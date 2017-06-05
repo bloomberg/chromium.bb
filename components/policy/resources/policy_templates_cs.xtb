@@ -87,11 +87,6 @@ Hodnota prodloužení musí být 100 % nebo více.</translation>
 Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vytváření profilů hosta nepovolí.</translation>
 <translation id="1363275621236827384">Povolit dotazy na server Quirks pro hardwarové profily</translation>
 <translation id="1397855852561539316">URL výchozího vyhledávače pro návrhy</translation>
-<translation id="1398889361882383850">Umožňuje nastavit, zda weby budou moci automaticky spouštět pluginy. Automatické spouštění pluginů lze pro všechny weby povolit, nebo zakázat.
-
-          Funkce Spustit kliknutím dovoluje spouštění pluginů, avšak uživatel na ně musí nejdříve kliknout.
-
-          Pokud zásada není nastavena, použije se zásada „AllowPlugins“ a uživatelé ji budou moci změnit.</translation>
 <translation id="1426410128494586442">Ano</translation>
 <translation id="1427655258943162134">Adresa (nebo adresa URL) proxy serveru</translation>
 <translation id="1435659902881071157">Konfigurace sítě na úrovni zařízení</translation>
@@ -163,7 +158,6 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 <translation id="1689963000958717134">Umožňuje přenést nastavení sítě, která se budou používat pro všechny uživatele zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1708496595873025510">Nastavit omezení pro načítání počáteční hodnoty variace</translation>
 <translation id="172374442286684480">Umožnit nastavení místních dat všem webům</translation>
-<translation id="1727394138581151779">Blokovat všechny pluginy</translation>
 <translation id="1734716591049455502">Konfigurace možností vzdáleného přístupu</translation>
 <translation id="1736269219679256369">Povolit pokračování ze stránky s upozorněním protokolu SSL</translation>
 <translation id="1749815929501097806">Nastavuje smluvní podmínky, které musí uživatel přijmout před zahájením relace prostřednictvím účtu v zařízení.
@@ -703,7 +697,6 @@ Pokud toto nastavení deaktivujete, v okně správce hesel nebude možné zobra
 
 Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správci hesel moci zobrazit uložená hesla jako čitelný text.</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
-<translation id="3570008976476035109">Blokovat pluginy na těchto stránkách</translation>
 <translation id="3591584750136265240">Konfigurace chování přihlašovacího ověření</translation>
 <translation id="3627678165642179114">Povolit nebo zakázat webovou službu kontroly pravopisu</translation>
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
@@ -786,7 +779,6 @@ Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správc
           Adresu URL Googlu pro návrhy lze zadat takto: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
-<translation id="3864818549971490907">Výchozí nastavení pluginů</translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="3868347814555911633">Tato zásada je aktivní pouze v režimu prodeje.
 
@@ -845,6 +837,7 @@ Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správc
 
           Tato možnost je obvykle vypnuta jako ochrana proti phishingu. Pokud zásada není nastavena, je tato možnost vypnuta a u obsahu třetích stran nebude povoleno vyskakování dialogového okna HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Deaktivovat protokol SPDY</translation>
+<translation id="408029843066770167">Povolit dotazy na časovou službu Google</translation>
 <translation id="4088589230932595924">Anonymní režim je povinný.</translation>
 <translation id="4088983553732356374">Umožňuje určit, zda mohou webové stránky nastavovat místní data. Nastavení místních dat lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.
 
@@ -912,6 +905,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="4377599627073874279">Povolit všem webům zobrazování všech obrázků</translation>
 <translation id="4389091865841123886">Konfiguruje vzdálené ověření identity pomocí mechanismu TPM.</translation>
 <translation id="4397469093966511008">Pokud tuto zásadu nastavíte na hodnotu false, uživatelé nebudou moci zvolit, že se mají některé informace o systému a obsahu stránek odeslat na servery Google. Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, uživatelé budou moci odesílat část informací o systému a obsahu stránek do Bezpečného prohlížení a pomoci tak zjišťovat nebezpečné aplikace a weby.</translation>
+<translation id="4418726081189202489">Pokud tuto zásadu nastavíte na hodnotu False, přestane <ph name="PRODUCT_NAME" /> odesílat příležitostné dotazy na server Google k získání přesného časového razítka. Pokud tato zásada bude nastavena na hodnotu True nebo nebude nastavena, budou tyto dotazy povoleny.</translation>
 <translation id="4423597592074154136">Zadat nastavení proxy serveru ručně</translation>
 <translation id="4429220551923452215">Povolí nebo zakáže zástupce aplikací na liště záložek.
 
@@ -1433,9 +1427,6 @@ Nastavením této zásady na hodnotu False přeskočení stránky s upozorněn�
           Pokud zvolíte, že se má proxy server zjistit automaticky, obdrží aplikace Android adresu URL skriptu http://wpad/wpad.dat. Žádná jiná část protokolu automatické detekce serveru proxy se nepoužije.
 
           Pokud zvolíte, že chcete používat skript .pac proxy serveru, obdrží aplikace Android adresu URL skriptu.</translation>
-<translation id="6467433935902485842">Umožňuje nastavit seznam vzorů adres URL stránek, které nemají povoleno spouštět pluginy.
-
-           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="6491139795995924304">Povolit na zařízení Bluetooth</translation>
 <translation id="6520802717075138474">Importování vyhledávačů z výchozího prohlížeče při prvním spuštění</translation>
 <translation id="653608967792832033">Udává dobu nečinnosti uživatele, po které bude obrazovka při napájení z baterie uzamčena.
@@ -1715,7 +1706,6 @@ Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je za
       V případě nastavení na možnost GAIA proběhne přihlášení běžným ověřovacím procesem GAIA.
 
       V případě nastavení na možnost SAML_INTERSTITIAL se při přihlášení zobrazí vsunutá obrazovka, na které uživatel bude moci zvolit, zda chce pokračovat v ověření prostřednictvím poskytovatele identity SAML domény, do které je zařízení zaregistrováno, nebo se vrátit k běžnému procesu přihlášení GAIA.</translation>
-<translation id="7567380065339179813">Povolit pluginy na těchto stránkách</translation>
 <translation id="757395965347379751">Když je toto nastavení aktivováno, povoluje <ph name="PRODUCT_NAME" /> certifikáty podepsané algoritmem SHA-1, pokud je možné je úspěšně ověřit a propojit s místně nainstalovanými certifikáty CA.
 
       Upozorňujeme, že tato zásada závisí na tom, zda podpisy SHA-1 povoluje ověřovací mechanismus operačních systému. Pokud při aktualizaci operačního systému dojde ke změně zpracování certifikátů SHA-1, tato zásada již nemusí fungovat. Tato zásada je určena jako dočasné řešení, které podnikům poskytne více času k přechodu na jiné podpisy než SHA-1. Tato zásada bude odstraněna kolem 1. ledna 2019.
@@ -1808,9 +1798,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Stránka Nová karta</translation>
 <translation id="7788511847830146438">Podle profilu</translation>
-<translation id="7796141075993499320">Umožňuje nastavit seznam vzorů adres URL určujících stránky, které mohou spouštět pluginy.
-          
-          Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="7801886189430766248">Když je tato zásada nastavena na hodnotu True, nahrávají se data kompatibilních aplikací Android na servery Android Backup a při přeinstalaci aplikací se z nich obnovují.
 
       Pokud je tato zásada nastavena na hodnotu False, služba Android Backup Service bude vypnuta.
@@ -2054,7 +2041,6 @@ Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjisti
 Pokud je toto nastavení povoleno, anonymní údaje o využití a selhání budou odesílány společnosti Google. Pokud je zakázáno, tyto informace společnosti Google odesílány nebudou. V obou případech uživatelé nemohou toto nastavení změnit ani přepsat.Pokud tuto zásadu ponecháte nenastavenou, bude jako nastavení použita volba uživatele při instalaci nebo prvním spuštění.
 
 Tato zásada není k dispozici v relacích Windows, které nejsou připojené k doméně Active Directory. (Pokud používáte Chrome OS, přečtěte si informace o zásadě DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Povolit automatické spouštění pluginů všem webům</translation>
 <translation id="8693243869659262736">Použít integrovaného klienta DNS</translation>
 <translation id="8704831857353097849">Seznam deaktivovaných pluginů</translation>
 <translation id="8711086062295757690">Určuje klíčové slovo, které v adresním řádku spouští vyhledávání tohoto poskytovatele.

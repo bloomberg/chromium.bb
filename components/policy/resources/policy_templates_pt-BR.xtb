@@ -79,16 +79,11 @@
 <translation id="1330985749576490863">Desativar o Google Drive por conexões de rede celular no aplicativo Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nome da política</translation>
 <translation id="1353966721814789986">Páginas de inicialização</translation>
-<translation id="1359553908012294236">Se esta política é definida como "true" ou não é configurada, o <ph name="PRODUCT_NAME" /> ativa os logins de convidados. Os logins de convidados são perfis do <ph name="PRODUCT_NAME" /> nos quais todas as janelas ficam no modo de navegação anônima.
+<translation id="1359553908012294236">Se esta política é definida como "true" ou não é configurada, o <ph name="PRODUCT_NAME" /> ativa os logins de convidados. Os logins de convidados são perfis do <ph name="PRODUCT_NAME" /> nos quais todas as janelas ficam no modo sem rastros.
 
       Se esta política é definida como "false", o <ph name="PRODUCT_NAME" /> não permite que perfis de convidados sejam iniciados.</translation>
 <translation id="1363275621236827384">Permitir consultas no Servidor Quirks para perfis de hardware</translation>
 <translation id="1397855852561539316">URL sugerido do provedor de pesquisa padrão</translation>
-<translation id="1398889361882383850">Permite definir se os websites estão autorizados a executar plug-ins automaticamente. A execução automática de plug-ins pode ser permitida ou negada para todos os websites. 
-
-"Clicar para reproduzir" permite que os plug-ins sejam executados, mas é preciso que o usuário clique neles para iniciar sua execução.
-
-Se esta política não for definida, 'AllowPlugins' será usada, e o usuário poderá alterá-la.</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
@@ -171,7 +166,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="1689963000958717134">Permite que a configuração de rede seja aplicada a todos os usuários de dispositivos <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Definir a restrição para busca do termo-semente "Variações"</translation>
 <translation id="172374442286684480">Permitir que todos os sites definam dados locais</translation>
-<translation id="1727394138581151779">Bloqueia todos os plug-ins</translation>
 <translation id="1734716591049455502">Configurar opções de acesso remoto</translation>
 <translation id="1736269219679256369">Permitir a continuação na página de aviso SSL</translation>
 <translation id="1749815929501097806">Define os Termos de Serviço que o usuário deve aceitar antes de iniciar uma sessão da conta local do dispositivo.
@@ -226,7 +220,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta política não é definida, os padrões são usados para todas as configurações.</translation>
 <translation id="1960840544413786116">Se os certificados emitidos pelas âncoras de confiança locais que estão sem a extensão subjectAlternativeName devem ser permitidos</translation>
-<translation id="1964634611280150550">Modo de navegação anônima desativado</translation>
+<translation id="1964634611280150550">Modo sem rastros desativado</translation>
 <translation id="1964802606569741174">Esta política não tem nenhum efeito sobre o app do YouTube para Android. Se o modo de segurança do YouTube precisar ser aplicado, a instalação desse app será bloqueada.</translation>
 <translation id="1969212217917526199">Modifica as políticas sobre versões de depuração do host de acesso remoto.
 
@@ -508,7 +502,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2811293057593285123">O serviço "Navegação segura" mostra uma página de aviso quando os usuários navegam em sites que são sinalizados como potencialmente mal-intencionados. A ativação dessa configuração impede que os usuários prossigam de qualquer forma da página de aviso para o site mal-intencionado.
 
       Se essa configuração for desativada ou não for configurada, os usuários poderão optar por prosseguir para o site sinalizado após o aviso ser exibido.</translation>
-<translation id="2824715612115726353">Ativar o modo de navegação anônima</translation>
+<translation id="2824715612115726353">Ativar o modo sem rastros</translation>
 <translation id="2844404652289407061">Ativa a disponibilidade de "Tocar para pesquisar" na visualização de conteúdo do <ph name="PRODUCT_NAME" />.
 
       Se você ativa esta configuração, o recurso "Tocar para pesquisar" fica disponível para o usuário, e é possível optar por ativar ou desativar o recurso.
@@ -607,7 +601,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta política não for definida, os usuários poderão decidir se o cliente DNS integrado será usado editando-se chrome://flags ou especificando-se a sinalização de uma linha de comando.</translation>
 <translation id="3214164532079860003">Caso ativada, esta política força a página inicial a ser importada do navegador padrão atual. Se desativada, a página inicial não é importada. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
-<translation id="3219421230122020860">Modo anônimo disponível</translation>
+<translation id="3219421230122020860">Modo sem rastros disponível</translation>
 <translation id="3220624000494482595">Se o app em Kiosk for um app Android, ele não terá nenhum controle sobre a versão do <ph name="PRODUCT_OS_NAME" />, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Padrões de URL para permitir instalação de extensões, aplicativos e scripts do usuário a partir de</translation>
 <translation id="3243309373265599239">Especifica o período de inatividade do usuário após o qual a tela é escurecida no funcionamento com alimentação CA.
@@ -684,7 +678,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se você ativar ou não definir esta política, os usuários poderão ver as próprias senhas em texto não criptografado no gerenciador de senhas.</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
-<translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
@@ -762,7 +755,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           A sugestão de URL do Google pode ser especificada como: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" está ativada.</translation>
-<translation id="3864818549971490907">Configuração padrão de plug-ins</translation>
 <translation id="3866249974567520381">Descrição</translation>
 <translation id="3868347814555911633">Esta política só fica ativada em modo de varejo.
 
@@ -820,7 +812,8 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="4027608872760987929">Ativar o provedor de pesquisa padrão</translation>
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros em uma página pode acionar pop-up de uma caixa de diálogo básica de autorização HTTP. Normalmente, esta função é desativada como proteção contra phishing. Se esta política não estiver definida, a função é desativada e o subconteúdo de terceiros não terá permissão para acionar pop-up de uma caixa de diálogo básica de autorização HTTP.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
-<translation id="4088589230932595924">Modo de navegação anônima forçado</translation>
+<translation id="408029843066770167">Permitir consultas a um serviço de hora do Google</translation>
+<translation id="4088589230932595924">Modo sem rastros forçado</translation>
 <translation id="4088983553732356374">Permite que você configure se os websites têm ou não permissão para definir dados locais. É possível permitir a configuração dos dados locais para todos os websites ou negá-la a todos eles.
 
           Se esta política é configurada para "Manter cookies enquanto durar a sessão", os cookies são apagados quando a sessão é encerrada. Se o <ph name="PRODUCT_NAME" /> é executado no "modo de segundo plano", é possível que a sessão não seja encerrada quando a última janela é fechada. Consulte a política "BackgroundModeEnabled" para ver mais informações sobre como configurar esse comportamento.
@@ -888,6 +881,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="4377599627073874279">Permitir que todos os sites exibam todas as imagens</translation>
 <translation id="4389091865841123886">Configurar a declaração remota com mecanismo TPM</translation>
 <translation id="4397469093966511008">A configuração dessa política como "false" impede que os usuários optem por enviar informações do sistema e conteúdos de páginas aos servidores do Google. Se essa configuração for definida como "true" ou não for configurada, os usuários terão permissão para enviar informações do sistema e conteúdos de página à Navegação segura para ajudar a detectar apps e sites perigosos.</translation>
+<translation id="4418726081189202489">Configurar esta política como falsa impede que o <ph name="PRODUCT_NAME" /> envie, ocasionalmente, consultas a um servidor do Google para recuperar um timestamp preciso. Essas consultas serão ativadas caso esta política seja configurada como Verdadeira ou não seja configurada.</translation>
 <translation id="4423597592074154136">Especificar manualmente as configurações de proxy</translation>
 <translation id="4429220551923452215">Ativa ou desativa os atalhos dos aplicativos na barra de favoritos.
 
@@ -1085,7 +1079,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Quando esta política não está definida, nenhuma caixa de diálogo de advertência é mostrada.
 
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem iguais ou inferiores ao período de inatividade.</translation>
-<translation id="5307432759655324440">Disponibilidade do modo de navegação anônima</translation>
+<translation id="5307432759655324440">Disponibilidade do modo sem rastros</translation>
 <translation id="5318185076587284965">Ativar o uso de servidores relay pelo host de acesso remoto</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo a seguir</translation>
 <translation id="5365946944967967336">Exibir o botão da Página inicial na barra de ferramentas</translation>
@@ -1198,7 +1192,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.
 
       Se a política não for definida, será usado o diretório padrão do perfil.</translation>
-<translation id="5826047473100157858">Especifica se o usuário pode abrir páginas no Modo de navegação anônima em <ph name="PRODUCT_NAME" />. Se a opção "Ativado" for selecionada ou a política for deixada sem configuração, as páginas podem ser abertas no Modo de navegação anônima. Se a opção "Destivado" for selecionada, as páginas não poderão ser abertas no Modo de navegação anônima. Se a opção "Forçado" for selecionada, as páginas podem ser abertas somente no Modo de navegação anônima.</translation>
+<translation id="5826047473100157858">Especifica se o usuário pode abrir páginas no modo sem rastros em <ph name="PRODUCT_NAME" />. Se a opção "Ativado" for selecionada ou a política for deixada sem configuração, as páginas podem ser abertas no modo sem rastros. Se a opção "Destivado" for selecionada, as páginas não poderão ser abertas no modo sem rastros. Se a opção "Forçado" for selecionada, as páginas podem ser abertas somente no modo sem rastros.</translation>
 <translation id="5836064773277134605">Restringir o intervalo de portas UDP usado pelo host de acesso remoto</translation>
 <translation id="5862253018042179045">Definir o estado padrão do recurso de acessibilidade do feedback falado na tela de login.
 
@@ -1354,7 +1348,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se você optar pela detecção automática do servidor proxy, o URL do script "http://wpad/wpad.dat" será fornecido aos apps Android. Nenhuma outra parte do protocolo de detecção automática de proxy será usada.
 
           Se você optar por usar um script de proxy .pac, o URL do script será fornecido aos apps Android.</translation>
-<translation id="6467433935902485842">Permite que você defina uma lista de padrões de URL que especifica sites sem permissão para executar plug-ins. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="6491139795995924304">Permitir o Bluetooth no dispositivo</translation>
 <translation id="6520802717075138474">Importar mecanismos de pesquisa do navegador padrão na primeira execução</translation>
 <translation id="653608967792832033">Especifica após quanto tempo de inatividade do usuário a tela é bloqueada no funcionamento com a energia da bateria.
@@ -1617,7 +1610,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se configurada como GAIA, o login é feito pelo fluxo normal de autenticação GAIA.
 
       Se configurada como SAML_INTERSTITIAL, o login exibe uma tela intersticial oferecendo ao usuário a opção de prosseguir com a autenticação por IdP de SAML do domínio de inscrição do dispositivo ou voltar para o fluxo normal de login GAIA.</translation>
-<translation id="7567380065339179813">Permitir plug-ins nestes sites</translation>
 <translation id="757395965347379751">Quando esta configuração está ativada, o <ph name="PRODUCT_NAME" /> permite certificados SHA-1 assinados, desde que eles sejam validados e estejam vinculados a certificados de CA instalados localmente.
 
       Esta política depende da permissão de assinaturas SHA-1 pela pilha de verificação de certificados do sistema operacional. Se a atualização de um SO alterar o modo como esse sistema lida com certificados SHA-1, talvez esta política deixe de ter efeito. Além disso, esta política é usada como alternativa temporária para dar às empresas mais tempo para deixar de usar SHA-1. Esta política será removida no dia 1 de janeiro de 2019 ou em uma data próxima a essa.
@@ -1705,7 +1697,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Página "Nova guia"</translation>
 <translation id="7788511847830146438">Por perfil</translation>
-<translation id="7796141075993499320">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar plug-ins. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7801886189430766248">Quando essa política é definida como true, é feito upload dos dados de apps do Android para os servidores do Android Backup. Esses dados são restaurados a partir desses servidores após reinstalações de apps compatíveis.
 
       Quando essa política é definida como false, o Android Backup Service é desativado.
@@ -1813,7 +1804,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Neste modo, os dados de perfil são mantidos no disco apenas durante a sessão do usuário. Recursos como o histórico do navegador, as extensões e as informações nelas contidas, os dados da Web, como cookies e bancos de dados não são mantidos após o navegador ser fechado. No entanto, isso não impede que o usuário faça o download de dados para o disco manualmente, salve páginas ou as imprima.
 
-      Se o usuário tiver ativado a sincronização, todos esses dados serão preservados no perfil de sincronização dele, assim como acontece nos perfis regulares. O modo de navegação anônima também estará disponível, se não for explicitamente desativado pela política.
+      Se o usuário tiver ativado a sincronização, todos esses dados serão preservados no perfil de sincronização dele, assim como acontece nos perfis regulares. O modo sem rastros também estará disponível, se não for explicitamente desativado pela política.
 
       Se a política for desativada ou não for definida, o login levará a perfis regulares.</translation>
 <translation id="8158758865057576716">Permite a criação de cópias em roaming dos dados de perfil do <ph name="PRODUCT_NAME" />.</translation>
@@ -1961,7 +1952,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Esta política não está disponível em instâncias do Windows não incluídas no
       domínio de um Active Directory. Para Chrome OS, consulte
       DeviceMetricsReportingEnabled.</translation>
-<translation id="868187325500643455">Permite que todos os sites executem automaticamente os plug-ins</translation>
 <translation id="8693243869659262736">Usar cliente DNS integrado</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave, que é o atalho utilizado na omnibox para acionar a pesquisa por este provedor. Esta política é opcional. Se não estiver definida, palavra-chave alguma ativará o mecanismo de pesquisa. Esta política só é considerada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
@@ -2050,7 +2040,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta política é definida como "true", os registros de sistema são enviados. Se ela é definida
       como "false" ou se não é definida, nenhum registro de sistema é enviado.</translation>
-<translation id="9150416707757015439">Esta política é obsoleta. Utilize IncognitoModeAvailability em seu lugar. Ativa o Modo de navegação anônima em <ph name="PRODUCT_NAME" />. Caso esta configuração seja ativada ou não configurada, os usuários podem abrir páginas da web no Modo de navegação anônima. Se essa configuração for desativada, os usuários não podem abrir páginas da web em Modo de navegação anônima. Se esta política for deixada sem definição, esta opção será ativada e o usuário será capaz de usar o Modo de navegação anônima.</translation>
+<translation id="9150416707757015439">Esta política é obsoleta. Utilize IncognitoModeAvailability em seu lugar, que ativa o modo sem rastros em <ph name="PRODUCT_NAME" />. Caso esta configuração seja ativada ou não configurada, os usuários podem abrir páginas da Web no modo sem rastros. Se essa configuração for desativada, os usuários não podem abrir páginas da Web usando o modo sem rastros. Se esta política for deixada sem definição, esta opção será ativada e o usuário será capaz de usar o modo sem rastros.</translation>
 <translation id="915194831143859291">Se esta política é definida como "false" ou se não é configurada, o <ph name="PRODUCT_OS_NAME" /> permite que o usuário desligue o dispositivo.
       Se esta política é definida como "true", o <ph name="PRODUCT_OS_NAME" /> aciona uma reinicialização quando o usuário desliga o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de desligamento da interface de usuário por botões de reinicialização. Se o usuário desliga o dispositivo no botão liga/desliga, ele não é reinicializado automaticamente, mesmo que a política esteja ativa.</translation>
 <translation id="9187743794267626640">Desativa a montagem de armazenamento externo</translation>

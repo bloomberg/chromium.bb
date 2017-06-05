@@ -88,11 +88,6 @@
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 將會禁止啟動訪客設定檔。</translation>
 <translation id="1363275621236827384">允許在 Quirks Server 中查詢硬體設定檔</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
-<translation id="1398889361882383850">讓你設定是否要允許網站自動執行外掛程式。你可以允許或禁止所有網站自動執行外掛程式。
-
-          啟用 [點選播放] 選項時，使用者必須手動點選外掛程式，程式才會開始執行。
-
-          如未設定這項政策，系統將會採用「AllowPlugins」，而使用者亦可變更這項設定。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
@@ -175,7 +170,6 @@
 <translation id="1689963000958717134">允許將網路設定按照使用者套用至已安裝 <ph name="PRODUCT_OS_NAME" /> 的裝置。該網路設定是由「開放網路設定」格式 (請參閱：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="1708496595873025510">設定變異版本種子的擷取限制</translation>
 <translation id="172374442286684480">允許所有網站設定本機資料</translation>
-<translation id="1727394138581151779">封鎖所有外掛程式</translation>
 <translation id="1734716591049455502">設定遠端存取選項</translation>
 <translation id="1736269219679256369">允許忽略 SSL 警告網頁，繼續前往原本指定的頁面</translation>
 <translation id="1749815929501097806">設定使用者在開始裝置本機帳戶工作階段前必須同意的《服務條款》。
@@ -691,7 +685,6 @@
 
           如果您啟用或未設定這項政策，使用者即可在密碼管理員中看到實際的密碼內容。</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
-<translation id="3570008976476035109">封鎖這些網站的外掛程式</translation>
 <translation id="3591584750136265240">設定登入驗證行為</translation>
 <translation id="3627678165642179114">啟用或停用拼字檢查網路服務</translation>
 <translation id="3646859102161347133">設定螢幕放大鏡類型</translation>
@@ -768,7 +761,6 @@
           您可以使用以下形式指定 Google 的建議網址：<ph name="GOOGLE_SUGGEST_SEARCH_URL" />。
 
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
-<translation id="3864818549971490907">預設外掛程式設定</translation>
 <translation id="3866249974567520381">說明</translation>
 <translation id="3868347814555911633">這項政策僅在零售模式下有效。
 
@@ -826,6 +818,7 @@
 <translation id="4027608872760987929">啟用預設搜尋引擎</translation>
 <translation id="4039085364173654945">控制是否允許網頁上的第三方附屬內容彈出「HTTP 基本驗證」對話方塊。為了防止網路釣魚，這項功能通常會停用。如果未設定這項政策，系統會停用這項功能，並且不允許第三方附屬內容彈出「HTTP 基本驗證」對話方塊。</translation>
 <translation id="4056910949759281379">停用 SPDY 通訊協定</translation>
+<translation id="408029843066770167">允許向 Google 時間服務傳送查詢</translation>
 <translation id="4088589230932595924">強制使用無痕模式</translation>
 <translation id="4088983553732356374">可讓您設定是否允許網站設定本機資料。您可以允許所有網站都能設定本機資料，也可以禁止所有網站設定本機資料。
 
@@ -894,6 +887,7 @@
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
 <translation id="4389091865841123886">使用 TPM 機制設定遠端證明。</translation>
 <translation id="4397469093966511008">將這項政策設為 false 會禁止使用者選擇傳送部分系統資訊和網頁內容給 Google 伺服器。如果這項設定為 true 或未設定，使用者即可傳送部分系統資訊和網頁內容給「安全搜尋」，協助我們偵測危險的應用程式和網站。</translation>
+<translation id="4418726081189202489">將這項政策設為 False 後，<ph name="PRODUCT_NAME" /> 就無法為了擷取精確時間戳記而不定期傳送查詢給 Google 伺服器。如果將這項政策設為 True 或不予設定，則會允許傳送這類查詢。</translation>
 <translation id="4423597592074154136">手動指定 Proxy 設定</translation>
 <translation id="4429220551923452215">啟用或停用書籤列中的應用程式捷徑。
 
@@ -1365,7 +1359,6 @@
           如果選擇自動偵測 Proxy 伺服器，系統會提供指令碼網址「http://wpad/wpad.dat」給 Android 應用程式 (不會使用 Proxy 自動偵測通訊協定的其他部分)。
 
           如果選擇 .pac Proxy 指令碼，系統會提供該指令碼網址給 Android 應用程式。</translation>
-<translation id="6467433935902485842">允許你設定網址模式清單，指定不可以執行外掛程式的網站。如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="6491139795995924304">允許在裝置上使用藍牙功能</translation>
 <translation id="6520802717075138474">第一次執行時從預設瀏覽器匯入搜尋引擎</translation>
 <translation id="653608967792832033">指定時間長度，如果系統在電池供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後鎖定螢幕。
@@ -1627,7 +1620,6 @@
       如果設為 GAIA，系統會讓使用者透過標準 GAIA 驗證流程完成登入作業。
 
       如果設為 SAML_INTERSTITIAL，系統在登入過程中會顯示插頁畫面，讓使用者選擇繼續透過裝置註冊網域的 SAML IdP 進行驗證，或是返回標準 GAIA 登入流程。</translation>
-<translation id="7567380065339179813">允許這些網站的外掛程式</translation>
 <translation id="757395965347379751">啟用這項設定時，只要 SHA-1 簽署憑證成功通過驗證並鏈結至本機安裝的 CA 憑證，即可在 <ph name="PRODUCT_NAME" /> 中使用。
 
       請注意，這項政策取決於允許 SHA-1 簽名的作業系統憑證驗證堆疊。如果作業系統更新變更了作業系統的 SHA-1 憑證處理方式，這項政策可能就會失效。此外，這項政策是暫時性的解決方案，目的是讓使用 SHA-1 憑證的企業有更多時間尋找其他解決方案。我們將於 2019 年 1 月 1 日左右移除這項政策。
@@ -1715,7 +1707,6 @@
           <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="7781069478569868053">新分頁</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
-<translation id="7796141075993499320">允許你設定網址模式清單，指定可以執行外掛程式的網站。如果未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7801886189430766248">將這項政策設為 true 時，系統會將 Android 應用程式資料上傳到 Android 備份伺服器。一旦重新安裝相容的應用程式，系統就會從 Android 備份伺服器還原 Android 應用程式資料。
 
       將這項政策設為 false 時，Android 備份服務會遭到停用。
@@ -1955,7 +1946,6 @@
       這項政策不適用於未加入 Active Directory 網域的
       Windows 執行個體 (如果是 Chrome 作業系統，請參閱
       DeviceMetricsReportingEnabled)。</translation>
-<translation id="868187325500643455">允許所有網站自動執行外掛程式</translation>
 <translation id="8693243869659262736">使用內建的 DNS 用戶端</translation>
 <translation id="8704831857353097849">停用的外掛程式清單</translation>
 <translation id="8711086062295757690">指定關鍵字，這是網址列用來為這個引擎觸發搜尋的捷徑。這項政策是選擇性的，如果未設定，就沒有關鍵字會啟動搜尋引擎。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>

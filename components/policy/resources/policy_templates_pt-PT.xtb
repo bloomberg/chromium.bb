@@ -88,11 +88,6 @@
       Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permite que os perfis de convidado sejam iniciados.</translation>
 <translation id="1363275621236827384">Ativar consultas ao Quirks Server para perfis de hardware</translation>
 <translation id="1397855852561539316">URL de sugestão do fornecedor de pesquisas padrão</translation>
-<translation id="1398889361882383850">Permite-lhe definir se os Sites têm automaticamente permissão para executar plug-ins. Os plug-ins automaticamente em execução podem ser permitidos para todos os Sites ou negados para todos os Sites.
-
-          Clicar para reproduzir permite a execução de plug-ins, mas o utilizador deve clicar sobre eles para iniciar a sua execução.
-
-          Se esta política não for definida, será utilizada a opção "Permitir Plug-ins" e o utilizador poderá alterá-la.</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede ao nível do aparelho</translation>
@@ -175,7 +170,6 @@
 <translation id="1689963000958717134">Permite que a configuração de rede seja aplicada para todos os utilizadores de um dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Definir a restrição para a obtenção da semente Variações</translation>
 <translation id="172374442286684480">Permitir que todos os sites definam dados locais</translation>
-<translation id="1727394138581151779">Bloquear todos os plug-ins</translation>
 <translation id="1734716591049455502">Configurar as opções de acesso remoto</translation>
 <translation id="1736269219679256369">Permitir continuar a partir da página de aviso SSL</translation>
 <translation id="1749815929501097806">Define os Termos de Utilização que o utilizador tem de aceitar antes de iniciar sessão numa conta local do dispositivo.
@@ -691,7 +685,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se ativar ou não definir esta política, os utilizadores podem ver as palavras-passe em texto simples no gestor de palavras-passe.</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
-<translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
 <translation id="3591584750136265240">Configurar o comportamento de autenticação de início de sessão</translation>
 <translation id="3627678165642179114">Ativar ou desativar o serviço Web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
@@ -769,7 +762,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           O URL de sugestão do Google pode ser especificado como <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
-<translation id="3864818549971490907">Definição de plug-ins predefinida</translation>
 <translation id="3866249974567520381">Descrição</translation>
 <translation id="3868347814555911633">Esta política está ativa apenas no modo de retalho.
 
@@ -827,6 +819,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4027608872760987929">Ativar o fornecedor de pesquisas personalizado</translation>
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros numa página tem permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP. Normalmente, esta definição está desativada como uma defesa contra phishing. Se esta política não for definida, a definição será desativada e o subconteúdo de terceiros não terá permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
+<translation id="408029843066770167">Permitir consultas a um serviço de hora da Google</translation>
 <translation id="4088589230932595924">Modo de navegação anónima forçado</translation>
 <translation id="4088983553732356374">Permite-lhe definir se os Sites estão autorizados a definir dados locais. A definição dos dados locais pode ser autorizada para todos os Sites ou negada para todos os Sites.
 
@@ -895,6 +888,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4377599627073874279">Permitir que todos os sites mostrem todas as imagens</translation>
 <translation id="4389091865841123886">Configura a comprovação remota através do mecanismo TPM.</translation>
 <translation id="4397469093966511008">Definir esta política como falsa impede os utilizadores de optarem por enviar algumas informações do sistema e conteúdo de páginas para os servidores da Google. Caso esta definição seja verdadeira ou não esteja configurada, os utilizadores podem enviar algumas informações do sistema e conteúdo de páginas para a Navegação segura de modo a ajudar a detetar aplicações e sites perigosos.</translation>
+<translation id="4418726081189202489">Definir esta política como falsa impede o <ph name="PRODUCT_NAME" /> de enviar ocasionalmente consultas para um servidor da Google para obter uma data/hora exata. Estas consultas serão ativadas caso esta política esteja definida como verdadeira ou não esteja definida.</translation>
 <translation id="4423597592074154136">Especificar manualmente as definições de proxy</translation>
 <translation id="4429220551923452215">Ativa ou desativa o atalho de aplicações na barra de marcadores.
 
@@ -1367,7 +1361,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Se escolher detetar automaticamente o servidor proxy, é fornecido o URL "http://wpad/wpad.dat" do script às aplicações Android. Não é utilizada mais nenhuma parte do protocolo de deteção automática do proxy.
 
           Se escolher utilizar um script de proxy .pac, o URL do script é fornecido às aplicações Android.</translation>
-<translation id="6467433935902485842">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a executar plug-ins. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultPluginsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="6491139795995924304">Permitir o Bluetooth no dispositivo</translation>
 <translation id="6520802717075138474">Importar motores de pesquisa a partir do navegador predefinido na primeira execução</translation>
 <translation id="653608967792832033">Especifica o período de tempo sem atividade por parte do utilizador após o qual se bloqueia o ecrã quando se está a utilizar a energia da bateria.
@@ -1633,7 +1626,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se definida para GAIA, o início de sessão é efetuado através do fluxo de autenticação GAIA normal.
 
       Se definida para SAML_INTERSTITIAL, o início de sessão apresenta um ecrã intercalar que pergunta ao utilizador se pretende avançar com a autenticação através do SAML IdP do domínio de inscrição do dispositivo ou retroceder para o fluxo de início de sessão GAIA normal.</translation>
-<translation id="7567380065339179813">Permitir plug-ins nesses sites</translation>
 <translation id="757395965347379751">Quando esta definição está ativada, o <ph name="PRODUCT_NAME" /> permite certificados assinados SHA-1 desde que validem e incluam com êxito uma cadeia para certificados da AC (Autoridade de certificação) instalados localmente.
 
       Tenha em atenção que esta política depende da pilha de confirmação de certificados de sistema operativo que autoriza assinaturas SHA-1. Se uma atualização do SO alterar o processamento do SO de certificados SHA-1, esta política pode deixar de ter efeito. Além disso, esta política serve de solução temporária para dar às empresas mais tempo para se desvincularem do SHA-1. Esta política será removida em meados do dia 1 de janeiro de 2019.
@@ -1721,7 +1713,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Página Novo separador</translation>
 <translation id="7788511847830146438">Por Perfil</translation>
-<translation id="7796141075993499320">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a executar plug-ins. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultPluginsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="7801886189430766248">Quando esta política está definida como verdadeira, os dados de aplicações Android são carregados para os servidores do Android Backup Service e restaurados a partir dos mesmos após a reinstalação de aplicações compatíveis.
 
       Quando esta política está definida como falsa, o Android Backup Service é desativado.
@@ -1984,7 +1975,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Esta política não está disponível em instâncias do Windows que não estão
       associadas a um domínio do Active Directory. (Para o SO Chrome, consulte
       DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Permitir que todos os sites executem plug-ins automaticamente</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS incorporado</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave a utilizar como atalho na caixa geral para acionar a pesquisa para este fornecedor. Esta política é opcional. Se não for definida, não será utilizada nenhuma palavra-chave para ativar o fornecedor. Esta política é apenas considerada se a política DefaultSearchProviderEnabled" estiver ativada.</translation>

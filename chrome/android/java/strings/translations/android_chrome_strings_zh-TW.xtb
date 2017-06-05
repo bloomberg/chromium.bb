@@ -68,6 +68,7 @@
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1623104350909869708">防止這個網頁產生其他對話方塊</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{移除 1 個選取的項目}other{移除 # 個選取的項目}}</translation>
+<translation id="1629390138158333592">搜尋網站</translation>
 <translation id="1641113438599504367">安全瀏覽</translation>
 <translation id="164269334534774161">您目前瀏覽的是這個網頁的離線複本 (建立時間：<ph name="CREATION_TIME" />)</translation>
 <translation id="1643702317193804718">正在將網頁內容翻譯成<ph name="SOURCE_LANGUAGE" />…</translation>
@@ -88,6 +89,7 @@
 <translation id="1832521218263067499">安全性事件</translation>
 <translation id="1853692000353488670">新增無痕式分頁</translation>
 <translation id="189172778771606813">關閉導覽匣</translation>
+<translation id="1892551174703874605">網址列。往上拉即可查看書籤、下載內容和歷史紀錄。</translation>
 <translation id="1897409700584096124">網站正在播送</translation>
 <translation id="1933845786846280168">選取的分頁</translation>
 <translation id="194341124344773587">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這項權限。</translation>
@@ -232,12 +234,14 @@
 <translation id="3583454905526475291">無法啟動應用程式</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="3590487821116122040">Chrome 認定為不重要的網站 (例如未儲存任何設定的網站，或是您不常造訪的網站) 所儲存的資料</translation>
+<translation id="3599863153486145794">將歷史紀錄從所有登入帳戶的裝置上清除。你的 Google 帳戶可能會儲存其他形式的瀏覽紀錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="360480449234699036">不需離開網頁即可瞭解網站上的主題。「輕觸搜尋」可將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片、搜尋結果和其他詳細資料。
 
 如要調整搜尋字詞，直接長按即可選取。如要修正搜尋，請將面板滑動到最上方，再輕觸搜尋框。</translation>
 <translation id="3616113530831147358">音訊</translation>
 <translation id="3632295766818638029">取消密碼遮罩</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
+<translation id="3649663272864015643">已選取 [首頁] 標籤</translation>
 <translation id="3656115297268584622">前往 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />開啟位置資訊設定。</translation>
 <translation id="3661699943263275414">第三方網站可以儲存及讀取 Cookie 資料</translation>
 <translation id="3662546969139119822">這裡沒有任何紀錄</translation>
@@ -413,6 +417,7 @@
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>
 <translation id="5487521232677179737">清除資料</translation>
 <translation id="5487729733663684359">這個 Android 版本已停止支援 Chrome 更新。</translation>
+<translation id="5490801865084500306">已選取 [書籤] 標籤</translation>
 <translation id="5512137114520586844">這個帳戶受 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5517095782334947753">你有來自 <ph name="FROM_ACCOUNT" /> 的書籤、歷史紀錄、密碼和其他設定。</translation>
 <translation id="5527082711130173040">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK1" />更新權限<ph name="END_LINK1" />。此外，<ph name="BEGIN_LINK2" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK2" />。</translation>
@@ -434,6 +439,7 @@
 <translation id="5676636989614905379">無法透過 <ph name="SCREEN_NAME" /> 播放影片。</translation>
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
+<translation id="5718200072127758424">在網址列往上拉即可查看書籤、下載內容和歷史紀錄</translation>
 <translation id="5719837394786370183">當您關閉所有無痕式分頁後，您在其中瀏覽的網頁都不會保留在瀏覽器紀錄、Cookie 儲存庫或搜尋紀錄中。不過，系統會將您下載的檔案或建立的書籤全部予以保留。
 
 不過，這並不代表您完全沒有瀏覽紀錄。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可記錄您的瀏覽活動。</translation>
@@ -539,6 +545,7 @@
 <translation id="6698801883190606802">管理同步資料</translation>
 <translation id="6701279291835318271">安全性報告</translation>
 <translation id="6710213216561001401">返回</translation>
+<translation id="6727612981472093924">導覽面版已開啟</translation>
 <translation id="6738867403308150051">下載中…</translation>
 <translation id="6762156594045689028">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">無法開啟檔案</translation>
@@ -548,6 +555,7 @@
 <translation id="6820607729870073286">您沒有已儲存的網站設定。</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻譯</translation>
+<translation id="6836509131652750668">Chrome 現正執行「<ph name="APP_NAME" />」。</translation>
 <translation id="6846298663435243399">載入中…</translation>
 <translation id="6850830437481525139">關閉了 <ph name="TAB_COUNT" /> 個分頁</translation>
 <translation id="6864459304226931083">下載圖片</translation>
@@ -567,15 +575,19 @@
 <translation id="6990079615885386641">從 Google Play 商店取得應用程式：<ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">自動將疑似安全性事件的詳細資料回報給 Google</translation>
 <translation id="6992289844737586249">允許網站使用您的麥克風前，必須先詢問您 (建議)</translation>
+<translation id="7006912589185917280">已選取 [歷史紀錄] 標籤</translation>
 <translation id="7016516562562142042">允許目前的搜尋引擎存取位置資訊</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 下載完成</translation>
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7031882061095297553">同步處理</translation>
+<translation id="704059664004611800">輕觸即可查看書籤和其他內容</translation>
+<translation id="7040779639826445456">輕觸即可查看書籤、下載內容和歷史紀錄</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7057058088140140610">使用 Google Payments 儲存的信用卡和地址資訊。</translation>
 <translation id="7062545763355031412">接受並切換帳戶</translation>
 <translation id="7063006564040364415">無法連線至同步處理伺服器。</translation>
+<translation id="7121362699166175603">將歷史紀錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽紀錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="7128222689758636196">對目前的搜尋引擎開放</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7144878232160441200">重試</translation>
@@ -670,6 +682,7 @@
 <translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">這個內容來自 <ph name="DOMAIN_NAME" />，由 Google 所提供。</translation>
+<translation id="8100932616285851614">導覽面版已關閉</translation>
 <translation id="8103578431304235997">無痕式分頁</translation>
 <translation id="8106211421800660735">信用卡號碼</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
@@ -711,6 +724,7 @@
 <translation id="857509777403223202">系統即將顯示更多文章供你閱覽，陪你度過美好的夜晚！</translation>
 <translation id="857943718398505171">已允許 (建議)</translation>
 <translation id="8583805026567836021">正在清除帳戶資料</translation>
+<translation id="8616006591992756292">你的 Google 帳戶可能會儲存其他形式的瀏覽紀錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="8617240290563765734">開啟這項下載內容中指定的建議網址？</translation>
 <translation id="862875433388403934">其他應用程式必須以新的裝置憑證重新取得授權，才能順利播放已下載的內容 (例如電影、音樂等)。
 
@@ -742,6 +756,7 @@
 <translation id="894871326938397531">要退出無痕模式嗎？</translation>
 <translation id="8951232171465285730">Chrome 為你節省了 <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL" /></translation>
+<translation id="896250263197055929">已選取 [下載] 標籤</translation>
 <translation id="8979340629087822094">過去 1 天</translation>
 <translation id="8981454092730389528">Google 活動控制項</translation>
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>

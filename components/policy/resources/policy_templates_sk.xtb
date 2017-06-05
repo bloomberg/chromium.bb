@@ -87,11 +87,6 @@
       Ak je toto pravidlo nastavené na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> nepovolí spustenie profilov hostí.</translation>
 <translation id="1363275621236827384">Povoľte dopyty na serveri Quirks pre hardvérové profily</translation>
 <translation id="1397855852561539316">Webová adresa návrhu predvoleného poskytovateľa vyhľadávania</translation>
-<translation id="1398889361882383850">Umožňuje nastaviť, či môžu webové stránky automaticky spúšťať doplnky. Automatické spúšťanie doplnkov môže byť pre všetky webové stránky povolené alebo zakázané.
-
-          Možnosť Kliknutím prehrať umožňuje spúšťať doplnky, ale používateľ musí na ne predtým kliknúť.
-
-          Ak sa toto pravidlo ponechá nenastavené, použije sa možnosť AllowPlugins (povoliť doplnky) a používateľ to bude môcť zmeniť.</translation>
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1427655258943162134">Adresa alebo webová adresa servera proxy</translation>
 <translation id="1435659902881071157">Konfigurácia siete na úrovni zariadenia</translation>
@@ -168,7 +163,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="1689963000958717134">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre všetkých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Nastaviť obmedzenie pre načítanie počiatočnej hodnoty variácie</translation>
 <translation id="172374442286684480">Povoliť všetkým webovým stránkam nastavovať miestne údaje</translation>
-<translation id="1727394138581151779">Blokovať všetky doplnky</translation>
 <translation id="1734716591049455502">Konfigurovať možnosti vzdialeného prístupu</translation>
 <translation id="1736269219679256369">Povoliť pokračovanie zo stránky s upozornením protokolu SSL</translation>
 <translation id="1749815929501097806">Nastavuje Zmluvné podmienky, ktoré musí používateľ prijať pred začatím relácie prostredníctvom miestneho účtu v zariadení.
@@ -719,7 +713,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Ak toto nastavenie povolíte alebo ho nenastavíte, používatelia budú môcť v správcovi hesiel zobraziť uložené heslá formou čitateľného textu.</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
-<translation id="3570008976476035109">Blokovať doplnky na týchto stránkach</translation>
 <translation id="3591584750136265240">Konfigurácia správania pri overovaní prihlasovacích údajov</translation>
 <translation id="3627678165642179114">Povoliť alebo zakázať webovú službu kontroly pravopisu</translation>
 <translation id="3646859102161347133">Nastavenie typu lupy obrazovky</translation>
@@ -799,7 +792,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
           Webovú adresu návrhu Google je možné špecifikovať ako: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Toto pravidlo bude uplatnené len v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
-<translation id="3864818549971490907">Predvolené nastavenie doplnkov</translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="3868347814555911633">Toto pravidlo je aktívne iba v režime predaja.
 
@@ -859,6 +851,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Táto funkcia je zvyčajne zakázaná kvôli ochrane pred phishingom (neoprávneným získavaním údajov). Ak toto pravidlo nie je nastavené, je zakázané a vnorenému obsahu tretej strany sa nepovolí zobrazovať kontextové dialógové okno s protokolom HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Zakázať protokol SPDY</translation>
+<translation id="408029843066770167">Povolenie dopytov odosielaných do časovej služby Google</translation>
 <translation id="4088589230932595924">Vynútený režim inkognito</translation>
 <translation id="4088983553732356374">Umožňuje nastaviť, či môžu webové stránky nastavovať miestne údaje. Nastavenie miestnych údajov je možné buď povoliť pre všetky webové stránky, alebo ho pre všetky webové stránky zakázať.
 
@@ -927,6 +920,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="4377599627073874279">Povoliť všetkým stránkam zobrazovať obrázky</translation>
 <translation id="4389091865841123886">Konfigurácia vzdialeného overenia s použitím mechanizmu TPM.</translation>
 <translation id="4397469093966511008">Nastavením tohto pravidla na možnosť False zabránite používateľom odosielať určité informácie o systéme a obsah stránok na servery Google. Ak toto pravidlo nastavíte na možnosť True alebo ak ho ponecháte nenastavené, používatelia budú môcť odosielať určité informácie o systéme a obsah stránok do funkcie Bezpečné prehliadanie, ktoré pomáha zisťovať nebezpečné aplikácie a weby.</translation>
+<translation id="4418726081189202489">Ak toto pravidlo nastavíte na hodnotu False, <ph name="PRODUCT_NAME" /> prestane odosielať príležitostné dopyty na server Google s cieľom získať presnú časovú pečiatku. Ak pravidlo nastavíte na hodnotu True alebo ju nenastavíte, tieto dopyty budú povolené.</translation>
 <translation id="4423597592074154136">Ručne určiť nastavenia servera proxy</translation>
 <translation id="4429220551923452215">Povolí alebo zakáže skratku aplikácií na paneli záložiek.
 
@@ -1450,9 +1444,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           Ak zvolíte možnosť „Automaticky zisťovať proxy server“, aplikácie pre Android budú mať k dispozícii webovú adresu skriptu http://wpad/wpad.dat. Nepoužije sa žiadna iná časť protokolu automatického zisťovania proxy servera.
 
           Ak zvolíte, že chcete používať skript .pac proxy servera, budú mať aplikácie pre Android k dispozícii webovú adresu skriptu.</translation>
-<translation id="6467433935902485842">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré nemôžu spúšťať doplnky.
-
-          Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultPluginsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="6491139795995924304">Povoliť Bluetooth na zariadení</translation>
 <translation id="6520802717075138474">Importovať vyhľadávače z predvoleného prehliadača pri prvom spustení</translation>
 <translation id="653608967792832033">Určuje dobu nečinnosti používateľa, po ktorej sa obrazovka pri napájaní z batérie uzamkne.
@@ -1737,7 +1728,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak ho nastavíte na možnosť GAIA, prihlasovanie bude prebiehať prostredníctvom normálneho overovania totožnosti GAIA.
 
       Ak ho nastavíte na možnosť SAML_INTERSTITIAL, počas prihlásenia bude mať používateľ k dispozícii intersticiálnu obrazovku umožňujúcu pokračovať s overením totožnosti prostredníctvom poskytovateľa identity SAML z domény registrácie príslušného zariadenia, prípadne sa vrátiť na normálne prihlásenie prostredníctvom štandardu GAIA.</translation>
-<translation id="7567380065339179813">Povoliť doplnky na týchto stránkach</translation>
 <translation id="757395965347379751">Ak je toto nastavenie aktivované, prehliadač <ph name="PRODUCT_NAME" /> povolí certifikáty podpísané algoritmom SHA-1, ktoré sú úspešne overené a pripojené k reťazcu miestne nainštalovaných certifikátov CA.
 
       Upozorňujeme, že toto pravidlo je závislé od balíka súborov na overovanie totožnosti certifikátov operačných systémov, ktorý povoľuje podpisy algoritmom SHA-1. Ak sa v dôsledku aktualizácie operačného systému zmení spracovávanie certifikátov SHA-1 operačným systémom, toto pravidlo nemusí byť uplatňované. Toto pravidlo má fungovať ako dočasné riešenie, ktoré podnikom poskytne viac času na ukončenie používania algoritmu SHA-1. Bude odstránené približne 1. januára 2019.
@@ -1831,9 +1821,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Stránka na novej karte</translation>
 <translation id="7788511847830146438">Podľa profilu</translation>
-<translation id="7796141075993499320">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu spúšťať doplnky.
-
-          Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultPluginsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="7801886189430766248">Keď toto pravidlo nastavíte na hodnotu True, údaje aplikácií pre Android sa nahrajú na servery služby Android Backup a pri opätovnej inštalácii kompatibilných aplikácií ich z nich obnoví.
 
       Keď ho nastavíte na hodnotu False, služba Android Backup Service bude vypnutá.
@@ -2099,7 +2086,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré
       nie sú pripojené k doméne Active Directory. (Pre systém
        Chrome OS si pozrite pravidlo DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Povoliť všetkým webovým stránkam automatické spúšťanie doplnkov</translation>
 <translation id="8693243869659262736">Použiť vstavaného klienta DNS</translation>
 <translation id="8704831857353097849">Zoznam zakázaných doplnkov</translation>
 <translation id="8711086062295757690">Určuje kľúčové slovo, ktoré vo všeobecnom poli spúšťa vyhľadávanie tohto poskytovateľa. Toto pravidlo je voliteľné.

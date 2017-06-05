@@ -88,11 +88,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli profilov gosta.</translation>
 <translation id="1363275621236827384">Omogoči poizvedbe strežniku Quirks Server za profile strojne opreme.</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
-<translation id="1398889361882383850">Omogoča nastavitev, ali je spletnim mestom dovoljeno samodejno izvajati vtičnike. Samodejno izvajanje vtičnikov je mogoče dovoliti za vsa spletna mesta ali zavrniti za vsa spletna mesta.
-
-          Klik za predvajanje omogoča izvajanje vtičnikov, vendar jih mora uporabnik klikniti, da se začnejo izvajati.
-
-          Če ta pravilnik ni nastavljen, se uporabi »AllowPlugins«, vendar lahko uporabnik to spremeni.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Naslov ali URL strežnika proxy</translation>
 <translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
@@ -177,7 +172,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1689963000958717134">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja za vse uporabnike, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisano na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Nastavitev omejitve prenosa semen različic</translation>
 <translation id="172374442286684480">Vsem spletnim mestom je omogočeno nastavljanje lokalnih podatkov</translation>
-<translation id="1727394138581151779">Blokiraj vse vtičnike</translation>
 <translation id="1734716591049455502">Nastavitev možnosti za oddaljen dostop</translation>
 <translation id="1736269219679256369">Dovoli nadaljevanje s strani z opozorilom SSL</translation>
 <translation id="1749815929501097806">Določa pogoje storitve, ki jih mora uporabnik sprejeti, preden začne sejo lokalnega računa v napravi.
@@ -727,7 +721,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če ta pravilnik omogočite ali ga ne nastavite, si lahko uporabniki v upravitelju gesel svoja gesla ogledajo v nešifrirani obliki.</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
-<translation id="3570008976476035109">Blokiraj vtičnike na teh mestih</translation>
 <translation id="3591584750136265240">Konfiguriranje preverjanja pristnosti pri prijavi</translation>
 <translation id="3627678165642179114">Omogoči ali onemogoči spletno storitev preverjanja črkovanja</translation>
 <translation id="3646859102161347133">Nastavitev vrste lupe</translation>
@@ -813,7 +806,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Googlov URL predloga je mogoče določiti kot: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
-<translation id="3864818549971490907">Privzete nastavitve vtičnikov</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3868347814555911633">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
@@ -873,6 +865,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Običajno je to onemogočeno kot zaščita pred lažnim predstavljanjem. Če ta pravilnik ni nastavljen, je to onemogočeno in podvsebina drugega ponudnika ne bo mogla odpreti pojavnega pogovornega okna HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Onemogoči protokol SPDY</translation>
+<translation id="408029843066770167">Omogočanje poizvedb za Googlovo časovno storitev</translation>
 <translation id="4088589230932595924">Vsiljen način brez beleženja zgodovine</translation>
 <translation id="4088983553732356374">Omogoča, da nastavite, ali je spletnim mestom dovoljeno nastavljanje lokalnih podatkov. Nastavljanje lokalnih podatkov je lahko dovoljeno za vsa mesta ali onemogočeno za vsa mesta.
 
@@ -941,6 +934,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4377599627073874279">Dovoli vsem mestom, da pokažejo vse slike</translation>
 <translation id="4389091865841123886">Konfiguriranje potrditve na daljavo z mehanizmom TPM.</translation>
 <translation id="4397469093966511008">Če onemogočite ta pravilnik, uporabnikom preprečite, da bi pošiljali nekatere informacije o sistemu in vsebino strani v Googlove strežnike. Če je ta nastavitev omogočena ali ni nastavljena, je uporabnikom dovoljeno pošiljati nekatere informacije o sistemu in vsebino strani Varnemu brskanju zaradi hitrejšega zaznavanja nevarnih aplikacij in spletnih mest.</translation>
+<translation id="4418726081189202489">Če onemogočite ta pravilnik, izdelku <ph name="PRODUCT_NAME" /> preprečite občasno pošiljanje poizvedb v Googlove storitve zaradi prejemanja točnega časovnega žiga. Te poizvedbe bodo omogočene, če je ta pravilnik omogočen ali ni nastavljen.</translation>
 <translation id="4423597592074154136">Ročna izbira nastavitev proxyja</translation>
 <translation id="4429220551923452215">Omogoči ali onemogoči bližnjico za aplikacije v vrstici z zaznamki.
 
@@ -1466,9 +1460,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če izberete, da se samodejno zazna strežnik proxy, se aplikacijam za Android posreduje URL skripta »http://wpad/wpad.dat«. Ne uporabi se noben drug del protokola za samodejno zaznavanje strežnika proxy.
 
           Če izberete, da se uporablja skript .pac za strežnik proxy, se aplikacijam za Android posreduje URL skripta.</translation>
-<translation id="6467433935902485842">Omogoča nastavitev seznama vzorcev URL-jev, s katerim se določijo spletna mesta , ki jim ni dovoljeno izvajanje vtičnikov.
-
-          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="6491139795995924304">Omogočanje Bluetootha v napravi</translation>
 <translation id="6520802717075138474">Uvoz iskalnikov privzetega brskalnika ob prvem zagonu</translation>
 <translation id="653608967792832033">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zaklene, če se napaja iz akumulatorja.
@@ -1754,7 +1745,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je nastavljen na GAIA, je prijava izvedena prek običajnega preverjanja pristnosti GAIA.
 
       Če je nastavljen na SAML_INTERSTITIAL, je pri prijavi prikazan vmesni zaslon, na katerem se lahko uporabnik odloči, ali bo nadaljeval preverjanje pristnosti prek SAML IdP domene za včlanitev naprave ali se bo vrnil na običajno prijavo GAIA.</translation>
-<translation id="7567380065339179813">Dovoli vtičnike na teh mestih</translation>
 <translation id="757395965347379751">Če je ta nastavitev omogočena, <ph name="PRODUCT_NAME" /> dovoli potrdila, podpisana z algoritmom SHA-1, če se uspešno potrdijo in so v verigi s potrdili lokalno nameščenega overitelja.
 
       Upoštevajte, da je ta pravilnik odvisen od tega, ali sklad za potrjevanje potrdil operacijskega sistema dovoli podpise z algoritmom SHA-1. Če posodobitev operacijskega sistema spremeni obravnavo potrdil, podpisanih z algoritmom SHA-1, ta pravilnik ne učinkuje več. Namen tega pravilnika je delovati kot začasna rešitev, ki daje podjetjem na voljo več časa, da prenehajo uporabljati algoritem SHA-1. Ta pravilnik bo odstranjen okoli 1. januarja 2019 oziroma na ta datum.
@@ -1848,9 +1838,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Stran »Nov zavihek«</translation>
 <translation id="7788511847830146438">Za profil</translation>
-<translation id="7796141075993499320">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko izvajajo vtičnike.
-
-          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="7801886189430766248">Če je ta pravilnik omogočen, so podatki aplikacij za Android naloženi v strežnike storitve Android Backup Service in znova obnovljeni iz njih ob vnovični namestitvi združljivih aplikacij.
 
       Če je ta pravilnik onemogočen, je storitev Android Backup Service izklopljena.
@@ -2123,7 +2110,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi
       v domeno Active Directory. (Za OS Chrome glejte
       »DeviceMetricsReportingEnabled«.)</translation>
-<translation id="868187325500643455">Dovoli samodejno izvajanje vtičnikov vsem mestom</translation>
 <translation id="8693243869659262736">Uporaba vgrajenega odjemalca DNS</translation>
 <translation id="8704831857353097849">Seznam onemogočenih vtičnikov</translation>
 <translation id="8711086062295757690">Določa ključno besedo, ki kot bližnjica v naslovni vrstici sproži iskanje za tega ponudnika.

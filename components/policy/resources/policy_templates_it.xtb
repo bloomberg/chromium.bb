@@ -85,11 +85,6 @@ Il fattore di regolazione minimo deve essere 100%.</translation>
       Se questa norma viene impostata su false, in <ph name="PRODUCT_NAME" /> non sarà possibile avviare profili ospite.</translation>
 <translation id="1363275621236827384">Attiva le query in Quirks Server per i profili hardware</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
-<translation id="1398889361882383850">Consente di stabilire se consentire o meno ai siti web di eseguire automaticamente i plug-in. L'esecuzione automatica dei plug-in può essere consentita o negata per tutti i siti web.
-
-Click-to-play consente di eseguire i plug-in ma l'utente deve fare clic sopra per avviarne l'esecuzione.
-
-Se questa norma non viene impostata, verrà utilizzata la norma "AllowPlugins" e l'utente potrà modificarla.</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
@@ -164,7 +159,6 @@ Avviso. Non è consigliato delegare il controllo della versione di <ph name="PRO
 <translation id="1689963000958717134">Consente di forzare l'applicazione della configurazione di rete per tutti gli utenti di un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1708496595873025510">Imposta la limitazione sul recupero del numero di inizializzazione delle varianti</translation>
 <translation id="172374442286684480">Consenti a tutti i siti di impostare i dati locali</translation>
-<translation id="1727394138581151779">Consente di bloccare tutti i plug-in</translation>
 <translation id="1734716591049455502">Configura le opzioni di accesso remoto</translation>
 <translation id="1736269219679256369">Consenti di proseguire dalla pagina di avviso SSL</translation>
 <translation id="1749815929501097806">Consente di impostare i Termini di servizio che l'utente deve accettare per poter avviare una sessione con l'account locale del dispositivo.
@@ -672,7 +666,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
           Se questa norma viene attivata o non viene impostata, gli utenti potranno visualizzare le loro password in testo non criptato in Gestione password.</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
-<translation id="3570008976476035109">Blocca plug-in su questi siti</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
 <translation id="3627678165642179114">Attiva o disattiva il servizio web di controllo ortografico</translation>
 <translation id="3646859102161347133">Impostazione tipo di ingrandimento dello schermo</translation>
@@ -747,7 +740,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
           L'URL per i suggerimenti di Google può essere specificato come segue: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
-<translation id="3864818549971490907">Impostazione plug-in predefiniti</translation>
 <translation id="3866249974567520381">Descrizione</translation>
 <translation id="3868347814555911633">Questa norma è attiva soltanto in modalità retail.
 
@@ -805,6 +797,7 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4027608872760987929">Attiva il provider di ricerca predefinito</translation>
 <translation id="4039085364173654945">Consente di stabilire se per i contenuti secondari di terze parti presenti in una pagina è consentita la visualizzazione di una finestra di dialogo Autorizzazione di base HTTP. Generalmente questa norma non è attiva per tutela dal phishing. Se questa norma non viene impostata, l'impostazione verrà disattivata e per i contenuti secondari di terze parti non potrà essere visualizzata una finestra di dialogo Autorizzazione di base HTTP.</translation>
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
+<translation id="408029843066770167">Consenti query a un servizio orario di Google</translation>
 <translation id="4088589230932595924">Modalità di navigazione in incognito forzata</translation>
 <translation id="4088983553732356374">Consente di stabilire se consentire o meno ai siti web di impostare dati locali. L'impostazione dei dati locali può essere consentita o vietata per tutti i siti web.
 
@@ -873,6 +866,7 @@ Avviso. Non è consigliabile configurare restrizioni alle versioni, poiché potr
 <translation id="4377599627073874279">Consenti la visualizzazione di tutte le immagini in tutti i siti</translation>
 <translation id="4389091865841123886">Configura l'attestazione da remoto con meccanismo TPM.</translation>
 <translation id="4397469093966511008">L'impostazione di questa norma su false impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni sul sistema e alcuni contenuti delle pagine. Se questa impostazione viene impostata su true o non viene configurata, gli utenti potranno inviare alcune informazioni sul sistema e alcuni contenuti delle pagine alla Navigazione sicura per contribuire a rilevare app e siti pericolosi.</translation>
+<translation id="4418726081189202489">Se questa norma viene impostata su false, <ph name="PRODUCT_NAME" /> non può più inviare query occasionali a un server di Google per recuperare un timestamp preciso. Queste query vengono attivate se questa norma viene impostata su True o non viene configurata.</translation>
 <translation id="4423597592074154136">Specifica manualmente le impostazioni proxy</translation>
 <translation id="4429220551923452215">Attiva o disattiva la scorciatoia per le app nella barra dei Preferiti. Se questa norma non è impostata, l'utente può scegliere di mostrare o nascondere la scorciatoia per le app dal menu contestuale della barra dei Preferiti. Se la norma è configurata, l'utente non può modificarla e la scorciatoia per le app viene mostrata sempre oppure non viene mostrata mai.</translation>
 <translation id="443665821428652897">Cancella i dati del sito alla chiusura del browser (obsoleta)</translation>
@@ -1330,7 +1324,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Se si decide di rilevare automaticamente il server proxy, alle app Android viene fornito l'URL script "http://wpad/wpad.dat". Non viene utilizzata nessun'altra parte del protocollo di rilevamento automatico del server proxy.
 
           Se si decide di utilizzare uno script proxy .pac, alle app Android viene fornito l'URL script.</translation>
-<translation id="6467433935902485842">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'esecuzione dei plug-in. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="6491139795995924304">Consenti Bluetooth sul dispositivo</translation>
 <translation id="6520802717075138474">Importa motori di ricerca dal browser predefinito alla prima esecuzione</translation>
 <translation id="653608967792832033">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene bloccato quando viene utilizzata la batteria.
@@ -1593,7 +1586,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se la norma viene impostata su GAIA, l'accesso verrà eseguito tramite il normale flusso di autenticazione GAIA.
 
       Se viene impostata su SAML_INTERSTITIAL, durante l'accesso verrà mostrata una schermata interstitial che consentirà all'utente di procedere con l'autenticazione tramite l'IdP SAML del dominio di registrazione del dispositivo oppure di tornare al normale flusso di accesso GAIA.</translation>
-<translation id="7567380065339179813">Consenti plug-in su questi siti</translation>
 <translation id="757395965347379751">Quando questa impostazione è attivata, <ph name="PRODUCT_NAME" /> consente l'utilizzo dei certificati SHA-1 firmati che sono convalidati e concatenati a certificati CA installati localmente.
 
       Considera che questa norma dipende dallo stack di verifica dei certificati del sistema operativo che autorizza le firme SHA-1. Se un aggiornamento del sistema operativo modifica la gestione dei certificati SHA-1 da parte del sistema operativo, la norma potrebbe non essere più valida. Inoltre, questa norma è da considerarsi come soluzione alternativa temporanea per concedere alle aziende più tempo per l'abbandono della crittografia SHA-1. Questa norma verrà rimossa il 1° gennaio 2019 o intorno a quella data.
@@ -1682,7 +1674,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Pagina Nuova scheda</translation>
 <translation id="7788511847830146438">Per profilo</translation>
-<translation id="7796141075993499320">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'esecuzione dei plug-in. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="7801886189430766248">Se questa norma viene impostata su true, i dati delle app Android vengono caricati sui server di Android Backup e ripristinati dai server in fase di reinstallazione delle app compatibili.
 
       Se questa norma viene impostata su false, Android Backup Service verrà disattivato.
@@ -1920,7 +1911,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Questa norma non è disponibile su istanze di Windows che non fanno parte di
       un dominio Active Directory. Per Chrome OS, vedere
       DeviceMetricsReportingEnabled.</translation>
-<translation id="868187325500643455">Consenti l'esecuzione automatica dei plug-in in tutti i siti</translation>
 <translation id="8693243869659262736">Utilizza client DNS integrato</translation>
 <translation id="8704831857353097849">Elenco dei plug-in disattivati</translation>
 <translation id="8711086062295757690">Consente di specificare la parola chiave, che è la scorciatoia utilizzata nella omnibox per attivare la ricerca con il provider. Questa norma è facoltativa. Se non viene impostata, nessuna parola chiave attiverà il provider di ricerca. Questa norma viene considerata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>

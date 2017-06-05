@@ -88,11 +88,6 @@
       Ako se pravilo postavi na "False", <ph name="PRODUCT_NAME" /> neće dopustiti pokretanje profila gostiju.</translation>
 <translation id="1363275621236827384">Omogući slanje upita na Quirks Server za hardverske profile</translation>
 <translation id="1397855852561539316">Predloženi URL zadanog davatelja usluge pretraživanja</translation>
-<translation id="1398889361882383850">Omogućuje vam da postavite hoće li web-lokacijama biti dopušteno automatsko pokretanje dodataka. Automatsko pokretanje dodataka može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije.
-
-          Klik za reprodukciju omogućuje pokretanje dodataka, ali korisnik ih mora kliknuti da bi se pokrenulo njihovo izvršenje.
-
-          Ako ovo pravilo nije postavljeno, bit će upotrijebljeno pravilo "Dopusti dodatke", a korisnik će ga moći promijeniti.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa ili URL proxy poslužitelja</translation>
 <translation id="1435659902881071157">Mrežna konfiguracija na razini uređaja</translation>
@@ -175,7 +170,6 @@
 <translation id="1689963000958717134">Omogućuje nametanje primjene mrežne konfiguracije za sve korisnike uređaja <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration", koji je opisan na stranici <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Postavljanje ograničenja za dohvaćanje vrijednosti varijacija</translation>
 <translation id="172374442286684480">Dopusti svim web-lokacijama postavljanje lokalnih podataka</translation>
-<translation id="1727394138581151779">Blokiraj sve dodatke</translation>
 <translation id="1734716591049455502">Konfiguriraj opcije daljinskog pristupa</translation>
 <translation id="1736269219679256369">Dopušta se nastavljanje dalje sa stranice s upozorenjem SSL-a</translation>
 <translation id="1749815929501097806">Postavlja Uvjete pružanja usluge koje korisnik mora prihvatiti prije nego što započne sesiju lokalnog računa na uređaju.
@@ -688,7 +682,6 @@
 
           Ako omogućite tu postavku ili ne postavite pravilo, korisnicima se zaporke u upravitelju zaporki prikazuju čitljivim tekstom.</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
-<translation id="3570008976476035109">Blokiraj dodatke na ovim web-lokacijama</translation>
 <translation id="3591584750136265240">Konfiguriraj ponašanje autentifikacije tijekom prijave</translation>
 <translation id="3627678165642179114">Omogući ili onemogući web-uslugu provjere pravopisa</translation>
 <translation id="3646859102161347133">Postavljanje vrste povećala</translation>
@@ -766,7 +759,6 @@
           Googleov URL prijedloga može se navesti kao: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           To će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
-<translation id="3864818549971490907">Zadana postavka dodataka</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3868347814555911633">To je pravilo aktivno samo u prodajnom načinu.
 
@@ -824,6 +816,7 @@
 <translation id="4027608872760987929">Omogući zadanog davatelja usluge pretraživanja</translation>
 <translation id="4039085364173654945">Nadzire smije li podsadržaj treće strane na stranici prikazivati skočni dijaloški okvir HTTP Basic Auth. Obično je to onemogućeno radi obrane od krađe identiteta. Ako ovo pravilo nije postavljeno, to je onemogućeno i podsadržajima treće strane neće biti dopušteno prikazivanje skočnog dijaloškog okvira HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Onemogući SPDY protokol</translation>
+<translation id="408029843066770167">Dopusti upute Googleovoj usluzi za vrijeme</translation>
 <translation id="4088589230932595924">Anoniman način rada prisilno je uključen</translation>
 <translation id="4088983553732356374">Omogućuje vam da odredite je li web-lokacijama dopušteno postavljanje lokalnih podataka. Postavljanje lokalnih podataka može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije.
 
@@ -892,6 +885,7 @@
 <translation id="4377599627073874279">Dopusti svim web-lokacijama prikazivanje svih slika</translation>
 <translation id="4389091865841123886">Konfiguriranje daljinskog atestiranja TPM mehanizmom.</translation>
 <translation id="4397469093966511008">Ako se to pravilo postavi na "false", korisnici neće moći odabrati slanje nekih informacija sustava i sadržaja stranice Googleovim poslužiteljima. Ako se ta postavka postavi na "true" ili se ne konfigurira, korisnici će moći slati neke informacije sustava i sadržaj stranice Sigurnom pregledavanju radi boljeg otkrivanja opasnih aplikacija i web-lokacija.</translation>
+<translation id="4418726081189202489">Ako se to pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> neće povremeno slati upite Googleovu poslužitelju radi dohvaćanja točne vremenske oznake. Ti će se upiti omogućiti ako se pravilo postavi na točno ili se ne postavi.</translation>
 <translation id="4423597592074154136">Ručno određivanje proxy postavki</translation>
 <translation id="4429220551923452215">Omogućuje ili onemogućuje prečace aplikacija u traci oznaka.
 
@@ -1369,7 +1363,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako odaberete automatsko otkrivanje proxy poslužitelja, URL skripte "http://wpad/wpad.dat" pruža se Android aplikacijama. Ne upotrebljava se nijedan drugi dio protokola za automatsko otkrivanje proxyja.
 
           Ako odaberete .pac skriptu proxyja, URL skripte pruža se Android aplikacijama.</translation>
-<translation id="6467433935902485842">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju stranice koje ne smiju pokretati dodatke. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultPluginsSetting" ako je ono postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="6491139795995924304">Omogući Bluetooth na uređaju</translation>
 <translation id="6520802717075138474">Uvoz tražilica iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="653608967792832033">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon zaključao tijekom rada s baterijskim napajanjem.
@@ -1631,7 +1624,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako je postavljeno na GAIA-u, prijava će se odvijati uobičajenim GAIA-inim tijekom autentifikacije.
 
       Ako je postavljeno na SAML_INTERSTITIAL, prijava će prikazati međuprostorni zaslon koji korisniku nudi da nastavi s autentifikacijom putem SAML IdP-a domene za prijavu uređaja ili da se vrati na uobičajen GAIA-in tijek prijave.</translation>
-<translation id="7567380065339179813">Omogući dodatke na ovim web-lokacijama</translation>
 <translation id="757395965347379751">Kada je ta postavka omogućena, <ph name="PRODUCT_NAME" /> dopušta certifikate s SHA-1 potpisom ako se uspješno ovjere i povežu s lokalno instaliranim CA certifikatima.
 
       Napominjemo da to pravilo ovisi o tome dopušta li snop za potvrdu certifikata operativnog sustava SHA-1 potpise. Ako se ažuriranjem OS-a promijeni njegovo rukovanje SHA-1 certifikatima, to pravilo možda više neće imati utjecaja. Nadalje, to je pravilo predviđeno kao privremeno rješenje kako bi organizacije imale više vremena za napuštanje algoritma SHA-1. Pravilo će se ukloniti 1. siječnja 2019. ili oko tog datuma.
@@ -1719,7 +1711,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Web-stranica nove kartice</translation>
 <translation id="7788511847830146438">Po profilu</translation>
-<translation id="7796141075993499320">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju pokretati dodatke. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultPluginsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="7801886189430766248">Kada se to pravilo postavi na True, podaci Android aplikacija prenose se na Androidove poslužitelje za sigurnosne kopije i vraćaju s njih nakon ponovnog instaliranja kompatibilnih aplikacija.
 
       Kad se to pravilo postavi na False, Androidova usluga za sigurnosno kopiranje bit će isključena.
@@ -1979,7 +1970,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       To pravilo nije dostupno u instancama Windowsa koje nisu pridružene
       domeni Active Directoryja. (Za OS Chrome pogledajte
       DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Dopusti svim web-lokacijama pokretanje dodataka</translation>
 <translation id="8693243869659262736">Upotreba ugrađenog DNS klijenta</translation>
 <translation id="8704831857353097849">Popis onemogućenih dodataka</translation>
 <translation id="8711086062295757690">Određuje ključnu riječ koja je prečac u višenamjenskom okviru za pokretanje usluge pretraživanja ovog davatelja usluga. Ovo je pravilo izborno. Ako nije postavljeno, nijedna ključna riječ neće aktivirati davatelja usluga pretraživanja. Ovo se pravilo uzima u obzir samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>

@@ -88,11 +88,6 @@
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis pradėti svečio profilių.</translation>
 <translation id="1363275621236827384">Įgalinti užklausas į „Quirks Server“, skirtas aparatinės įrangos profiliams</translation>
 <translation id="1397855852561539316">Numatytojo paieškos teikėjo siūlymo URL</translation>
-<translation id="1398889361882383850">Leidžiama nustatyti, ar svetainėms leidžiama automatiškai paleisti papildinius. Galima leisti visoms svetainėms automatiškai paleisti papildinius arba neleisti to padaryti.
-
-          Paleidimas spustelėjus – galima paleisti papildinius, bet naudotojas turi spustelėti juos, kad jie būtų vykdomi.
-
-          Jei ši politika nenustatoma, bus naudojama komanda „Leisti papildinius“ ir naudotojas galės ją pakeisti.</translation>
 <translation id="1426410128494586442">Taip</translation>
 <translation id="1427655258943162134">Tarpinio serverio adresas arba URL</translation>
 <translation id="1435659902881071157">Įrenginio lygio tinklo konfigūracija</translation>
@@ -177,7 +172,6 @@
 <translation id="1689963000958717134">Leidžiama naudoti tinklo konfigūraciją, kad būtų taikoma visiems „<ph name="PRODUCT_OS_NAME" />“ įrenginio naudotojams. Tinklo konfigūracija yra JSON suformatuota eilutė, kaip nurodyta atvirojo tinklo konfigūracijos formato, aprašyto šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Nustatykite variantų pirminės reikšmės pateikimo apribojimą</translation>
 <translation id="172374442286684480">Leisti visose svetainėse nustatyti vietinius duomenis</translation>
-<translation id="1727394138581151779">Blokuoti visus papildinius</translation>
 <translation id="1734716591049455502">Konfigūruoti nuotolinės prieigos parinktis</translation>
 <translation id="1736269219679256369">Leidžiama tęsti iš SSL įspėjimo puslapio</translation>
 <translation id="1749815929501097806">Nustatomos paslaugų teikimo sąlygos, su kuriomis naudotojas turi sutikti prieš pradėdamas vietinės įrenginio paskyros sesiją.
@@ -727,7 +721,6 @@
 
           Jei įgalinsite šią politiką ar jos nenustatysite, naudotojai galės peržiūrėti savo slaptažodžius nešifruotu tekstu slaptažodžių tvarkytuvėje.</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
-<translation id="3570008976476035109">Blokuoti papildinius šiose svetainėse</translation>
 <translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
 <translation id="3627678165642179114">Įgalinti rašybos tikrinimo žiniatinklio paslaugą arba jos neleisti</translation>
 <translation id="3646859102161347133">Nustatyti ekrano didinimo tipą</translation>
@@ -813,7 +806,6 @@
           „Google“ siūlomą URL galima nurodyti kaip: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
-<translation id="3864818549971490907">Numatytasis papildinių nustatymas</translation>
 <translation id="3866249974567520381">Aprašas</translation>
 <translation id="3868347814555911633">Ši politika taikoma tik mažmeninės prekybos režimu.
 
@@ -873,6 +865,7 @@
 
           Įprastai tai neleidžiama siekiant apsisaugoti nuo sukčiavimo. Nenustačius šios politikos, tai neleidžiama ir trečiosios šalies papildomo turinio neleidžiama pateikti iššokančiajame HTTP pagrindinės prieigos teisės dialogo lange.</translation>
 <translation id="4056910949759281379">Neleisti SPDY protokolo</translation>
+<translation id="408029843066770167">Leisti užklausas į „Google“ laiko paslaugą</translation>
 <translation id="4088589230932595924">Įjungtas inkognito režimas</translation>
 <translation id="4088983553732356374">Leidžiama nustatyti, ar svetainėms galima nustatyti vietinius duomenis. Nustatyti vietinius duomenis galima leisti arba uždrausti visoms svetainėms.
 
@@ -941,6 +934,7 @@
 <translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
 <translation id="4389091865841123886">Konfigūruojamas nuotolinis patvirtinimas naudojant TPM mechanizmą.</translation>
 <translation id="4397469093966511008">Nustačius šią politiką į „False“ naudotojai nebegalės pasirinkti siųsti tam tikros sistemos informacijos ir puslapių turinio į „Google“ serverius. Jei šis nustatymas nustatytas į „True“ arba nesukonfigūruotas, naudotojai galės siųsti tam tikrą sistemos informaciją ir puslapių turinį Saugaus naršymo funkcijai, kad padėtų aptikti pavojingas programas ir svetaines.</translation>
+<translation id="4418726081189202489">Nustačius šią politiką į „False“, „<ph name="PRODUCT_NAME" />“ nebesiunčia retkarčiais teikiamų užklausų į „Google“ serverį, kad gautų tikslią laiko žymę. Šios užklausos bus įgalintos, jei ši politika bus nustatyta į „True“ arba nenustatyta.</translation>
 <translation id="4423597592074154136">Pačiam nurodyti tarpinio serverio nustatymus</translation>
 <translation id="4429220551923452215">Įgalinamas arba išjungiamas programų spartusis klavišas žymių juostoje.
 
@@ -1466,9 +1460,6 @@
           Jei pasirinksite automatiškai aptikti tarpinį serverį, „Android“ programoms pateikiamas scenarijaus URL „http://wpad/wpad.dat“. Nenaudojama jokia kita tarpinio serverio automatinio aptikimo protokolo dalis.
 
           Jei pasirinksite naudoti .pac tarpinio serverio scenarijų, „Android“ programoms pateikiamas scenarijaus URL.</translation>
-<translation id="6467433935902485842">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama paleisti papildinių, sąrašą.
-
-          Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis papildinių nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
 <translation id="6491139795995924304">Leisti „Bluetooth“ įrenginyje</translation>
 <translation id="6520802717075138474">Importuoti paieškos variklius iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="653608967792832033">Nurodoma laiko trukmė be naudotojo įvesties, po kurios ekranas užrakinamas, kai naudojama akumuliatoriaus energija.
@@ -1754,7 +1745,6 @@
       Jei vertė nustatyta į GAIA, prisijungimas bus atliekamas naudojant įprastą GAIA autentifikavimo eigą.
 
       Jei vertė nustatyta į SAML_INTERSTITIAL, prisijungiant bus rodomas tarpinis ekranas, kuriame naudotojui bus siūloma tęsti autentifikavimą per įrenginio registravimo domeno „SAML IdP“ arba grįžti į įprastą GAIA prisijungimo eigą.</translation>
-<translation id="7567380065339179813">Leisti papildinius šiose svetainėse</translation>
 <translation id="757395965347379751">Kai šis nustatymas įgalintas, „<ph name="PRODUCT_NAME" />“ leidžia naudoti SHA-1 pasirašytus sertifikatus, jei jie yra sėkmingai patvirtinti ir yra susiję su vietiniu mastu įdiegtais CA sertifikatais.
 
       Atminkite, kad ši politika pagrįsta operacinės sistemos sertifikatu, kuriuo leidžiami SHA-1 parašai. Jei atnaujinus OS pasikeičia OS SHA-1 sertifikatų apdorojimo būdas, ši politika gali nebegalioti.  Be to, ši politika teikiama kaip laikinas sprendimo būdas, kuris įmonėms suteikia daugiau laiko pereiti nuo SHA-1.  Ši politika bus pašalinta 2019 m. sausio 1 d. arba šiek tiek vėliau / anksčiau.
@@ -1848,9 +1838,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Naujo skirtuko puslapis</translation>
 <translation id="7788511847830146438">Vienam profiliui</translation>
-<translation id="7796141075993499320">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti papildinius, sąrašą.
-
-          Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis papildinių nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
 <translation id="7801886189430766248">Kai ši politika nustatyta kaip „true“, „Android“ programos duomenys įkeliami į „Android“ atsarginių kopijų serverius ir pakartotinai diegiant suderinamas programas yra atkuriami iš šių serverių.
 
       Kai ši politika nustatyta kaip „false“, „Android“ atsarginių kopijų kūrimo paslauga yra išjungta.
@@ -2124,7 +2111,6 @@
       Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su
       aktyvaus katalogo domenu. (Jei naudojate „Chrome“ OS, žr.
       „DeviceMetricsReportingEnabled“.)</translation>
-<translation id="868187325500643455">Leisti visose svetainėse automatiškai paleisti papildinius</translation>
 <translation id="8693243869659262736">Naudoti integruotą DNS kliento programą</translation>
 <translation id="8704831857353097849">Neleidžiamų papildinių sąrašas</translation>
 <translation id="8711086062295757690">Nurodomas raktinis žodis, kuris yra spartusis klavišas, naudojamas „Omnibox“ šio teikėjo paieškai suaktyvinti.

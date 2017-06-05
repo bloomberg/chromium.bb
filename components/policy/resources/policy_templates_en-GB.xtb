@@ -88,11 +88,6 @@
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
-<translation id="1398889361882383850">Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.
-
-          Click to play allows plugins to run but the user must click them to start their execution.
-
-          If this policy is left not set, 'AllowPlugins' will be used and the user will be able to change it.</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
@@ -177,7 +172,6 @@
 <translation id="1689963000958717134">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Set the restriction on the fetching of the Variations seed</translation>
 <translation id="172374442286684480">Allow all sites to set local data.</translation>
-<translation id="1727394138581151779">Block all plug-ins</translation>
 <translation id="1734716591049455502">Configure remote access options</translation>
 <translation id="1736269219679256369">Allow proceeding from the SSL warning page</translation>
 <translation id="1749815929501097806">Sets the Terms of Service that the user must accept before starting a device-local account session.
@@ -727,7 +721,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If you enable or do not set this policy, users can view their passwords in clear text in the password manager.</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
-<translation id="3570008976476035109">Block plug-ins on these sites</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
@@ -813,7 +806,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           Google's suggest URL can be specified as: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="3864818549971490907"> setting</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3868347814555911633">This policy is active in retail mode only.
 
@@ -873,6 +865,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           Typically this is disabled as a phishing defence. If this policy is not set, this is disabled and third-party sub-content will not be allowed to pop up a HTTP Basic Auth dialogue box.</translation>
 <translation id="4056910949759281379">Disable SPDY protocol</translation>
+<translation id="408029843066770167">Allow queries to a Google time service</translation>
 <translation id="4088589230932595924">Incognito mode forced.</translation>
 <translation id="4088983553732356374">Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
 
@@ -941,6 +934,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
 <translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
 <translation id="4397469093966511008">Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.</translation>
+<translation id="4418726081189202489">Setting this policy to false stops <ph name="PRODUCT_NAME" /> from occasionally sending queries to a Google server to retrieve an accurate timestamp. These queries will be enabled if this policy is set to True or is not set.</translation>
 <translation id="4423597592074154136">Manually specify proxy settings</translation>
 <translation id="4429220551923452215">Enables or disables the apps shortcut in the bookmark bar.
 
@@ -1464,9 +1458,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you choose to auto detect the proxy server, the script URL "http://wpad/wpad.dat" is provided to Android apps. No other part of the proxy auto-detection protocol is used.
 
           If you choose to use a .pac proxy script, the script URL is provided to Android apps.</translation>
-<translation id="6467433935902485842">Allows you to set a list of url patterns that specify sites which are not allowed to run plug-ins.
-
-          If this policy is left unset the global default value will be used for all sites either from the 'DefaultPlug-insSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="6491139795995924304">Allow bluetooth on device</translation>
 <translation id="6520802717075138474">Import search engines from default browser on first run</translation>
 <translation id="653608967792832033">Specifies the length of time without user input after which the screen is locked when running on battery power.
@@ -1752,7 +1743,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If set to GAIA, login will be done via the normal GAIA authentication flow.
 
       If set to SAML_INTERSTITIAL, login will show an interstitial screen offering the user the option to go forward with authentication via the SAML IdP of the device's enrolment domain or go back to the normal GAIA login flow.</translation>
-<translation id="7567380065339179813">Allow plug-ins on these sites</translation>
 <translation id="757395965347379751">When this setting is enabled, <ph name="PRODUCT_NAME" /> allows SHA-1 signed certificates as long as they successfully validate and chain to a locally-installed CA certificates.
 
       Note that this policy depends on the operating system certificate verification stack allowing SHA-1 signatures. If an OS update changes the OS handling of SHA-1 certificates, this policy may no longer have effect. Furthermore, this policy is intended as a temporary workaround to give enterprises more time to move away from SHA-1. This policy will be removed on or around 1 January 2019.
@@ -1846,9 +1836,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">New Tab Page</translation>
 <translation id="7788511847830146438">Per Profile</translation>
-<translation id="7796141075993499320">Allows you to set a list of url patterns that specify sites which are allowed to run plug-ins.
-
-          If this policy is left unset the global default value will be used for all sites either from the 'DefaultPlug-insSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="7801886189430766248">When this policy is set to true, Android app data is uploaded to Android Backup servers and restored from them upon app re-installations for compatible apps.
 
       When this policy is set to false, Android Backup Service will be switched off.
@@ -2122,7 +2109,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       This policy is not available on Windows instances that are not joined to
       an Active Directory domain. (For Chrome OS, see
       DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Allow all sites to automatically run plug-ins</translation>
 <translation id="8693243869659262736">Use built-in DNS client</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
 <translation id="8711086062295757690">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.

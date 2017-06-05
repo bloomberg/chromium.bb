@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Заявката или параметрите й са невалидни</translation>
 <translation id="1826516787628120939">Извършва се проверка</translation>
 <translation id="1834321415901700177">Този сайт съдържа опасни програми</translation>
+<translation id="1840414022444569775">Този номер на карта вече се използва</translation>
 <translation id="1842969606798536927">Плащане</translation>
 <translation id="1871208020102129563">За прокси сървъра е зададено да използва фиксирани прокси сървъри, а не URL адрес на скрипт във формат .pac.</translation>
 <translation id="1871284979644508959">Задължително поле</translation>
 <translation id="187918866476621466">Отваряне на страниците при стартиране</translation>
 <translation id="1883255238294161206">Свиване на списъка</translation>
 <translation id="1898423065542865115">Филтриране</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Няма}=1{1 сайт}other{# сайта}}</translation>
 <translation id="194030505837763158">Към <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Отметки от <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Грешка при сериализирането</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">ID на API за директории:</translation>
 <translation id="2597378329261239068">Този документ е защитен с парола.  Моля, въведете я.</translation>
 <translation id="2609632851001447353">Вариации</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Няма}=1{1 приложение ($1)}=2{2 приложения ($1, $2)}other{# приложения ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Часовникът ви е напред</translation>
 <translation id="2639739919103226564">Състояние:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Информация за сертификата</translation>
 <translation id="3063697135517575841">Chrome не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
 <translation id="3064966200440839136">Ще напуснете режим „инкогнито“, за да платите във външно приложение. Искате ли да продължите?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Няма}=1{1 парола}other{# пароли}}</translation>
 <translation id="3093245981617870298">Понастоящем сте офлайн.</translation>
 <translation id="3105172416063519923">ID на актива:</translation>
 <translation id="3109728660330352905">Нямате пълномощия за преглед на тази страница.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="3498215018399854026">Не можахме да се свържем с родителя ви. Моля, опитайте отново.</translation>
 <translation id="3528171143076753409">Сертификатът на сървъра не е надежден.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Поне 1 елемент на синхронизирани устройства}=1{1 елемент (и други на синхронизирани устройства)}other{# елемента (и други на синхронизирани устройства)}}</translation>
 <translation id="3539171420378717834">Съхраняване на копие на картата на това устройство</translation>
 <translation id="3542684924769048008">Използване на паролата за:</translation>
 <translation id="3549644494707163724">Всички синхронизирани данни да се шифроват със собствения ви пропуск за синхронизиране</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">В момента не можете да посетите <ph name="SITE" />, защото уебсайтът изпрати кодирани идентификационни данни, които Chromium не може да обработи. Обикновено грешките в мрежата и атаките срещу нея са временни, така че тази страница вероятно ще работи по-късно.</translation>
 <translation id="375403751935624634">Преводът не бе успешен поради грешка в сървъра.</translation>
 <translation id="3759461132968374835">Наскоро не сте съобщавали за сривове. Тези, възникнали при деактивирано изпращане на сигнали за сривове, не се показват тук.</translation>
+<translation id="3778403066972421603">Искате ли тази карта да се запази на устройството и в профила ви в Google?</translation>
 <translation id="3787705759683870569">Изтича на <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Ако използвате прокси сървър...</translation>
 <translation id="3828924085048779000">Не може пропускът да не се попълни.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">Добавяне на имейл адрес</translation>
 <translation id="3901925938762663762">Картата е с изтекла валидност</translation>
 <translation id="3963721102035795474">Режим за четене</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Няма}=1{От 1 сайт }other{От # сайта }}</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3973234410852337861">Хостът <ph name="HOST_NAME" /> е блокиран</translation>
+<translation id="3987940399970879459">По-малко от 1 МБ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 уеб страница в близост}other{# уеб страници в близост}}</translation>
 <translation id="4021036232240155012">DNS е услугата за мрежи, която преобразува имената на уебсайтовете към техните адреси в интернет.</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">Още</translation>
 <translation id="6060685159320643512">Внимавайте, тези експерименти може да са опасни</translation>
 <translation id="6080696365213338172">Осъществихте достъп до съдържанието посредством осигурен от администратора сертификат. Данните, които предоставите на <ph name="DOMAIN" />, могат да бъдат прихванати от администратора ви.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Няма}=1{1 парола (синхронизирана)}other{# пароли (синхронизирани)}}</translation>
 <translation id="6146055958333702838">Проверете всички кабели и рестартирайте маршрутизаторите, модемите или другите мрежови
 устройства, които може да използвате.</translation>
 <translation id="614940544461990577">Изпробвайте следното:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">Окръг</translation>
 <translation id="6973656660372572881">Посочени са както фиксирани прокси сървъри, така и URL адрес на скрипт във формат .pac.</translation>
 <translation id="6989763994942163495">Показване на разширените настройки...</translation>
-<translation id="7000990526846637657">Няма намерени записи в историята</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Пароли</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">Извършвайте бързи плащания в сайтове и приложения от всякакви устройства посредством картите, които сте запазили в Google.</translation>
 <translation id="7588950540487816470">Физическа мрежа</translation>
 <translation id="7592362899630581445">Сертификатът на сървъра нарушава ограниченията за име.</translation>
+<translation id="7598391785903975535">По-малко от <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Понастоящем <ph name="HOST_NAME" /> не може да обработи тази заявка.</translation>
 <translation id="7600965453749440009">Никога да не се превежда от <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Стойността е извън обхват <ph name="VALUE" />.</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">&amp;Отмяна на преместването</translation>
 <translation id="8201077131113104583">Невалиден URL адрес за актуализиране на разширението с идентификационен номер <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Обобщена информация за поръчката</translation>
+<translation id="8206354486702514201">Тази настройка е наложена от администратора ви.</translation>
 <translation id="8218327578424803826">Зададено местоположение:</translation>
 <translation id="8225771182978767009">Човекът, който е настроил компютъра, е блокирал този сайт.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" /> и <ph name="TYPE_2" /></translation>
@@ -885,5 +895,6 @@
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="941721044073577244">Изглежда, че нямате разрешение да посетите този сайт</translation>
 <translation id="969892804517981540">Официално издание</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Няма}=1{1 елемент}other{# елемента}}</translation>
 <translation id="988159990683914416">Компилирана програма за програмисти</translation>
 </translationbundle>

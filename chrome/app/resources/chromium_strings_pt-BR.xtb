@@ -35,6 +35,7 @@
 <translation id="2119636228670142020">Sobre o &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licenças de código aberto do Chromium OS</translation>
 <translation id="2241627712206172106">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Chromium da maneira que desejarem.</translation>
+<translation id="2265088490657775772">use o Chromium no seu iPhone</translation>
 <translation id="2316129865977710310">Não.</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página que é exibida quando você inicia o Chromium.</translation>
 <translation id="2372704305038231957">É possível que o Chromium de 32 bits não funcione corretamente, porque ele não é mais compatível com esse sistema Linux. Faça upgrade para o Chromium de 64 bits.</translation>
@@ -91,7 +92,7 @@
 <translation id="4050175100176540509">Melhorias de segurança importantes e novos recursos estão disponíveis na versão mais recente.</translation>
 <translation id="407254336480250557">Selecione o <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Feche todas as janelas do Chromium e reinicie o Chromium para que a alteração entre em vigor.</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Aviso:<ph name="END_BOLD" /> O Chromium não pode impedir que as extensões gravem seu histórico de navegação. Para desativar esta extensão no modo anônimo, desmarque esta opção.</translation>
+<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Aviso:<ph name="END_BOLD" /> O Chromium não pode impedir que as extensões gravem seu histórico de navegação. Para desativar esta extensão no modo sem rastros, desmarque esta opção.</translation>
 <translation id="421369550622382712">Descubra ótimos aplicativos, jogos, extensões e temas para o Chromium.</translation>
 <translation id="4222580632002216401">Agora, você está conectado ao Chromium. A sincronização está desativada por seu administrador.</translation>
 <translation id="4224199872375172890">O Chromium está atualizado.</translation>

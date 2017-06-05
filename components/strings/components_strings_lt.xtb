@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Netinkama užklausa arba jos parametrai</translation>
 <translation id="1826516787628120939">Tikrinama</translation>
 <translation id="1834321415901700177">Šioje svetainėje yra kenkėjiškų programų</translation>
+<translation id="1840414022444569775">Šis kortelės numeris jau naudojamas</translation>
 <translation id="1842969606798536927">Mokėti</translation>
 <translation id="1871208020102129563">Įgaliotasis serveris nustatytas naudoti fiksuotų įgaliotųjų serverių, o ne .pac scenarijaus URL.</translation>
 <translation id="1871284979644508959">Būtinas laukas</translation>
 <translation id="187918866476621466">Atidaryti paleidimo puslapius</translation>
 <translation id="1883255238294161206">Sutraukti sąrašą</translation>
 <translation id="1898423065542865115">Filtravimas</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Nėra}=1{1 svetainė}one{# svetainė}few{# svetainės}many{# svetainės}other{# svetainių}}</translation>
 <translation id="194030505837763158">Apsilankykite <ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> žymės</translation>
 <translation id="1973335181906896915">Serijinio rengimo klaida</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">Katalogo API ID:</translation>
 <translation id="2597378329261239068">Šis dokumentas apsaugotas slaptažodžiu. Įveskite slaptažodį.</translation>
 <translation id="2609632851001447353">Variantai</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Nėra}=1{1 programa („$1“)}=2{2 programos („$1“, „$2“)}one{# programa („$1“, „$2“, „$3“)}few{# programos („$1“, „$2“, „$3“)}many{# programos („$1“, „$2“, „$3“)}other{# programų („$1“, „$2“, „$3“)}}</translation>
 <translation id="2625385379895617796">Jūsų laikrodis skuba</translation>
 <translation id="2639739919103226564">Būsena:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Sertifikato informacija</translation>
 <translation id="3063697135517575841">Šiuo metu „Chrome“ negali patvirtinti jūsų kortelės. Vėliau bandykite dar kartą.</translation>
 <translation id="3064966200440839136">Išjungiate inkognito režimą, kad galėtumėte sumokėti naudodami išorinę programą. Tęsti?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Nėra}=1{1 slaptažodis}one{# slaptažodis}few{# slaptažodžiai}many{# slaptažodžio}other{# slaptažodžių}}</translation>
 <translation id="3093245981617870298">Esate neprisijungę.</translation>
 <translation id="3105172416063519923">Ištekliaus ID:</translation>
 <translation id="3109728660330352905">Neturite prieigos teisės žiūrėti šį puslapį.</translation>
@@ -311,6 +315,7 @@
 <translation id="3479552764303398839">Ne dabar</translation>
 <translation id="3498215018399854026">Šiuo metu nepavyko susisiekti su jūsų tėvu. Bandykite dar kartą.</translation>
 <translation id="3528171143076753409">Serverio sertifikatas nepatikimas.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Mažiausiai 1 elementas sinchronizuotuose įrenginiuose}=1{1 elementas (ir daugiau sinchronizuotuose įrenginiuose)}one{# elementas (ir daugiau sinchronizuotuose įrenginiuose)}few{# elementai (ir daugiau sinchronizuotuose įrenginiuose)}many{# elemento (ir daugiau sinchronizuotuose įrenginiuose)}other{# elementų (ir daugiau sinchronizuotuose įrenginiuose)}}</translation>
 <translation id="3539171420378717834">Išsaugoti kortelės kopiją įrenginyje</translation>
 <translation id="3542684924769048008">Slaptažodį naudoti:</translation>
 <translation id="3549644494707163724">Šifruoti visus sinchronizuotus duomenis naudojant sinchronizavimo slaptafrazę</translation>
@@ -346,6 +351,7 @@
 <translation id="3744899669254331632">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes ji atsiuntė užšifruotus prisijungimo duomenis, kurių „Chromium“ negali apdoroti. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="375403751935624634">Vertimas nepavyko dėl serverio klaidos.</translation>
 <translation id="3759461132968374835">Nėra strigčių, apie kurias buvo neseniai pranešta. Strigtys, įvykusios tuo metu, kai strigčių ataskaitų teikimas buvo išjungtas, čia rodomos nebus.</translation>
+<translation id="3778403066972421603">Ar norite išsaugoti šią kortelę „Google“ paskyroje ir šiame įrenginyje?</translation>
 <translation id="3787705759683870569">Galiojimo laikas baigiasi <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Jei naudojate tarpinį serverį…</translation>
 <translation id="3828924085048779000">Neleidžiama naudoti tuščios slaptafrazės.</translation>
@@ -357,8 +363,10 @@
 <translation id="3890664840433101773">Pridėti el. pašto adresą</translation>
 <translation id="3901925938762663762">Kortelė nebegalioja</translation>
 <translation id="3963721102035795474">Skaitytojo režimas</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Nėra}=1{Iš 1 svetainės }one{Iš # svetainės }few{Iš # svetainių }many{Iš # svetainės }other{Iš # svetainių }}</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> užblokuota.</translation>
+<translation id="3987940399970879459">Mažiau nei 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 tinklalapis netoliese}one{# tinklalapis netoliese}few{# tinklalapiai netoliese}many{# tinklalapio netoliese}other{# tinklalapių netoliese}}</translation>
 <translation id="4021036232240155012">DNS – tai tinklo paslauga, verčianti svetainės pavadinimą į interneto adresą.</translation>
 <translation id="4030383055268325496">&amp;Anuliuoti pridėjimą</translation>
@@ -564,6 +572,7 @@
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="6060685159320643512">Atsargiai, šie bandymai gali būti pavojingi</translation>
 <translation id="6080696365213338172">Pasiekėte turinį naudodami administratoriaus pateiktą sertifikatą. Duomenys, kuriuos pateikiate <ph name="DOMAIN" />, gali būti perimti administratoriaus.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Nėra}=1{1 slaptažodis (sinchronizuotas)}one{# slaptažodis (sinchronizuotas)}few{# slaptažodžiai (sinchronizuoti)}many{# slaptažodžio (sinchronizuota)}other{# slaptažodžių (sinchronizuota)}}</translation>
 <translation id="6146055958333702838">Patikrinkite laidus ir iš naujo paleiskite maršruto parinktuvus, modemus ar kitus
         naudojamus tinklo įrenginius.</translation>
 <translation id="614940544461990577">Pabandykite atlikti toliau nurodytus veiksmus.</translation>
@@ -653,7 +662,6 @@
 <translation id="6970216967273061347">Rajonas</translation>
 <translation id="6973656660372572881">Nurodyti fiksuoti įgaliotieji serveriai ir .pac scenarijaus URL.</translation>
 <translation id="6989763994942163495">Rodyti išplėstinius nustatymus...</translation>
-<translation id="7000990526846637657">Nerasta jokių istorijos įrašų</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali būti pateikta kitų formų jūsų „Google“ paskyros naršymo istorija</translation>
 <translation id="7029809446516969842">Slaptažodžiai</translation>
@@ -722,6 +730,7 @@
 <translation id="7578104083680115302">Greitai mokėkite svetainėse ir programose įvairiuose įrenginiuose naudodami korteles, kurias išsaugojote „Google“.</translation>
 <translation id="7588950540487816470">Fizinis žiniatinklis</translation>
 <translation id="7592362899630581445">Serverio sertifikatas pažeidžia pavadinimų apribojimus.</translation>
+<translation id="7598391785903975535">Mažiau nei <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> šiuo metu negalima apdoroti šios užklausos.</translation>
 <translation id="7600965453749440009">Niekada neversti <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Vertė nepatenka į diapazoną <ph name="VALUE" />.</translation>
@@ -785,6 +794,7 @@
 <translation id="8194797478851900357">&amp;Anuliuoti perkėlimą</translation>
 <translation id="8201077131113104583">Netinkamas plėtinio, kurio ID „<ph name="EXTENSION_ID" />“, atnaujinimo URL.</translation>
 <translation id="8202097416529803614">Užsakymo suvestinė</translation>
+<translation id="8206354486702514201">Šį nustatymą vykdo jūsų administratorius.</translation>
 <translation id="8218327578424803826">Priskirta vieta:</translation>
 <translation id="8225771182978767009">Šį kompiuterį nustatęs asmuo pasirinko blokuoti šią svetainę.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -887,5 +897,6 @@
 <translation id="939736085109172342">Naujas aplankas</translation>
 <translation id="941721044073577244">Panašu, kad neturite leidimo apsilankyti šioje svetainėje</translation>
 <translation id="969892804517981540">Oficialiai pagaminta</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Nėra}=1{1 elementas}one{# elementas}few{# elementai}many{# elemento}other{# elementų}}</translation>
 <translation id="988159990683914416">Vykdymo programa sukurta</translation>
 </translationbundle>

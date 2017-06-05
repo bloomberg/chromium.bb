@@ -86,11 +86,6 @@
       Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na uruchamianie sesji gościa.</translation>
 <translation id="1363275621236827384">Włącz wysyłanie zapytań o profile sprzętowe do Quirks Server</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
-<translation id="1398889361882383850">Pozwala określić, czy strony będą mogły automatycznie uruchamiać wtyczki. Automatyczne uruchamianie wtyczek może być dozwolone dla wszystkich witryn lub zabronione dla wszystkich witryn.
-
-          Ustawienie Kliknij, by uruchomić zezwala na uruchamianie wtyczek, ale użytkownik musi kliknąć wtyczkę, by rozpoczęło się jej wykonywanie.
-
-          W przypadku nieustawienia tej zasady zostanie użyta opcja „AllowPlugins”, a użytkownik będzie mógł ją zmienić.</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres IP lub URL serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
@@ -173,7 +168,6 @@
 <translation id="1689963000958717134">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla wszystkich użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Ustaw ograniczenie pobierania odmian</translation>
 <translation id="172374442286684480">Zezwalaj wszystkim witrynom na tworzenie danych lokalnych</translation>
-<translation id="1727394138581151779">Blokuj wszystkie wtyczki</translation>
 <translation id="1734716591049455502">Skonfiguruj opcje dostępu zdalnego</translation>
 <translation id="1736269219679256369">Zezwól na kontynuowanie ze strony ostrzeżenia dotyczącego protokołu SSL</translation>
 <translation id="1749815929501097806">Określa Warunki korzystania z usługi, które użytkownik musi zaakceptować przed rozpoczęciem sesji używania lokalnego konta na urządzeniu.
@@ -688,7 +682,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 
           W przypadku włączenia lub nieskonfigurowania tej zasady użytkownicy będą mogli wyświetlać tekst haseł w menedżerze haseł.</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
-<translation id="3570008976476035109">Blokuj wtyczki w tych witrynach</translation>
 <translation id="3591584750136265240">Skonfiguruj sposób uwierzytelniania logowania</translation>
 <translation id="3627678165642179114">Włącz lub wyłącz internetową usługę sprawdzania pisowni</translation>
 <translation id="3646859102161347133">Ustaw typ lupy</translation>
@@ -763,7 +756,6 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
           URL sugestii Google to: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Ta zasada jest egzekwowana tylko wtedy, gdy jest włączona zasada „DefaultSearchProviderEnabled”.</translation>
-<translation id="3864818549971490907">Domyślne ustawienie wtyczek</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3868347814555911633">Ta zasada jest aktywna tylko w trybie sklepu.
 
@@ -823,6 +815,7 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
 
 Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku nieskonfigurowania zasady ustawienie jest wyłączone i treść dodatkowa innej firmy nie może wyświetlać okna dialogowego z podstawowym uwierzytelnianiem HTTP.</translation>
 <translation id="4056910949759281379">Wyłącz protokół SPDY</translation>
+<translation id="408029843066770167">Zezwalaj na wysyłanie zapytań do usługi czasu Google</translation>
 <translation id="4088589230932595924">Tryb incognito wymuszany</translation>
 <translation id="4088983553732356374">Pozwala określić, czy witryny mogą tworzyć dane lokalne. Może to być dozwolone lub zabronione dla wszystkich witryn.
 
@@ -891,6 +884,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4377599627073874279">Zezwalaj na wyświetlanie wszelkich grafik we wszystkich witrynach</translation>
 <translation id="4389091865841123886">Konfiguruje zdalne poświadczanie przy użyciu mechanizmu TPM</translation>
 <translation id="4397469093966511008">Wyłączenie tej zasady spowoduje, że użytkownicy nie będą mogli wysyłać na serwery Google pewnych informacji o systemie ani zawartości stron. Jeśli ta zasada jest włączona lub nieskonfigurowana, użytkownicy będą mogli wysyłać te dane do usługi Bezpieczne przeglądanie, by pomóc w wykrywaniu niebezpiecznych aplikacji i stron.</translation>
+<translation id="4418726081189202489">Wyłączenie tej zasady spowoduje, że <ph name="PRODUCT_NAME" /> nie będzie okresowo wysyłać zapytań do serwera Google w celu pobrania dokładnej sygnatury czasowej. Zapytania zostaną włączone, jeśli włączysz tę zasadę lub nie skonfigurujesz jej wcale.</translation>
 <translation id="4423597592074154136">Ręcznie określ ustawienia serwera proxy</translation>
 <translation id="4429220551923452215">Włącza lub wyłącza skróty aplikacji na pasku zakładek.
 
@@ -1358,7 +1352,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli wybierzesz automatyczne wykrywanie serwera proxy, aplikacje na Androida otrzymają URL skryptu „http://wpad/wpad.dat”. Nie jest używana żadna inna część protokołu automatycznego wykrywania serwera proxy.
 
           Jeśli wybierzesz używanie skryptu .pac serwera proxy, aplikacje na Androida otrzymają URL skryptu.</translation>
-<translation id="6467433935902485842">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie mogą być uruchamiane wtyczki. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPluginsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="6491139795995924304">Włącz Bluetooth na urządzeniu</translation>
 <translation id="6520802717075138474">Importuj wyszukiwarki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="653608967792832033">Określa, po jakim czasie nieaktywności użytkownika blokowany jest ekran przy zasilaniu z baterii.
@@ -1614,7 +1607,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli jest ustawiona wartość GAIA, logowanie będzie przebiegać zgodnie ze zwykłym procesem uwierzytelniania GAIA.
 
       Jeśli ustawiona wartość to SAML_INTERSTITIAL, podczas logowania wyświetli się pełnoekranowe okno z informacją, że użytkownik może przejść dalej, gdy dokona uwierzytelnienia przez dostawcę tożsamości SAML domeny rejestracji urządzenia lub może powrócić do normalnego procesu logowania GAIA.</translation>
-<translation id="7567380065339179813">Zezwalaj na wtyczki w tych witrynach</translation>
 <translation id="757395965347379751">Gdy to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> akceptuje certyfikaty z podpisem SHA-1, o ile zostanie potwierdzona ich poprawność i zostaną łańcuchowo powiązane z zainstalowanymi lokalnie certyfikatami CA.
 
       Uwaga: ta zasada zależy od tego, czy stos weryfikacji certyfikatów systemu operacyjnego zezwala na podpisy SHA-1. Jeśli w systemie operacyjnym wskutek aktualizacji zmieni się sposób obsługi certyfikatów SHA-1, może ona przestać działać. Oprócz tego zasada została pomyślana jako rozwiązanie tymczasowe, dzięki któremu firmy mają więcej czasu na rezygnację z podpisów SHA-1. Zostanie ona usunięta 1 stycznia 2019 r.
@@ -1702,7 +1694,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Strona Nowa karta</translation>
 <translation id="7788511847830146438">Według profilu</translation>
-<translation id="7796141075993499320">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być uruchamiane wtyczki. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPluginsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="7801886189430766248">Gdy ta zasada jest włączona, dane aplikacji na Androida są przesyłane na serwery usługi Android Backup i przywracane stamtąd po ponownym zainstalowaniu zgodnych aplikacji.
 
       Wyłączenie tej zasady powoduje wyłączenie Android Backup Service.
@@ -1965,7 +1956,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       Jeśli nie ustawisz tej zasady, obowiązujące ustawienie będzie zależało od wyboru użytkownika przy instalacji lub pierwszym uruchomieniu.
 
       Ta zasada nie jest dostępna w przypadku systemów Windows, które nie są podłączone do domeny Active Directory. (W przypadku systemu operacyjnego Chrome zapoznaj się zasadą DeviceMetricsReportingEnabled).</translation>
-<translation id="868187325500643455">Zezwalaj na automatyczne uruchamianie wtyczek we wszystkich witrynach</translation>
 <translation id="8693243869659262736">Użyj wbudowanego klienta DNS</translation>
 <translation id="8704831857353097849">Lista wyłączonych wtyczek</translation>
 <translation id="8711086062295757690">Pozwala określić słowo kluczowe będące skrótem umożliwiającym wywołanie w omniboksie usługi wyszukiwania od tego dostawcy. Ta zasada jest opcjonalna. Jeśli nie zostanie ustawiona, żadne słowo kluczowe nie będzie aktywować dostawcy wyszukiwania. Ta zasada jest uwzględniana tylko po włączeniu zasady „DefaultSearchProviderEnabled”.</translation>

@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Geçersiz istek veya istek parametreleri</translation>
 <translation id="1826516787628120939">Kontrol ediliyor</translation>
 <translation id="1834321415901700177">Bu site zararlı programlar içeriyor</translation>
+<translation id="1840414022444569775">Bu kart numarası zaten kullanılıyor</translation>
 <translation id="1842969606798536927">Ödeme</translation>
 <translation id="1871208020102129563">Proxy, bir .pac komut dosyası URL'sini değil, sabit proxy sunucuları kullanacak şekilde ayarlanır.</translation>
 <translation id="1871284979644508959">Zorunlu alan</translation>
 <translation id="187918866476621466">Başlangıç sayfalarını aç</translation>
 <translation id="1883255238294161206">Listeyi daralt</translation>
 <translation id="1898423065542865115">Filtreleme</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Yok}=1{1 site}other{# site}}</translation>
 <translation id="194030505837763158"><ph name="LINK" /> adresine git</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Yer İşaretleri</translation>
 <translation id="1973335181906896915">Serileştirme hatası</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">Dizin API'sı Kimliği:</translation>
 <translation id="2597378329261239068">Doküman şifre korumalı. Lütfen şifreyi girin.</translation>
 <translation id="2609632851001447353">Varyasyonlar</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Yok}=1{1 uygulama ($1)}=2{2 uygulama ($1, $2)}other{# uygulama ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Saatiniz ileri</translation>
 <translation id="2639739919103226564">Durum:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Sertifika Bilgileri</translation>
 <translation id="3063697135517575841">Chrome şu anda kartınızı onaylayamıyor. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="3064966200440839136">Harici bir uygulama üzerinden ödeme gerçekleştirmek için gizli moddan çıkılacak. Devam edilsin mi?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Yok}=1{1 şifre}other{# şifre}}</translation>
 <translation id="3093245981617870298">Çevrimdışısınız.</translation>
 <translation id="3105172416063519923">Öğe Kimliği:</translation>
 <translation id="3109728660330352905">Bu sayfayı görüntüleme yetkiniz yok.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">Şimdi değil</translation>
 <translation id="3498215018399854026">Şu anda ebeveyninize erişemedik. Lütfen tekrar deneyin.</translation>
 <translation id="3528171143076753409">Sunucunun sertifikasına güvenilmiyor.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Senkronize edilmiş cihazlarda en az 1 öğe}=1{1 öğe (ve senkronize edilmiş cihazlarda daha fazlası)}other{# öğe (ve senkronize edilmiş cihazlarda daha fazlası)}}</translation>
 <translation id="3539171420378717834">Bu kartın bir kopyasını bu cihazda tut</translation>
 <translation id="3542684924769048008">Şunun için şifre kullan:</translation>
 <translation id="3549644494707163724">Senkronize edilen tüm verileri kendi senkronizasyon parolanızla şifreleyin</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">Web sitesi Chromium'un işleyemediği karışık kimlik bilgileri gönderdiğinden <ph name="SITE" /> sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici türdendir, dolayısıyla bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="375403751935624634">Çeviri, bir sunucu hatası nedeniyle başarısız oldu.</translation>
 <translation id="3759461132968374835">Son zamanda herhangi bir kilitlenme bildirmediniz. Kilitlenme bildirme özelliği devre dışıyken oluşan kilitlenmeler burada görünmez.</translation>
+<translation id="3778403066972421603">Bu kartı Google Hesabınıza ve bu cihaza kaydetmek istiyor musunuz?</translation>
 <translation id="3787705759683870569">Son kullanma tarihi: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Proxy sunucu kullanıyorsanız...</translation>
 <translation id="3828924085048779000">Boş parolaya izin verilmez.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">E-posta adresi ekle</translation>
 <translation id="3901925938762663762">Kartın kullanım süresi doldu</translation>
 <translation id="3963721102035795474">Okuyucu Modu</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Yok}=1{1 siteden }other{# siteden }}</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> engellendi</translation>
+<translation id="3987940399970879459">1 MB'tan az</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Yakındaki 1 web sayfası}other{Yakındaki # web sayfası}}</translation>
 <translation id="4021036232240155012">DNS, bir web sitesinin adını o siteye özgü İnternet adresine dönüştüren ağ hizmetidir.</translation>
 <translation id="4030383055268325496">Eklemeyi &amp;geri al</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">Daha fazla</translation>
 <translation id="6060685159320643512">Dikkatli olun, bu deneyler canınızı yakabilir</translation>
 <translation id="6080696365213338172">Yönetici tarafından sağlanmış bir sertifika kullanan içeriğe eriştiniz. <ph name="DOMAIN" /> alan adına sağladığınız verileri yöneticiniz görebilir ve bunlara müdahale edebilir.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Yok}=1{1 şifre (senkronize edildi)}other{# şifre (senkronize edildi)}}</translation>
 <translation id="6146055958333702838">Kabloları kontrol edin ve kullandığınız yönlendiricileri, modemleri
     veya diğer ağ cihazlarını yeniden başlatın.</translation>
 <translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">Bölge</translation>
 <translation id="6973656660372572881">Hem sabit proxy sunucular hem de bir .pac komut dosyası URL'si belirtildi.</translation>
 <translation id="6989763994942163495">Gelişmiş ayarları göster...</translation>
-<translation id="7000990526846637657">Geçmiş girişi bulunamadı</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde Google Hesabınıza ilişkin başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="7029809446516969842">Şifreler</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">Google'a kaydettiğiniz kartları kullanarak farklı cihazlardan sitelerde ve uygulamalarda ödemelerinizi hızla yapabilirsiniz.</translation>
 <translation id="7588950540487816470">Fiziksel Web</translation>
 <translation id="7592362899630581445">Sunucunun sertifikası ad sınırlamasını ihlal ediyor.</translation>
+<translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" />'tan az</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> şu anda bu isteği işleme alamıyor.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
 <translation id="7610193165460212391">Değer aralık dışında: <ph name="VALUE" />.</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">Taşımayı &amp;Geri Al</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" kodlu uzantı için geçersiz güncelleme URL'si.</translation>
 <translation id="8202097416529803614">Sipariş özeti</translation>
+<translation id="8206354486702514201">Bu seçenek, yöneticiniz tarafınızdan denetleniyor.</translation>
 <translation id="8218327578424803826">Atanan Konum:</translation>
 <translation id="8225771182978767009">Bu bilgisayarı kuran kişi bu siteyi engellemeyi seçmiş.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -886,5 +896,6 @@
 <translation id="939736085109172342">Yeni klasör</translation>
 <translation id="941721044073577244">Bu siteyi ziyaret etme izniniz yok</translation>
 <translation id="969892804517981540">Resmi Derleme</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Yok}=1{1 öğe}other{# öğe}}</translation>
 <translation id="988159990683914416">Geliştirici Derlemesi</translation>
 </translationbundle>

@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
 <translation id="1826516787628120939">Se verifică</translation>
 <translation id="1834321415901700177">Acest site conține programe dăunătoare</translation>
+<translation id="1840414022444569775">Numărul cardului este folosit deja</translation>
 <translation id="1842969606798536927">Plătiți</translation>
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
 <translation id="1871284979644508959">Câmp obligatoriu</translation>
 <translation id="187918866476621466">Deschide paginile de pornire</translation>
 <translation id="1883255238294161206">Restrângeți lista</translation>
 <translation id="1898423065542865115">Filtrarea</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Niciunul}=1{1 site}few{# site-uri}other{# de site-uri}}</translation>
 <translation id="194030505837763158">Accesați <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Marcaje <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Eroare de serializare</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">ID-ul API-ului Directory:</translation>
 <translation id="2597378329261239068">Acest document este protejat cu parolă. Introdu o parolă.</translation>
 <translation id="2609632851001447353">Modificări</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Niciuna}=1{1 aplicație ($1)}=2{2 aplicații ($1, $2)}few{# aplicații ($1, $2, $3)}other{# de aplicații ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Ora este setată în viitor</translation>
 <translation id="2639739919103226564">Stare:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Informații despre certificat</translation>
 <translation id="3063697135517575841">Momentan, Chrome nu a putut confirma cardul. Încearcă din nou mai târziu.</translation>
 <translation id="3064966200440839136">Vei părăsi modul incognito pentru a plăti folosind o aplicație externă. Continui?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Niciuna}=1{1 parolă}few{# parole}other{# de parole}}</translation>
 <translation id="3093245981617870298">Ești offline.</translation>
 <translation id="3105172416063519923">ID articol:</translation>
 <translation id="3109728660330352905">Nu ești autorizat(ă) să vezi această pagină.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">Nu acum</translation>
 <translation id="3498215018399854026">Momentan, nu ți-am putut contacta părintele. Încearcă din nou.</translation>
 <translation id="3528171143076753409">Certificatul serverului nu este de încredere.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Cel puțin 1 element pe dispozitivele sincronizate}=1{1 element (și mai multe pe dispozitivele sincronizate)}few{# elemente (și mai multe pe dispozitivele sincronizate)}other{# de elemente (și mai multe pe dispozitivele sincronizate)}}</translation>
 <translation id="3539171420378717834">Păstrează o copie a cardului pe dispozitiv</translation>
 <translation id="3542684924769048008">Folosește parola pentru:</translation>
 <translation id="3549644494707163724">Criptați toate datele sincronizate cu parola dvs. de acces pentru sincronizare</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">Nu poți accesa acum <ph name="SITE" />, deoarece site-ul a trimis date de conectare într-un format necunoscut pe care Chromium nu le poate procesa. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="375403751935624634">Traducerea nu a reușit din cauza unei erori de server.</translation>
 <translation id="3759461132968374835">Nu există blocări raportate recent. Blocările care au avut loc când raportarea blocărilor era dezactivată nu vor apărea aici.</translation>
+<translation id="3778403066972421603">Dorești să salvezi acest card în Contul Google și pe acest dispozitiv?</translation>
 <translation id="3787705759683870569">Expiră în <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Dacă utilizați un server proxy...</translation>
 <translation id="3828924085048779000">Trebuie să fie introdusă expresia de acces.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">Adaugă o adresă de e-mail</translation>
 <translation id="3901925938762663762">Cardul este expirat</translation>
 <translation id="3963721102035795474">Modul Cititor</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Niciunul}=1{De la 1 site }few{De la # site-uri }other{De la # de site-uri }}</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> este blocat</translation>
+<translation id="3987940399970879459">Mai puțin de 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 pagină web în apropiere}few{# pagini web în apropiere}other{# de pagini web în apropiere}}</translation>
 <translation id="4021036232240155012">DNS este serviciul de rețea care translatează numele unui site în adresa sa de internet.</translation>
 <translation id="4030383055268325496">&amp;Anulați adăugarea</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="6060685159320643512">Atenție, aceste experimente pot produce daune</translation>
 <translation id="6080696365213338172">Ați accesat conținut utilizând un certificat oferit de administrator. Datele pe care le transmiteți către <ph name="DOMAIN" /> pot fi interceptate de administratorul dvs.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Niciuna}=1{1 parolă (sincronizată)}few{# parole (sincronizate)}other{# de parole (sincronizate)}}</translation>
 <translation id="6146055958333702838">Verifică toate cablurile și repornește routerele, modemurile sau alte
     dispozitive de rețea pe care le folosești.</translation>
 <translation id="614940544461990577">Încearcă:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">Județ</translation>
 <translation id="6973656660372572881">Sunt specificate atât servere proxy fixe, cât și o adresă URL pentru scripturi .pac.</translation>
 <translation id="6989763994942163495">Afișează setările avansate...</translation>
-<translation id="7000990526846637657">Nu s-au găsit intrări în istoric</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Parole</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">Plătește rapid pe site-uri și în aplicații pe diferite dispozitive folosind cardurile pe care le-ai salvat pe Google.</translation>
 <translation id="7588950540487816470">Web material</translation>
 <translation id="7592362899630581445">Certificatul serverului încalcă limitările privind numele.</translation>
+<translation id="7598391785903975535">Mai puțin de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Momentan, <ph name="HOST_NAME" /> nu poate procesa această solicitare.</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE" />.</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">&amp;Anulați mutarea</translation>
 <translation id="8201077131113104583">Adresa URL pentru actualizarea extensiei cu ID-ul „<ph name="EXTENSION_ID" />” nu este validă.</translation>
 <translation id="8202097416529803614">Rezumatul comenzii</translation>
+<translation id="8206354486702514201">Această setare este impusă de administratorul dvs.</translation>
 <translation id="8218327578424803826">Locație atribuită:</translation>
 <translation id="8225771182978767009">Persoana care a configurat computerul a ales să blocheze acest site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -886,5 +896,6 @@
 <translation id="939736085109172342">Dosar nou</translation>
 <translation id="941721044073577244">Se pare că nu ai permisiunea de a accesa acest site</translation>
 <translation id="969892804517981540">Versiune oficială</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Niciunul}=1{1 element}few{# elemente}other{# de elemente}}</translation>
 <translation id="988159990683914416">Versiune de programare</translation>
 </translationbundle>

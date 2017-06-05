@@ -107,6 +107,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="4147555960264124640">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Google Chrome. Dine Chrome-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Installationsprogrammet kunne ikke pakke arkivet ud. Download Google Chrome igen.</translation>
 <translation id="4251615635259297716">Vil du linke dine Chrome-data til denne konto?</translation>
+<translation id="4251625577313994583">få Chrome på din iPhone</translation>
 <translation id="4309555186815777032">(kræver en <ph name="BEGIN_BUTTON" />genstart<ph name="END_BUTTON" /> af Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">Denne computer vil ikke længere modtage Google Chrome-opdateringer, da dette Linux-system ikke længere understøttes.</translation>

@@ -129,6 +129,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="4527045527269911712">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে।</translation>
 <translation id="453661520163887813">সম্পূর্ণ হতে <ph name="TIME" /> বাকি</translation>
 <translation id="4544944664594876241">স্ক্রীন লক করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
+<translation id="4659419629803378708">ChromeVox সক্ষম করা আছে</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="4849058404725798627">কিবোর্ড ফোকাসের মাধ্যমে হাইলাইট করুন</translation>
@@ -152,6 +153,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="5548285847212963613">"<ph name="EXTENSION_NAME" />" এক্সটেনশানটি এই নেটওয়ার্কের সাথে সংযোগ স্থাপন করতে সাহায্য করতে পারে৷</translation>
 <translation id="5571066253365925590">ব্লুটুথ সক্ষমিত</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
+<translation id="5600837773213129531">কথ্য প্রতিক্রিয়া অক্ষম করতে Ctrl + Alt + Z টিপুন।</translation>
 <translation id="5648021990716966815">মাইক জ্যাক</translation>
 <translation id="5744083938413354016">ট্যাপ করে টেনে আনা</translation>
 <translation id="5777841717266010279">স্ক্রীন শেয়ার করা থামাবেন?</translation>
@@ -223,6 +225,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="7536035074519304529">IP ঠিকানা: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION" /> এ পরিবর্তিত হয়েছে</translation>
 <translation id="7562368315689366235">ইমোজি প্যালেট</translation>
+<translation id="7569509451529460200">ব্রেল এবং ChromeVox সক্ষম করেছেন</translation>
 <translation id="7581273696622423628">সমীক্ষায় যোগ দিন</translation>
 <translation id="7593891976182323525">Search অথবা Shift</translation>
 <translation id="7649070708921625228">সহায়তা</translation>
@@ -230,6 +233,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">আপনার সেটিংস সিঙ্ক করার পরে ভাষা "<ph name="FROM_LOCALE" />" থেকে "<ph name="TO_LOCALE" />" এ পরিবর্তন করা হয়েছে৷</translation>
 <translation id="7904094684485781019">এই অ্যাকাউন্টের প্রশাসক একাধিক প্রবেশ করুন অননুমোদিত করেছেন৷</translation>
+<translation id="7951523953736115461">নাইট লাইট</translation>
 <translation id="7977927628060636163">মোবাইল নেটওয়ার্কগুলির জন্য অনুসন্ধান করছে...</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
 <translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>

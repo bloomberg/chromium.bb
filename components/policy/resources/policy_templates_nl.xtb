@@ -87,11 +87,6 @@
       Als dit beleid is ingesteld op 'onwaar', staat <ph name="PRODUCT_NAME" /> niet toe dat er gastprofielen worden gestart.</translation>
 <translation id="1363275621236827384">Query's naar de Quirks Server inschakelen voor hardwareprofielen</translation>
 <translation id="1397855852561539316">Voorgestelde URL voor standaardzoekprovider</translation>
-<translation id="1398889361882383850">Hiermee kun je instellen of websites automatisch plug-ins mogen uitvoeren. Het automatisch uitvoeren van plug-ins kan ofwel worden toegestaan voor alle websites, ofwel worden geweigerd voor alle websites.
-
-          Met click-to-play kunnen plug-ins worden uitgevoerd, maar de gebruiker moet erop klikken om ze uit te voeren.
-
-          Als dit beleid niet wordt ingesteld, wordt 'AllowPlugins' gebruikt en kan de gebruiker dit wijzigen.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adres of URL van proxyserver</translation>
 <translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
@@ -173,7 +168,6 @@
 <translation id="1689963000958717134">Hiermee kun je een netwerkconfiguratie toepassen voor alle gebruikers van een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een tekenreeks met JSON-indeling, zoals gedefinieerd door de indeling voor open netwerkconfiguratie, beschreven op <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">De beperking voor het ophalen van de seed voor varianten instellen</translation>
 <translation id="172374442286684480">Alle sites toestaan lokale gegevens in te stellen</translation>
-<translation id="1727394138581151779">Alle plug-ins blokkeren</translation>
 <translation id="1734716591049455502">Opties voor externe toegang configureren</translation>
 <translation id="1736269219679256369">Doorgaan vanaf de SSL-waarschuwingspagina toestaan</translation>
 <translation id="1749815929501097806">De Servicevoorwaarden instellen die de gebruiker moet accepteren voordat een apparaat-lokale accountsessie kan worden gestart.
@@ -725,7 +719,6 @@
 
           Als je deze instelling inschakelt of niet configureert, kunnen gebruikers hun wachtwoorden als leesbare tekst bekijken in Wachtwoordbeheer.</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
-<translation id="3570008976476035109">Plug-ins blokkeren op deze sites</translation>
 <translation id="3591584750136265240">Het verificatiegedrag voor inloggen configureren</translation>
 <translation id="3627678165642179114">Webservice voor spellingcontrole in- of uitschakelen</translation>
 <translation id="3646859102161347133">Het type vergrootglas instellen</translation>
@@ -811,7 +804,6 @@
           De suggestie-URL van Google kan worden opgegeven als: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
-<translation id="3864818549971490907">Standaardinstelling voor plug-ins</translation>
 <translation id="3866249974567520381">Beschrijving</translation>
 <translation id="3868347814555911633">Dit beleid is alleen actief in de commerciële modus.
 
@@ -870,6 +862,7 @@
 
           Deze optie is meestal uitgeschakeld als beveiliging tegen phishing. Als dit beleid niet wordt ingesteld, wordt de optie uitgeschakeld en mag subinhoud van derden geen dialoogvenster voor algemene HTTP-authenticatie als pop-up weergeven.</translation>
 <translation id="4056910949759281379">SPDY-protocol uitschakelen</translation>
+<translation id="408029843066770167">Query's naar een Google-tijdservice toestaan</translation>
 <translation id="4088589230932595924">Incognitomodus afgedwongen</translation>
 <translation id="4088983553732356374">Hiermee kun je instellen of websites lokaal gegevens mogen instellen. Het instellen van lokale gegevens kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
 
@@ -938,6 +931,7 @@
 <translation id="4377599627073874279">Alle sites toestaan afbeeldingen weer te geven</translation>
 <translation id="4389091865841123886">De externe bevestiging configureren met een TPM-mechanisme.</translation>
 <translation id="4397469093966511008">Als dit beleid wordt ingesteld op 'false' (onwaar), kunnen gebruikers geen systeeminformatie en paginacontent meer naar Google-servers verzenden. Als deze instelling wordt ingesteld op 'true' (waar) of niet wordt geconfigureerd, kunnen gebruikers bepaalde systeeminformatie en paginacontent naar Safe Browsing verzenden om te helpen bij de detectie van gevaarlijke apps en sites.</translation>
+<translation id="4418726081189202489">Als dit beleid wordt ingesteld op Onwaar, is het <ph name="PRODUCT_NAME" /> niet toegestaan om af en toe query's naar een Google-server verzenden om een nauwkeurig tijdstempel op te halen. Als het beleid is ingesteld op Waar of niet is ingesteld, zijn deze query's ingeschakeld.</translation>
 <translation id="4423597592074154136">Proxyinstellingen handmatig specificeren</translation>
 <translation id="4429220551923452215">De snelkoppeling voor apps in- of uitschakelen op de bladwijzerbalk.
 
@@ -1460,9 +1454,6 @@
           Als je ervoor kiest de proxyserver automatisch te detecteren, ontvangen de Android-apps de script-URL http://wpad/wpad.dat. Er wordt geen enkel ander onderdeel van het protocol voor de automatische detectie van de proxy gebruikt.
 
           Als je het PAC-script voor de proxy kiest, ontvangen de Android-apps de script-URL.</translation>
-<translation id="6467433935902485842">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop plug-ins niet mogen worden uitgevoerd.
-
-          Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites, op basis van het beleid 'DefaultPluginsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="6491139795995924304">Bluetooth toestaan op apparaat</translation>
 <translation id="6520802717075138474">Zoekmachines importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="653608967792832033">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt vergrendeld wanneer op de accu wordt gewerkt.
@@ -1745,7 +1736,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid is ingesteld op GAIA, wordt het inloggen uitgevoerd volgens de normale GAIA-verificatie.
 
       Als het beleid is ingesteld op SAML_INTERSTITIAL, wordt er bij het inloggen een interstitial weergegeven waarin de gebruiker kan kiezen of hij wil doorgaan met de verificatie via de SAML IdP van het registratiedomein van het apparaat of wil teruggaan naar de normale manier van inloggen volgens GAIA.</translation>
-<translation id="7567380065339179813">Plug-ins toestaan op deze sites</translation>
 <translation id="757395965347379751">Wanneer deze instelling is ingeschakeld, staat <ph name="PRODUCT_NAME" /> met SHA-1 ondertekende certificaten toe, zolang deze correct zijn gevalideerd en zijn gekoppeld aan een lokaal geïnstalleerd CA-certificaat.
 
       Opmerking: Dit beleid is afhankelijk van de uitgevoerde verificatiestack voor het certificaat van het besturingssysteem en of hiermee SHA-1-handtekeningen zijn toegestaan. Als door een update van het besturingssysteem een wijziging wordt aangebracht in de verwerking van het besturingssysteem ten aanzien van SHA-1-certificaten, is dit beleid wellicht niet meer van toepassing. Daarnaast is dit beleid bedoeld als tijdelijke oplossing voor bedrijven om af te stappen van SHA-1. Dit beleid wordt op of rond 1 januari 2019 verwijderd.
@@ -1839,9 +1829,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Pagina 'Nieuw tabblad'</translation>
 <translation id="7788511847830146438">Per profiel</translation>
-<translation id="7796141075993499320">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop plug-ins mogen worden uitgevoerd.
-
-          Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites, op basis van het beleid 'DefaultPluginsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="7801886189430766248">Wanneer dit beleid is ingesteld op 'waar', worden app-gegevens van Android geüpload naar Android Backup-servers en teruggezet vanaf deze servers wanneer compatibele apps opnieuw worden geïnstalleerd.
 
       Wanneer dit beleid is ingesteld op 'onwaar', is Android Backup Service uitgeschakeld.
@@ -2113,7 +2100,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Dit beleid is niet beschikbaar op Windows-instanties die niet aan
       een Active Directory-domein zijn gekoppeld. (Zie voor Chrome OS
       het beleid 'DeviceMetricsReportingEnabled'.)</translation>
-<translation id="868187325500643455">Alle sites toestaan automatisch plug-ins uit te voeren</translation>
 <translation id="8693243869659262736">Ingebouwde DNS-client gebruiken</translation>
 <translation id="8704831857353097849">Lijst met uitgeschakelde plug-ins</translation>
 <translation id="8711086062295757690">Hiermee wordt het zoekwoord gespecificeerd dat in de omnibox wordt gebruikt om de zoekfunctie voor deze provider te activeren.

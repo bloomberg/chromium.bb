@@ -94,7 +94,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2800683595868705743">Quitter le sélecteur d'onglets</translation>
 <translation id="283291358677939992">Rechercher dans la page…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2843803966603263712">Réinit. param. Traduction</translation>
+<translation id="2843803966603263712">Réinitialiser paramètres Traduction</translation>
 <translation id="285960592395650245">Relancer téléchargement</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Masqué, Mot de passe</translation>
@@ -174,6 +174,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="441868831736628555">Avis de confidentialité</translation>
+<translation id="4508750114462689118">Fermer la promo de connexion</translation>
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Veuillez essayer de vous reconnecter.</translation>
 <translation id="4620246317052452550">Pages lues</translation>

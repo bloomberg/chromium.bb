@@ -129,6 +129,7 @@
 <translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。</translation>
 <translation id="453661520163887813">あと <ph name="TIME" /> で充電完了</translation>
 <translation id="4544944664594876241">画面をロックするショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
+<translation id="4659419629803378708">ChromeVox を有効にしました</translation>
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
 <translation id="4849058404725798627">キーボードのフォーカスがある項目をハイライト表示する</translation>
@@ -152,6 +153,7 @@
 <translation id="5548285847212963613">拡張機能「<ph name="EXTENSION_NAME" />」はこのネットワークへの接続をサポートします。</translation>
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
+<translation id="5600837773213129531">音声フィードバックを無効にするには Ctrl+Alt+Z を押してください。</translation>
 <translation id="5648021990716966815">マイク差込口</translation>
 <translation id="5744083938413354016">タップによるドラッグ</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
@@ -223,6 +225,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="7536035074519304529">IP アドレス: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7562368315689366235">絵文字パレット</translation>
+<translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7581273696622423628">アンケートに答える</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
@@ -230,6 +233,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
+<translation id="7951523953736115461">読書灯</translation>
 <translation id="7977927628060636163">モバイル ネットワークを検索しています...</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>

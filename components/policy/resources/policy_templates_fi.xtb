@@ -88,11 +88,6 @@
       Jos tämän käytännön arvoksi asetetaan Epätosi, <ph name="PRODUCT_NAME" /> ei salli kirjautumista vierasprofiililla.</translation>
 <translation id="1363275621236827384">Salli laiteprofiilien lähettää kyselyitä Quirks Serverille</translation>
 <translation id="1397855852561539316">Oletushakupalvelun ehdottama URL-osoite</translation>
-<translation id="1398889361882383850">Voit määrittää, saavatko sivustot suorittaa laajennuksia automaattisesti. Laajennuksien automaattinen suorittaminen voidaan joko sallia kaikille sivustoille tai kieltää kaikilta sivustoilta.
-
-          Toista klikkaamalla -toiminnon avulla sovellukset ovat käynnissä, mutta käyttäjän on klikattava sovellusta suorittaakseen sen.
-
-          Jos tätä käytäntöä ei ole määritetty, käytetään AllowPlugins-käytäntöä ja käyttäjä voi muuttaa sitä.</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1427655258943162134">Välityspalvelimen osoite tai URL-osoite</translation>
 <translation id="1435659902881071157">Laitetason verkon määritys</translation>
@@ -175,7 +170,6 @@
 <translation id="1689963000958717134">Antaa määrittää tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävien laitteiden verkkoasetukset kaikille käyttäjille. Verkkoasetukset määritetään JSON-muotoiltuna merkkijonona Open Network Configuration -muodossa, josta on lisätietoja osoitteessa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Aseta Variations-siemenarvon hakemisen rajoitukset</translation>
 <translation id="172374442286684480">Anna kaikkien sivustojen luoda tiedostoja tietokoneelle</translation>
-<translation id="1727394138581151779">Estä kaikki laajennukset</translation>
 <translation id="1734716591049455502">Määritä etäkäyttöasetukset</translation>
 <translation id="1736269219679256369">Salli SSL-varoitussivun ohittaminen</translation>
 <translation id="1749815929501097806">Asettaa käyttöehdot, jotka käyttäjän täytyy hyväksyä ennen laitteen paikallisen käyttökerran aloittamista.
@@ -691,7 +685,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos otat tämän käytännön käyttöön tai et määritä sitä ollenkaan, käyttäjät voivat nähdä salasanansa tekstinä salasanan hallinnassa.</translation>
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
-<translation id="3570008976476035109">Estä laajennukset näissä sivustoissa</translation>
 <translation id="3591584750136265240">Määritä kirjautumistodennuksen käytös.</translation>
 <translation id="3627678165642179114">Ota käyttöön tai poista käytöstä oikoluku-verkkopalvelu</translation>
 <translation id="3646859102161347133">Aseta näytön suurentajan tyyppi</translation>
@@ -769,7 +762,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Googlen ehdotus-URL-osoitteen voi antaa muodossa <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Tämä käytäntö toteutetaan vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
-<translation id="3864818549971490907">Laajennuksien oletusasetus</translation>
 <translation id="3866249974567520381">Kuvaus</translation>
 <translation id="3868347814555911633">Tämä käytäntö toimii vain myyntitilassa.
 
@@ -827,6 +819,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4027608872760987929">Ota oletushakupalvelu käyttöön</translation>
 <translation id="4039085364173654945">Määrittää, saako sivulla oleva kolmannen osapuolen alasisältö näyttää HTTP Basic Auth -valintaikkunan. Asetus on yleensä poistettu käytöstä tietojenkalastelun estotoimenpiteenä. Jos käytäntöä ei ole määritetty, asetus ei ole käytössä eikä kolmannen osapuolen alasisältö saa näyttää HTTP Basic Auth -valintaikkunaa.</translation>
 <translation id="4056910949759281379">Poista SPDY-protokolla käytöstä</translation>
+<translation id="408029843066770167">Salli kyselyt Googlen aikapalveluun</translation>
 <translation id="4088589230932595924">Incognito-tila pakotettu</translation>
 <translation id="4088983553732356374">Tällä käytännöllä määritetään, onko sivustoilla lupa luoda paikallisia tietoja. Paikallisten tietojen luominen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta.
 
@@ -896,6 +889,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4377599627073874279">Salli kaikkien sivustojen näyttää kaikki kuvat</translation>
 <translation id="4389091865841123886">Määritä etätodennus TPM-mekanismilla.</translation>
 <translation id="4397469093966511008">Jos tämän käytännön arvo on epätosi, käyttäjät eivät voi valita, lähetetäänkö Googlen palvelimille joitain järjestelmätietoja ja joidenkin sivujen sisältöä. Jos asetuksen arvo on tosi tai sitä ei ole määritetty, käyttäjät voivat lähettää joitain järjestelmätietoja ja joidenkin sivujen sisältöä Selaussuojalle auttaakseen vaarallisten sovellusten ja sivustojen havaitsemisessa.</translation>
+<translation id="4418726081189202489">Jos tämän käytännön arvo on Epätosi, <ph name="PRODUCT_NAME" /> ei voi lähettää ajoittaisia kyselyjä Googlen palvelimille oikean aikaleiman saamiseksi. Jos tämän käytännön arvo on Tosi tai sillä ei ole arvoa, nämä kyselyt sallitaan.</translation>
 <translation id="4423597592074154136">Määritä välityspalvelimen asetukset manuaalisesti</translation>
 <translation id="4429220551923452215">Poistaa tai ottaa käyttöön sovelluksen pikakuvakkeen kirjanmerkkipalkissa.
 
@@ -1368,7 +1362,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Jos välityspalvelin tunnistetaan automaattisesti, Android-sovelluksille toimitetaan http://wpad/wpad.dat-skriptin URL-osoite. Muita välityspalvelimien automaattisen tunnistusprotokollan osia ei käytetä.
 
           Jos otat käyttöön .pac-välityspalvelinskriptin, sen URL-osoite toimitetaan Android-sovelluksille.</translation>
-<translation id="6467433935902485842">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa suorittaa laajennuksia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPluginsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="6491139795995924304">Salli Bluetoothin käyttäminen laitteella</translation>
 <translation id="6520802717075138474">Tuo hakukoneet oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="653608967792832033">Määrittää käyttämättömyysajan, jonka kuluttua näyttö lukitaan, kun laitetta käytetään akkuvirralla.
@@ -1632,7 +1625,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos asetus on GAIA, kirjautuminen tehdään normaalin GAIA-todennuksen kautta.
 
       Jos asetus on SAML_INTERSTITIAL, kirjautumisen yhteydessä näytetään välinäyttö, jossa ehdotetaan käyttäjälle todennusta laitteen käyttöönoton verkkotunnuksen SAML IdP:n kautta tai normaaliin GAIA-kirjautumistyönkulkuun palaamista.</translation>
-<translation id="7567380065339179813">Salli laajennukset näissä sivustoissa</translation>
 <translation id="757395965347379751">Kun tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> sallii SHA-1-allekirjoitetut varmenteet, jos ne ovat vahvistettavissa ja liittyvät paikallisesti asennettuihin CA-varmenteisiin.
 
       Huom. Tämän käytännön toiminta riippuu siitä, salliiko käyttöjärjestelmän varmennepino SHA-1-allekirjoitukset. Jos käyttöjärjestelmän päivitys muuttaa tapaa, jolla käyttöjärjestelmä käsittelee SHA-1-varmenteita, tämän käytännön toiminta voi päättyä. Käytäntö on tarkoitettu väliaikaiseksi ratkaisuksi, joka antaa yrityksille lisäaikaa SHA-1:n käytön lopettamiseen. Käytäntö poistetaan 1.1.2019 tai sen tienoilla.
@@ -1720,7 +1712,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Uusi välilehti -sivu</translation>
 <translation id="7788511847830146438">Profiilikohtainen</translation>
-<translation id="7796141075993499320">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat suorittaa laajennuksia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPluginsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="7801886189430766248">Jos tämän käytännön arvo on Tosi, Android-sovellusten tiedot varmuuskopioidaan Android Backup ‑palvelimille ja voidaan palauttaa yhteensopivien sovellusten uudelleenasentamisen yhteydessä.
 
       Jos käytännön arvo on Epätosi, Android Backup Service ei ole käytössä.
@@ -1982,7 +1973,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
       Tämä käytäntö ei ole käytettävissä Windowsin esiintymissä, joita ei ole liitetty
       Active Directory -toimialueeseen. Jos kyseessä on Chrome-käyttöjärjestelmä, katso
       DeviceMetricsReportingEnabled.</translation>
-<translation id="868187325500643455">Salli kaikkien sivustojen käyttää laajennuksia automaattisesti</translation>
 <translation id="8693243869659262736">Käytä sisäänrakennettua DNS-asiakassovellusta</translation>
 <translation id="8704831857353097849">Luettelo käytöstä poistetuista laajennuksista</translation>
 <translation id="8711086062295757690">Määrittää avainsanan, joka käynnistää omniboxissa tämän hakupalvelun haun. Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, mikään avainsana ei käynnistä tätä hakupalvelua. Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>

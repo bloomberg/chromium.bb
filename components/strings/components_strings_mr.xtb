@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">अवैध विनंती किंवा विनंती मापदंड</translation>
 <translation id="1826516787628120939">तपासत आहे</translation>
 <translation id="1834321415901700177">या साइटमध्ये धोकादायक प्रोग्राम आहेत</translation>
+<translation id="1840414022444569775">हा कार्ड नंबर आधी वापरला गेला आहे</translation>
 <translation id="1842969606798536927">देय द्या</translation>
 <translation id="1871208020102129563">प्रॉक्सी निश्चित प्रॉक्सी सर्व्हर वापरण्‍यास सेट करण्‍यात आले आहे, .pac स्क्रिप्ट URL नव्हे.</translation>
 <translation id="1871284979644508959">आवश्यक फील्ड</translation>
 <translation id="187918866476621466">प्रारंभ पृष्ठ उघडा</translation>
 <translation id="1883255238294161206">सूची संकुचित करा</translation>
 <translation id="1898423065542865115">फिल्टर करणे</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{काहीही नाही}=1{1 साइट}one{# साइट}other{# साइट}}</translation>
 <translation id="194030505837763158"><ph name="LINK" /> दुव्याकडे जा</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="1973335181906896915">क्रमीकरण त्रुटी</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">शब्दकोश API आयडी:</translation>
 <translation id="2597378329261239068">हा दस्तऐवज संकेतशब्द संरक्षित आहे. कृपया संकेतशब्द प्रविष्ट करा.</translation>
 <translation id="2609632851001447353">तफावत</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{काहीही नाही}=1{1 अ‍ॅप ($1)}=2{2 अ‍ॅप्स ($1, $2)}one{# अ‍ॅप् ($1, $2, $3)}other{# अ‍ॅप्स ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">आपले घड्याळ पुढे आहे</translation>
 <translation id="2639739919103226564">स्थिती:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">प्रमाणपत्र माहिती...</translation>
 <translation id="3063697135517575841">Chrome यावेळी आपल्या कार्डची पुष्टी करण्यात अक्षम होते. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="3064966200440839136">बाह्य अनुप्रयोग द्वारे देय देण्यासाठी गुप्त मोड सोडत आहे. सुरु ठेवायचे?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{काहीही नाही}=1{1 पासवर्ड}one{# पासवर्ड}other{# पासवर्ड}}</translation>
 <translation id="3093245981617870298">आपण ऑफलाइन आहात.</translation>
 <translation id="3105172416063519923">मालमत्ता आयडी:</translation>
 <translation id="3109728660330352905">हे पृष्ठ पाहण्यासाठी आपण प्राधिकृत नाही.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="3498215018399854026">याक्षणी आम्ही आपल्या पालकांपर्यंत पोहोचू शकलो नाही. कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="3528171143076753409">सर्व्हरचे प्रमाणपत्र विश्वासनीय नाही.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{ सिंक केलेल्या डिव्हाइसवर किमान 1 आयटम}=1{1 आयटम (सिंक केलेल्या डिव्‍हाइसवर आणखी काही)}one{# आयटम (सिंक केलेल्या डिव्‍हाइसवर आणखी काही)}other{# आयटम (सिंक केलेल्या डिव्‍हाइसवर आणि आणखी काही)}}</translation>
 <translation id="3539171420378717834">या डिव्हाइसवर या कार्डची एक प्रत ठेवा</translation>
 <translation id="3542684924769048008">यासाठी संकेतशब्द वापरा:</translation>
 <translation id="3549644494707163724">आपल्या स्वतःच्या वाक्यांशासह सर्व संंकालित केलेला डेटा कूटबद्ध करा</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">Chromium प्रक्रिया करू शकत नसलेले सरमिसळ केलेले क्रेडेन्‍शियल वेबसाइटने पाठविल्‍याने आपण आत्ता <ph name="SITE" /> ला भेट देऊ शकत नाही. नेटवर्क त्रुटी आणि आक्रमण सहसा तात्पुरते आहेत त्यामुळे संभवत: हे पृष्‍ठ नंतर कार्य करेल.</translation>
 <translation id="375403751935624634">सर्व्हर त्रुटीमुळे भाषांतर अयशस्वी झाला.</translation>
 <translation id="3759461132968374835">आपण अलीकडे कोणतेही क्रॅश नोंदवले नाहीत. क्रॅश नोंदवणे अक्षम असताना झालेले क्रॅश येथे दिसून येणार नाहीत.</translation>
+<translation id="3778403066972421603">तुम्हाला हे कार्ड तुमच्या Google खात्यामध्ये आणि या डिव्हाइसवर सेव्ह करायचे आहे का?</translation>
 <translation id="3787705759683870569">समाप्त होते: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">आपण प्रॉक्सी सर्व्हर वापरत असल्यास...</translation>
 <translation id="3828924085048779000">रिक्त सांकेतिक वाक्यांशाची परवानगी नाही.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">ईमेल जोडा</translation>
 <translation id="3901925938762663762">कार्ड कालबाह्य झाले आहे</translation>
 <translation id="3963721102035795474">वाचक मोड</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{काहीही नाही}=1{1 साइटकडून }one{# साइटकडून }other{# साइटकडून }}</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> अवरोधित केले आहे</translation>
+<translation id="3987940399970879459">1 MB पेक्षा कमी</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{जवळपास 1 वेब पृष्‍ठ}one{जवळपास # वेब पृष्‍ठ}other{जवळपास # वेब पृष्ठे}}</translation>
 <translation id="4021036232240155012">DNS ही नेटवर्क सेवा आहे जी वेबसाइटचे नाव तिच्या इंटरनेट पत्त्यामध्‍ये भाषांतरित करते.</translation>
 <translation id="4030383055268325496">&amp;जोडा पूर्ववत करा</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="6060685159320643512">सावधगिरी बाळगा, या प्रयोगांमुळे हानी होऊ शकते</translation>
 <translation id="6080696365213338172">आपण प्रशासकाने-प्रदान केलेले प्रमाणपत्र वापरून सामग्रीमध्ये प्रवेश केला. आपण <ph name="DOMAIN" /> वर प्रदान करता तो डेटा आपल्या प्रशासकाद्वारे अंतःखंडित केला जाऊ शकतो.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{काहीही नाही}=1{1 पासवर्ड (सिंक केलेला)}one{# पासवर्ड (सिंक केलेला)}other{# पासवर्ड (सिंक केलेले)}}</translation>
 <translation id="6146055958333702838">कोणत्याही केबल तपासा आणि कोणतेही राउटर, मोडेम किंवा आपण
 वापरत असलेले
         अन्य नेटवर्क डिव्हाइसेस रीबूट करा.</translation>
@@ -653,7 +662,6 @@
 <translation id="6970216967273061347">‍जिल्‍हा</translation>
 <translation id="6973656660372572881">निश्चित प्रॉक्सी सर्व्हर आणि .pac स्क्रिप्ट URL निर्दिष्‍ट करण्‍यात आले आहेत.</translation>
 <translation id="6989763994942163495">प्रगत सेटिंग्ज दर्शवा...</translation>
-<translation id="7000990526846637657">कोणत्याही इतिहास प्रविष्टी सापडल्या नाहीत</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">आपल्या Google खात्यात <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची अन्य स्वरूपे असू शकतात</translation>
 <translation id="7029809446516969842">संकेतशब्द</translation>
@@ -722,6 +730,7 @@
 <translation id="7578104083680115302">आपण Google सह जतन केलेल्या कार्डचा वापर करून डिव्‍हाइसेसवरून द्रुतपणे साइट आणि अॅप्सवर देय द्या.</translation>
 <translation id="7588950540487816470">भौतिक वेब</translation>
 <translation id="7592362899630581445">सर्व्हरचे प्रमाणपत्र नाव मर्यादांचे उल्लंघन करते.</translation>
+<translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> पेक्षा कमी</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> सध्या ही विनंती हाताळण्यात अक्षम आहे.</translation>
 <translation id="7600965453749440009">कधीही <ph name="LANGUAGE" /> चा भाषांतर करु नका</translation>
 <translation id="7610193165460212391">मूल्य <ph name="VALUE" /> श्रेणीच्या बाहेर आहे.</translation>
@@ -785,6 +794,7 @@
 <translation id="8194797478851900357">&amp;हलवा पूर्ववत करा</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" आयडी असलेल्या विस्तारासाठी अवैध अद्यतन URL.</translation>
 <translation id="8202097416529803614">ऑर्डर सारांश</translation>
+<translation id="8206354486702514201">या सेटिंगची अंमलबजावणी आपल्या प्रशासकाकडून होते.</translation>
 <translation id="8218327578424803826">नियुक्त केलेले स्थान:</translation>
 <translation id="8225771182978767009">ज्या व्यक्तीने हा संगणक सेट केला त्या व्यक्तीने ही साइट अवरोधित करण्याचे निवडले आहे.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -886,5 +896,6 @@
 <translation id="939736085109172342">नवीन फोल्‍डर</translation>
 <translation id="941721044073577244">आपल्याला या साइटला भेट देण्याची परवानगी नाही असे दिसते</translation>
 <translation id="969892804517981540">अधिकृत बिल्ड</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{काहीही नाही}=1{1 आयटम}one{# आयटम}other{# आयटम}}</translation>
 <translation id="988159990683914416">विकसक बिल्ड</translation>
 </translationbundle>

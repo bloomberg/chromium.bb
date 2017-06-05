@@ -107,6 +107,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="4147555960264124640">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Programul de instalare nu a putut decomprima arhiva. Descarcă din nou Google Chrome.</translation>
 <translation id="4251615635259297716">Vă conectați datele Chrome cu acest cont?</translation>
+<translation id="4251625577313994583">descarcă Chrome pe iPhone</translation>
 <translation id="4309555186815777032">(necesită <ph name="BEGIN_BUTTON" />repornirea<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
 <translation id="437002079035561265">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece acest sistem Linux nu mai este acceptat.</translation>

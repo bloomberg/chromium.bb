@@ -88,11 +88,6 @@
       Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> nu va permite crearea profilurilor pentru invitați.</translation>
 <translation id="1363275621236827384">Activează interogările către Quirks Server pentru profilurile hardware</translation>
 <translation id="1397855852561539316">Adresă URL de sugerare a furnizorului de căutare prestabilit</translation>
-<translation id="1398889361882383850">Puteți să setați permisiunea ca site-urile web să ruleze pluginuri în mod automat. Rularea automată a pluginurilor poate fi permisă sau refuzată pentru toate site-urile web în bloc.
-
-          Opțiunea „Clic pentru a reda” permite rularea pluginurilor, însă utilizatorul trebuie să dea clic pe acestea pentru a începe executarea.
-
-          Dacă această politică nu este setată, va fi utilizată politica „AllowPlugins” și utilizatorul va putea să o schimbe.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
@@ -176,7 +171,6 @@
 <translation id="1689963000958717134">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru toți utilizatorii unui dispozitiv <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, așa cum este acesta definit de formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Setează o limită la preluarea valorii de bază pentru Variante</translation>
 <translation id="172374442286684480">Permiteți tuturor site-urilor să seteze date locale</translation>
-<translation id="1727394138581151779">Blochează toate pluginurile</translation>
 <translation id="1734716591049455502">Configurați opțiunile de acces la distanță</translation>
 <translation id="1736269219679256369">Permite continuarea navigării de pe pagina de avertisment SSL</translation>
 <translation id="1749815929501097806">Setează Termenii și condițiile pe care trebuie să le accepte utilizatorul înainte de a începe o sesiune cu un cont local de pe dispozitiv.
@@ -694,7 +688,6 @@
 
           Dacă activezi sau nu configurezi această politică, utilizatorii pot vedea parolele în text clar în managerul de parole.</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
-<translation id="3570008976476035109">Blochează pluginurile pe aceste site-uri</translation>
 <translation id="3591584750136265240">Configurează comportamentul de autentificare la conectare</translation>
 <translation id="3627678165642179114">Activați sau dezactivați serviciul web de verificare a ortografiei</translation>
 <translation id="3646859102161347133">Setați tipul lupei pentru ecran</translation>
@@ -778,7 +771,6 @@
           Adresa URL pentru sugestiile de la Google poate fi specificată ca: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Această politică este urmată numai dacă politica „DefaultSearchProviderEnabled” este activată.</translation>
-<translation id="3864818549971490907">Setare prestabilită pentru pluginuri</translation>
 <translation id="3866249974567520381">Descriere</translation>
 <translation id="3868347814555911633">Această politică este activă numai în modul Vânzare.
 
@@ -836,6 +828,7 @@
 <translation id="4027608872760987929">Activează furnizorul de căutare prestabilit</translation>
 <translation id="4039085364173654945">Stabilește dacă subconținutul terță parte dintr-o anumită pagină poate afișa într-o ferestră de tip pop-up o casetă de dialog pentru autentificarea HTTP de bază. De obicei, aceasta este dezactivată ca măsură de precauție împotriva atacurilor de tip phishing. Dacă această politică nu este setată, această funcție este dezactivată, iar subconținutul terță parte nu va avea permisiunea de a afișa într-o ferestră de tip pop-up o casetă de dialog pentru autentificarea HTTP de bază.</translation>
 <translation id="4056910949759281379">Dezactivează protocolul SPDY</translation>
+<translation id="408029843066770167">Permite interogările către un serviciu Google cu informații despre oră</translation>
 <translation id="4088589230932595924">Modul incognito a fost impus</translation>
 <translation id="4088983553732356374">Îți permite să setezi dacă site-urile au permisiunea de a seta date locale. Setarea datelor locale poate fi permisă sau refuzată în bloc pentru toate site-urile.
 
@@ -904,6 +897,7 @@
 <translation id="4377599627073874279">Permite tuturor site-urilor să afișeze toate imaginile</translation>
 <translation id="4389091865841123886">Configurați atestarea la distanță cu mecanismul TPM.</translation>
 <translation id="4397469093966511008">Dacă dezactivezi această politică, utilizatorii nu vor mai putea trimite unele informații de sistem și conținutul paginii la serverele Google. Dacă această setare este activată sau nu este configurată, utilizatorii au permisiunea să trimită unele informații de sistem și conținutul paginii la Navigarea sigură pentru detectarea aplicațiilor și a site-urilor periculoase.</translation>
+<translation id="4418726081189202489">Dacă dezactivezi această politică, <ph name="PRODUCT_NAME" /> nu mai trimite ocazional interogări către un server Google pentru a prelua un marcaj temporal precis. Dacă politica este activată sau nu este configurată, aceste interogări vor fi activate.</translation>
 <translation id="4423597592074154136">Specifică manual setările proxy</translation>
 <translation id="4429220551923452215">Activează sau dezactivează comanda rapidă pentru aplicații din bara de marcaje.
 
@@ -1380,7 +1374,6 @@
           Dacă alegi opțiunea „detectează automat serverul proxy”, adresa URL pentru scripturi „http://wpad/wpad.dat” este oferită aplicațiilor Android. Nu este folosită nicio altă parte a protocolului pentru detectarea automată a proxy-ului.
 
           Dacă alegi opțiunea „script .pac pentru proxy”, adresa URL pentru scripturi este oferită aplicațiilor Android.</translation>
-<translation id="6467433935902485842">Vă permite să setați o listă cu modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a rula pluginuri. Dacă această politică este lăsată nesetată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultPluginsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="6491139795995924304">Permite Bluetooth pe dispozitiv</translation>
 <translation id="6520802717075138474">Importați motoarele de căutare din browserul prestabilit, la prima rulare</translation>
 <translation id="653608967792832033">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este blocat atunci când dispozitivul funcționează pe baterie.
@@ -1647,7 +1640,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       dacă valoarea este setată la GAIA, conectarea se va efectua prin fluxul obișnuit de autentificare GAIA;
 
       dacă valoarea este setată la SAML_INTERSTITIAL, conectarea va afișa un ecran intercalat care îi oferă utilizatorului două opțiuni: să continue autentificarea folosind furnizorul de identitate SAML de pe domeniul de înregistrare al dispozitivului sau să revină la fluxul obișnuit de conectare GAIA.</translation>
-<translation id="7567380065339179813">Permite pluginuri pe aceste site-uri</translation>
 <translation id="757395965347379751">Când setarea este activată, <ph name="PRODUCT_NAME" /> acceptă certificatele semnate cu SHA-1, cu condiția ca acestea să valideze și să se asocieze unor certificate CA instalate local.
 
       Reține că această politică depinde de acceptarea semnăturilor SHA-1 de către stiva de verificare a certificatelor sistemului de operare. Dacă o actualizare a sistemului de operare modifică modul în care sistemul de operare gestionează certificatele semnate cu SHA-1, este posibil ca această politică să nu se mai aplice. Mai mult, această politică are rolul de soluție temporară, pentru a le oferi companiilor mai mult timp să renunțe la standardul SHA-1. Această politică va fi eliminată în data de 1 ianuarie 2019 sau în jurul acestei date.
@@ -1735,7 +1727,6 @@ nu poate fi stabilit de utilizator din setările browserului.
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Pagina Filă nouă</translation>
 <translation id="7788511847830146438">Per profil</translation>
-<translation id="7796141075993499320">Vă permite să setați o listă cu modele pentru adresele URL ce specifică site-urile care au permisiunea de a rula pluginuri. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultPluginsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="7801886189430766248">Dacă această politică este activată, datele aplicațiilor Android sunt încărcate pe serverele Android Backup Service și vor fi restabilite de pe acestea la reinstalarea aplicațiilor, pentru aplicațiile compatibile.
 
       Când această politică este dezactivată, Android Backup Service va fi dezactivat.
@@ -1993,7 +1984,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       Această politică nu este disponibilă în instanțele Windows neasociate unui
       domeniu Active Directory. (Pentru sistemul de operare Chrome, consultă
       DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Permite tuturor site-urilor să ruleze automat pluginuri</translation>
 <translation id="8693243869659262736">Utilizați clientul DNS integrat</translation>
 <translation id="8704831857353097849">Lista pluginurilor dezactivate</translation>
 <translation id="8711086062295757690">Specifică cuvântul cheie care este comanda rapidă utilizată în caseta polivalentă pentru a declanșa căutarea pentru acest furnizor. Această politică este opțională. Dacă nu este setată, niciun cuvânt cheie nu va activa furnizorul de căutare. Această politică este luată în considerare numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
