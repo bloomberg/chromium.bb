@@ -138,6 +138,7 @@ template("google_apis_tmpl") {
       "//base",
       "//base/third_party/dynamic_annotations",
       "//crypto",
+      "//mojo/public/cpp/bindings:struct_traits",
     ]
 
     if (defined(invoker.deps)) {

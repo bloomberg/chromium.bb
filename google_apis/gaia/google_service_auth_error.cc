@@ -74,6 +74,9 @@ bool GoogleServiceAuthError::operator!=(
   return !(*this == b);
 }
 
+GoogleServiceAuthError::GoogleServiceAuthError()
+    : state_(NONE), network_error_(0) {}
+
 GoogleServiceAuthError::GoogleServiceAuthError(State s)
     : state_(s),
       network_error_(0) {
