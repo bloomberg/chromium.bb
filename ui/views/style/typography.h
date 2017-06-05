@@ -89,14 +89,14 @@ enum TextStyle {
 };
 
 // Helpers to obtain text properties from the TypographyProvider given by the
-// current ViewsDelegate. |text_context| can be an enum value from TextContext,
-// or a value understood by the embedder's TypographyProvider. Similarly,
-// |text_style| corresponds to TextStyle.
-VIEWS_EXPORT const gfx::FontList& GetFont(int text_context, int text_style);
-VIEWS_EXPORT SkColor GetColor(int text_context,
-                              int text_style,
+// current LayoutProvider. |context| can be an enum value from TextContext, or a
+// value understood by the embedder's TypographyProvider. Similarly, |style|
+// corresponds to TextStyle.
+VIEWS_EXPORT const gfx::FontList& GetFont(int context, int style);
+VIEWS_EXPORT SkColor GetColor(int context,
+                              int style,
                               const ui::NativeTheme* theme);
-VIEWS_EXPORT int GetLineHeight(int text_context, int text_style);
+VIEWS_EXPORT int GetLineHeight(int context, int style);
 
 }  // namespace style
 }  // namespace views
