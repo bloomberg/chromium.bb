@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_MANAGER_H_
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_MANAGER_H_
 
+#include <deque>
 #include <unordered_map>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
@@ -188,8 +188,7 @@ class PermissionRequestManager
   std::unique_ptr<PermissionPrompt> view_;
 
   std::vector<PermissionRequest*> requests_;
-  std::vector<PermissionRequest*> queued_requests_;
-  std::vector<PermissionRequest*> queued_frame_requests_;
+  std::deque<PermissionRequest*> queued_requests_;
   // Maps from the first request of a kind to subsequent requests that were
   // duped against it.
   std::unordered_multimap<PermissionRequest*, PermissionRequest*>
