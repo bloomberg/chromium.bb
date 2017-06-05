@@ -13,9 +13,9 @@
 #include "components/ukm/public/ukm_recorder.h"
 #include "jni/ContextualSearchRankerLoggerImpl_jni.h"
 
-ContextualSearchRankerLoggerImpl::ContextualSearchRankerLoggerImpl(
-    JNIEnv* env,
-    jobject obj) {
+ContextualSearchRankerLoggerImpl::ContextualSearchRankerLoggerImpl(JNIEnv* env,
+                                                                   jobject obj)
+    : ukm_recorder_(nullptr), builder_(nullptr) {
   java_object_.Reset(env, obj);
 }
 
@@ -37,6 +37,11 @@ void ContextualSearchRankerLoggerImpl::SetupLoggingAndRanker(
 void ContextualSearchRankerLoggerImpl::SetUkmRecorder(
     ukm::UkmRecorder* ukm_recorder,
     const GURL& page_url) {
+  if (!ukm_recorder) {
+    builder_.reset();
+    return;
+  }
+
   ukm_recorder_ = ukm_recorder;
   source_id_ = ukm_recorder_->GetNewSourceID();
   ukm_recorder_->UpdateSourceURL(source_id_, page_url);
@@ -48,12 +53,18 @@ void ContextualSearchRankerLoggerImpl::LogLong(
     jobject obj,
     const base::android::JavaParamRef<jstring>& j_feature,
     jlong j_long) {
+  if (!builder_)
+    return;
+
   std::string feature = base::android::ConvertJavaStringToUTF8(env, j_feature);
   builder_->AddMetric(feature.c_str(), j_long);
 }
 
 void ContextualSearchRankerLoggerImpl::WriteLogAndReset(JNIEnv* env,
                                                         jobject obj) {
+  if (!ukm_recorder_)
+    return;
+
   // Set up another builder for the next record (in case it's needed).
   builder_ = ukm_recorder_->GetEntryBuilder(source_id_, "ContextualSearch");
 }
