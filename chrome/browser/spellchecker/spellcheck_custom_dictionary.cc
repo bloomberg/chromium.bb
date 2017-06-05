@@ -6,10 +6,8 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <functional>
 #include <utility>
-#include <vector>
 
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
@@ -17,8 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task_runner_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/common/spellcheck_common.h"
@@ -63,6 +59,7 @@ enum ChangeSanitationResult {
 // invalid checksum, then returns ChecksumStatus::INVALID and clears |words|.
 ChecksumStatus LoadFile(const base::FilePath& file_path,
                         std::set<std::string>* words) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(words);
   words->clear();
   std::string contents;
@@ -121,6 +118,7 @@ int SanitizeWordsToAdd(const std::set<std::string>& existing,
 // called on the file thread.
 std::unique_ptr<SpellcheckCustomDictionary::LoadFileResult>
 LoadDictionaryFileReliably(const base::FilePath& path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // Load the contents and verify the checksum.
   std::unique_ptr<SpellcheckCustomDictionary::LoadFileResult> result(
       new SpellcheckCustomDictionary::LoadFileResult);
@@ -142,6 +140,7 @@ LoadDictionaryFileReliably(const base::FilePath& path) {
 // the custom spellcheck dictionary at |path|.
 void SaveDictionaryFileReliably(const base::FilePath& path,
                                 const std::set<std::string>& custom_words) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::stringstream content;
   for (const std::string& word : custom_words)
     content << word << '\n';
@@ -156,6 +155,7 @@ void SavePassedWordsToDictionaryFileReliably(
     const base::FilePath& path,
     std::unique_ptr<SpellcheckCustomDictionary::LoadFileResult>
         load_file_result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(load_file_result);
   SaveDictionaryFileReliably(path, load_file_result->words);
 }
@@ -212,21 +212,19 @@ SpellcheckCustomDictionary::SpellcheckCustomDictionary(
     : custom_dictionary_path_(
           dictionary_directory_name.Append(chrome::kCustomDictionaryFileName)),
       is_loaded_(false),
-      task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
 SpellcheckCustomDictionary::~SpellcheckCustomDictionary() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 const std::set<std::string>& SpellcheckCustomDictionary::GetWords() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return words_;
 }
 
 bool SpellcheckCustomDictionary::AddWord(const std::string& word) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<Change> dictionary_change(new Change);
   dictionary_change->AddWord(word);
   int result = dictionary_change->Sanitize(GetWords());
@@ -238,7 +236,7 @@ bool SpellcheckCustomDictionary::AddWord(const std::string& word) {
 }
 
 bool SpellcheckCustomDictionary::RemoveWord(const std::string& word) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<Change> dictionary_change(new Change);
   dictionary_change->RemoveWord(word);
   int result = dictionary_change->Sanitize(GetWords());
@@ -254,36 +252,36 @@ bool SpellcheckCustomDictionary::HasWord(const std::string& word) const {
 }
 
 void SpellcheckCustomDictionary::AddObserver(Observer* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(observer);
   observers_.AddObserver(observer);
 }
 
 void SpellcheckCustomDictionary::RemoveObserver(Observer* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(observer);
   observers_.RemoveObserver(observer);
 }
 
 bool SpellcheckCustomDictionary::IsLoaded() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return is_loaded_;
 }
 
 bool SpellcheckCustomDictionary::IsSyncing() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return !!sync_processor_.get();
 }
 
 void SpellcheckCustomDictionary::Load() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE,
-      base::BindOnce(&SpellcheckCustomDictionary::LoadDictionaryFile,
-                     custom_dictionary_path_),
-      base::BindOnce(&SpellcheckCustomDictionary::OnLoaded,
-                     weak_ptr_factory_.GetWeakPtr()));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&SpellcheckCustomDictionary::LoadDictionaryFile,
+                 custom_dictionary_path_),
+      base::Bind(&SpellcheckCustomDictionary::OnLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 syncer::SyncMergeResult SpellcheckCustomDictionary::MergeDataAndStartSyncing(
@@ -291,7 +289,7 @@ syncer::SyncMergeResult SpellcheckCustomDictionary::MergeDataAndStartSyncing(
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
     std::unique_ptr<syncer::SyncErrorFactory> sync_error_handler) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!sync_processor_.get());
   DCHECK(!sync_error_handler_.get());
   DCHECK(sync_processor.get());
@@ -325,7 +323,7 @@ syncer::SyncMergeResult SpellcheckCustomDictionary::MergeDataAndStartSyncing(
 }
 
 void SpellcheckCustomDictionary::StopSyncing(syncer::ModelType type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(syncer::DICTIONARY, type);
   sync_processor_.reset();
   sync_error_handler_.reset();
@@ -333,7 +331,7 @@ void SpellcheckCustomDictionary::StopSyncing(syncer::ModelType type) {
 
 syncer::SyncDataList SpellcheckCustomDictionary::GetAllSyncData(
     syncer::ModelType type) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(syncer::DICTIONARY, type);
   syncer::SyncDataList data;
   size_t i = 0;
@@ -350,7 +348,7 @@ syncer::SyncDataList SpellcheckCustomDictionary::GetAllSyncData(
 syncer::SyncError SpellcheckCustomDictionary::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<Change> dictionary_change(new Change);
   for (const syncer::SyncChange& change : change_list) {
     DCHECK(change.IsValid());
@@ -389,6 +387,7 @@ SpellcheckCustomDictionary::LoadFileResult::~LoadFileResult() {}
 // static
 std::unique_ptr<SpellcheckCustomDictionary::LoadFileResult>
 SpellcheckCustomDictionary::LoadDictionaryFile(const base::FilePath& path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::unique_ptr<LoadFileResult> result = LoadDictionaryFileReliably(path);
   SpellCheckHostMetrics::RecordCustomWordCountStats(result->words.size());
   return result;
@@ -398,6 +397,7 @@ SpellcheckCustomDictionary::LoadDictionaryFile(const base::FilePath& path) {
 void SpellcheckCustomDictionary::UpdateDictionaryFile(
     std::unique_ptr<Change> dictionary_change,
     const base::FilePath& path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(dictionary_change);
 
   if (dictionary_change->empty())
@@ -417,7 +417,7 @@ void SpellcheckCustomDictionary::UpdateDictionaryFile(
 
 void SpellcheckCustomDictionary::OnLoaded(
     std::unique_ptr<LoadFileResult> result) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(result);
   Change dictionary_change;
   dictionary_change.AddWords(result->words);
@@ -439,7 +439,7 @@ void SpellcheckCustomDictionary::OnLoaded(
 }
 
 void SpellcheckCustomDictionary::Apply(const Change& dictionary_change) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!dictionary_change.to_add().empty()) {
     words_.insert(dictionary_change.to_add().begin(),
                   dictionary_change.to_add().end());
@@ -450,28 +450,26 @@ void SpellcheckCustomDictionary::Apply(const Change& dictionary_change) {
 
 void SpellcheckCustomDictionary::FixInvalidFile(
     std::unique_ptr<LoadFileResult> load_file_result) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SavePassedWordsToDictionaryFileReliably,
-                     custom_dictionary_path_, std::move(load_file_result)));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&SavePassedWordsToDictionaryFileReliably,
+                 custom_dictionary_path_, base::Passed(&load_file_result)));
 }
 
 void SpellcheckCustomDictionary::Save(
     std::unique_ptr<Change> dictionary_change) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   fix_invalid_file_.Cancel();
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SpellcheckCustomDictionary::UpdateDictionaryFile,
-                     std::move(dictionary_change), custom_dictionary_path_));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&SpellcheckCustomDictionary::UpdateDictionaryFile,
+                 base::Passed(&dictionary_change), custom_dictionary_path_));
 }
 
 syncer::SyncError SpellcheckCustomDictionary::Sync(
     const Change& dictionary_change) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   syncer::SyncError error;
   if (!IsSyncing() || dictionary_change.empty())
     return error;
@@ -522,7 +520,7 @@ syncer::SyncError SpellcheckCustomDictionary::Sync(
 }
 
 void SpellcheckCustomDictionary::Notify(const Change& dictionary_change) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsLoaded() || dictionary_change.empty())
     return;
   for (Observer& observer : observers_)
