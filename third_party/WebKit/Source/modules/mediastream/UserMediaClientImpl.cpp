@@ -28,38 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UserMediaClientImpl_h
-#define UserMediaClientImpl_h
+#include "modules/mediastream/UserMediaClientImpl.h"
 
-#include "modules/mediastream/UserMediaClient.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "public/web/WebFrameClient.h"
+#include "public/web/WebMediaDeviceChangeObserver.h"
+#include "public/web/WebMediaDevicesRequest.h"
+#include "public/web/WebUserMediaClient.h"
+#include "public/web/WebUserMediaRequest.h"
 
 namespace blink {
 
-class MediaDevices;
-class MediaDevicesRequest;
-class UserMediaRequest;
-class WebUserMediaClient;
+UserMediaClientImpl::UserMediaClientImpl(WebUserMediaClient* client)
+    : client_(client) {}
 
-class UserMediaClientImpl final : public UserMediaClient {
- public:
-  static std::unique_ptr<UserMediaClientImpl> Create(
-      WebUserMediaClient* client) {
-    return WTF::WrapUnique(new UserMediaClientImpl(client));
+void UserMediaClientImpl::RequestUserMedia(UserMediaRequest* request) {
+  if (client_)
+    client_->RequestUserMedia(request);
+}
+
+void UserMediaClientImpl::CancelUserMediaRequest(UserMediaRequest* request) {
+  if (client_)
+    client_->CancelUserMediaRequest(WebUserMediaRequest(request));
+}
+
+void UserMediaClientImpl::RequestMediaDevices(MediaDevicesRequest* request) {
+  if (client_)
+    client_->RequestMediaDevices(request);
+}
+
+void UserMediaClientImpl::SetMediaDeviceChangeObserver(MediaDevices* observer) {
+  if (client_) {
+    client_->SetMediaDeviceChangeObserver(
+        WebMediaDeviceChangeObserver(observer));
   }
-
-  // UserMediaClient ----------------------------------------------
-  void RequestUserMedia(UserMediaRequest*) override;
-  void CancelUserMediaRequest(UserMediaRequest*) override;
-  void RequestMediaDevices(MediaDevicesRequest*) override;
-  void SetMediaDeviceChangeObserver(MediaDevices*) override;
-
- private:
-  explicit UserMediaClientImpl(WebUserMediaClient*);
-
-  WebUserMediaClient* client_;
-};
+}
 
 }  // namespace blink
-
-#endif  // UserMediaClientImpl_h
