@@ -199,12 +199,14 @@ void TetherConnector::OnTetherHostToConnectFetched(
 
   DCHECK(device_id == tether_host_to_connect->GetDeviceId());
 
-  // TODO (hansberry): Indicate to ConnectTetheringOperation if first-time setup
-  // is required, so that it can adjust its timeout duration.
+  const std::string& tether_network_guid =
+      device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
+          device_id);
   connect_tethering_operation_ =
       ConnectTetheringOperation::Factory::NewInstance(
           *tether_host_to_connect, connection_manager_,
-          tether_host_response_recorder_);
+          tether_host_response_recorder_,
+          host_scan_cache_->DoesHostRequireSetup(tether_network_guid));
   connect_tethering_operation_->AddObserver(this);
   connect_tethering_operation_->Initialize();
 }

@@ -55,10 +55,13 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
   FakeConnectTetheringOperation(
       const cryptauth::RemoteDevice& device_to_connect,
       BleConnectionManager* connection_manager,
-      TetherHostResponseRecorder* tether_host_response_recorder)
+      TetherHostResponseRecorder* tether_host_response_recorder,
+      bool setup_required)
       : ConnectTetheringOperation(device_to_connect,
                                   connection_manager,
-                                  tether_host_response_recorder) {}
+                                  tether_host_response_recorder,
+                                  setup_required),
+        setup_required_(setup_required) {}
 
   ~FakeConnectTetheringOperation() override {}
 
@@ -75,6 +78,11 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
     EXPECT_EQ(1u, remote_devices().size());
     return remote_devices()[0];
   }
+
+  bool setup_required() { return setup_required_; }
+
+ private:
+  bool setup_required_;
 };
 
 class FakeConnectTetheringOperationFactory
@@ -92,10 +100,12 @@ class FakeConnectTetheringOperationFactory
   std::unique_ptr<ConnectTetheringOperation> BuildInstance(
       const cryptauth::RemoteDevice& device_to_connect,
       BleConnectionManager* connection_manager,
-      TetherHostResponseRecorder* tether_host_response_recorder) override {
+      TetherHostResponseRecorder* tether_host_response_recorder,
+      bool setup_required) override {
     FakeConnectTetheringOperation* operation =
         new FakeConnectTetheringOperation(device_to_connect, connection_manager,
-                                          tether_host_response_recorder);
+                                          tether_host_response_recorder,
+                                          setup_required);
     created_operations_.push_back(operation);
     return base::WrapUnique(operation);
   }
@@ -281,6 +291,8 @@ TEST_F(TetherConnectorTest, TestCancelWhileOperationActive) {
   // Simulate a failed connection attempt (either the host cannot provide
   // tethering at this time or a timeout occurs).
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
+  EXPECT_FALSE(
+      fake_operation_factory_->created_operations()[0]->setup_required());
   tether_connector_->CancelConnectionAttempt(
       GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
 
@@ -305,6 +317,8 @@ TEST_F(TetherConnectorTest, TestConnectTetheringOperationFails) {
   // Simulate a failed connection attempt (either the host cannot provide
   // tethering at this time or a timeout occurs).
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
+  EXPECT_FALSE(
+      fake_operation_factory_->created_operations()[0]->setup_required());
   fake_operation_factory_->created_operations()[0]->SendFailedResponse(
       ConnectTetheringResponse_ResponseCode::
           ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR);
@@ -328,6 +342,8 @@ TEST_F(TetherConnectorTest, TestConnectTetheringOperationFails_SetupRequired) {
 
   EXPECT_TRUE(
       fake_notification_presenter_->is_setup_required_notification_shown());
+  EXPECT_TRUE(
+      fake_operation_factory_->created_operations()[0]->setup_required());
 
   fake_operation_factory_->created_operations()[0]->SendFailedResponse(
       ConnectTetheringResponse_ResponseCode::
@@ -353,6 +369,8 @@ TEST_F(TetherConnectorTest, TestConnectingToWifiFails) {
 
   // Receive a successful response. We should still be connecting.
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
+  EXPECT_FALSE(
+      fake_operation_factory_->created_operations()[0]->setup_required());
   fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
       kSsid, kPassword);
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
@@ -387,6 +405,8 @@ TEST_F(TetherConnectorTest, TestCancelWhileConnectingToWifi) {
 
   // Receive a successful response. We should still be connecting.
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
+  EXPECT_FALSE(
+      fake_operation_factory_->created_operations()[0]->setup_required());
   fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
       kSsid, kPassword);
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
@@ -417,6 +437,8 @@ TEST_F(TetherConnectorTest, TestSuccessfulConnection) {
 
   // Receive a successful response. We should still be connecting.
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
+  EXPECT_FALSE(
+      fake_operation_factory_->created_operations()[0]->setup_required());
   fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
       kSsid, kPassword);
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
@@ -456,6 +478,8 @@ TEST_F(TetherConnectorTest, TestSuccessfulConnection_SetupRequired) {
 
   EXPECT_TRUE(
       fake_notification_presenter_->is_setup_required_notification_shown());
+  EXPECT_TRUE(
+      fake_operation_factory_->created_operations()[0]->setup_required());
 
   fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
       kSsid, kPassword);
