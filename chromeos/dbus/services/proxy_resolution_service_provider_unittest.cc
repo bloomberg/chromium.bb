@@ -178,7 +178,7 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
   net::ProxyResolver* proxy_resolver_;  // Not owned.
 
   // Created, used, and destroyed on the network thread (since net::ProxyService
-  // derives from base::NonThreadSafe).
+  // is thread-affine (uses ThreadChecker)).
   std::unique_ptr<net::ProxyService> proxy_service_;
 
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
