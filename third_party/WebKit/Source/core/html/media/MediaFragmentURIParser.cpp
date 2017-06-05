@@ -25,7 +25,6 @@
 
 #include "core/html/media/MediaFragmentURIParser.h"
 
-#include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -33,7 +32,7 @@ namespace blink {
 
 const unsigned kNptIdentiferLength = 4;  // "npt:"
 
-static String CollectDigits(const LChar* input,
+static String CollectDigits(const char* input,
                             unsigned length,
                             unsigned& position) {
   StringBuilder digits;
@@ -45,7 +44,7 @@ static String CollectDigits(const LChar* input,
   return digits.ToString();
 }
 
-static String CollectFraction(const LChar* input,
+static String CollectFraction(const char* input,
                               unsigned length,
                               unsigned& position) {
   StringBuilder digits;
@@ -125,17 +124,19 @@ void MediaFragmentURIParser::ParseFragments() {
     //     UTF-8. If either name or value are not valid UTF-8 strings, then
     //     remove the name-value pair from the list.
     bool valid_utf8 = true;
+    CString utf8_name;
     if (!name.IsEmpty()) {
-      name = name.Utf8(kStrictUTF8Conversion).data();
-      valid_utf8 = !name.IsEmpty();
+      utf8_name = name.Utf8(kStrictUTF8Conversion);
+      valid_utf8 = !utf8_name.IsNull();
     }
+    CString utf8_value;
     if (valid_utf8 && !value.IsEmpty()) {
-      value = value.Utf8(kStrictUTF8Conversion).data();
-      valid_utf8 = !value.IsEmpty();
+      utf8_value = value.Utf8(kStrictUTF8Conversion);
+      valid_utf8 = !utf8_value.IsNull();
     }
 
     if (valid_utf8)
-      fragments_.push_back(std::make_pair(name, value));
+      fragments_.emplace_back(std::move(utf8_name), std::move(utf8_value));
 
     offset = parameter_end + 1;
   }
@@ -150,9 +151,6 @@ void MediaFragmentURIParser::ParseTimeFragment() {
   time_format_ = kInvalid;
 
   for (const auto& fragment : fragments_) {
-    DCHECK(fragment.first.Is8Bit());
-    DCHECK(fragment.second.Is8Bit());
-
     // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#naming-time
     // Temporal clipping is denoted by the name t, and specified as an interval
     // with a begin time and an end time
@@ -168,8 +166,8 @@ void MediaFragmentURIParser::ParseTimeFragment() {
 
     double start = std::numeric_limits<double>::quiet_NaN();
     double end = std::numeric_limits<double>::quiet_NaN();
-    if (ParseNPTFragment(fragment.second.Characters8(),
-                         fragment.second.length(), start, end)) {
+    if (ParseNPTFragment(fragment.second.data(), fragment.second.length(),
+                         start, end)) {
       start_time_ = start;
       end_time_ = end;
       time_format_ = kNormalPlayTime;
@@ -186,7 +184,7 @@ void MediaFragmentURIParser::ParseTimeFragment() {
   fragments_.clear();
 }
 
-bool MediaFragmentURIParser::ParseNPTFragment(const LChar* time_string,
+bool MediaFragmentURIParser::ParseNPTFragment(const char* time_string,
                                               unsigned length,
                                               double& start_time,
                                               double& end_time) {
@@ -228,7 +226,7 @@ bool MediaFragmentURIParser::ParseNPTFragment(const LChar* time_string,
   return true;
 }
 
-bool MediaFragmentURIParser::ParseNPTTime(const LChar* time_string,
+bool MediaFragmentURIParser::ParseNPTTime(const char* time_string,
                                           unsigned length,
                                           unsigned& offset,
                                           double& time) {
