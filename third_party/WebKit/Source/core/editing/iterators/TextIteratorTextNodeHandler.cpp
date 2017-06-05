@@ -450,8 +450,13 @@ void TextIteratorTextNodeHandler::EmitText(Node* text_node,
                                            LayoutText* layout_object,
                                            int text_start_offset,
                                            int text_end_offset) {
-  text_state_->EmitText(text_node, layout_object, text_start_offset,
-                        text_end_offset);
+  const String& string = behavior_.EmitsOriginalText()
+                             ? layout_object->OriginalText()
+                             : layout_object->GetText();
+  text_state_->EmitText(text_node,
+                        text_start_offset + layout_object->TextStartOffset(),
+                        text_end_offset + layout_object->TextStartOffset(),
+                        string, text_start_offset, text_end_offset);
   ResetCollapsedWhiteSpaceFixup();
 }
 
