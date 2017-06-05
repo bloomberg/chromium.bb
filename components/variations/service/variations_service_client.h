@@ -56,9 +56,6 @@ class VariationsServiceClient {
   // |parameter| is an out-param that will contain the value of the restrict
   // parameter if true is returned.
   virtual bool OverridesRestrictParameter(std::string* parameter) = 0;
-
-  // Called from VariationsService::PerformPreMainMessageLoopStartup().
-  virtual void OnInitialStartup() {}
 };
 
 }  // namespace variations

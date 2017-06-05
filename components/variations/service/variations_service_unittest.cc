@@ -64,7 +64,6 @@ class TestVariationsServiceClient : public VariationsServiceClient {
     *parameter = restrict_parameter_;
     return true;
   }
-  void OnInitialStartup() override {}
 
   void set_restrict_parameter(const std::string& value) {
     restrict_parameter_ = value;

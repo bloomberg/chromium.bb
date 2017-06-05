@@ -372,7 +372,6 @@ void VariationsService::PerformPreMainMessageLoopStartup() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   StartRepeatedVariationsSeedFetch();
-  client_->OnInitialStartup();
 }
 
 void VariationsService::StartRepeatedVariationsSeedFetch() {
