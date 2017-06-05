@@ -22,14 +22,12 @@ bool FakeSurfaceObserver::IsSurfaceDamaged(const SurfaceId& surface_id) const {
   return damaged_surfaces_.count(surface_id) > 0;
 }
 
-void FakeSurfaceObserver::OnSurfaceDamaged(const SurfaceId& surface_id,
-                                           const BeginFrameAck& ack,
-                                           bool* changed) {
+bool FakeSurfaceObserver::OnSurfaceDamaged(const SurfaceId& surface_id,
+                                           const BeginFrameAck& ack) {
   if (ack.has_damage)
     damaged_surfaces_.insert(surface_id);
   last_ack_ = ack;
-  if (damage_display_)
-    *changed = true;
+  return ack.has_damage && damage_display_;
 }
 
 void FakeSurfaceObserver::OnSurfaceCreated(const SurfaceInfo& surface_info) {

@@ -121,9 +121,10 @@ void MojoFrameSinkManager::OnSurfaceCreated(
     client_->OnSurfaceCreated(surface_info);
 }
 
-void MojoFrameSinkManager::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
-                                            const cc::BeginFrameAck& ack,
-                                            bool* changed) {}
+bool MojoFrameSinkManager::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
+                                            const cc::BeginFrameAck& ack) {
+  return false;
+}
 
 void MojoFrameSinkManager::OnSurfaceDiscarded(const cc::SurfaceId& surface_id) {
 }

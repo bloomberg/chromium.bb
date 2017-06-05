@@ -80,9 +80,8 @@ class VIZ_EXPORT MojoFrameSinkManager
 
   // cc::SurfaceObserver implementation.
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
-  void OnSurfaceDamaged(const cc::SurfaceId& surface_id,
-                        const cc::BeginFrameAck& ack,
-                        bool* changed) override;
+  bool OnSurfaceDamaged(const cc::SurfaceId& surface_id,
+                        const cc::BeginFrameAck& ack) override;
   void OnSurfaceDiscarded(const cc::SurfaceId& surface_id) override;
   void OnSurfaceDestroyed(const cc::SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const cc::SurfaceId& surface_id,

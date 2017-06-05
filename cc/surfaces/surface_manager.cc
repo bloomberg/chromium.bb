@@ -480,7 +480,7 @@ bool SurfaceManager::SurfaceModified(const SurfaceId& surface_id,
   CHECK(thread_checker_.CalledOnValidThread());
   bool changed = false;
   for (auto& observer : observer_list_)
-    observer.OnSurfaceDamaged(surface_id, ack, &changed);
+    changed |= observer.OnSurfaceDamaged(surface_id, ack);
   return changed;
 }
 
