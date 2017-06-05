@@ -3325,7 +3325,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'chell-chrome-pfq': {
           'afdo_generate': True,
-          'latest_toolchain': True,
           # Disable hugepages before collecting AFDO profile.
           # Disable debug fission before collecting AFDO profile.
           'useflags': append_useflags(['-transparent_hugepage',
