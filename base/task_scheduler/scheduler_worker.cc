@@ -76,10 +76,8 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
         continue;
       }
 
-      if (outer_->task_tracker_->RunTask(sequence->TakeTask(),
-                                         sequence->token())) {
-        outer_->delegate_->DidRunTask();
-      }
+      outer_->task_tracker_->RunTask(sequence->TakeTask(), sequence->token());
+      outer_->delegate_->DidRunTask();
 
       const bool sequence_became_empty = sequence->Pop();
 

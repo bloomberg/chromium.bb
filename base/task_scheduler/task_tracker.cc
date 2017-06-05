@@ -235,7 +235,7 @@ bool TaskTracker::WillPostTask(const Task* task) {
   return true;
 }
 
-bool TaskTracker::RunTask(std::unique_ptr<Task> task,
+void TaskTracker::RunTask(std::unique_ptr<Task> task,
                           const SequenceToken& sequence_token) {
   DCHECK(task);
   DCHECK(sequence_token.IsValid());
@@ -252,8 +252,6 @@ bool TaskTracker::RunTask(std::unique_ptr<Task> task,
 
   if (!is_delayed)
     DecrementNumPendingUndelayedTasks();
-
-  return can_run_task;
 }
 
 bool TaskTracker::HasShutdownStarted() const {
