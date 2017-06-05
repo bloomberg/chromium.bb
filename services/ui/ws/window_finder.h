@@ -7,7 +7,6 @@
 
 namespace gfx {
 class Point;
-class Transform;
 }
 
 namespace ui {
@@ -26,10 +25,6 @@ struct DeepestWindow {
 // valid child window is found |window| is set to null.
 DeepestWindow FindDeepestVisibleWindowForEvents(ServerWindow* root_window,
                                                 const gfx::Point& location);
-
-// Retrieve the transform to the provided |window|'s coordinate space from the
-// root.
-gfx::Transform GetTransformToWindow(ServerWindow* window);
 
 }  // namespace ws
 }  // namespace ui

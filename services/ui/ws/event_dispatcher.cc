@@ -525,9 +525,7 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
 void EventDispatcher::DispatchToClient(ServerWindow* window,
                                        ClientSpecificId client_id,
                                        const ui::LocatedEvent& event) {
-  gfx::Point location(event.location());
-  gfx::Transform transform(GetTransformToWindow(window));
-  transform.TransformPoint(&location);
+  gfx::Point location = ConvertPointFromRoot(window, event.location());
   std::unique_ptr<ui::Event> clone = ui::Event::Clone(event);
   clone->AsLocatedEvent()->set_location(location);
   // TODO(jonross): add post-target accelerator support once accelerators

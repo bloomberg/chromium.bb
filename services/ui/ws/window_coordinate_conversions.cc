@@ -6,69 +6,41 @@
 
 #include "services/ui/ws/server_window.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/transform.h"
 
 namespace ui {
-
 namespace ws {
-
 namespace {
 
-gfx::Vector2dF CalculateOffsetToAncestor(const ServerWindow* window,
-                                         const ServerWindow* ancestor) {
-  DCHECK(ancestor->Contains(window));
-  gfx::Vector2d result;
-  for (const ServerWindow* v = window; v != ancestor; v = v->parent())
-    result += v->bounds().OffsetFromOrigin();
-  return gfx::Vector2dF(result.x(), result.y());
+gfx::Transform GetTransformToRoot(const ServerWindow* window) {
+  // This code should only be called when |window| is connected to a display.
+  const ServerWindow* root = window->GetRoot();
+  DCHECK(root);
+
+  gfx::Transform transform;
+  const ServerWindow* w = window;
+  for (; w && w != root; w = w->parent()) {
+    gfx::Transform translation;
+    translation.Translate(static_cast<float>(w->bounds().x()),
+                          static_cast<float>(w->bounds().y()));
+    if (!w->transform().IsIdentity())
+      transform.ConcatTransform(w->transform());
+    transform.ConcatTransform(translation);
+  }
+  return transform;
 }
 
 }  // namespace
 
-gfx::Point ConvertPointBetweenWindows(const ServerWindow* from,
-                                      const ServerWindow* to,
-                                      const gfx::Point& point) {
-  return gfx::ToFlooredPoint(
-      ConvertPointFBetweenWindows(from, to, gfx::PointF(point.x(), point.y())));
-}
-
-gfx::PointF ConvertPointFBetweenWindows(const ServerWindow* from,
-                                        const ServerWindow* to,
-                                        const gfx::PointF& point) {
-  DCHECK(from);
-  DCHECK(to);
-  if (from == to)
-    return point;
-
-  if (from->Contains(to)) {
-    const gfx::Vector2dF offset(CalculateOffsetToAncestor(to, from));
-    return point - offset;
-  }
-  DCHECK(to->Contains(from));
-  const gfx::Vector2dF offset(CalculateOffsetToAncestor(from, to));
-  return point + offset;
-}
-
-gfx::Rect ConvertRectBetweenWindows(const ServerWindow* from,
-                                    const ServerWindow* to,
-                                    const gfx::Rect& rect) {
-  DCHECK(from);
-  DCHECK(to);
-  if (from == to)
-    return rect;
-
-  const gfx::Point top_left(
-      ConvertPointBetweenWindows(from, to, rect.origin()));
-  const gfx::Point bottom_right(gfx::ToCeiledPoint(ConvertPointFBetweenWindows(
-      from, to, gfx::PointF(rect.right(), rect.bottom()))));
-  return gfx::Rect(top_left.x(), top_left.y(), bottom_right.x() - top_left.x(),
-                   bottom_right.y() - top_left.y());
+gfx::Point ConvertPointFromRoot(const ServerWindow* window,
+                                const gfx::Point& location_in_root) {
+  const gfx::Transform transform = GetTransformToRoot(window);
+  gfx::Point3F location_in_root3(gfx::PointF{location_in_root});
+  transform.TransformPointReverse(&location_in_root3);
+  return gfx::ToFlooredPoint(location_in_root3.AsPointF());
 }
 
 }  // namespace ws
-
 }  // namespace ui
