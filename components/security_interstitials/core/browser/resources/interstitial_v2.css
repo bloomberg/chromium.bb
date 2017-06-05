@@ -65,7 +65,7 @@ button:hover {
 
 #details {
   color: #696969;
-  margin: 45px 0 50px;
+  margin: 0 0 50px;
 }
 
 #details p:not(:first-of-type) {
@@ -315,7 +315,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
 @media (min-width: 240px) and (max-width: 420px) and
        (min-height: 401px),
        (min-width: 421px) and (min-height: 240px) and
-       (max-height: 736px) {
+       (max-height: 560px) {
   body .nav-wrapper {
     background: #f7f7f7;
     bottom: 0;
@@ -348,7 +348,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
 }
 
 @media (max-width: 420px) and (orientation: portrait),
-       (max-height: 736px) {
+       (max-height: 560px) {
   body {
     margin: 0 auto;
   }
@@ -435,7 +435,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
   }
 }
 
-@media (min-width: 421px) and (min-height: 500px) and (max-height: 736px) {
+@media (min-width: 421px) and (min-height: 500px) and (max-height: 560px) {
   .interstitial-wrapper {
     margin-top: 10vh;
   }
