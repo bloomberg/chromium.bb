@@ -7,8 +7,8 @@
 ; *** The contents of content/common/common.sb are implicitly included here. ***
 
 ; Needed for Fonts.
-(allow file-read* (regex #"^/System/Library/Fonts($|/)"))
-(allow file-read* (regex #"^/Library/Fonts($|/)"))
+(allow file-read* (subpath "/System/Library/Fonts"))
+(allow file-read* (subpath "/Library/Fonts"))
 (allow mach-lookup (global-name "com.apple.FontObjectsServer"))
 (allow mach-lookup (global-name "com.apple.FontServer"))
 (allow mach-lookup (global-name "com.apple.fonts"))
@@ -18,8 +18,8 @@
 (allow mach-lookup (global-name "com.apple.lsd.mapdb"))
 
 (allow file-read*
-  (regex #"^/System/Library/ColorSync($|/)")  ; https://crbug.com/46648
-  (regex #"^/System/Library/Keyboard Layouts($|/)")  ; https://crbug.com/152566
+  (subpath "/System/Library/ColorSync")  ; https://crbug.com/46648
+  (subpath "/System/Library/Keyboard Layouts")  ; https://crbug.com/152566
   (literal "/Library/Preferences/.GlobalPreferences.plist") ; https://crbug.com/60917
   (literal (user-homedir-path "/Library/Preferences/.GlobalPreferences.plist")))
 
@@ -33,10 +33,10 @@
 
 ; https://crbug.com/288697
 (allow file-read*
-  (regex #"^/(private/)?etc/localtime$")
-  (regex #"^/usr/share/zoneinfo/"))
+  (path "/private/etc/localtime")
+  (subpath "/usr/share/zoneinfo"))
 
-(allow file-read-metadata (regex #"^/(private/)?etc$"))
+(allow file-read-metadata (path "/private/etc"))
 
 ; https://crbug.com/605840
 ; file-read-metadata /System/Library/LinguisticData/en/US/hyphenation.dat

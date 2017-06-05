@@ -21,7 +21,12 @@
 (define elcap-or-later "ELCAP_OR_LATER")
 
 ; Consumes a subpath and appends it to the user's homedir path.
-(define (user-homedir-path subpath) (string-append (param homedir-as-literal) subpath))
+(define (user-homedir-path subpath)
+  (string-append (param homedir-as-literal) subpath))
+
+; (path) is not supported until 10.10.
+; TODO(kerrnel): remove this when 10.9 is no longer supported.
+(define (path x) (literal x))
 
 ; DISABLE_SANDBOX_DENIAL_LOGGING turns off log messages in the system log.
 (if (param-true? disable-sandbox-denial-logging)
@@ -39,9 +44,9 @@
 
 ; Loading System Libraries.
 (allow file-read*
-    (regex #"^/System/Library/Frameworks($|/)")
-    (regex #"^/System/Library/PrivateFrameworks($|/)")
-    (regex #"^/System/Library/CoreServices($|/)"))
+    (subpath "/System/Library/Frameworks")
+    (subpath "/System/Library/PrivateFrameworks")
+    (subpath "/System/Library/CoreServices"))
 
 (allow ipc-posix-shm)
 

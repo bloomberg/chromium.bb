@@ -71,150 +71,7 @@ static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) == \
               size_t(SANDBOX_TYPE_AFTER_LAST_TYPE), \
               "sandbox type to resource id mapping incorrect");
 
-// Try to escape |c| as a "SingleEscapeCharacter" (\n, etc).  If successful,
-// returns true and appends the escape sequence to |dst|.
-bool EscapeSingleChar(char c, std::string* dst) {
-  const char *append = NULL;
-  switch (c) {
-    case '\b':
-      append = "\\b";
-      break;
-    case '\f':
-      append = "\\f";
-      break;
-    case '\n':
-      append = "\\n";
-      break;
-    case '\r':
-      append = "\\r";
-      break;
-    case '\t':
-      append = "\\t";
-      break;
-    case '\\':
-      append = "\\\\";
-      break;
-    case '"':
-      append = "\\\"";
-      break;
-  }
-
-  if (!append) {
-    return false;
-  }
-
-  dst->append(append);
-  return true;
-}
-
-// Errors quoting strings for the Sandbox profile are always fatal, report them
-// in a central place.
-NOINLINE void FatalStringQuoteException(const std::string& str) {
-  // Copy bad string to the stack so it's recorded in the crash dump.
-  char bad_string[256] = {0};
-  base::strlcpy(bad_string, str.c_str(), arraysize(bad_string));
-  DLOG(FATAL) << "String quoting failed " << bad_string;
-}
-
 }  // namespace
-
-// static
-bool Sandbox::QuotePlainString(const std::string& src_utf8, std::string* dst) {
-  dst->clear();
-
-  const char* src = src_utf8.c_str();
-  int32_t length = src_utf8.length();
-  int32_t position = 0;
-  while (position < length) {
-    UChar32 c;
-    U8_NEXT(src, position, length, c);  // Macro increments |position|.
-    DCHECK_GE(c, 0);
-    if (c < 0)
-      return false;
-
-    if (c < 128) {  // EscapeSingleChar only handles ASCII.
-      char as_char = static_cast<char>(c);
-      if (EscapeSingleChar(as_char, dst)) {
-        continue;
-      }
-    }
-
-    if (c < 32 || c > 126) {
-      // Any characters that aren't printable ASCII get the \u treatment.
-      unsigned int as_uint = static_cast<unsigned int>(c);
-      base::StringAppendF(dst, "\\u%04X", as_uint);
-      continue;
-    }
-
-    // If we got here we know that the character in question is strictly
-    // in the ASCII range so there's no need to do any kind of encoding
-    // conversion.
-    dst->push_back(static_cast<char>(c));
-  }
-  return true;
-}
-
-// static
-bool Sandbox::QuoteStringForRegex(const std::string& str_utf8,
-                                  std::string* dst) {
-  // Characters with special meanings in sandbox profile syntax.
-  const char regex_special_chars[] = {
-    '\\',
-
-    // Metacharacters
-    '^',
-    '.',
-    '[',
-    ']',
-    '$',
-    '(',
-    ')',
-    '|',
-
-    // Quantifiers
-    '*',
-    '+',
-    '?',
-    '{',
-    '}',
-  };
-
-  // Anchor regex at start of path.
-  dst->assign("^");
-
-  const char* src = str_utf8.c_str();
-  int32_t length = str_utf8.length();
-  int32_t position = 0;
-  while (position < length) {
-    UChar32 c;
-    U8_NEXT(src, position, length, c);  // Macro increments |position|.
-    DCHECK_GE(c, 0);
-    if (c < 0)
-      return false;
-
-    // The Mac sandbox regex parser only handles printable ASCII characters.
-    // 33 >= c <= 126
-    if (c < 32 || c > 125) {
-      return false;
-    }
-
-    for (size_t i = 0; i < arraysize(regex_special_chars); ++i) {
-      if (c == regex_special_chars[i]) {
-        dst->push_back('\\');
-        break;
-      }
-    }
-
-    dst->push_back(static_cast<char>(c));
-  }
-
-  // Make sure last element of path is interpreted as a directory. Leaving this
-  // off would allow access to files if they start with the same name as the
-  // directory.
-  dst->append("(/|$)");
-
-  return true;
-}
 
 // Warm up System APIs that empirically need to be accessed before the Sandbox
 // is turned on.
@@ -393,12 +250,8 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   if (!allowed_dir.empty()) {
     // Add the sandbox parameters necessary to access the given directory.
     base::FilePath allowed_dir_canonical = GetCanonicalSandboxPath(allowed_dir);
-    std::string regex;
-    if (!QuoteStringForRegex(allowed_dir_canonical.value(), &regex)) {
-      FatalStringQuoteException(allowed_dir_canonical.value());
-      return false;
-    }
-    if (!compiler.InsertStringParam("PERMITTED_DIR", regex))
+    if (!compiler.InsertStringParam("PERMITTED_DIR",
+                                    allowed_dir_canonical.value()))
       return false;
   }
 
@@ -424,13 +277,8 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   base::FilePath home_dir_canonical =
       GetCanonicalSandboxPath(base::FilePath(home_dir));
 
-  std::string quoted_home_dir;
-  if (!QuotePlainString(home_dir_canonical.value(), &quoted_home_dir)) {
-    FatalStringQuoteException(home_dir_canonical.value());
-    return false;
-  }
-
-  if (!compiler.InsertStringParam("USER_HOMEDIR_AS_LITERAL", quoted_home_dir))
+  if (!compiler.InsertStringParam("USER_HOMEDIR_AS_LITERAL",
+                                  home_dir_canonical.value()))
     return false;
 
   bool elcap_or_later = base::mac::IsAtLeastOS10_11();

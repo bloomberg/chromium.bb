@@ -17,4 +17,4 @@
 (if (param-defined? permitted-dir)
     (begin
       (allow file-read-metadata )
-      (allow file-read* file-write* (regex (param permitted-dir)))))
+      (allow file-read* file-write* (subpath (param permitted-dir)))))
