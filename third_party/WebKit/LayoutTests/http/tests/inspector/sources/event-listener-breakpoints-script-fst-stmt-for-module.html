@@ -1,0 +1,45 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    var module = document.createElement("script");
+    module.type = "module";
+    module.src = "./resources/empty-module.js";
+    document.body.appendChild(module);
+    module.remove();
+}
+
+function test()
+{
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", true);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
+    {
+        var eventName = (auxData && auxData.eventName || "").replace(/^instrumentation:/, "");
+        InspectorTest.addResult("\nPaused on " + eventName);
+        InspectorTest.captureStackTrace(callFrames);
+        InspectorTest.resumeExecution(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", false);
+        InspectorTest.completeDebuggerTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests event listener breakpoint to break on the first statement of new modules.</p>
+</body>
+</html>

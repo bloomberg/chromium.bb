@@ -7,6 +7,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Modulator.h"
 #include "core/dom/ScriptModuleResolver.h"
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 
@@ -89,6 +90,7 @@ void ScriptModule::Evaluate(ScriptState* script_state) const {
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
+  probe::ExecuteScript probe(ExecutionContext::From(script_state));
   // TODO(kouhei): We currently don't have a code-path which use return value of
   // EvaluateModule. Stop ignoring result once we have such path.
   v8::Local<v8::Value> result;
