@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+@class HostInfo;
+
 // This enumerated the differnt modes this Client Connection View can be in.
 typedef NS_ENUM(NSInteger, ClientConnectionViewState) {
   ClientViewConnecting,
@@ -14,18 +16,6 @@ typedef NS_ENUM(NSInteger, ClientConnectionViewState) {
   ClientViewConnected,
   ClientViewClosed,
 };
-
-// The host connection view controller delegate provides feedback for state
-// changes on Host Connection that the calling view should respond to.
-@protocol ClientConnectionViewControllerDelegate<NSObject>
-
-// Notifies the delegate the client is connected to the host.
-- (void)clientConnected;
-
-// Gets the current host name the client is attempting to connect to.
-- (NSString*)getConnectingHostName;
-
-@end
 
 // This is the view that shows the user feedback while the client connection is
 // being established. If requested the view can also display the pin entry view.
@@ -35,12 +25,10 @@ typedef NS_ENUM(NSInteger, ClientConnectionViewState) {
 // work the same way if state is set directly.
 @interface ClientConnectionViewController : UIViewController
 
+- (instancetype)initWithHostInfo:(HostInfo*)hostInfo;
+
 // Setting state will change the view
 @property(nonatomic, assign) ClientConnectionViewState state;
-
-// This delegate is used to ask for Host Name and to notify when the connection
-// has been established.
-@property(weak, nonatomic) id<ClientConnectionViewControllerDelegate> delegate;
 
 @end
 

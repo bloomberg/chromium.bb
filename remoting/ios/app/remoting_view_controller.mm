@@ -20,7 +20,6 @@
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
-#import "remoting/ios/session/remoting_client.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/base/oauth_token_getter.h"
@@ -29,7 +28,6 @@
 static CGFloat kHostInset = 5.f;
 
 @interface RemotingViewController ()<HostCollectionViewControllerDelegate,
-                                     ClientConnectionViewControllerDelegate,
                                      UIViewControllerAnimatedTransitioning,
                                      UIViewControllerTransitioningDelegate> {
   bool _isAuthenticated;
@@ -37,7 +35,6 @@ static CGFloat kHostInset = 5.f;
   MDCAppBar* _appBar;
   HostCollectionViewController* _collectionViewController;
   RemotingService* _remotingService;
-  RemotingClient* _client;
 }
 @end
 
@@ -85,12 +82,6 @@ static CGFloat kHostInset = 5.f;
                                         target:self
                                         action:@selector(didSelectRefresh)];
     self.navigationItem.rightBarButtonItem = refreshButton;
-
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(hostSessionStatusChanged:)
-               name:kHostSessionStatusChanged
-             object:nil];
   }
   return self;
 }
@@ -183,22 +174,6 @@ static CGFloat kHostInset = 5.f;
   [_collectionViewController.collectionView reloadData];
 }
 
-#pragma mark - ClientConnectionViewControllerDelegate
-
-- (void)clientConnected {
-  HostViewController* hostViewController =
-      [[HostViewController alloc] initWithClient:_client];
-  _client = nil;
-  [self presentViewController:hostViewController animated:YES completion:nil];
-}
-
-- (NSString*)getConnectingHostName {
-  if (_client) {
-    return _client.hostInfo.hostName;
-  }
-  return nil;
-}
-
 #pragma mark - HostCollectionViewControllerDelegate
 
 - (void)didSelectCell:(HostCollectionViewCell*)cell
@@ -210,23 +185,8 @@ static CGFloat kHostInset = 5.f;
     return;
   }
 
-  _client = [[RemotingClient alloc] init];
-
-  [_remotingService.authentication
-      callbackWithAccessToken:base::BindBlockArc(^(
-                                  remoting::OAuthTokenGetter::Status status,
-                                  const std::string& user_email,
-                                  const std::string& access_token) {
-        // TODO(nicholss): Check status.
-        HostInfo* hostInfo = cell.hostInfo;
-        [_client connectToHost:hostInfo
-                      username:base::SysUTF8ToNSString(user_email)
-                   accessToken:base::SysUTF8ToNSString(access_token)];
-      })];
-
   ClientConnectionViewController* clientConnectionViewController =
-      [[ClientConnectionViewController alloc] init];
-  clientConnectionViewController.delegate = self;
+      [[ClientConnectionViewController alloc] initWithHostInfo:cell.hostInfo];
   [self presentViewController:clientConnectionViewController
                      animated:YES
                    completion:nil];
@@ -268,10 +228,6 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 }
 
 #pragma mark - Private
-
-- (void)hostSessionStatusChanged:(NSNotification*)notification {
-  NSLog(@"hostSessionStatusChanged: %@", [notification userInfo]);
-}
 
 - (void)closeViewController {
   [self dismissViewControllerAnimated:true completion:nil];
