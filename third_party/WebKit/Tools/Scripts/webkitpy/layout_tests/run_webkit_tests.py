@@ -80,6 +80,10 @@ def main(argv, stdout, stderr):
         return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
 
+def deprecate(option, opt_str, _, parser):
+    parser.error('%s: %s' % (opt_str, option.help))
+
+
 def parse_args(args):
     option_group_definitions = []
 
@@ -174,16 +178,16 @@ def parse_args(args):
                 help='Path to write the JSON test results for only *failing* tests.'),
             optparse.make_option(
                 '--new-baseline',
-                action='store_true',
-                default=False,
-                help=('Save generated results as new baselines into the *most-specific-platform* '
-                      "directory, overwriting whatever's already there. Equivalent to "
-                      '--reset-results --add-platform-exceptions')),
+                action='callback',
+                callback=deprecate,
+                help=('Deprecated. Use "webkit-patch rebaseline-cl" instead, or '
+                      '"--reset-results --add-platform-exceptions" if you do want to create '
+                      'platform-version-specific new baselines locally.')),
             optparse.make_option(
                 '--new-test-results',
-                action='store_true',
-                default=False,
-                help='Create new baselines when no expected results exist'),
+                action='callback',
+                callback=deprecate,
+                help='Deprecated. Use --reset-results instead.'),
             optparse.make_option(
                 '--no-show-results',
                 dest='show_results',
@@ -508,10 +512,6 @@ def _set_up_derived_options(port, options, args):
         for path in options.additional_platform_directory:
             additional_platform_directories.append(port.host.filesystem.abspath(path))
         options.additional_platform_directory = additional_platform_directories
-
-    if options.new_baseline:
-        options.reset_results = True
-        options.add_platform_exceptions = True
 
     if options.pixel_test_directories:
         options.pixel_tests = True

@@ -57,8 +57,6 @@ def run_single_test(
 
 
 class SingleTestRunner(object):
-    (ALONGSIDE_TEST, PLATFORM_DIR, VERSION_DIR, UPDATE) = ('alongside', 'platform', 'version', 'update')
-
     def __init__(self, port, options, results_directory, worker_name,
                  primary_driver, secondary_driver, test_input, stop_when_done):
         self._port = port
@@ -73,7 +71,6 @@ class SingleTestRunner(object):
         self._should_run_pixel_test = test_input.should_run_pixel_test
         self._should_run_pixel_test_first = test_input.should_run_pixel_test_first
         self._reference_files = test_input.reference_files
-        self._should_add_missing_baselines = test_input.should_add_missing_baselines
         self._stop_when_done = stop_when_done
 
         # If this is a virtual test that uses the default flags instead of the
@@ -105,7 +102,7 @@ class SingleTestRunner(object):
                             self._port.expected_audio(self._test_name))
 
     def _should_fetch_expected_checksum(self):
-        return self._should_run_pixel_test and not (self._options.new_baseline or self._options.reset_results)
+        return self._should_run_pixel_test and not self._options.reset_results
 
     def _driver_input(self):
         # The image hash is used to avoid doing an image dump if the
@@ -166,8 +163,6 @@ class SingleTestRunner(object):
         expected_driver_output = self._expected_driver_output()
 
         test_result = self._compare_output(expected_driver_output, driver_output)
-        if self._should_add_missing_baselines:
-            self._add_missing_baselines(test_result, driver_output)
         test_result_writer.write_test_result(self._filesystem, self._port, self._results_directory,
                                              self._test_name, driver_output, expected_driver_output, test_result.failures)
         return test_result
@@ -185,61 +180,32 @@ class SingleTestRunner(object):
 
     _render_tree_dump_pattern = re.compile(r"^layer at \(\d+,\d+\) size \d+x\d+\n")
 
-    def _add_missing_baselines(self, test_result, driver_output):
-        missing_image = test_result.has_failure_matching_types(
-            test_failures.FailureMissingImage, test_failures.FailureMissingImageHash)
-        if test_result.has_failure_matching_types(test_failures.FailureMissingResult):
-            self._save_baseline_data(driver_output.text, '.txt', self._location_for_missing_baseline(driver_output.text, '.txt'))
-        if test_result.has_failure_matching_types(test_failures.FailureMissingAudio):
-            self._save_baseline_data(driver_output.audio, '.wav', self._location_for_missing_baseline(driver_output.audio, '.wav'))
-        if missing_image:
-            self._save_baseline_data(driver_output.image, '.png', self._location_for_missing_baseline(driver_output.image, '.png'))
-
-    def _location_for_missing_baseline(self, data, extension):
-        if self._options.add_platform_exceptions:
-            return self.VERSION_DIR
-        if extension == '.png':
-            return self.PLATFORM_DIR
-        if extension == '.wav':
-            return self.ALONGSIDE_TEST
-        if extension == '.txt' and self._render_tree_dump_pattern.match(data):
-            return self.PLATFORM_DIR
-        return self.ALONGSIDE_TEST
-
     def _update_or_add_new_baselines(self, driver_output):
-        location = self.VERSION_DIR if self._options.add_platform_exceptions else self.UPDATE
-        self._save_baseline_data(driver_output.text, '.txt', location)
-        self._save_baseline_data(driver_output.audio, '.wav', location)
+        self._save_baseline_data(driver_output.text, '.txt')
+        self._save_baseline_data(driver_output.audio, '.wav')
         if self._should_run_pixel_test:
-            self._save_baseline_data(driver_output.image, '.png', location)
+            self._save_baseline_data(driver_output.image, '.png')
 
-    def _save_baseline_data(self, data, extension, location):
+    def _save_baseline_data(self, data, extension):
         if data is None:
             return
         port = self._port
         fs = self._filesystem
 
-        if location == self.ALONGSIDE_TEST:
-            output_dir = fs.dirname(port.abspath_for_test(self._test_name))
-        elif location == self.VERSION_DIR:
+        if self._options.add_platform_exceptions:
             output_dir = fs.join(port.baseline_version_dir(), fs.dirname(self._test_name))
-        elif location == self.PLATFORM_DIR:
-            output_dir = fs.join(port.baseline_platform_dir(), fs.dirname(self._test_name))
-        elif location == self.UPDATE:
-            output_dir = fs.dirname(port.expected_filename(self._test_name, extension))
         else:
-            raise AssertionError('unrecognized baseline location: %s' % location)
+            output_dir = fs.dirname(port.expected_filename(self._test_name, extension))
 
         fs.maybe_make_directory(output_dir)
         output_basename = fs.basename(fs.splitext(self._test_name)[0] + '-expected' + extension)
         output_path = fs.join(output_dir, output_basename)
 
-        if location == self.VERSION_DIR:
-            fallback_path = port.expected_filename(self._test_name, extension)
-            if fallback_path != output_path and fs.sha1(fallback_path) == hashlib.sha1(data).hexdigest():
-                _log.info('Not writing new expected result "%s" because it is the same as "%s"',
-                          port.relative_test_filename(output_path), port.relative_test_filename(fallback_path))
-                return
+        current_expected_path = port.expected_filename(self._test_name, extension)
+        if fs.exists(current_expected_path) and fs.sha1(current_expected_path) == hashlib.sha1(data).hexdigest():
+            _log.info('Not writing new expected result "%s" because it is the same as the current expected result',
+                      port.relative_test_filename(output_path))
+            return
 
         _log.info('Writing new expected result "%s"', port.relative_test_filename(output_path))
         port.update_baseline(output_path, data)

@@ -270,9 +270,7 @@ class Manager(object):
     def _test_input_for_file(self, test_file):
         return TestInput(test_file,
                          self._options.slow_time_out_ms if self._test_is_slow(test_file) else self._options.time_out_ms,
-                         self._test_requires_lock(test_file),
-                         should_add_missing_baselines=(self._options.new_test_results and
-                                                       not self._test_is_expected_missing(test_file)))
+                         self._test_requires_lock(test_file))
 
     def _test_requires_lock(self, test_file):
         """Return True if the test needs to be locked when running multiple

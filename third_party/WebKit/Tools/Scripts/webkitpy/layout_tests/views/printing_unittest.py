@@ -122,7 +122,6 @@ class Testprinter(unittest.TestCase):
         # FIXME: Make it so these options don't have to be set directly.
         # pylint: disable=protected-access
         printer._options.pixel_tests = True
-        printer._options.new_baseline = True
         printer._options.time_out_ms = 6000
         printer._options.slow_time_out_ms = 12000
         printer._options.order = 'random'
