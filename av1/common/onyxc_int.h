@@ -62,6 +62,12 @@ extern "C" {
 #define DELTA_FRAME_ID_LENGTH_MINUS2 12  // Allows frame id deltas up to 2^14-1
 #endif
 
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+#define FRAME_CONTEXTS (FRAME_BUFFERS + 1)
+// Extra frame context which is always kept at default values
+#define FRAME_CONTEXT_DEFAULTS (FRAME_CONTEXTS - 1)
+#else
+
 #if CONFIG_EXT_REFS
 #define FRAME_CONTEXTS_LOG2 3
 #else
@@ -69,6 +75,7 @@ extern "C" {
 #endif
 
 #define FRAME_CONTEXTS (1 << FRAME_CONTEXTS_LOG2)
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
 #define NUM_PING_PONG_BUFFERS 2
 
@@ -347,7 +354,9 @@ typedef struct AV1Common {
   FRAME_CONTEXT *fc;              /* this frame entropy */
   FRAME_CONTEXT *frame_contexts;  // FRAME_CONTEXTS
   FRAME_CONTEXT *pre_fc;          // Context referenced in this frame
+#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   unsigned int frame_context_idx; /* Context to use/update */
+#endif
   FRAME_COUNTS counts;
 
   unsigned int current_video_frame;

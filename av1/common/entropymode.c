@@ -5527,14 +5527,22 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
     // Reset all frame contexts.
     for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
   } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    // Reset the frame context of the first specified ref frame.
+    if (cm->frame_refs[0].idx >= 0) {
+      cm->frame_contexts[cm->frame_refs[0].idx] = *cm->fc;
+    }
+#else
     // Reset only the frame context specified in the frame header.
     cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   }
 
   // prev_mip will only be allocated in encoder.
   if (frame_is_intra_only(cm) && cm->prev_mip && !cm->frame_parallel_decode)
     memset(cm->prev_mip, 0,
            cm->mi_stride * (cm->mi_rows + 1) * sizeof(*cm->prev_mip));
-
+#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   cm->frame_context_idx = 0;
+#endif  // !CONFIG_NO_FRAME_CONTEXT_SIGNALING
 }

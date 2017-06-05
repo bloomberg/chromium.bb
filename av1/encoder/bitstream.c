@@ -4399,9 +4399,9 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     aom_wb_write_bit(
         wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_FORWARD);
   }
-
+#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   aom_wb_write_literal(wb, cm->frame_context_idx, FRAME_CONTEXTS_LOG2);
-
+#endif
   assert(cm->mib_size == mi_size_wide[cm->sb_size]);
   assert(cm->mib_size == 1 << cm->mib_size_log2);
 #if CONFIG_EXT_PARTITION

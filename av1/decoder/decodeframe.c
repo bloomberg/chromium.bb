@@ -4713,10 +4713,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   } else {
     cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_FORWARD;
   }
-
+#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   // This flag will be overridden by the call to av1_setup_past_independence
   // below, forcing the use of context 0 for those frame types.
   cm->frame_context_idx = aom_rb_read_literal(rb, FRAME_CONTEXTS_LOG2);
+#endif
 
   // Generate next_ref_frame_map.
   lock_buffer_pool(pool);
@@ -4762,7 +4763,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL) {
     for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
   } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    if (cm->frame_refs[0].idx <= 0) {
+      cm->frame_contexts[cm->frame_refs[0].idx] = *cm->fc;
+    }
+#else
     cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   }
 #endif  // CONFIG_Q_ADAPT_PROBS
 
@@ -5337,9 +5344,19 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_TEMPMV_SIGNALING
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
-
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  if (cm->error_resilient_mode || frame_is_intra_only(cm)) {
+    // use the default frame context values
+    *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+    cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+  } else {
+    *cm->fc = cm->frame_contexts[cm->frame_refs[0].idx];
+    cm->pre_fc = &cm->frame_contexts[cm->frame_refs[0].idx];
+  }
+#else
   *cm->fc = cm->frame_contexts[cm->frame_context_idx];
   cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   if (!cm->fc->initialized)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Uninitialized entropy context.");
@@ -5364,7 +5381,11 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     FrameWorkerData *const frame_worker_data = worker->data1;
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_FORWARD) {
       context_updated = 1;
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+      cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+#else
       cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
     }
     av1_frameworker_lock_stats(worker);
     pbi->cur_buf->row = -1;
@@ -5464,7 +5485,13 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif
 
-  // Non frame parallel update frame context here.
+// Non frame parallel update frame context here.
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  // TODO(tdaede): Figure out of this condition is required.
+  if (!cm->error_resilient_mode && !context_updated)
+    cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+#else
   if (!cm->error_resilient_mode && !context_updated)
     cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+#endif
 }

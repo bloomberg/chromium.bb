@@ -296,6 +296,10 @@ static void setup_frame(AV1_COMP *cpi) {
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
     av1_setup_past_independence(cm);
   } else {
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+// Just use frame context from first signaled reference frame.
+// This will always be LAST_FRAME for now.
+#else
 #if CONFIG_EXT_REFS
     const GF_GROUP *gf_group = &cpi->twopass.gf_group;
     if (gf_group->rf_level[gf_group->index] == GF_ARF_LOW)
@@ -315,6 +319,7 @@ static void setup_frame(AV1_COMP *cpi) {
 #endif  // CONFIG_EXT_REFS
     else
       cm->frame_context_idx = REGULAR_FRAME;
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   }
 
   if (cm->frame_type == KEY_FRAME) {
@@ -322,7 +327,16 @@ static void setup_frame(AV1_COMP *cpi) {
     cpi->refresh_alt_ref_frame = 1;
     av1_zero(cpi->interp_filter_selected);
   } else {
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
+        cm->frame_refs[0].idx < 0) {
+      *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+    } else {
+      *cm->fc = cm->frame_contexts[cm->frame_refs[0].idx];
+    }
+#else
     *cm->fc = cm->frame_contexts[cm->frame_context_idx];
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
     av1_zero(cpi->interp_filter_selected[0]);
   }
 #if CONFIG_EXT_REFS
@@ -333,7 +347,16 @@ static void setup_frame(AV1_COMP *cpi) {
   }
 #endif
 #endif
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
+    // use default frame context values
+    cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+  } else {
+    cm->pre_fc = &cm->frame_contexts[cm->frame_refs[0].idx];
+  }
+#else
   cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
   cpi->vaq_refresh = 0;
 
@@ -350,7 +373,6 @@ static void av1_enc_setup_mi(AV1_COMMON *cm) {
   // Clear left border column
   for (i = 1; i < cm->mi_rows + 1; ++i)
     memset(&cm->prev_mip[i * cm->mi_stride], 0, sizeof(*cm->prev_mip));
-
   cm->mi_grid_visible = cm->mi_grid_base + cm->mi_stride + 1;
   cm->prev_mi_grid_visible = cm->prev_mi_grid_base + cm->mi_stride + 1;
 
@@ -4164,7 +4186,13 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
           cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL) {
         for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
       } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+        if (cm->frame_refs[0].idx >= 0) {
+          cm->frame_contexts[cm->frame_refs[0].idx] = *cm->fc;
+        }
+#else
         cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+#endif
       }
     }
 #endif  // CONFIG_Q_ADAPT_PROBS
@@ -5705,9 +5733,13 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     Pass0Encode(cpi, size, dest, 0, frame_flags);
   }
 #endif
-
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  // TODO(tdaede): Check if this condition is really needed.
+  if (!cm->error_resilient_mode) cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+#else
   if (!cm->error_resilient_mode)
     cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
   // No frame encoded, or frame was dropped, release scaled references.
   if ((*size == 0) && (frame_is_intra_only(cm) == 0)) {
