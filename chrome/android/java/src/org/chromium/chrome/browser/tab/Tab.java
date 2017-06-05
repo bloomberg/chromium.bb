@@ -26,12 +26,14 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -85,8 +87,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.feature_engagement_tracker.EventConstants;
+import org.chromium.components.feature_engagement_tracker.FeatureConstants;
 import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -1545,12 +1549,42 @@ public class Tab
                 DataReductionProxySettings.getInstance().getContentLengthSavedInHistorySummary()
                 - mDataSavedOnStartPageLoad;
 
-        if (dataSaved > 0) {
-            FeatureEngagementTracker tracker =
-                    FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
-                            Profile.getLastUsedProfile());
+        FeatureEngagementTracker tracker =
+                FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
+                        Profile.getLastUsedProfile());
+        if (dataSaved > 0L) {
             tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
         }
+
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DATA_SAVER_DETAIL_FEATURE)) return;
+
+        showDataSaverInProductHelp(tracker);
+    }
+
+    private void showDataSaverInProductHelp(final FeatureEngagementTracker tracker) {
+        ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(getActivity(),
+                getActivity().getToolbarManager().getMenuButton(),
+                R.string.iph_data_saver_detail_text,
+                R.string.iph_data_saver_detail_accessibility_text);
+        textBubble.setDismissOnTouchInteraction(true);
+        getActivity().getAppMenuHandler().setMenuHighlight(R.id.data_reduction_footer);
+        textBubble.addOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tracker.dismissed(FeatureConstants.DATA_SAVER_DETAIL_FEATURE);
+                        getActivity().getAppMenuHandler().setMenuHighlight(null);
+                    }
+                });
+            }
+        });
+        int yInsetPx = mThemedApplicationContext.getResources().getDimensionPixelOffset(
+                R.dimen.text_bubble_menu_anchor_y_inset);
+        textBubble.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
+                FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
+        textBubble.show();
     }
 
     /**

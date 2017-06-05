@@ -21,7 +21,7 @@ extern const char kIPHDemoModeFeatureChoiceParam[];
 
 // The length of kIPHDemoModeChoiceVariations. This must be updated whenever
 // new features are added to the demo mode selection.
-constexpr size_t kIPHDemoModeChoiceVariationsLen = 3;
+constexpr size_t kIPHDemoModeChoiceVariationsLen = 4;
 
 // Defines the array of which features should be listed in the chrome://flags
 // UI to be able to select them alone for demo-mode. The features listed here
