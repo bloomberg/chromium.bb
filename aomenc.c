@@ -1183,6 +1183,8 @@ static void show_stream_config(struct stream_state *stream,
   if (stream->next || stream->index)
     fprintf(stderr, "\nStream Index: %d\n", stream->index);
   fprintf(stderr, "Destination file: %s\n", stream->config.out_fn);
+  fprintf(stderr, "Coding path: %s\n",
+          stream->config.use_16bit_internal ? "HBD" : "LBD");
   fprintf(stderr, "Encoder parameters:\n");
 
   SHOW(g_usage);
