@@ -16,7 +16,9 @@ class MockPermissionRequest : public PermissionRequest {
   MockPermissionRequest(const std::string& text,
                         PermissionRequestType request_type,
                         PermissionRequestGestureType gesture_type);
-  MockPermissionRequest(const std::string& text, const GURL& url);
+  MockPermissionRequest(const std::string& text,
+                        PermissionRequestType request_type,
+                        const GURL& url);
   MockPermissionRequest(const std::string& text,
                         const std::string& accept_label,
                         const std::string& deny_label);
