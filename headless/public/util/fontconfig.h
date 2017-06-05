@@ -5,15 +5,17 @@
 #ifndef HEADLESS_PUBLIC_UTIL_FONTCONFIG_H_
 #define HEADLESS_PUBLIC_UTIL_FONTCONFIG_H_
 
+#include "headless/public/headless_export.h"
+
 namespace headless {
 
 // Initialize fontconfig by loading fonts from given path without following
 // symlinks. This is a wrapper around FcInit from libfreetype bundled with
 // Chromium modified to enable headless embedders to deploy in custom
 // environments.
-void InitFonts(const char* font_config_path);
+HEADLESS_EXPORT void InitFonts(const char* font_config_path);
 
-void ReleaseFonts();
+HEADLESS_EXPORT void ReleaseFonts();
 
 }  // namespace headless
 
