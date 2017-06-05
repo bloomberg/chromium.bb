@@ -176,8 +176,8 @@ String Text::wholeText() const {
     if (!n->IsTextNode())
       continue;
     const String& data = ToText(n)->data();
-    if (std::numeric_limits<unsigned>::max() - data.length() < result_length)
-      IMMEDIATE_CRASH();
+    CHECK_GE(std::numeric_limits<unsigned>::max() - data.length(),
+             result_length);
     result_length += data.length();
   }
   StringBuilder result;

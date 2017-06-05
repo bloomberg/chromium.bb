@@ -52,8 +52,7 @@ class PlatformThreadSpecificKey
   PlatformThreadSpecificKey(void (*destructor)(void*))
       : destructor_(destructor) {
     tls_key_ = TlsAlloc();
-    if (tls_key_ == TLS_OUT_OF_INDEXES)
-      IMMEDIATE_CRASH();
+    CHECK_NE(tls_key_, TLS_OUT_OF_INDEXES);
   }
 
   ~PlatformThreadSpecificKey() { TlsFree(tls_key_); }
