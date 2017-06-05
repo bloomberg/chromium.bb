@@ -101,6 +101,9 @@ TEST_F(AvailabilityStoreTest, StorageDirectory) {
                                         std::move(load_callback_), 14u);
   db_->InitCallback(true);
   EXPECT_EQ(storage_dir_, db_->GetDirectory());
+
+  // Finish the pipeline to ensure the test does not leak anything.
+  db_->LoadCallback(false);
 }
 
 TEST_F(AvailabilityStoreTest, InitFail) {
