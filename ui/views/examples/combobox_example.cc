@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -54,9 +55,8 @@ void ComboboxExample::CreateExampleView(View* container) {
   // Note: STYLE_ACTION comboboxes always have the first item selected by
   // default.
 
-  container->SetLayoutManager(new BoxLayout(
-      BoxLayout::kVertical,
-      0, 10, 5));
+  container->SetLayoutManager(
+      new BoxLayout(BoxLayout::kVertical, gfx::Insets(10, 0), 5));
   container->AddChildView(combobox_);
   container->AddChildView(disabled_combobox_);
   container->AddChildView(action_combobox_);

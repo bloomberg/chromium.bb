@@ -134,9 +134,7 @@ void TrayBubbleContentMask::OnDeviceScaleFactorChanged(
 class BottomAlignedBoxLayout : public BoxLayout {
  public:
   explicit BottomAlignedBoxLayout(TrayBubbleView* bubble_view)
-      : BoxLayout(BoxLayout::kVertical, 0, 0, 0),
-        bubble_view_(bubble_view) {
-  }
+      : BoxLayout(BoxLayout::kVertical), bubble_view_(bubble_view) {}
 
   ~BottomAlignedBoxLayout() override {}
 

@@ -15,6 +15,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -140,9 +141,9 @@ StickyKeysOverlayView::StickyKeysOverlayView() {
   int vertical_spacing = font_size / 2 - font_padding;
   int child_spacing = font_size - 2 * font_padding;
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-                                        horizontal_spacing, vertical_spacing,
-                                        child_spacing));
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical,
+      gfx::Insets(vertical_spacing, horizontal_spacing), child_spacing));
   AddKeyLabel(ui::EF_CONTROL_DOWN,
               l10n_util::GetStringUTF8(IDS_ASH_CONTROL_KEY));
   AddKeyLabel(ui::EF_ALT_DOWN, l10n_util::GetStringUTF8(IDS_ASH_ALT_KEY));

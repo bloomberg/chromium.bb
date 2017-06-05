@@ -16,6 +16,7 @@
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/vector_icons/vector_icons.h"
@@ -170,7 +171,8 @@ class ShippingProfileViewController : public ProfileListViewController,
     constexpr int kRowHorizontalSpacing = 8;
     views::BoxLayout* layout = new views::BoxLayout(
         views::BoxLayout::kHorizontal,
-        payments::kPaymentRequestRowHorizontalInsets, 0, kRowHorizontalSpacing);
+        gfx::Insets(0, payments::kPaymentRequestRowHorizontalInsets),
+        kRowHorizontalSpacing);
     layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     layout->set_cross_axis_alignment(
@@ -363,8 +365,7 @@ void ProfileListViewController::PopulateList() {
 }
 
 void ProfileListViewController::FillContentView(views::View* content_view) {
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
@@ -381,8 +382,9 @@ std::unique_ptr<views::View>
 ProfileListViewController::CreateExtraFooterView() {
   std::unique_ptr<views::View> extra_view = base::MakeUnique<views::View>();
 
-  extra_view->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kPaymentRequestButtonSpacing));
+  extra_view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
+                           kPaymentRequestButtonSpacing));
 
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(GetSecondaryButtonTextId()));

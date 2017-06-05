@@ -53,7 +53,7 @@ TilesDefaultView::~TilesDefaultView() = default;
 
 void TilesDefaultView::Init() {
   views::BoxLayout* box_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 4, 0, 0);
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(0, 4));
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   box_layout->set_cross_axis_alignment(

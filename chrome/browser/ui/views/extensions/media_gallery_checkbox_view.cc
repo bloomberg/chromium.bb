@@ -7,6 +7,7 @@
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
@@ -28,8 +29,7 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
     views::ButtonListener* button_listener,
     views::ContextMenuController* menu_controller) {
   DCHECK(button_listener != NULL);
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int border_horiz_margin = provider->GetDistanceMetric(
       views::DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN);

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
@@ -43,11 +44,7 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
 
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical,
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN),
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
-      0));
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS), 0));
 
   views::StyledLabel* dialog_label =
       new views::StyledLabel(controller_->GetMainText(), /*listener=*/nullptr);

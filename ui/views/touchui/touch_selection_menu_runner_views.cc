@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/text_utils.h"
@@ -100,8 +101,8 @@ TouchSelectionMenuRunnerViews::Menu::Menu(TouchSelectionMenuRunnerViews* owner,
   set_adjust_if_offscreen(true);
   EnableCanvasFlippingForRTLUI(true);
 
-  SetLayoutManager(
-      new BoxLayout(BoxLayout::kHorizontal, 0, 0, kSpacingBetweenButtons));
+  SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(),
+                                 kSpacingBetweenButtons));
   CreateButtons();
 
   // After buttons are created, check if there is enough room between handles to

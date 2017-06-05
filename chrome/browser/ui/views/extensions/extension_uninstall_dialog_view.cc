@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -172,10 +173,7 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal,
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN),
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   icon_ = new views::ImageView();

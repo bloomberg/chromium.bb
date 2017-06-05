@@ -35,6 +35,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/native_theme/native_theme.h"
@@ -266,8 +267,8 @@ void ZoomBubbleView::Init() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int margin =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
-  views::BoxLayout* box_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, margin, 0, margin);
+  views::BoxLayout* box_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, gfx::Insets(0, margin), margin);
 
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);

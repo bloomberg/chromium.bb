@@ -15,6 +15,7 @@
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -42,10 +43,7 @@ AppInfoFooterPanel::AppInfoFooterPanel(gfx::NativeWindow parent_window,
 
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal,
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN),
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 
   LayoutButtons();

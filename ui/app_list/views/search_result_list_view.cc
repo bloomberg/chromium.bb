@@ -18,6 +18,7 @@
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -40,7 +41,7 @@ SearchResultListView::SearchResultListView(
       results_container_(new views::View),
       auto_launch_indicator_(new views::View) {
   results_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kVertical));
 
   for (int i = 0; i < kMaxResults; ++i)
     results_container_->AddChildView(new SearchResultView(this));

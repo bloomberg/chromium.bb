@@ -20,6 +20,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -164,7 +165,7 @@ void TrayUser::UpdateAfterShelfAlignmentChange() {
           kTrayLabelItemHorizontalPaddingBottomAlignment));
     }
     layout_view_->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, kUserLabelToIconPadding));
+        views::BoxLayout::kHorizontal, gfx::Insets(), kUserLabelToIconPadding));
   } else {
     if (avatar_) {
       avatar_->SetCornerRadii(0, 0, kTrayRoundedBorderRadius,
@@ -178,7 +179,7 @@ void TrayUser::UpdateAfterShelfAlignmentChange() {
           kTrayLabelItemHorizontalPaddingBottomAlignment));
     }
     layout_view_->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, kUserLabelToIconPadding));
+        views::BoxLayout::kVertical, gfx::Insets(), kUserLabelToIconPadding));
   }
 }
 

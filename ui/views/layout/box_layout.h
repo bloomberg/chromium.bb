@@ -55,14 +55,12 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     CROSS_AXIS_ALIGNMENT_END,
   };
 
-  // Use |inside_border_horizontal_spacing| and
-  // |inside_border_vertical_spacing| to add additional space between the child
+  // Use |inside_border_insets| to add additional space between the child
   // view area and the host view border. |between_child_spacing| controls the
   // space in between child views.
   BoxLayout(Orientation orientation,
-            int inside_border_horizontal_spacing,
-            int inside_border_vertical_spacing,
-            int between_child_spacing);
+            const gfx::Insets& inside_border_insets = gfx::Insets(),
+            int between_child_spacing = 0);
   ~BoxLayout() override;
 
   void set_main_axis_alignment(MainAxisAlignment main_axis_alignment) {

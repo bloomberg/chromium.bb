@@ -17,6 +17,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -159,7 +160,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
       1, GetNativeTheme()->GetSystemColor(
              ui::NativeTheme::kColorId_MenuBorderColor)));
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
   auxiliary_text_ = new InformationTextArea(gfx::ALIGN_RIGHT, 0);
   preedit_ = new InformationTextArea(gfx::ALIGN_LEFT, kMinPreeditAreaWidth);
   candidate_area_ = new views::View;
@@ -172,16 +173,16 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
     AddChildView(candidate_area_);
     AddChildView(auxiliary_text_);
     auxiliary_text_->SetBorderFromPosition(InformationTextArea::TOP);
-    candidate_area_->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, 0));
+    candidate_area_->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical));
   } else {
     AddChildView(preedit_);
     AddChildView(auxiliary_text_);
     AddChildView(candidate_area_);
     auxiliary_text_->SetAlignment(gfx::ALIGN_LEFT);
     auxiliary_text_->SetBorderFromPosition(InformationTextArea::BOTTOM);
-    candidate_area_->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, 0));
+    candidate_area_->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal));
   }
 }
 
@@ -247,14 +248,14 @@ void CandidateWindowView::UpdateCandidates(
         ReorderChildView(auxiliary_text_, -1);
         auxiliary_text_->SetAlignment(gfx::ALIGN_RIGHT);
         auxiliary_text_->SetBorderFromPosition(InformationTextArea::TOP);
-        candidate_area_->SetLayoutManager(new views::BoxLayout(
-            views::BoxLayout::kVertical, 0, 0, 0));
+        candidate_area_->SetLayoutManager(
+            new views::BoxLayout(views::BoxLayout::kVertical));
       } else {
         ReorderChildView(auxiliary_text_, 1);
         auxiliary_text_->SetAlignment(gfx::ALIGN_LEFT);
         auxiliary_text_->SetBorderFromPosition(InformationTextArea::BOTTOM);
-        candidate_area_->SetLayoutManager(new views::BoxLayout(
-            views::BoxLayout::kHorizontal, 0, 0, 0));
+        candidate_area_->SetLayoutManager(
+            new views::BoxLayout(views::BoxLayout::kHorizontal));
       }
     }
 

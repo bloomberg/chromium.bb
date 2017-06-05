@@ -15,6 +15,7 @@
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -116,7 +117,7 @@ InfolistEntryView::InfolistEntryView(const ui::InfolistEntry& entry,
                                      const gfx::FontList& title_font_list,
                                      const gfx::FontList& description_font_list)
     : entry_(entry) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
 
   title_label_ = new views::Label(entry.title, {title_font_list});
   title_label_->SetPosition(gfx::Point(0, 0));
@@ -184,7 +185,7 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
       1, GetNativeTheme()->GetSystemColor(
              ui::NativeTheme::kColorId_MenuBorderColor)));
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
 
   views::Label* caption_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_CHROMEOS_IME_INFOLIST_WINDOW_TITLE));

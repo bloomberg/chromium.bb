@@ -19,6 +19,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
@@ -150,8 +151,7 @@ base::string16 OrderSummaryViewController::GetSheetTitle() {
 }
 
 void OrderSummaryViewController::FillContentView(views::View* content_view) {
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, 0);
+  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);

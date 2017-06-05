@@ -76,7 +76,7 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy) {
   auto* view = new views::View;
   const int icon_padding = (kMenuButtonSize - kMenuIconSize) / 2;
   auto* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
                            kTrayPopupLabelHorizontalPadding + icon_padding);
   layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
   view->SetLayoutManager(layout);
@@ -209,7 +209,7 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login) : owner_(owner) {
   AddLogoutButton(login);
   AddUserCard(login);
 
-  auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
   SetLayoutManager(layout);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -355,7 +355,7 @@ void UserView::ToggleUserDropdownWidget() {
   user_dropdown_padding->SetBorder(views::CreateSolidSidedBorder(
       kMenuSeparatorVerticalPadding - kSeparatorWidth, 0, 0, 0, bg_color));
   user_dropdown_padding->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kVertical));
   views::Separator* separator = new views::Separator();
   separator->SetPreferredHeight(kSeparatorWidth);
   separator->SetColor(

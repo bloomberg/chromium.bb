@@ -38,6 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
@@ -144,12 +145,11 @@ class InfobarView : public views::View {
   // Initialize contents and layout.
   void Init() {
     AddChildView(content_);
-    content_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal,
-                             kInfobarHorizontalPadding,
-                             kInfobarVerticalPadding,
-                             ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
+    content_->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal,
+        gfx::Insets(kInfobarVerticalPadding, kInfobarHorizontalPadding),
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
     content_->AddChildView(info_image_);
     content_->AddChildView(label_);
     UpdateVisibility(false, CONTENT_SETTING_BLOCK, base::string16());

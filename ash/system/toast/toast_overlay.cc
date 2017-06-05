@@ -17,6 +17,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -146,7 +147,7 @@ ToastOverlayView::ToastOverlayView(
     const base::string16& text,
     const base::Optional<base::string16>& dismiss_text)
     : overlay_(overlay) {
-  auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
   SetLayoutManager(layout);
 
   if (dismiss_text.has_value()) {

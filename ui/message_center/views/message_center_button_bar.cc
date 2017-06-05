@@ -9,6 +9,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
@@ -103,7 +104,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
 
   button_container_ = new views::View;
   button_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kHorizontal));
   quiet_mode_button_ = CreateNotificationCenterButton(
       this, IDR_NOTIFICATION_DO_NOT_DISTURB,
       IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER,

@@ -20,6 +20,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -228,8 +229,8 @@ class WindowCycleView : public views::WidgetDelegateView {
     const int kInsideBorderPaddingDip = 64;
     const int kBetweenChildPaddingDip = 10;
     views::BoxLayout* layout = new views::BoxLayout(
-        views::BoxLayout::kHorizontal, kInsideBorderPaddingDip,
-        kInsideBorderPaddingDip, kBetweenChildPaddingDip);
+        views::BoxLayout::kHorizontal, gfx::Insets(kInsideBorderPaddingDip),
+        kBetweenChildPaddingDip);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     mirror_container_->SetLayoutManager(layout);

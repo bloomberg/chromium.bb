@@ -20,6 +20,7 @@
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -131,8 +132,9 @@ void BaseDateTimeView::OnLocaleChanged() {
 DateView::DateView(SystemTrayItem* owner)
     : BaseDateTimeView(owner), action_(DateAction::NONE) {
   // TODO(tdanderson): Tweak spacing and layout for material design.
-  views::BoxLayout* box_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kTrayPopupLabelHorizontalPadding, 0, 0);
+  views::BoxLayout* box_layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           gfx::Insets(0, kTrayPopupLabelHorizontalPadding), 0);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(

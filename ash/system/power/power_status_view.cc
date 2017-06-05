@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -32,8 +33,9 @@ PowerStatusView::PowerStatusView()
   separator_label_->SetEnabledColor(kHeaderTextColorNormal);
   separator_label_->SetText(base::ASCIIToUTF16(" - "));
 
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 12, 0, kTrayPopupPaddingBetweenItems);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(0, 12),
+                           kTrayPopupPaddingBetweenItems);
   SetLayoutManager(layout);
 
   AddChildView(percentage_label_);

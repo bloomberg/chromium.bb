@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -19,7 +20,7 @@ ToggleButtonExample::~ToggleButtonExample() {}
 
 void ToggleButtonExample::CreateExampleView(View* container) {
   button_ = new ToggleButton(this);
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
   layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   container->SetLayoutManager(layout);
   container->AddChildView(button_);

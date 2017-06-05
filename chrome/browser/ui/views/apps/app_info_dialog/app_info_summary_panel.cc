@@ -30,6 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -140,7 +141,7 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
       launch_options_combobox_(NULL),
       weak_ptr_factory_(this) {
   SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
                            ChromeLayoutProvider::Get()->GetDistanceMetric(
                                views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
@@ -156,7 +157,7 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
     views::View* vertical_stack) {
   views::View* description_and_labels_stack = new views::View();
   description_and_labels_stack->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
                            ChromeLayoutProvider::Get()->GetDistanceMetric(
                                DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 

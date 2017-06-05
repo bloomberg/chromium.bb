@@ -12,6 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -345,8 +346,9 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   std::unique_ptr<views::View> trailing_buttons_container =
       base::MakeUnique<views::View>();
 
-  trailing_buttons_container->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kPaymentRequestButtonSpacing));
+  trailing_buttons_container->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
+                           kPaymentRequestButtonSpacing));
 
 #if defined(OS_MACOSX)
   AddSecondaryButton(trailing_buttons_container.get());

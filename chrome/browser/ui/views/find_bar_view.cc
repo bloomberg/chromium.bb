@@ -29,6 +29,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/vector_icons/vector_icons.h"
@@ -167,8 +168,8 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->SetBorder(views::NullBorder());
 
   views::BoxLayout* manager =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, kInteriorPadding,
-                           kInteriorPadding, kInterChildSpacing);
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           gfx::Insets(kInteriorPadding), kInterChildSpacing);
   SetLayoutManager(manager);
   manager->SetFlexForView(find_text_, 1);
 }

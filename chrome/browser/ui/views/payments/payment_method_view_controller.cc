@@ -25,6 +25,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button.h"
@@ -103,8 +104,9 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     card_info_container->set_can_process_events_within_subtree(false);
 
     std::unique_ptr<views::BoxLayout> box_layout =
-        base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0,
-                                           kPaymentRequestRowVerticalInsets, 0);
+        base::MakeUnique<views::BoxLayout>(
+            views::BoxLayout::kVertical,
+            gfx::Insets(kPaymentRequestRowVerticalInsets, 0));
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     card_info_container->SetLayoutManager(box_layout.release());
@@ -195,8 +197,9 @@ std::unique_ptr<views::View>
 PaymentMethodViewController::CreateExtraFooterView() {
   std::unique_ptr<views::View> extra_view = base::MakeUnique<views::View>();
 
-  extra_view->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kPaymentRequestButtonSpacing));
+  extra_view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
+                           kPaymentRequestButtonSpacing));
 
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_CREDITCARD_CAPTION));

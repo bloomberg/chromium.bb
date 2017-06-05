@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -169,7 +170,7 @@ void IntentPickerBubbleView::Init() {
   // Creates a view to hold the views for each app.
   views::View* scrollable_view = new views::View();
   views::BoxLayout* scrollable_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+      new views::BoxLayout(views::BoxLayout::kVertical);
   scrollable_view->SetLayoutManager(scrollable_layout);
   for (size_t i = 0; i < app_info_.size(); ++i) {
     IntentPickerLabelButton* app_button = new IntentPickerLabelButton(

@@ -6,6 +6,7 @@
 
 #include "ash/system/tray/size_range_layout.h"
 #include "base/logging.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -50,8 +51,7 @@ TriView::TriView(Orientation orientation) : TriView(orientation, 0) {}
 
 TriView::TriView(Orientation orientation, int padding_between_containers)
     : box_layout_(new views::BoxLayout(GetOrientation(orientation),
-                                       0,
-                                       0,
+                                       gfx::Insets(),
                                        padding_between_containers)),
       start_container_layout_manager_(new SizeRangeLayout),
       center_container_layout_manager_(new SizeRangeLayout),

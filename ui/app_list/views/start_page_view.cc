@@ -26,6 +26,7 @@
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/tile_item_view.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -284,7 +285,7 @@ StartPageView::~StartPageView() {
 
 void StartPageView::InitInstantContainer() {
   views::BoxLayout* instant_layout_manager = new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, kInstantContainerSpacing);
+      views::BoxLayout::kVertical, gfx::Insets(), kInstantContainerSpacing);
   instant_layout_manager->set_inside_border_insets(
       gfx::Insets(0, 0, kSearchBoxAndTilesSpacing, 0));
   instant_layout_manager->set_main_axis_alignment(

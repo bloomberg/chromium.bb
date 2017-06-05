@@ -23,6 +23,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -138,9 +139,9 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   content_container_->AddChildView(back_button_);
   content_container_->SetBackground(base::MakeUnique<SearchBoxBackground>());
 
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, kPadding, 0,
-                           kInnerPadding - views::Textfield::kTextPadding);
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, gfx::Insets(0, kPadding),
+      kInnerPadding - views::Textfield::kTextPadding);
   content_container_->SetLayoutManager(layout);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);

@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -38,7 +39,7 @@ ButtonExample::~ButtonExample() {
 
 void ButtonExample::CreateExampleView(View* container) {
   container->SetBackground(CreateSolidBackground(SK_ColorWHITE));
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 10, 10, 10);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10);
   layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   container->SetLayoutManager(layout);
 

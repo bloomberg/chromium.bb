@@ -20,8 +20,8 @@ namespace {
 // Returns a layout manager that will size views according to their preferred
 // size.
 std::unique_ptr<views::LayoutManager> CreatePreferredSizeLayoutManager() {
-  auto layout = base::MakeUnique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, 0, 0, 0);
+  auto layout =
+      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kHorizontal);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   return std::move(layout);

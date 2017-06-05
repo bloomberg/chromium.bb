@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -76,8 +77,8 @@ SubtleNotificationView::InstructionView::InstructionView(
     SkColor background_color)
     : foreground_color_(foreground_color), background_color_(background_color) {
   // The |between_child_spacing| is the horizontal margin of the key name.
-  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                                  0, 0, kKeyNameMarginHorizPx);
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, gfx::Insets(), kKeyNameMarginHorizPx);
   SetLayoutManager(layout);
 
   SetText(text);
@@ -124,7 +125,7 @@ void SubtleNotificationView::InstructionView::AddTextSegment(
 
   views::View* key = new views::View;
   views::BoxLayout* key_name_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kKeyNamePaddingPx, 0, 0);
+      views::BoxLayout::kHorizontal, gfx::Insets(0, kKeyNamePaddingPx), 0);
   key_name_layout->set_minimum_cross_axis_size(
       label->GetPreferredSize().height() + kKeyNamePaddingPx * 2);
   key->SetLayoutManager(key_name_layout);
@@ -164,9 +165,9 @@ SubtleNotificationView::SubtleNotificationView(
   AddChildView(instruction_view_);
   AddChildView(link_);
 
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, outer_padding_horiz,
-                           outer_padding_vert, kMiddlePaddingPx);
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal,
+      gfx::Insets(outer_padding_vert, outer_padding_horiz), kMiddlePaddingPx);
   SetLayoutManager(layout);
 }
 

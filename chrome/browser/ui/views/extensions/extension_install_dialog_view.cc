@@ -39,6 +39,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/common_theme.h"
@@ -245,8 +246,8 @@ void ExtensionInstallDialogView::InitView() {
   if (prompt_->has_webstore_data()) {
     layout->StartRow(0, column_set_id);
     views::View* rating = new views::View();
-    rating->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, 0));
+    rating->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal));
     layout->AddView(rating);
     prompt_->AppendRatingStars(AddResourceIcon, rating);
 

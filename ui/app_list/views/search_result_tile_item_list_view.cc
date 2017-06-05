@@ -11,6 +11,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -32,9 +33,9 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     views::Textfield* search_box,
     AppListViewDelegate* view_delegate)
     : search_box_(search_box) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        kHorizontalBorderSpacing, 0,
-                                        kBetweenTileSpacing));
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, gfx::Insets(0, kHorizontalBorderSpacing),
+      kBetweenTileSpacing));
 
   for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
     SearchResultTileItemView* tile_item =

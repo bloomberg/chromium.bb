@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
@@ -67,10 +68,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical,
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN),
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 
   description_label_->SetMultiLine(true);

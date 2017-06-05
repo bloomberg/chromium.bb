@@ -25,6 +25,7 @@
 #include "net/base/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -53,10 +54,7 @@ AppInfoHeaderPanel::AppInfoHeaderPanel(Profile* profile,
 
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal,
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN),
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   CreateControls();
@@ -76,7 +74,7 @@ void AppInfoHeaderPanel::CreateControls() {
   // Create a vertical container to store the app's name and link.
   views::View* vertical_info_container = new views::View();
   views::BoxLayout* vertical_container_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+      new views::BoxLayout(views::BoxLayout::kVertical);
   vertical_container_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   vertical_info_container->SetLayoutManager(vertical_container_layout);

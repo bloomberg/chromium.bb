@@ -16,6 +16,7 @@
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_tile_item_list_view.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
@@ -58,8 +59,8 @@ SearchResultPageView::SearchResultPageView() : selected_index_(0) {
       gfx::Insets(kTopPadding, kSearchBoxPadding, 0, kSearchBoxPadding);
   insets += -border->GetInsets();
 
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, kGroupSpacing);
+  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical,
+                                                  gfx::Insets(), kGroupSpacing);
   layout->set_inside_border_insets(insets);
 
   SetLayoutManager(layout);
