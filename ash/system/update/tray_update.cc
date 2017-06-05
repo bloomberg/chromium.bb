@@ -7,6 +7,7 @@
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/public/interfaces/update.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -82,6 +83,7 @@ class TrayUpdate::UpdateView : public ActionableView {
     tri_view->AddView(TriView::Container::START, image);
 
     base::string16 label_text;
+    update_label_ = TrayPopupUtils::CreateDefaultLabel();
     if (owner->factory_reset_required_) {
       label_text = bundle.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE);
@@ -91,12 +93,16 @@ class TrayUpdate::UpdateView : public ActionableView {
                owner->update_over_cellular_available_) {
       label_text = bundle.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_UPDATE_OVER_CELLULAR_AVAILABLE);
+      if (!Shell::Get()->session_controller()->ShouldEnableSettings()) {
+        // Disables the view if settings page is not enabled.
+        tri_view->SetEnabled(false);
+        update_label_->SetEnabled(false);
+      }
     } else {
       label_text = bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE);
     }
 
     SetAccessibleName(label_text);
-    update_label_ = TrayPopupUtils::CreateDefaultLabel();
     update_label_->SetText(label_text);
 
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);

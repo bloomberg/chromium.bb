@@ -102,7 +102,7 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
   } else if (status.status ==
              UpdateEngineClient::UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE) {
     // Update engine broadcasts this state only when update is available but
-    // downloading over cellular connection requires user's agreement
+    // downloading over cellular connection requires user's agreement.
     NotifyUpdateOverCellularAvailable();
   }
 }
