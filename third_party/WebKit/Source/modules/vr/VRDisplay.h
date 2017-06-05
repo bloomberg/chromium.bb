@@ -135,7 +135,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   void OnDeactivate(device::mojom::blink::VRDisplayEventReason) override;
 
   void OnVSync(device::mojom::blink::VRPosePtr,
-               mojo::common::mojom::blink::TimeDeltaPtr,
+               WTF::TimeDelta,
                int16_t frame_id,
                device::mojom::blink::VRVSyncProvider::Status);
   void ConnectVSyncProvider();
