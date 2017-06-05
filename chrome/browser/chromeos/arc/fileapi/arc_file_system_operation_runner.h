@@ -55,6 +55,7 @@ class ArcFileSystemOperationRunner
       public InstanceHolder<mojom::FileSystemInstance>::Observer {
  public:
   using GetFileSizeCallback = mojom::FileSystemInstance::GetFileSizeCallback;
+  using GetMimeTypeCallback = mojom::FileSystemInstance::GetMimeTypeCallback;
   using OpenFileToReadCallback =
       mojom::FileSystemInstance::OpenFileToReadCallback;
   using GetDocumentCallback = mojom::FileSystemInstance::GetDocumentCallback;
@@ -99,6 +100,7 @@ class ArcFileSystemOperationRunner
 
   // Runs file system operations. See file_system.mojom for documentation.
   void GetFileSize(const GURL& url, const GetFileSizeCallback& callback);
+  void GetMimeType(const GURL& url, const GetMimeTypeCallback& callback);
   void OpenFileToRead(const GURL& url, const OpenFileToReadCallback& callback);
   void GetDocument(const std::string& authority,
                    const std::string& document_id,

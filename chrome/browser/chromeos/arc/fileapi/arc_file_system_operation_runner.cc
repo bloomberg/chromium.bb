@@ -104,6 +104,26 @@ void ArcFileSystemOperationRunner::GetFileSize(
   file_system_instance->GetFileSize(url.spec(), callback);
 }
 
+void ArcFileSystemOperationRunner::GetMimeType(
+    const GURL& url,
+    const GetMimeTypeCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (should_defer_) {
+    deferred_operations_.emplace_back(
+        base::Bind(&ArcFileSystemOperationRunner::GetMimeType,
+                   weak_ptr_factory_.GetWeakPtr(), url, callback));
+    return;
+  }
+  auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->file_system(), GetMimeType);
+  if (!file_system_instance) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, base::nullopt));
+    return;
+  }
+  file_system_instance->GetMimeType(url.spec(), callback);
+}
+
 void ArcFileSystemOperationRunner::OpenFileToRead(
     const GURL& url,
     const OpenFileToReadCallback& callback) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -51,7 +51,7 @@ interface FileSystemHost {
   [MinVersion=3] OnDocumentChanged@0(int64 watcher_id, ChangeType type);
 };
 
-// Next method ID: 8
+// Next method ID: 9
 interface FileSystemInstance {
   // Notes about Android Documents Provider:
   //
@@ -104,6 +104,10 @@ interface FileSystemInstance {
   // If the file does not exist or the size is unknown (e.g. directories and
   // streams), -1 is returned.
   [MinVersion=1] GetFileSize@1(string url) => (int64 size);
+
+  // Asks the ContentResolver to get the MIME type of the file specified by the
+  // URL. When an error occurs, returns null value.
+  [MinVersion=4] GetMimeType@8(string url) => (string? mime_type);
 
   // Establishes full-duplex communication with the host.
   [MinVersion=3] Init@5(FileSystemHost host_ptr);

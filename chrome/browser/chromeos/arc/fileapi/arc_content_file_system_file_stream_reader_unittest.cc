@@ -36,6 +36,8 @@ constexpr char kArcUrlPipe[] = "content://org.chromium.foo/pipe";
 
 constexpr char kData[] = "abcdefghijklmnopqrstuvwxyz";
 
+constexpr char kMimeType[] = "application/octet-stream";
+
 // Reads data from the reader to fill the buffer.
 bool ReadData(ArcContentFileSystemFileStreamReader* reader,
               net::IOBufferWithSize* buffer) {
@@ -62,8 +64,10 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
   ~ArcContentFileSystemFileStreamReaderTest() override = default;
 
   void SetUp() override {
-    fake_file_system_.AddFile(File(kArcUrlFile, kData, File::Seekable::YES));
-    fake_file_system_.AddFile(File(kArcUrlPipe, kData, File::Seekable::NO));
+    fake_file_system_.AddFile(
+        File(kArcUrlFile, kData, kMimeType, File::Seekable::YES));
+    fake_file_system_.AddFile(
+        File(kArcUrlPipe, kData, kMimeType, File::Seekable::NO));
 
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
     arc_service_manager_->AddService(
