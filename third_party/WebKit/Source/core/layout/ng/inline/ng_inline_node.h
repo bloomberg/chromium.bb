@@ -15,7 +15,6 @@
 
 namespace blink {
 
-class ComputedStyle;
 class LayoutBlockFlow;
 class LayoutNGBlockFlow;
 class LayoutObject;
@@ -30,21 +29,19 @@ class NGLayoutResult;
 // inline nodes and their descendants.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
-  NGInlineNode(LayoutObject* start_inline, LayoutNGBlockFlow*);
-  ~NGInlineNode() override;
+  NGInlineNode(LayoutNGBlockFlow*, LayoutObject*);
 
-  LayoutBlockFlow* GetLayoutBlockFlow() const { return block_; }
-  const ComputedStyle& Style() const override { return block_->StyleRef(); }
-  NGLayoutInputNode* NextSibling() override;
+  LayoutBlockFlow* GetLayoutBlockFlow() const {
+    return ToLayoutBlockFlow(box_);
+  }
+  NGLayoutInputNode NextSibling();
 
-  RefPtr<NGLayoutResult> Layout(NGConstraintSpace*,
-                                NGBreakToken* = nullptr) override;
-  LayoutObject* GetLayoutObject() const override;
+  RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken* = nullptr);
 
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
   // opportunity, and max-content is when lines do not wrap at all.
-  MinMaxContentSize ComputeMinMaxContentSize() override;
+  MinMaxContentSize ComputeMinMaxContentSize();
 
   // Copy fragment data of all lines to LayoutBlockFlow.
   void CopyFragmentDataToLayoutBox(const NGConstraintSpace&, NGLayoutResult*);
@@ -68,13 +65,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void AssertOffset(unsigned index, unsigned offset) const;
   void AssertEndOffset(unsigned index, unsigned offset) const;
 
-  String ToString() const override;
-
-  DECLARE_VIRTUAL_TRACE();
+  String ToString() const;
 
  protected:
-  NGInlineNode();  // This constructor is only for testing.
-
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
   void PrepareLayout();
@@ -87,12 +80,12 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void SegmentText();
   void ShapeText();
 
-  NGInlineNodeData& MutableData() { return block_->GetNGInlineNodeData(); }
-  const NGInlineNodeData& Data() const { return block_->GetNGInlineNodeData(); }
-
-  LayoutObject* start_inline_;
-  LayoutNGBlockFlow* block_;
-  Member<NGLayoutInputNode> next_sibling_;
+  NGInlineNodeData& MutableData() {
+    return ToLayoutNGBlockFlow(box_)->GetNGInlineNodeData();
+  }
+  const NGInlineNodeData& Data() const {
+    return ToLayoutNGBlockFlow(box_)->GetNGInlineNodeData();
+  }
 
   friend class NGLineBreakerTest;
 };

@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class LayoutBox;
+
 // Data which is required for inline nodes.
 struct CORE_EXPORT NGInlineNodeData {
  private:
@@ -21,6 +23,13 @@ struct CORE_EXPORT NGInlineNodeData {
   // Encoded either as UTF-16 or latin-1 depending on the content.
   String text_content_;
   Vector<NGInlineItem> items_;
+
+  // next_sibling_ is only valid after NGInlineNode::PrepareLayout is called.
+  // Calling NGInlineNode::NextSibling will trigger this.
+  LayoutBox* next_sibling_;
+
+  // start_inline_ must always be reset within the constructor of NGInlineNode.
+  LayoutObject* start_inline_;
 
   // TODO(kojii): This should move to somewhere else when we move PrepareLayout
   // to the correct place.

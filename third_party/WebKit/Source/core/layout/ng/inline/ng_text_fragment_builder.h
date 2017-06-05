@@ -6,20 +6,20 @@
 #define NGTextFragmentBuilder_h
 
 #include "core/layout/ng/geometry/ng_logical_size.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
 
-class NGInlineNode;
 class NGPhysicalTextFragment;
 
 class CORE_EXPORT NGTextFragmentBuilder final {
   STACK_ALLOCATED();
 
  public:
-  NGTextFragmentBuilder(NGInlineNode*);
+  NGTextFragmentBuilder(NGInlineNode);
 
   NGTextFragmentBuilder& SetDirection(TextDirection);
 
@@ -36,7 +36,7 @@ class CORE_EXPORT NGTextFragmentBuilder final {
  private:
   TextDirection direction_;
 
-  Persistent<NGInlineNode> node_;
+  NGInlineNode node_;
 
   NGLogicalSize size_;
 

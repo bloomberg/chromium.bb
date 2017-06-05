@@ -39,14 +39,13 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   // Perform 1st Layout.
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
-  NGInlineNode* inline_node =
-      new NGInlineNode(block_flow->FirstChild(), block_flow);
+  NGInlineNode inline_node(block_flow, block_flow->FirstChild());
   RefPtr<NGConstraintSpace> constraint_space =
       NGConstraintSpaceBuilder(NGWritingMode::kHorizontalTopBottom)
           .SetAvailableSize({LayoutUnit(50), LayoutUnit(20)})
           .ToConstraintSpace(NGWritingMode::kHorizontalTopBottom);
   RefPtr<NGLayoutResult> layout_result =
-      inline_node->Layout(constraint_space.Get(), nullptr);
+      inline_node.Layout(constraint_space.Get(), nullptr);
   auto* wrapper =
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
 
@@ -65,7 +64,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
 
   // Perform 2nd layout with the break token from the 2nd line.
   RefPtr<NGLayoutResult> layout_result2 =
-      inline_node->Layout(constraint_space.Get(), line2->BreakToken());
+      inline_node.Layout(constraint_space.Get(), line2->BreakToken());
   auto* wrapper2 =
       ToNGPhysicalBoxFragment(layout_result2->PhysicalFragment().Get());
 
@@ -97,11 +96,10 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
   )HTML");
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
-  NGInlineNode* inline_node =
-      new NGInlineNode(block_flow->FirstChild(), block_flow);
+  NGInlineNode inline_node(block_flow, block_flow->FirstChild());
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
-  RefPtr<NGLayoutResult> layout_result = inline_node->Layout(space.Get());
+  RefPtr<NGLayoutResult> layout_result = inline_node.Layout(space.Get());
   auto* wrapper =
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
   EXPECT_EQ(1u, wrapper->Children().size());

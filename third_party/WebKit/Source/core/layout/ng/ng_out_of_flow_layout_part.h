@@ -35,12 +35,12 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   void Run();
 
  private:
-  RefPtr<NGLayoutResult> LayoutDescendant(NGBlockNode& descendant,
+  RefPtr<NGLayoutResult> LayoutDescendant(NGBlockNode descendant,
                                           NGStaticPosition static_position,
                                           NGLogicalOffset* offset);
 
   RefPtr<NGLayoutResult> GenerateFragment(
-      NGBlockNode& node,
+      NGBlockNode node,
       const Optional<LayoutUnit>& block_estimate,
       const NGAbsolutePhysicalPosition node_position);
 

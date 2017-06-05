@@ -25,11 +25,11 @@ TEST_F(NGSpaceUtilsTest, NewFormattingContextForOutOfFlowChild) {
 
   auto& parent_style = GetLayoutObjectByElementId("parent")->StyleRef();
   auto* child = GetLayoutObjectByElementId("child");
-  auto* node = new NGBlockNode(child);
+  NGBlockNode node(ToLayoutBox(child));
 
   auto run_test = [&](RefPtr<ComputedStyle> style) {
     child->SetStyle(style);
-    EXPECT_TRUE(IsNewFormattingContextForBlockLevelChild(parent_style, *node));
+    EXPECT_TRUE(IsNewFormattingContextForBlockLevelChild(parent_style, node));
   };
 
   RefPtr<ComputedStyle> style = ComputedStyle::Create();

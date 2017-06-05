@@ -27,14 +27,14 @@ struct CORE_EXPORT NGUnpositionedFloat
                                             NGLogicalOffset origin_offset,
                                             NGLogicalOffset from_offset,
                                             NGBoxStrut margins,
-                                            NGBlockNode* node,
+                                            NGBlockNode node,
                                             NGBlockBreakToken* token) {
     return AdoptRef(new NGUnpositionedFloat(margins, available_size,
                                             percentage_size, origin_offset,
                                             from_offset, node, token));
   }
 
-  Persistent<NGBlockNode> node;
+  NGBlockNode node;
   RefPtr<NGBlockBreakToken> token;
 
   // Available size of the constraint space that will be used by
@@ -98,7 +98,7 @@ struct CORE_EXPORT NGUnpositionedFloat
                       const NGLogicalSize& percentage_size,
                       const NGLogicalOffset& origin_offset,
                       const NGLogicalOffset& from_offset,
-                      NGBlockNode* node,
+                      NGBlockNode node,
                       NGBlockBreakToken* token)
       : node(node),
         token(token),

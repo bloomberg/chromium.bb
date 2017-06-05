@@ -6,6 +6,7 @@
 #define NGBlockChildIterator_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_layout_input_node.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -24,7 +25,7 @@ class CORE_EXPORT NGBlockChildIterator {
   STACK_ALLOCATED();
 
  public:
-  NGBlockChildIterator(NGLayoutInputNode* first_child,
+  NGBlockChildIterator(NGLayoutInputNode first_child,
                        NGBlockBreakToken* break_token);
 
   // Returns the next input node which should be laid out, along with its
@@ -33,7 +34,7 @@ class CORE_EXPORT NGBlockChildIterator {
   Entry NextChild();
 
  private:
-  Persistent<NGLayoutInputNode> child_;
+  NGLayoutInputNode child_;
   NGBlockBreakToken* break_token_;
 
   // An index into break_token_'s ChildBreakTokens() vector. Used for keeping
@@ -44,10 +45,10 @@ class CORE_EXPORT NGBlockChildIterator {
 struct NGBlockChildIterator::Entry {
   STACK_ALLOCATED();
 
-  Entry(NGLayoutInputNode* node, NGBreakToken* token)
+  Entry(NGLayoutInputNode node, NGBreakToken* token)
       : node(node), token(token) {}
 
-  Persistent<NGLayoutInputNode> node;
+  NGLayoutInputNode node;
   NGBreakToken* token;
 
   bool operator==(const NGBlockChildIterator::Entry& other) const {

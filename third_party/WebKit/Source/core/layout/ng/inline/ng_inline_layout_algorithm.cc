@@ -40,21 +40,20 @@ NGLogicalOffset GetOriginPointForFloats(
 }  // namespace
 
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
-    NGInlineNode* inline_node,
+    NGInlineNode inline_node,
     NGConstraintSpace* space,
     NGInlineBreakToken* break_token)
     : NGLayoutAlgorithm(inline_node, space, break_token),
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space->WritingMode())),
       disallow_first_line_rules_(false),
-      space_builder_(space)
-{
+      space_builder_(space) {
   container_builder_.MutableUnpositionedFloats() = space->UnpositionedFloats();
 
   // TODO(crbug.com/716930): We may be an empty LayoutInline due to splitting.
   // Only resolve our BFC offset if we know that we are non-empty as we may
   // need to pass through our margin strut.
-  if (!inline_node->Items().IsEmpty()) {
+  if (!inline_node.Items().IsEmpty()) {
     LayoutUnit bfc_block_offset = ConstraintSpace().BfcOffset().block_offset;
     bfc_block_offset += ConstraintSpace().MarginStrut().Sum();
     MaybeUpdateFragmentBfcOffset(ConstraintSpace(), bfc_block_offset,
@@ -77,7 +76,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     DCHECK(break_token->TextOffset() || break_token->ItemIndex());
     disallow_first_line_rules_ = true;
   } else {
-    auto& engine = Node()->GetLayoutObject()->GetDocument().GetStyleEngine();
+    auto& engine = Node().GetLayoutObject()->GetDocument().GetStyleEngine();
     disallow_first_line_rules_ = !engine.UsesFirstLineRules();
   }
 
@@ -89,7 +88,7 @@ bool NGInlineLayoutAlgorithm::IsFirstLine() const {
 }
 
 const ComputedStyle& NGInlineLayoutAlgorithm::FirstLineStyle() const {
-  return Node()->GetLayoutObject()->FirstLineStyleRef();
+  return Node().GetLayoutObject()->FirstLineStyleRef();
 }
 
 const ComputedStyle& NGInlineLayoutAlgorithm::LineStyle() const {
@@ -112,7 +111,7 @@ LayoutUnit NGInlineLayoutAlgorithm::LogicalLeftOffset() const {
 bool NGInlineLayoutAlgorithm::CreateLine(
     NGInlineItemResults* item_results,
     RefPtr<NGInlineBreakToken> break_token) {
-  if (Node()->IsBidiEnabled())
+  if (Node().IsBidiEnabled())
     BidiReorder(item_results);
 
   if (!PlaceItems(item_results, break_token))
@@ -139,7 +138,7 @@ void NGInlineLayoutAlgorithm::BidiReorder(NGInlineItemResults* line_items) {
   // runs instead of characters.
   Vector<UBiDiLevel, 32> levels;
   levels.ReserveInitialCapacity(line_items->size());
-  const Vector<NGInlineItem>& items = Node()->Items();
+  const Vector<NGInlineItem>& items = Node().Items();
   for (const auto& item_result : *line_items)
     levels.push_back(items[item_result.item_index].BidiLevel());
   Vector<int32_t, 32> indices_in_visual_order(line_items->size());
@@ -177,11 +176,11 @@ void NGInlineLayoutAlgorithm::BidiReorder(NGInlineItemResults* line_items) {
 void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
     LayoutUnit end_position,
     LayoutObject* layout_object) {
-  NGBlockNode* node = new NGBlockNode(layout_object);
+  NGBlockNode node(ToLayoutBox(layout_object));
 
   NGLogicalOffset origin_offset =
       GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
-  const ComputedStyle& float_style = node->Style();
+  const ComputedStyle& float_style = node.Style();
   NGBoxStrut margins = ComputeMargins(ConstraintSpace(), float_style,
                                       ConstraintSpace().WritingMode(),
                                       ConstraintSpace().Direction());
@@ -215,7 +214,7 @@ void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
 bool NGInlineLayoutAlgorithm::PlaceItems(
     NGInlineItemResults* line_items,
     RefPtr<NGInlineBreakToken> break_token) {
-  const Vector<NGInlineItem>& items = Node()->Items();
+  const Vector<NGInlineItem>& items = Node().Items();
 
   const ComputedStyle& line_style = LineStyle();
   NGLineHeightMetrics line_metrics(line_style, baseline_type_);
@@ -285,7 +284,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       container_builder_.AddOutOfFlowDescendant(
           // Absolute positioning blockifies the box's display type.
           // https://drafts.csswg.org/css-display/#transformations
-          new NGBlockNode(item.GetLayoutObject()),
+          NGBlockNode(ToLayoutBox(item.GetLayoutObject())),
           NGStaticPosition::Create(ConstraintSpace().WritingMode(),
                                    ConstraintSpace().Direction(),
                                    NGPhysicalOffset()));

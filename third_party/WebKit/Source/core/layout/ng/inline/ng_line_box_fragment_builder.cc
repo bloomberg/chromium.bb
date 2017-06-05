@@ -13,7 +13,7 @@
 
 namespace blink {
 
-NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(NGInlineNode* node)
+NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(NGInlineNode node)
     : writing_mode_(kHorizontalTopBottom),
       direction_(TextDirection::kLtr),
       node_(node) {}
@@ -71,7 +71,7 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGWritingMode writing_mode(
-      FromPlatformWritingMode(node_->Style().GetWritingMode()));
+      FromPlatformWritingMode(node_.Style().GetWritingMode()));
   NGPhysicalSize physical_size =
       NGLogicalSize(inline_size_, Metrics().LineHeight())
           .ConvertToPhysical(writing_mode);

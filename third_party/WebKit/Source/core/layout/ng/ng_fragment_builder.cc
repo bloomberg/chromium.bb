@@ -17,12 +17,12 @@ namespace blink {
 
 // TODO(ikilpatrick): Make writing mode and direction be in the constructor.
 NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
-                                     NGLayoutInputNode* node)
+                                     NGLayoutInputNode node)
     : type_(type),
       writing_mode_(kHorizontalTopBottom),
       direction_(TextDirection::kLtr),
       node_(node),
-      layout_object_(node->GetLayoutObject()),
+      layout_object_(node.GetLayoutObject()),
       did_break_(false),
       border_edges_(NGBorderEdges::kAll) {}
 
@@ -31,6 +31,7 @@ NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
     : type_(type),
       writing_mode_(kHorizontalTopBottom),
       direction_(TextDirection::kLtr),
+      node_(nullptr),
       layout_object_(layout_object),
       did_break_(false) {}
 
@@ -75,9 +76,9 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   // Collect child's out of flow descendants.
   const Vector<NGStaticPosition>& oof_positions = child->OutOfFlowPositions();
   size_t oof_index = 0;
-  for (auto& oof_node : child->OutOfFlowDescendants()) {
+  for (NGBlockNode oof_node : child->OutOfFlowDescendants()) {
     NGStaticPosition oof_position = oof_positions[oof_index++];
-    out_of_flow_descendant_candidates_.insert(oof_node);
+    out_of_flow_descendant_candidates_.push_back(oof_node);
     out_of_flow_candidate_placements_.push_back(
         OutOfFlowPlacement{child_offset, oof_position});
   }
@@ -103,7 +104,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
       // NGInlineNode produces multiple line boxes in an anonymous box. Only
       // the last break token is needed to be reported to the parent.
       DCHECK(child->BreakToken());
-      DCHECK_EQ(child->BreakToken()->InputNode(), node_);
+      DCHECK(child->BreakToken()->InputNode() == node_);
       last_inline_break_token_ =
           child->BreakToken()->IsFinished() ? nullptr : child->BreakToken();
       break;
@@ -136,14 +137,14 @@ NGFragmentBuilder& NGFragmentBuilder::SetBfcOffset(
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
-    NGBlockNode* child,
+    NGBlockNode child,
     NGLogicalOffset child_offset) {
-  out_of_flow_descendant_candidates_.insert(child);
+  out_of_flow_descendant_candidates_.push_back(child);
   NGStaticPosition child_position =
       NGStaticPosition::Create(writing_mode_, direction_, NGPhysicalOffset());
   out_of_flow_candidate_placements_.push_back(
       OutOfFlowPlacement{child_offset, child_position});
-  child->SaveStaticOffsetForLegacy(child_offset);
+  child.SaveStaticOffsetForLegacy(child_offset);
   return *this;
 }
 
@@ -154,7 +155,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddUnpositionedFloat(
 }
 
 void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
-    WeakBoxList* descendants,
+    Vector<NGBlockNode>* descendants,
     Vector<NGStaticPosition>* descendant_positions) {
   DCHECK(descendants->IsEmpty());
   DCHECK(descendant_positions->IsEmpty());
@@ -164,7 +165,7 @@ void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   NGPhysicalSize builder_physical_size{size_.ConvertToPhysical(writing_mode_)};
 
   size_t placement_index = 0;
-  for (auto& oof_node : out_of_flow_descendant_candidates_) {
+  for (NGBlockNode oof_node : out_of_flow_descendant_candidates_) {
     OutOfFlowPlacement oof_placement =
         out_of_flow_candidate_placements_[placement_index++];
 
@@ -176,7 +177,7 @@ void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     builder_relative_position.type = oof_placement.descendant_position.type;
     builder_relative_position.offset =
         child_offset + oof_placement.descendant_position.offset;
-    descendants->insert(oof_node);
+    descendants->push_back(oof_node);
     descendant_positions->push_back(builder_relative_position);
   }
   out_of_flow_descendant_candidates_.clear();
@@ -184,9 +185,9 @@ void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(
-    NGBlockNode* descendant,
+    NGBlockNode descendant,
     const NGStaticPosition& position) {
-  out_of_flow_descendants_.insert(descendant);
+  out_of_flow_descendants_.push_back(descendant);
   out_of_flow_positions_.push_back(position);
   return *this;
 }
@@ -211,10 +212,10 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
       did_break_ = true;
     }
     if (did_break_) {
-      break_token = NGBlockBreakToken::Create(node_.Get(), used_block_size_,
+      break_token = NGBlockBreakToken::Create(node_, used_block_size_,
                                               child_break_tokens_);
     } else {
-      break_token = NGBlockBreakToken::Create(node_.Get());
+      break_token = NGBlockBreakToken::Create(node_);
     }
   }
 

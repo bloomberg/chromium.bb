@@ -108,7 +108,7 @@ NGPhysicalOffset CalculateFloatingObjectPaintOffset(
 WTF::Optional<LayoutUnit> CalculateFragmentationOffset(
     const NGUnpositionedFloat& unpositioned_float,
     const NGConstraintSpace& parent_space) {
-  const ComputedStyle& style = unpositioned_float.node->Style();
+  const ComputedStyle& style = unpositioned_float.node.Style();
   DCHECK(FromPlatformWritingMode(style.GetWritingMode()) ==
          parent_space.WritingMode());
 
@@ -125,7 +125,7 @@ RefPtr<NGConstraintSpace> CreateConstraintSpaceForFloat(
     const NGUnpositionedFloat& unpositioned_float,
     NGConstraintSpace* parent_space,
     WTF::Optional<LayoutUnit> fragmentation_offset = WTF::nullopt) {
-  const ComputedStyle& style = unpositioned_float.node->Style();
+  const ComputedStyle& style = unpositioned_float.node.Style();
 
   NGConstraintSpaceBuilder builder(parent_space);
 
@@ -151,7 +151,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
     NGUnpositionedFloat* unpositioned_float) {
   DCHECK(unpositioned_float);
 
-  const ComputedStyle& style = unpositioned_float->node->Style();
+  const ComputedStyle& style = unpositioned_float->node.Style();
 
   bool is_same_writing_mode = FromPlatformWritingMode(style.GetWritingMode()) ==
                               parent_space->WritingMode();
@@ -174,7 +174,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   if (is_same_writing_mode) {
     WTF::Optional<MinMaxContentSize> min_max_size;
     if (NeedMinMaxContentSize(*space.Get(), style))
-      min_max_size = unpositioned_float->node->ComputeMinMaxContentSize();
+      min_max_size = unpositioned_float->node.ComputeMinMaxContentSize();
     return ComputeInlineSizeForFragment(*space.Get(), style, min_max_size);
   }
 
@@ -187,7 +187,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   // its inline size. We are able to cache this result on the
   // unpositioned_float at this stage.
   RefPtr<NGLayoutResult> layout_result =
-      unpositioned_float->node->Layout(space.Get());
+      unpositioned_float->node.Layout(space.Get());
 
   RefPtr<NGPhysicalBoxFragment> fragment =
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
@@ -212,7 +212,7 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
 #if DCHECK_IS_ON()
   bool is_same_writing_mode =
       FromPlatformWritingMode(
-          unpositioned_float->node->Style().GetWritingMode()) ==
+          unpositioned_float->node.Style().GetWritingMode()) ==
       new_parent_space->WritingMode();
 #endif
 
@@ -233,7 +233,7 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
 
     RefPtr<NGConstraintSpace> space = CreateConstraintSpaceForFloat(
         *unpositioned_float, new_parent_space, fragmentation_offset);
-    RefPtr<NGLayoutResult> layout_result = unpositioned_float->node->Layout(
+    RefPtr<NGLayoutResult> layout_result = unpositioned_float->node.Layout(
         space.Get(), unpositioned_float->token.Get());
     physical_fragment =
         ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());

@@ -20,7 +20,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
   STACK_ALLOCATED();
 
  public:
-  explicit NGLineBoxFragmentBuilder(NGInlineNode*);
+  explicit NGLineBoxFragmentBuilder(NGInlineNode);
 
   NGLineBoxFragmentBuilder& SetWritingMode(NGWritingMode);
   NGWritingMode WritingMode() const { return writing_mode_; }
@@ -55,7 +55,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
   NGWritingMode writing_mode_;
   TextDirection direction_;
 
-  Persistent<NGInlineNode> node_;
+  NGInlineNode node_;
 
   LayoutUnit inline_size_;
 

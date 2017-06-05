@@ -86,13 +86,16 @@ class NGInlineNodeTest : public RenderingTest {
     SetupHtml("t", "<div id=t style='font:10px Ahem'>test</div>");
   }
 
-  NGInlineNodeForTest* CreateInlineNode() {
+  NGInlineNodeForTest CreateInlineNode() {
     if (!layout_block_flow_)
       SetupHtml("t", "<div id=t style='font:10px'>test</div>");
-    return new NGInlineNodeForTest(layout_object_, layout_block_flow_);
+    NGInlineNodeForTest node(layout_block_flow_,
+                             layout_block_flow_->FirstChild());
+    node.InvalidatePrepareLayout();
+    return node;
   }
 
-  void CreateLine(NGInlineNode* node,
+  void CreateLine(NGInlineNode node,
                   Vector<RefPtr<const NGPhysicalTextFragment>>* fragments_out) {
     RefPtr<NGConstraintSpace> constraint_space =
         NGConstraintSpaceBuilder(kHorizontalTopBottom)
@@ -134,9 +137,9 @@ class NGInlineNodeTest : public RenderingTest {
 
 TEST_F(NGInlineNodeTest, CollectInlinesText) {
   SetupHtml("t", "<div id=t>Hello <span>inline</span> world.</div>");
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->CollectInlines(layout_object_, layout_block_flow_);
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.CollectInlines(layout_object_, layout_block_flow_);
+  Vector<NGInlineItem>& items = node.Items();
   TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 6u);
   TEST_ITEM_TYPE_OFFSET(items[1], kOpenTag, 6u, 6u);
   TEST_ITEM_TYPE_OFFSET(items[2], kText, 6u, 12u);
@@ -147,10 +150,10 @@ TEST_F(NGInlineNodeTest, CollectInlinesText) {
 
 TEST_F(NGInlineNodeTest, CollectInlinesBR) {
   SetupHtml("t", u"<div id=t>Hello<br>World</div>");
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->CollectInlines(layout_object_, layout_block_flow_);
-  EXPECT_EQ("Hello\nWorld", node->Text());
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.CollectInlines(layout_object_, layout_block_flow_);
+  EXPECT_EQ("Hello\nWorld", node.Text());
+  Vector<NGInlineItem>& items = node.Items();
   TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 5u);
   TEST_ITEM_TYPE_OFFSET(items[1], kControl, 5u, 6u);
   TEST_ITEM_TYPE_OFFSET(items[2], kText, 6u, 11u);
@@ -159,12 +162,12 @@ TEST_F(NGInlineNodeTest, CollectInlinesBR) {
 
 TEST_F(NGInlineNodeTest, CollectInlinesRtlText) {
   SetupHtml("t", u"<div id=t dir=rtl>\u05E2 <span>\u05E2</span> \u05E2</div>");
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->CollectInlines(layout_object_, layout_block_flow_);
-  EXPECT_TRUE(node->IsBidiEnabled());
-  node->SegmentText();
-  EXPECT_TRUE(node->IsBidiEnabled());
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.CollectInlines(layout_object_, layout_block_flow_);
+  EXPECT_TRUE(node.IsBidiEnabled());
+  node.SegmentText();
+  EXPECT_TRUE(node.IsBidiEnabled());
+  Vector<NGInlineItem>& items = node.Items();
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[0], kText, 0u, 2u, 1u);
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[1], kOpenTag, 2u, 2u, 1u);
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[2], kText, 2u, 3u, 1u);
@@ -175,12 +178,12 @@ TEST_F(NGInlineNodeTest, CollectInlinesRtlText) {
 
 TEST_F(NGInlineNodeTest, CollectInlinesMixedText) {
   SetupHtml("t", u"<div id=t>Hello, \u05E2 <span>\u05E2</span></div>");
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->CollectInlines(layout_object_, layout_block_flow_);
-  EXPECT_TRUE(node->IsBidiEnabled());
-  node->SegmentText();
-  EXPECT_TRUE(node->IsBidiEnabled());
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.CollectInlines(layout_object_, layout_block_flow_);
+  EXPECT_TRUE(node.IsBidiEnabled());
+  node.SegmentText();
+  EXPECT_TRUE(node.IsBidiEnabled());
+  Vector<NGInlineItem>& items = node.Items();
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[0], kText, 0u, 7u, 0u);
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[1], kText, 7u, 9u, 1u);
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[2], kOpenTag, 9u, 9u, 1u);
@@ -191,12 +194,12 @@ TEST_F(NGInlineNodeTest, CollectInlinesMixedText) {
 
 TEST_F(NGInlineNodeTest, CollectInlinesMixedTextEndWithON) {
   SetupHtml("t", u"<div id=t>Hello, \u05E2 <span>\u05E2!</span></div>");
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->CollectInlines(layout_object_, layout_block_flow_);
-  EXPECT_TRUE(node->IsBidiEnabled());
-  node->SegmentText();
-  EXPECT_TRUE(node->IsBidiEnabled());
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.CollectInlines(layout_object_, layout_block_flow_);
+  EXPECT_TRUE(node.IsBidiEnabled());
+  node.SegmentText();
+  EXPECT_TRUE(node.IsBidiEnabled());
+  Vector<NGInlineItem>& items = node.Items();
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[0], kText, 0u, 7u, 0u);
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[1], kText, 7u, 9u, 1u);
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[2], kOpenTag, 9u, 9u, 1u);
@@ -207,42 +210,42 @@ TEST_F(NGInlineNodeTest, CollectInlinesMixedTextEndWithON) {
 }
 
 TEST_F(NGInlineNodeTest, SegmentASCII) {
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->Append("Hello");
-  node->SegmentText();
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.Append("Hello");
+  node.SegmentText();
+  Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(1u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u, TextDirection::kLtr);
 }
 
 TEST_F(NGInlineNodeTest, SegmentHebrew) {
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA");
-  node->SegmentText();
-  ASSERT_EQ(1u, node->Items().size());
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA");
+  node.SegmentText();
+  ASSERT_EQ(1u, node.Items().size());
+  Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(1u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u, TextDirection::kRtl);
 }
 
 TEST_F(NGInlineNodeTest, SegmentSplit1To2) {
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->Append(u"Hello \u05E2\u05D1\u05E8\u05D9\u05EA");
-  node->SegmentText();
-  ASSERT_EQ(2u, node->Items().size());
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.Append(u"Hello \u05E2\u05D1\u05E8\u05D9\u05EA");
+  node.SegmentText();
+  ASSERT_EQ(2u, node.Items().size());
+  Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(2u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(items[1], 6u, 11u, TextDirection::kRtl);
 }
 
 TEST_F(NGInlineNodeTest, SegmentSplit3To4) {
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->Append("Hel");
-  node->Append(u"lo \u05E2");
-  node->Append(u"\u05D1\u05E8\u05D9\u05EA");
-  node->SegmentText();
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.Append("Hel");
+  node.Append(u"lo \u05E2");
+  node.Append(u"\u05D1\u05E8\u05D9\u05EA");
+  node.SegmentText();
+  Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(4u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 3u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(items[1], 3u, 6u, TextDirection::kLtr);
@@ -251,13 +254,13 @@ TEST_F(NGInlineNodeTest, SegmentSplit3To4) {
 }
 
 TEST_F(NGInlineNodeTest, SegmentBidiOverride) {
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->Append("Hello ");
-  node->Append(kRightToLeftOverrideCharacter);
-  node->Append("ABC");
-  node->Append(kPopDirectionalFormattingCharacter);
-  node->SegmentText();
-  Vector<NGInlineItem>& items = node->Items();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.Append("Hello ");
+  node.Append(kRightToLeftOverrideCharacter);
+  node.Append("ABC");
+  node.Append(kPopDirectionalFormattingCharacter);
+  node.SegmentText();
+  Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(4u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, TextDirection::kRtl);
@@ -265,26 +268,26 @@ TEST_F(NGInlineNodeTest, SegmentBidiOverride) {
   TEST_ITEM_OFFSET_DIR(items[3], 10u, 11u, TextDirection::kLtr);
 }
 
-static NGInlineNodeForTest* CreateBidiIsolateNode(NGInlineNodeForTest* node,
-                                                  const ComputedStyle* style,
-                                                  LayoutObject* layout_object) {
-  node->Append("Hello ", style, layout_object);
-  node->Append(kRightToLeftIsolateCharacter);
-  node->Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA ", style, layout_object);
-  node->Append(kLeftToRightIsolateCharacter);
-  node->Append("A", style, layout_object);
-  node->Append(kPopDirectionalIsolateCharacter);
-  node->Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style, layout_object);
-  node->Append(kPopDirectionalIsolateCharacter);
-  node->Append(" World", style, layout_object);
-  node->SegmentText();
+static NGInlineNodeForTest CreateBidiIsolateNode(NGInlineNodeForTest node,
+                                                 const ComputedStyle* style,
+                                                 LayoutObject* layout_object) {
+  node.Append("Hello ", style, layout_object);
+  node.Append(kRightToLeftIsolateCharacter);
+  node.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA ", style, layout_object);
+  node.Append(kLeftToRightIsolateCharacter);
+  node.Append("A", style, layout_object);
+  node.Append(kPopDirectionalIsolateCharacter);
+  node.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style, layout_object);
+  node.Append(kPopDirectionalIsolateCharacter);
+  node.Append(" World", style, layout_object);
+  node.SegmentText();
   return node;
 }
 
 TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
-  NGInlineNodeForTest* node =
+  NGInlineNodeForTest node =
       CreateBidiIsolateNode(CreateInlineNode(), style_.Get(), layout_object_);
-  Vector<NGInlineItem>& items = node->Items();
+  Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(9u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, TextDirection::kLtr);
@@ -303,16 +306,16 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   EXPECT_EQ(index, fragment->ItemIndex());                                  \
   EXPECT_EQ(start_offset, fragment->StartOffset());                         \
   EXPECT_EQ(end_offset, fragment->EndOffset());                             \
-  EXPECT_EQ(dir, node->Items()[fragment->ItemIndex()].Direction())
+  EXPECT_EQ(dir, node.Items()[fragment->ItemIndex()].Direction())
 
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   UseLayoutObjectAndAhem();
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   style->SetLineHeight(Length(1, kFixed));
   style->GetFont().Update(nullptr);
-  NGInlineNodeForTest* node =
+  NGInlineNodeForTest node =
       CreateBidiIsolateNode(CreateInlineNode(), style.Get(), layout_object_);
-  node->ShapeText();
+  node.ShapeText();
   Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
   ASSERT_EQ(5u, fragments.size());
@@ -325,21 +328,21 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
 
 TEST_F(NGInlineNodeTest, MinMaxContentSize) {
   UseLayoutObjectAndAhem();
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->Append("AB CDEF", style_.Get(), layout_object_);
-  node->ShapeText();
-  MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.Append("AB CDEF", style_.Get(), layout_object_);
+  node.ShapeText();
+  MinMaxContentSize sizes = node.ComputeMinMaxContentSize();
   EXPECT_EQ(40, sizes.min_content);
   EXPECT_EQ(70, sizes.max_content);
 }
 
 TEST_F(NGInlineNodeTest, MinMaxContentSizeElementBoundary) {
   UseLayoutObjectAndAhem();
-  NGInlineNodeForTest* node = CreateInlineNode();
-  node->Append("A B", style_.Get(), layout_object_);
-  node->Append("C D", style_.Get(), layout_object_);
-  node->ShapeText();
-  MinMaxContentSize sizes = node->ComputeMinMaxContentSize();
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.Append("A B", style_.Get(), layout_object_);
+  node.Append("C D", style_.Get(), layout_object_);
+  node.ShapeText();
+  MinMaxContentSize sizes = node.ComputeMinMaxContentSize();
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
   EXPECT_EQ(20, sizes.min_content);

@@ -22,7 +22,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   DISALLOW_NEW();
 
  public:
-  NGFragmentBuilder(NGPhysicalFragment::NGFragmentType, NGLayoutInputNode*);
+  NGFragmentBuilder(NGPhysicalFragment::NGFragmentType, NGLayoutInputNode);
 
   // Build a fragment for LayoutObject without NGLayoutInputNode. LayoutInline
   // has NGInlineItem but does not have corresponding NGLayoutInputNode.
@@ -76,12 +76,12 @@ class CORE_EXPORT NGFragmentBuilder final {
   // NGOutOfFlowLayoutPart(container_style, builder).Run();
   //
   // See layout part for builder interaction.
-  NGFragmentBuilder& AddOutOfFlowChildCandidate(NGBlockNode*, NGLogicalOffset);
+  NGFragmentBuilder& AddOutOfFlowChildCandidate(NGBlockNode, NGLogicalOffset);
 
-  void GetAndClearOutOfFlowDescendantCandidates(WeakBoxList*,
+  void GetAndClearOutOfFlowDescendantCandidates(Vector<NGBlockNode>*,
                                                 Vector<NGStaticPosition>*);
 
-  NGFragmentBuilder& AddOutOfFlowDescendant(NGBlockNode*,
+  NGFragmentBuilder& AddOutOfFlowDescendant(NGBlockNode,
                                             const NGStaticPosition&);
 
   // Sets how much of the block size we've used so far for this box.
@@ -157,7 +157,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGWritingMode writing_mode_;
   TextDirection direction_;
 
-  Persistent<NGLayoutInputNode> node_;
+  NGLayoutInputNode node_;
   LayoutObject* layout_object_;
 
   NGLogicalSize size_;
@@ -172,10 +172,10 @@ class CORE_EXPORT NGFragmentBuilder final {
   Vector<RefPtr<NGBreakToken>> child_break_tokens_;
   RefPtr<NGBreakToken> last_inline_break_token_;
 
-  WeakBoxList out_of_flow_descendant_candidates_;
+  Vector<NGBlockNode> out_of_flow_descendant_candidates_;
   Vector<OutOfFlowPlacement> out_of_flow_candidate_placements_;
 
-  WeakBoxList out_of_flow_descendants_;
+  Vector<NGBlockNode> out_of_flow_descendants_;
   Vector<NGStaticPosition> out_of_flow_positions_;
 
   // Floats that need to be positioned by the next in-flow fragment that can
