@@ -31,8 +31,6 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 
 crbug.com/455369 html/marquee/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
 
-crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Crash ]
-
 crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 
