@@ -12,6 +12,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -44,10 +45,8 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   DCHECK(controller_);
 
   SetLayoutManager(new views::BoxLayout(
-      /*orientation=*/views::BoxLayout::kVertical,
-      /*inside_border_horizontal_spacing=*/views::kButtonHEdgeMarginNew,
-      /*inside_border_vertical_spacing=*/views::kPanelVertMargin,
-      /*between_child_spacing=*/0));
+      views::BoxLayout::kVertical,
+      gfx::Insets(views::kPanelVertMargin, views::kButtonHEdgeMarginNew), 0));
   views::Label* label = new views::Label(controller_->GetMainText());
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

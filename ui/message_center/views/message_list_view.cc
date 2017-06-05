@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/views/message_center_view.h"
@@ -35,7 +36,7 @@ MessageListView::MessageListView()
       quit_message_loop_after_animation_for_test_(false),
       weak_ptr_factory_(this) {
   views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 1);
   layout->SetDefaultFlex(1);
   SetLayoutManager(layout);
 

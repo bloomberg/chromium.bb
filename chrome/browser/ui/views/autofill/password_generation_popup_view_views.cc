@@ -13,6 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -45,7 +46,7 @@ class PasswordTextBox : public views::View {
             const base::string16& generated_password,
             const gfx::FontList& font_list) {
     views::BoxLayout* box_layout = new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 12, 5);
+        views::BoxLayout::kVertical, gfx::Insets(12, 0), 5);
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     SetLayoutManager(box_layout);
@@ -93,7 +94,7 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
             const gfx::FontList& font_list) {
     views::BoxLayout* box_layout = new views::BoxLayout(
         views::BoxLayout::kHorizontal,
-        PasswordGenerationPopupController::kHorizontalPadding, 0,
+        gfx::Insets(0, PasswordGenerationPopupController::kHorizontalPadding),
         PasswordGenerationPopupController::kHorizontalPadding);
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);

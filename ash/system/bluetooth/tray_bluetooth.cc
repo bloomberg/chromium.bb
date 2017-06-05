@@ -27,6 +27,7 @@
 #include "device/bluetooth/bluetooth_common.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -454,7 +455,7 @@ class BluetoothDetailedView : public TrayDetailsView {
   views::View* CreateDisabledPanel() {
     views::View* container = new views::View;
     views::BoxLayout* box_layout =
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+        new views::BoxLayout(views::BoxLayout::kVertical);
     box_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
     container->SetLayoutManager(box_layout);

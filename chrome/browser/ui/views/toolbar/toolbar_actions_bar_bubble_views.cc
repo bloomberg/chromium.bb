@@ -9,6 +9,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
@@ -74,7 +75,7 @@ views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
   if (icon && label) {
     views::View* parent = new views::View();
     parent->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+        new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
                              ChromeLayoutProvider::Get()->GetDistanceMetric(
                                  views::DISTANCE_RELATED_CONTROL_VERTICAL)));
     parent->AddChildView(icon.release());
@@ -119,7 +120,7 @@ bool ToolbarActionsBarBubbleViews::Close() {
 void ToolbarActionsBarBubbleViews::Init() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0,
+      views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   // Add the content string.

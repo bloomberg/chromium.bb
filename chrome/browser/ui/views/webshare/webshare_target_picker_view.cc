@@ -11,6 +11,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/table/table_view.h"
@@ -83,10 +84,7 @@ WebShareTargetPickerView::WebShareTargetPickerView(
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kVertical,
-      provider->GetDistanceMetric(
-          views::DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN),
-      provider->GetDistanceMetric(
-          views::DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN),
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   SetLayoutManager(layout);
 

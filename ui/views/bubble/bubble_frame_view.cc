@@ -410,8 +410,7 @@ void BubbleFrameView::SetFootnoteView(View* view) {
   DCHECK(!footnote_container_);
   footnote_container_ = new views::View();
   footnote_container_->SetLayoutManager(
-      new BoxLayout(BoxLayout::kVertical, content_margins_.left(),
-                    content_margins_.top(), 0));
+      new BoxLayout(BoxLayout::kVertical, content_margins_, 0));
   footnote_container_->SetBackground(
       CreateSolidBackground(kFootnoteBackgroundColor));
   footnote_container_->SetBorder(

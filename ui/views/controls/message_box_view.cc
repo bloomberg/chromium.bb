@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -232,7 +233,7 @@ void MessageBoxView::ResetLayoutManager() {
   const int kMaxScrollViewHeight = 400;
   views::View* message_contents = new views::View();
   message_contents->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kVertical));
   for (size_t i = 0; i < message_labels_.size(); ++i)
     message_contents->AddChildView(message_labels_[i]);
   ScrollView* scroll_view = new views::ScrollView();

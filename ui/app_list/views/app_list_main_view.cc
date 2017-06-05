@@ -30,6 +30,7 @@
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/start_page_view.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -51,8 +52,8 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate)
   SetLayoutManager(
       features::IsAnswerCardEnabled()
           ? static_cast<views::LayoutManager*>(new views::FillLayout)
-          : static_cast<views::LayoutManager*>(
-                new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0)));
+          : static_cast<views::LayoutManager*>(new views::BoxLayout(
+                views::BoxLayout::kVertical, gfx::Insets(), 0)));
   model_->AddObserver(this);
 }
 

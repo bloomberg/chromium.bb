@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/slider.h"
 #include "ui/views/layout/box_layout.h"
@@ -29,7 +30,8 @@ void SliderExample::CreateExampleView(View* container) {
 
   slider_->SetValue(0.5);
 
-  container->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 3, 3, 3));
+  container->SetLayoutManager(
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(3), 3));
   container->AddChildView(slider_);
   container->AddChildView(label_);
 }

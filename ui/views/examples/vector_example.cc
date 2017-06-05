@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -46,7 +47,7 @@ class VectorIconGallery : public View,
     AddChildView(color_input_);
 
     image_view_container_->AddChildView(image_view_);
-    BoxLayout* image_layout = new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0);
+    BoxLayout* image_layout = new BoxLayout(BoxLayout::kHorizontal);
     image_layout->set_cross_axis_alignment(
         BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
     image_layout->set_main_axis_alignment(
@@ -55,14 +56,15 @@ class VectorIconGallery : public View,
     image_view_->SetBorder(CreateSolidSidedBorder(1, 1, 1, 1, SK_ColorBLACK));
     AddChildView(image_view_container_);
 
-    BoxLayout* box = new BoxLayout(BoxLayout::kVertical, 10, 10, 10);
+    BoxLayout* box = new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10);
     SetLayoutManager(box);
     box->SetFlexForView(image_view_container_, 1);
 
     file_chooser_->set_placeholder_text(
         base::ASCIIToUTF16("Enter a file to read"));
     View* file_container = new View();
-    BoxLayout* file_box = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10);
+    BoxLayout* file_box =
+        new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
     file_container->SetLayoutManager(file_box);
     file_container->AddChildView(file_chooser_);
     file_container->AddChildView(file_go_button_);

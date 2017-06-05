@@ -31,6 +31,7 @@
 #include "components/bubble/bubble_ui.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/label.h"
@@ -212,7 +213,7 @@ void ExtensionInstalledBubbleView::Init() {
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   std::unique_ptr<views::BoxLayout> layout(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0,
+      views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   layout->set_minimum_cross_axis_size(kRightColumnWidth);
   // Indent by the size of the icon.

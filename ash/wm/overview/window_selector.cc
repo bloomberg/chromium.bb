@@ -37,6 +37,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/vector_icons/vector_icons.h"
@@ -180,8 +181,9 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   DCHECK(text_height);
   const int vertical_padding = (params.bounds.height() - text_height) / 2;
   views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kTextFilterHorizontalPadding,
-      vertical_padding, kTextFilterHorizontalPadding);
+      views::BoxLayout::kHorizontal,
+      gfx::Insets(vertical_padding, kTextFilterHorizontalPadding),
+      kTextFilterHorizontalPadding);
   container->SetLayoutManager(layout);
 
   views::Textfield* textfield = new views::Textfield;

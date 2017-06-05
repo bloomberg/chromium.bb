@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
@@ -44,7 +45,7 @@ class ModalDialogExample : public DialogExample {
 
 DialogExample::DialogExample() {
   SetBackground(CreateSolidBackground(SK_ColorGRAY));
-  SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 10, 10, 10));
+  SetLayoutManager(new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10));
   AddChildView(new Label(ASCIIToUTF16("Dialog contents label!")));
 }
 
@@ -72,7 +73,8 @@ WidgetExample::~WidgetExample() {
 }
 
 void WidgetExample::CreateExampleView(View* container) {
-  container->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 0, 0, 10));
+  container->SetLayoutManager(
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(), 10));
   BuildButton(container, "Popup widget", POPUP);
   BuildButton(container, "Dialog widget", DIALOG);
   BuildButton(container, "Modal Dialog", MODAL_DIALOG);
@@ -104,7 +106,7 @@ void WidgetExample::ShowWidget(View* sender, Widget::InitParams params) {
   // If the Widget has no contents by default, add a view with a 'Close' button.
   if (!widget->GetContentsView()) {
     View* contents = new View();
-    contents->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0));
+    contents->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal));
     contents->SetBackground(CreateSolidBackground(SK_ColorGRAY));
     BuildButton(contents, "Close", CLOSE_WIDGET);
     widget->SetContentsView(contents);

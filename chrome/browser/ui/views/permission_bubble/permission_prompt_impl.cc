@@ -26,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
@@ -93,7 +94,7 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0,
+      views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   display_origin_ = url_formatter::FormatUrlForSecurityDisplay(
@@ -106,7 +107,7 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     int indent =
         provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT);
     label_container->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, indent, 0,
+        views::BoxLayout::kHorizontal, gfx::Insets(0, indent),
         provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL)));
     views::ImageView* icon = new views::ImageView();
     const gfx::VectorIcon& vector_id = requests[index]->GetIconId();

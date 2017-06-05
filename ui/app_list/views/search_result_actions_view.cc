@@ -11,6 +11,7 @@
 #include "ui/app_list/views/search_result_actions_view_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -22,8 +23,8 @@ SearchResultActionsView::SearchResultActionsView(
     SearchResultActionsViewDelegate* delegate)
     : delegate_(delegate),
       selected_action_(-1) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 10, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                        gfx::Insets(10, 0), 0));
 }
 
 SearchResultActionsView::~SearchResultActionsView() {}

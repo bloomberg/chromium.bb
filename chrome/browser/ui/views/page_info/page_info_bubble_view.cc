@@ -247,7 +247,7 @@ BubbleHeaderView::BubbleHeaderView(
   layout->StartRow(0, label_column_status);
   reset_decisions_label_container_ = new views::View();
   reset_decisions_label_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kHorizontal));
   layout->AddView(reset_decisions_label_container_, 1, 1,
                   views::GridLayout::FILL, views::GridLayout::LEADING);
 
@@ -343,8 +343,8 @@ InternalPageInfoBubbleView::InternalPageInfoBubbleView(
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
-                                        kSpacing, kSpacing));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                        gfx::Insets(kSpacing), kSpacing));
   set_margins(gfx::Insets());
   if (ChromeLayoutProvider::Get()->ShouldShowWindowIcon()) {
     views::ImageView* icon_view = new NonAccessibleImageView();
@@ -669,7 +669,7 @@ void PageInfoBubbleView::SetPermissionInfo(
   views::View* link_section = new views::View();
   const int kLinkMarginTop = 4;
   link_section->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, kLinkMarginTop, 0));
+      views::BoxLayout::kHorizontal, gfx::Insets(kLinkMarginTop, 0)));
   link_section->AddChildView(site_settings_link);
   site_settings_view_->AddChildView(link_section);
 
@@ -726,8 +726,8 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
 
 views::View* PageInfoBubbleView::CreateSiteSettingsView(int side_margin) {
   views::View* site_settings_view = new views::View();
-  views::BoxLayout* box_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, side_margin, 0, 0);
+  views::BoxLayout* box_layout = new views::BoxLayout(
+      views::BoxLayout::kVertical, gfx::Insets(0, side_margin));
   site_settings_view->SetLayoutManager(box_layout);
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);

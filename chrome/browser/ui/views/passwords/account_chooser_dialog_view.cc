@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
@@ -74,7 +75,7 @@ views::ScrollView* CreateCredentialsView(
     net::URLRequestContextGetter* request_context) {
   views::View* list_view = new views::View;
   list_view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kVertical));
   int item_height = 0;
   for (const auto& form : forms) {
     std::pair<base::string16, base::string16> titles =

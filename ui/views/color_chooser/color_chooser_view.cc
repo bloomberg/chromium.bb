@@ -18,6 +18,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
@@ -363,12 +364,12 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   DCHECK(listener_);
 
   SetBackground(CreateSolidBackground(SK_ColorLTGRAY));
-  SetLayoutManager(new BoxLayout(BoxLayout::kVertical, kMarginWidth,
-                                 kMarginWidth, kMarginWidth));
+  SetLayoutManager(new BoxLayout(BoxLayout::kVertical,
+                                 gfx::Insets(kMarginWidth), kMarginWidth));
 
   View* container = new View();
-  container->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 0, 0,
-                                            kMarginWidth));
+  container->SetLayoutManager(
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(), kMarginWidth));
   saturation_value_ = new SaturationValueView(this);
   container->AddChildView(saturation_value_);
   hue_ = new HueView(this);

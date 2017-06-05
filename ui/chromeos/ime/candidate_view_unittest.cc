@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -45,7 +46,7 @@ class CandidateViewTest : public views::ViewsTestBase,
 
     container_ = init_params.delegate->GetContentsView();
     container_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+        new views::BoxLayout(views::BoxLayout::kVertical));
     for (size_t i = 0; i < arraysize(kDummyCandidates); ++i) {
       CandidateView* candidate = new CandidateView(
           this, ui::CandidateWindow::VERTICAL);

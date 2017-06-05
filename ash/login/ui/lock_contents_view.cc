@@ -9,6 +9,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
@@ -16,7 +17,7 @@
 namespace ash {
 
 LockContentsView::LockContentsView() {
-  auto* layout = new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+  auto* layout = new views::BoxLayout(views::BoxLayout::kVertical);
   SetLayoutManager(layout);
 
   views::Label* label = new views::Label();

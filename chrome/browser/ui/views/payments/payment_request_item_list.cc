@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request_state.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/button.h"
@@ -167,8 +168,9 @@ void PaymentRequestItemList::AddItem(
 std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
   std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
 
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, kPaymentRequestRowVerticalInsets, 0);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           gfx::Insets(kPaymentRequestRowVerticalInsets, 0), 0);
   content_view->SetLayoutManager(layout);
 
   for (auto& item : items_)

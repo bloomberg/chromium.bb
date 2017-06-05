@@ -10,6 +10,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/common/app.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -24,7 +25,7 @@ ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
       app_list_observer_(this),
       manage_link_(nullptr) {
   SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
                            ChromeLayoutProvider::Get()->GetDistanceMetric(
                                views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   manage_link_ = new views::Link(

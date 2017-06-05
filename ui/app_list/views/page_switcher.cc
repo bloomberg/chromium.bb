@@ -12,6 +12,7 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -220,7 +221,8 @@ void PageSwitcher::CalculateButtonWidthAndSpacing(int contents_width) {
                           std::max(kMinButtonWidth, button_width));
 
   buttons_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kButtonStripPadding, 0, button_spacing));
+      views::BoxLayout::kHorizontal, gfx::Insets(0, kButtonStripPadding),
+      button_spacing));
   for (int i = 0; i < button_count; ++i) {
     PageSwitcherButton* button =
         static_cast<PageSwitcherButton*>(buttons_->child_at(i));

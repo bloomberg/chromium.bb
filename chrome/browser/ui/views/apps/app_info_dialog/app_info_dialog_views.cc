@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/border.h"
@@ -113,8 +114,7 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
                              Profile* profile,
                              const extensions::Extension* app)
     : profile_(profile), app_id_(app->id()) {
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical);
   SetLayoutManager(layout);
 
   const int kHorizontalSeparatorHeight = 1;
@@ -137,10 +137,7 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   dialog_body_contents->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical,
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN),
-      provider->GetDistanceMetric(
-          views::DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN),
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS),
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   dialog_body_contents->AddChildView(new AppInfoSummaryPanel(profile, app));
   dialog_body_contents->AddChildView(new AppInfoPermissionsPanel(profile, app));

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/view.h"
 
@@ -24,13 +25,14 @@ class BoxLayoutTest : public testing::Test {
 }  // namespace
 
 TEST_F(BoxLayoutTest, Empty) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 20);
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 20);
   host_->SetLayoutManager(layout);
   EXPECT_EQ(gfx::Size(20, 20), layout->GetPreferredSize(host_.get()));
 }
 
 TEST_F(BoxLayoutTest, AlignmentHorizontal) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v1);
@@ -44,7 +46,7 @@ TEST_F(BoxLayoutTest, AlignmentHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, AlignmentVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
@@ -58,7 +60,8 @@ TEST_F(BoxLayoutTest, AlignmentVertical) {
 }
 
 TEST_F(BoxLayoutTest, SetInsideBorderInsets) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 10, 20, 0);
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(20, 10));
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v1);
@@ -80,7 +83,7 @@ TEST_F(BoxLayoutTest, SetInsideBorderInsets) {
 }
 
 TEST_F(BoxLayoutTest, Spacing) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 7, 7, 8);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(7), 8);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v1);
@@ -94,7 +97,7 @@ TEST_F(BoxLayoutTest, Spacing) {
 }
 
 TEST_F(BoxLayoutTest, Overflow) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
@@ -126,7 +129,8 @@ TEST_F(BoxLayoutTest, Overflow) {
 }
 
 TEST_F(BoxLayoutTest, NoSpace) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10);
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
   host_->SetLayoutManager(layout);
   View* childView = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(childView);
@@ -136,7 +140,8 @@ TEST_F(BoxLayoutTest, NoSpace) {
 }
 
 TEST_F(BoxLayoutTest, InvisibleChild) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10);
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
   v1->SetVisible(false);
@@ -150,7 +155,7 @@ TEST_F(BoxLayoutTest, InvisibleChild) {
 }
 
 TEST_F(BoxLayoutTest, UseHeightForWidth) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
@@ -184,7 +189,7 @@ TEST_F(BoxLayoutTest, EmptyPreferredSize) {
     BoxLayout::Orientation orientation = i == 0 ? BoxLayout::kHorizontal :
                                                   BoxLayout::kVertical;
     host_->RemoveAllChildViews(true);
-    host_->SetLayoutManager(new BoxLayout(orientation, 0, 0, 5));
+    host_->SetLayoutManager(new BoxLayout(orientation, gfx::Insets(), 5));
     View* v1 = new StaticSizedView(gfx::Size());
     host_->AddChildView(v1);
     View* v2 = new StaticSizedView(gfx::Size(10, 10));
@@ -205,7 +210,7 @@ TEST_F(BoxLayoutTest, EmptyPreferredSize) {
 // empty preferred size, simultaneously.
 TEST_F(BoxLayoutTest, EmptyPreferredSizeWithFlexLayoutAndChildSpacing) {
   host_->RemoveAllChildViews(true);
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 0, 0, 5);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(), 5);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size());
   host_->AddChildView(v1);
@@ -221,7 +226,8 @@ TEST_F(BoxLayoutTest, EmptyPreferredSizeWithFlexLayoutAndChildSpacing) {
 }
 
 TEST_F(BoxLayoutTest, MainAxisAlignmentHorizontal) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10);
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
   host_->SetLayoutManager(layout);
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
@@ -257,7 +263,7 @@ TEST_F(BoxLayoutTest, MainAxisAlignmentHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, MainAxisAlignmentVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 10, 10, 10);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10);
   host_->SetLayoutManager(layout);
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
@@ -293,7 +299,8 @@ TEST_F(BoxLayoutTest, MainAxisAlignmentVertical) {
 }
 
 TEST_F(BoxLayoutTest, CrossAxisAlignmentHorizontal) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10);
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
   host_->SetLayoutManager(layout);
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
@@ -335,7 +342,7 @@ TEST_F(BoxLayoutTest, CrossAxisAlignmentHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, CrossAxisAlignmentVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 10, 10, 10);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10);
   host_->SetLayoutManager(layout);
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
@@ -377,7 +384,8 @@ TEST_F(BoxLayoutTest, CrossAxisAlignmentVertical) {
 }
 
 TEST_F(BoxLayoutTest, FlexAll) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10);
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
   host_->SetLayoutManager(layout);
   layout->SetDefaultFlex(1);
 
@@ -397,7 +405,7 @@ TEST_F(BoxLayoutTest, FlexAll) {
 }
 
 TEST_F(BoxLayoutTest, FlexGrowVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 10, 10, 10);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, gfx::Insets(10), 10);
   host_->SetLayoutManager(layout);
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
@@ -454,7 +462,7 @@ TEST_F(BoxLayoutTest, FlexGrowVertical) {
 }
 
 TEST_F(BoxLayoutTest, FlexGrowHorizontalWithRemainder) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
   host_->SetLayoutManager(layout);
   layout->SetDefaultFlex(1);
   std::vector<View*> views;
@@ -478,7 +486,7 @@ TEST_F(BoxLayoutTest, FlexGrowHorizontalWithRemainder) {
 }
 
 TEST_F(BoxLayoutTest, FlexGrowHorizontalWithRemainder2) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
   host_->SetLayoutManager(layout);
   layout->SetDefaultFlex(1);
   std::vector<View*> views;
@@ -501,7 +509,8 @@ TEST_F(BoxLayoutTest, FlexGrowHorizontalWithRemainder2) {
 }
 
 TEST_F(BoxLayoutTest, FlexShrinkHorizontal) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10);
+  BoxLayout* layout =
+      new BoxLayout(BoxLayout::kHorizontal, gfx::Insets(10), 10);
   host_->SetLayoutManager(layout);
 
   View* v1 = new StaticSizedView(gfx::Size(20, 20));
@@ -560,7 +569,7 @@ TEST_F(BoxLayoutTest, FlexShrinkHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, FlexShrinkVerticalWithRemainder) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
@@ -610,7 +619,7 @@ TEST_F(BoxLayoutTest, FlexShrinkVerticalWithRemainder) {
 }
 
 TEST_F(BoxLayoutTest, MinimumCrossAxisVertical) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
@@ -620,7 +629,7 @@ TEST_F(BoxLayoutTest, MinimumCrossAxisVertical) {
 }
 
 TEST_F(BoxLayoutTest, MinimumCrossAxisHorizontal) {
-  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0);
+  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal);
   host_->SetLayoutManager(layout);
   View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);

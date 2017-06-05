@@ -138,7 +138,7 @@ NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
                                        const Notification& notification)
     : MessageView(controller, notification),
       clickable_(notification.clickable()) {
-  layout_ = new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 2);
+  layout_ = new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 2);
   layout_->set_inside_border_insets(kNotificationPadding);
   SetLayoutManager(layout_);
 
@@ -147,7 +147,7 @@ NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
   // close button.
   top_view_ = new views::View();
   views::BoxLayout* top_box_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 1, 5);
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(1, 0), 5);
   top_box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   top_view_->SetLayoutManager(top_box_layout);
@@ -155,13 +155,13 @@ NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
 
   main_view_ = new views::View();
   main_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kVertical));
   AddChildView(main_view_);
 
   // Create the bottom_view_, which collects notification icon.
   bottom_view_ = new views::View();
   bottom_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kVertical));
   AddChildView(bottom_view_);
 
   views::ImageView* small_image_view = new views::ImageView();

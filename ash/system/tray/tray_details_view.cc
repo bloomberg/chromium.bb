@@ -22,6 +22,7 @@
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_paint_util.h"
@@ -53,8 +54,7 @@ const int kTitleRowSeparatorIndex = 1;
 class ScrollContentsView : public views::View {
  public:
   ScrollContentsView()
-      : box_layout_(
-            new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0)) {
+      : box_layout_(new views::BoxLayout(views::BoxLayout::kVertical)) {
     SetLayoutManager(box_layout_);
   }
   ~ScrollContentsView() override {}
@@ -272,7 +272,7 @@ void TrayDetailsView::InfoLabel::SetMessage(int message_id) {
 
 TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
     : owner_(owner),
-      box_layout_(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0)),
+      box_layout_(new views::BoxLayout(views::BoxLayout::kVertical)),
       scroller_(nullptr),
       scroll_content_(nullptr),
       progress_bar_(nullptr),

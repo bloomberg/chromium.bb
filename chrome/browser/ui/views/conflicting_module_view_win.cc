@@ -22,6 +22,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -137,9 +138,9 @@ void ConflictingModuleView::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_RELATED_LABEL_HORIZONTAL)));
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
+                           ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_RELATED_LABEL_HORIZONTAL)));
 
   views::ImageView* icon = new views::ImageView();
   icon->SetImage(rb.GetImageSkiaNamed(IDR_INPUT_ALERT_MENU));

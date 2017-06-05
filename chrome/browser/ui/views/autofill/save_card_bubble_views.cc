@@ -18,6 +18,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -85,8 +86,7 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
 
   // Use BoxLayout to provide insets around the label.
   View* view = new View();
-  view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
 
   // Add a StyledLabel for each line of the legal message.
   for (const LegalMessageLine& line : controller_->GetLegalMessageLines())
@@ -194,13 +194,13 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   view->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0,
+      views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   // Add the card type icon, last four digits and expiration date.
   views::View* description_view = new views::View();
   description_view->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0,
+      views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
   view->AddChildView(description_view);
 
@@ -237,7 +237,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
   request_cvc_view->SetBackground(views::CreateThemedSolidBackground(
       request_cvc_view.get(), ui::NativeTheme::kColorId_BubbleBackground));
   views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
                            ChromeLayoutProvider::Get()->GetDistanceMetric(
                                views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   layout->set_cross_axis_alignment(
@@ -277,7 +277,7 @@ void SaveCardBubbleViews::ContentsChanged(views::Textfield* sender,
 }
 
 void SaveCardBubbleViews::Init() {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
   view_stack_ = new ViewStack();
   view_stack_->SetBackground(views::CreateThemedSolidBackground(
       view_stack_, ui::NativeTheme::kColorId_BubbleBackground));

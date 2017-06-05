@@ -61,6 +61,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -1025,7 +1026,7 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
   // Sets an overall horizontal layout.
   views::View* view = new views::View();
   views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kMenuEdgeMargin, kMenuEdgeMargin,
+      views::BoxLayout::kHorizontal, gfx::Insets(kMenuEdgeMargin),
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
@@ -1042,7 +1043,7 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
   const int small_vertical_spacing = provider->GetDistanceMetric(
       DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
   views::BoxLayout* vertical_layout = new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, small_vertical_spacing);
+      views::BoxLayout::kVertical, gfx::Insets(), small_vertical_spacing);
   vertical_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   vertical_view->SetLayoutManager(vertical_layout);
@@ -1091,8 +1092,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   views::View* view = new views::View();
   const int vertical_spacing_small =
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
-  view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0,
-                                              vertical_spacing_small, 0));
+  view->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, gfx::Insets(vertical_spacing_small, 0), 0));
 
   // Container for the profile photo and avatar/user name.
   BackgroundColorHoverButton* current_profile_card =
@@ -1191,12 +1192,12 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       browser_->profile()->GetOriginalProfile());
   if (signin_manager->IsSigninAllowed()) {
     views::View* extra_links_view = new views::View();
-    views::BoxLayout* extra_links_layout =
-        new views::BoxLayout(
-            views::BoxLayout::kVertical, kMenuEdgeMargin,
-            provider->GetDistanceMetric(
-                views::DISTANCE_RELATED_CONTROL_VERTICAL),
-            kMenuEdgeMargin);
+    views::BoxLayout* extra_links_layout = new views::BoxLayout(
+        views::BoxLayout::kVertical,
+        gfx::Insets(provider->GetDistanceMetric(
+                        views::DISTANCE_RELATED_CONTROL_VERTICAL),
+                    kMenuEdgeMargin),
+        kMenuEdgeMargin);
     extra_links_layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     extra_links_view->SetLayoutManager(extra_links_layout);

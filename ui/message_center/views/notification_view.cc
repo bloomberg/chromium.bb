@@ -17,6 +17,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
@@ -102,8 +103,9 @@ class ItemView : public views::View {
 };
 
 ItemView::ItemView(const message_center::NotificationItem& item) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-      0, 0, message_center::kItemTitleToMessagePadding));
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
+                           message_center::kItemTitleToMessagePadding));
 
   views::Label* title = new views::Label(item.title);
   title->set_collapse_when_hidden(true);
@@ -188,7 +190,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
   // close button.
   top_view_ = new views::View();
   top_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kVertical));
   top_view_->SetBorder(
       MakeEmptyBorder(kTextTopPadding - 8, 0, kTextBottomPadding - 5, 0));
   AddChildView(top_view_);
@@ -196,7 +198,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
   // below the notification icon.
   bottom_view_ = new views::View();
   bottom_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kVertical));
   AddChildView(bottom_view_);
 
   views::ImageView* small_image_view = new views::ImageView();
