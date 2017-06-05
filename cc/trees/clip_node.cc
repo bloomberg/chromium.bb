@@ -17,7 +17,6 @@ ClipNode::ClipNode()
       owning_layer_id(Layer::INVALID_ID),
       clip_type(ClipType::APPLIES_LOCAL_CLIP),
       transform_id(TransformTree::kInvalidNodeId) {
-  cached_clip_rects = std::vector<ClipRectData>(defaultCachedClipsSize);
 }
 
 ClipNode::ClipNode(const ClipNode& other)

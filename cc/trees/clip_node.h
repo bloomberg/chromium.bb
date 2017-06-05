@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/stack_container.h"
 #include "cc/cc_export.h"
 #include "cc/trees/clip_expander.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -26,8 +27,6 @@ struct CC_EXPORT ClipNode {
   ClipNode& operator=(const ClipNode& other);
 
   ~ClipNode();
-
-  static const int defaultCachedClipsSize = 1;
 
   // The node index of this node in the clip tree node vector.
   int id;
@@ -56,8 +55,13 @@ struct CC_EXPORT ClipNode {
   gfx::RectF clip;
 
   // Each element of this cache stores the accumulated clip from this clip
-  // node to a particular target.
-  mutable std::vector<ClipRectData> cached_clip_rects;
+  // node to a particular target.  The number of cached clip rects required
+  // per node is roughly proportional to the number of render targets a
+  // given clip rect participates in.  On many pages with only a root
+  // render target, the number of cached clip rects per node is 1.
+  // Any more than 3, and this will overflow rects onto the heap, so this
+  // number is a tradeoff of ClipNode size on average and access speed.
+  mutable base::StackVector<ClipRectData, 3> cached_clip_rects;
 
   // This rect accumulates all clips from this node to the root in screen space.
   // It is used in the computation of layer's visible rect.
