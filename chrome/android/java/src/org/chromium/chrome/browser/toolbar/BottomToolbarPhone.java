@@ -538,6 +538,10 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mNewTabButton.setAlpha(progress);
 
         mLocationBar.setAlpha(1f - progress);
+        mLocationBar.setVisibility(MathUtils.areFloatsEqual(mLocationBar.getAlpha(), 0f)
+                        ? View.INVISIBLE
+                        : View.VISIBLE);
+
         if (mUseToolbarHandle) mToolbarHandleView.setAlpha(1f - progress);
 
         int tabSwitcherThemeColor = getToolbarColorForVisualState(VisualState.TAB_SWITCHER_NORMAL);
