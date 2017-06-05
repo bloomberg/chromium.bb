@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">طلب غير صالح، أو معلمات طلب غير صالحة</translation>
 <translation id="1826516787628120939">حساب شيكات</translation>
 <translation id="1834321415901700177">يحتوي هذا الموقع على برامج ضارة</translation>
+<translation id="1840414022444569775">رقم البطاقة هذا مستخدم من قبل</translation>
 <translation id="1842969606798536927">الدفع</translation>
 <translation id="1871208020102129563">‏تم تعيين الخادم الوكيل لاستخدام الخوادم الوكيلة الثابتة وليس عنوان URL لنص برمجي pac.</translation>
 <translation id="1871284979644508959">حقل مطلوب</translation>
 <translation id="187918866476621466">فتح صفحات بدء التشغيل</translation>
 <translation id="1883255238294161206">تصغير القائمة</translation>
 <translation id="1898423065542865115">التصفية</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{بدون}=1{موقع واحد}two{ موقعان (#)}few{# مواقع}many{# موقعًا}other{# موقع}}</translation>
 <translation id="194030505837763158">الانتقال إلى <ph name="LINK" /></translation>
 <translation id="1962204205936693436">إشارات <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">خطأ أثناء التسلسل</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">رقم تعريف واجهة برمجة التطبيقات الدليل:</translation>
 <translation id="2597378329261239068">هذا المستند محمي بكلمة المرور.  الرجاء إدخال كلمة مرور.</translation>
 <translation id="2609632851001447353">الاختلافات</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{بدون}=1{تطبيق واحد ($1)}=2{تطبيقان (2) ($1، $2)}few{# تطبيقات ($1، $2، $3)}many{# تطبيقًا ($1، $2، $3)}other{# تطبيق ($1، $2، $3)}}</translation>
 <translation id="2625385379895617796">توقيت ساعتك متقدم عن الوقت الحالي</translation>
 <translation id="2639739919103226564">الحالة:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">معلومات الشهادة</translation>
 <translation id="3063697135517575841">‏لم يتمكن Chrome من التأكد من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="3064966200440839136">ستتم مغادرة وضع التصفح المتخفي للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{بدون}=1{كلمة مرور واحدة}two{كلمتا مرور (#)}few{# كلمات مرور}many{# كلمة مرور}other{# كلمة مرور}}</translation>
 <translation id="3093245981617870298">أنت غير متصل.</translation>
 <translation id="3105172416063519923">رقم تعريف الأصل:</translation>
 <translation id="3109728660330352905">ليس لديك إذن بعرض هذه الصفحة.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="3498215018399854026">لم نتمكن من الوصول إلى أحد والديك في الوقت الحالي. يُرجى إعادة المحاولة مرة أخرى.</translation>
 <translation id="3528171143076753409">شهادة الخادم غير موثوق فيها.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{عنصر واحد على الأقل على الأجهزة المتزامنة}=1{عنصر واحد (1) (وأكثر على الأجهزة المتزامنة)}two{عنصران (#) (وأكثر على الأجهزة المتزامنة)}few{# عناصر (وأكثر على الأجهزة المتزامنة)}many{# عنصرًا (وأكثر على الأجهزة المتزامنة)}other{# عنصر (وأكثر على الأجهزة المتزامنة)}}</translation>
 <translation id="3539171420378717834">الاحتفاظ بنسخة من هذه البطاقة على هذا الجهاز</translation>
 <translation id="3542684924769048008">استخدام كلمة مرور لـ:</translation>
 <translation id="3549644494707163724">تشفير جميع البيانات المتزامنة باستخدام عبارة مرور المزامنة</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">‏لا يمكنك زيارة <ph name="SITE" /> في الوقت الحالي لأن الموقع أرسل اعتمادات مختلطة حيث لا يستطيع Chromium المعالجة. أخطاء الشبكة وهجماتها عادةً ما تكون مؤقتة، لذلك من المحتمل أن تعمل هذه الصفحة في وقت لاحق.</translation>
 <translation id="375403751935624634">أخفقت الترجمة بسبب حدوث خطأ في الخادم.</translation>
 <translation id="3759461132968374835">ليس لديك أي أعطال تم الإبلاغ عنها مؤخرًا. الأعطال التي حدثت عندما تم تعطيل الإبلاغ عن الأعطال لن تظهر هنا.</translation>
+<translation id="3778403066972421603">‏هل تريد حفظ هذه البطاقة في حسابك في Google وعلى هذا الجهاز؟</translation>
 <translation id="3787705759683870569">تنتهي في <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">إذا كنت تستخدم خادمًا وكيلاً...</translation>
 <translation id="3828924085048779000">غير مسموح باستخدام عبارة مرور فارغة.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">إضافة بريد إلكتروني</translation>
 <translation id="3901925938762663762">انتهت صلاحية البطاقة</translation>
 <translation id="3963721102035795474">وضع القارئ</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{بدون}=1{من موقع واحد }two{من موقعين (#) }few{من # مواقع }many{من # موقعًا }other{من # موقع }}</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="3973234410852337861">تم حظر <ph name="HOST_NAME" /></translation>
+<translation id="3987940399970879459">أقل من ميغابايت واحد</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{صفحة ويب واحدة مجاورة}zero{# صفحات ويب مجاورة}two{صفحتا ويب (#) مجاورتان}few{# صفحات ويب مجاورة}many{# صفحة ويب مجاورة}other{# صفحة ويب مجاورة}}</translation>
 <translation id="4021036232240155012">‏يُعد نظام أسماء النطاقات (DNS) هو خدمة الشبكة التي تترجم اسم موقع ويب إلى عنوانه على شبكة الإنترنت.</translation>
 <translation id="4030383055268325496">تراجع عن الإ&amp;ضافة</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="6060685159320643512">احذر، هذه التجارب غير مضمونة النتائج</translation>
 <translation id="6080696365213338172">لقد دخلت إلى المحتوى باستخدام شهادة وفرها المشرف. ويمكن أن يعترض المشرف طريق البيانات التي تقدمها إلى <ph name="DOMAIN" />.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{بدون}=1{ كلمة مرور واحدة (تمت مزامنتها)}two{كلمتا مرور (#) (تمت مزامنتهما)}few{# كلمات مرور (تمت مزامنتها)}many{# كلمة مرور (تمت مزامنتها)}other{# كلمة مرور (تمت مزامنتها)}}</translation>
 <translation id="6146055958333702838">تحقق من أي كابلات وأعد تشغيل أي أجهزة توجيه أو أجهزة مودم أو أجهزة شبكة
         أخرى ربما تستخدمها.</translation>
 <translation id="614940544461990577">جرّب:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">المنطقة</translation>
 <translation id="6973656660372572881">‏تم تحديد كل من الخوادم الوكيلة الثابتة وعنوان URL للنص البرمجي pac.</translation>
 <translation id="6989763994942163495">عرض الإعدادات المتقدمة...</translation>
-<translation id="7000990526846637657">لم يتم العثور على أي إدخالات في السجلّ</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">‏قد يتضمن حسابك في Google نماذج أخرى من سجلّ التصفح في <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">‏الدفع سريعًا على المواقع والتطبيقات عبر الأجهزة باستخدام البطاقات التي حفظتها في Google.</translation>
 <translation id="7588950540487816470">الشبكة المادية</translation>
 <translation id="7592362899630581445">تنتهك شهادة الخادم القيود المفروضة على الاسم.</translation>
+<translation id="7598391785903975535">أقل من <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">يتعذر على <ph name="HOST_NAME" /> معالجة هذا الطلب حاليًا.</translation>
 <translation id="7600965453749440009">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE" />.</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">تراجع عن ال&amp;نقل</translation>
 <translation id="8201077131113104583">‏عنوان URL لتحديث الإضافة التي تحتوي على رقم التعريف "<ph name="EXTENSION_ID" />" غير صالح.</translation>
 <translation id="8202097416529803614">ملخص الطلب</translation>
+<translation id="8206354486702514201">تم فرض هذا الإعداد بواسطة المشرف.</translation>
 <translation id="8218327578424803826">الموقع الذي تم تعيينه:</translation>
 <translation id="8225771182978767009">اختار الشخص الذي أعد جهاز الكمبيوتر حظر موقع الويب هذا.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />، <ph name="TYPE_2" /></translation>
@@ -886,5 +896,6 @@
 <translation id="939736085109172342">مجلد جديد</translation>
 <translation id="941721044073577244">يبدو أنه ليس لديك إذن بالدخول إلى هذا الموقع</translation>
 <translation id="969892804517981540">البنية الرسمية</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{بدون}=1{عنصر واحد}two{عنصران (#)}few{# عناصر}many{# عنصرًا}other{# عنصر}}</translation>
 <translation id="988159990683914416">بنية المطوِّر</translation>
 </translationbundle>

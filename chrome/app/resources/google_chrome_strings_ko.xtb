@@ -111,6 +111,7 @@
 <translation id="4147555960264124640">관리 계정으로 로그인하여 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">설치 프로그램이 보관 파일 압축 풀기에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="4251615635259297716">Chrome 데이터를 이 계정에 연결하시겠습니까?</translation>
+<translation id="4251625577313994583">iPhone에 Chrome 다운로드하기</translation>
 <translation id="4309555186815777032">(Chrome을 <ph name="BEGIN_BUTTON" />다시 시작<ph name="END_BUTTON" />해야 함)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">이 Linux 시스템이 더 이상 지원되지 않으므로 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>

@@ -89,11 +89,6 @@
       Bu politika yanlış seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> misafir profillerinin başlatılmasına izin vermez.</translation>
 <translation id="1363275621236827384">Quirks Server'dan donanım profillerini sorgulamayı etkinleştir</translation>
 <translation id="1397855852561539316">Arama önerileri için varsayılan arama sağlayıcı URL'si</translation>
-<translation id="1398889361882383850">Web sitelerinin, eklentileri otomatik olarak çalıştırmalarına izin verilip verilmeyeceğini ayarlamanızı sağlar. Otomatik olarak çalışan eklentilere ya bütün web sitelerinde izin verilebilir ya da bunlar web sitelerinin tümünde reddedilebilir.
-
-          Tıkla oynat seçeneği, eklentilerin çalışmasına izin verir; ancak eklentileri çalıştırmak için kullanıcının bunları tıklaması gerekir.
-
-          Bu politika ayarlanmamış olarak bırakılırsa, 'AllowPlugins' kullanılır ve kullanıcı bunu değiştirebilir.</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1427655258943162134">Proxy sunucunun adresi veya URL'si</translation>
 <translation id="1435659902881071157">Cihaz düzeyinde ağ yapılandırması</translation>
@@ -180,7 +175,6 @@
 <translation id="1689963000958717134">Bir <ph name="PRODUCT_OS_NAME" /> cihazının tüm kullanıcıları için uygulanacak ağ yapılandırmasını iletmeye olanak sağlar. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="1708496595873025510">Varyasyon temelini alma sınırlamasını ayarla</translation>
 <translation id="172374442286684480">Tüm sitelerin yerel verileri ayarlamasına izin verme</translation>
-<translation id="1727394138581151779">Tüm eklentileri engelle</translation>
 <translation id="1734716591049455502">Uzaktan erişim seçeneklerini yapılandır</translation>
 <translation id="1736269219679256369">SSL uyarı sayfasından devam etmeye izin ver</translation>
 <translation id="1749815929501097806">Bir cihaz-yerel hesap oturumunu başlatmadan önce kullanıcının kabul etmesi gereken Hizmet Şartları'nı ayarlar.
@@ -726,7 +720,6 @@ Bu ayarı devre dışı bırakırsanız, şifre yöneticisi saklanmış olan şi
 
 Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrelerini şifre yöneticisi penceresinde açık metin olarak görüntüleyebilirler.</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
-<translation id="3570008976476035109">Bu sitelerde eklentileri engelle</translation>
 <translation id="3591584750136265240">Giriş için kimlik doğrulama yöntemini yapılandır</translation>
 <translation id="3627678165642179114">Yazım denetimi Web hizmetini etkinleştir veya devre dışı bırak</translation>
 <translation id="3646859102161347133">Ekran büyüteci türünü ayarla</translation>
@@ -803,7 +796,6 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
           Google'ın öneri URL'si şu şekilde belirtilebilir: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />
 
           Bu politikaya yalnızca "DefaultSearchProviderEnabled" politikası etkinleştirildiğinde uyulur.</translation>
-<translation id="3864818549971490907">Varsayılan eklentiler ayarı</translation>
 <translation id="3866249974567520381">Açıklama</translation>
 <translation id="3868347814555911633">Bu politika yalnızca perakende modunda etkindir.
 
@@ -863,6 +855,7 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 
           Genellikle, kimlik avından korunma amacıyla bu özellik devre dışı bırakılır. Bu politika ayarlanmazsa, bu özellik devre dışı bırakılır ve üçüncü taraf alt içeriğinin bir HTTP Basic Auth iletişim kutusu görüntülemesine izin verilmez.</translation>
 <translation id="4056910949759281379">SPDY protokolünü devre dışı bırak</translation>
+<translation id="408029843066770167">Google zaman hizmetini sorgulamaya izin ver</translation>
 <translation id="4088589230932595924">Gizli mod zorunlu</translation>
 <translation id="4088983553732356374">Web sitelerinin yerel verileri ayarlamasına izin verilip verilmeyeceğini belirlemenize olanak sağlar. Yerel verileri ayarlamaları için ya tüm web sitelerine izin verilir ya da hiçbirine izin verilmez.
 
@@ -932,6 +925,7 @@ politikayı geçersiz kılamaz.
 <translation id="4377599627073874279">Tüm sitelerin tüm resimleri görüntülemesine izin ver</translation>
 <translation id="4389091865841123886">TPM mekanizmasıyla uzaktan doğrulamayı yapılandırın.</translation>
 <translation id="4397469093966511008">Bu politika yanlış seçeneğine ayarlandığında, kullanıcıların, bazı sistem bilgilerini ve sayfa içeriğini Google sunucularına göndermeyi seçmeleri engellenir. Bu ayar doğru seçeneğine ayarlanırsa veya hiç yapılandırılmazsa kullanıcılar, tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak amacıyla bazı sistem bilgilerini ve sayfa içeriğini Güvenli Tarama'ya gönderebilir.</translation>
+<translation id="4418726081189202489">Bu politika false (yanlış) değerine ayarlandığında <ph name="PRODUCT_NAME" /> uygulaması doğru zaman damgasını almak için ara sıra bir Google sunucusuna sorgu göndermeyi durdurur. Bu politika true (doğru) değerine ayarlanır veya hiç ayarlanmazsa bu sorgular etkinleşir.</translation>
 <translation id="4423597592074154136">Proxy ayarlarını el ile belirle</translation>
 <translation id="4429220551923452215">Yer işareti çubuğunda uygulamalar kısayolunu etkinleştirir veya devre dışı bırakır.
 
@@ -1452,9 +1446,6 @@ politikayı geçersiz kılamaz.
           Proxy sunucuyu otomatik olarak algılamayı seçerseniz Android uygulamaları, komut dosyası URL'si "http://wpad/wpad.dat" bilgisini alır. Otomatik proxy algılama protokolünün başka hiçbir bölümü kullanılmaz.
 
           Bir .pac proxy komut dosyası kullanmayı seçerseniz Android uygulamalarına komut dosyası URL'si iletilir.</translation>
-<translation id="6467433935902485842">Eklentileri çalıştırmalarına izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
-
-          Bu politika ayarlanmadan bırakılırsa, 'DefaultPluginsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması genel varsayılan değer olarak kullanılır.</translation>
 <translation id="6491139795995924304">Cihazda Bluetooth'a izin ver</translation>
 <translation id="6520802717075138474">İlk çalıştırmada arama motorlarını varsayılan tarayıcıdan içe aktar</translation>
 <translation id="653608967792832033">Pil gücüyle çalışırken, ekranın kilitlenmesinden önce kullanıcı girişi olmadan geçecek süreyi belirtir.
@@ -1736,7 +1727,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       GAIA seçeneğine ayarlanırsa, giriş işlemi normal GAIA kimlik doğrulama akışıyla yapılır.
 
       SAML_INTERSTITIAL seçeneğine ayarlanırsa, giriş işleminde bir geçiş ekranı görüntülenerek kullanıcıya cihazın kaydolduğu alan adının SAML IdP'sini kullanarak giriş işlemine devam etme veya normal GAIA giriş akışına geri dönme seçeneği sunulur.</translation>
-<translation id="7567380065339179813">Bu sitelerde eklentilere izin ver</translation>
 <translation id="757395965347379751">Bu ayar etkinleştirildiğinde <ph name="PRODUCT_NAME" />, başarılı bir şekilde doğrulanan ve yerel olarak yüklenmiş CA sertifikalarıyla zincirleme bağlantı kuran SHA-1 imzalı sertifikalara izin verir.
 
       Bu politikanın, SHA-1 imzalarına izin veren işletim sistemi sertifika doğrulama yığınına bağlı olduğu unutulmamalıdır. Bir işletim sistemi güncellemesi, işletim sisteminin SHA-1 sertifikalarını işleme şeklini değiştirirse bu politikanın etkisi ortadan kalkabilir. Bunun yanı sıra, bu politika kurumlara SHA-1'i kullanımdan kaldırmaları için zaman kazandıran geçici bir çözüm sağlamak amacıyla hazırlanmıştır. Bu politika, 1 Ocak 2019'da veya buna yakın bir tarihte kaldırılacaktır.
@@ -1830,9 +1820,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Yeni Sekme Sayfası</translation>
 <translation id="7788511847830146438">Her Profil İçin Ayrı</translation>
-<translation id="7796141075993499320">Eklentileri çalıştırmalarına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
-
-          Bu politika ayarlanmadan bırakılırsa, 'DefaultPluginsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
 <translation id="7801886189430766248">Bu politika doğru (true) değerine ayarlandığında, Android uygulama verileri Android Backup sunucularına yüklenir ve uyumlu uygulamaların yeniden yüklenmelerinin ardından buradan geri yüklenir.
 
       Bu politika yanlış (false) değerine ayarlandığında, Android Backup Service kapatılır.
@@ -2109,7 +2096,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Bu politika bir Active Directory alan adına katılmamış Windows
       örneklerinde kullanılamaz. (Chrome OS için bkz. DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Tüm sitelerin eklentileri otomatik olarak çalıştırmasına izin ver</translation>
 <translation id="8693243869659262736">Dahili DNS istemcisini kullan</translation>
 <translation id="8704831857353097849">Devre dışı bırakılmış eklentilerin listesi</translation>
 <translation id="8711086062295757690">Bu sağlayıcıda aramayı tetiklemek üzere çok amaçlı adres çubuğunda anahtar kelime kısayolunu belirtir.

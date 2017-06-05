@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Taotlus või selle parameetrid on kehtetud</translation>
 <translation id="1826516787628120939">Kontrollimine</translation>
 <translation id="1834321415901700177">See sait sisaldab kahjulikke programme</translation>
+<translation id="1840414022444569775">See kaardinumber on juba kasutusel</translation>
 <translation id="1842969606798536927">Maksmine</translation>
 <translation id="1871208020102129563">Puhverserver on seatud kasutama fikseeritud puhverservereid, mitte pac-skripti URL-i.</translation>
 <translation id="1871284979644508959">Kohustuslik väli</translation>
 <translation id="187918866476621466">Ava käivitamisel avatavad lehed</translation>
 <translation id="1883255238294161206">Ahenda loend</translation>
 <translation id="1898423065542865115">Filtreerimine</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Ühtegi}=1{1 sait}other{# saiti}}</translation>
 <translation id="194030505837763158">Avage <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="1973335181906896915">Viga jadaks teisendamisel</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">Kataloogi API ID:</translation>
 <translation id="2597378329261239068">Dokument on parooliga kaitstud. Sisestage parool.</translation>
 <translation id="2609632851001447353">Variatsioonid</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Ühtegi}=1{1 rakendus ($1)}=2{2 rakendust ($1, $2)}other{# rakendust ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Teie kell on ees</translation>
 <translation id="2639739919103226564">Olek:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Sertifikaadi andmed</translation>
 <translation id="3063697135517575841">Chrome ei saanud praegu teie kaarti kinnitada. Proovige hiljem uuesti.</translation>
 <translation id="3064966200440839136">Väljute inkognito režiimist, et välise rakenduse kaudu maksta. Kas soovite jätkata?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Ühtegi}=1{1 parool}other{# parooli}}</translation>
 <translation id="3093245981617870298">Olete võrguühenduseta.</translation>
 <translation id="3105172416063519923">Vara ID:</translation>
 <translation id="3109728660330352905">Teil pole volitust selle lehe vaatamiseks.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">Mitte praegu</translation>
 <translation id="3498215018399854026">Teie vanemaga ei õnnestunud praegu ühendust võtta. Proovige hiljem uuesti.</translation>
 <translation id="3528171143076753409">Serveri sertifikaat ei ole usaldusväärne.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Vähemalt 1 üksus sünkroonitud seadmetes}=1{1 üksus (ja rohkem sünkroonitud seadmetes)}other{# üksust (ja rohkem sünkroonitud seadmetes)}}</translation>
 <translation id="3539171420378717834">Säilita kaardi koopia seadmes</translation>
 <translation id="3542684924769048008">Kasuta parooli:</translation>
 <translation id="3549644494707163724">Krüpteerige kõik sünkroonitud andmed oma sünkroonimise parooliga</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait saatis tagasi arusaamatud mandaadid, mida Chromium ei saa töödelda. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="375403751935624634">Tõlkimine ebaõnnestus serverivea tõttu.</translation>
 <translation id="3759461132968374835">Hiljuti teatatud krahhe ei ole. Siin ei ilmu krahhid, mis toimusid siis, kui krahhide aruandlus oli keelatud.</translation>
+<translation id="3778403066972421603">Kas soovite selle kaardi salvestada oma Google'i kontole ja sellesse seadmesse?</translation>
 <translation id="3787705759683870569">Aegub: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Kui kasutate puhverserverit ...</translation>
 <translation id="3828924085048779000">Tühi parool ei ole lubatud.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">E-posti aadressi lisamine</translation>
 <translation id="3901925938762663762">Kaart on aegunud</translation>
 <translation id="3963721102035795474">Lugejarežiim</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Ükski}=1{1 saidilt }other{# saidilt }}</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> on blokeeritud</translation>
+<translation id="3987940399970879459">Alla 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Läheduses on 1 veebileht}other{Läheduses on # veebilehte}}</translation>
 <translation id="4021036232240155012">DNS on võrguteenus, mis tõlgib veebisaidi nime selle Interneti-aadressiks.</translation>
 <translation id="4030383055268325496">&amp;Võta lisamine tagasi</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">Rohkem</translation>
 <translation id="6060685159320643512">Ettevaatust, need katsed võivad hammustada.</translation>
 <translation id="6080696365213338172">Olete sisule juurde pääsenud administraatori antud sertifikaadiga. Administraator saab domeenile <ph name="DOMAIN" /> edastatavaid andmeid kinni pidada.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Ühtegi}=1{1 parool (sünkroonitud)}other{# parooli (sünkroonitud)}}</translation>
 <translation id="6146055958333702838">Kontrollige kaableid ning taaskäivitage kõik ruuterid, modemid ja muud
     kasutuses olevad võrguseadmed.</translation>
 <translation id="614940544461990577">Proovige järgmist.</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">Ringkond</translation>
 <translation id="6973656660372572881">Määratud on nii fikseeritud puhverserverid kui ka pac-skriptiga URL.</translation>
 <translation id="6989763994942163495">Kuva täpsemad seaded ...</translation>
-<translation id="7000990526846637657">Ajalookirjeid ei leitud</translation>
 <translation id="7012363358306927923">Hiina UnionPay</translation>
 <translation id="7012372675181957985">Aadressil <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu</translation>
 <translation id="7029809446516969842">Paroolid</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">Google'i salvestatud kaartide abil saate eri seadmetes saitidel ja rakendustes kiirelt maksta.</translation>
 <translation id="7588950540487816470">Füüsiline veeb</translation>
 <translation id="7592362899630581445">Serveri sertifikaat rikub nime piiranguid.</translation>
+<translation id="7598391785903975535">Alla <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Host <ph name="HOST_NAME" /> ei saa praegu seda taotlust töödelda.</translation>
 <translation id="7600965453749440009">Ära kunagi tõlgi: <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE" />) väljaspool.</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">&amp;Võta teisaldamine tagasi</translation>
 <translation id="8201077131113104583">ID-ga „<ph name="EXTENSION_ID" />” laienduse kehtetu värskendamise URL.</translation>
 <translation id="8202097416529803614">Tellimuse kokkuvõte</translation>
+<translation id="8206354486702514201">Selle seade jõustas teie administraator.</translation>
 <translation id="8218327578424803826">Määratud asukoht:</translation>
 <translation id="8225771182978767009">Arvuti seadistanud inimene blokeeris selle saidi.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -885,5 +895,6 @@
 <translation id="939736085109172342">Uus kaust</translation>
 <translation id="941721044073577244">Näib, et teil pole luba selle saidi külastamiseks</translation>
 <translation id="969892804517981540">Ametlik järk</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Ühtegi}=1{1 üksus}other{# üksust}}</translation>
 <translation id="988159990683914416">Arendaja järk</translation>
 </translationbundle>

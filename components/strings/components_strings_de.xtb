@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Anfrage oder Anfrageparameter ungültig</translation>
 <translation id="1826516787628120939">Überprüfung läuft</translation>
 <translation id="1834321415901700177">Diese Website enthält schädliche Programme</translation>
+<translation id="1840414022444569775">Diese Kartennummer wird bereits verwendet</translation>
 <translation id="1842969606798536927">Bezahlen</translation>
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
 <translation id="1871284979644508959">Pflichtfeld</translation>
 <translation id="187918866476621466">"Beim Start"-Seiten öffnen</translation>
 <translation id="1883255238294161206">Liste ausblenden</translation>
 <translation id="1898423065542865115">Filtern</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Keine}=1{1 Website}other{# Websites}}</translation>
 <translation id="194030505837763158">Besuchen Sie die Seite <ph name="LINK" />.</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="1973335181906896915">Fehler bei der Serialisierung</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">Directory API-ID:</translation>
 <translation id="2597378329261239068">Dieses Dokument ist passwortgeschützt. Geben Sie ein Passwort ein.</translation>
 <translation id="2609632851001447353">Varianten</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Keine}=1{1 App ($1)}=2{2 Apps ($1, $2)}other{# Apps ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Ihre Uhr geht vor.</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Zertifikatinformationen</translation>
 <translation id="3063697135517575841">Ihre Karte kann von Chrome zurzeit nicht bestätigt werden. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="3064966200440839136">Der Inkognitomodus wird beendet, um über eine externe Anwendung zu zahlen. Fortfahren?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Keine}=1{1 Passwort}other{# Passwörter}}</translation>
 <translation id="3093245981617870298">Sie sind offline.</translation>
 <translation id="3105172416063519923">Geräte-ID:</translation>
 <translation id="3109728660330352905">Sie sind nicht zum Aufrufen dieser Seite autorisiert.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="3498215018399854026">Wir können deinen Vater bzw. deine Mutter momentan nicht erreichen. Bitte versuche es später erneut.</translation>
 <translation id="3528171143076753409">Serverzertifikat ist nicht vertrauenswürdig.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Mindestens 1 Eintrag auf synchronisierten Geräten}=1{1 Eintrag (und weitere auf synchronisierten Geräten)}other{# Einträge (und weitere auf synchronisierten Geräten)}}</translation>
 <translation id="3539171420378717834">Kopie dieser Karte auf diesem Gerät speichern</translation>
 <translation id="3542684924769048008">Passwort verwenden für:</translation>
 <translation id="3549644494707163724">Alle synchronisierten Daten mit Ihrer eigenen Synchronisierungspassphrase verschlüsseln</translation>
@@ -344,6 +349,7 @@
 <translation id="3744899669254331632">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website verschlüsselte Anmeldedaten gesendet hat, die von Chromium nicht verarbeitet werden können. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="375403751935624634">Aufgrund eines Serverfehlers ist die Übersetzung fehlgeschlagen.</translation>
 <translation id="3759461132968374835">Es liegen keine kürzlich gemeldeten Abstürze vor. Abstürze, die bei deaktivierter Absturzberichtsfunktion aufgetreten sind, werden hier nicht angezeigt.</translation>
+<translation id="3778403066972421603">Möchten Sie diese Karte in Ihrem Google-Konto und auf diesem Gerät speichern?</translation>
 <translation id="3787705759683870569">Ablaufdatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Falls Sie einen Proxyserver verwenden...</translation>
 <translation id="3828924085048779000">Eine leere Passphrase ist nicht zulässig.</translation>
@@ -355,8 +361,10 @@
 <translation id="3890664840433101773">E-Mail-Adresse hinzufügen</translation>
 <translation id="3901925938762663762">Die Karte ist abgelaufen.</translation>
 <translation id="3963721102035795474">Lesemodus</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Keine}=1{Von 1 Website }other{Von # Websites }}</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
+<translation id="3987940399970879459">Weniger als 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Webseite in der Nähe}other{# Webseiten in der Nähe}}</translation>
 <translation id="4021036232240155012">DNS ist der Netzwerkdienst, der den Namen einer Website in die entsprechende Internetadresse umwandelt.</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
@@ -562,6 +570,7 @@
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="6060685159320643512">Vorsichtig, diese Experimente können gefährlich sein!</translation>
 <translation id="6080696365213338172">Sie haben über ein vom Administrator bereitgestelltes Zertifikat auf Inhalte zugegriffen. Die Daten, die Sie innerhalb von <ph name="DOMAIN" /> bereitstellen, können von Ihrem Administrator abgefangen werden.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Keine}=1{1 Passwort (synchronisiert)}other{# Passwörter (synchronisiert)}}</translation>
 <translation id="6146055958333702838">Überprüfen Sie alle Kabel und starten Sie alle verwendeten Router, Modems und
     anderen Netzwerkgeräte neu.</translation>
 <translation id="614940544461990577">Versuchen Sie Folgendes:</translation>
@@ -651,7 +660,6 @@
 <translation id="6970216967273061347">Bezirk</translation>
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
 <translation id="6989763994942163495">Erweiterte Einstellungen anzeigen</translation>
-<translation id="7000990526846637657">Keine Verlaufseinträge gefunden</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Möglicherweise sind in Ihrem Google-Konto noch andere Formen des Browserverlaufs unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> vorhanden</translation>
 <translation id="7029809446516969842">Passwörter</translation>
@@ -720,6 +728,7 @@
 <translation id="7578104083680115302">Mit Karten, die Sie bei Google gespeichert haben, können Sie schnell und geräteübergreifend auf Websites und in Apps bezahlen.</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7592362899630581445">Das Serverzertifikat verstößt gegen Namensbeschränkungen.</translation>
+<translation id="7598391785903975535">Weniger als <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kann diese Anfrage momentan nicht verarbeiten.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nie übersetzen</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE" />).</translation>
@@ -783,6 +792,7 @@
 <translation id="8194797478851900357">&amp;Verschieben rückgängig machen</translation>
 <translation id="8201077131113104583">Ungültige Update-URL für Erweiterung mit der ID "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8202097416529803614">Zusammenfassung der Bestellung</translation>
+<translation id="8206354486702514201">Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
 <translation id="8218327578424803826">Zugewiesener Standort:</translation>
 <translation id="8225771182978767009">Die Person, die diesen Computer eingerichtet hat, hat diese Website gesperrt.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -885,5 +895,6 @@
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="941721044073577244">Du bist offenbar nicht berechtigt, auf diese Website zuzugreifen</translation>
 <translation id="969892804517981540">Offizieller Build</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Keine}=1{1 Eintrag}other{# Einträge}}</translation>
 <translation id="988159990683914416">Entwickler-Build</translation>
 </translationbundle>

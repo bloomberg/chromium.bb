@@ -88,11 +88,6 @@
       Kui selle reegli väärtuseks määratakse Väär, ei luba teenus <ph name="PRODUCT_NAME" /> külaliste profiile käivitada.</translation>
 <translation id="1363275621236827384">Lubatakse riistvaraprofiilide päringud Quirks Serverist</translation>
 <translation id="1397855852561539316">Vaikeotsingupakkuja soovitatud URL</translation>
-<translation id="1398889361882383850">Saate määrata, kas veebisaitidel on lubatud pistikprogramme automaatselt käitada. Pistikprogrammide automaatse käitamise saab kõigi veebisaitide puhul lubada või keelata.
-
-          „Klõpsa esitamiseks” lubab pistikprogramme käitada, kuid kasutaja peab selleks pistikprogrammil klõpsama.
-
-          Kui seda reeglit ei määrata, kasutatakse funktsiooni „Luba pistikprogrammid” ja kasutaja saab seda muuta.</translation>
 <translation id="1426410128494586442">Jah</translation>
 <translation id="1427655258943162134">Puhverserveri aadress või URL</translation>
 <translation id="1435659902881071157">Seadme tasemel võrgukonfigureerimine</translation>
@@ -177,7 +172,6 @@
 <translation id="1689963000958717134">Võimaldab jõustada võrgu konfigureerimise kõigile <ph name="PRODUCT_OS_NAME" /> seadme kasutajatele. Võrgu konfigureerimine on JSON-i vormingus string, mille määrab aadressil <ph name="ONC_SPEC_URL" /> kirjeldatud vorming Open Network Configuration</translation>
 <translation id="1708496595873025510">Piirangu määramine variatsioonide lähteväärtuse toomisele</translation>
 <translation id="172374442286684480">Luba kõikidel saitidel kohalike andmete määramine</translation>
-<translation id="1727394138581151779">Blokeeri kõik pistikprogrammid</translation>
 <translation id="1734716591049455502">Kaugjuurdepääsu valikute seadistamine</translation>
 <translation id="1736269219679256369">SSL-i hoiatuslehelt jätkamise lubamine</translation>
 <translation id="1749815929501097806">Määrab teenusetingimused, millega kasutaja peab enne seadmes kasutatava konto seansi käivitamist nõustuma.
@@ -718,7 +712,6 @@
 
           Kui lubate reegli või jätate selle määramata, siis saavad kasutajad paroolihalduris paroole tavatekstina vaadata.</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
-<translation id="3570008976476035109">Blokeeri pistikprogrammid nendel saitidel</translation>
 <translation id="3591584750136265240">Sisselogimise autentimise käitumise seadistamine</translation>
 <translation id="3627678165642179114">Õigekirjakontrolli veebiteenuse lubamine või keelamine</translation>
 <translation id="3646859102161347133">Ekraaniluubi tüübi määramine</translation>
@@ -798,7 +791,6 @@
           Google'i soovituste URL-iks võib määrata: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />
 
           Reegel on jõus vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
-<translation id="3864818549971490907">Pistikprogrammide vaikeseade</translation>
 <translation id="3866249974567520381">Kirjeldus</translation>
 <translation id="3868347814555911633">Reegel on aktiivne ainult jaerežiimis.
 
@@ -858,6 +850,7 @@
 
           Tavaliselt on see andmepüügi eest kaitsmiseks keelatud. Kui see reegel ei ole määratud, siis see keelatakse ja kolmanda osapoole alamsisu ei saa HTTP Basic Authi hüpikdialoogina avaneda.</translation>
 <translation id="4056910949759281379">Keela SPDY-protokoll</translation>
+<translation id="408029843066770167">Google'i kellaajateenuses päringute lubamine</translation>
 <translation id="4088589230932595924">Inkognito režiim on jõustatud</translation>
 <translation id="4088983553732356374">Võimaldab teil seadistada, kas veebisaitidel on lubatud määrata kohalikke andmeid. Kohalike andmete määramise saab lubada või keelata kõigi veebisaitide jaoks.
 
@@ -926,6 +919,7 @@
 <translation id="4377599627073874279">Luba kõikidel saitidel kõikide kujutiste kuvamine</translation>
 <translation id="4389091865841123886">Kaugatesteerimine konfigureeritakse TPM-mehhanismi abil.</translation>
 <translation id="4397469093966511008">Kui reegli väärtuseks määratakse Väär, ei saa kasutajad soovi korral saata teatud süsteemiteavet ja lehe sisu Google'i serveritesse. Kui selle seade väärtuseks määratakse Tõene või seda ei seadistata, saavad kasutajad saata teatud süsteemiteavet ja lehe sisu ohutu sirvimise funktsioonile, et aidata ohtlikke rakendusi ja saite tuvastada.</translation>
+<translation id="4418726081189202489">Kui selle reegli väärtuseks määratakse Väär, peatatakse teenusest <ph name="PRODUCT_NAME" /> päringute saatmine Google'i serverile täpse ajatempli saamiseks. Need päringud lubatakse, kui reegli väärtuseks on määratud Tõene või see on määramata.</translation>
 <translation id="4423597592074154136">Puhverserveri seadete määramine käsitsi</translation>
 <translation id="4429220551923452215">Lubab või keelab rakenduste otsetee järjehoidjaribal.
 
@@ -1450,9 +1444,6 @@
           Kui otsustate puhverserveri automaatselt tuvastada, esitatakse Androidi rakendustele URL „http://wpad/wpad.dat”. Ühtegi teist puhverserveri automaatse tuvastamise protokolli osa ei kasutata.
 
           Kui otsustate kasutada puhverserveri skripti .pac, esitatakse Androidi rakendustele skripti URL.</translation>
-<translation id="6467433935902485842">Võimaldab teil määrata URL-i mustrite loendi, mis määravad saidid, millel ei ole lubatud pistikprogramme käitada.
-
-          Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust reeglist „DefaultPluginsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="6491139795995924304">Luba Bluetooth seadmes</translation>
 <translation id="6520802717075138474">Impordi otsingumootorid vaikebrauserist esimesel käitamisel</translation>
 <translation id="653608967792832033">Määrab aja, pärast mida lukustatakse ekraan akutoitel töötamisel, kui kasutaja pole midagi sisestanud.
@@ -1739,7 +1730,6 @@
       Kui määratud on GAIA, toimub sisselogimine tavapärase GAIA autentimisvoo kaudu.
 
       Kui valikuks on määratud SAML_INTERSTITIAL, kuvatakse sisselogimisel vaheekraan, kus kasutajale pakutakse autentimise jätkamist seadme registreerimisdomeeni SAML IdP kaudu või võimalust naasta tavapärasesse GAIA sisselogimisvoogu.</translation>
-<translation id="7567380065339179813">Luba pistikprogrammid nendel saitidel</translation>
 <translation id="757395965347379751">Kui see seade on lubatud, lubab <ph name="PRODUCT_NAME" /> SHA-1 allkirjastatud sertifikaate seni, kuni need on valideeritud ja ühtivad kohalikult installitud CA-sertifikaatidega.
 
       Arvestage sellega, et see reegel oleneb operatsioonisüsteemi sertifikaadi kinnitamise virnast, mis lubab SHA-1 allkirju. Kui OS-i värskendus muudab OS-i SHA-1 sertifikaatide käsitlemist, ei pruugi see reegel enam kehtida.  Lisaks on see reegel ajutine lahendus, et anda ettevõtetele rohkem aega SHA-1-st lahkumiseks.  See reegel eemaldatakse 2019. aasta 1. jaanuari paiku.
@@ -1832,9 +1822,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Uus vaheleht</translation>
 <translation id="7788511847830146438">Profiilipõhine</translation>
-<translation id="7796141075993499320">Võimaldab teil määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud pistikprogramme käitada.
-
-          Kui jätate selle reeglis määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPluginsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="7801886189430766248">Kui selle reegli väärtuseks määratakse Tõene, laaditakse Androidi rakenduse andmed üles Androidi varundusserveritesse ja ühilduvate rakenduste uuesti installimise korral taastatakse need sealt.
 
       Kui selle reegli väärtuseks määratakse Väär, on Androidi varundusteenus välja lülitatud.
@@ -2109,7 +2096,6 @@
       Reegel ei ole saadaval Windowsi eksemplarides, mis ei ole liidetud
       Active Directory domeeniga. (Chrome OS-i puhul vaadake reegliga
       DeviceMetricsReportingEnabled seonduvat teavet.)</translation>
-<translation id="868187325500643455">Kõikidel saitidel pistikprogrammide automaatselt käitamise lubamine</translation>
 <translation id="8693243869659262736">Kasuta sisseehitatud DNS-i klienti</translation>
 <translation id="8704831857353097849">Keelatud pistikprogrammide loend</translation>
 <translation id="8711086062295757690">Määrab märksõna, mis on otsetee, mida kasutatakse omnikastikeses otsingupakkuja käivitamiseks.

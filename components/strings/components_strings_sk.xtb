@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Neplatná žiadosť alebo parametre žiadosti</translation>
 <translation id="1826516787628120939">Kontroluje sa</translation>
 <translation id="1834321415901700177">Tento web obsahuje škodlivé programy</translation>
+<translation id="1840414022444569775">Toto číslo karty sa už používa</translation>
 <translation id="1842969606798536927">Zaplatiť</translation>
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC webovej adresy.</translation>
 <translation id="1871284979644508959">Povinné pole</translation>
 <translation id="187918866476621466">Otvoriť stránky pri spustení</translation>
 <translation id="1883255238294161206">Zbaliť zoznam</translation>
 <translation id="1898423065542865115">Filtrovanie</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Žiadne}=1{1 web}few{# weby}many{# webu}other{# webov}}</translation>
 <translation id="194030505837763158">Prejdite na stránku <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Záložky (<ph name="DOMAIN" />)</translation>
 <translation id="1973335181906896915">Chyba serializácie</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">Identifikátor priečinka API:</translation>
 <translation id="2597378329261239068">Tento dokument je chránený heslom. Zadajte heslo.</translation>
 <translation id="2609632851001447353">Variácie</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Žiadne}=1{1 aplikácia ($1)}=2{2 aplikácie ($1, $2)}few{# aplikácie ($1, $2, $3)}many{# aplikácie ($1, $2, $3)}other{# aplikácií ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Vaše hodiny idú dopredu</translation>
 <translation id="2639739919103226564">Stav:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Informácie o certifikáte</translation>
 <translation id="3063697135517575841">Chromu sa nepodarilo overiť vašu kartu. Skúste to znova neskôr.</translation>
 <translation id="3064966200440839136">Ak zaplatíte pomocou externej aplikácie, opustíte režim inkognito. Chcete pokračovať?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Žiadne}=1{1 heslo}few{# heslá}many{# hesla}other{# hesiel}}</translation>
 <translation id="3093245981617870298">Ste v režime offline.</translation>
 <translation id="3105172416063519923">Identifikátor obsahu:</translation>
 <translation id="3109728660330352905">Nemáte povolenie na zobrazenie tejto stránky.</translation>
@@ -307,6 +311,7 @@
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3498215018399854026">V tejto chvíli sa nám nepodarilo spojiť s vaším rodičom. Skúste to znova neskôr.</translation>
 <translation id="3528171143076753409">Certifikát servera nie je dôveryhodný.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Aspoň 1 položka v synchronizovaných zariadeniach}=1{1 položka (a ďalšie v synchronizovaných zariadeniach)}few{# položky (a ďalšie v synchronizovaných zariadeniach)}many{# položky (a ďalšie v synchronizovaných zariadeniach)}other{# položiek (a ďalšie v synchronizovaných zariadeniach)}}</translation>
 <translation id="3539171420378717834">Ponechať kópiu tejto karty na tomto zariadení</translation>
 <translation id="3542684924769048008">Použiť heslo pre:</translation>
 <translation id="3549644494707163724">Šifrovať všetky synchronizované údaje pomocou vlastnej prístupovej frázy pre synchronizáciu</translation>
@@ -341,6 +346,7 @@
 <translation id="3744899669254331632">Webové stránky <ph name="SITE" /> momentálne nemôžete navštíviť, pretože odoslali zakódované poverenia, ktoré Chromium neodkáže spracovať. Chyby siete a útoky sú zvyčajne dočasné, takže táto stránka by mala pravdepodobne neskôr fungovať.</translation>
 <translation id="375403751935624634">Preklad zlyhal v dôsledku chyby servera.</translation>
 <translation id="3759461132968374835">Nemáte žiadne nedávno nahlásené zlyhania. Na tejto stránke sa nezobrazujú zlyhania, ktoré nastali pri zakázanej možnosti hlásení zlyhaní.</translation>
+<translation id="3778403066972421603">Chcete uložiť túto kartu do svojho účtu Google a tohto zariadenia?</translation>
 <translation id="3787705759683870569">Platnosť vyprší <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Ak používate server proxy...</translation>
 <translation id="3828924085048779000">Prístupová fráza nemôže byť prázdna.</translation>
@@ -352,8 +358,10 @@
 <translation id="3890664840433101773">Pridanie e-mailu</translation>
 <translation id="3901925938762663762">Platnosť karty vypršala</translation>
 <translation id="3963721102035795474">Režim čítačky</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Žiadne}=1{Z 1 webu }few{Z # webov }many{Z # webu }other{Z # webov }}</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
 <translation id="3973234410852337861">Web <ph name="HOST_NAME" /> je zablokovaný</translation>
+<translation id="3987940399970879459">Menej ako 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webová stránka v okolí}few{# webové stránky v okolí}many{# webovej stránky v okolí}other{# webových stránok v okolí}}</translation>
 <translation id="4021036232240155012">DNS je sieťová služba, ktorá preloží názov webu do jeho internetovej adresy.</translation>
 <translation id="4030383055268325496">&amp;Vrátiť späť pridanie</translation>
@@ -559,6 +567,7 @@
 <translation id="6042308850641462728">Viac</translation>
 <translation id="6060685159320643512">Opatrne, tieto experimenty môžu spôsobiť problémy</translation>
 <translation id="6080696365213338172">K obsahu ste pristúpili pomocou certifikátu, ktorý poskytol správca. Údaje, ktoré poskytnete doméne <ph name="DOMAIN" /> môžu byť zachytené správcom.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Žiadne}=1{1 heslo (synchronizované)}few{# heslá (synchronizované)}many{# hesla (synchronizované)}other{# hesiel (synchronizované)}}</translation>
 <translation id="6146055958333702838">Skontrolujte všetky káble a reštartujte všetky používané smerovače, modemy alebo iné sieťové zariadenia.</translation>
 <translation id="614940544461990577">Vyskúšajte:</translation>
 <translation id="6151417162996330722">Obdobie platnosti certifikátu servera je príliš dlhé</translation>
@@ -647,7 +656,6 @@
 <translation id="6970216967273061347">Obvod</translation>
 <translation id="6973656660372572881">Určené sú pevne dané servery proxy aj skript PAC webovej adresy.</translation>
 <translation id="6989763994942163495">Zobraziť rozšírené nastavenia...</translation>
-<translation id="7000990526846637657">V histórii sa nenašli žiadne záznamy</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Heslá</translation>
@@ -716,6 +724,7 @@
 <translation id="7578104083680115302">Zaplaťte rýchlejšie na stránkach a v aplikáciách v rôznych službách pomocou kariet, ktoré ste si uložili na Googli.</translation>
 <translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7592362899630581445">Certifikát servera porušuje obmedzenia názvov.</translation>
+<translation id="7598391785903975535">Menej ako <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Web <ph name="HOST_NAME" /> momentálne nemôže spracovať túto žiadosť.</translation>
 <translation id="7600965453749440009">Nikdy neprekladať jazyk <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Hodnota (<ph name="VALUE" />) presahuje povolený rozsah.</translation>
@@ -779,6 +788,7 @@
 <translation id="8194797478851900357">&amp;Vrátiť späť presunutie</translation>
 <translation id="8201077131113104583">Neplatná webová adresa aktualizácie pre rozšírenie s ID <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Súhrn objednávky</translation>
+<translation id="8206354486702514201">Toto nastavenie je vynútené správcom.</translation>
 <translation id="8218327578424803826">Pridelená poloha:</translation>
 <translation id="8225771182978767009">Osoba, ktorá nastavila tento počítač, sa rozhodla daný web blokovať.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -881,5 +891,6 @@
 <translation id="939736085109172342">Nový priečinok</translation>
 <translation id="941721044073577244">Zdá sa, že nemáte povolenie pristupovať na tento web</translation>
 <translation id="969892804517981540">Oficiálne zostavenie</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Žiadne}=1{1 položka}few{# položky}many{# položky}other{# položiek}}</translation>
 <translation id="988159990683914416">Zostavenie pre vývojárov</translation>
 </translationbundle>

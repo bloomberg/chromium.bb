@@ -129,6 +129,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="4527045527269911712">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse.</translation>
 <translation id="453661520163887813">Fuldt opladet om <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Genvejen til at låse skærmen er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4659419629803378708">ChromeVox er aktiveret</translation>
 <translation id="479989351350248267">søg</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4849058404725798627">Fremhæv element med tastaturfokus</translation>
@@ -152,6 +153,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="5548285847212963613">Udvidelsen "<ph name="EXTENSION_NAME" />" kan hjælpe med at oprette forbindelse til dette netværk.</translation>
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> d. <ph name="DATE" /></translation>
+<translation id="5600837773213129531">Tryk på Ctrl+Alt+Z for at deaktivere oplæsning.</translation>
 <translation id="5648021990716966815">Stik til mikrofon</translation>
 <translation id="5744083938413354016">Tryk og træk</translation>
 <translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
@@ -223,6 +225,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="7536035074519304529">IP-adresse: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" />. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emojipalet</translation>
+<translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7581273696622423628">Deltag i undersøgelsen</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7649070708921625228">Hjælp</translation>
@@ -230,6 +233,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
+<translation id="7951523953736115461">Nattelys</translation>
 <translation id="7977927628060636163">Søger efter mobilnetværk...</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="8000066093800657092">Intet netværk</translation>

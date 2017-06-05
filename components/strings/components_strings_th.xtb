@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">คำขอหรือพารามิเตอร์คำขอไม่ถูกต้อง</translation>
 <translation id="1826516787628120939">กำลังตรวจสอบ</translation>
 <translation id="1834321415901700177">เว็บไซต์นี้มีโปรแกรมอันตราย</translation>
+<translation id="1840414022444569775">มีการใช้หมายเลขบัตรนี้แล้ว</translation>
 <translation id="1842969606798536927">จ่าย</translation>
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
 <translation id="1871284979644508959">ช่องที่ต้องกรอก</translation>
 <translation id="187918866476621466">เปิดหน้าเริ่มต้นใช้งาน</translation>
 <translation id="1883255238294161206">ยุบรายการ</translation>
 <translation id="1898423065542865115">การกรอง</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{ไม่มี}=1{เว็บไซต์ 1 แห่ง}other{เว็บไซต์ # แห่ง}}</translation>
 <translation id="194030505837763158">ไปที่ <ph name="LINK" /></translation>
 <translation id="1962204205936693436">บุ๊กมาร์กของ <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">ข้อผิดพลาดในการจัดเรียง</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">รหัส API ไดเรกทอรี:</translation>
 <translation id="2597378329261239068">เอกสารนี้ได้รับการป้องกันด้วยรหัสผ่าน โปรดป้อนรหัสผ่าน</translation>
 <translation id="2609632851001447353">รูปแบบต่างๆ</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{ไม่มี}=1{1 แอป ($1)}=2{2 แอป ($1, $2)}other{# แอป ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">นาฬิกาเร็วเกินไป</translation>
 <translation id="2639739919103226564">สถานะ:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">ข้อมูลในใบรับรอง</translation>
 <translation id="3063697135517575841">Chrome ไม่สามารถยืนยันบัตรของคุณได้ในขณะนี้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="3064966200440839136">ออกจากโหมดไม่ระบุตัวตนเพื่อชำระเงินผ่านแอปพลิเคชันภายนอก ดำเนินการต่อไหม</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{ไม่มี}=1{รหัสผ่าน 1 รายการ}other{รหัสผ่าน # รายการ}}</translation>
 <translation id="3093245981617870298">คุณออฟไลน์อยู่</translation>
 <translation id="3105172416063519923">รหัสสินทรัพย์:</translation>
 <translation id="3109728660330352905">คุณไม่มีสิทธิ์ดูหน้านี้</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="3498215018399854026">เราไม่สามารถติดต่อผู้ปกครองของคุณได้ในขณะนี้ โปรดลองอีกครั้ง</translation>
 <translation id="3528171143076753409">ใบรับรองของเซิร์ฟเวอร์ไม่น่าเชื่อถือ</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{อย่างน้อย 1 รายการบนอุปกรณ์ที่ซิงค์}=1{1 รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}other{# รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}}</translation>
 <translation id="3539171420378717834">เก็บสำเนาบัตรนี้ไว้บนอุปกรณ์นี้</translation>
 <translation id="3542684924769048008">ใช้รหัสผ่านสำหรับ:</translation>
 <translation id="3549644494707163724">เข้ารหัสข้อมูลที่ซิงค์ทั้งหมดด้วยข้อความรหัสผ่านการซิงค์ของคุณเอง</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากเว็บไซต์ได้ส่งข้อมูลรับรองที่มีการแปลงข้อมูลซึ่ง Chromium ไม่สามารถดำเนินการได้ ข้อผิดพลาดของเครือข่ายและการโจมตีมักจะเกิดขึ้นชั่วคราว ดังนั้นหน้านี้อาจจะใช้งานได้ในภายหลัง</translation>
 <translation id="375403751935624634">การแปลล้มเหลวเนื่องจากข้อผิดพลาดของเซิร์ฟเวอร์</translation>
 <translation id="3759461132968374835">คุณไม่ได้รายงานข้อขัดข้องเมื่อเร็วๆ นี้ ข้อขัดข้องที่เกิดขึ้นเมื่อปิดใช้งานการรายงานข้อขัดข้อง จะไม่ปรากฏที่นี่</translation>
+<translation id="3778403066972421603">คุณต้องการบันทึกบัตรนี้ลงในบัญชี Google และในอุปกรณ์นี้ไหม</translation>
 <translation id="3787705759683870569">หมดอายุ <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">หากคุณใช้พร็อกซีเซิร์ฟเวอร์...</translation>
 <translation id="3828924085048779000">ข้อความรหัสผ่านต้องไม่เว้นว่างไว้</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">เพิ่มอีเมล</translation>
 <translation id="3901925938762663762">บัตรหมดอายุ</translation>
 <translation id="3963721102035795474">โหมดนักอ่าน</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{ไม่มี}=1{จากเว็บไซต์ 1 แห่ง }other{จากเว็บไซต์ #  แห่ง }}</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ถูกบล็อก</translation>
+<translation id="3987940399970879459">ไม่ถึง 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{มีหน้าเว็บ 1 หน้าใกล้ๆ}other{มีหน้าเว็บ # หน้าใกล้ๆ}}</translation>
 <translation id="4021036232240155012">DNS คือบริการเครือข่ายที่แปลชื่อของเว็บไซต์เป็นที่อยู่อินเทอร์เน็ต</translation>
 <translation id="4030383055268325496">&amp;เลิกทำการเพิ่ม</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="6060685159320643512">ระวัง การทดลองนี้อาจเป็นอันตราย</translation>
 <translation id="6080696365213338172">คุณเข้าถึงเนื้อหาโดยใช้ใบรับรองที่ผู้ดูแลระบบออกให้ ข้อมูลที่คุณให้กับ <ph name="DOMAIN" /> อาจถูกสกัดกั้นโดยผู้ดูแลระบบ</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{ไม่มี}=1{รหัสผ่าน (ที่ซิงค์) 1 รายการ}other{รหัสผ่าน (ที่ซิงค์) # รายการ}}</translation>
 <translation id="6146055958333702838">ตรวจสายเคเบิลและรีบูตเราเตอร์ โมเด็ม หรืออุปกรณ์เครือข่ายอื่น
     ที่คุณอาจใช้งานอยู่</translation>
 <translation id="614940544461990577">ลอง:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">เขต</translation>
 <translation id="6973656660372572881">มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่และ URL สคริปต์ .pac ไว้</translation>
 <translation id="6989763994942163495">แสดงการตั้งค่าขั้นสูง...</translation>
-<translation id="7000990526846637657">ไม่พบข้อมูลประวัติการเข้าชม</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">ชำระเงินบนเว็บไซต์และแอปในอุปกรณ์ต่างๆ ได้อย่างรวดเร็วด้วยบัตรที่คุณได้บันทึกไว้กับ Google</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7592362899630581445">ใบรับรองของเซิร์ฟเวอร์ละเมิดข้อกำหนดชื่อ</translation>
+<translation id="7598391785903975535">ไม่ถึง <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> ไม่สามารถดำเนินการกับคำขอนี้ในขณะนี้</translation>
 <translation id="7600965453749440009">ไม่ต้องแปลภาษา<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">ค่าอยู่นอกช่วง <ph name="VALUE" /></translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">&amp;เลิกทำการย้าย</translation>
 <translation id="8201077131113104583">การอัปเดต URL ไม่ถูกต้องสำหรับส่วนขยายรหัส "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8202097416529803614">ข้อมูลสรุปคำสั่งซื้อ</translation>
+<translation id="8206354486702514201">ผู้ดูแลระบบของคุณกำหนดให้ใช้การตั้งค่านี้</translation>
 <translation id="8218327578424803826">ตำแหน่งที่มอบหมาย:</translation>
 <translation id="8225771182978767009">ผู้ที่ตั้งค่าคอมพิวเตอร์เครื่องนี้เลือกบล็อกเว็บไซต์นี้</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -886,5 +896,6 @@
 <translation id="939736085109172342">โฟลเดอร์ใหม่</translation>
 <translation id="941721044073577244">ดูเหมือนว่าคุณจะไม่มีสิทธิ์เข้าชมเว็บไซต์นี้</translation>
 <translation id="969892804517981540">รุ่นที่เป็นทางการ</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{ไม่มี}=1{1 รายการ}other{# รายการ}}</translation>
 <translation id="988159990683914416">รุ่นนักพัฒนา</translation>
 </translationbundle>

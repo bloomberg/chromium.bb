@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
 <translation id="1826516787628120939">מתבצעת בדיקה</translation>
 <translation id="1834321415901700177">האתר הזה מכיל תוכניות מזיקות</translation>
+<translation id="1840414022444569775">מספר הכרטיס הזה כבר נמצא בשימוש</translation>
 <translation id="1842969606798536927">שלם</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
 <translation id="1871284979644508959">שדה חובה</translation>
 <translation id="187918866476621466">פתח דפי פתיחה</translation>
 <translation id="1883255238294161206">כווץ רשימה</translation>
 <translation id="1898423065542865115">סינון</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{ללא}=1{אתר אחד}two{שני אתרים}many{# אתרים}other{# אתרים}}</translation>
 <translation id="194030505837763158">עבור ל-<ph name="LINK" /></translation>
 <translation id="1962204205936693436">סימניות של <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">שגיאה בעריכה בסידרה</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">‏מזהה ממשק API של ספרייה:</translation>
 <translation id="2597378329261239068">מסמך זה מוגן באמצעות סיסמה. הזן סיסמה.</translation>
 <translation id="2609632851001447353">וריאציות</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{ללא}=1{אפליקציה אחת (1‏$)}=2{שתי אפליקציות ($1, $2)}many{# אפליקציות ($1, $2, $3)}other{# אפליקציות ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">השעון שלך מקדים</translation>
 <translation id="2639739919103226564">סטטוס:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">פרטי אישור</translation>
 <translation id="3063697135517575841">‏Chrome לא הצליח לאשר את הכרטיס שלך הפעם. נסה שוב מאוחר יותר.</translation>
 <translation id="3064966200440839136">בחרת לצאת ממצב גלישה בסתר כדי לשלם באמצעות יישום חיצוני. להמשיך?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{ללא}=1{סיסמה אחת}two{שתי סיסמאות}many{# סיסמאות}other{# סיסמאות}}</translation>
 <translation id="3093245981617870298">אתה במצב לא מקוון.</translation>
 <translation id="3105172416063519923">מזהה נכס:</translation>
 <translation id="3109728660330352905">אין לך הרשאה להציג את הדף הזה.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="3498215018399854026">לא הצלחנו ליצור קשר עם ההורה שלך. נסה שוב מאוחר יותר.</translation>
 <translation id="3528171143076753409">אישור השרת אינו מהימן.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{לפחות פריט אחד במכשירים מסונכרנים}=1{פריט אחד (ופריטים נוספים במכשירים מסונכרנים)}two{שני פריטים (ופריטים נוספים במכשירים מסונכרנים)}many{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}other{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}}</translation>
 <translation id="3539171420378717834">שמור עותק של הכרטיס הזה במכשיר הזה</translation>
 <translation id="3542684924769048008">השתמש בסיסמה עבור:</translation>
 <translation id="3549644494707163724">הצפן את כל הנתונים המסונכרנים באמצעות משפט הסיסמה שלך לסנכרון</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">‏אינך יכול לבקר כרגע ב-<ph name="SITE" /> מפני שהאתר שלח פרטי כניסה מעורבלים ש-Chromium אינו יכול לעבד. שגיאות רשת והתקפות הן בדרך כלל זמניות, לכן סביר להניח שדף זה יפעל כהלכה בהמשך.</translation>
 <translation id="375403751935624634">התרגום נכשל עקב שגיאת שרת.</translation>
 <translation id="3759461132968374835">לא התקבלו דיווחים על קריסות לאחרונה. קריסות שהתרחשו בזמן שאפשרות הדיווח על קריסות היתה מושבתת לא יופיעו כאן.</translation>
+<translation id="3778403066972421603">‏האם ברצונך לשמור את הכרטיס בחשבון Google שלך ובמכשיר הזה?</translation>
 <translation id="3787705759683870569">תאריך תפוגה: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">‏אם אתה משתמש בשרת Proxy...</translation>
 <translation id="3828924085048779000">אין אפשרות להשתמש במשפט-סיסמה ריק.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">הוספת כתובת אימייל</translation>
 <translation id="3901925938762663762">תוקף הכרטיס פג</translation>
 <translation id="3963721102035795474">מצב קורא</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{ללא}=1{מאתר אחד }two{משני אתרים }many{מ-# אתרים }other{מ-# אתרים }}</translation>
 <translation id="397105322502079400">מחשב...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> חסום</translation>
+<translation id="3987940399970879459">‏פחות מ-‎1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{דף אינטרנט קרוב אחד}two{# דפי אינטרנט קרובים}many{# דפי אינטרנט קרובים}other{# דפי אינטרנט קרובים}}</translation>
 <translation id="4021036232240155012">‏DNS הוא שירות הרשת שמתרגם שם של אתר לכתובת האינטרנט שלו.</translation>
 <translation id="4030383055268325496">&amp;ביטול הוספה</translation>
@@ -568,6 +576,7 @@ Del</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="6060685159320643512">זהירות, ניסויים אלה עלולים לנשוך</translation>
 <translation id="6080696365213338172">ניגשת לתוכן באמצעות אישור שהוענק על ידי מנהל מערכת. מנהל המערכת שלך עשוי ליירט נתונים שתספק ל-<ph name="DOMAIN" />.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{ללא}=1{סיסמה אחת (מסונכרנת)}two{שתי סיסמאות (מסונכרנות)}many{# סיסמאות (מסונכרנות)}other{# סיסמאות (מסונכרנות)}}</translation>
 <translation id="6146055958333702838">בדוק את הכבלים והפעל מחדש את הנתבים, המודמים ושאר התקני הרשת
   שאתה משתמש בהם.</translation>
 <translation id="614940544461990577">נסה:</translation>
@@ -657,7 +666,6 @@ Del</translation>
 <translation id="6970216967273061347">מחוז</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
 <translation id="6989763994942163495">הצג הגדרות מתקדמות...</translation>
-<translation id="7000990526846637657">לא נמצאו רשומות היסטוריה</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">‏ייתכן שלחשבון Google שלך יש סוגים אחרים של היסטוריית גלישה שזמינים בכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">סיסמאות</translation>
@@ -726,6 +734,7 @@ Del</translation>
 <translation id="7578104083680115302">‏שלם במהירות באתרים ובאפליקציות בכל המכשירים באמצעות כרטיסים ששמרת ב-Google.</translation>
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
 <translation id="7592362899630581445">אישור השרת מפר את אילוצי השמות.</translation>
+<translation id="7598391785903975535">פחות מ-<ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> לא יכול לטפל כרגע בבקשה הזו.</translation>
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE" />.</translation>
@@ -789,6 +798,7 @@ Del</translation>
 <translation id="8194797478851900357">&amp;ביטול העברה</translation>
 <translation id="8201077131113104583">כתובת אתר לא חוקית לעדכון עבור תוסף עם המזהה "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">סיכום הזמנה</translation>
+<translation id="8206354486702514201">הגדרה זו נאכפת על ידי מנהל המערכת שלך.</translation>
 <translation id="8218327578424803826">מיקום מוקצה:</translation>
 <translation id="8225771182978767009">האדם שהגדיר את המחשב הזה בחר לחסום את האתר הזה.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -891,5 +901,6 @@ Del</translation>
 <translation id="939736085109172342">תיקייה חדשה</translation>
 <translation id="941721044073577244">נראה שאין לך הרשאה לבקר באתר הזה</translation>
 <translation id="969892804517981540">גירסה רשמית</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{ללא}=1{פריט אחד}two{שני פריטים}many{# פריטים}other{# פריטים}}</translation>
 <translation id="988159990683914416">גירסת מפתחים</translation>
 </translationbundle>

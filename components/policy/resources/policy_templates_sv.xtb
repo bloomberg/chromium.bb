@@ -88,11 +88,6 @@
       Om principen är inställd på falskt tillåts ingen användning av gästprofiler i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1363275621236827384">Aktivera frågor till Quirks-servern (servern för maskinvaruspecifik information) om maskinvaruprofiler</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
-<translation id="1398889361882383850">Gör det möjligt att ange om webbplatser får köra plugin-program automatiskt. Det går att tillåta eller neka att plugin-program körs automatiskt för alla webbplatser.
-
-          Spela genom att klicka tillåter plugin-program att köras, men användaren måste klicka på dem för att de ska starta.
-
-          Om den här policyn inte anges används "AllowPlugins" och användaren kan ändra den.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
@@ -178,7 +173,6 @@
 <translation id="1689963000958717134">Tillåter att en pushad nätverkskonfiguration används för alla användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Ange begränsning av hämtningen av startvärdet för Variations</translation>
 <translation id="172374442286684480">Tillåt alla webbplatser att ange lokala data</translation>
-<translation id="1727394138581151779">Blockera alla plugin-program</translation>
 <translation id="1734716591049455502">Konfigurera alternativ för fjärråtkomst</translation>
 <translation id="1736269219679256369">Tillåt fortsättning från SSL-varningssidan</translation>
 <translation id="1749815929501097806">Anger de användarvillkor som användaren måste godkänna innan en session med ett konto som är lokalt i enheten kan påbörjas.
@@ -728,7 +722,6 @@
 
           Om du aktiverar principen eller om den inte konfigureras kan användarnas lösenord visas i klartext i lösenordshanteraren.</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
-<translation id="3570008976476035109">Blockera plugin-program för dessa webbplatser</translation>
 <translation id="3591584750136265240">Konfigurera vad som ska göras vid inloggningsautentisering</translation>
 <translation id="3627678165642179114">Aktivera eller inaktivera webbtjänsten för stavningskontroll</translation>
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
@@ -814,7 +807,6 @@
           Googles förslagsadress kan anges så här: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Principen tillämpas bara om principen DefaultSearchProviderEnabled har aktiverats.</translation>
-<translation id="3864818549971490907">Standardinställning för plugin-program</translation>
 <translation id="3866249974567520381">Beskrivning</translation>
 <translation id="3868347814555911633">Den här policyn är bara aktiv i återförsäljarläge.
 
@@ -874,6 +866,7 @@
 
           Policyn är normalt inaktiverad som skydd mot lösenordsfiske. Om policyn inte anges är inställningen inaktiverad och underordnat innehåll från tredje part får inte öppna en dialogruta för HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Inaktivera SPDY-protokoll</translation>
+<translation id="408029843066770167">Tillåt sökfrågor till en tidstjänst från Google</translation>
 <translation id="4088589230932595924">Tvingat inkognitoläge</translation>
 <translation id="4088983553732356374">Innebär att du kan ange om webbplatser ska få ange lokal data. Att ange lokal data kan tillåtas för alla webbplatser eller nekas för alla webbplatser.
 
@@ -942,6 +935,7 @@
 <translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
 <translation id="4389091865841123886">Konfigurera fjärrattesteringen med TPM-mekanism.</translation>
 <translation id="4397469093966511008">Om den här principen är inställd på falskt kan inte användare skicka systeminformation eller innehåll på sidan till Googles servrar. Om inställningen är inställd på sant eller inte har konfigurerats kan användare skicka systeminformation och innehåll på sidan till Säker webbsökning och bidra till att skadliga appar och webbplatser identifieras.</translation>
+<translation id="4418726081189202489">Om principen är inställd på falskt förhindras att sökfrågor skickas från <ph name="PRODUCT_NAME" /> till en Google-server för att hämta en korrekt tidsstämpel. Dessa sökfrågor aktiveras om principen är inställd på sant eller inte inställd alls.</translation>
 <translation id="4423597592074154136">Ange proxyinställningar manuellt</translation>
 <translation id="4429220551923452215">Aktiverar eller inaktiverar genvägen Appar i bokmärkesfältet.
 
@@ -1469,9 +1463,6 @@
           Med alternativet Identifiera proxyserver automatiskt får Android-apparna tillgång till skriptadressen http://wpad/wpad.dat. Ingen annan del av protokollet för automatisk proxyidentifiering används. 
 
           Med alternativet PAC-proxyskript får Android-apparna tillgång till skriptadressen.</translation>
-<translation id="6467433935902485842">Policyn gör att du kan ange en lista med webbadressmönster som definierar webbplatser som inte får köra plugin-program.
-
-          Om den här policyn inte anges används det globala standardvärdet för alla webbplatser från policyn DefaultPluginsSetting om den har ställts in, eller användarens personliga konfiguration om den inte har det.</translation>
 <translation id="6491139795995924304">Tillåt Bluetooth på enheten</translation>
 <translation id="6520802717075138474">Importera sökmotorer från standardwebbläsaren första gången den körs</translation>
 <translation id="653608967792832033">Anger efter hur lång tid utan indata från användaren som skärmen ska låsas när enheten går på batteri.
@@ -1756,7 +1747,6 @@
       Om principen är inställd på GAIA utförs inloggningen via det vanliga autentiseringsflödet för GAIA.
 
       Om principen är inställd på SAML_INTERSTITIAL visas en mellansidesskärm när användaren loggar in som frågar om han eller hon vill fortsätta autentiseringen via SAML IdP på enhetens registreringsdomän eller gå tillbaka till det vanliga inloggningsflödet för GAIA.</translation>
-<translation id="7567380065339179813">Tillåt plugin-program på dessa webbplatser</translation>
 <translation id="757395965347379751">När den här inställningen har aktiverats är certifikat som signerats med SHA-1 tillåtna i <ph name="PRODUCT_NAME" /> så länge det går att validera dem i en obruten kedja till ett lokalt installerat CA-certifikat.
 
       Observera att principen är beroende av att stacken för certifikatverifiering i operativsystemet tillåter SHA-1-signaturer. Om en uppdatering av operativsystemet leder till en ändring av hur SHA-1-certifikat hanteras där kanske den här principen inte längre har någon funktion. Vidare är principen bara en tillfällig lösning som ska ge företag längre tid på sig att avveckla SHA-1. Principen kommer att tas bort den 1 januari 2019 eller däromkring.
@@ -1850,9 +1840,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Sidan Ny flik</translation>
 <translation id="7788511847830146438">Per profil</translation>
-<translation id="7796141075993499320">Policyn gör att du kan ange en lista med webbadressmönster som får köra plugin-program.
-
-          Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPluginsSetting om den har angetts eller från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="7801886189430766248">När principen är inställd på sant laddas Android-appdata upp till Android-servrarna för säkerhetskopiering och återställs från dem när kompatibla appar återinstalleras.
 
       När principen är inställd på falskt stängs säkerhetskopieringstjänsten för Android av.
@@ -2128,7 +2115,6 @@
       Den här policyn är inte tillgänglig på Windows-instanser som inte är kopplade till en 
       Active Directory-domän. (För Chrome OS finns mer information i
       DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Tillåt alla webbplatser att köra pluginprogram automatiskt</translation>
 <translation id="8693243869659262736">Använd en inbyggd DNS-klient</translation>
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
 <translation id="8711086062295757690">Policyn anger nyckelordet, som är ett kortkommando som används i adressfältet för att aktivera sökning för den här leverantören.

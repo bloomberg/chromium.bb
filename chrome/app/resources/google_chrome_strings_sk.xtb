@@ -109,6 +109,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="4147555960264124640">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom prehliadača Chrome. Vaše údaje prehliadača Chrome, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Inštalátor pri dekomprimovaní archívu zlyhal. Stiahnite prehliadač Google Chrome znova.</translation>
 <translation id="4251615635259297716">Chcete prepojiť údaje prehliadača Chrome s týmto účtom?</translation>
+<translation id="4251625577313994583">získať Chrome na zariadení iPhone</translation>
 <translation id="4309555186815777032">(vyžaduje <ph name="BEGIN_BUTTON" />reštartovanie<ph name="END_BUTTON" /> prehliadača Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">Tento počítač už nebude dostávať aktualizácie prehliadača Google Chrome, pretože táto verzia systému Linux už nie je podporovaná.</translation>

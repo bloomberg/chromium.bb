@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">잘못된 요청 또는 요청 매개변수</translation>
 <translation id="1826516787628120939">확인 중</translation>
 <translation id="1834321415901700177">이 사이트에 유해한 프로그램이 있습니다.</translation>
+<translation id="1840414022444569775">이미 사용된 카드 번호입니다.</translation>
 <translation id="1842969606798536927">결제하기</translation>
 <translation id="1871208020102129563">프록시가 .pac 스크립트 URL이 아닌 고정 프록시 서버를 사용하도록 설정됩니다.</translation>
 <translation id="1871284979644508959">필수 입력란</translation>
 <translation id="187918866476621466">시작 페이지 열기</translation>
 <translation id="1883255238294161206">접기 목록</translation>
 <translation id="1898423065542865115">필터링</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{없음}=1{사이트 1개}other{사이트 #개}}</translation>
 <translation id="194030505837763158"><ph name="LINK" />(으)로 이동</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> 북마크</translation>
 <translation id="1973335181906896915">일련화 오류</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">Directory API ID:</translation>
 <translation id="2597378329261239068">문서가 비밀번호로 보호되고 있습니다. 비밀번호를 입력하세요.</translation>
 <translation id="2609632851001447353">유사 버전</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{없음}=1{앱 1개($1)}=2{앱 2개($1, $2)}other{앱 #개($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">시간이 너무 먼 미래로 설정되어 있습니다.</translation>
 <translation id="2639739919103226564">상태:</translation>
 <translation id="2649204054376361687"><ph name="COUNTRY" />, <ph name="CITY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">인증서 정보</translation>
 <translation id="3063697135517575841">현재 Chrome에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3064966200440839136">시크릿 모드를 종료하고 외부 애플리케이션에서 결제합니다. 계속하시겠습니까?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{없음}=1{비밀번호 1개}other{비밀번호 #개}}</translation>
 <translation id="3093245981617870298">오프라인 상태입니다.</translation>
 <translation id="3105172416063519923">애셋 ID:</translation>
 <translation id="3109728660330352905">이 페이지를 볼 수 있는 권한이 없습니다.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">나중에</translation>
 <translation id="3498215018399854026">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{동기화된 기기에 항목 1개 이상}=1{항목 1개(동기화된 기기에는 그 이상)}other{항목 #개(동기화된 기기에는 그 이상)}}</translation>
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>
 <translation id="3542684924769048008">비밀번호 사용 항목:</translation>
 <translation id="3549644494707163724">나만의 동기화 암호로 모든 동기화 데이터 암호화</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">웹사이트가 Chromium이 처리할 수 없는 암호화된 사용자 인증 정보를 전송하였으므로 지금은 <ph name="SITE" />에 방문할 수 없습니다. 네트워크 오류와 공격은 대체로 일시적인 문제이기 때문에 이후에는 이 페이지가 제대로 작동할 가능성이 높습니다.</translation>
 <translation id="375403751935624634">서버 오류가 발생하여 번역하지 못했습니다.</translation>
 <translation id="3759461132968374835">최근에 보고된 비정상 종료가 없습니다. 비정상 종료 보고를 사용 중지했을 때 발생한 비정상 종료는 여기에 표시되지 않습니다.</translation>
+<translation id="3778403066972421603">이 카드를 Google 계정과 이 기기에 저장하시겠습니까?</translation>
 <translation id="3787705759683870569">만료: <ph name="EXPIRATION_YEAR" />년 <ph name="EXPIRATION_MONTH" />월</translation>
 <translation id="382518646247711829">프록시 서버를 사용하는 경우</translation>
 <translation id="3828924085048779000">암호를 빈 칸으로 두어서는 안 됩니다.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">이메일 추가</translation>
 <translation id="3901925938762663762">만료된 카드입니다.</translation>
 <translation id="3963721102035795474">리더 모드</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{없음}=1{사이트 1개 }other{사이트 #개 }}</translation>
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" />이(가) 차단됨</translation>
+<translation id="3987940399970879459">1MB 미만</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{주변 웹페이지 1개}other{주변 웹페이지 #개}}</translation>
 <translation id="4021036232240155012">DNS는 웹사이트 이름을 인터넷 주소로 변환하는 네트워크 서비스입니다.</translation>
 <translation id="4030383055268325496">추가 실행 취소(&amp;U)</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">더보기</translation>
 <translation id="6060685159320643512">이러한 실험실 기능은 문제를 일으킬 수 있습니다.</translation>
 <translation id="6080696365213338172">관리자 제공 인증서를 사용하여 콘텐츠에 액세스했습니다. 사용자가 <ph name="DOMAIN" />에 제공한 데이터가 관리자에 의해 차단될 수 있습니다.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{없음}=1{비밀번호 1개(동기화됨)}other{비밀번호 #개(동기화됨)}}</translation>
 <translation id="6146055958333702838">케이블을 확인하고 사용 중인 라우터, 모뎀 또는 기타 네트워크 기기를
     재부팅하시기 바랍니다.</translation>
 <translation id="614940544461990577">다음을 시도:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">구</translation>
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
 <translation id="6989763994942163495">고급 설정 표시</translation>
-<translation id="7000990526846637657">기록이 없습니다.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Google 계정에 다른 형식의 탐색 기록이 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />에 남아있을 수 있습니다.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">Google에 저장한 카드를 사용하여 어떤 기기에서든지 사이트 및 앱에서 빠르게 지불할 수 있습니다.</translation>
 <translation id="7588950540487816470">피지컬 웹</translation>
 <translation id="7592362899630581445">서버의 인증서가 이름 제약 조건을 위반합니다.</translation>
+<translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> 미만</translation>
 <translation id="759889825892636187">현재 <ph name="HOST_NAME" />에서 요청을 처리할 수 없습니다.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> 번역 안함</translation>
 <translation id="7610193165460212391">값(<ph name="VALUE" />)이 범위를 벗어났습니다.</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">이동 실행 취소(&amp;U)</translation>
 <translation id="8201077131113104583">ID가 '<ph name="EXTENSION_ID" />'인 확장 프로그램에 대한 잘못된 업데이트 URL</translation>
 <translation id="8202097416529803614">주문 요약</translation>
+<translation id="8206354486702514201">이 설정은 관리자가 강제로 설정해 놓았습니다.</translation>
 <translation id="8218327578424803826">지정된 위치:</translation>
 <translation id="8225771182978767009">컴퓨터를 설정한 사용자가 이 사이트를 차단했습니다.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -885,5 +895,6 @@
 <translation id="939736085109172342">새 폴더</translation>
 <translation id="941721044073577244">이 사이트를 방문할 수 있는 권한이 없습니다.</translation>
 <translation id="969892804517981540">공식 빌드</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{없음}=1{항목 1개}other{항목 #개}}</translation>
 <translation id="988159990683914416">개발자 빌드</translation>
 </translationbundle>

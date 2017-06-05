@@ -88,11 +88,6 @@
       Ha a házirend értéke hamis, a <ph name="PRODUCT_NAME" /> nem teszi lehetővé vendégprofilok indítását.</translation>
 <translation id="1363275621236827384">Lekérdezések engedélyezése a Quirks Server felé a hardverprofiloknál</translation>
 <translation id="1397855852561539316">Alapértelmezett keresési szolgáltató javasolt URL-je</translation>
-<translation id="1398889361882383850">Lehetővé teszi annak beállítását, hogy a webhelyek számára engedélyezett-e a bővítmények automatikus futtatása. A bővítmények automatikus futtatását az összes webhely számára engedélyezheti, illetve megtagadhatja.
-
-          A „Kattintson a lejátszáshoz” lehetővé teszi a bővítmények futtatását, de indításukhoz a felhasználónak rájuk kell kattintania.
-
-          Ha ez a házirend nincs beállítva, akkor a „Bővítmények engedélyezése” van érvényben, és a felhasználó módosíthatja azt.</translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1427655258943162134">Proxyszerver címe vagy URL-je</translation>
 <translation id="1435659902881071157">Eszközszintű hálózatbeállítás</translation>
@@ -174,7 +169,6 @@
 <translation id="1689963000958717134">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását a(z) <ph name="PRODUCT_OS_NAME" />-eszköz minden felhasználójára. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Korlátozást állít be a Variations seed lekérésére</translation>
 <translation id="172374442286684480">Helyi adatok beállításának engedélyezése minden webhely számára</translation>
-<translation id="1727394138581151779">Minden bővítmény tiltása</translation>
 <translation id="1734716591049455502">Távoli elérési beállítások konfigurálása</translation>
 <translation id="1736269219679256369">Továbblépés engedélyezése az SSL-problémára figyelmeztető oldalról</translation>
 <translation id="1749815929501097806">Meghatározza azokat az Általános Szerződési Feltételeket, amelyeket a felhasználónak el kell fogadnia, mielőtt egy eszközszinten helyi fiókkal munkamenetbe kezdene.
@@ -688,7 +682,6 @@
 
           Ha bekapcsolja, vagy nem állítja be ezt a beállítást, a felhasználók megtekinthetik egyszerű szövegként a tárolt jelszavakat a jelszókezelőben.</translation>
 <translation id="3547954654003013442">Proxybeállítások</translation>
-<translation id="3570008976476035109">Bővítmények tiltása ezeken a webhelyeken</translation>
 <translation id="3591584750136265240">Bejelentkezési hitelesítési viselkedés konfigurálása</translation>
 <translation id="3627678165642179114">Engedélyezi vagy letiltja az internetes helyesírás-ellenőrző szolgáltatást</translation>
 <translation id="3646859102161347133">Nagyító típusának beállítása</translation>
@@ -763,7 +756,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           A Google javaslat URL-je a következőként adható meg: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Ez a házirend csak akkor teljesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
-<translation id="3864818549971490907">Alapértelmezett bővítménybeállítások</translation>
 <translation id="3866249974567520381">Leírás</translation>
 <translation id="3868347814555911633">Ez a házirend csak kiállító módban aktív.
 
@@ -821,6 +813,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4027608872760987929">Alapértelmezett keresési szolgáltató engedélyezése</translation>
 <translation id="4039085364173654945">Azt szabályozza, hogy harmadik felek altartalma az oldalon megnyithat-e HTTP Basic Auth párbeszédpanelt. Ez általában le van tiltva az adathalászat elleni védelem miatt. Ha a házirend nincs beállítva, akkor ez a letiltás nincs konfigurálva, és a harmadik féltől származó altartalom számára nem lesz engedélyezve a HTTP Basic Auth párbeszédpanel megnyitása.</translation>
 <translation id="4056910949759281379">SPDY protokoll letiltása</translation>
+<translation id="408029843066770167">Engedélyezi a lekérdezéseket a Google-időszolgáltatás számára</translation>
 <translation id="4088589230932595924">Inkognitómód kényszerítve</translation>
 <translation id="4088983553732356374">Azt határozza meg, hogy a webhelyek tárolhatnak-e helyi adatokat. A helyi adatok beállítását egyszerre lehet engedélyezni vagy letiltani az összes webhelynél.
 
@@ -889,6 +882,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4377599627073874279">Az összes kép megjelenítésének engedélyezése valamennyi webhely számára</translation>
 <translation id="4389091865841123886">TPM mechanizmussal történő távoli tanúsítás konfigurálása.</translation>
 <translation id="4397469093966511008">Ha ennek a házirendnek az értéke hamis, akkor a felhasználók nem dönthetik el, hogy elküldjenek-e bizonyos rendszer-információkat és oldaltartalmakat a Google szervereinek. Ha a beállítás aktív, vagy ha nincs konfigurálva, akkor a felhasználók elküldhetnek bizonyos rendszer-információkat és oldaltartalmakat a Biztonságos Böngészés szolgáltatásnak, hogy segítsék a veszélyes alkalmazások és webhelyek észlelését.</translation>
+<translation id="4418726081189202489">Ha a házirend értéke hamis, akkor a(z) <ph name="PRODUCT_NAME" /> nem küldhet véletlenszerűen lekérdezéseket Google-szervereknek pontos időbélyeg kéréséhez. A lekérdezések akkor engedélyezettek, ha a házirend értéke igaz, vagy ha nincs beállítva.</translation>
 <translation id="4423597592074154136">Proxybeállítások manuális megadása</translation>
 <translation id="4429220551923452215">Engedélyezi vagy letiltja az alkalmazások parancsikonját a könyvjelzősávon.
 
@@ -1362,7 +1356,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha a proxyszerver automatikus észlelését választja, az Android-alkalmazások a „http://wpad/wpad.dat” szkript-URL-t kapják. A proxy automatikus észlelésével kapcsolatos protokoll más része nem kerül felhasználásra.
 
           Ha a .pac proxyszkriptet választja, az Android-alkalmazások a szkript-URL-t kapják meg.</translation>
-<translation id="6467433935902485842">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem futtathatnak bővítményeket. Ha a házirend konfigurálatlanul marad, akkor a rendszer a "DefaultPluginsSetting" házirend globális alapértelmezett értékét használja (ha az be van állítva), vagy pedig a felhasználó saját személyes beállítását.</translation>
 <translation id="6491139795995924304">Bluetooth engedélyezése az eszközön</translation>
 <translation id="6520802717075138474">Keresőmotorok importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="653608967792832033">Az a felhasználói bevitel nélkül eltöltött idő, amely után a rendszer lezárja a képernyőt, ha akkumulátorról működik.
@@ -1628,7 +1621,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha GAIA értékre van beállítva, a bejelentkezés a normál GAIA hitelesítési folyamat szerint történik.
 
       Ha SAML_INTERSTITIAL értékre van beállítva, a bejelentkezés során egy közbeiktatott képernyő jelenik meg, amelyen a felhasználó választhat, hogy az eszköz regisztrációs domainjén érvényes SAML IdP hitelesítés használatával folytatja, vagy visszatér a normál GAIA-bejelentkezési folyamathoz.</translation>
-<translation id="7567380065339179813">Bővítmények engedélyezése ezeken a webhelyeken</translation>
 <translation id="757395965347379751">A beállítás aktiválása esetén a(z) <ph name="PRODUCT_NAME" /> engedélyezi az SHA-1-aláírással rendelkező tanúsítványokat, amennyiben sikeres a hitelesítésük, és helyileg telepített CA-tanúsítványokhoz tartoznak.
 
       Felhívjuk figyelmét arra, hogy ez az irányelv az SHA-1-aláírásokat engedélyező operációs rendszer tanúsítványhitelesítési készletétől függ. Ha az operációs rendszer valamelyik frissítése módosítja az SHA-1-tanúsítványok kezelésének módját, akkor előfordulhat, hogy ez az irányelv a továbbiakban nem fog működni.  Továbbá ez az irányelv csak ideiglenes megoldásként szolgál, hogy a vállalatoknak több idejük legyen áttérni az SHA-1-ről.  Ez az irányelv 2019. január 1-jén eltávolításra kerül.
@@ -1716,7 +1708,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Új lap oldal</translation>
 <translation id="7788511847830146438">Profilonként</translation>
-<translation id="7796141075993499320">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek futtathatnak bővítményeket. Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a "DefaultPluginsSetting" házirendből (ha az be van állítva), vagy egyéb esetben a felhasználó saját személyes beállításából.</translation>
 <translation id="7801886189430766248">Ha ezt az irányelvet igazra állítja, a rendszer feltölti az Android-alkalmazásadatokat az Android Backup-szerverekre, ahonnan újratelepítéskor letölti őket a megfelelő alkalmazás.
 
       Ha ezt az irányelvet hamisra állítja, az Android Backup Service kikapcsolódik.
@@ -1979,7 +1970,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ez a házirend nem állítható be az olyan Windows-példányokon, amelyek
       nem csatlakoznak Active Directory-domainhez.  (A Chrome OS rendszerrel
       kapcsolatban lásd a DeviceMetricsReportingEnabled házirendet.)</translation>
-<translation id="868187325500643455">Lehetővé teszi az összes webhely számára a bővítmények automatikus futtatását</translation>
 <translation id="8693243869659262736">Beépített DNS-ügyfél használata</translation>
 <translation id="8704831857353097849">Tiltott bővítmények listája</translation>
 <translation id="8711086062295757690">Megadja a kulcsszót, amely az ezzel a szolgáltatóval való keresés gyors elérésére használatos a cím- és keresősávban. Nem kötelező házirend. Ha nincs beállítva, kulcsszóval nem lehet aktiválni a keresési szolgáltatót. A házirend csak akkor érvényesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>

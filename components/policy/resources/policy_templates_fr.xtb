@@ -88,11 +88,6 @@
       Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'autorisera pas la création de profils d'invités.</translation>
 <translation id="1363275621236827384">Activer l'envoi de requêtes de profils matériels à Quirks Server</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
-<translation id="1398889361882383850">Permet d'indiquer si les sites Web sont autorisés à exécuter des plug-ins automatiquement. L'exécution automatique des plug-ins peut-être soit autorisée pour tous les sites Web, soit refusée pour tous les sites Web.
-
-          L'option "Cliquer pour lire" autorise l'exécution des plug-ins, mais l'utilisateur doit cliquer dessus pour les lancer.
-
-          Si cette règle n'est pas configurée, le paramètre "AllowPlugins" est utilisé, et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
@@ -179,7 +174,6 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1689963000958717134">Permet de transférer l'application de la configuration réseau à tous les utilisateurs d'un appareil fonctionnant avec <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit à l'adresse <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1708496595873025510">Définir la restriction liée à la récupération de la valeur de départ des variantes</translation>
 <translation id="172374442286684480">Autoriser tous les sites à définir des données locales</translation>
-<translation id="1727394138581151779">Bloquer tous les plug-ins</translation>
 <translation id="1734716591049455502">Configurer les options d'accès à distance</translation>
 <translation id="1736269219679256369">Autoriser la poursuite de la navigation depuis une page d'avertissement SSL</translation>
 <translation id="1749815929501097806">Définir les conditions d'utilisation que l'utilisateur doit accepter avant d'ouvrir une session d'un compte local de l'appareil
@@ -735,7 +729,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Si vous activez ou si vous ne configurez pas cette règle, les utilisateurs pourront voir leurs mots de passe en texte clair dans le gestionnaire de mots de passe.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
-<translation id="3570008976476035109">Bloquer les plug-ins sur ces sites</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
 <translation id="3646859102161347133">Définir le type de loupe</translation>
@@ -821,7 +814,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           L'URL en question peut être spécifiée comme suit : <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
-<translation id="3864818549971490907">Paramètre de plug-ins par défaut</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3868347814555911633">Cette règle n'est active qu'en mode "point de vente".
 
@@ -881,6 +873,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
 Cette option est habituellement désactivée dans le cadre de la protection contre le phishing. Si cette règle n'est pas configurée, cette option est désactivée et le sous-contenu tiers n'est pas autorisé à afficher une boîte de dialogue d'authentification de base HTTP.</translation>
 <translation id="4056910949759281379">Désactiver le protocole SPDY</translation>
+<translation id="408029843066770167">Autoriser l'envoi de requêtes à un service horaire de Google</translation>
 <translation id="4088589230932595924">Mode navigation privée forcé</translation>
 <translation id="4088983553732356374">Vous permet de définir si les sites Web sont autorisés à configurer les données locales. La configuration des données locales peut être soit autorisée, soit bloquée pour tous les sites Web.
 
@@ -950,6 +943,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4377599627073874279">Autoriser tous les sites à afficher toutes les images</translation>
 <translation id="4389091865841123886">Configurer l'attestation à distance avec le mécanisme TPM</translation>
 <translation id="4397469093966511008">Si cette règle est définie sur "False", les utilisateurs ne peuvent pas envoyer d'informations système ni de contenu de pages aux serveurs Google. Si elle est définie sur "True" ou si elle n'est pas configurée, ils sont autorisés à envoyer des informations système et le contenu des pages au service de navigation sécurisée afin de contribuer à la détection des applications et des sites dangereux.</translation>
+<translation id="4418726081189202489">Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> cesse d'envoyer occasionnellement des requêtes à un serveur Google en vue d'obtenir un horodatage précis. En revanche, si elle est définie sur "True" ou si elle n'est pas définie, ces requêtes pourront être envoyées.</translation>
 <translation id="4423597592074154136">Spécifier manuellement les paramètres de proxy</translation>
 <translation id="4429220551923452215">Activer ou désactiver le raccourci des applications dans la barre de favoris.
 
@@ -1478,9 +1472,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
           Si vous choisissez de détecter automatiquement le serveur proxy, l'URL de script "http://wpad/wpad.dat" est transmise aux applications Android. Aucune autre partie du protocole d'auto-détection du proxy n'est utilisée.
 
           Si vous sélectionnez le script de proxy .pac, l'URL de script est fournie aux applications Android.</translation>
-<translation id="6467433935902485842">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à exécuter des plug-ins. 
-
-Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultPluginsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="6491139795995924304">Autoriser le Bluetooth sur l'appareil</translation>
 <translation id="6520802717075138474">Importer les moteurs de recherche du navigateur par défaut à la première exécution</translation>
 <translation id="653608967792832033">Indiquer le délai d'inactivité au terme duquel l'écran est verrouillé en cas d'utilisation de la batterie
@@ -1766,7 +1757,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si la valeur est GAIA, la connexion s'effectue suivant le flux d'authentification GAIA normale.
 
       Si la valeur est SAML_INTERSTITIAL, un écran interstitiel s'affiche lors de la connexion et invite l'utilisateur à poursuivre l'authentification via le fournisseur d'identité SAML du domaine d'inscription de l'appareil, ou à revenir au flux de connexion GAIA normal.</translation>
-<translation id="7567380065339179813">Autoriser les plug-ins sur ces sites</translation>
 <translation id="757395965347379751">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> autorise les certificats signés par SHA-1 tant qu'ils sont validés et que leurs chaînes renvoient à un certificat CA installé localement.
 
       Notez que cette règle dépend de la pile de validation des certificats du système d'exploitation qui autorise les signatures SHA-1. Si la mise à jour d'un OS modifie la gestion des certificats SHA-1 par l'OS, cette règle n'aura plus d'effet. En outre, cette règle sera supprimée dans les environs du 1er janvier 2019.
@@ -1861,9 +1851,6 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
            <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Page Nouvel onglet</translation>
 <translation id="7788511847830146438">Par profil</translation>
-<translation id="7796141075993499320">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter des plug-ins. 
-
-Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultPluginsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="7801886189430766248">Lorsque cette règle est définie sur "True", les données des applications Android sont sauvegardées via Android Backup Service. Elles sont ensuite restaurées au moment de la réinstallation des applications (valable pour les applications compatibles uniquement).
 
       Lorsque cette règle est définie sur "False", Android Backup Service est désactivé.
@@ -2137,7 +2124,6 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
       Cette règle n'est pas disponible sur les instances Windows qui ne sont pas associées
       à un domaine Active Directory. (Pour Chrome OS, reportez-vous à
       la règle DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Autoriser tous les sites à exécuter automatiquement les plug-ins</translation>
 <translation id="8693243869659262736">Utiliser le client DNS intégré</translation>
 <translation id="8704831857353097849">Liste des plug-ins désactivés</translation>
 <translation id="8711086062295757690">Indique le mot clé qui est le raccourci utilisé dans l'Omnibox pour déclencher la recherche de ce moteur.

@@ -68,6 +68,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Fjern 1 valgt element}other{Fjern # valgte elementer}}</translation>
+<translation id="1629390138158333592">Søk på Internett</translation>
 <translation id="1641113438599504367">Sikker surfing</translation>
 <translation id="164269334534774161">Du ser en lokal kopi av denne siden fra <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Oversetter siden til <ph name="SOURCE_LANGUAGE" /> …</translation>
@@ -88,6 +89,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1832521218263067499">Sikkerhetshendelser</translation>
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="189172778771606813">Lukk uttrekksmenyen</translation>
+<translation id="1892551174703874605">Adressefeltet. Dra oppover for å få tilgang til bokmerker, nedlastinger og loggen.</translation>
 <translation id="1897409700584096124">Nettstedet kringkastes</translation>
 <translation id="1933845786846280168">Valgt fane</translation>
 <translation id="194341124344773587">Slå på tillatelsen for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
@@ -232,12 +234,14 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="3583454905526475291">Kunne ikke starte appen</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="3590487821116122040">Nettstedslagring Chrome ikke tror er viktig (for eksempel områder uten lagrede innstillinger eller som du ikke besøker ofte)</translation>
+<translation id="3599863153486145794">Tømmer loggen på alle påloggede enheter. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="360480449234699036">Finn ut mer om emner på nettsteder uten å forlate siden. «Trykk for å søke» sender et ord og den omkringliggende konteksten til Google Søk, slik at definisjoner, bilder, søkeresultater og annen informasjon blir sendt tilbake.
 
 Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. Hvis du vil finstemme søket, kan du dra panelet helt opp til toppen og trykke på søkefeltet.</translation>
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="3632295766818638029">Vis passordet</translation>
 <translation id="363596933471559332">Du logges på nettsteder automatisk ved hjelp av lagret legitimasjon. Når funksjonen er slått av, blir du bedt om å oppgi legitimasjonen din hver gang du logger på et nettsted.</translation>
+<translation id="3649663272864015643">Startfanen er valgt</translation>
 <translation id="3656115297268584622">Slå på posisjonstjenesten i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Tredjepartsnettsteder kan lagre og lese data i informasjonskapsler.</translation>
 <translation id="3662546969139119822">Her er det ingen logg</translation>
@@ -413,6 +417,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="548278423535722844">Åpne i en kartapp</translation>
 <translation id="5487521232677179737">Slett data</translation>
 <translation id="5487729733663684359">Denne Android-versjonen har ikke lenger støtte for Chrome-oppdateringer.</translation>
+<translation id="5490801865084500306">Bokmerkefanen er valgt</translation>
 <translation id="5512137114520586844">Denne kontoen er administrert av <ph name="PARENT_NAME" />.</translation>
 <translation id="5517095782334947753">Du har bokmerker, loggen, passord og andre innstillinger fra <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5527082711130173040">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK1" />Oppdater tillatelsene<ph name="END_LINK1" />. Posisjonstilgang er også <ph name="BEGIN_LINK2" />slått av for denne enheten<ph name="END_LINK2" />.</translation>
@@ -434,6 +439,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5676636989614905379">Kunne ikke spille av videoen på <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blokkert</translation>
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
+<translation id="5718200072127758424">Dra oppover på adressefeltet for å se bokmerker, nedlastinger og loggen</translation>
 <translation id="5719837394786370183">Når du åpner sider i inkognitofaner, lagres de ikke i nettleser- eller søkeloggen, og eventuelle informasjonskapsler slettes. Filer du laster ned og bokmerker du oppretter, beholdes.
 
 Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for arbeidsgiveren, nettleverandøren eller nettstedene du besøker.</translation>
@@ -539,6 +545,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6698801883190606802">Administrer synkroniserte data</translation>
 <translation id="6701279291835318271">Sikkerhetsrapporter</translation>
 <translation id="6710213216561001401">Forrige</translation>
+<translation id="6727612981472093924">Navigasjonspanelet er åpnet</translation>
 <translation id="6738867403308150051">Laster ned …</translation>
 <translation id="6762156594045689028">For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Kan ikke åpne filen</translation>
@@ -548,6 +555,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6820607729870073286">Du har ingen lagrede nettstedsinnstillinger.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Oversett</translation>
+<translation id="6836509131652750668"><ph name="APP_NAME" /> kjører i Chrome.</translation>
 <translation id="6846298663435243399">Laster inn …</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> faner ble lukket</translation>
 <translation id="6864459304226931083">Last ned bildet</translation>
@@ -567,15 +575,19 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6990079615885386641">Last ned appen fra Google Play Butikk: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Rapportér detaljer om mulige sikkerhetsbrudd til Google automatisk</translation>
 <translation id="6992289844737586249">Spør før nettsteder får bruke mikrofonen (anbefales)</translation>
+<translation id="7006912589185917280">Loggfanen er valgt</translation>
 <translation id="7016516562562142042">Tillatt for den aktive søkemotoren</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> er lastet ned</translation>
 <translation id="7022756207310403729">Åpne i nettleseren</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7031882061095297553">Synkroniser med</translation>
+<translation id="704059664004611800">Trykk for å se bokmerker og andre ting</translation>
+<translation id="7040779639826445456">Trykk for å se bokmerker, nedlastinger og loggen</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7057058088140140610">Kredittkort og adresser ved bruk av Google Payments</translation>
 <translation id="7062545763355031412">Godta og bytt konto</translation>
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
+<translation id="7121362699166175603">Tømmer loggen og fjerner autofullføringer i adressefeltet. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Tillat for den aktive søkemotoren</translation>
 <translation id="7138678301420049075">Annet</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
@@ -670,6 +682,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="8076014560081431679">Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Dette innholdet er fra <ph name="DOMAIN_NAME" /> og er levert av Google.</translation>
+<translation id="8100932616285851614">Navigasjonspanelet er lukket</translation>
 <translation id="8103578431304235997">Inkognitofane</translation>
 <translation id="8106211421800660735">Kredittkortnummer</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
@@ -711,6 +724,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="857509777403223202">Flere artikler kommer snart. Ha en fin kveld.</translation>
 <translation id="857943718398505171">Tillatt (anbefales)</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
+<translation id="8616006591992756292">Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Vil du åpne den foreslåtte nettadressen som er spesifisert i det nedlastede innholdet?</translation>
 <translation id="862875433388403934">Innhold (filmer, musikk osv.) som er lastet ned i andre apper, kan kanskje ikke spilles av lenger, før appene får nye lisenser basert på ny enhetslegitimasjon.
 
@@ -742,6 +756,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="894871326938397531">Vil du avslutte inkognitomodus?</translation>
 <translation id="8951232171465285730">Chrome har spart deg for <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
+<translation id="896250263197055929">Nedlastingsfanen er valgt</translation>
 <translation id="8979340629087822094">det siste døgnet</translation>
 <translation id="8981454092730389528">Google Aktivitetslagring</translation>
 <translation id="8986494364107987395">Send bruksstatistikk og programstopprapporter automatisk til Google</translation>

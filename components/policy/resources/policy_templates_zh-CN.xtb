@@ -87,11 +87,6 @@
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止使用访客个人资料登录。</translation>
 <translation id="1363275621236827384">允许在 Quirks Server 中查询硬件配置文件</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
-<translation id="1398889361882383850">可让您设置是否允许网站自动运行插件。您可以允许所有网站或拒绝所有网站自动运行插件。
-
-          点击运行可允许插件运行，但用户必须点击这些插件才能让它们开始执行。
-
-          如果未设置此政策，系统将使用“AllowPlugins”并允许用户更改此设置。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
@@ -162,7 +157,6 @@
 <translation id="1689963000958717134">允许将推送网络配置应用于安装了 <ph name="PRODUCT_OS_NAME" />的设备的所有用户。网络配置为 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>
 <translation id="1708496595873025510">对变体种子的提取设置限制条件</translation>
 <translation id="172374442286684480">允许所有网站设置本地数据</translation>
-<translation id="1727394138581151779">阻止所有插件</translation>
 <translation id="1734716591049455502">配置远程访问选项</translation>
 <translation id="1736269219679256369">允许关闭 SSL 警告页面并继续操作</translation>
 <translation id="1749815929501097806">设置用户在开始设备本地帐号会话前必须接受的服务条款。
@@ -669,7 +663,6 @@
 
           如果您启用了此政策或未设置此政策，用户将可以在密码管理器中查看以明文形式显示的密码。</translation>
 <translation id="3547954654003013442">代理设置</translation>
-<translation id="3570008976476035109">在这些网站上阻止插件</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
 <translation id="3646859102161347133">设置放大镜类型</translation>
@@ -743,7 +736,6 @@
           您可以按以下格式指定 Google 的搜索建议网址：<ph name="GOOGLE_SUGGEST_SEARCH_URL" />。
 
           仅当“DefaultSearchProviderEnabled”政策处于启用状态时，此政策才能发挥作用。</translation>
-<translation id="3864818549971490907">默认插件设置</translation>
 <translation id="3866249974567520381">说明</translation>
 <translation id="3868347814555911633">此策略仅在零售模式下有效。
 
@@ -800,6 +792,7 @@
 <translation id="4027608872760987929">启用默认搜索服务提供商</translation>
 <translation id="4039085364173654945">控制是否允许网页上的第三方子内容弹出 HTTP 基本身份认证对话框。通常情况下，为了防止网上诱骗，此设置是停用的。如果未设置此政策，就会停用此设置，而不允许第三方子内容弹出 HTTP 基本身份认证对话框。</translation>
 <translation id="4056910949759281379">停用 SPDY 协议</translation>
+<translation id="408029843066770167">允许向 Google 时间服务发出查询</translation>
 <translation id="4088589230932595924">强制使用隐身模式</translation>
 <translation id="4088983553732356374">可让您指定是否允许网站设置本地数据。您可以允许所有网站设置本地数据，也可以禁止所有网站设置本地数据。
 
@@ -868,6 +861,7 @@
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
 <translation id="4389091865841123886">通过 TPM 机制配置远程认证。</translation>
 <translation id="4397469093966511008">如果此政策设为 false，用户将无法选择向 Google 服务器发送一些系统信息和网页内容。如果此设置设为 true 或未配置，用户将能够向安全浏览功能发送一些系统信息和网页内容，以帮助检测危险应用和网站。</translation>
+<translation id="4418726081189202489">如果将此政策设为 False，<ph name="PRODUCT_NAME" /> 将无法不定期向 Google 服务器发出查询来检索准确的时间戳。如果此政策设为 True 或未设置，这样的查询将能够发送到 Google 服务器。</translation>
 <translation id="4423597592074154136">手动指定代理设置</translation>
 <translation id="4429220551923452215">启用或停用书签栏中的应用快捷方式。
 
@@ -1334,7 +1328,6 @@
           如果您选择自动检测代理服务器，则系统会向 Android 应用提供脚本网址“http://wpad/wpad.dat”，但不会使用代理自动检测协议的任何其他部分。
 
           如果您选择使用 .pac 代理脚本，则系统会向 Android 应用提供相应的脚本网址。</translation>
-<translation id="6467433935902485842">可让您设置网址格式的列表，这些网址格式用于指定不允许运行插件的网站。在未设置此政策的情况下，如果设置了“DefaultPluginsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="6491139795995924304">允许在设备上使用蓝牙功能</translation>
 <translation id="6520802717075138474">首次运行时，从默认浏览器导入搜索引擎</translation>
 <translation id="653608967792832033">指定在使用电池供电时用户停止输入后隔多久锁定屏幕。
@@ -1597,7 +1590,6 @@
       如果设为 GAIA，将通过常规 GAIA 身份验证流程完成登录。
 
       如果设为 SAML_INTERSTITIAL，登录过程中将会显示一个插页式屏幕，让用户选择是通过设备注册网域的 SAML IdP 进行身份验证，还是返回到常规 GAIA 登录流程。</translation>
-<translation id="7567380065339179813">在这些网站上允许插件</translation>
 <translation id="757395965347379751">启用此设置后，只要 SHA-1 签名证书成功验证并关联到本地安装的 CA 证书，<ph name="PRODUCT_NAME" /> 就会允许使用这些证书。
 
       请注意，此政策取决于操作系统证书验证堆栈是否允许 SHA-1 签名。如果操作系统更新更改了操作系统处理 SHA-1 证书的方式，则此政策可能不再有效。此外，此政策仅用作临时解决方法，旨在为企业提供更多时间来弃用 SHA-1。系统将于 2019 年 1 月 1 日（或左右）取消此政策。
@@ -1685,7 +1677,6 @@
           <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="7781069478569868053">新标签页</translation>
 <translation id="7788511847830146438">根据个人资料</translation>
-<translation id="7796141075993499320">可让您设置网址格式的列表，这些网址格式用于指定允许运行插件的网站。在未设置此政策的情况下，如果设置了“DefaultPluginsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="7801886189430766248">当此政策设为 true 时，系统会将 Android 应用数据上传到 Android 备份服务器，并且当用户重新安装兼容的应用时，系统会从这些服务器恢复 Android 应用数据。
  
       当此政策设为 false 时，系统将关闭 Android Backup Service。
@@ -1918,7 +1909,6 @@
       如果此设置处于启用状态，系统将向 Google 匿名发送使用情况和崩溃数据报告。如果此设置处于停用状态，系统将不会向 Google 发送此类信息。无论此设置处于启用状态还是停用状态，用户都无法更改或覆盖此设置。如果此政策未设置，系统将采用用户在安装/首次运行该浏览器时选择的设置。
 
       此政策不适用于未加入 Active Directory 网域的 Windows 实例（对于 Chrome 操作系统，请参见 DeviceMetricsReportingEnabled）。</translation>
-<translation id="868187325500643455">允许所有网站自动运行插件</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>

@@ -107,6 +107,7 @@
 <translation id="4147555960264124640">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการ และให้การควบคุมระดับผู้ดูแลระบบของบัญชีดังกล่าวเหนือโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะเชื่อมโยงอย่างถาวรกับ <ph name="USER_NAME" /> คุณจะสามารถลบข้อมูลนี้ผ่านทางแผงควบคุมบัญชี Google แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่น <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">โปรแกรมติดตั้งยกเลิกการบีบอัดการเก็บข้อมูลไม่ได้ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="4251615635259297716">เชื่อมโยงข้อมูล Chrome กับบัญชีนี้ไหม</translation>
+<translation id="4251625577313994583">รับ Chrome ใน iPhone ของคุณ</translation>
 <translation id="4309555186815777032">(จำเป็นต้อง<ph name="BEGIN_BUTTON" />รีสตาร์ท<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>

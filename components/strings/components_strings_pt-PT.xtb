@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Pedido ou parâmetros do pedido inválidos</translation>
 <translation id="1826516787628120939">A verificar</translation>
 <translation id="1834321415901700177">Este site contém programas prejudiciais</translation>
+<translation id="1840414022444569775">Este número do cartão já está a ser utilizado.</translation>
 <translation id="1842969606798536927">Pagar</translation>
 <translation id="1871208020102129563">O proxy está definido para utilizar servidores proxy fixos e não um URL de script .pac.</translation>
 <translation id="1871284979644508959">Campo obrigatório</translation>
 <translation id="187918866476621466">Abrir páginas iniciais</translation>
 <translation id="1883255238294161206">Fechar lista</translation>
 <translation id="1898423065542865115">Filtragem</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Nenhum}=1{1 site}one{# sites}other{# sites}}</translation>
 <translation id="194030505837763158">Aceder a <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Erro de serialização</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">ID da API de diretório:</translation>
 <translation id="2597378329261239068">Este documento está protegido por palavra-passe.  Introduza uma palavra-passe.</translation>
 <translation id="2609632851001447353">Variações</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Nenhuma}=1{1 aplicação ($1)}=2{2 aplicações ($1, $2)}one{# aplicações ($1, $2, $3)}other{# aplicações ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">O seu relógio está adiantado</translation>
 <translation id="2639739919103226564">Estado:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Informações do certificado</translation>
 <translation id="3063697135517575841">O Chrome não conseguiu confirmar o seu cartão neste momento. Tente novamente mais tarde.</translation>
 <translation id="3064966200440839136">Está a sair do modo de navegação anónima para pagar através de uma aplicação externa. Pretende continuar?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Nenhuma}=1{1 palavra-passe}one{# palavras-passe}other{# palavras-passe}}</translation>
 <translation id="3093245981617870298">O utilizador está em modo offline.</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="3109728660330352905">Não tem autorização para ver esta página.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">Agora não</translation>
 <translation id="3498215018399854026">Não conseguimos falar com o(a) seu (sua) pai/mãe de momento. Tente novamente.</translation>
 <translation id="3528171143076753409">O certificado do servidor não é fidedigno.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Pelo menos 1 item em dispositivos sincronizados}=1{1 item (e mais em dispositivos sincronizados)}one{# itens (e mais em dispositivos sincronizados)}other{# itens (e mais em dispositivos sincronizados)}}</translation>
 <translation id="3539171420378717834">Guardar uma cópia deste cartão neste dispositivo</translation>
 <translation id="3542684924769048008">Utilizar palavra-passe para:</translation>
 <translation id="3549644494707163724">Encriptar todos os dados sincronizados com a sua própria frase de acesso de sincronização</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">Não pode visitar <ph name="SITE" /> neste momento, porque o Website enviou credenciais baralhadas que o Chromium não consegue processar. Os erros de rede e os ataques são geralmente temporários, pelo que esta página deverá funcionar mais tarde.</translation>
 <translation id="375403751935624634">A tradução falhou devido a um erro do servidor.</translation>
 <translation id="3759461132968374835">Não tem comunicado falhas recentemente. As falhas que tenham ocorrido enquanto a criação de relatórios de falha esteve desativada não surgem aqui.</translation>
+<translation id="3778403066972421603">Pretende guardar este cartão na sua Conta Google e neste dispositivo?</translation>
 <translation id="3787705759683870569">Expira a <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Se utilizar um servidor de proxy...</translation>
 <translation id="3828924085048779000">Não é permitida uma frase de acesso vazia.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">Adicionar email</translation>
 <translation id="3901925938762663762">O cartão expirou</translation>
 <translation id="3963721102035795474">Modo de leitor</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Nenhum}=1{De 1 site }one{De # sites }other{De # sites }}</translation>
 <translation id="397105322502079400">A calcular...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> está bloqueado</translation>
+<translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 página Web próxima}one{# web pages nearby}other{# páginas Web próximas}}</translation>
 <translation id="4021036232240155012">O DNS é o serviço de rede que converte o nome de um Website no respetivo endereço de Internet.</translation>
 <translation id="4030383055268325496">&amp;Anular adição</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">Mais</translation>
 <translation id="6060685159320643512">Tenha cuidado, estas experiências podem morder</translation>
 <translation id="6080696365213338172">Acedeu a conteúdos utilizando um certificado fornecido por um administrador. Os dados que fornecer a <ph name="DOMAIN" /> podem ser intercetados pelo seu administrador.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Nenhuma}=1{1 palavra-passe (sincronizada)}one{# palavras-passe (sincronizadas)}other{# palavras-passe (sincronizadas)}}</translation>
 <translation id="6146055958333702838">Verifique os cabos e reinicie todos os routers, modems ou outros
     dispositivos de rede que possa estar a utilizar.</translation>
 <translation id="614940544461990577">Experimente:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Foram especificados servidores proxy fixos e um URL de script .pac.</translation>
 <translation id="6989763994942163495">Mostrar definições avançadas...</translation>
-<translation id="7000990526846637657">Não foram encontradas entradas no histórico</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">Pague rapidamente em sites e aplicações em todos os dispositivos com cartões que tenha guardado com o Google.</translation>
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7592362899630581445">O certificado do servidor viola as restrições de nome.</translation>
+<translation id="7598391785903975535">Menos de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> não consegue processar este pedido de momento.</translation>
 <translation id="7600965453749440009">Nunca traduzir do <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">O valor está fora do intervalo <ph name="VALUE" /> .</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">&amp;Anular movimentação</translation>
 <translation id="8201077131113104583">Atualizar URL inválido para a extensão com o ID "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Resumo da encomenda</translation>
+<translation id="8206354486702514201">Esta definição é aplicada pelo administrador.</translation>
 <translation id="8218327578424803826">Localização atribuída:</translation>
 <translation id="8225771182978767009">A pessoa que configurou este computador optou por bloquear este site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -886,5 +896,6 @@
 <translation id="939736085109172342">Nova pasta</translation>
 <translation id="941721044073577244">Parece que não tem autorização para visitar este site</translation>
 <translation id="969892804517981540">Compilação oficial</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Nenhum}=1{1 item}one{# itens}other{# itens}}</translation>
 <translation id="988159990683914416">Compilação de programador</translation>
 </translationbundle>

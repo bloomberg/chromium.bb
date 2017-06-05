@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">请求或请求参数无效</translation>
 <translation id="1826516787628120939">正在检查</translation>
 <translation id="1834321415901700177">此网站包含有害程序</translation>
+<translation id="1840414022444569775">此卡号已存在</translation>
 <translation id="1842969606798536927">付款</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
 <translation id="1871284979644508959">必填字段</translation>
 <translation id="187918866476621466">打开启动页</translation>
 <translation id="1883255238294161206">收起列表</translation>
 <translation id="1898423065542865115">过滤</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{无}=1{1 个网站}other{# 个网站}}</translation>
 <translation id="194030505837763158">请访问<ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" />书签</translation>
 <translation id="1973335181906896915">序列化错误</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">Directory API ID：</translation>
 <translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
 <translation id="2609632851001447353">其他变体</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{无}=1{1 个应用（$1）}=2{2 个应用（$1、$2）}other{# 个应用（$1、$2，$3）}}</translation>
 <translation id="2625385379895617796">您的时钟快了</translation>
 <translation id="2639739919103226564">状态：</translation>
 <translation id="2649204054376361687"><ph name="COUNTRY" /><ph name="CITY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">证书信息</translation>
 <translation id="3063697135517575841">Chrome 目前无法确认您的信用卡，请稍后重试。</translation>
 <translation id="3064966200440839136">将要退出隐身模式，以便通过外部应用付款。是否继续？</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{无}=1{1 个密码}other{# 个密码}}</translation>
 <translation id="3093245981617870298">您处于离线状态。</translation>
 <translation id="3105172416063519923">资产 ID：</translation>
 <translation id="3109728660330352905">您未获授权，无法查看此网页。</translation>
@@ -308,6 +312,7 @@
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="3498215018399854026">我们暂时无法与您父母取得联系，请重试。</translation>
 <translation id="3528171143076753409">服务器的证书不受信任。</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{在已同步的设备上至少有 1 项内容}=1{1 项内容（在已同步的设备上还有更多内容）}other{# 项内容（在已同步的设备上还有更多内容）}}</translation>
 <translation id="3539171420378717834">在此设备上保存此信用卡的副本</translation>
 <translation id="3542684924769048008">使用以下项的密码：</translation>
 <translation id="3549644494707163724">使用您自己的同步密码加密所有已同步数据</translation>
@@ -342,6 +347,7 @@
 <translation id="3744899669254331632">您目前无法访问 <ph name="SITE" />，因为此网站发送了 Chromium 无法处理的杂乱凭据。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="375403751935624634">由于服务器出错，翻译失败。</translation>
 <translation id="3759461132968374835">您最近未收到崩溃报告。崩溃报告停用时发生的崩溃不会在此处显示。</translation>
+<translation id="3778403066972421603">要将此卡的信息保存到您的 Google 帐号中和此设备上吗？</translation>
 <translation id="3787705759683870569">失效日期：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
 <translation id="382518646247711829">如果您使用代理服务器…</translation>
 <translation id="3828924085048779000">密码输入字段不能留空。</translation>
@@ -353,8 +359,10 @@
 <translation id="3890664840433101773">添加电子邮件地址</translation>
 <translation id="3901925938762663762">此信用卡已过期</translation>
 <translation id="3963721102035795474">阅读器模式</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{无}=1{来自 1 个网站}other{来自 # 个网站}}</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
+<translation id="3987940399970879459">小于 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 个网页}other{附近有 # 个网页}}</translation>
 <translation id="4021036232240155012">DNS 是一项网络服务，可将网站的名称转译为其对应的互联网地址。</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
@@ -560,6 +568,7 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="6060685159320643512">请小心，这些实验性功能可能有风险</translation>
 <translation id="6080696365213338172">您已使用管理员提供的证书访问了内容，因此管理员可以拦截您提供给 <ph name="DOMAIN" /> 的数据。</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{无}=1{1 个密码（已同步）}other{# 个密码（已同步）}}</translation>
 <translation id="6146055958333702838">请检查所有网线是否都已连好，然后重新启动您可能正在使用的任何路由器、调制解调器或其他网络设备。</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6151417162996330722">该服务器证书的有效期过长。</translation>
@@ -648,7 +657,6 @@
 <translation id="6970216967273061347">区</translation>
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
-<translation id="7000990526846637657">未找到任何记录条目</translation>
 <translation id="7012363358306927923">中国银联</translation>
 <translation id="7012372675181957985">您的 Google 帐号在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录</translation>
 <translation id="7029809446516969842">密码</translation>
@@ -717,6 +725,7 @@
 <translation id="7578104083680115302">通过各种设备在网站和应用中购物时，您都可以使用 Google 为您保存的银行卡信息快速付款。</translation>
 <translation id="7588950540487816470">实物网</translation>
 <translation id="7592362899630581445">服务器的证书违反了域名限制。</translation>
+<translation id="7598391785903975535">少于 <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> 目前无法处理此请求。</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
@@ -780,6 +789,7 @@
 <translation id="8194797478851900357">撤消移动(&amp;U)</translation>
 <translation id="8201077131113104583">ID 为“<ph name="EXTENSION_ID" />”的扩展程序的更新网址无效。</translation>
 <translation id="8202097416529803614">订单摘要</translation>
+<translation id="8206354486702514201">此设置是由您的管理员执行的。</translation>
 <translation id="8218327578424803826">分配的位置：</translation>
 <translation id="8225771182978767009">设置此计算机的用户已选择屏蔽此网站。</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
@@ -882,5 +892,6 @@
 <translation id="939736085109172342">新建文件夹</translation>
 <translation id="941721044073577244">您似乎无权访问此网站</translation>
 <translation id="969892804517981540">正式版本</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{无}=1{1 项内容}other{# 项内容}}</translation>
 <translation id="988159990683914416">开发者内部版本</translation>
 </translationbundle>

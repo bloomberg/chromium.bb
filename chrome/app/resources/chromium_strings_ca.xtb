@@ -35,6 +35,7 @@
 <translation id="2119636228670142020">Quant a &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Llicències de programari lliure de Chromium OS</translation>
 <translation id="2241627712206172106">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chromium com vulguin.</translation>
+<translation id="2265088490657775772">baixa Chromium al teu dispositiu iPhone</translation>
 <translation id="2316129865977710310">No, gràcies</translation>
 <translation id="2347108572062610441">Aquesta extensió ha canviat la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="2372704305038231957">Pot ser que Chromium de 32 bits no funcioni correctament perquè ja no és compatible amb aquest sistema Linux. Feu l'actualització a Chromium de 64 bits.</translation>
@@ -93,7 +94,7 @@
 <translation id="4050175100176540509">La versió més recent incorpora millores de seguretat i funcions noves importants.</translation>
 <translation id="407254336480250557">Selecciona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Tanqueu totes les finestres de Chromium i torneu-lo a iniciar perquè s'apliqui aquest canvi.</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Advertiment:<ph name="END_BOLD" /> Chromium no pot evitar que les extensions registrin l'historial de navegació. Per desactivar l'extensió en mode d'incògnit, anul·leu la selecció de l'opció corresponent.</translation>
+<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Advertiment:<ph name="END_BOLD" /> Chromium no pot evitar que les extensions registrin l'historial de navegació. Per desactivar l'extensió en mode d'incògnit, desmarca aquesta opció.</translation>
 <translation id="421369550622382712">Descobriu aplicacions, jocs, extensions i temes genials per a Chromium.</translation>
 <translation id="4222580632002216401">Heu iniciat la sessió a Chromium. El vostre administrador ha desactivat la sincronització.</translation>
 <translation id="4224199872375172890">Chromium està actualitzat.</translation>

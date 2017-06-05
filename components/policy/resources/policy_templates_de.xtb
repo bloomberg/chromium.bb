@@ -82,11 +82,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Ist für die Richtlinie "false" festgelegt, erlaubt <ph name="PRODUCT_NAME" /> das Erstellen von Gastprofilen nicht.</translation>
 <translation id="1363275621236827384">Abfragen an Quirks-Server für Hardwareprofile aktivieren</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
-<translation id="1398889361882383850">Mit dieser Richtlinie können Sie festlegen, ob Websites Plug-ins automatisch ausführen dürfen. Das automatische Ausführen von Plug-ins kann entweder allen Websites gestattet oder für alle Websites unterbunden werden.
-
-           Click-to-Play ermöglicht die Ausführung von Plug-ins. Der Nutzer muss jedoch darauf klicken, um die Ausführung zu initiieren.
-
-          Wird diese Richtlinie nicht konfiguriert, wird die Richtlinie "AllowPlugins" genutzt, die der Nutzer ändern kann.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse oder URL des Proxyservers</translation>
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
@@ -163,7 +158,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1689963000958717134">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration für alle Nutzer eines <ph name="PRODUCT_OS_NAME" />-Geräts. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL" /> entspricht.</translation>
 <translation id="1708496595873025510">Beschränkung für Abruf des Varianten-Seeds festlegen</translation>
 <translation id="172374442286684480">Speichern von lokalen Daten für alle Websites zulassen</translation>
-<translation id="1727394138581151779">Alle Plug-ins blockieren</translation>
 <translation id="1734716591049455502">Optionen für Remote-Zugriff konfigurieren</translation>
 <translation id="1736269219679256369">Fortfahren von SSL-Hinweisseite erlauben</translation>
 <translation id="1749815929501097806">Legt die Nutzungsbedingungen fest, die der Nutzer akzeptieren muss, bevor eine Sitzung mit einem lokalen Gerätekonto gestartet werden kann.
@@ -677,7 +671,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
           Sollten Sie sie aktivieren oder nicht konfigurieren, so können Nutzer ihre Passwörter im Passwortmanager als Klartext einsehen.</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
-<translation id="3570008976476035109">Plug-ins auf diesen Websites blockieren</translation>
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
 <translation id="3627678165642179114">Webdienst für die Rechtschreibprüfung aktivieren oder deaktivieren</translation>
 <translation id="3646859102161347133">Lupentyp festlegen</translation>
@@ -752,7 +745,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
           Die Vorschlags-URL von Google kann wie folgt angegeben werden: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
-<translation id="3864818549971490907">Standardeinstellung für Plug-ins</translation>
 <translation id="3866249974567520381">Beschreibung</translation>
 <translation id="3868347814555911633">Diese Richtlinie ist nur im Händlermodus aktiv.
 
@@ -812,6 +804,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="4027608872760987929">Standardsuchmaschine aktivieren</translation>
 <translation id="4039085364173654945">Bestimmt, ob untergeordnete Inhalte von Drittanbietern auf einer Seite in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen. In der Regel ist dies zur Abwehr gegen Phishing deaktiviert. Wenn die Richtlinie nicht konfiguriert ist, so ist die Einstellung standardmäßig deaktiviert, sodass untergeordnete Inhalte von Drittanbietern nicht in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen.</translation>
 <translation id="4056910949759281379">SPDY-Protokoll deaktivieren</translation>
+<translation id="408029843066770167">Abfragen an einen Google-Dienst für die Zeiteinstellung zulassen</translation>
 <translation id="4088589230932595924">Inkognitomodus erzwungen</translation>
 <translation id="4088983553732356374">Mit dieser Richtlinie können Sie festlegen, welche Websites lokale Daten speichern dürfen. Das Speichern von lokalen Daten kann entweder für alle Websites zugelassen oder für alle Websites unterbunden werden.
 
@@ -880,6 +873,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="4377599627073874279">Anzeige aller Bilder auf allen Websites zulassen</translation>
 <translation id="4389091865841123886">Konfiguriert die Remote-Bestätigung mit TPM-Mechanismus</translation>
 <translation id="4397469093966511008">Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer nicht mehr auswählen, ob sie einige Systeminformationen und Seiteninhalte an die Google-Server senden möchten. Ist die Richtlinie auf "true" eingestellt oder nicht konfiguriert, können Nutzer einige Systeminformationen und Seiteninhalte an Safe Browsing senden, um bei der Erfassung schädlicher Apps und Websites zu helfen.</translation>
+<translation id="4418726081189202489">Beim Festlegen dieser Richtlinien auf "False" wird <ph name="PRODUCT_NAME" /> daran gehindert, gelegentlich Abfragen an einen Google-Server zu senden, um einen korrekten Zeitstempel abzurufen. Diese Abfragen werden aktiviert, sobald für diese Richtlinien "True" oder nichts festgelegt ist.</translation>
 <translation id="4423597592074154136">Proxy-Einstellungen manuell angeben</translation>
 <translation id="4429220551923452215">Aktiviert oder deaktiviert die App-Verknüpfung in der Lesezeichenleiste
 
@@ -1354,7 +1348,6 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
           Wenn Sie "Proxyserver automatisch erkennen" wählen, erhalten Android-Apps die Skript-URL "http://wpad/wpad.dat". Kein anderer Teil des Protokolls zur automatischen Proxyerkennung wird verwendet.
 
           Wenn Sie ein PAC-Proxyskript wählen, erhalten Android-Apps die Skript-URL.</translation>
-<translation id="6467433935902485842">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Ausführen von Plug-ins nicht gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zu Einsatz.</translation>
 <translation id="6491139795995924304">Bluetooth auf Gerät zulassen</translation>
 <translation id="6520802717075138474">Suchmaschinen bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="653608967792832033">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb gesperrt wird.
@@ -1617,7 +1610,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Wenn sie auf GAIA festgelegt wird, erfolgt der Log-in über den normalen GAIA-Authentifizierungsvorgang.
 
       Wenn sie auf SAML_INTERSTITIAL festgelegt wird, erscheint beim Log-in ein Interstitialbildschirm, über den der Nutzer die Authentifizierung über den SAML-IdP der Registrierungsdomain, in dem sich das Gerät befindet, durchführen oder zum normalen GAIA-Log-in-Vorgang zurückkehren kann.</translation>
-<translation id="7567380065339179813">Plug-ins auf diesen Websites zulassen</translation>
 <translation id="757395965347379751">Wenn diese Einstellung aktiviert ist, werden von <ph name="PRODUCT_NAME" /> SHA-1-signierte Zertifikate genehmigt, vorausgesetzt sie werden erfolgreich überprüft und bilden eine Kette zu einem lokal installierten CA-Zertifikat.
 
       Diese Richtlinie setzt voraus, dass vom Zertifikatüberprüfungsstapel des Betriebssystems SHA-1-Signaturen zugelassen werden. Wenn sich durch ein Update des Betriebssystems die Handhabung von SHA-1-Zertifikaten ändert, ist diese Richtlinie nicht mehr wirksam. Diese Richtlinie dient zur vorübergehenden Problemumgehung, um Unternehmen mehr Zeit zu geben, SHA-1 zu ersetzen. Diese Richtlinie wird ab dem 1. Januar 2019 entfernt.
@@ -1705,7 +1697,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">"Neuer Tab"-Seite</translation>
 <translation id="7788511847830146438">Nach Profil</translation>
-<translation id="7796141075993499320">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von Plug-ins gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zu Einsatz.</translation>
 <translation id="7801886189430766248">Wenn diese Richtlinie auf "true" gesetzt ist, werden Android-App-Daten auf die Android Backup Server geladen und bei Neuinstallationen kompatibler Apps wiederhergestellt.
 
       Wenn diese Richtlinie auf "false" gesetzt wird, wird der Android Backup Service deaktiviert.
@@ -1957,7 +1948,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer Active
       Directory-Domain verbunden sind. Informationen zu Chrome OS finden Sie unter
       "DeviceMetricsReportingEnabled".</translation>
-<translation id="868187325500643455">Automatische Ausführung von Plug-ins für alle Websites zulassen</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
 <translation id="8704831857353097849">Liste der deaktivierten Plug-ins</translation>
 <translation id="8711086062295757690">Gibt das Suchkürzel an, das als die Verknüpfung fungiert, die in der Omnibox als Auslöser der Suche für diesen Anbieter verwendet wird. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so wird der Suchanbieter von keinem Suchkürzel aktiviert. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>

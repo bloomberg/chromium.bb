@@ -111,6 +111,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4147555960264124640">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Ladda ned Google Chrome igen.</translation>
 <translation id="4251615635259297716">Koppla dina uppgifter i Chrome till det här kontot</translation>
+<translation id="4251625577313994583">Ladda ned Chrome på iPhone</translation>
 <translation id="4309555186815777032">(Chrome måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">Den här datorn får inte längre uppdateringar för Google Chrome eftersom dess Linux-system inte längre stöds.</translation>

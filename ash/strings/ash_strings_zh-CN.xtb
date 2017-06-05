@@ -129,6 +129,7 @@
 <translation id="4527045527269911712">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。</translation>
 <translation id="453661520163887813"><ph name="TIME" /> 后充满</translation>
 <translation id="4544944664594876241">用于锁定屏幕的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
+<translation id="4659419629803378708">已启用 ChromeVox</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="4849058404725798627">突出显示键盘焦点所在对象</translation>
@@ -152,6 +153,7 @@
 <translation id="5548285847212963613">扩展程序“<ph name="EXTENSION_NAME" />”可帮助连接到此网络。</translation>
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
+<translation id="5600837773213129531">按 Ctrl + Alt + Z 即可停用语音反馈。</translation>
 <translation id="5648021990716966815">麦克风耳机插孔</translation>
 <translation id="5744083938413354016">点按拖动</translation>
 <translation id="5777841717266010279">要停止屏幕共享吗？</translation>
@@ -223,6 +225,7 @@
 <translation id="7536035074519304529">IP 地址：<ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />不支持<ph name="SPECIFIED_RESOLUTION" />。分辨率已改为<ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">表情符号面板</translation>
+<translation id="7569509451529460200">已启用盲文和 ChromeVox</translation>
 <translation id="7581273696622423628">参与调查</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7649070708921625228">帮助</translation>
@@ -230,6 +233,7 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">同步了您的设置后，该语言已由“<ph name="FROM_LOCALE" />”更改为“<ph name="TO_LOCALE" />”。</translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
+<translation id="7951523953736115461">夜间模式</translation>
 <translation id="7977927628060636163">正在搜索移动网络…</translation>
 <translation id="7982789257301363584">网络</translation>
 <translation id="8000066093800657092">未连接任何网络</translation>

@@ -88,11 +88,6 @@
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> at gjesteprofiler startes.</translation>
 <translation id="1363275621236827384">Slå på forespørsler til Quirks Server for maskinvareprofiler</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
-<translation id="1398889361882383850">Med denne retningslinjen kan du angi hvorvidt nettsteder har tillatelse til å kjøre programtillegg automatisk.  Automatisk kjøring av programtillegg kan enten tillates eller nektes for alle nettsteder.
-
-          Med klikk for avspilling kan du tillate at programtillegg kjøres, men brukeren må klikke på dem for å starte programtilleggene.
-
-          Hvis denne retningslinjen ikke angis, brukes «AllowPlugins», og brukeren kan endre den.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxy-tjener</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
@@ -177,7 +172,6 @@
 <translation id="1689963000958717134">Tillater skyving av nettverkskonfigurasjon for alle brukere av en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjonen er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Angi begrensning for henting av startverdien for variasjonene</translation>
 <translation id="172374442286684480">Lar alle nettsteder angi lokale data</translation>
-<translation id="1727394138581151779">Blokkér alle programtillegg</translation>
 <translation id="1734716591049455502">Konfigurer eksterne tilgangsalternativer</translation>
 <translation id="1736269219679256369">Tillat å gå videre fra SSL-advarselssiden</translation>
 <translation id="1749815929501097806">Angir vilkårene som brukeren må godta før enhetslokal konto-økt.
@@ -706,7 +700,6 @@
 
           Hvis du slår på eller ikke angir denne regelen, kan brukerne se passordene i klartekst i passordbehandlingen.</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
-<translation id="3570008976476035109">Blokkér programtillegg på disse nettstedene</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
 <translation id="3627678165642179114">Aktiver eller deaktiver nett-tjeneste for stavekontroll</translation>
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
@@ -784,7 +777,6 @@
           Googles forslagsnettadresse kan spesifiseres slik: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Denne regelen gjelder bare hvis regelen DefaultSearchProviderEnabledpolicy er slått på.</translation>
-<translation id="3864818549971490907">Standardinnstilling for programtillegg</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3868347814555911633">Denne retningslinjen er aktiv bare i detaljistmodus.
 
@@ -845,6 +837,7 @@
 
           Dette deaktiveres vanligvis for å beskytte seg mot nettfisking. Hvis denne retningslinjen ikke er angitt, er den deaktivert, og tredjeparts underinnhold kan ikke åpne en HTTP Basic Auth-dialogrute som forgrunnsvindu.</translation>
 <translation id="4056910949759281379">Deaktiver SPDY-protokoll</translation>
+<translation id="408029843066770167">Tillat forespørsler til en Google-tjeneste for klokkeslett</translation>
 <translation id="4088589230932595924">Tvungen inkognitomodus</translation>
 <translation id="4088983553732356374">Gjør det mulig å velge om nettsteder kan angi lokale data. Dette kan enten tillates for alle nettsteder eller blokkeres for alle nettsteder.
 
@@ -913,6 +906,7 @@
 <translation id="4377599627073874279">La alle nettsteder vise alle bilder</translation>
 <translation id="4389091865841123886">Konfigurer ekstern attestering med TPM-mekanisme</translation>
 <translation id="4397469093966511008">Hvis denne regelen settes til «false» (usann), kan ikke brukerne velge å sende enkelte typer systeminformasjon og sideinnhold til Googles tjenere. Hvis denne regelen settes til «true» (sann) eller ikke konfigureres, kan brukerne sende enkelte typer systeminformasjon eller innhold til Sikker Surfing for å bidra til å oppdage farlige apper og nettsteder.</translation>
+<translation id="4418726081189202489">Hvis du setter denne regelen til «false» (usann), forhindres <ph name="PRODUCT_NAME" /> fra å sende sporadiske forespørsler til en Google-tjeneste for å innhente et nøyaktig tidsstempel. Slike forespørsler er aktivert hvis regelen er satt til «true» (sann) eller ikke er angitt.</translation>
 <translation id="4423597592074154136">Manuell konfigurering av mellomtjenerinnstillinger</translation>
 <translation id="4429220551923452215">Aktiverer eller deaktiverer snarveien til appene i bokmerkefeltet.
 
@@ -1430,7 +1424,6 @@
           Hvis du velger å finne proxy-tjeneren automatisk, får Android-apper skriptnettadressen «http://wpad/wpad.dat». Ingen annen del av protokollen for automatisk gjenkjennelse brukes.
 
           Hvis du velger PAC-skript for proxy-tjenere, får Android-apper skriptnettadressen.</translation>
-<translation id="6467433935902485842">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som ikke får kjøre programtillegg. Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultPluginsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke brukes.</translation>
 <translation id="6491139795995924304">Tillat Bluetooth på enheten</translation>
 <translation id="6520802717075138474">Importér søkemotorer fra standard nettleser ved første kjøring</translation>
 <translation id="653608967792832033">Angir hvor lenge skjermen kan stå ubrukt før den låses når enheten bruker batteriet.
@@ -1711,7 +1704,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis den settes til GAIA, gjøres påloggingen via den normale GAIA-autentiseringsprosessen.
 
       Hvis den settes til SAML_INTERSTITIAL, vises en mellomskjerm under påloggingen der brukeren kan velge å gå videre med autentiseringen via SAML IdP-en for enhetens registreringsdomene eller gå tilbake til den normale GAIA-påloggingsprosessen.</translation>
-<translation id="7567380065339179813">Tillat programtillegg på disse nettstedene</translation>
 <translation id="757395965347379751">Når denne innstillingen er slått på, tillater <ph name="PRODUCT_NAME" /> SHA-1-signerte sertifikater så lenge de valideres og kjedes til lokalt installerte CA-sertifikater.
 
       Vær oppmerksom på at denne regelen avhenger av at operativsystemstakken for sertifikatverifisering tillater SHA-1-signaturer. Hvis en OS-oppdatering endrer hvordan OS-et håndterer SHA-1-sertifikater, kan det hende denne regelen ikke har noen effekt lenger. Videre er denne regelen ment som en midlertidig løsning for å gi bedrifter mer tid til å gå bort fra bruken av SHA-1. Denne regelen blir fjernet ca. 1. januar 2019.
@@ -1805,9 +1797,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Ny fane-siden</translation>
 <translation id="7788511847830146438">Per profil</translation>
-<translation id="7796141075993499320">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får kjøre programtillegg.
-
-          Hvis denne retningslinjen ikke angis, brukes den globale verdien for alle nettsteder, enten fra retningslinjenDefaultPluginsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte innstillingen ikke er angitt.</translation>
 <translation id="7801886189430766248">Når denne regelen er satt til true (sann), lastes Android-appdata opp til Android Backup-tjenere og gjenopprettes derfra når kompatible apper installeres på nytt.
 
       Når denne regelen settes til false (usann), blir Android Backup Service slått av.
@@ -2079,7 +2068,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Denne regelen er ikke tilgjengelig for Windows-forekomster som ikke er
       knyttet til noe Active Directory-domene. (For Chrome OS, se
       DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Tillat alle nettsteder å kjøre programtillegg</translation>
 <translation id="8693243869659262736">Bruk innebygd DNS-klient</translation>
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
 <translation id="8711086062295757690">Angir nøkkelordet, som er snarveien som brukes i søkefeltet for å utløse søket for denne leverandøren.

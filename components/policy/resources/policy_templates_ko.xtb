@@ -88,11 +88,6 @@
       이 정책이 'false'로 설정되면 <ph name="PRODUCT_NAME" />에서 게스트 프로필을 사용할 수 없습니다.</translation>
 <translation id="1363275621236827384">하드웨어 프로필 Quirks 서버에 검색어를 사용합니다.</translation>
 <translation id="1397855852561539316">기본 검색 공급자 추천 URL</translation>
-<translation id="1398889361882383850">웹사이트의 플러그인 자동 실행 여부를 설정하도록 합니다. 플러그인 자동 실행은 모든 웹사이트에 대해 허용하거나 모든 웹사이트에 대해 거부할 수 있습니다.
-
-          '클릭하여 재생'을 선택하면 플러그인을 재생할 수 있으나 클릭해야 실행됩니다.
-
-          이 정책을 설정하지 않으면 '플러그인 허용'이 적용되며 사용자가 변경할 수 있습니다.</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1427655258943162134">프록시 서버의 주소 또는 URL</translation>
 <translation id="1435659902881071157">기기 수준 네트워크 설정</translation>
@@ -177,7 +172,6 @@
 <translation id="1689963000958717134"><ph name="PRODUCT_OS_NAME" /> 기기에 모든 사용자에게 적용되는 네트워크 구성을 사용하도록 허용합니다. 네트워크 구성은 <ph name="ONC_SPEC_URL" />에서 설명한 개방형 네트워크 구성에서 정의한 대로 JSON 형식의 문자열입니다.</translation>
 <translation id="1708496595873025510">버전 시드 가져오기 제한 설정</translation>
 <translation id="172374442286684480">모든 사이트에서 로컬 데이터 설정 허용</translation>
-<translation id="1727394138581151779">모든 플러그인 차단</translation>
 <translation id="1734716591049455502">원격 액세스 옵션 설정</translation>
 <translation id="1736269219679256369">SSL 경고 페이지에서 계속 진행하도록 허용</translation>
 <translation id="1749815929501097806">사용자가 기기 로컬 계정 세션을 시작하기 전에 동의해야 하는 서비스 약관을 설정합니다.
@@ -725,7 +719,6 @@
 
           이 설정을 사용하거나 이 정책을 설정하지 않으면 사용자가 비밀번호 관리자에서 일반 텍스트로 비밀번호를 볼 수 있습니다.</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
-<translation id="3570008976476035109">이 사이트에서 플러그인 차단</translation>
 <translation id="3591584750136265240">로그인 인증 동작 설정</translation>
 <translation id="3627678165642179114">맞춤법 검사 웹 서비스 사용 또는 사용 중지</translation>
 <translation id="3646859102161347133">화면 돋보기 유형 설정</translation>
@@ -805,7 +798,6 @@
           Google의 추천 URL은 <ph name="GOOGLE_SUGGEST_SEARCH_URL" />(으)로 지정될 수 있습니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
-<translation id="3864818549971490907">기본 플러그인 설정</translation>
 <translation id="3866249974567520381">설명</translation>
 <translation id="3868347814555911633">이 정책은 판매 모드일 때만 사용할 수 있습니다.
 
@@ -865,6 +857,7 @@
 
           일반적으로 이 설정은 피싱 차단을 위해 사용 중지되어 있습니다. 이 정책을 설정하지 않은 경우 사용 중지되며 제3자 하위 콘텐츠가 HTTP 기본 인증 대화 상자를 팝업할 수 없습니다.</translation>
 <translation id="4056910949759281379">SPDY 프로토콜 사용 중지</translation>
+<translation id="408029843066770167">Google 시간 서비스에 쿼리 허용</translation>
 <translation id="4088589230932595924">시크릿 모드를 강제로 사용함</translation>
 <translation id="4088983553732356374">웹사이트에서 로컬 데이터를 설정하도록 허용할지 선택할 수 있습니다. 로컬 데이터 설정은 모든 웹사이트를 대상으로 허용하거나 거부할 수 있습니다.
 
@@ -934,6 +927,7 @@
 <translation id="4377599627073874279">모든 사이트에서 모든 이미지를 표시하도록 허용</translation>
 <translation id="4389091865841123886">TPM 메커니즘으로 원격 인증을 구성합니다.</translation>
 <translation id="4397469093966511008">이 정책을 false로 설정하면 사용자가 일부 시스템 정보 및 페이지 콘텐츠를 Google 서버로 전송하지 못하도록 차단됩니다. 이 설정이 true로 설정되거나 설정되지 않으면 위험한 앱 및 사이트를 감지하기 위해 사용자는 일부 시스템 정보와 페이지 콘텐츠를 세이프 브라우징으로 전송하도록 허용됩니다.</translation>
+<translation id="4418726081189202489">이 정책을 False로 설정하면 <ph name="PRODUCT_NAME" />이(가) 정확한 타임스탬프를 가져오기 위해 Google 서버로 쿼리를 전송하지 못하는 경우가 발생할 수도 있습니다. 이 정책을 설정하지 않거나 True로 설정하며 이러한 쿼리가 사용 설정됩니다.</translation>
 <translation id="4423597592074154136">프록시 설정을 수동으로 지정</translation>
 <translation id="4429220551923452215">북마크바에서 앱 단축키를 사용하거나 사용 중지합니다.
 
@@ -1457,9 +1451,6 @@
           프록시 서버를 자동 감지하도록 선택한 경우 Android 앱에 스크립트 URL 'http://wpad/wpad.dat'가 제공됩니다. 프록시 자동 감지 프로토콜의 다른 부분은 사용되지 않습니다.
 
           .pac 프록시 스크립트를 사용하도록 선택한 경우 Android 앱에 스크립트 URL이 제공됩니다.</translation>
-<translation id="6467433935902485842">플러그인 실행이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
-
-          이 정책을 설정하지 않은 경우 'DefaultPluginsSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="6491139795995924304">기기에서 블루투스 허용</translation>
 <translation id="6520802717075138474">처음 실행 시 기본 브라우저에서 검색엔진 가져오기</translation>
 <translation id="653608967792832033">배터리 전원으로 실행할 때 사용자 입력이 없어서 화면이 잠길 때까지 걸리는 시간을 지정합니다.
@@ -1744,7 +1735,6 @@
       GAIA로 설정된 경우 표준 GAIA 인증 절차에 따라 로그인이 이뤄집니다.
 
       SAML_INTERSTITIAL로 설정된 경우 사용자에게 기기 등록 도메인의 SAML IdP를 통해 인증을 진행하거나 표준 GAIA 로그인 절차로 돌아가도록 안내하는 로그인 화면이 표시됩니다.</translation>
-<translation id="7567380065339179813">이 사이트에서 플러그인 허용</translation>
 <translation id="757395965347379751">이 설정이 사용 설정되었다면 <ph name="PRODUCT_NAME" />은(는) 로컬에 설치된 CA 인증서를 성공적으로 확인하고 체인을 구축하는 한 SHA-1 서명 인증서를 허용합니다.
 
       이 정책은 SHA-1 서명을 허용하는 운영체제 인증서 확인 스택에 따라 다릅니다. OS 업데이트가 SHA-1 인증서의 OS 처리를 변경하는 경우 이 정책은 더 이상 유효하지 않을 수 있습니다. 또한 이 정책은 기업에게 SHA-1에서 전환할 시간을 부여하는 임시 해결 방법으로 활용됩니다. 이 정책은 2019년 1월 1일쯤 삭제될 예정입니다.
@@ -1838,9 +1828,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">새 탭 페이지</translation>
 <translation id="7788511847830146438">프로필당</translation>
-<translation id="7796141075993499320">플러그인 실행이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
-
-          이 정책을 설정하지 않은 경우 'DefaultPluginsSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="7801886189430766248">이 정책이 true로 설정된 경우 Android 앱 데이터가 Android Backup 서버에 업로드되고 호환 앱에 맞도록 앱을 재설치하여 이 서버에서 복원됩니다.
 
       이 정책이 false로 설정된 경우 Android Backup Service가 사용 중지됩니다.
@@ -2114,7 +2101,6 @@
       Active Directory 도메인에 가입하지 않은 Windows 인스턴스에서는 이 정책을
       사용할 수 없습니다. Chrome OS의 경우
       DeviceMetricsReportingEnabled를 참조하세요.</translation>
-<translation id="868187325500643455">모든 사이트에서 플러그인 자동 실행 허용</translation>
 <translation id="8693243869659262736">내장 DNS 클라이언트 사용</translation>
 <translation id="8704831857353097849">사용할 수 없는 플러그인 목록</translation>
 <translation id="8711086062295757690">해당 검색 공급자로 검색할 때 검색주소창에서 사용되는 단축키 키워드를 지정합니다.

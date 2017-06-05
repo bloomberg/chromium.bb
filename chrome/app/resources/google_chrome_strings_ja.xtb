@@ -107,6 +107,7 @@
 <translation id="4147555960264124640">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
 <translation id="4251615635259297716">Chrome データをこのアカウントにリンクしますか？</translation>
+<translation id="4251625577313994583">iPhone に Chrome をインストール</translation>
 <translation id="4309555186815777032">（Chrome を<ph name="BEGIN_BUTTON" />再起動<ph name="END_BUTTON" />する必要があります）</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">この Linux システムはサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>

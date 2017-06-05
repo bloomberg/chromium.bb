@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
 <translation id="1826516787628120939">Checking</translation>
 <translation id="1834321415901700177">This site contains harmful programs</translation>
+<translation id="1840414022444569775">This card number is already used</translation>
 <translation id="1842969606798536927">Pay</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
 <translation id="1871284979644508959">Required field</translation>
 <translation id="187918866476621466">Open startup pages</translation>
 <translation id="1883255238294161206">Collapse list</translation>
 <translation id="1898423065542865115">Filtering</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{None}=1{1 site}other{# sites}}</translation>
 <translation id="194030505837763158">Go to <ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Bookmarks</translation>
 <translation id="1973335181906896915">Serialisation error</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">Directory API ID:</translation>
 <translation id="2597378329261239068">This document is password-protected.  Please enter a password.</translation>
 <translation id="2609632851001447353">Variations</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{None}=1{1 app ($1)}=2{2 apps ($1, $2)}other{# apps ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Your clock is ahead</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Certificate Information</translation>
 <translation id="3063697135517575841">Chrome was unable to confirm your card at this time. Please try again later.</translation>
 <translation id="3064966200440839136">Leaving incognito mode to pay via an external application. Continue?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{None}=1{1 password}other{# passwords}}</translation>
 <translation id="3093245981617870298">You are offline</translation>
 <translation id="3105172416063519923">Asset ID:</translation>
 <translation id="3109728660330352905">You don't have authorisation to view this page.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3498215018399854026">We could not reach your parent at the moment. Please try again.</translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{At least 1 item on synced devices}=1{1 item (and more on synced devices)}other{# items (and more on synced devices)}}</translation>
 <translation id="3539171420378717834">Keep a copy of this card on this device</translation>
 <translation id="3542684924769048008">Use password for:</translation>
 <translation id="3549644494707163724">Encrypt all synced data with your own sync passphrase</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">You cannot visit <ph name="SITE" /> right now because the website sent scrambled credentials that Chromium cannot process. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="375403751935624634">The translation failed because of a server error.</translation>
 <translation id="3759461132968374835">You have no recently reported crashes.  Crashes that occurred when crash reporting was disabled will not appear here.</translation>
+<translation id="3778403066972421603">Do you want to save this card to your Google account and on this device?</translation>
 <translation id="3787705759683870569">Expires <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">If you use a proxy server...</translation>
 <translation id="3828924085048779000">Empty passphrase is not allowed.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">Add email</translation>
 <translation id="3901925938762663762">The card is expired</translation>
 <translation id="3963721102035795474">Reader Mode</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{None}=1{From 1 site }other{From # sites }}</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> is blocked</translation>
+<translation id="3987940399970879459">Less than 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page nearby}other{# web pages nearby}}</translation>
 <translation id="4021036232240155012">DNS is the network service that translates a website’s name to its Internet address.</translation>
 <translation id="4030383055268325496">&amp;Undo add</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">More</translation>
 <translation id="6060685159320643512">Careful, these experiments may bite</translation>
 <translation id="6080696365213338172">You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN" /> can be intercepted by your administrator.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{None}=1{1 password (synced)}other{# passwords (synced)}}</translation>
 <translation id="6146055958333702838">Check any cables and reboot any routers, modems or other network
     devices you may be using.</translation>
 <translation id="614940544461990577">Try:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
 <translation id="6989763994942163495">+ Show advanced settings</translation>
-<translation id="7000990526846637657">No history entries found</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Passwords</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">Pay quickly on sites and apps across devices using cards that you have saved with Google.</translation>
 <translation id="7588950540487816470">Physical web</translation>
 <translation id="7592362899630581445">Server's certificate violates name constraints.</translation>
+<translation id="7598391785903975535">Less than <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> is currently unable to handle this request.</translation>
 <translation id="7600965453749440009">Never translate <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Value is out of range <ph name="VALUE" />.</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">&amp;Undo Move</translation>
 <translation id="8201077131113104583">Invalid update URL for extension with ID "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Order summary</translation>
+<translation id="8206354486702514201">This setting is enforced by your administrator.</translation>
 <translation id="8218327578424803826">Assigned Location:</translation>
 <translation id="8225771182978767009">The person who set up this computer has chosen to block this site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -885,5 +895,6 @@
 <translation id="939736085109172342">New folder</translation>
 <translation id="941721044073577244">Looks like you don't have permission to visit this site</translation>
 <translation id="969892804517981540">Official Build</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{None}=1{1 item}other{# items}}</translation>
 <translation id="988159990683914416">Developer Build</translation>
 </translationbundle>

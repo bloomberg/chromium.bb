@@ -124,7 +124,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3329904751041170572">Tidak dapat tersambung ke server.</translation>
 <translation id="3335947283844343239">Buka Kembali Tab yang Tertutup</translation>
 <translation id="3387752218061326363">Menampilkan riwayat dari perangkat yang Anda gunakan untuk login. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" />.</translation>
-<translation id="3393920035788932672">Munculan Diizinkan</translation>
+<translation id="3393920035788932672">Pop-up Diizinkan</translation>
 <translation id="3414292259312108062">Chrome akan menyimpan sandi ini pada <ph name="BEGIN_LINK" />sandi tersimpan Google<ph name="END_LINK" /> dan melengkapinya secara otomatis sehingga Anda tidak perlu mengingatnya.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> mnt</translation>
 <translation id="3448016392200048164">Layar Terpisah</translation>
@@ -174,6 +174,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4359125752503270327">Laman ini akan dibuka di aplikasi lain.</translation>
 <translation id="4378154925671717803">Telepon</translation>
 <translation id="441868831736628555">Notifikasi Privasi</translation>
+<translation id="4508750114462689118">Tutup promo login</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Coba masuk lagi.</translation>
 <translation id="4620246317052452550">Halaman yang Telah Anda Baca</translation>

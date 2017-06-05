@@ -90,11 +90,6 @@
       Ja šai politikai ir iestatīta vērtība Nepatiesa, pārlūkā <ph name="PRODUCT_NAME" /> nevar izveidot viesu profilus.</translation>
 <translation id="1363275621236827384">Iespējot Quirks servera vaicājumus aparatūras profiliem</translation>
 <translation id="1397855852561539316">Noklusējuma meklētājprogrammas ieteikumu URL</translation>
-<translation id="1398889361882383850">Ļauj iestatīt, vai vietnes varēs automātiski izpildīt spraudņus. Automātiski izpildāmus spraudņus var atļaut vai aizliegt visām vietnēm.
-
-          Iespēja “noklikšķināt, lai atskaņotu” ļauj izpildīt spraudņus, taču lietotājam ir jānoklikšķina uz tiem, lai tiktu sākta izpilde.
-
-          Ja šī politika nav iestatīta, tiks izmantota politika “AllowPlugins” un lietotājs varēs to mainīt.</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="1427655258943162134">Starpniekservera adrese vai URL</translation>
 <translation id="1435659902881071157">Ierīces līmeņa tīkla konfigurācija</translation>
@@ -179,7 +174,6 @@
 <translation id="1689963000958717134">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot visiem ierīces <ph name="PRODUCT_OS_NAME" /> lietotājiem. Tīkla konfigurācija ir JSON formatēta virkne, kā tas definēts šeit aprakstītajā atvērtā tīkla konfigurācijas formātā: <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1708496595873025510">Iestatīt ierobežojumu attiecībā uz variantu sākotnējās vērtības iegūšanu</translation>
 <translation id="172374442286684480">Atļauja visām vietnēm iestatīt lokālus datus</translation>
-<translation id="1727394138581151779">Bloķēt visus spraudņus</translation>
 <translation id="1734716591049455502">Attālās piekļuves iespēju konfigurēšana</translation>
 <translation id="1736269219679256369">Atļauja turpināt darbu no SSL brīdinājuma lapas</translation>
 <translation id="1749815929501097806">Tiek iestatīti pakalpojumu sniegšanas noteikumi, un lietotājam ir jāpiekrīt tiem pirms ierīces lokālā konta sesijas sākšanas.
@@ -728,7 +722,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 
           Ja šī politika ir iespējota vai nav iestatīta, paroles paroļu pārvaldniekā ir redzamas nešifrētā tekstā.</translation>
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
-<translation id="3570008976476035109">Bloķē spraudņus šajās vietnēs</translation>
 <translation id="3591584750136265240">Pieteikšanās autentifikācijas darbības konfigurēšana</translation>
 <translation id="3627678165642179114">Pareizrakstības pārbaudes tīmekļa pakalpojuma iespējošana vai atspējošana</translation>
 <translation id="3646859102161347133">Ekrāna lupas veida iestatīšana</translation>
@@ -811,7 +804,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Google ieteikumu vietrādi URL var norādīt šādi: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
-<translation id="3864818549971490907">Noklusējuma spraudņu iestatījums</translation>
 <translation id="3866249974567520381">Apraksts</translation>
 <translation id="3868347814555911633">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
@@ -871,6 +863,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Parasti šī iespēja ir atspējota kā aizsardzība pret pikšķerēšanu. Ja šī politika nav iestatīta, tā tiks atspējota un trešās puses sekundārajam saturam nebūs atļauts atvērt HTTP pamata autentifikācijas dialoglodziņu.</translation>
 <translation id="4056910949759281379">Atspējo SPDY protokolu</translation>
+<translation id="408029843066770167">Atļaut vaicājumus Google laika pakalpojumam</translation>
 <translation id="4088589230932595924">Inkognito režīms piespiedu kārtā</translation>
 <translation id="4088983553732356374">Izmantojot šo politiku, varat norādīt, vai vietnes var iestatīt lokālos datus. Lokālo datu iestatīšana var būt vai nu atļauta visām vietnēm, vai arī liegta visām vietnēm.
 
@@ -939,6 +932,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4377599627073874279">Atļauj visām vietnēm rādīt visus attēlus</translation>
 <translation id="4389091865841123886">Konfigurē attālināto apstiprināšanu, izmantojot TPM mehānismu.</translation>
 <translation id="4397469093966511008">Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotājiem tiek liegta iespēja nosūtīt sistēmas informāciju un lapu saturu Google serveriem. Ja šī vērtība ir Patiesa vai nav konfigurēta, lietotāji varēs nosūtīt sistēmas informāciju un lapu saturu funkcijai Droša pārlūkošana, lai palīdzētu noteikt bīstamas lietotnes un vietnes.</translation>
+<translation id="4418726081189202489">Iestatot šo politiku kā nepatiesu, tiek pārtraukta neregulāra vaicājumu sūtīšana no <ph name="PRODUCT_NAME" /> uz Google serveri, lai izgūtu precīzu laikspiedolu. Šie vaicājumi tiks iespējoti, ja šī politika tiks iestatīta kā patiesa vai netiks iestatīta.</translation>
 <translation id="4423597592074154136">Manuāli norādīt starpniekservera iestatījumus</translation>
 <translation id="4429220551923452215">Iespējo vai atspējo lietotņu saīsni grāmatzīmju joslā.
 
@@ -1463,9 +1457,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja izvēlēsieties automātiski noteikt starpniekserveri, Android lietotnēm tiks nodrošināts skripta URL http://wpad/wpad.dat. Netiks izmantota neviena cita daļa no automātiskās noteikšanas protokola.
 
           Ja izvēlēsieties izmantot .pac starpniekservera skriptu, Android lietotnēm tiks nodrošināts skripta URL.</translation>
-<translation id="6467433935902485842">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts izpildīt spraudņus.
-
-          Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPluginsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="6491139795995924304">Bluetooth atļaušana ierīcē</translation>
 <translation id="6520802717075138474">Meklētājprogrammu importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
 <translation id="653608967792832033">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek bloķēts (ja ierīce darbojas ar akumulatora jaudu).
@@ -1751,7 +1742,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja pieteikšanās būs iestatīta uz GAIA, pieteikšanās tiks veikta, izmantojot parasto GAIA autentifikācijas plūsmu.
 
       Ja pieteikšanās būs iestatīta uz SAML_INTERSTITIAL, pieteikšanās laikā tiks parādīts ekrāns, kurā lietotājam tiks piedāvāt turpināt autentifikāciju, izmantojot ierīces reģistrācijas domēna SAML identitātes nodrošinātāju, vai atgriezties parastajā GAIA pieteikšanās plūsmā.</translation>
-<translation id="7567380065339179813">Atļauj spraudņus šajās vietnēs</translation>
 <translation id="757395965347379751">Ja šis iestatījums ir iespējots, pārlūks <ph name="PRODUCT_NAME" /> atļauj ar SHA-1 parakstītu sertifikātu izmantošanu, ja tie tiek veiksmīgi apstiprināti un piesaistīti lokāli instalētiem CA sertifikātiem.
 
       Ņemiet vērā, ka šī politika ir atkarīga no operētājsistēmas sertifikātu verifikācijas kopas, kura atļauj SHA-1 sertifikātus. Ja, atjauninot operētājsistēmu, tiek mainīts veids, kā operētājsistēma apstrādā SHA-1 sertifikātus, šī politika, iespējams, vairs nebūs spēkā. Turklāt šī politika ir pagaidu risinājums, lai uzņēmumiem būtu vairāk laika pārtraukt SHA-1 lietošanu. Šī politika tiks noņemta 2019. gada 1. janvārī vai ap to laiku.
@@ -1845,9 +1835,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Jaunas cilnes lapa</translation>
 <translation id="7788511847830146438">Katram profilam</translation>
-<translation id="7796141075993499320">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts izpildīt spraudņus.
-
-          Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPluginsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="7801886189430766248">Ja šai politikai ir iestatīta vērtība “Patiess”, Android lietotņu dati tiek augšupielādēti Android dublēšanas serveros un tiek atjaunoti no tiem, atkārtoti instalējot saderīgās lietotnes.
 
       Ja šai politikai ir iestatīta vērtība “Nepatiesa”, pakalpojums Android Backup Service tiks izslēgts.
@@ -2121,7 +2108,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Šī politika nav pieejama Windows instancēs, kas nav pievienotas
       Active Directory domēnam. (Operētājsistēmai Chrome OS skatiet politiku
       DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Atļaut visām vietnēm automātiski izpildīt spraudņus</translation>
 <translation id="8693243869659262736">Iebūvētā DNS klienta izmantošana</translation>
 <translation id="8704831857353097849">Atspējoto spraudņu saraksts</translation>
 <translation id="8711086062295757690">Norāda atslēgvārdu, kas tiek izmantots par saīsni universālajā lodziņā, lai izsauktu meklēšanu ar šo meklētājprogrammu.

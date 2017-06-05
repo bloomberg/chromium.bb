@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
 <translation id="1826516787628120939">Kontrollerer</translation>
 <translation id="1834321415901700177">Dette nettstedet inneholder skadelige programmer</translation>
+<translation id="1840414022444569775">Dette kortnummeret er brukt allerede</translation>
 <translation id="1842969606798536927">Betal</translation>
 <translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
 <translation id="1871284979644508959">Obligatorisk felt</translation>
 <translation id="187918866476621466">Åpne oppstartssidene</translation>
 <translation id="1883255238294161206">Skjul liste</translation>
 <translation id="1898423065542865115">Filtrering</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Ingen}=1{1 nettsted}other{# nettsteder}}</translation>
 <translation id="194030505837763158">Gå til <ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" />-bokmerker</translation>
 <translation id="1973335181906896915">Serialiseringsfeil</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">ID for katalog-API:</translation>
 <translation id="2597378329261239068">Dette dokumentet er passordbeskyttet. Skriv inn et passord.</translation>
 <translation id="2609632851001447353">Varianter</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Ingen}=1{1 app ($1)}=2{2 apper ($1, $2)}other{# apper ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Klokken går for fort</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Sertifikatinformasjon</translation>
 <translation id="3063697135517575841">Chrome kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
 <translation id="3064966200440839136">Går ut av inkognitomodus for å betale via en ekstern app. Vil du fortsette?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Ingen}=1{1 passord}other{# passord}}</translation>
 <translation id="3093245981617870298">Du er ikke tilkoblet Internett.</translation>
 <translation id="3105172416063519923">Ressurs-ID:</translation>
 <translation id="3109728660330352905">Du har ikke autorisasjon til å se denne siden.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="3498215018399854026">Vi kunne ikke nå foreldrene dine akkurat nå. Prøv igjen.</translation>
 <translation id="3528171143076753409">Tjenerens sertifikat er ikke pålitelig.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Minst 1 element på synkroniserte enheter}=1{1 element (og flere på synkroniserte enheter)}other{# elementer (og flere på synkroniserte enheter)}}</translation>
 <translation id="3539171420378717834">Lagre en kopi av dette kortet på denne enheten</translation>
 <translation id="3542684924769048008">Bruk passord for:</translation>
 <translation id="3549644494707163724">Kryptér alle synkroniserte data med din egen passordfrase for synkronisering</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">Du kan ikke gå til <ph name="SITE" /> akkurat nå, fordi nettstedet sendte kryptert legitimasjon som Chromium ikke kan behandle. Nettverksfeil og -angrep er vanligvis forbigående, så siden kommer sikkert til å virke senere.</translation>
 <translation id="375403751935624634">Oversettelsen mislyktes på grunn av en tjenerfeil.</translation>
 <translation id="3759461132968374835">Du har ingen nylig rapportert programstopp. Programstopp som inntraff når rapportering om programstopp var deaktivert, blir ikke vist her.</translation>
+<translation id="3778403066972421603">Vil du lagre dette kortet i Google-kontoen din og på denne enheten?</translation>
 <translation id="3787705759683870569">Utløper <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Hvis du bruker en mellomtjener...</translation>
 <translation id="3828924085048779000">Tom passordfrase er ikke tillatt.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">Legg til e-post</translation>
 <translation id="3901925938762663762">Kortet er utløpt</translation>
 <translation id="3963721102035795474">Lesermodus</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Ingen}=1{Fra 1 nettsted }other{Fra # nettsteder }}</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokkert</translation>
+<translation id="3987940399970879459">Under 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Like ved-nettside}other{# Like ved-nettsider}}</translation>
 <translation id="4021036232240155012">DNS er nettverkstjenesten som oversetter navnene på nettsteder til Internett-adressene deres.</translation>
 <translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">Mer</translation>
 <translation id="6060685159320643512">Vær forsiktig. Disse eksperimentene kan bite</translation>
 <translation id="6080696365213338172">Du har åpnet innhold via et administratorlevert sertifikat. Data du sender til <ph name="DOMAIN" /> kan stoppes av administratoren din.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Ingen}=1{1 passord (synkronisert)}other{# passord (synkronisert)}}</translation>
 <translation id="6146055958333702838">Sjekk alle kabler, og start rutere, modemer eller andre nettverksenheter
      du bruker, på nytt.</translation>
 <translation id="614940544461990577">Prøv dette:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">Område</translation>
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
 <translation id="6989763994942163495">Vis avanserte innstillinger</translation>
-<translation id="7000990526846637657">Fant ingen loggoppføringer</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Google-kontoen din kan ha andre typer nettlesingslogger på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Passord</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">Når du lagrer kort med Google, kan du bruke dem til å betale raskt på nettsteder og i apper – uansett hvilken enhet du bruker.</translation>
 <translation id="7588950540487816470">Fysisk nett</translation>
 <translation id="7592362899630581445">Tjenerens sertifikat bryter navnereglene.</translation>
+<translation id="7598391785903975535">Under <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kan for øyeblikket ikke behandle denne forespørselen.</translation>
 <translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE" />.</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">&amp;Angre flyttingen</translation>
 <translation id="8201077131113104583">Ugyldig oppdaterings-URL for utvidelse med ID «<ph name="EXTENSION_ID" />».</translation>
 <translation id="8202097416529803614">Bestillingssammendrag</translation>
+<translation id="8206354486702514201">Denne innstillingen håndheves av administratoren din.</translation>
 <translation id="8218327578424803826">Tilordnet posisjon:</translation>
 <translation id="8225771182978767009">Personen som konfigurerte denne datamaskinen, har valgt å blokkere dette nettstedet.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -885,5 +895,6 @@
 <translation id="939736085109172342">Ny mappe</translation>
 <translation id="941721044073577244">Det ser ut til at du ikke har tillatelse til å besøke dette nettstedet</translation>
 <translation id="969892804517981540">Offisiell delversjon</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Ingen}=1{1 element}other{# elementer}}</translation>
 <translation id="988159990683914416">Utviklerversjon</translation>
 </translationbundle>

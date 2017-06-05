@@ -110,12 +110,14 @@
 <translation id="1821930232296380041">Недійсний запит або параметри запиту</translation>
 <translation id="1826516787628120939">Перевірка</translation>
 <translation id="1834321415901700177">Цей сайт містить шкідливі програми</translation>
+<translation id="1840414022444569775">Цей номер картки вже використовується</translation>
 <translation id="1842969606798536927">Оплатити</translation>
 <translation id="1871208020102129563">Проксі-сервер налаштовано на використання фіксованих проксі-серверів, а не URL-адреси сценарію .pac.</translation>
 <translation id="1871284979644508959">Обов’язкове поле</translation>
 <translation id="187918866476621466">Відкрити стартові сторінки</translation>
 <translation id="1883255238294161206">Згорнути список</translation>
 <translation id="1898423065542865115">Фільтрування</translation>
+<translation id="192020519938775529">{COUNT,plural, =0{Немає}=1{1 сайт}one{# сайт}few{# сайти}many{# сайтів}other{# сайту}}</translation>
 <translation id="194030505837763158">Перейдіть за адресою <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Закладки <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Помилка серіалізації</translation>
@@ -190,6 +192,7 @@
 <translation id="2587841377698384444">Ідентифікатор API каталогу:</translation>
 <translation id="2597378329261239068">Цей документ захищено паролем. Введіть пароль.</translation>
 <translation id="2609632851001447353">Різновиди</translation>
+<translation id="262424810616849754">{COUNT,plural, =0{Немає}=1{1 додаток ($1)}=2{2 додатки ($1, $2)}one{# додаток ($1, $2, $3)}few{# додатки ($1, $2, $3)}many{# додатків ($1, $2, $3)}other{# додатка ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Ваш годинник спішить</translation>
 <translation id="2639739919103226564">Статус:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
@@ -245,6 +248,7 @@
 <translation id="3041612393474885105">Інформація про сертифікат</translation>
 <translation id="3063697135517575841">Chrome не вдалося підтвердити дані вашої картки. Спробуйте пізніше.</translation>
 <translation id="3064966200440839136">Щоб оплатити в зовнішньому додатку, ви вийдете з режиму анонімного перегляду. Продовжити?</translation>
+<translation id="3083099961703215236">{COUNT,plural, =0{Немає}=1{1 пароль}one{# пароль}few{# паролі}many{# паролів}other{# пароля}}</translation>
 <translation id="3093245981617870298">Ви в режимі офлайн</translation>
 <translation id="3105172416063519923">Ідентифікатор об’єкта:</translation>
 <translation id="3109728660330352905">У вас немає дозволу переглядати цю сторінку.</translation>
@@ -310,6 +314,7 @@
 <translation id="3479552764303398839">Не зараз</translation>
 <translation id="3498215018399854026">Не вдалося зв’язатися з одним із ваших батьків. Повторіть спробу.</translation>
 <translation id="3528171143076753409">Сертифікат сервера ненадійний.</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{Принаймні 1 запис на синхронізованих пристроях}=1{1 запис (і ще на синхронізованих пристроях)}one{# запис (і ще на синхронізованих пристроях)}few{# записи (і ще на синхронізованих пристроях)}many{# записів (і ще на синхронізованих пристроях)}other{# запису (і ще на синхронізованих пристроях)}}</translation>
 <translation id="3539171420378717834">Зберігати копію даних цієї картки на цьому пристрої</translation>
 <translation id="3542684924769048008">Використовувати пароль для:</translation>
 <translation id="3549644494707163724">Шифрувати всі синхронізовані дані за допомогою власної парольної фрази для синхронізації</translation>
@@ -345,6 +350,7 @@
 <translation id="3744899669254331632">Зараз не можна перейти на сторінку <ph name="SITE" />, оскільки веб-сайт надіслав зашифровані облікові дані, які Chromium не може обробити. Помилки мережі й атаки зазвичай є тимчасовими, тому ця сторінка може працювати пізніше.</translation>
 <translation id="375403751935624634">Не вдалося виконати переклад через помилку сервера.</translation>
 <translation id="3759461132968374835">У вас немає останніх повідомлень про аварійне завершення роботи. Тут не відображатимуться випадки аварійного завершення роботи, які сталися, коли повідомлення про аварійне завершення роботи було вимкнено.</translation>
+<translation id="3778403066972421603">Зберегти дані картки у вашому обліковому записі Google і на цьому пристрої?</translation>
 <translation id="3787705759683870569">Діє до <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Якщо ви використовуєте проксі-сервер…</translation>
 <translation id="3828924085048779000">Порожня парольна фраза заборонена.</translation>
@@ -356,8 +362,10 @@
 <translation id="3890664840433101773">Додати електронну адресу</translation>
 <translation id="3901925938762663762">Термін дії картки минув</translation>
 <translation id="3963721102035795474">Режим перегляду</translation>
+<translation id="3964661563329879394">{COUNT,plural, =0{Немає}=1{З 1 сайту }one{З # сайту }few{З # сайтів }many{З # сайтів }other{З # сайту }}</translation>
 <translation id="397105322502079400">Обчислення...</translation>
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> заблокований</translation>
+<translation id="3987940399970879459">Менше 1 Мб</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-сторінка поруч}one{# веб-сторінка поруч}few{# веб-сторінки поруч}many{# веб-сторінок поруч}other{# веб-сторінки поруч}}</translation>
 <translation id="4021036232240155012">DNS – це мережева служба, яка перетворює назву веб-сайту на його інтернет-адресу.</translation>
 <translation id="4030383055268325496">&amp;Відмінити додавання</translation>
@@ -563,6 +571,7 @@
 <translation id="6042308850641462728">Більше</translation>
 <translation id="6060685159320643512">Обережно, ці експерименти ненадійні</translation>
 <translation id="6080696365213338172">Ви отримали доступ до вмісту, використовуючи наданий адміністратором сертифікат. Адміністратор може перехоплювати дані, які ви надасте домену <ph name="DOMAIN" />.</translation>
+<translation id="6144381551823904650">{COUNT,plural, =0{Немає}=1{1 пароль (синхронізовано)}one{# пароль (синхронізовано)}few{# паролі (синхронізовано)}many{# паролів (синхронізовано)}other{# пароля (синхронізовано)}}</translation>
 <translation id="6146055958333702838">Перевірте всі кабелі та перезавантажте всі маршрутизатори, модеми чи інші мережеві
     пристрої, які ви використовуєте.</translation>
 <translation id="614940544461990577">Спробуйте:</translation>
@@ -652,7 +661,6 @@
 <translation id="6970216967273061347">Район або округ</translation>
 <translation id="6973656660372572881">Указано фіксовані проксі-сервери та URL-адреса сценарію .pac.</translation>
 <translation id="6989763994942163495">Показати розширені налаштування...</translation>
-<translation id="7000990526846637657">Немає записів в історії</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7012372675181957985">Історія веб-перегляду також може зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Паролі</translation>
@@ -721,6 +729,7 @@
 <translation id="7578104083680115302">Зберігайте картки в Google, щоб швидко платити на сайтах і в додатках на всіх своїх пристроях.</translation>
 <translation id="7588950540487816470">Інтернет навколо нас</translation>
 <translation id="7592362899630581445">Сертифікат сервера порушує обмежувальні умови щодо імен.</translation>
+<translation id="7598391785903975535">Менше <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Хост <ph name="HOST_NAME" /> зараз не може обробити цей запит.</translation>
 <translation id="7600965453749440009">Ніколи не перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Значення за межами діапазону <ph name="VALUE" />.</translation>
@@ -784,6 +793,7 @@
 <translation id="8194797478851900357">&amp;Відмінити переміщення</translation>
 <translation id="8201077131113104583">Недійсна URL-адреса для оновлення розширення з ідентифікатором "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Підсумок замовлення</translation>
+<translation id="8206354486702514201">Це налаштування застосовується вашим адміністратором.</translation>
 <translation id="8218327578424803826">Указане місцезнаходження:</translation>
 <translation id="8225771182978767009">Користувач, який налаштував комп’ютер, заблокував цей сайт.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -886,5 +896,6 @@
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="941721044073577244">Схоже, у вас немає дозволу, щоб перейти на цей сайт</translation>
 <translation id="969892804517981540">Розробка</translation>
+<translation id="975560348586398090">{COUNT,plural, =0{Немає}=1{1 запис}one{# запис}few{# записи}many{# записів}other{# запису}}</translation>
 <translation id="988159990683914416">Конструкція розробника</translation>
 </translationbundle>

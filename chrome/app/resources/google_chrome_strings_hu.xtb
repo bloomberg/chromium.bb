@@ -107,6 +107,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="4147555960264124640">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiókok Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Nem sikerült a telepítőnek kibontani a tömörített állományt. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
 <translation id="4251615635259297716">Társítja Chrome-adatait ezzel a fiókkal?</translation>
+<translation id="4251625577313994583">Chrome beszerzése iPhone eszközre</translation>
 <translation id="4309555186815777032">(a Chrome <ph name="BEGIN_BUTTON" />újraindítását<ph name="END_BUTTON" /> igényli)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="437002079035561265">Mivel a jelenlegi Linux rendszer támogatása megszűnik, ez a számítógép a továbbiakban nem kap Google Chrome-frissítéseket.</translation>

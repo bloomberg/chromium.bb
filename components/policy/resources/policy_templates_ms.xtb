@@ -89,11 +89,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil tetamu dimulakan.</translation>
 <translation id="1363275621236827384">Dayakan pertanyaan ke Pelayan Quirks untuk mendapatkan profil perkakasan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
-<translation id="1398889361882383850">Membolehkan anda menetapkan sama ada laman web dibenarkan menjalankan pemalam secara automatik. Menjalankan pemalam secara automatik boleh ditetapkan sama ada dibenarkan untuk semua laman web atau dinafikan untuk semua laman web.
-
-          Klik untuk main membenarkan pemalam dijalankan tetapi pengguna mesti mengkliknya untuk memulakan pelaksanaan.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, 'AllowPlugins' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
@@ -178,7 +173,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="1689963000958717134">Membenarkan penolakan konfigurasi rangkaian digunakan untuk semua pengguna peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Tetapkan sekatan terhadap pengambilan benih Variasi</translation>
 <translation id="172374442286684480">Benarkan semua tapak menetapkan data setempat</translation>
-<translation id="1727394138581151779">Sekat semua pemalam</translation>
 <translation id="1734716591049455502">Konfigurasi pilihan akses jauh</translation>
 <translation id="1736269219679256369">Benarkan tindakan daripada halaman amaran SSL</translation>
 <translation id="1749815929501097806">Menetapkan Syarat Perkhidmatan yang pengguna mesti terima sebelum memulakan sesi akaun peranti setempat.
@@ -726,7 +720,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
           Jika anda mendayakan atau tidak menetapkan dasar ini, pengguna boleh melihat kata laluan mereka dalam teks yang jelas dalam pengurus kata laluan.</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
-<translation id="3570008976476035109">Sekat pemalam pada tapak ini</translation>
 <translation id="3591584750136265240">Konfigurasikan gelagat pengesahan log masuk</translation>
 <translation id="3627678165642179114">Dayakan atau lumpuhkan perkhidmatan web penyemakan ejaan</translation>
 <translation id="3646859102161347133">Tetapkan jenis penggadang skrin</translation>
@@ -811,7 +804,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           URL cadangan Google boleh ditentukan sebagai: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Dasar ini hanya akan diambil kira jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
-<translation id="3864818549971490907">Tetapan pemalam lalai</translation>
 <translation id="3866249974567520381">Huraian</translation>
 <translation id="3868347814555911633">Dasar ini aktif dalam mod runcit sahaja.
 
@@ -871,6 +863,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
           Biasanya perkara ini dilumpuhkan sebagai perlindungan daripada pemancingan data. Jika dasar ini tidak ditetapkan, tetapan ini dilumpuhkan dan kandungan kecil pihak ketiga tidak akan dibenarkan untuk menimbulkan kotak dialog Pengesahan Asas HTTP.</translation>
 <translation id="4056910949759281379">Lumpuhkan protokol SPDY</translation>
+<translation id="408029843066770167">Benarkan pertanyaan kepada perkhidmatan masa Google</translation>
 <translation id="4088589230932595924">Mod Inkognito dipaksa</translation>
 <translation id="4088983553732356374">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk menetapkan data setempat. Penetapan data setempat boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
 
@@ -939,6 +932,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="4377599627073874279">Benarkan semua tapak untuk menunjukkan semua imej</translation>
 <translation id="4389091865841123886">Konfigurasikan pembuktian jauh dengan mekanisme TPM.</translation>
 <translation id="4397469093966511008">Penetapan dasar ini kepada palsu akan menghentikan pengguna daripada memilih untuk menghantar beberapa maklumat sistem dan kandungan halaman kepada pelayan Google. Jika tetapan ini benar atau tidak dikonfigurasikan, maka pengguna akan dibenarkan menghantar beberapa maklumat sistem dan kandungan halaman kepada Penyemakan Imbas Selamat untuk mengesan apl dan tapak yang berbahaya.</translation>
+<translation id="4418726081189202489">Apabila dasar ini ditetapkan kepada palsu, dsaar ini akan menghentikan <ph name="PRODUCT_NAME" /> daripada menghantar sekali sekala pertanyaan kepada pelayan Google untuk mendapatkan cap masa yang tepat. Pertanyaan ini akan didayakan jika dasar ini ditetapkan kepada Benar atau tidak ditetapkan.</translation>
 <translation id="4423597592074154136">Menentukan tetapan proksi secara manual</translation>
 <translation id="4429220551923452215">Dayakan atau menyahdayakan pintasan apl pada bar penanda halaman.
 
@@ -1461,9 +1455,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Jika anda memilih untuk mengesan pelayan proksi secara automatik, URL skrip "http://wpad/wpad.dat" akan diberikan kepada apl Android. Tiada bahagian protokol autokesan proksi yang lain akan digunakan.
 
           Jika anda memilih untuk menggunakan skrip proksi .pac, URL skrip akan diberikan kepada apl Android.</translation>
-<translation id="6467433935902485842">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menjalankan pemalam.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPluginsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
 <translation id="6491139795995924304">Benarkan bluetooth pada peranti</translation>
 <translation id="6520802717075138474">Import enjin carian daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="653608967792832033">Menetapkan panjang masa tanpa input daripada pengguna yang akan mengunci skrin selepas tempoh tersebut apabila dijalankan dengan kuasa bateri.
@@ -1748,7 +1739,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika ditetapkan kepada GAIA, log masuk akan dilakukan melalui aliran pengesahan GAIA yang biasa.
 
       Jika ditetapkan kepada SAML_INTERSTITIAL, log masuk akan menunjukkan skrin ruang antara yang memberi peluang kepada pengguna supaya meneruskan dengan pengesahan melalui SAML IdP domain pendaftaran peranti atau kembali kepada aliran log masuk GAIA yang biasa.</translation>
-<translation id="7567380065339179813">Benarkan pemalam pada tapak ini</translation>
 <translation id="757395965347379751">Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME" /> membenarkan sijil yang ditandatangani SHA-1 selagi sijil ini berjaya disahkan dan dikaitkan dengan sijil CA yang dipasang setempat.
 
       Sila ambil perhatian bahawa dasar ini bergantung pada tindanan pengesahan sijil sistem pengendalian yang membenarkan tandatangan SHA-1. Jika kemas kini OS mengubah cara pengendalian OS terhadap sijil SHA-1, dasar ini tidak berkuat kuasa lagi.  Selain itu, dasar ini bertujuan digunakan sebagai penyelesaian sementara bagi memberikan pihak syarikat lebih masa untuk beralih daripada SHA-1.  Dasar ini akan dialih keluar pada atau kira-kira 1 Januari 2019.
@@ -1842,9 +1832,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Halaman Tab Baharu</translation>
 <translation id="7788511847830146438">Setiap Profil</translation>
-<translation id="7796141075993499320">Membolehkan anda menentukan senarai pola url yang dibenarkan untuk menjalankan pemalam.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPluginsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
 <translation id="7801886189430766248">Apabila dasar ini ditetapkan kepada benar, data apl Android dimuat naik ke pelayan Android Backup dan dipulihkan daripadanya semasa pemasangan semula apl untuk apl yang serasi.
 
       Apabila dasar ini ditetapkan kepada palsu, Android Backup Service akan dimatikan.
@@ -2119,7 +2106,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke
       domain Direktori Aktif.  (Untuk OS Chrome, lihat
       DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Benarkan semua tapak untuk menjalankan pemalam secara automatik</translation>
 <translation id="8693243869659262736">Gunakan pelanggan DNS terbina dalam</translation>
 <translation id="8704831857353097849">Senarai pemalam yang dilumpuhkan</translation>
 <translation id="8711086062295757690">Menentukan kata kunci iaitu pintasan yang digunakan dalam kotak omni untuk mencetuskan carian bagi penyedia ini.

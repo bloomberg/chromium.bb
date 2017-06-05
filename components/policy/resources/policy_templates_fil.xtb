@@ -88,11 +88,6 @@
       Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> na magsimula ang mga profile ng bisita.</translation>
 <translation id="1363275621236827384">I-enable ang mga query sa Quirks Server para sa mga profile sa hardware</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
-<translation id="1398889361882383850">Pinapayagan kang itakda kung papayagan ang mga website na awtomatikong magpatakbo ng mga plugin. Maaaring payagan ang awtomatikong pagpapatakbo ng mga plugin para sa lahat ng website o tatanggihan para sa lahat ng website.
-
-          Pinapayagan ng I-click upang i-play ang mga plugin na tumakbo, ngunit dapat i-click ng user ang mga ito upang simulan ang pagpapatupad ng mga ito.
-
-          Kung naiwang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowPlugins' at mababago ito ng user.</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
 <translation id="1435659902881071157">Configuration ng network sa antas ng device</translation>
@@ -175,7 +170,6 @@
 <translation id="1689963000958717134">Nagbibigay-daan na malapat sa lahat ng user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang string na naka-format sa JSON tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Itakda ang paghihigpit sa pagkuha ng seed ng Mga Variation</translation>
 <translation id="172374442286684480">Payagan ang lahat ng site na magtakda ng lokal na data</translation>
-<translation id="1727394138581151779">I-block ang lahat ng plugin</translation>
 <translation id="1734716591049455502">I-configure ang mga pagpipilian sa malayuang pag-access</translation>
 <translation id="1736269219679256369">Bigyang-daan ang pagpapatuloy sa page ng babala sa SSL</translation>
 <translation id="1749815929501097806">Itinatakda ang Mga Tuntunin ng Serbisyo na dapat tanggapin ng user bago magsimula ng session ng account na lokal sa device.
@@ -722,7 +716,6 @@
 
           Kung ie-enable mo o hindi mo itatakda ang patakarang ito, makikita ng mga user ang kanilang mga password sa malinaw na text sa password manager.</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
-<translation id="3570008976476035109">I-block ang mga plugin sa mga site na ito</translation>
 <translation id="3591584750136265240">I-configure ang gawi sa pagpapatotoo sa pag-log in</translation>
 <translation id="3627678165642179114">Paganahin o huwag paganahin ang spell checking na serbisyo sa web</translation>
 <translation id="3646859102161347133">Itakda ang uri ng magnifier sa screen</translation>
@@ -802,7 +795,6 @@
           Ang suhestyong URL ng Google ay maaaring matukoy bilang: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Kikilalanin lang ang patakaran kung naka-enable ang patakaran na 'DefaultSearchProviderEnabled.'</translation>
-<translation id="3864818549971490907">Default na setting ng mga plugin</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
 <translation id="3868347814555911633">Sa retail mode lang aktibo ang patakarang ito.
 
@@ -862,6 +854,7 @@
 
           Karaniwang hindi ito pinapagana bilang isang depensa sa phishing. Kung hindi nakatakda ang patakarang ito, hindi ito pinapagana at hindi papayagan ang sub-content ng third-party na mag-pop up ng isang dialog box ng HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Huwag paganahin ang SPDY protocol</translation>
+<translation id="408029843066770167">Payagan ang mga query sa isang serbisyo ng oras ng Google</translation>
 <translation id="4088589230932595924">Pinuwersa ang mode na incognito</translation>
 <translation id="4088983553732356374">Nagbibigay-daan sa iyong itakda kung maaari bang magtakda ng lokal na data ang mga website. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagtatakda ng lokal na data.
 
@@ -930,6 +923,7 @@
 <translation id="4377599627073874279">Payagan ang lahat ng mga site na ipakita ang lahat ng mga larawan</translation>
 <translation id="4389091865841123886">I-configure ang malayuang pagpapatunay gamit ang mekanismo ng TPM.</translation>
 <translation id="4397469093966511008">Kapag itinakda ang patakarang ito sa false, hindi na mapipili ng mga user na magpadala ng ilang impormasyon ng system at content ng page sa mga server ng Google. Kung ang setting na ito ay true o hindi na-configure, papayagan ang mga user na magpadala ng ilang impormasyon ng system at content ng page sa Ligtas na Pagba-browse upang makatulong na tumukoy ng mapapanganib na app at site.</translation>
+<translation id="4418726081189202489">Kapag itinakda ang patakarang ito sa false, pipigilan ang <ph name="PRODUCT_NAME" /> na paminsan-minsang magpadala ng mga query sa isang server ng Google upang kumuha ng tumpak na timestamp. Ie-enable ang mga query na ito kung nakatakda sa True ang patakarang ito o kung hindi ito nakatakda.</translation>
 <translation id="4423597592074154136">Manu-manong tukuyin ang mga setting ng proxy</translation>
 <translation id="4429220551923452215">Ini-enable o dini-disable ang shortcut ng mga app bar ng bookmark.
 
@@ -1453,9 +1447,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pipiliin mong awtomatikong i-detect ang proxy server, ibibigay sa mga Android app ang script URL na "http://wpad/wpad.dat." Walang gagamiting ibang bahagi ng protocol ng awtomatikong pag-detect ng proxy.
 
           Kung pipiliin mong gumamit ng isang .pac proxy script, ibibigay sa mga Android app ang script URL.</translation>
-<translation id="6467433935902485842">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na hindi pinapayagang magpatakbo ng mga plugin.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultPluginsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="6491139795995924304">Payagan ang bluetooth sa device</translation>
 <translation id="6520802717075138474">Mag-import ng mga search engine mula sa default na browser sa unang pagtakbo</translation>
 <translation id="653608967792832033">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay mala-lock ang screen kapag tumatakbo gamit ang power ng baterya.
@@ -1741,7 +1732,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung itatakda sa GAIA, gagawin ang pag-log in sa pamamagitan ng normal na daloy ng pagpapatotoo ng GAIA.
 
       Kung itatakda sa SAML_INTERSTITIAL, makikita sa log in ang isang interstitial na screen na nag-aalok sa user na magpatuloy sa pagpapatotoo sa pamamagitan ng SAML IdP ng domain ng pag-enroll ng device, o bumalik sa normal na daloy ng pag-log in sa GAIA.</translation>
-<translation id="7567380065339179813">Pinapayagan ang mga plugin sa mga site na ito</translation>
 <translation id="757395965347379751">Kapag naka-enable ang setting na ito, pinapayagan ng <ph name="PRODUCT_NAME" /> ang mga SHA-1 signed certificate hanggang matagumpay silang nakakapagpatotoo at nakakabit sa isang lokal na naka-install na mga CA certificate.
 
       Tandaan na nakadepende ang patakarang ito sa operating system certificate verification stack na pumapayag sa mga SHA-1 signature. Kung mabago ng isang update sa OS ang pangangasiwa ng OS sa mga SHA-1 certificate, maaaring mawalan na nang bisa ang patakarang ito.  Bukod pa rito, maaaring nilayon ang patakarang ito na maging isang pansamantalang remedyo upang mabigyan ang mga kumpanya ng higit pang oras upang makalipat mula sa SHA-1.  Aalisin ang patakarang ito sa petsa o malapit sa petsang ika-1 ng Enero, 2019.
@@ -1836,9 +1826,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Page ng Bagong Tab</translation>
 <translation id="7788511847830146438">Bawat Profile</translation>
-<translation id="7796141075993499320">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng mga plugin.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang default na global na halaga para sa lahat ng site mula sa patakarang 'DefaultPluginsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="7801886189430766248">Kapag nakatakda ang patakarang ito sa true, ia-upload ang data ng Android app sa mga server ng Android Backup at ire-restore mula sa mga ito kapag nagsagawa ng mga muling pag-install ng app para sa mga compatible na app.
 
       Kapag nakatakda ang patakarang ito sa false, mag-o-off ang Android Backup Service.
@@ -2117,7 +2104,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Hindi available ang patakarangi to sa mga instance ng Windows na hindi kasama sa
       isang Active Directory domain.  (Para sa Chrome OS, tingnan ang
       DeviceMetricsReportingEnabled.)</translation>
-<translation id="868187325500643455">Payagan ang lahat ng site upang awtomatikong magpatakbo ng mga plugin</translation>
 <translation id="8693243869659262736">Gamitin ang built-in na DNS client</translation>
 <translation id="8704831857353097849">Listahan ng mga hindi pinaganang plugin</translation>
 <translation id="8711086062295757690">Tinutukoy ang keyword, ang shortcut na ginamit sa omnibox upang i-trigger ang paghahanap para sa provider na ito.
