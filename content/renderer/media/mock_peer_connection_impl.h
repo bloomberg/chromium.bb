@@ -109,6 +109,10 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   bool AddIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
   void RegisterUMAObserver(webrtc::UMAObserver* observer) override;
 
+  webrtc::RTCError SetBitrate(
+      const webrtc::PeerConnectionInterface::BitrateParameters& bitrate)
+      override;
+
   void AddRemoteStream(webrtc::MediaStreamInterface* stream);
 
   const std::string& stream_label() const { return stream_label_; }
