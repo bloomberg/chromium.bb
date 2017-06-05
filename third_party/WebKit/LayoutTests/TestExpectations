@@ -2686,6 +2686,15 @@ crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03b.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-04.html [ Failure ]
 
+# Producing incorrect results due to crbug.com/729352
+# TODO(ccameron): Re-enable and re-baseline when fixed.
+crbug.com/729352 images/color-profile-background-image-cross-fade.html [ Pass Failure Crash Timeout ]
+crbug.com/729352 images/color-profile-background-image-space.html [ Pass Failure Crash Timeout ]
+crbug.com/729352 images/color-profile-group.html [ Pass Failure Crash Timeout ]
+crbug.com/729352 images/color-profile-layer-filter.html [ Pass Failure Crash Timeout ]
+crbug.com/729352 images/color-profile-svg.html [ Pass Failure Crash Timeout ]
+crbug.com/729352 images/color-profile-svg-fill-text.html [ Pass Failure Crash Timeout ]
+
 # TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
 # this is not meant to be here for more than a few days (from 2016-11-03 SYD)
 crbug.com/657646 [ Win ] fast/text/font-weight.html [ Failure Pass ]
