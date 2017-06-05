@@ -41,7 +41,6 @@
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
-#include "components/history/core/browser/typed_url_sync_bridge.h"
 #include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -224,6 +223,7 @@ void HistoryBackend::Init(
             &ModelTypeChangeProcessor::Create,
             // TODO(gangwu): use ReportUnrecoverableError before launch.
             base::BindRepeating(base::IgnoreResult(&DumpWithoutCrashing))));
+    typed_url_sync_bridge_->Init();
   } else {
     typed_url_syncable_service_ =
         base::MakeUnique<TypedUrlSyncableService>(this);

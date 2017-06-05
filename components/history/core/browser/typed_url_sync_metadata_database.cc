@@ -4,8 +4,9 @@
 
 #include "components/history/core/browser/typed_url_sync_metadata_database.h"
 
+#include "base/big_endian.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
+#include "components/history/core/browser/url_row.h"
 #include "sql/statement.h"
 
 namespace history {
@@ -55,9 +56,11 @@ bool TypedURLSyncMetadataDatabase::UpdateSyncMetadata(
       << "Only the TYPED_URLS model type is supported";
 
   int64_t storage_key_int = 0;
-  if (!base::StringToInt64(storage_key, &storage_key_int)) {
-    return false;
-  }
+  DCHECK_EQ(storage_key.size(), sizeof(storage_key_int));
+  base::ReadBigEndian(storage_key.data(), &storage_key_int);
+  // Make sure storage_key_int is set.
+  DCHECK_NE(storage_key_int, 0);
+
   sql::Statement s(GetDB().GetUniqueStatement(
       "INSERT OR REPLACE INTO typed_url_sync_metadata "
       "(storage_key, value) VALUES(?, ?)"));
@@ -74,9 +77,11 @@ bool TypedURLSyncMetadataDatabase::ClearSyncMetadata(
       << "Only the TYPED_URLS model type is supported";
 
   int64_t storage_key_int = 0;
-  if (!base::StringToInt64(storage_key, &storage_key_int)) {
-    return false;
-  }
+  DCHECK_EQ(storage_key.size(), sizeof(storage_key_int));
+  base::ReadBigEndian(storage_key.data(), &storage_key_int);
+  // Make sure storage_key_int is set.
+  DCHECK_NE(storage_key_int, 0);
+
   sql::Statement s(GetDB().GetUniqueStatement(
       "DELETE FROM typed_url_sync_metadata WHERE storage_key=?"));
   s.BindInt64(0, storage_key_int);
@@ -122,7 +127,8 @@ bool TypedURLSyncMetadataDatabase::GetAllSyncEntityMetadata(
       "SELECT storage_key, value FROM typed_url_sync_metadata"));
 
   while (s.Step()) {
-    std::string storage_key = base::Int64ToString(s.ColumnInt64(0));
+    std::string storage_key(sizeof(URLID), 0);
+    base::WriteBigEndian<URLID>(&storage_key[0], s.ColumnInt64(0));
     std::string serialized_metadata = s.ColumnString(1);
     sync_pb::EntityMetadata entity_metadata;
     if (entity_metadata.ParseFromString(serialized_metadata)) {
