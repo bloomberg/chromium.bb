@@ -117,12 +117,14 @@ class ConnectTetheringOperationTest : public testing::Test {
 
     operation_ = base::WrapUnique(new ConnectTetheringOperation(
         test_device_, fake_ble_connection_manager_.get(),
-        mock_tether_host_response_recorder_.get()));
+        mock_tether_host_response_recorder_.get(), false /* setup_required */));
     operation_->AddObserver(test_observer_.get());
     operation_->Initialize();
   }
 
   void SimulateDeviceAuthenticationAndVerifyMessageSent() {
+    VerifyResponseTimeoutSeconds(false /* setup_required */);
+
     operation_->OnDeviceAuthenticated(test_device_);
 
     // Verify that the message was sent successfully.
@@ -164,6 +166,16 @@ class ConnectTetheringOperationTest : public testing::Test {
       EXPECT_TRUE(test_observer_->has_received_failure);
       EXPECT_EQ(expected_response_code, test_observer_->error_code);
     }
+  }
+
+  void VerifyResponseTimeoutSeconds(bool setup_required) {
+    uint32_t expected_response_timeout_seconds =
+        setup_required
+            ? ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds
+            : MessageTransferOperation::kDefaultResponseTimeoutSeconds;
+
+    EXPECT_EQ(expected_response_timeout_seconds,
+              operation_->GetResponseTimeoutSeconds());
   }
 
   const std::string connect_tethering_request_string_;
@@ -250,6 +262,13 @@ TEST_F(ConnectTetheringOperationTest, TestCannotConnect) {
   EXPECT_EQ(ConnectTetheringResponse_ResponseCode::
                 ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR,
             test_observer_->error_code);
+}
+
+TEST_F(ConnectTetheringOperationTest, TestOperation_SetupRequired) {
+  operation_ = base::WrapUnique(new ConnectTetheringOperation(
+      test_device_, fake_ble_connection_manager_.get(),
+      mock_tether_host_response_recorder_.get(), true /* setup_required */));
+  VerifyResponseTimeoutSeconds(true /* setup_required */);
 }
 
 }  // namespace tether

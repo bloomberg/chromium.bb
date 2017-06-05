@@ -13,6 +13,11 @@ namespace chromeos {
 
 namespace tether {
 
+// This value is quite large because first time
+// setup can take a long time.
+// static
+uint32_t ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds = 90;
+
 // static
 ConnectTetheringOperation::Factory*
     ConnectTetheringOperation::Factory::factory_instance_ = nullptr;
@@ -22,12 +27,14 @@ std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::NewInstance(
     const cryptauth::RemoteDevice& device_to_connect,
     BleConnectionManager* connection_manager,
-    TetherHostResponseRecorder* tether_host_response_recorder) {
+    TetherHostResponseRecorder* tether_host_response_recorder,
+    bool setup_required) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(device_to_connect, connection_manager,
-                                          tether_host_response_recorder);
+                                          tether_host_response_recorder,
+                                          setup_required);
 }
 
 // static
@@ -40,20 +47,24 @@ std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::BuildInstance(
     const cryptauth::RemoteDevice& device_to_connect,
     BleConnectionManager* connection_manager,
-    TetherHostResponseRecorder* tether_host_response_recorder) {
+    TetherHostResponseRecorder* tether_host_response_recorder,
+    bool setup_required) {
   return base::MakeUnique<ConnectTetheringOperation>(
-      device_to_connect, connection_manager, tether_host_response_recorder);
+      device_to_connect, connection_manager, tether_host_response_recorder,
+      setup_required);
 }
 
 ConnectTetheringOperation::ConnectTetheringOperation(
     const cryptauth::RemoteDevice& device_to_connect,
     BleConnectionManager* connection_manager,
-    TetherHostResponseRecorder* tether_host_response_recorder)
+    TetherHostResponseRecorder* tether_host_response_recorder,
+    bool setup_required)
     : MessageTransferOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
       remote_device_(device_to_connect),
       tether_host_response_recorder_(tether_host_response_recorder),
+      setup_required_(setup_required),
       error_code_to_return_(
           ConnectTetheringResponse_ResponseCode::
               ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR) {}
@@ -157,6 +168,12 @@ void ConnectTetheringOperation::NotifyObserversOfConnectionFailure(
   for (auto& observer : observer_list_) {
     observer.OnConnectTetheringFailure(remote_device_, error_code);
   }
+}
+
+uint32_t ConnectTetheringOperation::GetResponseTimeoutSeconds() {
+  return (setup_required_)
+             ? ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds
+             : MessageTransferOperation::GetResponseTimeoutSeconds();
 }
 
 }  // namespace tether
