@@ -194,9 +194,6 @@ static const arg_def_t disable_warning_prompt =
             "Display warnings, but do not prompt user to continue.");
 
 #if CONFIG_HIGHBITDEPTH
-static const arg_def_t test16bitinternalarg = ARG_DEF(
-    NULL, "test-16bit-internal", 0, "Force use of 16 bit internal buffer");
-
 static const struct arg_enum_list bitdepth_enum[] = {
   { "8", AOM_BITS_8 }, { "10", AOM_BITS_10 }, { "12", AOM_BITS_12 }, { NULL, 0 }
 };
@@ -259,28 +256,18 @@ static const arg_def_t error_resilient =
 static const arg_def_t lag_in_frames =
     ARG_DEF(NULL, "lag-in-frames", 1, "Max number of frames to lag");
 
-static const arg_def_t *global_args[] = { &use_yv12,
-                                          &use_i420,
-                                          &use_i422,
-                                          &use_i444,
-                                          &use_i440,
-                                          &usage,
-                                          &threads,
-                                          &profile,
-                                          &width,
-                                          &height,
+static const arg_def_t *global_args[] = {
+  &use_yv12,      &use_i420,  &use_i422,        &use_i444, &use_i440,
+  &usage,         &threads,   &profile,         &width,    &height,
 #if CONFIG_WEBM_IO
-                                          &stereo_mode,
+  &stereo_mode,
 #endif
-                                          &timebase,
-                                          &framerate,
-                                          &error_resilient,
+  &timebase,      &framerate, &error_resilient,
 #if CONFIG_HIGHBITDEPTH
-                                          &test16bitinternalarg,
-                                          &bitdeptharg,
+  &bitdeptharg,
 #endif
-                                          &lag_in_frames,
-                                          NULL };
+  &lag_in_frames, NULL
+};
 
 static const arg_def_t dropframe_thresh =
     ARG_DEF(NULL, "drop-frame", 1, "Temporal resampling threshold (buf %)");
@@ -906,9 +893,6 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
   static const int *ctrl_args_map = NULL;
   struct stream_config *config = &stream->config;
   int eos_mark_found = 0;
-#if CONFIG_HIGHBITDEPTH
-  int test_16bit_internal = 0;
-#endif
 
   // Handle codec specific options
   if (0) {
@@ -1026,13 +1010,6 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.kf_max_dist = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &kf_disabled, argi)) {
       config->cfg.kf_mode = AOM_KF_DISABLED;
-#if CONFIG_HIGHBITDEPTH
-    } else if (arg_match(&arg, &test16bitinternalarg, argi)) {
-      if (strcmp(global->codec->name, "av1") == 0 ||
-          strcmp(global->codec->name, "av1") == 0) {
-        test_16bit_internal = 1;
-      }
-#endif
     } else {
       int i, match = 0;
       for (i = 0; ctrl_args[i]; i++) {
@@ -1062,7 +1039,7 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
   }
 #if CONFIG_HIGHBITDEPTH
   config->use_16bit_internal =
-      test_16bit_internal || (config->cfg.g_profile > 1) || !CONFIG_LOWBITDEPTH;
+      config->cfg.g_bit_depth > AOM_BITS_8 || !CONFIG_LOWBITDEPTH;
 #endif
   return eos_mark_found;
 }
