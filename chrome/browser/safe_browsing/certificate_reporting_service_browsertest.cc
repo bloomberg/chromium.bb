@@ -388,15 +388,9 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
       ReportExpectation::Successful({{"report1", RetryStatus::RETRIED}}));
 }
 
-// Failing on some Win and Mac buildbots.  See crbug.com/719138.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_DontSendOldReports DISABLED_DontSendOldReports
-#else
-#define MAYBE_DontSendOldReports DontSendOldReports
-#endif
 // CertificateReportingService should ignore reports older than the report TTL.
 IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
-                       MAYBE_DontSendOldReports) {
+                       DontSendOldReports) {
   SetExpectedHistogramCountOnTeardown(5);
 
   base::SimpleTestClock* clock = new base::SimpleTestClock();
@@ -456,6 +450,15 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Send pending reports. report2 should be discarded since it's too old. No
   // other reports remain. If any report is sent, test teardown will catch it.
   SendPendingReports();
+
+  // Let all reports succeed and send a single report. This is to make sure
+  // that any (incorrectly) pending reports are dropped before the test tear
+  // down.
+  test_helper()->SetFailureMode(certificate_reporting_test_utils::
+                                    ReportSendingResult::REPORTS_SUCCESSFUL);
+  SendReport("report3");
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({{"report3", RetryStatus::NOT_RETRIED}}));
 }
 
 // CertificateReportingService should drop old reports from its pending report
