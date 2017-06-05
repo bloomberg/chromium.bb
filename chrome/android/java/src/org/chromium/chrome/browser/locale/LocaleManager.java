@@ -11,11 +11,15 @@ import android.content.SharedPreferences;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -26,12 +30,14 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.widget.PromoDialog;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Manager for some locale specific logics.
@@ -69,7 +75,8 @@ public class LocaleManager {
 
     private static LocaleManager sInstance;
 
-    private boolean mSearchEnginePromoShown;
+    private boolean mSearchEnginePromoCompleted;
+    private boolean mSearchEnginePromoShownThisSession;
 
     // LocaleManager is a singleton and it should not have strong reference to UI objects.
     // SnackbarManager is owned by ChromeActivity and is not null as long as the activity is alive.
@@ -92,6 +99,7 @@ public class LocaleManager {
     /**
      * @return An instance of the {@link LocaleManager}. This should only be called on UI thread.
      */
+    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     @CalledByNative
     public static LocaleManager getInstance() {
         assert ThreadUtils.runningOnUiThread();
@@ -107,7 +115,7 @@ public class LocaleManager {
     public LocaleManager() {
         int state = ContextUtils.getAppSharedPreferences().getInt(
                 KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_SHOULD_CHECK);
-        mSearchEnginePromoShown = state == SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN;
+        mSearchEnginePromoCompleted = state == SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN;
     }
 
     /**
@@ -214,21 +222,78 @@ public class LocaleManager {
      * @return Whether such dialog is needed.
      */
     public boolean showSearchEnginePromoIfNeeded(
-            Activity activity, @Nullable Callback<Boolean> onDismissed) {
-        int shouldShow = getSearchEnginePromoShowType();
+            final Activity activity, final @Nullable Callback<Boolean> onDismissed) {
+        final int shouldShow = getSearchEnginePromoShowType();
+
+        Callable<PromoDialog> dialogCreator;
         switch (shouldShow) {
             case SEARCH_ENGINE_PROMO_DONT_SHOW:
-                return false;
-            case SEARCH_ENGINE_PROMO_SHOW_SOGOU:
-                new SogouPromoDialog(activity, this, onDismissed).show();
                 return true;
+            case SEARCH_ENGINE_PROMO_SHOW_SOGOU:
+                dialogCreator = new Callable<PromoDialog>() {
+                    @Override
+                    public PromoDialog call() throws Exception {
+                        return new SogouPromoDialog(activity, LocaleManager.this, onDismissed);
+                    }
+                };
+                break;
             case SEARCH_ENGINE_PROMO_SHOW_EXISTING:
             case SEARCH_ENGINE_PROMO_SHOW_NEW:
-                DefaultSearchEnginePromoDialog.show(activity, shouldShow, onDismissed);
-                return true;
+                dialogCreator = new Callable<PromoDialog>() {
+                    @Override
+                    public PromoDialog call() throws Exception {
+                        return new DefaultSearchEnginePromoDialog(
+                                activity, shouldShow, onDismissed);
+                    }
+                };
+                break;
             default:
                 assert false;
                 return false;
+        }
+
+        mSearchEnginePromoShownThisSession = true;
+        ensureTemplateUrlServiceLoadedAndShowDialog(dialogCreator, activity, onDismissed);
+        return true;
+    }
+
+    private void ensureTemplateUrlServiceLoadedAndShowDialog(
+            final Callable<PromoDialog> dialogCreator, final Activity activity,
+            final Callback<Boolean> onDismissed) {
+        assert LibraryLoader.isInitialized();
+
+        // Load up the search engines.
+        final TemplateUrlService instance = TemplateUrlService.getInstance();
+        if (!instance.isLoaded()) {
+            instance.registerLoadListener(new TemplateUrlService.LoadListener() {
+                @Override
+                public void onTemplateUrlServiceLoaded() {
+                    instance.unregisterLoadListener(this);
+
+                    // If the activity has been destroyed by the time the TemplateUrlService has
+                    // loaded, then do not attempt to show the dialog.
+                    if (ApplicationStatus.getStateForActivity(activity)
+                            == ActivityState.DESTROYED) {
+                        if (onDismissed != null) onDismissed.onResult(false);
+                        return;
+                    }
+
+                    showPromoDialog(dialogCreator);
+                }
+            });
+            instance.load();
+        } else {
+            showPromoDialog(dialogCreator);
+        }
+    }
+
+    private void showPromoDialog(Callable<PromoDialog> dialogCreator) {
+        try {
+            dialogCreator.call().show();
+        } catch (Exception e) {
+            // Exception is caught purely because Callable states it can be thrown.  This is never
+            // expected to be hit.
+            throw new RuntimeException(e);
         }
     }
 
@@ -317,7 +382,7 @@ public class LocaleManager {
                 .edit()
                 .putInt(KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN)
                 .apply();
-        mSearchEnginePromoShown = true;
+        mSearchEnginePromoCompleted = true;
     }
 
     /**
@@ -359,11 +424,25 @@ public class LocaleManager {
      */
     public void recordLocaleBasedSearchWidgetMetrics(boolean widgetPresent) {}
 
-    /**
-     * @return Whether the search engine promo has been shown.
-     */
+    // Deprecated.  Use hasCompletedSearchEnginePromo.
+    // TODO(tedchoc): Remove once downstream uses hasCompletedSearchEnginePromo.
     public boolean hasShownSearchEnginePromo() {
-        return mSearchEnginePromoShown;
+        return hasCompletedSearchEnginePromo();
+    }
+
+    /**
+     * @return Whether the search engine promo has been shown and the user selected a valid option
+     *         and successfully completed the promo.
+     */
+    public boolean hasCompletedSearchEnginePromo() {
+        return mSearchEnginePromoCompleted;
+    }
+
+    /**
+     * @return Whether the search engine promo has been shown in this session.
+     */
+    public boolean hasShownSearchEnginePromoThisSession() {
+        return mSearchEnginePromoShownThisSession;
     }
 
     /**

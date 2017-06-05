@@ -381,6 +381,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             TraceEvent.begin("ChromeTabbedActivity.initializeCompositor");
             super.initializeCompositor();
 
+            // LocaleManager can only function after the native library is loaded.
+            mLocaleManager = LocaleManager.getInstance();
+            mLocaleManager.showSearchEnginePromoIfNeeded(this, null);
+
             mTabModelSelectorImpl.onNativeLibraryReady(getTabContentManager());
 
             mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelectorImpl) {
@@ -468,18 +472,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 IncognitoNotificationManager.dismissIncognitoNotification();
             }
 
-            // LocaleManager can only function after the native library is loaded.
-            mLocaleManager = LocaleManager.getInstance();
-            boolean searchEnginePromoShown =
-                    mLocaleManager.showSearchEnginePromoIfNeeded(this, null);
-
             ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
             // Promos can only be shown when we start with ACTION_MAIN intent and
             // after FRE is complete. Native initialization can finish before the FRE flow is
             // complete, and this will only show promos on the second opportunity. This is
             // because the FRE is shown on the first opportunity, and we don't want to show such
             // content back to back.
-            if (!searchEnginePromoShown && !mIntentWithEffect
+            if (!mLocaleManager.hasShownSearchEnginePromoThisSession() && !mIntentWithEffect
                     && FirstRunStatus.getFirstRunFlowComplete()
                     && preferenceManager.getPromosSkippedOnFirstStart()) {
                 // Data reduction promo should be temporarily suppressed if the sign in promo is
