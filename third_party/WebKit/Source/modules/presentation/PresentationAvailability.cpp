@@ -61,9 +61,10 @@ void PresentationAvailability::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::change)
+  if (event_type == EventTypeNames::change) {
     UseCounter::Count(GetExecutionContext(),
                       UseCounter::kPresentationAvailabilityChangeEventListener);
+  }
 }
 
 void PresentationAvailability::AvailabilityChanged(bool value) {

@@ -61,9 +61,10 @@ HTMLStyleElement* StyleSheetList::GetNamedItem(const AtomicString& name) const {
 }
 
 CSSStyleSheet* StyleSheetList::AnonymousNamedGetter(const AtomicString& name) {
-  if (GetDocument())
+  if (GetDocument()) {
     UseCounter::Count(*GetDocument(),
                       UseCounter::kStyleSheetListAnonymousNamedGetter);
+  }
   HTMLStyleElement* item = GetNamedItem(name);
   if (!item)
     return nullptr;

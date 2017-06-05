@@ -162,9 +162,10 @@ float LayoutFlexibleBox::CountIntrinsicSizeForAlgorithmChange(
   float max_content_flex_fraction =
       max_preferred_logical_width.ToFloat() / flex_grow;
   if (previous_max_content_flex_fraction != -1 &&
-      max_content_flex_fraction != previous_max_content_flex_fraction)
+      max_content_flex_fraction != previous_max_content_flex_fraction) {
     UseCounter::Count(GetDocument(),
                       UseCounter::kFlexboxIntrinsicSizeAlgorithmIsDifferent);
+  }
   return max_content_flex_fraction;
 }
 

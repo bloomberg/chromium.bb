@@ -204,9 +204,10 @@ void HTMLElement::MapLanguageAttributeToLocale(const AtomicString& value,
     first_separator = ui_language.find('_');
     if (first_separator != kNotFound)
       ui_language = ui_language.Left(first_separator);
-    if (!DeprecatedEqualIgnoringCase(html_language, ui_language))
+    if (!DeprecatedEqualIgnoringCase(html_language, ui_language)) {
       UseCounter::Count(GetDocument(),
                         UseCounter::kLangAttributeDoesNotMatchToUILocale);
+    }
   } else {
     // The empty string means the language is explicitly unknown.
     AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale,
@@ -248,9 +249,10 @@ void HTMLElement::CollectStyleForPresentationAttribute(
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
                                               CSSValueAfterWhiteSpace);
       UseCounter::Count(GetDocument(), UseCounter::kContentEditableTrue);
-      if (HasTagName(htmlTag))
+      if (HasTagName(htmlTag)) {
         UseCounter::Count(GetDocument(),
                           UseCounter::kContentEditableTrueOnHTML);
+      }
     } else if (DeprecatedEqualIgnoringCase(value, "plaintext-only")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadWritePlaintextOnly);

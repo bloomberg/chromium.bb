@@ -362,9 +362,10 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
       continue;
 
     HTMLSourceElement* source = toHTMLSourceElement(child);
-    if (!source->FastGetAttribute(srcAttr).IsNull())
+    if (!source->FastGetAttribute(srcAttr).IsNull()) {
       Deprecation::CountDeprecation(GetDocument(),
                                     UseCounter::kPictureSourceSrc);
+    }
     String srcset = source->FastGetAttribute(srcsetAttr);
     if (srcset.IsEmpty())
       continue;

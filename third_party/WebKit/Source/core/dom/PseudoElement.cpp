@@ -92,9 +92,10 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
   SetParentOrShadowHostNode(parent);
   SetHasCustomStyleCallbacks();
   if ((pseudo_id == kPseudoIdBefore || pseudo_id == kPseudoIdAfter) &&
-      parent->HasTagName(HTMLNames::inputTag))
+      parent->HasTagName(HTMLNames::inputTag)) {
     UseCounter::Count(parent->GetDocument(),
                       UseCounter::kPseudoBeforeAfterForInputElement);
+  }
 }
 
 PassRefPtr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {

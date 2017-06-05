@@ -58,11 +58,12 @@ RTCIceCandidate* RTCIceCandidate::Create(
 
   // TODO(guidou): Change default value to -1. crbug.com/614958.
   unsigned short sdp_m_line_index = 0;
-  if (candidate_init.hasSdpMLineIndex())
+  if (candidate_init.hasSdpMLineIndex()) {
     sdp_m_line_index = candidate_init.sdpMLineIndex();
-  else
+  } else {
     UseCounter::Count(context,
                       UseCounter::kRTCIceCandidateDefaultSdpMLineIndex);
+  }
 
   return new RTCIceCandidate(WebRTCICECandidate(candidate_init.candidate(),
                                                 sdp_mid, sdp_m_line_index));

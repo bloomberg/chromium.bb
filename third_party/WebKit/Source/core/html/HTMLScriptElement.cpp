@@ -99,9 +99,10 @@ Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
   ScriptType script_type = ScriptType::kClassic;
   if (insertion_point->isConnected() && HasSourceAttribute() &&
       !Loader()->IsScriptTypeSupported(
-          ScriptLoader::kDisallowLegacyTypeInTypeAttribute, script_type))
+          ScriptLoader::kDisallowLegacyTypeInTypeAttribute, script_type)) {
     UseCounter::Count(GetDocument(),
                       UseCounter::kScriptElementWithInvalidTypeHasSrc);
+  }
   HTMLElement::InsertedInto(insertion_point);
   LogAddElementIfIsolatedWorldAndInDocument("script", srcAttr);
 

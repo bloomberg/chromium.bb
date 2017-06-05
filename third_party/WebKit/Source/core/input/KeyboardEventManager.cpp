@@ -350,9 +350,10 @@ void KeyboardEventManager::DefaultBackspaceEventHandler(KeyboardEvent* event) {
   if (!frame_->GetEditor().Behavior().ShouldNavigateBackOnBackspace())
     return;
   UseCounter::Count(frame_->GetDocument(), UseCounter::kBackspaceNavigatedBack);
-  if (frame_->GetPage()->GetChromeClient().HadFormInteraction())
+  if (frame_->GetPage()->GetChromeClient().HadFormInteraction()) {
     UseCounter::Count(frame_->GetDocument(),
                       UseCounter::kBackspaceNavigatedBackAfterFormInteraction);
+  }
   bool handled_event = frame_->Loader().Client()->NavigateBackForward(
       event->shiftKey() ? 1 : -1);
   if (handled_event)

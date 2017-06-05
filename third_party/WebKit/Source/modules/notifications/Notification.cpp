@@ -96,16 +96,18 @@ Notification* Notification::Create(ExecutionContext* context,
 
   if (context->IsSecureContext()) {
     UseCounter::Count(context, UseCounter::kNotificationSecureOrigin);
-    if (context->IsDocument())
+    if (context->IsDocument()) {
       UseCounter::CountCrossOriginIframe(
           *ToDocument(context), UseCounter::kNotificationAPISecureOriginIframe);
+    }
   } else {
     Deprecation::CountDeprecation(context,
                                   UseCounter::kNotificationInsecureOrigin);
-    if (context->IsDocument())
+    if (context->IsDocument()) {
       Deprecation::CountDeprecationCrossOriginIframe(
           *ToDocument(context),
           UseCounter::kNotificationAPIInsecureOriginIframe);
+    }
   }
 
   WebNotificationData data =

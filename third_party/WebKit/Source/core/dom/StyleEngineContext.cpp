@@ -37,9 +37,10 @@ void StyleEngineContext::AddingPendingSheet(const Document& document) {
   // treated as before-body.
   if (!added_pending_sheet_before_body_) {
     added_pending_sheet_before_body_ = !document.body();
-    if (!added_pending_sheet_before_body_)
+    if (!added_pending_sheet_before_body_) {
       UseCounter::Count(document,
                         UseCounter::kPendingStylesheetAddedAfterBodyStarted);
+    }
   }
 }
 

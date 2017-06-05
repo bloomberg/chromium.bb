@@ -469,9 +469,10 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
 
   UseCounter::Count(GetDocument(), UseCounter::kFormsSubmitted);
   if (MixedContentChecker::IsMixedFormAction(GetDocument().GetFrame(),
-                                             submission->Action()))
+                                             submission->Action())) {
     UseCounter::Count(GetDocument().GetFrame(),
                       UseCounter::kMixedContentFormsSubmitted);
+  }
 
   // TODO(lukasza): Investigate if the code below can uniformly handle remote
   // and local frames (i.e. by calling virtual Frame::navigate from a timer).
@@ -527,9 +528,10 @@ void HTMLFormElement::ParseAttribute(
         attributes_.Action().IsEmpty() ? GetDocument().Url().GetString()
                                        : attributes_.Action());
     if (MixedContentChecker::IsMixedFormAction(GetDocument().GetFrame(),
-                                               action_url))
+                                               action_url)) {
       UseCounter::Count(GetDocument().GetFrame(),
                         UseCounter::kMixedContentFormPresent);
+    }
   } else if (name == targetAttr) {
     attributes_.SetTarget(params.new_value);
   } else if (name == methodAttr) {
