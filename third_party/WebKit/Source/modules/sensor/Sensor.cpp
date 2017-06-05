@@ -310,8 +310,7 @@ void Sensor::NotifyOnActivate() {
 }
 
 void Sensor::NotifyError(DOMException* error) {
-  DispatchEvent(
-      SensorErrorEvent::Create(EventTypeNames::error, std::move(error)));
+  DispatchEvent(SensorErrorEvent::Create(EventTypeNames::error, error));
 }
 
 bool Sensor::CanReturnReadings() const {
