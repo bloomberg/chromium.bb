@@ -525,8 +525,7 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
                                         CFL_CTX *cfl,
 #endif
                                         tran_low_t *dqcoeff) {
-  int i;
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
+  for (int i = 0; i < MAX_MB_PLANE; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
 #if CONFIG_PVQ
     xd->plane[i].pvq_ref_coeff = pvq_ref_coeff;
@@ -558,8 +557,8 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
              sizeof(cm->uv_dequant_nuq));
 #endif
     }
-    xd->fc = cm->fc;
   }
+  xd->fc = cm->fc;
   xd->above_seg_context = cm->above_seg_context;
 #if CONFIG_VAR_TX
   xd->above_txfm_context = cm->above_txfm_context;
