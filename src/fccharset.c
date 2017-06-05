@@ -1113,7 +1113,7 @@ FcCharSetHash (FcCharSet *fcs)
 	hash = ((hash << 1) | (hash >> 31)) ^ FcCharLeafHash (FcCharSetLeaf(fcs,i));
     /* hash in numbers */
     for (i = 0; i < fcs->num; i++)
-	hash = ((hash << 1) | (hash >> 31)) ^ *FcCharSetNumbers(fcs);
+	hash = ((hash << 1) | (hash >> 31)) ^ FcCharSetNumbers(fcs)[i];
     return hash;
 }
 
