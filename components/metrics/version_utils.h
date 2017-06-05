@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_NET_VERSION_UTILS_H_
-#define COMPONENTS_METRICS_NET_VERSION_UTILS_H_
+#ifndef COMPONENTS_METRICS_VERSION_UTILS_H_
+#define COMPONENTS_METRICS_VERSION_UTILS_H_
 
 #include <string>
 
@@ -21,9 +21,8 @@ std::string GetVersionString();
 
 // Translates version_info::Channel to the equivalent
 // SystemProfileProto::Channel.
-SystemProfileProto::Channel AsProtobufChannel(
-    version_info::Channel channel);
+SystemProfileProto::Channel AsProtobufChannel(version_info::Channel channel);
 
 }  // namespace metrics
 
-#endif  // COMPONENTS_METRICS_NET_VERSION_UTILS_H_
+#endif  // COMPONENTS_METRICS_VERSION_UTILS_H_

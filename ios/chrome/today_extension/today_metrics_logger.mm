@@ -22,7 +22,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_client.h"
-#include "components/metrics/net/version_utils.h"
+#include "components/metrics/version_utils.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"

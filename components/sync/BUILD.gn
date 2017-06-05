@@ -982,6 +982,7 @@ source_set("unit_tests") {
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/version_info",
+    "//components/version_info:version_string",
     "//google_apis",
     "//google_apis:test_support",
     "//net",

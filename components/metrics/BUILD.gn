@@ -90,6 +90,8 @@ static_library("metrics") {
     "system_memory_stats_recorder_win.cc",
     "url_constants.cc",
     "url_constants.h",
+    "version_utils.cc",
+    "version_utils.h",
   ]
 
   public_deps = [
@@ -102,6 +104,7 @@ static_library("metrics") {
     "//base:base_static",
     "//components/prefs",
     "//components/variations",
+    "//components/version_info:version_info",
     "//third_party/zlib/google:compression_utils",
   ]
 
@@ -151,8 +154,6 @@ static_library("net") {
     "net/net_metrics_log_uploader.h",
     "net/network_metrics_provider.cc",
     "net/network_metrics_provider.h",
-    "net/version_utils.cc",
-    "net/version_utils.h",
     "net/wifi_access_point_info_provider.cc",
     "net/wifi_access_point_info_provider.h",
   ]
@@ -166,7 +167,6 @@ static_library("net") {
     "//base",
     "//components/data_use_measurement/core",
     "//components/variations",
-    "//components/version_info",
     "//net",
     "//url",
   ]

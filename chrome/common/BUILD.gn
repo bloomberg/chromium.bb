@@ -214,6 +214,7 @@ static_library("common") {
     "//components/url_formatter",
     "//components/variations",
     "//components/version_info",
+    "//components/version_info:version_string",
     "//components/visitedlink/common",
     "//content/public/common",
     "//crypto",

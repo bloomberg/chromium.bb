@@ -21,6 +21,7 @@ source_set("common") {
   deps = [
     "//base",
     "//components/version_info",
+    "//components/version_info:version_string",
     "//ios/chrome/common/app_group:main_app",
     "//ios/chrome/common/physical_web",
     "//net",
