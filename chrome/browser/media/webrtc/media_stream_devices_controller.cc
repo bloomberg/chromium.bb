@@ -293,7 +293,11 @@ MediaStreamDevicesController::Request::GetPermissionRequestType() const {
 
 bool MediaStreamDevicesController::Request::ShouldShowPersistenceToggle()
     const {
-  return PermissionUtil::ShouldShowPersistenceToggle();
+  // Camera and Mic are handled the same w.r.t. showing the persistence toggle,
+  // just check camera here for simplicity (this class will be removed once the
+  // Android and media refactorings are finished).
+  return PermissionUtil::ShouldShowPersistenceToggle(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
 }
 
 // Implementation of PermissionPromptDelegate which actually shows a permission

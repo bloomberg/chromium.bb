@@ -96,10 +96,7 @@ std::vector<int> PermissionInfoBarDelegate::content_settings_types() const {
 }
 
 bool PermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
-  return (content_settings_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-          content_settings_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-          content_settings_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) &&
-         PermissionUtil::ShouldShowPersistenceToggle();
+  return PermissionUtil::ShouldShowPersistenceToggle(content_settings_type_);
 }
 
 bool PermissionInfoBarDelegate::Accept() {

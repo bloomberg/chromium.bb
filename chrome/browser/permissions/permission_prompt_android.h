@@ -30,11 +30,13 @@ class PermissionPromptAndroid : public PermissionPrompt {
   gfx::NativeWindow GetNativeWindow() override;
 
   void Closing();
+  void TogglePersist(bool value);
   void ToggleAccept(int index, bool value);
   void Accept();
   void Deny();
 
   size_t PermissionCount() const;
+  bool ShouldShowPersistenceToggle() const;
   ContentSettingsType GetContentSettingType(size_t position) const;
   int GetIconIdForPermission(size_t position) const;
   base::string16 GetMessageText(size_t position) const;

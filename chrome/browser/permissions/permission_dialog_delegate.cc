@@ -162,9 +162,7 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
       ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText(0)),
       // TODO(timloh): Pass the actual link text for EME.
       ConvertUTF16ToJavaString(env, base::string16()), primaryButtonText,
-      secondaryButtonText,
-      // TODO(timloh): Hook up the persistence toggle.
-      false));
+      secondaryButtonText, permission_prompt_->ShouldShowPersistenceToggle()));
 }
 
 void PermissionDialogDelegate::Accept(JNIEnv* env,
@@ -177,6 +175,8 @@ void PermissionDialogDelegate::Accept(JNIEnv* env,
     return;
   }
 
+  if (permission_prompt_->ShouldShowPersistenceToggle())
+    permission_prompt_->TogglePersist(persist);
   permission_prompt_->Accept();
 }
 
@@ -190,6 +190,8 @@ void PermissionDialogDelegate::Cancel(JNIEnv* env,
     return;
   }
 
+  if (permission_prompt_->ShouldShowPersistenceToggle())
+    permission_prompt_->TogglePersist(persist);
   permission_prompt_->Deny();
 }
 
