@@ -2,8 +2,6 @@ danakj@chromium.org
 jbauman@chromium.org
 ccameron@chromium.org
 
-per-file frame_sink*=kylechar@chromium.org
-
 per-file *mus*=fsamuel@chromium.org
 per-file *mus*=sadrul@chromium.org
 per-file *mus*=rjkroege@chromium.org

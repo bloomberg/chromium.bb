@@ -110,7 +110,7 @@ executable("views_examples_exe") {
     "//base/test:test_support",
     "//build/config:exe_and_shlib_deps",
     "//build/win:default_exe_manifest",
-    "//cc/surfaces",
+    "//components/viz/host",
     "//ui/base",
     "//ui/compositor",
     "//ui/compositor:test_support",

@@ -42,9 +42,12 @@ class SurfaceManager;
 class VulkanContextProvider;
 }
 
+namespace viz {
+class FrameSinkManagerHost;
+}
+
 namespace content {
 class CompositorClient;
-class FrameSinkManagerHost;
 
 // -----------------------------------------------------------------------------
 // Browser-side compositor that manages a tree of content and UI layers.
@@ -62,7 +65,7 @@ class CONTENT_EXPORT CompositorImpl
   static bool IsInitialized();
 
   static cc::SurfaceManager* GetSurfaceManager();
-  static FrameSinkManagerHost* GetFrameSinkManagerHost();
+  static viz::FrameSinkManagerHost* GetFrameSinkManagerHost();
   static cc::FrameSinkId AllocateFrameSinkId();
 
   // ui::ResourceProvider implementation.
@@ -189,6 +192,6 @@ class CONTENT_EXPORT CompositorImpl
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };
 
-} // namespace content
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_COMPOSITOR_IMPL_ANDROID_H_

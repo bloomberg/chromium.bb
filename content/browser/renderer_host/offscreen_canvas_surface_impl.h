@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_info.h"
-#include "content/browser/compositor/frame_sink_observer.h"
+#include "components/viz/host/frame_sink_observer.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
@@ -20,7 +20,7 @@ namespace content {
 // connections to both the renderer and frame sink manager.
 class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
     : public blink::mojom::OffscreenCanvasSurface,
-      public NON_EXPORTED_BASE(FrameSinkObserver) {
+      public NON_EXPORTED_BASE(viz::FrameSinkObserver) {
  public:
   using DestroyCallback = base::OnceCallback<void()>;
 

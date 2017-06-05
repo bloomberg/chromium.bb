@@ -9,7 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/surfaces/surface_manager.h"
-#include "content/browser/compositor/frame_sink_manager_host.h"
+#include "components/viz/host/frame_sink_manager_host.h"
 #include "content/browser/compositor/surface_utils.h"
 
 namespace content {

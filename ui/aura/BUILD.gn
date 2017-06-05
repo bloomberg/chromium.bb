@@ -313,7 +313,7 @@ executable("demo") {
     "//base:i18n",
     "//build/config:exe_and_shlib_deps",
     "//build/win:default_exe_manifest",
-    "//cc/surfaces",
+    "//components/viz/host",
     "//skia",
     "//third_party/icu",
     "//ui/base",

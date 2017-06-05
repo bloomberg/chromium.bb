@@ -23,6 +23,7 @@
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
+#include "components/viz/host/frame_sink_manager_host.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -134,11 +135,11 @@ struct InProcessContextFactory::PerCompositorData {
 };
 
 InProcessContextFactory::InProcessContextFactory(
-    cc::SurfaceManager* surface_manager)
+    viz::FrameSinkManagerHost* frame_sink_manager)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
-      surface_manager_(surface_manager) {
-  DCHECK(surface_manager);
+      frame_sink_manager_(frame_sink_manager) {
+  DCHECK(frame_sink_manager);
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gl::GLSurfaceTestSupport::InitializeOneOff()";
@@ -247,9 +248,9 @@ void InProcessContextFactory::CreateCompositorFrameSink(
 
   auto* display = per_compositor_data_[compositor.get()]->display.get();
   auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(
-      compositor->frame_sink_id(), surface_manager_, display, context_provider,
-      shared_worker_context_provider_, &gpu_memory_buffer_manager_,
-      &shared_bitmap_manager_);
+      compositor->frame_sink_id(), GetSurfaceManager(), display,
+      context_provider, shared_worker_context_provider_,
+      &gpu_memory_buffer_manager_, &shared_bitmap_manager_);
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
 
   data->display->Resize(compositor->size());
@@ -311,7 +312,11 @@ cc::FrameSinkId InProcessContextFactory::AllocateFrameSinkId() {
 }
 
 cc::SurfaceManager* InProcessContextFactory::GetSurfaceManager() {
-  return surface_manager_;
+  return frame_sink_manager_->surface_manager();
+}
+
+viz::FrameSinkManagerHost* InProcessContextFactory::GetFrameSinkManagerHost() {
+  return frame_sink_manager_;
 }
 
 void InProcessContextFactory::SetDisplayVisible(ui::Compositor* compositor,
