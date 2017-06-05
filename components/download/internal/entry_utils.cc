@@ -35,5 +35,22 @@ std::map<DownloadClient, std::vector<std::string>> MapEntriesToClients(
   return categorized;
 }
 
+Criteria GetSchedulingCriteria(const Model::EntryList& entries) {
+  Criteria criteria;
+  for (auto* const entry : entries) {
+    DCHECK(entry);
+    const SchedulingParams& scheduling_params = entry->scheduling_params;
+    if (scheduling_params.battery_requirements ==
+        SchedulingParams::BatteryRequirements::BATTERY_INSENSITIVE) {
+      criteria.requires_battery_charging = false;
+    }
+    if (scheduling_params.network_requirements ==
+        SchedulingParams::NetworkRequirements::NONE) {
+      criteria.requires_unmetered_network = false;
+    }
+  }
+  return criteria;
+}
+
 }  // namespace util
 }  // namespace download

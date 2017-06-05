@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_SCHEDULER_NETWORK_LISTENER_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_SCHEDULER_NETWORK_LISTENER_H_
 
+#include "components/download/internal/scheduler/device_status.h"
 #include "net/base/network_change_notifier.h"
 
 namespace download {
@@ -13,15 +14,6 @@ namespace download {
 class NetworkListener
     : public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
-  // NetworkStatus should mostly one to one map to
-  // SchedulingParams::NetworkRequirements. Has coarser granularity than
-  // network connection type.
-  enum class NetworkStatus {
-    DISCONNECTED = 0,
-    UNMETERED = 1,  // WIFI or Ethernet.
-    METERED = 2,    // Mobile networks.
-  };
-
   class Observer {
    public:
     // Called when network status is changed.

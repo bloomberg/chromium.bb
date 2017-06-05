@@ -8,24 +8,23 @@ namespace download {
 
 namespace {
 
-// Converts a ConnectionType to NetworkListener::NetworkStatus.
-NetworkListener::NetworkStatus ToNetworkStatus(
-    net::NetworkChangeNotifier::ConnectionType type) {
+// Converts a ConnectionType to NetworkStatus.
+NetworkStatus ToNetworkStatus(net::NetworkChangeNotifier::ConnectionType type) {
   switch (type) {
     case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
     case net::NetworkChangeNotifier::CONNECTION_WIFI:
-      return NetworkListener::NetworkStatus::UNMETERED;
+      return NetworkStatus::UNMETERED;
     case net::NetworkChangeNotifier::CONNECTION_2G:
     case net::NetworkChangeNotifier::CONNECTION_3G:
     case net::NetworkChangeNotifier::CONNECTION_4G:
-      return NetworkListener::NetworkStatus::METERED;
+      return NetworkStatus::METERED;
     case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
     case net::NetworkChangeNotifier::CONNECTION_NONE:
     case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      return NetworkListener::NetworkStatus::DISCONNECTED;
+      return NetworkStatus::DISCONNECTED;
   }
   NOTREACHED();
-  return NetworkListener::NetworkStatus::DISCONNECTED;
+  return NetworkStatus::DISCONNECTED;
 }
 
 }  // namespace
@@ -37,7 +36,7 @@ NetworkListener::~NetworkListener() {
   Stop();
 }
 
-NetworkListener::NetworkStatus NetworkListener::CurrentNetworkStatus() const {
+NetworkStatus NetworkListener::CurrentNetworkStatus() const {
   return ToNetworkStatus(net::NetworkChangeNotifier::GetConnectionType());
 }
 

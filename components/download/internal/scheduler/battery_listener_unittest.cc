@@ -10,6 +10,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::InSequence;
+
 namespace download {
 namespace {
 
@@ -17,7 +19,7 @@ using BatteryRequirements = SchedulingParams::BatteryRequirements;
 
 class MockObserver : public BatteryListener::Observer {
  public:
-  MOCK_METHOD1(OnBatteryChange, void(SchedulingParams::BatteryRequirements));
+  MOCK_METHOD1(OnBatteryChange, void(BatteryStatus));
 };
 
 class BatteryListenerTest : public testing::Test {
@@ -57,14 +59,13 @@ class BatteryListenerTest : public testing::Test {
 
 // Ensures observer methods are corrected called.
 TEST_F(BatteryListenerTest, NotifyObservers) {
+  InSequence s;
   listener_->Start();
-  EXPECT_CALL(*observer_.get(),
-              OnBatteryChange(BatteryRequirements::BATTERY_INSENSITIVE))
+  EXPECT_CALL(*observer_.get(), OnBatteryChange(BatteryStatus::NOT_CHARGING))
       .RetiresOnSaturation();
   CallBatteryChange(true);
 
-  EXPECT_CALL(*observer_.get(),
-              OnBatteryChange(BatteryRequirements::BATTERY_SENSITIVE))
+  EXPECT_CALL(*observer_.get(), OnBatteryChange(BatteryStatus::CHARGING))
       .RetiresOnSaturation();
   CallBatteryChange(false);
   listener_->Stop();

@@ -59,6 +59,10 @@ protodb::DownloadClient ProtoConversions::DownloadClientToProto(
       return protodb::DownloadClient::INVALID;
     case DownloadClient::TEST:
       return protodb::DownloadClient::TEST;
+    case DownloadClient::TEST_2:
+      return protodb::DownloadClient::TEST_2;
+    case DownloadClient::TEST_3:
+      return protodb::DownloadClient::TEST_3;
     case DownloadClient::OFFLINE_PAGE_PREFETCH:
       return protodb::DownloadClient::OFFLINE_PAGE_PREFETCH;
     case DownloadClient::BOUNDARY:
@@ -76,6 +80,10 @@ DownloadClient ProtoConversions::DownloadClientFromProto(
       return DownloadClient::INVALID;
     case protodb::DownloadClient::TEST:
       return DownloadClient::TEST;
+    case protodb::DownloadClient::TEST_2:
+      return DownloadClient::TEST_2;
+    case protodb::DownloadClient::TEST_3:
+      return DownloadClient::TEST_3;
     case protodb::DownloadClient::OFFLINE_PAGE_PREFETCH:
       return DownloadClient::OFFLINE_PAGE_PREFETCH;
     case protodb::DownloadClient::BOUNDARY:
@@ -244,7 +252,7 @@ Entry ProtoConversions::EntryFromProto(const protodb::Entry& proto) {
       SchedulingParamsFromProto(proto.scheduling_params());
   entry.request_params = RequestParamsFromProto(proto.request_params());
   entry.state = RequestStateFromProto(proto.state());
-
+  entry.create_time = base::Time::FromInternalValue(proto.create_time());
   return entry;
 }
 
@@ -257,6 +265,7 @@ protodb::Entry ProtoConversions::EntryToProto(const Entry& entry) {
                           proto.mutable_scheduling_params());
   RequestParamsToProto(entry.request_params, proto.mutable_request_params());
   proto.set_state(RequestStateToProto(entry.state));
+  proto.set_create_time(entry.create_time.ToInternalValue());
 
   return proto;
 }

@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "components/download/internal/model.h"
+#include "components/download/internal/scheduler/device_status.h"
 #include "components/download/public/clients.h"
 
 namespace download {
@@ -30,6 +32,10 @@ uint32_t GetNumberOfEntriesForClient(DownloadClient client,
 std::map<DownloadClient, std::vector<std::string>> MapEntriesToClients(
     const std::set<DownloadClient>& clients,
     const std::vector<Entry*>& entries);
+
+// Get the least strict scheduling criteria from |entries|, the criteria is used
+// to schedule platform background tasks.
+Criteria GetSchedulingCriteria(const Model::EntryList& entries);
 
 }  // namespace util
 }  // namespace download

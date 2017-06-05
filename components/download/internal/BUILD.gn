@@ -41,8 +41,13 @@ static_library("internal") {
     "proto_conversions.h",
     "scheduler/battery_listener.cc",
     "scheduler/battery_listener.h",
+    "scheduler/device_status.cc",
+    "scheduler/device_status.h",
     "scheduler/network_listener.cc",
     "scheduler/network_listener.h",
+    "scheduler/scheduler.h",
+    "scheduler/scheduler_impl.cc",
+    "scheduler/scheduler_impl.h",
     "startup_status.cc",
     "startup_status.h",
     "stats.cc",
@@ -73,6 +78,7 @@ source_set("unit_tests") {
     "proto_conversions_unittest.cc",
     "scheduler/battery_listener_unittest.cc",
     "scheduler/network_listener_unittest.cc",
+    "scheduler/scheduler_impl_unittest.cc",
   ]
 
   deps = [

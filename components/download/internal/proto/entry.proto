@@ -16,8 +16,10 @@ import "scheduling.proto";
 enum DownloadClient {
   INVALID = 0;
   TEST = 1;
-  OFFLINE_PAGE_PREFETCH = 2;
-  BOUNDARY = 3;
+  TEST_2 = 2;
+  TEST_3 = 3;
+  OFFLINE_PAGE_PREFETCH = 4;
+  BOUNDARY = 5;
 }
 
 // Stores the request params, internal state, metrics and metadata associated
@@ -42,6 +44,9 @@ message Entry {
   optional SchedulingParams scheduling_params = 3;
   optional RequestParams request_params = 4;
 
-  // Internal Tracking State.
+  // Internal Tracking States.
   optional State state = 5;
+
+  // Creation time of the entry, measured in milliseconds.
+  optional int64 create_time = 6;
 }

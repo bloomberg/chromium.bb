@@ -12,6 +12,7 @@ Entry::Entry(const Entry& other) = default;
 Entry::Entry(const DownloadParams& params)
     : client(params.client),
       guid(params.guid),
+      create_time(base::Time::Now()),
       scheduling_params(params.scheduling_params),
       request_params(params.request_params) {}
 
