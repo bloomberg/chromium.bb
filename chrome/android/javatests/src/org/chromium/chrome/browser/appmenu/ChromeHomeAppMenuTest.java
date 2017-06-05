@@ -4,34 +4,57 @@
 
 package org.chromium.chrome.browser.appmenu;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
+
 import android.support.test.filters.SmallTest;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.test.BottomSheetTestCaseBase;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.BottomSheetTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Tests for the app menu when Chrome Home is enabled.
  */
-public class ChromeHomeAppMenuTest extends BottomSheetTestCaseBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({BottomSheetTestRule.ENABLE_CHROME_HOME,
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        BottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
+public class ChromeHomeAppMenuTest {
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
     private AppMenuHandler mAppMenuHandler;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Rule
+    public BottomSheetTestRule mBottomSheetTestRule = new BottomSheetTestRule();
 
-        mAppMenuHandler = getActivity().getAppMenuHandler();
+    @Before
+    public void setUp() throws Exception {
+        mBottomSheetTestRule.startMainActivityOnBlankPage();
+        mAppMenuHandler = mBottomSheetTestRule.getActivity().getAppMenuHandler();
     }
 
+    @Test
     @SmallTest
     public void testPageMenu() throws IllegalArgumentException, InterruptedException {
-        loadUrl(TEST_URL);
+        mBottomSheetTestRule.loadUrl(TEST_URL);
 
         showAppMenuAndAssertMenuShown();
-        AppMenu appMenu = getActivity().getAppMenuHandler().getAppMenu();
+        AppMenu appMenu = mAppMenuHandler.getAppMenu();
         AppMenuIconRowFooter iconRow = (AppMenuIconRowFooter) appMenu.getPromptView();
 
         assertFalse(iconRow.getForwardButtonForTests().isEnabled());
@@ -46,7 +69,7 @@ public class ChromeHomeAppMenuTest extends BottomSheetTestCaseBase {
             @Override
             public void run() {
                 mAppMenuHandler.hideAppMenu();
-                getActivity().getActivityTab().goBack();
+                mBottomSheetTestRule.getActivity().getActivityTab().goBack();
             }
         });
 
@@ -55,17 +78,18 @@ public class ChromeHomeAppMenuTest extends BottomSheetTestCaseBase {
         assertTrue(iconRow.getForwardButtonForTests().isEnabled());
     }
 
+    @Test
     @SmallTest
     public void testTabSwitcherMenu() throws IllegalArgumentException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().getLayoutManager().showOverview(false);
+                mBottomSheetTestRule.getActivity().getLayoutManager().showOverview(false);
             }
         });
 
         showAppMenuAndAssertMenuShown();
-        AppMenu appMenu = getActivity().getAppMenuHandler().getAppMenu();
+        AppMenu appMenu = mAppMenuHandler.getAppMenu();
 
         assertNull(appMenu.getPromptView());
     }
