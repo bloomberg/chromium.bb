@@ -29,6 +29,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 
@@ -54,11 +55,11 @@ class MediaFragmentURIParser final {
     kWallClockTimeCode
   };
   void ParseTimeFragment();
-  bool ParseNPTFragment(const LChar*,
+  bool ParseNPTFragment(const char*,
                         unsigned length,
                         double& start_time,
                         double& end_time);
-  bool ParseNPTTime(const LChar*,
+  bool ParseNPTTime(const char*,
                     unsigned length,
                     unsigned& offset,
                     double& time);
@@ -67,7 +68,7 @@ class MediaFragmentURIParser final {
   TimeFormat time_format_;
   double start_time_;
   double end_time_;
-  Vector<std::pair<String, String>> fragments_;
+  Vector<std::pair<CString, CString>> fragments_;
 };
 
 }  // namespace blink
