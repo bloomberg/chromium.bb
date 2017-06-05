@@ -6782,7 +6782,7 @@ TEST_F(URLRequestTestHTTP, ExpectCTHeader) {
   context.set_network_delegate(&network_delegate);
   context.set_cert_verifier(&cert_verifier);
   context.set_cert_transparency_verifier(&ct_verifier);
-  context.set_ct_policy_enforcer(std::move(&ct_policy_enforcer));
+  context.set_ct_policy_enforcer(&ct_policy_enforcer);
   context.Init();
 
   // Now send a request to trigger the violation.
