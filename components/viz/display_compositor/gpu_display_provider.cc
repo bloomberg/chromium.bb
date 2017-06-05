@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/mus_display_provider.h"
+#include "components/viz/display_compositor/gpu_display_provider.h"
 
 #include <utility>
 
@@ -15,19 +15,19 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
+#include "components/viz/display_compositor/display_output_surface.h"
 #include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
-#include "services/ui/surfaces/display_output_surface.h"
 
 #if defined(USE_OZONE)
+#include "components/viz/display_compositor/display_output_surface_ozone.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/ui/surfaces/display_output_surface_ozone.h"
 #endif
 
-namespace ui {
+namespace viz {
 
-MusDisplayProvider::MusDisplayProvider(
+GpuDisplayProvider::GpuDisplayProvider(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
     std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory)
@@ -36,9 +36,9 @@ MusDisplayProvider::MusDisplayProvider(
       image_factory_(image_factory),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-MusDisplayProvider::~MusDisplayProvider() {}
+GpuDisplayProvider::~GpuDisplayProvider() = default;
 
-std::unique_ptr<cc::Display> MusDisplayProvider::CreateDisplay(
+std::unique_ptr<cc::Display> GpuDisplayProvider::CreateDisplay(
     const cc::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     std::unique_ptr<cc::BeginFrameSource>* begin_frame_source) {
@@ -86,10 +86,10 @@ std::unique_ptr<cc::Display> MusDisplayProvider::CreateDisplay(
   *begin_frame_source = std::move(synthetic_begin_frame_source);
 
   return base::MakeUnique<cc::Display>(
-      viz::HostSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
+      HostSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
       settings, frame_sink_id, begin_frame_source->get(),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
 }
 
-}  // namespace ui
+}  // namespace viz

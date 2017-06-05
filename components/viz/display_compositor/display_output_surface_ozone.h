@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_SURFACES_DISPLAY_OUTPUT_SURFACE_OZONE_H_
-#define SERVICES_UI_SURFACES_DISPLAY_OUTPUT_SURFACE_OZONE_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_DISPLAY_OUTPUT_SURFACE_OZONE_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_DISPLAY_OUTPUT_SURFACE_OZONE_H_
 
 #include <memory>
 
@@ -11,8 +11,8 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/in_process_context_provider.h"
 #include "cc/output/output_surface.h"
+#include "components/viz/display_compositor/display_output_surface.h"
 #include "components/viz/display_compositor/gl_helper.h"
-#include "services/ui/surfaces/display_output_surface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -22,15 +22,13 @@ namespace cc {
 class SyntheticBeginFrameSource;
 }
 
-namespace viz {
-class BufferQueue;
-}
-
 namespace gpu {
 class GpuMemoryBufferManager;
 }
 
-namespace ui {
+namespace viz {
+
+class BufferQueue;
 
 // An OutputSurface implementation that directly draws and swap to a GL
 // "surfaceless" surface (aka one backed by a buffer managed explicitly in
@@ -66,8 +64,8 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
   // DisplayOutputSurface:
   void DidReceiveSwapBuffersAck(gfx::SwapResult result) override;
 
-  viz::GLHelper gl_helper_;
-  std::unique_ptr<viz::BufferQueue> buffer_queue_;
+  GLHelper gl_helper_;
+  std::unique_ptr<BufferQueue> buffer_queue_;
 
   gfx::Size reshape_size_;
   gfx::Size swap_size_;
@@ -75,6 +73,6 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
   DISALLOW_COPY_AND_ASSIGN(DisplayOutputSurfaceOzone);
 };
 
-}  // namespace ui
+}  // namespace viz
 
-#endif  // SERVICES_UI_SURFACES_DISPLAY_OUTPUT_SURFACE_OZONE_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_DISPLAY_OUTPUT_SURFACE_OZONE_H_

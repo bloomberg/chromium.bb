@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_SURFACES_DISPLAY_OUTPUT_SURFACE_H_
-#define SERVICES_UI_SURFACES_DISPLAY_OUTPUT_SURFACE_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_DISPLAY_OUTPUT_SURFACE_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_DISPLAY_OUTPUT_SURFACE_H_
 
 #include <memory>
 
@@ -15,7 +15,7 @@ namespace cc {
 class SyntheticBeginFrameSource;
 }
 
-namespace ui {
+namespace viz {
 
 // An OutputSurface implementation that directly draws and
 // swaps to an actual GL surface.
@@ -55,7 +55,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
  private:
   // Called when a swap completion is signaled from ImageTransportSurface.
   void OnGpuSwapBuffersCompleted(
-      const std::vector<LatencyInfo>& latency_info,
+      const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac);
   void OnVSyncParametersUpdated(base::TimeTicks timebase,
@@ -63,7 +63,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
 
   cc::OutputSurfaceClient* client_ = nullptr;
   cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
-  LatencyTracker latency_tracker_;
+  ui::LatencyTracker latency_tracker_;
 
   bool set_draw_rectangle_for_frame_ = false;
   // True if the draw rectangle has been set at all since the last resize.
@@ -73,6 +73,6 @@ class DisplayOutputSurface : public cc::OutputSurface {
   base::WeakPtrFactory<DisplayOutputSurface> weak_ptr_factory_;
 };
 
-}  // namespace ui
+}  // namespace viz
 
-#endif  // SERVICES_UI_SURFACES_DISPLAY_OUTPUT_SURFACE_H_
+#endif  // COMPONENTS_VIZ_DISPLAY_COMPOSITOR_DISPLAY_OUTPUT_SURFACE_H_

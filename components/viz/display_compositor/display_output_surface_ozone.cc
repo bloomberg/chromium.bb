@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/display_output_surface_ozone.h"
+#include "components/viz/display_compositor/display_output_surface_ozone.h"
 
 #include <utility>
 
@@ -17,9 +17,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/display/types/display_snapshot.h"
 
-using viz::BufferQueue;
-
-namespace ui {
+namespace viz {
 
 DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
     scoped_refptr<cc::InProcessContextProvider> context_provider,
@@ -125,4 +123,4 @@ void DisplayOutputSurfaceOzone::DidReceiveSwapBuffersAck(
     client()->SetNeedsRedrawRect(gfx::Rect(swap_size_));
 }
 
-}  // namespace ui
+}  // namespace viz
