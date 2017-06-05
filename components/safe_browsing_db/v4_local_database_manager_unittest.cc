@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/safe_browsing_db/v4_local_database_manager.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -1099,6 +1100,47 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckDownloadUrlWithOneBlacklisted) {
   EXPECT_FALSE(client.on_check_download_urls_result_called_);
   WaitForTasksOnTaskRunner();
   EXPECT_TRUE(client.on_check_download_urls_result_called_);
+}
+
+TEST_F(V4LocalDatabaseManagerTest, DeleteUnusedStoreFileDoesNotExist) {
+  auto store_file_path = base_dir_.GetPath().AppendASCII("AnyIpMalware.store");
+  ASSERT_FALSE(base::PathExists(store_file_path));
+
+  // Reset the database manager so that DeleteUnusedStoreFiles is called.
+  ResetLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+  ASSERT_FALSE(base::PathExists(store_file_path));
+}
+
+TEST_F(V4LocalDatabaseManagerTest, DeleteUnusedStoreFileSuccess) {
+  auto store_file_path = base_dir_.GetPath().AppendASCII("AnyIpMalware.store");
+  ASSERT_FALSE(base::PathExists(store_file_path));
+
+  // Now write an empty file.
+  base::WriteFile(store_file_path, "", 0);
+  ASSERT_TRUE(base::PathExists(store_file_path));
+
+  // Reset the database manager so that DeleteUnusedStoreFiles is called.
+  ResetLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+  ASSERT_FALSE(base::PathExists(store_file_path));
+}
+
+TEST_F(V4LocalDatabaseManagerTest, DeleteUnusedStoreFileRandomFileNotDeleted) {
+  auto random_store_file_path = base_dir_.GetPath().AppendASCII("random.store");
+  ASSERT_FALSE(base::PathExists(random_store_file_path));
+
+  // Now write an empty file.
+  base::WriteFile(random_store_file_path, "", 0);
+  ASSERT_TRUE(base::PathExists(random_store_file_path));
+
+  // Reset the database manager so that DeleteUnusedStoreFiles is called.
+  ResetLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+  ASSERT_TRUE(base::PathExists(random_store_file_path));
+
+  // Cleanup
+  base::DeleteFile(random_store_file_path, false /* recursive */);
 }
 
 }  // namespace safe_browsing
