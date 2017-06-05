@@ -299,7 +299,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         if (currentBackground != null && currentBackground.getConstantState() != null) {
             Drawable backgroundClone =
                     currentBackground.getConstantState().newDrawable(footerView.getResources());
-            newBackground = new LayerDrawable(new Drawable[] {pulse, backgroundClone});
+            newBackground = new LayerDrawable(new Drawable[] {backgroundClone, pulse});
         }
 
         view.setBackground(newBackground);
