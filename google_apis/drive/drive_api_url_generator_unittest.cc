@@ -204,24 +204,39 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
   const std::string kV2FilesUrlPrefix =
       "https://www.example.com/drive/v2/files";
   const std::string kV2FilesUrlPrefixWithTeamDrives =
-      "https://www.example.com/drive/v2/files?"
-      "supportsTeamDrives=true&includeTeamDriveItems=true";
+      "https://www.example.com/drive/v2/files?supportsTeamDrives=true&"
+      "includeTeamDriveItems=true&corpora=default%2CallTeamDrives";
 
   for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
     EXPECT_EQ(kV2FilesUrlPrefix +
                   (kTestPatterns[i].expected_query.empty() ? "" : "?") +
                   kTestPatterns[i].expected_query,
-              url_generator_.GetFilesListUrl(kTestPatterns[i].max_results,
-                                             kTestPatterns[i].page_token,
-                                             kTestPatterns[i].q).spec());
+              url_generator_
+                  .GetFilesListUrl(kTestPatterns[i].max_results,
+                                   kTestPatterns[i].page_token,
+                                   FilesListCorpora::DEFAULT, std::string(),
+                                   kTestPatterns[i].q)
+                  .spec());
     EXPECT_EQ(kV2FilesUrlPrefixWithTeamDrives +
                   (kTestPatterns[i].expected_query.empty() ? "" : "&") +
                   kTestPatterns[i].expected_query,
-              team_drives_url_generator_.GetFilesListUrl(
-                  kTestPatterns[i].max_results,
-                  kTestPatterns[i].page_token,
-                  kTestPatterns[i].q).spec());
+              team_drives_url_generator_
+                  .GetFilesListUrl(kTestPatterns[i].max_results,
+                                   kTestPatterns[i].page_token,
+                                   FilesListCorpora::ALL_TEAM_DRIVES,
+                                   std::string(), kTestPatterns[i].q)
+                  .spec());
   }
+
+  EXPECT_EQ(
+      "https://www.example.com/drive/v2/files?supportsTeamDrives=true&"
+      "includeTeamDriveItems=true&corpora=teamDrive&"
+      "teamDriveId=TheTeamDriveId&q=query",
+      team_drives_url_generator_
+          .GetFilesListUrl(100, std::string() /* page_token */,
+                           FilesListCorpora::TEAM_DRIVE, "TheTeamDriveId",
+                           "query")
+          .spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFilesDeleteUrl) {

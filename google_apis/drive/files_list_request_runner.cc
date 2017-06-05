@@ -29,6 +29,8 @@ FilesListRequestRunner::~FilesListRequestRunner() {
 
 CancelCallback FilesListRequestRunner::CreateAndStartWithSizeBackoff(
     int max_results,
+    FilesListCorpora corpora,
+    const std::string& team_drive_id,
     const std::string& q,
     const std::string& fields,
     const FileListCallback& callback) {
@@ -39,8 +41,9 @@ CancelCallback FilesListRequestRunner::CreateAndStartWithSizeBackoff(
       base::MakeUnique<drive::FilesListRequest>(
           request_sender_, url_generator_,
           base::Bind(&FilesListRequestRunner::OnCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), max_results, q, fields,
-                     callback, base::Owned(cancel_callback)));
+                     weak_ptr_factory_.GetWeakPtr(), max_results, corpora,
+                     team_drive_id, q, fields, callback,
+                     base::Owned(cancel_callback)));
   request->set_max_results(max_results);
   request->set_q(q);
   request->set_fields(fields);
@@ -61,6 +64,8 @@ void FilesListRequestRunner::OnCancel(base::Closure* cancel_callback) {
 }
 
 void FilesListRequestRunner::OnCompleted(int max_results,
+                                         FilesListCorpora corpora,
+                                         const std::string& team_drive_id,
                                          const std::string& q,
                                          const std::string& fields,
                                          const FileListCallback& callback,
@@ -74,7 +79,8 @@ void FilesListRequestRunner::OnCompleted(int max_results,
       "Drive.FilesListRequestRunner.ApiErrorCode", error);
 
   if (error == google_apis::DRIVE_RESPONSE_TOO_LARGE && max_results > 1) {
-    CreateAndStartWithSizeBackoff(max_results / 2, q, fields, callback);
+    CreateAndStartWithSizeBackoff(max_results / 2, corpora, team_drive_id, q,
+                                  fields, callback);
     return;
   }
 

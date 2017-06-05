@@ -31,6 +31,8 @@ class FilesListRequestRunner {
   // retry in case of DRIVE_RESPONSE_TOO_LARGE error code.
   CancelCallback CreateAndStartWithSizeBackoff(
       int max_results,
+      FilesListCorpora corpora,
+      const std::string& team_drive_id,
       const std::string& q,
       const std::string& fields,
       const FileListCallback& callback);
@@ -49,6 +51,8 @@ class FilesListRequestRunner {
   // error. In case of DRIVE_RESPONSE_TOO_LARGE it will retry the request with
   // half of the requests.
   void OnCompleted(int max_results,
+                   FilesListCorpora corpora,
+                   const std::string& team_drive_id,
                    const std::string& q,
                    const std::string& fields,
                    const FileListCallback& callback,
