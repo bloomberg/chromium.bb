@@ -12,7 +12,9 @@
 #include "base/test/test_suite.h"
 
 namespace base {
-class MessageLoop;
+namespace test {
+class ScopedTaskEnvironment;
+}
 }
 
 namespace ui {
@@ -29,7 +31,7 @@ class CompositorTestSuite : public base::TestSuite {
   void Shutdown() override;
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorTestSuite);
 };

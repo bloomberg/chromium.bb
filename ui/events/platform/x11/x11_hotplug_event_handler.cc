@@ -23,8 +23,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
 #include "ui/events/devices/device_util_linux.h"
@@ -481,14 +481,14 @@ void X11HotplugEventHandler::OnHotplugEvent() {
   callbacks.touchpad_callback = base::Bind(&OnTouchpadDevices);
   callbacks.hotplug_finished_callback = base::Bind(&OnHotplugFinished);
 
-  // Parsing the device information may block, so delegate the operation to a
-  // worker thread. Once the device information is extracted the parsed devices
-  // will be returned via the callbacks.
-  base::WorkerPool::PostTask(
+  // Parse the device information asynchronously since this operation may block.
+  // Once the device information is extracted the parsed devices will be
+  // returned via the callbacks.
+  base::PostTaskWithTraits(
       FROM_HERE,
-      base::Bind(&HandleHotplugEventInWorker, device_infos, display_state,
-                 base::ThreadTaskRunnerHandle::Get(), callbacks),
-      true /* task_is_slow */);
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&HandleHotplugEventInWorker, device_infos, display_state,
+                     base::ThreadTaskRunnerHandle::Get(), callbacks));
 }
 
 }  // namespace ui
