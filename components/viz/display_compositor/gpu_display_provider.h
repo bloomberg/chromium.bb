@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_SURFACES_MUS_DISPLAY_PROVIDER_H_
-#define SERVICES_UI_SURFACES_MUS_DISPLAY_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GPU_DISPLAY_PROVIDER_H_
+#define COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GPU_DISPLAY_PROVIDER_H_
 
 #include <memory>
 
@@ -11,7 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "components/viz/frame_sinks/display_provider.h"
+#include "components/viz/display_compositor/display_provider.h"
+#include "components/viz/viz_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
@@ -20,18 +21,19 @@ namespace gpu {
 class ImageFactory;
 }
 
-namespace ui {
+namespace viz {
 
-// Mus implementation of DisplayProvider. This will be created in mus-gpu.
-class MusDisplayProvider : public NON_EXPORTED_BASE(viz::DisplayProvider) {
+// In-process implementation of DisplayProvider.
+class VIZ_EXPORT GpuDisplayProvider
+    : public NON_EXPORTED_BASE(DisplayProvider) {
  public:
-  MusDisplayProvider(
+  GpuDisplayProvider(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
       std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory);
-  ~MusDisplayProvider() override;
+  ~GpuDisplayProvider() override;
 
-  // viz::DisplayProvider:
+  // DisplayProvider:
   std::unique_ptr<cc::Display> CreateDisplay(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
@@ -44,9 +46,9 @@ class MusDisplayProvider : public NON_EXPORTED_BASE(viz::DisplayProvider) {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(MusDisplayProvider);
+  DISALLOW_COPY_AND_ASSIGN(GpuDisplayProvider);
 };
 
-}  // namespace ui
+}  // namespace viz
 
-#endif  //  SERVICES_UI_SURFACES_MUS_DISPLAY_PROVIDER_H_
+#endif  //  COMPONENTS_VIZ_DISPLAY_COMPOSITOR_GPU_DISPLAY_PROVIDER_H_

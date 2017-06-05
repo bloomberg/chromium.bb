@@ -21,7 +21,7 @@ source_set("gpu") {
 
   deps = [
     "//cc",
-    "//components/viz/frame_sinks",
+    "//components/viz",
     "//gpu/ipc:command_buffer",
     "//gpu/ipc/common",
     "//gpu/ipc/service",
@@ -32,7 +32,6 @@ source_set("gpu") {
     "//services/ui/common:server_gpu",
     "//services/ui/gpu/interfaces",
     "//services/ui/public/interfaces",
-    "//services/ui/surfaces",
     "//ui/gfx:memory_buffer",
     "//ui/gl/init",
   ]

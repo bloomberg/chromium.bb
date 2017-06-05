@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/display_output_surface.h"
+#include "components/viz/display_compositor/display_output_surface.h"
 
 #include <stdint.h>
 
@@ -16,7 +16,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
-namespace ui {
+namespace viz {
 
 DisplayOutputSurface::DisplayOutputSurface(
     scoped_refptr<cc::InProcessContextProvider> context_provider,
@@ -127,7 +127,7 @@ void DisplayOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
 }
 
 void DisplayOutputSurface::OnGpuSwapBuffersCompleted(
-    const std::vector<LatencyInfo>& latency_info,
+    const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
   for (const auto& latency : latency_info) {
@@ -145,4 +145,4 @@ void DisplayOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
       interval.is_zero() ? cc::BeginFrameArgs::DefaultInterval() : interval);
 }
 
-}  // namespace ui
+}  // namespace viz

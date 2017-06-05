@@ -2,11 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-component("frame_sinks") {
-  defines = [ "VIZ_IMPLEMENTATION" ]
+group("frame_sinks") {
+  if (is_component_build) {
+    public_deps = [
+      "//components/viz",
+    ]
+  } else {
+    public_deps = [
+      ":frame_sinks_sources",
+    ]
+  }
+}
 
+source_set("frame_sinks_sources") {
   sources = [
-    "display_provider.h",
     "frame_eviction_manager.cc",
     "frame_eviction_manager.h",
     "frame_evictor.cc",
@@ -20,14 +29,16 @@ component("frame_sinks") {
     "mojo_frame_sink_manager.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//cc",
     "//cc/ipc:interfaces",
     "//cc/surfaces",
-    "//components/viz/display_compositor",
+    "//components/viz/display_compositor:display_compositor_sources",
     "//gpu/ipc:command_buffer",
   ]
+
+  configs += [ "//components/viz:viz_implementation" ]
 
   if (is_win) {
     cflags = [ "/wd4267" ]  # conversion from 'size_t' to 'int' on x64 (crbug.com/633312)

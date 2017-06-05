@@ -5,24 +5,41 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-component("display_compositor") {
+group("display_compositor") {
+  if (is_component_build) {
+    public_deps = [
+      "//components/viz",
+    ]
+  } else {
+    public_deps = [
+      ":display_compositor_sources",
+    ]
+  }
+}
+
+source_set("display_compositor_sources") {
   sources = [
     "buffer_queue.cc",
     "buffer_queue.h",
     "compositor_overlay_candidate_validator.h",
+    "display_output_surface.cc",
+    "display_output_surface.h",
     "gl_helper.cc",
     "gl_helper.h",
     "gl_helper_readback_support.cc",
     "gl_helper_readback_support.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
+    "gpu_display_provider.cc",
+    "gpu_display_provider.h",
     "host_shared_bitmap_manager.cc",
     "host_shared_bitmap_manager.h",
   ]
 
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  defines = [ "VIZ_IMPLEMENTATION" ]
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//components/viz:viz_implementation",
+  ]
 
   deps = [
     "//base",
@@ -32,6 +49,7 @@ component("display_compositor") {
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
+    "//gpu/ipc:command_buffer",
     "//gpu/ipc/common:surface_handle_type",
     "//skia",
     "//ui/display/types",
@@ -56,6 +74,8 @@ component("display_compositor") {
     sources += [
       "compositor_overlay_candidate_validator_ozone.cc",
       "compositor_overlay_candidate_validator_ozone.h",
+      "display_output_surface_ozone.cc",
+      "display_output_surface_ozone.h",
     ]
 
     deps += [ "//ui/ozone" ]
