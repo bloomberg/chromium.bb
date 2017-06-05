@@ -24,12 +24,14 @@
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/frame_sink_provider_impl.h"
+#include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context_impl.h"
 #include "content/browser/renderer_host/offscreen_canvas_provider_impl.h"
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
 #include "content/common/associated_interface_registry_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
+#include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
@@ -60,7 +62,6 @@ class SharedPersistentMemoryAllocator;
 
 namespace content {
 class AudioInputRendererHost;
-class AudioRendererHost;
 class ChildConnection;
 class GpuClient;
 class IndexedDBDispatcherHost;
@@ -206,8 +207,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
 
-  scoped_refptr<AudioRendererHost> audio_renderer_host() const;
-
   // Call this function when it is evident that the child process is actively
   // performing some operation, for example if we just received an IPC message.
   void mark_child_process_activity_time() {
@@ -295,6 +294,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
   void RecomputeAndUpdateWebKitPreferences();
+
+  RendererAudioOutputStreamFactoryContext*
+  GetRendererAudioOutputStreamFactoryContext() override;
 
   // Called when an audio stream is added or removed and used to determine if
   // the process should be backgrounded or not.
@@ -620,7 +622,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // through RenderProcessHostObserver::RenderProcessExited.
   bool within_process_died_observer_;
 
-  scoped_refptr<AudioRendererHost> audio_renderer_host_;
+  std::unique_ptr<RendererAudioOutputStreamFactoryContextImpl,
+                  BrowserThread::DeleteOnIOThread>
+      audio_output_stream_factory_context_;
 
   scoped_refptr<AudioInputRendererHost> audio_input_renderer_host_;
 

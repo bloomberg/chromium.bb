@@ -36,6 +36,42 @@ url::Origin GetOrigin(int process_id, int frame_id) {
 
 }  // namespace
 
+// static
+std::unique_ptr<RenderFrameAudioOutputStreamFactoryHandle,
+                BrowserThread::DeleteOnIOThread>
+RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
+    RendererAudioOutputStreamFactoryContext* context,
+    int frame_id,
+    mojom::RendererAudioOutputStreamFactoryRequest request) {
+  std::unique_ptr<RenderFrameAudioOutputStreamFactoryHandle,
+                  BrowserThread::DeleteOnIOThread>
+      handle(new RenderFrameAudioOutputStreamFactoryHandle(context, frame_id));
+  // Unretained is safe since |*handle| must be posted to the IO thread prior to
+  // deletion.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&RenderFrameAudioOutputStreamFactoryHandle::Init,
+                     base::Unretained(handle.get()), std::move(request)));
+  return handle;
+}
+
+RenderFrameAudioOutputStreamFactoryHandle::
+    ~RenderFrameAudioOutputStreamFactoryHandle() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
+
+RenderFrameAudioOutputStreamFactoryHandle::
+    RenderFrameAudioOutputStreamFactoryHandle(
+        RendererAudioOutputStreamFactoryContext* context,
+        int frame_id)
+    : impl_(frame_id, context), binding_(&impl_) {}
+
+void RenderFrameAudioOutputStreamFactoryHandle::Init(
+    mojom::RendererAudioOutputStreamFactoryRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  binding_.Bind(std::move(request));
+}
+
 RenderFrameAudioOutputStreamFactory::RenderFrameAudioOutputStreamFactory(
     int render_frame_id,
     RendererAudioOutputStreamFactoryContext* context)
@@ -43,6 +79,9 @@ RenderFrameAudioOutputStreamFactory::RenderFrameAudioOutputStreamFactory(
       context_(context),
       weak_ptr_factory_(this) {
   DCHECK(context_);
+  // No thread-hostile state has been initialized yet, so we don't have to bind
+  // to this specific thread.
+  thread_checker_.DetachFromThread();
 }
 
 RenderFrameAudioOutputStreamFactory::~RenderFrameAudioOutputStreamFactory() {

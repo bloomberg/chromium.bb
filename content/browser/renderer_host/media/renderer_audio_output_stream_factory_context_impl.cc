@@ -13,7 +13,6 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "media/audio/audio_system.h"
 
@@ -39,16 +38,6 @@ RendererAudioOutputStreamFactoryContextImpl::
 RendererAudioOutputStreamFactoryContextImpl::
     ~RendererAudioOutputStreamFactoryContextImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-}
-
-void RendererAudioOutputStreamFactoryContextImpl::CreateFactory(
-    int frame_host_id,
-    mojo::InterfaceRequest<mojom::RendererAudioOutputStreamFactory> request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  factories_.AddBinding(base::MakeUnique<RenderFrameAudioOutputStreamFactory>(
-                            frame_host_id, this),
-                        std::move(request));
 }
 
 int RendererAudioOutputStreamFactoryContextImpl::GetRenderProcessId() const {
@@ -96,6 +85,12 @@ RendererAudioOutputStreamFactoryContextImpl::CreateDelegate(
       handler, audio_manager_, std::move(audio_log),
       AudioMirroringManager::GetInstance(), media_observer, stream_id,
       render_frame_id, render_process_id_, params, unique_device_id);
+}
+
+// static
+bool RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories() {
+  // TODO(maxmorin): Introduce a feature for this.
+  return false;
 }
 
 }  // namespace content

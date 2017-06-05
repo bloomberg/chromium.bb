@@ -308,15 +308,18 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
     media_stream_manager_ =
         base::MakeUnique<MediaStreamManager>(audio_system_.get());
   }
+
   ~RendererAudioOutputStreamFactoryIntegrationTest() override {
     audio_manager_->Shutdown();
   }
 
-  void CreateAndBindFactory(AudioOutputStreamFactoryRequest request) {
+  UniqueAudioOutputStreamFactoryPtr CreateAndBindFactory(
+      AudioOutputStreamFactoryRequest request) {
     factory_context_.reset(new RendererAudioOutputStreamFactoryContextImpl(
         kRenderProcessId, audio_system_.get(), audio_manager_.get(),
         media_stream_manager_.get(), kSalt));
-    factory_context_->CreateFactory(kRenderFrameId, std::move(request));
+    return RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
+        factory_context_.get(), kRenderFrameId, std::move(request));
   }
 
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
@@ -342,11 +345,7 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
       .WillOnce(Return(stream));
 
   AudioOutputStreamFactoryPtr factory_ptr;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&RendererAudioOutputStreamFactoryIntegrationTest::
-                         CreateAndBindFactory,
-                     base::Unretained(this), mojo::MakeRequest(&factory_ptr)));
+  auto factory_handle = CreateAndBindFactory(mojo::MakeRequest(&factory_ptr));
 
   AudioOutputStreamProviderPtr provider_ptr;
   base::RunLoop loop;
