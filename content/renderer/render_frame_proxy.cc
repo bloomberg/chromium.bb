@@ -46,8 +46,8 @@ typedef std::map<int, RenderFrameProxy*> RoutingIDProxyMap;
 static base::LazyInstance<RoutingIDProxyMap>::DestructorAtExit
     g_routing_id_proxy_map = LAZY_INSTANCE_INITIALIZER;
 
-// Facilitates lookup of RenderFrameProxy by WebFrame.
-typedef std::map<blink::WebFrame*, RenderFrameProxy*> FrameMap;
+// Facilitates lookup of RenderFrameProxy by WebRemoteFrame.
+typedef std::map<blink::WebRemoteFrame*, RenderFrameProxy*> FrameMap;
 base::LazyInstance<FrameMap>::DestructorAtExit g_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -77,7 +77,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
        frame_to_replace->GetWebFrame()->Parent()->IsWebLocalFrame())
           ? frame_to_replace->GetRenderWidget()
           : RenderFrameProxy::FromWebFrame(
-                frame_to_replace->GetWebFrame()->Parent())
+                frame_to_replace->GetWebFrame()->Parent()->ToWebRemoteFrame())
                 ->render_widget();
   proxy->Init(web_frame, frame_to_replace->render_view(), widget);
   return proxy.release();
@@ -157,13 +157,21 @@ RenderFrameProxy* RenderFrameProxy::FromRoutingID(int32_t routing_id) {
 }
 
 // static
-RenderFrameProxy* RenderFrameProxy::FromWebFrame(blink::WebFrame* web_frame) {
+RenderFrameProxy* RenderFrameProxy::FromWebFrame(
+    blink::WebRemoteFrame* web_frame) {
+  // TODO(dcheng): Turn this into a DCHECK() if it doesn't crash on canary.
+  CHECK(web_frame);
   FrameMap::iterator iter = g_frame_map.Get().find(web_frame);
   if (iter != g_frame_map.Get().end()) {
     RenderFrameProxy* proxy = iter->second;
     DCHECK_EQ(web_frame, proxy->web_frame());
     return proxy;
   }
+  // Reaching this is not expected: this implies that the |web_frame| in
+  // question is not managed by the content API, or the associated
+  // RenderFrameProxy is already deleted--in which case, it's not safe to touch
+  // |web_frame|.
+  NOTREACHED();
   return NULL;
 }
 
