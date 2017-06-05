@@ -94,8 +94,9 @@ class CONTENT_EXPORT RenderFrameProxy
   // Returns the RenderFrameProxy for the given routing ID.
   static RenderFrameProxy* FromRoutingID(int routing_id);
 
-  // Returns the RenderFrameProxy given a WebFrame.
-  static RenderFrameProxy* FromWebFrame(blink::WebFrame* web_frame);
+  // Returns the RenderFrameProxy given a WebRemoteFrame. |web_frame| must not
+  // be null, nor will this method return null.
+  static RenderFrameProxy* FromWebFrame(blink::WebRemoteFrame* web_frame);
 
   ~RenderFrameProxy() override;
 
