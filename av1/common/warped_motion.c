@@ -954,7 +954,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                               int subsampling_y, int bd, int comp_avg,
                               int16_t alpha, int16_t beta, int16_t gamma,
                               int16_t delta) {
-  uint32_t tmp[15 * 8];
+  int32_t tmp[15 * 8];
   int i, j, k, l, m;
 
   for (i = p_row; i < p_row + p_height; i += 8) {
@@ -1250,7 +1250,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                        int subsampling_x, int subsampling_y, int comp_avg,
                        int16_t alpha, int16_t beta, int16_t gamma,
                        int16_t delta) {
-  uint16_t tmp[15 * 8];
+  int32_t tmp[15 * 8];
   int i, j, k, l, m;
   const int bd = 8;
 
