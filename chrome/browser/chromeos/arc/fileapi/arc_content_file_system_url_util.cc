@@ -47,9 +47,13 @@ GURL ExternalFileUrlToArcUrl(const GURL& external_file_url) {
 }
 
 GURL FileSystemUrlToArcUrl(const storage::FileSystemURL& url) {
+  return PathToArcUrl(url.path());
+}
+
+GURL PathToArcUrl(const base::FilePath& path) {
   base::FilePath path_after_mount_point;
   if (!base::FilePath(kContentFileSystemMountPointPath)
-           .AppendRelativePath(url.path(), &path_after_mount_point)) {
+           .AppendRelativePath(path, &path_after_mount_point)) {
     return GURL();
   }
   return UnescapeArcUrl(path_after_mount_point.AsUTF8Unsafe());

@@ -40,6 +40,12 @@ GURL ExternalFileUrlToArcUrl(const GURL& external_file_url);
 // Converts a FileSystemURL to a URL which can be used within the ARC container.
 GURL FileSystemUrlToArcUrl(const storage::FileSystemURL& url);
 
+// Converts a path which was returned by FileSystemURL::path() (not to be
+// confused with virtual_path()) to a URL which can be used within the ARC
+// container. If the given path is not under the ARC content file system mount
+// point, returns an empty GURL.
+GURL PathToArcUrl(const base::FilePath& path);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_CONTENT_FILE_SYSTEM_URL_UTIL_H_

@@ -78,4 +78,13 @@ TEST(ArcContentFileSystemUrlUtilTest, FileSystemUrlToArcUrl) {
   EXPECT_EQ(arc_url, FileSystemUrlToArcUrl(file_system_url));
 }
 
+TEST(ArcContentFileSystemUrlUtilTest, PathToArcUrl) {
+  GURL arc_url("content://org.chromium.foo/bar/baz");
+
+  base::FilePath path =
+      base::FilePath(kContentFileSystemMountPointPath)
+          .Append(base::FilePath::FromUTF8Unsafe(EscapeArcUrl(arc_url)));
+  EXPECT_EQ(arc_url, PathToArcUrl(path));
+}
+
 }  // namespace arc
