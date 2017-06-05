@@ -15,16 +15,15 @@
 
 #include "aom/internal/aom_codec_internal.h"
 
-void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm, int subsampling_x,
-              int subsampling_y) {
-  if (!((subsampling_x == 0 && subsampling_y == 0) ||
-        (subsampling_x == 1 && subsampling_y == 1))) {
+void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
+  if (!((cm->subsampling_x == 0 && cm->subsampling_y == 0) ||
+        (cm->subsampling_x == 1 && cm->subsampling_y == 1))) {
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Only 4:4:4 and 4:2:0 are currently supported by CfL");
   }
   memset(&cfl->y_pix, 0, sizeof(uint8_t) * MAX_SB_SQUARE);
-  cfl->subsampling_x = subsampling_x;
-  cfl->subsampling_y = subsampling_y;
+  cfl->subsampling_x = cm->subsampling_x;
+  cfl->subsampling_y = cm->subsampling_y;
 }
 
 // CfL computes its own block-level DC_PRED. This is required to compute both

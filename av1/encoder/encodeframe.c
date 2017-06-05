@@ -4512,8 +4512,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 #if CONFIG_CFL
   MACROBLOCKD *const xd = &td->mb.e_mbd;
   xd->cfl = &this_tile->cfl;
-  cfl_init(xd->cfl, cm, xd->plane[AOM_PLANE_U].subsampling_x,
-           xd->plane[AOM_PLANE_U].subsampling_y);
+  cfl_init(xd->cfl, cm);
 #endif
 
 #if CONFIG_PVQ

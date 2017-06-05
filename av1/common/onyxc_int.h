@@ -532,8 +532,7 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
 #if CONFIG_CFL
     xd->cfl = cfl;
-    cfl_init(cfl, cm, xd->plane[AOM_PLANE_U].subsampling_x,
-             xd->plane[AOM_PLANE_U].subsampling_y);
+    cfl_init(cfl, cm);
 #endif
     xd->above_context[i] = cm->above_context[i];
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {

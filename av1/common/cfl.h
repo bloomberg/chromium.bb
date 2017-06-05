@@ -57,8 +57,7 @@ static const int cfl_alpha_codes[CFL_ALPHABET_SIZE][CFL_PRED_PLANES] = {
   { 0, 3 }, { 5, 1 }, { 1, 5 }, { 0, 5 }
 };
 
-void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm, int subsampling_x,
-              int subsampling_y);
+void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
 
 void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size);
 
