@@ -5,6 +5,8 @@ include_rules = [
   "+extensions/shell/common",
   "+extensions/shell/test",
 
+  "+content/shell/common",
+
   # Do not add dependencies on Chrome. Talk to OWNERS about how to refactor
   # the code you need to a shared location.
   "-chrome",
