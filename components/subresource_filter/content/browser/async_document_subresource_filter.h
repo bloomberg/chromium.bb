@@ -16,6 +16,7 @@
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
+#include "components/subresource_filter/core/common/load_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

@@ -25,6 +25,7 @@ static_library("common") {
     "fuzzy_pattern_matching.h",
     "indexed_ruleset.cc",
     "indexed_ruleset.h",
+    "load_policy.h",
     "memory_mapped_ruleset.cc",
     "memory_mapped_ruleset.h",
     "ngram_extractor.h",

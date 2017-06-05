@@ -39,4 +39,11 @@ void SubresourceFilterObserverManager::NotifyPageActivationComputed(
   }
 }
 
+void SubresourceFilterObserverManager::NotifySubframeNavigationEvaluated(
+    content::NavigationHandle* navigation_handle,
+    LoadPolicy load_policy) {
+  for (auto& observer : observers_)
+    observer.OnSubframeNavigationEvaluated(navigation_handle, load_policy);
+}
+
 }  // namespace subresource_filter
