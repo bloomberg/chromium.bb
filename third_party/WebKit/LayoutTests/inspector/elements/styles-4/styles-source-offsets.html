@@ -40,16 +40,13 @@ function test()
 
     InspectorTest.selectNodeWithId("mainBody", step1);
 
-    function step1(node)
+    async function step1(node)
     {
-        InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, onMatchedStyles)
-    }
+        var response = await InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
 
-    function onMatchedStyles(error, inlineStyle, attributeStyle, matchedCSSRules)
-    {
-        for (var i = 0; i < matchedCSSRules.length; ++i)
-            dumpStyleData(matchedCSSRules[i].rule);
-        dumpStyleData(inlineStyle);
+        for (var rule of response.matchedCSSRules)
+            dumpStyleData(rule.rule);
+        dumpStyleData(response.inlineStyle);
         InspectorTest.completeTest();
     }
 }

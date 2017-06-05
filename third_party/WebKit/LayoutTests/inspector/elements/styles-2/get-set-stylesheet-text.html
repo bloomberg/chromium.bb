@@ -66,21 +66,21 @@ function test()
 
     function testNewElementStyles()
     {
-        function callback(error, inlineStyle, attributeStyle, matchedCSSRules)
+        function callback(response)
         {
-            if (error) {
-                InspectorTest.addResult("error: " + error);
+            if (response[Protocol.Error]) {
+                InspectorTest.addResult("error: " + response[Protocol.Error]);
                 return;
             }
 
             InspectorTest.addResult("=== Matched rules for h1 after setText() ===");
-            dumpMatchesArray(matchedCSSRules);
+            dumpMatchesArray(response.matchedCSSRules);
             InspectorTest.completeTest();
         }
 
         function nodeCallback(node)
         {
-            InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, callback);
+            InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id}).then(callback);
         }
 
         InspectorTest.selectNodeWithId("inspected", nodeCallback);

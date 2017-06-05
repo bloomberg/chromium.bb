@@ -38,30 +38,21 @@ function test()
 
     InspectorTest.selectNodeWithId("element", step1);
 
-    function step1(node)
+    async function step1(node)
     {
-        InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, onCSSAnimations.bind(null, node.id));
-    }
+        var response = await InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
 
-    function onCSSAnimations(nodeId, error, inlinePayload, attributesPayload, matchedPayload, pseudoPayload, inheritedPayload, animationsPayload)
-    {
-        for (var i = 0; i < animationsPayload.length; ++i)
-            dumpRule(animationsPayload[i]);
+        for (var animation of response.cssKeyframesRules)
+            dumpRule(animation);
 
         InspectorTest.addResult("\n>> Modifying keyframe rule");
-        var style = new SDK.CSSStyleDeclaration(InspectorTest.cssModel, null, animationsPayload[1].keyframes[0].style, SDK.CSSStyleDeclaration.Type.Regular);
-        style.setText("width: 123px").then(onStyleEdited);
+        var style = new SDK.CSSStyleDeclaration(InspectorTest.cssModel, null, response.cssKeyframesRules[1].keyframes[0].style, SDK.CSSStyleDeclaration.Type.Regular);
+        await style.setText("width: 123px");
 
-        function onStyleEdited()
-        {
-            InspectorTest.CSSAgent.getMatchedStylesForNode(nodeId, onModifiedAnimations);
-        }
-    }
+        response = await InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
 
-    function onModifiedAnimations(error, inlinePayload, attributesPayload, matchedPayload, pseudoPayload, inheritedPayload, animationsPayload)
-    {
-        for (var i = 0; i < animationsPayload.length; ++i)
-            dumpRule(animationsPayload[i]);
+        for (var animation of response.cssKeyframesRules)
+            dumpRule(animation);
         InspectorTest.completeTest();
     }
 }
