@@ -54,16 +54,17 @@ class CORE_EXPORT TextMatchMarker final : public DocumentMarker {
 
   bool IsRendered() const;
   bool Contains(const LayoutPoint&) const;
-  void SetRenderedRect(const LayoutRect&);
-  const LayoutRect& RenderedRect() const;
-  void NullifyRenderedRect();
+  void SetLayoutRect(const LayoutRect&);
+  const LayoutRect& GetLayoutRect() const;
+  void NullifyLayoutRect();
+
   void Invalidate();
   bool IsValid() const;
 
  private:
   MatchStatus match_status_;
   LayoutStatus layout_status_ = LayoutStatus::kInvalid;
-  LayoutRect rendered_rect_;
+  LayoutRect layout_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(TextMatchMarker);
 };

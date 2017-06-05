@@ -404,7 +404,7 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
   return result;
 }
 
-Vector<IntRect> DocumentMarkerController::RenderedRectsForTextMatchMarkers() {
+Vector<IntRect> DocumentMarkerController::LayoutRectsForTextMatchMarkers() {
   DCHECK(!document_->View()->NeedsLayout());
   DCHECK(!document_->NeedsLayoutTreeUpdate());
 
@@ -427,7 +427,7 @@ Vector<IntRect> DocumentMarkerController::RenderedRectsForTextMatchMarkers() {
         ListForType(markers, DocumentMarker::kTextMatch);
     if (!list)
       continue;
-    result.AppendVector(ToTextMatchMarkerListImpl(list)->RenderedRects(node));
+    result.AppendVector(ToTextMatchMarkerListImpl(list)->LayoutRects(node));
   }
 
   return result;

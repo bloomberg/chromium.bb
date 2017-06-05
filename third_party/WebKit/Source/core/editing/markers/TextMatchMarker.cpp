@@ -29,22 +29,22 @@ bool TextMatchMarker::IsRendered() const {
 
 bool TextMatchMarker::Contains(const LayoutPoint& point) const {
   DCHECK_EQ(layout_status_, LayoutStatus::kValidNotNull);
-  return rendered_rect_.Contains(point);
+  return layout_rect_.Contains(point);
 }
 
-void TextMatchMarker::SetRenderedRect(const LayoutRect& rect) {
-  if (layout_status_ == LayoutStatus::kValidNotNull && rect == rendered_rect_)
+void TextMatchMarker::SetLayoutRect(const LayoutRect& rect) {
+  if (layout_status_ == LayoutStatus::kValidNotNull && rect == layout_rect_)
     return;
   layout_status_ = LayoutStatus::kValidNotNull;
-  rendered_rect_ = rect;
+  layout_rect_ = rect;
 }
 
-const LayoutRect& TextMatchMarker::RenderedRect() const {
+const LayoutRect& TextMatchMarker::GetLayoutRect() const {
   DCHECK_EQ(layout_status_, LayoutStatus::kValidNotNull);
-  return rendered_rect_;
+  return layout_rect_;
 }
 
-void TextMatchMarker::NullifyRenderedRect() {
+void TextMatchMarker::NullifyLayoutRect() {
   layout_status_ = LayoutStatus::kValidNull;
   // Now |rendered_rect_| can not be accessed until |SetRenderedRect| is
   // called.
