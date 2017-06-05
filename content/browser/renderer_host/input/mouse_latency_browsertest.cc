@@ -37,6 +37,8 @@ const char kMouseUpDownDataURL[] =
     "<style>"
     "body {"
     "  height:3000px;"
+    // Prevent text selection logic from triggering, as it makes the test flaky.
+    "  user-select: none;"
     "}"
     "</style>"
     "</head>"
