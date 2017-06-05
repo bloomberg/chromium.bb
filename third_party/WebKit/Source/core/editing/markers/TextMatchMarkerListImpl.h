@@ -36,7 +36,7 @@ class CORE_EXPORT TextMatchMarkerListImpl final : public DocumentMarkerList {
   DECLARE_VIRTUAL_TRACE();
 
   // TextMatchMarkerListImpl-specific
-  Vector<IntRect> RenderedRects(const Node&) const;
+  Vector<IntRect> LayoutRects(const Node&) const;
   // Returns true if markers within a range defined by |startOffset| and
   // |endOffset| are found.
   bool SetTextMatchMarkersActive(unsigned start_offset,

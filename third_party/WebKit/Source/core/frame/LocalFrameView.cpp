@@ -2666,7 +2666,7 @@ void LocalFrameView::GetTickmarks(Vector<IntRect>& tickmarks) const {
     return;
   }
   tickmarks =
-      GetFrame().GetDocument()->Markers().RenderedRectsForTextMatchMarkers();
+      GetFrame().GetDocument()->Markers().LayoutRectsForTextMatchMarkers();
 }
 
 void LocalFrameView::SetInputEventsTransformForEmulation(
