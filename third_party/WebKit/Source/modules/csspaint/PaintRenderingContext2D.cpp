@@ -76,4 +76,12 @@ void PaintRenderingContext2D::ValidateStateStack() const {
 #endif
 }
 
+bool PaintRenderingContext2D::StateHasFilter() {
+  return GetState().HasFilterForOffscreenCanvas(IntSize(Width(), Height()));
+}
+
+sk_sp<SkImageFilter> PaintRenderingContext2D::StateGetFilter() {
+  return GetState().GetFilterForOffscreenCanvas(IntSize(Width(), Height()));
+}
+
 }  // namespace blink
