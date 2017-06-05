@@ -125,14 +125,12 @@ typedef pthread_key_t ThreadSpecificKey;
 inline void ThreadSpecificKeyCreate(ThreadSpecificKey* key,
                                     void (*destructor)(void*)) {
   int error = pthread_key_create(key, destructor);
-  if (error)
-    IMMEDIATE_CRASH();
+  CHECK(!error);
 }
 
 inline void ThreadSpecificKeyDelete(ThreadSpecificKey key) {
   int error = pthread_key_delete(key);
-  if (error)
-    IMMEDIATE_CRASH();
+  CHECK(!error);
 }
 
 inline void ThreadSpecificSet(ThreadSpecificKey key, void* value) {
@@ -146,8 +144,7 @@ inline void* ThreadSpecificGet(ThreadSpecificKey key) {
 template <typename T>
 inline ThreadSpecific<T>::ThreadSpecific() {
   int error = pthread_key_create(&key_, Destroy);
-  if (error)
-    IMMEDIATE_CRASH();
+  CHECK(!error);
 }
 
 template <typename T>
@@ -191,12 +188,10 @@ WTF_EXPORT void* ThreadSpecificGet(ThreadSpecificKey);
 template <typename T>
 inline ThreadSpecific<T>::ThreadSpecific() : index_(-1) {
   DWORD tls_key = TlsAlloc();
-  if (tls_key == TLS_OUT_OF_INDEXES)
-    IMMEDIATE_CRASH();
+  CHECK_NE(tls_key, TLS_OUT_OF_INDEXES);
 
   index_ = InterlockedIncrement(&TlsKeyCount()) - 1;
-  if (index_ >= kMaxTlsKeySize)
-    IMMEDIATE_CRASH();
+  CHECK_LE(index_, kMaxTlsKeySize);
   TlsKeys()[index_] = tls_key;
 }
 
