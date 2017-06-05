@@ -43,6 +43,17 @@ void ErrorExit(jpeg_common_struct* cinfo) {
 
 }  // namespace
 
+// This method helps identify at run time which library chromium is using.
+JPEGCodec::LibraryVariant JPEGCodec::JpegLibraryVariant() {
+#if defined(USE_SYSTEM_LIBJPEG)
+  return SYSTEM_LIBJPEG;
+#elif defined(USE_LIBJPEG_TURBO)
+  return LIBJPEG_TURBO;
+#else
+  return IJG_LIBJPEG;
+#endif
+}
+
 // Encoder ---------------------------------------------------------------------
 //
 // This code is based on nsJPEGEncoder from Mozilla.
@@ -133,6 +144,33 @@ void TermDestination(jpeg_compress_struct* cinfo) {
   state->out->resize(state->image_buffer_used);
 }
 
+#if !defined(JCS_EXTENSIONS)
+// Converts RGBA to RGB (removing the alpha values) to prepare to send data to
+// libjpeg. This converts one row of data in rgba with the given width in
+// pixels the the given rgb destination buffer (which should have enough space
+// reserved for the final data).
+void StripAlpha(const unsigned char* rgba, int pixel_width, unsigned char* rgb)
+{
+  for (int x = 0; x < pixel_width; x++)
+    memcpy(&rgb[x * 3], &rgba[x * 4], 3);
+}
+
+// Converts BGRA to RGB by reordering the color components and dropping the
+// alpha. This converts  one row of data in rgba with the given width in
+// pixels the the given rgb destination buffer (which should have enough space
+// reserved for the final data).
+void BGRAtoRGB(const unsigned char* bgra, int pixel_width, unsigned char* rgb)
+{
+  for (int x = 0; x < pixel_width; x++) {
+    const unsigned char* pixel_in = &bgra[x * 4];
+    unsigned char* pixel_out = &rgb[x * 3];
+    pixel_out[0] = pixel_in[2];
+    pixel_out[1] = pixel_in[1];
+    pixel_out[2] = pixel_in[0];
+  }
+}
+#endif  // !defined(JCS_EXTENSIONS)
+
 // This class destroys the given jpeg_compress object when it goes out of
 // scope. It simplifies the error handling in Encode (and even applies to the
 // success case).
@@ -166,6 +204,9 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
   CompressDestroyer destroyer;
   destroyer.SetManagedObject(&cinfo);
   output->clear();
+#if !defined(JCS_EXTENSIONS)
+  unsigned char* row_buffer = NULL;
+#endif
 
   // We set up the normal JPEG error routines, then override error_exit.
   // This must be done before the call to create_compress.
@@ -181,6 +222,9 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
     // goto using a call to longjmp."  So we delete the CompressDestroyer's
     // object manually instead.
     destroyer.DestroyManagedObject();
+#if !defined(JCS_EXTENSIONS)
+    delete[] row_buffer;
+#endif
     return false;
   }
 
@@ -189,16 +233,22 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
 
   cinfo.image_width = w;
   cinfo.image_height = h;
-  cinfo.input_components = 4;
+  cinfo.input_components = 3;
+#ifdef JCS_EXTENSIONS
   // Choose an input colorspace and return if it is an unsupported one. Since
   // libjpeg-turbo supports all input formats used by Chromium (i.e. RGB, RGBA,
   // and BGRA), we just map the input parameters to a colorspace used by
   // libjpeg-turbo.
-  if (format == FORMAT_RGBA ||
-      (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
+  if (format == FORMAT_RGB) {
+    cinfo.input_components = 3;
+    cinfo.in_color_space = JCS_RGB;
+  } else if (format == FORMAT_RGBA ||
+             (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
+    cinfo.input_components = 4;
     cinfo.in_color_space = JCS_EXT_RGBX;
   } else if (format == FORMAT_BGRA ||
              (format == FORMAT_SkBitmap && SK_B32_SHIFT == 0)) {
+    cinfo.input_components = 4;
     cinfo.in_color_space = JCS_EXT_BGRX;
   } else {
     // We can exit this function without calling jpeg_destroy_compress() because
@@ -206,6 +256,9 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
     NOTREACHED() << "Invalid pixel format";
     return false;
   }
+#else
+  cinfo.in_color_space = JCS_RGB;
+#endif
   cinfo.data_precision = 8;
 
   jpeg_set_defaults(&cinfo);
@@ -224,6 +277,7 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
   jpeg_start_compress(&cinfo, 1);
 
   // feed it the rows, doing necessary conversions for the color format
+#ifdef JCS_EXTENSIONS
   // This function already returns when the input format is not supported by
   // libjpeg-turbo and needs conversion. Therefore, we just encode lines without
   // conversions.
@@ -231,6 +285,37 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
     const unsigned char* row = &input[cinfo.next_scanline * row_byte_width];
     jpeg_write_scanlines(&cinfo, const_cast<unsigned char**>(&row), 1);
   }
+#else
+  if (format == FORMAT_RGB) {
+    // no conversion necessary
+    while (cinfo.next_scanline < cinfo.image_height) {
+      const unsigned char* row = &input[cinfo.next_scanline * row_byte_width];
+      jpeg_write_scanlines(&cinfo, const_cast<unsigned char**>(&row), 1);
+    }
+  } else {
+    // get the correct format converter
+    void (*converter)(const unsigned char* in, int w, unsigned char* rgb);
+    if (format == FORMAT_RGBA ||
+        (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
+      converter = StripAlpha;
+    } else if (format == FORMAT_BGRA ||
+               (format == FORMAT_SkBitmap && SK_B32_SHIFT == 0)) {
+      converter = BGRAtoRGB;
+    } else {
+      NOTREACHED() << "Invalid pixel format";
+      return false;
+    }
+
+    // output row after converting
+    row_buffer = new unsigned char[w * 3];
+
+    while (cinfo.next_scanline < cinfo.image_height) {
+      converter(&input[cinfo.next_scanline * row_byte_width], w, row_buffer);
+      jpeg_write_scanlines(&cinfo, &row_buffer, 1);
+    }
+    delete[] row_buffer;
+  }
+#endif
 
   jpeg_finish_compress(&cinfo);
   return true;
@@ -313,6 +398,31 @@ void SkipInputData(j_decompress_ptr cinfo, long num_bytes) {
 void TermSource(j_decompress_ptr cinfo) {
 }
 
+#if !defined(JCS_EXTENSIONS)
+// Converts one row of rgb data to rgba data by adding a fully-opaque alpha
+// value.
+void AddAlpha(const unsigned char* rgb, int pixel_width, unsigned char* rgba) {
+  for (int x = 0; x < pixel_width; x++) {
+    memcpy(&rgba[x * 4], &rgb[x * 3], 3);
+    rgba[x * 4 + 3] = 0xff;
+  }
+}
+
+// Converts one row of RGB data to BGRA by reordering the color components and
+// adding alpha values of 0xff.
+void RGBtoBGRA(const unsigned char* bgra, int pixel_width, unsigned char* rgb)
+{
+  for (int x = 0; x < pixel_width; x++) {
+    const unsigned char* pixel_in = &bgra[x * 3];
+    unsigned char* pixel_out = &rgb[x * 4];
+    pixel_out[0] = pixel_in[2];
+    pixel_out[1] = pixel_in[1];
+    pixel_out[2] = pixel_in[0];
+    pixel_out[3] = 0xff;
+  }
+}
+#endif  // !defined(JCS_EXTENSIONS)
+
 // This class destroys the given jpeg_decompress object when it goes out of
 // scope. It simplifies the error handling in Decode (and even applies to the
 // success case).
@@ -386,12 +496,16 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
     case JCS_GRAYSCALE:
     case JCS_RGB:
     case JCS_YCbCr:
+#ifdef JCS_EXTENSIONS
       // Choose an output colorspace and return if it is an unsupported one.
       // Same as JPEGCodec::Encode(), libjpeg-turbo supports all input formats
       // used by Chromium (i.e. RGB, RGBA, and BGRA) and we just map the input
       // parameters to a colorspace.
-      if (format == FORMAT_RGBA ||
-          (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
+      if (format == FORMAT_RGB) {
+        cinfo.out_color_space = JCS_RGB;
+        cinfo.output_components = 3;
+      } else if (format == FORMAT_RGBA ||
+                 (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
         cinfo.out_color_space = JCS_EXT_RGBX;
         cinfo.output_components = 4;
       } else if (format == FORMAT_BGRA ||
@@ -404,6 +518,9 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
         NOTREACHED() << "Invalid pixel format";
         return false;
       }
+#else
+      cinfo.out_color_space = JCS_RGB;
+#endif
       break;
     case JCS_CMYK:
     case JCS_YCCK:
@@ -413,6 +530,9 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
       // care about these anyway.
       return false;
   }
+#ifndef JCS_EXTENSIONS
+  cinfo.output_components = 3;
+#endif
 
   jpeg_calc_output_dimensions(&cinfo);
   *w = cinfo.output_width;
@@ -424,6 +544,7 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
   // how to align row lengths as we do for the compressor.
   int row_read_stride = cinfo.output_width * cinfo.output_components;
 
+#ifdef JCS_EXTENSIONS
   // Create memory for a decoded image and write decoded lines to the memory
   // without conversions same as JPEGCodec::Encode().
   int row_write_stride = row_read_stride;
@@ -434,6 +555,49 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
     if (!jpeg_read_scanlines(&cinfo, &rowptr, 1))
       return false;
   }
+#else
+  if (format == FORMAT_RGB) {
+    // easy case, row needs no conversion
+    int row_write_stride = row_read_stride;
+    output->resize(row_write_stride * cinfo.output_height);
+
+    for (int row = 0; row < static_cast<int>(cinfo.output_height); row++) {
+      unsigned char* rowptr = &(*output)[row * row_write_stride];
+      if (!jpeg_read_scanlines(&cinfo, &rowptr, 1))
+        return false;
+    }
+  } else {
+    // Rows need conversion to output format: read into a temporary buffer and
+    // expand to the final one. Performance: we could avoid the extra
+    // allocation by doing the expansion in-place.
+    int row_write_stride;
+    void (*converter)(const unsigned char* rgb, int w, unsigned char* out);
+    if (format == FORMAT_RGBA ||
+        (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
+      row_write_stride = cinfo.output_width * 4;
+      converter = AddAlpha;
+    } else if (format == FORMAT_BGRA ||
+               (format == FORMAT_SkBitmap && SK_B32_SHIFT == 0)) {
+      row_write_stride = cinfo.output_width * 4;
+      converter = RGBtoBGRA;
+    } else {
+      NOTREACHED() << "Invalid pixel format";
+      jpeg_destroy_decompress(&cinfo);
+      return false;
+    }
+
+    output->resize(row_write_stride * cinfo.output_height);
+
+    std::unique_ptr<unsigned char[]> row_data(
+        new unsigned char[row_read_stride]);
+    unsigned char* rowptr = row_data.get();
+    for (int row = 0; row < static_cast<int>(cinfo.output_height); row++) {
+      if (!jpeg_read_scanlines(&cinfo, &rowptr, 1))
+        return false;
+      converter(rowptr, *w, &(*output)[row * row_write_stride]);
+    }
+  }
+#endif
 
   jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
