@@ -424,6 +424,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ActivityTracker.Collect.UncleanShutdownCount" units="count">
+  <obsolete>
+    Deprecated 05/2017 in favor of ActivityTracker.Collect.Status.
+  </obsolete>
   <owner>manzagop@chromium.org</owner>
   <summary>
     Number of unclean shutdowns, as derived from the stability instrumentation.
@@ -432,6 +435,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ActivityTracker.Collect.UncleanSystemCount" units="count">
+  <obsolete>
+    Deprecated 05/2017 in favor of ActivityTracker.Collect.Status.
+  </obsolete>
   <owner>manzagop@chromium.org</owner>
   <summary>
     Number of unclean shutdowns that can potentially be attributed to system

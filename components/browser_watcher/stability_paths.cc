@@ -15,6 +15,7 @@
 #include "base/debug/activity_tracker.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/strings/stringprintf.h"
@@ -28,6 +29,7 @@
 
 namespace browser_watcher {
 
+using base::FilePath;
 using base::FilePersistentMemoryAllocator;
 using base::MemoryMappedFile;
 using base::PersistentMemoryAllocator;
@@ -57,14 +59,14 @@ bool SetPmaFileDeleted(const base::FilePath& file_path) {
 
 }  // namespace
 
-base::FilePath GetStabilityDir(const base::FilePath& user_data_dir) {
+FilePath GetStabilityDir(const FilePath& user_data_dir) {
   return user_data_dir.AppendASCII("Stability");
 }
 
-base::FilePath GetStabilityFileForProcess(base::ProcessId pid,
-                                          timeval creation_time,
-                                          const base::FilePath& user_data_dir) {
-  base::FilePath stability_dir = GetStabilityDir(user_data_dir);
+FilePath GetStabilityFileForProcess(base::ProcessId pid,
+                                    timeval creation_time,
+                                    const FilePath& user_data_dir) {
+  FilePath stability_dir = GetStabilityDir(user_data_dir);
 
   constexpr uint64_t kMicrosecondsPerSecond = static_cast<uint64_t>(1E6);
   int64_t creation_time_us =
@@ -76,8 +78,8 @@ base::FilePath GetStabilityFileForProcess(base::ProcessId pid,
 }
 
 bool GetStabilityFileForProcess(const base::Process& process,
-                                const base::FilePath& user_data_dir,
-                                base::FilePath* file_path) {
+                                const FilePath& user_data_dir,
+                                FilePath* file_path) {
   DCHECK(file_path);
 
   FILETIME creation_time;
@@ -92,9 +94,28 @@ bool GetStabilityFileForProcess(const base::Process& process,
   return true;
 }
 
-base::FilePath::StringType GetStabilityFilePattern() {
-  return base::FilePath::StringType(FILE_PATH_LITERAL("*-*")) +
+FilePath::StringType GetStabilityFilePattern() {
+  return FilePath::StringType(FILE_PATH_LITERAL("*-*")) +
          base::PersistentMemoryAllocator::kFileExtension;
+}
+
+std::vector<FilePath> GetStabilityFiles(
+    const FilePath& stability_dir,
+    const FilePath::StringType& stability_file_pattern,
+    const std::set<FilePath>& excluded_stability_files) {
+  DCHECK_NE(true, stability_dir.empty());
+  DCHECK_NE(true, stability_file_pattern.empty());
+
+  std::vector<FilePath> paths;
+  base::FileEnumerator enumerator(stability_dir, false /* recursive */,
+                                  base::FileEnumerator::FILES,
+                                  stability_file_pattern);
+  FilePath path;
+  for (path = enumerator.Next(); !path.empty(); path = enumerator.Next()) {
+    if (excluded_stability_files.find(path) == excluded_stability_files.end())
+      paths.push_back(path);
+  }
+  return paths;
 }
 
 void MarkOwnStabilityFileDeleted(const base::FilePath& user_data_dir) {

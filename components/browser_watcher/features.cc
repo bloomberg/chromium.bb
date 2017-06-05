@@ -11,4 +11,6 @@ const base::Feature kStabilityDebuggingFeature{
 
 const char kInitFlushParam[] = "init_flush";
 
+const char kCollectPostmortemParam[] = "collect_postmortem";
+
 }  // namespace browser_watcher
