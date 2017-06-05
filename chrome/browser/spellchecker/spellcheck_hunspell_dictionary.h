@@ -11,11 +11,8 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
 #include "components/spellcheck/browser/spellcheck_dictionary.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -167,10 +164,6 @@ class SpellcheckHunspellDictionary
 
   // Dictionary file path and descriptor.
   DictionaryFile dictionary_file_;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<SpellcheckHunspellDictionary> weak_ptr_factory_;
 
