@@ -55,6 +55,7 @@ source_set("tests") {
   ]
   sources = [
     "persistent_pref_store_impl_unittest.cc",
+    "pref_store_consistency_unittest.cc",
   ]
   if (!is_ios) {
     sources += [ "pref_service_factory_unittest.cc" ]

@@ -16,6 +16,65 @@
 #include "services/preferences/public/cpp/lib/util.h"
 
 namespace prefs {
+namespace {
+
+// Creates a PrefUpdateValuePtr representing |value| at |path|.
+mojom::PrefUpdateValuePtr CreatePrefUpdate(const std::vector<std::string>& path,
+                                           const base::Value* value) {
+  if (path.empty()) {
+    return mojom::PrefUpdateValue::NewAtomicUpdate(
+        value ? value->CreateDeepCopy() : nullptr);
+  }
+  std::vector<mojom::SubPrefUpdatePtr> pref_updates;
+  pref_updates.emplace_back(base::in_place, path,
+                            value ? value->CreateDeepCopy() : nullptr);
+  return mojom::PrefUpdateValue::NewSplitUpdates(std::move(pref_updates));
+}
+
+// Returns a mojom::PrefUpdateValuePtr for |path| relative to |value|. If the
+// full path does not exist, a PrefUpdateValue containing the closest value is
+// returned.
+//
+// For example, for a |path| of {"foo", "bar"}:
+//  - with a |value| of
+//     {
+//       "foo": 1
+//     }
+//   returns a path {"foo"} and value 1.
+//
+// - with a |value| of
+//     {}
+//   returns a path {"foo"} and null value.
+//
+// - with a |value| of
+//     {
+//       "foo": {}
+//     }
+//   returns a path {"foo", "bar"} and null value.
+//
+// - with a |value| of
+//     {
+//       "foo": {
+//         "bar": "baz"
+//       }
+//     }
+//   returns a path {"foo", "bar"} and value "baz".
+mojom::PrefUpdateValuePtr LookupPrefUpdate(const std::vector<std::string>& path,
+                                           const base::Value* value) {
+  if (!value)
+    return CreatePrefUpdate(std::vector<std::string>(), value);
+
+  for (size_t i = 0; i < path.size(); ++i) {
+    const base::DictionaryValue* dictionary_value = nullptr;
+    if (!value->GetAsDictionary(&dictionary_value) ||
+        !dictionary_value->Get(path[i], &value)) {
+      return CreatePrefUpdate({path.begin(), path.begin() + i}, value);
+    }
+  }
+  return CreatePrefUpdate(path, value);
+}
+
+}  // namespace
 
 class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
  public:
@@ -55,6 +114,19 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
   void SetValues(std::vector<mojom::PrefUpdatePtr> updates) override {
     base::AutoReset<bool> scoped_call_in_progress(&write_in_progress_, true);
     pref_store_->SetValues(std::move(updates));
+    observer_->OnPrefChangeAck();
+  }
+
+  void RequestValue(const std::string& key,
+                    const std::vector<std::string>& path) override {
+    if (!base::ContainsKey(observed_keys_, key))
+      return;
+
+    const base::Value* value = nullptr;
+    pref_store_->GetValue(key, &value);
+    std::vector<mojom::PrefUpdatePtr> updates;
+    updates.emplace_back(base::in_place, key, LookupPrefUpdate(path, value), 0);
+    observer_->OnPrefsChanged(std::move(updates));
   }
 
   void CommitPendingWrite() override { pref_store_->CommitPendingWrite(); }
@@ -169,6 +241,11 @@ void PersistentPrefStoreImpl::SetValues(
       }
     }
   }
+}
+
+bool PersistentPrefStoreImpl::GetValue(const std::string& key,
+                                       const base::Value** value) const {
+  return backing_pref_store_->GetValue(key, value);
 }
 
 void PersistentPrefStoreImpl::CommitPendingWrite() {
