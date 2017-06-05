@@ -6,6 +6,10 @@ package org.chromium.chrome.browser.widget;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,6 +69,17 @@ public abstract class PromoDialog extends AlwaysDismissedDialog
 
         mDialogLayout = (PromoDialogLayout) mScrimView.findViewById(R.id.promo_dialog_layout);
         mDialogLayout.initialize(getDialogParams());
+    }
+
+    /**
+     * Force the promo dialog to have a fully opaque background hiding any underlying content.
+     */
+    protected void forceOpaqueBackground() {
+        LayerDrawable background = new LayerDrawable(new Drawable[] {
+                new ColorDrawable(Color.WHITE),
+                new ColorDrawable(ApiCompatibilityUtils.getColor(
+                        getContext().getResources(), R.color.modal_dialog_scrim_color))});
+        mScrimView.setBackground(background);
     }
 
     /**
