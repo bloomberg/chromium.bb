@@ -557,20 +557,21 @@ GURL TeamDriveListRequest::GetURLInternal() const {
 
 //============================= FilesListRequest =============================
 
-FilesListRequest::FilesListRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const FileListCallback& callback)
+FilesListRequest::FilesListRequest(RequestSender* sender,
+                                   const DriveApiUrlGenerator& url_generator,
+                                   const FileListCallback& callback)
     : DriveApiDataRequest<FileList>(sender, callback),
       url_generator_(url_generator),
-      max_results_(100) {
+      max_results_(100),
+      corpora_(FilesListCorpora::DEFAULT) {
   DCHECK(!callback.is_null());
 }
 
 FilesListRequest::~FilesListRequest() {}
 
 GURL FilesListRequest::GetURLInternal() const {
-  return url_generator_.GetFilesListUrl(max_results_, page_token_, q_);
+  return url_generator_.GetFilesListUrl(max_results_, page_token_, corpora_,
+                                        team_drive_id_, q_);
 }
 
 //======================== FilesListNextPageRequest =========================

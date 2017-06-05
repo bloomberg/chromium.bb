@@ -15,6 +15,17 @@
 
 namespace google_apis {
 
+// This enum class is used to express a corpora parameter configuration for
+// Files:list.
+enum class FilesListCorpora {
+  // 'default': The user's subscribed items.
+  DEFAULT,
+  // 'teamDrives': A Team Drive.
+  TEAM_DRIVE,
+  // 'default,allTeamDrives': All Team Drives and the user's subscribed items.
+  ALL_TEAM_DRIVES
+};
+
 // This class is used to generate URLs for communicating with drive api
 // servers for production, and a local server for testing.
 class DriveApiUrlGenerator {
@@ -68,6 +79,8 @@ class DriveApiUrlGenerator {
   // Returns a URL to fetch file list.
   GURL GetFilesListUrl(int max_results,
                        const std::string& page_token,
+                       FilesListCorpora corpora,
+                       const std::string& team_drive_id,
                        const std::string& q) const;
 
   // Returns a URL to delete a resource with the given |file_id|.

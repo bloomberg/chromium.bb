@@ -139,7 +139,7 @@ class FilesListRequestRunnerTest : public testing::Test {
 TEST_F(FilesListRequestRunnerTest, Success_NoBackoff) {
   SetFakeServerResponse(net::HTTP_OK, kSuccessResource);
   runner_->CreateAndStartWithSizeBackoff(
-      kMaxResults, kQuery, kFields,
+      kMaxResults, FilesListCorpora::DEFAULT, std::string(), kQuery, kFields,
       base::Bind(&FilesListRequestRunnerTest::OnCompleted,
                  base::Unretained(this)));
 
@@ -161,7 +161,7 @@ TEST_F(FilesListRequestRunnerTest, Success_Backoff) {
   SetFakeServerResponse(net::HTTP_INTERNAL_SERVER_ERROR,
                         kResponseTooLargeErrorResource);
   runner_->CreateAndStartWithSizeBackoff(
-      kMaxResults, kQuery, kFields,
+      kMaxResults, FilesListCorpora::DEFAULT, std::string(), kQuery, kFields,
       base::Bind(&FilesListRequestRunnerTest::OnCompleted,
                  base::Unretained(this)));
   {
@@ -199,7 +199,7 @@ TEST_F(FilesListRequestRunnerTest, Failure_TooManyBackoffs) {
   SetFakeServerResponse(net::HTTP_INTERNAL_SERVER_ERROR,
                         kResponseTooLargeErrorResource);
   runner_->CreateAndStartWithSizeBackoff(
-      kMaxResults, kQuery, kFields,
+      kMaxResults, FilesListCorpora::DEFAULT, std::string(), kQuery, kFields,
       base::Bind(&FilesListRequestRunnerTest::OnCompleted,
                  base::Unretained(this)));
   {
@@ -255,7 +255,7 @@ TEST_F(FilesListRequestRunnerTest, Failure_AnotherError) {
   SetFakeServerResponse(net::HTTP_INTERNAL_SERVER_ERROR,
                         kQuotaExceededErrorResource);
   runner_->CreateAndStartWithSizeBackoff(
-      kMaxResults, kQuery, kFields,
+      kMaxResults, FilesListCorpora::DEFAULT, std::string(), kQuery, kFields,
       base::Bind(&FilesListRequestRunnerTest::OnCompleted,
                  base::Unretained(this)));
 

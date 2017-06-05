@@ -532,6 +532,14 @@ class FilesListRequest : public DriveApiDataRequest<FileList> {
     page_token_ = page_token;
   }
 
+  FilesListCorpora corpora() const { return corpora_; }
+  void set_corpora(FilesListCorpora corpora) { corpora_ = corpora; }
+
+  const std::string& team_drive_id() const { return team_drive_id_; }
+  void set_team_drive_id(const std::string& team_drive_id) {
+    team_drive_id_ = team_drive_id;
+  }
+
   const std::string& q() const { return q_; }
   void set_q(const std::string& q) { q_ = q; }
 
@@ -543,6 +551,8 @@ class FilesListRequest : public DriveApiDataRequest<FileList> {
   const DriveApiUrlGenerator url_generator_;
   int max_results_;
   std::string page_token_;
+  FilesListCorpora corpora_;
+  std::string team_drive_id_;
   std::string q_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesListRequest);
