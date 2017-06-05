@@ -1571,16 +1571,6 @@ void DownloadItemImpl::OnDownloadCompleting() {
   DCHECK(!GetTargetFilePath().empty());
   DCHECK(!IsDangerous());
 
-  // TODO(rdsmith/benjhayden): Remove as part of SavePackage integration.
-  if (is_save_package_download_) {
-    // Avoid doing anything on the file thread; there's nothing we control
-    // there.  Strictly speaking, this skips giving the embedder a chance to
-    // open the download.  But on a save package download, there's no real
-    // concept of opening.
-    Completed();
-    return;
-  }
-
   DCHECK(download_file_.get());
   // Unilaterally rename; even if it already has the right name,
   // we need theannotation.
