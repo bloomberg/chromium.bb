@@ -15,7 +15,7 @@
 
 namespace media {
 
-class OpenSLESOutputStream;
+class MuteableAudioOutputStream;
 
 // Android implemention of AudioManager.
 class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
@@ -51,6 +51,10 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const AudioParameters& params,
       const LogCallback& log_callback) override;
   AudioOutputStream* MakeLowLatencyOutputStream(
+      const AudioParameters& params,
+      const std::string& device_id,
+      const LogCallback& log_callback) override;
+  AudioOutputStream* MakeBitstreamOutputStream(
       const AudioParameters& params,
       const std::string& device_id,
       const LogCallback& log_callback) override;
@@ -96,7 +100,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   // Java AudioManager instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_manager_;
 
-  typedef std::set<OpenSLESOutputStream*> OutputStreams;
+  typedef std::set<MuteableAudioOutputStream*> OutputStreams;
   OutputStreams streams_;
 
   // Enabled when first input stream is created and set to false when last

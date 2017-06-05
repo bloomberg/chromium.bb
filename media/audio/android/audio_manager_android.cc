@@ -171,7 +171,7 @@ AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
   AudioOutputStream* stream = AudioManagerBase::MakeAudioOutputStream(
       params, std::string(), AudioManager::LogCallback());
   if (stream)
-    streams_.insert(static_cast<OpenSLESOutputStream*>(stream));
+    streams_.insert(static_cast<MuteableAudioOutputStream*>(stream));
   return stream;
 }
 
@@ -197,7 +197,7 @@ AudioInputStream* AudioManagerAndroid::MakeAudioInputStream(
 
 void AudioManagerAndroid::ReleaseOutputStream(AudioOutputStream* stream) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  streams_.erase(static_cast<OpenSLESOutputStream*>(stream));
+  streams_.erase(static_cast<MuteableAudioOutputStream*>(stream));
   AudioManagerBase::ReleaseOutputStream(stream);
 }
 
@@ -233,6 +233,15 @@ AudioOutputStream* AudioManagerAndroid::MakeLowLatencyOutputStream(
   const SLint32 stream_type = communication_mode_is_on_ ?
       SL_ANDROID_STREAM_VOICE : SL_ANDROID_STREAM_MEDIA;
   return new OpenSLESOutputStream(this, params, stream_type);
+}
+
+AudioOutputStream* AudioManagerAndroid::MakeBitstreamOutputStream(
+    const AudioParameters& params,
+    const std::string& device_id,
+    const LogCallback& log_callback) {
+  // TODO(tsunghung): add output stream for audio bitstream formats.
+  NOTREACHED();
+  return nullptr;
 }
 
 AudioInputStream* AudioManagerAndroid::MakeLinearInputStream(

@@ -166,9 +166,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
       break;
     case AudioParameters::AUDIO_BITSTREAM_AC3:
     case AudioParameters::AUDIO_BITSTREAM_EAC3:
-      // TODO(tsunghung): create passthrough output stream.
-      NOTREACHED();
-      stream = nullptr;
+      stream = MakeBitstreamOutputStream(params, device_id, log_callback);
       break;
     case AudioParameters::AUDIO_FAKE:
       stream = FakeAudioOutputStream::MakeFakeStream(this, params);
@@ -183,6 +181,13 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
   }
 
   return stream;
+}
+
+AudioOutputStream* AudioManagerBase::MakeBitstreamOutputStream(
+    const AudioParameters& params,
+    const std::string& device_id,
+    const LogCallback& log_callback) {
+  return nullptr;
 }
 
 AudioInputStream* AudioManagerBase::MakeAudioInputStream(
@@ -286,7 +291,8 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   const base::TimeDelta kCloseDelay =
       base::TimeDelta::FromSeconds(kStreamCloseDelaySeconds);
   std::unique_ptr<AudioOutputDispatcher> dispatcher;
-  if (output_params.format() != AudioParameters::AUDIO_FAKE) {
+  if (output_params.format() != AudioParameters::AUDIO_FAKE &&
+      !output_params.IsBitstreamFormat()) {
     // Using unretained for |debug_recording_manager_| is safe since it
     // outlives the dispatchers (cleared in ShutdownOnAudioThread()).
     dispatcher = base::MakeUnique<AudioOutputResampler>(
