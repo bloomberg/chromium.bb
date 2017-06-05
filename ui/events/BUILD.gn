@@ -460,6 +460,7 @@ if (!is_ios) {
         "ozone/evdev/tablet_event_converter_evdev_unittest.cc",
         "ozone/evdev/touch_event_converter_evdev_unittest.cc",
         "ozone/evdev/touch_filter/false_touch_finder_unittest.cc",
+        "ozone/gamepad/generic_gamepad_mapping_unittest.cc",
       ]
 
       if (use_xkbcommon) {
