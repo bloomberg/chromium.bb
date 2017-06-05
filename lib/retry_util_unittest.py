@@ -20,6 +20,33 @@ from chromite.lib import osutils
 class TestRetries(cros_test_lib.MockTempDirTestCase):
   """Tests of GenericRetry and relatives."""
 
+  def testWithRetrySuccess(self):
+    """Test basic retry success case."""
+    @retry_util.WithRetry(max_retry=3)
+    def _run():
+      return 10
+    self.assertEqual(10, _run())
+
+  def testWithRetrySuccessAfterRetry(self):
+    """Test basic retry success case, but failed at least once."""
+    counter = itertools.count()
+    @retry_util.WithRetry(max_retry=3)
+    def _run():
+      current = counter.next()
+      # Failed twice, then success.
+      if current < 2:
+        raise Exception()
+      return 10
+    self.assertEqual(10, _run())
+
+  def testWithRetryFail(self):
+    """Test basic retry fail case."""
+    @retry_util.WithRetry(max_retry=3)
+    def _run():
+      raise Exception('Retry fail')
+    with self.assertRaisesRegexp(Exception, 'Retry fail'):
+      _run()
+
   def testGenericRetry(self):
     """Test basic semantics of retry and success recording."""
     source = iter(xrange(5)).next
@@ -182,7 +209,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
       osutils.WriteFile(paths['stop'], str(stop))
 
     def _AssertCounters(sleep, sleep_cnt):
-      calls = [mock.call(sleep * (x + 1)) for x in range(sleep_cnt)]
+      calls = [mock.call(float(sleep * (x + 1))) for x in range(sleep_cnt)]
       sleep_mock.assert_has_calls(calls)
 
     sleep_mock = self.PatchObject(time, 'sleep')
