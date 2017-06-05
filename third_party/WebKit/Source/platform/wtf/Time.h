@@ -16,11 +16,12 @@ namespace WTF {
 //    of time.
 //  - WTF::TimeTicks wraps base::TimeTicks and represents a monotonic time
 //    value.
-//  - WTF::Time wraps base::Time and represents a wall time value.
+//  - WTF::Time is an alias for base::Time and represents a wall time value.
 //
 // For usage guideline please see the documentation in base/time/time.h
 
 using TimeDelta = base::TimeDelta;
+using Time = base::Time;
 
 namespace internal {
 
@@ -85,7 +86,6 @@ class TimeWrapper {
 
 }  // namespace internal
 
-using Time = internal::TimeWrapper<base::Time>;
 using TimeTicks = internal::TimeWrapper<base::TimeTicks>;
 
 }  // namespace WTF

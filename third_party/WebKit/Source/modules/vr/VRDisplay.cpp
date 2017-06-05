@@ -833,7 +833,7 @@ void VRDisplay::ProcessScheduledAnimations(double timestamp) {
 }
 
 void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
-                        mojo::common::mojom::blink::TimeDeltaPtr time,
+                        WTF::TimeDelta time_delta,
                         int16_t frame_id,
                         device::mojom::blink::VRVSyncProvider::Status error) {
   DVLOG(2) << __FUNCTION__;
@@ -846,8 +846,6 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
   }
   pending_vsync_ = false;
 
-  WTF::TimeDelta time_delta =
-      WTF::TimeDelta::FromMicroseconds(time->microseconds);
   // Ensure a consistent timebase with document rAF.
   if (timebase_ < 0) {
     timebase_ = WTF::MonotonicallyIncreasingTime() - time_delta.InSecondsF();
