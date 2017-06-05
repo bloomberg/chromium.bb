@@ -73,9 +73,6 @@ class ShelfWindowWatcher : public ::wm::ActivationChangeObserver,
   // Removes a ShelfItem for |window|.
   void RemoveShelfItem(aura::Window* window);
 
-  // Returns the index of ShelfItem associated with |window|, or -1 if none.
-  int GetShelfItemIndexForWindow(aura::Window* window) const;
-
   // Cleans up observers on |container|.
   void OnContainerWindowDestroying(aura::Window* container);
 
