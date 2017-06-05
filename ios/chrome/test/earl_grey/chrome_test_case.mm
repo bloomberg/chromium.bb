@@ -260,7 +260,6 @@ const CFTimeInterval kDrainTimeout = 5;
 
 + (void)startHTTPServer {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  DCHECK(!server.IsRunning());
   server.StartOrDie();
 }
 

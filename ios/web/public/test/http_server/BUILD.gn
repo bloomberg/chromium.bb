@@ -10,6 +10,7 @@ source_set("http_server") {
     "//base/test:test_support",
     "//ios/third_party/gcdwebserver",
     "//net",
+    "//net:test_support",
     "//url",
   ]
 
@@ -20,10 +21,6 @@ source_set("http_server") {
     "delayed_response_provider.mm",
     "error_page_response_provider.h",
     "error_page_response_provider.mm",
-    "file_based_response_provider.h",
-    "file_based_response_provider.mm",
-    "file_based_response_provider_impl.h",
-    "file_based_response_provider_impl.mm",
     "html_response_provider.h",
     "html_response_provider.mm",
     "html_response_provider_impl.h",

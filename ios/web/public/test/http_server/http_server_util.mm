@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#import "ios/web/public/test/http_server/file_based_response_provider.h"
 #import "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 
@@ -22,11 +21,9 @@ void SetUpSimpleHttpServerWithSetCookies(
   SetUpHttpServer(base::MakeUnique<HtmlResponseProvider>(responses));
 }
 
-void SetUpFileBasedHttpServer() {
-  base::FilePath path;
-  PathService::Get(base::DIR_MODULE, &path);
-  SetUpHttpServer(base::MakeUnique<FileBasedResponseProvider>(path));
-}
+// TODO(crbug.com/694859): Cleanup tests and remove the function. Not
+// necessary after switching to EmbeddedTestServer.
+void SetUpFileBasedHttpServer() {}
 
 void SetUpHttpServer(std::unique_ptr<web::ResponseProvider> provider) {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();

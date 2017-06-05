@@ -9,38 +9,31 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/third_party/gcdwebserver/src/GCDWebServer/Core/GCDWebServer.h"
-#import "ios/third_party/gcdwebserver/src/GCDWebServer/Core/GCDWebServerResponse.h"
-#import "ios/third_party/gcdwebserver/src/GCDWebServer/Requests/GCDWebServerDataRequest.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 #include "url/gurl.h"
 
 namespace {
 
-// The default port on which the GCDWebServer is brought up on.
-const NSUInteger kDefaultPort = 8080;
-
-// Converts a GCDWebServerDataRequest (received from the GCDWebServer servlet)
-// to a request object that the ResponseProvider expects.
-web::ResponseProvider::Request ResponseProviderRequestFromGCDWebServerRequest(
-    GCDWebServerDataRequest* request) {
-  GURL url(net::GURLWithNSURL(request.URL));
-  std::string method(base::SysNSStringToUTF8(request.method));
-  base::scoped_nsobject<NSString> body([[NSString alloc]
-      initWithData:request.data
-          encoding:NSUTF8StringEncoding]);
-  __block net::HttpRequestHeaders headers;
-  [[request headers] enumerateKeysAndObjectsUsingBlock:^(
-                         NSString* header_key, NSString* header_value, BOOL*) {
-    headers.SetHeader(base::SysNSStringToUTF8(header_key),
-                      base::SysNSStringToUTF8(header_value));
-  }];
-  return web::ResponseProvider::Request(url, method,
-                                        base::SysNSStringToUTF8(body), headers);
+// Converts a net::test_server::HttpRequest (received from the
+// EmbeddedTestServer servlet) to a request object that the ResponseProvider
+// expects.
+web::ResponseProvider::Request
+ResponseProviderRequestFromEmbeddedTestServerRequest(
+    const net::test_server::HttpRequest& request) {
+  net::HttpRequestHeaders headers;
+  for (auto it = request.headers.begin(); it != request.headers.end(); ++it) {
+    headers.SetHeader(it->first, it->second);
+  }
+  return web::ResponseProvider::Request(request.GetURL(), request.method_string,
+                                        request.content, headers);
 }
 
 }  // namespace
@@ -75,64 +68,47 @@ HttpServer& HttpServer::GetSharedInstanceWithResponseProviders(
   return server;
 }
 
-void HttpServer::InitHttpServer() {
-  DCHECK(gcd_web_server_);
-  // Note: This block is called from an arbitrary GCD thread.
-  id process_request =
-      ^GCDWebServerResponse*(GCDWebServerDataRequest* request) {
-    // Relax the cross-thread access restriction to non-thread-safe RefCount.
-    // TODO(crbug.com/707010): Remove ScopedAllowCrossThreadRefCountAccess.
-    base::ScopedAllowCrossThreadRefCountAccess
-        allow_cross_thread_ref_count_access;
+std::unique_ptr<net::test_server::HttpResponse> HttpServer::GetResponse(
+    const net::test_server::HttpRequest& request) {
+  ResponseProvider::Request provider_request =
+      ResponseProviderRequestFromEmbeddedTestServerRequest(request);
+  ResponseProvider* response_provider =
+      GetResponseProviderForProviderRequest(provider_request);
 
-    ResponseProvider::Request provider_request =
-        ResponseProviderRequestFromGCDWebServerRequest(request);
-    scoped_refptr<RefCountedResponseProviderWrapper>
-        ref_counted_response_provider =
-            GetResponseProviderForRequest(provider_request);
-
-    if (!ref_counted_response_provider) {
-      return [GCDWebServerResponse response];
-    }
-    ResponseProvider* response_provider =
-        ref_counted_response_provider->GetResponseProvider();
-    if (!response_provider) {
-      return [GCDWebServerResponse response];
-    }
-
-    return response_provider->GetGCDWebServerResponse(provider_request);
-  };
-  [gcd_web_server_ removeAllHandlers];
-  // Register a servlet for all HTTP GET, POST methods.
-  [gcd_web_server_ addDefaultHandlerForMethod:@"GET"
-                                 requestClass:[GCDWebServerDataRequest class]
-                                 processBlock:process_request];
-  [gcd_web_server_ addDefaultHandlerForMethod:@"POST"
-                                 requestClass:[GCDWebServerDataRequest class]
-                                 processBlock:process_request];
+  if (!response_provider) {
+    return nullptr;
+  }
+  return response_provider->GetEmbeddedTestServerResponse(provider_request);
 }
 
-HttpServer::HttpServer() : port_(0) {
-  gcd_web_server_.reset([[GCDWebServer alloc] init]);
-  InitHttpServer();
+ResponseProvider* HttpServer::GetResponseProviderForProviderRequest(
+    const web::ResponseProvider::Request& request) {
+  auto response_provider = GetResponseProviderForRequest(request);
+  if (!response_provider) {
+    return nullptr;
+  }
+  return response_provider->GetResponseProvider();
 }
+
+HttpServer::HttpServer() : port_(0) {}
 
 HttpServer::~HttpServer() {}
 
-bool HttpServer::StartOnPort(NSUInteger port) {
-  DCHECK([NSThread isMainThread]);
-  DCHECK(!IsRunning()) << "The server is already running."
-                       << " Please stop it before starting it again.";
-  BOOL success = [gcd_web_server_ startWithPort:port bonjourName:@""];
-  if (success) {
-    SetPort(port);
-  }
-  return success;
-}
-
 void HttpServer::StartOrDie() {
   DCHECK([NSThread isMainThread]);
-  StartOnPort(kDefaultPort);
+
+  // Registers request handler which serves files from the http test files
+  // directory. The current tests calls full path relative to DIR_SOURCE_ROOT.
+  // Registers the DIR_SOURCE_ROOT to avoid massive test changes.
+  embedded_test_server_ = base::MakeUnique<net::EmbeddedTestServer>();
+  embedded_test_server_->ServeFilesFromSourceDirectory(".");
+
+  embedded_test_server_->RegisterDefaultHandler(
+      base::Bind(&HttpServer::GetResponse, this));
+
+  if (embedded_test_server_->Start()) {
+    SetPort((NSUInteger)embedded_test_server_->port());
+  }
   CHECK(IsRunning());
 }
 
@@ -140,13 +116,18 @@ void HttpServer::Stop() {
   DCHECK([NSThread isMainThread]);
   DCHECK(IsRunning()) << "Cannot stop an already stopped server.";
   RemoveAllResponseProviders();
-  [gcd_web_server_ stop];
+  // TODO(crbug.com/711723): Re-write the Stop() function when shutting down
+  // server works for iOS.
+  embedded_test_server_.release();
   SetPort(0);
 }
 
 bool HttpServer::IsRunning() const {
   DCHECK([NSThread isMainThread]);
-  return [gcd_web_server_ isRunning];
+  if (embedded_test_server_ == nullptr) {
+    return false;
+  }
+  return embedded_test_server_->Started();
 }
 
 NSUInteger HttpServer::GetPort() const {
@@ -162,24 +143,7 @@ GURL HttpServer::MakeUrl(const std::string& url) {
 GURL HttpServer::MakeUrlForHttpServer(const std::string& url) const {
   GURL result(url);
   DCHECK(result.is_valid());
-  const std::string kLocalhostHost = std::string("localhost");
-  if (result.port() == base::IntToString(GetPort()) &&
-      result.host() == kLocalhostHost) {
-    return result;
-  }
-
-  GURL::Replacements replacements;
-  replacements.SetHostStr(kLocalhostHost);
-
-  const std::string port = base::IntToString(static_cast<int>(GetPort()));
-  replacements.SetPortStr(port);
-
-  // It is necessary to prepend the host of the input URL so that URLs such
-  // as http://origin/foo, http://destination/foo can be disamgiguated.
-  const std::string new_path = std::string(result.host() + result.path());
-  replacements.SetPathStr(new_path);
-
-  return result.ReplaceComponents(replacements);
+  return embedded_test_server_->GetURL("/" + result.GetContent());
 }
 
 scoped_refptr<RefCountedResponseProviderWrapper>
