@@ -257,6 +257,12 @@ class Port(object):
         baseline_search_paths = self.baseline_search_path()
         return baseline_search_paths[0]
 
+    def baseline_flag_specific_dir(self):
+        """If --additional-driver-flag is specified, returns the absolute path to the flag-specific
+           platform-independent results. Otherwise returns None."""
+        flag_specific_path = self._flag_specific_baseline_search_path()
+        return flag_specific_path[-1] if flag_specific_path else None
+
     def virtual_baseline_search_path(self, test_name):
         suite = self.lookup_virtual_suite(test_name)
         if not suite:

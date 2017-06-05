@@ -1144,6 +1144,32 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
                               'platform/test-mac-mac10.10/failures/unexpected/text-image-checksum',
                               ['.png'], err)
 
+    def test_new_flag_specific_baseline(self):
+        # Test that we create new baselines under flag-specific directory if the actual results
+        # are different from the current expectations.
+        host = MockHost()
+        host.filesystem.write_text_file(
+            test.LAYOUT_TEST_DIR + '/failures/unexpected/text-image-checksum-expected.txt',
+            # Make the current text expectation the same as the actual text result of the test.
+            # The value is the same as actual_result of the test defined in
+            # webkitpy.layout_tests.port.test.
+            'text-image-checksum_fail-txt')
+        details, err, _ = logging_run(
+            ['--additional-driver-flag=--flag',
+             '--new-flag-specific-baseline',
+             'failures/unexpected/text-image-checksum.html'],
+            tests_included=True, host=host)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 8)
+        # We should create new pixel baseline only.
+        self.assertFalse(
+            host.filesystem.exists(
+                test.LAYOUT_TEST_DIR + '/flag-specific/flag/failures/unexpected/text-image-checksum-expected.txt'))
+        self.assert_baselines(file_list,
+                              'flag-specific/flag/failures/unexpected/text-image-checksum',
+                              ['.png'], err)
+
     def test_reftest_reset_results(self):
         # Test rebaseline of reftests.
         # Should ignore reftests without text expectations.

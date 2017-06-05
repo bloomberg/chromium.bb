@@ -121,8 +121,9 @@ def parse_args(args):
                 '--add-platform-exceptions',
                 action='store_true',
                 default=False,
-                help=('Save generated results into the *most-specific-platform* directory rather '
-                      'than the *generic-platform* directory')),
+                help=('For --reset-results and --new-flag-specific-baseline, save generated '
+                      'results into the *most-specific-platform* directory rather than the '
+                      'current baseline directory or *generic-platform* directory')),
             optparse.make_option(
                 '--additional-driver-flag',
                 '--additional-drt-flag',
@@ -182,7 +183,14 @@ def parse_args(args):
                 callback=deprecate,
                 help=('Deprecated. Use "webkit-patch rebaseline-cl" instead, or '
                       '"--reset-results --add-platform-exceptions" if you do want to create '
-                      'platform-version-specific new baselines locally.')),
+                      'new baselines for the *most-specific-platform* locally.')),
+            optparse.make_option(
+                '--new-flag-specific-baseline',
+                action='store_true',
+                default=False,
+                help=('Together with --addtional-driver-flag, if actual results are '
+                      'different from expected, save actual results as new baselines '
+                      'into the flag-specific generic-platform directory.')),
             optparse.make_option(
                 '--new-test-results',
                 action='callback',
@@ -484,7 +492,12 @@ def parse_args(args):
         option_group.add_options(group_options)
         option_parser.add_option_group(option_group)
 
-    return option_parser.parse_args(args)
+    (options, args) = option_parser.parse_args(args)
+
+    if options.new_flag_specific_baseline and not options.additional_driver_flag:
+        option_parser.error('--new-flag-specific-baseline requires --additional-driver-flag')
+
+    return (options, args)
 
 
 def _set_up_derived_options(port, options, args):
@@ -512,6 +525,9 @@ def _set_up_derived_options(port, options, args):
         for path in options.additional_platform_directory:
             additional_platform_directories.append(port.host.filesystem.abspath(path))
         options.additional_platform_directory = additional_platform_directories
+
+    if options.new_flag_specific_baseline:
+        options.reset_results = True
 
     if options.pixel_test_directories:
         options.pixel_tests = True
