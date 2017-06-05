@@ -1564,15 +1564,16 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
 }
 
 StyleInheritedVariables* ComputedStyle::InheritedVariables() const {
-  return VariablesInternal().Get();
+  return InheritedVariablesInternal().Get();
 }
 
 StyleNonInheritedVariables* ComputedStyle::NonInheritedVariables() const {
-  return rare_non_inherited_data_->variables_.get();
+  return rare_non_inherited_data_->non_inherited_variables_.get();
 }
 
 StyleInheritedVariables& ComputedStyle::MutableInheritedVariables() {
-  RefPtr<StyleInheritedVariables>& variables = MutableVariablesInternal();
+  RefPtr<StyleInheritedVariables>& variables =
+      MutableInheritedVariablesInternal();
   if (!variables)
     variables = StyleInheritedVariables::Create();
   else if (!variables->HasOneRef())
@@ -1582,7 +1583,7 @@ StyleInheritedVariables& ComputedStyle::MutableInheritedVariables() {
 
 StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
   std::unique_ptr<StyleNonInheritedVariables>& variables =
-      rare_non_inherited_data_.Access()->variables_;
+      rare_non_inherited_data_.Access()->non_inherited_variables_;
   if (!variables)
     variables = StyleNonInheritedVariables::Create();
   return *variables;

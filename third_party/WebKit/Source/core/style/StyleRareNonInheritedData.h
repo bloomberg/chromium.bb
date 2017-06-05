@@ -150,7 +150,7 @@ class CORE_EXPORT StyleRareNonInheritedData
 
   std::unique_ptr<PaintImages> paint_images_;
 
-  std::unique_ptr<StyleNonInheritedVariables> variables_;
+  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables_;
 
   StyleContentAlignmentData align_content_;
   StyleSelfAlignmentData align_items_;
