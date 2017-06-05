@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -37,6 +38,52 @@
 namespace extensions {
 namespace {
 
+// Helper to ensure all extension hosts are destroyed during the test. If a host
+// is still alive, the Profile can not be destroyed in
+// BrowserProcessImpl::StartTearDown(). TODO(tapted): The existence of this
+// helper is probably a bug. Extension hosts do not currently block shutdown the
+// way a browser tab does. Maybe they should. See http://crbug.com/729476.
+class ExtensionHostWatcher : public content::NotificationObserver {
+ public:
+  ExtensionHostWatcher() {
+    registrar_.Add(this, NOTIFICATION_EXTENSION_HOST_CREATED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this, NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                   content::NotificationService::AllSources());
+  }
+
+  void Wait() {
+    if (created_ == destroyed_)
+      return;
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, quit_closure_, TestTimeouts::action_timeout());
+    run_loop.Run();
+  }
+
+  int created() const { return created_; }
+  int destroyed() const { return destroyed_; }
+
+  // NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    ++(type == NOTIFICATION_EXTENSION_HOST_CREATED ? created_ : destroyed_);
+    if (!quit_closure_.is_null() && created_ == destroyed_)
+      quit_closure_.Run();
+  }
+
+ private:
+  content::NotificationRegistrar registrar_;
+  base::Closure quit_closure_;
+  int created_ = 0;
+  int destroyed_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionHostWatcher);
+};
+
 // chrome.browserAction API tests that interact with the UI in such a way that
 // they cannot be run concurrently (i.e. openPopup API tests that require the
 // window be focused/active).
@@ -47,8 +94,19 @@ class BrowserActionInteractiveTest : public ExtensionApiTest {
 
   // BrowserTestBase:
   void SetUpOnMainThread() override {
+    host_watcher_ = base::MakeUnique<ExtensionHostWatcher>();
     ExtensionApiTest::SetUpOnMainThread();
     EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  }
+
+  void TearDownOnMainThread() override {
+    // Note browser windows are closed in PostRunTestOnMainThread(), which is
+    // called after this. But relying on the window close to close the
+    // extension host can cause flakes. See http://crbug.com/729476.
+    // Waiting here requires individual tests to ensure their popup has closed.
+    ExtensionApiTest::TearDownOnMainThread();
+    host_watcher_->Wait();
+    EXPECT_EQ(host_watcher_->created(), host_watcher_->destroyed());
   }
 
  protected:
@@ -95,6 +153,9 @@ class BrowserActionInteractiveTest : public ExtensionApiTest {
     EnsurePopupActive();
   }
 
+  // Close the popup window directly.
+  void ClosePopup() { BrowserActionTestUtil(browser()).HidePopup(); }
+
   // Trigger a focus loss to close the popup.
   void ClosePopupViaFocusLoss() {
     EXPECT_TRUE(BrowserActionTestUtil(browser()).HasPopup());
@@ -123,6 +184,11 @@ class BrowserActionInteractiveTest : public ExtensionApiTest {
     observer.Wait();
     base::RunLoop().RunUntilIdle();
   }
+
+ private:
+  std::unique_ptr<ExtensionHostWatcher> host_watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionInteractiveTest);
 };
 
 // Tests opening a popup using the chrome.browserAction.openPopup API. This test
@@ -160,8 +226,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopup) {
 
   EXPECT_TRUE(new_browser != NULL);
 
-// Flaky on non-aura linux http://crbug.com/309749
-#if !(defined(OS_LINUX) && !defined(USE_AURA))
   ResultCatcher catcher;
   {
     content::WindowedNotificationObserver frame_observer(
@@ -173,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopup) {
     EXPECT_TRUE(BrowserActionTestUtil(new_browser).HasPopup());
   }
   ASSERT_TRUE(catcher.GetNextResult()) << message_;
-#endif
+  BrowserActionTestUtil(new_browser).HidePopup();
 }
 
 // Tests opening a popup in an incognito window.
@@ -196,8 +260,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopupIncognito) {
   EXPECT_FALSE(BrowserActionTestUtil(browser()).HasPopup());
 #endif
   // Incognito window should have a popup.
-  EXPECT_TRUE(BrowserActionTestUtil(BrowserList::GetInstance()->GetLastActive())
-                  .HasPopup());
+  BrowserActionTestUtil test_util(BrowserList::GetInstance()->GetLastActive());
+  EXPECT_TRUE(test_util.HasPopup());
+  test_util.HidePopup();
 }
 
 // Tests that an extension can open a popup in the last active incognito window
@@ -227,7 +292,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
       OpenURLOffTheRecord(profile(), GURL("chrome://newtab/"));
   listener.WaitUntilSatisfied();
   EXPECT_EQ(std::string("opened"), listener.message());
-  EXPECT_TRUE(BrowserActionTestUtil(incognito_browser).HasPopup());
+  BrowserActionTestUtil test_util(incognito_browser);
+  EXPECT_TRUE(test_util.HasPopup());
+  test_util.HidePopup();
 }
 
 #if defined(OS_LINUX)
@@ -259,6 +326,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   // Return control to javascript to validate that opening a popup fails now.
   listener.Reply("show another");
   ASSERT_TRUE(catcher.GetNextResult()) << message_;
+  ClosePopup();
 }
 
 // Test that openPopup does not grant tab permissions like for browser action
@@ -278,6 +346,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
               SessionTabHelper::IdForTab(
                   browser()->tab_strip_model()->GetActiveWebContents()),
               APIPermission::kTab));
+  ClosePopup();
 }
 
 // Test that the extension popup is closed when the browser window is focused.
