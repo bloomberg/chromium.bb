@@ -1092,7 +1092,7 @@ void TestLauncher::RunTestIteration() {
       FROM_HERE, BindOnce(&TestLauncher::RunTests, Unretained(this)));
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 // I/O watcher for the reading end of the self-pipe above.
 // Terminates any launched child processes and exits the process.
 void TestLauncher::OnShutdownPipeReadable() {
