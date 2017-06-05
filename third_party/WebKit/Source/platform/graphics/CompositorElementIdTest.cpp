@@ -15,7 +15,7 @@ uint64_t IdFromCompositorElementId(CompositorElementId element_id) {
 }
 
 TEST_F(CompositorElementIdTest, EncodeDecode) {
-  CompositorElementId element_id = CompositorElementIdFromPaintLayerId(
+  CompositorElementId element_id = CompositorElementIdFromLayoutObjectId(
       1, CompositorElementIdNamespace::kPrimary);
   EXPECT_EQ(1u, IdFromCompositorElementId(element_id));
   EXPECT_EQ(CompositorElementIdNamespace::kPrimary,
