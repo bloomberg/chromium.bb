@@ -318,6 +318,8 @@ typedef enum {
 } PALETTE_COLOR;
 #endif  // CONFIG_PALETTE
 
+// Note: All directional predictors must be between V_PRED and D63_PRED (both
+// inclusive).
 typedef enum ATTRIBUTE_PACKED {
   DC_PRED,    // Average of above and left pixels
   V_PRED,     // Vertical

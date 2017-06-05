@@ -76,14 +76,7 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
 #if CONFIG_EXT_INTRA
 static INLINE int av1_is_directional_mode(PREDICTION_MODE mode,
                                           BLOCK_SIZE bsize) {
-  return mode != DC_PRED && mode != TM_PRED &&
-#if CONFIG_ALT_INTRA
-         mode != SMOOTH_PRED &&
-#if CONFIG_SMOOTH_HV
-         mode != SMOOTH_V_PRED && mode != SMOOTH_H_PRED &&
-#endif  // CONFIG_SMOOTH_HV
-#endif  // CONFIG_ALT_INTRA
-         bsize >= BLOCK_8X8;
+  return mode >= V_PRED && mode <= D63_PRED && bsize >= BLOCK_8X8;
 }
 #endif  // CONFIG_EXT_INTRA
 
