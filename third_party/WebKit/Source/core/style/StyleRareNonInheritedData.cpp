@@ -93,7 +93,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
       visited_link_border_right_color_(StyleColor::CurrentColor()),
       visited_link_border_top_color_(StyleColor::CurrentColor()),
       visited_link_border_bottom_color_(StyleColor::CurrentColor()),
-      variables_(ComputedStyle::InitialNonInheritedVariables()),
+      non_inherited_variables_(ComputedStyle::InitialNonInheritedVariables()),
       align_content_(ComputedStyle::InitialContentAlignment()),
       align_items_(ComputedStyle::InitialDefaultAlignment()),
       align_self_(ComputedStyle::InitialSelfAlignment()),
@@ -179,7 +179,9 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(
       callback_selectors_(o.callback_selectors_),
       paint_images_(o.paint_images_ ? new PaintImages(*o.paint_images_)
                                     : nullptr),
-      variables_(o.variables_ ? o.variables_->Clone() : nullptr),
+      non_inherited_variables_(o.non_inherited_variables_
+                                   ? o.non_inherited_variables_->Clone()
+                                   : nullptr),
       align_content_(o.align_content_),
       align_items_(o.align_items_),
       align_self_(o.align_self_),
@@ -262,7 +264,7 @@ bool StyleRareNonInheritedData::operator==(
          visited_link_border_bottom_color_ ==
              o.visited_link_border_bottom_color_ &&
          callback_selectors_ == o.callback_selectors_ &&
-         DataEquivalent(variables_, o.variables_) &&
+         DataEquivalent(non_inherited_variables_, o.non_inherited_variables_) &&
          align_content_ == o.align_content_ && align_items_ == o.align_items_ &&
          align_self_ == o.align_self_ &&
          justify_content_ == o.justify_content_ &&
