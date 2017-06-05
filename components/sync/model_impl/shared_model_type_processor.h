@@ -56,8 +56,8 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
            MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& storage_key,
               MetadataChangeList* metadata_change_list) override;
-  void UpdateStorageKey(const std::string& old_storage_key,
-                        const std::string& new_storage_key,
+  void UpdateStorageKey(const EntityData& entity_data,
+                        const std::string& storage_key,
                         MetadataChangeList* metadata_change_list) override;
   void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
   void OnSyncStarting(const ModelErrorHandler& error_handler,
@@ -145,6 +145,9 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // Version of the above that generates a tag for |data|.
   ProcessorEntityTracker* CreateEntity(const EntityData& data);
 
+  // Returns true if all processor entity trackers have non-empty storage keys.
+  bool AllStorageKeysPopulated() const;
+
   /////////////////////
   // Processor state //
   /////////////////////
@@ -204,10 +207,15 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // entities may not always contain model type data/specifics.
   std::map<std::string, std::unique_ptr<ProcessorEntityTracker>> entities_;
 
-  // The bridge wants to communicate entirely via storage keys that is free to
-  // define and can understand more easily. All of the sync machinery wants to
-  // use client tag hash. This mapping allows us to convert from storage key to
-  // client tag hash. The other direction can use |entities_|.
+  // The bridge wants to communicate entirely via storage keys that it is free
+  // to define and can understand more easily. All of the sync machinery wants
+  // to use client tag hash. This mapping allows us to convert from storage key
+  // to client tag hash. The other direction can use |entities_|.
+  // Entity is temporarily not included in this map for the duration of
+  // MergeSyncData/ApplySyncChanges call when the bridge doesn't support
+  // GetStorageKey(). In this case the bridge is responsible for updating
+  // storage key with UpdateStorageKey() call from within
+  // MergeSyncData/ApplySyncChanges.
   std::map<std::string, std::string> storage_key_to_tag_hash_;
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -4,6 +4,7 @@
 
 #include "components/sync/model/fake_model_type_sync_bridge.h"
 
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -26,6 +27,17 @@ class TestMetadataChangeList : public InMemoryMetadataChangeList {
  public:
   TestMetadataChangeList() {}
   ~TestMetadataChangeList() override {}
+
+  void UpdateMetadata(const std::string& storage_key,
+                      const sync_pb::EntityMetadata& metadata) override {
+    DCHECK(!storage_key.empty());
+    InMemoryMetadataChangeList::UpdateMetadata(storage_key, metadata);
+  }
+
+  void ClearMetadata(const std::string& storage_key) override {
+    DCHECK(!storage_key.empty());
+    InMemoryMetadataChangeList::ClearMetadata(storage_key);
+  }
 
   const std::map<std::string, MetadataChange>& GetMetadataChanges() const {
     return metadata_changes_;
@@ -163,7 +175,7 @@ void FakeModelTypeSyncBridge::WriteItem(
     const std::string& key,
     std::unique_ptr<EntityData> entity_data) {
   db_->PutData(key, *entity_data);
-  if (change_processor()) {
+  if (change_processor()->IsTrackingMetadata()) {
     auto change_list = CreateMetadataChangeList();
     change_processor()->Put(key, std::move(entity_data), change_list.get());
     ApplyMetadataChangeList(std::move(change_list));
@@ -172,7 +184,7 @@ void FakeModelTypeSyncBridge::WriteItem(
 
 void FakeModelTypeSyncBridge::DeleteItem(const std::string& key) {
   db_->RemoveData(key);
-  if (change_processor()) {
+  if (change_processor()->IsTrackingMetadata()) {
     auto change_list = CreateMetadataChangeList();
     change_processor()->Delete(key, change_list.get());
     ApplyMetadataChangeList(std::move(change_list));
@@ -185,26 +197,45 @@ FakeModelTypeSyncBridge::CreateMetadataChangeList() {
 }
 
 base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
-    std::unique_ptr<MetadataChangeList> metadata_changes,
-    EntityDataMap data_map) {
+    std::unique_ptr<MetadataChangeList> metadata_change_list,
+    EntityChangeList entity_data) {
   if (error_next_) {
     error_next_ = false;
     return ModelError(FROM_HERE, "boom");
   }
 
+  std::set<std::string> remote_storage_keys;
+  // Store any new remote entities.
+  for (const auto& change : entity_data) {
+    EXPECT_FALSE(change.data().is_deleted());
+    EXPECT_EQ(EntityChange::ACTION_ADD, change.type());
+    std::string storage_key = change.storage_key();
+    EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
+    if (storage_key.empty()) {
+      storage_key = GetStorageKeyImpl(change.data());
+      change_processor()->UpdateStorageKey(change.data(), storage_key,
+                                           metadata_change_list.get());
+    }
+    remote_storage_keys.insert(storage_key);
+    db_->PutData(storage_key, change.data());
+  }
+
   // Commit any local entities that aren't being overwritten by the server.
   for (const auto& kv : db_->all_data()) {
-    if (data_map.find(kv.first) == data_map.end()) {
+    if (remote_storage_keys.find(kv.first) == remote_storage_keys.end()) {
       change_processor()->Put(kv.first, CopyEntityData(*kv.second),
-                              metadata_changes.get());
+                              metadata_change_list.get());
     }
   }
-  // Store any new remote entities.
-  for (const auto& kv : data_map) {
-    EXPECT_FALSE(kv.second->is_deleted());
-    db_->PutData(kv.first, kv.second.value());
-  }
-  ApplyMetadataChangeList(std::move(metadata_changes));
+
+  ApplyMetadataChangeList(std::move(metadata_change_list));
+  return {};
+}
+
+base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
+    std::unique_ptr<MetadataChangeList> metadata_change_list,
+    EntityDataMap entity_data) {
+  NOTREACHED();
   return {};
 }
 
@@ -218,10 +249,18 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::ApplySyncChanges(
 
   for (const EntityChange& change : entity_changes) {
     switch (change.type()) {
-      case EntityChange::ACTION_ADD:
-        EXPECT_FALSE(db_->HasData(change.storage_key()));
-        db_->PutData(change.storage_key(), change.data());
+      case EntityChange::ACTION_ADD: {
+        std::string storage_key = change.storage_key();
+        EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
+        if (storage_key.empty()) {
+          storage_key = GetStorageKeyImpl(change.data());
+          change_processor()->UpdateStorageKey(change.data(), storage_key,
+                                               metadata_changes.get());
+        }
+        EXPECT_FALSE(db_->HasData(storage_key));
+        db_->PutData(storage_key, change.data());
         break;
+      }
       case EntityChange::ACTION_UPDATE:
         EXPECT_TRUE(db_->HasData(change.storage_key()));
         db_->PutData(change.storage_key(), change.data());
@@ -302,7 +341,22 @@ std::string FakeModelTypeSyncBridge::GetClientTag(
 
 std::string FakeModelTypeSyncBridge::GetStorageKey(
     const EntityData& entity_data) {
+  DCHECK(supports_get_storage_key_);
+  return GetStorageKeyImpl(entity_data);
+}
+
+std::string FakeModelTypeSyncBridge::GetStorageKeyImpl(
+    const EntityData& entity_data) {
   return entity_data.specifics.preference().name();
+}
+
+bool FakeModelTypeSyncBridge::SupportsGetStorageKey() const {
+  return supports_get_storage_key_;
+}
+
+void FakeModelTypeSyncBridge::SetSupportsGetStorageKey(
+    bool supports_get_storage_key) {
+  supports_get_storage_key_ = supports_get_storage_key;
 }
 
 ConflictResolution FakeModelTypeSyncBridge::ResolveConflict(

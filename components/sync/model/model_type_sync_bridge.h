@@ -50,17 +50,41 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
 
   // Perform the initial merge between local and sync data. This should only be
   // called when a data type is first enabled to start syncing, and there is no
+  // sync metadata. Best effort should be made to match local and sync data.
+  // Storage key in entity_data elements will be set to result of
+  // GetStorageKey() call if the bridge supports it. Otherwise it will be left
+  // empty, bridge is responsible for updating storage keys of new entities with
+  // change_processor()->UpdateStorageKey() in this case. If a local and sync
+  // data should match/merge but disagree on storage key, the bridge should
+  // delete one of the records (preferably local). Any local pieces of data that
+  // are not present in sync should immediately be Put(...) to the processor
+  // before returning. The same MetadataChangeList that was passed into this
+  // function can be passed to Put(...) calls. Delete(...) can also be called
+  // but should not be needed for most model types. Durable storage writes, if
+  // not able to combine all change atomically, should save the metadata after
+  // the data changes, so that this merge will be re-driven by sync if is not
+  // completely saved during the current run.
+  virtual base::Optional<ModelError> MergeSyncData(
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
+      EntityChangeList entity_data);
+
+  // Perform the initial merge between local and sync data. This should only be
+  // called when a data type is first enabled to start syncing, and there is no
   // sync metadata. Best effort should be made to match local and sync data. The
-  // keys in the |entity_data_map| will have been created via GetClientTag(...),
-  // and if a local and sync data should match/merge but disagree on tags, the
-  // bridge should use the sync data's tag. Any local pieces of data that are
-  // not present in sync should immediately be Put(...) to the processor before
-  // returning. The same MetadataChangeList that was passed into this function
-  // can be passed to Put(...) calls. Delete(...) can also be called but should
-  // not be needed for most model types. Durable storage writes, if not able to
-  // combine all change atomically, should save the metadata after the data
-  // changes, so that this merge will be re-driven by sync if is not completely
-  // saved during the current run.
+  // keys in the |entity_data_map| will have been created via
+  // GetStorageKey(...), and if a local and sync data should match/merge but
+  // disagree on storage key, the bridge should delete one of the records
+  // (preferably local). Any local pieces of data that are not present in sync
+  // should immediately be Put(...) to the processor before returning. The same
+  // MetadataChangeList that was passed into this function can be passed to
+  // Put(...) calls. Delete(...) can also be called but should not be needed for
+  // most model types. Durable storage writes, if not able to combine all change
+  // atomically, should save the metadata after the data changes, so that this
+  // merge will be re-driven by sync if is not completely saved during the
+  // current run.
+  // TODO(pavely): This function should be removed as part of crbug.com/719570
+  // once all bridge implementations are switched to the other MergeSyncData
+  // signature.
   virtual base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) = 0;
@@ -101,6 +125,20 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // should be. Storage keys are kept in memory at steady state, so each model
   // type should strive to keep these keys as small as possible.
   virtual std::string GetStorageKey(const EntityData& entity_data) = 0;
+
+  // By returning true in this function datatype indicates that it can generate
+  // storage key from EntityData. In this case for all new entities received
+  // from server, change processor will call GetStorageKey and update
+  // EntityChange structures before passing them to MergeSyncData and
+  // ApplySyncChanges.
+  //
+  // This function should return false when datatype's native storage is not
+  // indexed by some combination of values from EntityData, when key into the
+  // storage is obtained at the time the record is inserted into it (e.g. ROWID
+  // in SQLite). In this case entity changes for new entities passed to
+  // MergeSyncData and ApplySyncChanges will have empty storage_key. It is
+  // datatype's responsibility to call UpdateStorageKey for such entities.
+  virtual bool SupportsGetStorageKey() const;
 
   // Resolve a conflict between the client and server versions of data. They are
   // guaranteed not to match (both be deleted or have identical specifics). A
