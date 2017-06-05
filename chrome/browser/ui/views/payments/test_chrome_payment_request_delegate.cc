@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/payments/test_chrome_payment_request_delegate.h"
 
-#include <utility>
-
 #include "content/public/browser/web_contents.h"
 
 namespace payments {
@@ -25,7 +23,7 @@ void TestChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   PaymentRequestDialogView* dialog_view =
       new PaymentRequestDialogView(request, observer_);
   dialog_view->ShowDialog();
-  dialog_ = std::move(dialog_view);
+  dialog_ = dialog_view;
 }
 
 bool TestChromePaymentRequestDelegate::IsIncognito() const {
