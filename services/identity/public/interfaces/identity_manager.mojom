@@ -4,19 +4,17 @@
 
 module identity.mojom;
 
-import "components/signin/public/interfaces/account_id.mojom";
 import "mojo/common/time.mojom";
+import "services/identity/public/interfaces/account_info.mojom";
 import "services/identity/public/interfaces/google_service_auth_error.mojom";
 import "services/identity/public/interfaces/scope_set.mojom";
 
 // Gives access to information about the user's Google accounts.
 interface IdentityManager {
-  // Returns the AccountId for the Google account that serves as the user's
+  // Returns the AccountInfo for the Google account that serves as the user's
   // primary account, or null if the user has no primary account (e.g., if they
   // are not signed in).
-  // TODO(blundell): Move away from using this struct to using a typemapped
-  // version of AccountInfo (and call this GetPrimaryAccountInfo()).
-  GetPrimaryAccountId() => (signin.mojom.AccountId? account_id);
+  GetPrimaryAccountInfo() => (AccountInfo? account_info);
 
   // Returns an access token with the requested scopes for the given
   // |account_id|, or null if it is not possible to obtain such a token (e.g.,
