@@ -273,7 +273,9 @@ void LayoutBoxModelObject::StyleWillChange(StyleDifference diff,
   // for the case because we can only see the new paintInvalidationContainer
   // during compositing update.
   if (Style() &&
-      (Style()->IsStackingContext() != new_style.IsStackingContext())) {
+      Style()->IsStackingContext() != new_style.IsStackingContext() &&
+      // InvalidatePaintIncludingNonCompositingDescendants() requires this.
+      IsRooted()) {
     // The following disablers are valid because we need to invalidate based on
     // the current status.
     DisableCompositingQueryAsserts compositing_disabler;
