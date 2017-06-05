@@ -270,25 +270,25 @@ static void amdgpu_print_devices()
 /* Find a match AMD device in PCI bus
  * Return the index of the device or -1 if not found
  */
-static int amdgpu_find_device(uint8_t bus, uint8_t dev)
+static int amdgpu_find_device(uint8_t bus, uint16_t dev)
 {
 	int i;
 	drmDevicePtr device;
 
-	for (i = 0; i < MAX_CARDS_SUPPORTED && drm_amdgpu[i] >=0; i++)
+	for (i = 0; i < MAX_CARDS_SUPPORTED && drm_amdgpu[i] >= 0; i++) {
 		if (drmGetDevice2(drm_amdgpu[i],
 			DRM_DEVICE_GET_PCI_REVISION,
 			&device) == 0) {
 			if (device->bustype == DRM_BUS_PCI)
-				if (device->businfo.pci->bus == bus &&
-					device->businfo.pci->dev == dev) {
-
+				if ((bus == 0xFF || device->businfo.pci->bus == bus) &&
+					device->deviceinfo.pci->device_id == dev) {
 					drmFreeDevice(&device);
 					return i;
 				}
 
 			drmFreeDevice(&device);
 		}
+	}
 
 	return -1;
 }
@@ -331,7 +331,7 @@ int main(int argc, char **argv)
 			pci_bus_id = atoi(optarg);
 			break;
 		case 'd':
-			pci_device_id = atoi(optarg);
+			sscanf(optarg, "%x", &pci_device_id);
 			break;
 		case 'p':
 			display_devices = 1;
@@ -365,10 +365,10 @@ int main(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
-	if (pci_bus_id > 0) {
+	if (pci_bus_id > 0 || pci_device_id) {
 		/* A device was specified to run the test */
-		test_device_index = amdgpu_find_device((uint8_t)pci_bus_id,
-							(uint8_t)pci_device_id);
+		test_device_index = amdgpu_find_device(pci_bus_id,
+						       pci_device_id);
 
 		if (test_device_index >= 0) {
 			/* Most tests run on device of drm_amdgpu[0].
