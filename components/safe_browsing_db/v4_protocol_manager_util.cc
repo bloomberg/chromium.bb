@@ -305,7 +305,7 @@ bool V4ProtocolManagerUtil::FullHashToHashPrefix(const FullHash& full_hash,
   if (full_hash.size() < prefix_size) {
     return false;
   }
-  *hash_prefix = full_hash.substr(prefix_size);
+  *hash_prefix = full_hash.substr(0, prefix_size);
   return true;
 }
 
