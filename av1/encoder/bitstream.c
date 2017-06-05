@@ -3311,16 +3311,23 @@ static void write_sgrproj_filter(SgrprojInfo *sgrproj_info,
 
 static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
   int i, p;
-  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height,
-                                         cm->rst_info[0].restoration_tilesize,
-                                         NULL, NULL, NULL, NULL);
+#if CONFIG_FRAME_SUPERRES
+  const int width = cm->superres_upscaled_width;
+  const int height = cm->superres_upscaled_height;
+#else
+  const int width = cm->width;
+  const int height = cm->height;
+#endif  // CONFIG_FRAME_SUPERRES
+  const int ntiles =
+      av1_get_rest_ntiles(width, height, cm->rst_info[0].restoration_tilesize,
+                          NULL, NULL, NULL, NULL);
   WienerInfo ref_wiener_info;
   SgrprojInfo ref_sgrproj_info;
   set_default_wiener(&ref_wiener_info);
   set_default_sgrproj(&ref_sgrproj_info);
   const int ntiles_uv = av1_get_rest_ntiles(
-      ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
-      ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
+      ROUND_POWER_OF_TWO(width, cm->subsampling_x),
+      ROUND_POWER_OF_TWO(height, cm->subsampling_y),
       cm->rst_info[1].restoration_tilesize, NULL, NULL, NULL, NULL);
   RestorationInfo *rsi = &cm->rst_info[0];
   if (rsi->frame_restoration_type != RESTORE_NONE) {

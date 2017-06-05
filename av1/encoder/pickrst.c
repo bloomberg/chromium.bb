@@ -437,8 +437,8 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   int width, height, src_stride, dgd_stride;
   uint8_t *dgd_buffer, *src_buffer;
   if (plane == AOM_PLANE_Y) {
-    width = cm->width;
-    height = cm->height;
+    width = src->y_crop_width;
+    height = src->y_crop_height;
     src_buffer = src->y_buffer;
     src_stride = src->y_stride;
     dgd_buffer = dgd->y_buffer;
@@ -985,8 +985,8 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   int width, height, src_stride, dgd_stride;
   uint8_t *dgd_buffer, *src_buffer;
   if (plane == AOM_PLANE_Y) {
-    width = cm->width;
-    height = cm->height;
+    width = src->y_crop_width;
+    height = src->y_crop_height;
     src_buffer = src->y_buffer;
     src_stride = src->y_stride;
     dgd_buffer = dgd->y_buffer;
@@ -1133,8 +1133,8 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   int h_start, h_end, v_start, v_end;
   int width, height;
   if (plane == AOM_PLANE_Y) {
-    width = cm->width;
-    height = cm->height;
+    width = src->y_crop_width;
+    height = src->y_crop_height;
   } else {
     width = src->uv_crop_width;
     height = src->uv_crop_height;
@@ -1165,8 +1165,8 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 }
 
 static double search_switchable_restoration(
-    AV1_COMP *cpi, int partial_frame, int plane, RestorationInfo *rsi,
-    double *tile_cost[RESTORE_SWITCHABLE_TYPES]) {
+    const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi, int partial_frame, int plane,
+    RestorationInfo *rsi, double *tile_cost[RESTORE_SWITCHABLE_TYPES]) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *x = &cpi->td.mb;
   double cost_switchable = 0;
@@ -1174,11 +1174,11 @@ static double search_switchable_restoration(
   RestorationType r;
   int width, height;
   if (plane == AOM_PLANE_Y) {
-    width = cm->width;
-    height = cm->height;
+    width = src->y_crop_width;
+    height = src->y_crop_height;
   } else {
-    width = ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x);
-    height = ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y);
+    width = src->uv_crop_width;
+    height = src->uv_crop_height;
   }
   const int ntiles = av1_get_rest_ntiles(
       width, height, cm->rst_info[plane].restoration_tilesize, NULL, NULL, NULL,
@@ -1243,14 +1243,17 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   RestorationType *restore_types[RESTORE_SWITCHABLE_TYPES];
   double best_cost_restore;
   RestorationType r, best_restore;
+  const int ywidth = src->y_crop_width;
+  const int yheight = src->y_crop_height;
+  const int uvwidth = src->uv_crop_width;
+  const int uvheight = src->uv_crop_height;
 
-  const int ntiles_y = av1_get_rest_ntiles(cm->width, cm->height,
-                                           cm->rst_info[0].restoration_tilesize,
-                                           NULL, NULL, NULL, NULL);
+  const int ntiles_y =
+      av1_get_rest_ntiles(ywidth, yheight, cm->rst_info[0].restoration_tilesize,
+                          NULL, NULL, NULL, NULL);
   const int ntiles_uv = av1_get_rest_ntiles(
-      ROUND_POWER_OF_TWO(cm->width, cm->subsampling_x),
-      ROUND_POWER_OF_TWO(cm->height, cm->subsampling_y),
-      cm->rst_info[1].restoration_tilesize, NULL, NULL, NULL, NULL);
+      uvwidth, uvheight, cm->rst_info[1].restoration_tilesize, NULL, NULL, NULL,
+      NULL);
 
   // Assume ntiles_uv is never larger that ntiles_y and so the same arrays work.
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++) {
@@ -1270,9 +1273,9 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                                 tile_cost[r], &cpi->trial_frame_rst);
     }
     if (plane == AOM_PLANE_Y)
-      cost_restore[RESTORE_SWITCHABLE] =
-          search_switchable_restoration(cpi, method == LPF_PICK_FROM_SUBIMAGE,
-                                        plane, &cm->rst_info[plane], tile_cost);
+      cost_restore[RESTORE_SWITCHABLE] = search_switchable_restoration(
+          src, cpi, method == LPF_PICK_FROM_SUBIMAGE, plane,
+          &cm->rst_info[plane], tile_cost);
     else
       cost_restore[RESTORE_SWITCHABLE] = DBL_MAX;
     best_cost_restore = DBL_MAX;
