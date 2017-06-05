@@ -31,6 +31,11 @@ struct ActiveGroupId;
 
 namespace metrics {
 
+namespace internal {
+extern const int kOmniboxEventLimit;
+extern const int kUserActionEventLimit;
+}
+
 class MetricsProvider;
 class MetricsServiceClient;
 
@@ -128,17 +133,16 @@ class MetricsLog {
   // None of the Record* methods can be called after this is called.
   void CloseLog();
 
+  // Truncate some of the fields within the log that we want to restrict in
+  // size due to bandwidth concerns.
+  void TruncateEvents();
+
   // Fills |encoded_log| with the serialized protobuf representation of the
   // record.  Must only be called after CloseLog() has been called.
   void GetEncodedLog(std::string* encoded_log);
 
   const base::TimeTicks& creation_time() const {
     return creation_time_;
-  }
-
-  int num_events() const {
-    return uma_proto_.omnibox_event_size() +
-           uma_proto_.user_action_event_size();
   }
 
   LogType log_type() const { return log_type_; }

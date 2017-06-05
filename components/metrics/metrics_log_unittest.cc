@@ -74,6 +74,10 @@ class TestMetricsLog : public MetricsLog {
     return *MetricsLog::uma_proto();
   }
 
+  ChromeUserMetricsExtension* mutable_uma_proto() {
+    return MetricsLog::uma_proto();
+  }
+
   const SystemProfileProto& system_profile() const {
     return uma_proto().system_profile();
   }
@@ -411,6 +415,29 @@ TEST_F(MetricsLogTest, ProductSetIfNotDefault) {
   // Check that the product is set to |kTestProduct|.
   EXPECT_TRUE(log.uma_proto().has_product());
   EXPECT_EQ(kTestProduct, log.uma_proto().product());
+}
+
+TEST_F(MetricsLogTest, TruncateEvents) {
+  TestMetricsServiceClient client;
+  TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client,
+                     &prefs_);
+
+  for (int i = 0; i < internal::kUserActionEventLimit * 2; ++i) {
+    log.RecordUserAction("BasicAction");
+    EXPECT_EQ(i + 1, log.uma_proto().user_action_event_size());
+  }
+  for (int i = 0; i < internal::kOmniboxEventLimit * 2; ++i) {
+    // Add an empty omnibox event. Not fully realistic since these are normally
+    // supplied by a metrics provider.
+    log.mutable_uma_proto()->add_omnibox_event();
+    EXPECT_EQ(i + 1, log.uma_proto().omnibox_event_size());
+  }
+
+  // Truncate, and check that the current size is the limit.
+  log.TruncateEvents();
+  EXPECT_EQ(internal::kUserActionEventLimit,
+            log.uma_proto().user_action_event_size());
+  EXPECT_EQ(internal::kOmniboxEventLimit, log.uma_proto().omnibox_event_size());
 }
 
 }  // namespace metrics
