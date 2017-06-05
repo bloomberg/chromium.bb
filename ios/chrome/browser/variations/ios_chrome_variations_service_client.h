@@ -25,7 +25,6 @@ class IOSChromeVariationsServiceClient
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   version_info::Channel GetChannel() override;
   bool OverridesRestrictParameter(std::string* parameter) override;
-  void OnInitialStartup() override;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeVariationsServiceClient);
 };
