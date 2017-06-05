@@ -219,11 +219,12 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
   scoped_refptr<const extensions::Extension> CreateExtension(
       const extensions::ExtensionId& id,
       const std::string& name) {
-    return CreateExtension(id, name, nullptr);
+    return CreateExtension(id, name, nullptr, nullptr);
   }
   scoped_refptr<const extensions::Extension> CreateExtension(
       const extensions::ExtensionId& id,
       const std::string& name,
+      std::unique_ptr<base::Value> permissions,
       std::unique_ptr<base::Value> action_handlers) {
     std::unique_ptr<base::DictionaryValue> manifest =
         extensions::DictionaryBuilder()
@@ -243,6 +244,9 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
 
     if (action_handlers)
       manifest->Set("action_handlers", std::move(action_handlers));
+
+    if (permissions)
+      manifest->Set("permissions", std::move(permissions));
 
     return extensions::ExtensionBuilder()
         .SetManifest(std::move(manifest))
@@ -404,9 +408,9 @@ TEST_P(NoteTakingHelperTest, ListChromeAppsWithLockScreenNotesSupported) {
 
   // Install Keep app that does not support lock screen note taking - it should
   // be reported not to support lock screen note taking.
-  scoped_refptr<const extensions::Extension> prod_extension =
-      CreateExtension(NoteTakingHelper::kProdKeepExtensionId, kProdKeepAppName,
-                      std::move(lock_disabled_action_handler));
+  scoped_refptr<const extensions::Extension> prod_extension = CreateExtension(
+      NoteTakingHelper::kProdKeepExtensionId, kProdKeepAppName,
+      nullptr /* permissions */, std::move(lock_disabled_action_handler));
   InstallExtension(prod_extension.get(), profile());
   EXPECT_TRUE(helper()->IsAppAvailable(profile()));
   std::vector<NoteTakingAppInfo> apps = helper()->GetAvailableApps(profile());
@@ -430,6 +434,7 @@ TEST_P(NoteTakingHelperTest, ListChromeAppsWithLockScreenNotesSupported) {
   // enable-lock-screen-apps flag is set).
   scoped_refptr<const extensions::Extension> dev_extension =
       CreateExtension(NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName,
+                      extensions::ListBuilder().Append("lockScreen").Build(),
                       std::move(lock_enabled_action_handler));
   InstallExtension(dev_extension.get(), profile());
   apps = helper()->GetAvailableApps(profile());
@@ -462,6 +467,7 @@ TEST_P(NoteTakingHelperTest, PreferredAppEnabledOnLockScreen) {
   // Install lock screen enabled Keep note taking app.
   scoped_refptr<const extensions::Extension> dev_extension =
       CreateExtension(NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName,
+                      extensions::ListBuilder().Append("lockScreen").Build(),
                       std::move(lock_enabled_action_handler));
   InstallExtension(dev_extension.get(), profile());
 
@@ -498,6 +504,37 @@ TEST_P(NoteTakingHelperTest, PreferredAppEnabledOnLockScreen) {
             GetAppString(apps[0]));
 }
 
+TEST_P(NoteTakingHelperTest, PreferredAppWithNoLockScreenPermission) {
+  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+
+  ASSERT_FALSE(helper()->IsAppAvailable(profile()));
+  ASSERT_TRUE(helper()->GetAvailableApps(profile()).empty());
+
+  std::unique_ptr<base::Value> lock_enabled_action_handler =
+      extensions::ListBuilder()
+          .Append(extensions::DictionaryBuilder()
+                      .Set("action", app_runtime::ToString(
+                                         app_runtime::ACTION_TYPE_NEW_NOTE))
+                      .SetBoolean("enabled_on_lock_screen", true)
+                      .Build())
+          .Build();
+
+  // Install lock screen enabled Keep note taking app, but wihtout lock screen
+  // permission listed.
+  scoped_refptr<const extensions::Extension> dev_extension = CreateExtension(
+      NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName,
+      nullptr /* permissions */, std::move(lock_enabled_action_handler));
+  InstallExtension(dev_extension.get(), profile());
+
+  // Verify that the app is not reported to support lock screen note taking.
+  std::vector<NoteTakingAppInfo> apps = helper()->GetAvailableApps(profile());
+  ASSERT_EQ(1u, apps.size());
+  EXPECT_EQ(GetAppString(NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName,
+                         false /* preferred */,
+                         NoteTakingLockScreenSupport::kNotSupported),
+            GetAppString(apps[0]));
+}
+
 TEST_P(NoteTakingHelperTest,
        PreferredAppWithotLockSupportClearsLockScreenPref) {
   Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
@@ -517,6 +554,7 @@ TEST_P(NoteTakingHelperTest,
   // Install dev Keep app that supports lock screen note taking.
   scoped_refptr<const extensions::Extension> dev_extension =
       CreateExtension(NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName,
+                      extensions::ListBuilder().Append("lockScreen").Build(),
                       lock_enabled_action_handler->CreateDeepCopy());
   InstallExtension(dev_extension.get(), profile());
 
@@ -524,7 +562,8 @@ TEST_P(NoteTakingHelperTest,
   const extensions::ExtensionId kNewNoteId = crx_file::id_util::GenerateId("a");
   const std::string kName = "Some App";
   scoped_refptr<const extensions::Extension> has_new_note = CreateExtension(
-      kNewNoteId, kName, lock_enabled_action_handler->CreateDeepCopy());
+      kNewNoteId, kName, extensions::ListBuilder().Append("lockScreen").Build(),
+      lock_enabled_action_handler->CreateDeepCopy());
   InstallExtension(has_new_note.get(), profile());
 
   // Verify that only Keep app is reported to support lock screen note taking.
@@ -607,6 +646,7 @@ TEST_P(NoteTakingHelperTest,
 
   scoped_refptr<const extensions::Extension> dev_extension =
       CreateExtension(NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName,
+                      extensions::ListBuilder().Append("lockScreen").Build(),
                       std::move(lock_enabled_action_handler));
   InstallExtension(dev_extension.get(), profile());
 
@@ -640,6 +680,7 @@ TEST_P(NoteTakingHelperTest, LockScreenAppsSupportNotEnabled) {
 
   scoped_refptr<const extensions::Extension> dev_extension =
       CreateExtension(NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName,
+                      extensions::ListBuilder().Append("lockScreen").Build(),
                       std::move(lock_enabled_action_handler));
   InstallExtension(dev_extension.get(), profile());
   std::vector<NoteTakingAppInfo> apps = helper()->GetAvailableApps(profile());
@@ -663,14 +704,15 @@ TEST_P(NoteTakingHelperTest, CustomChromeApps) {
 
   // "action_handlers": ["new_note"]
   scoped_refptr<const extensions::Extension> has_new_note = CreateExtension(
-      kNewNoteId, kName,
+      kNewNoteId, kName, nullptr /* permissions */,
       extensions::ListBuilder()
           .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
           .Build());
   InstallExtension(has_new_note.get(), profile());
   // "action_handlers": []
   scoped_refptr<const extensions::Extension> empty_array =
-      CreateExtension(kEmptyArrayId, kName, extensions::ListBuilder().Build());
+      CreateExtension(kEmptyArrayId, kName, nullptr /* permissions*/,
+                      extensions::ListBuilder().Build());
   InstallExtension(empty_array.get(), profile());
   // (no action handler entry)
   scoped_refptr<const extensions::Extension> none =
@@ -704,7 +746,8 @@ TEST_P(NoteTakingHelperTest, CustomLockScreenEnabledApps) {
                       .Build())
           .Build();
   scoped_refptr<const extensions::Extension> has_new_note = CreateExtension(
-      kNewNoteId, kName, std::move(lock_enabled_action_handler));
+      kNewNoteId, kName, extensions::ListBuilder().Append("lockScreen").Build(),
+      std::move(lock_enabled_action_handler));
   InstallExtension(has_new_note.get(), profile());
 
   // Only the "new_note" extension is returned from GetAvailableApps.
@@ -719,7 +762,7 @@ TEST_P(NoteTakingHelperTest, WhitelistedAndCustomAppsShowOnlyOnce) {
   Init(ENABLE_PALETTE);
 
   scoped_refptr<const extensions::Extension> extension = CreateExtension(
-      NoteTakingHelper::kProdKeepExtensionId, "Keep",
+      NoteTakingHelper::kProdKeepExtensionId, "Keep", nullptr /* permissions */,
       extensions::ListBuilder()
           .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
           .Build());
