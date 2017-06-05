@@ -30,7 +30,7 @@ class TEST_RUNNER_EXPORT AppBannerService
                                const base::Callback<void(bool)>& callback);
 
   // blink::mojom::AppBannerService overrides.
-  void DisplayAppBanner() override;
+  void DisplayAppBanner(bool user_gesture) override;
 
  private:
   void OnBannerPromptReply(const base::Callback<void(bool)>& callback,
