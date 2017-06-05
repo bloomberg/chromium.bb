@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/md_bookmarks/bookmarks_message_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -152,6 +154,8 @@ MdBookmarksUI::MdBookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile,
                                 CreateMdBookmarksUIHTMLSource(profile));
+
+  web_ui->AddMessageHandler(base::MakeUnique<BookmarksMessageHandler>());
 }
 
 // static

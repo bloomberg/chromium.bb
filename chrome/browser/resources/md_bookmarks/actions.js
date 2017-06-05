@@ -241,6 +241,18 @@ cr.define('bookmarks.actions', function() {
     };
   }
 
+  /**
+   * @param {IncognitoAvailability} availability
+   * @return {!Action}
+   */
+  function setIncognitoAvailability(availability) {
+    assert(availability != IncognitoAvailability.FORCED);
+    return {
+      name: 'set-incognito-availability',
+      value: availability,
+    };
+  }
+
   return {
     changeFolderOpen: changeFolderOpen,
     clearSearch: clearSearch,
@@ -254,6 +266,7 @@ cr.define('bookmarks.actions', function() {
     selectAll: selectAll,
     selectFolder: selectFolder,
     selectItem: selectItem,
+    setIncognitoAvailability: setIncognitoAvailability,
     setSearchResults: setSearchResults,
     setSearchTerm: setSearchTerm,
     updateAnchor: updateAnchor,

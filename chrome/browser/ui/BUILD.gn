@@ -948,6 +948,8 @@ split_static_library("ui") {
       "webui/identity_internals_ui.h",
       "webui/inspect_ui.cc",
       "webui/inspect_ui.h",
+      "webui/md_bookmarks/bookmarks_message_handler.cc",
+      "webui/md_bookmarks/bookmarks_message_handler.h",
       "webui/md_bookmarks/md_bookmarks_ui.cc",
       "webui/md_bookmarks/md_bookmarks_ui.h",
       "webui/md_downloads/downloads_list_tracker.cc",

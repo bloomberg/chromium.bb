@@ -395,6 +395,24 @@ cr.define('bookmarks', function() {
     return newClosedFolders;
   };
 
+  var PreferencesState = {};
+
+  /**
+   * @param {PreferencesState} prefs
+   * @param {Action} action
+   * @return {PreferencesState}
+   */
+  PreferencesState.updatePrefs = function(prefs, action) {
+    switch (action.name) {
+      case 'set-incognito-availability':
+        return /** @type {PreferencesState} */ (Object.assign({}, prefs, {
+          incognitoAvailability: action.value,
+        }));
+      default:
+        return prefs;
+    }
+  };
+
   /**
    * @param {ClosedFolderState} closedFolders
    * @param {Action} action
@@ -437,6 +455,7 @@ cr.define('bookmarks', function() {
           state.selectedFolder, action, state.nodes),
       closedFolders: ClosedFolderState.updateClosedFolders(
           state.closedFolders, action, state.nodes),
+      prefs: PreferencesState.updatePrefs(state.prefs, action),
       search: SearchState.updateSearch(state.search, action),
       selection: SelectionState.updateSelection(state.selection, action),
     };
@@ -446,6 +465,7 @@ cr.define('bookmarks', function() {
     reduceAction: reduceAction,
     ClosedFolderState: ClosedFolderState,
     NodeState: NodeState,
+    PreferencesState: PreferencesState,
     SearchState: SearchState,
     SelectedFolderState: SelectedFolderState,
     SelectionState: SelectionState,
