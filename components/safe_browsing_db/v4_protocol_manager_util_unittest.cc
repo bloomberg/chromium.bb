@@ -269,4 +269,28 @@ TEST_F(V4ProtocolManagerUtilTest, TestIPAddressToEncodedIPV6) {
   }
 }
 
+TEST_F(V4ProtocolManagerUtilTest, TestFullHashToHashPrefix) {
+  const std::string full_hash = "abcdefgh";
+  std::vector<std::tuple<bool, std::string, PrefixSize, std::string>>
+      test_cases = {
+          std::make_tuple(true, "", 0, ""),
+          std::make_tuple(false, "", kMinHashPrefixLength, ""),
+          std::make_tuple(true, "a", 1, full_hash),
+          std::make_tuple(true, "abcd", kMinHashPrefixLength, full_hash),
+          std::make_tuple(true, "abcde", kMinHashPrefixLength + 1, full_hash)};
+  for (size_t i = 0; i < test_cases.size(); i++) {
+    DVLOG(1) << "Running case: " << i;
+    bool success = std::get<0>(test_cases[i]);
+    const auto& expected_prefix = std::get<1>(test_cases[i]);
+    const PrefixSize& prefix_size = std::get<2>(test_cases[i]);
+    const auto& input_full_hash = std::get<3>(test_cases[i]);
+    std::string prefix;
+    ASSERT_EQ(success, V4ProtocolManagerUtil::FullHashToHashPrefix(
+                           input_full_hash, prefix_size, &prefix));
+    if (success) {
+      ASSERT_EQ(expected_prefix, prefix);
+    }
+  }
+}
+
 }  // namespace safe_browsing
