@@ -539,6 +539,9 @@ TEST_F(BackgroundFetchServiceTest, Abort) {
   // Immediately abort the registration. This also is expected to succeed.
   ASSERT_NO_FATAL_FAILURE(Abort(registration_id, &abort_error));
   ASSERT_EQ(abort_error, blink::mojom::BackgroundFetchError::NONE);
+  // Wait for the response of the Mojo IPC to dispatch
+  // BackgroundFetchAbortEvent.
+  base::RunLoop().RunUntilIdle();
 
   blink::mojom::BackgroundFetchError second_error;
   BackgroundFetchRegistration second_registration;
