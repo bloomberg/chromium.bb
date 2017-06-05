@@ -5120,27 +5120,26 @@ static int check_best_zero_mv(
     int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME], int this_mode,
     const MV_REFERENCE_FRAME ref_frames[2], const BLOCK_SIZE bsize, int block,
     int mi_row, int mi_col) {
-  int_mv zeromv[2];
+  int_mv zeromv[2] = { {.as_int = 0 } };
   int comp_pred_mode = ref_frames[1] > INTRA_FRAME;
-  int cur_frm;
   (void)mi_row;
   (void)mi_col;
-  for (cur_frm = 0; cur_frm < 1 + comp_pred_mode; cur_frm++) {
 #if CONFIG_GLOBAL_MOTION
-    if (this_mode == ZEROMV
+  if (this_mode == ZEROMV
 #if CONFIG_EXT_INTER
-        || this_mode == ZERO_ZEROMV
+      || this_mode == ZERO_ZEROMV
 #endif  // CONFIG_EXT_INTER
-        )
+      ) {
+    for (int cur_frm = 0; cur_frm < 1 + comp_pred_mode; cur_frm++) {
       zeromv[cur_frm].as_int =
           gm_get_motion_vector(&cpi->common.global_motion[ref_frames[cur_frm]],
                                cpi->common.allow_high_precision_mv, bsize,
                                mi_col, mi_row, block)
               .as_int;
-    else
-#endif  // CONFIG_GLOBAL_MOTION
-      zeromv[cur_frm].as_int = 0;
+    }
   }
+#endif  // CONFIG_GLOBAL_MOTION
+
 #if !CONFIG_EXT_INTER
   assert(ref_frames[1] != INTRA_FRAME);  // Just sanity check
 #endif                                   // !CONFIG_EXT_INTER
