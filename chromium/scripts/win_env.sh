@@ -22,7 +22,7 @@ if [ ! -d $1 ]; then
   exit 1
 fi
 
-VSPATH=$1/win_toolchain/vs_files/d5dc33b15d1b2c086f2f6632e2fd15882f80dbd3
+VSPATH=$1/win_toolchain/vs_files/d3cb0e37bdd120ad0ac4650b674b09e81be45616
 
 if [ ! -d $VSPATH ]; then
   echo "Visual Studio 2015 toolchain not found: $VSPATH"
@@ -76,8 +76,8 @@ case "$2" in
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/ucrt/x86
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/um/x86
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.14393.0/ucrt/x86
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.14393.0/um/x86
     add_lib_path $VSPATH/VC/atlmfc/lib
     ;;
 
@@ -86,8 +86,8 @@ case "$2" in
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib/amd64
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/ucrt/x64
-    add_lib_path $VSPATH/win_sdk/Lib/10.0.10586.0/um/x64
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.14393.0/ucrt/x64
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.14393.0/um/x64
     add_lib_path $VSPATH/VC/atlmfc/lib/amd64
     ;;
 
@@ -99,9 +99,9 @@ esac
 
 # Common for x86 and x64.
 add_path $(dirname $(readlink -f "$0")) # For cygwin-wrapper.
-add_include_path $VSPATH/win_sdk/Include/10.0.10586.0/ucrt
-add_include_path $VSPATH/win_sdk/Include/10.0.10586.0/um
-add_include_path $VSPATH/win_sdk/Include/10.0.10586.0/shared
+add_include_path $VSPATH/win_sdk/Include/10.0.14393.0/ucrt
+add_include_path $VSPATH/win_sdk/Include/10.0.14393.0/um
+add_include_path $VSPATH/win_sdk/Include/10.0.14393.0/shared
 add_include_path $VSPATH/VC/include
 add_include_path $VSPATH/VC/atlmfc/include
 

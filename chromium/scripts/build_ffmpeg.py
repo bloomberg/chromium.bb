@@ -226,7 +226,7 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   # triggering mis-detection during configure execution.
   if target_os == 'win':
       RewriteFile(
-          os.path.join(config_dir, 'config.mak'),
+          os.path.join(config_dir, 'ffbuild/config.mak'),
           r'(LDFLAGS=.*)',
           (r'\1 -FORCE:UNRESOLVED'))
 
