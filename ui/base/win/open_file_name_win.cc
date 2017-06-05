@@ -73,7 +73,7 @@ base::FilePath OpenFileName::GetSingleResult() {
   base::FilePath directory;
   std::vector<base::FilePath> filenames;
   GetResult(&directory, &filenames);
-  if (filenames.size() != 1)
+  if (filenames.size() != 1 || filenames[0].empty())
     return base::FilePath();
   return directory.Append(filenames[0]);
 }
