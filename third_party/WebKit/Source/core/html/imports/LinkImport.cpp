@@ -30,12 +30,19 @@
 
 #include "core/html/imports/LinkImport.h"
 
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportTreeRoot.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "platform/loader/fetch/FetchParameters.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/weborigin/SecurityPolicy.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 
@@ -64,24 +71,35 @@ void LinkImport::Process() {
   if (!ShouldLoadResource())
     return;
 
-  if (!owner_->GetDocument().ImportsController()) {
+  if (!GetDocument().ImportsController()) {
     // The document should be the master.
-    Document& master = owner_->GetDocument();
+    Document& master = GetDocument();
     DCHECK(master.GetFrame());
     master.CreateImportsController();
   }
 
-  LinkRequestBuilder builder(owner_);
-  if (!builder.IsValid()) {
+  KURL url = owner_->GetNonEmptyURLAttribute(HTMLNames::hrefAttr);
+  if (url.IsEmpty() || !url.IsValid()) {
     DidFinish();
     return;
   }
 
-  HTMLImportsController* controller = owner_->GetDocument().ImportsController();
-  HTMLImportLoader* loader = owner_->GetDocument().ImportLoader();
+  HTMLImportsController* controller = GetDocument().ImportsController();
+  HTMLImportLoader* loader = GetDocument().ImportLoader();
   HTMLImport* parent = loader ? static_cast<HTMLImport*>(loader->FirstImport())
                               : static_cast<HTMLImport*>(controller->Root());
-  child_ = controller->Load(parent, this, builder.Build(false));
+
+  ResourceRequest resource_request(GetDocument().CompleteURL(url));
+  ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
+  if (referrer_policy != kReferrerPolicyDefault) {
+    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+        referrer_policy, url, GetDocument().OutgoingReferrer()));
+  }
+
+  FetchParameters params(resource_request, owner_->localName(), GetCharset());
+  params.SetContentSecurityPolicyNonce(owner_->nonce());
+
+  child_ = controller->Load(parent, this, params);
   if (!child_) {
     DidFinish();
     return;
@@ -120,7 +138,7 @@ void LinkImport::OwnerInserted() {
 
 void LinkImport::OwnerRemoved() {
   if (owner_)
-    owner_->GetDocument().GetStyleEngine().HtmlImportAddedOrRemoved();
+    GetDocument().GetStyleEngine().HtmlImportAddedOrRemoved();
 }
 
 DEFINE_TRACE(LinkImport) {
