@@ -684,6 +684,13 @@ fileOperationUtil.CopyTask.prototype.__proto__ =
     fileOperationUtil.Task.prototype;
 
 /**
+ * Number of consecutive errors to stop CopyTask.
+ * @const {number}
+ * @private
+ */
+fileOperationUtil.CopyTask.CONSECUTIVE_ERROR_LIMIT_ = 100;
+
+/**
  * Initializes the CopyTask.
  * @param {function()} callback Called when the initialize is completed.
  */
@@ -800,6 +807,11 @@ fileOperationUtil.CopyTask.prototype.run = function(
 
   this.updateProgressRateLimiter_ = new AsyncUtil.RateLimiter(progressCallback);
 
+  // Number of consecutive errors. Increases while failing and resets to zero
+  // when one of them succeeds.
+  var errorCount = 0;
+  var lastError;
+
   AsyncUtil.forEach(
       this.sourceEntries,
       function(callback, entry, index) {
@@ -830,16 +842,29 @@ fileOperationUtil.CopyTask.prototype.run = function(
               // Update current source index and processing bytes.
               this.processingSourceIndex_ = index + 1;
               this.processedBytes = this.calcProcessedBytes_();
+              errorCount = 0;
               callback();
             }.bind(this),
             function(error) {
               // Finishes off delayed updates if necessary.
               this.updateProgressRateLimiter_.runImmediately();
-              errorCallback(error);
+              // Update current source index and processing bytes.
+              this.processingSourceIndex_ = index + 1;
+              this.processedBytes = this.calcProcessedBytes_();
+              errorCount++;
+              lastError = error;
+              if (errorCount <
+                  fileOperationUtil.CopyTask.CONSECUTIVE_ERROR_LIMIT_) {
+                callback();
+              } else {
+                errorCallback(error);
+              }
             }.bind(this));
       },
       function() {
-        if (this.deleteAfterCopy) {
+        if (lastError) {
+          errorCallback(lastError);
+        } else if (this.deleteAfterCopy) {
           deleteOriginals();
         } else {
           successCallback();
