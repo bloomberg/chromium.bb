@@ -57,6 +57,12 @@ Polymer({
       bookmarks.Store.getInstance().init(initialState);
       bookmarks.ApiListener.init();
 
+      setTimeout(function() {
+        chrome.metricsPrivate.recordTime(
+            'BookmarkManager.ResultsRenderedTime',
+            Math.floor(window.performance.now()));
+      });
+
     }.bind(this));
 
     this.boundUpdateSidebarWidth_ = this.updateSidebarWidth_.bind(this);
