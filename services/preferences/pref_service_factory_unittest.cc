@@ -174,23 +174,12 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
   }
 
  private:
-  // Called when the PrefService has been initialized.
-  static void OnInit(const base::Closure& quit_closure, bool success) {
-    quit_closure.Run();
-  }
-
   // Called when the PrefService has been created.
   static void OnCreate(const base::Closure& quit_closure,
                        std::unique_ptr<PrefService>* out,
                        std::unique_ptr<PrefService> pref_service) {
     DCHECK(pref_service);
     *out = std::move(pref_service);
-    if ((*out)->GetInitializationStatus() ==
-        PrefService::INITIALIZATION_STATUS_WAITING) {
-      (*out)->AddPrefInitObserver(
-          base::Bind(PrefServiceFactoryTest::OnInit, quit_closure));
-      return;
-    }
     quit_closure.Run();
   }
 
