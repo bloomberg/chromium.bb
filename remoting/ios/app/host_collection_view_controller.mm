@@ -17,15 +17,6 @@ static NSString* const kReusableIdentifierItem =
     @"remotingHostCollectionViewControllerItem";
 
 static CGFloat kHostCollectionViewControllerCellHeight = 70.f;
-static CGFloat kHostCollectionViewControllerDefaultHeaderHeight = 100.f;
-static CGFloat kHostCollectionViewControllerSmallHeaderHeight = 60.f;
-static UIColor* kBackgroundColor =
-    [UIColor colorWithRed:0.f green:0.67f blue:0.55f alpha:1.f];
-
-@interface HostCollectionViewController () {
-  MDCInkTouchController* _inkTouchController;
-}
-@end
 
 @implementation HostCollectionViewController
 
@@ -36,7 +27,7 @@ static UIColor* kBackgroundColor =
 - (instancetype)initWithCollectionViewLayout:(UICollectionViewLayout*)layout {
   self = [super initWithCollectionViewLayout:layout];
   if (self) {
-    self.collectionView.backgroundColor = [UIColor whiteColor];
+    self.collectionView.backgroundColor = [UIColor clearColor];
     [self.collectionView registerClass:[HostCollectionViewCell class]
             forCellWithReuseIdentifier:NSStringFromClass(
                                            [HostCollectionViewCell class])];
@@ -48,7 +39,7 @@ static UIColor* kBackgroundColor =
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+  self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
   self.styler.cellLayoutType = MDCCollectionViewCellLayoutTypeList;
 }
 
@@ -111,32 +102,14 @@ static UIColor* kBackgroundColor =
 
 #pragma mark - Private
 
-- (UIView*)hostsHeaderView {
-  CGRect headerFrame =
-      _flexHeaderContainerViewController.headerViewController.headerView.bounds;
-  UIView* hostsHeaderView = [[UIView alloc] initWithFrame:headerFrame];
-  hostsHeaderView.backgroundColor = kBackgroundColor;
-  hostsHeaderView.layer.masksToBounds = YES;
-  hostsHeaderView.autoresizingMask =
-      (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-
-  _inkTouchController =
-      [[MDCInkTouchController alloc] initWithView:hostsHeaderView];
-  [_inkTouchController addInkView];
-
-  return hostsHeaderView;
-}
-
-- (void)setflexHeaderContainerViewController:
+- (void)setFlexHeaderContainerViewController:
     (MDCFlexibleHeaderContainerViewController*)
         flexHeaderContainerViewController {
   _flexHeaderContainerViewController = flexHeaderContainerViewController;
   MDCFlexibleHeaderView* headerView =
       _flexHeaderContainerViewController.headerViewController.headerView;
   headerView.trackingScrollView = self.collectionView;
-  headerView.maximumHeight = kHostCollectionViewControllerDefaultHeaderHeight;
-  headerView.minimumHeight = kHostCollectionViewControllerSmallHeaderHeight;
-  [headerView addSubview:[self hostsHeaderView]];
+  headerView.backgroundColor = [UIColor clearColor];
 
   // Use a custom shadow under the flexible header.
   MDCShadowLayer* shadowLayer = [MDCShadowLayer layer];

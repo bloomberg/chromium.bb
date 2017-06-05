@@ -27,6 +27,9 @@
 
 static CGFloat kHostInset = 5.f;
 
+static UIColor* kChromotingBlueBackground =
+    [UIColor colorWithRed:0.11f green:0.23f blue:0.66f alpha:1.f];
+
 @interface RemotingViewController ()<HostCollectionViewControllerDelegate,
                                      UIViewControllerAnimatedTransitioning,
                                      UIViewControllerTransitioningDelegate> {
@@ -66,7 +69,7 @@ static CGFloat kHostInset = 5.f;
     [self addChildViewController:_appBar.headerViewController];
 
     _appBar.headerViewController.headerView.backgroundColor =
-        [UIColor clearColor];
+        kChromotingBlueBackground;
     _appBar.navigationBar.tintColor = [UIColor whiteColor];
 
     UIBarButtonItem* menuButton =
@@ -90,6 +93,20 @@ static CGFloat kHostInset = 5.f;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  UIImage* image = [UIImage imageNamed:@"Background"];
+  UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
+  [self.view addSubview:imageView];
+  [self.view sendSubviewToBack:imageView];
+
+  imageView.translatesAutoresizingMaskIntoConstraints = NO;
+  [NSLayoutConstraint activateConstraints:@[
+    [[imageView widthAnchor]
+        constraintGreaterThanOrEqualToAnchor:[self.view widthAnchor]],
+    [[imageView heightAnchor]
+        constraintGreaterThanOrEqualToAnchor:[self.view heightAnchor]],
+  ]];
+
   [_appBar addSubviewsToParent];
 
   [[NSNotificationCenter defaultCenter]
@@ -126,18 +143,8 @@ static CGFloat kHostInset = 5.f;
   }
 }
 
-- (void)viewDidLayoutSubviews {
-  [super viewDidLayoutSubviews];
-
-  // Adjust the collection view's position and size so that it doesn't get
-  // overlayed by the navigation bar.
-  CGFloat collectionOffsetY =
-      _appBar.headerViewController.headerView.frame.size.height;
-  CGFloat collectionHeight = self.view.bounds.size.height - collectionOffsetY;
-  CGRect oldFrame = _collectionViewController.collectionView.frame;
-  _collectionViewController.collectionView.frame =
-      CGRectMake(oldFrame.origin.x, collectionOffsetY, oldFrame.size.width,
-                 collectionHeight);
+- (UIStatusBarStyle)preferredStatusBarStyle {
+  return UIStatusBarStyleLightContent;
 }
 
 #pragma mark - Remoting Service Notifications
