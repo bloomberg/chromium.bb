@@ -42,8 +42,7 @@ CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {
 }
 
 CSSMatrixComponent* CSSMatrixComponent::Perspective(double length) {
-  DOMMatrixInit init;
-  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, ASSERT_NO_EXCEPTION);
+  DOMMatrix* matrix = DOMMatrix::Create();
 
   if (length != 0)
     matrix->setM34(-1 / length);
@@ -51,8 +50,7 @@ CSSMatrixComponent* CSSMatrixComponent::Perspective(double length) {
 }
 
 CSSMatrixComponent* CSSMatrixComponent::Rotate(double angle) {
-  DOMMatrixInit init;
-  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, ASSERT_NO_EXCEPTION);
+  DOMMatrix* matrix = DOMMatrix::Create();
 
   matrix->rotateSelf(angle);
   return new CSSMatrixComponent(matrix, kRotationType);
@@ -62,16 +60,14 @@ CSSMatrixComponent* CSSMatrixComponent::Rotate3d(double angle,
                                                  double x,
                                                  double y,
                                                  double z) {
-  DOMMatrixInit init;
-  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, ASSERT_NO_EXCEPTION);
+  DOMMatrix* matrix = DOMMatrix::Create();
 
   matrix->rotateAxisAngleSelf(x, y, z, angle);
   return new CSSMatrixComponent(matrix, kRotation3DType);
 }
 
 CSSMatrixComponent* CSSMatrixComponent::Scale(double x, double y) {
-  DOMMatrixInit init;
-  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, ASSERT_NO_EXCEPTION);
+  DOMMatrix* matrix = DOMMatrix::Create();
 
   matrix->setM11(x);
   matrix->setM22(y);
@@ -79,8 +75,7 @@ CSSMatrixComponent* CSSMatrixComponent::Scale(double x, double y) {
 }
 
 CSSMatrixComponent* CSSMatrixComponent::Scale3d(double x, double y, double z) {
-  DOMMatrixInit init;
-  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, ASSERT_NO_EXCEPTION);
+  DOMMatrix* matrix = DOMMatrix::Create();
 
   matrix->setM11(x);
   matrix->setM22(y);
@@ -92,8 +87,7 @@ CSSMatrixComponent* CSSMatrixComponent::Skew(double ax, double ay) {
   double tan_ax = std::tan(deg2rad(ax));
   double tan_ay = std::tan(deg2rad(ay));
 
-  DOMMatrixInit init;
-  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, ASSERT_NO_EXCEPTION);
+  DOMMatrix* matrix = DOMMatrix::Create();
 
   matrix->setM12(tan_ay);
   matrix->setM21(tan_ax);
@@ -101,8 +95,7 @@ CSSMatrixComponent* CSSMatrixComponent::Skew(double ax, double ay) {
 }
 
 CSSMatrixComponent* CSSMatrixComponent::Translate(double x, double y) {
-  DOMMatrixInit init;
-  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, ASSERT_NO_EXCEPTION);
+  DOMMatrix* matrix = DOMMatrix::Create();
 
   matrix->setM41(x);
   matrix->setM42(y);
@@ -112,8 +105,7 @@ CSSMatrixComponent* CSSMatrixComponent::Translate(double x, double y) {
 CSSMatrixComponent* CSSMatrixComponent::Translate3d(double x,
                                                     double y,
                                                     double z) {
-  DOMMatrixInit init;
-  DOMMatrix* matrix = DOMMatrix::fromMatrix(init, ASSERT_NO_EXCEPTION);
+  DOMMatrix* matrix = DOMMatrix::Create();
 
   matrix->setM41(x);
   matrix->setM42(y);
