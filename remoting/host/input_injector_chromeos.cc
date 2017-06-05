@@ -15,9 +15,10 @@
 #include "remoting/host/chromeos/point_transformer.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
+#include "ui/base/ime/chromeos/ime_keyboard.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/system_input_injector.h"
 
@@ -42,6 +43,28 @@ ui::EventFlags MouseButtonToUIFlags(MouseEvent::MouseButton button) {
     default:
       NOTREACHED();
       return ui::EF_NONE;
+  }
+}
+
+bool shouldSetLockStates(ui::DomCode dom_code, bool key_pressed) {
+  if (!key_pressed)
+    return false;
+  switch (dom_code) {
+    // Ignores all the keys that could possibly be mapped to Caps Lock in event
+    // rewriter. Please refer to ui::EventRewriterChromeOS::RewriteModifierKeys.
+    case ui::DomCode::F16:
+    case ui::DomCode::CAPS_LOCK:
+    case ui::DomCode::META_LEFT:
+    case ui::DomCode::META_RIGHT:
+    case ui::DomCode::CONTROL_LEFT:
+    case ui::DomCode::CONTROL_RIGHT:
+    case ui::DomCode::ALT_LEFT:
+    case ui::DomCode::ALT_RIGHT:
+    case ui::DomCode::ESCAPE:
+    case ui::DomCode::BACKSPACE:
+      return false;
+    default:
+      return true;
   }
 }
 
@@ -85,12 +108,13 @@ void InputInjectorChromeos::Core::InjectKeyEvent(const KeyEvent& event) {
   DCHECK(event.has_pressed());
   DCHECK(event.has_usb_keycode());
 
-  if (event.has_lock_states()) {
-    SetLockStates(event.lock_states());
-  }
-
   ui::DomCode dom_code =
       ui::KeycodeConverter::UsbKeycodeToDomCode(event.usb_keycode());
+
+  if (event.has_lock_states() &&
+      shouldSetLockStates(dom_code, event.pressed())) {
+    SetLockStates(event.lock_states());
+  }
 
   // Ignore events which can't be mapped.
   if (dom_code != ui::DomCode::NONE) {
@@ -131,9 +155,9 @@ void InputInjectorChromeos::Core::Start(
 }
 
 void InputInjectorChromeos::Core::SetLockStates(uint32_t states) {
-  ui::InputController* input_controller =
-      ui::OzonePlatform::GetInstance()->GetInputController();
-  input_controller->SetCapsLockEnabled(
+  chromeos::input_method::InputMethodManager* ime =
+      chromeos::input_method::InputMethodManager::Get();
+  ime->GetImeKeyboard()->SetCapsLockEnabled(
       states & protocol::KeyEvent::LOCK_STATES_CAPSLOCK);
 }
 
