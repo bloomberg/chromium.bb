@@ -81,10 +81,6 @@ class Printer(object):
         if self._options.order == 'random':
             self._print_default('Using random order with seed: %d' % self._options.seed)
 
-        # FIXME: should these options be in printing_options?
-        if self._options.new_baseline:
-            self._print_default('Placing new baselines in %s' % self._port.baseline_version_dir())
-
         fs = self._port.host.filesystem
         fallback_path = [fs.split(x)[1] for x in self._port.baseline_search_path()]
         self._print_default('Baseline search path: %s -> generic' % ' -> '.join(fallback_path))
