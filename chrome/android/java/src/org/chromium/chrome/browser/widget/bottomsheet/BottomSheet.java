@@ -44,7 +44,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
+import org.chromium.chrome.browser.toolbar.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
@@ -230,6 +232,9 @@ public class BottomSheet
 
     /** The activity displaying the bottom sheet. */
     private ChromeActivity mActivity;
+
+    /** A delegate for when the action bar starts showing. */
+    private ViewShiftingActionBarDelegate mActionBarDelegate;
 
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
@@ -467,6 +472,14 @@ public class BottomSheet
         mContentSwapAnimatorSet = null;
     }
 
+    /**
+     * @return An action bar delegate that appropriately moves the sheet when the action bar is
+     *         shown.
+     */
+    public ActionBarDelegate getActionBarDelegate() {
+        return mActionBarDelegate;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
         // If touch is disabled, act like a black hole and consume touch events without doing
@@ -594,6 +607,7 @@ public class BottomSheet
         mControlContainer = controlContainer;
         mToolbarHeight = mControlContainer.getHeight();
         mActivity = activity;
+        mActionBarDelegate = new ViewShiftingActionBarDelegate(mActivity, this);
 
         mBottomSheetContentContainer = (FrameLayout) findViewById(R.id.bottom_sheet_content);
 

@@ -71,6 +71,8 @@ public class DownloadSheetContent implements BottomSheetContent {
             }
         };
         ApplicationStatus.registerStateListenerForActivity(mActivityStateListener, activity);
+
+        mToolbarView.setActionBarDelegate(activity.getBottomSheet().getActionBarDelegate());
     }
 
     @Override
