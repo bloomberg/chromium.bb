@@ -442,8 +442,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return;
         }
 
-        PaymentRequestMetrics.recordRequestedInformationHistogram(
-                mRequestPayerEmail, mRequestPayerPhone, mRequestShipping, mRequestPayerName);
+        mJourneyLogger.setRequestedInformation(
+                mRequestShipping, mRequestPayerEmail, mRequestPayerPhone, mRequestPayerName);
 
         if (OriginSecurityChecker.isSchemeCryptographic(mWebContents.getLastCommittedUrl())
                 && !SslValidityChecker.isSslCertificateValid(mWebContents)) {

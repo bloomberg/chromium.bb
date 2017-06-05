@@ -150,7 +150,7 @@ public class PaymentRequestNameTest implements MainActivityStartCallback {
     }
 
     /**
-     * Test that starting a payment request that requires only the user's payer name results in
+     * Test that ending a payment request that requires only the user's payer name results in
      * the appropriate metric being logged in the PaymentRequest.RequestedInformation histogram.
      */
     @Test
@@ -158,8 +158,15 @@ public class PaymentRequestNameTest implements MainActivityStartCallback {
     @Feature({"Payments"})
     public void testRequestedInformationMetric()
             throws InterruptedException, ExecutionException, TimeoutException {
-        // Start the Payment Request.
+        // Start and complete the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Jon Doe"});
 
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < RequestedInformation.MAX; ++i) {
