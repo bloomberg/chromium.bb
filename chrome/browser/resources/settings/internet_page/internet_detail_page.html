@@ -82,36 +82,34 @@
           </cr-policy-indicator>
         </template>
       </div>
-      <div id="buttonDiv" class="button-container">
-        <template is="dom-if" if="[[!isSecondaryUser_]]">
-          <paper-button class="secondary-button" on-tap="onForgetTap_"
-              hidden$="[[!showForget_(networkProperties)]]">
-            $i18n{networkButtonForget}
-          </paper-button>
-          <paper-button class="secondary-button" on-tap="onViewAccountTap_"
-              hidden$="[[!showViewAccount_(networkProperties)]]">
-            $i18n{networkButtonViewAccount}
-          </paper-button>
-          <paper-button class="secondary-button" on-tap="onActivateTap_"
-              hidden$="[[!showActivate_(networkProperties)]]">
-            $i18n{networkButtonActivate}
-          </paper-button>
-          <paper-button class="secondary-button" on-tap="onConfigureTap_"
-              hidden$="[[!showConfigure_(networkProperties, globalPolicy)]]">
-            $i18n{networkButtonConfigure}
-          </paper-button>
-        </template>
-        <paper-button class="primary-button" on-tap="onConnectTap_"
-            hidden$="[[!showConnect_(networkProperties, globalPolicy)]]"
-            disabled="[[!enableConnect_(networkProperties, defaultNetwork,
-                globalPolicy)]]">
-          $i18n{networkButtonConnect}
+      <template is="dom-if" if="[[!isSecondaryUser_]]">
+        <paper-button class="secondary-button" on-tap="onForgetTap_"
+            hidden$="[[!showForget_(networkProperties)]]">
+          $i18n{networkButtonForget}
         </paper-button>
-        <paper-button class="primary-button" on-tap="onDisconnectTap_"
-            hidden$="[[!showDisconnect_(networkProperties)]]">
-          $i18n{networkButtonDisconnect}
+        <paper-button class="secondary-button" on-tap="onViewAccountTap_"
+            hidden$="[[!showViewAccount_(networkProperties)]]">
+          $i18n{networkButtonViewAccount}
         </paper-button>
-      </div>
+        <paper-button class="secondary-button" on-tap="onActivateTap_"
+            hidden$="[[!showActivate_(networkProperties)]]">
+          $i18n{networkButtonActivate}
+        </paper-button>
+        <paper-button class="secondary-button" on-tap="onConfigureTap_"
+            hidden$="[[!showConfigure_(networkProperties, globalPolicy)]]">
+          $i18n{networkButtonConfigure}
+        </paper-button>
+      </template>
+      <paper-button class="primary-button" on-tap="onConnectTap_"
+          hidden$="[[!showConnect_(networkProperties, globalPolicy)]]"
+          disabled="[[!enableConnect_(networkProperties, defaultNetwork,
+              globalPolicy)]]">
+        $i18n{networkButtonConnect}
+      </paper-button>
+      <paper-button class="primary-button" on-tap="onDisconnectTap_"
+          hidden$="[[!showDisconnect_(networkProperties)]]">
+        $i18n{networkButtonDisconnect}
+      </paper-button>
     </div>
 
     <!-- Disabled by policy / Shared messages. -->
