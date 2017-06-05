@@ -282,12 +282,15 @@ class MessageReceiverDisallowStart : public MessageReceiver {
         // Prepare for OnStopWorker().
         instance_host_ptr_map_[embedded_worker_id].Bind(
             std::move(instance_host));
-        break;  // Do nothing.
+        // Just keep the connection alive.
+        event_dispatcher_request_map_[embedded_worker_id] = std::move(request);
+        break;
       case StartMode::FAIL:
         ASSERT_EQ(current_mock_instance_index_ + 1,
                   mock_instance_clients()->size());
         // Remove the connection by peer
         mock_instance_clients()->at(current_mock_instance_index_).reset();
+        std::move(request);
         break;
       case StartMode::SUCCEED:
         MessageReceiver::OnStartWorker(
@@ -317,6 +320,9 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       int /* embedded_worker_id */,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
       instance_host_ptr_map_;
+  std::map<int /* embedded_worker_id */,
+           mojom::ServiceWorkerEventDispatcherRequest>
+      event_dispatcher_request_map_;
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStart);
 };
 
