@@ -65,7 +65,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 }
 
 void NGOutOfFlowLayoutPart::Run() {
-  PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_candidates;
+  Vector<NGBlockNode> out_of_flow_candidates;
   Vector<NGStaticPosition> out_of_flow_candidate_positions;
   container_builder_->GetAndClearOutOfFlowDescendantCandidates(
       &out_of_flow_candidates, &out_of_flow_candidate_positions);
@@ -78,10 +78,10 @@ void NGOutOfFlowLayoutPart::Run() {
           out_of_flow_candidate_positions[position_index++];
 
       if (IsContainingBlockForAbsoluteDescendant(container_style_,
-                                                 descendant->Style())) {
+                                                 descendant.Style())) {
         NGLogicalOffset offset;
         RefPtr<NGLayoutResult> result =
-            LayoutDescendant(*descendant, static_position, &offset);
+            LayoutDescendant(descendant, static_position, &offset);
         // TODO(atotic) Need to adjust size of overflow rect per spec.
         container_builder_->AddChild(std::move(result), offset);
       } else {
@@ -98,7 +98,7 @@ void NGOutOfFlowLayoutPart::Run() {
 }
 
 RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
-    NGBlockNode& descendant,
+    NGBlockNode descendant,
     NGStaticPosition static_position,
     NGLogicalOffset* offset) {
   // Adjust the static_position origin. The static_position coordinate origin is
@@ -162,7 +162,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
 // 2. To compute final fragment, when block size is known from the absolute
 //    position calculation.
 RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
-    NGBlockNode& descendant,
+    NGBlockNode descendant,
     const Optional<LayoutUnit>& block_estimate,
     const NGAbsolutePhysicalPosition node_position) {
   // As the block_estimate is always in the descendant's writing mode, we build

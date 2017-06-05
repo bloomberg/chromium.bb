@@ -9,15 +9,15 @@
 namespace blink {
 
 bool NGUnpositionedFloat::IsLeft() const {
-  return node->Style().Floating() == EFloat::kLeft;
+  return node.Style().Floating() == EFloat::kLeft;
 }
 
 bool NGUnpositionedFloat::IsRight() const {
-  return node->Style().Floating() == EFloat::kRight;
+  return node.Style().Floating() == EFloat::kRight;
 }
 
 EClear NGUnpositionedFloat::ClearType() const {
-  return node->Style().Clear();
+  return node.Style().Clear();
 }
 
 }  // namespace blink

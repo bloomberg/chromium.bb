@@ -20,53 +20,50 @@ struct MinMaxContentSize;
 // Represents the input to a layout algorithm for a given node. The layout
 // engine should use the style, node type to determine which type of layout
 // algorithm to use to produce fragments for this node.
-class CORE_EXPORT NGLayoutInputNode
-    : public GarbageCollectedFinalized<NGLayoutInputNode> {
+class CORE_EXPORT NGLayoutInputNode {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
  public:
-  enum NGLayoutInputNodeType { kLegacyBlock = 0, kLegacyInline = 1 };
+  NGLayoutInputNode(std::nullptr_t) : box_(nullptr) {}
 
-  bool IsInline() const { return type_ == kLegacyInline; }
-
-  bool IsBlock() const { return type_ == kLegacyBlock; }
-
-  bool IsFloating() const { return IsBlock() && Style().IsFloating(); }
-
-  bool IsOutOfFlowPositioned() const {
-    return IsBlock() && Style().HasOutOfFlowPosition();
-  }
-
-  virtual ~NGLayoutInputNode(){};
+  bool IsInline() const;
+  bool IsBlock() const;
+  bool IsFloating() const;
+  bool IsOutOfFlowPositioned() const;
 
   // Performs layout on this input node, will return the layout result.
-  virtual RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken*) = 0;
+  RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken*);
+
+  MinMaxContentSize ComputeMinMaxContentSize();
 
   // Returns the next sibling.
-  virtual NGLayoutInputNode* NextSibling() = 0;
+  NGLayoutInputNode NextSibling();
 
   // Returns the LayoutObject which is associated with this node.
-  virtual LayoutObject* GetLayoutObject() const = 0;
+  LayoutObject* GetLayoutObject() const;
 
-  virtual MinMaxContentSize ComputeMinMaxContentSize() = 0;
+  const ComputedStyle& Style() const;
 
-  virtual const ComputedStyle& Style() const = 0;
+  String ToString() const;
 
-  virtual String ToString() const = 0;
+  explicit operator bool() { return box_ != nullptr; }
 
-  NGLayoutInputNodeType Type() const {
-    return static_cast<NGLayoutInputNodeType>(type_);
+  bool operator==(const NGLayoutInputNode& other) const {
+    return box_ == other.box_;
+  }
+
+  bool operator!=(const NGLayoutInputNode& other) const {
+    return !(*this == other);
   }
 
 #ifndef NDEBUG
   void ShowNodeTree() const;
 #endif
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
-
  protected:
-  explicit NGLayoutInputNode(NGLayoutInputNodeType type) : type_(type) {}
+  explicit NGLayoutInputNode(LayoutBox* box) : box_(box) {}
 
- private:
-  unsigned type_ : 1;
+  LayoutBox* box_;
 };
 
 }  // namespace blink

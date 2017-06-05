@@ -16,7 +16,7 @@ namespace blink {
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  public:
   NGPhysicalTextFragment(LayoutObject* layout_object,
-                         const NGInlineNode* node,
+                         const NGInlineNode node,
                          unsigned item_index,
                          unsigned start_offset,
                          unsigned end_offset,
@@ -27,8 +27,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
         start_offset_(start_offset),
         end_offset_(end_offset) {}
 
-  const NGInlineNode* Node() const { return node_; }
-  StringView Text() const { return node_->Text(start_offset_, end_offset_); }
+  const NGInlineNode Node() const { return node_; }
+  StringView Text() const { return node_.Text(start_offset_, end_offset_); }
 
   // The range of NGLayoutInlineItem.
   unsigned ItemIndex() const { return item_index_; }
@@ -38,7 +38,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  private:
   // TODO(kojii): NGInlineNode is to access text content and NGLayoutInlineItem.
   // Review if it's better to point them.
-  Persistent<const NGInlineNode> node_;
+  const NGInlineNode node_;
   unsigned item_index_;
   unsigned start_offset_;
   unsigned end_offset_;

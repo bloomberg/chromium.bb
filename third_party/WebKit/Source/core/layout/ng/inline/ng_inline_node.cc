@@ -20,6 +20,7 @@
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/inline/ng_text_fragment.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
@@ -151,27 +152,25 @@ unsigned PlaceInlineBoxChildren(
 
 }  // namespace
 
-NGInlineNode::NGInlineNode(LayoutObject* start_inline, LayoutNGBlockFlow* block)
-    : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyInline),
-      start_inline_(start_inline),
-      block_(block) {
+NGInlineNode::NGInlineNode(LayoutNGBlockFlow* block, LayoutObject* start_inline)
+    : NGLayoutInputNode(block) {
   DCHECK(start_inline);
   DCHECK(block);
-  block->ResetNGInlineNodeData();
+  block->SetLayoutNGInline(true);
+  if (!block->HasNGInlineNodeData()) {
+    block->ResetNGInlineNodeData();
+  }
+  MutableData().start_inline_ = start_inline;
 }
-
-NGInlineNode::NGInlineNode()
-    : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyInline),
-      start_inline_(nullptr),
-      block_(nullptr) {}
-
-NGInlineNode::~NGInlineNode() {}
 
 NGInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
   return NGInlineItemRange(&MutableData().items_, start, end);
 }
 
 void NGInlineNode::InvalidatePrepareLayout() {
+  LayoutObject* start_inline = Data().start_inline_;
+  ToLayoutNGBlockFlow(GetLayoutBlockFlow())->ResetNGInlineNodeData();
+  MutableData().start_inline_ = start_inline;
   MutableData().text_content_ = String();
   MutableData().items_.clear();
 }
@@ -179,7 +178,7 @@ void NGInlineNode::InvalidatePrepareLayout() {
 void NGInlineNode::PrepareLayout() {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
   // NGInlineNode represent a collection of adjacent non-atomic inlines.
-  CollectInlines(start_inline_, block_);
+  CollectInlines(Data().start_inline_, GetLayoutBlockFlow());
   if (Data().is_bidi_enabled_)
     SegmentText();
   ShapeText();
@@ -199,7 +198,7 @@ void NGInlineNode::CollectInlines(LayoutObject* start, LayoutBlockFlow* block) {
 
   MutableData().text_content_ = builder.ToString();
   DCHECK(!next_sibling || !next_sibling->IsInline());
-  next_sibling_ = next_sibling ? new NGBlockNode(next_sibling) : nullptr;
+  MutableData().next_sibling_ = ToLayoutBox(next_sibling);
   MutableData().is_bidi_enabled_ =
       !Data().text_content_.IsEmpty() &&
       !(Data().text_content_.Is8Bit() && !builder.HasBidiControls());
@@ -319,7 +318,7 @@ RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
   InvalidatePrepareLayout();
   PrepareLayout();
 
-  NGInlineLayoutAlgorithm algorithm(this, constraint_space,
+  NGInlineLayoutAlgorithm algorithm(*this, constraint_space,
                                     ToNGInlineBreakToken(break_token));
   RefPtr<NGLayoutResult> result = algorithm.Layout();
   CopyFragmentDataToLayoutBox(*constraint_space, result.Get());
@@ -328,14 +327,17 @@ RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
 
 enum class ContentSizeMode { Max, Sum };
 
-static LayoutUnit ComputeContentSize(NGInlineNode* node,
+static LayoutUnit ComputeContentSize(NGInlineNode node,
                                      ContentSizeMode mode,
-                                     LayoutUnit available_inline_size,
-                                     NGConstraintSpaceBuilder* space_builder,
-                                     NGWritingMode writing_mode) {
-  space_builder->SetAvailableSize({available_inline_size, NGSizeIndefinite});
+                                     LayoutUnit available_inline_size) {
+  const ComputedStyle& style = node.Style();
+  NGWritingMode writing_mode = FromPlatformWritingMode(style.GetWritingMode());
+
   RefPtr<NGConstraintSpace> space =
-      space_builder->ToConstraintSpace(writing_mode);
+      NGConstraintSpaceBuilder(writing_mode)
+          .SetTextDirection(style.Direction())
+          .SetAvailableSize({available_inline_size, NGSizeIndefinite})
+          .ToConstraintSpace(writing_mode);
   NGLineBreaker line_breaker(node, space.Get());
   NGInlineLayoutAlgorithm algorithm(node, space.Get());
   NGInlineItemResults item_results;
@@ -369,36 +371,24 @@ MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
   // Compute the max of inline sizes of all line boxes with 0 available inline
   // size. This gives the min-content, the width where lines wrap at every
   // break opportunity.
-  const ComputedStyle& style = Style();
-  NGWritingMode writing_mode = FromPlatformWritingMode(style.GetWritingMode());
-  NGConstraintSpaceBuilder space_builder(writing_mode);
-  space_builder.SetTextDirection(style.Direction());
-  space_builder.SetAvailableSize({LayoutUnit(), NGSizeIndefinite});
-  RefPtr<NGConstraintSpace> space =
-      space_builder.ToConstraintSpace(writing_mode);
   MinMaxContentSize sizes;
-  sizes.min_content = ComputeContentSize(
-      this, ContentSizeMode::Max, LayoutUnit(), &space_builder, writing_mode);
+  sizes.min_content =
+      ComputeContentSize(*this, ContentSizeMode::Max, LayoutUnit());
 
   // Compute the sum of inline sizes of all inline boxes with no line breaks.
   // TODO(kojii): NGConstraintSpaceBuilder does not allow NGSizeIndefinite
   // inline available size. We can allow it, or make this more efficient
   // without using NGLineBreaker.
   sizes.max_content =
-      ComputeContentSize(this, ContentSizeMode::Sum, LayoutUnit::Max(),
-                         &space_builder, writing_mode);
+      ComputeContentSize(*this, ContentSizeMode::Sum, LayoutUnit::Max());
 
   return sizes;
 }
 
-NGLayoutInputNode* NGInlineNode::NextSibling() {
+NGLayoutInputNode NGInlineNode::NextSibling() {
   if (!IsPrepareLayoutFinished())
     PrepareLayout();
-  return next_sibling_;
-}
-
-LayoutObject* NGInlineNode::GetLayoutObject() const {
-  return GetLayoutBlockFlow();
+  return NGBlockNode(Data().next_sibling_);
 }
 
 void NGInlineNode::CopyFragmentDataToLayoutBox(
@@ -502,11 +492,6 @@ void NGInlineNode::GetLayoutTextOffsets(
 
 String NGInlineNode::ToString() const {
   return String::Format("NGInlineNode");
-}
-
-DEFINE_TRACE(NGInlineNode) {
-  visitor->Trace(next_sibling_);
-  NGLayoutInputNode::Trace(visitor);
 }
 
 }  // namespace blink

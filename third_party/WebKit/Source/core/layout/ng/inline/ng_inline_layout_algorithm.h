@@ -35,7 +35,7 @@ class NGTextFragmentBuilder;
 class CORE_EXPORT NGInlineLayoutAlgorithm final
     : public NGLayoutAlgorithm<NGInlineNode, NGInlineBreakToken> {
  public:
-  NGInlineLayoutAlgorithm(NGInlineNode*,
+  NGInlineLayoutAlgorithm(NGInlineNode,
                           NGConstraintSpace*,
                           NGInlineBreakToken* = nullptr);
 

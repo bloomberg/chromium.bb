@@ -6,7 +6,7 @@
 
 namespace blink {
 
-NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(NGBlockNode* node,
+NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(NGBlockNode node,
                                                  NGConstraintSpace* space,
                                                  NGBreakToken* break_token)
     : NGBlockLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)){};

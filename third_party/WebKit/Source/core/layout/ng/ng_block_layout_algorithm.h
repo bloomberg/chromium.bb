@@ -42,7 +42,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // @param space The constraint space which the algorithm should generate a
   //              fragment within.
   // @param break_token The break token from which the layout should start.
-  NGBlockLayoutAlgorithm(NGBlockNode* node,
+  NGBlockLayoutAlgorithm(NGBlockNode node,
                          NGConstraintSpace* space,
                          NGBlockBreakToken* break_token = nullptr);
 
@@ -50,22 +50,22 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   virtual RefPtr<NGLayoutResult> Layout() override;
 
  private:
-  NGBoxStrut CalculateMargins(NGLayoutInputNode* child);
+  NGBoxStrut CalculateMargins(NGLayoutInputNode child);
 
   // Creates a new constraint space for the current child.
   RefPtr<NGConstraintSpace> CreateConstraintSpaceForChild(
-      const NGLayoutInputNode& child,
+      const NGLayoutInputNode child,
       const NGInflowChildData& child_data);
 
   // @return Estimated BFC offset for the "to be layout" child.
   NGInflowChildData PrepareChildLayout(const NGPreviousInflowPosition&,
-                                       NGLayoutInputNode*);
+                                       NGLayoutInputNode);
 
   NGPreviousInflowPosition FinishChildLayout(
       const NGConstraintSpace&,
       const NGPreviousInflowPosition& prev_data,
       const NGInflowChildData& child_data,
-      const NGLayoutInputNode* child,
+      const NGLayoutInputNode child,
       NGLayoutResult*);
 
   // Positions the fragment that establishes a new formatting context.
@@ -110,9 +110,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGLogicalOffset PositionLegacy(const NGConstraintSpace& child_space,
                                  const NGInflowChildData& child_data);
 
-  void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode*);
+  void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloating(const NGPreviousInflowPosition&,
-                      NGBlockNode*,
+                      NGBlockNode,
                       NGBlockBreakToken*);
 
   // Final adjustments before fragment creation. We need to prevent the

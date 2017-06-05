@@ -8,7 +8,7 @@
 
 namespace blink {
 
-NGInlineBreakToken::NGInlineBreakToken(NGInlineNode* node,
+NGInlineBreakToken::NGInlineBreakToken(NGInlineNode node,
                                        unsigned item_index,
                                        unsigned text_offset)
     : NGBreakToken(kInlineBreakToken, kUnfinished, node),
@@ -18,7 +18,7 @@ NGInlineBreakToken::NGInlineBreakToken(NGInlineNode* node,
   DCHECK(item_index || text_offset);
 }
 
-NGInlineBreakToken::NGInlineBreakToken(NGLayoutInputNode* node)
+NGInlineBreakToken::NGInlineBreakToken(NGLayoutInputNode node)
     : NGBreakToken(kInlineBreakToken, kFinished, node),
       item_index_(0),
       text_offset_(0) {}

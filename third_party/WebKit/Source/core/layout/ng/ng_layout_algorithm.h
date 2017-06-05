@@ -23,7 +23,7 @@ template <typename NGInputNodeType, typename NGBreakTokenType>
 class CORE_EXPORT NGLayoutAlgorithm {
   STACK_ALLOCATED();
  public:
-  NGLayoutAlgorithm(NGInputNodeType* node,
+  NGLayoutAlgorithm(NGInputNodeType node,
                     NGConstraintSpace* space,
                     NGBreakTokenType* break_token)
       : node_(node),
@@ -55,21 +55,18 @@ class CORE_EXPORT NGLayoutAlgorithm {
   }
   NGConstraintSpace* MutableConstraintSpace() { return constraint_space_; }
 
-  const ComputedStyle& Style() const {
-    DCHECK(node_);
-    return node_->Style();
-  }
+  const ComputedStyle& Style() const { return node_.Style(); }
 
   NGLogicalOffset ContainerBfcOffset() const {
     DCHECK(container_builder_.BfcOffset().has_value());
     return container_builder_.BfcOffset().value();
   }
 
-  virtual NGInputNodeType* Node() const { return node_; }
+  virtual NGInputNodeType Node() const { return node_; }
 
   NGBreakTokenType* BreakToken() const { return break_token_; }
 
-  Persistent<NGInputNodeType> node_;
+  NGInputNodeType node_;
   NGConstraintSpace* constraint_space_;
 
   // The break token from which we are currently resuming layout.

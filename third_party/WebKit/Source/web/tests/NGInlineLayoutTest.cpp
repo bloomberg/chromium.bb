@@ -49,14 +49,14 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
       ToLayoutNGBlockFlow(target->GetLayoutObject());
   RefPtr<NGConstraintSpace> constraint_space =
       ConstraintSpaceForElement(block_flow);
-  NGBlockNode* node = new NGBlockNode(block_flow);
+  NGBlockNode node(block_flow);
 
   RefPtr<NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, constraint_space.Get()).Layout();
   EXPECT_TRUE(result);
 
   String expected_text("Hello World!");
-  EXPECT_EQ(expected_text, ToNGInlineNode(node->FirstChild())->Text(0, 12));
+  EXPECT_EQ(expected_text, ToNGInlineNode(node.FirstChild()).Text(0, 12));
 }
 
 TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
@@ -74,7 +74,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
       ToLayoutNGBlockFlow(target->GetLayoutObject());
   RefPtr<NGConstraintSpace> constraint_space =
       ConstraintSpaceForElement(block_flow);
-  NGBlockNode* node = new NGBlockNode(block_flow);
+  NGBlockNode node(block_flow);
 
   RefPtr<NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, constraint_space.Get()).Layout();
@@ -83,7 +83,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   String expected_text("Hello ");
   expected_text.append(kObjectReplacementCharacter);
   expected_text.append(".");
-  EXPECT_EQ(expected_text, ToNGInlineNode(node->FirstChild())->Text(0, 8));
+  EXPECT_EQ(expected_text, ToNGInlineNode(node.FirstChild()).Text(0, 8));
 
   // Delete the line box tree to avoid leaks in the test.
   block_flow->DeleteLineBoxTree();

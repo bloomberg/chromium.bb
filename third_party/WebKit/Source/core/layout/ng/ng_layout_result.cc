@@ -8,8 +8,7 @@ namespace blink {
 
 NGLayoutResult::NGLayoutResult(
     PassRefPtr<NGPhysicalFragment> physical_fragment,
-    PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
-        out_of_flow_descendants,
+    Vector<NGBlockNode>& out_of_flow_descendants,
     Vector<NGStaticPosition> out_of_flow_positions,
     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats)
     : physical_fragment_(std::move(physical_fragment)),

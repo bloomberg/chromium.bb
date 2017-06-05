@@ -67,8 +67,8 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
   LayoutNGBlockFlow* block_flow = ToLayoutNGBlockFlow(rel->GetLayoutObject());
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
-  NGBlockNode* node = new NGBlockNode(block_flow);
-  RefPtr<NGLayoutResult> result = node->Layout(space.Get());
+  NGBlockNode node(block_flow);
+  RefPtr<NGLayoutResult> result = node.Layout(space.Get());
   EXPECT_EQ(result->OutOfFlowDescendants().size(), (size_t)2);
 
   // Test the final result.
@@ -105,12 +105,12 @@ TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode1) {
 
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
-  auto* node = new NGBlockNode(block_flow);
+  NGBlockNode node(block_flow);
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
 
   RefPtr<const NGPhysicalFragment> fragment =
-      node->Layout(space.Get())->PhysicalFragment();
+      node.Layout(space.Get())->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(400)), fragment->Size());
 
   fragment = ToNGPhysicalBoxFragment(fragment.Get())->Children()[0];
@@ -144,12 +144,12 @@ TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode2) {
 
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
-  auto* node = new NGBlockNode(block_flow);
+  NGBlockNode node(block_flow);
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
 
   RefPtr<const NGPhysicalFragment> fragment =
-      node->Layout(space.Get())->PhysicalFragment();
+      node.Layout(space.Get())->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(400)), fragment->Size());
 
   fragment = ToNGPhysicalBoxFragment(fragment.Get())->Children()[0];

@@ -56,18 +56,18 @@ std::pair<unsigned, LayoutUnit> ShapeLineMock(
 
 }  // namespace
 
-NGLineBreaker::NGLineBreaker(NGInlineNode* node,
+NGLineBreaker::NGLineBreaker(NGInlineNode node,
                              const NGConstraintSpace* space,
                              NGInlineBreakToken* break_token)
     : node_(node),
       constraint_space_(space),
       item_index_(0),
       offset_(0),
-      break_iterator_(node->Text()) {
+      break_iterator_(node.Text()) {
   if (break_token) {
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
-    node->AssertOffset(item_index_, offset_);
+    node.AssertOffset(item_index_, offset_);
   }
 }
 
@@ -85,8 +85,8 @@ void NGLineBreaker::NextLine(NGInlineItemResults* item_results,
 void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
                               NGInlineLayoutAlgorithm* algorithm) {
   DCHECK(item_results->IsEmpty());
-  const Vector<NGInlineItem>& items = node_->Items();
-  const ComputedStyle& style = node_->Style();
+  const Vector<NGInlineItem>& items = node_.Items();
+  const ComputedStyle& style = node_.Style();
   UpdateBreakIterator(style);
 #if !defined(MOCK_SHAPE_LINE)
   // TODO(kojii): Instantiate in the constructor.
@@ -230,7 +230,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleControlItem(
     const NGInlineItem& item,
     NGInlineItemResult* item_result) {
   DCHECK_EQ(item.Length(), 1u);
-  UChar character = node_->Text()[item.StartOffset()];
+  UChar character = node_.Text()[item.StartOffset()];
   if (character == kNewlineCharacter) {
     MoveToNextOf(item);
     return LineBreakState::kForcedBreak;
@@ -250,15 +250,15 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
     const NGInlineItem& item,
     NGInlineItemResult* item_result) {
   DCHECK_EQ(item.Type(), NGInlineItem::kAtomicInline);
-  NGBlockNode* node = new NGBlockNode(item.GetLayoutObject());
-  const ComputedStyle& style = node->Style();
+  NGBlockNode node = NGBlockNode(ToLayoutBox(item.GetLayoutObject()));
+  const ComputedStyle& style = node.Style();
   NGConstraintSpaceBuilder constraint_space_builder(constraint_space_);
   RefPtr<NGConstraintSpace> constraint_space =
       constraint_space_builder.SetIsNewFormattingContext(true)
           .SetIsShrinkToFit(true)
           .SetTextDirection(style.Direction())
           .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
-  item_result->layout_result = node->Layout(constraint_space.Get());
+  item_result->layout_result = node.Layout(constraint_space.Get());
 
   item_result->inline_size =
       NGBoxFragment(constraint_space_->WritingMode(),
@@ -331,7 +331,7 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
 // At this point, item_results does not fit into the current line, and there
 // are no break opportunities in item_results.back().
 void NGLineBreaker::HandleOverflow(NGInlineItemResults* item_results) {
-  const Vector<NGInlineItem>& items = node_->Items();
+  const Vector<NGInlineItem>& items = node_.Items();
   LayoutUnit rewind_width = available_width_ - position_;
   DCHECK_LT(rewind_width, 0);
 
@@ -425,7 +425,7 @@ void NGLineBreaker::UpdateBreakIterator(const ComputedStyle& style) {
 }
 
 void NGLineBreaker::MoveToNextOf(const NGInlineItem& item) {
-  DCHECK_EQ(&item, &node_->Items()[item_index_]);
+  DCHECK_EQ(&item, &node_.Items()[item_index_]);
   offset_ = item.EndOffset();
   item_index_++;
 }
@@ -433,13 +433,13 @@ void NGLineBreaker::MoveToNextOf(const NGInlineItem& item) {
 void NGLineBreaker::MoveToNextOf(const NGInlineItemResult& item_result) {
   offset_ = item_result.end_offset;
   item_index_ = item_result.item_index;
-  const NGInlineItem& item = node_->Items()[item_result.item_index];
+  const NGInlineItem& item = node_.Items()[item_result.item_index];
   if (offset_ == item.EndOffset())
     item_index_++;
 }
 
 void NGLineBreaker::SkipCollapsibleWhitespaces() {
-  const Vector<NGInlineItem>& items = node_->Items();
+  const Vector<NGInlineItem>& items = node_.Items();
   if (item_index_ >= items.size())
     return;
   const NGInlineItem& item = items[item_index_];
@@ -447,7 +447,7 @@ void NGLineBreaker::SkipCollapsibleWhitespaces() {
     return;
 
   DCHECK_LT(offset_, item.EndOffset());
-  if (node_->Text()[offset_] == kSpaceCharacter) {
+  if (node_.Text()[offset_] == kSpaceCharacter) {
     // Skip one whitespace. Collapsible spaces are collapsed to single space in
     // NGInlineItemBuilder, so this removes all collapsible spaces.
     offset_++;
@@ -457,7 +457,7 @@ void NGLineBreaker::SkipCollapsibleWhitespaces() {
 }
 
 RefPtr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken() const {
-  const Vector<NGInlineItem>& items = node_->Items();
+  const Vector<NGInlineItem>& items = node_.Items();
   if (item_index_ >= items.size())
     return nullptr;
   return NGInlineBreakToken::Create(node_, item_index_, offset_);

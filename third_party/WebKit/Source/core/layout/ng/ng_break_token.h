@@ -48,19 +48,19 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
 
   // Returns the node associated with this break token. A break token cannot be
   // used with any other node.
-  NGLayoutInputNode* InputNode() const { return node_; }
+  NGLayoutInputNode InputNode() const { return node_; }
 
  protected:
   NGBreakToken(NGBreakTokenType type,
                NGBreakTokenStatus status,
-               NGLayoutInputNode* node)
+               NGLayoutInputNode node)
       : type_(type), status_(status), node_(node) {}
 
  private:
   unsigned type_ : 1;
   unsigned status_ : 1;
 
-  Persistent<NGLayoutInputNode> node_;
+  NGLayoutInputNode node_;
 };
 
 }  // namespace blink

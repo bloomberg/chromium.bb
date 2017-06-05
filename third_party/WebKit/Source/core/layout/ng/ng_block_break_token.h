@@ -25,7 +25,7 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   // The node is NGBlockNode, or any other NGLayoutInputNode that produces
   // anonymous box.
   static RefPtr<NGBlockBreakToken> Create(
-      NGLayoutInputNode* node,
+      NGLayoutInputNode node,
       LayoutUnit used_block_size,
       Vector<RefPtr<NGBreakToken>>& child_break_tokens) {
     return AdoptRef(
@@ -33,7 +33,7 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
-  static RefPtr<NGBlockBreakToken> Create(NGLayoutInputNode* node) {
+  static RefPtr<NGBlockBreakToken> Create(NGLayoutInputNode node) {
     return AdoptRef(new NGBlockBreakToken(node));
   }
 
@@ -57,11 +57,11 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   }
 
  private:
-  NGBlockBreakToken(NGLayoutInputNode* node,
+  NGBlockBreakToken(NGLayoutInputNode node,
                     LayoutUnit used_block_size,
                     Vector<RefPtr<NGBreakToken>>& child_break_tokens);
 
-  explicit NGBlockBreakToken(NGLayoutInputNode* node);
+  explicit NGBlockBreakToken(NGLayoutInputNode node);
 
   LayoutUnit used_block_size_;
   Vector<RefPtr<NGBreakToken>> child_break_tokens_;

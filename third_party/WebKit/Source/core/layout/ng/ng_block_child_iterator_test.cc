@@ -26,10 +26,10 @@ TEST_F(NGBlockChildIteratorTest, NoBreakToken) {
       <div id='child2'></div>
       <div id='child3'></div>
     )HTML");
-  NGLayoutInputNode* node1 =
-      new NGBlockNode(ToLayoutBlockFlow(GetLayoutObjectByElementId("child1")));
-  NGLayoutInputNode* node2 = node1->NextSibling();
-  NGLayoutInputNode* node3 = node2->NextSibling();
+  NGLayoutInputNode node1 =
+      NGBlockNode(ToLayoutBox(GetLayoutObjectByElementId("child1")));
+  NGLayoutInputNode node2 = node1.NextSibling();
+  NGLayoutInputNode node3 = node2.NextSibling();
 
   // The iterator should loop through three children.
   NGBlockChildIterator iterator(node1, nullptr);
@@ -48,11 +48,11 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithFinishedChild) {
         <div id='child3'></div>
       </div>
     )HTML");
-  NGBlockNode* container = new NGBlockNode(
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
-  NGLayoutInputNode* node1 = container->FirstChild();
-  NGLayoutInputNode* node2 = node1->NextSibling();
-  NGLayoutInputNode* node3 = node2->NextSibling();
+  NGBlockNode container =
+      NGBlockNode(ToLayoutBox(GetLayoutObjectByElementId("container")));
+  NGLayoutInputNode node1 = container.FirstChild();
+  NGLayoutInputNode node2 = node1.NextSibling();
+  NGLayoutInputNode node3 = node2.NextSibling();
 
   Vector<RefPtr<NGBreakToken>> child_break_tokens;
   child_break_tokens.push_back(NGBlockBreakToken::Create(node1));
@@ -86,11 +86,11 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithUnFinishedChild) {
         <div id='child3'></div>
       </div>
     )HTML");
-  NGBlockNode* container = new NGBlockNode(
-      ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
-  NGLayoutInputNode* node1 = container->FirstChild();
-  NGLayoutInputNode* node2 = node1->NextSibling();
-  NGLayoutInputNode* node3 = node2->NextSibling();
+  NGBlockNode container =
+      NGBlockNode(ToLayoutBox(GetLayoutObjectByElementId("container")));
+  NGLayoutInputNode node1 = container.FirstChild();
+  NGLayoutInputNode node2 = node1.NextSibling();
+  NGLayoutInputNode node3 = node2.NextSibling();
 
   Vector<RefPtr<NGBreakToken>> child_break_tokens;
   RefPtr<NGBreakToken> child_token =
