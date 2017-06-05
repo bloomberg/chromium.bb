@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/user_metrics.h"
@@ -35,8 +36,10 @@
 namespace feature_engagement_tracker {
 
 namespace {
-const char kEventDBStorageDir[] = "EventDB";
-const char kAvailabilityDBStorageDir[] = "AvailabilityDB";
+const base::FilePath::CharType kEventDBStorageDir[] =
+    FILE_PATH_LITERAL("EventDB");
+const base::FilePath::CharType kAvailabilityDBStorageDir[] =
+    FILE_PATH_LITERAL("AvailabilityDB");
 
 // Creates a FeatureEngagementTrackerImpl that is usable for a demo mode.
 std::unique_ptr<FeatureEngagementTracker>
