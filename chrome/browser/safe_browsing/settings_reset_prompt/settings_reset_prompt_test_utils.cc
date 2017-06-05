@@ -52,10 +52,8 @@ std::unique_ptr<SettingsResetPromptModel> CreateModelForTesting(
     ++id;
   }
 
-  return SettingsResetPromptModel::CreateForTesting(
+  return base::MakeUnique<SettingsResetPromptModel>(
       profile, std::move(config),
-      base::MakeUnique<ResettableSettingsSnapshot>(profile),
-      base::MakeUnique<BrandcodedDefaultSettings>(),
       profile_resetter
           ? std::move(profile_resetter)
           : base::MakeUnique<NiceMock<MockProfileResetter>>(profile));
