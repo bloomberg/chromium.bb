@@ -53,21 +53,11 @@ class SettingsResetPromptModel {
 
   using ExtensionMap =
       std::unordered_map<extensions::ExtensionId, ExtensionInfo>;
-  using CreateCallback =
-      base::Callback<void(std::unique_ptr<SettingsResetPromptModel>)>;
 
-  // Creates a new |SettingsResetPromptModel| and passes it to |callback|. This
-  // function should be called on the UI thread.
-  static void Create(Profile* profile,
-                     std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-                     CreateCallback callback);
-  static std::unique_ptr<SettingsResetPromptModel> CreateForTesting(
+  SettingsResetPromptModel(
       Profile* profile,
       std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-      std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
-      std::unique_ptr<BrandcodedDefaultSettings> default_settings,
       std::unique_ptr<ProfileResetter> profile_resetter);
-
   virtual ~SettingsResetPromptModel();
 
   Profile* profile() const;
@@ -81,7 +71,9 @@ class SettingsResetPromptModel {
   // operation has been completed.
   //
   // NOTE: Can only be called once during the lifetime of this object.
-  virtual void PerformReset(const base::Closure& done_callback);
+  virtual void PerformReset(
+      std::unique_ptr<BrandcodedDefaultSettings> default_settings,
+      const base::Closure& done_callback);
   // To be called when the reset prompt dialog has been shown so that
   // preferences can be updated.
   virtual void DialogShown();
@@ -106,22 +98,7 @@ class SettingsResetPromptModel {
 
   void ReportUmaMetrics() const;
 
- protected:
-  // Exposed for mocking in tests.
-  SettingsResetPromptModel(
-      Profile* profile,
-      std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-      std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
-      std::unique_ptr<BrandcodedDefaultSettings> default_settings,
-      std::unique_ptr<ProfileResetter> profile_resetter);
-
  private:
-  static void OnSettingsFetched(
-      Profile* profile,
-      std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-      SettingsResetPromptModel::CreateCallback callback,
-      std::unique_ptr<BrandcodedDefaultSettings> default_settings);
-
   // Functions to be called by the constructor to initialize the model
   // object. These functions should be called in the order in which they are
   // declared here so that the correct setting is chosen for the prompt when
@@ -147,9 +124,6 @@ class SettingsResetPromptModel {
   SettingsResetPromptPrefsManager prefs_manager_;
   std::unique_ptr<SettingsResetPromptConfig> prompt_config_;
   std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot_;
-  // |default_settings_| should only be accessed on the UI thread after
-  // construction.
-  std::unique_ptr<BrandcodedDefaultSettings> default_settings_;
   std::unique_ptr<ProfileResetter> profile_resetter_;
 
   // A single timestamp to be used by all initialization functions to determine
@@ -160,21 +134,24 @@ class SettingsResetPromptModel {
   base::TimeDelta time_since_last_prompt_;
 
   // Bits to keep track of which settings types have been initialized.
-  uint32_t settings_types_initialized_;
+  uint32_t settings_types_initialized_ = 0;
 
   GURL homepage_url_;
-  int homepage_reset_domain_id_;
-  ResetState homepage_reset_state_;
+  int homepage_reset_domain_id_ = -1;
+  ResetState homepage_reset_state_ =
+      NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED;
 
   GURL default_search_url_;
-  int default_search_reset_domain_id_;
-  ResetState default_search_reset_state_;
+  int default_search_reset_domain_id_ = -1;
+  ResetState default_search_reset_state_ =
+      NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED;
 
   std::vector<GURL> startup_urls_;
   std::vector<GURL> startup_urls_to_reset_;
   // Reset domain IDs for URLs in |startup_urls_to_reset_|;
   std::unordered_set<int> domain_ids_for_startup_urls_to_reset_;
-  ResetState startup_urls_reset_state_;
+  ResetState startup_urls_reset_state_ =
+      NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED;
 
   ExtensionMap extensions_to_disable_;
 

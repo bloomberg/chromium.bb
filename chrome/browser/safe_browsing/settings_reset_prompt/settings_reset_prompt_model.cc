@@ -12,9 +12,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
+#include "chrome/browser/profile_resetter/profile_resetter.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/settings_reset_prompt/default_settings_fetcher.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
@@ -65,31 +65,48 @@ GURL FixupUrl(const std::string& url_text) {
 
 }  // namespace
 
-// static
-void SettingsResetPromptModel::Create(
+SettingsResetPromptModel::SettingsResetPromptModel(
     Profile* profile,
     std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-    CreateCallback callback) {
+    std::unique_ptr<ProfileResetter> profile_resetter)
+    : profile_(profile),
+      prefs_manager_(profile, prompt_config->prompt_wave()),
+      prompt_config_(std::move(prompt_config)),
+      settings_snapshot_(base::MakeUnique<ResettableSettingsSnapshot>(profile)),
+      profile_resetter_(std::move(profile_resetter)),
+      time_since_last_prompt_(base::Time::Now() -
+                              prefs_manager_.LastTriggeredPrompt()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-  DCHECK(prompt_config);
+  DCHECK(profile_);
+  DCHECK(prompt_config_);
+  DCHECK(settings_snapshot_);
+  DCHECK(profile_resetter_);
 
-  DefaultSettingsFetcher::FetchDefaultSettings(
-      base::Bind(SettingsResetPromptModel::OnSettingsFetched, profile,
-                 base::Passed(&prompt_config), base::Passed(&callback)));
-}
+  InitDefaultSearchData();
+  InitStartupUrlsData();
+  InitHomepageData();
+  DCHECK_EQ(settings_types_initialized_, SETTINGS_TYPE_ALL);
 
-// static
-std::unique_ptr<SettingsResetPromptModel>
-SettingsResetPromptModel::CreateForTesting(
-    Profile* profile,
-    std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-    std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
-    std::unique_ptr<BrandcodedDefaultSettings> default_settings,
-    std::unique_ptr<ProfileResetter> profile_resetter) {
-  return base::WrapUnique(new SettingsResetPromptModel(
-      profile, std::move(prompt_config), std::move(settings_snapshot),
-      std::move(default_settings), std::move(profile_resetter)));
+  InitExtensionData();
+
+  if (!SomeSettingRequiresReset())
+    return;
+
+  // For now, during the experimental phase, if policy controls any of the
+  // settings that we consider for reset (search, startup pages, homepage) or if
+  // an extension that needs to be disabled is managed by policy, then we do not
+  // show the reset prompt.
+  //
+  // TODO(alito): Consider how clients with policies should be prompted for
+  // reset.
+  if (SomeSettingIsManaged() || SomeExtensionMustRemainEnabled()) {
+    if (homepage_reset_state_ == RESET_REQUIRED)
+      homepage_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
+    if (default_search_reset_state_ == RESET_REQUIRED)
+      default_search_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
+    if (startup_urls_reset_state_ == RESET_REQUIRED)
+      startup_urls_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
+  }
 }
 
 SettingsResetPromptModel::~SettingsResetPromptModel() {}
@@ -107,12 +124,10 @@ bool SettingsResetPromptModel::ShouldPromptForReset() const {
 }
 
 void SettingsResetPromptModel::PerformReset(
+    std::unique_ptr<BrandcodedDefaultSettings> default_settings,
     const base::Closure& done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // |default_settings_| is set in the constructor and will be passed on to
-  // |profile_resetter_| who will take over ownership. This method should never
-  // be called more than once during the lifetime of this object.
-  DCHECK(default_settings_);
+  DCHECK(default_settings);
 
   // Disable all extensions that override settings that need to be reset.
   ExtensionService* extension_service =
@@ -145,7 +160,7 @@ void SettingsResetPromptModel::PerformReset(
                               SETTINGS_RESET_STARTUP_URLS, SETTINGS_RESET_MAX);
   }
 
-  profile_resetter_->Reset(reset_flags, std::move(default_settings_),
+  profile_resetter_->Reset(reset_flags, std::move(default_settings),
                            done_callback);
 }
 
@@ -217,76 +232,6 @@ void SettingsResetPromptModel::ReportUmaMetrics() const {
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       "SettingsResetPrompt.DelayBeforePromptParam",
       prompt_config_->delay_before_prompt().InSeconds());
-}
-
-// static
-void SettingsResetPromptModel::OnSettingsFetched(
-    Profile* profile,
-    std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-    SettingsResetPromptModel::CreateCallback callback,
-    std::unique_ptr<BrandcodedDefaultSettings> default_settings) {
-  DCHECK(profile);
-  DCHECK(prompt_config);
-  DCHECK(default_settings);
-
-  callback.Run(base::WrapUnique(new SettingsResetPromptModel(
-      profile, std::move(prompt_config),
-      base::MakeUnique<ResettableSettingsSnapshot>(profile),
-      std::move(default_settings),
-      base::MakeUnique<ProfileResetter>(profile))));
-}
-
-SettingsResetPromptModel::SettingsResetPromptModel(
-    Profile* profile,
-    std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-    std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
-    std::unique_ptr<BrandcodedDefaultSettings> default_settings,
-    std::unique_ptr<ProfileResetter> profile_resetter)
-    : profile_(profile),
-      prefs_manager_(profile, prompt_config->prompt_wave()),
-      prompt_config_(std::move(prompt_config)),
-      settings_snapshot_(std::move(settings_snapshot)),
-      default_settings_(std::move(default_settings)),
-      profile_resetter_(std::move(profile_resetter)),
-      time_since_last_prompt_(base::Time::Now() -
-                              prefs_manager_.LastTriggeredPrompt()),
-      settings_types_initialized_(0),
-      homepage_reset_domain_id_(-1),
-      homepage_reset_state_(NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED),
-      default_search_reset_domain_id_(-1),
-      default_search_reset_state_(NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED),
-      startup_urls_reset_state_(NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED) {
-  DCHECK(profile_);
-  DCHECK(prompt_config_);
-  DCHECK(settings_snapshot_);
-  DCHECK(default_settings_);
-  DCHECK(profile_resetter_);
-
-  InitDefaultSearchData();
-  InitStartupUrlsData();
-  InitHomepageData();
-  DCHECK_EQ(settings_types_initialized_, SETTINGS_TYPE_ALL);
-
-  InitExtensionData();
-
-  if (!SomeSettingRequiresReset())
-    return;
-
-  // For now, during the experimental phase, if policy controls any of the
-  // settings that we consider for reset (search, startup pages, homepage) or if
-  // an extension that needs to be disabled is managed by policy, then we do not
-  // show the reset prompt.
-  //
-  // TODO(alito): Consider how clients with policies should be prompted for
-  // reset.
-  if (SomeSettingIsManaged() || SomeExtensionMustRemainEnabled()) {
-    if (homepage_reset_state_ == RESET_REQUIRED)
-      homepage_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
-    if (default_search_reset_state_ == RESET_REQUIRED)
-      default_search_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
-    if (startup_urls_reset_state_ == RESET_REQUIRED)
-      startup_urls_reset_state_ = NO_RESET_REQUIRED_DUE_TO_POLICY;
-  }
 }
 
 void SettingsResetPromptModel::InitDefaultSearchData() {

@@ -25,6 +25,9 @@ class DefaultSettingsFetcher {
   // Fetches default settings and passes the corresponding
   // |BrandcodedDefaultSettings| object to |callback| on the UI thread. This
   // function must be called on the UI thread as well.
+  //
+  // If fetching of default settings on the network fails, a default-constructed
+  // BrandcodedDefaultSettings object will be passed to |callback|.
   static void FetchDefaultSettings(SettingsCallback callback);
   // Allows tests to specify the default settings that were fetched in
   // |fetched_settings|. Passing nullptr as |fetched_settings| corresponds to
