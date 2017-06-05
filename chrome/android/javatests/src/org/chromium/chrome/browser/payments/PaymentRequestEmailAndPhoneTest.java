@@ -145,7 +145,7 @@ public class PaymentRequestEmailAndPhoneTest implements MainActivityStartCallbac
     }
 
     /**
-     * Test that starting a payment request that requires only the user's email address results in
+     * Test that ending a payment request that requires only the user's email address results in
      * the appropriate metric being logged in the PaymentRequest.RequestedInformation histogram.
      */
     @Test
@@ -153,8 +153,11 @@ public class PaymentRequestEmailAndPhoneTest implements MainActivityStartCallbac
     @Feature({"Payments"})
     public void testRequestedInformationMetric()
             throws InterruptedException, ExecutionException, TimeoutException {
-        // Start the Payment Request.
+        // Start and cancel the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.close_button, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
 
         int appropriateEnumValue = RequestedInformation.EMAIL | RequestedInformation.PHONE;
 

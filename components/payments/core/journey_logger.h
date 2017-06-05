@@ -168,6 +168,12 @@ class JourneyLogger {
   // Records the payment method that was used to complete the Payment Request.
   void SetSelectedPaymentMethod(SelectedPaymentMethod payment_method);
 
+  // Records the user information requested by the merchant.
+  void SetRequestedInformation(bool requested_shipping,
+                               bool requested_email,
+                               bool requested_phone,
+                               bool requested_name);
+
   // Records that the Payment Request was completed successfully, and starts the
   // logging of all the journey metrics.
   void SetCompleted();
@@ -222,6 +228,9 @@ class JourneyLogger {
   // Records the metric about the selected payment method.
   void RecordPaymentMethodMetric();
 
+  // Records the user information that the merchant requested.
+  void RecordRequestedInformationMetrics();
+
   // Records the histograms for all the sections that were requested by the
   // merchant.
   void RecordSectionSpecificStats(CompletionStatus completion_status);
@@ -254,6 +263,9 @@ class JourneyLogger {
 
   // To keep track of the selected payment method.
   SelectedPaymentMethod payment_method_ = SELECTED_PAYMENT_METHOD_MAX;
+
+  // Keeps track of the user information requested by the merchant.
+  int requested_information_ = REQUESTED_INFORMATION_MAX;
 
   const GURL url_;
 

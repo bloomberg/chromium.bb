@@ -72,7 +72,7 @@ public class PaymentRequestPhoneAndFreeShippingTest implements MainActivityStart
     }
 
     /**
-     * Test that starting a payment request that requires a phone number and a shipping address
+     * Test that ending a payment request that requires a phone number and a shipping address
      * results in the appropriate metric being logged in the PaymentRequest.RequestedInformation
      * histogram.
      */
@@ -81,8 +81,17 @@ public class PaymentRequestPhoneAndFreeShippingTest implements MainActivityStart
     @Feature({"Payments"})
     public void testRequestedInformationMetric()
             throws InterruptedException, ExecutionException, TimeoutException {
-        // Start the Payment Request.
+        // Start and complete the Payment Request.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                DialogInterface.BUTTON_POSITIVE, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"+15555555555", "Jon Doe",
+                "4111111111111111", "12", "2050", "visa", "123", "Google", "340 Main St", "CA",
+                "Los Angeles", "90291", "US", "en", "freeShippingOption"});
 
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < RequestedInformation.MAX; ++i) {
