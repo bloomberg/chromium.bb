@@ -3,6 +3,7 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/page-mock.js"></script>
 <script>
+
 async function test()
 {
     var files = [
@@ -42,11 +43,10 @@ async function test()
     }
 
     InspectorTest.addResult("Dumping next file for each file:");
-    for (var i = 0; i < uiSourceCodes.length; ++i) {
-        var uiSourceCode = uiSourceCodes[i];
+    for (var uiSourceCode of uiSourceCodes) {
         var nextUISourceCode = Sources.SourcesView.SwitchFileActionDelegate._nextFile(uiSourceCode);
         var nextURI = nextUISourceCode ? nextUISourceCode.url() : "<none>";
-        InspectorTest.addResult("Next file for " + uiSourceCode.url() + " is " + nextURI + ".");
+        InspectorTest.addResult(`Next file for ${uiSourceCode.url()} is ${nextURI}.`);
     }
     InspectorTest.completeTest();
 }

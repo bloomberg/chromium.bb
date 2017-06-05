@@ -88,18 +88,19 @@ function test()
 
         function onNodeSelected(node)
         {
-            InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, onMatchedStylesForNode);
+            InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id}).then(onMatchedStylesForNode);
         }
 
-        function onMatchedStylesForNode(error, inlineStyle, attributeStyle, matchedStyles)
+        function onMatchedStylesForNode(response)
         {
+            var error = response[Protocol.Error];
             if (error) {
                 InspectorTest.addResult("error: " + error);
                 InspectorTest.completeTest();
                 return;
             }
-            for (var i = 0; i < matchedStyles.length; ++i) {
-                var rule = matchedStyles[i].rule;
+            for (var matchedStyle of response.matchedCSSRules) {
+                var rule = matchedStyle.rule;
                 if (rule.origin !== "regular")
                     continue;
                 callback(new SDK.CSSStyleDeclaration(InspectorTest.cssModel, null, rule.style));
