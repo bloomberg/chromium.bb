@@ -79,6 +79,7 @@ extern const char kChromeUIContentSettingsURL[];
 extern const char kChromeUISettingsFrameURL[];
 extern const char kChromeUISigninEmailConfirmationURL[];
 extern const char kChromeUISigninErrorURL[];
+extern const char kChromeUISiteDetailsPrefixURL[];
 extern const char kChromeUISiteEngagementHost[];
 extern const char kChromeUISuggestionsURL[];
 extern const char kChromeUISupervisedUserPassphrasePageURL[];

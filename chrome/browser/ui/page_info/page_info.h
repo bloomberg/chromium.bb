@@ -142,6 +142,9 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // This method is called when the revoke SSL error bypass button is pressed.
   void OnRevokeSSLErrorBypassButtonPressed();
 
+  // Handles opening the link to show more site settings and records the event.
+  void OpenSiteSettingsView();
+
   // Accessors.
   SiteConnectionStatus site_connection_status() const {
     return site_connection_status_;

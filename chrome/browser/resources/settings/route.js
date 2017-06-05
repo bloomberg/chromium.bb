@@ -168,6 +168,12 @@ cr.define('settings', function() {
     r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');
     r.SITE_SETTINGS_SITE_DETAILS =
         r.SITE_SETTINGS_ALL.createChild('/content/siteDetails');
+  } else if (loadTimeData.getBoolean('enableSiteDetails')) {
+    // When there is no "All Sites", pressing 'back' from "Site Details" should
+    // return to "Content Settings". This should only occur when |kSiteSettings|
+    // is off and |kSiteDetails| is on.
+    r.SITE_SETTINGS_SITE_DETAILS =
+        r.SITE_SETTINGS.createChild('/content/siteDetails');
   }
 
   r.SITE_SETTINGS_HANDLERS = r.SITE_SETTINGS.createChild('/handlers');

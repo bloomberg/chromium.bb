@@ -82,6 +82,8 @@ const char kChromeUIQuitURL[] = "chrome://quit/";
 const char kChromeUIRestartURL[] = "chrome://restart/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUIContentSettingsURL[] = "chrome://settings/content";
+const char kChromeUISiteDetailsPrefixURL[] =
+    "chrome://settings/content/siteDetails?site=";
 const char kChromeUISettingsFrameURL[] = "chrome://settings-frame/";
 const char kChromeUISigninEmailConfirmationURL[] =
     "chrome://signin-email-confirmation";
