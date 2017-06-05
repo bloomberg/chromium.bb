@@ -100,7 +100,7 @@ static uint32_t mediatek_resolve_format(uint32_t format)
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
-		return DRM_FORMAT_YVU420_ANDROID;
+		return DRM_FORMAT_YVU420;
 	default:
 		return format;
 	}

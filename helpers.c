@@ -140,16 +140,26 @@ int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, 
 
 	num_planes = drv_num_planes_from_format(format);
 	assert(num_planes);
-	bo->total_size = 0;
+
+	/*
+	 * HAL_PIXEL_FORMAT_YV12 requires that (see <system/graphics.h>):
+	 *  - the aligned height is same as the buffer's height.
+	 *  - the chroma stride is 16 bytes aligned, i.e., the luma's strides
+	 *    is 32 bytes aligned.
+	 */
+	if (bo->format == DRM_FORMAT_YVU420_ANDROID) {
+		assert(aligned_height == bo->height);
+		assert(stride == ALIGN(stride, 32));
+	}
 
 	for (p = 0; p < num_planes; p++) {
 		bo->strides[p] = subsample_stride(stride, format, p);
-		bo->sizes[p] = drv_size_from_format(format, bo->strides[p], bo->height, p);
+		bo->sizes[p] = drv_size_from_format(format, bo->strides[p], aligned_height, p);
 		bo->offsets[p] = offset;
 		offset += bo->sizes[p];
-		bo->total_size += drv_size_from_format(format, bo->strides[p], aligned_height, p);
 	}
 
+	bo->total_size = offset;
 	return 0;
 }
 
@@ -169,6 +179,9 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 		 * Android requires.
 		 */
 		aligned_width = ALIGN(width, 32);
+	}
+
+	if (format == DRM_FORMAT_YVU420_ANDROID || format == DRM_FORMAT_YVU420) {
 		aligned_height = 3 * DIV_ROUND_UP(height, 2);
 	}
 

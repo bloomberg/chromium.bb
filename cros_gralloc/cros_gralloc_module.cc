@@ -331,6 +331,7 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const *module, buffer
 		ycbcr->chroma_step = 2;
 		break;
 	case DRM_FORMAT_YVU420_ANDROID:
+	case DRM_FORMAT_YVU420:
 		ycbcr->y = addr;
 		ycbcr->cb = addr + offsets[2];
 		ycbcr->cr = addr + offsets[1];

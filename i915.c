@@ -271,19 +271,27 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32
 	else
 		bo->tiling = I915_TILING_Y;
 
-	stride = drv_stride_from_format(format, width, 0);
-	/*
-	 * Align the Y plane to 128 bytes so the chroma planes would be aligned
-	 * to 64 byte boundaries. This is an Intel HW requirement.
-	 */
-	if (format == DRM_FORMAT_YVU420 || format == DRM_FORMAT_YVU420_ANDROID) {
-		stride = ALIGN(stride, 128);
+	if (format == DRM_FORMAT_YVU420 || format == DRM_FORMAT_YVU420_ANDROID)
 		bo->tiling = I915_TILING_NONE;
-	}
+
+	stride = drv_stride_from_format(format, width, 0);
 
 	ret = i915_align_dimensions(bo, bo->tiling, &stride, &height);
 	if (ret)
 		return ret;
+
+	/*
+	 * Align the Y plane to 128 bytes so the chroma planes would be aligned
+	 * to 64 byte boundaries. This is an Intel HW requirement.
+	 */
+	if (format == DRM_FORMAT_YVU420)
+		stride = ALIGN(stride, 128);
+
+	/*
+	 * HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned.
+	 */
+	if (format == DRM_FORMAT_YVU420_ANDROID)
+		height = bo->height;
 
 	drv_bo_from_format(bo, stride, height, format);
 
@@ -424,7 +432,7 @@ static uint32_t i915_resolve_format(uint32_t format)
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
-		return DRM_FORMAT_YVU420_ANDROID;
+		return DRM_FORMAT_YVU420;
 	default:
 		return format;
 	}

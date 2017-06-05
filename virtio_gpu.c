@@ -37,9 +37,14 @@ static int virtio_gpu_init(struct driver *drv)
 static int virtio_gpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 				uint32_t flags)
 {
-	int ret = drv_dumb_bo_create(bo, ALIGN(width, MESA_LLVMPIPE_TILE_SIZE),
-				     ALIGN(height, MESA_LLVMPIPE_TILE_SIZE), format, flags);
-	return ret;
+	width = ALIGN(width, MESA_LLVMPIPE_TILE_SIZE);
+	height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);
+
+	/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned. */
+	if (bo->format == DRM_FORMAT_YVU420_ANDROID)
+		height = bo->height;
+
+	return drv_dumb_bo_create(bo, width, height, format, flags);
 }
 
 static uint32_t virtio_gpu_resolve_format(uint32_t format)
@@ -49,7 +54,7 @@ static uint32_t virtio_gpu_resolve_format(uint32_t format)
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
-		return DRM_FORMAT_YVU420_ANDROID;
+		return DRM_FORMAT_YVU420;
 	default:
 		return format;
 	}
