@@ -450,7 +450,11 @@ deps_os = {
 
     # DevTools node modules. Used on Linux buildbots only.
     'src/third_party/WebKit/Source/devtools/devtools-node-modules':
-      Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision')
+      Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
+
+    # Minizip library. Used on Chrome OS.
+    'src/third_party/minizip/src':
+      Var('chromium_git') + '/external/github.com/nmoinvaz/minizip' + '@' + 'dc3ad01e3d5928e9105f770b7e896a8e9fe0d3b4',
   },
   'android': {
     'src/third_party/android_protobuf/src':
