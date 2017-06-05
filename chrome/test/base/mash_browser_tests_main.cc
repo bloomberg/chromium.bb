@@ -18,6 +18,7 @@
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/app/mash/embedded_services.h"
@@ -189,9 +190,14 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
     base::debug::EnableInProcessStackDumping();
 #endif
 
+    base::TaskScheduler::CreateAndStartWithDefaultParams("StandaloneService");
+
     command_line->AppendSwitch(ui::switches::kUseTestConfig);
     service_manager::RunStandaloneService(base::Bind(&StartEmbeddedService));
     *exit_code = 0;
+
+    base::TaskScheduler::GetInstance()->Shutdown();
+
     return true;
   }
 
