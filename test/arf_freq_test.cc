@@ -76,9 +76,9 @@ int is_extension_y4m(const char *filename) {
 }
 
 class ArfFreqTestLarge
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWith3Params<TestVideoParam,
-                                                 TestEncodeParam, int> {
+    : public ::libaom_test::CodecTestWith3Params<TestVideoParam,
+                                                 TestEncodeParam, int>,
+      public ::libaom_test::EncoderTest {
  protected:
   ArfFreqTestLarge()
       : EncoderTest(GET_PARAM(0)), test_video_param_(GET_PARAM(1)),

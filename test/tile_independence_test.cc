@@ -22,8 +22,8 @@
 
 namespace {
 class TileIndependenceTest
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWith2Params<int, int> {
+    : public ::libaom_test::CodecTestWith2Params<int, int>,
+      public ::libaom_test::EncoderTest {
  protected:
   TileIndependenceTest()
       : EncoderTest(GET_PARAM(0)), md5_fw_order_(), md5_inv_order_(),

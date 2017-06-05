@@ -25,8 +25,8 @@ const int kTileRows = 2;
 typedef std::tr1::tuple<libaom_test::TestMode, int, int> SuperframeTestParam;
 
 class SuperframeTest
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWithParam<SuperframeTestParam> {
+    : public ::libaom_test::CodecTestWithParam<SuperframeTestParam>,
+      public ::libaom_test::EncoderTest {
  protected:
   SuperframeTest()
       : EncoderTest(GET_PARAM(0)), modified_buf_(NULL), last_sf_pts_(0) {}

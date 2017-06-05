@@ -265,8 +265,8 @@ class ResizingVideoSource : public ::libaom_test::DummyVideoSource {
 };
 
 class ResizeTest
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWithParam<libaom_test::TestMode> {
+    : public ::libaom_test::CodecTestWithParam<libaom_test::TestMode>,
+      public ::libaom_test::EncoderTest {
  protected:
   ResizeTest() : EncoderTest(GET_PARAM(0)) {}
 
@@ -427,8 +427,8 @@ TEST_P(ResizeInternalTest, TestInternalResizeChangeConfig) {
 }
 
 class ResizeRealtimeTest
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
+    : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
+      public ::libaom_test::EncoderTest {
  protected:
   ResizeRealtimeTest() : EncoderTest(GET_PARAM(0)) {}
   virtual ~ResizeRealtimeTest() {}

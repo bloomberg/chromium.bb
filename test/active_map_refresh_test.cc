@@ -59,8 +59,8 @@ void GenerateMap(int mb_rows, int mb_cols, const aom_image_t &current,
 const int kAqModeCyclicRefresh = 3;
 
 class ActiveMapRefreshTest
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
+    : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
+      public ::libaom_test::EncoderTest {
  protected:
   ActiveMapRefreshTest() : EncoderTest(GET_PARAM(0)) {}
   virtual ~ActiveMapRefreshTest() {}

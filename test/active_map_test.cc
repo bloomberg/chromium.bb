@@ -20,8 +20,8 @@
 namespace {
 
 class ActiveMapTest
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
+    : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
+      public ::libaom_test::EncoderTest {
  protected:
   static const int kWidth = 208;
   static const int kHeight = 144;

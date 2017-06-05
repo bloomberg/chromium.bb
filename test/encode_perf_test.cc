@@ -56,8 +56,8 @@ const int kEncodePerfTestThreads[] = { 1, 2, 4 };
 #define NELEMENTS(x) (sizeof((x)) / sizeof((x)[0]))
 
 class AV1EncodePerfTest
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWithParam<libaom_test::TestMode> {
+    : public ::libaom_test::CodecTestWithParam<libaom_test::TestMode>,
+      public ::libaom_test::EncoderTest {
  protected:
   AV1EncodePerfTest()
       : EncoderTest(GET_PARAM(0)), min_psnr_(kMaxPsnr), nframes_(0),

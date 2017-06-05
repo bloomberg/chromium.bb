@@ -93,8 +93,8 @@ TEST_P(DecodePerfTest, PerfTest) {
 //                        ::testing::ValuesIn(kAV1DecodePerfVectors));
 
 class AV1NewEncodeDecodePerfTest
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWithParam<libaom_test::TestMode> {
+    : public ::libaom_test::CodecTestWithParam<libaom_test::TestMode>,
+      public ::libaom_test::EncoderTest {
  protected:
   AV1NewEncodeDecodePerfTest()
       : EncoderTest(GET_PARAM(0)), encoding_mode_(GET_PARAM(1)), speed_(0),

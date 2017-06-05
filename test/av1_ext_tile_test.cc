@@ -33,8 +33,8 @@ const int kImgHeight = 576;
 // This test tests "tile_encoding_mode = TILE_VR" case. The TILE_NORMAL case is
 // tested by the tile_independence test.
 class AV1ExtTileTest
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
+    : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
+      public ::libaom_test::EncoderTest {
  protected:
   AV1ExtTileTest()
       : EncoderTest(GET_PARAM(0)), encoding_mode_(GET_PARAM(1)),

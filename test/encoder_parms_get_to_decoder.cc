@@ -54,9 +54,10 @@ const EncodeParameters kAV1EncodeParameterSet[] = {
 };
 
 class AvxEncoderParmsGetToDecoder
-    : public ::libaom_test::EncoderTest,
-      public ::libaom_test::CodecTestWith2Params<EncodeParameters,
-                                                 EncodePerfTestVideo> {
+    : public ::libaom_test::CodecTestWith2Params<EncodeParameters,
+                                                 EncodePerfTestVideo>,
+      public ::libaom_test::EncoderTest,
+{
  protected:
   AvxEncoderParmsGetToDecoder()
       : EncoderTest(GET_PARAM(0)), encode_parms(GET_PARAM(1)) {}
