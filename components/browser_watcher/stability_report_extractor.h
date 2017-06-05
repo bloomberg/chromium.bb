@@ -12,7 +12,7 @@
 
 namespace browser_watcher {
 
-// DO NOT CHANGE VALUES. This is logged persistently in a histogram.
+// DO NOT REMOVE OR REORDER VALUES. This is logged persistently in a histogram.
 enum CollectionStatus {
   NONE = 0,
   SUCCESS = 1,  // Successfully registered a report with Crashpad.
@@ -22,7 +22,11 @@ enum CollectionStatus {
   WRITE_TO_MINIDUMP_FAILED = 5,
   DEBUG_FILE_DELETION_FAILED = 6,
   FINISHED_WRITING_CRASH_REPORT_FAILED = 7,
-  COLLECTION_STATUS_MAX = 8
+  UNCLEAN_SHUTDOWN = 8,
+  UNCLEAN_SESSION = 9,
+  COLLECTION_ATTEMPT = 10,
+  // New values go here.
+  COLLECTION_STATUS_MAX = 11
 };
 
 // Extracts a stability report from a stability file.

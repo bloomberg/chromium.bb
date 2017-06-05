@@ -126,6 +126,7 @@ if (is_win) {
       "postmortem_minidump_writer_win_unittest.cc",
       "postmortem_report_collector_unittest.cc",
       "stability_debugging_win_unittest.cc",
+      "stability_paths_unittest.cc",
       "system_session_analyzer_win_unittest.cc",
       "watcher_client_win_unittest.cc",
       "watcher_metrics_provider_win_unittest.cc",

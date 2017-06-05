@@ -28,6 +28,15 @@
 
 namespace browser_watcher {
 
+// Deletes stability files.
+class PostmortemDeleter {
+ public:
+  PostmortemDeleter() = default;
+  ~PostmortemDeleter() = default;
+
+  void Process(const std::vector<base::FilePath>& stability_files);
+};
+
 // Handles postmortem report collection by establishing the set of stability
 // files to collect, then for each file:
 //   - extracting a report protocol buffer
@@ -39,20 +48,13 @@ class PostmortemReportCollector {
   PostmortemReportCollector(const std::string& product_name,
                             const std::string& version_number,
                             const std::string& channel_name,
+                            crashpad::CrashReportDatabase* report_database,
                             SystemSessionAnalyzer* analyzer);
-  virtual ~PostmortemReportCollector();
+  ~PostmortemReportCollector();
 
-  // Collects postmortem stability reports from files found in |debug_info_dir|,
-  // relying on |debug_file_pattern| and |excluded_debug_files|. Reports are
-  // then wrapped in Crashpad reports, manufactured via |report_database|.
-  // Returns the number crash reports successfully registered with the reporter.
-  // TODO(manzagop): consider mechanisms for partial collection if this is to be
-  //     used on a critical path.
-  int CollectAndSubmitAllPendingReports(
-      const base::FilePath& debug_info_dir,
-      const base::FilePath::StringType& debug_file_pattern,
-      const std::set<base::FilePath>& excluded_debug_files,
-      crashpad::CrashReportDatabase* report_database);
+  // Collects postmortem stability reports from |stability_files|. Reports are
+  // then wrapped in Crashpad reports and registered with the crash database.
+  void Process(const std::vector<base::FilePath>& stability_files);
 
   const std::string& product_name() const { return product_name_; }
   const std::string& version_number() const { return version_number_; }
@@ -81,18 +83,10 @@ class PostmortemReportCollector {
       PostmortemReportCollectorCollectionFromGlobalTrackerTest,
       SystemStateTest);
 
-  // Virtual for unittesting.
-  virtual std::vector<base::FilePath> GetDebugStateFilePaths(
-      const base::FilePath& debug_info_dir,
-      const base::FilePath::StringType& debug_file_pattern,
-      const std::set<base::FilePath>& excluded_debug_files);
-
   // Collects a stability file, generates a report and registers it with the
-  // database. Returns true on success. False otherwise.
-  bool CollectAndSubmitOneReport(const crashpad::UUID& client_id,
-                                 const base::FilePath& file,
-                                 crashpad::CrashReportDatabase* report_database,
-                                 bool* system_unclean);
+  // database.
+  void CollectAndSubmitOneReport(const crashpad::UUID& client_id,
+                                 const base::FilePath& file);
 
   virtual CollectionStatus CollectOneReport(
       const base::FilePath& stability_file,
@@ -111,6 +105,7 @@ class PostmortemReportCollector {
   std::string version_number_;
   std::string channel_name_;
 
+  crashpad::CrashReportDatabase* report_database_;  // Not owned.
   SystemSessionAnalyzer* system_session_analyzer_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(PostmortemReportCollector);

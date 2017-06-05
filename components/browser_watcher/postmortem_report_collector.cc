@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -60,102 +59,58 @@ void LogCollectionStatus(CollectionStatus status) {
 
 }  // namespace
 
+void PostmortemDeleter::Process(
+    const std::vector<base::FilePath>& stability_files) {
+  for (const FilePath& file : stability_files) {
+    if (base::DeleteFile(file, false))
+      LogCollectionStatus(UNCLEAN_SHUTDOWN);
+    else
+      LogCollectionStatus(DEBUG_FILE_DELETION_FAILED);
+  }
+}
+
 PostmortemReportCollector::PostmortemReportCollector(
     const std::string& product_name,
     const std::string& version_number,
     const std::string& channel_name,
+    crashpad::CrashReportDatabase* report_database,
     SystemSessionAnalyzer* analyzer)
     : product_name_(product_name),
       version_number_(version_number),
       channel_name_(channel_name),
-      system_session_analyzer_(analyzer) {}
+      report_database_(report_database),
+      system_session_analyzer_(analyzer) {
+  DCHECK_NE(nullptr, report_database);
+}
 
 PostmortemReportCollector::~PostmortemReportCollector() {}
 
-int PostmortemReportCollector::CollectAndSubmitAllPendingReports(
-    const base::FilePath& debug_info_dir,
-    const base::FilePath::StringType& debug_file_pattern,
-    const std::set<base::FilePath>& excluded_debug_files,
-    crashpad::CrashReportDatabase* report_database) {
-  DCHECK_NE(true, debug_info_dir.empty());
-  DCHECK_NE(true, debug_file_pattern.empty());
-  DCHECK_NE(nullptr, report_database);
-
-  // Collect the list of files to harvest.
-  std::vector<FilePath> debug_files = GetDebugStateFilePaths(
-      debug_info_dir, debug_file_pattern, excluded_debug_files);
-  UMA_HISTOGRAM_COUNTS_100("ActivityTracker.Collect.StabilityFileCount",
-                           debug_files.size());
-
+void PostmortemReportCollector::Process(
+    const std::vector<base::FilePath>& stability_files) {
   // Determine the crashpad client id.
   crashpad::UUID client_id;
-  crashpad::Settings* settings = report_database->GetSettings();
+  crashpad::Settings* settings = report_database_->GetSettings();
   if (settings) {
     // If GetSettings() or GetClientID() fails client_id will be left at its
     // default value, all zeroes, which is appropriate.
     settings->GetClientID(&client_id);
   }
 
-  // Number of unclean shutdowns based on successful collection of stability
-  // reports.
-  int unclean_cnt = 0;
-  // Number of unclean shutdowns that may be attributable to system instability
-  // based on successful collection of stability reports. This number should be
-  // smaller or equal to |unclean_cnt|.
-  int unclean_system_cnt = 0;
-
-  // Process each stability file.
-  for (const FilePath& file : debug_files) {
-    bool system_unclean = false;
-    if (CollectAndSubmitOneReport(client_id, file, report_database,
-                                  &system_unclean)) {
-      ++unclean_cnt;
-      if (system_unclean)
-        ++unclean_system_cnt;
-    }
+  for (const FilePath& file : stability_files) {
+    CollectAndSubmitOneReport(client_id, file);
   }
-
-  UMA_STABILITY_HISTOGRAM_COUNTS_100(
-      "ActivityTracker.Collect.UncleanShutdownCount", unclean_cnt);
-  UMA_STABILITY_HISTOGRAM_COUNTS_100(
-      "ActivityTracker.Collect.UncleanSystemCount", unclean_system_cnt);
-
-  return unclean_cnt;
 }
 
-std::vector<FilePath> PostmortemReportCollector::GetDebugStateFilePaths(
-    const FilePath& debug_info_dir,
-    const FilePath::StringType& debug_file_pattern,
-    const std::set<FilePath>& excluded_debug_files) {
-  DCHECK_NE(true, debug_info_dir.empty());
-  DCHECK_NE(true, debug_file_pattern.empty());
-
-  std::vector<FilePath> paths;
-  base::FileEnumerator enumerator(debug_info_dir, false /* recursive */,
-                                  base::FileEnumerator::FILES,
-                                  debug_file_pattern);
-  FilePath path;
-  for (path = enumerator.Next(); !path.empty(); path = enumerator.Next()) {
-    if (excluded_debug_files.find(path) == excluded_debug_files.end())
-      paths.push_back(path);
-  }
-  return paths;
-}
-
-bool PostmortemReportCollector::CollectAndSubmitOneReport(
+void PostmortemReportCollector::CollectAndSubmitOneReport(
     const crashpad::UUID& client_id,
-    const FilePath& file,
-    crashpad::CrashReportDatabase* report_database,
-    bool* system_unclean) {
-  DCHECK_NE(nullptr, report_database);
-  DCHECK_NE(nullptr, system_unclean);
-  *system_unclean = false;
+    const FilePath& file) {
+  DCHECK_NE(nullptr, report_database_);
+  LogCollectionStatus(COLLECTION_ATTEMPT);
 
   // Note: the code below involves two notions of report: chrome internal state
   // reports and the crashpad reports they get wrapped into.
 
-  // Collect the data from the debug file to a proto. Note: a non-empty report
-  // is interpreted here as an unclean exit.
+  // Collect the data from the debug file to a proto.
   StabilityReport report_proto;
   CollectionStatus status = CollectOneReport(file, &report_proto);
   if (status != SUCCESS) {
@@ -164,41 +119,41 @@ bool PostmortemReportCollector::CollectAndSubmitOneReport(
     if (!base::DeleteFile(file, false))
       DLOG(ERROR) << "Failed to delete " << file.value();
     LogCollectionStatus(status);
-    return false;
+    return;
   }
+
+  // Delete the stability file. If the file cannot be deleted, do not report its
+  // contents - it will be retried in a future processing run. Note that this
+  // approach can lead to under reporting and retries. However, under reporting
+  // is preferable to the over reporting that would happen with a file that
+  // cannot be deleted. Also note that the crash registration may still fail at
+  // this point: losing the report in such a case is deemed acceptable.
+  if (!base::DeleteFile(file, false)) {
+    DLOG(ERROR) << "Failed to delete " << file.value();
+    LogCollectionStatus(DEBUG_FILE_DELETION_FAILED);
+    return;
+  }
+
+  LogCollectionStatus(UNCLEAN_SHUTDOWN);
+  if (report_proto.system_state().session_state() == SystemState::UNCLEAN)
+    LogCollectionStatus(UNCLEAN_SESSION);
 
   // Prepare a crashpad report.
   CrashReportDatabase::NewReport* new_report = nullptr;
   CrashReportDatabase::OperationStatus database_status =
-      report_database->PrepareNewCrashReport(&new_report);
+      report_database_->PrepareNewCrashReport(&new_report);
   if (database_status != CrashReportDatabase::kNoError) {
-    // Assume this is recoverable: not deleting the file.
-    DLOG(ERROR) << "PrepareNewCrashReport failed";
     LogCollectionStatus(PREPARE_NEW_CRASH_REPORT_FAILED);
-    return false;
+    return;
   }
   CrashReportDatabase::CallErrorWritingCrashReport
-      call_error_writing_crash_report(report_database, new_report);
+      call_error_writing_crash_report(report_database_, new_report);
 
   // Write the report to a minidump.
   if (!WriteReportToMinidump(&report_proto, client_id, new_report->uuid,
                              reinterpret_cast<FILE*>(new_report->handle))) {
-    // Assume this is not recoverable and delete the file.
-    if (!base::DeleteFile(file, false))
-      DLOG(ERROR) << "Failed to delete " << file.value();
     LogCollectionStatus(WRITE_TO_MINIDUMP_FAILED);
-    return false;
-  }
-
-  // If the file cannot be deleted, do not report its contents. Note this can
-  // lead to under reporting and retries. However, under reporting is
-  // preferable to the over reporting that would happen with a file that
-  // cannot be deleted.
-  // TODO(manzagop): metrics for the number of non-deletable files.
-  if (!base::DeleteFile(file, false)) {
-    DLOG(ERROR) << "Failed to delete " << file.value();
-    LogCollectionStatus(DEBUG_FILE_DELETION_FAILED);
-    return false;
+    return;
   }
 
   // Finalize the report wrt the report database. Note that this doesn't trigger
@@ -206,18 +161,14 @@ bool PostmortemReportCollector::CollectAndSubmitOneReport(
   // writing, the delay is on the order of up to 15 minutes).
   call_error_writing_crash_report.Disarm();
   crashpad::UUID unused_report_id;
-  database_status = report_database->FinishedWritingCrashReport(
+  database_status = report_database_->FinishedWritingCrashReport(
       new_report, &unused_report_id);
   if (database_status != CrashReportDatabase::kNoError) {
-    DLOG(ERROR) << "FinishedWritingCrashReport failed";
     LogCollectionStatus(FINISHED_WRITING_CRASH_REPORT_FAILED);
-    return false;
+    return;
   }
 
   LogCollectionStatus(SUCCESS);
-  if (report_proto.system_state().session_state() == SystemState::UNCLEAN)
-    *system_unclean = true;
-  return true;
 }
 
 CollectionStatus PostmortemReportCollector::CollectOneReport(
