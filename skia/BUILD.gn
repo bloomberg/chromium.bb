@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/freetype/freetype.gni")
 import("//build/config/ui.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//printing/features/features.gni")
@@ -53,7 +54,7 @@ config("skia_config") {
     defines += [ "SK_HAS_JPEG_LIBRARY" ]
   }
 
-  if (is_win || is_mac) {
+  if (!use_system_freetype) {
     defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
   }
 
