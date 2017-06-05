@@ -1968,20 +1968,20 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
   def testDeviceName(self):
     driver = self.CreateDriver(
-        mobile_emulation = {'deviceName': 'Google Nexus 5'})
+        mobile_emulation = {'deviceName': 'Nexus 5'})
     driver.Load(self._http_server.GetUrl() + '/userAgentUseDeviceWidth')
     self.assertEqual(360, driver.ExecuteScript('return window.screen.width'))
     self.assertEqual(640, driver.ExecuteScript('return window.screen.height'))
     body_tag = driver.FindElement('tag name', 'body')
     self.assertEqual(
-        'Mozilla/5.0 (Linux; Android 4.4.4; Nexus 5 Build/KTU84P) '
-        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.114 Mobile '
+        'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile '
         'Safari/537.36',
         body_tag.GetText())
 
   def testSendKeysToElement(self):
     driver = self.CreateDriver(
-        mobile_emulation = {'deviceName': 'Google Nexus 5'})
+        mobile_emulation = {'deviceName': 'Nexus 5'})
     text = driver.ExecuteScript(
         'document.body.innerHTML = \'<input type="text">\';'
         'var input = document.getElementsByTagName("input")[0];'
@@ -1996,7 +1996,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
   def testClickElement(self):
     driver = self.CreateDriver(
-        mobile_emulation = {'deviceName': 'Google Nexus 5'})
+        mobile_emulation = {'deviceName': 'Nexus 5'})
     driver.Load('about:blank')
     div = driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
@@ -2010,7 +2010,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
   def testTapElement(self):
     driver = self.CreateDriver(
-        mobile_emulation = {'deviceName': 'Google Nexus 5'})
+        mobile_emulation = {'deviceName': 'Nexus 5'})
     driver.Load('about:blank')
     div = driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
@@ -2024,7 +2024,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
   def testHasTouchScreen(self):
     driver = self.CreateDriver(
-        mobile_emulation = {'deviceName': 'Google Nexus 5'})
+        mobile_emulation = {'deviceName': 'Nexus 5'})
     self.assertIn('hasTouchScreen', driver.capabilities)
     self.assertTrue(driver.capabilities['hasTouchScreen'])
 
@@ -2073,14 +2073,14 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
   def testNetworkConnectionEnabled(self):
     # mobileEmulation must be enabled for networkConnection to be enabled
     driver = self.CreateDriver(
-        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        mobile_emulation={'deviceName': 'Nexus 5'},
         network_connection=True)
     self.assertTrue(driver.capabilities['mobileEmulationEnabled'])
     self.assertTrue(driver.capabilities['networkConnectionEnabled'])
 
   def testEmulateNetworkConnection4g(self):
     driver = self.CreateDriver(
-        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        mobile_emulation={'deviceName': 'Nexus 5'},
         network_connection=True)
     # Test 4G connection.
     connection_type = 0x8
@@ -2091,7 +2091,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
   def testEmulateNetworkConnectionMultipleBits(self):
     driver = self.CreateDriver(
-        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        mobile_emulation={'deviceName': 'Nexus 5'},
         network_connection=True)
     # Connection with 4G, 3G, and 2G bits on.
     # Tests that 4G takes precedence.
@@ -2103,7 +2103,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
   def testWifiAndAirplaneModeEmulation(self):
     driver = self.CreateDriver(
-        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        mobile_emulation={'deviceName': 'Nexus 5'},
         network_connection=True)
     # Connection with both Wifi and Airplane Mode on.
     # Tests that Wifi takes precedence over Airplane Mode.
@@ -2124,7 +2124,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
       '/helloworld', respondWithString)
 
     driver = self.CreateDriver(
-        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        mobile_emulation={'deviceName': 'Nexus 5'},
         network_connection=True)
 
     # Set network to online
@@ -2158,7 +2158,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
   def testNetworkConnectionTypeIsAppliedToAllTabs(self):
     driver = self.CreateDriver(
-        mobile_emulation={'deviceName': 'Google Nexus 5'},
+        mobile_emulation={'deviceName': 'Nexus 5'},
         network_connection=True)
     driver.Load(self._http_server.GetUrl() +'/chromedriver/page_test.html')
     window1_handle = driver.GetCurrentWindowHandle()
