@@ -108,7 +108,7 @@ class SingleTestRunner(object):
         # The image hash is used to avoid doing an image dump if the
         # checksums match, so it should be set to a blank value if we
         # are generating a new baseline.  (Otherwise, an image from a
-        # previous run will be copied into the baseline."""
+        # previous run will be copied into the baseline.)
         image_hash = None
         if self._should_fetch_expected_checksum():
             image_hash = self._port.expected_checksum(self._test_name)
@@ -194,6 +194,8 @@ class SingleTestRunner(object):
 
         if self._options.add_platform_exceptions:
             output_dir = fs.join(port.baseline_version_dir(), fs.dirname(self._test_name))
+        elif self._options.new_flag_specific_baseline:
+            output_dir = fs.join(port.baseline_flag_specific_dir(), fs.dirname(self._test_name))
         else:
             output_dir = fs.dirname(port.expected_filename(self._test_name, extension))
 

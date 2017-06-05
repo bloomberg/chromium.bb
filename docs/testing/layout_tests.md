@@ -454,6 +454,42 @@ in the platform-independent directory, e.g.
 When you rebaseline a test, make sure your commit description explains why the
 test is being re-baselined.
 
+### Rebaselining flag-specific expectations
+
+Though we prefer the Rebaseline Tool to local rebaselining, the Rebaseline Tool
+doesn't support rebaselining flag-specific expectations.
+
+```bash
+cd src/third_party/WebKit
+Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --new-flag-specific-baseline foo/bar/test.html
+```
+
+New baselines will be created in the flag-specific baselines directory, e.g.
+`LayoutTests/flag-specific/enable-flag/foo/bar/test-expected.{txt,png}`.
+
+Then you can commit the new baselines and upload the patch for review.
+
+However, it's difficult for reviewers to review the patch containing only new
+files. You can follow the steps below for easier review. The steps require a
+try bot already setup for the flag-specific tests (e.g.
+`linux_layout_tests_slimming_paint_v2` for `--enable-slimming-paint-v2`).
+
+1. Before the rebaseline, upload a patch for which the tests to be rebaselined
+   will fail. If the tests are expected to fail in
+   `LayoutTests/FlagExpectations/<flag>`, remove the failure expectation lines
+   in the patch.
+
+2. Schedule a try job on the try bot for the flag.
+
+3. Rebaseline locally, and upload a new version of patch containing the new
+   baselines to the same CL.
+
+4. After the try job finishes, request review of the CL and tell the reviewer
+   the URL of the `layout_test_result` link under the `archive_webkit_tests_results`
+   step of the try job. The reviewer should review the layout test result
+   assuming that the new baselines in the latest version of the CL are the same
+   as the actual results in the linked page.
+
 ## web-platform-tests
 
 In addition to layout tests developed and run just by the Blink team, there is
