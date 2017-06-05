@@ -148,11 +148,8 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         builder.setContentIntent(mContentIntent);
         builder.setDeleteIntent(mDeleteIntent);
         builder.setPriority(mPriority);
-        // Browser channel uses silent notifications to avoid disrupting the user.
-        if (!ChannelDefinitions.CHANNEL_ID_BROWSER.equals(mChannelId)) {
-            builder.setDefaults(mDefaults);
-            builder.setVibrate(mVibratePattern);
-        }
+        builder.setDefaults(mDefaults);
+        if (mVibratePattern != null) builder.setVibrate(mVibratePattern);
         builder.setWhen(mTimestamp);
         builder.setOnlyAlertOnce(!mRenotify);
         builder.setContent(compactView);

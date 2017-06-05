@@ -120,7 +120,7 @@ public abstract class NotificationBuilderBase {
     protected PendingIntent mDeleteIntent;
     protected List<Action> mActions = new ArrayList<>(MAX_AUTHOR_PROVIDED_ACTION_BUTTONS);
     protected Action mSettingsAction;
-    protected int mDefaults = Notification.DEFAULT_ALL;
+    protected int mDefaults;
     protected long[] mVibratePattern;
     protected long mTimestamp;
     protected boolean mRenotify;
