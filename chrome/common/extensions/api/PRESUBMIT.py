@@ -27,6 +27,7 @@ def _CheckExterns(input_api, output_api):
 
   api_pair_names = {
     'autofill_private.idl': 'autofill_private.js',
+    'automation.idl': 'automation.js',
     'developer_private.idl': 'developer_private.js',
     'bookmark_manager_private.json': 'bookmark_manager_private.js',
     'command_line_private.json': 'command_line_private.js',
