@@ -18,9 +18,9 @@
 namespace content {
 
 NoTransportImageTransportFactory::NoTransportImageTransportFactory()
-    : frame_sink_manager_host_(base::MakeUnique<FrameSinkManagerHost>()),
+    : frame_sink_manager_host_(base::MakeUnique<viz::FrameSinkManagerHost>()),
       context_factory_(base::MakeUnique<ui::InProcessContextFactory>(
-          frame_sink_manager_host_->surface_manager())) {
+          frame_sink_manager_host_.get())) {
   // The context factory created here is for unit tests, thus using a higher
   // refresh rate to spend less time waiting for BeginFrames.
   context_factory_->SetUseFastRefreshRateForTests();
@@ -38,11 +38,6 @@ ui::ContextFactory* NoTransportImageTransportFactory::GetContextFactory() {
 ui::ContextFactoryPrivate*
 NoTransportImageTransportFactory::GetContextFactoryPrivate() {
   return context_factory_.get();
-}
-
-FrameSinkManagerHost*
-NoTransportImageTransportFactory::GetFrameSinkManagerHost() {
-  return frame_sink_manager_host_.get();
 }
 
 viz::GLHelper* NoTransportImageTransportFactory::GetGLHelper() {

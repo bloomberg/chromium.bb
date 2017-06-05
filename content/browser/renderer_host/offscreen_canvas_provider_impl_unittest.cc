@@ -18,6 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
+#include "ui/compositor/compositor.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/compositor/image_transport_factory.h"
@@ -143,6 +144,7 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
         std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
     ImageTransportFactory::GetInstance()
+        ->GetContextFactoryPrivate()
         ->GetFrameSinkManagerHost()
         ->ConnectToFrameSinkManager();
 #endif

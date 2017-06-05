@@ -33,8 +33,8 @@
 #include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
 #include "components/viz/display_compositor/gl_helper.h"
 #include "components/viz/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/host/frame_sink_manager_host.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
-#include "content/browser/compositor/frame_sink_manager_host.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
@@ -206,7 +206,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
       callback_factory_(this) {
   cc::SetClientNameForMetrics("Browser");
 
-  frame_sink_manager_host_ = base::MakeUnique<FrameSinkManagerHost>();
+  frame_sink_manager_host_ = base::MakeUnique<viz::FrameSinkManagerHost>();
   frame_sink_manager_host_->ConnectToFrameSinkManager();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -713,6 +713,15 @@ cc::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
   return frame_sink_id_allocator_.NextFrameSinkId();
 }
 
+cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
+  return frame_sink_manager_host_->surface_manager();
+}
+
+viz::FrameSinkManagerHost*
+GpuProcessTransportFactory::GetFrameSinkManagerHost() {
+  return frame_sink_manager_host_.get();
+}
+
 void GpuProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,
                                                    bool visible) {
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
@@ -806,14 +815,6 @@ void GpuProcessTransportFactory::AddObserver(
 void GpuProcessTransportFactory::RemoveObserver(
     ui::ContextFactoryObserver* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
-  return frame_sink_manager_host_->surface_manager();
-}
-
-FrameSinkManagerHost* GpuProcessTransportFactory::GetFrameSinkManagerHost() {
-  return frame_sink_manager_host_.get();
 }
 
 viz::GLHelper* GpuProcessTransportFactory::GetGLHelper() {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_FRAME_SINK_MANAGER_HOST_H_
-#define CONTENT_BROWSER_COMPOSITOR_FRAME_SINK_MANAGER_HOST_H_
+#ifndef COMPONENTS_VIZ_HOST_FRAME_SINK_MANAGER_HOST_H_
+#define COMPONENTS_VIZ_HOST_FRAME_SINK_MANAGER_HOST_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -11,8 +11,8 @@
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "components/viz/frame_sinks/mojo_frame_sink_manager.h"
-#include "content/browser/compositor/frame_sink_observer.h"
-#include "content/common/content_export.h"
+#include "components/viz/host/frame_sink_observer.h"
+#include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace cc {
@@ -20,11 +20,11 @@ class SurfaceInfo;
 class SurfaceManager;
 }
 
-namespace content {
+namespace viz {
 
 // Browser side implementation of mojom::FrameSinkManager. Manages frame sinks
 // and is intended to replace SurfaceManager.
-class CONTENT_EXPORT FrameSinkManagerHost
+class VIZ_HOST_EXPORT FrameSinkManagerHost
     : NON_EXPORTED_BASE(cc::mojom::FrameSinkManagerClient) {
  public:
   FrameSinkManagerHost();
@@ -62,7 +62,7 @@ class CONTENT_EXPORT FrameSinkManagerHost
   // This is owned here so that SurfaceManager will be accessible in process.
   // Other than using SurfaceManager, access to |frame_sink_manager_| should
   // happen using Mojo. See http://crbug.com/657959.
-  viz::MojoFrameSinkManager frame_sink_manager_;
+  MojoFrameSinkManager frame_sink_manager_;
 
   // Local observers to that receive OnSurfaceCreated() messages from IPC.
   base::ObserverList<FrameSinkObserver> observers_;
@@ -70,6 +70,6 @@ class CONTENT_EXPORT FrameSinkManagerHost
   DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerHost);
 };
 
-}  // namespace content
+}  // namespace viz
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_FRAME_SINK_MANAGER_HOST_H_
+#endif  // COMPONENTS_VIZ_HOST_FRAME_SINK_MANAGER_HOST_H_

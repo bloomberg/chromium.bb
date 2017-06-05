@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/frame_sink_manager_host.h"
+#include "components/viz/host/frame_sink_manager_host.h"
 
 #include <utility>
 
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
 
-namespace content {
+namespace viz {
 
 FrameSinkManagerHost::FrameSinkManagerHost()
     : binding_(this),
@@ -69,4 +69,4 @@ void FrameSinkManagerHost::OnSurfaceCreated(
     observer.OnSurfaceCreated(surface_info);
 }
 
-}  // namespace content
+}  // namespace viz

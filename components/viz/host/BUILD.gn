@@ -1,0 +1,21 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("host") {
+  defines = [ "VIZ_HOST_IMPLEMENTATION" ]
+
+  sources = [
+    "frame_sink_manager_host.cc",
+    "frame_sink_manager_host.h",
+    "frame_sink_observer.h",
+    "viz_host_export.h",
+  ]
+
+  deps = [
+    "//base",
+    "//cc/ipc:interfaces",
+    "//cc/surfaces",
+    "//components/viz/frame_sinks",
+  ]
+}

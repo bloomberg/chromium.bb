@@ -18,14 +18,17 @@ class CopyOutputResult;
 class SurfaceManager;
 }  // namespace cc
 
-namespace content {
+namespace viz {
 class FrameSinkManagerHost;
+}
+
+namespace content {
 
 CONTENT_EXPORT cc::FrameSinkId AllocateFrameSinkId();
 
 CONTENT_EXPORT cc::SurfaceManager* GetSurfaceManager();
 
-CONTENT_EXPORT FrameSinkManagerHost* GetFrameSinkManagerHost();
+CONTENT_EXPORT viz::FrameSinkManagerHost* GetFrameSinkManagerHost();
 
 void CopyFromCompositingSurfaceHasResult(
     const gfx::Size& dst_size_in_pixel,

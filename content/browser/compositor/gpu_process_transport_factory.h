@@ -34,9 +34,12 @@ namespace ui {
 class ContextProviderCommandBuffer;
 }
 
+namespace viz {
+class FrameSinkManagerHost;
+}
+
 namespace content {
 class OutputDeviceBacking;
-class FrameSinkManagerHost;
 
 class GpuProcessTransportFactory : public ui::ContextFactory,
                                    public ui::ContextFactoryPrivate,
@@ -63,6 +66,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   void RemoveReflector(ui::Reflector* reflector) override;
   void RemoveCompositor(ui::Compositor* compositor) override;
   cc::FrameSinkId AllocateFrameSinkId() override;
+  cc::SurfaceManager* GetSurfaceManager() override;
+  viz::FrameSinkManagerHost* GetFrameSinkManagerHost() override;
   void SetDisplayVisible(ui::Compositor* compositor, bool visible) override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
@@ -79,8 +84,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   // ImageTransportFactory implementation.
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
-  cc::SurfaceManager* GetSurfaceManager() override;
-  FrameSinkManagerHost* GetFrameSinkManagerHost() override;
   viz::GLHelper* GetGLHelper() override;
   void SetGpuChannelEstablishFactory(
       gpu::GpuChannelEstablishFactory* factory) override;
@@ -108,7 +111,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   SharedVulkanContextProvider();
 
   // Manages creation and hierarchy of frame sinks.
-  std::unique_ptr<FrameSinkManagerHost> frame_sink_manager_host_;
+  std::unique_ptr<viz::FrameSinkManagerHost> frame_sink_manager_host_;
 
   cc::FrameSinkIdAllocator frame_sink_id_allocator_;
 

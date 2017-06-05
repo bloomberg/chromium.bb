@@ -23,6 +23,10 @@ class ResourceSettings;
 class SurfaceManager;
 }
 
+namespace viz {
+class FrameSinkManagerHost;
+}
+
 namespace ui {
 class InProcessContextProvider;
 
@@ -31,7 +35,7 @@ class InProcessContextFactory : public ContextFactory,
  public:
   // surface_manager is owned by the creator of this and must outlive the
   // context factory.
-  explicit InProcessContextFactory(cc::SurfaceManager* surface_manager);
+  explicit InProcessContextFactory(viz::FrameSinkManagerHost* manager);
   ~InProcessContextFactory() override;
 
   // If true (the default) an OutputSurface is created that does not display
@@ -62,6 +66,7 @@ class InProcessContextFactory : public ContextFactory,
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   cc::FrameSinkId AllocateFrameSinkId() override;
   cc::SurfaceManager* GetSurfaceManager() override;
+  viz::FrameSinkManagerHost* GetFrameSinkManagerHost() override;
   void SetDisplayVisible(ui::Compositor* compositor, bool visible) override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
@@ -93,7 +98,7 @@ class InProcessContextFactory : public ContextFactory,
   cc::FrameSinkIdAllocator frame_sink_id_allocator_;
   bool use_test_surface_;
   double refresh_rate_ = 60.0;
-  cc::SurfaceManager* surface_manager_;
+  viz::FrameSinkManagerHost* frame_sink_manager_;
   base::ObserverList<ContextFactoryObserver> observer_list_;
 
   cc::RendererSettings renderer_settings_;

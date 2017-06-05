@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_FRAME_SINK_OBSERVER_H_
-#define CONTENT_BROWSER_COMPOSITOR_FRAME_SINK_OBSERVER_H_
+#ifndef COMPONENTS_VIZ_HOST_FRAME_SINK_OBSERVER_H_
+#define COMPONENTS_VIZ_HOST_FRAME_SINK_OBSERVER_H_
 
 namespace cc {
 class SurfaceInfo;
 }
 
-namespace content {
+namespace viz {
 
 class FrameSinkObserver {
  public:
@@ -21,6 +21,6 @@ class FrameSinkObserver {
   ~FrameSinkObserver() {}
 };
 
-}  // namespace content
+}  // namespace viz
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_FRAME_SINK_OBSERVER_H_
+#endif  // COMPONENTS_VIZ_HOST_FRAME_SINK_OBSERVER_H_
