@@ -169,7 +169,7 @@ const char TrayPower::kUsbNotificationId[] = "usb-charger";
 TrayPower::TrayPower(SystemTray* system_tray, MessageCenter* message_center)
     : SystemTrayItem(system_tray, UMA_POWER),
       message_center_(message_center),
-      power_tray_(NULL),
+      power_tray_(nullptr),
       notification_state_(NOTIFICATION_NONE),
       usb_charger_was_connected_(false),
       line_power_was_connected_(false),
@@ -186,7 +186,7 @@ views::View* TrayPower::CreateTrayView(LoginStatus status) {
   // There may not be enough information when this is created about whether
   // there is a battery or not. So always create this, and adjust visibility as
   // necessary.
-  CHECK(power_tray_ == NULL);
+  CHECK(power_tray_ == nullptr);
   power_tray_ = new tray::PowerTrayView(this);
   power_tray_->UpdateStatus(false);
   return power_tray_;
@@ -195,11 +195,11 @@ views::View* TrayPower::CreateTrayView(LoginStatus status) {
 views::View* TrayPower::CreateDefaultView(LoginStatus status) {
   // Make sure icon status is up to date. (Also triggers stub activation).
   PowerStatus::Get()->RequestStatusUpdate();
-  return NULL;
+  return nullptr;
 }
 
-void TrayPower::DestroyTrayView() {
-  power_tray_ = NULL;
+void TrayPower::OnTrayViewDestroyed() {
+  power_tray_ = nullptr;
 }
 
 void TrayPower::OnPowerStatusChanged() {

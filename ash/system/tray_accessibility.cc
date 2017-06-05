@@ -345,8 +345,8 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
     : TrayImageItem(system_tray,
                     kSystemTrayAccessibilityIcon,
                     UMA_ACCESSIBILITY),
-      default_(NULL),
-      detailed_menu_(NULL),
+      default_(nullptr),
+      detailed_menu_(nullptr),
       tray_icon_visible_(false),
       login_(GetCurrentLoginStatus()),
       previous_accessibility_state_(GetAccessibilityState()),
@@ -376,7 +376,7 @@ bool TrayAccessibility::GetInitialVisibility() {
 }
 
 views::View* TrayAccessibility::CreateDefaultView(LoginStatus status) {
-  CHECK(default_ == NULL);
+  CHECK(default_ == nullptr);
 
   // Shows accessibility menu if:
   // - on login screen (not logged in);
@@ -388,16 +388,16 @@ views::View* TrayAccessibility::CreateDefaultView(LoginStatus status) {
       !delegate->ShouldShowAccessibilityMenu() &&
       // On login screen, keeps the initial visibility of the menu.
       (status != LoginStatus::LOCKED || !show_a11y_menu_on_lock_screen_))
-    return NULL;
+    return nullptr;
 
-  CHECK(default_ == NULL);
+  CHECK(default_ == nullptr);
   default_ = new tray::DefaultAccessibilityView(this);
 
   return default_;
 }
 
 views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
-  CHECK(detailed_menu_ == NULL);
+  CHECK(detailed_menu_ == nullptr);
 
   ShellPort::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_ACCESSIBILITY);
@@ -405,12 +405,12 @@ views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
   return detailed_menu_;
 }
 
-void TrayAccessibility::DestroyDefaultView() {
-  default_ = NULL;
+void TrayAccessibility::OnDefaultViewDestroyed() {
+  default_ = nullptr;
 }
 
-void TrayAccessibility::DestroyDetailedView() {
-  detailed_menu_ = NULL;
+void TrayAccessibility::OnDetailedViewDestroyed() {
+  detailed_menu_ = nullptr;
 }
 
 void TrayAccessibility::UpdateAfterLoginStatusChange(LoginStatus status) {

@@ -29,11 +29,11 @@ views::View* SystemTrayItem::CreateDetailedView(LoginStatus status) {
   return nullptr;
 }
 
-void SystemTrayItem::DestroyTrayView() {}
+void SystemTrayItem::OnTrayViewDestroyed() {}
 
-void SystemTrayItem::DestroyDefaultView() {}
+void SystemTrayItem::OnDefaultViewDestroyed() {}
 
-void SystemTrayItem::DestroyDetailedView() {}
+void SystemTrayItem::OnDetailedViewDestroyed() {}
 
 void SystemTrayItem::TransitionDetailedView() {
   transition_delay_timer_.Start(

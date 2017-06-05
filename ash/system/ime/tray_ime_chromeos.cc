@@ -146,9 +146,9 @@ class IMEDetailedView : public ImeListView {
 
 TrayIME::TrayIME(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_IME),
-      tray_label_(NULL),
-      default_(NULL),
-      detailed_(NULL),
+      tray_label_(nullptr),
+      default_(nullptr),
+      detailed_(nullptr),
       keyboard_suppressed_(false),
       is_visible_(true) {
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
@@ -224,7 +224,7 @@ base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {
 }
 
 views::View* TrayIME::CreateTrayView(LoginStatus status) {
-  CHECK(tray_label_ == NULL);
+  CHECK(tray_label_ == nullptr);
   tray_label_ = new TrayItemView(this);
   tray_label_->CreateLabel();
   SetupLabelForTray(tray_label_->label());
@@ -235,7 +235,7 @@ views::View* TrayIME::CreateTrayView(LoginStatus status) {
 }
 
 views::View* TrayIME::CreateDefaultView(LoginStatus status) {
-  CHECK(default_ == NULL);
+  CHECK(default_ == nullptr);
   default_ = new tray::IMEDefaultView(
       this, GetDefaultViewLabel(ShouldShowImeTrayItem(ime_list_.size())));
   default_->SetVisible(ShouldDefaultViewBeVisible());
@@ -243,23 +243,23 @@ views::View* TrayIME::CreateDefaultView(LoginStatus status) {
 }
 
 views::View* TrayIME::CreateDetailedView(LoginStatus status) {
-  CHECK(detailed_ == NULL);
+  CHECK(detailed_ == nullptr);
   detailed_ = new tray::IMEDetailedView(this);
   detailed_->SetImeManagedMessage(ime_managed_message_);
   detailed_->Init(ShouldShowKeyboardToggle(), GetSingleImeBehavior());
   return detailed_;
 }
 
-void TrayIME::DestroyTrayView() {
-  tray_label_ = NULL;
+void TrayIME::OnTrayViewDestroyed() {
+  tray_label_ = nullptr;
 }
 
-void TrayIME::DestroyDefaultView() {
-  default_ = NULL;
+void TrayIME::OnDefaultViewDestroyed() {
+  default_ = nullptr;
 }
 
-void TrayIME::DestroyDetailedView() {
-  detailed_ = NULL;
+void TrayIME::OnDetailedViewDestroyed() {
+  detailed_ = nullptr;
 }
 
 void TrayIME::OnIMERefresh() {

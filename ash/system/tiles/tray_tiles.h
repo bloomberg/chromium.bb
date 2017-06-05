@@ -32,7 +32,7 @@ class ASH_EXPORT TrayTiles : public SystemTrayItem {
 
   // SystemTrayItem:
   views::View* CreateDefaultView(LoginStatus status) override;
-  void DestroyDefaultView() override;
+  void OnDefaultViewDestroyed() override;
 
   TilesDefaultView* default_view_;
 

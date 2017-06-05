@@ -101,8 +101,8 @@ class TrayAccessibility : public TrayImageItem, public AccessibilityObserver {
   bool GetInitialVisibility() override;
   views::View* CreateDefaultView(LoginStatus status) override;
   views::View* CreateDetailedView(LoginStatus status) override;
-  void DestroyDefaultView() override;
-  void DestroyDetailedView() override;
+  void OnDefaultViewDestroyed() override;
+  void OnDetailedViewDestroyed() override;
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
 
   // Overridden from AccessibilityObserver.

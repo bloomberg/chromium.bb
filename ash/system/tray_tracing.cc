@@ -91,21 +91,21 @@ bool TrayTracing::GetInitialVisibility() {
 }
 
 views::View* TrayTracing::CreateDefaultView(LoginStatus status) {
-  CHECK(default_ == NULL);
+  CHECK(default_ == nullptr);
   if (tray_view() && tray_view()->visible())
     default_ = new tray::DefaultTracingView(this);
   return default_;
 }
 
 views::View* TrayTracing::CreateDetailedView(LoginStatus status) {
-  return NULL;
+  return nullptr;
 }
 
-void TrayTracing::DestroyDefaultView() {
-  default_ = NULL;
+void TrayTracing::OnDefaultViewDestroyed() {
+  default_ = nullptr;
 }
 
-void TrayTracing::DestroyDetailedView() {}
+void TrayTracing::OnDetailedViewDestroyed() {}
 
 void TrayTracing::OnTracingModeChanged(bool value) {
   SetTrayIconVisible(value);

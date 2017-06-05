@@ -90,9 +90,9 @@ class ASH_EXPORT SystemTrayItem {
   // These functions are called when the corresponding view item is about to be
   // removed. An item should do appropriate cleanup in these functions.
   // The default implementation does nothing.
-  virtual void DestroyTrayView();
-  virtual void DestroyDefaultView();
-  virtual void DestroyDetailedView();
+  virtual void OnTrayViewDestroyed();
+  virtual void OnDefaultViewDestroyed();
+  virtual void OnDetailedViewDestroyed();
 
   // Updates the tray view (if applicable) when the user's login status changes.
   // It is not necessary the update the default or detailed view, since the

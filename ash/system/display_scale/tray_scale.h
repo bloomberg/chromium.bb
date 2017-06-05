@@ -27,8 +27,8 @@ class ASH_EXPORT TrayScale : public SystemTrayItem {
   // Overridden from SystemTrayItem.
   views::View* CreateDefaultView(LoginStatus status) override;
   views::View* CreateDetailedView(LoginStatus status) override;
-  void DestroyDefaultView() override;
-  void DestroyDetailedView() override;
+  void OnDefaultViewDestroyed() override;
+  void OnDetailedViewDestroyed() override;
   bool ShouldShowShelf() const override;
 
   tray::ScaleView* scale_view_;

@@ -69,7 +69,7 @@ views::View* TraySessionLengthLimit::CreateDefaultView(LoginStatus status) {
 }
 
 // View has been removed from tray bubble.
-void TraySessionLengthLimit::DestroyDefaultView() {
+void TraySessionLengthLimit::OnDefaultViewDestroyed() {
   tray_bubble_view_ = nullptr;
 }
 

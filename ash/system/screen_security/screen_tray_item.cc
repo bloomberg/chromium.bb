@@ -164,11 +164,11 @@ void ScreenTrayItem::RecordStoppedFromDefaultViewMetric() {}
 
 void ScreenTrayItem::RecordStoppedFromNotificationViewMetric() {}
 
-void ScreenTrayItem::DestroyTrayView() {
+void ScreenTrayItem::OnTrayViewDestroyed() {
   tray_view_ = nullptr;
 }
 
-void ScreenTrayItem::DestroyDefaultView() {
+void ScreenTrayItem::OnDefaultViewDestroyed() {
   default_view_ = nullptr;
 }
 

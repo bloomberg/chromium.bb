@@ -62,8 +62,8 @@ class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionObserver {
   // Overridden from SystemTrayItem.
   views::View* CreateTrayView(LoginStatus status) override;
   views::View* CreateDefaultView(LoginStatus status) override;
-  void DestroyTrayView() override;
-  void DestroyDefaultView() override;
+  void OnTrayViewDestroyed() override;
+  void OnDefaultViewDestroyed() override;
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
   void UpdateAfterShelfAlignmentChange() override;
 

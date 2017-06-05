@@ -36,7 +36,7 @@ views::View* TrayTiles::CreateDefaultView(LoginStatus status) {
   return default_view_;
 }
 
-void TrayTiles::DestroyDefaultView() {
+void TrayTiles::OnDefaultViewDestroyed() {
   default_view_ = nullptr;
 }
 

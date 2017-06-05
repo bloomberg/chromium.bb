@@ -30,7 +30,7 @@ class TrayCapsLock : public TrayImageItem,
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;
   views::View* CreateDefaultView(LoginStatus status) override;
-  void DestroyDefaultView() override;
+  void OnDefaultViewDestroyed() override;
 
   CapsLockDefaultView* default_;
 

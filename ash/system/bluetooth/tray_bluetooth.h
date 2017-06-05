@@ -27,12 +27,10 @@ class TrayBluetooth : public SystemTrayItem, public BluetoothObserver {
 
  private:
   // Overridden from SystemTrayItem.
-  views::View* CreateTrayView(LoginStatus status) override;
   views::View* CreateDefaultView(LoginStatus status) override;
   views::View* CreateDetailedView(LoginStatus status) override;
-  void DestroyTrayView() override;
-  void DestroyDefaultView() override;
-  void DestroyDetailedView() override;
+  void OnDefaultViewDestroyed() override;
+  void OnDetailedViewDestroyed() override;
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
 
   // Overridden from BluetoothObserver.

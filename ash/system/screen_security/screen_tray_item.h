@@ -122,8 +122,8 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   // Overridden from SystemTrayItem.
   views::View* CreateTrayView(LoginStatus status) override;
   views::View* CreateDefaultView(LoginStatus status) override = 0;
-  void DestroyTrayView() override;
-  void DestroyDefaultView() override;
+  void OnTrayViewDestroyed() override;
+  void OnDefaultViewDestroyed() override;
 
  private:
   tray::ScreenTrayView* tray_view_;
