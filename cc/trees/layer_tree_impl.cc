@@ -222,45 +222,43 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
   for (auto& pair : element_id_to_scrollbar_layer_ids_) {
     ElementId scrolling_element_id = pair.first;
 
+    // TODO(pdr): Remove this LayerImpl access and just use scroll nodes. This
+    // is blocked on scroll offset's dependency on LayerImpl.
     LayerImpl* scrolling_layer = LayerByElementId(scrolling_element_id);
     if (!scrolling_layer)
       continue;
-
-    LayerImpl* bounds_layer = scrolling_layer->scroll_clip_layer();
-    if (!bounds_layer)
-      continue;
-
-    // The viewport scrollbars are special because all viewport layers can
-    // affect the scrollbars. Begin with the inner container and outer scroll.
-    bool is_viewport_scrollbar = scrolling_layer->is_viewport_layer_type();
-    if (is_viewport_scrollbar) {
-      bounds_layer = InnerViewportContainerLayer();
-      scrolling_layer = OuterViewportScrollLayer();
-      if (!bounds_layer || !scrolling_layer)
-        continue;
-    }
-
-    gfx::SizeF scrolling_size(scrolling_layer->BoundsForScrolling());
-    if (scrolling_size.IsEmpty())
-      continue;
-
     gfx::ScrollOffset current_offset = scrolling_layer->CurrentScrollOffset();
-    gfx::SizeF bounds_size(bounds_layer->BoundsForScrolling());
-    float viewport_vertical_adjust = 0;
 
-    // Viewport adjustments to account for the inner scroll layer and outer
-    // container layer.
+    auto& scroll_tree = property_trees()->scroll_tree;
+    auto* scroll_node = scroll_tree.FindNodeFromElementId(scrolling_element_id);
+    if (!scroll_node)
+      continue;
+    gfx::SizeF scrolling_size(scroll_node->bounds);
+    gfx::SizeF bounds_size(
+        scroll_tree.scroll_clip_layer_bounds(scroll_node->id));
+
+    bool is_viewport_scrollbar = scroll_node->scrolls_inner_viewport ||
+                                 scroll_node->scrolls_outer_viewport;
     if (is_viewport_scrollbar) {
-      // The offset is the combination of the outer and inner scroll offsets.
-      current_offset += InnerViewportScrollLayer()->CurrentScrollOffset();
+      if (scroll_node->scrolls_inner_viewport) {
+        // Add offset and bounds contribution of outer viewport.
+        current_offset += OuterViewportScrollLayer()->CurrentScrollOffset();
+        gfx::SizeF outer_viewport_bounds(scroll_tree.scroll_clip_layer_bounds(
+            OuterViewportScrollLayer()->scroll_tree_index()));
+        bounds_size.SetToMin(outer_viewport_bounds);
 
-      // The bounds are set using the intersection of the two viewport clip
-      // layers, adjusted for the page scale factor.
-      if (auto* outer_viewport_container = OuterViewportContainerLayer())
-        bounds_size.SetToMin(outer_viewport_container->BoundsForScrolling());
+        // The scrolling size is only determined by the outer viewport.
+        scroll_node = scroll_tree.FindNodeFromElementId(
+            OuterViewportScrollLayer()->element_id());
+        scrolling_size = gfx::SizeF(scroll_node->bounds);
+      } else {
+        // Add offset and bounds contribution of inner viewport.
+        current_offset += InnerViewportScrollLayer()->CurrentScrollOffset();
+        gfx::SizeF inner_viewport_bounds(scroll_tree.scroll_clip_layer_bounds(
+            InnerViewportScrollLayer()->scroll_tree_index()));
+        bounds_size.SetToMin(inner_viewport_bounds);
+      }
       bounds_size.Scale(1 / current_page_scale_factor());
-
-      viewport_vertical_adjust = bounds_layer->ViewportBoundsDelta().y();
     }
 
     bool y_offset_did_change = false;
@@ -274,7 +272,10 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
         scrollbar->SetClipLayerLength(bounds_size.height());
         scrollbar->SetScrollLayerLength(scrolling_size.height());
       }
-      scrollbar->SetVerticalAdjust(viewport_vertical_adjust);
+      if (is_viewport_scrollbar) {
+        scrollbar->SetVerticalAdjust(
+            InnerViewportContainerLayer()->ViewportBoundsDelta().y());
+      }
     }
 
     if (y_offset_did_change && is_viewport_scrollbar)
