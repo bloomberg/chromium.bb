@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/test/fake_central.h"
@@ -25,19 +24,12 @@ class FakePeripheral : public device::BluetoothDevice {
   // Changes the name of the device.
   void SetName(base::Optional<std::string> name);
 
-  // Set it to indicate if the system has connected to the Peripheral outside of
-  // the Bluetooth interface e.g. the user connected to the device through
-  // system settings.
-  void SetSystemConnected(bool gatt_connected);
+  // Set it to indicate if the Peripheral is connected or not.
+  void SetGattConnected(bool gatt_connected);
 
   // Updates the peripheral's UUIDs that are returned by
   // BluetoothDevice::GetUUIDs().
   void SetServiceUUIDs(UUIDSet service_uuids);
-
-  // If |code| is kHCISuccess calls a pending success callback for
-  // CreateGattConnection. Otherwise calls a pending error callback
-  // with the ConnectErrorCode corresponding to |code|.
-  void SetNextGATTConnectionResponse(uint16_t code);
 
   // BluetoothDevice overrides:
   uint32_t GetBluetoothClass() const override;
@@ -86,31 +78,16 @@ class FakePeripheral : public device::BluetoothDevice {
       const device::BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
-  void CreateGattConnection(
-      const GattConnectionCallback& callback,
-      const ConnectErrorCallback& error_callback) override;
 
  protected:
   void CreateGattConnectionImpl() override;
   void DisconnectGatt() override;
 
  private:
-  void DispatchConnectionResponse();
-
   const std::string address_;
   base::Optional<std::string> name_;
-  UUIDSet service_uuids_;
-  // True when the system has connected to the device outside of the Bluetooth
-  // interface e.g. the user connected to the device through system settings.
-  bool system_connected_;
-  // True when this Bluetooth interface is connected to the device.
   bool gatt_connected_;
-
-  // Used to decide which callback should be called when
-  // CreateGattConnection is called.
-  base::Optional<uint16_t> next_connection_response_;
-
-  base::WeakPtrFactory<FakePeripheral> weak_ptr_factory_;
+  UUIDSet service_uuids_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePeripheral);
 };
