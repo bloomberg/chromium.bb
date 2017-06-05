@@ -16,6 +16,10 @@ int ChannelAsInt();
 // Browsing extended reporting.
 bool SafeBrowsingExtendedReportingEnabled();
 
+// Returns true if there is a profile in which the user has opted into Safe
+// Browsing extended reporting with reporting level SBER_LEVEL_SCOUT.
+bool SafeBrowsingExtendedReportingScoutEnabled();
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CLIENT_INFO_WIN_H_
