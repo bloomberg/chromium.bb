@@ -24,54 +24,34 @@
 
 namespace blink {
 
-// Retrieves the custom elements constructor -> name map, creating it
-// if necessary.
-static v8::Local<v8::Map> EnsureCustomElementRegistryMap(
-    ScriptState* script_state,
-    CustomElementRegistry* registry) {
-  CHECK(script_state->World().IsMainWorld());
-  v8::Isolate* isolate = script_state->GetIsolate();
-
-  V8PrivateProperty::Symbol symbol =
-      V8PrivateProperty::GetCustomElementRegistryMap(isolate);
-  v8::Local<v8::Object> wrapper = ToV8(registry, script_state).As<v8::Object>();
-  v8::Local<v8::Value> map = symbol.GetOrUndefined(wrapper);
-  if (map->IsUndefined()) {
-    map = v8::Map::New(isolate);
-    symbol.Set(wrapper, map);
-  }
-  return map.As<v8::Map>();
-}
-
 ScriptCustomElementDefinition* ScriptCustomElementDefinition::ForConstructor(
     ScriptState* script_state,
     CustomElementRegistry* registry,
     const v8::Local<v8::Value>& constructor) {
-  v8::Local<v8::Map> map =
-      EnsureCustomElementRegistryMap(script_state, registry);
-  v8::Local<v8::Value> id_value =
-      map->Get(script_state->GetContext(), constructor).ToLocalChecked();
+  auto private_id =
+      script_state->PerContextData()->GetPrivateCustomElementDefinitionId();
+  v8::Local<v8::Value> id_value;
+  if (!constructor.As<v8::Object>()
+           ->GetPrivate(script_state->GetContext(), private_id)
+           .ToLocal(&id_value))
+    return nullptr;
   if (!id_value->IsUint32())
     return nullptr;
   uint32_t id = id_value.As<v8::Uint32>()->Value();
 
-  // This downcast is safe because only
-  // ScriptCustomElementDefinitions have an ID associated with a V8
-  // constructor in the map; see
-  // ScriptCustomElementDefinition::create. This relies on three
-  // things:
+  // This downcast is safe because only ScriptCustomElementDefinitions
+  // have an ID associated with them. This relies on three things:
   //
-  // 1. Only ScriptCustomElementDefinition adds entries to the map.
-  //    Audit the use of private properties in general and how the
-  //    map is handled--it should never be leaked to script.
+  // 1. Only ScriptCustomElementDefinition::Create sets the private
+  //    property on a constructor.
   //
   // 2. CustomElementRegistry adds ScriptCustomElementDefinitions
-  //    assigned an ID to the lis tof definitions without fail.
+  //    assigned an ID to the list of definitions without fail.
   //
   // 3. The relationship between the CustomElementRegistry and its
-  //    map is never mixed up; this is guaranteed by the bindings
-  //    system which provides a stable wrapper, and the map hangs
-  //    off the wrapper.
+  //    private property is never mixed up; this is guaranteed by the
+  //    bindings system because the registry is associated with its
+  //    context.
   //
   // At a meta-level, this downcast is safe because there is
   // currently only one implementation of CustomElementDefinition in
@@ -98,12 +78,14 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
       disconnected_callback, adopted_callback, attribute_changed_callback,
       std::move(observed_attributes));
 
-  // Add a constructor -> ID mapping to the registry.
+  // Tag the JavaScript constructor object with its ID.
   v8::Local<v8::Value> id_value =
-      v8::Integer::New(script_state->GetIsolate(), id);
-  v8::Local<v8::Map> map =
-      EnsureCustomElementRegistryMap(script_state, registry);
-  map->Set(script_state->GetContext(), constructor, id_value).ToLocalChecked();
+      v8::Integer::NewFromUnsigned(script_state->GetIsolate(), id);
+  auto private_id =
+      script_state->PerContextData()->GetPrivateCustomElementDefinitionId();
+  CHECK(
+      constructor->SetPrivate(script_state->GetContext(), private_id, id_value)
+          .ToChecked());
 
   return definition;
 }

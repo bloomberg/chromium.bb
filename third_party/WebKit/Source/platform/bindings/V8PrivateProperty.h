@@ -27,7 +27,6 @@ class ScriptWrappable;
   X(CustomElement, Document)                          \
   X(CustomElement, IsInterfacePrototypeObject)        \
   X(CustomElement, NamespaceURI)                      \
-  X(CustomElement, RegistryMap)                       \
   X(CustomElement, TagName)                           \
   X(CustomElement, Type)                              \
   X(CustomElementLifecycle, AttachedCallback)         \
