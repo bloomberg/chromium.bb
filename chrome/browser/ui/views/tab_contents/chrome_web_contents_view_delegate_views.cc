@@ -21,26 +21,17 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/focus/view_storage.h"
+#include "ui/views/view_tracker.h"
 #include "ui/views/widget/widget.h"
 
 ChromeWebContentsViewDelegateViews::ChromeWebContentsViewDelegateViews(
     content::WebContents* web_contents)
     : ContextMenuDelegate(web_contents),
-      web_contents_(web_contents) {
-  last_focused_view_storage_id_ =
-      views::ViewStorage::GetInstance()->CreateStorageID();
-}
+      last_focused_view_tracker_(base::MakeUnique<views::ViewTracker>()),
+      web_contents_(web_contents) {}
 
-ChromeWebContentsViewDelegateViews::~ChromeWebContentsViewDelegateViews() {
-  // Makes sure to remove any stored view we may still have in the ViewStorage.
-  //
-  // It is possible the view went away before us, so we only do this if the
-  // view is registered.
-  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
-  if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
-    view_storage->RemoveView(last_focused_view_storage_id_);
-}
+ChromeWebContentsViewDelegateViews::~ChromeWebContentsViewDelegateViews() =
+    default;
 
 gfx::NativeWindow ChromeWebContentsViewDelegateViews::GetNativeWindow() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
@@ -80,22 +71,19 @@ void ChromeWebContentsViewDelegateViews::TakeFocus(bool reverse) {
 }
 
 void ChromeWebContentsViewDelegateViews::StoreFocus() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
-
-  if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
-    view_storage->RemoveView(last_focused_view_storage_id_);
+  last_focused_view_tracker_->RemoveAll();
 
   if (!GetFocusManager())
     return;
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   if (focused_view)
-    view_storage->StoreView(last_focused_view_storage_id_, focused_view);
+    last_focused_view_tracker_->Add(focused_view);
 }
 
 void ChromeWebContentsViewDelegateViews::RestoreFocus() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
-  views::View* last_focused_view =
-      view_storage->RetrieveView(last_focused_view_storage_id_);
+  views::View* last_focused_view = last_focused_view_tracker_->views().empty()
+                                       ? nullptr
+                                       : last_focused_view_tracker_->views()[0];
 
   if (!last_focused_view) {
     SetInitialFocus();
@@ -111,7 +99,7 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
       // default focus.
       SetInitialFocus();
     }
-    view_storage->RemoveView(last_focused_view_storage_id_);
+    last_focused_view_tracker_->Remove(last_focused_view);
   }
 }
 

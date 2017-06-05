@@ -587,9 +587,6 @@ class BrowserView : public BrowserWindow,
   // Returns the max top arrow height for infobar.
   int GetMaxTopInfoBarArrowHeight();
 
-  // Last focused view that issued a tab traversal.
-  int last_focused_view_storage_id_;
-
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_;
 

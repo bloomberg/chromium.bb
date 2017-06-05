@@ -24,6 +24,7 @@ class VIEWS_EXPORT ViewTracker : public ViewObserver {
 
   void Add(View* view);
   void Remove(View* view);
+  void RemoveAll();
 
   const std::vector<View*> views() const { return views_; }
 

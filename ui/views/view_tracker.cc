@@ -32,6 +32,12 @@ void ViewTracker::Remove(View* view) {
   }
 }
 
+void ViewTracker::RemoveAll() {
+  for (View* view : views_)
+    view->RemoveObserver(this);
+  views_.clear();
+}
+
 void ViewTracker::OnViewIsDeleting(View* observed_view) {
   Remove(observed_view);
 }
