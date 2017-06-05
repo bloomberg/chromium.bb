@@ -80,11 +80,12 @@ class TestImporterTest(LoggingTestCase):
         self.assertEqual(
             description,
             'Last commit message\n\n'
-            'Background: https://chromium.googlesource.com/'
-            'chromium/src/+/master/docs/testing/web_platform_tests.md\n\n'
-            'Note to sheriffs: If this CL causes a small number of new layout\n'
-            'test failures, it may be easier to add lines to TestExpectations\n'
-            'rather than reverting.\n'
+            'Note to sheriffs: This CL imports external tests and adds\n'
+            'expectations for those tests; if this CL is large and causes\n'
+            'a few new failures, please fix the failures by adding new\n'
+            'lines to TestExpectations rather than reverting. See:\n'
+            'https://chromium.googlesource.com'
+            '/chromium/src/+/master/docs/testing/web_platform_tests.md\n\n'
             'TBR=qyearsley@chromium.org\n'
             'NOEXPORT=true')
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
