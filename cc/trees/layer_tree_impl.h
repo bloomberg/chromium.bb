@@ -219,6 +219,15 @@ class CC_EXPORT LayerTreeImpl {
     int outer_viewport_container = Layer::INVALID_ID;
     int inner_viewport_scroll = Layer::INVALID_ID;
     int outer_viewport_scroll = Layer::INVALID_ID;
+
+    bool operator==(const ViewportLayerIds& other) {
+      return overscroll_elasticity == other.overscroll_elasticity &&
+             page_scale == other.page_scale &&
+             inner_viewport_container == other.inner_viewport_container &&
+             outer_viewport_container == other.outer_viewport_container &&
+             inner_viewport_scroll == other.inner_viewport_scroll &&
+             outer_viewport_scroll == other.outer_viewport_scroll;
+    }
   };
   void SetViewportLayersFromIds(const ViewportLayerIds& viewport_layer_ids);
   void ClearViewportLayers();
