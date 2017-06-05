@@ -3226,6 +3226,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {
 
   horiz_scrollbar->SetScrollElementId(root_scroll->element_id());
 
+  host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->active_tree()->UpdateScrollbarGeometries();
 
   EXPECT_EQ(300, horiz_scrollbar->clip_layer_length());

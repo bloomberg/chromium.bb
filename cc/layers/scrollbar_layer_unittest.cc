@@ -792,6 +792,7 @@ TEST_F(ScrollbarLayerTest, SubPixelCanScrollOrientation) {
   clip_layer->SetBounds(gfx::Size(980, 980));
   scroll_layer->SetBounds(gfx::Size(980, 980));
 
+  impl.host_impl()->active_tree()->BuildPropertyTreesForTesting();
   DCHECK(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
   impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
 
@@ -799,11 +800,13 @@ TEST_F(ScrollbarLayerTest, SubPixelCanScrollOrientation) {
 
   // Fake clip layer length to scrollbar to mock rounding error.
   scrollbar_layer->SetClipLayerLength(979.999939f);
+  impl.host_impl()->active_tree()->BuildPropertyTreesForTesting();
 
   EXPECT_FALSE(scrollbar_layer->CanScrollOrientation());
 
   // Fake clip layer length to scrollable.
   scrollbar_layer->SetClipLayerLength(979.0f);
+  impl.host_impl()->active_tree()->BuildPropertyTreesForTesting();
 
   EXPECT_TRUE(scrollbar_layer->CanScrollOrientation());
 }
