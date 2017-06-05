@@ -43,6 +43,12 @@ typedef variations::ActiveGroupId ActiveGroupId;
 
 namespace metrics {
 
+namespace internal {
+// Maximum number of events before truncation.
+extern const int kOmniboxEventLimit = 5000;
+extern const int kUserActionEventLimit = 5000;
+}
+
 namespace {
 
 // Any id less than 16 bytes is considered to be a testing id.
@@ -328,6 +334,25 @@ bool MetricsLog::LoadSavedEnvironmentFromPrefs(std::string* app_version) {
 void MetricsLog::CloseLog() {
   DCHECK(!closed_);
   closed_ = true;
+}
+
+void MetricsLog::TruncateEvents() {
+  DCHECK(!closed_);
+  if (uma_proto_.user_action_event_size() > internal::kUserActionEventLimit) {
+    UMA_HISTOGRAM_COUNTS_100000("UMA.TruncatedEvents.UserAction",
+                                uma_proto_.user_action_event_size());
+    uma_proto_.mutable_user_action_event()->DeleteSubrange(
+        internal::kUserActionEventLimit,
+        uma_proto_.user_action_event_size() - internal::kUserActionEventLimit);
+  }
+
+  if (uma_proto_.omnibox_event_size() > internal::kOmniboxEventLimit) {
+    UMA_HISTOGRAM_COUNTS_100000("UMA.TruncatedEvents.Omnibox",
+                                uma_proto_.omnibox_event_size());
+    uma_proto_.mutable_omnibox_event()->DeleteSubrange(
+        internal::kOmniboxEventLimit,
+        uma_proto_.omnibox_event_size() - internal::kOmniboxEventLimit);
+  }
 }
 
 void MetricsLog::GetEncodedLog(std::string* encoded_log) {

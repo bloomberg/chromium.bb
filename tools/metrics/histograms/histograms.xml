@@ -78150,6 +78150,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.Discarded Log Events">
+  <obsolete>
+    Replaced by UMA.Truncate* metrics.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <summary>
@@ -78637,6 +78640,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The number of synthetic field trials added to the UMA log when the system
     profile is recorded. Since this is done prior to capturing the histograms
     from the current process, this will generally be logged once per UMA log.
+  </summary>
+</histogram>
+
+<histogram name="UMA.TruncatedEvents.Omnibox" units="events">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The number of omnibox events that existed in the metrics log before we
+    truncated them to save bandwidth.
+  </summary>
+</histogram>
+
+<histogram name="UMA.TruncatedEvents.UserAction" units="events">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The number of user actions events that existed in the metrics log before we
+    truncated them to save bandwidth.
   </summary>
 </histogram>
 

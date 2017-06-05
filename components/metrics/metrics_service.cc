@@ -162,11 +162,6 @@ namespace metrics {
 
 namespace {
 
-// This drops records if the number of events (user action and omnibox) exceeds
-// the kEventLimit.
-const base::Feature kUMAThrottleEvents{"UMAThrottleEvents",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // The delay, in seconds, after starting recording before doing expensive
 // initialization work.
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -178,9 +173,6 @@ const int kInitializationDelaySeconds = 5;
 #else
 const int kInitializationDelaySeconds = 30;
 #endif
-
-// The maximum number of events in a log uploaded to the UMA server.
-const int kEventLimit = 2400;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
@@ -646,16 +638,6 @@ void MetricsService::CloseCurrentLog() {
   if (!log_manager_.current_log())
     return;
 
-  // TODO(rkaplow): Evaluate if this is needed.
-  if (log_manager_.current_log()->num_events() > kEventLimit) {
-    UMA_HISTOGRAM_COUNTS("UMA.Discarded Log Events",
-                         log_manager_.current_log()->num_events());
-    if (base::FeatureList::IsEnabled(kUMAThrottleEvents)) {
-      log_manager_.DiscardCurrentLog();
-      OpenNewLog();  // Start trivial log to hold our histograms.
-    }
-  }
-
   // If a persistent allocator is in use, update its internal histograms (such
   // as how much memory is being used) before reporting.
   base::PersistentHistogramAllocator* allocator =
@@ -678,6 +660,7 @@ void MetricsService::CloseCurrentLog() {
 
   current_log->RecordGeneralMetrics(metrics_providers_);
   RecordCurrentHistograms();
+  current_log->TruncateEvents();
   DVLOG(1) << "Generated an ongoing log.";
   log_manager_.FinishCurrentLog(log_store());
 }
