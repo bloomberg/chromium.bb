@@ -184,6 +184,9 @@ class InputHandlerProxy
 
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
+  EventDisposition HitTestTouchEvent(const blink::WebTouchEvent& touch_event,
+                                     bool* is_touching_scrolling_layer);
+
   std::unique_ptr<blink::WebGestureCurve> fling_curve_;
   // Parameters for the active fling animation, stored in case we need to
   // transfer it out later.
@@ -238,10 +241,10 @@ class InputHandlerProxy
   bool uma_latency_reporting_enabled_;
   const bool touchpad_and_wheel_scroll_latching_enabled_;
 
-  // The merged result of the last touch start with previous touch starts.
+  // The merged result of the last touch event with previous touch events.
   // This value will get returned for subsequent TouchMove events to allow
   // passive events not to block scrolling.
-  int32_t touch_start_result_;
+  int32_t touch_result_;
 
   // The result of the last mouse wheel event. This value is used to determine
   // whether the next wheel scroll is blocked on the Main thread or not.

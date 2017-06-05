@@ -615,8 +615,8 @@ bool LayerTreeHostImpl::IsScrolledBy(LayerImpl* child, ScrollNode* ancestor) {
   return false;
 }
 
-InputHandler::TouchStartEventListenerType
-LayerTreeHostImpl::EventListenerTypeForTouchStartAt(
+InputHandler::TouchStartOrMoveEventListenerType
+LayerTreeHostImpl::EventListenerTypeForTouchStartOrMoveAt(
     const gfx::Point& viewport_point) {
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
@@ -627,22 +627,22 @@ LayerTreeHostImpl::EventListenerTypeForTouchStartAt(
       active_tree_->FindLayerThatIsHitByPointInTouchHandlerRegion(
           device_viewport_point);
   if (layer_impl_with_touch_handler == NULL)
-    return InputHandler::TouchStartEventListenerType::NO_HANDLER;
+    return InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
 
   if (!CurrentlyScrollingNode())
-    return InputHandler::TouchStartEventListenerType::HANDLER;
+    return InputHandler::TouchStartOrMoveEventListenerType::HANDLER;
 
-  // Check if the touch start hits on the current scrolling layer or its
-  // descendant. layer_impl_with_touch_handler is the layer hit by the pointer
-  // and has an event handler, otherwise it is null.
-  // We want to compare the most inner layer we are hitting on which may not
-  // have an event listener with the actual scrolling layer.
+  // Check if the touch start (or move) hits on the current scrolling layer or
+  // its descendant. layer_impl_with_touch_handler is the layer hit by the
+  // pointer and has an event handler, otherwise it is null. We want to compare
+  // the most inner layer we are hitting on which may not have an event listener
+  // with the actual scrolling layer.
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
   bool is_ancestor = IsScrolledBy(layer_impl, CurrentlyScrollingNode());
-  return is_ancestor ? InputHandler::TouchStartEventListenerType::
+  return is_ancestor ? InputHandler::TouchStartOrMoveEventListenerType::
                            HANDLER_ON_SCROLLING_LAYER
-                     : InputHandler::TouchStartEventListenerType::HANDLER;
+                     : InputHandler::TouchStartOrMoveEventListenerType::HANDLER;
 }
 
 std::unique_ptr<SwapPromiseMonitor>

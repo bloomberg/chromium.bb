@@ -266,7 +266,7 @@ InputHandlerProxy::InputHandlerProxy(
       uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()),
       touchpad_and_wheel_scroll_latching_enabled_(
           touchpad_and_wheel_scroll_latching_enabled),
-      touch_start_result_(kEventDispositionUndefined),
+      touch_result_(kEventDispositionUndefined),
       mouse_wheel_result_(kEventDispositionUndefined),
       current_overscroll_params_(nullptr),
       has_ongoing_compositor_scroll_fling_pinch_(false),
@@ -616,7 +616,7 @@ void InputHandlerProxy::RecordScrollingThreadStatus(
   if (reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain) {
     int32_t event_disposition_result =
         (device == blink::kWebGestureDeviceTouchpad ? mouse_wheel_result_
-                                                    : touch_start_result_);
+                                                    : touch_result_);
     switch (event_disposition_result) {
       case kEventDispositionUndefined:
       case DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
@@ -1040,22 +1040,26 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
   return DID_NOT_HANDLE;
 }
 
-InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
-    const blink::WebTouchEvent& touch_event) {
+InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
+    const blink::WebTouchEvent& touch_event,
+    bool* is_touching_scrolling_layer) {
+  *is_touching_scrolling_layer = false;
   EventDisposition result = DROP_EVENT;
-  bool is_touching_scrolling_layer = false;
   for (size_t i = 0; i < touch_event.touches_length; ++i) {
-    if (touch_event.touches[i].state != WebTouchPoint::kStatePressed)
+    if (touch_event.GetType() == WebInputEvent::kTouchStart &&
+        touch_event.touches[i].state != WebTouchPoint::kStatePressed) {
       continue;
-    cc::InputHandler::TouchStartEventListenerType event_listener_type =
-        input_handler_->EventListenerTypeForTouchStartAt(
+    }
+    cc::InputHandler::TouchStartOrMoveEventListenerType event_listener_type =
+        input_handler_->EventListenerTypeForTouchStartOrMoveAt(
             gfx::Point(touch_event.touches[i].PositionInWidget().x,
                        touch_event.touches[i].PositionInWidget().y));
     if (event_listener_type !=
-        cc::InputHandler::TouchStartEventListenerType::NO_HANDLER) {
-      is_touching_scrolling_layer =
-          event_listener_type == cc::InputHandler::TouchStartEventListenerType::
-                                     HANDLER_ON_SCROLLING_LAYER;
+        cc::InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER) {
+      *is_touching_scrolling_layer =
+          event_listener_type ==
+          cc::InputHandler::TouchStartOrMoveEventListenerType::
+              HANDLER_ON_SCROLLING_LAYER;
       result = DID_NOT_HANDLE;
       break;
     }
@@ -1088,16 +1092,23 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
     }
   }
 
-  // Merge |touch_start_result_| and |result| so the result has the highest
+  // Merge |touch_result_| and |result| so the result has the highest
   // priority value according to the sequence; (DROP_EVENT,
   // DID_HANDLE_NON_BLOCKING, DID_NOT_HANDLE).
-  if (touch_start_result_ == kEventDispositionUndefined ||
-      touch_start_result_ == DROP_EVENT || result == DID_NOT_HANDLE)
-    touch_start_result_ = result;
+  if (touch_result_ == kEventDispositionUndefined ||
+      touch_result_ == DROP_EVENT || result == DID_NOT_HANDLE)
+    touch_result_ = result;
+  return result;
+}
 
+InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
+    const blink::WebTouchEvent& touch_event) {
+  bool is_touching_scrolling_layer;
+  EventDisposition result =
+      HitTestTouchEvent(touch_event, &is_touching_scrolling_layer);
   // If |result| is still DROP_EVENT look at the touch end handler as
   // we may not want to discard the entire touch sequence. Note this
-  // code is explicitly after the assignment of the |touch_start_result_|
+  // code is explicitly after the assignment of the |touch_result_|
   // so the touch moves are not sent to the main thread un-necessarily.
   if (result == DROP_EVENT &&
       input_handler_->GetEventListenerProperties(
@@ -1116,15 +1127,20 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchMove(
     const blink::WebTouchEvent& touch_event) {
-  if (touch_start_result_ != kEventDispositionUndefined)
-    return static_cast<EventDisposition>(touch_start_result_);
-  return DID_NOT_HANDLE;
+  // Hit test if this is the first touch move or we don't have any results
+  // from a previous hit test.
+  if (touch_result_ == kEventDispositionUndefined ||
+      touch_event.touch_start_or_first_touch_move) {
+    bool is_touching_scrolling_layer;
+    return HitTestTouchEvent(touch_event, &is_touching_scrolling_layer);
+  }
+  return static_cast<EventDisposition>(touch_result_);
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchEnd(
     const blink::WebTouchEvent& touch_event) {
   if (touch_event.touches_length == 1)
-    touch_start_result_ = kEventDispositionUndefined;
+    touch_result_ = kEventDispositionUndefined;
   return DID_NOT_HANDLE;
 }
 

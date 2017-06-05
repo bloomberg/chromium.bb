@@ -201,7 +201,8 @@ class CC_EXPORT LayerTreeHostImpl
       InputHandler::ScrollInputType type) const override;
   EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const override;
-  InputHandler::TouchStartEventListenerType EventListenerTypeForTouchStartAt(
+  InputHandler::TouchStartOrMoveEventListenerType
+  EventListenerTypeForTouchStartOrMoveAt(
       const gfx::Point& viewport_port) override;
   std::unique_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
