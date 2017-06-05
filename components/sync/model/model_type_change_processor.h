@@ -48,12 +48,14 @@ class ModelTypeChangeProcessor {
   virtual void Delete(const std::string& storage_key,
                       MetadataChangeList* metadata_change_list) = 0;
 
-  // Inform the processor that storage key has chagned.
-  // TODO(gangwu): crbug.com/719570 should remove this after bug fixed.
-  // This function should only be called for the data type which does not create
-  // storage key based on syncer::EntityData.
-  virtual void UpdateStorageKey(const std::string& old_storage_key,
-                                const std::string& new_storage_key,
+  // Sets storage key for the new entity. This function only applies to
+  // datatypes that can't generate storage key based on EntityData. Bridge
+  // should call this function when handling MergeSyncData/ApplySyncChanges to
+  // inform the processor about |storage_key| of an entity identified by
+  // |entity_data|. Metadata changes about new entity will be appended to
+  // |metadata_change_list|.
+  virtual void UpdateStorageKey(const EntityData& entity_data,
+                                const std::string& storage_key,
                                 MetadataChangeList* metadata_change_list) = 0;
 
   // The bridge is expected to call this exactly once unless it encounters an

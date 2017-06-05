@@ -107,6 +107,9 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
   std::unique_ptr<ProcessorEntityTracker> CreateNew() {
     return ProcessorEntityTracker::CreateNew(kKey, kHash, "", ctime_);
   }
+  std::unique_ptr<ProcessorEntityTracker> CreateNewWithEmptyStorageKey() {
+    return ProcessorEntityTracker::CreateNew("", kHash, "", ctime_);
+  }
 
   std::unique_ptr<ProcessorEntityTracker> CreateSynced() {
     std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
@@ -240,6 +243,21 @@ TEST_F(ProcessorEntityTrackerTest, NewServerItem) {
   EXPECT_TRUE(entity->UpdateIsReflection(10));
   EXPECT_FALSE(entity->UpdateIsReflection(11));
   EXPECT_FALSE(entity->HasCommitData());
+}
+
+// Test creating tracker for new server item with empty storage key, applying
+// update and updating storage key.
+TEST_F(ProcessorEntityTrackerTest, NewServerItem_EmptyStorageKey) {
+  std::unique_ptr<ProcessorEntityTracker> entity =
+      CreateNewWithEmptyStorageKey();
+
+  EXPECT_EQ("", entity->storage_key());
+
+  const base::Time mtime = base::Time::Now();
+  entity->RecordAcceptedUpdate(
+      GenerateUpdate(*entity, kHash, kId, kName, kValue1, mtime, 10));
+  entity->SetStorageKey(kKey);
+  EXPECT_EQ(kKey, entity->storage_key());
 }
 
 // Test state for a tombstone received for a previously unknown item.

@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/metadata_change_list.h"
 
 namespace syncer {
 
@@ -19,6 +20,23 @@ ModelTypeSyncBridge::ModelTypeSyncBridge(
       change_processor_(change_processor_factory_.Run(type_, this)) {}
 
 ModelTypeSyncBridge::~ModelTypeSyncBridge() {}
+
+base::Optional<ModelError> ModelTypeSyncBridge::MergeSyncData(
+    std::unique_ptr<MetadataChangeList> metadata_change_list,
+    EntityChangeList entity_data) {
+  EntityDataMap entity_data_map;
+  for (const auto& change : entity_data) {
+    DCHECK_EQ(EntityChange::ACTION_ADD, change.type());
+    DCHECK(!change.storage_key().empty());
+    DCHECK(entity_data_map.find(change.storage_key()) == entity_data_map.end());
+    entity_data_map.emplace(change.storage_key(), change.data_ptr());
+  }
+  return MergeSyncData(std::move(metadata_change_list), entity_data_map);
+}
+
+bool ModelTypeSyncBridge::SupportsGetStorageKey() const {
+  return true;
+}
 
 ConflictResolution ModelTypeSyncBridge::ResolveConflict(
     const EntityData& local_data,
