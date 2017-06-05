@@ -872,6 +872,10 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kVirtualKeyboard);
   skip.insert(APIPermission::kLauncherSearchProvider);
 
+  // The lock screen apps are set by user through settings, no need to warn at
+  // installation time.
+  skip.insert(APIPermission::kLockScreen);
+
   // We already have a generic message for declaring externally_connectable.
   skip.insert(APIPermission::kExternallyConnectableAllUrls);
 

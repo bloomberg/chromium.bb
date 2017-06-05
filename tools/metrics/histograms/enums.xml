@@ -13080,6 +13080,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="202" label="kVirtualKeyboard"/>
   <int value="203" label="kNetworkingCastPrivate"/>
   <int value="204" label="kMediaPerceptionPrivate"/>
+  <int value="205" label="kLockScreen"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
