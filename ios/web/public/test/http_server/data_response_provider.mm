@@ -4,19 +4,24 @@
 
 #import "ios/web/public/test/http_server/data_response_provider.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/third_party/gcdwebserver/src/GCDWebServer/Responses/GCDWebServerDataResponse.h"
 
 namespace web {
 
-GCDWebServerResponse* DataResponseProvider::GetGCDWebServerResponse(
-    const Request& request) {
+std::unique_ptr<net::test_server::HttpResponse>
+DataResponseProvider::GetEmbeddedTestServerResponse(const Request& request) {
   std::string response_body;
   scoped_refptr<net::HttpResponseHeaders> response_headers;
   GetResponseHeadersAndBody(request, &response_headers, &response_body);
-  GCDWebServerDataResponse* data_response = [GCDWebServerDataResponse
-      responseWithHTML:base::SysUTF8ToNSString(response_body)];
-  data_response.statusCode = response_headers->response_code();
+
+  std::unique_ptr<net::test_server::BasicHttpResponse> data_response =
+      base::MakeUnique<net::test_server::BasicHttpResponse>();
+
+  data_response->set_code(
+      static_cast<net::HttpStatusCode>(response_headers->response_code()));
+  data_response->set_content(response_body);
+
   size_t iter = 0;
   std::string name;
   std::string value;
@@ -24,13 +29,12 @@ GCDWebServerResponse* DataResponseProvider::GetGCDWebServerResponse(
     // TODO(crbug.com/435350): Extract out other names that can't be set by
     // using the |setValue:forAdditionalHeader:| API such as "ETag" etc.
     if (name == "Content-type") {
-      data_response.contentType = base::SysUTF8ToNSString(value);
+      data_response->set_content_type(value);
       continue;
     }
-    [data_response setValue:base::SysUTF8ToNSString(value)
-        forAdditionalHeader:base::SysUTF8ToNSString(name)];
+    data_response->AddCustomHeader(name, value);
   }
-  return data_response;
+  return std::move(data_response);
 }
 
 }  // namespace web

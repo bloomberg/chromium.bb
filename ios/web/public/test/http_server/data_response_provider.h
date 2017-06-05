@@ -14,14 +14,15 @@
 
 namespace web {
 
-// An abstract ResponseProvider that returns a GCDWebServerDataResponse for a
+// An abstract ResponseProvider that returns a test_server::HttpResponse for a
 // request. This class encapsulates the logic to convert the response headers
 // and body received from |GetResponseHeadersAndBody| into a
 // GCDWebServerDataResponse.
 class DataResponseProvider : public ResponseProvider {
  public:
   // ResponseProvider implementation.
-  GCDWebServerResponse* GetGCDWebServerResponse(const Request& request) final;
+  std::unique_ptr<net::test_server::HttpResponse> GetEmbeddedTestServerResponse(
+      const Request& request) final;
 
   // Returns the headers and the response body. Will only be called if the
   // provider can handle the request.
