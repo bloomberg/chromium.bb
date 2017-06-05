@@ -3461,7 +3461,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   LayerTreeHostTestUIResource() : num_ui_resources_(0) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->renderer_settings.texture_id_allocation_chunk_size = 1;
+    settings->resource_settings.texture_id_allocation_chunk_size = 1;
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

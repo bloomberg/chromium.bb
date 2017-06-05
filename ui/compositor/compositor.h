@@ -45,7 +45,7 @@ class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
 class LocalSurfaceId;
-class RendererSettings;
+class ResourceSettings;
 class SurfaceManager;
 class TaskGraphRunner;
 }
@@ -159,7 +159,7 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
 
   // Gets the renderer settings.
-  virtual const cc::RendererSettings& GetRendererSettings() const = 0;
+  virtual const cc::ResourceSettings& GetResourceSettings() const = 0;
 
   virtual void AddObserver(ContextFactoryObserver* observer) = 0;
 

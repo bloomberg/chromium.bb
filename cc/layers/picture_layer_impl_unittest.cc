@@ -81,7 +81,7 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
     settings.create_low_res_tiling = true;
-    settings.buffer_to_texture_target_map =
+    settings.resource_settings.buffer_to_texture_target_map =
         DefaultBufferToTextureTargetMapForTesting();
     return settings;
   }
