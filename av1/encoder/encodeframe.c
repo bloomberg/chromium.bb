@@ -1979,6 +1979,11 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
+#if CONFIG_SPEED_REFS
+  // First scanning pass of an SB is dry run only.
+  if (cpi->sb_scanning_pass_idx == 0) assert(dry_run == DRY_RUN_NORMAL);
+#endif  // CONFIG_SPEED_REFS
+
   if (!dry_run && ctx >= 0) td->counts->partition[ctx][partition]++;
 
 #if CONFIG_SUPERTX
@@ -3387,6 +3392,17 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif
 
+#if CONFIG_SPEED_REFS
+  if (cpi->sb_scanning_pass_idx == 0) {
+    // NOTE: For the 1st pass of scanning, check all the subblocks of equal size
+    //       only.
+    partition_none_allowed = (bsize == MIN_SPEED_REFS_BLKSIZE);
+    partition_horz_allowed = 0;
+    partition_vert_allowed = 0;
+    do_square_split = (bsize > MIN_SPEED_REFS_BLKSIZE);
+  }
+#endif  // CONFIG_SPEED_REFS
+
   // PARTITION_NONE
   if (partition_none_allowed) {
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
@@ -4117,6 +4133,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
+#if CONFIG_SPEED_REFS
+  // First scanning is done.
+  if (cpi->sb_scanning_pass_idx == 0 && bsize == cm->sb_size) return;
+#endif  // CONFIG_SPEED_REFS
+
   // TODO(jbb): This code added so that we avoid static analysis
   // warning related to the fact that best_rd isn't used after this
   // point.  This code should be refactored so that the duplicate
@@ -4319,12 +4340,30 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         rd_auto_partition_range(cpi, tile_info, xd, mi_row, mi_col,
                                 &x->min_partition_size, &x->max_partition_size);
       }
+#if CONFIG_SPEED_REFS
+      // NOTE: Two scanning passes for the current superblock - the first pass
+      //       is only targeted to collect stats.
+      for (int sb_pass_idx = 0; sb_pass_idx < 2; ++sb_pass_idx) {
+        cpi->sb_scanning_pass_idx = sb_pass_idx;
+        rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, cm->sb_size,
+                          &dummy_rdc,
+#if CONFIG_SUPERTX
+                          &dummy_rate_nocoef,
+#endif  // CONFIG_SUPERTX
+                          INT64_MAX, pc_root);
+        if (sb_pass_idx == 0) {
+          av1_zero(x->pred_mv);
+          pc_root->index = 0;
+        }
+      }
+#else  // !CONFIG_SPEED_REFS
       rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, cm->sb_size,
                         &dummy_rdc,
 #if CONFIG_SUPERTX
                         &dummy_rate_nocoef,
 #endif  // CONFIG_SUPERTX
                         INT64_MAX, pc_root);
+#endif  // CONFIG_SPEED_REFS
     }
   }
 }

@@ -53,6 +53,10 @@
 extern "C" {
 #endif
 
+#if CONFIG_SPEED_REFS
+#define MIN_SPEED_REFS_BLKSIZE BLOCK_16X16
+#endif  // CONFIG_SPEED_REFS
+
 typedef struct {
   int nmv_vec_cost[NMV_CONTEXTS][MV_JOINTS];
   int nmv_costs[NMV_CONTEXTS][2][MV_VALS];
@@ -650,6 +654,10 @@ typedef struct AV1_COMP {
 #if CONFIG_LV_MAP
   tran_low_t *tcoeff_buf[MAX_MB_PLANE];
 #endif
+
+#if CONFIG_SPEED_REFS
+  int sb_scanning_pass_idx;
+#endif  // CONFIG_SPEED_REFS
 } AV1_COMP;
 
 void av1_initialize_enc(void);

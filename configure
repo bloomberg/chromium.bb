@@ -262,6 +262,7 @@ EXPERIMENT_LIST="
     wedge
     compound_segment
     ext_refs
+    speed_refs
     global_motion
     new_quant
     supertx
