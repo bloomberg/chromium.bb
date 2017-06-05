@@ -19,11 +19,23 @@ static_library("version_info") {
   deps = [
     ":generate_version_info",
     "//base",
-    "//components/strings",
   ]
 
   public_deps = [
     ":channel",
+  ]
+}
+
+# Isolate the //ui/base dependency in this target.
+static_library("version_string") {
+  sources = [
+    "version_string.cc",
+    "version_string.h",
+  ]
+
+  deps = [
+    ":version_info",
+    "//components/strings",
   ]
 
   if (use_unofficial_version_number) {
@@ -35,6 +47,8 @@ static_library("version_info") {
 source_set("channel") {
   sources = [
     "channel.h",
+    "channel_android.cc",
+    "channel_android.h",
   ]
 }
 

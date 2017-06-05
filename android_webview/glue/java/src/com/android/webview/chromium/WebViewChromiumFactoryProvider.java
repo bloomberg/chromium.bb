@@ -419,6 +419,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         // The WebView package name is used to locate the separate Service to which we copy crash
         // minidumps. This package name must be set before a render process has a chance to crash -
         // otherwise we might try to copy a minidump without knowing what process to copy it to.
+        // It's also used to determine channel for UMA, so it must be set before initializing UMA.
         AwBrowserProcess.setWebViewPackageName(webViewPackageName);
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, isExternalService);
         AwBrowserProcess.start();

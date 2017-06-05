@@ -5,7 +5,6 @@
 #include "components/version_info/version_info.h"
 
 #include "build/build_config.h"
-#include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info_values.h"
 
 #if defined(USE_UNOFFICIAL_VERSION_NUMBER)
@@ -81,23 +80,6 @@ std::string GetChannelString(Channel channel) {
       break;
   }
   return std::string();
-}
-
-std::string GetVersionStringWithModifier(const std::string& modifier) {
-  std::string current_version;
-  current_version += GetVersionNumber();
-#if defined(USE_UNOFFICIAL_VERSION_NUMBER)
-  current_version += " (";
-  current_version += l10n_util::GetStringUTF8(IDS_VERSION_UI_UNOFFICIAL);
-  current_version += " ";
-  current_version += GetLastChange();
-  current_version += " ";
-  current_version += GetOSType();
-  current_version += ")";
-#endif  // USE_UNOFFICIAL_VERSION_NUMBER
-  if (!modifier.empty())
-    current_version += " " + modifier;
-  return current_version;
 }
 
 }  // namespace version_info

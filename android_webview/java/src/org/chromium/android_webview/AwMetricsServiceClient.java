@@ -79,5 +79,10 @@ public class AwMetricsServiceClient {
         }
     }
 
+    @CalledByNative
+    public static String getWebViewPackageName() {
+        return AwBrowserProcess.getWebViewPackageName();
+    }
+
     public static native void nativeSetMetricsEnabled(boolean enabled);
 }

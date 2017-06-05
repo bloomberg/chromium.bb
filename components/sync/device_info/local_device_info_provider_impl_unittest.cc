@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/base/get_session_name.h"
+#include "components/version_info/version_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

@@ -11,6 +11,7 @@
 #include "base/profiler/scoped_tracker.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/version_info/version_info.h"
+#include "components/version_info/version_string.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

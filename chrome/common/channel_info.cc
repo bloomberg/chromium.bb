@@ -6,6 +6,7 @@
 
 #include "base/profiler/scoped_tracker.h"
 #include "components/version_info/version_info.h"
+#include "components/version_info/version_string.h"
 
 namespace chrome {
 

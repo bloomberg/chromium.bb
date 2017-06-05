@@ -8,6 +8,7 @@
 #include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/jni/AwMetricsServiceClient_jni.h"
 #include "base/android/build_info.h"
+#include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -23,7 +24,10 @@
 #include "components/metrics/profiler/profiler_metrics_provider.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
+#include "components/metrics/version_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/version_info/channel_android.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace android_webview {
@@ -68,6 +72,15 @@ void GetOrCreateGUID(const base::FilePath guid_file_path, std::string* guid) {
   return;
 }
 
+version_info::Channel GetChannelFromPackageName() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  std::string package_name = base::android::ConvertJavaStringToUTF8(
+      env, Java_AwMetricsServiceClient_getWebViewPackageName(env));
+  // We can't determine the channel for stand-alone WebView, since it has the
+  // same package name across channels. It will always be "unknown".
+  return version_info::ChannelFromPackageName(package_name.c_str());
+}
+
 }  // namespace
 
 // static
@@ -86,6 +99,7 @@ void AwMetricsServiceClient::Initialize(
   DCHECK(request_context_ == nullptr);
   pref_service_ = pref_service;
   request_context_ = request_context;
+  channel_ = GetChannelFromPackageName();
 
   std::string* guid = new std::string;
   // Initialization happens on the UI thread, but getting the GUID should happen
@@ -186,9 +200,7 @@ bool AwMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 metrics::SystemProfileProto::Channel AwMetricsServiceClient::GetChannel() {
-  // "Channel" means stable, beta, etc. WebView doesn't have channel info yet.
-  // TODO(paulmiller) Update this once we have channel info.
-  return metrics::SystemProfileProto::CHANNEL_UNKNOWN;
+  return metrics::AsProtobufChannel(channel_);
 }
 
 std::string AwMetricsServiceClient::GetVersionString() {
@@ -224,7 +236,10 @@ base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {
 }
 
 AwMetricsServiceClient::AwMetricsServiceClient()
-    : is_enabled_(false), pref_service_(nullptr), request_context_(nullptr) {}
+    : is_enabled_(false),
+      pref_service_(nullptr),
+      request_context_(nullptr),
+      channel_(version_info::Channel::UNKNOWN) {}
 
 AwMetricsServiceClient::~AwMetricsServiceClient() {}
 

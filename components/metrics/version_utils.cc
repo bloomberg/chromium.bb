@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/net/version_utils.h"
+#include "components/metrics/version_utils.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -20,8 +20,7 @@ std::string GetVersionString() {
   return version;
 }
 
-SystemProfileProto::Channel AsProtobufChannel(
-    version_info::Channel channel) {
+SystemProfileProto::Channel AsProtobufChannel(version_info::Channel channel) {
   switch (channel) {
     case version_info::Channel::UNKNOWN:
       return SystemProfileProto::CHANNEL_UNKNOWN;
