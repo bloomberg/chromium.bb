@@ -104,7 +104,11 @@ noinst_PROGRAMS = fcarch
 ../fc-lang/fclang.h:
 	cd ../fc-lang && $(MAKE) $(AM_MAKEFLAGS) fclang.h
 
-fcobjshash.gperf: fcobjshash.gperf.h fcobjs.h
+fcobjshash.gperf: Makefile stamp-fcobjshash.gperf
+	-@$(RM) stamp-fcobjshash.gperf
+	@$(MAKE) stamp-fcobjshash.gperf
+	@touch -r stamp-fcobjshash.gperf $@
+stamp-fcobjshash.gperf: fcobjshash.gperf.h fcobjs.h
 	$(AM_V_GEN) $(CPP) -I$(top_srcdir) $< | \
 	$(SED) 's/^ *//;s/ *, */,/' | \
 	$(GREP) '^[^#]' | \
@@ -113,7 +117,7 @@ fcobjshash.gperf: fcobjshash.gperf.h fcobjs.h
 		/CUT_OUT_END/ { no_write=0; next; }; \
 		{ if (!no_write) print; next; }; \
 	' - > $@.tmp && \
-	mv -f $@.tmp $@ || ( $(RM) $@.tmp && false )
+	mv -f $@.tmp fcobjshash.gperf && touch $@ || ( $(RM) $@.tmp && false )
 
 fcobjshash.h: Makefile fcobjshash.gperf
 	$(AM_V_GEN) $(GPERF) -m 100 fcobjshash.gperf > $@.tmp && \
@@ -198,7 +202,7 @@ stamp-fcstdint: $(top_builddir)/config.status
 	@touch $@
 
 CLEANFILES = $(ALIAS_FILES) fontconfig.def
-DISTCLEANFILES = stamp-fcstdint fcstdint.h
+DISTCLEANFILES = stamp-fcstdint fcstdint.h stamp-fcobjshash.gperf
 
 fontconfig.def: $(PUBLIC_FILES) $(PUBLIC_FT_FILES)
 	echo Generating $@
