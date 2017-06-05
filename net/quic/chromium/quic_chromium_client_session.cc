@@ -353,7 +353,7 @@ int QuicChromiumClientSession::Handle::GetPeerAddress(
 QuicChromiumClientSession::StreamRequest::StreamRequest(
     QuicChromiumClientSession::Handle* session,
     bool requires_confirmation)
-    : session_(std::move(session)),
+    : session_(session),
       requires_confirmation_(requires_confirmation),
       stream_(nullptr),
       weak_factory_(this) {}
