@@ -10,11 +10,13 @@ blink_modules_sources("exported") {
     "WebDOMMediaStreamTrack.cpp",
     "WebDatabase.cpp",
     "WebMediaDeviceChangeObserver.cpp",
+    "WebMediaDevicesRequest.cpp",
     "WebMediaStreamRegistry.cpp",
     "WebSpeechGrammar.cpp",
     "WebSpeechRecognitionHandle.cpp",
     "WebSpeechRecognitionResult.cpp",
     "WebStorageEventDispatcherImpl.cpp",
+    "WebUserMediaRequest.cpp",
   ]
 
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]

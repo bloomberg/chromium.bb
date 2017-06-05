@@ -43,7 +43,7 @@ class WebDocument;
 class WebMediaConstraints;
 class WebMediaStream;
 
-class WebUserMediaRequest {
+class BLINK_EXPORT WebUserMediaRequest {
  public:
   WebUserMediaRequest() {}
   WebUserMediaRequest(const WebUserMediaRequest& request) { Assign(request); }
@@ -54,39 +54,36 @@ class WebUserMediaRequest {
     return *this;
   }
 
-  BLINK_EXPORT void Reset();
+  void Reset();
   bool IsNull() const { return private_.IsNull(); }
-  BLINK_EXPORT bool Equals(const WebUserMediaRequest&) const;
-  BLINK_EXPORT void Assign(const WebUserMediaRequest&);
+  bool Equals(const WebUserMediaRequest&) const;
+  void Assign(const WebUserMediaRequest&);
 
-  BLINK_EXPORT bool Audio() const;
-  BLINK_EXPORT bool Video() const;
-  BLINK_EXPORT WebMediaConstraints AudioConstraints() const;
-  BLINK_EXPORT WebMediaConstraints VideoConstraints() const;
+  bool Audio() const;
+  bool Video() const;
+  WebMediaConstraints AudioConstraints() const;
+  WebMediaConstraints VideoConstraints() const;
 
-  BLINK_EXPORT WebSecurityOrigin GetSecurityOrigin() const;
-  BLINK_EXPORT WebDocument OwnerDocument() const;
+  WebSecurityOrigin GetSecurityOrigin() const;
+  WebDocument OwnerDocument() const;
 
-  BLINK_EXPORT void RequestSucceeded(const WebMediaStream&);
+  void RequestSucceeded(const WebMediaStream&);
 
-  BLINK_EXPORT void RequestDenied(const WebString& description = WebString());
-  BLINK_EXPORT void RequestFailedConstraint(
-      const WebString& constraint_name,
-      const WebString& description = WebString());
-  BLINK_EXPORT void RequestFailedUASpecific(
-      const WebString& name,
-      const WebString& constraint_name = WebString(),
-      const WebString& description = WebString());
+  void RequestDenied(const WebString& description = WebString());
+  void RequestFailedConstraint(const WebString& constraint_name,
+                               const WebString& description = WebString());
+  void RequestFailedUASpecific(const WebString& name,
+                               const WebString& constraint_name = WebString(),
+                               const WebString& description = WebString());
 
   // DEPRECATED
-  BLINK_EXPORT void RequestFailed(const WebString& description = WebString()) {
+  void RequestFailed(const WebString& description = WebString()) {
     RequestDenied(description);
   }
 
   // For testing in content/
-  BLINK_EXPORT static WebUserMediaRequest CreateForTesting(
-      const WebMediaConstraints& audio,
-      const WebMediaConstraints& video);
+  static WebUserMediaRequest CreateForTesting(const WebMediaConstraints& audio,
+                                              const WebMediaConstraints& video);
 
 #if BLINK_IMPLEMENTATION
   WebUserMediaRequest(UserMediaRequest*);
