@@ -48,13 +48,14 @@ class ContextualSearchRankerLoggerImpl {
   // TODO(donnd): write a test, using this to inject a test-ukm-recorder.
   void SetUkmRecorder(ukm::UkmRecorder* ukm_recorder, const GURL& page_url);
 
-  // Used to log URL-keyed metrics. This pointer will outlive |this|.
+  // Used to log URL-keyed metrics. This pointer will outlive |this|, and may
+  // be nullptr.
   ukm::UkmRecorder* ukm_recorder_;
 
   // The UKM source ID being used for this session.
   int32_t source_id_;
 
-  // The entry builder for the current record.
+  // The entry builder for the current record, or nullptr if not yet configured.
   std::unique_ptr<ukm::UkmEntryBuilder> builder_;
 
   // The linked Java object.
