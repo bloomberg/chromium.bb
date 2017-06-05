@@ -4621,6 +4621,34 @@ TEST_P(GLES2DecoderTest, TestInitInvalidDiscardableTexture) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest, TestInitDiscardableTextureWithInvalidArguments) {
+  EXPECT_EQ(0u, group().discardable_manager()->NumCacheEntriesForTesting());
+
+  // Manually initialize an init command with an invalid buffer.
+  {
+    cmds::InitializeDiscardableTextureCHROMIUM cmd;
+    cmd.Init(client_texture_id_, kInvalidSharedMemoryId, 0);
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+    EXPECT_EQ(0u, group().discardable_manager()->NumCacheEntriesForTesting());
+  }
+
+  // Manually initialize an init command with an out of bounds offset.
+  {
+    cmds::InitializeDiscardableTextureCHROMIUM cmd;
+    cmd.Init(client_texture_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+    EXPECT_EQ(0u, group().discardable_manager()->NumCacheEntriesForTesting());
+  }
+
+  // Manually initialize an init command with a non-atomic32-aligned offset.
+  {
+    cmds::InitializeDiscardableTextureCHROMIUM cmd;
+    cmd.Init(client_texture_id_, shared_memory_id_, 1);
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+    EXPECT_EQ(0u, group().discardable_manager()->NumCacheEntriesForTesting());
+  }
+}
+
 TEST_P(GLES2DecoderTest, TestUnlockDiscardableTexture) {
   const ContextGroup& context_group = group();
   EXPECT_EQ(0u,

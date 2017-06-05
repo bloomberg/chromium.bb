@@ -30,6 +30,18 @@ DiscardableHandleBase& DiscardableHandleBase::operator=(
 DiscardableHandleBase& DiscardableHandleBase::operator=(
     DiscardableHandleBase&& other) = default;
 
+bool DiscardableHandleBase::ValidateParameters(const Buffer* buffer,
+                                               uint32_t byte_offset) {
+  if (!buffer)
+    return false;
+  if (byte_offset % sizeof(base::subtle::Atomic32))
+    return false;
+  if (!buffer->GetDataAddress(byte_offset, sizeof(base::subtle::Atomic32)))
+    return false;
+
+  return true;
+}
+
 bool DiscardableHandleBase::IsLockedForTesting() const {
   return kHandleLockedStart <= base::subtle::NoBarrier_Load(AsAtomic());
 }
