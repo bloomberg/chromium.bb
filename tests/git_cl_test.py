@@ -593,6 +593,9 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gerrit_util, 'GetChangeDetail',
               lambda *args, **kwargs: self._mocked_call(
                   'GetChangeDetail', *args, **kwargs))
+    self.mock(git_cl.gerrit_util, 'GetChangeComments',
+              lambda *args, **kwargs: self._mocked_call(
+                  'GetChangeComments', *args, **kwargs))
     self.mock(git_cl.gerrit_util, 'AddReviewers',
               lambda h, i, reviewers, ccs, notify: self._mocked_call(
                   'AddReviewers', h, i, reviewers, ccs, notify))
@@ -3418,7 +3421,7 @@ class TestGitCl(TestCase):
        'https://chromium.googlesource.com/infra/infra'),
       (('GetChangeDetail', 'chromium-review.googlesource.com', '1',
         ['MESSAGES', 'DETAILED_ACCOUNTS']), {
-          'owner': {'email': 'owner@example.com'},
+        'owner': {'email': 'owner@example.com'},
         'messages': [
           {
              u'_revision_number': 1,
@@ -3455,19 +3458,48 @@ class TestGitCl(TestCase):
              u'message': u'Patch Set 2: Code-Review+1',
           },
         ]
-      })
+      }),
+      (('GetChangeComments', 'chromium-review.googlesource.com', 1), {
+        '/COMMIT_MSG': [
+          {
+            'author': {'email': u'reviewer@example.com'},
+            'updated': u'2017-03-17 05:19:37.500000000',
+            'patch_set': 2,
+            'side': 'REVISION',
+            'message': 'Please include a bug link',
+          },
+        ],
+        'codereview.settings': [
+          {
+            'author': {'email': u'owner@example.com'},
+            'updated': u'2017-03-16 20:00:41.000000000',
+            'patch_set': 2,
+            'side': 'PARENT',
+            'line': 42,
+            'message': 'I removed this because it is bad',
+          },
+        ]
+      }),
     ] * 2
     expected_comments_summary = [
       git_cl._CommentSummary(
-        message=u'Patch Set 1:\n\nDry run: CQ is trying da patch...',
-        date=datetime.datetime(2017, 3, 15, 20, 8, 45, 0),
-        disapproval=False, approval=False, sender=u'commit-bot@chromium.org'),
-      git_cl._CommentSummary(
-        message=u'PTAL',
+        message=(
+            u'PTAL\n' +
+            u'\n' +
+            u'codereview.settings\n' +
+            u'  Base, Line 42: https://chromium-review.googlesource.com/' +
+            u'c/1/2/codereview.settings#b42\n' +
+            u'  I removed this because it is bad\n'),
         date=datetime.datetime(2017, 3, 16, 20, 0, 41, 0),
         disapproval=False, approval=False, sender=u'owner@example.com'),
       git_cl._CommentSummary(
-        message=u'Patch Set 2: Code-Review+1',
+        message=(
+            u'Patch Set 2: Code-Review+1\n' +
+            u'\n' +
+            u'/COMMIT_MSG\n' +
+            u'  PS2, File comment: https://chromium-review.googlesource.com/' +
+            u'c/1/2//COMMIT_MSG#\n' +
+            u'  Please include a bug link\n'),
         date=datetime.datetime(2017, 3, 17, 5, 19, 37, 500000),
         disapproval=False, approval=False, sender=u'reviewer@example.com'),
     ]
@@ -3480,15 +3512,31 @@ class TestGitCl(TestCase):
                                        '-j', out_file]))
       with open(out_file) as f:
         read = json.load(f)
-      self.assertEqual(len(read), 3)
-      self.assertEqual(read[0]['date'], u'2017-03-15 20:08:45.000000')
-      self.assertEqual(read[1]['date'], u'2017-03-16 20:00:41.000000')
-      self.assertEqual(read[2], {
-          u'date': u'2017-03-17 05:19:37.500000',
-          u'message': u'Patch Set 2: Code-Review+1',
-          u'approval': False,
-          u'disapproval': False,
-          u'sender': u'reviewer@example.com'})
+      self.assertEqual(len(read), 2)
+      self.assertEqual(read[0], {
+        u'date': u'2017-03-16 20:00:41.000000',
+        u'message': (
+            u'PTAL\n' +
+            u'\n' +
+            u'codereview.settings\n' +
+            u'  Base, Line 42: https://chromium-review.googlesource.com/' +
+            u'c/1/2/codereview.settings#b42\n' +
+            u'  I removed this because it is bad\n'),
+        u'approval': False,
+        u'disapproval': False,
+        u'sender': u'owner@example.com'})
+      self.assertEqual(read[1], {
+        u'date': u'2017-03-17 05:19:37.500000',
+        u'message': (
+            u'Patch Set 2: Code-Review+1\n' +
+            u'\n' +
+            u'/COMMIT_MSG\n' +
+            u'  PS2, File comment: https://chromium-review.googlesource.com/' +
+            u'c/1/2//COMMIT_MSG#\n' +
+            u'  Please include a bug link\n'),
+        u'approval': False,
+        u'disapproval': False,
+        u'sender': u'reviewer@example.com'})
 
 
 if __name__ == '__main__':
