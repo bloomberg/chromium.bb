@@ -7773,7 +7773,7 @@ static int64_t handle_inter_mode(
 
     for (cur_type = COMPOUND_AVERAGE; cur_type < COMPOUND_TYPES; cur_type++) {
       if (cur_type != COMPOUND_AVERAGE && !masked_compound_used) break;
-      if (!is_interinter_compound_used(cur_type, bsize)) break;
+      if (!is_interinter_compound_used(cur_type, bsize)) continue;
       tmp_rate_mv = rate_mv;
       best_rd_cur = INT64_MAX;
       mbmi->interinter_compound_type = cur_type;
