@@ -200,7 +200,7 @@ TEST_F(PersistentPrefStoreImplTest, WriteObservedByOtherClient) {
   EXPECT_TRUE(other_pref_store->IsInitializationComplete());
 
   const base::Value value("value");
-  pref_store()->SetValueSilently(kKey, value.CreateDeepCopy(), 0);
+  pref_store()->SetValue(kKey, value.CreateDeepCopy(), 0);
 
   ExpectPrefChange(other_pref_store.get(), kKey);
   const base::Value* output = nullptr;

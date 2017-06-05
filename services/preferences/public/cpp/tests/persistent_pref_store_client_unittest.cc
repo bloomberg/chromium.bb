@@ -54,11 +54,6 @@ class PersistentPrefStoreClientTest : public testing::Test,
                            nullptr, pref_notifier),
         persistent_pref_store_client.get(), pref_registry.get(),
         base::Bind(&DoNothingWithReadError), false);
-    // The first update to a pref will write the entire dictionary as it would
-    // previously be missing. Do this here to avoid individual tests needing to
-    // deal with those updates.
-    ScopedDictionaryPrefUpdate(pref_service(), kDictionaryKey).Get();
-    auto update = WaitForUpdate();
   }
 
   void TearDown() override {
@@ -81,6 +76,7 @@ class PersistentPrefStoreClientTest : public testing::Test,
   }
 
   void ExpectNoUpdate() {
+    pref_service()->CommitPendingWrite();
     binding_.FlushForTesting();
     EXPECT_TRUE(last_updates_.empty());
   }
@@ -92,6 +88,8 @@ class PersistentPrefStoreClientTest : public testing::Test,
       std::move(on_update_).Run();
   }
 
+  void RequestValue(const std::string& key,
+                    const std::vector<std::string>& path) override {}
   void CommitPendingWrite() override {}
   void SchedulePendingLossyWrites() override {}
   void ClearMutableValues() override {}
@@ -485,19 +483,6 @@ TEST_F(PersistentPrefStoreClientTest, SubPrefUpdates_ReplaceDictionary) {
   ASSERT_EQ(1u, split_updates.size());
   EXPECT_EQ(base::Value(2), *split_updates[0]->value);
   EXPECT_EQ((std::vector<std::string>{"path"}), split_updates[0]->path);
-}
-
-TEST_F(PersistentPrefStoreClientTest, SubPrefUpdates_Uninitialized) {
-  {
-    ScopedDictionaryPrefUpdate update(pref_service(),
-                                      kUninitializedDictionaryKey);
-    update->SetInteger("path.to.integer", 1);
-  }
-  auto update = WaitForUpdate();
-  ASSERT_TRUE(update->is_atomic_update());
-  base::DictionaryValue expected_value;
-  expected_value.SetInteger("path.to.integer", 1);
-  EXPECT_EQ(expected_value, *update->get_atomic_update());
 }
 
 }  // namespace

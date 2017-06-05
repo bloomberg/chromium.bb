@@ -37,6 +37,7 @@ class PersistentPrefStoreImpl : public PrefStore::Observer {
   class Connection;
 
   void SetValues(std::vector<mojom::PrefUpdatePtr> updates);
+  bool GetValue(const std::string& key, const base::Value** value) const;
 
   void CommitPendingWrite();
   void SchedulePendingLossyWrites();

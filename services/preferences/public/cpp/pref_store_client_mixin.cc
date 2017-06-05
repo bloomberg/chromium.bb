@@ -101,12 +101,19 @@ void PrefStoreClientMixin<BasePrefStore>::OnInitializationCompleted(
 }
 
 template <typename BasePrefStore>
+void PrefStoreClientMixin<BasePrefStore>::OnPrefChangeAck() {}
+
+template <typename BasePrefStore>
 void PrefStoreClientMixin<BasePrefStore>::OnPrefChanged(
     const std::string& key,
     mojom::PrefUpdateValuePtr update_value) {
   DCHECK(cached_prefs_);
   bool changed = false;
   if (update_value->is_atomic_update()) {
+    if (ShouldSkipWrite(key, std::vector<std::string>(),
+                        update_value->get_atomic_update().get())) {
+      return;
+    }
     auto& value = update_value->get_atomic_update();
     if (!value) {  // Delete
       if (cached_prefs_->RemovePath(key, nullptr))
@@ -129,9 +136,10 @@ void PrefStoreClientMixin<BasePrefStore>::OnPrefChanged(
       changed = true;
     for (auto& update : updates) {
       // Clients shouldn't send empty paths.
-      if (update->path.empty())
+      if (update->path.empty() ||
+          ShouldSkipWrite(key, update->path, update->value.get())) {
         continue;
-
+      }
       std::vector<base::StringPiece> full_path = base::SplitStringPiece(
           key, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
       full_path.insert(full_path.end(), update->path.begin(),
@@ -141,6 +149,14 @@ void PrefStoreClientMixin<BasePrefStore>::OnPrefChanged(
   }
   if (changed && initialized_)
     ReportPrefValueChanged(key);
+}
+
+template <typename BasePrefStore>
+bool PrefStoreClientMixin<BasePrefStore>::ShouldSkipWrite(
+    const std::string& key,
+    const std::vector<std::string>& path,
+    const base::Value* new_value) {
+  return false;
 }
 
 template class PrefStoreClientMixin<::PrefStore>;

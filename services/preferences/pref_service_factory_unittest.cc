@@ -496,7 +496,12 @@ TEST_F(PrefServiceFactoryTest,
 
   {
     ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
-    update.Get();
+    update->SetInteger(kKey, kInitialValue);
+  }
+  WaitForPrefChange(pref_service2.get(), kDictionaryKey);
+  {
+    ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
+    update->Remove(kKey, nullptr);
   }
   WaitForPrefChange(pref_service2.get(), kDictionaryKey);
   EXPECT_TRUE(pref_service2->GetDictionary(kDictionaryKey)->empty());
