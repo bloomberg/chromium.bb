@@ -23,6 +23,10 @@ namespace gfx {
 class CODEC_EXPORT JPEGCodec {
  public:
   enum ColorFormat {
+    // 3 bytes per pixel (packed), in RGB order regardless of endianness.
+    // This is the native JPEG format.
+    FORMAT_RGB,
+
     // 4 bytes per pixel, in RGBA order in mem regardless of endianness.
     FORMAT_RGBA,
 
@@ -34,6 +38,15 @@ class CODEC_EXPORT JPEGCodec {
     // order in kARGB_8888_Config skia bitmap.
     FORMAT_SkBitmap
   };
+
+  enum LibraryVariant {
+    SYSTEM_LIBJPEG = 0,
+    LIBJPEG_TURBO,
+    IJG_LIBJPEG,
+  };
+
+  // This method helps identify at run time which library chromium is using.
+  static LibraryVariant JpegLibraryVariant();
 
   // Encodes the given raw 'input' data, with each pixel being represented as
   // given in 'format'. The encoded JPEG data will be written into the supplied
