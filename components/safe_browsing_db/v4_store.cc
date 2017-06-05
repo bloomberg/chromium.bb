@@ -46,11 +46,6 @@ const char kTime[] = ".Time";
 const uint32_t kFileMagic = 0x600D71FE;
 const uint32_t kFileVersion = 9;
 
-std::string GetUmaSuffixForStore(const base::FilePath& file_path) {
-  return base::StringPrintf(
-      ".%" PRIsFP, file_path.BaseName().RemoveExtension().value().c_str());
-}
-
 void RecordTimeWithAndWithoutSuffix(const std::string& metric,
                                     base::TimeDelta time,
                                     const base::FilePath& file_path) {

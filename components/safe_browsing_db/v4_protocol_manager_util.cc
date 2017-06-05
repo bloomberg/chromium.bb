@@ -21,6 +21,10 @@ using base::Time;
 using base::TimeDelta;
 
 namespace safe_browsing {
+const base::FilePath::CharType kStoreSuffix[] = FILE_PATH_LITERAL(".store");
+
+// The Safe Browsing V4 server URL prefix.
+const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 
 namespace {
 
@@ -141,8 +145,11 @@ ListIdentifier GetUrlUwsId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, UNWANTED_SOFTWARE);
 }
 
-// The Safe Browsing V4 server URL prefix.
-const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
+std::string GetUmaSuffixForStore(const base::FilePath& file_path) {
+  DCHECK_EQ(kStoreSuffix, file_path.BaseName().Extension());
+  return base::StringPrintf(
+      ".%" PRIsFP, file_path.BaseName().RemoveExtension().value().c_str());
+}
 
 StoreAndHashPrefix::StoreAndHashPrefix(ListIdentifier list_id,
                                        const HashPrefix& hash_prefix)
