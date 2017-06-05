@@ -19,27 +19,42 @@ void SpellCheckMarkerListImpl::Add(DocumentMarker* marker) {
     return;
   }
 
-  auto first_overlapping = std::lower_bound(
+  // Find first marker that ends after the one being inserted starts. If any
+  // markers overlap the one being inserted, this is the first one.
+  const auto& first_overlapping = std::lower_bound(
       markers_.begin(), markers_.end(), marker,
       [](const Member<DocumentMarker>& marker_in_list,
          const DocumentMarker* marker_to_insert) {
         return marker_in_list->EndOffset() < marker_to_insert->StartOffset();
       });
 
-  size_t index = first_overlapping - markers_.begin();
-  markers_.insert(index, marker);
-  const auto inserted = markers_.begin() + index;
-  first_overlapping = inserted + 1;
-  // TODO(rlanday): optimize this loop so it runs in O(N) time and not O(N^2)
-  for (const auto i = first_overlapping;
-       i != markers_.end() &&
-       (*i)->StartOffset() <= (*inserted)->EndOffset();) {
-    (*inserted)->SetStartOffset(
-        std::min((*inserted)->StartOffset(), (*i)->StartOffset()));
-    (*inserted)->SetEndOffset(
-        std::max((*inserted)->EndOffset(), (*i)->EndOffset()));
-    markers_.erase(i - markers_.begin());
+  // If this marker does not overlap the one being inserted, insert before it
+  // and we are done.
+  if (marker->EndOffset() < (*first_overlapping)->StartOffset()) {
+    markers_.insert(first_overlapping - markers_.begin(), marker);
+    return;
   }
+
+  // Otherwise, find the last overlapping marker, replace the first marker with
+  // the newly-inserted marker (to get the new description), set its start and
+  // end offsets to include all the overlapped markers, and erase the rest of
+  // the old markers.
+
+  const auto& last_overlapping = std::upper_bound(
+      first_overlapping, markers_.end(), marker,
+      [](const DocumentMarker* marker_to_insert,
+         const Member<DocumentMarker>& marker_in_list) {
+        return marker_to_insert->EndOffset() < marker_in_list->StartOffset();
+      });
+
+  marker->SetStartOffset(
+      std::min(marker->StartOffset(), (*first_overlapping)->StartOffset()));
+  marker->SetEndOffset(
+      std::max(marker->EndOffset(), (*(last_overlapping - 1))->EndOffset()));
+
+  *first_overlapping = marker;
+  size_t num_to_erase = last_overlapping - (first_overlapping + 1);
+  markers_.erase(first_overlapping + 1 - markers_.begin(), num_to_erase);
 }
 
 void SpellCheckMarkerListImpl::Clear() {
