@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
+#include "components/subresource_filter/core/common/load_policy.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
@@ -38,6 +39,10 @@ class SubresourceFilterObserverManager
       content::NavigationHandle* navigation_handle,
       ActivationDecision activation_decision,
       const ActivationState& activation_state);
+
+  void NotifySubframeNavigationEvaluated(
+      content::NavigationHandle* navigation_handle,
+      LoadPolicy load_policy);
 
  private:
   base::ObserverList<SubresourceFilterObserver> observers_;

@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/core/common/load_policy.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace content {
@@ -38,6 +39,8 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
       override;
+  content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
+      override;
   const char* GetNameForLogging() override;
 
  private:
@@ -47,12 +50,14 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
       ThrottlingStage stage);
   void OnCalculatedLoadPolicy(ThrottlingStage stage, LoadPolicy policy);
 
+  void NotifyLoadPolicy() const;
+
   // Must outlive this class.
   AsyncDocumentSubresourceFilter* parent_frame_filter_;
 
   base::TimeTicks last_defer_timestamp_;
   base::TimeDelta total_defer_time_;
-  bool disallowed_ = false;
+  LoadPolicy load_policy_ = LoadPolicy::ALLOW;
 
   base::WeakPtrFactory<SubframeNavigationFilteringThrottle> weak_ptr_factory_;
 

@@ -59,6 +59,8 @@ static_library("test_support") {
     "async_document_subresource_filter_test_utils.h",
     "fake_safe_browsing_database_manager.cc",
     "fake_safe_browsing_database_manager.h",
+    "subresource_filter_observer_test_utils.cc",
+    "subresource_filter_observer_test_utils.h",
   ]
   deps = [
     ":browser",

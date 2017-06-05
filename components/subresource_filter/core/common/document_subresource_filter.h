@@ -16,6 +16,7 @@
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
+#include "components/subresource_filter/core/common/load_policy.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 
 class GURL;
@@ -28,12 +29,6 @@ namespace subresource_filter {
 
 class FirstPartyOrigin;
 class MemoryMappedRuleset;
-
-enum class LoadPolicy {
-  ALLOW,
-  DISALLOW,
-  WOULD_DISALLOW,
-};
 
 // Computes whether/how subresource filtering should be activated while loading
 // |document_url| in a frame, based on the parent document's |activation_state|,
