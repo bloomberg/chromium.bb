@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -16,25 +17,43 @@
 #include "ash/shell_port.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/wm/core/transient_window_controller.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
 namespace {
 
 // Returns the window's shelf item type property value.
+// Mash provides an initial default shelf item type for untyped windows.
+// TODO(msw): Extend this Mash behavior to all Ash configs.
 ShelfItemType GetShelfItemType(aura::Window* window) {
+  if (Shell::GetAshConfig() == Config::MASH &&
+      window->GetProperty(kShelfItemTypeKey) == TYPE_UNDEFINED &&
+      !wm::GetWindowState(window)->ignored_by_shelf()) {
+    return TYPE_DIALOG;
+  }
   return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
 }
 
-// Returns the window's shelf id property value.
+// Returns the window's shelf id property value, or provides a default value.
+// Mash provides an initial default shelf id for unidentified windows.
+// TODO(msw): Extend this Mash behavior to all Ash configs.
 ShelfID GetShelfID(aura::Window* window) {
+  if (Shell::GetAshConfig() == Config::MASH &&
+      !window->GetProperty(kShelfIDKey) &&
+      !wm::GetWindowState(window)->ignored_by_shelf()) {
+    static int id = 0;
+    const ash::ShelfID shelf_id("ShelfWindowWatcher" + std::to_string(id++));
+    window->SetProperty(kShelfIDKey, new std::string(shelf_id.Serialize()));
+    return shelf_id;
+  }
   return ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
 }
 
@@ -43,6 +62,7 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   DCHECK(item->id.IsNull() || item->id == GetShelfID(window));
   item->id = GetShelfID(window);
   item->type = GetShelfItemType(window);
+  item->title = window->GetTitle();
 
   item->status = STATUS_RUNNING;
   if (wm::IsActiveWindow(window))
@@ -60,8 +80,6 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   } else {
     item->image = *image;
   }
-
-  item->title = window->GetTitle();
 
   // Do not show tooltips for visible attached app panel windows.
   item->shows_tooltip = item->type != TYPE_APP_PANEL || !window->IsVisible() ||
@@ -103,6 +121,20 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
+  // ShelfIDs should never change except when replacing Mash temporary defaults.
+  // TODO(msw): Extend this Mash behavior to all Ash configs.
+  if (Shell::GetAshConfig() == Config::MASH && key == kShelfIDKey) {
+    ShelfID old_id = ShelfID::Deserialize(reinterpret_cast<std::string*>(old));
+    ShelfID new_id = ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
+    if (old_id != new_id && !old_id.IsNull() && !new_id.IsNull() &&
+        window_watcher_->model_->ItemIndexByID(old_id) >= 0) {
+      // Id changing is not supported; remove the item and it will be re-added.
+      window_watcher_->user_windows_with_items_.erase(window);
+      const int index = window_watcher_->model_->ItemIndexByID(old_id);
+      window_watcher_->model_->RemoveItemAt(index);
+    }
+  }
+
   if (key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
       key == aura::client::kDrawAttentionKey || key == kPanelAttachedKey ||
       key == kShelfItemTypeKey || key == kShelfIDKey) {
@@ -118,13 +150,9 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowDestroying(
 void ShelfWindowWatcher::UserWindowObserver::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
-  // OnWindowVisibilityChanged() is called for descendants too. We only care
-  // about changes to the visibility of windows we know about.
-  if (!window_watcher_->observed_user_windows_.IsObserving(window))
-    return;
-
-  // The tooltip behavior for panel windows depends on the panel visibility.
-  window_watcher_->OnUserWindowPropertyChanged(window);
+  // This is also called for descendants; check that the window is observed.
+  if (window_watcher_->observed_user_windows_.IsObserving(window))
+    window_watcher_->OnUserWindowPropertyChanged(window);
 }
 
 void ShelfWindowWatcher::UserWindowObserver::OnWindowTitleChanged(
@@ -177,11 +205,6 @@ void ShelfWindowWatcher::OnContainerWindowDestroying(aura::Window* container) {
   observed_container_windows_.Remove(container);
 }
 
-int ShelfWindowWatcher::GetShelfItemIndexForWindow(aura::Window* window) const {
-  const ShelfID shelf_id = GetShelfID(window);
-  return shelf_id.IsNull() ? -1 : model_->ItemIndexByID(shelf_id);
-}
-
 void ShelfWindowWatcher::OnUserWindowAdded(aura::Window* window) {
   // The window may already be tracked from a prior display or parent container.
   if (observed_user_windows_.IsObserving(window))
@@ -204,24 +227,26 @@ void ShelfWindowWatcher::OnUserWindowDestroying(aura::Window* window) {
 
 void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
   if (GetShelfItemType(window) == TYPE_UNDEFINED ||
-      GetShelfID(window).IsNull()) {
-    // Remove |window|'s ShelfItem if it was added by this ShelfWindowWatcher.
+      GetShelfID(window).IsNull() ||
+      ::wm::TransientWindowController::Get()->GetTransientParent(window)) {
+    // Remove |window|'s ShelfItem if it was added by ShelfWindowWatcher.
     if (user_windows_with_items_.count(window) > 0)
       RemoveShelfItem(window);
     return;
   }
 
-  // Update an existing ShelfItem for |window| when a property has changed.
-  int index = GetShelfItemIndexForWindow(window);
-  if (index > 0) {
+  // Update an existing ShelfWindowWatcher item when a window property changes.
+  int index = model_->ItemIndexByID(GetShelfID(window));
+  if (index > 0 && user_windows_with_items_.count(window) > 0) {
     ShelfItem item = model_->items()[index];
     UpdateShelfItemForWindow(&item, window);
     model_->Set(index, item);
     return;
   }
 
-  // Creates a new ShelfItem for |window|.
-  AddShelfItem(window);
+  // Create a new ShelfWindowWatcher item for |window|.
+  if (index < 0)
+    AddShelfItem(window);
 }
 
 void ShelfWindowWatcher::OnWindowActivated(ActivationReason reason,

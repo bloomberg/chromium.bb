@@ -16,7 +16,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
-#include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -25,6 +24,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/transient_window_controller.h"
 
 namespace ash {
 namespace {
@@ -54,7 +54,7 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
 
   static ShelfID CreateShelfItem(aura::Window* window) {
     static int id = 0;
-    ShelfID shelf_id(base::IntToString(id++));
+    ShelfID shelf_id(std::to_string(id++));
     window->SetProperty(kShelfIDKey, new std::string(shelf_id.Serialize()));
     window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
     return shelf_id;
@@ -72,7 +72,7 @@ TEST_F(ShelfWindowWatcherTest, OpenAndClose) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
-  // Adding windows with valid ShelfItemType properties adds shelf items.
+  // Windows with valid ShelfItemType and ShelfID properties get shelf items.
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   CreateShelfItem(widget1->GetNativeWindow());
@@ -86,6 +86,38 @@ TEST_F(ShelfWindowWatcherTest, OpenAndClose) {
   widget1.reset();
   EXPECT_EQ(2, model_->item_count());
   widget2.reset();
+  EXPECT_EQ(1, model_->item_count());
+}
+
+// Ensure shelf items are added and removed for unknown windows in mash.
+TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
+  if (Shell::GetAshConfig() != Config::MASH)
+    return;
+
+  // ShelfModel only has an APP_LIST item.
+  EXPECT_EQ(1, model_->item_count());
+
+  // Windows with no valid ShelfItemType and ShelfID properties get shelf items.
+  std::unique_ptr<views::Widget> widget1 =
+      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
+  EXPECT_EQ(2, model_->item_count());
+  std::unique_ptr<views::Widget> widget2 =
+      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
+  EXPECT_EQ(3, model_->item_count());
+
+  // Each ShelfItem is removed when the associated window is destroyed.
+  widget1.reset();
+  EXPECT_EQ(2, model_->item_count());
+  widget2.reset();
+  EXPECT_EQ(1, model_->item_count());
+
+  // Windows with WindowState::ignored_by_shelf set do not get shelf items.
+  widget1 =
+      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
+  wm::GetWindowState(widget1->GetNativeWindow())->set_ignored_by_shelf(true);
+  // TODO(msw): Make the flag a window property and remove this workaround.
+  widget1->GetNativeWindow()->SetProperty(aura::client::kDrawAttentionKey,
+                                          true);
   EXPECT_EQ(1, model_->item_count());
 }
 
@@ -370,6 +402,36 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   EXPECT_EQ(initial_item_count + 1, model_->item_count());
 
   child_window.reset();
+  window.reset();
+  EXPECT_EQ(initial_item_count, model_->item_count());
+}
+
+TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForTransientWindows) {
+  const int initial_item_count = model_->item_count();
+
+  std::unique_ptr<aura::Window> window(base::MakeUnique<aura::Window>(
+      nullptr, aura::client::WINDOW_TYPE_NORMAL));
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->SetProperty(kShelfIDKey, new std::string(ShelfID("foo").Serialize()));
+  window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
+  Shell::GetPrimaryRootWindow()
+      ->GetChildById(kShellWindowId_DefaultContainer)
+      ->AddChild(window.get());
+  window->Show();
+  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+
+  std::unique_ptr<aura::Window> transient_window(base::MakeUnique<aura::Window>(
+      nullptr, aura::client::WINDOW_TYPE_NORMAL));
+  transient_window->Init(ui::LAYER_NOT_DRAWN);
+  transient_window->SetProperty(kShelfItemTypeKey,
+                                static_cast<int32_t>(TYPE_APP));
+  ::wm::TransientWindowController::Get()->AddTransientChild(
+      window.get(), transient_window.get());
+  transient_window->Show();
+  // |transient_window| should not result in adding a new entry.
+  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+
+  transient_window.reset();
   window.reset();
   EXPECT_EQ(initial_item_count, model_->item_count());
 }
