@@ -166,9 +166,6 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     return false;
   }
 
-  surface_manager_->SurfaceDamageExpected(surface->surface_id(),
-                                          last_begin_frame_args_);
-
   if (current_surface_) {
     surface->SetPreviousFrameSurface(current_surface_.get());
     DestroyCurrentSurface();
