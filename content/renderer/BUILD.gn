@@ -137,8 +137,6 @@ target(link_target_type, "renderer") {
     "gpu/render_widget_compositor.cc",
     "gpu/render_widget_compositor.h",
     "gpu/render_widget_compositor_delegate.h",
-    "gpu/renderer_compositor_frame_sink.cc",
-    "gpu/renderer_compositor_frame_sink.h",
     "gpu/stream_texture_host_android.cc",
     "gpu/stream_texture_host_android.h",
     "history_entry.cc",

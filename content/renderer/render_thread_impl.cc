@@ -55,6 +55,8 @@
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
+#include "components/viz/client/client_compositor_frame_sink.h"
+#include "components/viz/client/local_surface_id_provider.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/blob_storage/blob_message_filter.h"
@@ -106,7 +108,6 @@
 #include "content/renderer/gpu/compositor_external_begin_frame_source.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
-#include "content/renderer/gpu/renderer_compositor_frame_sink.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_input_event_filter.h"
@@ -418,6 +419,26 @@ void CreateSingleSampleMetricsProvider(
       base::Bind(&CreateSingleSampleMetricsProvider, std::move(task_runner),
                  connector, base::Passed(&request)));
 }
+
+class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
+ public:
+  const cc::LocalSurfaceId& GetLocalSurfaceIdForFrame(
+      const cc::CompositorFrame& frame) override {
+    auto new_surface_properties =
+        RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
+    if (!local_surface_id_.is_valid() ||
+        new_surface_properties != surface_properties_) {
+      local_surface_id_ = local_surface_id_allocator_.GenerateId();
+      surface_properties_ = new_surface_properties;
+    }
+    return local_surface_id_;
+  }
+
+ private:
+  cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  cc::LocalSurfaceId local_surface_id_;
+  RenderWidgetSurfaceProperties surface_properties_;
+};
 
 }  // namespace
 
@@ -1914,10 +1935,12 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
       DCHECK(!layout_test_mode());
       frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                             std::move(client));
-      callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
-          routing_id, std::move(synthetic_begin_frame_source),
-          std::move(vulkan_context_provider), std::move(sink_info),
-          std::move(client_request)));
+      callback.Run(base::MakeUnique<viz::ClientCompositorFrameSink>(
+          std::move(vulkan_context_provider),
+          std::move(synthetic_begin_frame_source), std::move(sink_info),
+          std::move(client_request),
+          base::MakeUnique<RendererLocalSurfaceIdProvider>(),
+          false /* enable_surface_synchroninzation */));
       return;
     }
   }
@@ -1942,10 +1965,12 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
     DCHECK(!layout_test_mode());
     frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                           std::move(client));
-    callback.Run(base::MakeUnique<RendererCompositorFrameSink>(
-        routing_id, std::move(synthetic_begin_frame_source), nullptr, nullptr,
-        nullptr, shared_bitmap_manager(), std::move(sink_info),
-        std::move(client_request)));
+    callback.Run(base::MakeUnique<viz::ClientCompositorFrameSink>(
+        nullptr, nullptr, nullptr, shared_bitmap_manager(),
+        std::move(synthetic_begin_frame_source), std::move(sink_info),
+        std::move(client_request),
+        base::MakeUnique<RendererLocalSurfaceIdProvider>(),
+        false /* enable_surface_synchroninzation */));
     return;
   }
 
@@ -2014,11 +2039,13 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
 #endif
   frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                         std::move(client));
-  callback.Run(base::WrapUnique(new RendererCompositorFrameSink(
-      routing_id, std::move(synthetic_begin_frame_source),
+  callback.Run(base::MakeUnique<viz::ClientCompositorFrameSink>(
       std::move(context_provider), std::move(worker_context_provider),
-      GetGpuMemoryBufferManager(), nullptr, std::move(sink_info),
-      std::move(client_request))));
+      GetGpuMemoryBufferManager(), nullptr,
+      std::move(synthetic_begin_frame_source), std::move(sink_info),
+      std::move(client_request),
+      base::MakeUnique<RendererLocalSurfaceIdProvider>(),
+      false /* enable_surface_synchroninzation */));
 }
 
 AssociatedInterfaceRegistry*

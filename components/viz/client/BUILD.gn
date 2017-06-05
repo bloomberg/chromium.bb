@@ -6,6 +6,8 @@ source_set("client") {
   sources = [
     "client_compositor_frame_sink.cc",
     "client_compositor_frame_sink.h",
+    "local_surface_id_provider.cc",
+    "local_surface_id_provider.h",
   ]
 
   public_deps = [
