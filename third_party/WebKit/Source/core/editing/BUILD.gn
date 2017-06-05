@@ -82,6 +82,7 @@ blink_core_sources("editing") {
     "VisibleSelection.h",
     "VisibleUnits.cpp",
     "VisibleUnits.h",
+    "VisibleUnitsLine.cpp",
     "WritingDirection.h",
     "commands/AppendNodeCommand.cpp",
     "commands/AppendNodeCommand.h",

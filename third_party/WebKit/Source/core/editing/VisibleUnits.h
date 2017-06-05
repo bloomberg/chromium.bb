@@ -340,6 +340,21 @@ CORE_EXPORT IntRect ComputeTextRect(const EphemeralRange&);
 IntRect ComputeTextRect(const EphemeralRangeInFlatTree&);
 FloatRect ComputeTextFloatRect(const EphemeralRange&);
 
+// Export below functions only for |VisibleUnit| family.
+PositionWithAffinity HonorEditingBoundaryAtOrBefore(const PositionWithAffinity&,
+                                                    const Position&);
+
+PositionInFlatTreeWithAffinity HonorEditingBoundaryAtOrBefore(
+    const PositionInFlatTreeWithAffinity&,
+    const PositionInFlatTree&);
+
+VisiblePosition HonorEditingBoundaryAtOrAfter(const VisiblePosition&,
+                                              const Position&);
+
+VisiblePositionInFlatTree HonorEditingBoundaryAtOrAfter(
+    const VisiblePositionInFlatTree&,
+    const PositionInFlatTree&);
+
 // Export below functions only for |SelectionModifier|.
 VisiblePosition HonorEditingBoundaryAtOrBefore(const VisiblePosition&,
                                                const Position&);
