@@ -101,6 +101,20 @@ class PLATFORM_EXPORT V8PerContextData final {
 
   void AddCustomElementBinding(std::unique_ptr<V0CustomElementBinding>);
 
+  // Gets a Private to store custom element definition IDs on a
+  // constructor that has been registered as a custom element in this
+  // context. This private has to be per-context because the same
+  // constructor could be simultaneously registered as a custom
+  // element in many contexts and they each need to give it a unique
+  // identifier.
+  v8::Local<v8::Private> GetPrivateCustomElementDefinitionId() {
+    if (UNLIKELY(private_custom_element_definition_id_.IsEmpty())) {
+      private_custom_element_definition_id_.Set(isolate_,
+                                                v8::Private::New(isolate_));
+    }
+    return private_custom_element_definition_id_.NewLocal(isolate_);
+  }
+
   V8DOMActivityLogger* ActivityLogger() const { return activity_logger_; }
   void SetActivityLogger(V8DOMActivityLogger* activity_logger) {
     activity_logger_ = activity_logger;
@@ -137,6 +151,8 @@ class PLATFORM_EXPORT V8PerContextData final {
 
   ScopedPersistent<v8::Context> context_;
   ScopedPersistent<v8::Value> error_prototype_;
+
+  ScopedPersistent<v8::Private> private_custom_element_definition_id_;
 
   typedef Vector<std::unique_ptr<V0CustomElementBinding>>
       V0CustomElementBindingList;
