@@ -491,7 +491,6 @@ void BluetoothDeviceChooserController::SetTestScanDurationForTesting() {
 }
 
 void BluetoothDeviceChooserController::PopulateConnectedDevices() {
-  // TODO(crbug.com/728897): Use RetrieveGattConnectedDevices once implemented.
   for (const device::BluetoothDevice* device : adapter_->GetDevices()) {
     if (device->IsGattConnected()) {
       AddFilteredDevice(*device);

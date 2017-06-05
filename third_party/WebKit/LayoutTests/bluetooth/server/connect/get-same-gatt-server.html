@@ -2,24 +2,16 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 promise_test(() => {
-  return getDiscoveredHealthThermometerDevice()
-    .then(([device, fake_peripheral]) => {
-      return fake_peripheral
-        .setNextGATTConnectionResponse({code: HCI_SUCCESS})
-        .then(() => device.gatt.connect())
-        .then(gatt1 => {
-          // No second response is necessary because an ATT Bearer
-          // already exists from the first connection.
-          // See https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothremotegattserver-connect
-          // step 5.1.
-          return device.gatt.connect().then(gatt2 => [gatt1, gatt2]);
-        });
-    })
-    .then(([gatt1, gatt2]) => assert_equals(gatt1, gatt2));
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => {
+      return Promise.all([device.gatt.connect(), device.gatt.connect()])
+    }).then(gattServers => {
+      assert_equals(gattServers[0], gattServers[1]);
+    });
 }, 'Multiple connects should return the same gatt object.');
 </script>

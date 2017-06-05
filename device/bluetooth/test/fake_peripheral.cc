@@ -4,17 +4,13 @@
 
 #include "device/bluetooth/test/fake_peripheral.h"
 
-#include "base/memory/weak_ptr.h"
-
 namespace bluetooth {
 
 FakePeripheral::FakePeripheral(FakeCentral* fake_central,
                                const std::string& address)
     : device::BluetoothDevice(fake_central),
       address_(address),
-      system_connected_(false),
-      gatt_connected_(false),
-      weak_ptr_factory_(this) {}
+      gatt_connected_(false) {}
 
 FakePeripheral::~FakePeripheral() {}
 
@@ -22,18 +18,12 @@ void FakePeripheral::SetName(base::Optional<std::string> name) {
   name_ = std::move(name);
 }
 
-void FakePeripheral::SetSystemConnected(bool connected) {
-  system_connected_ = connected;
+void FakePeripheral::SetGattConnected(bool connected) {
+  gatt_connected_ = connected;
 }
 
 void FakePeripheral::SetServiceUUIDs(UUIDSet service_uuids) {
   service_uuids_ = std::move(service_uuids);
-}
-
-void FakePeripheral::SetNextGATTConnectionResponse(uint16_t code) {
-  DCHECK(!next_connection_response_);
-  DCHECK(create_gatt_connection_error_callbacks_.empty());
-  next_connection_response_ = code;
 }
 
 uint32_t FakePeripheral::GetBluetoothClass() const {
@@ -102,10 +92,7 @@ bool FakePeripheral::IsConnected() const {
 }
 
 bool FakePeripheral::IsGattConnected() const {
-  // TODO(crbug.com/728870): Return gatt_connected_ only once system connected
-  // peripherals are supported and Web Bluetooth uses them. See issue for more
-  // details.
-  return system_connected_ || gatt_connected_;
+  return gatt_connected_;
 }
 
 bool FakePeripheral::IsConnectable() const {
@@ -197,43 +184,11 @@ void FakePeripheral::ConnectToServiceInsecurely(
   NOTREACHED();
 }
 
-void FakePeripheral::CreateGattConnection(
-    const GattConnectionCallback& callback,
-    const ConnectErrorCallback& error_callback) {
-  create_gatt_connection_success_callbacks_.push_back(callback);
-  create_gatt_connection_error_callbacks_.push_back(error_callback);
-
-  // TODO(crbug.com/728870): Stop overriding CreateGattConnection once
-  // IsGattConnected() is fixed. See issue for more details.
-  if (gatt_connected_)
-    return DidConnectGatt();
-
-  CreateGattConnectionImpl();
-}
-
 void FakePeripheral::CreateGattConnectionImpl() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakePeripheral::DispatchConnectionResponse,
-                            weak_ptr_factory_.GetWeakPtr()));
-}
-
-void FakePeripheral::DispatchConnectionResponse() {
-  DCHECK(next_connection_response_);
-
-  uint16_t code = next_connection_response_.value();
-  next_connection_response_.reset();
-
-  if (code == mojom::kHCISuccess) {
-    gatt_connected_ = true;
-    DidConnectGatt();
-  } else if (code == mojom::kHCIConnectionTimeout) {
-    DidFailToConnectGatt(ERROR_FAILED);
-  } else {
-    DidFailToConnectGatt(ERROR_UNKNOWN);
-  }
+  NOTREACHED();
 }
 
 void FakePeripheral::DisconnectGatt() {
+  NOTREACHED();
 }
-
 }  // namespace bluetooth
