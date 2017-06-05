@@ -107,7 +107,7 @@ GamepadEventConverterEvdev::GamepadEventConverterEvdev(
       last_hat_right_press_(false),
       last_hat_up_press_(false),
       last_hat_down_press_(false),
-      mapper_(GetGamepadMapper(devinfo.vendor_id(), devinfo.product_id())),
+      mapper_(GetGamepadMapper(devinfo)),
       input_device_fd_(std::move(fd)),
       dispatcher_(dispatcher) {
   input_absinfo abs_info;
@@ -125,7 +125,7 @@ GamepadEventConverterEvdev::GamepadEventConverterEvdev(
       if (abs_info.fuzz == 0) {
         abs_info.fuzz = abs_info.flat * 0.25f;
       }
-      mapper_(EV_ABS, code, &mapped_type, &mapped_code);
+      mapper_->Map(EV_ABS, code, &mapped_type, &mapped_code);
       axes_[code] = Axis(abs_info, mapped_type, mapped_code);
     }
   }
@@ -190,7 +190,7 @@ void GamepadEventConverterEvdev::ProcessEvdevKey(
   GamepadEventType mapped_type;
   uint16_t mapped_code;
 
-  bool found_map = mapper_(EV_KEY, code, &mapped_type, &mapped_code);
+  bool found_map = mapper_->Map(EV_KEY, code, &mapped_type, &mapped_code);
 
   // If we cannot find a map for this event, it will be discarded.
   if (!found_map) {

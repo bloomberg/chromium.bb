@@ -79,6 +79,36 @@ bool ParseBitfield(const std::string& bitfield,
 
 }  // namespace
 
+// Captured from HJC Game ZD - V gamepad.
+const DeviceAbsoluteAxis kHJCGamepadAbsAxes[] = {
+    {ABS_X, {128, 0, 255, 15, 0}}, {ABS_Y, {128, 0, 255, 15, 0}},
+    {ABS_Z, {128, 0, 255, 15, 0}}, {ABS_RZ, {128, 0, 255, 15, 0}},
+    {ABS_HAT0X, {0, -1, 1, 0, 0}}, {ABS_HAT0Y, {0, 1, 1, 0, 0}}};
+
+const DeviceCapabilities kHJCGamepad = {
+    /* path */
+    "/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2:1.0/"
+    "input/input38/event11",
+    /* name */ "HJC Game ZD - V",
+    /* phys */ "usb-0000:00:14.0-2.2/input0",
+    /* uniq */ "",
+    /* bustype */ "0011",
+    /* vendor */ "11c5",
+    /* product */ "5506",
+    /* version */ "0111",
+    /* prop */ "0",
+    /* ev */ "1b",
+    /* key */ "fff000000000000 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "30027",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kHJCGamepadAbsAxes,
+    arraysize(kHJCGamepadAbsAxes),
+};
+
 // Captured from Xbox 360 gamepad.
 const DeviceAbsoluteAxis kXboxGamepadAbsAxes[] = {
     {ABS_X, {0, -32768, 32767, 16, 128}},

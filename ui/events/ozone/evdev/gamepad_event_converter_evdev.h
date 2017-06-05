@@ -107,7 +107,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
   bool last_hat_up_press_;
   bool last_hat_down_press_;
 
-  GamepadMapper mapper_;
+  std::unique_ptr<GamepadMapper> mapper_;
 
   // Input device file descriptor.
   ScopedInputDevice input_device_fd_;

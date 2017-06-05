@@ -129,6 +129,10 @@ if (use_ozone) {
       "gamepad/gamepad_observer.h",
       "gamepad/gamepad_provider_ozone.cc",
       "gamepad/gamepad_provider_ozone.h",
+      "gamepad/generic_gamepad_mapping.cc",
+      "gamepad/generic_gamepad_mapping.h",
+      "gamepad/static_gamepad_mapping.cc",
+      "gamepad/static_gamepad_mapping.h",
       "gamepad/webgamepad_constants.h",
     ]
 
