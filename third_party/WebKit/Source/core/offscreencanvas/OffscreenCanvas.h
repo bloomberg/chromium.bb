@@ -155,6 +155,7 @@ class CORE_EXPORT OffscreenCanvas final
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  friend class OffscreenCanvasTest;
   explicit OffscreenCanvas(const IntSize&);
   OffscreenCanvasFrameDispatcher* GetOrCreateFrameDispatcher();
   void DoCommit();

@@ -33,6 +33,9 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   // OffscreenCanvasFrameDispatcher implementation.
   ~OffscreenCanvasFrameDispatcherImpl() final;
   void SetNeedsBeginFrame(bool) final;
+  void SetSuspendAnimation(bool) final;
+  bool NeedsBeginFrame() const final { return needs_begin_frame_; }
+  bool IsAnimationSuspended() const final { return suspend_animation_; }
   void DispatchFrame(RefPtr<StaticBitmapImage>,
                      double commit_start_time,
                      const SkIRect& damage_rect,
@@ -64,7 +67,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   int width_;
   int height_;
   bool change_size_for_next_commit_;
-  bool needs_begin_frame_;
+  bool suspend_animation_ = false;
+  bool needs_begin_frame_ = false;
   int pending_compositor_frames_ = 0;
 
   unsigned next_resource_id_;
@@ -83,6 +87,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   std::unique_ptr<FrameResource> recycleable_resource_;
   std::unique_ptr<FrameResource> createOrRecycleFrameResource();
+
+  void SetNeedsBeginFrameInternal();
 
   typedef HashMap<unsigned, std::unique_ptr<FrameResource>> ResourceMap;
   void ReclaimResourceInternal(const ResourceMap::iterator&);

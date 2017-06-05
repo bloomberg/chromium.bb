@@ -433,9 +433,25 @@ void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck(
 
 void OffscreenCanvasFrameDispatcherImpl::SetNeedsBeginFrame(
     bool needs_begin_frame) {
-  if (sink_ && needs_begin_frame != needs_begin_frame_) {
-    needs_begin_frame_ = needs_begin_frame;
-    sink_->SetNeedsBeginFrame(needs_begin_frame);
+  if (needs_begin_frame_ == needs_begin_frame)
+    return;
+  needs_begin_frame_ = needs_begin_frame;
+  if (!suspend_animation_)
+    SetNeedsBeginFrameInternal();
+}
+
+void OffscreenCanvasFrameDispatcherImpl::SetSuspendAnimation(
+    bool suspend_animation) {
+  if (suspend_animation_ == suspend_animation)
+    return;
+  suspend_animation_ = suspend_animation;
+  if (needs_begin_frame_)
+    SetNeedsBeginFrameInternal();
+}
+
+void OffscreenCanvasFrameDispatcherImpl::SetNeedsBeginFrameInternal() {
+  if (sink_) {
+    sink_->SetNeedsBeginFrame(needs_begin_frame_ && !suspend_animation_);
   }
 }
 

@@ -27,8 +27,11 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
                              double commit_start_time,
                              const SkIRect& damage_rect,
                              bool is_web_gl_software_rendering) = 0;
-  virtual void SetNeedsBeginFrame(bool) = 0;
   virtual void ReclaimResource(unsigned resource_id) = 0;
+  virtual void SetNeedsBeginFrame(bool) = 0;
+  virtual void SetSuspendAnimation(bool) = 0;
+  virtual bool NeedsBeginFrame() const = 0;
+  virtual bool IsAnimationSuspended() const = 0;
 
   virtual void Reshape(int width, int height) = 0;
 
