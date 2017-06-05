@@ -83,16 +83,4 @@
   return _browserState.get();
 }
 
-// NSCopying
-
-- (id)copyWithZone:(NSZone*)zone {
-  [[self class] initialize];
-
-  auto browserState = base::MakeUnique<ios_web_view::WebViewBrowserState>(
-      _browserState->IsOffTheRecord());
-
-  return [[[self class] allocWithZone:zone]
-      initWithBrowserState:std::move(browserState)];
-}
-
 @end

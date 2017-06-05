@@ -13,7 +13,7 @@
 
 // Configuration used for creation of a CWVWebView.
 CWV_EXPORT
-@interface CWVWebViewConfiguration : NSObject<NSCopying>
+@interface CWVWebViewConfiguration : NSObject
 
 // Configuration with persistent data store which stores all data on disk.
 + (instancetype)defaultConfiguration;

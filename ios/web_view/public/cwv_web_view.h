@@ -24,7 +24,7 @@ CWV_EXPORT
 @interface CWVWebView : UIView
 
 // The configuration of the web view.
-@property(nonatomic, readonly, copy) CWVWebViewConfiguration* configuration;
+@property(nonatomic, readonly) CWVWebViewConfiguration* configuration;
 
 // This web view's navigation delegate.
 @property(nonatomic, weak) id<CWVNavigationDelegate> navigationDelegate;
