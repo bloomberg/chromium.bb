@@ -75,9 +75,10 @@ HTMLImportChild* HTMLImportsController::CreateChild(
   HTMLImport::SyncMode mode = client->IsSync() && !MakesCycle(parent, url)
                                   ? HTMLImport::kSync
                                   : HTMLImport::kAsync;
-  if (mode == HTMLImport::kAsync)
+  if (mode == HTMLImport::kAsync) {
     UseCounter::Count(Root()->GetDocument(),
                       UseCounter::kHTMLImportsAsyncAttribute);
+  }
 
   HTMLImportChild* child = new HTMLImportChild(url, loader, mode);
   child->SetClient(client);

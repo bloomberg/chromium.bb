@@ -48,19 +48,21 @@ Entry::Entry(DOMFileSystemBase* file_system, const String& full_path)
     : EntryBase(file_system, full_path) {}
 
 DOMFileSystem* Entry::filesystem(ScriptState* script_state) const {
-  if (file_system_->GetType() == kFileSystemTypeIsolated)
+  if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(
         ExecutionContext::From(script_state),
         UseCounter::kEntry_Filesystem_AttributeGetter_IsolatedFileSystem);
+  }
   return filesystem();
 }
 
 void Entry::getMetadata(ScriptState* script_state,
                         MetadataCallback* success_callback,
                         ErrorCallback* error_callback) {
-  if (file_system_->GetType() == kFileSystemTypeIsolated)
+  if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEntry_GetMetadata_Method_IsolatedFileSystem);
+  }
   file_system_->GetMetadata(this, success_callback,
                             ScriptErrorCallback::Wrap(error_callback));
 }
@@ -70,9 +72,10 @@ void Entry::moveTo(ScriptState* script_state,
                    const String& name,
                    EntryCallback* success_callback,
                    ErrorCallback* error_callback) const {
-  if (file_system_->GetType() == kFileSystemTypeIsolated)
+  if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEntry_MoveTo_Method_IsolatedFileSystem);
+  }
   file_system_->Move(this, parent, name, success_callback,
                      ScriptErrorCallback::Wrap(error_callback));
 }
@@ -82,9 +85,10 @@ void Entry::copyTo(ScriptState* script_state,
                    const String& name,
                    EntryCallback* success_callback,
                    ErrorCallback* error_callback) const {
-  if (file_system_->GetType() == kFileSystemTypeIsolated)
+  if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEntry_CopyTo_Method_IsolatedFileSystem);
+  }
   file_system_->Copy(this, parent, name, success_callback,
                      ScriptErrorCallback::Wrap(error_callback));
 }
@@ -92,9 +96,10 @@ void Entry::copyTo(ScriptState* script_state,
 void Entry::remove(ScriptState* script_state,
                    VoidCallback* success_callback,
                    ErrorCallback* error_callback) const {
-  if (file_system_->GetType() == kFileSystemTypeIsolated)
+  if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEntry_Remove_Method_IsolatedFileSystem);
+  }
   file_system_->Remove(this, success_callback,
                        ScriptErrorCallback::Wrap(error_callback));
 }
@@ -102,17 +107,19 @@ void Entry::remove(ScriptState* script_state,
 void Entry::getParent(ScriptState* script_state,
                       EntryCallback* success_callback,
                       ErrorCallback* error_callback) const {
-  if (file_system_->GetType() == kFileSystemTypeIsolated)
+  if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEntry_GetParent_Method_IsolatedFileSystem);
+  }
   file_system_->GetParent(this, success_callback,
                           ScriptErrorCallback::Wrap(error_callback));
 }
 
 String Entry::toURL(ScriptState* script_state) const {
-  if (file_system_->GetType() == kFileSystemTypeIsolated)
+  if (file_system_->GetType() == kFileSystemTypeIsolated) {
     UseCounter::Count(ExecutionContext::From(script_state),
                       UseCounter::kEntry_ToURL_Method_IsolatedFileSystem);
+  }
   return static_cast<const EntryBase*>(this)->toURL();
 }
 

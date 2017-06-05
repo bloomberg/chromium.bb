@@ -29,10 +29,11 @@ void PresentationConnectionList::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::connectionavailable)
+  if (event_type == EventTypeNames::connectionavailable) {
     UseCounter::Count(
         GetExecutionContext(),
         UseCounter::kPresentationRequestConnectionAvailableEventListener);
+  }
 }
 
 void PresentationConnectionList::AddConnection(

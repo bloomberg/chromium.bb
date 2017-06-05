@@ -110,9 +110,10 @@ void BaseCheckableInputType::SetValue(const String& sanitized_value,
 }
 
 void BaseCheckableInputType::ReadingChecked() const {
-  if (is_in_click_handler_)
+  if (is_in_click_handler_) {
     UseCounter::Count(GetElement().GetDocument(),
                       UseCounter::kReadingCheckedInClickHandler);
+  }
 }
 
 bool BaseCheckableInputType::IsCheckable() {

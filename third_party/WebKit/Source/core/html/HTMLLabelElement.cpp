@@ -59,10 +59,11 @@ LabelableElement* HTMLLabelElement::control() const {
     for (LabelableElement& element :
          Traversal<LabelableElement>::DescendantsOf(*this)) {
       if (element.SupportLabels()) {
-        if (!element.IsFormControlElement())
+        if (!element.IsFormControlElement()) {
           UseCounter::Count(
               GetDocument(),
               UseCounter::kHTMLLabelElementControlForNonFormAssociatedElement);
+        }
         return &element;
       }
     }
@@ -75,10 +76,11 @@ LabelableElement* HTMLLabelElement::control() const {
   if (Element* element = GetTreeScope().getElementById(control_id)) {
     if (IsLabelableElement(*element) &&
         ToLabelableElement(*element).SupportLabels()) {
-      if (!element->IsFormControlElement())
+      if (!element->IsFormControlElement()) {
         UseCounter::Count(
             GetDocument(),
             UseCounter::kHTMLLabelElementControlForNonFormAssociatedElement);
+      }
       return ToLabelableElement(element);
     }
   }

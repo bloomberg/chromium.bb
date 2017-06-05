@@ -436,9 +436,10 @@ void ServiceWorkerContainer::SetController(
     return;
   controller_ = ServiceWorker::From(GetExecutionContext(),
                                     WTF::WrapUnique(handle.release()));
-  if (controller_)
+  if (controller_) {
     UseCounter::Count(GetExecutionContext(),
                       UseCounter::kServiceWorkerControlledPage);
+  }
   if (should_notify_controller_change)
     DispatchEvent(Event::Create(EventTypeNames::controllerchange));
 }

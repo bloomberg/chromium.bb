@@ -93,9 +93,10 @@ bool CSPSource::HostMatches(const String& host) const {
     // the following count measures when a match fails that would have
     // passed the old, incorrect style, in case a lot of sites were
     // relying on that behavior.
-    if (document && equal_hosts)
+    if (document && equal_hosts) {
       UseCounter::Count(*document,
                         UseCounter::kCSPSourceWildcardWouldMatchExactHost);
+    }
   } else {
     // host-part = 1*host-char *( "." 1*host-char )
     match = equal_hosts;

@@ -357,12 +357,14 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
     // because our current behavior is different from the spec and we want to
     // gather compatibility data.
     if (style.PaddingBefore().IsPercentOrCalc() ||
-        style.PaddingAfter().IsPercentOrCalc())
+        style.PaddingAfter().IsPercentOrCalc()) {
       UseCounter::Count(document,
                         UseCounter::kFlexboxPercentagePaddingVertical);
+    }
     if (style.MarginBefore().IsPercentOrCalc() ||
-        style.MarginAfter().IsPercentOrCalc())
+        style.MarginAfter().IsPercentOrCalc()) {
       UseCounter::Count(document, UseCounter::kFlexboxPercentageMarginVertical);
+    }
   }
 }
 

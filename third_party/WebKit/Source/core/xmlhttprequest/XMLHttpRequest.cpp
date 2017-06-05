@@ -645,10 +645,11 @@ void XMLHttpRequest::open(const AtomicString& method,
     // exception thrown.
     // Refer : https://xhr.spec.whatwg.org/#sync-warning
     // Use count for XHR synchronous requests on main thread only.
-    if (!GetDocument()->ProcessingBeforeUnload())
+    if (!GetDocument()->ProcessingBeforeUnload()) {
       Deprecation::CountDeprecation(
           GetExecutionContext(),
           UseCounter::kXMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload);
+    }
   }
 
   method_ = FetchUtils::NormalizeMethod(method);
@@ -976,9 +977,10 @@ void XMLHttpRequest::CreateRequest(PassRefPtr<EncodedFormData> http_body,
            Suborigin::SuboriginPolicyOptions::kUnsafeCredentials) &&
        SecurityOrigin::Create(url_)->IsSameSchemeHostPort(GetSecurityOrigin()));
 
-  if (!same_origin_request_ && include_credentials)
+  if (!same_origin_request_ && include_credentials) {
     UseCounter::Count(&execution_context,
                       UseCounter::kXMLHttpRequestCrossOriginWithCredentials);
+  }
 
   // We also remember whether upload events should be allowed for this request
   // in case the upload listeners are added after the request is started.

@@ -188,11 +188,12 @@ WebRTCICECandidate ConvertToWebRTCIceCandidate(
         candidate.getAsRTCIceCandidateInit();
     // TODO(guidou): Change default value to -1. crbug.com/614958.
     unsigned short sdp_m_line_index = 0;
-    if (ice_candidate_init.hasSdpMLineIndex())
+    if (ice_candidate_init.hasSdpMLineIndex()) {
       sdp_m_line_index = ice_candidate_init.sdpMLineIndex();
-    else
+    } else {
       UseCounter::Count(context,
                         UseCounter::kRTCIceCandidateDefaultSdpMLineIndex);
+    }
     return WebRTCICECandidate(ice_candidate_init.candidate(),
                               ice_candidate_init.sdpMid(), sdp_m_line_index);
   }
@@ -432,12 +433,13 @@ RTCPeerConnection* RTCPeerConnection::Create(
     const RTCConfiguration& rtc_configuration,
     const Dictionary& media_constraints,
     ExceptionState& exception_state) {
-  if (media_constraints.IsObject())
+  if (media_constraints.IsObject()) {
     UseCounter::Count(context,
                       UseCounter::kRTCPeerConnectionConstructorConstraints);
-  else
+  } else {
     UseCounter::Count(context,
                       UseCounter::kRTCPeerConnectionConstructorCompliant);
+  }
 
   WebRTCConfiguration configuration =
       ParseConfiguration(context, rtc_configuration, exception_state);
@@ -589,12 +591,13 @@ ScriptPromise RTCPeerConnection::createOffer(
 
   if (offer_options) {
     if (offer_options->OfferToReceiveAudio() != -1 ||
-        offer_options->OfferToReceiveVideo() != -1)
+        offer_options->OfferToReceiveVideo() != -1) {
       UseCounter::Count(
           context, UseCounter::kRTCPeerConnectionCreateOfferLegacyOfferOptions);
-    else
+    } else {
       UseCounter::Count(
           context, UseCounter::kRTCPeerConnectionCreateOfferLegacyCompliant);
+    }
 
     peer_handler_->CreateOffer(request, WebRTCOfferOptions(offer_options));
   } else {
@@ -611,12 +614,13 @@ ScriptPromise RTCPeerConnection::createOffer(
       return ScriptPromise::CastUndefined(script_state);
     }
 
-    if (!constraints.IsEmpty())
+    if (!constraints.IsEmpty()) {
       UseCounter::Count(
           context, UseCounter::kRTCPeerConnectionCreateOfferLegacyConstraints);
-    else
+    } else {
       UseCounter::Count(
           context, UseCounter::kRTCPeerConnectionCreateOfferLegacyCompliant);
+    }
 
     peer_handler_->CreateOffer(request, constraints);
   }
@@ -649,12 +653,13 @@ ScriptPromise RTCPeerConnection::createAnswer(
   ExecutionContext* context = ExecutionContext::From(script_state);
   UseCounter::Count(
       context, UseCounter::kRTCPeerConnectionCreateAnswerLegacyFailureCallback);
-  if (media_constraints.IsObject())
+  if (media_constraints.IsObject()) {
     UseCounter::Count(
         context, UseCounter::kRTCPeerConnectionCreateAnswerLegacyConstraints);
-  else
+  } else {
     UseCounter::Count(
         context, UseCounter::kRTCPeerConnectionCreateAnswerLegacyCompliant);
+  }
 
   if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
     return ScriptPromise::CastUndefined(script_state);

@@ -306,9 +306,10 @@ Node::InsertionNotificationRequest SVGSMILElement::InsertedInto(
     return kInsertionDone;
 
   UseCounter::Count(GetDocument(), UseCounter::kSVGSMILElementInDocument);
-  if (GetDocument().IsLoadCompleted())
+  if (GetDocument().IsLoadCompleted()) {
     UseCounter::Count(&GetDocument(),
                       UseCounter::kSVGSMILElementInsertedAfterLoad);
+  }
 
   SVGSVGElement* owner = ownerSVGElement();
   if (!owner)

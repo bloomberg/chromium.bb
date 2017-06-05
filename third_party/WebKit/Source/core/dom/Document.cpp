@@ -6300,9 +6300,10 @@ Touch* Document::createTouch(DOMWindow* window,
   if (!std::isfinite(force))
     force = 0;
 
-  if (radius_x || radius_y || rotation_angle || force)
+  if (radius_x || radius_y || rotation_angle || force) {
     UseCounter::Count(*this,
                       UseCounter::kDocumentCreateTouchMoreThanSevenArguments);
+  }
 
   // FIXME: It's not clear from the documentation at
   // http://developer.apple.com/library/safari/#documentation/UserExperience/Reference/DocumentAdditionsReference/DocumentAdditions/DocumentAdditions.html

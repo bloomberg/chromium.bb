@@ -318,11 +318,12 @@ bool MediaStream::AddEventListenerInternal(
     const AtomicString& event_type,
     EventListener* listener,
     const AddEventListenerOptionsResolved& options) {
-  if (event_type == EventTypeNames::active)
+  if (event_type == EventTypeNames::active) {
     UseCounter::Count(GetExecutionContext(), UseCounter::kMediaStreamOnActive);
-  else if (event_type == EventTypeNames::inactive)
+  } else if (event_type == EventTypeNames::inactive) {
     UseCounter::Count(GetExecutionContext(),
                       UseCounter::kMediaStreamOnInactive);
+  }
 
   return EventTargetWithInlineData::AddEventListenerInternal(event_type,
                                                              listener, options);

@@ -652,9 +652,10 @@ bool EventTarget::FireEventListeners(Event* event,
   if (CheckTypeThenUseCount(event, EventTypeNames::beforeunload,
                             UseCounter::kDocumentBeforeUnloadFired)) {
     if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
-      if (executing_window != executing_window->top())
+      if (executing_window != executing_window->top()) {
         UseCounter::Count(executing_window->document(),
                           UseCounter::kSubFrameBeforeUnloadFired);
+      }
     }
   } else if (CheckTypeThenUseCount(event, EventTypeNames::unload,
                                    UseCounter::kDocumentUnloadFired)) {
@@ -676,9 +677,10 @@ bool EventTarget::FireEventListeners(Event* event,
                                    UseCounter::kPointerDownFired)) {
     if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
       if (event->IsPointerEvent() &&
-          static_cast<PointerEvent*>(event)->pointerType() == "touch")
+          static_cast<PointerEvent*>(event)->pointerType() == "touch") {
         UseCounter::Count(executing_window->document(),
                           UseCounter::kPointerDownFiredForTouch);
+      }
     }
   } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerenter,
                                    UseCounter::kPointerEnterLeaveFired)) {

@@ -269,14 +269,15 @@ LayoutDeprecatedFlexibleBox::LayoutDeprecatedFlexibleBox(Element& element)
   stretching_children_ = false;
   if (!IsAnonymous()) {
     const KURL& url = GetDocument().Url();
-    if (url.ProtocolIs("chrome"))
+    if (url.ProtocolIs("chrome")) {
       UseCounter::Count(GetDocument(), UseCounter::kDeprecatedFlexboxChrome);
-    else if (url.ProtocolIs("chrome-extension"))
+    } else if (url.ProtocolIs("chrome-extension")) {
       UseCounter::Count(GetDocument(),
                         UseCounter::kDeprecatedFlexboxChromeExtension);
-    else
+    } else {
       UseCounter::Count(GetDocument(),
                         UseCounter::kDeprecatedFlexboxWebContent);
+    }
   }
 }
 
