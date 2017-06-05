@@ -55,7 +55,10 @@
 
 - (void)launchRemotingViewController {
   RemotingViewController* vc = [[RemotingViewController alloc] init];
-  self.window.rootViewController = vc;
+  UINavigationController* navController =
+      [[UINavigationController alloc] initWithRootViewController:vc];
+  navController.navigationBarHidden = true;
+  self.window.rootViewController = navController;
   [self.window makeKeyAndVisible];
 }
 

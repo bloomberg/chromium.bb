@@ -300,15 +300,12 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       [[HostViewController alloc] initWithClient:_client];
   _client = nil;
 
-  __weak UIViewController* parentController = self.presentingViewController;
-
-  [self dismissViewControllerAnimated:NO
-                           completion:^{
-                             [parentController
-                                 presentViewController:hostViewController
-                                              animated:NO
-                                            completion:nil];
-                           }];
+  // Replaces current (topmost) view controller with |hostViewController|.
+  NSMutableArray* controllers =
+      [self.navigationController.viewControllers mutableCopy];
+  [controllers removeLastObject];
+  [controllers addObject:hostViewController];
+  [self.navigationController setViewControllers:controllers animated:NO];
 }
 
 - (void)didProvidePin:(NSString*)pin createPairing:(BOOL)createPairing {
@@ -323,7 +320,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)didTapCancel:(id)sender {
   _client = nil;
-  [self dismissViewControllerAnimated:YES completion:nil];
+  [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)hostSessionStatusChanged:(NSNotification*)notification {
