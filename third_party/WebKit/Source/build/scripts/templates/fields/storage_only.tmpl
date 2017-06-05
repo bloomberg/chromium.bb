@@ -7,7 +7,9 @@
 
 {% macro decl_protected_methods(field) -%}
 {{base.decl_internal_getter_method(field)}}
+{% if not field.wrapper_pointer_name %}
 {{base.decl_internal_setter_method(field)}}
+{% endif %}
 {% if not field.is_bit_field -%}
 void {{field.internal_setter_method_name}}({{field.type_name}}&& v) {
 {% if field.group_member_name %}
