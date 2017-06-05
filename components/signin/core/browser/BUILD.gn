@@ -6,6 +6,17 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+# Split into its own target to allow the Identity Service to depend on it in
+# typemaps without introducing a dependency on all of
+# //components/signin/core/browser, which is undesirable. In the long term
+# this file will move to be part of the Identity Service client library.
+static_library("account_info") {
+  sources = [
+    "account_info.cc",
+    "account_info.h",
+  ]
+}
+
 static_library("browser") {
   sources = [
     "about_signin_internals.cc",
@@ -14,8 +25,6 @@ static_library("browser") {
     "access_token_fetcher.h",
     "account_fetcher_service.cc",
     "account_fetcher_service.h",
-    "account_info.cc",
-    "account_info.h",
     "account_info_fetcher.cc",
     "account_info_fetcher.h",
     "account_investigator.cc",
@@ -79,6 +88,7 @@ static_library("browser") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   public_deps = [
+    ":account_info",
     "//components/signin/core/account_id",
     "//components/signin/core/common",
   ]
