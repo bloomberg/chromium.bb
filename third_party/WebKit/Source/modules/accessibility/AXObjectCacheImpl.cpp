@@ -350,6 +350,9 @@ AXObjectImpl* AXObjectCacheImpl::GetOrCreate(Node* node) {
   if (!node)
     return 0;
 
+  if (!node->IsElementNode() && !node->IsTextNode() && !node->IsDocumentNode())
+    return 0;  // Only documents, elements and text nodes get a11y objects
+
   if (AXObjectImpl* obj = Get(node))
     return obj;
 

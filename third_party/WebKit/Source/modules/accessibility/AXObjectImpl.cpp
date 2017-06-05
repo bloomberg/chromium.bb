@@ -821,11 +821,7 @@ bool AXObjectImpl::IsPresentationalChild() const {
 }
 
 bool AXObjectImpl::CanReceiveAccessibilityFocus() const {
-  const Node* node = this->GetNode();
-  if (!node)
-    return false;
-
-  const Element* elem = ToElement(node);
+  const Element* elem = GetElement();
   if (!elem)
     return false;
 
