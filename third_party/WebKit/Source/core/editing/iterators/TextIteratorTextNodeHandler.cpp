@@ -450,9 +450,10 @@ void TextIteratorTextNodeHandler::EmitText(Node* text_node,
                                            LayoutText* layout_object,
                                            int text_start_offset,
                                            int text_end_offset) {
-  const String& string = behavior_.EmitsOriginalText()
-                             ? layout_object->OriginalText()
-                             : layout_object->GetText();
+  String string = behavior_.EmitsOriginalText() ? layout_object->OriginalText()
+                                                : layout_object->GetText();
+  if (behavior_.EmitsSpaceForNbsp())
+    string.Replace(kNoBreakSpaceCharacter, kSpaceCharacter);
   text_state_->EmitText(text_node,
                         text_start_offset + layout_object->TextStartOffset(),
                         text_end_offset + layout_object->TextStartOffset(),

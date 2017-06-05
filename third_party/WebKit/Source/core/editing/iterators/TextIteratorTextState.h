@@ -30,17 +30,14 @@
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
 #include "core/editing/iterators/ForwardsTextBuffer.h"
-#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-class TextIteratorBehavior;
-
 class CORE_EXPORT TextIteratorTextState
     : public GarbageCollectedFinalized<TextIteratorTextState> {
  public:
-  explicit TextIteratorTextState(const TextIteratorBehavior&);
+  TextIteratorTextState() {}
   ~TextIteratorTextState() {}
 
   // Return properties of the current text.
@@ -106,8 +103,6 @@ class CORE_EXPORT TextIteratorTextState
   // any other content
   bool has_emitted_ = false;
   UChar last_character_ = 0;
-
-  const TextIteratorBehavior behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(TextIteratorTextState);
 };

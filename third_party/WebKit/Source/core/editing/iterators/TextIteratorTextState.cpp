@@ -27,14 +27,9 @@
 
 #include "core/editing/iterators/TextIteratorTextState.h"
 
-#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
-
-TextIteratorTextState::TextIteratorTextState(
-    const TextIteratorBehavior& behavior)
-    : behavior_(behavior) {}
 
 DEFINE_TRACE(TextIteratorTextState) {
   visitor->Trace(position_node_);
@@ -149,11 +144,6 @@ void TextIteratorTextState::EmitText(Node* text_node,
                                      int text_end_offset) {
   DCHECK(text_node);
   text_ = string;
-
-  // TODO(xiaochengh): Hoist the conversion to TextIteratorTextNodeHandler, so
-  // that we can remove |behavior_| from TextIteratorTextState.
-  if (behavior_.EmitsSpaceForNbsp())
-    text_.Replace(kNoBreakSpaceCharacter, kSpaceCharacter);
 
   DCHECK(!text_.IsEmpty());
   DCHECK_LE(0, text_start_offset);

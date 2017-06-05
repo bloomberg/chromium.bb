@@ -187,7 +187,7 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
       shadow_depth_(
           ShadowDepthOf<Strategy>(*start_container_, *end_container_)),
       behavior_(AdjustBehaviorFlags<Strategy>(behavior)),
-      text_state_(new TextIteratorTextState(behavior_)),
+      text_state_(new TextIteratorTextState()),
       text_node_handler_(
           new TextIteratorTextNodeHandler(behavior_, text_state_)) {
   DCHECK(start_container_);
