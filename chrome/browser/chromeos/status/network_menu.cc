@@ -471,7 +471,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     }
   } else {
     int initializing_message_id =
-        ash::network_icon::GetCellularUninitializedMsg();
+        ash::network_icon::GetMobileUninitializedMsg();
     if (initializing_message_id) {
       // Initializing cellular modem...
       AddMessageItem(l10n_util::GetStringUTF16(initializing_message_id));

@@ -878,13 +878,15 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
   }
 }
 
-int GetCellularUninitializedMsg() {
+int GetMobileUninitializedMsg() {
   static base::Time s_uninitialized_state_time;
   static int s_uninitialized_msg(0);
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   if (handler->GetTechnologyState(NetworkTypePattern::Mobile()) ==
       NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
+    // TODO (lesliewatkins): Add a more descriptive message (e.g. "Enable
+    // Bluetooth") for Tether technology type.
     s_uninitialized_msg = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
     s_uninitialized_state_time = base::Time::Now();
     return s_uninitialized_msg;
@@ -894,7 +896,7 @@ int GetCellularUninitializedMsg() {
     return s_uninitialized_msg;
   }
   // There can be a delay between leaving the Initializing state and when
-  // a Cellular device shows up, so keep showing the initializing
+  // a Mobile device shows up, so keep showing the initializing
   // animation for a bit to avoid flashing the disconnect icon.
   const int kInitializingDelaySeconds = 1;
   base::TimeDelta dtime = base::Time::Now() - s_uninitialized_state_time;
@@ -950,8 +952,8 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
     }
   }
   if (!network) {
-    // If no connecting network, check for cellular initializing.
-    int uninitialized_msg = GetCellularUninitializedMsg();
+    // If no connecting network, check for mobile initializing.
+    int uninitialized_msg = GetMobileUninitializedMsg();
     if (uninitialized_msg != 0) {
       *image = GetConnectingImage(icon_type, shill::kTypeCellular);
       if (label)

@@ -523,7 +523,7 @@ NetworkListView::UpdateNetworkListEntries() {
   }
 
   // Cellular initializing.
-  int cellular_message_id = network_icon::GetCellularUninitializedMsg();
+  int cellular_message_id = network_icon::GetMobileUninitializedMsg();
   if (!cellular_message_id &&
       handler->IsTechnologyEnabled(NetworkTypePattern::Mobile()) &&
       !handler->FirstNetworkByType(NetworkTypePattern::Mobile())) {
