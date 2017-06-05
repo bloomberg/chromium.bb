@@ -460,7 +460,8 @@ class DataSeries0Test(CIDBIntegrationTest):
                                         'change_source': 'external',
                                         'patch_number': 1L,
                                         'reason': '',
-                                        'buildbucket_id': None})
+                                        'buildbucket_id': None,
+                                        'status': 'pass'})
 
   def _start_and_finish_time_checks(self, db):
     """Sanity checks that correct data was recorded, and can be retrieved."""

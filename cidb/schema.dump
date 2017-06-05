@@ -159,7 +159,7 @@ CREATE TABLE `clActionTable` (
   `change_number` int(11) NOT NULL,
   `patch_number` int(11) NOT NULL,
   `change_source` enum('internal','external') NOT NULL,
-  `action` enum('picked_up','submitted','kicked_out','submit_failed','verified','pre_cq_inflight','pre_cq_passed','pre_cq_failed','pre_cq_launching','pre_cq_waiting','pre_cq_ready_to_submit','requeued','screened_for_pre_cq','validation_pending_pre_cq','irrelevant_to_slave','trybot_launching','speculative','forgiven','pre_cq_fully_verified','pre_cq_reset','trybot_cancelled') NOT NULL,
+  `action` enum('picked_up','submitted','kicked_out','submit_failed','verified','pre_cq_inflight','pre_cq_passed','pre_cq_failed','pre_cq_launching','pre_cq_waiting','pre_cq_ready_to_submit','requeued','screened_for_pre_cq','validation_pending_pre_cq','irrelevant_to_slave','trybot_launching','speculative','forgiven','pre_cq_fully_verified','pre_cq_reset','trybot_cancelled','relevant_to_slave') NOT NULL,
   `reason` varchar(80) DEFAULT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `buildbucket_id` varchar(80) DEFAULT NULL,
