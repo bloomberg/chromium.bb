@@ -38,6 +38,7 @@ class BrowserContext;
 class BrowserMessageFilter;
 class RenderProcessHostObserver;
 class RenderWidgetHost;
+class RendererAudioOutputStreamFactoryContext;
 class StoragePartition;
 struct GlobalRequestID;
 
@@ -117,6 +118,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void WidgetRestored() = 0;
   virtual void WidgetHidden() = 0;
   virtual int VisibleWidgetCount() const = 0;
+
+  virtual RendererAudioOutputStreamFactoryContext*
+  GetRendererAudioOutputStreamFactoryContext() = 0;
 
   // Called when an audio stream is added or removed and used to determine if
   // the process should be backgrounded or not.

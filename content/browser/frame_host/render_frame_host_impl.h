@@ -905,6 +905,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DeleteWebBluetoothService(
       WebBluetoothServiceImpl* web_bluetooth_service);
 
+  void CreateAudioOutputStreamFactory(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::RendererAudioOutputStreamFactoryRequest request);
+
   void BindMediaInterfaceFactoryRequest(
       const service_manager::BindSourceInfo& source_info,
       media::mojom::InterfaceFactoryRequest request);
@@ -1189,6 +1193,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Callback for responding when
   // |FrameHostMsg_TextSurroundingSelectionResponse| message comes.
   TextSurroundingSelectionCallback text_surrounding_selection_callback_;
+
+  UniqueAudioOutputStreamFactoryPtr audio_output_stream_factory_;
 
   // Hosts media::mojom::InterfaceFactory for the RenderFrame and forwards
   // media::mojom::InterfaceFactory calls to the remote "media" service.

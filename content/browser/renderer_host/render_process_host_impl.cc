@@ -1329,18 +1329,21 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       BrowserMainLoop::GetInstance()->audio_manager();
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
-  // The AudioInputRendererHost and AudioRendererHost needs to be available for
+  // The AudioInputRendererHost needs to be available for
   // lookup, so it's stashed in a member variable.
   audio_input_renderer_host_ = new AudioInputRendererHost(
       GetID(), audio_manager, media_stream_manager,
       AudioMirroringManager::GetInstance(),
       BrowserMainLoop::GetInstance()->user_input_monitor());
   AddFilter(audio_input_renderer_host_.get());
-  audio_renderer_host_ = new AudioRendererHost(
-      GetID(), audio_manager, BrowserMainLoop::GetInstance()->audio_system(),
-      AudioMirroringManager::GetInstance(), media_stream_manager,
-      browser_context->GetMediaDeviceIDSalt());
-  AddFilter(audio_renderer_host_.get());
+  if (!RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories()) {
+    AddFilter(base::MakeRefCounted<AudioRendererHost>(
+                  GetID(), audio_manager,
+                  BrowserMainLoop::GetInstance()->audio_system(),
+                  AudioMirroringManager::GetInstance(), media_stream_manager,
+                  browser_context->GetMediaDeviceIDSalt())
+                  .get());
+  }
   AddFilter(
       new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_service()));
   AddFilter(new AppCacheDispatcherHost(
@@ -1830,6 +1833,23 @@ void RenderProcessHostImpl::WidgetHidden() {
 
 int RenderProcessHostImpl::VisibleWidgetCount() const {
   return visible_widgets_;
+}
+
+RendererAudioOutputStreamFactoryContext*
+RenderProcessHostImpl::GetRendererAudioOutputStreamFactoryContext() {
+  if (!audio_output_stream_factory_context_) {
+    media::AudioManager* audio_manager =
+        BrowserMainLoop::GetInstance()->audio_manager();
+    MediaStreamManager* media_stream_manager =
+        BrowserMainLoop::GetInstance()->media_stream_manager();
+    media::AudioSystem* audio_system =
+        BrowserMainLoop::GetInstance()->audio_system();
+    std::string salt = GetBrowserContext()->GetMediaDeviceIDSalt();
+    audio_output_stream_factory_context_.reset(
+        new RendererAudioOutputStreamFactoryContextImpl(
+            GetID(), audio_system, audio_manager, media_stream_manager, salt));
+  }
+  return audio_output_stream_factory_context_.get();
 }
 
 void RenderProcessHostImpl::OnAudioStreamAdded() {
@@ -3398,11 +3418,6 @@ void RenderProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   RendererClosedDetails details{base::TERMINATION_STATUS_LAUNCH_FAILED,
                                 error_code};
   ProcessDied(true, &details);
-}
-
-scoped_refptr<AudioRendererHost> RenderProcessHostImpl::audio_renderer_host()
-    const {
-  return audio_renderer_host_;
 }
 
 void RenderProcessHostImpl::OnUserMetricsRecordAction(
