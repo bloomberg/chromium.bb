@@ -1180,10 +1180,12 @@ AffineTransform HTMLCanvasElement::BaseTransform() const {
 }
 
 void HTMLCanvasElement::PageVisibilityChanged() {
+  bool hidden = !GetPage()->IsPageVisible();
+  SetSuspendOffscreenCanvasAnimation(hidden);
+
   if (!context_)
     return;
 
-  bool hidden = !GetPage()->IsPageVisible();
   context_->SetIsHidden(hidden);
   if (hidden) {
     ClearCopiedImage();

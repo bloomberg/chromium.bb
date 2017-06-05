@@ -62,7 +62,8 @@ CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
       observer_(observer),
       binding_(this),
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
-      parent_frame_sink_id_(layer_tree_view->GetFrameSinkId()) {
+      parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
+                                            : cc::FrameSinkId()) {
   ref_factory_ =
       new OffscreenCanvasSurfaceReferenceFactory(weak_factory_.GetWeakPtr());
 

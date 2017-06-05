@@ -30,6 +30,14 @@ void releaseFrameToDispatcher(
   }
 }
 
+void SetSuspendAnimation(
+    WeakPtr<blink::OffscreenCanvasFrameDispatcher> dispatcher,
+    bool suspend) {
+  if (dispatcher) {
+    dispatcher->SetSuspendAnimation(suspend);
+  }
+}
+
 }  // unnamed namespace
 
 namespace blink {
@@ -73,6 +81,16 @@ void OffscreenCanvasPlaceholder::SetPlaceholderFrame(
   frame_dispatcher_ = std::move(dispatcher);
   frame_dispatcher_task_runner_ = std::move(task_runner);
   placeholder_frame_resource_id_ = resource_id;
+
+  if (animation_state_ == kShouldSuspendAnimation) {
+    bool success = PostSetSuspendAnimationToOffscreenCanvasThread(true);
+    DCHECK(success);
+    animation_state_ = kSuspendedAnimation;
+  } else if (animation_state_ == kShouldActivateAnimation) {
+    bool success = PostSetSuspendAnimationToOffscreenCanvasThread(false);
+    DCHECK(success);
+    animation_state_ = kActiveAnimation;
+  }
 }
 
 void OffscreenCanvasPlaceholder::ReleasePlaceholderFrame() {
@@ -85,6 +103,52 @@ void OffscreenCanvasPlaceholder::ReleasePlaceholderFrame() {
                         std::move(placeholder_frame_),
                         placeholder_frame_resource_id_));
   }
+}
+
+void OffscreenCanvasPlaceholder::SetSuspendOffscreenCanvasAnimation(
+    bool suspend) {
+  switch (animation_state_) {
+    case kActiveAnimation:
+      if (suspend) {
+        if (PostSetSuspendAnimationToOffscreenCanvasThread(suspend)) {
+          animation_state_ = kSuspendedAnimation;
+        } else {
+          animation_state_ = kShouldSuspendAnimation;
+        }
+      }
+      break;
+    case kSuspendedAnimation:
+      if (!suspend) {
+        if (PostSetSuspendAnimationToOffscreenCanvasThread(suspend)) {
+          animation_state_ = kActiveAnimation;
+        } else {
+          animation_state_ = kShouldActivateAnimation;
+        }
+      }
+      break;
+    case kShouldSuspendAnimation:
+      if (!suspend) {
+        animation_state_ = kActiveAnimation;
+      }
+      break;
+    case kShouldActivateAnimation:
+      if (suspend) {
+        animation_state_ = kSuspendedAnimation;
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+bool OffscreenCanvasPlaceholder::PostSetSuspendAnimationToOffscreenCanvasThread(
+    bool suspend) {
+  if (!frame_dispatcher_task_runner_)
+    return false;
+  frame_dispatcher_task_runner_->PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(SetSuspendAnimation, frame_dispatcher_, suspend));
+  return true;
 }
 
 }  // blink
