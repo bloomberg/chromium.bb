@@ -1855,9 +1855,9 @@ crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
 crbug.com/548765 virtual/mojo-loading/http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
 
-crbug.com/564109 [ Win7 ]  external/wpt/css-font-display/font-display.html [ Pass Failure ]
-crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display-intervention.html [ Pass Failure ]
-crbug.com/564109 [ Win7 ]  virtual/mojo-loading/http/tests/webfont/font-display-intervention.html [ Pass Failure ]
+crbug.com/564109 [ Win ]  external/wpt/css-font-display/font-display.html [ Pass Failure Timeout ]
+crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
+crbug.com/564109 [ Win ]  virtual/mojo-loading/http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 crbug.com/399951 virtual/mojo-loading/http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
