@@ -132,9 +132,7 @@ class TrayAccessibilityTest
     return tray()->CreateDefaultView(GetLoginStatus());
   }
 
-  void DestroyMenuItem() {
-    return tray()->DestroyDefaultView();
-  }
+  void DestroyMenuItem() { return tray()->OnDefaultViewDestroyed(); }
 
   bool CanCreateMenuItem() {
     views::View* menu_item_view = CreateMenuItem();
@@ -154,9 +152,9 @@ class TrayAccessibilityTest
   }
 
   void CloseDetailMenu() {
-    CHECK(tray()->detailed_menu_);
-    tray()->DestroyDetailedView();
-    tray()->detailed_menu_ = NULL;
+    ASSERT_TRUE(tray()->detailed_menu_);
+    tray()->OnDetailedViewDestroyed();
+    EXPECT_FALSE(tray()->detailed_menu_);
   }
 
   void ClickSpokenFeedbackOnDetailMenu() {

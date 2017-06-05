@@ -213,7 +213,7 @@ SystemTray::~SystemTray() {
   key_event_watcher_.reset();
   system_bubble_.reset();
   for (const auto& item : items_)
-    item->DestroyTrayView();
+    item->OnTrayViewDestroyed();
 }
 
 void SystemTray::InitializeTrayItems(

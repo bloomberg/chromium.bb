@@ -62,11 +62,11 @@ views::View* TraySystemInfo::CreateDefaultView(LoginStatus status) {
   return default_view_;
 }
 
-void TraySystemInfo::DestroyTrayView() {
+void TraySystemInfo::OnTrayViewDestroyed() {
   tray_view_ = nullptr;
 }
 
-void TraySystemInfo::DestroyDefaultView() {
+void TraySystemInfo::OnDefaultViewDestroyed() {
   default_view_ = nullptr;
 }
 

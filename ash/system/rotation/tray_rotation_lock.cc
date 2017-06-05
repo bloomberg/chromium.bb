@@ -202,10 +202,10 @@ void TrayRotationLock::OnMaximizeModeEnded() {
   StopObservingRotation();
 }
 
-void TrayRotationLock::DestroyTrayView() {
+void TrayRotationLock::OnTrayViewDestroyed() {
   StopObservingRotation();
   Shell::Get()->RemoveShellObserver(this);
-  TrayImageItem::DestroyTrayView();
+  TrayImageItem::OnTrayViewDestroyed();
 }
 
 bool TrayRotationLock::GetInitialVisibility() {

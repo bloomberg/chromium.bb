@@ -32,7 +32,7 @@ class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
 
   // SystemTrayItem:
   views::View* CreateDefaultView(LoginStatus status) override;
-  void DestroyDefaultView() override;
+  void OnDefaultViewDestroyed() override;
 
   // SessionLengthLimitObserver:
   void OnSessionStartTimeChanged() override;

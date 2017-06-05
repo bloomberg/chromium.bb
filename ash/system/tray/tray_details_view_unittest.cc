@@ -75,9 +75,9 @@ class TestItem : public SystemTrayItem {
     detailed_view_ = new TestDetailsView(this);
     return detailed_view_;
   }
-  void DestroyTrayView() override { tray_view_ = NULL; }
-  void DestroyDefaultView() override { default_view_ = NULL; }
-  void DestroyDetailedView() override { detailed_view_ = NULL; }
+  void OnTrayViewDestroyed() override { tray_view_ = NULL; }
+  void OnDefaultViewDestroyed() override { default_view_ = NULL; }
+  void OnDetailedViewDestroyed() override { detailed_view_ = NULL; }
 
   views::View* tray_view() const { return tray_view_; }
   views::View* default_view() const { return default_view_; }

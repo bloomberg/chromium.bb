@@ -75,11 +75,11 @@ views::View* TrayAudio::CreateDetailedView(LoginStatus status) {
   }
 }
 
-void TrayAudio::DestroyDefaultView() {
-  volume_view_ = NULL;
+void TrayAudio::OnDefaultViewDestroyed() {
+  volume_view_ = nullptr;
 }
 
-void TrayAudio::DestroyDetailedView() {
+void TrayAudio::OnDetailedViewDestroyed() {
   if (audio_detail_view_) {
     audio_detail_view_ = nullptr;
   } else if (volume_view_) {

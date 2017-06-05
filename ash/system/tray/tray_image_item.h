@@ -36,7 +36,7 @@ class ASH_EXPORT TrayImageItem : public SystemTrayItem {
 
   // Overridden from SystemTrayItem.
   views::View* CreateTrayView(LoginStatus status) override;
-  void DestroyTrayView() override;
+  void OnTrayViewDestroyed() override;
 
   // Sets the color of the icon to |color|.
   void SetIconColor(SkColor color);

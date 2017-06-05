@@ -61,7 +61,7 @@ views::View* TrayEnterprise::CreateDefaultView(LoginStatus status) {
   return tray_view_;
 }
 
-void TrayEnterprise::DestroyDefaultView() {
+void TrayEnterprise::OnDefaultViewDestroyed() {
   tray_view_ = nullptr;
 }
 

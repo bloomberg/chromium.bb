@@ -178,11 +178,11 @@ views::View* TrayVPN::CreateDetailedView(LoginStatus status) {
   return detailed_;
 }
 
-void TrayVPN::DestroyDefaultView() {
+void TrayVPN::OnDefaultViewDestroyed() {
   default_ = nullptr;
 }
 
-void TrayVPN::DestroyDetailedView() {
+void TrayVPN::OnDetailedViewDestroyed() {
   detailed_ = nullptr;
 }
 

@@ -44,11 +44,11 @@ views::View* TrayScale::CreateDetailedView(LoginStatus status) {
   return scale_detail_view_;
 }
 
-void TrayScale::DestroyDefaultView() {
+void TrayScale::OnDefaultViewDestroyed() {
   scale_view_ = nullptr;
 }
 
-void TrayScale::DestroyDetailedView() {
+void TrayScale::OnDetailedViewDestroyed() {
   scale_detail_view_ = nullptr;
 }
 
