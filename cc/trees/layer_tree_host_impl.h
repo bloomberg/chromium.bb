@@ -468,11 +468,6 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<BeginFrameCallbackList> ProcessLayerTreeMutations();
 
   std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
-
-  void set_max_memory_needed_bytes(size_t bytes) {
-    max_memory_needed_bytes_ = bytes;
-  }
-
   FrameRateCounter* fps_counter() { return fps_counter_.get(); }
   MemoryHistory* memory_history() { return memory_history_.get(); }
   DebugRectHistory* debug_rect_history() { return debug_rect_history_.get(); }
