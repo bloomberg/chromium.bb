@@ -633,7 +633,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnGetClientFinished(int request_id,
                            const ServiceWorkerClientInfo& client_info);
 
-  void OnGetClientsFinished(int request_id, ServiceWorkerClients* clients);
+  void OnGetClientsFinished(int request_id,
+                            std::unique_ptr<ServiceWorkerClients> clients);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
   // if it is excessively idle or unresponsive to ping.

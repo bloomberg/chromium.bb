@@ -1005,8 +1005,9 @@ void ServiceWorkerVersion::OnGetClients(
                  weak_factory_.GetWeakPtr(), request_id));
 }
 
-void ServiceWorkerVersion::OnGetClientsFinished(int request_id,
-                                                ServiceWorkerClients* clients) {
+void ServiceWorkerVersion::OnGetClientsFinished(
+    int request_id,
+    std::unique_ptr<ServiceWorkerClients> clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::OnGetClients",
                          request_id, "The number of clients", clients->size());

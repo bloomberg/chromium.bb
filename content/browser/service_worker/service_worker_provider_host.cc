@@ -167,6 +167,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerDispatcherHost* dispatcher_host)
     : client_uuid_(base::GenerateGUID()),
+      create_time_(base::TimeTicks::Now()),
       render_process_id_(render_process_id),
       render_thread_id_(kDocumentMainThreadId),
       info_(std::move(info)),
