@@ -27,7 +27,7 @@ class NullProxy : public DrmCursorProxy {
                  const gfx::Point& point,
                  int frame_delay_ms) override {}
   void Move(gfx::AcceleratedWidget window, const gfx::Point& point) override {}
-  void InitializeOnEvdev() override {}
+  void InitializeOnEvdevIfNecessary() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullProxy);
@@ -44,11 +44,11 @@ DrmCursor::DrmCursor(DrmWindowHostManager* window_manager)
 
 DrmCursor::~DrmCursor() {}
 
-void DrmCursor::SetDrmCursorProxy(DrmCursorProxy* proxy) {
+void DrmCursor::SetDrmCursorProxy(std::unique_ptr<DrmCursorProxy> proxy) {
   TRACE_EVENT0("drmcursor", "DrmCursor::SetDrmCursorProxy");
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
-  proxy_.reset(proxy);
+  proxy_ = std::move(proxy);
 }
 
 void DrmCursor::ResetDrmCursorProxy() {
@@ -216,7 +216,7 @@ gfx::Rect DrmCursor::GetCursorConfinedBounds() {
 
 void DrmCursor::InitializeOnEvdev() {
   DCHECK(evdev_thread_checker_.CalledOnValidThread());
-  proxy_->InitializeOnEvdev();
+  proxy_->InitializeOnEvdevIfNecessary();
 }
 
 void DrmCursor::SetCursorLocationLocked(const gfx::PointF& location) {
