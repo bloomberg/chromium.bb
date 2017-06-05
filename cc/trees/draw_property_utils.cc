@@ -238,7 +238,8 @@ static ConditionalClip ComputeAccumulatedClip(PropertyTrees* property_trees,
   while (target_node->clip_id < clip_node->id) {
     if (parent_chain.size() > 0) {
       // Search the cache.
-      for (auto& data : clip_node->cached_clip_rects) {
+      for (size_t i = 0; i < clip_node->cached_clip_rects->size(); ++i) {
+        auto& data = clip_node->cached_clip_rects[i];
         if (data.target_id == target_id) {
           cache_hit = true;
           cached_clip = data.clip;
@@ -769,7 +770,7 @@ static void ComputeClips(PropertyTrees* property_trees) {
        i < static_cast<int>(clip_tree->size()); ++i) {
     ClipNode* clip_node = clip_tree->Node(i);
     // Clear the clip rect cache
-    clip_node->cached_clip_rects = std::vector<ClipRectData>(1);
+    clip_node->cached_clip_rects->clear();
     if (clip_node->id == ClipTree::kViewportNodeId) {
       clip_node->cached_accumulated_rect_in_screen_space = clip_node->clip;
       continue;

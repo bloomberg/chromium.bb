@@ -2104,12 +2104,13 @@ DrawTransformData& PropertyTrees::FetchDrawTransformsDataFromCache(
 ClipRectData* PropertyTrees::FetchClipRectFromCache(int clip_id,
                                                     int target_id) {
   ClipNode* clip_node = clip_tree.Node(clip_id);
-  for (auto& data : clip_node->cached_clip_rects) {
+  for (size_t i = 0; i < clip_node->cached_clip_rects->size(); ++i) {
+    auto& data = clip_node->cached_clip_rects[i];
     if (data.target_id == target_id || data.target_id == -1)
       return &data;
   }
-  clip_node->cached_clip_rects.push_back(ClipRectData());
-  return &clip_node->cached_clip_rects.back();
+  clip_node->cached_clip_rects->emplace_back();
+  return &clip_node->cached_clip_rects->back();
 }
 
 DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
