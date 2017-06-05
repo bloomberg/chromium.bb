@@ -49,14 +49,6 @@
     </message>
   </if>
 
-  <!-- Extended reporting strings -->
-  <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_URL" translateable="false">
-    https://www.google.com/chrome/browser/privacy/#safe-browsing-policies
-  </message>
-  <message name="IDS_SAFE_BROWSING_WHITEPAPER_URL" translateable="false">
-    https://www.google.com/chrome/browser/privacy/whitepaper.html#extendedreport
-  </message>
-
   <!-- SSL error page -->
   <message name="IDS_SSL_V2_TITLE" desc="The tab title for the SSL interstitial.">
     Privacy error
