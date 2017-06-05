@@ -19694,18 +19694,25 @@ error::Error GLES2DecoderImpl::HandleInitializeDiscardableTextureCHROMIUM(
       *static_cast<
           const volatile gles2::cmds::InitializeDiscardableTextureCHROMIUM*>(
           cmd_data);
-  TextureRef* texture = texture_manager()->GetTexture(c.texture_id);
+  GLuint texture_id = c.texture_id;
+  uint32_t shm_id = c.shm_id;
+  uint32_t shm_offset = c.shm_offset;
+
+  TextureRef* texture = texture_manager()->GetTexture(texture_id);
   if (!texture) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
                        "glInitializeDiscardableTextureCHROMIUM",
                        "Invalid texture ID");
     return error::kNoError;
   }
+  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(shm_id);
+  if (!DiscardableHandleBase::ValidateParameters(buffer.get(), shm_offset))
+    return error::kInvalidArguments;
+
   size_t size = texture->texture()->estimated_size();
-  ServiceDiscardableHandle handle(GetSharedMemoryBuffer(c.shm_id), c.shm_offset,
-                                  c.shm_id);
+  ServiceDiscardableHandle handle(std::move(buffer), shm_offset, shm_id);
   GetContextGroup()->discardable_manager()->InsertLockedTexture(
-      c.texture_id, size, group_->texture_manager(), std::move(handle));
+      texture_id, size, group_->texture_manager(), std::move(handle));
   return error::kNoError;
 }
 
@@ -19716,11 +19723,12 @@ error::Error GLES2DecoderImpl::HandleUnlockDiscardableTextureCHROMIUM(
       *static_cast<
           const volatile gles2::cmds::UnlockDiscardableTextureCHROMIUM*>(
           cmd_data);
+  GLuint texture_id = c.texture_id;
   ServiceDiscardableManager* discardable_manager =
       GetContextGroup()->discardable_manager();
   TextureRef* texture_to_unbind;
-  if (!discardable_manager->UnlockTexture(
-          c.texture_id, group_->texture_manager(), &texture_to_unbind)) {
+  if (!discardable_manager->UnlockTexture(texture_id, group_->texture_manager(),
+                                          &texture_to_unbind)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUnlockDiscardableTextureCHROMIUM",
                        "Texture ID not initialized");
   }
@@ -19736,8 +19744,9 @@ error::Error GLES2DecoderImpl::HandleLockDiscardableTextureCHROMIUM(
   const volatile gles2::cmds::LockDiscardableTextureCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::LockDiscardableTextureCHROMIUM*>(
           cmd_data);
+  GLuint texture_id = c.texture_id;
   if (!GetContextGroup()->discardable_manager()->LockTexture(
-          c.texture_id, group_->texture_manager())) {
+          texture_id, group_->texture_manager())) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glLockDiscardableTextureCHROMIUM",
                        "Texture ID not initialized");
   }
