@@ -72,25 +72,30 @@ bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
   return start_pos != end_pos;
 }
 
-// TODO(rlanday): make this not take O(n^2) time when all the markers are
-// removed
 bool DocumentMarkerListEditor::ShiftMarkersContentDependent(
     MarkerList* list,
     unsigned offset,
     unsigned old_length,
     unsigned new_length) {
-  bool did_shift_marker = false;
-  for (MarkerList::iterator it = list->begin(); it != list->end(); ++it) {
-    DocumentMarker& marker = **it;
+  // Find first marker that ends after the start of the region being edited.
+  // Markers before this one can be left untouched. This saves us some time over
+  // scanning the entire list linearly if the edit region is near the end of the
+  // text node.
+  const MarkerList::iterator& shift_range_begin =
+      std::upper_bound(list->begin(), list->end(), offset,
+                       [](size_t offset, const Member<DocumentMarker>& marker) {
+                         return offset < marker->EndOffset();
+                       });
 
-    // marked text is neither changed nor shifted
-    if (marker.EndOffset() <= offset)
-      continue;
+  MarkerList::iterator erase_range_end = shift_range_begin;
+
+  bool did_shift_marker = false;
+  for (MarkerList::iterator it = shift_range_begin; it != list->end(); ++it) {
+    DocumentMarker& marker = **it;
 
     // marked text is (potentially) changed by edit, remove marker
     if (marker.StartOffset() < offset + old_length) {
-      list->erase(it - list->begin());
-      --it;
+      erase_range_end = std::next(it);
       did_shift_marker = true;
       continue;
     }
@@ -100,24 +105,41 @@ bool DocumentMarkerListEditor::ShiftMarkersContentDependent(
     did_shift_marker = true;
   }
 
+  // Note: shift_range_begin could point at a marker being shifted instead of
+  // deleted, but if this is the case, we don't need to delete any markers, and
+  // erase() will get 0 for the length param
+  list->erase(shift_range_begin - list->begin(),
+              erase_range_end - shift_range_begin);
   return did_shift_marker;
 }
 
-// TODO(rlanday): make this not take O(n^2) time when all the markers are
-// removed
 bool DocumentMarkerListEditor::ShiftMarkersContentIndependent(
     MarkerList* list,
     unsigned offset,
     unsigned old_length,
     unsigned new_length) {
+  // Find first marker that ends after the start of the region being edited.
+  // Markers before this one can be left untouched. This saves us some time over
+  // scanning the entire list linearly if the edit region is near the end of the
+  // text node.
+  const MarkerList::iterator& shift_range_begin =
+      std::upper_bound(list->begin(), list->end(), offset,
+                       [](size_t offset, const Member<DocumentMarker>& marker) {
+                         return offset < marker->EndOffset();
+                       });
+
+  MarkerList::iterator erase_range_begin = list->end();
+  MarkerList::iterator erase_range_end = list->end();
+
   bool did_shift_marker = false;
-  for (MarkerList::iterator it = list->begin(); it != list->end(); ++it) {
+  for (MarkerList::iterator it = shift_range_begin; it != list->end(); ++it) {
     DocumentMarker& marker = **it;
     Optional<DocumentMarker::MarkerOffsets> result =
         marker.ComputeOffsetsAfterShift(offset, old_length, new_length);
     if (result == WTF::nullopt) {
-      list->erase(it - list->begin());
-      --it;
+      if (erase_range_begin == list->end())
+        erase_range_begin = it;
+      erase_range_end = std::next(it);
       did_shift_marker = true;
       continue;
     }
@@ -130,6 +152,8 @@ bool DocumentMarkerListEditor::ShiftMarkersContentIndependent(
     }
   }
 
+  list->erase(erase_range_begin - list->begin(),
+              erase_range_end - erase_range_begin);
   return did_shift_marker;
 }
 
