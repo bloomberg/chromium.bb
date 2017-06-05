@@ -4,6 +4,7 @@
 
 #include "chromecast/graphics/cast_focus_client_aura.h"
 
+#include "base/stl_util.h"
 #include "ui/aura/window.h"
 
 #define LOG_WINDOW_INFO(top_level, window)                              \
@@ -124,9 +125,7 @@ void CastFocusClientAura::FocusWindow(aura::Window* window) {
     aura::Window* top_level = GetZOrderWindow(window);
     DCHECK(top_level);
     DLOG(INFO) << "Requesting focus for " << LOG_WINDOW_INFO(top_level, window);
-    auto iter =
-        std::find(focusable_windows_.begin(), focusable_windows_.end(), window);
-    if (iter == focusable_windows_.end()) {
+    if (!base::ContainsValue(focusable_windows_, window)) {
       // We're not yet tracking this focusable window, so start tracking it as a
       // potential focus target.
       window->AddObserver(this);

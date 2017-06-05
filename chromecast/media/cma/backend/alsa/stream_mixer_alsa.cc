@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/saturated_arithmetic.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1021,16 +1022,14 @@ void StreamMixerAlsa::AddLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
   RUN_ON_MIXER_THREAD(&StreamMixerAlsa::AddLoopbackAudioObserver, observer);
   DCHECK(observer);
-  DCHECK(std::find(loopback_observers_.begin(), loopback_observers_.end(),
-                   observer) == loopback_observers_.end());
+  DCHECK(!base::ContainsValue(loopback_observers_, observer));
   loopback_observers_.push_back(observer);
 }
 
 void StreamMixerAlsa::RemoveLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
   RUN_ON_MIXER_THREAD(&StreamMixerAlsa::RemoveLoopbackAudioObserver, observer);
-  DCHECK(std::find(loopback_observers_.begin(), loopback_observers_.end(),
-                   observer) != loopback_observers_.end());
+  DCHECK(base::ContainsValue(loopback_observers_, observer));
   loopback_observers_.erase(std::remove(loopback_observers_.begin(),
                                         loopback_observers_.end(), observer),
                             loopback_observers_.end());
