@@ -52,7 +52,7 @@
     <!-- Policy indicator. Only one dom-if below will be shown. -->
     <template is="dom-if"
         if="[[shouldShowNetworkPolicyIndicator_(networkProperties)]]">
-      <div class="list-frame">
+      <div class="settings-box">
         <div class="layout horizontal center">
           <cr-policy-network-indicator
               property="[[networkProperties.ProxySettings.Type]]"
@@ -64,7 +64,7 @@
     </template>
     <template is="dom-if"
         if="[[shouldShowExtensionIndicator_(networkProperties)]]">
-      <div class="list-frame">
+      <div class="settings-box">
         <extension-controlled-indicator
             extension-id="[[prefs.proxy.extensionId]]"
             extension-name="[[prefs.proxy.controlledByName]]"
@@ -74,7 +74,7 @@
     </template>
 
     <!-- Allow shared proxies -->
-    <div class="settings-box continuation indent"
+    <div class="settings-box continuation"
         hidden$="[[!shouldShowAllowShared_(
             networkProperties.ProxySettings.Type)]]">
       <settings-toggle-button id="allowShared" class="start"
@@ -86,7 +86,7 @@
     </div>
 
     <!-- Proxy type dropdown -->
-    <div class="settings-box continuation indent">
+    <div class="settings-box continuation">
       <div class="start">$i18n{networkProxyConnectionType}</div>
       <div class="md-select-wrapper">
         <select id="proxyType" class="md-select" on-change="onTypeChange_"
@@ -103,7 +103,7 @@
     </div>
 
     <!-- Autoconfiguration (PAC) -->
-    <div class="settings-box continuation indent"
+    <div class="settings-box continuation"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.PAC)]]">
       <div>$i18n{networkProxyAutoConfig}</div>
       <paper-input no-label-float class="middle" value="{{proxy_.PAC}}"
@@ -114,14 +114,14 @@
     </div>
 
     <!-- Web Proxy Auto Discovery (WPAD) -->
-    <div class="settings-box continuation indent"
+    <div class="settings-box continuation"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.WPAD)]]">
       <div>$i18n{networkSectionWpad}</div>
       <div class="middle">[[WPAD_]]</div>
     </div>
 
     <!-- Manual -->
-    <div class="settings-box continuation indent"
+    <div class="settings-box continuation"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.MANUAL)]]">
       <div id="networkProxyToggleLabel" class="flex">
         $i18n{networkProxyUseSame}
