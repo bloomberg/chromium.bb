@@ -71,20 +71,13 @@ void ChromeWebContentsViewDelegateViews::TakeFocus(bool reverse) {
 }
 
 void ChromeWebContentsViewDelegateViews::StoreFocus() {
-  last_focused_view_tracker_->RemoveAll();
-
-  if (!GetFocusManager())
-    return;
-  views::View* focused_view = GetFocusManager()->GetFocusedView();
-  if (focused_view)
-    last_focused_view_tracker_->Add(focused_view);
+  last_focused_view_tracker_->Clear();
+  if (GetFocusManager())
+    last_focused_view_tracker_->SetView(GetFocusManager()->GetFocusedView());
 }
 
 void ChromeWebContentsViewDelegateViews::RestoreFocus() {
-  views::View* last_focused_view = last_focused_view_tracker_->views().empty()
-                                       ? nullptr
-                                       : last_focused_view_tracker_->views()[0];
-
+  views::View* last_focused_view = last_focused_view_tracker_->view();
   if (!last_focused_view) {
     SetInitialFocus();
   } else {
@@ -99,7 +92,7 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
       // default focus.
       SetInitialFocus();
     }
-    last_focused_view_tracker_->Remove(last_focused_view);
+    last_focused_view_tracker_->Clear();
   }
 }
 

@@ -4,42 +4,31 @@
 
 #include "ui/views/view_tracker.h"
 
-#include "base/stl_util.h"
 #include "ui/views/view.h"
 
 namespace views {
 
-ViewTracker::ViewTracker() {}
+ViewTracker::ViewTracker(View* view) : view_(view) {
+  SetView(view);
+}
 
 ViewTracker::~ViewTracker() {
-  for (View* view : views_)
-    view->RemoveObserver(this);
+  SetView(nullptr);
 }
 
-void ViewTracker::Add(View* view) {
-  if (!view || base::ContainsValue(views_, view))
+void ViewTracker::SetView(View* view) {
+  if (view == view_)
     return;
 
-  view->AddObserver(this);
-  views_.push_back(view);
-}
-
-void ViewTracker::Remove(View* view) {
-  auto iter = std::find(views_.begin(), views_.end(), view);
-  if (iter != views_.end()) {
-    view->RemoveObserver(this);
-    views_.erase(iter);
-  }
-}
-
-void ViewTracker::RemoveAll() {
-  for (View* view : views_)
-    view->RemoveObserver(this);
-  views_.clear();
+  if (view_)
+    view_->RemoveObserver(this);
+  view_ = view;
+  if (view_)
+    view_->AddObserver(this);
 }
 
 void ViewTracker::OnViewIsDeleting(View* observed_view) {
-  Remove(observed_view);
+  SetView(nullptr);
 }
 
 }  // namespace views
