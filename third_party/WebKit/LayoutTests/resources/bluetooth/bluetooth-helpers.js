@@ -1,5 +1,11 @@
 'use strict';
 
+// HCI Error Codes. Used for simulateGATT[Dis]ConnectionResponse.
+// For a complete list of possible error codes see
+// BT 4.2 Vol 2 Part D 1.3 List Of Error Codes.
+const HCI_SUCCESS = 0x0000;
+const HCI_CONNECTION_TIMEOUT = 0x0008;
+
 // Bluetooth UUID constants:
 // Services:
 var blocklist_test_service_uuid = "611c954a-263b-4f4a-aab6-01ddb953f985";
@@ -416,6 +422,8 @@ function generateRequestDeviceArgsWithServices(services = ['heart_rate']) {
   }];
 }
 
+// Simulates a pre-connected device with |address|, |name| and
+// |knownServiceUUIDs|.
 function setUpPreconnectedDevice({
   address = '00:00:00:00:00:00', name = 'LE Device', knownServiceUUIDs = []}) {
   return navigator.bluetooth.test.simulateCentral({state: 'powered-on'})
@@ -426,6 +434,8 @@ function setUpPreconnectedDevice({
     }));
 }
 
+// Returns an array containing two FakePeripherals corresponding
+// to the simulated devices.
 function setUpHealthThermometerAndHeartRateDevices() {
   return navigator.bluetooth.test.simulateCentral({state: 'powered-on'})
    .then(fake_central => Promise.all([
@@ -439,4 +449,36 @@ function setUpHealthThermometerAndHeartRateDevices() {
        name: 'Heart Rate',
        knownServiceUUIDs: ['generic_access', 'heart_rate'],
      })]));
+}
+
+// Returns a BluetoothDevice discovered using |options| and its
+// corresponding FakePeripheral.
+// The simulated device is called 'Health Thermometer' it has two known service
+// UUIDs: 'generic_access' and 'health_thermometer'. The device has been
+// connected to and its services have been discovered.
+// TODO(crbug.com/719816): Add services, characteristics and descriptors,
+// and discover all the attributes.
+function getHealthThermometerDevice(options) {
+  return getDiscoveredHealthThermometerDevice(options)
+    .then(([device, fake_peripheral]) => {
+      return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
+        .then(() => device.gatt.connect())
+        .then(gatt => [gatt.device, fake_peripheral]);
+    });
+}
+
+// Similar to getHealthThermometerDevice() except the device
+// is not connected and thus its services have not been
+// discovered.
+function getDiscoveredHealthThermometerDevice(
+  options = {filters: [{services: ['health_thermometer']}]}) {
+  return setUpPreconnectedDevice({
+    address: '09:09:09:09:09:09',
+    name: 'Health Thermometer',
+    knownServiceUUIDs: ['generic_access', 'health_thermometer'],
+  })
+  .then(fake_peripheral => {
+    return requestDeviceWithKeyDown(options)
+      .then(device => [device, fake_peripheral]);
+  });
 }
