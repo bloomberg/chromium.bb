@@ -29,6 +29,7 @@ cr.define('login', function() {
   var CROS_PIN_POD_HEIGHT = 417;
   var SCROLL_MASK_HEIGHT = 112;
   var BANNER_MESSAGE_WIDTH = 520;
+  var CROS_POD_HEIGHT_WITH_PIN = 618;
 
   /**
    * The maximum number of users that each pod placement method can handle.
@@ -1285,6 +1286,10 @@ cr.define('login', function() {
       if (visible && !this.pinEnabled)
         return;
 
+      // Do not show pin keyboard if the pod is not in large style.
+      if (visible && this.getPodStyle() != UserPod.Style.LARGE)
+        return;
+
       var elements = this.getElementsByClassName('pin-tag');
       for (var i = 0; i < elements.length; ++i)
         this.updatePinClass_(elements[i], visible);
@@ -1296,6 +1301,10 @@ cr.define('login', function() {
       // Change the password placeholder based on pin keyboard visibility.
       this.passwordElement.placeholder = loadTimeData.getString(visible ?
           'pinKeyboardPlaceholderPinPassword' : 'passwordHint');
+
+      // Adjust the vertical position based on the pin keyboard visibility.
+      var podHeight = visible ? CROS_POD_HEIGHT_WITH_PIN : CROS_POD_HEIGHT;
+      this.top = ($('pod-row').screenSize.height - podHeight) / 2;
 
       chrome.send('setForceDisableVirtualKeyboard', [visible]);
     },
@@ -3479,12 +3488,7 @@ cr.define('login', function() {
         this.mainPod_ = this.preselectedPod;
         this.appendPodsToParents_();
       }
-      this.restoreInitialStates_();
-      this.hideEmptyArea_();
-      // Clear error bubbles whenever pod placement is happening, i.e., after
-      // orientation change, showing or hiding virtual keyboard, and user
-      // removal.
-      Oobe.clearErrors();
+      this.handleBeforePodPlacement_();
 
       if (this.isScreenShrinked_()) {
         // When virtual keyboard is shown, the account picker should occupy
@@ -3507,7 +3511,7 @@ cr.define('login', function() {
         this.placePodsOnContainer_();
       }
       Oobe.getInstance().updateScreenSize(this.parentNode);
-      this.updatePodNameArea_();
+      this.handleAfterPodPlacement_();
     },
 
     /**
@@ -3775,7 +3779,7 @@ cr.define('login', function() {
      * explicitly each time.
      * @private
      */
-    restoreInitialStates_: function() {
+    handleBeforePodPlacement_: function() {
       this.smallPodsContainer.hidden = true;
       document.querySelector('.small-pod-container-mask').hidden = true;
       document.querySelector('.small-pod-container-mask.rotate').hidden = true;
@@ -3791,6 +3795,11 @@ cr.define('login', function() {
         pod.imageElement.classList.remove('switch-image-animation');
         pod.smallPodImageElement.classList.remove('switch-image-animation');
       }
+      this.hideEmptyArea_();
+      // Clear error bubbles whenever pod placement is happening, i.e., after
+      // orientation change, showing or hiding virtual keyboard, and user
+      // removal.
+      Oobe.clearErrors();
     },
 
     /**
@@ -3834,18 +3843,17 @@ cr.define('login', function() {
     },
 
     /**
-     * Makes sure that:
-     * 1) User name on each large pod is centered.
-     * 2) Extra long names don't exceed maximum pod width.
-     * 3) Action box menus are either left-aligned or right-aligned with
-     * the drop down button.
+     * Called after pod placement and before showing the pod row. Updates
+     * elements whose style may depend on the pod placement outcome.
      * @private
      */
-    updatePodNameArea_: function() {
+    handleAfterPodPlacement_: function() {
       var pods = this.pods;
       for (var pod of pods) {
         if (pods.length > POD_ROW_LIMIT && pod != this.mainPod_)
           continue;
+        // Make sure that user name on each large pod is centered and extra
+        // long names don't exceed maximum pod width.
         var nameArea = pod.querySelector('.name-container');
         var leftMargin = (CROS_POD_WIDTH - pod.nameElement.offsetWidth) / 2;
         if (leftMargin > 0)
@@ -3877,6 +3885,25 @@ cr.define('login', function() {
         actionBoxRippleEffect.style.left = actionBoxMenu.style.left;
         actionBoxRippleEffect.style.top =
             cr.ui.toCssPx(actionBoxButton.style.marginTop);
+        // Adjust the vertical position of the pod if pin keyboard is shown.
+        if (pod.isPinShown() && !this.isScreenShrinked_())
+          pod.top = (this.screenSize.height - CROS_POD_HEIGHT_WITH_PIN) / 2;
+      }
+      // Update the position of the sign-in banner if it's shown.
+      if ($('signin-banner').textContent.length != 0) {
+        var bannerContainer = $('signin-banner-container1');
+        var BANNER_TOP_PADDING = this.isScreenShrinked_() ? 0 : 38;
+        bannerContainer.style.top = cr.ui.toCssPx(
+            this.mainPod_.top + CROS_POD_HEIGHT + BANNER_TOP_PADDING);
+        if (this.pods.length <= POD_ROW_LIMIT) {
+          bannerContainer.style.left =
+              cr.ui.toCssPx((this.screenSize.width - BANNER_MESSAGE_WIDTH) / 2);
+        }
+        else {
+          var leftPadding =
+              this.mainPod_.left - (BANNER_MESSAGE_WIDTH - CROS_POD_WIDTH) / 2;
+          bannerContainer.style.left = cr.ui.toCssPx(Math.max(leftPadding, 0));
+        }
       }
     },
 
@@ -3936,7 +3963,7 @@ cr.define('login', function() {
       // The new main pod should already be focused but we need a focus update
       // in order to focus on the input box.
       this.focusPod(this.mainPod_, true /* force */);
-      this.updatePodNameArea_();
+      this.handleAfterPodPlacement_();
     },
 
     /**
@@ -3951,24 +3978,14 @@ cr.define('login', function() {
     /**
      * Displays a banner containing |message|. If the banner is already present
      * this function updates the message in the banner.
+     * The positioning of the banner is handled by handleAfterPodPlacement_()
+     * becuase it dynamically depends on the pod positions.
      * @param {string} message Text to be displayed or empty to hide the banner.
      */
     showBannerMessage: function(message) {
       var banner = $('signin-banner');
       banner.textContent = message;
       banner.classList.toggle('message-set', !!message);
-      var bannerContainer = $('signin-banner-container1');
-      var BANNER_TOP_PADDING = this.isScreenShrinked_() ? 0 : 38;
-      bannerContainer.style.top = cr.ui.toCssPx(
-          this.mainPod_.top + CROS_POD_HEIGHT + BANNER_TOP_PADDING);
-      if (this.pods.length <= POD_ROW_LIMIT)
-        bannerContainer.style.left =
-            cr.ui.toCssPx((this.screenSize.width - BANNER_MESSAGE_WIDTH) / 2);
-      else {
-        var leftPadding =
-            this.mainPod_.left - (BANNER_MESSAGE_WIDTH - CROS_POD_WIDTH) / 2;
-        bannerContainer.style.left = cr.ui.toCssPx(Math.max(leftPadding, 0));
-      }
     },
 
     /**
@@ -4442,7 +4459,7 @@ cr.define('login', function() {
         this.maybePreselectPod();
       }
 
-      this.updatePodNameArea_();
+      this.handleAfterPodPlacement_();
     },
 
     /**

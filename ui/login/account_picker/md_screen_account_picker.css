@@ -46,9 +46,11 @@ html[dir=rtl] #signin-banner {
 }
 
 html[screen=user-adding] #signin-banner {
+  background-color: rgba(0, 0, 0, 0.34);
   display: inline-block;
 }
 
+html[screen=user-adding] #signin-banner,
 html[screen=login] #signin-banner {
   padding: 20px 24px;
 }
