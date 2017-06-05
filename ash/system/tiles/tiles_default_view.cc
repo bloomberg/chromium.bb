@@ -86,10 +86,12 @@ void TilesDefaultView::Init() {
   AddChildView(help_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
-  night_light_button_ = new NightLightToggleButton(this);
-  night_light_button_->SetEnabled(can_show_web_ui);
-  AddChildView(night_light_button_);
-  AddChildView(TrayPopupUtils::CreateVerticalSeparator());
+  if (NightLightController::IsFeatureEnabled()) {
+    night_light_button_ = new NightLightToggleButton(this);
+    night_light_button_->SetEnabled(can_show_web_ui);
+    AddChildView(night_light_button_);
+    AddChildView(TrayPopupUtils::CreateVerticalSeparator());
+  }
 
   lock_button_ =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
@@ -120,7 +122,8 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
   } else if (sender == help_button_) {
     ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_HELP);
     Shell::Get()->system_tray_controller()->ShowHelp();
-  } else if (sender == night_light_button_) {
+  } else if (NightLightController::IsFeatureEnabled() &&
+             sender == night_light_button_) {
     ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_NIGHT_LIGHT);
     Shell::Get()->night_light_controller()->Toggle();
     night_light_button_->Update();

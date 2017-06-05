@@ -1072,6 +1072,11 @@ const char kEnableNavigationTracingDescription[] =
     "flag. The trace may include personally identifiable information (PII) "
     "such as the titles and URLs of websites you visit.";
 
+const char kEnableNightLightName[] = "Enable Night Light";
+const char kEnableNightLightDescription[] =
+    "Enable the Night Light feature to control the color temperature of the "
+    "screen.";
+
 const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 
 const char kEnablePictureInPictureDescription[] =

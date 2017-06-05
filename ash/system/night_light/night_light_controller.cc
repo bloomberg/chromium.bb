@@ -4,9 +4,11 @@
 
 #include "ash/system/night_light/night_light_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -54,6 +56,12 @@ NightLightController::NightLightController(
 
 NightLightController::~NightLightController() {
   session_controller_->RemoveObserver(this);
+}
+
+// static
+bool NightLightController::IsFeatureEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshEnableNightLight);
 }
 
 // static

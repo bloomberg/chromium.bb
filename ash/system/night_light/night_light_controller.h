@@ -35,6 +35,9 @@ class ASH_EXPORT NightLightController : public SessionObserver {
   explicit NightLightController(SessionController* session_controller);
   ~NightLightController() override;
 
+  // Returns true if the NightLight feature is enabled in the flags.
+  static bool IsFeatureEnabled();
+
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   void AddObserver(Observer* observer);
