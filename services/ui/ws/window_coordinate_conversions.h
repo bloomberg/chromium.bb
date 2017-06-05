@@ -7,33 +7,18 @@
 
 namespace gfx {
 class Point;
-class PointF;
-class Rect;
 }
 
 namespace ui {
-
 namespace ws {
 
 class ServerWindow;
 
-// Converts |point| from the coordinates of |from| to the coordinates of |to|.
-// |from| and |to| must be an ancestors or descendants of each other.
-gfx::Point ConvertPointBetweenWindows(const ServerWindow* from,
-                                      const ServerWindow* to,
-                                      const gfx::Point& point);
-gfx::PointF ConvertPointFBetweenWindows(const ServerWindow* from,
-                                        const ServerWindow* to,
-                                        const gfx::PointF& point);
-
-// Converts |rect| from the coordinates of |from| to the coordinates of |to|.
-// |from| and |to| must be an ancestors or descendants of each other.
-gfx::Rect ConvertRectBetweenWindows(const ServerWindow* from,
-                                    const ServerWindow* to,
-                                    const gfx::Rect& rect);
+// Converts |point|, in the coordinates of the root, to that of |window|.
+gfx::Point ConvertPointFromRoot(const ServerWindow* window,
+                                const gfx::Point& point);
 
 }  // namespace ws
-
 }  // namespace ui
 
 #endif  // SERVICES_UI_WS_WINDOW_COORDINATE_CONVERSIONS_H_

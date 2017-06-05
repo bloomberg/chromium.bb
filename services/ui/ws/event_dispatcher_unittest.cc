@@ -1619,7 +1619,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventSubWindowSystemModal) {
     std::unique_ptr<DispatchedEventDetails> details =
         test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
     ASSERT_TRUE(details) << " details is nullptr " << i;
-    EXPECT_EQ(kTouchData[i].expected_target, details->window);
+    EXPECT_EQ(kTouchData[i].expected_target, details->window) << i;
 
     // Release touch.
     event_dispatcher()->ProcessEvent(
@@ -1880,6 +1880,36 @@ TEST_F(EventDispatcherTest, MousePointerClearedOnDestroy) {
   EXPECT_EQ(c1.get(), event_dispatcher()->mouse_cursor_source_window());
   c1.reset();
   EXPECT_EQ(nullptr, event_dispatcher()->mouse_cursor_source_window());
+}
+
+TEST_F(EventDispatcherTest, LocationHonorsTransform) {
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+
+  gfx::Transform transform;
+  transform.Scale(SkIntToMScalar(2), SkIntToMScalar(2));
+  child->SetTransform(transform);
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  // Send event that is over child.
+  const ui::PointerEvent ui_event(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  event_dispatcher()->ProcessEvent(ui_event, 0,
+                                   EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  std::unique_ptr<DispatchedEventDetails> details =
+      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+  ASSERT_TRUE(details);
+  ASSERT_EQ(child.get(), details->window);
+
+  ASSERT_TRUE(details->event);
+  ASSERT_TRUE(details->event->IsPointerEvent());
+
+  ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
+  EXPECT_EQ(gfx::Point(20, 25), dispatched_event->root_location());
+  EXPECT_EQ(gfx::Point(5, 7), dispatched_event->location());
 }
 
 }  // namespace test

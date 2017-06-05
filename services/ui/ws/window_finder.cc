@@ -7,7 +7,6 @@
 #include "base/containers/adapters.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
-#include "services/ui/ws/window_coordinate_conversions.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -35,30 +34,28 @@ bool IsLocationInNonclientArea(const ServerWindow* target,
   return true;
 }
 
-gfx::Point ConvertPointFromParentToChild(const ServerWindow* child,
-                                         const gfx::Point& location_in_parent) {
-  if (child->transform().IsIdentity()) {
-    return gfx::Point(location_in_parent.x() - child->bounds().x(),
-                      location_in_parent.y() - child->bounds().y());
-  }
-
-  gfx::Transform transform = child->transform();
+gfx::Transform TransformFromParent(const ServerWindow* window,
+                                   const gfx::Transform& current_transform) {
+  gfx::Transform transform = current_transform;
+  if (!window->transform().IsIdentity())
+    transform.ConcatTransform(window->transform());
   gfx::Transform translation;
-  translation.Translate(static_cast<float>(child->bounds().x()),
-                        static_cast<float>(child->bounds().y()));
+  translation.Translate(static_cast<float>(window->bounds().x()),
+                        static_cast<float>(window->bounds().y()));
   transform.ConcatTransform(translation);
-  gfx::Point3F location_in_child3(gfx::PointF{location_in_parent});
-  transform.TransformPointReverse(&location_in_child3);
-  return gfx::ToFlooredPoint(location_in_child3.AsPointF());
+  return transform;
 }
 
-bool FindDeepestVisibleWindowForEventsImpl(ServerWindow* window,
-                                           const gfx::Point& location,
-                                           DeepestWindow* deepest_window) {
+bool FindDeepestVisibleWindowForEventsImpl(
+    ServerWindow* window,
+    const gfx::Point& location_in_root,
+    const gfx::Point& location_in_window,
+    const gfx::Transform& transform_from_parent,
+    DeepestWindow* deepest_window) {
   // The non-client area takes precedence over descendants, as otherwise the
   // user would likely not be able to hit the non-client area as it's common
   // for descendants to go into the non-client area.
-  if (IsLocationInNonclientArea(window, location)) {
+  if (IsLocationInNonclientArea(window, location_in_window)) {
     deepest_window->window = window;
     deepest_window->in_non_client_area = true;
     return true;
@@ -77,8 +74,12 @@ bool FindDeepestVisibleWindowForEventsImpl(ServerWindow* window,
       if (!child->visible())
         continue;
 
-      gfx::Point location_in_child =
-          ConvertPointFromParentToChild(child, location);
+      const gfx::Transform child_transform =
+          TransformFromParent(child, transform_from_parent);
+      gfx::Point3F location_in_child3(gfx::PointF{location_in_root});
+      child_transform.TransformPointReverse(&location_in_child3);
+      const gfx::Point location_in_child =
+          gfx::ToFlooredPoint(location_in_child3.AsPointF());
       gfx::Rect child_bounds(child->bounds().size());
       child_bounds.Inset(-child->extended_hit_test_region().left(),
                          -child->extended_hit_test_region().top(),
@@ -90,8 +91,9 @@ bool FindDeepestVisibleWindowForEventsImpl(ServerWindow* window,
         continue;
       }
 
-      if (FindDeepestVisibleWindowForEventsImpl(child, location_in_child,
-                                                deepest_window)) {
+      if (FindDeepestVisibleWindowForEventsImpl(
+              child, location_in_root, location_in_child, child_transform,
+              deepest_window)) {
         return true;
       }
     }
@@ -110,18 +112,9 @@ bool FindDeepestVisibleWindowForEventsImpl(ServerWindow* window,
 DeepestWindow FindDeepestVisibleWindowForEvents(ServerWindow* root_window,
                                                 const gfx::Point& location) {
   DeepestWindow result;
-  FindDeepestVisibleWindowForEventsImpl(root_window, location, &result);
+  FindDeepestVisibleWindowForEventsImpl(root_window, location, location,
+                                        gfx::Transform(), &result);
   return result;
-}
-
-gfx::Transform GetTransformToWindow(ServerWindow* window) {
-  gfx::Transform transform;
-  ServerWindow* current = window;
-  while (current->parent()) {
-    transform.Translate(-current->bounds().x(), -current->bounds().y());
-    current = current->parent();
-  }
-  return transform;
 }
 
 }  // namespace ws
