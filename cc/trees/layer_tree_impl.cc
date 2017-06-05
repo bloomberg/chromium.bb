@@ -151,24 +151,6 @@ void LayerTreeImpl::RecreateTileResources() {
   }
 }
 
-bool LayerTreeImpl::IsViewportLayerId(int id) const {
-#if DCHECK_IS_ON()
-  // Ensure the LayerImpl viewport layer types correspond to the LayerTreeImpl's
-  // viewport layers.
-  if (id == viewport_layer_ids_.inner_viewport_container)
-    DCHECK(LayerById(id)->viewport_layer_type() == INNER_VIEWPORT_CONTAINER);
-  if (id == viewport_layer_ids_.outer_viewport_container)
-    DCHECK(LayerById(id)->viewport_layer_type() == OUTER_VIEWPORT_CONTAINER);
-  if (id == viewport_layer_ids_.inner_viewport_scroll)
-    DCHECK(LayerById(id)->viewport_layer_type() == INNER_VIEWPORT_SCROLL);
-  if (id == viewport_layer_ids_.outer_viewport_scroll)
-    DCHECK(LayerById(id)->viewport_layer_type() == OUTER_VIEWPORT_SCROLL);
-#endif
-  if (auto* layer = LayerById(id))
-    return layer->viewport_layer_type() != NOT_VIEWPORT_LAYER;
-  return false;
-}
-
 void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
   // Scrollbar positions depend on the current scroll offset.
   SetScrollbarGeometriesNeedUpdate();

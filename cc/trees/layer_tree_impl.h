@@ -542,7 +542,6 @@ class CC_EXPORT LayerTreeImpl {
                                     float max_page_scale_factor);
   bool SetPageScaleFactorLimits(float min_page_scale_factor,
                                 float max_page_scale_factor);
-  bool IsViewportLayerId(int id) const;
   void DidUpdatePageScale();
   void PushBrowserControls(const float* top_controls_shown_ratio);
   bool ClampBrowserControlsShownRatio();
