@@ -26,6 +26,7 @@ struct ServiceWorkerClientInfo {
                           const GURL& url,
                           RequestContextFrameType frame_type,
                           base::TimeTicks last_focus_time,
+                          base::TimeTicks create_time,
                           blink::WebServiceWorkerClientType client_type);
   ServiceWorkerClientInfo(const ServiceWorkerClientInfo& other);
 
@@ -42,6 +43,7 @@ struct ServiceWorkerClientInfo {
   GURL url;
   RequestContextFrameType frame_type;
   base::TimeTicks last_focus_time;
+  base::TimeTicks create_time;
   blink::WebServiceWorkerClientType client_type;
 };
 

@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
@@ -102,6 +103,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   ~ServiceWorkerProviderHost() override;
 
   const std::string& client_uuid() const { return client_uuid_; }
+  base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return render_process_id_; }
   int provider_id() const { return info_.provider_id; }
   int frame_id() const;
@@ -380,6 +382,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void UnregisterWorkerFetchContext(mojom::ServiceWorkerWorkerClient*);
 
   std::string client_uuid_;
+  base::TimeTicks create_time_;
   int render_process_id_;
 
   // For provider hosts that are hosting a running service worker, the id of the
