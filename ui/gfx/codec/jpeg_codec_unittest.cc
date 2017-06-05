@@ -88,44 +88,17 @@ static double AveragePixelDelta(const std::vector<unsigned char>& a,
   return acc / static_cast<double>(a.size());
 }
 
-static void MakeRGBImage(int w, int h, std::vector<unsigned char>* dat) {
-  dat->resize(w * h * 3);
+static void MakeRGBAImage(int w, int h, std::vector<unsigned char>* dat) {
+  dat->resize(w * h * 4);
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
-      unsigned char* org_px = &(*dat)[(y * w + x) * 3];
+      unsigned char* org_px = &(*dat)[(y * w + x) * 4];
       org_px[0] = x * 3;      // r
       org_px[1] = x * 3 + 1;  // g
       org_px[2] = x * 3 + 2;  // b
+      org_px[3] = 0xFF;       // a
     }
   }
-}
-
-TEST(JPEGCodec, EncodeDecodeRGB) {
-  int w = 20, h = 20;
-
-  // create an image with known values
-  std::vector<unsigned char> original;
-  MakeRGBImage(w, h, &original);
-
-  // encode, making sure it was compressed some
-  std::vector<unsigned char> encoded;
-  EXPECT_TRUE(JPEGCodec::Encode(&original[0], JPEGCodec::FORMAT_RGB, w, h,
-                                w * 3, jpeg_quality, &encoded));
-  EXPECT_GT(original.size(), encoded.size());
-
-  // decode, it should have the same size as the original
-  std::vector<unsigned char> decoded;
-  int outw, outh;
-  EXPECT_TRUE(JPEGCodec::Decode(&encoded[0], encoded.size(),
-                                JPEGCodec::FORMAT_RGB, &decoded,
-                                &outw, &outh));
-  ASSERT_EQ(w, outw);
-  ASSERT_EQ(h, outh);
-  ASSERT_EQ(original.size(), decoded.size());
-
-  // Images must be approximately equal (compression will have introduced some
-  // minor artifacts).
-  ASSERT_GE(jpeg_equality_threshold, AveragePixelDelta(original, decoded));
 }
 
 TEST(JPEGCodec, EncodeDecodeRGBA) {
@@ -134,16 +107,7 @@ TEST(JPEGCodec, EncodeDecodeRGBA) {
   // create an image with known values, a must be opaque because it will be
   // lost during compression
   std::vector<unsigned char> original;
-  original.resize(w * h * 4);
-  for (int y = 0; y < h; y++) {
-    for (int x = 0; x < w; x++) {
-      unsigned char* org_px = &original[(y * w + x) * 4];
-      org_px[0] = x * 3;      // r
-      org_px[1] = x * 3 + 1;  // g
-      org_px[2] = x * 3 + 2;  // b
-      org_px[3] = 0xFF;       // a (opaque)
-    }
-  }
+  MakeRGBAImage(w, h, &original);
 
   // encode, making sure it was compressed some
   std::vector<unsigned char> encoded;
@@ -172,31 +136,31 @@ TEST(JPEGCodec, DecodeCorrupted) {
 
   // some random data (an uncompressed image)
   std::vector<unsigned char> original;
-  MakeRGBImage(w, h, &original);
+  MakeRGBAImage(w, h, &original);
 
   // it should fail when given non-JPEG compressed data
   std::vector<unsigned char> output;
   int outw, outh;
   ASSERT_FALSE(JPEGCodec::Decode(&original[0], original.size(),
-                                 JPEGCodec::FORMAT_RGB, &output,
-                                 &outw, &outh));
+                                 JPEGCodec::FORMAT_RGBA, &output, &outw,
+                                 &outh));
 
   // make some compressed data
   std::vector<unsigned char> compressed;
-  ASSERT_TRUE(JPEGCodec::Encode(&original[0], JPEGCodec::FORMAT_RGB, w, h,
+  ASSERT_TRUE(JPEGCodec::Encode(&original[0], JPEGCodec::FORMAT_RGBA, w, h,
                                 w * 3, jpeg_quality, &compressed));
 
   // try decompressing a truncated version
   ASSERT_FALSE(JPEGCodec::Decode(&compressed[0], compressed.size() / 2,
-                                 JPEGCodec::FORMAT_RGB, &output,
-                                 &outw, &outh));
+                                 JPEGCodec::FORMAT_RGBA, &output, &outw,
+                                 &outh));
 
   // corrupt it and try decompressing that
   for (int i = 10; i < 30; i++)
     compressed[i] = i;
   ASSERT_FALSE(JPEGCodec::Decode(&compressed[0], compressed.size(),
-                                 JPEGCodec::FORMAT_RGB, &output,
-                                 &outw, &outh));
+                                 JPEGCodec::FORMAT_RGBA, &output, &outw,
+                                 &outh));
 }
 
 // Test that we can decode JPEG images without invalid-read errors on valgrind.
@@ -205,11 +169,6 @@ TEST(JPEGCodec, DecodeCorrupted) {
 TEST(JPEGCodec, InvalidRead) {
   std::vector<unsigned char> output;
   int outw, outh;
-  JPEGCodec::Decode(kTopSitesMigrationTestImage,
-                    arraysize(kTopSitesMigrationTestImage),
-                    JPEGCodec::FORMAT_RGB, &output,
-                    &outw, &outh);
-
   JPEGCodec::Decode(kTopSitesMigrationTestImage,
                     arraysize(kTopSitesMigrationTestImage),
                     JPEGCodec::FORMAT_RGBA, &output,
