@@ -922,7 +922,7 @@ void ComputedStyle::SetCursorList(CursorList* other) {
 }
 
 void ComputedStyle::SetQuotes(RefPtr<QuotesData> q) {
-  SetQuotesInternal(q);
+  SetQuotesInternal(std::move(q));
 }
 
 bool ComputedStyle::QuotesDataEquivalent(const ComputedStyle& other) const {
@@ -1207,7 +1207,7 @@ void ComputedStyle::ApplyMotionPathTransform(
 }
 
 void ComputedStyle::SetTextShadow(RefPtr<ShadowList> s) {
-  SetTextShadowInternal(s);
+  SetTextShadowInternal(std::move(s));
 }
 
 bool ComputedStyle::TextShadowDataEquivalent(const ComputedStyle& other) const {
@@ -1878,8 +1878,8 @@ void ComputedStyle::RestoreParentTextDecorations(
   SetHasSimpleUnderlineInternal(parent_style.HasSimpleUnderlineInternal());
   if (AppliedTextDecorationsInternal() !=
       parent_style.AppliedTextDecorationsInternal()) {
-    SetAppliedTextDecorationsInternal(
-        parent_style.AppliedTextDecorationsInternal());
+    SetAppliedTextDecorationsInternal(RefPtr<AppliedTextDecorationList>(
+        parent_style.AppliedTextDecorationsInternal()));
   }
 }
 
