@@ -194,9 +194,8 @@ static UIColor* kChromotingBlueBackground =
 
   ClientConnectionViewController* clientConnectionViewController =
       [[ClientConnectionViewController alloc] initWithHostInfo:cell.hostInfo];
-  [self presentViewController:clientConnectionViewController
-                     animated:YES
-                   completion:nil];
+  [self.navigationController pushViewController:clientConnectionViewController
+                                       animated:YES];
   completionBlock();
 }
 
