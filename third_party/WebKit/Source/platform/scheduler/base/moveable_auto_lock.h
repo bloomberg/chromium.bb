@@ -16,7 +16,7 @@ class MoveableAutoLock {
     lock_.Acquire();
   }
 
-  explicit MoveableAutoLock(MoveableAutoLock&& other)
+  MoveableAutoLock(MoveableAutoLock&& other)
       : lock_(other.lock_), moved_(other.moved_) {
     lock_.AssertAcquired();
     other.moved_ = true;
