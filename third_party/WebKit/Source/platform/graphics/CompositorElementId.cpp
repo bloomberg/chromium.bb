@@ -23,11 +23,14 @@ static CompositorElementId CreateCompositorElementId(
   return CompositorElementId(id);
 }
 
-CompositorElementId PLATFORM_EXPORT
-CompositorElementIdFromPaintLayerId(PaintLayerId id,
-                                    CompositorElementIdNamespace namespace_id) {
+CompositorElementId PLATFORM_EXPORT CompositorElementIdFromLayoutObjectId(
+    LayoutObjectId id,
+    CompositorElementIdNamespace namespace_id) {
   DCHECK(namespace_id == CompositorElementIdNamespace::kPrimary ||
-         namespace_id == CompositorElementIdNamespace::kScroll);
+         namespace_id == CompositorElementIdNamespace::kScroll ||
+         namespace_id == CompositorElementIdNamespace::kEffectFilter ||
+         namespace_id == CompositorElementIdNamespace::kEffectMask ||
+         namespace_id == CompositorElementIdNamespace::kScrollTranslation);
   return CreateCompositorElementId(id, namespace_id);
 }
 
@@ -49,6 +52,11 @@ CompositorElementIdFromScrollbarId(ScrollbarId id,
                                    CompositorElementIdNamespace namespace_id) {
   DCHECK(namespace_id == CompositorElementIdNamespace::kScrollbar);
   return CreateCompositorElementId(id, namespace_id);
+}
+
+CompositorElementId CompositorElementIdFromRootEffectId(uint64_t id) {
+  return CreateCompositorElementId(id,
+                                   CompositorElementIdNamespace::kEffectRoot);
 }
 
 CompositorElementIdNamespace NamespaceFromCompositorElementId(
