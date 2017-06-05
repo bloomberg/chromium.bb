@@ -297,6 +297,8 @@ cc_component("cc") {
     "resources/resource_pool.h",
     "resources/resource_provider.cc",
     "resources/resource_provider.h",
+    "resources/resource_settings.cc",
+    "resources/resource_settings.h",
     "resources/resource_util.h",
     "resources/returned_resource.h",
     "resources/scoped_resource.cc",

@@ -15,6 +15,7 @@
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/resources/resource_format.h"
+#include "cc/resources/resource_settings.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/tiles/tile_manager_settings.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -32,6 +33,7 @@ class CC_EXPORT LayerTreeSettings {
   TileManagerSettings ToTileManagerSettings() const;
 
   RendererSettings renderer_settings;
+  ResourceSettings resource_settings;
   bool single_thread_proxy_scheduler = true;
   bool main_frame_before_activation_enabled = false;
   bool using_synchronous_renderer_compositor = false;
@@ -86,7 +88,6 @@ class CC_EXPORT LayerTreeSettings {
   size_t decoded_image_cache_budget_bytes = 128 * 1024 * 1024;
   size_t decoded_image_working_set_budget_bytes = 128 * 1024 * 1024;
   int max_preraster_distance_in_screen_pixels = 1000;
-  BufferToTextureTargetMap buffer_to_texture_target_map;
   ResourceFormat preferred_tile_format;
 
   bool enable_color_correct_rasterization = false;

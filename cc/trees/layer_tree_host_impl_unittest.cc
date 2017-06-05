@@ -130,8 +130,8 @@ class LayerTreeHostImplTest : public testing::Test,
     LayerTreeSettings settings;
     settings.enable_surface_synchronization = true;
     settings.minimum_occlusion_tracking_size = gfx::Size();
-    settings.renderer_settings.texture_id_allocation_chunk_size = 1;
-    settings.buffer_to_texture_target_map =
+    settings.resource_settings.texture_id_allocation_chunk_size = 1;
+    settings.resource_settings.buffer_to_texture_target_map =
         DefaultBufferToTextureTargetMapForTesting();
     return settings;
   }

@@ -388,13 +388,13 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.use_partial_raster = compositor_deps->IsPartialRasterEnabled();
   settings.enable_elastic_overscroll =
       compositor_deps->IsElasticOverscrollEnabled();
-  settings.renderer_settings.use_gpu_memory_buffer_resources =
+  settings.resource_settings.use_gpu_memory_buffer_resources =
       compositor_deps->IsGpuMemoryBufferCompositorResourcesEnabled();
   settings.enable_color_correct_rasterization =
       cmd.HasSwitch(switches::kEnableColorCorrectRendering);
   settings.renderer_settings.enable_color_correct_rendering =
       cmd.HasSwitch(switches::kEnableColorCorrectRendering);
-  settings.buffer_to_texture_target_map =
+  settings.resource_settings.buffer_to_texture_target_map =
       compositor_deps->GetBufferToTextureTargetMap();
 
   // Build LayerTreeSettings from command line args.

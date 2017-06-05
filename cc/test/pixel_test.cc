@@ -39,8 +39,7 @@ PixelTest::PixelTest()
       disable_picture_quad_image_filtering_(false),
       output_surface_client_(new FakeOutputSurfaceClient),
       main_thread_task_runner_(
-          BlockingTaskRunner::Create(base::ThreadTaskRunnerHandle::Get())) {
-}
+          BlockingTaskRunner::Create(base::ThreadTaskRunnerHandle::Get())) {}
 PixelTest::~PixelTest() {}
 
 bool PixelTest::RunPixelTest(RenderPassList* pass_list,
@@ -167,14 +166,13 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
   gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);
   // Not relevant for display compositor since it's not delegated.
-  bool delegated_sync_points_required = false;
+  constexpr bool delegated_sync_points_required = false;
   resource_provider_ = base::MakeUnique<ResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 1,
+      gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
       delegated_sync_points_required,
-      settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.enable_color_correct_rasterization,
-      settings_.buffer_to_texture_target_map);
+      settings_.resource_settings);
 
   texture_mailbox_deleter_ = base::MakeUnique<TextureMailboxDeleter>(
       base::ThreadTaskRunnerHandle::Get());
@@ -196,13 +194,13 @@ void PixelTest::SetUpSoftwareRenderer() {
       new PixelTestOutputSurface(base::MakeUnique<SoftwareOutputDevice>()));
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-  bool delegated_sync_points_required = false;  // Meaningless for software.
+  constexpr bool delegated_sync_points_required =
+      false;  // Meaningless for software.
   resource_provider_ = base::MakeUnique<ResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
-      main_thread_task_runner_.get(), 1, delegated_sync_points_required,
-      settings_.renderer_settings.use_gpu_memory_buffer_resources,
+      main_thread_task_runner_.get(), delegated_sync_points_required,
       settings_.enable_color_correct_rasterization,
-      settings_.buffer_to_texture_target_map);
+      settings_.resource_settings);
   auto renderer = base::MakeUnique<SoftwareRenderer>(
       &settings_.renderer_settings, output_surface_.get(),
       resource_provider_.get());
