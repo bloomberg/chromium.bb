@@ -4,8 +4,10 @@
 
 #include "components/history/core/browser/typed_url_sync_metadata_database.h"
 
+#include "base/big_endian.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "components/history/core/browser/url_row.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,6 +18,16 @@ using syncer::EntityMetadataMap;
 using syncer::MetadataBatch;
 
 namespace history {
+
+namespace {
+
+std::string IntToStorageKey(int i) {
+  std::string storage_key(sizeof(URLID), 0);
+  base::WriteBigEndian<URLID>(&storage_key[0], i);
+  return storage_key;
+}
+
+}  // namespace
 
 class TypedURLSyncMetadataDatabaseTest : public testing::Test,
                                          public TypedURLSyncMetadataDatabase {
@@ -60,8 +72,8 @@ TEST_F(TypedURLSyncMetadataDatabaseTest, TypedURLNoMetadata) {
 
 TEST_F(TypedURLSyncMetadataDatabaseTest, TypedURLGetAllSyncMetadata) {
   EntityMetadata metadata;
-  std::string storage_key = "1";
-  std::string storage_key2 = "2";
+  std::string storage_key = IntToStorageKey(1);
+  std::string storage_key2 = IntToStorageKey(2);
   metadata.set_sequence_number(1);
 
   EXPECT_TRUE(UpdateSyncMetadata(syncer::TYPED_URLS, storage_key, metadata));
@@ -96,7 +108,7 @@ TEST_F(TypedURLSyncMetadataDatabaseTest, TypedURLGetAllSyncMetadata) {
 TEST_F(TypedURLSyncMetadataDatabaseTest, TypedURLWriteThenDeleteSyncMetadata) {
   EntityMetadata metadata;
   MetadataBatch metadata_batch;
-  std::string storage_key = "1";
+  std::string storage_key = IntToStorageKey(1);
   ModelTypeState model_type_state;
 
   model_type_state.set_initial_sync_done(true);
