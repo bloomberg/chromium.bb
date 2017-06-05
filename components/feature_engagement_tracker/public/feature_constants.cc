@@ -11,8 +11,10 @@ namespace feature_engagement_tracker {
 const base::Feature kIPHDemoMode{"IPH_DemoMode",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kIPHDataSaverPreview{"IPH_DataSaverPreview",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHDataSaverPreviewFeature{
+    "IPH_DataSaverPreview", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHDataSaverDetailFeature{
+    "IPH_DataSaverDetail", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadPageFeature{"IPH_DownloadPage",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadHomeFeature{"IPH_DownloadHome",
