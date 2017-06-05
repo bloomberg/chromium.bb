@@ -222,7 +222,6 @@ wolf-paladin (gce_beefy)
 wolf-release (gce_beefy)
 wolf-tot-paladin (gce_beefy)
 wooten-paladin (gce_beefy)
-x86-generic-chromium-pfq (baremetal)
 zako-release (gce_beefy)
 
 == chromeos.infra ==
@@ -247,7 +246,6 @@ oak-full (gce_beefy)
 tatl-paladin (gce_beefy)
 x86-generic-full (baremetal)
 x86-generic-incremental (baremetal)
-x86-generic-paladin (baremetal)
 
 == chromiumos.tryserver ==
 amd64-generic-cheets-compile-only-pre-cq (baremetal)

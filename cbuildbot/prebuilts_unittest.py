@@ -207,7 +207,7 @@ class BinhostConfWriterTest(
     self._Run('master-paladin')
 
     # Provide a sample of private/public slave boards that are expected.
-    public_slave_boards = ('amd64-generic', 'x86-generic')
+    public_slave_boards = ('amd64-generic', 'daisy')
     # TODO: 20170606 temporarily removed cyan due to crbug.com/730272
     #private_slave_boards = ('cyan', 'samus', 'lumpy', 'daisy_spring')
     private_slave_boards = ('samus', 'lumpy', 'daisy_spring')
@@ -219,7 +219,7 @@ class BinhostConfWriterTest(
     self._Run('master-chromium-pfq')
 
     # Provide a sample of private/public slave boards that are expected.
-    public_slave_boards = ('amd64-generic', 'x86-generic', 'daisy')
+    public_slave_boards = ('amd64-generic', 'daisy')
     private_slave_boards = ('cyan', 'lumpy', 'daisy_skate', 'peppy')
 
     self._VerifyResults(public_slave_boards=public_slave_boards,

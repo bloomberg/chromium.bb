@@ -2209,7 +2209,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'whirlwind',
       'winky',
       'wolf',
-      'x86-generic',
   ])
 
   # Paladin configs that exist and should be important as soon as they are
@@ -2823,7 +2822,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'arm-generic',
       'daisy',
       'veyron_jerry',
-      'x86-generic',
       'amd64-generic',
   ])
 

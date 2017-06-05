@@ -14154,8 +14154,7 @@
             "tricky-chrome-pfq",
             "veyron_jerry-chromium-pfq",
             "veyron_minnie-chrome-pfq",
-            "veyron_rialto-chrome-pfq",
-            "x86-generic-chromium-pfq"
+            "veyron_rialto-chrome-pfq"
         ]
     },
     "master-nyc-android-pfq": {
@@ -14265,8 +14264,7 @@
             "winky-paladin",
             "wolf-paladin",
             "wolf-tot-paladin",
-            "wooten-paladin",
-            "x86-generic-paladin"
+            "wooten-paladin"
         ],
         "trybot_list": false,
         "useflags": [
@@ -27512,11 +27510,11 @@
     },
     "x86-generic-chromium-pfq": {
         "_template": "chromium_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "x86-generic"
         ],
         "buildslave_type": "baremetal",
+        "important": false,
         "useflags": [
             "-chrome_internal"
         ]
@@ -27573,11 +27571,11 @@
     },
     "x86-generic-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromiumos",
         "boards": [
             "x86-generic"
         ],
-        "buildslave_type": "baremetal"
+        "buildslave_type": "baremetal",
+        "important": false
     },
     "x86-generic-pre-cq": {
         "_template": "pre_cq",
