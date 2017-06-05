@@ -33,7 +33,7 @@ void AppBannerService::SendBannerPromptRequest(
                             base::Unretained(this), callback));
 }
 
-void AppBannerService::DisplayAppBanner() { /* do nothing */
+void AppBannerService::DisplayAppBanner(bool user_gesture) { /* do nothing */
 }
 
 void AppBannerService::OnBannerPromptReply(
