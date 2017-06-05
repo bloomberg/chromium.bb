@@ -83,14 +83,15 @@ const char kMetaItContentLanguage[] =
     "<meta http-equiv=\"content-language\" content=\"it\">";
 
 // Various link components.
-const char kHttpServerDomain[] = "localhost";
+// TODO(crbug.com/729195): Re-write the hardcoded address.
+const char kHttpServerDomain[] = "127.0.0.1";
 const char kLanguagePath[] = "/languagepath/";
 const char kLinkPath[] = "/linkpath/";
 const char kSubresourcePath[] = "/subresourcepath/";
 const char kSomeLanguageUrl[] = "http://languagepath/?http=es";
 const char kFrenchPagePath[] = "/frenchpage/";
 const char kFrenchPageWithLinkPath[] = "/frenchpagewithlink/";
-const char kTranslateScriptPath[] = "/translatescript";
+const char kTranslateScriptPath[] = "/translatescript/";
 const char kTranslateScript[] = "Fake Translate Script";
 
 // Builds a HTML document with a French text and the given |html| and |meta|
