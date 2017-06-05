@@ -1,6 +1,9 @@
 {
   "layers": [
     {
+      "name": "Root Transform Layer"
+    },
+    {
       "name": "Inner Viewport Container Layer",
       "bounds": [800, 600]
     },

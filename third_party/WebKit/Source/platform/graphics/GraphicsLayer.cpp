@@ -592,8 +592,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerTreeAsJSON(
     return LayerTreeAsJSONInternal(flags, rendering_context_map);
   std::unique_ptr<JSONObject> json = JSONObject::Create();
   std::unique_ptr<JSONArray> layers_array = JSONArray::Create();
-  for (auto& child : children_)
-    child->LayersAsJSONArray(flags, rendering_context_map, layers_array.get());
+  LayersAsJSONArray(flags, rendering_context_map, layers_array.get());
   json->SetArray("layers", std::move(layers_array));
   return json;
 }
@@ -1295,7 +1294,18 @@ void showGraphicsLayerTree(const blink::GraphicsLayer* layer) {
     return;
   }
 
-  String output = layer->LayerTreeAsText(blink::kLayerTreeIncludesDebugInfo);
+  String output = layer->LayerTreeAsText(0xffffffff);  // with all flags.
+  LOG(INFO) << output.Utf8().data();
+}
+
+void showGraphicsLayers(const blink::GraphicsLayer* layer) {
+  if (!layer) {
+    LOG(INFO) << "Cannot showGraphicsLayers for (nil).";
+    return;
+  }
+
+  String output =
+      layer->LayerTreeAsText(0xffffffff & ~blink::kOutputAsLayerTree);
   LOG(INFO) << output.Utf8().data();
 }
 #endif

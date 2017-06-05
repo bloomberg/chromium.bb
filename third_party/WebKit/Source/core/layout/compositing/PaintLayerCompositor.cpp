@@ -748,7 +748,13 @@ std::unique_ptr<JSONObject> PaintLayerCompositor::LayerTreeAsJSON(
   // We skip dumping the scroll and clip layers to keep layerTreeAsText output
   // similar between platforms (unless we explicitly request dumping from the
   // root.
-  GraphicsLayer* root_layer = root_content_layer_.get();
+  const GraphicsLayer* root_layer = root_content_layer_.get();
+  if (root_layer && root_layer->Children().size() == 1) {
+    // Omit the root_content_layer_ itself, start from the layer for the root
+    // LayoutView.
+    root_layer = root_layer->Children()[0];
+  }
+
   if (!root_layer)
     root_layer = RootGraphicsLayer();
 
