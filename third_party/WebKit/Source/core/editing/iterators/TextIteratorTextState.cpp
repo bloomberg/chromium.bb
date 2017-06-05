@@ -28,7 +28,7 @@
 #include "core/editing/iterators/TextIteratorTextState.h"
 
 #include "core/editing/iterators/TextIteratorBehavior.h"
-#include "core/layout/LayoutText.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -141,15 +141,17 @@ void TextIteratorTextState::SpliceBuffer(UChar c,
   last_character_ = c;
 }
 
-// TODO(xiaochengh): Remove the dependency on LayoutText, so that the class can
-// also be used by Layout NG.
 void TextIteratorTextState::EmitText(Node* text_node,
-                                     LayoutText* layout_object,
+                                     int position_start_offset,
+                                     int position_end_offset,
+                                     const String& string,
                                      int text_start_offset,
                                      int text_end_offset) {
   DCHECK(text_node);
-  text_ = behavior_.EmitsOriginalText() ? layout_object->OriginalText()
-                                        : layout_object->GetText();
+  text_ = string;
+
+  // TODO(xiaochengh): Hoist the conversion to TextIteratorTextNodeHandler, so
+  // that we can remove |behavior_| from TextIteratorTextState.
   if (behavior_.EmitsSpaceForNbsp())
     text_.Replace(kNoBreakSpaceCharacter, kSpaceCharacter);
 
@@ -162,8 +164,8 @@ void TextIteratorTextState::EmitText(Node* text_node,
 
   position_node_ = text_node;
   position_offset_base_node_ = nullptr;
-  position_start_offset_ = text_start_offset + layout_object->TextStartOffset();
-  position_end_offset_ = text_end_offset + layout_object->TextStartOffset();
+  position_start_offset_ = position_start_offset;
+  position_end_offset_ = position_end_offset;
   single_character_buffer_ = 0;
   text_start_offset_ = text_start_offset;
   text_length_ = text_end_offset - text_start_offset;

@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class LayoutText;
 class TextIteratorBehavior;
 
 class CORE_EXPORT TextIteratorTextState
@@ -60,8 +59,10 @@ class CORE_EXPORT TextIteratorTextState
                     Node* offset_base_node,
                     int text_start_offset,
                     int text_end_offset);
-  void EmitText(Node* text_node,
-                LayoutText* layout_object,
+  void EmitText(Node*,
+                int position_start_offset,
+                int position_end_offset,
+                const String&,
                 int text_start_offset,
                 int text_end_offset);
   void EmitAltText(Node*);
