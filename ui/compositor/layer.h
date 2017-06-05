@@ -191,6 +191,10 @@ class COMPOSITOR_EXPORT Layer
   float layer_temperature() const { return layer_temperature_; }
   void SetLayerTemperature(float value);
 
+  // Returns the target color temperature if animator is running, or the current
+  // temperature otherwise.
+  float GetTargetTemperature() const;
+
   // Blur pixels by this amount in anything below the layer and visible through
   // the layer.
   int background_blur() const { return background_blur_radius_; }
