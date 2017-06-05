@@ -1710,6 +1710,8 @@ test("browser_tests") {
       "../browser/ui/webui/inspect_ui_browsertest.cc",
       "../browser/ui/webui/interstitials/interstitial_ui_browsertest.cc",
       "../browser/ui/webui/log_web_ui_url_browsertest.cc",
+      "../browser/ui/webui/md_bookmarks/md_bookmarks_browsertest.cc",
+      "../browser/ui/webui/md_bookmarks/md_bookmarks_browsertest.h",
       "../browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc",
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.cc",
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.h",

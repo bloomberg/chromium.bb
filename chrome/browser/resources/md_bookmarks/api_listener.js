@@ -78,6 +78,13 @@ cr.define('bookmarks.ApiListener', function() {
     chrome.bookmarks.onCreated.addListener(onBookmarkCreated);
   }
 
+  /**
+   * @param {IncognitoAvailability} availability
+   */
+  function onIncognitoAvailabilityChanged(availability) {
+    dispatch(bookmarks.actions.setIncognitoAvailability(availability));
+  }
+
   function init() {
     chrome.bookmarks.onChanged.addListener(onBookmarkChanged);
     chrome.bookmarks.onChildrenReordered.addListener(onChildrenReordered);
@@ -86,6 +93,11 @@ cr.define('bookmarks.ApiListener', function() {
     chrome.bookmarks.onRemoved.addListener(onBookmarkRemoved);
     chrome.bookmarks.onImportBegan.addListener(onImportBegan);
     chrome.bookmarks.onImportEnded.addListener(onImportEnded);
+
+    cr.sendWithPromise('getIncognitoAvailability')
+        .then(onIncognitoAvailabilityChanged);
+    cr.addWebUIListener(
+        'incognito-availability-changed', onIncognitoAvailabilityChanged);
   }
 
   return {
