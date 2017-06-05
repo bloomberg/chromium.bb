@@ -68,10 +68,10 @@ TaskQueueManager::TaskQueueManager(
       this);
   selector_.SetTaskQueueSelectorObserver(this);
 
-  delayed_do_work_closure_ =
-      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), true);
-  immediate_do_work_closure_ =
-      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
+  delayed_do_work_closure_ = base::BindRepeating(
+      &TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), true);
+  immediate_do_work_closure_ = base::BindRepeating(
+      &TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
 
   // TODO(alexclarke): Change this to be a parameter that's passed in.
   RegisterTimeDomain(real_time_domain_.get());
@@ -208,7 +208,7 @@ void TaskQueueManager::MaybeScheduleImmediateWork(
 
 void TaskQueueManager::MaybeScheduleImmediateWorkLocked(
     const tracked_objects::Location& from_here,
-    MoveableAutoLock&& lock) {
+    MoveableAutoLock lock) {
   {
     MoveableAutoLock auto_lock(std::move(lock));
     // Unless we're nested, try to avoid posting redundant DoWorks.
@@ -368,7 +368,7 @@ void TaskQueueManager::DoWork(bool delayed) {
 void TaskQueueManager::PostDoWorkContinuationLocked(
     base::Optional<NextTaskDelay> next_delay,
     LazyNow* lazy_now,
-    MoveableAutoLock&& lock) {
+    MoveableAutoLock lock) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   {

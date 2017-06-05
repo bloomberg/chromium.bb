@@ -246,7 +246,7 @@ class PLATFORM_EXPORT TaskQueueManager
   // Post a DoWork continuation if |next_delay| is not empty.
   void PostDoWorkContinuationLocked(base::Optional<NextTaskDelay> next_delay,
                                     LazyNow* lazy_now,
-                                    MoveableAutoLock&& lock);
+                                    MoveableAutoLock lock);
 
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue and
   // reloads any empty work queues.
@@ -295,7 +295,7 @@ class PLATFORM_EXPORT TaskQueueManager
 
   void MaybeScheduleImmediateWorkLocked(
       const tracked_objects::Location& from_here,
-      MoveableAutoLock&& lock);
+      MoveableAutoLock lock);
 
   // Adds |queue| to |any_thread().has_incoming_immediate_work_| and if
   // |queue_is_blocked| is false it makes sure a DoWork is posted.
@@ -328,8 +328,8 @@ class PLATFORM_EXPORT TaskQueueManager
   scoped_refptr<TaskQueueManagerDelegate> delegate_;
   internal::TaskQueueSelector selector_;
 
-  base::Closure immediate_do_work_closure_;
-  base::Closure delayed_do_work_closure_;
+  base::RepeatingClosure immediate_do_work_closure_;
+  base::RepeatingClosure delayed_do_work_closure_;
   base::CancelableClosure cancelable_delayed_do_work_closure_;
 
   bool task_was_run_on_quiescence_monitored_queue_;
