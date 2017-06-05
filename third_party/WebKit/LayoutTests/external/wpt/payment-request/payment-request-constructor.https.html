@@ -41,7 +41,7 @@ test(() => {
 
 test(() => {
   const newDetails = Object.assign({}, defaultDetails, {
-    id: "".padStart(100000000, "\n test 123 \t \n "),
+    id: "".padStart(1024, "\n test 123 \t \n "),
   });
   const request = new PaymentRequest(defaultMethods, newDetails);
   assert_equals(
