@@ -140,7 +140,7 @@ static int msmpeg4v12_decode_mb(MpegEncContext *s, int16_t block[6][64])
         if(s->msmpeg4_version==2)
             cbp= get_vlc2(&s->gb, v2_intra_cbpc_vlc.table, V2_INTRA_CBPC_VLC_BITS, 1);
         else
-            cbp= get_vlc2(&s->gb, ff_h263_intra_MCBPC_vlc.table, INTRA_MCBPC_VLC_BITS, 1);
+            cbp= get_vlc2(&s->gb, ff_h263_intra_MCBPC_vlc.table, INTRA_MCBPC_VLC_BITS, 2);
         if(cbp<0 || cbp>3){
             av_log(s->avctx, AV_LOG_ERROR, "cbpc %d invalid at %d %d\n", cbp, s->mb_x, s->mb_y);
             return -1;
@@ -414,13 +414,6 @@ int ff_msmpeg4_decode_picture_header(MpegEncContext * s)
         av_log(s->avctx, AV_LOG_ERROR, "invalid picture type\n");
         return -1;
     }
-#if 0
-{
-    static int had_i=0;
-    if(s->pict_type == AV_PICTURE_TYPE_I) had_i=1;
-    if(!had_i) return -1;
-}
-#endif
     s->chroma_qscale= s->qscale = get_bits(&s->gb, 5);
     if(s->qscale==0){
         av_log(s->avctx, AV_LOG_ERROR, "invalid qscale\n");

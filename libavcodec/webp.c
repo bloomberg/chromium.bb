@@ -1342,6 +1342,8 @@ static int vp8_lossy_decode_frame(AVCodecContext *avctx, AVFrame *p,
     pkt.size = data_size;
 
     ret = ff_vp8_decode_frame(avctx, p, got_frame, &pkt);
+    if (ret < 0)
+        return ret;
     if (s->has_alpha) {
         ret = vp8_lossy_decode_alpha(avctx, p, s->alpha_data,
                                      s->alpha_data_size);
@@ -1489,7 +1491,7 @@ static int webp_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
                 goto exif_end;
             }
 
-            av_dict_copy(avpriv_frame_get_metadatap(data), exif_metadata, 0);
+            av_dict_copy(&((AVFrame *) data)->metadata, exif_metadata, 0);
 
 exif_end:
             av_dict_free(&exif_metadata);

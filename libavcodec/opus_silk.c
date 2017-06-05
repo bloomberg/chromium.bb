@@ -128,8 +128,7 @@ static inline void silk_stabilize_lsf(int16_t nlsf[16], int order, const uint16_
     if (nlsf[0] < min_delta[0])
         nlsf[0] = min_delta[0];
     for (i = 1; i < order; i++)
-        if (nlsf[i] < nlsf[i - 1] + min_delta[i])
-            nlsf[i] = nlsf[i - 1] + min_delta[i];
+        nlsf[i] = FFMAX(nlsf[i], FFMIN(nlsf[i - 1] + min_delta[i], 32767));
 
     /* push backwards to increase distance */
     if (nlsf[order-1] > 32768 - min_delta[order])
@@ -807,7 +806,7 @@ int ff_silk_decode_superframe(SilkContext *s, OpusRangeCoder *rc,
 
         redundancy[i] = ff_opus_rc_dec_log(rc, 1);
         if (redundancy[i]) {
-            av_log(s->avctx, AV_LOG_ERROR, "LBRR frames present; this is unsupported\n");
+            avpriv_report_missing_feature(s->avctx, "LBRR frames");
             return AVERROR_PATCHWELCOME;
         }
     }

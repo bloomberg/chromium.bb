@@ -46,6 +46,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/dict.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/stereo3d.h"
 #include "libavutil/timecode.h"
 #include "libavutil/color_utils.h"
 #include "hevc.h"
@@ -676,6 +677,29 @@ static int mov_write_dfla_tag(AVIOContext *pb, MOVTrack *track)
     return update_size(pb, pos);
 }
 
+static int mov_write_dops_tag(AVIOContext *pb, MOVTrack *track)
+{
+    int64_t pos = avio_tell(pb);
+    avio_wb32(pb, 0);
+    ffio_wfourcc(pb, "dOps");
+    avio_w8(pb, 0); /* Version */
+    if (track->par->extradata_size < 19) {
+        av_log(pb, AV_LOG_ERROR, "invalid extradata size\n");
+        return AVERROR_INVALIDDATA;
+    }
+    /* extradata contains an Ogg OpusHead, other than byte-ordering and
+       OpusHead's preceeding magic/version, OpusSpecificBox is currently
+       identical. */
+    avio_w8(pb, AV_RB8(track->par->extradata + 9)); /* OuputChannelCount */
+    avio_wb16(pb, AV_RL16(track->par->extradata + 10)); /* PreSkip */
+    avio_wb32(pb, AV_RL32(track->par->extradata + 12)); /* InputSampleRate */
+    avio_wb16(pb, AV_RL16(track->par->extradata + 16)); /* OutputGain */
+    /* Write the rest of the header out without byte-swapping. */
+    avio_write(pb, track->par->extradata + 18, track->par->extradata_size - 18);
+
+    return update_size(pb, pos);
+}
+
 static int mov_write_chan_tag(AVFormatContext *s, AVIOContext *pb, MOVTrack *track)
 {
     uint32_t layout_tag, bitmap;
@@ -985,19 +1009,26 @@ static int mov_write_audio_tag(AVFormatContext *s, AVIOContext *pb, MOVMuxContex
                 avio_wb16(pb, 16);
             avio_wb16(pb, track->audio_vbr ? -2 : 0); /* compression ID */
         } else { /* reserved for mp4/3gp */
-            if (track->par->codec_id == AV_CODEC_ID_FLAC) {
+            if (track->par->codec_id == AV_CODEC_ID_FLAC ||
+                track->par->codec_id == AV_CODEC_ID_OPUS) {
                 avio_wb16(pb, track->par->channels);
-                avio_wb16(pb, track->par->bits_per_raw_sample);
             } else {
                 avio_wb16(pb, 2);
+            }
+            if (track->par->codec_id == AV_CODEC_ID_FLAC) {
+                avio_wb16(pb, track->par->bits_per_raw_sample);
+            } else {
                 avio_wb16(pb, 16);
             }
             avio_wb16(pb, 0);
         }
 
         avio_wb16(pb, 0); /* packet size (= 0) */
-        avio_wb16(pb, track->par->sample_rate <= UINT16_MAX ?
-                      track->par->sample_rate : 0);
+        if (track->par->codec_id == AV_CODEC_ID_OPUS)
+            avio_wb16(pb, 48000);
+        else
+            avio_wb16(pb, track->par->sample_rate <= UINT16_MAX ?
+                          track->par->sample_rate : 0);
         avio_wb16(pb, 0); /* Reserved */
     }
 
@@ -1038,6 +1069,8 @@ static int mov_write_audio_tag(AVFormatContext *s, AVIOContext *pb, MOVMuxContex
         mov_write_wfex_tag(s, pb, track);
     else if (track->par->codec_id == AV_CODEC_ID_FLAC)
         mov_write_dfla_tag(pb, track);
+    else if (track->par->codec_id == AV_CODEC_ID_OPUS)
+        mov_write_dops_tag(pb, track);
     else if (track->vos_len > 0)
         mov_write_glbl_tag(pb, track);
 
@@ -1207,6 +1240,7 @@ static int mp4_get_codec_tag(AVFormatContext *s, MOVTrack *track)
     else if (track->par->codec_id == AV_CODEC_ID_MOV_TEXT)  tag = MKTAG('t','x','3','g');
     else if (track->par->codec_id == AV_CODEC_ID_VC1)       tag = MKTAG('v','c','-','1');
     else if (track->par->codec_id == AV_CODEC_ID_FLAC)      tag = MKTAG('f','L','a','C');
+    else if (track->par->codec_id == AV_CODEC_ID_OPUS)      tag = MKTAG('O','p','u','s');
     else if (track->par->codec_type == AVMEDIA_TYPE_VIDEO)  tag = MKTAG('m','p','4','v');
     else if (track->par->codec_type == AVMEDIA_TYPE_AUDIO)  tag = MKTAG('m','p','4','a');
     else if (track->par->codec_id == AV_CODEC_ID_DVD_SUBTITLE)  tag = MKTAG('m','p','4','s');
@@ -1287,12 +1321,21 @@ static AVRational find_fps(AVFormatContext *s, AVStream *st)
     return rate;
 }
 
+static int defined_frame_rate(AVFormatContext *s, AVStream *st)
+{
+    AVRational rational_framerate = find_fps(s, st);
+    int rate = 0;
+    if (rational_framerate.den != 0)
+        rate = av_q2d(rational_framerate);
+    return rate;
+}
+
 static int mov_get_mpeg2_xdcam_codec_tag(AVFormatContext *s, MOVTrack *track)
 {
     int tag = track->par->codec_tag;
     int interlaced = track->par->field_order > AV_FIELD_PROGRESSIVE;
     AVStream *st = track->st;
-    int rate = av_q2d(find_fps(s, st));
+    int rate = defined_frame_rate(s, st);
 
     if (!tag)
         tag = MKTAG('m', '2', 'v', '1'); //fallback tag
@@ -1354,7 +1397,7 @@ static int mov_get_h264_codec_tag(AVFormatContext *s, MOVTrack *track)
     int tag = track->par->codec_tag;
     int interlaced = track->par->field_order > AV_FIELD_PROGRESSIVE;
     AVStream *st = track->st;
-    int rate = av_q2d(find_fps(s, st));
+    int rate = defined_frame_rate(s, st);
 
     if (!tag)
         tag = MKTAG('a', 'v', 'c', 'i'); //fallback tag
@@ -1603,6 +1646,94 @@ static int mov_write_subtitle_tag(AVIOContext *pb, MOVTrack *track)
     return update_size(pb, pos);
 }
 
+static int mov_write_st3d_tag(AVIOContext *pb, AVStereo3D *stereo_3d)
+{
+    int8_t stereo_mode;
+
+    if (stereo_3d->flags != 0) {
+        av_log(pb, AV_LOG_WARNING, "Unsupported stereo_3d flags %x. st3d not written.\n", stereo_3d->flags);
+        return 0;
+    }
+
+    switch (stereo_3d->type) {
+    case AV_STEREO3D_2D:
+        stereo_mode = 0;
+        break;
+    case AV_STEREO3D_TOPBOTTOM:
+        stereo_mode = 1;
+        break;
+    case AV_STEREO3D_SIDEBYSIDE:
+        stereo_mode = 2;
+        break;
+    default:
+        av_log(pb, AV_LOG_WARNING, "Unsupported stereo_3d type %s. st3d not written.\n", av_stereo3d_type_name(stereo_3d->type));
+        return 0;
+    }
+    avio_wb32(pb, 13); /* size */
+    ffio_wfourcc(pb, "st3d");
+    avio_wb32(pb, 0); /* version = 0 & flags = 0 */
+    avio_w8(pb, stereo_mode);
+    return 13;
+}
+
+static int mov_write_sv3d_tag(AVFormatContext *s, AVIOContext *pb, AVSphericalMapping *spherical_mapping)
+{
+    int64_t sv3d_pos, svhd_pos, proj_pos;
+    const char* metadata_source = s->flags & AVFMT_FLAG_BITEXACT ? "Lavf" : LIBAVFORMAT_IDENT;
+
+    if (spherical_mapping->projection != AV_SPHERICAL_EQUIRECTANGULAR &&
+        spherical_mapping->projection != AV_SPHERICAL_EQUIRECTANGULAR_TILE &&
+        spherical_mapping->projection != AV_SPHERICAL_CUBEMAP) {
+        av_log(pb, AV_LOG_WARNING, "Unsupported projection %d. sv3d not written.\n", spherical_mapping->projection);
+        return 0;
+    }
+
+    sv3d_pos = avio_tell(pb);
+    avio_wb32(pb, 0);  /* size */
+    ffio_wfourcc(pb, "sv3d");
+
+    svhd_pos = avio_tell(pb);
+    avio_wb32(pb, 0);  /* size */
+    ffio_wfourcc(pb, "svhd");
+    avio_wb32(pb, 0); /* version = 0 & flags = 0 */
+    avio_put_str(pb, metadata_source);
+    update_size(pb, svhd_pos);
+
+    proj_pos = avio_tell(pb);
+    avio_wb32(pb, 0); /* size */
+    ffio_wfourcc(pb, "proj");
+
+    avio_wb32(pb, 24); /* size */
+    ffio_wfourcc(pb, "prhd");
+    avio_wb32(pb, 0); /* version = 0 & flags = 0 */
+    avio_wb32(pb, spherical_mapping->yaw);
+    avio_wb32(pb, spherical_mapping->pitch);
+    avio_wb32(pb, spherical_mapping->roll);
+
+    switch (spherical_mapping->projection) {
+    case AV_SPHERICAL_EQUIRECTANGULAR:
+    case AV_SPHERICAL_EQUIRECTANGULAR_TILE:
+        avio_wb32(pb, 28);    /* size */
+        ffio_wfourcc(pb, "equi");
+        avio_wb32(pb, 0); /* version = 0 & flags = 0 */
+        avio_wb32(pb, spherical_mapping->bound_top);
+        avio_wb32(pb, spherical_mapping->bound_bottom);
+        avio_wb32(pb, spherical_mapping->bound_left);
+        avio_wb32(pb, spherical_mapping->bound_right);
+        break;
+    case AV_SPHERICAL_CUBEMAP:
+        avio_wb32(pb, 20);    /* size */
+        ffio_wfourcc(pb, "cbmp");
+        avio_wb32(pb, 0); /* version = 0 & flags = 0 */
+        avio_wb32(pb, 0); /* layout */
+        avio_wb32(pb, spherical_mapping->padding); /* padding */
+        break;
+    }
+    update_size(pb, proj_pos);
+
+    return update_size(pb, sv3d_pos);
+}
+
 static int mov_write_pasp_tag(AVIOContext *pb, MOVTrack *track)
 {
     AVRational sar;
@@ -1627,7 +1758,7 @@ static int mov_write_gama_tag(AVIOContext *pb, MOVTrack *track, double gamma)
 
     if (gamma > 1e-6) {
         gama = (uint32_t)lrint((double)(1<<16) * gamma);
-        av_log(pb, AV_LOG_DEBUG, "writing gama value %d\n", gama);
+        av_log(pb, AV_LOG_DEBUG, "writing gama value %"PRId32"\n", gama);
 
         av_assert0(track->mode == MODE_MOV);
         avio_wb32(pb, 12);
@@ -1728,7 +1859,7 @@ static void find_compressor(char * compressor_name, int len, MOVTrack *track)
     } else if (track->par->codec_id == AV_CODEC_ID_MPEG2VIDEO && xdcam_res) {
         int interlaced = track->par->field_order > AV_FIELD_PROGRESSIVE;
         AVStream *st = track->st;
-        int rate = av_q2d(find_fps(NULL, st));
+        int rate = defined_frame_rate(NULL, st);
         av_strlcatf(compressor_name, len, "XDCAM");
         if (track->par->format == AV_PIX_FMT_YUV422P) {
             av_strlcatf(compressor_name, len, " HD422");
@@ -1871,6 +2002,16 @@ static int mov_write_video_tag(AVIOContext *pb, MOVMuxContext *mov, MOVTrack *tr
             mov_write_colr_tag(pb, track);
         else
             av_log(mov->fc, AV_LOG_WARNING, "Not writing 'colr' atom. Format is not MOV or MP4.\n");
+    }
+
+    if (track->mode == MODE_MP4 && mov->fc->strict_std_compliance <= FF_COMPLIANCE_UNOFFICIAL) {
+        AVStereo3D* stereo_3d = (AVStereo3D*) av_stream_get_side_data(track->st, AV_PKT_DATA_STEREO3D, NULL);
+        AVSphericalMapping* spherical_mapping = (AVSphericalMapping*)av_stream_get_side_data(track->st, AV_PKT_DATA_SPHERICAL, NULL);
+
+        if (stereo_3d)
+            mov_write_st3d_tag(pb, stereo_3d);
+        if (spherical_mapping)
+            mov_write_sv3d_tag(mov->fc, pb, spherical_mapping);
     }
 
     if (track->par->sample_aspect_ratio.den && track->par->sample_aspect_ratio.num) {
@@ -2100,6 +2241,93 @@ static int mov_write_dref_tag(AVIOContext *pb)
     return 28;
 }
 
+static int mov_preroll_write_stbl_atoms(AVIOContext *pb, MOVTrack *track)
+{
+    struct sgpd_entry {
+        int count;
+        int16_t roll_distance;
+        int group_description_index;
+    };
+
+    struct sgpd_entry *sgpd_entries = NULL;
+    int entries = -1;
+    int group = 0;
+    int i, j;
+
+    const int OPUS_SEEK_PREROLL_MS = 80;
+    int roll_samples = av_rescale_q(OPUS_SEEK_PREROLL_MS,
+                                    (AVRational){1, 1000},
+                                    (AVRational){1, 48000});
+
+    if (track->entry) {
+        sgpd_entries = av_malloc_array(track->entry, sizeof(*sgpd_entries));
+        if (!sgpd_entries)
+            return AVERROR(ENOMEM);
+    }
+
+    av_assert0(track->par->codec_id == AV_CODEC_ID_OPUS);
+
+    for (i = 0; i < track->entry; i++) {
+        int roll_samples_remaining = roll_samples;
+        int distance = 0;
+        for (j = i - 1; j >= 0; j--) {
+            roll_samples_remaining -= get_cluster_duration(track, j);
+            distance++;
+            if (roll_samples_remaining <= 0)
+                break;
+        }
+        /* We don't have enough preceeding samples to compute a valid
+           roll_distance here, so this sample can't be independently
+           decoded. */
+        if (roll_samples_remaining > 0)
+            distance = 0;
+        /* Verify distance is a minimum of 2 (60ms) packets and a maximum of
+           32 (2.5ms) packets. */
+        av_assert0(distance == 0 || (distance >= 2 && distance <= 32));
+        if (i && distance == sgpd_entries[entries].roll_distance) {
+            sgpd_entries[entries].count++;
+        } else {
+            entries++;
+            sgpd_entries[entries].count = 1;
+            sgpd_entries[entries].roll_distance = distance;
+            sgpd_entries[entries].group_description_index = distance ? ++group : 0;
+        }
+    }
+    entries++;
+
+    if (!group) {
+        av_free(sgpd_entries);
+        return 0;
+    }
+
+    /* Write sgpd tag */
+    avio_wb32(pb, 24 + (group * 2)); /* size */
+    ffio_wfourcc(pb, "sgpd");
+    avio_wb32(pb, 1 << 24); /* fullbox */
+    ffio_wfourcc(pb, "roll");
+    avio_wb32(pb, 2); /* default_length */
+    avio_wb32(pb, group); /* entry_count */
+    for (i = 0; i < entries; i++) {
+        if (sgpd_entries[i].group_description_index) {
+            avio_wb16(pb, -sgpd_entries[i].roll_distance); /* roll_distance */
+        }
+    }
+
+    /* Write sbgp tag */
+    avio_wb32(pb, 20 + (entries * 8)); /* size */
+    ffio_wfourcc(pb, "sbgp");
+    avio_wb32(pb, 0); /* fullbox */
+    ffio_wfourcc(pb, "roll");
+    avio_wb32(pb, entries); /* entry_count */
+    for (i = 0; i < entries; i++) {
+        avio_wb32(pb, sgpd_entries[i].count); /* sample_count */
+        avio_wb32(pb, sgpd_entries[i].group_description_index); /* group_description_index */
+    }
+
+    av_free(sgpd_entries);
+    return 0;
+}
+
 static int mov_write_stbl_tag(AVFormatContext *s, AVIOContext *pb, MOVMuxContext *mov, MOVTrack *track)
 {
     int64_t pos = avio_tell(pb);
@@ -2126,6 +2354,9 @@ static int mov_write_stbl_tag(AVFormatContext *s, AVIOContext *pb, MOVMuxContext
     mov_write_stco_tag(pb, track);
     if (mov->encryption_scheme == MOV_ENC_CENC_AES_CTR) {
         ff_mov_cenc_write_stbl_atoms(&track->cenc, pb);
+    }
+    if (track->par->codec_id == AV_CODEC_ID_OPUS) {
+        mov_preroll_write_stbl_atoms(pb, track);
     }
     return update_size(pb, pos);
 }
@@ -2278,13 +2509,9 @@ static int mov_write_hdlr_tag(AVFormatContext *s, AVIOContext *pb, MOVTrack *tra
             hdlr_type = "tmcd";
             descr = "TimeCodeHandler";
         } else {
-            char tag_buf[32];
-            av_get_codec_tag_string(tag_buf, sizeof(tag_buf),
-                                    track->par->codec_tag);
-
             av_log(s, AV_LOG_WARNING,
-                   "Unknown hldr_type for %s / 0x%04X, writing dummy values\n",
-                   tag_buf, track->par->codec_tag);
+                   "Unknown hldr_type for %s, writing dummy values\n",
+                   av_fourcc2str(track->par->codec_tag));
         }
         if (track->st) {
             // hdlr.name is used by some players to identify the content title
@@ -2496,19 +2723,23 @@ static int mov_write_tkhd_tag(AVIOContext *pb, MOVMuxContext *mov,
     avio_wb16(pb, 0); /* reserved */
 
     /* Matrix structure */
+#if FF_API_OLD_ROTATE_API
     if (st && st->metadata) {
         AVDictionaryEntry *rot = av_dict_get(st->metadata, "rotate", NULL, 0);
         rotation = (rot && rot->value) ? atoi(rot->value) : 0;
     }
+#endif
     if (display_matrix) {
         for (i = 0; i < 9; i++)
             avio_wb32(pb, display_matrix[i]);
+#if FF_API_OLD_ROTATE_API
     } else if (rotation == 90) {
         write_matrix(pb,  0,  1, -1,  0, track->par->height, 0);
     } else if (rotation == 180) {
         write_matrix(pb, -1,  0,  0, -1, track->par->width, track->par->height);
     } else if (rotation == 270) {
         write_matrix(pb,  0, -1,  1,  0, 0, track->par->width);
+#endif
     } else {
         write_matrix(pb,  1,  0,  0,  1, 0, 0);
     }
@@ -5616,7 +5847,7 @@ static int mov_init(AVFormatContext *s)
 
     /* Non-seekable output is ok if using fragmentation. If ism_lookahead
      * is enabled, we don't support non-seekable output at all. */
-    if (!s->pb->seekable &&
+    if (!(s->pb->seekable & AVIO_SEEKABLE_NORMAL) &&
         (!(mov->flags & FF_MOV_FLAG_FRAGMENT) || mov->ism_lookahead)) {
         av_log(s, AV_LOG_ERROR, "muxer does not support non seekable output\n");
         return AVERROR(EINVAL);
@@ -5805,16 +6036,17 @@ static int mov_init(AVFormatContext *s)
                            i, track->par->sample_rate);
                 }
             }
-            if (track->par->codec_id == AV_CODEC_ID_FLAC) {
+            if (track->par->codec_id == AV_CODEC_ID_FLAC ||
+                track->par->codec_id == AV_CODEC_ID_OPUS) {
                 if (track->mode != MODE_MP4) {
-                    av_log(s, AV_LOG_ERROR, "FLAC only supported in MP4.\n");
+                    av_log(s, AV_LOG_ERROR, "%s only supported in MP4.\n", avcodec_get_name(track->par->codec_id));
                     return AVERROR(EINVAL);
                 }
                 if (s->strict_std_compliance > FF_COMPLIANCE_EXPERIMENTAL) {
                     av_log(s, AV_LOG_ERROR,
-                           "FLAC in MP4 support is experimental, add "
+                           "%s in MP4 support is experimental, add "
                            "'-strict %d' if you want to use it.\n",
-                           FF_COMPLIANCE_EXPERIMENTAL);
+                           avcodec_get_name(track->par->codec_id), FF_COMPLIANCE_EXPERIMENTAL);
                     return AVERROR_EXPERIMENTAL;
                 }
             }
@@ -6253,6 +6485,8 @@ static int mov_check_bitstream(struct AVFormatContext *s, const AVPacket *pkt)
     if (st->codecpar->codec_id == AV_CODEC_ID_AAC) {
         if (pkt->size > 2 && (AV_RB16(pkt->data) & 0xfff0) == 0xfff0)
             ret = ff_stream_add_bitstream_filter(st, "aac_adtstoasc", NULL);
+    } else if (st->codecpar->codec_id == AV_CODEC_ID_VP9) {
+        ret = ff_stream_add_bitstream_filter(st, "vp9_superframe", NULL);
     }
 
     return ret;

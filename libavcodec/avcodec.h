@@ -112,6 +112,12 @@
  * are filled. This situation is handled transparently if you follow the steps
  * outlined above.
  *
+ * In theory, sending input can result in EAGAIN - this should happen only if
+ * not all output was received. You can use this to structure alternative decode
+ * or encode loops other than the one suggested above. For example, you could
+ * try sending new input on each iteration, and try to receive output if that
+ * returns EAGAIN.
+ *
  * End of stream situations. These require "flushing" (aka draining) the codec,
  * as the codec might buffer multiple frames or packets internally for
  * performance or out of necessity (consider B-frames).
@@ -136,8 +142,9 @@
  *
  * Not all codecs will follow a rigid and predictable dataflow; the only
  * guarantee is that an AVERROR(EAGAIN) return value on a send/receive call on
- * one end implies that a receive/send call on the other end will succeed. In
- * general, no codec will permit unlimited buffering of input or output.
+ * one end implies that a receive/send call on the other end will succeed, or
+ * at least will not fail with AVERROR(EAGAIN). In general, no codec will
+ * permit unlimited buffering of input or output.
  *
  * This API replaces the following legacy functions:
  * - avcodec_decode_video2() and avcodec_decode_audio4():
@@ -146,7 +153,8 @@
  *   Unlike with the old video decoding API, multiple frames might result from
  *   a packet. For audio, splitting the input packet into frames by partially
  *   decoding packets becomes transparent to the API user. You never need to
- *   feed an AVPacket to the API twice.
+ *   feed an AVPacket to the API twice (unless it is rejected with AVERROR(EAGAIN) - then
+ *   no data was read from the packet).
  *   Additionally, sending a flush/draining packet is required only once.
  * - avcodec_encode_video2()/avcodec_encode_audio2():
  *   Use avcodec_send_frame() to feed input to the encoder, then use
@@ -159,7 +167,22 @@
  * and will result in undefined behavior.
  *
  * Some codecs might require using the new API; using the old API will return
- * an error when calling it.
+ * an error when calling it. All codecs support the new API.
+ *
+ * A codec is not allowed to return AVERROR(EAGAIN) for both sending and receiving. This
+ * would be an invalid state, which could put the codec user into an endless
+ * loop. The API has no concept of time either: it cannot happen that trying to
+ * do avcodec_send_packet() results in AVERROR(EAGAIN), but a repeated call 1 second
+ * later accepts the packet (with no other receive/flush API calls involved).
+ * The API is a strict state machine, and the passage of time is not supposed
+ * to influence it. Some timing-dependent behavior might still be deemed
+ * acceptable in certain cases. But it must never result in both send/receive
+ * returning EAGAIN at the same time at any point. It must also absolutely be
+ * avoided that the current state is "unstable" and can "flip-flop" between
+ * the send/receive APIs allowing progress. For example, it's not allowed that
+ * the codec randomly decides that it actually wants to consume a packet now
+ * instead of returning a frame, after it just returned AVERROR(EAGAIN) on an
+ * avcodec_send_packet() call.
  * @}
  */
 
@@ -417,6 +440,11 @@ enum AVCodecID {
     AV_CODEC_ID_FMVC,
     AV_CODEC_ID_SCPR,
     AV_CODEC_ID_CLEARVIDEO,
+    AV_CODEC_ID_XPM,
+    AV_CODEC_ID_AV1,
+    AV_CODEC_ID_BITPACKED,
+    AV_CODEC_ID_MSCC,
+    AV_CODEC_ID_SRGC,
 
     /* various PCM "codecs" */
     AV_CODEC_ID_FIRST_AUDIO = 0x10000,     ///< A dummy id pointing at the start of audio codecs
@@ -699,7 +727,7 @@ typedef struct AVCodecDescriptor {
 
 /**
  * Codec uses only intra compression.
- * Video codecs only.
+ * Video and audio codecs only.
  */
 #define AV_CODEC_PROP_INTRA_ONLY    (1 << 0)
 /**
@@ -1370,6 +1398,11 @@ typedef struct AVCPBProperties {
  * @{
  */
 enum AVPacketSideDataType {
+    /**
+     * An AV_PKT_DATA_PALETTE side data packet contains exactly AVPALETTE_SIZE
+     * bytes worth of palette. This side data signals that a new palette is
+     * present.
+     */
     AV_PKT_DATA_PALETTE,
 
     /**
@@ -1543,7 +1576,7 @@ enum AVPacketSideDataType {
 
     /**
      * Mastering display metadata (based on SMPTE-2086:2014). This metadata
-     * should be associated with a video stream and containts data in the form
+     * should be associated with a video stream and contains data in the form
      * of the AVMasteringDisplayMetadata struct.
      */
     AV_PKT_DATA_MASTERING_DISPLAY_METADATA,
@@ -1553,6 +1586,13 @@ enum AVPacketSideDataType {
      * to the AVSphericalMapping structure.
      */
     AV_PKT_DATA_SPHERICAL,
+
+    /**
+     * Content light level (based on CTA-861.3). This metadata should be
+     * associated with a video stream and contains data in the form of the
+     * AVContentLightMetadata struct.
+     */
+    AV_PKT_DATA_CONTENT_LIGHT_LEVEL,
 };
 
 #define AV_PKT_DATA_QUALITY_FACTOR AV_PKT_DATA_QUALITY_STATS //DEPRECATED
@@ -3595,6 +3635,15 @@ typedef struct AVCodecContext {
      * contexts used must be created on the same device.
      */
     AVBufferRef *hw_device_ctx;
+
+    /**
+     * Bit set of AV_HWACCEL_FLAG_* flags, which affect hardware accelerated
+     * decoding (if active).
+     * - encoding: unused
+     * - decoding: Set by user (either before avcodec_open2(), or in the
+     *             AVCodecContext.get_format callback)
+     */
+    int hwaccel_flags;
 } AVCodecContext;
 
 AVRational av_codec_get_pkt_timebase         (const AVCodecContext *avctx);
@@ -3715,20 +3764,22 @@ typedef struct AVCodec {
     int (*decode)(AVCodecContext *, void *outdata, int *outdata_size, AVPacket *avpkt);
     int (*close)(AVCodecContext *);
     /**
-     * Decode/encode API with decoupled packet/frame dataflow. The API is the
+     * Encode API with decoupled packet/frame dataflow. The API is the
      * same as the avcodec_ prefixed APIs (avcodec_send_frame() etc.), except
      * that:
      * - never called if the codec is closed or the wrong type,
-     * - AVPacket parameter change side data is applied right before calling
-     *   AVCodec->send_packet,
-     * - if AV_CODEC_CAP_DELAY is not set, drain packets or frames are never sent,
-     * - only one drain packet is ever passed down (until the next flush()),
-     * - a drain AVPacket is always NULL (no need to check for avpkt->size).
+     * - if AV_CODEC_CAP_DELAY is not set, drain frames are never sent,
+     * - only one drain frame is ever passed down,
      */
     int (*send_frame)(AVCodecContext *avctx, const AVFrame *frame);
-    int (*send_packet)(AVCodecContext *avctx, const AVPacket *avpkt);
-    int (*receive_frame)(AVCodecContext *avctx, AVFrame *frame);
     int (*receive_packet)(AVCodecContext *avctx, AVPacket *avpkt);
+
+    /**
+     * Decode API with decoupled packet/frame dataflow. This function is called
+     * to get one output frame. It should call ff_decode_get_packet() to obtain
+     * input data.
+     */
+    int (*receive_frame)(AVCodecContext *avctx, AVFrame *frame);
     /**
      * Flush buffers.
      * Will be called when seeking
@@ -3739,6 +3790,12 @@ typedef struct AVCodec {
      * See FF_CODEC_CAP_* in internal.h
      */
     int caps_internal;
+
+    /**
+     * Decoding only, a comma-separated list of bitstream filters to apply to
+     * packets before decoding.
+     */
+    const char *bsfs;
 } AVCodec;
 
 int av_codec_get_max_lowres(const AVCodec *codec);
@@ -3881,6 +3938,11 @@ typedef struct AVHWAccel {
      * AVCodecInternal.hwaccel_priv_data.
      */
     int priv_data_size;
+
+    /**
+     * Internal hwaccel capabilities.
+     */
+    int caps_internal;
 } AVHWAccel;
 
 /**
@@ -4408,13 +4470,13 @@ AVPacket *av_packet_alloc(void);
  * @see av_packet_alloc
  * @see av_packet_ref
  */
-AVPacket *av_packet_clone(AVPacket *src);
+AVPacket *av_packet_clone(const AVPacket *src);
 
 /**
  * Free the packet, if the packet is reference counted, it will be
  * unreferenced first.
  *
- * @param packet packet to be freed. The pointer will be set to NULL.
+ * @param pkt packet to be freed. The pointer will be set to NULL.
  * @note passing NULL is a no-op.
  */
 void av_packet_free(AVPacket **pkt);
@@ -4549,12 +4611,17 @@ int av_packet_shrink_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
  * @param size pointer for side information size to store (optional)
  * @return pointer to data if present or NULL otherwise
  */
-uint8_t* av_packet_get_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
+uint8_t* av_packet_get_side_data(const AVPacket *pkt, enum AVPacketSideDataType type,
                                  int *size);
 
+#if FF_API_MERGE_SD_API
+attribute_deprecated
 int av_packet_merge_side_data(AVPacket *pkt);
 
+// Chromium: Avoid calling this. http://crbug.com/720142
+// attribute_deprecated
 int av_packet_split_side_data(AVPacket *pkt);
+#endif
 
 const char *av_packet_side_data_name(enum AVPacketSideDataType type);
 
@@ -4856,13 +4923,13 @@ int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
  * and reusing a get_buffer written for video codecs would probably perform badly
  * due to a potentially very different allocation pattern.
  *
- * Some decoders (those marked with CODEC_CAP_DELAY) have a delay between input
+ * Some decoders (those marked with AV_CODEC_CAP_DELAY) have a delay between input
  * and output. This means that for some packets they will not immediately
  * produce decoded output and need to be flushed at the end of decoding to get
  * all the decoded data. Flushing is done by calling this function with packets
  * with avpkt->data set to NULL and avpkt->size set to 0 until it stops
  * returning subtitles. It is safe to flush even those decoders that are not
- * marked with CODEC_CAP_DELAY, then no subtitles will be returned.
+ * marked with AV_CODEC_CAP_DELAY, then no subtitles will be returned.
  *
  * @note The AVCodecContext MUST have been opened with @ref avcodec_open2()
  * before packets may be fed to the decoder.
@@ -4916,8 +4983,10 @@ int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,
  *                  a flush packet.
  *
  * @return 0 on success, otherwise negative error code:
- *      AVERROR(EAGAIN):   input is not accepted right now - the packet must be
- *                         resent after trying to read output
+ *      AVERROR(EAGAIN):   input is not accepted in the current state - user
+ *                         must read output with avcodec_receive_frame() (once
+ *                         all output is read, the packet should be resent, and
+ *                         the call will not fail with EAGAIN).
  *      AVERROR_EOF:       the decoder has been flushed, and no new packets can
  *                         be sent to it (also returned if more than 1 flush
  *                         packet is sent)
@@ -4938,7 +5007,7 @@ int avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt);
  *
  * @return
  *      0:                 success, a frame was returned
- *      AVERROR(EAGAIN):   output is not available right now - user must try
+ *      AVERROR(EAGAIN):   output is not available in this state - user must try
  *                         to send new input
  *      AVERROR_EOF:       the decoder has been fully flushed, and there will be
  *                         no more output frames
@@ -4971,8 +5040,10 @@ int avcodec_receive_frame(AVCodecContext *avctx, AVFrame *frame);
  *                  avctx->frame_size for all frames except the last.
  *                  The final frame may be smaller than avctx->frame_size.
  * @return 0 on success, otherwise negative error code:
- *      AVERROR(EAGAIN):   input is not accepted right now - the frame must be
- *                         resent after trying to read output packets
+ *      AVERROR(EAGAIN):   input is not accepted in the current state - user
+ *                         must read output with avcodec_receive_packet() (once
+ *                         all output is read, the packet should be resent, and
+ *                         the call will not fail with EAGAIN).
  *      AVERROR_EOF:       the encoder has been flushed, and no new frames can
  *                         be sent to it
  *      AVERROR(EINVAL):   codec not opened, refcounted_frames not set, it is a
@@ -4990,8 +5061,8 @@ int avcodec_send_frame(AVCodecContext *avctx, const AVFrame *frame);
  *              encoder. Note that the function will always call
  *              av_frame_unref(frame) before doing anything else.
  * @return 0 on success, otherwise negative error code:
- *      AVERROR(EAGAIN):   output is not available right now - user must try
- *                         to send input
+ *      AVERROR(EAGAIN):   output is not available in the current state - user
+ *                         must try to send input
  *      AVERROR_EOF:       the encoder has been fully flushed, and there will be
  *                         no more output packets
  *      AVERROR(EINVAL):   codec not opened, or it is an encoder
@@ -5617,6 +5688,7 @@ attribute_deprecated
 void avcodec_set_dimensions(AVCodecContext *s, int width, int height);
 #endif
 
+#if FF_API_TAG_STRING
 /**
  * Put a string representing the codec tag codec_tag in buf.
  *
@@ -5625,8 +5697,12 @@ void avcodec_set_dimensions(AVCodecContext *s, int width, int height);
  * @param codec_tag codec tag to assign
  * @return the length of the string that would have been generated if
  * enough space had been available, excluding the trailing null
+ *
+ * @deprecated see av_fourcc_make_string() and av_fourcc2str().
  */
+attribute_deprecated
 size_t av_get_codec_tag_string(char *buf, size_t buf_size, unsigned int codec_tag);
+#endif
 
 void avcodec_string(char *buf, int buf_size, AVCodecContext *enc, int encode);
 
@@ -5739,7 +5815,7 @@ int av_get_audio_frame_duration2(AVCodecParameters *par, int frame_bytes);
 #if FF_API_OLD_BSF
 typedef struct AVBitStreamFilterContext {
     void *priv_data;
-    struct AVBitStreamFilter *filter;
+    const struct AVBitStreamFilter *filter;
     AVCodecParserContext *parser;
     struct AVBitStreamFilterContext *next;
     /**
@@ -5786,12 +5862,15 @@ typedef struct AVBSFContext {
     void *priv_data;
 
     /**
-     * Parameters of the input stream. Set by the caller before av_bsf_init().
+     * Parameters of the input stream. This field is allocated in
+     * av_bsf_alloc(), it needs to be filled by the caller before
+     * av_bsf_init().
      */
     AVCodecParameters *par_in;
 
     /**
-     * Parameters of the output stream. Set by the filter in av_bsf_init().
+     * Parameters of the output stream. This field is allocated in
+     * av_bsf_alloc(), it is set by the filter in av_bsf_init().
      */
     AVCodecParameters *par_out;
 
@@ -5969,8 +6048,7 @@ int av_bsf_init(AVBSFContext *ctx);
  * av_bsf_receive_packet() repeatedly until it returns AVERROR(EAGAIN) or
  * AVERROR_EOF.
  *
- * @param pkt the packet to filter. pkt must contain some payload (i.e data or
- * side data must be present in pkt). The bitstream filter will take ownership of
+ * @param pkt the packet to filter. The bitstream filter will take ownership of
  * the packet and reset the contents of pkt. pkt is not touched if an error occurs.
  * This parameter may be NULL, which signals the end of the stream (i.e. no more
  * packets will be sent). That will cause the filter to output any packets it

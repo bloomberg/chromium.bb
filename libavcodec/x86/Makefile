@@ -87,7 +87,8 @@ MMX-OBJS-$(CONFIG_SNOW_DECODER)        += x86/snowdsp.o
 MMX-OBJS-$(CONFIG_SNOW_ENCODER)        += x86/snowdsp.o
 
 # subsystems
-YASM-OBJS-$(CONFIG_AC3DSP)             += x86/ac3dsp.o
+YASM-OBJS-$(CONFIG_AC3DSP)             += x86/ac3dsp.o                  \
+                                          x86/ac3dsp_downmix.o
 YASM-OBJS-$(CONFIG_AUDIODSP)           += x86/audiodsp.o
 YASM-OBJS-$(CONFIG_BLOCKDSP)           += x86/blockdsp.o
 YASM-OBJS-$(CONFIG_BSWAPDSP)           += x86/bswapdsp.o
@@ -141,6 +142,7 @@ YASM-OBJS-$(CONFIG_ADPCM_G722_DECODER) += x86/g722dsp.o
 YASM-OBJS-$(CONFIG_ADPCM_G722_ENCODER) += x86/g722dsp.o
 YASM-OBJS-$(CONFIG_ALAC_DECODER)       += x86/alacdsp.o
 YASM-OBJS-$(CONFIG_APNG_DECODER)       += x86/pngdsp.o
+YASM-OBJS-$(CONFIG_CAVS_DECODER)       += x86/cavsidct.o
 YASM-OBJS-$(CONFIG_DCA_DECODER)        += x86/dcadsp.o x86/synth_filter.o
 YASM-OBJS-$(CONFIG_DIRAC_DECODER)      += x86/diracdsp.o                \
                                           x86/dirac_dwt.o
@@ -149,10 +151,10 @@ YASM-OBJS-$(CONFIG_FLAC_DECODER)       += x86/flacdsp.o
 ifdef CONFIG_GPL
 YASM-OBJS-$(CONFIG_FLAC_ENCODER)       += x86/flac_dsp_gpl.o
 endif
-YASM-OBJS-$(CONFIG_HEVC_DECODER)       += x86/hevc_mc.o                 \
+YASM-OBJS-$(CONFIG_HEVC_DECODER)       += x86/hevc_add_res.o            \
                                           x86/hevc_deblock.o            \
                                           x86/hevc_idct.o               \
-                                          x86/hevc_res_add.o            \
+                                          x86/hevc_mc.o                 \
                                           x86/hevc_sao.o                \
                                           x86/hevc_sao_10bit.o
 YASM-OBJS-$(CONFIG_JPEG2000_DECODER)   += x86/jpeg2000dsp.o

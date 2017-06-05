@@ -465,7 +465,7 @@ static inline void mv_pred_direct(AVSContext *h, cavs_vector *pmv_fw,
                                   cavs_vector *col_mv)
 {
     cavs_vector *pmv_bw = pmv_fw + MV_BWD_OFFS;
-    int den = h->direct_den[col_mv->ref];
+    unsigned den = h->direct_den[col_mv->ref];
     int m = FF_SIGNBIT(col_mv->x);
 
     pmv_fw->dist = h->dist[1];
@@ -545,7 +545,7 @@ static inline int dequant(AVSContext *h, int16_t *level_buf, uint8_t *run_buf,
  */
 static int decode_residual_block(AVSContext *h, GetBitContext *gb,
                                  const struct dec_2dvlc *r, int esc_golomb_order,
-                                 int qp, uint8_t *dst, int stride)
+                                 int qp, uint8_t *dst, ptrdiff_t stride)
 {
     int i, esc_code, level, mask, ret;
     unsigned int level_code, run;
@@ -1031,6 +1031,10 @@ static int decode_pic(AVSContext *h)
     h->scale_den[1] = h->dist[1] ? 512/h->dist[1] : 0;
     if (h->cur.f->pict_type == AV_PICTURE_TYPE_B) {
         h->sym_factor = h->dist[0] * h->scale_den[1];
+        if (FFABS(h->sym_factor) > 32768) {
+            av_log(h->avctx, AV_LOG_ERROR, "sym_factor %d too large\n", h->sym_factor);
+            return AVERROR_INVALIDDATA;
+        }
     } else {
         h->direct_den[0] = h->dist[0] ? 16384 / h->dist[0] : 0;
         h->direct_den[1] = h->dist[1] ? 16384 / h->dist[1] : 0;

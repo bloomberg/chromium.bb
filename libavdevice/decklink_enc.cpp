@@ -19,16 +19,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <DeckLinkAPI.h>
+#include <atomic>
+using std::atomic;
 
-#include <pthread.h>
-#include <semaphore.h>
+#include <DeckLinkAPI.h>
 
 extern "C" {
 #include "libavformat/avformat.h"
 #include "libavformat/internal.h"
 #include "libavutil/imgutils.h"
-#include "libavutil/atomic.h"
 }
 
 #include "decklink_common.h"
@@ -60,10 +59,10 @@ public:
     virtual HRESULT STDMETHODCALLTYPE GetAncillaryData(IDeckLinkVideoFrameAncillary **ancillary)               { return S_FALSE; }
 
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, LPVOID *ppv) { return E_NOINTERFACE; }
-    virtual ULONG   STDMETHODCALLTYPE AddRef(void)                            { return avpriv_atomic_int_add_and_fetch(&_refs, 1); }
+    virtual ULONG   STDMETHODCALLTYPE AddRef(void)                            { return ++_refs; }
     virtual ULONG   STDMETHODCALLTYPE Release(void)
     {
-        int ret = avpriv_atomic_int_add_and_fetch(&_refs, -1);
+        int ret = --_refs;
         if (!ret) {
             av_frame_free(&_avframe);
             delete this;
@@ -75,7 +74,7 @@ public:
     AVFrame *_avframe;
 
 private:
-    volatile int   _refs;
+    std::atomic<int>  _refs;
 };
 
 class decklink_output_callback : public IDeckLinkVideoOutputCallback
@@ -89,7 +88,10 @@ public:
 
         av_frame_unref(avframe);
 
-        sem_post(&ctx->semaphore);
+        pthread_mutex_lock(&ctx->mutex);
+        ctx->frames_buffer_available_spots++;
+        pthread_cond_broadcast(&ctx->cond);
+        pthread_mutex_unlock(&ctx->mutex);
 
         return S_OK;
     }
@@ -131,7 +133,6 @@ static int decklink_setup_video(AVFormatContext *avctx, AVStream *st)
     ctx->output_callback = new decklink_output_callback();
     ctx->dlo->SetScheduledFrameCompletionCallback(ctx->output_callback);
 
-    /* Start video semaphore. */
     ctx->frames_preroll = st->time_base.den * ctx->preroll;
     if (st->time_base.den > 1000)
         ctx->frames_preroll /= 1000;
@@ -139,7 +140,9 @@ static int decklink_setup_video(AVFormatContext *avctx, AVStream *st)
     /* Buffer twice as many frames as the preroll. */
     ctx->frames_buffer = ctx->frames_preroll * 2;
     ctx->frames_buffer = FFMIN(ctx->frames_buffer, 60);
-    sem_init(&ctx->semaphore, 0, ctx->frames_buffer);
+    pthread_mutex_init(&ctx->mutex, NULL);
+    pthread_cond_init(&ctx->cond, NULL);
+    ctx->frames_buffer_available_spots = ctx->frames_buffer;
 
     /* The device expects the framerate to be fixed. */
     avpriv_set_pts_info(st, 64, st->time_base.num, st->time_base.den);
@@ -209,7 +212,8 @@ av_cold int ff_decklink_write_trailer(AVFormatContext *avctx)
     if (ctx->output_callback)
         delete ctx->output_callback;
 
-    sem_destroy(&ctx->semaphore);
+    pthread_mutex_destroy(&ctx->mutex);
+    pthread_cond_destroy(&ctx->cond);
 
     av_freep(&cctx->ctx);
 
@@ -245,7 +249,12 @@ static int decklink_write_video_packet(AVFormatContext *avctx, AVPacket *pkt)
     }
 
     /* Always keep at most one second of frames buffered. */
-    sem_wait(&ctx->semaphore);
+    pthread_mutex_lock(&ctx->mutex);
+    while (ctx->frames_buffer_available_spots == 0) {
+        pthread_cond_wait(&ctx->cond, &ctx->mutex);
+    }
+    ctx->frames_buffer_available_spots--;
+    pthread_mutex_unlock(&ctx->mutex);
 
     /* Schedule frame for playback. */
     hr = ctx->dlo->ScheduleVideoFrame((struct IDeckLinkVideoFrame *) frame,

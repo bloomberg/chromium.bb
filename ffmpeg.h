@@ -316,6 +316,11 @@ typedef struct InputStream {
 
     int64_t min_pts; /* pts with the smallest value in a current stream */
     int64_t max_pts; /* pts with the higher value in a current stream */
+
+    // when forcing constant input framerate through -r,
+    // this contains the pts that will be given to the next decoded frame
+    int64_t cfr_next_pts;
+
     int64_t nb_samples; /* number of samples in the last decoded audio frame before looping */
 
     double ts_scale;
@@ -470,6 +475,7 @@ typedef struct OutputStream {
     int force_fps;
     int top_field_first;
     int rotate_overridden;
+    double rotate_override_value;
 
     AVRational frame_aspect_ratio;
 
@@ -632,6 +638,7 @@ void choose_sample_fmt(AVStream *st, AVCodec *codec);
 
 int configure_filtergraph(FilterGraph *fg);
 int configure_output_filter(FilterGraph *fg, OutputFilter *ofilter, AVFilterInOut *out);
+void check_filter_outputs(void);
 int ist_in_filtergraph(FilterGraph *fg, InputStream *ist);
 int filtergraph_is_simple(FilterGraph *fg);
 int init_simple_filtergraph(InputStream *ist, OutputStream *ost);

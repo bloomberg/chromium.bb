@@ -83,12 +83,7 @@ static inline int get_vlc_symbol(GetBitContext *gb, VlcState *const state,
     ff_dlog(NULL, "v:%d bias:%d error:%d drift:%d count:%d k:%d",
             v, state->bias, state->error_sum, state->drift, state->count, k);
 
-#if 0 // JPEG LS
-    if (k == 0 && 2 * state->drift <= -state->count)
-        v ^= (-1);
-#else
     v ^= ((2 * state->drift + state->count) >> 31);
-#endif
 
     ret = fold(v + state->bias, bits);
 
@@ -875,7 +870,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
                 fs->slice_damaged = 1;
             }
             if (avctx->debug & FF_DEBUG_PICT_INFO) {
-                av_log(avctx, AV_LOG_DEBUG, "slice %d, CRC: 0x%08X\n", i, AV_RB32(buf_p + v - 4));
+                av_log(avctx, AV_LOG_DEBUG, "slice %d, CRC: 0x%08"PRIX32"\n", i, AV_RB32(buf_p + v - 4));
             }
         }
 
@@ -903,7 +898,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
             const uint8_t *src[4];
             uint8_t *dst[4];
             ff_thread_await_progress(&f->last_picture, INT_MAX, 0);
-            for (j = 0; j < 4; j++) {
+            for (j = 0; j < desc->nb_components; j++) {
                 int pixshift = desc->comp[j].depth > 8;
                 int sh = (j == 1 || j == 2) ? f->chroma_h_shift : 0;
                 int sv = (j == 1 || j == 2) ? f->chroma_v_shift : 0;
@@ -911,6 +906,12 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
                          (fs->slice_y >> sv) + ((fs->slice_x >> sh) << pixshift);
                 src[j] = f->last_picture.f->data[j] + f->last_picture.f->linesize[j] *
                          (fs->slice_y >> sv) + ((fs->slice_x >> sh) << pixshift);
+
+            }
+            if (desc->flags & AV_PIX_FMT_FLAG_PAL ||
+                desc->flags & AV_PIX_FMT_FLAG_PSEUDOPAL) {
+                dst[1] = p->data[1];
+                src[1] = f->last_picture.f->data[1];
             }
             av_image_copy(dst, p->linesize, src,
                           f->last_picture.f->linesize,

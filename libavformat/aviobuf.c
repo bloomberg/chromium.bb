@@ -120,6 +120,7 @@ int ffio_init_context(AVIOContext *s,
     s->current_type          = AVIO_DATA_MARKER_UNKNOWN;
     s->last_time             = AV_NOPTS_VALUE;
     s->short_seek_get        = NULL;
+    s->written               = 0;
 
     return 0;
 }
@@ -154,6 +155,9 @@ static void writeout(AVIOContext *s, const uint8_t *data, int len)
             ret = s->write_packet(s->opaque, (uint8_t *)data, len);
         if (ret < 0) {
             s->error = ret;
+        } else {
+            if (s->pos + len > s->written)
+                s->written = s->pos + len;
         }
     }
     if (s->current_type == AVIO_DATA_MARKER_SYNC_POINT ||
@@ -269,7 +273,7 @@ int64_t avio_seek(AVIOContext *s, int64_t offset, int whence)
         offset1 >= 0 && offset1 <= buffer_size - s->write_flag) {
         /* can do the seek inside the buffer */
         s->buf_ptr = s->buffer + offset1;
-    } else if ((!s->seekable ||
+    } else if ((!(s->seekable & AVIO_SEEKABLE_NORMAL) ||
                offset1 <= buffer_size + short_seek) &&
                !s->write_flag && offset1 >= 0 &&
                (!s->direct || !s->seek) &&
@@ -322,6 +326,9 @@ int64_t avio_size(AVIOContext *s)
 
     if (!s)
         return AVERROR(EINVAL);
+
+    if (s->written)
+        return s->written;
 
     if (!s->seek)
         return AVERROR(ENOSYS);
@@ -934,6 +941,9 @@ int ffio_fdopen(AVIOContext **s, URLContext *h)
     if(h->prot) {
         (*s)->read_pause = io_read_pause;
         (*s)->read_seek  = io_read_seek;
+
+        if (h->prot->url_read_seek)
+            (*s)->seekable |= AVIO_SEEKABLE_TIME;
     }
     (*s)->short_seek_get = io_short_seek;
     (*s)->av_class = &ff_avio_class;

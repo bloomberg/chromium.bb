@@ -370,12 +370,10 @@ FF_ENABLE_DEPRECATION_WARNINGS
             }
             if (par->codec_tag) {
                 if (!validate_codec_tag(s, st)) {
-                    char tagbuf[32], tagbuf2[32];
-                    av_get_codec_tag_string(tagbuf, sizeof(tagbuf), par->codec_tag);
-                    av_get_codec_tag_string(tagbuf2, sizeof(tagbuf2), av_codec_get_tag(s->oformat->codec_tag, par->codec_id));
+                    const uint32_t otag = av_codec_get_tag(s->oformat->codec_tag, par->codec_id);
                     av_log(s, AV_LOG_ERROR,
-                           "Tag %s/0x%08x incompatible with output codec id '%d' (%s)\n",
-                           tagbuf, par->codec_tag, par->codec_id, tagbuf2);
+                           "Tag %s incompatible with output codec id '%d' (%s)\n",
+                           av_fourcc2str(par->codec_tag), par->codec_id, av_fourcc2str(otag));
                     ret = AVERROR_INVALIDDATA;
                     goto fail;
                 }
@@ -752,7 +750,11 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         }
     }
 
+#if FF_API_LAVF_MERGE_SD
+FF_DISABLE_DEPRECATION_WARNINGS
     did_split = av_packet_split_side_data(pkt);
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
     if (!s->internal->header_written) {
         ret = s->internal->write_header_ret ? s->internal->write_header_ret : write_header_internal(s);
@@ -777,8 +779,12 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
 fail:
+#if FF_API_LAVF_MERGE_SD
+FF_DISABLE_DEPRECATION_WARNINGS
     if (did_split)
         av_packet_merge_side_data(pkt);
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
     if (ret < 0) {
         pkt->pts = pts_backup;
@@ -815,7 +821,7 @@ static int prepare_input_packet(AVFormatContext *s, AVPacket *pkt)
     if (ret < 0)
         return ret;
 
-#if !FF_API_COMPUTE_PKT_FIELDS2 && FF_API_LAVF_AVCTX
+#if !FF_API_COMPUTE_PKT_FIELDS2 || !FF_API_LAVF_AVCTX
     /* sanitize the timestamps */
     if (!(s->oformat->flags & AVFMT_NOTIMESTAMPS)) {
         AVStream *st = s->streams[pkt->stream_index];
@@ -875,8 +881,15 @@ static int do_packet_auto_bsf(AVFormatContext *s, AVPacket *pkt) {
         }
     }
 
-    if (st->internal->nb_bsfcs)
-        av_packet_split_side_data(pkt);
+#if FF_API_LAVF_MERGE_SD
+FF_DISABLE_DEPRECATION_WARNINGS
+    if (st->internal->nb_bsfcs) {
+        ret = av_packet_split_side_data(pkt);
+        if (ret < 0)
+            av_log(s, AV_LOG_WARNING, "Failed to split side data before bitstream filter\n");
+    }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
     for (i = 0; i < st->internal->nb_bsfcs; i++) {
         AVBSFContext *ctx = st->internal->bsfcs[i];
@@ -1409,7 +1422,7 @@ static int av_write_uncoded_frame_internal(AVFormatContext *s, int stream_index,
         pkt.size         = UNCODED_FRAME_PACKET_SIZE;
         pkt.pts          =
         pkt.dts          = frame->pts;
-        pkt.duration     = av_frame_get_pkt_duration(frame);
+        pkt.duration     = frame->pkt_duration;
         pkt.stream_index = stream_index;
         pkt.flags |= AV_PKT_FLAG_UNCODED_FRAME;
     }

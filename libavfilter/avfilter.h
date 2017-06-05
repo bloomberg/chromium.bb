@@ -268,6 +268,8 @@ typedef struct AVFilter {
 
     int priv_size;      ///< size of private data to allocate for the filter
 
+    int flags_internal; ///< Additional flags for avfilter internal use only.
+
     /**
      * Used by the filter registration system. Must not be touched by any other
      * code.
@@ -841,7 +843,9 @@ typedef struct AVFilterGraph {
     unsigned nb_filters;
 
     char *scale_sws_opts; ///< sws options to use for the auto-inserted scale filters
-    char *resample_lavr_opts;   ///< libavresample options to use for the auto-inserted resample filters
+#if FF_API_LAVR_OPTS
+    attribute_deprecated char *resample_lavr_opts;   ///< libavresample options to use for the auto-inserted resample filters
+#endif
 
     /**
      * Type of multithreading allowed for filters in this graph. A combination

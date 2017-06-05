@@ -262,7 +262,7 @@ static int vlc_decode_block(MimicContext *ctx, int num_coeffs, int qscale)
 
         coeff = vlcdec_lookup[num_bits][value];
         if (pos < 3)
-            coeff <<= 4;
+            coeff *= 16;
         else /* TODO Use >> 10 instead of / 1001 */
             coeff = (coeff * qscale) / 1001;
 
@@ -445,9 +445,6 @@ static int mimic_decode_frame(AVCodecContext *avctx, void *data,
 
     ctx->prev_index = ctx->next_prev_index;
     ctx->cur_index  = ctx->next_cur_index;
-
-    /* Only release frames that aren't used for backreferences anymore */
-    ff_thread_release_buffer(avctx, &ctx->frames[ctx->cur_index]);
 
     return buf_size;
 }

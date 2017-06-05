@@ -363,14 +363,6 @@ typedef struct H264Context {
     int width, height;
     int chroma_x_shift, chroma_y_shift;
 
-    /**
-     * Backup frame properties: needed, because they can be different
-     * between returned frame and last decoded frame.
-     **/
-    int backup_width;
-    int backup_height;
-    enum AVPixelFormat backup_pix_fmt;
-
     int droppable;
     int coded_picture_number;
 
@@ -579,7 +571,6 @@ int ff_h264_decode_ref_pic_marking(H264SliceContext *sl, GetBitContext *gb,
                                    const H2645NAL *nal, void *logctx);
 
 void ff_h264_hl_decode_mb(const H264Context *h, H264SliceContext *sl);
-int ff_h264_decode_init(AVCodecContext *avctx);
 void ff_h264_decode_init_vlc(void);
 
 /**

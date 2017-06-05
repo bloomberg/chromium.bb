@@ -53,7 +53,7 @@ void ff_tlog_ref(void *ctx, AVFrame *ref, int end)
             "ref[%p buf:%p data:%p linesize[%d, %d, %d, %d] pts:%"PRId64" pos:%"PRId64,
             ref, ref->buf, ref->data[0],
             ref->linesize[0], ref->linesize[1], ref->linesize[2], ref->linesize[3],
-            ref->pts, av_frame_get_pkt_pos(ref));
+            ref->pts, ref->pkt_pos);
 
     if (ref->width) {
         ff_tlog(ctx, " a:%d/%d s:%dx%d i:%c iskey:%d type:%c",
@@ -355,14 +355,12 @@ int avfilter_config_links(AVFilterContext *filter)
             }
 
             if (link->src->nb_inputs && link->src->inputs[0]->hw_frames_ctx &&
-                !link->hw_frames_ctx) {
-                AVHWFramesContext *input_ctx = (AVHWFramesContext*)link->src->inputs[0]->hw_frames_ctx->data;
-
-                if (input_ctx->format == link->format) {
-                    link->hw_frames_ctx = av_buffer_ref(link->src->inputs[0]->hw_frames_ctx);
-                    if (!link->hw_frames_ctx)
-                        return AVERROR(ENOMEM);
-                }
+                !(link->src->filter->flags_internal & FF_FILTER_FLAG_HWFRAME_AWARE)) {
+                av_assert0(!link->hw_frames_ctx &&
+                           "should not be set by non-hwframe-aware filter");
+                link->hw_frames_ctx = av_buffer_ref(link->src->inputs[0]->hw_frames_ctx);
+                if (!link->hw_frames_ctx)
+                    return AVERROR(ENOMEM);
             }
 
             if ((config_link = link->dstpad->config_props))
@@ -1145,7 +1143,7 @@ int ff_filter_frame(AVFilterLink *link, AVFrame *frame)
             av_log(link->dst, AV_LOG_ERROR, "Format change is not supported\n");
             goto error;
         }
-        if (av_frame_get_channels(frame) != link->channels) {
+        if (frame->channels != link->channels) {
             av_log(link->dst, AV_LOG_ERROR, "Channel count change is not supported\n");
             goto error;
         }
@@ -1587,7 +1585,7 @@ int ff_inlink_make_frame_writable(AVFilterLink *link, AVFrame **rframe)
     case AVMEDIA_TYPE_AUDIO:
         av_samples_copy(out->extended_data, frame->extended_data,
                         0, 0, frame->nb_samples,
-                        av_frame_get_channels(frame),
+                        frame->channels,
                         frame->format);
         break;
     default:
@@ -1618,7 +1616,7 @@ int ff_inlink_evaluate_timeline_at_frame(AVFilterLink *link, const AVFrame *fram
 {
     AVFilterContext *dstctx = link->dst;
     int64_t pts = frame->pts;
-    int64_t pos = av_frame_get_pkt_pos(frame);
+    int64_t pos = frame->pkt_pos;
 
     if (!dstctx->enable_str)
         return 1;
