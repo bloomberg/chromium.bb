@@ -140,17 +140,26 @@
     // - separator
     // The property supports a list of values, and when there is more than one,
     // it is separated with this character.
-    // - supports_percentage
-    // The property supports percentage types.
     typedom_types: {
       default: [],
+      valid_type: "list",
+      valid_values: [
+        "Angle",
+        "Flex",
+        "Frequency",
+        "Length",
+        "Number",
+        "Percent",
+        "Position",
+        "Resolution",
+        "Time",
+        "Transform",
+        "Unparsed",
+        "Image"
+      ],
     },
     separator: {
       valid_values: [",", " ", "/"],
-    },
-    supports_percentage: {
-      default: false,
-      valid_type: "bool",
     },
 
     // Flags which go into CSSPropertyMetadata:
@@ -719,6 +728,7 @@
       initial: "InitialBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
+      typedom_types: ["Length"],
       field_template: "storage_only",
       include_paths: ["platform/LayoutUnit.h"],
       type_name: "LayoutUnit",
@@ -791,6 +801,7 @@
       initial: "InitialBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
+      typedom_types: ["Length"],
       field_template: "storage_only",
       include_paths: ["platform/LayoutUnit.h"],
       type_name: "LayoutUnit",
@@ -823,6 +834,7 @@
       initial: "InitialBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
+      typedom_types: ["Length"],
       field_template: "storage_only",
       include_paths: ["platform/LayoutUnit.h"],
       type_name: "LayoutUnit",
@@ -879,7 +891,7 @@
       initial: "InitialBorderWidth",
       interpolable: true,
       keywords: ["thin", "medium", "thick"],
-      supports_percentage: true,
+      typedom_types: ["Length"],
       field_template: "storage_only",
       include_paths: ["platform/LayoutUnit.h"],
       type_name: "LayoutUnit",
@@ -893,7 +905,6 @@
       converter: "ConvertLengthOrAuto",
       interpolable: true,
       keywords: ["auto"],
-      supports_percentage: true,
       field_template: "external",
       include_paths: ["platform/Length.h"],
       type_name: "Length",
@@ -1264,7 +1275,6 @@
       is_descriptor: true,
       interpolable: true,
       keywords: ["auto", "fit-content", "min-content", "max-content"],
-      supports_percentage: true,
       field_template: "external",
       include_paths: ["platform/Length.h"],
       type_name: "Length",
@@ -1329,7 +1339,6 @@
       converter: "ConvertLengthOrAuto",
       interpolable: true,
       keywords: ["auto"],
-      supports_percentage: true,
       field_template: "external",
       include_paths: ["platform/Length.h"],
       type_name: "Length",
@@ -1790,7 +1799,6 @@
       converter: "ConvertLengthOrAuto",
       interpolable: true,
       keywords: ["auto"],
-      supports_percentage: true,
       field_template: "external",
       include_paths: ["platform/Length.h"],
       type_name: "Length",
@@ -2159,7 +2167,6 @@
       converter: "ConvertLengthOrAuto",
       interpolable: true,
       keywords: ["auto"],
-      supports_percentage: true,
       field_template: "external",
       include_paths: ["platform/Length.h"],
       type_name: "Length",
@@ -2728,7 +2735,6 @@
       is_descriptor: true,
       interpolable: true,
       keywords: ["auto", "fit-content", "min-content", "max-content"],
-      supports_percentage: true,
       field_template: "external",
       include_paths: ["platform/Length.h"],
       type_name: "Length",

@@ -13,19 +13,15 @@ namespace blink {
 
 bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
                                  const CSSStyleValue& styleValue) {
-  // Shortcut special case.
-  if (styleValue.GetType() == CSSStyleValue::kSimpleLengthType ||
-      styleValue.GetType() == CSSStyleValue::kCalcLengthType) {
-    // TODO(meade): Rewrite this once the new length types are spec'd.
-    // if (ToCSSLengthValue(styleValue).ContainsPercent() &&
-    //     !CSSPropertyMetadata::PropertySupportsPercentage(id)) {
-    //   return false;
-    // }
-  } else if (styleValue.GetType() == CSSStyleValue::kKeywordType) {
-    // Keywords are also handled differently.
+  if (styleValue.GetType() == CSSStyleValue::kKeywordType) {
     return CSSOMKeywords::ValidKeywordForProperty(
         id, ToCSSKeywordValue(styleValue));
-  } else if (styleValue.GetType() == CSSStyleValue::kUnknown) {
+  }
+  if (styleValue.ContainsPercent() &&
+      !CSSPropertyMetadata::PropertySupportsPercentage(id)) {
+    return false;
+  }
+  if (styleValue.GetType() == CSSStyleValue::kUnknownType) {
     // The check happens later in this case.
     return true;
   }

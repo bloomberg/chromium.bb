@@ -23,15 +23,18 @@ CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1U);
   CSSNumericValue* length =
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+  // TODO(meade): This shouldn't happen once CSSNumericValue is fully
+  // implemented, so once that happens this check can be removed.
+  if (!length)
+    return nullptr;
   DCHECK(!length->ContainsPercent());
   return new CSSPerspective(length);
 }
 
 CSSFunctionValue* CSSPerspective::ToCSSValue() const {
-  return nullptr;
-  // CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
-  // result->Append(*length_->ToCSSValue());
-  // return result;
+  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
+  result->Append(*length_->ToCSSValue());
+  return result;
 }
 
 }  // namespace blink

@@ -10,30 +10,40 @@
 
 namespace blink {
 
+// Represents numeric values that can be expressed as a single number plus a
+// unit (or a naked number or percentage).
+// See CSSUnitValue.idl for more information about this class.
 class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   WTF_MAKE_NONCOPYABLE(CSSUnitValue);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSPrimitiveValue::UnitType UnitFromName(const String& name);
+  // The constructor defined in the IDL.
   static CSSUnitValue* Create(double value,
                               const String& unit,
                               ExceptionState&);
+  // Blink-internal ways of creating CSSUnitValues.
   static CSSUnitValue* Create(double value, CSSPrimitiveValue::UnitType);
   static CSSUnitValue* FromCSSValue(const CSSPrimitiveValue&);
 
+  // Setters and getters for attributes defined in the IDL.
   void setValue(double new_value) { value_ = new_value; }
   double value() const { return value_; }
   void setUnit(const String& new_unit, ExceptionState&);
   String unit() const;
-
   String type() const;
 
-  StyleValueType GetType() const override { return StyleValueType::kUnitType; }
-
+  // Gets the Typed OM category, e.g. length, angle, etc.
+  StyleValueType GetType() const override;
+  bool ContainsPercent() const override {
+    return unit_ == CSSPrimitiveValue::UnitType::kPercentage;
+  }
+  // Gets the representation that can be applied to an inline style.
   const CSSValue* ToCSSValue() const override;
 
  private:
+  static CSSPrimitiveValue::UnitType UnitFromName(const String& name);
+
   CSSUnitValue(double value, CSSPrimitiveValue::UnitType unit)
       : CSSNumericValue(), value_(value), unit_(unit) {}
 

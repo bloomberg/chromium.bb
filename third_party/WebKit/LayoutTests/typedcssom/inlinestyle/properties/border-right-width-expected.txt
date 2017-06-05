@@ -5,21 +5,22 @@ PASS Setting border-right-width to thick
 PASS Setting border-right-width to initial 
 PASS Setting border-right-width to inherit 
 PASS Setting border-right-width to unset 
-FAIL Setting border-right-width to CSSUnitValue with value 1px Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 3em Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 4ex Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 5ch Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 6rem Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 7vw Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 8vh Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 9vmin Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 10vmax Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 11cm Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 12mm Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 13in Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 14pc Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL Setting border-right-width to CSSUnitValue with value 15pt Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-PASS Setting border-right-width to invalid value CSSUnitValue throws 
+PASS Setting border-right-width to CSSUnitValue with value 1px 
+PASS Setting border-right-width to CSSUnitValue with value 3em 
+PASS Setting border-right-width to CSSUnitValue with value 4ex 
+PASS Setting border-right-width to CSSUnitValue with value 5ch 
+PASS Setting border-right-width to CSSUnitValue with value 6rem 
+PASS Setting border-right-width to CSSUnitValue with value 7vw 
+PASS Setting border-right-width to CSSUnitValue with value 8vh 
+PASS Setting border-right-width to CSSUnitValue with value 9vmin 
+PASS Setting border-right-width to CSSUnitValue with value 10vmax 
+PASS Setting border-right-width to CSSUnitValue with value 11cm 
+PASS Setting border-right-width to CSSUnitValue with value 12mm 
+PASS Setting border-right-width to CSSUnitValue with value 13in 
+PASS Setting border-right-width to CSSUnitValue with value 14pc 
+PASS Setting border-right-width to CSSUnitValue with value 15pt 
+PASS Setting border-right-width to invalid value CSSUnitValue "1" throws 
+PASS Setting border-right-width to invalid value CSSUnitValue "2%" throws 
 PASS Setting border-right-width to invalid value null throws 
 PASS Setting border-right-width to invalid value undefined throws 
 PASS Setting border-right-width to invalid value true throws 
@@ -27,7 +28,7 @@ PASS Setting border-right-width to invalid value false throws
 PASS Setting border-right-width to invalid value 1 throws 
 PASS Setting border-right-width to invalid value hello throws 
 PASS Setting border-right-width to invalid value [object Object] throws 
-PASS Setting border-right-width to invalid value CSSKeywordValue throws 
+PASS Setting border-right-width to invalid value CSSKeywordValue "notAKeyword" throws 
 PASS Getting border-right-width when it is set to thin 
 PASS Getting border-right-width when it is set to medium 
 PASS Getting border-right-width when it is set to thick 
@@ -50,7 +51,7 @@ FAIL Getting border-right-width with a CSSUnitValue whose value is 14pc assert_e
 FAIL Getting border-right-width with a CSSUnitValue whose value is 15pt assert_equals: typeof result expected "CSSUnitValue" but got "CSSStyleValue"
 FAIL getAll for single-valued border-right-width assert_equals: Returned type is incorrect: expected "CSSUnitValue" but got "CSSStyleValue"
 PASS Delete border-right-width removes the value from the styleMap 
-FAIL border-right-width shows up in getProperties Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS border-right-width shows up in getProperties 
 PASS Setting border-right-width to a sequence throws 
 PASS Appending to border-right-width throws 
 Harness: the test ran to completion.

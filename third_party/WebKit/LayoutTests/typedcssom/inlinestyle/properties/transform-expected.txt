@@ -20,7 +20,7 @@ FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' 
 FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting transform to CSSTransformValue with value  Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-PASS Setting transform to invalid value CSSUnitValue throws 
+PASS Setting transform to invalid value CSSUnitValue "4px" throws 
 PASS Setting transform to invalid value null throws 
 PASS Setting transform to invalid value undefined throws 
 PASS Setting transform to invalid value true throws 
@@ -28,7 +28,7 @@ PASS Setting transform to invalid value false throws
 PASS Setting transform to invalid value 1 throws 
 PASS Setting transform to invalid value hello throws 
 PASS Setting transform to invalid value [object Object] throws 
-PASS Setting transform to invalid value CSSKeywordValue throws 
+PASS Setting transform to invalid value CSSKeywordValue "notAKeyword" throws 
 PASS Getting transform when it is set to none 
 PASS Getting transform when it is set to initial 
 PASS Getting transform when it is set to inherit 
