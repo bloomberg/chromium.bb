@@ -248,6 +248,7 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      "chrome://bookmarks/*",
       "chrome://md-settings/*",
       "chrome://settings/*",
       "chrome://settings-frame/*"
