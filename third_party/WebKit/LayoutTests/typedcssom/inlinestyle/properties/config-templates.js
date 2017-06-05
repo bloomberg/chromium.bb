@@ -48,7 +48,10 @@ config_templates.lengthConfig_ = {
       //   'calc((5vmin + 1mm) / 2)': new CSSCalcValue({vmin: 2.5, mm: 0.5}),
       },
       supportsMultiple: false,
-      invalidObjects: [new CSSUnitValue(1, 'number')]
+      invalidObjects: [
+          new CSSUnitValue(1, 'number'),
+          new CSSUnitValue(2, 'percent'),
+      ]
 };
 
 config_templates.lengthPercentConfig_ = Object.assign(
@@ -77,6 +80,9 @@ config_templates.lengthPercentConfig_.validObjects.concat([
     // // Contains px and percent
     // new CSSCalcValue({px: 6, percent: 10})
   ]);
+config_templates.lengthPercentConfig_.invalidObjects = [
+    new CSSUnitValue(1, 'number'),
+];
 
 config_templates.borderConfig_ = {
   validKeywords: [

@@ -20,7 +20,7 @@ FAIL Setting height to CSSUnitValue with value 12mm Failed to execute 'set' on '
 FAIL Setting height to CSSUnitValue with value 13in Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting height to CSSUnitValue with value 14pc Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting height to CSSUnitValue with value 15pt Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-PASS Setting height to invalid value CSSUnitValue throws 
+PASS Setting height to invalid value CSSUnitValue "1" throws 
 PASS Setting height to invalid value null throws 
 PASS Setting height to invalid value undefined throws 
 PASS Setting height to invalid value true throws 
@@ -28,7 +28,7 @@ PASS Setting height to invalid value false throws
 PASS Setting height to invalid value 1 throws 
 PASS Setting height to invalid value hello throws 
 PASS Setting height to invalid value [object Object] throws 
-PASS Setting height to invalid value CSSKeywordValue throws 
+PASS Setting height to invalid value CSSKeywordValue "notAKeyword" throws 
 PASS Getting height when it is set to max-content 
 PASS Getting height when it is set to min-content 
 PASS Getting height when it is set to fit-content 

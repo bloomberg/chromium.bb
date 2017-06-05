@@ -11,7 +11,7 @@ test(function() {
 
 test(function() {
   var simpleLength = new CSSUnitValue(10, 'percent');
-  assert_throws(null, function() { new CSSPerspective(simpleLength) });
+  assert_throws(new TypeError(), function() { new CSSPerspective(simpleLength) });
 }, "Constructor should throw an error for CSSUnitValues with a percentage type");
 
 test(function() {

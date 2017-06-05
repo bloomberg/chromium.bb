@@ -17,7 +17,7 @@ FAIL Setting left to CSSUnitValue with value 12mm Failed to execute 'set' on 'St
 FAIL Setting left to CSSUnitValue with value 13in Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting left to CSSUnitValue with value 14pc Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting left to CSSUnitValue with value 15pt Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-PASS Setting left to invalid value CSSUnitValue throws 
+PASS Setting left to invalid value CSSUnitValue "1" throws 
 PASS Setting left to invalid value null throws 
 PASS Setting left to invalid value undefined throws 
 PASS Setting left to invalid value true throws 
@@ -25,7 +25,7 @@ PASS Setting left to invalid value false throws
 PASS Setting left to invalid value 1 throws 
 PASS Setting left to invalid value hello throws 
 PASS Setting left to invalid value [object Object] throws 
-PASS Setting left to invalid value CSSKeywordValue throws 
+PASS Setting left to invalid value CSSKeywordValue "notAKeyword" throws 
 PASS Getting left when it is set to auto 
 PASS Getting left when it is set to initial 
 PASS Getting left when it is set to inherit 

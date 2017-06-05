@@ -27,28 +27,32 @@ class CORE_EXPORT CSSStyleValue
 
  public:
   enum StyleValueType {
-    // This list corresponds to each non-abstract subclass.
-    kUnknown,
+    kUnknownType,
     kAngleType,
-    kCalcLengthType,
+    kFlexType,
+    kFrequencyType,
     kKeywordType,
+    kLengthType,
     kNumberType,
+    kPercentType,
     kPositionType,
-    kSimpleLengthType,
+    kResolutionType,
+    kTimeType,
     kTransformType,
-    kUnitType,
     kUnparsedType,
     kURLImageType,
+    kInvalidType,
   };
-
-  virtual ~CSSStyleValue() {}
-
-  virtual StyleValueType GetType() const = 0;
 
   static ScriptValue parse(ScriptState*,
                            const String& property_name,
                            const String& value,
                            ExceptionState&);
+
+  virtual ~CSSStyleValue() {}
+
+  virtual StyleValueType GetType() const = 0;
+  virtual bool ContainsPercent() const { return false; }
 
   virtual const CSSValue* ToCSSValue() const = 0;
   virtual const CSSValue* ToCSSValueWithProperty(CSSPropertyID) const {
@@ -64,6 +68,8 @@ class CORE_EXPORT CSSStyleValue
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
+  static String StyleValueTypeToString(StyleValueType);
+
   CSSStyleValue() {}
 };
 

@@ -17,7 +17,7 @@ FAIL Setting right to CSSUnitValue with value 12mm Failed to execute 'set' on 'S
 FAIL Setting right to CSSUnitValue with value 13in Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting right to CSSUnitValue with value 14pc Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting right to CSSUnitValue with value 15pt Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-PASS Setting right to invalid value CSSUnitValue throws 
+PASS Setting right to invalid value CSSUnitValue "1" throws 
 PASS Setting right to invalid value null throws 
 PASS Setting right to invalid value undefined throws 
 PASS Setting right to invalid value true throws 
@@ -25,7 +25,7 @@ PASS Setting right to invalid value false throws
 PASS Setting right to invalid value 1 throws 
 PASS Setting right to invalid value hello throws 
 PASS Setting right to invalid value [object Object] throws 
-PASS Setting right to invalid value CSSKeywordValue throws 
+PASS Setting right to invalid value CSSKeywordValue "notAKeyword" throws 
 PASS Getting right when it is set to auto 
 PASS Getting right when it is set to initial 
 PASS Getting right when it is set to inherit 

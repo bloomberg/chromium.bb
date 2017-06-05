@@ -20,7 +20,9 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
     return new CSSUnsupportedStyleValue(css_text);
   }
 
-  StyleValueType GetType() const override { return StyleValueType::kUnknown; }
+  StyleValueType GetType() const override {
+    return StyleValueType::kUnknownType;
+  }
   const CSSValue* ToCSSValue() const override;
   const CSSValue* ToCSSValueWithProperty(CSSPropertyID) const override;
   String toString() const override { return css_text_; }

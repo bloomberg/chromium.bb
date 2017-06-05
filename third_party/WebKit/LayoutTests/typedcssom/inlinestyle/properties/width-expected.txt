@@ -20,7 +20,7 @@ FAIL Setting width to CSSUnitValue with value 12mm Failed to execute 'set' on 'S
 FAIL Setting width to CSSUnitValue with value 13in Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting width to CSSUnitValue with value 14pc Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 FAIL Setting width to CSSUnitValue with value 15pt Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-PASS Setting width to invalid value CSSUnitValue throws 
+PASS Setting width to invalid value CSSUnitValue "1" throws 
 PASS Setting width to invalid value null throws 
 PASS Setting width to invalid value undefined throws 
 PASS Setting width to invalid value true throws 
@@ -28,7 +28,7 @@ PASS Setting width to invalid value false throws
 PASS Setting width to invalid value 1 throws 
 PASS Setting width to invalid value hello throws 
 PASS Setting width to invalid value [object Object] throws 
-PASS Setting width to invalid value CSSKeywordValue throws 
+PASS Setting width to invalid value CSSKeywordValue "notAKeyword" throws 
 PASS Getting width when it is set to max-content 
 PASS Getting width when it is set to min-content 
 PASS Getting width when it is set to fit-content 

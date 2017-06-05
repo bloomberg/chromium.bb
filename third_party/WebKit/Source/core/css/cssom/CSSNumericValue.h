@@ -49,12 +49,7 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
     return nullptr;
   }
 
-  // Internal methods.
   virtual CSSUnitValue* to(CSSPrimitiveValue::UnitType) { return nullptr; }
-  bool ContainsPercent() const {
-    // TODO(meade): Implement.
-    return false;
-  }
 
  protected:
   CSSNumericValue() {}
