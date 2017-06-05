@@ -94,7 +94,7 @@ class TestLauncher {
     // These mirror values in base::LaunchOptions, see it for details.
     HandlesToInheritVector* handles_to_inherit = nullptr;
     bool inherit_handles = false;
-#elif defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
     const FileHandleMappingVector* fds_to_remap = nullptr;
 #endif
   };
