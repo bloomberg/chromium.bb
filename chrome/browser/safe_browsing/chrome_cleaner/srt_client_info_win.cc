@@ -4,6 +4,9 @@
 
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,6 +42,15 @@ bool SafeBrowsingExtendedReportingEnabled() {
                      [](const Profile* profile) {
                        return IsExtendedReportingEnabled(*profile->GetPrefs());
                      });
+}
+
+bool SafeBrowsingExtendedReportingScoutEnabled() {
+  std::vector<Profile*> profiles = ProfileManager::GetLastOpenedProfiles();
+  return std::any_of(
+      profiles.begin(), profiles.end(), [](const Profile* profile) {
+        return profile && GetExtendedReportingLevel(*profile->GetPrefs()) ==
+                              SBER_LEVEL_SCOUT;
+      });
 }
 
 }  // namespace safe_browsing

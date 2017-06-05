@@ -122,9 +122,9 @@ class ChromeCleanerRunnerSimpleTest
 
   void OnConnectionClosed() {}
 
-  void OnProcessDone(ChromeCleanerRunner::LaunchStatus launch_status) {
+  void OnProcessDone(ChromeCleanerRunner::ProcessStatus process_status) {
     on_process_done_called_ = true;
-    launch_status_ = launch_status;
+    process_status_ = process_status;
     run_loop_.QuitWhenIdle();
   }
 
@@ -142,7 +142,7 @@ class ChromeCleanerRunnerSimpleTest
 
   // Variables set by OnProcessDone().
   bool on_process_done_called_ = false;
-  ChromeCleanerRunner::LaunchStatus launch_status_;
+  ChromeCleanerRunner::ProcessStatus process_status_;
 
   base::RunLoop run_loop_;
 };
@@ -300,9 +300,9 @@ class ChromeCleanerRunnerTest
     QuitTestRunLoopIfCommunicationDone();
   }
 
-  void OnProcessDone(ChromeCleanerRunner::LaunchStatus launch_status) {
+  void OnProcessDone(ChromeCleanerRunner::ProcessStatus process_status) {
     on_process_done_called_ = true;
-    launch_status_ = launch_status;
+    process_status_ = process_status;
     QuitTestRunLoopIfCommunicationDone();
   }
 
@@ -316,7 +316,8 @@ class ChromeCleanerRunnerTest
   PromptAcceptance prompt_acceptance_to_send_ = PromptAcceptance::UNSPECIFIED;
 
   // Set by OnProcessDone().
-  ChromeCleanerRunner::LaunchStatus launch_status_ = {false, -1};
+  ChromeCleanerRunner::ProcessStatus process_status_;
+
   // Set by OnPromptUser().
   std::unique_ptr<std::set<base::FilePath>> received_files_to_delete_;
 
@@ -363,9 +364,11 @@ TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
               cleaner_process_options_.files_to_delete());
   }
 
-  EXPECT_TRUE(launch_status_.process_ok);
-  EXPECT_EQ(launch_status_.exit_code, cleaner_process_options_.ExpectedExitCode(
-                                          prompt_acceptance_to_send_));
+  EXPECT_EQ(process_status_.launch_status,
+            ChromeCleanerRunner::LaunchStatus::kSuccess);
+  EXPECT_EQ(
+      process_status_.exit_code,
+      cleaner_process_options_.ExpectedExitCode(prompt_acceptance_to_send_));
 }
 
 INSTANTIATE_TEST_CASE_P(
