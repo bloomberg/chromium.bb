@@ -16,8 +16,8 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/signin/core/account_id",
     "//components/signin/core/browser",
+    "//components/signin/core/browser:account_info",
     "//services/identity/public/cpp:cpp_types",
     "//services/identity/public/interfaces",
     "//services/service_manager/public/cpp",
@@ -36,8 +36,8 @@ source_set("tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//components/signin/core/account_id",
     "//components/signin/core/browser",
+    "//components/signin/core/browser:account_info",
     "//components/signin/core/browser:test_support",
     "//components/sync_preferences:test_support",
     "//mojo/public/cpp/bindings:bindings",

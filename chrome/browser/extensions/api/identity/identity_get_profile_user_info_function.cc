@@ -36,22 +36,22 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
       ->BindInterface(identity::mojom::kServiceName,
                       mojo::MakeRequest(&identity_manager_));
 
-  identity_manager_->GetPrimaryAccountId(base::Bind(
-      &IdentityGetProfileUserInfoFunction::OnReceivedPrimaryAccountId, this));
+  identity_manager_->GetPrimaryAccountInfo(base::Bind(
+      &IdentityGetProfileUserInfoFunction::OnReceivedPrimaryAccountInfo, this));
 
   return RespondLater();
 }
 
-void IdentityGetProfileUserInfoFunction::OnReceivedPrimaryAccountId(
-    const base::Optional<AccountId>& account_id) {
+void IdentityGetProfileUserInfoFunction::OnReceivedPrimaryAccountInfo(
+    const base::Optional<AccountInfo>& account_info) {
   DCHECK(extension()->permissions_data()->HasAPIPermission(
       APIPermission::kIdentityEmail));
 
   api::identity::ProfileUserInfo profile_user_info;
 
-  if (account_id) {
-    profile_user_info.email = account_id->GetUserEmail();
-    profile_user_info.id = account_id->GetGaiaId();
+  if (account_info) {
+    profile_user_info.email = account_info->email;
+    profile_user_info.id = account_info->gaia;
   }
 
   Respond(OneArgument(profile_user_info.ToValue()));

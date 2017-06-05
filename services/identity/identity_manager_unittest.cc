@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -84,9 +84,10 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
     account_tracker_.Initialize(&signin_client_);
   }
 
-  void OnReceivedPrimaryAccountId(base::Closure quit_closure,
-                                  const base::Optional<AccountId>& account_id) {
-    primary_account_id_ = account_id;
+  void OnReceivedPrimaryAccountInfo(
+      base::Closure quit_closure,
+      const base::Optional<AccountInfo>& account_info) {
+    primary_account_info_ = account_info;
     quit_closure.Run();
   }
 
@@ -113,7 +114,7 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
   }
 
   mojom::IdentityManagerPtr identity_manager_;
-  base::Optional<AccountId> primary_account_id_;
+  base::Optional<AccountInfo> primary_account_info_;
   base::Optional<std::string> access_token_;
   GoogleServiceAuthError access_token_error_;
 
@@ -133,24 +134,24 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
 // Check that the primary account ID is null if not signed in.
 TEST_F(IdentityManagerTest, GetPrimaryAccountNotSignedIn) {
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountId(
-      base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountId,
+  identity_manager_->GetPrimaryAccountInfo(
+      base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
-  EXPECT_FALSE(primary_account_id_);
+  EXPECT_FALSE(primary_account_info_);
 }
 
 // Check that the primary account ID has expected values if signed in.
 TEST_F(IdentityManagerTest, GetPrimaryAccountSignedIn) {
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
   base::RunLoop run_loop;
-  identity_manager_->GetPrimaryAccountId(
-      base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountId,
+  identity_manager_->GetPrimaryAccountInfo(
+      base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
-  EXPECT_TRUE(primary_account_id_);
-  EXPECT_EQ(kTestGaiaId, primary_account_id_->GetGaiaId());
-  EXPECT_EQ(kTestEmail, primary_account_id_->GetUserEmail());
+  EXPECT_TRUE(primary_account_info_);
+  EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
+  EXPECT_EQ(kTestEmail, primary_account_info_->email);
 }
 
 // Check that the expected error is received if requesting an access token when

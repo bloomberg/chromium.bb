@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/signin/core/account_id",
   "+components/signin/core/browser/account_info.h",
   "+components/signin/core/browser/account_tracker_service.h",
   "+components/signin/core/browser/fake_profile_oauth2_token_service.h",

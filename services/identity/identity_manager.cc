@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/time/time.h"
-#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -71,17 +70,9 @@ IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
 
 IdentityManager::~IdentityManager() {}
 
-void IdentityManager::GetPrimaryAccountId(
-    GetPrimaryAccountIdCallback callback) {
-  AccountId account_id = EmptyAccountId();
-
-  if (signin_manager_->IsAuthenticated()) {
-    AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
-    account_id =
-        AccountId::FromUserEmailGaiaId(account_info.email, account_info.gaia);
-  }
-
-  std::move(callback).Run(account_id);
+void IdentityManager::GetPrimaryAccountInfo(
+    GetPrimaryAccountInfoCallback callback) {
+  std::move(callback).Run(signin_manager_->GetAuthenticatedAccountInfo());
 }
 
 void IdentityManager::GetAccessToken(const std::string& account_id,
