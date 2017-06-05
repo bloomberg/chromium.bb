@@ -4,10 +4,24 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
+
 import android.support.test.filters.SmallTest;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.download.DownloadSheetContent;
@@ -15,31 +29,48 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.history.HistorySheetContent;
 import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
-import org.chromium.chrome.test.BottomSheetTestCaseBase;
+import org.chromium.chrome.test.BottomSheetTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.TimeoutException;
 
 /** This class tests the functionality of the {@link BottomSheetContentController}. */
-public class BottomSheetContentControllerTest extends BottomSheetTestCaseBase {
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({"enable-features=ChromeHome",
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        BottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
+public class BottomSheetContentControllerTest {
+    private BottomSheetTestRule.Observer mObserver;
+    private BottomSheet mBottomSheet;
+    private BottomSheetContentController mBottomSheetContentController;
+
+    @Rule
+    public BottomSheetTestRule mBottomSheetTestRule = new BottomSheetTestRule();
+
+    @Before
+    public void setUp() throws Exception {
+        mBottomSheetTestRule.startMainActivityOnBlankPage();
+        mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+        mObserver = mBottomSheetTestRule.getObserver();
+        mBottomSheet = mBottomSheetTestRule.getBottomSheet();
+        mBottomSheetContentController = mBottomSheetTestRule.getBottomSheetContentController();
     }
 
+    @Test
     @SmallTest
     public void testSelectContent() throws InterruptedException, TimeoutException {
         int contentChangedCount = mObserver.mContentChangedCallbackHelper.getCallCount();
         int openedCount = mObserver.mOpenedCallbackHelper.getCallCount();
         int closedCount = mObserver.mClosedCallbackHelper.getCallCount();
 
-        setSheetState(BottomSheet.SHEET_STATE_HALF, false);
+        mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_HALF, false);
         mObserver.mOpenedCallbackHelper.waitForCallback(openedCount, 1);
         openedCount++;
         assertEquals(contentChangedCount, mObserver.mContentChangedCallbackHelper.getCallCount());
         assertEquals(closedCount, mObserver.mClosedCallbackHelper.getCallCount());
 
-        selectBottomSheetContent(R.id.action_history);
+        mBottomSheetTestRule.selectBottomSheetContent(R.id.action_history);
         mObserver.mContentChangedCallbackHelper.waitForCallback(contentChangedCount, 1);
         contentChangedCount++;
         assertEquals(openedCount, mObserver.mOpenedCallbackHelper.getCallCount());
@@ -48,7 +79,7 @@ public class BottomSheetContentControllerTest extends BottomSheetTestCaseBase {
         assertEquals(
                 R.id.action_history, mBottomSheetContentController.getSelectedItemIdForTests());
 
-        setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+        mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
         mObserver.mClosedCallbackHelper.waitForCallback(closedCount, 1);
         mObserver.mContentChangedCallbackHelper.waitForCallback(contentChangedCount, 1);
         assertEquals(openedCount, mObserver.mOpenedCallbackHelper.getCallCount());
@@ -56,6 +87,7 @@ public class BottomSheetContentControllerTest extends BottomSheetTestCaseBase {
         assertEquals(R.id.action_home, mBottomSheetContentController.getSelectedItemIdForTests());
     }
 
+    @Test
     @SmallTest
     public void testShowContentAndOpenSheet_Bookmarks()
             throws InterruptedException, TimeoutException {
@@ -65,7 +97,7 @@ public class BottomSheetContentControllerTest extends BottomSheetTestCaseBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                BookmarkUtils.showBookmarkManager(getActivity());
+                BookmarkUtils.showBookmarkManager(mBottomSheetTestRule.getActivity());
             }
         });
 
@@ -77,6 +109,7 @@ public class BottomSheetContentControllerTest extends BottomSheetTestCaseBase {
                 R.id.action_bookmarks, mBottomSheetContentController.getSelectedItemIdForTests());
     }
 
+    @Test
     @SmallTest
     public void testShowContentAndOpenSheet_Downloads()
             throws InterruptedException, TimeoutException {
@@ -86,7 +119,8 @@ public class BottomSheetContentControllerTest extends BottomSheetTestCaseBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                DownloadUtils.showDownloadManager(getActivity(), getActivity().getActivityTab());
+                ChromeTabbedActivity activity = mBottomSheetTestRule.getActivity();
+                DownloadUtils.showDownloadManager(activity, activity.getActivityTab());
             }
         });
 
@@ -98,6 +132,7 @@ public class BottomSheetContentControllerTest extends BottomSheetTestCaseBase {
                 R.id.action_downloads, mBottomSheetContentController.getSelectedItemIdForTests());
     }
 
+    @Test
     @SmallTest
     public void testShowContentAndOpenSheet_History()
             throws InterruptedException, TimeoutException {
@@ -107,8 +142,8 @@ public class BottomSheetContentControllerTest extends BottomSheetTestCaseBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                HistoryManagerUtils.showHistoryManager(
-                        getActivity(), getActivity().getActivityTab());
+                ChromeTabbedActivity activity = mBottomSheetTestRule.getActivity();
+                HistoryManagerUtils.showHistoryManager(activity, activity.getActivityTab());
             }
         });
 
