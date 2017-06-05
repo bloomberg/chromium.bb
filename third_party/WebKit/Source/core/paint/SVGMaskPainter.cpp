@@ -27,8 +27,10 @@ bool SVGMaskPainter::PrepareEffect(const LayoutObject& object,
   if (visual_rect.IsEmpty() || !mask_.GetElement()->HasChildren())
     return false;
 
-  context.GetPaintController().CreateAndAppend<BeginCompositingDisplayItem>(
-      object, SkBlendMode::kSrcOver, 1, &visual_rect);
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    context.GetPaintController().CreateAndAppend<BeginCompositingDisplayItem>(
+        object, SkBlendMode::kSrcOver, 1, &visual_rect);
+  }
   return true;
 }
 
@@ -60,7 +62,8 @@ void SVGMaskPainter::FinishEffect(const LayoutObject& object,
                             visual_rect);
   }
 
-  context.GetPaintController().EndItem<EndCompositingDisplayItem>(object);
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    context.GetPaintController().EndItem<EndCompositingDisplayItem>(object);
 }
 
 void SVGMaskPainter::DrawMaskForLayoutObject(
