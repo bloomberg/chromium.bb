@@ -23,6 +23,7 @@ ASH_EXPORT extern const char kAshDeveloperShortcuts[];
 ASH_EXPORT extern const char kAshDisableSmoothScreenRotation[];
 ASH_EXPORT extern const char kAshDisableTouchExplorationMode[];
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
+ASH_EXPORT extern const char kAshEnableNightLight[];
 ASH_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
 ASH_EXPORT extern const char kAshEnableScaleSettingsTray[];
 ASH_EXPORT extern const char kAshEnableTouchView[];

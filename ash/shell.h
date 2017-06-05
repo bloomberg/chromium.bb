@@ -341,9 +341,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   NewWindowController* new_window_controller() {
     return new_window_controller_.get();
   }
-  NightLightController* night_light_controller() {
-    return night_light_controller_.get();
-  }
+  NightLightController* night_light_controller();
   SessionController* session_controller() { return session_controller_.get(); }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
   ShelfModel* shelf_model();

@@ -374,6 +374,11 @@ bool Shell::ShouldSaveDisplaySettings() {
       resolution_notification_controller_->DoesNotificationTimeout());
 }
 
+NightLightController* Shell::night_light_controller() {
+  DCHECK(NightLightController::IsFeatureEnabled());
+  return night_light_controller_.get();
+}
+
 ShelfModel* Shell::shelf_model() {
   return shelf_controller_->model();
 }
@@ -563,8 +568,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       media_controller_(base::MakeUnique<MediaController>()),
       new_window_controller_(base::MakeUnique<NewWindowController>()),
       session_controller_(base::MakeUnique<SessionController>()),
-      night_light_controller_(
-          base::MakeUnique<NightLightController>(session_controller_.get())),
       shelf_controller_(base::MakeUnique<ShelfController>()),
       shell_delegate_(std::move(shell_delegate)),
       shutdown_controller_(base::MakeUnique<ShutdownController>()),
@@ -791,6 +794,11 @@ Shell::~Shell() {
 
 void Shell::Init(const ShellInitParams& init_params) {
   const Config config = shell_port_->GetAshConfig();
+
+  if (NightLightController::IsFeatureEnabled()) {
+    night_light_controller_ =
+        base::MakeUnique<NightLightController>(session_controller_.get());
+  }
 
   blocking_pool_ = init_params.blocking_pool;
 
