@@ -11,11 +11,13 @@
 #include "core/loader/resource/StyleSheetResource.h"
 #include "core/loader/resource/StyleSheetResourceClient.h"
 #include "platform/loader/fetch/ResourceOwner.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
 class HTMLLinkElement;
-//
+class KURL;
+
 // LinkStyle handles dynamically change-able link resources, which is
 // typically @rel="stylesheet".
 //
@@ -23,7 +25,6 @@ class HTMLLinkElement;
 // types might better be handled by a separate class, but dynamically
 // changing @rel makes it harder to move such a design so we are
 // sticking current way so far.
-//
 class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
   USING_GARBAGE_COLLECTED_MIXIN(LinkStyle);
 
@@ -66,7 +67,8 @@ class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
                         const CSSStyleSheetResource*) override;
   String DebugName() const override { return "LinkStyle"; }
   enum LoadReturnValue { kLoaded, kNotNeeded, kBail };
-  LoadReturnValue LoadStylesheetIfNeeded(const LinkRequestBuilder&,
+  LoadReturnValue LoadStylesheetIfNeeded(const KURL&,
+                                         const AtomicString&,
                                          const String& type);
 
   enum DisabledState { kUnset, kEnabledViaScript, kDisabled };
@@ -76,7 +78,6 @@ class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
   void ClearSheet();
   void AddPendingSheet(PendingSheetType);
   void RemovePendingSheet();
-  Document& GetDocument();
 
   void SetCrossOriginStylesheetStatus(CSSStyleSheet*);
   void SetFetchFollowingCORS() {

@@ -33,12 +33,10 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
+class Document;
 class HTMLLinkElement;
 class LocalFrame;
 
@@ -64,24 +62,12 @@ class CORE_EXPORT LinkResource
   DECLARE_VIRTUAL_TRACE();
 
  protected:
+  void Load();
+
+  Document& GetDocument();
+  AtomicString GetCharset() const;
+
   Member<HTMLLinkElement> owner_;
-};
-
-class LinkRequestBuilder {
-  STACK_ALLOCATED();
-
- public:
-  explicit LinkRequestBuilder(HTMLLinkElement* owner);
-
-  bool IsValid() const { return !url_.IsEmpty() && url_.IsValid(); }
-  const KURL& Url() const { return url_; }
-  const AtomicString& Charset() const { return charset_; }
-  FetchParameters Build(bool low_priority) const;
-
- private:
-  Member<HTMLLinkElement> owner_;
-  KURL url_;
-  AtomicString charset_;
 };
 
 }  // namespace blink
