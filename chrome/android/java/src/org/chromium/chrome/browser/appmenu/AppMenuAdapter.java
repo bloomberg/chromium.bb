@@ -473,7 +473,7 @@ class AppMenuAdapter extends BaseAdapter {
             background = background.getConstantState().newDrawable(resources);
         }
 
-        LayerDrawable drawable = new LayerDrawable(new Drawable[] {pulse, background});
+        LayerDrawable drawable = new LayerDrawable(new Drawable[] {background, pulse});
         view.setBackground(drawable);
         pulse.start();
     }
