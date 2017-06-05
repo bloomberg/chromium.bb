@@ -202,8 +202,10 @@ class CORE_EXPORT StyleResolverState {
     font_builder_.DidChangeWritingMode();
   }
   void SetTextOrientation(ETextOrientation text_orientation) {
-    if (style_->SetTextOrientation(text_orientation))
+    if (style_->GetTextOrientation() != text_orientation) {
+      style_->SetTextOrientation(text_orientation);
       font_builder_.DidChangeTextOrientation();
+    }
   }
 
   void SetHasDirAutoAttribute(bool value) { has_dir_auto_attribute_ = value; }
