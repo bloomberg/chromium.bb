@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_ENTRY_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_ENTRY_H_
 
+#include "base/time/time.h"
 #include "components/download/public/client.h"
 #include "components/download/public/clients.h"
 #include "components/download/public/download_params.h"
@@ -51,6 +52,9 @@ struct Entry {
 
   // A unique GUID that represents this download.  See | base::GenerateGUID()|.
   std::string guid;
+
+  // The time when the entry is created.
+  base::Time create_time;
 
   // The parameters that determine under what device conditions this download
   // will occur.

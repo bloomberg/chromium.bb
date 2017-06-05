@@ -45,7 +45,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
 class MockObserver : public NetworkListener::Observer {
  public:
-  MOCK_METHOD1(OnNetworkChange, void(NetworkListener::NetworkStatus));
+  MOCK_METHOD1(OnNetworkChange, void(NetworkStatus));
 };
 
 class NetworkListenerTest : public testing::Test {
@@ -69,26 +69,23 @@ TEST_F(NetworkListenerTest, NotifyObserverNetworkChange) {
   network_listener_.AddObserver(&mock_observer_);
 
   // Initial states check.
-  EXPECT_EQ(NetworkListener::NetworkStatus::DISCONNECTED,
+  EXPECT_EQ(NetworkStatus::DISCONNECTED,
             network_listener_.CurrentNetworkStatus());
 
   // Network switch between mobile networks, the observer should be notified
   // only once.
-  EXPECT_CALL(mock_observer_,
-              OnNetworkChange(NetworkListener::NetworkStatus::METERED))
+  EXPECT_CALL(mock_observer_, OnNetworkChange(NetworkStatus::METERED))
       .Times(1)
       .RetiresOnSaturation();
 
   ChangeNetworkType(ConnectionType::CONNECTION_4G);
   ChangeNetworkType(ConnectionType::CONNECTION_3G);
   ChangeNetworkType(ConnectionType::CONNECTION_2G);
-  EXPECT_EQ(NetworkListener::NetworkStatus::METERED,
-            network_listener_.CurrentNetworkStatus());
+  EXPECT_EQ(NetworkStatus::METERED, network_listener_.CurrentNetworkStatus());
 
   // Network is switched between wifi and ethernet, the observer should be
   // notified only once.
-  EXPECT_CALL(mock_observer_,
-              OnNetworkChange(NetworkListener::NetworkStatus::UNMETERED))
+  EXPECT_CALL(mock_observer_, OnNetworkChange(NetworkStatus::UNMETERED))
       .Times(1)
       .RetiresOnSaturation();
 
