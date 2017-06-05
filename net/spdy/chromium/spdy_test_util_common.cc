@@ -411,6 +411,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
 HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
     SpdySessionDependencies* session_deps) {
   HttpNetworkSession::Context context;
+  context.client_socket_factory = session_deps->socket_factory.get();
   context.host_resolver = session_deps->host_resolver.get();
   context.cert_verifier = session_deps->cert_verifier.get();
   context.channel_id_service = session_deps->channel_id_service.get();

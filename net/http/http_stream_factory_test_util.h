@@ -100,6 +100,7 @@ class MockHttpStreamFactoryImplJob : public HttpStreamFactoryImpl::Job {
                                HttpNetworkSession* session,
                                const HttpRequestInfo& request_info,
                                RequestPriority priority,
+                               ProxyInfo proxy_info,
                                const SSLConfig& server_ssl_config,
                                const SSLConfig& proxy_ssl_config,
                                HostPortPair destination,
@@ -112,6 +113,7 @@ class MockHttpStreamFactoryImplJob : public HttpStreamFactoryImpl::Job {
                                HttpNetworkSession* session,
                                const HttpRequestInfo& request_info,
                                RequestPriority priority,
+                               ProxyInfo proxy_info,
                                const SSLConfig& server_ssl_config,
                                const SSLConfig& proxy_ssl_config,
                                HostPortPair destination,
@@ -134,12 +136,13 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
   TestJobFactory();
   ~TestJobFactory() override;
 
-  HttpStreamFactoryImpl::Job* CreateJob(
+  std::unique_ptr<HttpStreamFactoryImpl::Job> CreateMainJob(
       HttpStreamFactoryImpl::Job::Delegate* delegate,
       HttpStreamFactoryImpl::JobType job_type,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
+      const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HostPortPair destination,
@@ -147,12 +150,13 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
       bool enable_ip_based_pooling,
       NetLog* net_log) override;
 
-  HttpStreamFactoryImpl::Job* CreateJob(
+  std::unique_ptr<HttpStreamFactoryImpl::Job> CreateAltSvcJob(
       HttpStreamFactoryImpl::Job::Delegate* delegate,
       HttpStreamFactoryImpl::JobType job_type,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
+      const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HostPortPair destination,
@@ -161,12 +165,13 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
       bool enable_ip_based_pooling,
       NetLog* net_log) override;
 
-  HttpStreamFactoryImpl::Job* CreateJob(
+  std::unique_ptr<HttpStreamFactoryImpl::Job> CreateAltProxyJob(
       HttpStreamFactoryImpl::Job::Delegate* delegate,
       HttpStreamFactoryImpl::JobType job_type,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
+      const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HostPortPair destination,
