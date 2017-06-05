@@ -847,7 +847,6 @@ component("ash") {
     "//components/quirks",
     "//components/session_manager:base",
     "//components/signin/core/account_id",
-    "//components/strings:components_strings",
     "//components/ui_devtools",
     "//components/user_manager",
     "//components/vector_icons",
