@@ -13,7 +13,7 @@ function onResize() {
   var mainContent = document.querySelector('#main-content');
   var mediaQuery = '(min-width: 240px) and (max-width: 420px) and ' +
       '(min-height: 401px), ' +
-      '(max-height: 736px) and (min-height: 240px) and ' +
+      '(max-height: 560px) and (min-height: 240px) and ' +
       '(min-width: 421px)';
 
   var detailsHidden = helpOuterBox.classList.contains('hidden');
