@@ -16,8 +16,8 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "media/audio/android/muteable_audio_output_stream.h"
 #include "media/audio/android/opensles_util.h"
-#include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"
 
@@ -48,7 +48,7 @@ class AudioManagerAndroid;
 // This class is created and lives on the Audio Manager thread but recorded
 // audio buffers are given to us from an internal OpenSLES audio thread.
 // All public methods should be called on the Audio Manager thread.
-class OpenSLESOutputStream : public AudioOutputStream {
+class OpenSLESOutputStream : public MuteableAudioOutputStream {
  public:
   static const int kMaxNumOfBuffersInQueue = 2;
 
@@ -58,7 +58,7 @@ class OpenSLESOutputStream : public AudioOutputStream {
 
   ~OpenSLESOutputStream() override;
 
-  // Implementation of AudioOutputStream.
+  // Implementation of MuteableAudioOutputStream.
   bool Open() override;
   void Close() override;
   void Start(AudioSourceCallback* callback) override;
@@ -68,7 +68,7 @@ class OpenSLESOutputStream : public AudioOutputStream {
 
   // Set the value of |muted_|. It does not affect |volume_| which can be
   // got by calling GetVolume(). See comments for |muted_| below.
-  void SetMute(bool muted);
+  void SetMute(bool muted) override;
 
  private:
   bool CreatePlayer();

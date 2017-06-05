@@ -208,6 +208,7 @@ source_set("audio") {
       "android/audio_manager_android.h",
       "android/audio_record_input.cc",
       "android/audio_record_input.h",
+      "android/muteable_audio_output_stream.h",
       "android/opensles_input.cc",
       "android/opensles_input.h",
       "android/opensles_output.cc",
