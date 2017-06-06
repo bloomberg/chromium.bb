@@ -794,21 +794,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // -webkit-box-flex
   static float InitialBoxFlex() { return 0.0f; }
   float BoxFlex() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_data_data_->flex;
+    return rare_non_inherited_data_->deprecated_flexible_box_data_->flex;
   }
   void SetBoxFlex(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
                    flex, f);
   }
 
   // -webkit-box-flex-group
   static unsigned InitialBoxFlexGroup() { return 1; }
   unsigned BoxFlexGroup() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_data_data_
-        ->flex_group;
+    return rare_non_inherited_data_->deprecated_flexible_box_data_->flex_group;
   }
   void SetBoxFlexGroup(unsigned fg) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
                    flex_group, fg);
   }
 
@@ -818,10 +817,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static EBoxAlignment InitialBoxAlign() { return BSTRETCH; }
   EBoxAlignment BoxAlign() const {
     return static_cast<EBoxAlignment>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_data_->align);
+        rare_non_inherited_data_->deprecated_flexible_box_data_->align);
   }
   void SetBoxAlign(EBoxAlignment a) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
                    align, a);
   }
 
@@ -829,21 +828,21 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static EBoxLines InitialBoxLines() { return SINGLE; }
   EBoxLines BoxLines() const {
     return static_cast<EBoxLines>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_data_->lines);
+        rare_non_inherited_data_->deprecated_flexible_box_data_->lines);
   }
   void SetBoxLines(EBoxLines lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
                    lines, lines);
   }
 
   // -webkit-box-ordinal-group
   static unsigned InitialBoxOrdinalGroup() { return 1; }
   unsigned BoxOrdinalGroup() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_data_data_
+    return rare_non_inherited_data_->deprecated_flexible_box_data_
         ->ordinal_group;
   }
   void SetBoxOrdinalGroup(unsigned og) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
                    ordinal_group,
                    std::min(std::numeric_limits<unsigned>::max() - 1, og));
   }
@@ -852,10 +851,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static EBoxOrient InitialBoxOrient() { return HORIZONTAL; }
   EBoxOrient BoxOrient() const {
     return static_cast<EBoxOrient>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_data_->orient);
+        rare_non_inherited_data_->deprecated_flexible_box_data_->orient);
   }
   void SetBoxOrient(EBoxOrient o) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
                    orient, o);
   }
 
@@ -863,10 +862,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static EBoxPack InitialBoxPack() { return kBoxPackStart; }
   EBoxPack BoxPack() const {
     return static_cast<EBoxPack>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_data_->pack);
+        rare_non_inherited_data_->deprecated_flexible_box_data_->pack);
   }
   void SetBoxPack(EBoxPack p) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
                    pack, p);
   }
 

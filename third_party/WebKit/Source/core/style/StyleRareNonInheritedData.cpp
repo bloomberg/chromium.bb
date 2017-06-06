@@ -143,7 +143,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(
       object_position_(o.object_position_),
       line_clamp_(o.line_clamp_),
       draggable_region_mode_(o.draggable_region_mode_),
-      deprecated_flexible_box_data_data_(o.deprecated_flexible_box_data_data_),
+      deprecated_flexible_box_data_(o.deprecated_flexible_box_data_),
       flexible_box_data_(o.flexible_box_data_),
       multi_col_data_(o.multi_col_data_),
       transform_data_(o.transform_data_),
@@ -236,8 +236,7 @@ bool StyleRareNonInheritedData::operator==(
          object_position_ == o.object_position_ &&
          line_clamp_ == o.line_clamp_ &&
          draggable_region_mode_ == o.draggable_region_mode_ &&
-         deprecated_flexible_box_data_data_ ==
-             o.deprecated_flexible_box_data_data_ &&
+         deprecated_flexible_box_data_ == o.deprecated_flexible_box_data_ &&
          flexible_box_data_ == o.flexible_box_data_ &&
          multi_col_data_ == o.multi_col_data_ &&
          transform_data_ == o.transform_data_ &&

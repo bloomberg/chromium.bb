@@ -128,7 +128,7 @@ RefPtr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
   rare_non_inherited_data_.Init();
-  rare_non_inherited_data_.Access()->deprecated_flexible_box_data_data_.Init();
+  rare_non_inherited_data_.Access()->deprecated_flexible_box_data_.Init();
   rare_non_inherited_data_.Access()->flexible_box_data_.Init();
   rare_non_inherited_data_.Access()->multi_col_data_.Init();
   rare_non_inherited_data_.Access()->transform_data_.Init();
@@ -587,11 +587,11 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
             *other.rare_non_inherited_data_->grid_item_data_.Get())
       return true;
 
-    if (rare_non_inherited_data_->deprecated_flexible_box_data_data_.Get() !=
-            other.rare_non_inherited_data_->deprecated_flexible_box_data_data_
+    if (rare_non_inherited_data_->deprecated_flexible_box_data_.Get() !=
+            other.rare_non_inherited_data_->deprecated_flexible_box_data_
                 .Get() &&
-        *rare_non_inherited_data_->deprecated_flexible_box_data_data_.Get() !=
-            *other.rare_non_inherited_data_->deprecated_flexible_box_data_data_
+        *rare_non_inherited_data_->deprecated_flexible_box_data_.Get() !=
+            *other.rare_non_inherited_data_->deprecated_flexible_box_data_
                  .Get())
       return true;
 
