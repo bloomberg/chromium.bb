@@ -26,6 +26,9 @@ class MockPermissionRequest : public PermissionRequest {
   ~MockPermissionRequest() override;
 
   IconId GetIconId() const override;
+#if defined(OS_ANDROID)
+  base::string16 GetMessageText() const override;
+#endif
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
 
