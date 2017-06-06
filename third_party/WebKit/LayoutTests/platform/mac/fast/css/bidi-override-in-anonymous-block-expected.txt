@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1225
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1223
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1225 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1225.02
-    LayoutBlockFlow {BODY} at (8,16) size 769x1201.02
+layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1223.33
+    LayoutBlockFlow {BODY} at (8,16) size 769x1199.33
       LayoutBlockFlow {P} at (0,0) size 769x18
         LayoutText {#text} at (0,0) size 164x18
           text run at (0,0) width 164: "div, span, nested div/span"
@@ -178,11 +178,11 @@ layer at (0,0) size 785x1225 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,917.06) size 769x18
         LayoutText {#text} at (0,0) size 426x18
           text run at (0,0) width 426: "The following 2 tables should be identical, ignorning whitespaces:"
-      LayoutTable {TABLE} at (1.42,951.06) size 84x66.84 [border: (1.42px solid #808080)]
+      LayoutTable {TABLE} at (1.42,951.06) size 84x66 [border: (1px solid #808080)]
         LayoutBlockFlow {CAPTION} at (0,0) size 84x18
           LayoutText {#text} at (0,0) size 85x18
             text run at (0,0) width 84: "NormalTable"
-        LayoutTableSection {TBODY} at (1,19.42) size 82x46
+        LayoutTableSection {TBODY} at (1,19) size 82x46
           LayoutTableRow {TR} at (0,2) size 82x20
             LayoutTableCell {TD} at (43,2) size 37x20 [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (13,1) size 23x18
@@ -197,11 +197,11 @@ layer at (0,0) size 785x1225 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (2,24) size 39x20 [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (14,1) size 24x18
                 text run at (14,1) width 24: "opq"
-      LayoutTable {DIV} at (1.42,1019.33) size 143x56.84 [border: (1.42px solid #000000)]
+      LayoutTable {DIV} at (1.42,1018.48) size 143x56 [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (0,0) size 143x18
           LayoutText {#text} at (0,0) size 144x18
             text run at (0,0) width 143: "AnonymousTableRow"
-        LayoutTableSection (anonymous) at (1,19.42) size 141x36
+        LayoutTableSection (anonymous) at (1,19) size 141x36
           LayoutTableRow {DIV} at (0,0) size 141x18
             LayoutTableCell {DIV} at (72,0) size 69x18 [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (46,0) size 23x18
@@ -216,10 +216,10 @@ layer at (0,0) size 785x1225 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {DIV} at (0,18) size 72x18 [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (48,0) size 24x18
                 text run at (48,0) width 24: "opq"
-      LayoutBlockFlow {P} at (0,1092.17) size 769x18
+      LayoutBlockFlow {P} at (0,1090.48) size 769x18
         LayoutText {#text} at (0,0) size 505x18
           text run at (0,0) width 505: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
-      LayoutBlockFlow {DIV} at (0,1126.17) size 769x74.84 [border: (1.42px solid #000000)]
+      LayoutBlockFlow {DIV} at (0,1124.48) size 769x74.84 [border: (1.42px solid #000000)]
         LayoutTable (anonymous) at (1.42,1.42) size 24x72
           LayoutTableSection (anonymous) at (0,18) size 24x36
             LayoutTableRow {DIV} at (0,0) size 24x18

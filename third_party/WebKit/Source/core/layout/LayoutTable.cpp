@@ -1163,9 +1163,7 @@ LayoutUnit LayoutTable::BorderBefore() const {
     UpdateCollapsedOuterBorders();
     return LayoutUnit(collapsed_outer_border_before_);
   }
-  // TODO(karlo@opera.com): Should we round this in the same way as in
-  // BorderStart()?
-  return LayoutBlock::BorderBefore();
+  return LayoutUnit(LayoutBlock::BorderBefore().ToInt());
 }
 
 LayoutUnit LayoutTable::BorderAfter() const {
@@ -1173,9 +1171,7 @@ LayoutUnit LayoutTable::BorderAfter() const {
     UpdateCollapsedOuterBorders();
     return LayoutUnit(collapsed_outer_border_after_);
   }
-  // TODO(karlo@opera.com): Should we round this in the same way as in
-  // BorderStart()?
-  return LayoutBlock::BorderAfter();
+  return LayoutUnit(LayoutBlock::BorderAfter().ToInt());
 }
 
 LayoutUnit LayoutTable::BorderStart() const {
