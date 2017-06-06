@@ -621,97 +621,108 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // column-count (aka -webkit-column-count)
   static unsigned short InitialColumnCount() { return 1; }
   unsigned short ColumnCount() const {
-    return rare_non_inherited_data_->multi_col_->count_;
+    return rare_non_inherited_data_->multi_col_data_->count_;
   }
   void SetColumnCount(unsigned short c) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, auto_count_, false);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, count_, c);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, auto_count_,
+                   false);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, count_, c);
   }
   bool HasAutoColumnCount() const {
-    return rare_non_inherited_data_->multi_col_->auto_count_;
+    return rare_non_inherited_data_->multi_col_data_->auto_count_;
   }
   void SetHasAutoColumnCount() {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, auto_count_, true);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, count_,
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, auto_count_,
+                   true);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, count_,
                    InitialColumnCount());
   }
 
   // column-fill
   static ColumnFill InitialColumnFill() { return kColumnFillBalance; }
   ColumnFill GetColumnFill() const {
-    return static_cast<ColumnFill>(rare_non_inherited_data_->multi_col_->fill_);
+    return static_cast<ColumnFill>(
+        rare_non_inherited_data_->multi_col_data_->fill_);
   }
   void SetColumnFill(ColumnFill column_fill) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, fill_, column_fill);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, fill_,
+                   column_fill);
   }
 
   // column-gap (aka -webkit-column-gap)
-  float ColumnGap() const { return rare_non_inherited_data_->multi_col_->gap_; }
+  float ColumnGap() const {
+    return rare_non_inherited_data_->multi_col_data_->gap_;
+  }
   void SetColumnGap(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, normal_gap_, false);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, gap_, f);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, normal_gap_,
+                   false);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, gap_, f);
   }
   bool HasNormalColumnGap() const {
-    return rare_non_inherited_data_->multi_col_->normal_gap_;
+    return rare_non_inherited_data_->multi_col_data_->normal_gap_;
   }
   void SetHasNormalColumnGap() {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, normal_gap_, true);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, gap_, 0);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, normal_gap_,
+                   true);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, gap_, 0);
   }
 
   // column-rule-color (aka -webkit-column-rule-color)
   void SetColumnRuleColor(const StyleColor& c) {
-    SET_BORDERVALUE_COLOR(rare_non_inherited_data_.Access()->multi_col_, rule_,
-                          c);
+    SET_BORDERVALUE_COLOR(rare_non_inherited_data_.Access()->multi_col_data_,
+                          rule_, c);
   }
 
   // column-rule-style (aka -webkit-column-rule-style)
   EBorderStyle ColumnRuleStyle() const {
-    return rare_non_inherited_data_->multi_col_->rule_.Style();
+    return rare_non_inherited_data_->multi_col_data_->rule_.Style();
   }
   void SetColumnRuleStyle(EBorderStyle b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, rule_.style_,
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, rule_.style_,
                    static_cast<unsigned>(b));
   }
 
   // column-rule-width (aka -webkit-column-rule-width)
   static unsigned short InitialColumnRuleWidth() { return 3; }
   unsigned short ColumnRuleWidth() const {
-    const BorderValue& rule = rare_non_inherited_data_->multi_col_->rule_;
+    const BorderValue& rule = rare_non_inherited_data_->multi_col_data_->rule_;
     if (rule.Style() == EBorderStyle::kNone ||
         rule.Style() == EBorderStyle::kHidden)
       return 0;
     return rule.Width();
   }
   void SetColumnRuleWidth(unsigned short w) {
-    SET_NESTED_BORDER_WIDTH(rare_non_inherited_data_, multi_col_, rule_, w);
+    SET_NESTED_BORDER_WIDTH(rare_non_inherited_data_, multi_col_data_, rule_,
+                            w);
   }
 
   // column-span (aka -webkit-column-span)
   static ColumnSpan InitialColumnSpan() { return kColumnSpanNone; }
   ColumnSpan GetColumnSpan() const {
     return static_cast<ColumnSpan>(
-        rare_non_inherited_data_->multi_col_->column_span_);
+        rare_non_inherited_data_->multi_col_data_->column_span_);
   }
   void SetColumnSpan(ColumnSpan column_span) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, column_span_,
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_span_,
                    column_span);
   }
 
   // column-width (aka -webkit-column-width)
   float ColumnWidth() const {
-    return rare_non_inherited_data_->multi_col_->width_;
+    return rare_non_inherited_data_->multi_col_data_->width_;
   }
   void SetColumnWidth(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, auto_width_, false);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, width_, f);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, auto_width_,
+                   false);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, width_, f);
   }
   bool HasAutoColumnWidth() const {
-    return rare_non_inherited_data_->multi_col_->auto_width_;
+    return rare_non_inherited_data_->multi_col_data_->auto_width_;
   }
   void SetHasAutoColumnWidth() {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, auto_width_, true);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_, width_, 0);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, auto_width_,
+                   true);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, width_, 0);
   }
 
   // contain
@@ -733,10 +744,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // flex-basis (aka -webkit-flex-basis)
   static Length InitialFlexBasis() { return Length(kAuto); }
   const Length& FlexBasis() const {
-    return rare_non_inherited_data_->flexible_box_->flex_basis_;
+    return rare_non_inherited_data_->flexible_box_data_->flex_basis_;
   }
   void SetFlexBasis(const Length& length) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_, flex_basis_,
+    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_basis_,
                    length);
   }
 
@@ -744,57 +755,60 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static EFlexDirection InitialFlexDirection() { return kFlowRow; }
   EFlexDirection FlexDirection() const {
     return static_cast<EFlexDirection>(
-        rare_non_inherited_data_->flexible_box_->flex_direction_);
+        rare_non_inherited_data_->flexible_box_data_->flex_direction_);
   }
   void SetFlexDirection(EFlexDirection direction) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_, flex_direction_,
-                   direction);
+    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_,
+                   flex_direction_, direction);
   }
 
   // flex-grow (aka -webkit-flex-grow)
   static float InitialFlexGrow() { return 0; }
   float FlexGrow() const {
-    return rare_non_inherited_data_->flexible_box_->flex_grow_;
+    return rare_non_inherited_data_->flexible_box_data_->flex_grow_;
   }
   void SetFlexGrow(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_, flex_grow_, f);
+    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_grow_, f);
   }
 
   // flex-shrink (aka -webkit-flex-shrink)
   static float InitialFlexShrink() { return 1; }
   float FlexShrink() const {
-    return rare_non_inherited_data_->flexible_box_->flex_shrink_;
+    return rare_non_inherited_data_->flexible_box_data_->flex_shrink_;
   }
   void SetFlexShrink(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_, flex_shrink_, f);
+    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_shrink_,
+                   f);
   }
 
   // flex-wrap (aka -webkit-flex-wrap)
   static EFlexWrap InitialFlexWrap() { return kFlexNoWrap; }
   EFlexWrap FlexWrap() const {
     return static_cast<EFlexWrap>(
-        rare_non_inherited_data_->flexible_box_->flex_wrap_);
+        rare_non_inherited_data_->flexible_box_data_->flex_wrap_);
   }
   void SetFlexWrap(EFlexWrap w) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_, flex_wrap_, w);
+    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_wrap_, w);
   }
 
   // -webkit-box-flex
   static float InitialBoxFlex() { return 0.0f; }
   float BoxFlex() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_->flex;
+    return rare_non_inherited_data_->deprecated_flexible_box_data_data_->flex;
   }
   void SetBoxFlex(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_, flex, f);
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+                   flex, f);
   }
 
   // -webkit-box-flex-group
   static unsigned InitialBoxFlexGroup() { return 1; }
   unsigned BoxFlexGroup() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_->flex_group;
+    return rare_non_inherited_data_->deprecated_flexible_box_data_data_
+        ->flex_group;
   }
   void SetBoxFlexGroup(unsigned fg) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_,
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
                    flex_group, fg);
   }
 
@@ -804,31 +818,32 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static EBoxAlignment InitialBoxAlign() { return BSTRETCH; }
   EBoxAlignment BoxAlign() const {
     return static_cast<EBoxAlignment>(
-        rare_non_inherited_data_->deprecated_flexible_box_->align);
+        rare_non_inherited_data_->deprecated_flexible_box_data_data_->align);
   }
   void SetBoxAlign(EBoxAlignment a) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_, align,
-                   a);
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+                   align, a);
   }
 
   // -webkit-box-lines
   static EBoxLines InitialBoxLines() { return SINGLE; }
   EBoxLines BoxLines() const {
     return static_cast<EBoxLines>(
-        rare_non_inherited_data_->deprecated_flexible_box_->lines);
+        rare_non_inherited_data_->deprecated_flexible_box_data_data_->lines);
   }
   void SetBoxLines(EBoxLines lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_, lines,
-                   lines);
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+                   lines, lines);
   }
 
   // -webkit-box-ordinal-group
   static unsigned InitialBoxOrdinalGroup() { return 1; }
   unsigned BoxOrdinalGroup() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_->ordinal_group;
+    return rare_non_inherited_data_->deprecated_flexible_box_data_data_
+        ->ordinal_group;
   }
   void SetBoxOrdinalGroup(unsigned og) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_,
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
                    ordinal_group,
                    std::min(std::numeric_limits<unsigned>::max() - 1, og));
   }
@@ -837,21 +852,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   static EBoxOrient InitialBoxOrient() { return HORIZONTAL; }
   EBoxOrient BoxOrient() const {
     return static_cast<EBoxOrient>(
-        rare_non_inherited_data_->deprecated_flexible_box_->orient);
+        rare_non_inherited_data_->deprecated_flexible_box_data_data_->orient);
   }
   void SetBoxOrient(EBoxOrient o) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_, orient,
-                   o);
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+                   orient, o);
   }
 
   // -webkit-box-pack
   static EBoxPack InitialBoxPack() { return kBoxPackStart; }
   EBoxPack BoxPack() const {
     return static_cast<EBoxPack>(
-        rare_non_inherited_data_->deprecated_flexible_box_->pack);
+        rare_non_inherited_data_->deprecated_flexible_box_data_data_->pack);
   }
   void SetBoxPack(EBoxPack p) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_, pack, p);
+    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_data_,
+                   pack, p);
   }
 
   // -webkit-box-reflect
@@ -888,36 +904,36 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // grid-auto-columns
   static Vector<GridTrackSize> InitialGridAutoColumns();
   const Vector<GridTrackSize>& GridAutoColumns() const {
-    return rare_non_inherited_data_->grid_->grid_auto_columns_;
+    return rare_non_inherited_data_->grid_data_->grid_auto_columns_;
   }
   void SetGridAutoColumns(const Vector<GridTrackSize>& track_size_list) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, grid_auto_columns_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_columns_,
                    track_size_list);
   }
 
   // grid-auto-flow
   static GridAutoFlow InitialGridAutoFlow() { return kAutoFlowRow; }
   void SetGridAutoFlow(GridAutoFlow flow) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, grid_auto_flow_, flow);
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_flow_, flow);
   }
 
   // grid-auto-rows
   static Vector<GridTrackSize> InitialGridAutoRows();
   const Vector<GridTrackSize>& GridAutoRows() const {
-    return rare_non_inherited_data_->grid_->grid_auto_rows_;
+    return rare_non_inherited_data_->grid_data_->grid_auto_rows_;
   }
   void SetGridAutoRows(const Vector<GridTrackSize>& track_size_list) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, grid_auto_rows_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_rows_,
                    track_size_list);
   }
 
   // grid-column-gap
   static Length InitialGridColumnGap() { return Length(kFixed); }
   const Length& GridColumnGap() const {
-    return rare_non_inherited_data_->grid_->grid_column_gap_;
+    return rare_non_inherited_data_->grid_data_->grid_column_gap_;
   }
   void SetGridColumnGap(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, grid_column_gap_, v);
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_column_gap_, v);
   }
 
   // grid-column-start
@@ -925,11 +941,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return GridPosition(); /* auto */
   }
   const GridPosition& GridColumnStart() const {
-    return rare_non_inherited_data_->grid_item_->grid_column_start_;
+    return rare_non_inherited_data_->grid_item_data_->grid_column_start_;
   }
   void SetGridColumnStart(const GridPosition& column_start_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_, grid_column_start_,
-                   column_start_position);
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_data_,
+                   grid_column_start_, column_start_position);
   }
 
   // grid-column-end
@@ -937,20 +953,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return GridPosition(); /* auto */
   }
   const GridPosition& GridColumnEnd() const {
-    return rare_non_inherited_data_->grid_item_->grid_column_end_;
+    return rare_non_inherited_data_->grid_item_data_->grid_column_end_;
   }
   void SetGridColumnEnd(const GridPosition& column_end_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_, grid_column_end_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_data_, grid_column_end_,
                    column_end_position);
   }
 
   // grid-row-gap
   static Length InitialGridRowGap() { return Length(kFixed); }
   const Length& GridRowGap() const {
-    return rare_non_inherited_data_->grid_->grid_row_gap_;
+    return rare_non_inherited_data_->grid_data_->grid_row_gap_;
   }
   void SetGridRowGap(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, grid_row_gap_, v);
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_row_gap_, v);
   }
 
   // grid-row-start
@@ -958,20 +974,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return GridPosition(); /* auto */
   }
   const GridPosition& GridRowStart() const {
-    return rare_non_inherited_data_->grid_item_->grid_row_start_;
+    return rare_non_inherited_data_->grid_item_data_->grid_row_start_;
   }
   void SetGridRowStart(const GridPosition& row_start_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_, grid_row_start_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_data_, grid_row_start_,
                    row_start_position);
   }
 
   // grid-row-end
   static GridPosition InitialGridRowEnd() { return GridPosition(); /* auto */ }
   const GridPosition& GridRowEnd() const {
-    return rare_non_inherited_data_->grid_item_->grid_row_end_;
+    return rare_non_inherited_data_->grid_item_data_->grid_row_end_;
   }
   void SetGridRowEnd(const GridPosition& row_end_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_, grid_row_end_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_item_data_, grid_row_end_,
                    row_end_position);
   }
 
@@ -980,10 +996,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return Vector<GridTrackSize>(); /* none */
   }
   const Vector<GridTrackSize>& GridTemplateColumns() const {
-    return rare_non_inherited_data_->grid_->grid_template_columns_;
+    return rare_non_inherited_data_->grid_data_->grid_template_columns_;
   }
   void SetGridTemplateColumns(const Vector<GridTrackSize>& lengths) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, grid_template_columns_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_template_columns_,
                    lengths);
   }
 
@@ -992,10 +1008,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return Vector<GridTrackSize>(); /* none */
   }
   const Vector<GridTrackSize>& GridTemplateRows() const {
-    return rare_non_inherited_data_->grid_->grid_template_rows_;
+    return rare_non_inherited_data_->grid_data_->grid_template_rows_;
   }
   void SetGridTemplateRows(const Vector<GridTrackSize>& lengths) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, grid_template_rows_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_template_rows_,
                    lengths);
   }
 
@@ -1079,27 +1095,27 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return LengthPoint(Length(kAuto), Length(kAuto));
   }
   const LengthPoint& OffsetAnchor() const {
-    return rare_non_inherited_data_->transform_->motion_.anchor_;
+    return rare_non_inherited_data_->transform_data_->motion_.anchor_;
   }
   void SetOffsetAnchor(const LengthPoint& offset_anchor) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_, motion_.anchor_,
+    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, motion_.anchor_,
                    offset_anchor);
   }
 
   // offset-distance
   static Length InitialOffsetDistance() { return Length(0, kFixed); }
   const Length& OffsetDistance() const {
-    return rare_non_inherited_data_->transform_->motion_.distance_;
+    return rare_non_inherited_data_->transform_data_->motion_.distance_;
   }
   void SetOffsetDistance(const Length& offset_distance) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_, motion_.distance_,
+    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, motion_.distance_,
                    offset_distance);
   }
 
   // offset-path
   static BasicShape* InitialOffsetPath() { return nullptr; }
   BasicShape* OffsetPath() const {
-    return rare_non_inherited_data_->transform_->motion_.path_.Get();
+    return rare_non_inherited_data_->transform_data_->motion_.path_.Get();
   }
   void SetOffsetPath(RefPtr<BasicShape>);
 
@@ -1108,10 +1124,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return LengthPoint(Length(kAuto), Length(kAuto));
   }
   const LengthPoint& OffsetPosition() const {
-    return rare_non_inherited_data_->transform_->motion_.position_;
+    return rare_non_inherited_data_->transform_data_->motion_.position_;
   }
   void SetOffsetPosition(const LengthPoint& offset_position) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_, motion_.position_,
+    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, motion_.position_,
                    offset_position);
   }
 
@@ -1120,10 +1136,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return StyleOffsetRotation(0, kOffsetRotationAuto);
   }
   const StyleOffsetRotation& OffsetRotate() const {
-    return rare_non_inherited_data_->transform_->motion_.rotation_;
+    return rare_non_inherited_data_->transform_data_->motion_.rotation_;
   }
   void SetOffsetRotate(const StyleOffsetRotation& offset_rotate) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_, motion_.rotation_,
+    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, motion_.rotation_,
                    offset_rotate);
   }
 
@@ -1235,10 +1251,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return EmptyTransformOperations();
   }
   const TransformOperations& Transform() const {
-    return rare_non_inherited_data_->transform_->operations_;
+    return rare_non_inherited_data_->transform_data_->operations_;
   }
   void SetTransform(const TransformOperations& ops) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_, operations_, ops);
+    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, operations_, ops);
   }
 
   // transform-origin (aka -webkit-transform-origin)
@@ -1246,10 +1262,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return TransformOrigin(Length(50.0, kPercent), Length(50.0, kPercent), 0);
   }
   const TransformOrigin& GetTransformOrigin() const {
-    return rare_non_inherited_data_->transform_->origin_;
+    return rare_non_inherited_data_->transform_data_->origin_;
   }
   void SetTransformOrigin(const TransformOrigin& o) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_, origin_, o);
+    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, origin_, o);
   }
 
   // transform-style (aka -webkit-transform-style)
@@ -1294,30 +1310,30 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return nullptr;
   }
   TranslateTransformOperation* Translate() const {
-    return rare_non_inherited_data_->transform_->translate_.Get();
+    return rare_non_inherited_data_->transform_data_->translate_.Get();
   }
   void SetTranslate(RefPtr<TranslateTransformOperation> v) {
-    rare_non_inherited_data_.Access()->transform_.Access()->translate_ =
+    rare_non_inherited_data_.Access()->transform_data_.Access()->translate_ =
         std::move(v);
   }
 
   // rotate
   static RefPtr<RotateTransformOperation> InitialRotate() { return nullptr; }
   RotateTransformOperation* Rotate() const {
-    return rare_non_inherited_data_->transform_->rotate_.Get();
+    return rare_non_inherited_data_->transform_data_->rotate_.Get();
   }
   void SetRotate(RefPtr<RotateTransformOperation> v) {
-    rare_non_inherited_data_.Access()->transform_.Access()->rotate_ =
+    rare_non_inherited_data_.Access()->transform_data_.Access()->rotate_ =
         std::move(v);
   }
 
   // scale
   static RefPtr<ScaleTransformOperation> InitialScale() { return nullptr; }
   ScaleTransformOperation* Scale() const {
-    return rare_non_inherited_data_->transform_->scale_.Get();
+    return rare_non_inherited_data_->transform_data_->scale_.Get();
   }
   void SetScale(RefPtr<ScaleTransformOperation> v) {
-    rare_non_inherited_data_.Access()->transform_.Access()->scale_ =
+    rare_non_inherited_data_.Access()->transform_data_.Access()->scale_ =
         std::move(v);
   }
 
@@ -1337,10 +1353,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return Vector<LengthPoint>();
   }
   const Vector<LengthPoint>& ScrollSnapCoordinate() const {
-    return rare_non_inherited_data_->scroll_snap_->coordinates_;
+    return rare_non_inherited_data_->scroll_snap_data_->coordinates_;
   }
   void SetScrollSnapCoordinate(const Vector<LengthPoint>& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_, coordinates_, b);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, coordinates_,
+                   b);
   }
 
   // scroll-snap-destination
@@ -1348,10 +1365,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return LengthPoint(Length(0, kFixed), Length(0, kFixed));
   }
   const LengthPoint& ScrollSnapDestination() const {
-    return rare_non_inherited_data_->scroll_snap_->destination_;
+    return rare_non_inherited_data_->scroll_snap_data_->destination_;
   }
   void SetScrollSnapDestination(const LengthPoint& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_, destination_, b);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, destination_,
+                   b);
   }
 
   // scroll-snap-points-x
@@ -1359,10 +1377,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return ScrollSnapPoints();
   }
   const ScrollSnapPoints& ScrollSnapPointsX() const {
-    return rare_non_inherited_data_->scroll_snap_->x_points_;
+    return rare_non_inherited_data_->scroll_snap_data_->x_points_;
   }
   void SetScrollSnapPointsX(const ScrollSnapPoints& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_, x_points_, b);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, x_points_, b);
   }
 
   // scroll-snap-points-y
@@ -1370,10 +1388,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return ScrollSnapPoints();
   }
   const ScrollSnapPoints& ScrollSnapPointsY() const {
-    return rare_non_inherited_data_->scroll_snap_->y_points_;
+    return rare_non_inherited_data_->scroll_snap_data_->y_points_;
   }
   void SetScrollSnapPointsY(const ScrollSnapPoints& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_, y_points_, b);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, y_points_, b);
   }
 
   // scroll-snap-type
@@ -1521,26 +1539,27 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // will-change
   const Vector<CSSPropertyID>& WillChangeProperties() const {
-    return rare_non_inherited_data_->will_change_->properties_;
+    return rare_non_inherited_data_->will_change_data_->properties_;
   }
   bool WillChangeContents() const {
-    return rare_non_inherited_data_->will_change_->contents_;
+    return rare_non_inherited_data_->will_change_data_->contents_;
   }
   bool WillChangeScrollPosition() const {
-    return rare_non_inherited_data_->will_change_->scroll_position_;
+    return rare_non_inherited_data_->will_change_data_->scroll_position_;
   }
   bool SubtreeWillChangeContents() const {
     return SubtreeWillChangeContentsInternal();
   }
   void SetWillChangeProperties(const Vector<CSSPropertyID>& properties) {
-    SET_NESTED_VAR(rare_non_inherited_data_, will_change_, properties_,
+    SET_NESTED_VAR(rare_non_inherited_data_, will_change_data_, properties_,
                    properties);
   }
   void SetWillChangeContents(bool b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, will_change_, contents_, b);
+    SET_NESTED_VAR(rare_non_inherited_data_, will_change_data_, contents_, b);
   }
   void SetWillChangeScrollPosition(bool b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, will_change_, scroll_position_, b);
+    SET_NESTED_VAR(rare_non_inherited_data_, will_change_data_,
+                   scroll_position_, b);
   }
   void SetSubtreeWillChangeContents(bool b) {
     SetSubtreeWillChangeContentsInternal(b);
@@ -2083,12 +2102,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return !HasAutoColumnCount() || !HasAutoColumnWidth();
   }
   bool ColumnRuleIsTransparent() const {
-    return rare_non_inherited_data_->multi_col_->rule_.IsTransparent();
+    return rare_non_inherited_data_->multi_col_data_->rule_.IsTransparent();
   }
   bool ColumnRuleEquivalent(const ComputedStyle* other_style) const;
   void InheritColumnPropertiesFrom(const ComputedStyle& parent) {
-    rare_non_inherited_data_.Access()->multi_col_ =
-        parent.rare_non_inherited_data_->multi_col_;
+    rare_non_inherited_data_.Access()->multi_col_data_ =
+        parent.rare_non_inherited_data_->multi_col_data_;
   }
 
   // Flex utility functions.
@@ -2143,159 +2162,162 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // Grid utility functions.
   const Vector<GridTrackSize>& GridAutoRepeatColumns() const {
-    return rare_non_inherited_data_->grid_->grid_auto_repeat_columns_;
+    return rare_non_inherited_data_->grid_data_->grid_auto_repeat_columns_;
   }
   const Vector<GridTrackSize>& GridAutoRepeatRows() const {
-    return rare_non_inherited_data_->grid_->grid_auto_repeat_rows_;
+    return rare_non_inherited_data_->grid_data_->grid_auto_repeat_rows_;
   }
   size_t GridAutoRepeatColumnsInsertionPoint() const {
-    return rare_non_inherited_data_->grid_
+    return rare_non_inherited_data_->grid_data_
         ->auto_repeat_columns_insertion_point_;
   }
   size_t GridAutoRepeatRowsInsertionPoint() const {
-    return rare_non_inherited_data_->grid_->auto_repeat_rows_insertion_point_;
+    return rare_non_inherited_data_->grid_data_
+        ->auto_repeat_rows_insertion_point_;
   }
   AutoRepeatType GridAutoRepeatColumnsType() const {
-    return rare_non_inherited_data_->grid_->auto_repeat_columns_type_;
+    return rare_non_inherited_data_->grid_data_->auto_repeat_columns_type_;
   }
   AutoRepeatType GridAutoRepeatRowsType() const {
-    return rare_non_inherited_data_->grid_->auto_repeat_rows_type_;
+    return rare_non_inherited_data_->grid_data_->auto_repeat_rows_type_;
   }
   const NamedGridLinesMap& NamedGridColumnLines() const {
-    return rare_non_inherited_data_->grid_->named_grid_column_lines_;
+    return rare_non_inherited_data_->grid_data_->named_grid_column_lines_;
   }
   const NamedGridLinesMap& NamedGridRowLines() const {
-    return rare_non_inherited_data_->grid_->named_grid_row_lines_;
+    return rare_non_inherited_data_->grid_data_->named_grid_row_lines_;
   }
   const OrderedNamedGridLines& OrderedNamedGridColumnLines() const {
-    return rare_non_inherited_data_->grid_->ordered_named_grid_column_lines_;
+    return rare_non_inherited_data_->grid_data_
+        ->ordered_named_grid_column_lines_;
   }
   const OrderedNamedGridLines& OrderedNamedGridRowLines() const {
-    return rare_non_inherited_data_->grid_->ordered_named_grid_row_lines_;
+    return rare_non_inherited_data_->grid_data_->ordered_named_grid_row_lines_;
   }
   const NamedGridLinesMap& AutoRepeatNamedGridColumnLines() const {
-    return rare_non_inherited_data_->grid_
+    return rare_non_inherited_data_->grid_data_
         ->auto_repeat_named_grid_column_lines_;
   }
   const NamedGridLinesMap& AutoRepeatNamedGridRowLines() const {
-    return rare_non_inherited_data_->grid_->auto_repeat_named_grid_row_lines_;
+    return rare_non_inherited_data_->grid_data_
+        ->auto_repeat_named_grid_row_lines_;
   }
   const OrderedNamedGridLines& AutoRepeatOrderedNamedGridColumnLines() const {
-    return rare_non_inherited_data_->grid_
+    return rare_non_inherited_data_->grid_data_
         ->auto_repeat_ordered_named_grid_column_lines_;
   }
   const OrderedNamedGridLines& AutoRepeatOrderedNamedGridRowLines() const {
-    return rare_non_inherited_data_->grid_
+    return rare_non_inherited_data_->grid_data_
         ->auto_repeat_ordered_named_grid_row_lines_;
   }
   const NamedGridAreaMap& NamedGridArea() const {
-    return rare_non_inherited_data_->grid_->named_grid_area_;
+    return rare_non_inherited_data_->grid_data_->named_grid_area_;
   }
   size_t NamedGridAreaRowCount() const {
-    return rare_non_inherited_data_->grid_->named_grid_area_row_count_;
+    return rare_non_inherited_data_->grid_data_->named_grid_area_row_count_;
   }
   size_t NamedGridAreaColumnCount() const {
-    return rare_non_inherited_data_->grid_->named_grid_area_column_count_;
+    return rare_non_inherited_data_->grid_data_->named_grid_area_column_count_;
   }
   GridAutoFlow GetGridAutoFlow() const {
     return static_cast<GridAutoFlow>(
-        rare_non_inherited_data_->grid_->grid_auto_flow_);
+        rare_non_inherited_data_->grid_data_->grid_auto_flow_);
   }
   bool IsGridAutoFlowDirectionRow() const {
-    return (rare_non_inherited_data_->grid_->grid_auto_flow_ &
+    return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
             kInternalAutoFlowDirectionRow) == kInternalAutoFlowDirectionRow;
   }
   bool IsGridAutoFlowDirectionColumn() const {
-    return (rare_non_inherited_data_->grid_->grid_auto_flow_ &
+    return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
             kInternalAutoFlowDirectionColumn) ==
            kInternalAutoFlowDirectionColumn;
   }
   bool IsGridAutoFlowAlgorithmSparse() const {
-    return (rare_non_inherited_data_->grid_->grid_auto_flow_ &
+    return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
             kInternalAutoFlowAlgorithmSparse) ==
            kInternalAutoFlowAlgorithmSparse;
   }
   bool IsGridAutoFlowAlgorithmDense() const {
-    return (rare_non_inherited_data_->grid_->grid_auto_flow_ &
+    return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
             kInternalAutoFlowAlgorithmDense) == kInternalAutoFlowAlgorithmDense;
   }
   void SetGridAutoRepeatColumns(const Vector<GridTrackSize>& track_sizes) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, grid_auto_repeat_columns_,
-                   track_sizes);
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
+                   grid_auto_repeat_columns_, track_sizes);
   }
   void SetGridAutoRepeatRows(const Vector<GridTrackSize>& track_sizes) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, grid_auto_repeat_rows_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, grid_auto_repeat_rows_,
                    track_sizes);
   }
   void SetGridAutoRepeatColumnsInsertionPoint(const size_t insertion_point) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
                    auto_repeat_columns_insertion_point_, insertion_point);
   }
   void SetGridAutoRepeatRowsInsertionPoint(const size_t insertion_point) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
                    auto_repeat_rows_insertion_point_, insertion_point);
   }
   void SetGridAutoRepeatColumnsType(const AutoRepeatType auto_repeat_type) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, auto_repeat_columns_type_,
-                   auto_repeat_type);
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
+                   auto_repeat_columns_type_, auto_repeat_type);
   }
   void SetGridAutoRepeatRowsType(const AutoRepeatType auto_repeat_type) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, auto_repeat_rows_type_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, auto_repeat_rows_type_,
                    auto_repeat_type);
   }
   void SetNamedGridColumnLines(
       const NamedGridLinesMap& named_grid_column_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, named_grid_column_lines_,
-                   named_grid_column_lines);
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
+                   named_grid_column_lines_, named_grid_column_lines);
   }
   void SetNamedGridRowLines(const NamedGridLinesMap& named_grid_row_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, named_grid_row_lines_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, named_grid_row_lines_,
                    named_grid_row_lines);
   }
   void SetOrderedNamedGridColumnLines(
       const OrderedNamedGridLines& ordered_named_grid_column_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
                    ordered_named_grid_column_lines_,
                    ordered_named_grid_column_lines);
   }
   void SetOrderedNamedGridRowLines(
       const OrderedNamedGridLines& ordered_named_grid_row_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
                    ordered_named_grid_row_lines_, ordered_named_grid_row_lines);
   }
   void SetAutoRepeatNamedGridColumnLines(
       const NamedGridLinesMap& named_grid_column_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
                    auto_repeat_named_grid_column_lines_,
                    named_grid_column_lines);
   }
   void SetAutoRepeatNamedGridRowLines(
       const NamedGridLinesMap& named_grid_row_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
                    auto_repeat_named_grid_row_lines_, named_grid_row_lines);
   }
   void SetAutoRepeatOrderedNamedGridColumnLines(
       const OrderedNamedGridLines& ordered_named_grid_column_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
                    auto_repeat_ordered_named_grid_column_lines_,
                    ordered_named_grid_column_lines);
   }
   void SetAutoRepeatOrderedNamedGridRowLines(
       const OrderedNamedGridLines& ordered_named_grid_row_lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
                    auto_repeat_ordered_named_grid_row_lines_,
                    ordered_named_grid_row_lines);
   }
   void SetNamedGridArea(const NamedGridAreaMap& named_grid_area) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, named_grid_area_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_, named_grid_area_,
                    named_grid_area);
   }
   void SetNamedGridAreaRowCount(size_t row_count) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_, named_grid_area_row_count_,
-                   row_count);
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
+                   named_grid_area_row_count_, row_count);
   }
   void SetNamedGridAreaColumnCount(size_t column_count) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_,
+    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
                    named_grid_area_column_count_, column_count);
   }
 
@@ -3015,14 +3037,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // Filter/transform utility functions.
   bool Has3DTransform() const {
-    return rare_non_inherited_data_->transform_->Has3DTransform();
+    return rare_non_inherited_data_->transform_data_->Has3DTransform();
   }
   bool HasTransform() const {
     return HasTransformOperations() || HasOffset() ||
            HasCurrentTransformAnimation() || Translate() || Rotate() || Scale();
   }
   bool HasTransformOperations() const {
-    return !rare_non_inherited_data_->transform_->operations_.Operations()
+    return !rare_non_inherited_data_->transform_data_->operations_.Operations()
                 .IsEmpty();
   }
   ETransformStyle3D UsedTransformStyle3D() const {
@@ -3034,8 +3056,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   // transform operations but differ in other transform-impacting style
   // respects.
   bool TransformDataEquivalent(const ComputedStyle& other) const {
-    return rare_non_inherited_data_->transform_ ==
-           other.rare_non_inherited_data_->transform_;
+    return rare_non_inherited_data_->transform_data_ ==
+           other.rare_non_inherited_data_->transform_data_;
   }
   bool Preserves3D() const {
     return UsedTransformStyle3D() != kTransformStyle3DFlat;
@@ -3283,7 +3305,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_non_inherited_data_, visited_link_outline_color_, v);
   }
   void SetVisitedLinkColumnRuleColor(const StyleColor& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_,
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
                    visited_link_column_rule_color_, v);
   }
   void SetVisitedLinkTextDecorationColor(const StyleColor& v) {
@@ -3380,7 +3402,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
   }
   Color GetColor() const;
   StyleColor ColumnRuleColor() const {
-    return rare_non_inherited_data_->multi_col_->rule_.GetColor();
+    return rare_non_inherited_data_->multi_col_data_->rule_.GetColor();
   }
   StyleColor OutlineColor() const {
     return rare_non_inherited_data_->outline_.GetColor();
@@ -3426,7 +3448,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     return rare_non_inherited_data_->visited_link_outline_color_;
   }
   StyleColor VisitedLinkColumnRuleColor() const {
-    return rare_non_inherited_data_->multi_col_
+    return rare_non_inherited_data_->multi_col_data_
         ->visited_link_column_rule_color_;
   }
   StyleColor TextDecorationColor() const {

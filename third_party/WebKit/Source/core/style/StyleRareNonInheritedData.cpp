@@ -143,16 +143,16 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(
       object_position_(o.object_position_),
       line_clamp_(o.line_clamp_),
       draggable_region_mode_(o.draggable_region_mode_),
-      deprecated_flexible_box_(o.deprecated_flexible_box_),
-      flexible_box_(o.flexible_box_),
-      multi_col_(o.multi_col_),
-      transform_(o.transform_),
-      will_change_(o.will_change_),
+      deprecated_flexible_box_data_data_(o.deprecated_flexible_box_data_data_),
+      flexible_box_data_(o.flexible_box_data_),
+      multi_col_data_(o.multi_col_data_),
+      transform_data_(o.transform_data_),
+      will_change_data_(o.will_change_data_),
       filter_(o.filter_),
       backdrop_filter_(o.backdrop_filter_),
-      grid_(o.grid_),
-      grid_item_(o.grid_item_),
-      scroll_snap_(o.scroll_snap_),
+      grid_data_(o.grid_data_),
+      grid_item_data_(o.grid_item_data_),
+      scroll_snap_data_(o.scroll_snap_data_),
       content_(o.content_ ? o.content_->Clone() : nullptr),
       counter_directives_(o.counter_directives_ ? o.counter_directives_->Clone()
                                                 : nullptr),
@@ -236,12 +236,15 @@ bool StyleRareNonInheritedData::operator==(
          object_position_ == o.object_position_ &&
          line_clamp_ == o.line_clamp_ &&
          draggable_region_mode_ == o.draggable_region_mode_ &&
-         deprecated_flexible_box_ == o.deprecated_flexible_box_ &&
-         flexible_box_ == o.flexible_box_ && multi_col_ == o.multi_col_ &&
-         transform_ == o.transform_ && will_change_ == o.will_change_ &&
-         filter_ == o.filter_ && backdrop_filter_ == o.backdrop_filter_ &&
-         grid_ == o.grid_ && grid_item_ == o.grid_item_ &&
-         scroll_snap_ == o.scroll_snap_ &&
+         deprecated_flexible_box_data_data_ ==
+             o.deprecated_flexible_box_data_data_ &&
+         flexible_box_data_ == o.flexible_box_data_ &&
+         multi_col_data_ == o.multi_col_data_ &&
+         transform_data_ == o.transform_data_ &&
+         will_change_data_ == o.will_change_data_ && filter_ == o.filter_ &&
+         backdrop_filter_ == o.backdrop_filter_ && grid_data_ == o.grid_data_ &&
+         grid_item_data_ == o.grid_item_data_ &&
+         scroll_snap_data_ == o.scroll_snap_data_ &&
          DataEquivalent(content_, o.content_) &&
          DataEquivalent(counter_directives_, o.counter_directives_) &&
          DataEquivalent(box_shadow_, o.box_shadow_) &&

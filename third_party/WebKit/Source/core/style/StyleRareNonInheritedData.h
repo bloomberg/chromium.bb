@@ -101,21 +101,21 @@ class CORE_EXPORT StyleRareNonInheritedData
   unsigned draggable_region_mode_ : 2;  // DraggableRegionMode
 
   DataRef<StyleDeprecatedFlexibleBoxData>
-      deprecated_flexible_box_;  // Flexible box properties
-  DataRef<StyleFlexibleBoxData> flexible_box_;
-  DataRef<StyleMultiColData> multi_col_;  //  CSS3 multicol properties
+      deprecated_flexible_box_data_data_;  // Flexible box properties
+  DataRef<StyleFlexibleBoxData> flexible_box_data_;
+  DataRef<StyleMultiColData> multi_col_data_;  //  CSS3 multicol properties
   DataRef<StyleTransformData>
-      transform_;  // Transform properties (rotate, scale, skew, etc.)
-  DataRef<StyleWillChangeData> will_change_;  // CSS Will Change
+      transform_data_;  // Transform properties (rotate, scale, skew, etc.)
+  DataRef<StyleWillChangeData> will_change_data_;  // CSS Will Change
 
   DataPersistent<StyleFilterData>
       filter_;  // Filter operations (url, sepia, blur, etc.)
   DataPersistent<StyleFilterData>
       backdrop_filter_;  // Backdrop filter operations (url, sepia, blur, etc.)
 
-  DataRef<StyleGridData> grid_;
-  DataRef<StyleGridItemData> grid_item_;
-  DataRef<StyleScrollSnapData> scroll_snap_;
+  DataRef<StyleGridData> grid_data_;
+  DataRef<StyleGridItemData> grid_item_data_;
+  DataRef<StyleScrollSnapData> scroll_snap_data_;
 
   Persistent<ContentData> content_;
   std::unique_ptr<CounterDirectiveMap> counter_directives_;
