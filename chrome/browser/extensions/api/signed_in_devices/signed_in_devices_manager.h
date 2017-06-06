@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/sync/device_info/device_info_tracker.h"
+#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -21,7 +22,6 @@ class Profile;
 
 namespace content {
 class BrowserContext;
-class NotificationRegistrar;
 }  // namespace content
 
 namespace extensions {

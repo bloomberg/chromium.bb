@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/events/lazy_event_dispatch_util.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/process_manager.h"
@@ -48,7 +49,8 @@ class ExtensionRegistry;
 class RuntimeAPI : public BrowserContextKeyedAPI,
                    public ExtensionRegistryObserver,
                    public UpdateObserver,
-                   public ProcessManagerObserver {
+                   public ProcessManagerObserver,
+                   public LazyEventDispatchUtil::Observer {
  public:
   // The status of the restartAfterDelay request.
   enum class RestartAfterDelayStatus {
@@ -96,13 +98,15 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
-  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
-                                  const Extension* extension,
-                                  bool is_update,
-                                  const std::string& old_name) override;
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               UninstallReason reason) override;
+
+  // LazyEventDispatchUtil::Observer:
+  void OnExtensionInstalledAndLoaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      const base::Version& previous_version) override;
 
   // Cancels any previously scheduled restart request.
   void MaybeCancelRunningDelayedRestartTimer();
@@ -129,14 +133,6 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
 
   // ProcessManagerObserver implementation:
   void OnBackgroundHostStartup(const Extension* extension) override;
-
-  // Pref related functions that deals with info about installed extensions that
-  // has not been loaded yet.
-  // Used to send chrome.runtime.onInstalled event upon loading the extensions.
-  bool ReadPendingOnInstallInfoFromPref(const ExtensionId& extension_id,
-                                        base::Version* previous_version);
-  void RemovePendingOnInstallInfoFromPref(const ExtensionId& extension_id);
-  void StorePendingOnInstallInfoToPref(const Extension* extension);
 
   void AllowNonKioskAppsInRestartAfterDelayForTesting();
 

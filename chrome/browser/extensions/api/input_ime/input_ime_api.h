@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
@@ -33,10 +34,6 @@
 #endif  // defined(OS_CHROMEOS)
 
 class Profile;
-
-namespace content {
-class NotificationRegistrar;
-}
 
 namespace ui {
 class IMEEngineHandlerInterface;

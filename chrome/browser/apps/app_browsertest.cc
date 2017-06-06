@@ -937,11 +937,28 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
   ASSERT_TRUE(extension);
   ASSERT_TRUE(GetFirstAppWindow());
 
-  // Now tell the app to reload itself
+  // Now tell the app to reload itself.
   ExtensionTestMessageListener launched_listener2("Launched", false);
   launched_listener.Reply("reload");
   ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
   ASSERT_TRUE(GetFirstAppWindow());
+}
+
+// Tests that reloading a component app loads its (lazy) background page.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       ComponentReloadLoadsLazyBackgroundPage) {
+  ExtensionTestMessageListener launched_listener("Launched", true);
+  const Extension* component_app = LoadExtensionAsComponentWithManifest(
+      test_data_dir_.AppendASCII("platform_apps")
+          .AppendASCII("component_reload"),
+      FILE_PATH_LITERAL("manifest.json"));
+  ASSERT_TRUE(component_app);
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  // Now tell the app to reload itself.
+  ExtensionTestMessageListener launched_listener2("Launched", false);
+  launched_listener.Reply("reload");
+  ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
 }
 
 namespace {

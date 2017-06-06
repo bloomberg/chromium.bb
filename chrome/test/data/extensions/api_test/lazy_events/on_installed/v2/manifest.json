@@ -1,0 +1,5 @@
+{
+  "version": "2",
+  "name": "Lazy events test: runtime.onInstalled",
+  "background": {"scripts": ["background.js"]}
+}

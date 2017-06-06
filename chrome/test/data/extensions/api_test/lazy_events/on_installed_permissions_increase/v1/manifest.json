@@ -1,0 +1,5 @@
+{
+  "version": "1",
+  "name": "Lazy events test: runtime.onInstalled with permissions increase",
+  "background": {"scripts": ["background.js"]}
+}

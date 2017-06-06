@@ -51,6 +51,7 @@
 #include "ui/native_theme/native_theme.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #endif
 
@@ -162,35 +163,45 @@ base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
 class ThemeService::ThemeObserver
     : public extensions::ExtensionRegistryObserver {
  public:
-  explicit ThemeObserver(ThemeService* service) : theme_service_(service) {
-    extensions::ExtensionRegistry::Get(theme_service_->profile_)
-        ->AddObserver(this);
+  explicit ThemeObserver(ThemeService* service)
+      : theme_service_(service), extension_registry_observer_(this) {
+    extension_registry_observer_.Add(
+        extensions::ExtensionRegistry::Get(theme_service_->profile_));
   }
 
   ~ThemeObserver() override {
-    extensions::ExtensionRegistry::Get(theme_service_->profile_)
-        ->RemoveObserver(this);
   }
 
  private:
+  // extensions::ExtensionRegistryObserver:
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const extensions::Extension* extension,
                                   bool is_update,
                                   const std::string& old_name) override {
     if (extension->is_theme()) {
-      // The theme may be initially disabled. Wait till it is loaded (if ever).
+      // Remember ID of the newly installed theme.
       theme_service_->installed_pending_load_id_ = extension->id();
     }
   }
 
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override {
-    if (extension->is_theme() &&
+    if (!extension->is_theme())
+      return;
+
+    bool is_new_version =
         theme_service_->installed_pending_load_id_ != kDefaultThemeID &&
-        theme_service_->installed_pending_load_id_ == extension->id()) {
-      theme_service_->SetTheme(extension);
-    }
+        theme_service_->installed_pending_load_id_ == extension->id();
     theme_service_->installed_pending_load_id_ = kDefaultThemeID;
+
+    // Do not load already loaded theme.
+    if (!is_new_version && extension->id() == theme_service_->GetThemeID())
+      return;
+
+    // Set the new theme during extension load:
+    // This includes: a) installing a new theme, b) enabling a disabled theme.
+    // We shouldn't get here for the update of a disabled theme.
+    theme_service_->DoSetTheme(extension, !is_new_version);
   }
 
   void OnExtensionUnloaded(
@@ -206,6 +217,12 @@ class ThemeService::ThemeObserver
   }
 
   ThemeService* theme_service_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThemeObserver);
 };
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -261,12 +278,6 @@ void ThemeService::Observe(int type,
                         content::Source<Profile>(profile_));
       OnExtensionServiceReady();
       break;
-    case extensions::NOTIFICATION_EXTENSION_ENABLED: {
-      const Extension* extension = Details<const Extension>(details).ptr();
-      if (extension->is_theme())
-        DoSetTheme(extension, true);
-      break;
-    }
     default:
       NOTREACHED();
   }
@@ -779,12 +790,8 @@ void ThemeService::OnExtensionServiceReady() {
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  theme_observer_.reset(new ThemeObserver(this));
+  theme_observer_ = base::MakeUnique<ThemeObserver>(this);
 #endif
-
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_ENABLED,
-                 content::Source<Profile>(profile_));
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&ThemeService::RemoveUnusedThemes,

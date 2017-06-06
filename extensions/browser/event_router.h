@@ -18,10 +18,9 @@
 #include "base/scoped_observer.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "extensions/browser/event_listener_map.h"
+#include "extensions/browser/events/lazy_event_dispatch_util.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/event_filtering_info.h"
@@ -45,7 +44,6 @@ struct Event;
 struct EventListenerInfo;
 
 class EventRouter : public KeyedService,
-                    public content::NotificationObserver,
                     public ExtensionRegistryObserver,
                     public EventListenerMap::Delegate,
                     public content::RenderProcessHostObserver {
@@ -203,6 +201,10 @@ class EventRouter : public KeyedService,
                    const Extension* extension,
                    bool did_enqueue);
 
+  LazyEventDispatchUtil* lazy_event_dispatch_util() {
+    return &lazy_event_dispatch_util_;
+  }
+
  private:
   friend class EventRouterFilterTest;
   friend class EventRouterTest;
@@ -230,9 +232,6 @@ class EventRouter : public KeyedService,
   void SetRegisteredEvents(const std::string& extension_id,
                            const std::set<std::string>& events);
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
   // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
@@ -330,8 +329,6 @@ class EventRouter : public KeyedService,
   // tests.
   ExtensionPrefs* const extension_prefs_;
 
-  content::NotificationRegistrar registrar_;
-
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
@@ -342,6 +339,8 @@ class EventRouter : public KeyedService,
   ObserverMap observers_;
 
   std::set<content::RenderProcessHost*> observed_process_set_;
+
+  LazyEventDispatchUtil lazy_event_dispatch_util_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };
