@@ -1014,12 +1014,12 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
-  mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
 
 #if CONFIG_INTRABC
   if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools) {
     mbmi->use_intrabc = aom_read(r, ec_ctx->intrabc_prob, ACCT_STR);
     if (mbmi->use_intrabc) {
+      mbmi->tx_size = read_tx_size(cm, xd, 1, !mbmi->skip, r);
       mbmi->mode = mbmi->uv_mode = DC_PRED;
 #if CONFIG_DUAL_FILTER
       for (int idx = 0; idx < 4; ++idx) mbmi->interp_filter[idx] = BILINEAR;
@@ -1066,6 +1066,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     }
   }
 #endif  // CONFIG_INTRABC
+
+  mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
 
 #if CONFIG_CB4X4
   (void)i;

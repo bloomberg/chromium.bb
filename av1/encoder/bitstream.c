@@ -2110,18 +2110,17 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
   write_skip(cm, xd, mbmi->segment_id, mi, w);
 #endif
 
-  if (cm->tx_mode == TX_MODE_SELECT &&
+  int enable_tx_size = cm->tx_mode == TX_MODE_SELECT &&
 #if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
 #if CONFIG_RECT_TX
-      bsize > BLOCK_4X4 &&
+                       bsize > BLOCK_4X4 &&
 #else
-      bsize >= BLOCK_8X8 &&
+                       bsize >= BLOCK_8X8 &&
 #endif  // CONFIG_RECT_TX
 #else
-      bsize >= BLOCK_8X8 &&
+                       bsize >= BLOCK_8X8 &&
 #endif
-      !xd->lossless[mbmi->segment_id])
-    write_selected_tx_size(cm, xd, w);
+                       !xd->lossless[mbmi->segment_id];
 
 #if CONFIG_INTRABC
   if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools) {
@@ -2130,6 +2129,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
     if (use_intrabc) {
       assert(mbmi->mode == DC_PRED);
       assert(mbmi->uv_mode == DC_PRED);
+      if (enable_tx_size && !mbmi->skip) write_selected_tx_size(cm, xd, w);
       int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
       av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
 #if CONFIG_EXT_TX && !CONFIG_TXK_SEL
@@ -2143,6 +2143,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
     }
   }
 #endif  // CONFIG_INTRABC
+  if (enable_tx_size) write_selected_tx_size(cm, xd, w);
 
   if (bsize >= BLOCK_8X8 || unify_bsize) {
     write_intra_mode_kf(cm, ec_ctx, mi, above_mi, left_mi, 0, mbmi->mode, w);
