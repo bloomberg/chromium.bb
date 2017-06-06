@@ -41,6 +41,7 @@
 #include "modules/webaudio/IIRFilterNode.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/RefPtr.h"
@@ -52,7 +53,6 @@ namespace blink {
 
 class AnalyserNode;
 class AudioBuffer;
-class AudioBufferCallback;
 class AudioBufferSourceNode;
 class AudioContextOptions;
 class AudioListener;
@@ -62,6 +62,8 @@ class ChannelSplitterNode;
 class ConstantSourceNode;
 class ConvolverNode;
 class DelayNode;
+class DecodeErrorCallback;
+class DecodeSuccessCallback;
 class Document;
 class DynamicsCompressorNode;
 class ExceptionState;
@@ -110,6 +112,8 @@ class MODULES_EXPORT BaseAudioContext
   ~BaseAudioContext() override;
 
   DECLARE_VIRTUAL_TRACE();
+
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
   // Is the destination node initialized and ready to handle audio?
   bool IsDestinationInitialized() const {
@@ -169,16 +173,25 @@ class MODULES_EXPORT BaseAudioContext
   // Asynchronous audio file data decoding.
   ScriptPromise decodeAudioData(ScriptState*,
                                 DOMArrayBuffer* audio_data,
-                                AudioBufferCallback* success_callback,
-                                AudioBufferCallback* error_callback,
+                                DecodeSuccessCallback*,
+                                DecodeErrorCallback*,
+                                ExceptionState&);
+
+  ScriptPromise decodeAudioData(ScriptState*,
+                                DOMArrayBuffer* audio_data,
+                                ExceptionState&);
+
+  ScriptPromise decodeAudioData(ScriptState*,
+                                DOMArrayBuffer* audio_data,
+                                DecodeSuccessCallback*,
                                 ExceptionState&);
 
   // Handles the promise and callbacks when |decodeAudioData| is finished
   // decoding.
   void HandleDecodeAudioData(AudioBuffer*,
                              ScriptPromiseResolver*,
-                             AudioBufferCallback* success_callback,
-                             AudioBufferCallback* error_callback);
+                             DecodeSuccessCallback*,
+                             DecodeErrorCallback*);
 
   AudioListener* listener() { return listener_; }
 
@@ -466,6 +479,12 @@ class MODULES_EXPORT BaseAudioContext
   AudioContextState context_state_;
 
   AsyncAudioDecoder audio_decoder_;
+
+  // Hold references to the |decodeAudioData| callbacks so that they
+  // don't get prematurely GCed by v8 before |decodeAudioData| returns
+  // and calls them.
+  HeapVector<TraceWrapperMember<DecodeSuccessCallback>> success_callbacks_;
+  HeapVector<TraceWrapperMember<DecodeErrorCallback>> error_callbacks_;
 
   // When a context is closed, the sample rate is cleared.  But decodeAudioData
   // can be called after the context has been closed and it needs the sample
