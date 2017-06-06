@@ -63,7 +63,7 @@ public class ContextualSearchFieldTrial {
     private static final String DISABLE_AMP_AS_SEPARATE_TAB = "disable_amp_as_separate_tab";
 
     // Machine Learning
-    private static final String ENABLE_RANKER_LOGGING = "enable_ranker_logging";
+    private static final String DISABLE_RANKER_LOGGING = "disable_ranker_logging";
 
     // Privacy-related flags
     private static final String DISABLE_SEND_HOME_COUNTRY = "disable_send_home_country";
@@ -93,7 +93,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsSendHomeCountryDisabled;
     private static Boolean sIsPageContentNotificationDisabled;
     private static Boolean sContextualSearchUrlActionsEnabled;
-    private static Boolean sIsRankerLoggingEnabled;
+    private static Boolean sIsRankerLoggingDisabled;
     private static Integer sWaitAfterTapDelayMs;
 
     /**
@@ -338,14 +338,14 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether or not logging to Ranker is enabled.
+     * @return Whether or not logging to Ranker is disabled.
      */
-    static boolean isRankerLoggingEnabled() {
-        if (sIsRankerLoggingEnabled == null) {
-            sIsRankerLoggingEnabled = getBooleanParam(ENABLE_RANKER_LOGGING);
+    static boolean isRankerLoggingDisabled() {
+        if (sIsRankerLoggingDisabled == null) {
+            sIsRankerLoggingDisabled = getBooleanParam(DISABLE_RANKER_LOGGING);
         }
 
-        return sIsRankerLoggingEnabled;
+        return sIsRankerLoggingDisabled;
     }
 
     /**

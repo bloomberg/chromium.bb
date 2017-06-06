@@ -151,7 +151,7 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
 
     /** Whether actually writing data is enabled.  If not, we may do nothing, or just print. */
     private boolean isEnabled() {
-        return ContextualSearchFieldTrial.isRankerLoggingEnabled();
+        return !ContextualSearchFieldTrial.isRankerLoggingDisabled();
     }
 
     /**
