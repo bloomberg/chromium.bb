@@ -40,51 +40,16 @@ class CrOSComponentInstallerTest : public PlatformTest {
   DISALLOW_COPY_AND_ASSIGN(CrOSComponentInstallerTest);
 };
 
-class FakeInstallerTraits : public ComponentInstallerTraits {
+class MockCrOSComponentInstallerTraits : public CrOSComponentInstallerTraits {
  public:
-  ~FakeInstallerTraits() override {}
-
-  bool VerifyInstallation(const base::DictionaryValue& manifest,
-                          const base::FilePath& dir) const override {
-    return true;
-  }
-
-  bool SupportsGroupPolicyEnabledComponentUpdates() const override {
-    return true;
-  }
-
-  bool RequiresNetworkEncryption() const override { return true; }
-
-  update_client::CrxInstaller::Result OnCustomInstall(
-      const base::DictionaryValue& manifest,
-      const base::FilePath& install_dir) override {
-    return update_client::CrxInstaller::Result(0);
-  }
-
-  void ComponentReady(
-      const base::Version& version,
-      const base::FilePath& install_dir,
-      std::unique_ptr<base::DictionaryValue> manifest) override {}
-
-  base::FilePath GetRelativeInstallDir() const override {
-    return base::FilePath(FILE_PATH_LITERAL("fake"));
-  }
-
-  void GetHash(std::vector<uint8_t>* hash) const override {}
-
-  std::string GetName() const override { return "fake name"; }
-
-  update_client::InstallerAttributes GetInstallerAttributes() const override {
-    update_client::InstallerAttributes installer_attributes;
-    return installer_attributes;
-  }
-
-  std::vector<std::string> GetMimeTypes() const override {
-    return std::vector<std::string>();
-  }
+  explicit MockCrOSComponentInstallerTraits(const ComponentConfig& config)
+      : CrOSComponentInstallerTraits(config) {}
+  MOCK_METHOD2(IsCompatible,
+               bool(const std::string& env_version_str,
+                    const std::string& min_env_version_str));
 };
 
-void install_callback(update_client::Error error) {}
+void load_callback(const std::string& result) {}
 
 TEST_F(CrOSComponentInstallerTest, BPPPCompatibleCrOSComponent) {
   BrowserProcessPlatformPart bppp;
@@ -93,13 +58,57 @@ TEST_F(CrOSComponentInstallerTest, BPPPCompatibleCrOSComponent) {
   ASSERT_EQ(bppp.IsCompatibleCrOSComponent("a"), true);
 }
 
-TEST_F(CrOSComponentInstallerTest, RegisterComponentFail) {
-  std::unique_ptr<CrOSMockComponentUpdateService> cus =
-      base::MakeUnique<CrOSMockComponentUpdateService>();
-  EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(0);
-  component_updater::CrOSComponent::InstallCrOSComponent(
-      "a-component-not-exist", base::Bind(install_callback));
+TEST_F(CrOSComponentInstallerTest, RegisterComponentSuccess) {
+  CrOSMockComponentUpdateService cus;
+  EXPECT_CALL(cus, RegisterComponent(testing::_)).Times(1);
+  component_updater::CrOSComponent::InstallComponent(
+      &cus, "epson-inkjet-printer-escpr", base::Bind(load_callback));
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrOSComponentInstallerTest, RegisterComponentFail) {
+  CrOSMockComponentUpdateService cus;
+  EXPECT_CALL(cus, RegisterComponent(testing::_)).Times(0);
+  component_updater::CrOSComponent::InstallComponent(
+      &cus, "a-component-not-exist", base::Bind(load_callback));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrOSComponentInstallerTest, ComponentReadyCorrectManifest) {
+  ComponentConfig config("a", "2.1", "");
+  MockCrOSComponentInstallerTraits traits(config);
+  EXPECT_CALL(traits, IsCompatible(testing::_, testing::_)).Times(1);
+  base::Version version;
+  base::FilePath path;
+  std::unique_ptr<base::DictionaryValue> manifest =
+      base::MakeUnique<base::DictionaryValue>();
+  manifest->SetString("min_env_version", "2.1");
+  traits.ComponentReady(version, path, std::move(manifest));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrOSComponentInstallerTest, ComponentReadyWrongManifest) {
+  ComponentConfig config("a", "2.1", "");
+  MockCrOSComponentInstallerTraits traits(config);
+  EXPECT_CALL(traits, IsCompatible(testing::_, testing::_)).Times(0);
+  base::Version version;
+  base::FilePath path;
+  std::unique_ptr<base::DictionaryValue> manifest =
+      base::MakeUnique<base::DictionaryValue>();
+  traits.ComponentReady(version, path, std::move(manifest));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrOSComponentInstallerTest, IsCompatibleOrNot) {
+  ComponentConfig config("", "", "");
+  CrOSComponentInstallerTraits traits(config);
+  EXPECT_TRUE(traits.IsCompatible("1.0", "1.0"));
+  EXPECT_TRUE(traits.IsCompatible("1.1", "1.0"));
+  EXPECT_FALSE(traits.IsCompatible("1.0", "1.1"));
+  EXPECT_FALSE(traits.IsCompatible("1.0", "2.0"));
+  EXPECT_FALSE(traits.IsCompatible("1.c", "1.c"));
+  EXPECT_FALSE(traits.IsCompatible("1", "1.1"));
+  EXPECT_TRUE(traits.IsCompatible("1.1.1", "1.1"));
 }
 
 }  // namespace component_updater

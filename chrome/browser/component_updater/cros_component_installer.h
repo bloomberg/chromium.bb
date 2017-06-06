@@ -13,6 +13,24 @@
 #include "components/update_client/update_client.h"
 #include "crypto/sha2.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_method_call_status.h"
+#endif  // defined(OS_CHROMEOS)
+
+//  Developer API usage:
+//  ...
+//  void LoadCallback(const std::string& mount_point){
+//    if (mount_point.empty()) {
+//      // component is not loaded.
+//      return;
+//    }
+//    ...
+//  }
+//  ...
+//  component_updater::CrOSComponent::LoadComponent(
+//            name,
+//            base::Bind(&LoadCallback));
+//
 namespace component_updater {
 
 #if defined(OS_CHROMEOS)
@@ -34,6 +52,11 @@ class CrOSComponentInstallerTraits : public ComponentInstallerTraits {
   ~CrOSComponentInstallerTraits() override {}
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, IsCompatibleOrNot);
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
+                           ComponentReadyCorrectManifest);
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
+                           ComponentReadyWrongManifest);
   // The following methods override ComponentInstallerTraits.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
@@ -50,6 +73,9 @@ class CrOSComponentInstallerTraits : public ComponentInstallerTraits {
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
+
+  virtual bool IsCompatible(const std::string& env_version_str,
+                            const std::string& min_env_version_str);
   std::string name;
   std::string env_version;
   uint8_t kSha2Hash_[crypto::kSHA256Length] = {};
@@ -60,62 +86,22 @@ class CrOSComponentInstallerTraits : public ComponentInstallerTraits {
 // This class contains functions used to register and install a component.
 class CrOSComponent {
  public:
-  //  Register and start installing a CrOS component.
-  //  |install_callback| is triggered after install finishes and returns error
-  //  code.
-  //
-  //  example:
-  //  ...
-  //  void load_callback(const std::string& result){
-  //    if (result.empty) {
-  //      // component is not mounted.
-  //      return;
-  //    }
-  //    // [component mount point: result]
-  //  }
-  //  void install_callback(update_client::Error error){
-  //    // switch(error){
-  //    //   case update_client::Error::NONE:
-  //    //     // component is installed
-  //    //     break;
-  //    //   case update_client::Error::INVALID_ARGUMENT:
-  //    //     // your install failed due to your wrong parameters.
-  //    //     break;
-  //    //   default:
-  //    //     // your install failed due to system failure.
-  //    //     break;
-  //    // }
-  //    // Even when error code other than NONE returned (your install failed),
-  //    // component might has already being installed previously.
-  //    // Plus, if you want to know current version of component.
-  //    component_updater:CrOSComponent::LoadCrOSComponent(name, load_callback);
-  //  }
-  //  ...
-  //    component_updater::CrOSComponent::InstallCrOSComponent(
-  //              name,
-  //              base::Bind(&install_callback));
-  //
-  static bool InstallCrOSComponent(
+  static void LoadComponent(
       const std::string& name,
-      const update_client::Callback& install_callback);
-
-  static void LoadCrOSComponent(
-      const std::string& name,
-      const base::Callback<void(const std::string&)>& mount_callback);
+      const base::Callback<void(const std::string&)>& load_callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
+                           RegisterComponentSuccess);
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, RegisterComponentFail);
   CrOSComponent() {}
-  // Register a component.
-  static void RegisterCrOSComponentInternal(ComponentUpdateService* cus,
-                                            const ComponentConfig& config,
-                                            const base::Closure& callback);
-  // A helper function to pass into RegisterCrOSComonentInternal as a callback.
-  // It calls OnDemandUpdate to install the component right after being
-  // registered.
-  static void InstallChromeOSComponent(
+  static void RegisterResult(ComponentUpdateService* cus,
+                             const std::string& id,
+                             const update_client::Callback& install_callback);
+  static void InstallComponent(
       ComponentUpdateService* cus,
-      const std::string& id,
-      const update_client::Callback& install_callback);
+      const std::string& name,
+      const base::Callback<void(const std::string&)>& load_callback);
 };
 #endif  // defined(OS_CHROMEOS)
 
