@@ -97,6 +97,19 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     waitable_event.Wait();
   }
 
+  void RunParsingParameterDescriptorTest(WorkerThread* thread) {
+    WaitableEvent waitable_event;
+    TaskRunnerHelper::Get(TaskType::kUnthrottled, thread)
+        ->PostTask(
+            BLINK_FROM_HERE,
+            CrossThreadBind(
+                &AudioWorkletGlobalScopeTest::
+                    RunParsingParameterDescriptorTestOnWorkletThread,
+                CrossThreadUnretained(this), CrossThreadUnretained(thread),
+                CrossThreadUnretained(&waitable_event)));
+    waitable_event.Wait();
+  }
+
  private:
   // Test if AudioWorkletGlobalScope and V8 components (ScriptState, Isolate)
   // are properly instantiated. Runs a simple processor registration and check
@@ -245,6 +258,53 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     wait_event->Signal();
   }
 
+  void RunParsingParameterDescriptorTestOnWorkletThread(
+      WorkerThread* thread,
+      WaitableEvent* wait_event) {
+    EXPECT_TRUE(thread->IsCurrentThread());
+
+    AudioWorkletGlobalScope* global_scope =
+        static_cast<AudioWorkletGlobalScope*>(thread->GlobalScope());
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
+
+    ScriptState::Scope scope(script_state);
+
+    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
+        R"JS(
+          registerProcessor('testProcessor', class {
+              static get parameterDescriptors () {
+                return [{
+                  name: 'gain',
+                  defaultValue: 0.707,
+                  minValue: 0.0,
+                  maxValue: 1.0
+                }];
+              }
+              constructor () {}
+              process () {}
+            }
+          )
+        )JS"));
+
+    AudioWorkletProcessorDefinition* definition =
+        global_scope->FindDefinition("testProcessor");
+    EXPECT_TRUE(definition);
+    EXPECT_EQ(definition->GetName(), "testProcessor");
+
+    const Vector<String> param_names =
+        definition->GetAudioParamDescriptorNames();
+    EXPECT_EQ(param_names[0], "gain");
+
+    const AudioParamDescriptor* descriptor =
+        definition->GetAudioParamDescriptor(param_names[0]);
+    EXPECT_EQ(descriptor->defaultValue(), 0.707f);
+    EXPECT_EQ(descriptor->minValue(), 0.0f);
+    EXPECT_EQ(descriptor->maxValue(), 1.0f);
+
+    wait_event->Signal();
+  }
+
   RefPtr<SecurityOrigin> security_origin_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
@@ -264,6 +324,12 @@ TEST_F(AudioWorkletGlobalScopeTest, Parsing) {
 TEST_F(AudioWorkletGlobalScopeTest, BufferProcessing) {
   std::unique_ptr<AudioWorkletThread> thread = CreateAudioWorkletThread();
   RunSimpleProcessTest(thread.get());
+  thread->TerminateAndWait();
+}
+
+TEST_F(AudioWorkletGlobalScopeTest, ParsingParameterDescriptor) {
+  std::unique_ptr<AudioWorkletThread> thread = CreateAudioWorkletThread();
+  RunParsingParameterDescriptorTest(thread.get());
   thread->TerminateAndWait();
 }
 
