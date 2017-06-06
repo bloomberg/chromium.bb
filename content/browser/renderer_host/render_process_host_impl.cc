@@ -1637,9 +1637,8 @@ void RenderProcessHostImpl::BindFrameSinkProvider(
 void RenderProcessHostImpl::CreateStoragePartitionService(
     const service_manager::BindSourceInfo& source_info,
     mojom::StoragePartitionServiceRequest request) {
-  // DO NOT REMOVE THIS COMMAND LINE CHECK WITHOUT SECURITY REVIEW!
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMojoLocalStorage)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMojoLocalStorage)) {
     storage_partition_impl_->Bind(std::move(request));
   }
 }
@@ -2181,7 +2180,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMainFrameResizesAreOrientationChanges,
     switches::kMaxUntiledLayerWidth,
     switches::kMaxUntiledLayerHeight,
-    switches::kMojoLocalStorage,
+    switches::kDisableMojoLocalStorage,
     switches::kMSEAudioBufferSizeLimit,
     switches::kMSEVideoBufferSizeLimit,
     switches::kNoReferrers,

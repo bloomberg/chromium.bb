@@ -456,12 +456,12 @@
   {
     "prefix": "mojo-localstorage",
     "base": "external/wpt/webstorage",
-    "args": ["--mojo-local-storage"]
+    "args": ["--disable-mojo-local-storage"]
   },
   {
     "prefix": "mojo-localstorage",
     "base": "storage/domstorage/localstorage",
-    "args": ["--mojo-local-storage"]
+    "args": ["--disable-mojo-local-storage"]
   },
   {
     "prefix": "print_browser",

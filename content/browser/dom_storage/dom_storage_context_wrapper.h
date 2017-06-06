@@ -77,6 +77,9 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request);
 
+  void SetLocalStorageDatabaseForTesting(
+      leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
+
  private:
   friend class DOMStorageMessageFilter;  // for access to context()
   friend class SessionStorageNamespaceImpl;  // ditto
@@ -94,10 +97,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   void OnPurgeMemory() override;
 
   void PurgeMemory(DOMStorageContextImpl::PurgeOption purge_option);
-
-  void GotMojoLocalStorageUsage(GetLocalStorageUsageCallback callback,
-                                base::SingleThreadTaskRunner* reply_task_runner,
-                                std::vector<LocalStorageUsageInfo> usage);
 
   // Keep all mojo-ish details together and not bleed them through the public
   // interface. The |mojo_state_| object is owned by this object, but destroyed

@@ -25,6 +25,11 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
  public:
   DOMStorageBrowserTest() {}
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableMojoLocalStorage);
+  }
+
   void SimpleTest(const GURL& test_url, bool incognito) {
     // The test page will perform tests then navigate to either
     // a #pass or #fail ref.
@@ -46,7 +51,6 @@ class MojoDOMStorageBrowserTest : public DOMStorageBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kMojoLocalStorage);
   }
 
   LocalStorageContextMojo* context() {
@@ -120,8 +124,8 @@ class DOMStorageMigrationBrowserTest : public DOMStorageBrowserTest {
     // Only enable mojo local storage if this is not a PRE_ test.
     const testing::TestInfo* test =
         testing::UnitTest::GetInstance()->current_test_info();
-    if (!base::StartsWith(test->name(), "PRE_", base::CompareCase::SENSITIVE))
-      command_line->AppendSwitch(switches::kMojoLocalStorage);
+    if (base::StartsWith(test->name(), "PRE_", base::CompareCase::SENSITIVE))
+      command_line->AppendSwitch(switches::kDisableMojoLocalStorage);
   }
 };
 
