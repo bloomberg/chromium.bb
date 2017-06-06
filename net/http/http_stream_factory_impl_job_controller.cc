@@ -328,7 +328,11 @@ void HttpStreamFactoryImpl::JobController::OnStreamFailed(
 
   status = ReconsiderProxyAfterError(job, status);
   if (next_state_ == STATE_RESOLVE_PROXY_COMPLETE) {
-    RunLoop(OK);
+    if (status == ERR_IO_PENDING)
+      return;
+    // TODO(xunjieli): Use DCHECK once https://crbug.com/723589 is fixed.
+    CHECK_EQ(OK, status);
+    RunLoop(status);
     return;
   }
   request_->OnStreamFailed(status, used_ssl_config);

@@ -306,7 +306,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, ProxyResolutionFailsSync) {
   ProxyConfig proxy_config;
   proxy_config.set_pac_url(GURL("http://fooproxyurl"));
   proxy_config.set_pac_mandatory(true);
-  MockAsyncProxyResolver resolver;
   session_deps_.proxy_service.reset(new ProxyService(
       base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
       base::WrapUnique(new FailingProxyResolverFactory), nullptr));
@@ -543,6 +542,76 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
                 test_proxy_delegate_raw->get_alternative_proxy_invocations());
     }
   }
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+}
+
+// Regression test for crbug.com/723589.
+TEST_P(JobControllerReconsiderProxyAfterErrorTest,
+       ProxyResolutionSucceedsOnReconsiderAsync) {
+  const int mock_error = ::testing::get<1>(GetParam());
+  StaticSocketDataProvider failed_main_job;
+  failed_main_job.set_connect_data(MockConnect(ASYNC, mock_error));
+  session_deps_.socket_factory->AddSocketDataProvider(&failed_main_job);
+
+  StaticSocketDataProvider successful_fallback;
+  successful_fallback.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  session_deps_.socket_factory->AddSocketDataProvider(&successful_fallback);
+
+  ProxyConfig proxy_config;
+  GURL pac_url("http://fooproxyurl/old.pac");
+  proxy_config.set_pac_url(pac_url);
+  proxy_config.set_pac_mandatory(true);
+  MockAsyncProxyResolverFactory* proxy_resolver_factory =
+      new MockAsyncProxyResolverFactory(false);
+  ProxyService* proxy_service =
+      new ProxyService(base::MakeUnique<ProxyConfigServiceFixed>(proxy_config),
+                       base::WrapUnique(proxy_resolver_factory), nullptr);
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.example.com");
+
+  Initialize(base::WrapUnique<ProxyService>(proxy_service), nullptr);
+  std::unique_ptr<HttpStreamRequest> request =
+      CreateJobController(request_info);
+  ASSERT_EQ(1u, proxy_resolver_factory->pending_requests().size());
+
+  EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
+  EXPECT_EQ(
+      pac_url,
+      proxy_resolver_factory->pending_requests()[0]->script_data()->url());
+  MockAsyncProxyResolver resolver;
+  proxy_resolver_factory->pending_requests()[0]->CompleteNowWithForwarder(
+      OK, &resolver);
+  ASSERT_EQ(1u, resolver.pending_jobs().size());
+  EXPECT_EQ(request_info.url, resolver.pending_jobs()[0]->url());
+  resolver.pending_jobs()[0]->results()->UsePacString("PROXY badproxy:10");
+  resolver.pending_jobs()[0]->CompleteNow(OK);
+  ASSERT_EQ(0u, proxy_resolver_factory->pending_requests().size());
+
+  ProxyConfig new_proxy_config;
+  GURL new_pac_url("http://fooproxyurl/new.pac");
+  new_proxy_config.set_pac_url(new_pac_url);
+  new_proxy_config.set_pac_mandatory(true);
+  auto new_proxy_config_service =
+      base::MakeUnique<ProxyConfigServiceFixed>(new_proxy_config);
+  proxy_service->ResetConfigService(std::move(new_proxy_config_service));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, proxy_resolver_factory->pending_requests().size());
+  EXPECT_EQ(
+      new_pac_url,
+      proxy_resolver_factory->pending_requests()[0]->script_data()->url());
+  proxy_resolver_factory->pending_requests()[0]->CompleteNowWithForwarder(
+      OK, &resolver);
+  ASSERT_EQ(1u, resolver.pending_jobs().size());
+  EXPECT_EQ(request_info.url, resolver.pending_jobs()[0]->url());
+  resolver.pending_jobs()[0]->results()->UsePacString(
+      "PROXY goodfallbackproxy:80");
+  resolver.pending_jobs()[0]->CompleteNow(OK);
+
+  EXPECT_CALL(request_delegate_, OnStreamReady(_, _, _))
+      .WillOnce(Invoke(DeleteHttpStreamPointer));
+  base::RunLoop().RunUntilIdle();
+  request.reset();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
