@@ -298,11 +298,6 @@ WebRect WebRemoteFrameImpl::SelectionBoundsRect() const {
   return WebRect();
 }
 
-WebString WebRemoteFrameImpl::LayerTreeAsText(bool show_debug_info) const {
-  NOTREACHED();
-  return WebString();
-}
-
 WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
     const WebString& name,

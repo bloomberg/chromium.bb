@@ -582,6 +582,13 @@ class WebLocalFrame : public WebFrame {
   // If set to false, do not draw scrollbars on this frame's view.
   virtual void SetCanHaveScrollbars(bool) = 0;
 
+  // Testing ------------------------------------------------------------------
+
+  // Dumps the layer tree, used by the accelerated compositor, in
+  // text form. This is used only by layout tests.
+  virtual WebString GetLayerTreeAsTextForTesting(
+      bool show_debug_info = false) const = 0;
+
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 

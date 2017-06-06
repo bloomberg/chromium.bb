@@ -177,7 +177,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // LocalFrame into another class.
 
   // See GraphicsLayerClient.h for accepted flags.
-  String LayerTreeAsText(unsigned flags = 0) const;
+  String GetLayerTreeAsTextForTesting(unsigned flags = 0) const;
 
   void SetPrinting(bool printing,
                    const FloatSize& page_size,

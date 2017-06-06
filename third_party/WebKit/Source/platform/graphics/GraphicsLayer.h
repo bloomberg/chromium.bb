@@ -216,7 +216,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // Return a string with a human readable form of the layer tree. If debug is
   // true, pointers for the layers and timing data will be included in the
   // returned string.
-  String LayerTreeAsText(LayerTreeFlags = kLayerTreeNormal) const;
+  String GetLayerTreeAsTextForTesting(LayerTreeFlags = kLayerTreeNormal) const;
 
   std::unique_ptr<JSONObject> LayerTreeAsJSON(LayerTreeFlags) const;
 

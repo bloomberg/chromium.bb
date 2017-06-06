@@ -2116,7 +2116,7 @@ String Internals::layerTreeAsText(Document* document,
 
   document->View()->UpdateAllLifecyclePhases();
 
-  return document->GetFrame()->LayerTreeAsText(flags);
+  return document->GetFrame()->GetLayerTreeAsTextForTesting(flags);
 }
 
 String Internals::elementLayerTreeAsText(
@@ -2144,7 +2144,7 @@ String Internals::elementLayerTreeAsText(
 
   return layer->GetCompositedLayerMapping()
       ->MainGraphicsLayer()
-      ->LayerTreeAsText(flags);
+      ->GetLayerTreeAsTextForTesting(flags);
 }
 
 String Internals::scrollingStateTreeAsText(Document*) const {
