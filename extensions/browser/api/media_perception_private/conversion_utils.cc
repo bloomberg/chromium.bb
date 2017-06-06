@@ -43,6 +43,31 @@ std::unique_ptr<BoundingBox> BoundingBoxProtoToIdl(
   return bounding_box_result;
 }
 
+DistanceUnits DistanceUnitsProtoToIdl(const mri::Distance& distance) {
+  if (distance.has_units()) {
+    switch (distance.units()) {
+      case mri::Distance::METERS:
+        return DISTANCE_UNITS_METERS;
+      case mri::Distance::PIXELS:
+        return DISTANCE_UNITS_PIXELS;
+      case mri::Distance::UNITS_UNSPECIFIED:
+        return DISTANCE_UNITS_UNSPECIFIED;
+    }
+    NOTREACHED() << "Unknown distance units: " << distance.units();
+  }
+  return DISTANCE_UNITS_UNSPECIFIED;
+}
+
+std::unique_ptr<Distance> DistanceProtoToIdl(const mri::Distance& distance) {
+  std::unique_ptr<Distance> distance_result = base::MakeUnique<Distance>();
+  distance_result->units = DistanceUnitsProtoToIdl(distance);
+
+  if (distance.has_magnitude())
+    distance_result->magnitude = base::MakeUnique<double>(distance.magnitude());
+
+  return distance_result;
+}
+
 EntityType EntityTypeProtoToIdl(const mri::Entity& entity) {
   if (entity.has_type()) {
     switch (entity.type()) {
@@ -50,6 +75,8 @@ EntityType EntityTypeProtoToIdl(const mri::Entity& entity) {
         return ENTITY_TYPE_FACE;
       case mri::Entity::PERSON:
         return ENTITY_TYPE_PERSON;
+      case mri::Entity::MOTION_REGION:
+        return ENTITY_TYPE_MOTION_REGION;
       case mri::Entity::UNSPECIFIED:
         return ENTITY_TYPE_UNSPECIFIED;
     }
@@ -69,6 +96,9 @@ Entity EntityProtoToIdl(const mri::Entity& entity) {
 
   if (entity.has_bounding_box())
     entity_result.bounding_box = BoundingBoxProtoToIdl(entity.bounding_box());
+
+  if (entity.has_depth())
+    entity_result.depth = DistanceProtoToIdl(entity.depth());
 
   return entity_result;
 }

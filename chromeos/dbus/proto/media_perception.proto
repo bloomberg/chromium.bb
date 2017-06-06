@@ -91,6 +91,7 @@ message Entity {
     UNSPECIFIED = 0;
     FACE = 1;
     PERSON = 2;
+    MOTION_REGION = 3;
   }
 
   optional EntityType type = 2;
@@ -100,6 +101,9 @@ message Entity {
 
   // A value for the quality of this detection.
   optional float confidence = 4;
+
+  // Perpendicular distance (depth) from the camera plane to the entity.
+  optional Distance depth = 5;
 }
 
 message BoundingBox {
@@ -118,4 +122,17 @@ message Point {
   // y represents the vertical distance from the top left corner of the image to
   // the point.
   optional float y = 2;
+}
+
+// Generic message object to encapsulate a distance magnitude and units.
+message Distance {
+  enum DistanceUnits {
+    UNITS_UNSPECIFIED = 0;
+    METERS = 1;
+    PIXELS = 2;
+  }
+
+  optional DistanceUnits units = 1;
+
+  optional float magnitude = 2;
 }

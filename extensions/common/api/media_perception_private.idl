@@ -28,7 +28,7 @@ namespace mediaPerceptionPrivate {
     SUSPENDED
   };
 
-  // The system and configuration state of the analytics process and v4lplugin.
+  // The system and configuration state of the analytics process.
   dictionary State {
     Status status;
 
@@ -55,10 +55,26 @@ namespace mediaPerceptionPrivate {
     Point? bottomRight;
   };
 
+  enum DistanceUnits {
+    UNSPECIFIED,
+    METERS,
+    PIXELS
+  };
+
+  // Generic dictionary to encapsulate a distance magnitude and units.
+  dictionary Distance {
+    // This field provides flexibility to report depths or distances of
+    // different entity types with different units.
+    DistanceUnits? units;
+
+    double? magnitude;
+  };
+
   enum EntityType {
     UNSPECIFIED,
     FACE,
-    PERSON
+    PERSON,
+    MOTION_REGION
   };
 
   dictionary Entity {
@@ -75,7 +91,7 @@ namespace mediaPerceptionPrivate {
     double? confidence;
 
     // The estimated depth of the entity from the camera.
-    double? depthInMeters;
+    Distance? depth;
   };
 
   // The set of computer vision metadata for an image frame.
