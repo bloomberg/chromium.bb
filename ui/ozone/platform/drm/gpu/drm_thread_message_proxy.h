@@ -30,6 +30,7 @@ class DrmThread;
 struct DisplayMode_Params;
 struct DisplaySnapshot_Params;
 struct OverlayCheck_Params;
+struct OverlayCheckReturn_Params;
 
 class DrmThreadMessageProxy : public IPC::MessageFilter,
                               public InterThreadMessagingProxy {
@@ -80,7 +81,8 @@ class DrmThreadMessageProxy : public IPC::MessageFilter,
 
   void OnCheckOverlayCapabilitiesCallback(
       gfx::AcceleratedWidget widget,
-      const std::vector<OverlayCheck_Params>& overlays) const;
+      const std::vector<OverlayCheck_Params>& overlays,
+      const std::vector<OverlayCheckReturn_Params>& returns) const;
   void OnRefreshNativeDisplaysCallback(
       const std::vector<DisplaySnapshot_Params>& displays) const;
   void OnConfigureNativeDisplayCallback(int64_t display_id, bool success) const;

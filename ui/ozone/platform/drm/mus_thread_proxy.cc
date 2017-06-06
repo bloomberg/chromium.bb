@@ -392,9 +392,10 @@ bool MusThreadProxy::GpuSetColorCorrection(
 
 void MusThreadProxy::GpuCheckOverlayCapabilitiesCallback(
     gfx::AcceleratedWidget widget,
-    const std::vector<OverlayCheck_Params>& overlays) const {
+    const std::vector<OverlayCheck_Params>& overlays,
+    const std::vector<OverlayCheckReturn_Params>& returns) const {
   DCHECK(on_window_server_thread_.CalledOnValidThread());
-  overlay_manager_->GpuSentOverlayResult(widget, overlays);
+  overlay_manager_->GpuSentOverlayResult(widget, overlays, returns);
 }
 
 void MusThreadProxy::GpuConfigureNativeDisplayCallback(int64_t display_id,

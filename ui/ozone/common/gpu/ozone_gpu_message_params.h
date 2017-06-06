@@ -73,6 +73,15 @@ struct OverlayCheck_Params {
   bool is_overlay_candidate = true;
 };
 
+struct OverlayCheckReturn_Params {
+  OverlayCheckReturn_Params() = default;
+  OverlayCheckReturn_Params(const OverlayCheckReturn_Params& other) = default;
+  ~OverlayCheckReturn_Params() = default;
+
+  enum Status { PENDING, ABLE, NOT, LAST = NOT };
+  Status status = Status::PENDING;
+};
+
 }  // namespace ui
 
 #endif  // UI_OZONE_COMMON_GPU_OZONE_GPU_MESSAGE_PARAMS_H_

@@ -147,7 +147,7 @@ void DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
   controller_->SchedulePageFlip(last_submitted_planes_, std::move(callback));
 }
 
-std::vector<OverlayCheck_Params> DrmWindow::TestPageFlip(
+std::vector<OverlayCheckReturn_Params> DrmWindow::TestPageFlip(
     const std::vector<OverlayCheck_Params>& overlay_params) {
   return overlay_validator_->TestPageFlip(overlay_params,
                                           last_submitted_planes_);

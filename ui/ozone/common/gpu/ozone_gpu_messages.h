@@ -34,6 +34,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(display::HDCPState, display::HDCP_STATE_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::OverlayTransform, gfx::OVERLAY_TRANSFORM_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(ui::OverlayCheckReturn_Params::Status,
+                          ui::OverlayCheckReturn_Params::Status::LAST)
+
 // clang-format off
 IPC_STRUCT_TRAITS_BEGIN(ui::DisplayMode_Params)
   IPC_STRUCT_TRAITS_MEMBER(size)
@@ -76,6 +79,10 @@ IPC_STRUCT_TRAITS_BEGIN(ui::OverlayCheck_Params)
   IPC_STRUCT_TRAITS_MEMBER(crop_rect)
   IPC_STRUCT_TRAITS_MEMBER(plane_z_order)
   IPC_STRUCT_TRAITS_MEMBER(is_overlay_candidate)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ui::OverlayCheckReturn_Params)
+  IPC_STRUCT_TRAITS_MEMBER(status)
 IPC_STRUCT_TRAITS_END()
 
 // clang-format on
@@ -185,6 +192,7 @@ IPC_MESSAGE_CONTROL1(OzoneHostMsg_DisplayControlRelinquished,
 
 // Response to OzoneGpuMsg_CheckOverlayCapabilities. Returns list of supported
 // params.
-IPC_MESSAGE_CONTROL2(OzoneHostMsg_OverlayCapabilitiesReceived,
+IPC_MESSAGE_CONTROL3(OzoneHostMsg_OverlayCapabilitiesReceived,
                      gfx::AcceleratedWidget /* widget */,
-                     std::vector<ui::OverlayCheck_Params> /* overlays */)
+                     std::vector<ui::OverlayCheck_Params> /* overlays */,
+                     std::vector<ui::OverlayCheckReturn_Params> /* returns */)

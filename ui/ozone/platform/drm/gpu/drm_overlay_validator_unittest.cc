@@ -157,18 +157,19 @@ TEST_F(DrmOverlayValidatorTest, WindowWithNoController) {
   // present.
   ui::HardwareDisplayController* controller = window_->GetController();
   window_->SetController(nullptr);
-  std::vector<ui::OverlayCheck_Params> validated_params =
+  std::vector<ui::OverlayCheckReturn_Params> returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
-  EXPECT_FALSE(validated_params.front().is_overlay_candidate);
-  EXPECT_FALSE(validated_params.back().is_overlay_candidate);
+  EXPECT_EQ(returns.front().status, ui::OverlayCheckReturn_Params::Status::NOT);
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::NOT);
   window_->SetController(controller);
 }
 
 TEST_F(DrmOverlayValidatorTest, DontPromoteMoreLayersThanAvailablePlanes) {
-  std::vector<ui::OverlayCheck_Params> validated_params =
+  std::vector<ui::OverlayCheckReturn_Params> returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
-  EXPECT_TRUE(validated_params.front().is_overlay_candidate);
-  EXPECT_FALSE(validated_params.back().is_overlay_candidate);
+  EXPECT_EQ(returns.front().status,
+            ui::OverlayCheckReturn_Params::Status::ABLE);
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::NOT);
 }
 
 TEST_F(DrmOverlayValidatorTest, DontCollapseOverlayToPrimaryInFullScreen) {
@@ -177,12 +178,13 @@ TEST_F(DrmOverlayValidatorTest, DontCollapseOverlayToPrimaryInFullScreen) {
   overlay_params_.back().display_rect = primary_rect_;
   plane_list_.back().display_bounds = primary_rect_;
 
-  std::vector<ui::OverlayCheck_Params> validated_params =
+  std::vector<ui::OverlayCheckReturn_Params> returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
   // Second candidate should be marked as Invalid as we have only one plane
   // per CRTC.
-  EXPECT_TRUE(validated_params.front().is_overlay_candidate);
-  EXPECT_FALSE(validated_params.back().is_overlay_candidate);
+  EXPECT_EQ(returns.front().status,
+            ui::OverlayCheckReturn_Params::Status::ABLE);
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::NOT);
 }
 
 TEST_F(DrmOverlayValidatorTest, ClearCacheOnReset) {
@@ -314,11 +316,11 @@ TEST_F(DrmOverlayValidatorTest, OverlayPreferredFormat) {
   plane_manager_->SetPlaneProperties(planes_info);
   overlay_validator_->ClearCache();
 
-  std::vector<ui::OverlayCheck_Params> validated_params =
+  std::vector<ui::OverlayCheckReturn_Params> returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
 
-  for (const auto& param : validated_params)
-    EXPECT_TRUE(param.is_overlay_candidate);
+  for (const auto& param : returns)
+    EXPECT_EQ(param.status, ui::OverlayCheckReturn_Params::Status::ABLE);
 
   EXPECT_EQ(3, plane_manager_->plane_count());
 
@@ -349,11 +351,11 @@ TEST_F(DrmOverlayValidatorTest, OverlayPreferredFormat_YUV) {
   plane_manager_->SetPlaneProperties(planes_info);
   overlay_validator_->ClearCache();
 
-  std::vector<ui::OverlayCheck_Params> validated_params =
+  std::vector<ui::OverlayCheckReturn_Params> returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
 
-  for (const auto& param : validated_params)
-    EXPECT_TRUE(param.is_overlay_candidate);
+  for (const auto& param : returns)
+    EXPECT_EQ(param.status, ui::OverlayCheckReturn_Params::Status::ABLE);
 
   EXPECT_EQ(5, plane_manager_->plane_count());
 
@@ -380,15 +382,15 @@ TEST_F(DrmOverlayValidatorTest, OverlayPreferredFormat_XRGB) {
   plane_manager_->SetPlaneProperties(planes_info);
   overlay_validator_->ClearCache();
 
-  std::vector<ui::OverlayCheck_Params> validated_params =
+  std::vector<ui::OverlayCheckReturn_Params> returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
   ui::OverlayPlaneList plane_list =
       overlay_validator_->PrepareBuffersForPageFlip(plane_list_);
   EXPECT_EQ(DRM_FORMAT_XRGB8888,
             plane_list.back().buffer->GetFramebufferPixelFormat());
   EXPECT_EQ(3, plane_manager_->plane_count());
-  for (const auto& param : validated_params)
-    EXPECT_TRUE(param.is_overlay_candidate);
+  for (const auto& param : returns)
+    EXPECT_EQ(param.status, ui::OverlayCheckReturn_Params::Status::ABLE);
 }
 
 TEST_F(DrmOverlayValidatorTest, RejectYUVBuffersIfNotSupported) {
@@ -411,10 +413,11 @@ TEST_F(DrmOverlayValidatorTest, RejectYUVBuffersIfNotSupported) {
   std::vector<ui::OverlayCheck_Params> validated_params = overlay_params_;
   validated_params.back().format = gfx::BufferFormat::UYVY_422;
   plane_manager_->ResetPlaneCount();
-  validated_params = overlay_validator_->TestPageFlip(validated_params,
-                                                      ui::OverlayPlaneList());
+  std::vector<ui::OverlayCheckReturn_Params> returns =
+      overlay_validator_->TestPageFlip(validated_params,
+                                       ui::OverlayPlaneList());
 
-  EXPECT_FALSE(validated_params.back().is_overlay_candidate);
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::NOT);
 }
 
 TEST_F(DrmOverlayValidatorTest,
@@ -454,10 +457,11 @@ TEST_F(DrmOverlayValidatorTest,
   std::vector<ui::OverlayCheck_Params> validated_params = overlay_params_;
   validated_params.back().format = gfx::BufferFormat::UYVY_422;
   plane_manager_->ResetPlaneCount();
-  validated_params = overlay_validator_->TestPageFlip(validated_params,
-                                                      ui::OverlayPlaneList());
+  std::vector<ui::OverlayCheckReturn_Params> returns =
+      overlay_validator_->TestPageFlip(validated_params,
+                                       ui::OverlayPlaneList());
 
-  EXPECT_TRUE(validated_params.back().is_overlay_candidate);
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::ABLE);
 
   // Both controllers have Overlay which support DRM_FORMAT_UYVY, and scaling is
   // needed, hence this should be picked as the optimal format.
@@ -474,9 +478,9 @@ TEST_F(DrmOverlayValidatorTest,
   plane_manager_->SetPlaneProperties(planes_info);
   overlay_validator_->ClearCache();
 
-  validated_params = overlay_validator_->TestPageFlip(validated_params,
-                                                      ui::OverlayPlaneList());
-  EXPECT_FALSE(validated_params.back().is_overlay_candidate);
+  returns = overlay_validator_->TestPageFlip(validated_params,
+                                             ui::OverlayPlaneList());
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::NOT);
 
   // Check case where we dont have support for packed formats in primary
   // display.
@@ -485,9 +489,9 @@ TEST_F(DrmOverlayValidatorTest,
   plane_manager_->SetPlaneProperties(planes_info);
   overlay_validator_->ClearCache();
 
-  validated_params = overlay_validator_->TestPageFlip(validated_params,
-                                                      ui::OverlayPlaneList());
-  EXPECT_FALSE(validated_params.back().is_overlay_candidate);
+  returns = overlay_validator_->TestPageFlip(validated_params,
+                                             ui::OverlayPlaneList());
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::NOT);
   controller->RemoveCrtc(drm_, kSecondaryCrtc);
 }
 
@@ -523,10 +527,10 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatYUV_MirroredControllers) {
   overlay_validator_->ClearCache();
 
   plane_manager_->ResetPlaneCount();
-  std::vector<ui::OverlayCheck_Params> validated_params =
+  std::vector<ui::OverlayCheckReturn_Params> returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
 
-  EXPECT_TRUE(validated_params.back().is_overlay_candidate);
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::ABLE);
   ui::OverlayPlaneList plane_list =
       overlay_validator_->PrepareBuffersForPageFlip(plane_list_);
   EXPECT_EQ(DRM_FORMAT_XRGB8888,
@@ -537,9 +541,9 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatYUV_MirroredControllers) {
   plane_manager_->SetPlaneProperties(planes_info);
   overlay_validator_->ClearCache();
 
-  validated_params =
+  returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
-  EXPECT_TRUE(validated_params.back().is_overlay_candidate);
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::ABLE);
 
   plane_list = overlay_validator_->PrepareBuffersForPageFlip(plane_list_);
   EXPECT_EQ(DRM_FORMAT_XRGB8888,
@@ -552,9 +556,9 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatYUV_MirroredControllers) {
   plane_manager_->SetPlaneProperties(planes_info);
   overlay_validator_->ClearCache();
 
-  validated_params =
+  returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
-  EXPECT_TRUE(validated_params.back().is_overlay_candidate);
+  EXPECT_EQ(returns.back().status, ui::OverlayCheckReturn_Params::Status::ABLE);
 
   plane_list = overlay_validator_->PrepareBuffersForPageFlip(plane_list_);
   EXPECT_EQ(DRM_FORMAT_XRGB8888,
@@ -636,7 +640,7 @@ TEST_F(DrmOverlayValidatorTest, RejectBufferAllocationFail) {
   // In that case we should reject the overlay candidate.
   buffer_generator_->set_allocation_failure(true);
 
-  std::vector<ui::OverlayCheck_Params> validated_params =
+  std::vector<ui::OverlayCheckReturn_Params> returns =
       overlay_validator_->TestPageFlip(overlay_params_, ui::OverlayPlaneList());
-  EXPECT_FALSE(validated_params.front().is_overlay_candidate);
+  EXPECT_EQ(returns.front().status, ui::OverlayCheckReturn_Params::Status::NOT);
 }

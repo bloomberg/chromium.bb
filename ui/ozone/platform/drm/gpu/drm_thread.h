@@ -94,7 +94,8 @@ class DrmThread : public base::Thread, public ozone::mojom::DeviceCursor {
       gfx::AcceleratedWidget widget,
       const std::vector<OverlayCheck_Params>& overlays,
       base::OnceCallback<void(gfx::AcceleratedWidget,
-                              const std::vector<OverlayCheck_Params>&)>
+                              const std::vector<OverlayCheck_Params>&,
+                              const std::vector<OverlayCheckReturn_Params>&)>
           callback);
   void RefreshNativeDisplays(
       base::OnceCallback<void(const std::vector<DisplaySnapshot_Params>&)>
