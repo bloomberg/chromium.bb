@@ -1256,6 +1256,73 @@ TEST_F(ShelfViewTest, ShelfItemStatus) {
   ASSERT_EQ(ShelfButton::STATE_ATTENTION, button->state());
 }
 
+// Test what drag movements will rip an item off the shelf.
+TEST_F(ShelfViewTest, ShelfRipOff) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  // The test makes some assumptions that the shelf is bottom aligned.
+  ASSERT_EQ(test_api_->shelf_view()->shelf()->alignment(),
+            SHELF_ALIGNMENT_BOTTOM);
+
+  // The rip off threshold. Taken from |kRipOffDistance| in shelf_view.cc.
+  const int kRipOffDistance = 48;
+
+  // Add two apps (which is on the main shelf) and then add buttons until
+  // overflow. Add one more app (which is on the overflow shelf).
+  ShelfID first_app_id = AddAppShortcut();
+  ShelfID second_app_id = AddAppShortcut();
+  AddButtonsUntilOverflow();
+  ShelfID overflow_app_id = AddAppShortcut();
+
+  // Verify that dragging an app off the shelf will trigger the app getting
+  // ripped off, unless the distance is less than |kRipOffDistance|.
+  gfx::Point first_app_location = GetButtonCenter(GetButtonByID(first_app_id));
+  generator.set_current_location(first_app_location);
+  generator.PressLeftButton();
+  // Drag the mouse to just off the shelf.
+  generator.MoveMouseBy(0, -kShelfSize / 2 - 1);
+  EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
+  // Drag the mouse past the rip off threshold.
+  generator.MoveMouseBy(0, -kRipOffDistance);
+  EXPECT_TRUE(test_api_->IsRippedOffFromShelf());
+  // Drag the mouse back to the original position, so that the app does not get
+  // deleted.
+  generator.MoveMouseTo(first_app_location);
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
+
+  // Open overflow shelf and test api for it.
+  test_api_->ShowOverflowBubble();
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+  ShelfViewTestAPI test_api_for_overflow(
+      test_api_->overflow_bubble()->shelf_view());
+
+  // Verify that when an app from the main shelf is dragged to a location on the
+  // overflow shelf, it is ripped off.
+  gfx::Point second_app_location =
+      GetButtonCenter(GetButtonByID(second_app_id));
+  gfx::Point overflow_app_location = GetButtonCenter(
+      test_api_for_overflow.GetButton(model_->ItemIndexByID(overflow_app_id)));
+  generator.set_current_location(second_app_location);
+  generator.PressLeftButton();
+  generator.MoveMouseTo(overflow_app_location);
+  EXPECT_TRUE(test_api_->IsRippedOffFromShelf());
+  generator.MoveMouseTo(second_app_location);
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(test_api_->IsRippedOffFromShelf());
+
+  // Verify that when an app from the overflow shelf is dragged to a location on
+  // the main shelf, it is ripped off.
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+  generator.set_current_location(overflow_app_location);
+  generator.PressLeftButton();
+  generator.MoveMouseTo(second_app_location);
+  EXPECT_TRUE(test_api_for_overflow.IsRippedOffFromShelf());
+  generator.MoveMouseTo(overflow_app_location);
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(test_api_for_overflow.IsRippedOffFromShelf());
+}
+
 // Confirm that item status changes are reflected in the buttons
 // for platform apps.
 TEST_F(ShelfViewTest, ShelfItemStatusPlatformApp) {
