@@ -429,8 +429,10 @@ bool FrameSelection::SelectionHasFocus() const {
   // TODO(editing-dev): Hoist UpdateStyleAndLayoutIgnorePendingStylesheets
   // to caller. See http://crbug.com/590369 for more details.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (ComputeVisibleSelectionInFlatTree().IsNone())
+    return false;
   const Node* current =
-      ComputeVisibleSelectionInDOMTree().Start().ComputeContainerNode();
+      ComputeVisibleSelectionInFlatTree().Start().ComputeContainerNode();
   if (!current)
     return false;
 
@@ -443,12 +445,6 @@ bool FrameSelection::SelectionHasFocus() const {
 
   if (focused_element->IsTextControl())
     return focused_element->ContainsIncludingHostElements(*current);
-
-  if (ComputeVisibleSelectionInFlatTree().IsNone()) {
-    // TODO(editing-dev): We should avoid any case where VSInFlatTree is none
-    // but VSInDOMTree is not none.
-    DLOG(FATAL) << ComputeVisibleSelectionInDOMTree();
-  }
 
   // Selection has focus if it contains the focused element.
   const PositionInFlatTree& focused_position =
