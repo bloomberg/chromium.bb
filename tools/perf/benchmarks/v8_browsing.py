@@ -229,6 +229,7 @@ class V8MobileClassicBrowsingBenchmark(_V8BrowsingBenchmark):
     return 'v8.browsing_mobile_classic'
 
 
+@benchmark.Disabled('android')
 @benchmark.Owner(emails=['mythria@chromium.org'])
 class V8RuntimeStatsDesktopBrowsingBenchmark(
     _V8RuntimeStatsBrowsingBenchmark):
@@ -256,6 +257,7 @@ class V8RuntimeStatsDesktopTurboBrowsingBenchmark(
     return 'v8.runtimestats.browsing_desktop_turbo'
 
 
+@benchmark.Disabled('android')
 @benchmark.Owner(emails=['hablich@chromium.org'])
 class V8RuntimeStatsDesktopClassicBrowsingBenchmark(
     _V8RuntimeStatsBrowsingBenchmark):
@@ -269,7 +271,6 @@ class V8RuntimeStatsDesktopClassicBrowsingBenchmark(
   @classmethod
   def Name(cls):
     return 'v8.runtimestats.browsing_desktop_classic'
-
 
 
 @benchmark.Enabled('android')
