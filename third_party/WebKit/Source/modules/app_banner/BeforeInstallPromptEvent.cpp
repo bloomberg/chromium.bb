@@ -21,6 +21,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     mojom::blink::AppBannerEventRequest event_request,
     const Vector<String>& platforms)
     : Event(name, false, true),
+      ContextClient(&frame),
       banner_service_(std::move(service_ptr)),
       binding_(this, std::move(event_request)),
       platforms_(platforms),
@@ -34,14 +35,18 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
 }
 
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(
+    ExecutionContext* execution_context,
     const AtomicString& name,
     const BeforeInstallPromptEventInit& init)
-    : Event(name, init), binding_(this), prompt_called_(false) {
+    : Event(name, init),
+      ContextClient(execution_context),
+      binding_(this),
+      prompt_called_(false) {
   if (init.hasPlatforms())
     platforms_ = init.platforms();
 }
 
-BeforeInstallPromptEvent::~BeforeInstallPromptEvent() {}
+BeforeInstallPromptEvent::~BeforeInstallPromptEvent() = default;
 
 void BeforeInstallPromptEvent::Dispose() {
   banner_service_.reset();
@@ -97,6 +102,11 @@ void BeforeInstallPromptEvent::preventDefault() {
   }
 }
 
+bool BeforeInstallPromptEvent::HasPendingActivity() const {
+  return user_choice_ &&
+         user_choice_->GetState() == ScriptPromisePropertyBase::kPending;
+}
+
 void BeforeInstallPromptEvent::BannerAccepted(const String& platform) {
   user_choice_->Resolve(AppBannerPromptResult::Create(
       platform, AppBannerPromptResult::Outcome::kAccepted));
@@ -110,6 +120,7 @@ void BeforeInstallPromptEvent::BannerDismissed() {
 DEFINE_TRACE(BeforeInstallPromptEvent) {
   visitor->Trace(user_choice_);
   Event::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 [
-    Constructor(DOMString type, optional BeforeInstallPromptEventInit eventInitDict)
+    ActiveScriptWrappable,
+    DependentLifetime,
+    Constructor(DOMString type, optional BeforeInstallPromptEventInit eventInitDict),
+    ConstructorCallWith=ExecutionContext,
 ] interface BeforeInstallPromptEvent : Event {
     readonly attribute FrozenArray<DOMString> platforms;
     [CallWith=ScriptState] readonly attribute Promise<AppBannerPromptResult> userChoice;
