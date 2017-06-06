@@ -46,8 +46,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
-class SkImage;
-
 namespace cc {
 class HeadsUpDisplayLayer;
 class Layer;
@@ -485,7 +483,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   gfx::ScrollOffset GetScrollOffsetForAnimation(
       ElementId element_id) const override;
 
-  void QueueImageDecode(sk_sp<const SkImage> image,
+  void QueueImageDecode(const PaintImage& image,
                         const base::Callback<void(bool)>& callback);
 
  protected:
@@ -646,7 +644,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   MutatorHost* mutator_host_;
 
-  std::vector<std::pair<sk_sp<const SkImage>, base::Callback<void(bool)>>>
+  std::vector<std::pair<PaintImage, base::Callback<void(bool)>>>
       queued_image_decodes_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);

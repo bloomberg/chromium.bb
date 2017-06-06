@@ -141,7 +141,7 @@ void HTMLImageElement::RequestDecode() {
   }
   Image* image = GetImageLoader().GetImage()->GetImage();
   frame->GetChromeClient().RequestDecode(
-      frame, image->ImageForCurrentFrame(),
+      frame, image->PaintImageForCurrentFrame(),
       WTF::Bind(&HTMLImageElement::DecodeRequestFinished,
                 WrapWeakPersistent(this), decode_sequence_id_));
 }

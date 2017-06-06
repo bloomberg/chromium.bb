@@ -254,9 +254,9 @@ void WebFrameWidgetBase::DidLosePointerLock() {
 }
 
 void WebFrameWidgetBase::RequestDecode(
-    sk_sp<SkImage> image,
+    const PaintImage& image,
     std::unique_ptr<WTF::Function<void(bool)>> callback) {
-  View()->RequestDecode(std::move(image), std::move(callback));
+  View()->RequestDecode(image, std::move(callback));
 }
 
 // TODO(665924): Remove direct dispatches of mouse events from

@@ -56,8 +56,9 @@ class DecodedImageTrackerTest : public testing::Test {
 TEST_F(DecodedImageTrackerTest, QueueImageLocksImages) {
   bool locked = false;
   decoded_image_tracker()->QueueImageDecode(
-      nullptr, base::Bind([](bool* locked, bool success) { *locked = true; },
-                          base::Unretained(&locked)));
+      PaintImage(),
+      base::Bind([](bool* locked, bool success) { *locked = true; },
+                 base::Unretained(&locked)));
   EXPECT_TRUE(locked);
   EXPECT_EQ(1u, image_controller()->num_locked_images());
 }
@@ -65,8 +66,9 @@ TEST_F(DecodedImageTrackerTest, QueueImageLocksImages) {
 TEST_F(DecodedImageTrackerTest, NotifyFrameFinishedUnlocksImages) {
   bool locked = false;
   decoded_image_tracker()->QueueImageDecode(
-      nullptr, base::Bind([](bool* locked, bool success) { *locked = true; },
-                          base::Unretained(&locked)));
+      PaintImage(),
+      base::Bind([](bool* locked, bool success) { *locked = true; },
+                 base::Unretained(&locked)));
   EXPECT_TRUE(locked);
   EXPECT_EQ(1u, image_controller()->num_locked_images());
 
@@ -75,8 +77,9 @@ TEST_F(DecodedImageTrackerTest, NotifyFrameFinishedUnlocksImages) {
 
   locked = false;
   decoded_image_tracker()->QueueImageDecode(
-      nullptr, base::Bind([](bool* locked, bool success) { *locked = true; },
-                          base::Unretained(&locked)));
+      PaintImage(),
+      base::Bind([](bool* locked, bool success) { *locked = true; },
+                 base::Unretained(&locked)));
   EXPECT_TRUE(locked);
   EXPECT_EQ(2u, image_controller()->num_locked_images());
 

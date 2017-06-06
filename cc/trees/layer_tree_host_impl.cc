@@ -2382,11 +2382,11 @@ LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {
 }
 
 void LayerTreeHostImpl::QueueImageDecode(
-    sk_sp<const SkImage> image,
+    const PaintImage& image,
     const base::Callback<void(bool)>& embedder_callback) {
   decoded_image_tracker_.QueueImageDecode(
-      std::move(image), base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
-                                   base::Unretained(this), embedder_callback));
+      image, base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
+                        base::Unretained(this), embedder_callback));
 }
 
 void LayerTreeHostImpl::ImageDecodeFinished(

@@ -505,7 +505,7 @@ class WEB_EXPORT WebViewImpl final
   }
 
   void RequestDecode(
-      sk_sp<SkImage>,
+      const PaintImage&,
       std::unique_ptr<WTF::Function<void(bool)>> callback) override;
 
  private:

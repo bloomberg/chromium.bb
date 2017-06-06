@@ -359,7 +359,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   virtual void RequestDecode(
       LocalFrame*,
-      sk_sp<SkImage> image,
+      const PaintImage& image,
       std::unique_ptr<WTF::Function<void(bool)>> callback) {
     (*callback)(false);
   }

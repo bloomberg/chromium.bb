@@ -12,8 +12,6 @@
 #include "cc/cc_export.h"
 #include "cc/tiles/image_controller.h"
 
-class SkImage;
-
 namespace cc {
 
 // This class is the main interface for the rest of the system to request
@@ -32,7 +30,7 @@ class CC_EXPORT DecodedImageTracker {
   // Request that the given image be decoded. This issues a callback upon
   // completion. The callback takes a bool indicating whether the decode was
   // successful or not.
-  void QueueImageDecode(sk_sp<const SkImage> image,
+  void QueueImageDecode(const PaintImage& image,
                         const base::Callback<void(bool)>& callback);
   void NotifyFrameFinished();
 
