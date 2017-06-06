@@ -16,7 +16,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_checker.h"
 #include "components/sync/base/cancelation_observer.h"
 #include "components/sync/syncable/syncable_id.h"

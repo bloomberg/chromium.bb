@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "components/invalidation/impl/state_writer.h"
 #include "components/invalidation/public/invalidation_export.h"

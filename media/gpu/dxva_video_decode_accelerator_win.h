@@ -28,7 +28,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"

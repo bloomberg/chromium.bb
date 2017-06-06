@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "cc/output/output_surface.h"
 #include "content/common/content_export.h"

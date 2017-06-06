@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/gpu/media_gpu_export.h"

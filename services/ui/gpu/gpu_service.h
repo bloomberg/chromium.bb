@@ -9,7 +9,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"

@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/non_thread_safe.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 
 namespace remoting {
