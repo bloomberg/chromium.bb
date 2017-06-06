@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -549,15 +550,16 @@ class WebViewInteractiveTest : public WebViewInteractiveTestBase,
 
     bool use_cross_process_frames_for_guests = GetParam();
     if (use_cross_process_frames_for_guests) {
-      command_line->AppendSwitchASCII(
-          switches::kEnableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kGuestViewCrossProcessFrames);
     } else {
-      command_line->AppendSwitchASCII(
-          switches::kDisableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kGuestViewCrossProcessFrames);
     }
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class WebViewDragDropInteractiveTest : public WebViewInteractiveTest {};

@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -843,15 +844,16 @@ class WebViewTest : public WebViewTestBase,
 
     bool use_cross_process_frames_for_guests = GetParam();
     if (use_cross_process_frames_for_guests) {
-      command_line->AppendSwitchASCII(
-          switches::kEnableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kGuestViewCrossProcessFrames);
     } else {
-      command_line->AppendSwitchASCII(
-          switches::kDisableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kGuestViewCrossProcessFrames);
     }
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewTest, testing::Bool());
@@ -3612,18 +3614,18 @@ class WebViewGuestScrollTest
 
     bool use_cross_process_frames_for_guests = testing::get<0>(GetParam());
     if (use_cross_process_frames_for_guests) {
-      command_line->AppendSwitchASCII(
-          switches::kEnableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kGuestViewCrossProcessFrames);
     } else {
-      command_line->AppendSwitchASCII(
-          switches::kDisableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kGuestViewCrossProcessFrames);
     }
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebViewGuestScrollTest);
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class WebViewGuestScrollTouchTest : public WebViewGuestScrollTest {
@@ -4148,9 +4150,8 @@ class ChromeSignInWebViewTest : public WebViewTestBase {
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kEnableFeatures,
-        ::features::kGuestViewCrossProcessFrames.name);
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kGuestViewCrossProcessFrames);
   }
 
   void WaitForWebViewInDom() {
@@ -4172,6 +4173,9 @@ class ChromeSignInWebViewTest : public WebViewTestBase {
         "}, 1000);";
     ExecuteScriptWaitForTitle(web_contents, script, "success");
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX) || \

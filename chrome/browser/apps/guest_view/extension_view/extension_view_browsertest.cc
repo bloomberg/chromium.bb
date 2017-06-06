@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -78,17 +79,16 @@ class ExtensionViewTest : public extensions::PlatformAppBrowserTest,
 
     bool use_cross_process_frames_for_guests = GetParam();
     if (use_cross_process_frames_for_guests) {
-      command_line->AppendSwitchASCII(
-          switches::kEnableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kGuestViewCrossProcessFrames);
     } else {
-      command_line->AppendSwitchASCII(
-          switches::kDisableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kGuestViewCrossProcessFrames);
     }
   }
 
   TestGuestViewManagerFactory factory_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_CASE_P(ExtensionViewTests, ExtensionViewTest, testing::Bool());

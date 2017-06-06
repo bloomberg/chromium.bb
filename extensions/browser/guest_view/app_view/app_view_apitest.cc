@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
@@ -155,18 +156,17 @@ class AppViewTest : public AppShellTest,
 
     bool use_cross_process_frames_for_guests = GetParam();
     if (use_cross_process_frames_for_guests) {
-      command_line->AppendSwitchASCII(
-          switches::kEnableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kGuestViewCrossProcessFrames);
     } else {
-      command_line->AppendSwitchASCII(
-          switches::kDisableFeatures,
-          ::features::kGuestViewCrossProcessFrames.name);
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kGuestViewCrossProcessFrames);
     }
   }
 
   content::WebContents* embedder_web_contents_;
   TestGuestViewManagerFactory factory_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_CASE_P(AppViewTests, AppViewTest, testing::Bool());
