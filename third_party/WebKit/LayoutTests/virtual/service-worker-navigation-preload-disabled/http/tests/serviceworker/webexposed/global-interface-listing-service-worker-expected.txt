@@ -854,6 +854,7 @@ interface PaymentRequestEvent : ExtendableEvent
     getter topLevelOrigin
     getter total
     method constructor
+    method openWindow
     method respondWith
 interface PerformanceObserverEntryList
     attribute @@toStringTag

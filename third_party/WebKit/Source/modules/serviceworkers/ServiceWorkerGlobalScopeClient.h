@@ -69,8 +69,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   virtual void GetClients(
       const WebServiceWorkerClientQueryOptions&,
       std::unique_ptr<WebServiceWorkerClientsCallbacks>) = 0;
-  virtual void OpenWindow(const WebURL&,
-                          std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
+  virtual void OpenWindowForClients(
+      const WebURL&,
+      std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
+  virtual void OpenWindowForPaymentHandler(
+      const WebURL&,
+      std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
   virtual void SetCachedMetadata(const WebURL&, const char*, size_t) = 0;
   virtual void ClearCachedMetadata(const WebURL&) = 0;
 

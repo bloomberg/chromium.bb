@@ -946,8 +946,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClient, OnGetClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClients,
                         OnGetClients)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenWindow,
-                        OnOpenWindow)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenNewTab, OnOpenNewTab)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenNewPopup, OnOpenNewPopup)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetCachedMetadata,
                         OnSetCachedMetadata)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClearCachedMetadata,
@@ -1065,7 +1065,17 @@ void ServiceWorkerVersion::CountFeature(uint32_t feature) {
     provider_host_by_uuid.second->CountFeature(feature);
 }
 
-void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {
+void ServiceWorkerVersion::OnOpenNewTab(int request_id, const GURL& url) {
+  OnOpenWindow(request_id, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+}
+
+void ServiceWorkerVersion::OnOpenNewPopup(int request_id, const GURL& url) {
+  OnOpenWindow(request_id, url, WindowOpenDisposition::NEW_POPUP);
+}
+
+void ServiceWorkerVersion::OnOpenWindow(int request_id,
+                                        GURL url,
+                                        WindowOpenDisposition disposition) {
   // Just abort if we are shutting down.
   if (!context_)
     return;
@@ -1096,7 +1106,7 @@ void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {
   }
 
   service_worker_client_utils::OpenWindow(
-      url, script_url_, embedded_worker_->process_id(), context_,
+      url, script_url_, embedded_worker_->process_id(), context_, disposition,
       base::Bind(&ServiceWorkerVersion::OnOpenWindowFinished,
                  weak_factory_.GetWeakPtr(), request_id));
 }

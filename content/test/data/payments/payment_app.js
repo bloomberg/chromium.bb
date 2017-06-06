@@ -21,7 +21,7 @@ self.addEventListener('paymentrequest', e => {
   // SW <----- postMessage('payment_app_window_ready') ------ payment_app_window
   // SW -------- postMessage('payment_app_request') --------> payment_app_window
   // SW <-- postMessage({methodName: 'test', details: {}}) -- payment_app_window
-  e.respondWith(new Promise(resolve => {
+  e.respondWith(new Promise((resolve, reject) => {
     let payment_app_window = undefined;
     let window_ready = false;
 
@@ -43,11 +43,18 @@ self.addEventListener('paymentrequest', e => {
       }
     });
 
-    // Open a window
-    clients.openWindow('payment_app_window.html')
+    // Open a window for the payment instrument.
+    var payment_app_web_page = 'payment_app_window.html';
+    if(e.instrumentKey == 'bobpay-payment-app-id') {
+      payment_app_web_page = 'https://bobpay.com';
+    }
+    e.openWindow(payment_app_web_page)
       .then(window_client => {
         payment_app_window = window_client;
         maybeSendPaymentRequest();
       })
+      .catch(error => {
+        reject(error);
+      });
   }));
 });
