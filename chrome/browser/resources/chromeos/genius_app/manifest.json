@@ -35,10 +35,9 @@
     "unlimitedStorage",
     "https://*.ytimg.com/*",
     "https://www.google.com/*",
+    "https://support.google.com/*",
     "https://commondatastorage.googleapis.com/*",
     "https://storage.googleapis.com/*",
-    "https://www-googleapis-test.sandbox.google.com/*",
-    "https://www.googleapis.com/*",
     "https://www.google-analytics.com/"
   ],
   "oauth2": {
