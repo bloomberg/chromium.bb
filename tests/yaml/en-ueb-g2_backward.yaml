@@ -45,3 +45,9 @@ tests:
   - [⠁⠃⠂, "about,", {xfail: true}]
   - [⠁⠃⠧⠂, "above,", {xfail: true}]
 
+  # Make sure back-translation for words with "ea" after letters that
+  # have contractions associated, such as words like meat, head and
+  # others works properly.
+  # See https://github.com/liblouis/liblouis/pull/350
+  - [⠍⠂⠞, "meat"]
+  - [⠓⠂⠙, "head"]
