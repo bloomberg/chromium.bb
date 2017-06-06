@@ -258,7 +258,7 @@
           Leaving this policy not set will allow the user to choose their home page on their own if HomepageIsNewTabPage is not set too.
 
           This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.''',
+          to a Microsoft® Active Directory® domain.''',
           'label': '''Home page URL''',
         },
         {
@@ -286,7 +286,7 @@
           Leaving this policy not set will allow the user to choose whether the new tab page is their home page on their own.
 
           This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.''',
+          to a Microsoft® Active Directory® domain.''',
         },
       ],
     },
@@ -318,7 +318,7 @@
 
           If the policy is not set or left empty the default new tab page is used.
 
-          This policy is not available on Windows instances that are not joined to an Active Directory domain.''',
+          This policy is not available on Windows instances that are not joined to a Microsoft® Active Directory® domain.''',
           'label': '''New Tab page URL''',
         },
       ],
@@ -1303,7 +1303,7 @@
       upon installation / first run.
 
       This policy is not available on Windows instances that are not joined to
-      an Active Directory domain.  (For Chrome OS, see
+      a Microsoft® Active Directory® domain.  (For Chrome OS, see
       DeviceMetricsReportingEnabled.)''',
     },
     {
@@ -2291,9 +2291,9 @@
 
           This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          For Windows instances that are not joined to an Active Directory
-          domain, forced installation is limited to apps and extensions listed
-          in the Chrome Web Store.
+          For Windows instances that are not joined to a Microsoft® Active
+          Directory® domain, forced installation is limited to apps and
+          extensions listed in the Chrome Web Store.
 
           Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME">DeveloperToolsDisabled</ph> policy should be set.
 
@@ -2630,7 +2630,7 @@
           Disabling this setting is equivalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.''',
+          to a Microsoft® Active Directory® domain.''',
         },
         {
           'name': 'RestoreOnStartupURLs',
@@ -2654,7 +2654,7 @@
           This policy only works if the 'RestoreOnStartup' policy is set to 'RestoreOnStartupIsURLs'.
 
           This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.''',
+          to a Microsoft® Active Directory® domain.''',
         },
       ],
     },
@@ -2717,7 +2717,7 @@
           If this policy is left not set, the default search provider is enabled, and the user will be able to set the search provider list.
 
           This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.''',
+          to a Microsoft® Active Directory® domain.''',
         },
         {
           'name': 'DefaultSearchProviderName',
@@ -9648,7 +9648,7 @@
 
       The recommended way to configure policy on Windows is via GPO, although
       provisioning policy via registry is still supported for Windows instances
-      that are joined to an Active Directory domain.'''
+      that are joined to a Microsoft® Active Directory® domain.'''
     },
     'doc_back_to_top': {
       'desc': '''Text of a link in the generated policy documentation, that takes the user to the top of the page''',
