@@ -412,11 +412,12 @@ class CORE_EXPORT ContainerNode : public Node {
   bool HasRestyleFlagInternal(DynamicRestyleFlags) const;
   bool HasRestyleFlagsInternal() const;
 
-  bool CollectChildrenAndRemoveFromOldParentWithCheck(const Node* next,
-                                                      const Node* old_child,
-                                                      Node& new_child,
-                                                      NodeVector&,
-                                                      ExceptionState&) const;
+  bool CollectChildrenAndRemoveFromOldParentWithOptionalRecheck(
+      const Node* next,
+      const Node* old_child,
+      Node& new_child,
+      NodeVector&,
+      ExceptionState&) const;
   inline bool CheckAcceptChildGuaranteedNodeTypes(const Node& new_child,
                                                   const Node* old_child,
                                                   ExceptionState&) const;
