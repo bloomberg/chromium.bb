@@ -85,9 +85,14 @@ cr.define('media_router_container_test_base', function() {
      * @type {!Array<!media_router.CastMode>}
      */
     var fakeCastModeList = [
-      new media_router.CastMode(0x1, 'Cast google.com', 'google.com', false),
-      new media_router.CastMode(0x2, 'Description 1', null, false),
-      new media_router.CastMode(0x4, 'Description 2', null, false),
+      new media_router.CastMode(
+          media_router.CastModeType.PRESENTATION, 'Cast google.com',
+          'google.com', false),
+      new media_router.CastMode(
+          media_router.CastModeType.TAB_MIRROR, 'Description 1', null, false),
+      new media_router.CastMode(
+          media_router.CastModeType.DESKTOP_MIRROR, 'Description 2', null,
+          false),
     ];
 
     /**
@@ -95,9 +100,11 @@ cr.define('media_router_container_test_base', function() {
      * @type {!Array<!media_router.CastMode>}
      */
     var fakeCastModeListWithNonPresentationModesOnly = [
-      new media_router.CastMode(0x2, 'Description 1', null, false),
-      new media_router.CastMode(0x4, 'Description 2', null, false),
-      new media_router.CastMode(0x8, 'Description 3', null, false),
+      new media_router.CastMode(
+          media_router.CastModeType.TAB_MIRROR, 'Description 1', null, false),
+      new media_router.CastMode(
+          media_router.CastModeType.DESKTOP_MIRROR, 'Description 2', null,
+          false),
     ];
 
     /**
@@ -105,9 +112,28 @@ cr.define('media_router_container_test_base', function() {
      * @type {!Array<!media_router.CastMode>}
      */
     var fakeCastModeListWithPresentationModeForced = [
-      new media_router.CastMode(0x1, 'Cast google.com', 'google.com', true),
-      new media_router.CastMode(0x4, 'Description 2', null, false),
-      new media_router.CastMode(0x8, 'Description 3', null, false),
+      new media_router.CastMode(
+          media_router.CastModeType.PRESENTATION, 'Cast google.com',
+          'google.com', true),
+      new media_router.CastMode(
+          media_router.CastModeType.DESKTOP_MIRROR, 'Description 2', null,
+          false),
+      new media_router.CastMode(
+          media_router.CastModeType.LOCAL_FILE, 'Description 3', null, false),
+    ];
+
+    /**
+     * The list of CastModes to show with Local media on the list
+     * @type {!Array<!media_router.CastMode>}
+     */
+    var fakeCastModeListWithLocalMedia = [
+      new media_router.CastMode(
+          media_router.CastModeType.TAB_MIRROR, 'Description 1', null, false),
+      new media_router.CastMode(
+          media_router.CastModeType.DESKTOP_MIRROR, 'Description 2', null,
+          false),
+      new media_router.CastMode(
+          media_router.CastModeType.LOCAL_FILE, 'Description 3', null, false),
     ];
 
     /**
@@ -202,6 +228,7 @@ cr.define('media_router_container_test_base', function() {
           fakeCastModeListWithNonPresentationModesOnly,
       fakeCastModeListWithPresentationModeForced:
           fakeCastModeListWithPresentationModeForced,
+      fakeCastModeListWithLocalMedia: fakeCastModeListWithLocalMedia,
       fakeNonBlockingIssue: fakeNonBlockingIssue,
       fakeRouteList: fakeRouteList,
       fakeRouteListWithLocalRoutesOnly: fakeRouteListWithLocalRoutesOnly,

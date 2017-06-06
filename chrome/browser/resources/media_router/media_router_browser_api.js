@@ -275,6 +275,10 @@ cr.define('media_router.browserApi', function() {
     chrome.send('seekCurrentMedia', [{time: time}]);
   }
 
+  function selectLocalMediaFile() {
+    chrome.send('selectLocalMediaFile');
+  }
+
   /**
    * Sends a command to mute or unmute the route shown in the route details
    * view.
@@ -324,6 +328,7 @@ cr.define('media_router.browserApi', function() {
     requestRoute: requestRoute,
     searchSinksAndCreateRoute: searchSinksAndCreateRoute,
     seekCurrentMedia: seekCurrentMedia,
+    selectLocalMediaFile: selectLocalMediaFile,
     setCurrentMediaMute: setCurrentMediaMute,
     setCurrentMediaVolume: setCurrentMediaVolume,
   };

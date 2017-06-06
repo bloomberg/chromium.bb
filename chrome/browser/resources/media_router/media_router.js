@@ -46,6 +46,8 @@ cr.define('media_router', function() {
                                onNavigateToDetails);
     container.addEventListener('navigate-to-cast-mode-list',
                                onNavigateToCastMode);
+    container.addEventListener(
+        'select-local-media-file', onSelectLocalMediaFile);
     container.addEventListener('report-filter', onFilter);
     container.addEventListener('report-initial-action', onInitialAction);
     container.addEventListener('report-initial-action-close',
@@ -112,6 +114,13 @@ cr.define('media_router', function() {
     var detail = event.detail;
     media_router.browserApi.changeRouteSource(
         detail.route, detail.selectedCastMode);
+  }
+
+  /**
+   * Sends a request to the browser to select a local file.
+   */
+  function onSelectLocalMediaFile() {
+    media_router.browserApi.selectLocalMediaFile();
   }
 
   /**

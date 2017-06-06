@@ -680,6 +680,8 @@ Polymer({
         return 'media-router:tab';
       case media_router.CastModeType.DESKTOP_MIRROR:
         return 'media-router:laptop';
+      case media_router.CastModeType.LOCAL_FILE:
+        return 'media-router:folder';
       default:
         return '';
     }
@@ -812,12 +814,26 @@ Polymer({
    * @param {!Array<!media_router.CastMode>} castModeList The current list of
    *     cast modes.
    * @return {!Array<!media_router.CastMode>} The list of non-PRESENTATION cast
+   *     modes. Also excludes LOCAL_FILE.
+   * @private
+   */
+  computeShareScreenCastModeList_: function(castModeList) {
+    return castModeList.filter(function(mode) {
+      return mode.type == media_router.CastModeType.DESKTOP_MIRROR ||
+          mode.type == media_router.CastModeType.TAB_MIRROR;
+    });
+  },
+
+  /**
+   * @param {!Array<!media_router.CastMode>} castModeList The current list of
+   *     cast modes.
+   * @return {!Array<!media_router.CastMode>} The list of local media cast
    *     modes.
    * @private
    */
-  computeNonPresentationCastModeList_: function(castModeList) {
+  computeLocalMediaCastModeList_: function(castModeList) {
     return castModeList.filter(function(mode) {
-      return mode.type != media_router.CastModeType.PRESENTATION;
+      return mode.type == media_router.CastModeType.LOCAL_FILE;
     });
   },
 
@@ -889,7 +905,17 @@ Polymer({
    * @private
    */
   computeShareScreenSubheadingHidden_: function(castModeList) {
-    return this.computeNonPresentationCastModeList_(castModeList).length == 0;
+    return this.computeShareScreenCastModeList_(castModeList).length == 0;
+  },
+
+  /**
+   * @param {!Array<!media_router.CastMode>} castModeList The current list of
+   *     cast modes.
+   * @return {boolean} Whether or not to hide the local media subheading text.
+   * @private
+   */
+  computeLocalMediaSubheadingHidden_: function(castModeList) {
+    return this.computeLocalMediaCastModeList_(castModeList).length == 0;
   },
 
   /**
@@ -1597,20 +1623,25 @@ Polymer({
    * @private
    */
   onCastModeClick_: function(event) {
-    // The clicked cast mode can come from one of two lists,
-    // presentationCastModeList and nonPresentationCastModeList.
+    // The clicked cast mode can come from one of three lists,
+    // presentationCastModeList, shareScreenCastModeList, and
+    // localMediaCastModeList.
     var clickedMode =
         this.$$('#presentationCastModeList').itemForElement(event.target) ||
-        this.$$('#nonPresentationCastModeList').itemForElement(event.target);
+        this.$$('#shareScreenCastModeList').itemForElement(event.target) ||
+        this.$$('#localMediaCastModeList').itemForElement(event.target);
 
     if (!clickedMode)
       return;
 
-    this.selectCastMode(clickedMode.type);
-    this.fire('cast-mode-selected', {castModeType: clickedMode.type});
-    this.showSinkList_();
-    this.maybeReportUserFirstAction(
-        media_router.MediaRouterUserAction.CHANGE_MODE);
+    // If the user selects LOCAL_FILE, some additional steps are required
+    // (selecting the file), before the cast mode has been officially
+    // selected.
+    if (clickedMode.type == media_router.CastModeType.LOCAL_FILE) {
+      this.selectLocalMediaFile_();
+    } else {
+      this.castModeSelected_(clickedMode);
+    }
   },
 
   /**
@@ -1966,6 +1997,47 @@ Polymer({
   },
 
   /**
+   * Sets up the LOCAL_FILE cast mode for display after a specific file has been
+   * selected.
+   *
+   * @param {string} fileName The name of the file that has been selected.
+   */
+  onFileDialogSuccess(fileName) {
+    /** @const */ var mode =
+        this.findCastModeByType_(media_router.CastModeType.LOCAL_FILE);
+
+    if (!mode) {
+      return;
+    }
+
+    this.castModeSelected_(mode);
+    this.headerText =
+        loadTimeData.getStringF('castLocalMediaSelectedFileTitle', fileName);
+  },
+
+  /**
+   * Calls all the functions to set the UI to a given cast mode.
+   * @param {media_router.CastMode} castMode The cast mode to set things to.
+   * @private
+   */
+  castModeSelected_(castMode) {
+    this.selectCastMode(castMode.type);
+    this.fire('cast-mode-selected', {castModeType: castMode.type});
+    this.showSinkList_();
+    this.maybeReportUserFirstAction(
+        media_router.MediaRouterUserAction.CHANGE_MODE);
+  },
+
+  /**
+   * Fires the command to open a file dialog.
+   *
+   * @private
+   */
+  selectLocalMediaFile_() {
+    this.fire('select-local-media-file');
+  },
+
+  /**
    * Called when |routeList| is updated. Rebuilds |routeMap_| and
    * |sinkToRouteMap_|.
    *
@@ -2022,6 +2094,7 @@ Polymer({
     var updatedSinkList = this.allSinks.filter(function(sink) {
       return !sink.isPseudoSink;
     }, this);
+
     if (this.pseudoSinkSearchState_) {
       var pendingPseudoSink = this.pseudoSinkSearchState_.getPseudoSink();
       // Here we will treat the pseudo sink that launched the search as a real

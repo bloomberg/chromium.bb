@@ -25,14 +25,18 @@ const base::Feature kEnableDialLocalDiscovery{
 // Controls if browser side Cast device discovery is enabled.
 const base::Feature kEnableCastDiscovery{"EnableCastDiscovery",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls if local media casting is enabled.
+const base::Feature kEnableCastLocalMedia{"EnableCastLocalMedia",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 namespace {
 const PrefService::Preference* GetMediaRouterPref(
     content::BrowserContext* context) {
-  return user_prefs::UserPrefs::Get(context)
-      ->FindPreference(prefs::kEnableMediaRouter);
+  return user_prefs::UserPrefs::Get(context)->FindPreference(
+      prefs::kEnableMediaRouter);
 }
 }  // namespace
 #endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
@@ -61,6 +65,11 @@ bool DialLocalDiscoveryEnabled() {
 // Returns true if browser side Cast discovery is enabled.
 bool CastDiscoveryEnabled() {
   return base::FeatureList::IsEnabled(kEnableCastDiscovery);
+}
+
+// Returns true if local media casting is enabled.
+bool CastLocalMediaEnabled() {
+  return base::FeatureList::IsEnabled(kEnableCastLocalMedia);
 }
 #endif
 
