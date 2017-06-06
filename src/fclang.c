@@ -732,7 +732,7 @@ FcLangSetPromote (const FcChar8 *lang, FcValuePromotionBuffer *vbuf)
     if (lang)
     {
 	id = FcLangSetIndex (lang);
-	if (id > 0)
+	if (id >= 0)
 	{
 	    FcLangSetBitSet (&buf->ls, id);
 	}
