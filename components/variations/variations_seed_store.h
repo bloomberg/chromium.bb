@@ -65,11 +65,6 @@ class VariationsSeedStore {
     return variations_serial_number_;
   }
 
-  // Returns whether the last loaded or stored seed has the country field set.
-  bool seed_has_country_code() const {
-    return seed_has_country_code_;
-  }
-
   // Returns the invalid signature in base64 format, or an empty string if the
   // signature was valid, missing, or if signature verification is disabled.
   std::string GetInvalidSignature() const;
@@ -134,10 +129,6 @@ class VariationsSeedStore {
 
   // Cached serial number from the most recently fetched variations seed.
   std::string variations_serial_number_;
-
-  // Whether the most recently fetched variations seed has the country code
-  // field set.
-  bool seed_has_country_code_;
 
   // Keeps track of an invalid signature.
   std::string invalid_base64_signature_;

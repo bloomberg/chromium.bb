@@ -226,36 +226,18 @@ TEST(VariationsSeedStoreTest, StoreSeedData_CountryCode) {
   VariationsSeedStore::RegisterPrefs(prefs.registry());
   TestVariationsSeedStore seed_store(&prefs);
 
-  // Test with a seed country code and no header value.
-  variations::VariationsSeed seed = CreateTestSeed();
-  seed.set_country_code("test_country");
-  EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
-                                       std::string(), base::Time::Now(), false,
-                                       false, nullptr));
+  // Test with a valid header value.
+  std::string seed = SerializeSeed(CreateTestSeed());
+  EXPECT_TRUE(seed_store.StoreSeedData(seed, std::string(), "test_country",
+                                       base::Time::Now(), false, false,
+                                       nullptr));
   EXPECT_EQ("test_country", prefs.GetString(prefs::kVariationsCountry));
 
-  // Test with a header value and no seed country.
-  prefs.ClearPref(prefs::kVariationsCountry);
-  seed.clear_country_code();
-  EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
-                                       "test_country2", base::Time::Now(),
-                                       false, false,  nullptr));
-  EXPECT_EQ("test_country2", prefs.GetString(prefs::kVariationsCountry));
-
-  // Test with a seed country code and header value.
-  prefs.ClearPref(prefs::kVariationsCountry);
-  seed.set_country_code("test_country3");
-  EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
-                                       "test_country4", base::Time::Now(),
-                                       false, false, nullptr));
-  EXPECT_EQ("test_country4", prefs.GetString(prefs::kVariationsCountry));
-
   // Test with no country code specified - which should preserve the old value.
-  seed.clear_country_code();
-  EXPECT_TRUE(seed_store.StoreSeedData(SerializeSeed(seed), std::string(),
-                                       std::string(), base::Time::Now(), false,
-                                       false, nullptr));
-  EXPECT_EQ("test_country4", prefs.GetString(prefs::kVariationsCountry));
+  EXPECT_TRUE(seed_store.StoreSeedData(seed, std::string(), std::string(),
+                                       base::Time::Now(), false, false,
+                                       nullptr));
+  EXPECT_EQ("test_country", prefs.GetString(prefs::kVariationsCountry));
 }
 
 TEST(VariationsSeedStoreTest, StoreSeedData_GzippedSeed) {
