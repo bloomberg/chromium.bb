@@ -2061,15 +2061,16 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _mnc_hwtest_boards = frozenset([
-      'cyan',
-      'samus',
-      'veyron_minnie',
   ])
   _mnc_no_hwtest_boards = frozenset([
+      'veyron_tiger',
   ])
   _nyc_hwtest_boards = frozenset([
       'caroline',
+      'cyan',
+      'samus',
       'veyron_jaq',
+      'veyron_minnie',
   ])
   _nyc_no_hwtest_boards = frozenset([
       'reef',

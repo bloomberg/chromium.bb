@@ -564,9 +564,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
       # TODO(dgarrett): Remove after  crbug.com/679022
       failures.discard('veyron_jerry-chromium-pfq')
 
-      # TODO(dgarrett): Remove after crbug.com/711546
-      failures.discard('glados-cheets-android-pfq')
-
       if failures:
         self.fail("Some active PFQ configs don't have active Paladins: %s" % (
             ', '.join(sorted(failures))))
