@@ -194,6 +194,17 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 
 #pragma mark - MDCCollectionViewStylingDelegate
 
+// TODO(crbug.com/724493): Use collectionView:hidesInkViewAtIndexPath: when it
+// is fixed. For now hidding the ink prevent cell interaction.
+- (UIColor*)collectionView:(UICollectionView*)collectionView
+       inkColorAtIndexPath:(NSIndexPath*)indexPath {
+  if ([self.collectionUpdater
+          shouldUseCustomStyleForSection:indexPath.section]) {
+    return [UIColor clearColor];
+  }
+  return nil;
+}
+
 - (UIColor*)collectionView:(nonnull UICollectionView*)collectionView
     cellBackgroundColorAtIndexPath:(nonnull NSIndexPath*)indexPath {
   if ([self.collectionUpdater
