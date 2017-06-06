@@ -345,15 +345,15 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
   // Time how long this takes to see if it's a problem for users.
   base::TimeTicks resize_start = base::TimeTicks::Now();
 
-  SkIRect dest = { 0, 0, dest_width, dest_height };
-  DCHECK(dest.contains(dest_subset)) <<
-      "The supplied subset does not fall within the destination image.";
-
   // If the size of source or destination is 0, i.e. 0x0, 0xN or Nx0, just
   // return empty.
   if (source.width() < 1 || source.height() < 1 ||
       dest_width < 1 || dest_height < 1)
     return SkBitmap();
+
+  SkIRect dest = {0, 0, dest_width, dest_height};
+  DCHECK(dest.contains(dest_subset))
+      << "The supplied subset does not fall within the destination image.";
 
   method = ResizeMethodToAlgorithmMethod(method);
   // Check that we deal with an "algorithm methods" from this point onward.
