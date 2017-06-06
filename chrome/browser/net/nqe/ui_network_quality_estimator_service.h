@@ -24,7 +24,9 @@ class PrefRegistrySimple;
 class Profile;
 
 namespace net {
+class EffectiveConnectionTypeObserver;
 class NetworkQualitiesPrefsManager;
+class RTTAndThroughputEstimatesObserver;
 }
 
 // UI service to determine the current EffectiveConnectionType.
@@ -38,33 +40,17 @@ class UINetworkQualityEstimatorService
   // NetworkQualityProvider implementation:
   // Must be called on the UI thread.
   net::EffectiveConnectionType GetEffectiveConnectionType() const override;
-  // Must be called on the UI thread. |observer| will be notified on the UI
-  // thread.  |observer| would be notified of the current effective connection
-  // type in the next message pump.
   void AddEffectiveConnectionTypeObserver(
-      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
-      override;
-  // Must be called on the UI thread.
+      net::EffectiveConnectionTypeObserver* observer) override;
   void RemoveEffectiveConnectionTypeObserver(
-      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
-      override;
+      net::EffectiveConnectionTypeObserver* observer) override;
   base::Optional<base::TimeDelta> GetHttpRTT() const override;
   base::Optional<base::TimeDelta> GetTransportRTT() const override;
   base::Optional<int32_t> GetDownstreamThroughputKbps() const override;
-
-  // Must be called on the UI thread. |observer| will be notified on the UI
-  // thread. |observer| would be notified of the changes in the HTTP RTT,
-  // transport RTT or throughput. |observer| would be notified of the current
-  // values in the next message pump.
   void AddRTTAndThroughputEstimatesObserver(
-      net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer)
-      override;
-
-  // Removes |observer| from the list of RTT and throughput estimate observers.
-  // Must be called on the UI thread.
+      net::RTTAndThroughputEstimatesObserver* observer) override;
   void RemoveRTTAndThroughputEstimatesObserver(
-      net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer)
-      override;
+      net::RTTAndThroughputEstimatesObserver* observer) override;
 
   // Registers the profile-specific network quality estimator prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -88,14 +74,12 @@ class UINetworkQualityEstimatorService
   // Notifies |observer| of the current effective connection type if |observer|
   // is still registered as an observer.
   void NotifyEffectiveConnectionTypeObserverIfPresent(
-      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
-      const;
+      net::EffectiveConnectionTypeObserver* observer) const;
 
   // Notifies |observer| of the current effective connection type if |observer|
   // is still registered as an observer.
   void NotifyRTTAndThroughputObserverIfPresent(
-      net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer)
-      const;
+      net::RTTAndThroughputEstimatesObserver* observer) const;
 
   // KeyedService implementation:
   void Shutdown() override;
@@ -125,13 +109,11 @@ class UINetworkQualityEstimatorService
   std::unique_ptr<IONetworkQualityObserver> io_observer_;
 
   // Observer list for changes in effective connection type.
-  base::ObserverList<
-      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver>
+  base::ObserverList<net::EffectiveConnectionTypeObserver>
       effective_connection_type_observer_list_;
 
   // Observer list for changes in RTT or throughput values.
-  base::ObserverList<
-      net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver>
+  base::ObserverList<net::RTTAndThroughputEstimatesObserver>
       rtt_throughput_observer_list_;
 
   // Prefs manager that is owned by this service. Created on the UI thread, but

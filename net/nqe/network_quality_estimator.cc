@@ -1767,6 +1767,14 @@ void NetworkQualityEstimator::OnPrefsRead(
   }
 }
 
+base::Optional<base::TimeDelta> NetworkQualityEstimator::GetHttpRTT() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (network_quality_.http_rtt() == nqe::internal::InvalidRTT())
+    return base::Optional<base::TimeDelta>();
+  return network_quality_.http_rtt();
+}
+
 base::Optional<base::TimeDelta> NetworkQualityEstimator::GetTransportRTT()
     const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1774,6 +1782,17 @@ base::Optional<base::TimeDelta> NetworkQualityEstimator::GetTransportRTT()
   if (network_quality_.transport_rtt() == nqe::internal::InvalidRTT())
     return base::Optional<base::TimeDelta>();
   return network_quality_.transport_rtt();
+}
+
+base::Optional<int32_t> NetworkQualityEstimator::GetDownstreamThroughputKbps()
+    const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (network_quality_.downstream_throughput_kbps() ==
+      nqe::internal::kInvalidThroughput) {
+    return base::Optional<int32_t>();
+  }
+  return network_quality_.downstream_throughput_kbps();
 }
 
 void NetworkQualityEstimator::MaybeUpdateNetworkQualityFromCache(
@@ -1830,22 +1849,6 @@ const char* NetworkQualityEstimator::GetNameForStatistic(int i) const {
   }
   NOTREACHED();
   return "";
-}
-
-base::Optional<base::TimeDelta>
-NetworkQualityEstimator::NetworkQualityProvider::GetHttpRTT() const {
-  return base::Optional<base::TimeDelta>();
-}
-
-base::Optional<base::TimeDelta>
-NetworkQualityEstimator::NetworkQualityProvider::GetTransportRTT() const {
-  return base::Optional<base::TimeDelta>();
-}
-
-base::Optional<int32_t>
-NetworkQualityEstimator::NetworkQualityProvider::GetDownstreamThroughputKbps()
-    const {
-  return base::Optional<int32_t>();
 }
 
 }  // namespace net

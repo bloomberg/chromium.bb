@@ -11,19 +11,25 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/network_quality_observer_factory.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_quality.h"
-#include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/rtt_throughput_estimates_observer.h"
+
+namespace net {
+class NetworkQualityEstimator;
+}
 
 namespace content {
 
 // Listens for changes to the network quality and manages sending updates to
 // each RenderProcess via mojo.
 class CONTENT_EXPORT NetworkQualityObserverImpl
-    : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver,
-      public net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver {
+    : public net::EffectiveConnectionTypeObserver,
+      public net::RTTAndThroughputEstimatesObserver {
  public:
   explicit NetworkQualityObserverImpl(
       net::NetworkQualityEstimator* network_quality_estimator);
@@ -33,13 +39,11 @@ class CONTENT_EXPORT NetworkQualityObserverImpl
  private:
   class UiThreadObserver;
 
-  // net::NetworkQualityEstimator::EffectiveConnectionTypeObserver
-  // implementation:
+  // net::EffectiveConnectionTypeObserver implementation:
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override;
 
-  // net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver
-  // implementation:
+  // net::RTTAndThroughputEstimatesObserver implementation:
   void OnRTTOrThroughputEstimatesComputed(
       base::TimeDelta http_rtt,
       base::TimeDelta transport_rtt,

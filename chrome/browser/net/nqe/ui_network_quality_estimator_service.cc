@@ -20,8 +20,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_qualities_prefs_manager.h"
 #include "net/nqe/network_quality.h"
+#include "net/nqe/rtt_throughput_estimates_observer.h"
 
 namespace {
 
@@ -81,8 +83,8 @@ void SetNQEOnIOThread(net::NetworkQualitiesPrefsManager* prefs_manager,
 // to the UI service.
 // It is created on the UI thread, but used and deleted on the IO thread.
 class UINetworkQualityEstimatorService::IONetworkQualityObserver
-    : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver,
-      public net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver {
+    : public net::EffectiveConnectionTypeObserver,
+      public net::RTTAndThroughputEstimatesObserver {
  public:
   explicit IONetworkQualityObserver(
       base::WeakPtr<UINetworkQualityEstimatorService> service)
@@ -221,7 +223,7 @@ void UINetworkQualityEstimatorService::RTTOrThroughputComputed(
 }
 
 void UINetworkQualityEstimatorService::AddEffectiveConnectionTypeObserver(
-    net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer) {
+    net::EffectiveConnectionTypeObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   effective_connection_type_observer_list_.AddObserver(observer);
 
@@ -235,7 +237,7 @@ void UINetworkQualityEstimatorService::AddEffectiveConnectionTypeObserver(
 }
 
 void UINetworkQualityEstimatorService::RemoveEffectiveConnectionTypeObserver(
-    net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer) {
+    net::EffectiveConnectionTypeObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   effective_connection_type_observer_list_.RemoveObserver(observer);
 }
@@ -268,7 +270,7 @@ UINetworkQualityEstimatorService::GetDownstreamThroughputKbps() const {
 }
 
 void UINetworkQualityEstimatorService::AddRTTAndThroughputEstimatesObserver(
-    net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer) {
+    net::RTTAndThroughputEstimatesObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   rtt_throughput_observer_list_.AddObserver(observer);
 
@@ -284,7 +286,7 @@ void UINetworkQualityEstimatorService::AddRTTAndThroughputEstimatesObserver(
 // Removes |observer| from the list of RTT and throughput estimate observers.
 // Must be called on the IO thread.
 void UINetworkQualityEstimatorService::RemoveRTTAndThroughputEstimatesObserver(
-    net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer) {
+    net::RTTAndThroughputEstimatesObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   rtt_throughput_observer_list_.RemoveObserver(observer);
 }
@@ -310,8 +312,7 @@ void UINetworkQualityEstimatorService::ClearPrefs() {
 
 void UINetworkQualityEstimatorService::
     NotifyEffectiveConnectionTypeObserverIfPresent(
-        net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
-        const {
+        net::EffectiveConnectionTypeObserver* observer) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!effective_connection_type_observer_list_.HasObserver(observer))
@@ -322,8 +323,7 @@ void UINetworkQualityEstimatorService::
 }
 
 void UINetworkQualityEstimatorService::NotifyRTTAndThroughputObserverIfPresent(
-    net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer)
-    const {
+    net::RTTAndThroughputEstimatesObserver* observer) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!rtt_throughput_observer_list_.HasObserver(observer))

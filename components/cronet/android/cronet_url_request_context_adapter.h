@@ -19,8 +19,10 @@
 #include "base/threading/thread.h"
 #include "components/prefs/json_pref_store.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_observation_source.h"
+#include "net/nqe/rtt_throughput_estimates_observer.h"
 
 class PrefService;
 
@@ -48,8 +50,8 @@ bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env);
 
 // Adapter between Java CronetUrlRequestContext and net::URLRequestContext.
 class CronetURLRequestContextAdapter
-    : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver,
-      public net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver,
+    : public net::EffectiveConnectionTypeObserver,
+      public net::RTTAndThroughputEstimatesObserver,
       public net::NetworkQualityEstimator::RTTObserver,
       public net::NetworkQualityEstimator::ThroughputObserver {
  public:

@@ -83,6 +83,7 @@ class HttpAuthPreferences;
 class LoggingNetworkChangeObserver;
 class NetworkQualityEstimator;
 class ProxyConfigService;
+class RTTAndThroughputEstimatesObserver;
 class SSLConfigService;
 class URLRequestContext;
 class URLRequestContextGetter;
@@ -154,8 +155,7 @@ class IOThread : public content::BrowserThreadDelegate {
 #endif
     std::unique_ptr<net::HostMappingRules> host_mapping_rules;
     std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator;
-    std::unique_ptr<
-        net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver>
+    std::unique_ptr<net::RTTAndThroughputEstimatesObserver>
         network_quality_observer;
 
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
