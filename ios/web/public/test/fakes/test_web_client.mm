@@ -9,6 +9,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 TestWebClient::TestWebClient()
@@ -40,11 +44,11 @@ base::RefCountedMemory* TestWebClient::GetDataResourceBytes(
 }
 
 NSString* TestWebClient::GetEarlyPageScript(BrowserState* browser_state) const {
-  return early_page_script_ ? early_page_script_.get() : @"";
+  return early_page_script_ ? early_page_script_ : @"";
 }
 
 void TestWebClient::SetEarlyPageScript(NSString* page_script) {
-  early_page_script_.reset([page_script copy]);
+  early_page_script_ = [page_script copy];
 }
 
 void TestWebClient::AllowCertificateError(

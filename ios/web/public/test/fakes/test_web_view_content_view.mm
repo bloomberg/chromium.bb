@@ -5,11 +5,14 @@
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface TestWebViewContentView () {
-  base::scoped_nsprotocol<id> _mockWebView;
-  base::scoped_nsprotocol<id> _mockScrollView;
+  id _mockWebView;
+  id _mockScrollView;
 }
 
 @end
@@ -21,8 +24,8 @@
   if (self) {
     DCHECK(webView);
     DCHECK(scrollView);
-    _mockWebView.reset([webView retain]);
-    _mockScrollView.reset([scrollView retain]);
+    _mockWebView = webView;
+    _mockScrollView = scrollView;
   }
   return self;
 }
@@ -40,11 +43,11 @@
 #pragma mark Accessors
 
 - (UIScrollView*)scrollView {
-  return static_cast<UIScrollView*>(_mockScrollView.get());
+  return static_cast<UIScrollView*>(_mockScrollView);
 }
 
 - (UIView*)webView {
-  return static_cast<UIView*>(_mockWebView.get());
+  return static_cast<UIView*>(_mockWebView);
 }
 
 @end

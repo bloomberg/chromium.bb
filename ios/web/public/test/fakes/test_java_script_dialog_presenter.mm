@@ -4,6 +4,10 @@
 
 #import "ios/web/public/test/fakes/test_java_script_dialog_presenter.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 TestJavaScriptDialog::TestJavaScriptDialog() = default;
@@ -28,12 +32,12 @@ void TestJavaScriptDialogPresenter::RunJavaScriptDialog(
   dialog.web_state = web_state;
   dialog.origin_url = origin_url;
   dialog.java_script_dialog_type = java_script_dialog_type;
-  dialog.message_text.reset([message_text copy]);
-  dialog.default_prompt_text.reset([default_prompt_text copy]);
+  dialog.message_text = [message_text copy];
+  dialog.default_prompt_text = [default_prompt_text copy];
 
   requested_dialogs_.push_back(dialog);
 
-  callback.Run(callback_success_argument_, callback_user_input_argument_.get());
+  callback.Run(callback_success_argument_, callback_user_input_argument_);
 }
 
 void TestJavaScriptDialogPresenter::CancelDialogs(WebState* web_state) {
