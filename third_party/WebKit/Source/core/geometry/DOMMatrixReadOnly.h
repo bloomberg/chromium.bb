@@ -98,7 +98,7 @@ class CORE_EXPORT DOMMatrixReadOnly
   NotShared<DOMFloat32Array> toFloat32Array() const;
   NotShared<DOMFloat64Array> toFloat64Array() const;
 
-  const String toString() const;
+  const String toString(ExceptionState&) const;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
