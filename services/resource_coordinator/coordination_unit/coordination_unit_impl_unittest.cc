@@ -3,14 +3,19 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/values.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_factory.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
+#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,6 +175,33 @@ TEST_F(CoordinationUnitImplTest, CyclicGraphUnits) {
     parent_callback.Run();
     child_callback.Run();
   }
+}
+
+TEST_F(CoordinationUnitImplTest, GetSetProperty) {
+  CoordinationUnitID cu_id(CoordinationUnitType::kWebContents, std::string());
+
+  std::unique_ptr<CoordinationUnitImpl> coordination_unit =
+      coordination_unit_factory::CreateCoordinationUnit(
+          cu_id, service_context_ref_factory()->CreateRef());
+
+  // An empty value should be returned if property is not found
+  EXPECT_EQ(base::Value(),
+            coordination_unit->GetProperty(mojom::PropertyType::kTest));
+
+  // An empty value should be able to set a property
+  coordination_unit->SetProperty(mojom::PropertyType::kTest, base::Value());
+  EXPECT_EQ(0u, coordination_unit->property_store_for_testing().size());
+
+  base::Value int_val(41);
+
+  // Perform a valid storage property set
+  coordination_unit->SetProperty(mojom::PropertyType::kTest, int_val);
+  EXPECT_EQ(1u, coordination_unit->property_store_for_testing().size());
+  EXPECT_EQ(int_val,
+            coordination_unit->GetProperty(mojom::PropertyType::kTest));
+
+  coordination_unit->ClearProperty(mojom::PropertyType::kTest);
+  EXPECT_EQ(0u, coordination_unit->property_store_for_testing().size());
 }
 
 }  // namespace resource_coordinator

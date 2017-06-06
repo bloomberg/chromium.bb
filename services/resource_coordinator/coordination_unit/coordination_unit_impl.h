@@ -8,9 +8,11 @@
 #include <list>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <utility>
 
 #include "base/optional.h"
+#include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -35,14 +37,26 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   void AddChild(const CoordinationUnitID& child_id) override;
   void SetCoordinationPolicyCallback(
       mojom::CoordinationPolicyCallbackPtr callback) override;
+  void SetProperty(mojom::PropertyPtr property) override;
 
   const CoordinationUnitID& id() const { return id_; }
   const std::set<CoordinationUnitImpl*>& children() const { return children_; }
   const std::set<CoordinationUnitImpl*>& parents() const { return parents_; }
+  const std::unordered_map<mojom::PropertyType, base::Value>&
+  property_store_for_testing() const {
+    return property_store_;
+  }
 
   static const double kCPUUsageMinimumForTesting;
   static const double kCPUUsageUnmeasuredForTesting;
   virtual double GetCPUUsageForTesting();
+
+  // Clear property from internal key-value store
+  void ClearProperty(mojom::PropertyType property);
+  // Retrieve property from internal key-value store
+  base::Value GetProperty(mojom::PropertyType property);
+  // Set property from internal key-value store
+  void SetProperty(mojom::PropertyType property, base::Value value);
 
  protected:
   const CoordinationUnitID id_;
@@ -59,6 +73,8 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
 
   void RecalcCoordinationPolicy();
   void UnregisterCoordinationPolicyCallback();
+
+  std::unordered_map<mojom::PropertyType, base::Value> property_store_;
 
   enum StateFlags : uint8_t {
     kTestState,

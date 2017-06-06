@@ -216,4 +216,30 @@ double CoordinationUnitImpl::GetCPUUsageForTesting() {
   return kCPUUsageUnmeasuredForTesting;
 }
 
+base::Value CoordinationUnitImpl::GetProperty(mojom::PropertyType property) {
+  auto value_it = property_store_.find(property);
+
+  return value_it != property_store_.end() ? value_it->second : base::Value();
+}
+
+void CoordinationUnitImpl::ClearProperty(mojom::PropertyType property) {
+  property_store_.erase(property);
+}
+
+void CoordinationUnitImpl::SetProperty(mojom::PropertyPtr property) {
+  SetProperty(property->property, *property->value);
+}
+
+void CoordinationUnitImpl::SetProperty(mojom::PropertyType property,
+                                       base::Value value) {
+  // setting a property with an empty value is effectively clearing the
+  // value from storage
+  if (value.IsType(base::Value::Type::NONE)) {
+    ClearProperty(property);
+    return;
+  }
+
+  property_store_[property] = value;
+}
+
 }  // namespace resource_coordinator
