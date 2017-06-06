@@ -6,7 +6,7 @@
 #define CONFIG_THIS_YEAR 2017
 #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
 #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
-#define CC_IDENT "Apple LLVM version 8.0.0 (clang-800.0.42.1)"
+#define CC_IDENT "Apple LLVM version 8.1.0 (clang-802.0.42)"
 #define av_restrict restrict
 #define EXTERN_PREFIX "_"
 #define EXTERN_ASM _

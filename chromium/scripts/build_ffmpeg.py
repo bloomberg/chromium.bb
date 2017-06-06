@@ -605,7 +605,6 @@ def main(argv):
       '--enable-decoder=amrnb,amrwb',
       # Wav files for playing phone messages.
       '--enable-decoder=gsm_ms',
-      '--enable-demuxer=gsm',
       '--enable-parser=gsm',
   ])
 

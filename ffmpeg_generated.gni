@@ -369,7 +369,6 @@ if ((is_linux && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chr
     "libavcodec/amrnbdec.c",
     "libavcodec/amrwbdec.c",
     "libavcodec/autorename_libavcodec_blockdsp.c",
-    "libavcodec/autorename_libavcodec_gsmdec.c",
     "libavcodec/autorename_libavcodec_idctdsp.c",
     "libavcodec/autorename_libavcodec_me_cmp.c",
     "libavcodec/autorename_libavcodec_mpegvideo.c",
@@ -387,6 +386,7 @@ if ((is_linux && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chr
     "libavcodec/fdctdsp.c",
     "libavcodec/flvdec.c",
     "libavcodec/gsm_parser.c",
+    "libavcodec/gsmdec.c",
     "libavcodec/gsmdec_data.c",
     "libavcodec/h263.c",
     "libavcodec/h263_parser.c",
@@ -412,7 +412,6 @@ if ((is_linux && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "Chr
     "libavcodec/tiff_common.c",
     "libavformat/amr.c",
     "libavformat/avidec.c",
-    "libavformat/gsmdec.c",
   ]
 }
 
