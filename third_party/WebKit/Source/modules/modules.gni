@@ -7,6 +7,7 @@
 # This file is shared with all modules' BUILD files which shouldn't need access
 # to the huge and slow lists of sources. If sharing is necessary, make a
 # separate .gni.
+import("//build/split_static_library.gni")
 import("//third_party/WebKit/Source/config.gni")
 
 # Defines a part of blink modules. This is either a source set or a static
@@ -21,7 +22,11 @@ template("blink_modules_sources") {
   if (is_component_build) {
     target_type = "source_set"
   } else {
-    target_type = "static_library"
+    if (!defined(invoker.split_count)) {
+      target_type = "static_library"
+    } else {
+      target_type = "split_static_library"
+    }
   }
 
   target(target_type, target_name) {
@@ -37,9 +42,17 @@ template("blink_modules_sources") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
+    if (target_type == "split_static_library") {
+      split_count = invoker.split_count
+    }
 
     # Take everything else not handled above from the invoker.
-    forward_variables_from(invoker, "*", [ "deps" ])
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "deps",
+                             "split_count",
+                           ])
   }
 }
 set_defaults("blink_modules_sources") {

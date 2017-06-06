@@ -15,6 +15,7 @@ group("bindings_modules_v8_generated") {
     ":bindings_modules_v8_generated_init_partial",
     ":generate_bindings_modules_v8_interfaces",
     ":generate_bindings_modules_v8_partial_interfaces",
+    ":generate_bindings_modules_v8_partial_interfaces_for_testing",
   ]
 }
 
@@ -35,8 +36,14 @@ idl_impl("bindings_modules_impl_generated") {
 }
 
 idl_compiler("generate_bindings_modules_v8_partial_interfaces") {
-  sources = core_idl_with_modules_dependency_files +
-            webcore_testing_idl_with_modules_dependency_files
+  sources = core_idl_with_modules_dependency_files
+  output_dir = bindings_modules_v8_output_dir
+  output_name_suffix = "Partial"
+  target_component = "modules"
+}
+
+idl_compiler("generate_bindings_modules_v8_partial_interfaces_for_testing") {
+  sources = webcore_testing_idl_with_modules_dependency_files
   output_dir = bindings_modules_v8_output_dir
   output_name_suffix = "Partial"
   target_component = "modules"
@@ -67,4 +74,25 @@ action("bindings_modules_v8_generated_init_partial") {
   deps = [
     "//third_party/WebKit/Source/bindings/modules:interfaces_info",
   ]
+}
+
+blink_modules_sources("bindings_modules_impl") {
+  # ":generate_bindings_modules_v8_partial_interfaces_for_testing" is not
+  # included here.
+  sources =
+      get_target_outputs(":generate_bindings_modules_v8_interfaces") +
+      get_target_outputs(":bindings_modules_impl_generated") +
+      get_target_outputs(":generate_bindings_modules_v8_partial_interfaces") +
+      get_target_outputs(":bindings_modules_v8_generated_init_partial")
+
+  deps = [
+    ":bindings_modules_v8_generated",
+  ]
+
+  if (!is_component_build && is_win) {
+    # This target as a static library (for non-component builds) is >4GB on
+    # Windows, this causes linking to fail. As a workaround, split it into
+    # multiple shards.
+    split_count = 5
+  }
 }
