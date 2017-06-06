@@ -132,6 +132,7 @@ class ProcessSingleton {
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   static void DisablePromptForTesting();
   static void SkipIsChromeProcessCheckForTesting(bool skip);
+  static void SetUserOptedUnlockInUseProfileForTesting(bool set_unlock);
 #endif
 #if defined(OS_WIN)
   // Called to query whether to kill a hung browser process that has visible
@@ -184,11 +185,15 @@ class ProcessSingleton {
   bool IsSameChromeInstance(pid_t pid);
 
   // Extract the process's pid from a symbol link path and if it is on
-  // the same host, kill the process, unlink the lock file and return true.
+  // the same host or is_connected_to_socket is true, kill the process, unlink
+  // the lock file and return true.
   // If the process is part of the same chrome instance, unlink the lock file
   // and return true without killing it.
-  // If the process is on a different host, return false.
-  bool KillProcessByLockPath();
+  // If the process is on a different host and is_connected_to_socket is false,
+  // display profile in use error dialog (on Linux). If user opted to unlock
+  // profile (on Mac OS X by default), unlink the lock file and return true.
+  // Otherwise return false.
+  bool KillProcessByLockPath(bool is_connected_to_socket);
 
   // Default function to kill a process, overridable by tests.
   void KillProcess(int pid);

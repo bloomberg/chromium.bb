@@ -122,6 +122,7 @@ const char kLockDelimiter = '-';
 
 bool g_disable_prompt = false;
 bool g_skip_is_chrome_process_check = false;
+bool g_user_opted_unlock_in_use_profile = false;
 
 // Set the close-on-exec bit on a file descriptor.
 // Returns 0 on success, -1 on failure.
@@ -322,7 +323,7 @@ bool DisplayProfileInUseError(const base::FilePath& lock_path,
   LOG(ERROR) << error;
 
   if (g_disable_prompt)
-    return false;
+    return g_user_opted_unlock_in_use_profile;
 
 #if defined(OS_LINUX)
   base::string16 relaunch_button_text = l10n_util::GetStringUTF16(
@@ -338,11 +339,13 @@ bool DisplayProfileInUseError(const base::FilePath& lock_path,
 }
 
 bool IsChromeProcess(pid_t pid) {
+  if (g_skip_is_chrome_process_check)
+    return true;
+
   base::FilePath other_chrome_path(base::GetProcessExecutablePath(pid));
   return (!other_chrome_path.empty() &&
-          (g_skip_is_chrome_process_check ||
-           other_chrome_path.BaseName() ==
-               base::FilePath(chrome::kBrowserProcessExecutableName)));
+          other_chrome_path.BaseName() ==
+              base::FilePath(chrome::kBrowserProcessExecutableName));
 }
 
 // A helper class to hold onto a socket.
@@ -826,7 +829,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 
     if (retries == retry_attempts) {
       // Retries failed.  Kill the unresponsive chrome process and continue.
-      if (!kill_unresponsive || !KillProcessByLockPath())
+      if (!kill_unresponsive || !KillProcessByLockPath(false))
         return PROFILE_IN_USE;
       SendRemoteHungProcessTerminateReasonHistogram(NOTIFY_ATTEMPTS_EXCEEDED);
       return PROCESS_NONE;
@@ -862,7 +865,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   // Send the message
   if (!WriteToSocket(socket.fd(), to_send.data(), to_send.length())) {
     // Try to kill the other process, because it might have been dead.
-    if (!kill_unresponsive || !KillProcessByLockPath())
+    if (!kill_unresponsive || !KillProcessByLockPath(true))
       return PROFILE_IN_USE;
     SendRemoteHungProcessTerminateReasonHistogram(SOCKET_WRITE_FAILED);
     return PROCESS_NONE;
@@ -878,7 +881,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 
   // Failed to read ACK, the other process might have been frozen.
   if (len <= 0) {
-    if (!kill_unresponsive || !KillProcessByLockPath())
+    if (!kill_unresponsive || !KillProcessByLockPath(true))
       return PROFILE_IN_USE;
     SendRemoteHungProcessTerminateReasonHistogram(SOCKET_READ_FAILED);
     return PROCESS_NONE;
@@ -967,12 +970,20 @@ void ProcessSingleton::OverrideKillCallbackForTesting(
   kill_callback_ = callback;
 }
 
+// static
 void ProcessSingleton::DisablePromptForTesting() {
   g_disable_prompt = true;
 }
 
+// static
 void ProcessSingleton::SkipIsChromeProcessCheckForTesting(bool skip) {
   g_skip_is_chrome_process_check = skip;
+}
+
+// static
+void ProcessSingleton::SetUserOptedUnlockInUseProfileForTesting(
+    bool set_unlock) {
+  g_user_opted_unlock_in_use_profile = set_unlock;
 }
 
 bool ProcessSingleton::Create() {
@@ -1081,15 +1092,18 @@ bool ProcessSingleton::IsSameChromeInstance(pid_t pid) {
   return true;
 }
 
-bool ProcessSingleton::KillProcessByLockPath() {
+bool ProcessSingleton::KillProcessByLockPath(bool is_connected_to_socket) {
   std::string hostname;
   int pid;
   ParseLockPath(lock_path_, &hostname, &pid);
 
-  if (!hostname.empty() && hostname != net::GetHostName()) {
+  if (!hostname.empty() && hostname != net::GetHostName() &&
+      !is_connected_to_socket) {
     bool res = DisplayProfileInUseError(lock_path_, hostname, pid);
-    if (res)
+    if (res) {
+      UnlinkPath(lock_path_);
       SendRemoteProcessInteractionResultHistogram(PROFILE_UNLOCKED_BEFORE_KILL);
+    }
     return res;
   }
   UnlinkPath(lock_path_);
