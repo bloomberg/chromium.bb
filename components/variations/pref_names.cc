@@ -32,9 +32,6 @@ const char kVariationsPermutedEntropyCache[] =
 // String for the restrict parameter to be appended to the variations URL.
 const char kVariationsRestrictParameter[] = "variations_restrict_parameter";
 
-// Base64-encoded serialized form of the variations seed protobuf.
-const char kVariationsSeed[] = "variations_seed";
-
 // 64-bit integer serialization of the base::Time from the last seed received.
 const char kVariationsSeedDate[] = "variations_seed_date";
 

@@ -161,9 +161,6 @@ class MasterPreferences {
   // Returns the compressed variations seed entry from the master prefs.
   std::string GetCompressedVariationsSeed() const;
 
-  // Returns the variations seed entry from the master prefs.
-  std::string GetVariationsSeed() const;
-
   // Returns the variations seed signature entry from the master prefs.
   std::string GetVariationsSeedSignature() const;
 

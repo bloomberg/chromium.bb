@@ -295,10 +295,6 @@ std::string MasterPreferences::GetCompressedVariationsSeed() const {
   return ExtractPrefString(variations::prefs::kVariationsCompressedSeed);
 }
 
-std::string MasterPreferences::GetVariationsSeed() const {
-  return ExtractPrefString(variations::prefs::kVariationsSeed);
-}
-
 std::string MasterPreferences::GetVariationsSeedSignature() const {
   return ExtractPrefString(variations::prefs::kVariationsSeedSignature);
 }

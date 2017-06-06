@@ -1147,16 +1147,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
     // Store the initial VariationsService seed in local state, if it exists
     // in master prefs.
-    if (!master_prefs_->variations_seed.empty() ||
-        !master_prefs_->compressed_variations_seed.empty()) {
-      if (!master_prefs_->variations_seed.empty()) {
-        local_state_->SetString(variations::prefs::kVariationsSeed,
-                                master_prefs_->variations_seed);
-      }
-      if (!master_prefs_->compressed_variations_seed.empty()) {
-        local_state_->SetString(variations::prefs::kVariationsCompressedSeed,
-                                master_prefs_->compressed_variations_seed);
-      }
+    if (!master_prefs_->compressed_variations_seed.empty()) {
+      local_state_->SetString(variations::prefs::kVariationsCompressedSeed,
+                              master_prefs_->compressed_variations_seed);
       if (!master_prefs_->variations_seed_signature.empty()) {
         local_state_->SetString(variations::prefs::kVariationsSeedSignature,
                                 master_prefs_->variations_seed_signature);

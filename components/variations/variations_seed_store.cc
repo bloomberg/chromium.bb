@@ -298,7 +298,6 @@ std::string VariationsSeedStore::GetInvalidSignature() const {
 // static
 void VariationsSeedStore::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kVariationsCompressedSeed, std::string());
-  registry->RegisterStringPref(prefs::kVariationsSeed, std::string());
   registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
                               base::Time().ToInternalValue());
   registry->RegisterStringPref(prefs::kVariationsSeedSignature, std::string());
@@ -336,7 +335,6 @@ VariationsSeedStore::VerifySeedSignature(
 
 void VariationsSeedStore::ClearPrefs() {
   local_state_->ClearPref(prefs::kVariationsCompressedSeed);
-  local_state_->ClearPref(prefs::kVariationsSeed);
   local_state_->ClearPref(prefs::kVariationsSeedDate);
   local_state_->ClearPref(prefs::kVariationsSeedSignature);
 }
@@ -378,11 +376,6 @@ void VariationsSeedStore::ImportFirstRunJavaSeed() {
 bool VariationsSeedStore::ReadSeedData(std::string* seed_data) {
   std::string base64_seed_data =
       local_state_->GetString(prefs::kVariationsCompressedSeed);
-  const bool is_compressed = !base64_seed_data.empty();
-  // If there's no compressed seed, fall back to the uncompressed one.
-  if (!is_compressed)
-    base64_seed_data = local_state_->GetString(prefs::kVariationsSeed);
-
   if (base64_seed_data.empty()) {
     RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_EMPTY);
     return false;
@@ -396,9 +389,7 @@ bool VariationsSeedStore::ReadSeedData(std::string* seed_data) {
     return false;
   }
 
-  if (!is_compressed) {
-    seed_data->swap(decoded_data);
-  } else if (!compression::GzipUncompress(decoded_data, seed_data)) {
+  if (!compression::GzipUncompress(decoded_data, seed_data)) {
     ClearPrefs();
     RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_GZIP);
     return false;
@@ -445,10 +436,6 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
 
   std::string base64_seed_data;
   base::Base64Encode(compressed_seed_data, &base64_seed_data);
-
-  // TODO(asvitkine): This pref is no longer being used. Remove it completely
-  // in M45+.
-  local_state_->ClearPref(prefs::kVariationsSeed);
 
 #if defined(OS_ANDROID)
   // If currently we do not have any stored pref then we mark seed storing as
