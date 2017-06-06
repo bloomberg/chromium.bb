@@ -184,7 +184,9 @@ class LinuxPort(base.Port):
         # While xvfb is running, the poll() method will return None;
         # https://docs.python.org/2/library/subprocess.html#subprocess.Popen.poll
         start_time = self.host.time()
-        while self.host.time() - start_time < self.XVFB_START_TIMEOUT or self._xvfb_process.poll() is not None:
+        while self.host.time() - start_time < self.XVFB_START_TIMEOUT:
+            if self._xvfb_process.poll() is not None:
+                break
             # We don't explicitly set the display, as we want to check the
             # environment value.
             exit_code = self.host.executive.run_command(
@@ -217,7 +219,7 @@ class LinuxPort(base.Port):
             self._xvfb_stdout.close()
         if self._xvfb_stderr:
             self._xvfb_stderr.close()
-        if self._xvfb_process:
+        if self._xvfb_process and self._xvfb_process.poll() is None:
             _log.debug('Killing Xvfb process pid %d.', self._xvfb_process.pid)
             self._xvfb_process.kill()
             self._xvfb_process.wait()
