@@ -45,7 +45,7 @@ class CONTENT_EXPORT PaymentAppProvider {
   virtual void InvokePaymentApp(
       BrowserContext* browser_context,
       int64_t registration_id,
-      payments::mojom::PaymentAppRequestPtr app_request,
+      payments::mojom::PaymentRequestEventDataPtr event_data,
       const InvokePaymentAppCallback& callback) = 0;
 
  protected:

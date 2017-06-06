@@ -8,7 +8,7 @@
 #include "components/payments/mojom/payment_app.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "third_party/WebKit/public/platform/modules/payments/WebPaymentAppRequest.h"
+#include "third_party/WebKit/public/platform/modules/payments/WebPaymentRequestEventData.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 
@@ -22,10 +22,10 @@ struct CONTENT_EXPORT TypeConverter<content::ServiceWorkerStatusCode,
 };
 
 template <>
-struct TypeConverter<blink::WebPaymentAppRequest,
-                     payments::mojom::PaymentAppRequestPtr> {
-  static blink::WebPaymentAppRequest Convert(
-      const payments::mojom::PaymentAppRequestPtr& input);
+struct TypeConverter<blink::WebPaymentRequestEventData,
+                     payments::mojom::PaymentRequestEventDataPtr> {
+  static blink::WebPaymentRequestEventData Convert(
+      const payments::mojom::PaymentRequestEventDataPtr& input);
 };
 
 template <>

@@ -27,8 +27,8 @@ using ::base::android::JavaRef;
 using ::base::android::ScopedJavaGlobalRef;
 using ::base::android::ScopedJavaLocalRef;
 using ::base::android::ToJavaArrayOfStrings;
-using ::payments::mojom::PaymentAppRequest;
-using ::payments::mojom::PaymentAppRequestPtr;
+using ::payments::mojom::PaymentRequestEventData;
+using ::payments::mojom::PaymentRequestEventDataPtr;
 using ::payments::mojom::PaymentCurrencyAmount;
 using ::payments::mojom::PaymentDetailsModifier;
 using ::payments::mojom::PaymentDetailsModifierPtr;
@@ -101,13 +101,13 @@ static void InvokePaymentApp(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
-  PaymentAppRequestPtr app_request = PaymentAppRequest::New();
+  PaymentRequestEventDataPtr event_data = PaymentRequestEventData::New();
 
-  app_request->top_level_origin =
+  event_data->top_level_origin =
       GURL(ConvertJavaStringToUTF8(env, jtop_level_origin));
-  app_request->payment_request_origin =
+  event_data->payment_request_origin =
       GURL(ConvertJavaStringToUTF8(env, jpayment_request_origin));
-  app_request->payment_request_id =
+  event_data->payment_request_id =
       ConvertJavaStringToUTF8(env, jpayment_request_id);
 
   for (jsize i = 0; i < env->GetArrayLength(jmethod_data); i++) {
@@ -124,18 +124,18 @@ static void InvokePaymentApp(
         env,
         Java_ServiceWorkerPaymentAppBridge_getStringifiedDataFromMethodData(
             env, element));
-    app_request->method_data.push_back(std::move(methodData));
+    event_data->method_data.push_back(std::move(methodData));
   }
 
-  app_request->total = PaymentItem::New();
-  app_request->total->label = ConvertJavaStringToUTF8(
+  event_data->total = PaymentItem::New();
+  event_data->total->label = ConvertJavaStringToUTF8(
       env,
       Java_ServiceWorkerPaymentAppBridge_getLabelFromPaymentItem(env, jtotal));
-  app_request->total->amount = PaymentCurrencyAmount::New();
-  app_request->total->amount->currency = ConvertJavaStringToUTF8(
+  event_data->total->amount = PaymentCurrencyAmount::New();
+  event_data->total->amount->currency = ConvertJavaStringToUTF8(
       env, Java_ServiceWorkerPaymentAppBridge_getCurrencyFromPaymentItem(
                env, jtotal));
-  app_request->total->amount->value = ConvertJavaStringToUTF8(
+  event_data->total->amount->value = ConvertJavaStringToUTF8(
       env,
       Java_ServiceWorkerPaymentAppBridge_getValueFromPaymentItem(env, jtotal));
 
@@ -173,14 +173,13 @@ static void InvokePaymentApp(
         Java_ServiceWorkerPaymentAppBridge_getStringifiedDataFromMethodData(
             env, jmodifier_method_data));
 
-    app_request->modifiers.push_back(std::move(modifier));
+    event_data->modifiers.push_back(std::move(modifier));
   }
 
-  app_request->instrument_key = ConvertJavaStringToUTF8(env, jinstrument_key);
+  event_data->instrument_key = ConvertJavaStringToUTF8(env, jinstrument_key);
 
   content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
-      web_contents->GetBrowserContext(), registration_id,
-      std::move(app_request),
+      web_contents->GetBrowserContext(), registration_id, std::move(event_data),
       base::Bind(&OnPaymentAppInvoked,
                  ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                  ScopedJavaGlobalRef<jobject>(env, jcallback)));

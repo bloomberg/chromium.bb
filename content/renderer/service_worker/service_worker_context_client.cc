@@ -65,8 +65,8 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
-#include "third_party/WebKit/public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "third_party/WebKit/public/platform/modules/payments/WebPaymentAppResponse.h"
+#include "third_party/WebKit/public/platform/modules/payments/WebPaymentRequestEventData.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
@@ -1213,7 +1213,7 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
 
 void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
     int payment_request_id,
-    payments::mojom::PaymentAppRequestPtr app_request,
+    payments::mojom::PaymentRequestEventDataPtr eventData,
     payments::mojom::PaymentAppResponseCallbackPtr response_callback,
     DispatchPaymentRequestEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
@@ -1223,9 +1223,9 @@ void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
   context_->payment_request_event_callbacks.insert(
       std::make_pair(payment_request_id, std::move(callback)));
 
-  blink::WebPaymentAppRequest webAppRequest =
-      mojo::ConvertTo<blink::WebPaymentAppRequest>(std::move(app_request));
-  proxy_->DispatchPaymentRequestEvent(payment_request_id, webAppRequest);
+  blink::WebPaymentRequestEventData webEventData =
+      mojo::ConvertTo<blink::WebPaymentRequestEventData>(std::move(eventData));
+  proxy_->DispatchPaymentRequestEvent(payment_request_id, webEventData);
 }
 
 void ServiceWorkerContextClient::Send(IPC::Message* message) {

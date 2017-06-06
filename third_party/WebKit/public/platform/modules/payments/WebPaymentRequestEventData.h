@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPaymentAppRequest_h
-#define WebPaymentAppRequest_h
+#ifndef WebPaymentRequestEventData_h
+#define WebPaymentRequestEventData_h
 
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
@@ -13,8 +13,7 @@
 
 namespace blink {
 
-// https://w3c.github.io/webpayments-payment-apps-api/#idl-def-paymentapprequest
-struct WebPaymentAppRequest {
+struct WebPaymentRequestEventData {
   WebString top_level_origin;
   WebString payment_request_origin;
   WebString payment_request_id;
@@ -26,4 +25,4 @@ struct WebPaymentAppRequest {
 
 }  // namespace blink
 
-#endif  // WebPaymentAppRequest_h
+#endif  // WebPaymentRequestEventData_h

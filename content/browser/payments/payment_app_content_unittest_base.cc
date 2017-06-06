@@ -69,12 +69,12 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
   }
 
   void OnPaymentRequestEvent(
-      payments::mojom::PaymentAppRequestPtr app_request,
+      payments::mojom::PaymentRequestEventDataPtr event_data,
       payments::mojom::PaymentAppResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchPaymentRequestEventCallback
           callback) override {
     EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
-        std::move(app_request), std::move(response_callback),
+        std::move(event_data), std::move(response_callback),
         std::move(callback));
   }
 
