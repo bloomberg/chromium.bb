@@ -647,7 +647,7 @@ public class ToolbarPhone extends ToolbarLayout
     /**
      * @return The left bounds of the location bar after accounting for any visible left buttons.
      */
-    protected int getBoundsAfterAccountingForLeftButton() {
+    private int getBoundsAfterAccountingForLeftButton() {
         int padding = mToolbarSidePadding;
         if (mHomeButton.getVisibility() != GONE) padding = mHomeButton.getMeasuredWidth();
         return padding;
