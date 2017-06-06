@@ -117,7 +117,6 @@ TEST_F(PermissionRequestManagerTest, SingleRequest) {
   EXPECT_TRUE(prompt_factory_->is_visible());
   ASSERT_EQ(prompt_factory_->request_count(), 1);
 
-  ToggleAccept(0, true);
   Accept();
   EXPECT_TRUE(request1_.granted());
 }
@@ -130,7 +129,6 @@ TEST_F(PermissionRequestManagerTest, SingleRequestViewFirst) {
   EXPECT_TRUE(prompt_factory_->is_visible());
   ASSERT_EQ(prompt_factory_->request_count(), 1);
 
-  ToggleAccept(0, true);
   Accept();
   EXPECT_TRUE(request1_.granted());
 }
@@ -164,8 +162,6 @@ TEST_F(PermissionRequestManagerTest, MicCameraGrouped) {
   EXPECT_TRUE(prompt_factory_->is_visible());
   ASSERT_EQ(prompt_factory_->request_count(), 2);
 
-  ToggleAccept(0, true);
-  ToggleAccept(1, true);
   Accept();
   EXPECT_TRUE(request_mic_.granted());
   EXPECT_TRUE(request_camera_.granted());
@@ -188,9 +184,6 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
   EXPECT_TRUE(prompt_factory_->is_visible());
   ASSERT_EQ(prompt_factory_->request_count(), 2);
 
-  ToggleAccept(0, true);
-  ToggleAccept(1, false);
-
   MockTabSwitchAway();
   EXPECT_FALSE(prompt_factory_->is_visible());
 
@@ -201,7 +194,7 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
 
   Accept();
   EXPECT_TRUE(request_mic_.granted());
-  EXPECT_FALSE(request_camera_.granted());
+  EXPECT_TRUE(request_camera_.granted());
 }
 
 TEST_F(PermissionRequestManagerTest, NoRequests) {
@@ -513,7 +506,6 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedGestureBubble) {
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt, 1, 1);
 
-  ToggleAccept(0, true);
   Accept();
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptAccepted,
@@ -574,8 +566,7 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedBubbleAlternatePath) {
   // No need to test UMA for showing prompts again, they were tested in
   // UMAForSimpleAcceptedBubble.
 
-  ToggleAccept(0, false);
-  Accept();
+  Deny();
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDenied,
       static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
@@ -611,8 +602,6 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
 
-  ToggleAccept(0, true);
-  ToggleAccept(1, true);
   Accept();
 
   histograms.ExpectUniqueSample(
@@ -631,36 +620,6 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
       1);
 }
 
-TEST_F(PermissionRequestManagerTest, UMAForMergedMixedBubble) {
-  base::HistogramTester histograms;
-
-  manager_->AddRequest(&request_mic_);
-  manager_->AddRequest(&request_camera_);
-  manager_->DisplayPendingRequests();
-  WaitForBubbleToBeShown();
-  // No need to test UMA for showing prompts again, they were tested in
-  // UMAForMergedAcceptedBubble.
-
-  ToggleAccept(0, true);
-  ToggleAccept(1, false);
-  Accept();
-
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
-      1);
-  histograms.ExpectBucketCount(
-      PermissionUmaUtil::kPermissionsPromptMergedBubbleAccepted,
-      static_cast<base::HistogramBase::Sample>(
-          PermissionRequestType::PERMISSION_MEDIASTREAM_MIC),
-      1);
-  histograms.ExpectBucketCount(
-      PermissionUmaUtil::kPermissionsPromptMergedBubbleDenied,
-      static_cast<base::HistogramBase::Sample>(
-          PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA),
-      1);
-}
-
 TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
   base::HistogramTester histograms;
 
@@ -671,9 +630,7 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
   // No need to test UMA for showing prompts again, they were tested in
   // UMAForMergedAcceptedBubble.
 
-  ToggleAccept(0, false);
-  ToggleAccept(1, false);
-  Accept();
+  Deny();
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDenied,

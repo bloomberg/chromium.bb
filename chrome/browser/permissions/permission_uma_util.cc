@@ -390,48 +390,13 @@ void PermissionUmaUtil::PermissionPromptShown(
 }
 
 void PermissionUmaUtil::PermissionPromptAccepted(
-    const std::vector<PermissionRequest*>& requests,
-    const std::vector<bool>& accept_states) {
-  DCHECK(!requests.empty());
-  DCHECK(requests.size() == accept_states.size());
-
-  bool all_accepted = accept_states[0];
-  PermissionRequestType permission_prompt_type =
-      requests[0]->GetPermissionRequestType();
-  PermissionRequestGestureType permission_gesture_type =
-      requests[0]->GetGestureType();
-  if (requests.size() > 1) {
-    permission_prompt_type = PermissionRequestType::MULTIPLE;
-    permission_gesture_type = PermissionRequestGestureType::UNKNOWN;
-    for (size_t i = 0; i < requests.size(); ++i) {
-      const auto* request = requests[i];
-      if (accept_states[i]) {
-        PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleAccepted,
-                                   request->GetPermissionRequestType());
-      } else {
-        all_accepted = false;
-        PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleDenied,
-                                   request->GetPermissionRequestType());
-      }
-    }
-  }
-
-  if (all_accepted) {
-    RecordPermissionPromptAccepted(permission_prompt_type,
-                                   permission_gesture_type);
-  } else {
-    RecordPermissionPromptDenied(permission_prompt_type,
-                                 permission_gesture_type);
-  }
+    const std::vector<PermissionRequest*>& requests) {
+  RecordPromptDecided(requests, /*accepted=*/true);
 }
 
 void PermissionUmaUtil::PermissionPromptDenied(
     const std::vector<PermissionRequest*>& requests) {
-  DCHECK(!requests.empty());
-  DCHECK(requests.size() == 1);
-
-  RecordPermissionPromptDenied(requests[0]->GetPermissionRequestType(),
-                               requests[0]->GetGestureType());
+  RecordPromptDecided(requests, /*accepted=*/false);
 }
 
 void PermissionUmaUtil::RecordPermissionPromptShown(
@@ -712,5 +677,39 @@ void PermissionUmaUtil::RecordPermissionAction(
     rappor_service->RecordSampleString(
         rappor_metric, rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
         rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
+  }
+}
+
+// static
+void PermissionUmaUtil::RecordPromptDecided(
+    const std::vector<PermissionRequest*>& requests,
+    bool accepted) {
+  DCHECK(!requests.empty());
+
+  PermissionRequestType permission_prompt_type =
+      requests[0]->GetPermissionRequestType();
+  PermissionRequestGestureType permission_gesture_type =
+      requests[0]->GetGestureType();
+  if (requests.size() > 1) {
+    permission_prompt_type = PermissionRequestType::MULTIPLE;
+    permission_gesture_type = PermissionRequestGestureType::UNKNOWN;
+    for (size_t i = 0; i < requests.size(); ++i) {
+      const auto* request = requests[i];
+      if (accepted) {
+        PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleAccepted,
+                                   request->GetPermissionRequestType());
+      } else {
+        PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleDenied,
+                                   request->GetPermissionRequestType());
+      }
+    }
+  }
+
+  if (accepted) {
+    RecordPermissionPromptAccepted(permission_prompt_type,
+                                   permission_gesture_type);
+  } else {
+    RecordPermissionPromptDenied(permission_prompt_type,
+                                 permission_gesture_type);
   }
 }

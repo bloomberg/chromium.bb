@@ -160,12 +160,8 @@ class PermissionUmaUtil {
 
   // The following two functions can be combined with the PermissionPromptShown
   // metrics to calculate accept, deny and ignore rates.
-  // Note that for coalesced permission bubbles, PermissionPromptAccepted will
-  // always be called, with |accept_states| containing whether each request was
-  // accepted or denied.
   static void PermissionPromptAccepted(
-      const std::vector<PermissionRequest*>& requests,
-      const std::vector<bool>& accept_states);
+      const std::vector<PermissionRequest*>& requests);
 
   static void PermissionPromptDenied(
       const std::vector<PermissionRequest*>& requests);
@@ -218,6 +214,10 @@ class PermissionUmaUtil {
       ContentSettingsType permission,
       const std::string& prefix,
       int count);
+
+  static void RecordPromptDecided(
+      const std::vector<PermissionRequest*>& requests,
+      bool accepted);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUmaUtil);
 };
