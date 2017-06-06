@@ -40,6 +40,10 @@
       "reason": "scroll control"
     },
     {
+      "object": "Caret",
+      "reason": "caret"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "subtree"
     },
