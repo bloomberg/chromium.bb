@@ -86,8 +86,9 @@ class RenderbufferAttachment
 
   bool CanRenderTo(const FeatureInfo*) const override { return true; }
 
-  void DetachFromFramebuffer(Framebuffer* framebuffer) const override {
-    // Nothing to do for renderbuffers.
+  void DetachFromFramebuffer(Framebuffer* framebuffer,
+                             GLenum attachment) const override {
+    renderbuffer_->RemoveFramebufferAttachmentPoint(framebuffer, attachment);
   }
 
   bool IsLayerValid() const override { return true; }
@@ -238,7 +239,8 @@ class TextureAttachment
     return texture_ref_->texture()->CanRenderTo(feature_info, level_);
   }
 
-  void DetachFromFramebuffer(Framebuffer* framebuffer) const override {
+  void DetachFromFramebuffer(Framebuffer* framebuffer,
+                             GLenum attachment) const override {
     texture_ref_->texture()->DetachFromFramebuffer();
   }
 
@@ -338,9 +340,10 @@ FramebufferManager::~FramebufferManager() {
 void Framebuffer::MarkAsDeleted() {
   deleted_ = true;
   while (!attachments_.empty()) {
-    Attachment* attachment = attachments_.begin()->second.get();
-    attachment->DetachFromFramebuffer(this);
-    attachments_.erase(attachments_.begin());
+    auto entry = attachments_.begin();
+    Attachment* attachment = entry->second.get();
+    attachment->DetachFromFramebuffer(this, entry->first);
+    attachments_.erase(entry);
   }
 }
 
@@ -401,6 +404,10 @@ Framebuffer::~Framebuffer() {
     }
     manager_->StopTracking(this);
     manager_ = NULL;
+  }
+
+  for (auto& attachment : attachments_) {
+    attachment.second->DetachFromFramebuffer(this, attachment.first);
   }
 }
 
@@ -983,14 +990,15 @@ void Framebuffer::AttachRenderbuffer(
   DCHECK(attachment != GL_DEPTH_STENCIL_ATTACHMENT);
   const Attachment* a = GetAttachment(attachment);
   if (a)
-    a->DetachFromFramebuffer(this);
+    a->DetachFromFramebuffer(this, attachment);
   if (renderbuffer) {
     attachments_[attachment] = scoped_refptr<Attachment>(
         new RenderbufferAttachment(renderbuffer));
+    renderbuffer->AddFramebufferAttachmentPoint(this, attachment);
   } else {
     attachments_.erase(attachment);
   }
-  framebuffer_complete_state_count_id_ = 0;
+  UnmarkAsComplete();
 }
 
 void Framebuffer::AttachTexture(
@@ -999,7 +1007,7 @@ void Framebuffer::AttachTexture(
   DCHECK(attachment != GL_DEPTH_STENCIL_ATTACHMENT);
   const Attachment* a = GetAttachment(attachment);
   if (a)
-    a->DetachFromFramebuffer(this);
+    a->DetachFromFramebuffer(this, attachment);
   if (texture_ref) {
     attachments_[attachment] = scoped_refptr<Attachment>(
         new TextureAttachment(texture_ref, target, level, samples, 0));
@@ -1007,7 +1015,7 @@ void Framebuffer::AttachTexture(
   } else {
     attachments_.erase(attachment);
   }
-  framebuffer_complete_state_count_id_ = 0;
+  UnmarkAsComplete();
 }
 
 void Framebuffer::AttachTextureLayer(
@@ -1016,7 +1024,7 @@ void Framebuffer::AttachTextureLayer(
   DCHECK(attachment != GL_DEPTH_STENCIL_ATTACHMENT);
   const Attachment* a = GetAttachment(attachment);
   if (a)
-    a->DetachFromFramebuffer(this);
+    a->DetachFromFramebuffer(this, attachment);
   if (texture_ref) {
     attachments_[attachment] = scoped_refptr<Attachment>(
         new TextureAttachment(texture_ref, target, level, 0, layer));
@@ -1024,7 +1032,7 @@ void Framebuffer::AttachTextureLayer(
   } else {
     attachments_.erase(attachment);
   }
-  framebuffer_complete_state_count_id_ = 0;
+  UnmarkAsComplete();
 }
 
 const Framebuffer::Attachment*

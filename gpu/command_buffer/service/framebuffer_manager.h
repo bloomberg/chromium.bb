@@ -60,7 +60,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     virtual bool IsLayerValid() const = 0;
 
     virtual bool CanRenderTo(const FeatureInfo* feature_info) const = 0;
-    virtual void DetachFromFramebuffer(Framebuffer* framebuffer) const = 0;
+    virtual void DetachFromFramebuffer(Framebuffer* framebuffer,
+                                       GLenum attachment) const = 0;
     virtual bool ValidForAttachmentType(GLenum attachment_type,
                                         uint32_t max_color_attachments) = 0;
     virtual size_t GetSignatureSize(TextureManager* texture_manager) const = 0;
@@ -224,6 +225,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   uint32_t draw_buffer_bound_mask() const {
     return draw_buffer_bound_mask_;
   }
+
+  void UnmarkAsComplete() { framebuffer_complete_state_count_id_ = 0; }
 
  private:
   friend class FramebufferManager;
