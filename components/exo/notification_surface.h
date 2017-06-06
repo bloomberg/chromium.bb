@@ -26,13 +26,13 @@ class NotificationSurface : public SurfaceDelegate, public SurfaceObserver {
  public:
   NotificationSurface(NotificationSurfaceManager* manager,
                       Surface* surface,
-                      const std::string& notification_id);
+                      const std::string& notification_key);
   ~NotificationSurface() override;
 
   gfx::Size GetSize() const;
 
   aura::Window* window() { return window_.get(); }
-  const std::string& notification_id() const { return notification_id_; }
+  const std::string& notification_key() const { return notification_key_; }
 
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
@@ -44,7 +44,7 @@ class NotificationSurface : public SurfaceDelegate, public SurfaceObserver {
  private:
   NotificationSurfaceManager* const manager_;  // Not owned.
   Surface* surface_;                           // Not owned.
-  const std::string notification_id_;
+  const std::string notification_key_;
 
   std::unique_ptr<aura::Window> window_;
   bool added_to_manager_ = false;

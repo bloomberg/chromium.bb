@@ -39,13 +39,13 @@ exo::NotificationSurface* ArcNotificationSurfaceManager::GetSurface(
 
 void ArcNotificationSurfaceManager::AddSurface(
     exo::NotificationSurface* surface) {
-  if (notification_surface_map_.find(surface->notification_id()) !=
+  if (notification_surface_map_.find(surface->notification_key()) !=
       notification_surface_map_.end()) {
     NOTREACHED();
     return;
   }
 
-  notification_surface_map_[surface->notification_id()] = surface;
+  notification_surface_map_[surface->notification_key()] = surface;
 
   for (auto& observer : observers_)
     observer.OnNotificationSurfaceAdded(surface);
@@ -53,7 +53,7 @@ void ArcNotificationSurfaceManager::AddSurface(
 
 void ArcNotificationSurfaceManager::RemoveSurface(
     exo::NotificationSurface* surface) {
-  auto it = notification_surface_map_.find(surface->notification_id());
+  auto it = notification_surface_map_.find(surface->notification_key());
   if (it == notification_surface_map_.end())
     return;
 
