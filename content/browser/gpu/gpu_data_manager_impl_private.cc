@@ -44,6 +44,7 @@
 #include "gpu/ipc/service/switches.h"
 #include "media/media_features.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -591,7 +592,8 @@ void GpuDataManagerImplPrivate::Initialize() {
   const bool force_software_gl =
       (command_line->GetSwitchValueASCII(switches::kUseGL) ==
        softwareGLImplementationName) ||
-      command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests);
+      command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests) ||
+      command_line->HasSwitch(switches::kHeadless);
   if (force_software_gl) {
     // If using the OSMesa GL implementation, use fake vendor and device ids to
     // make sure it never gets blacklisted. This is better than simply

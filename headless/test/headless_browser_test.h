@@ -60,6 +60,7 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
   ~HeadlessBrowserTest() override;
 
   // BrowserTestBase:
+  void SetUp() override;
   void PreRunTestOnMainThread() override;
   void PostRunTestOnMainThread() override;
 
@@ -76,6 +77,10 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
       const std::string& script);
 
  protected:
+  // Call this instead of SetUp() to run tests without GPU rendering (i.e.,
+  // without using SwiftShader or a hardware GPU).
+  void SetUpWithoutGPU();
+
   // Returns the browser for the test.
   HeadlessBrowser* browser() const;
 

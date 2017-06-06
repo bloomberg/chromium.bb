@@ -4,6 +4,7 @@
 
 #include "headless/test/headless_browser_test.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -23,6 +24,7 @@
 #include "headless/public/headless_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_switches.h"
 #include "url/gurl.h"
 
 namespace headless {
@@ -133,6 +135,18 @@ HeadlessBrowserTest::HeadlessBrowserTest() {
 #endif  // defined(OS_MACOSX)
   base::FilePath headless_test_data(FILE_PATH_LITERAL("headless/test/data"));
   CreateTestServer(headless_test_data);
+}
+
+void HeadlessBrowserTest::SetUp() {
+  // Enable GPU usage (i.e., SwiftShader, hardware GL on macOS) in all tests
+  // since that's the default configuration of --headless.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kUseGpuInTests);
+  BrowserTestBase::SetUp();
+}
+
+void HeadlessBrowserTest::SetUpWithoutGPU() {
+  BrowserTestBase::SetUp();
 }
 
 HeadlessBrowserTest::~HeadlessBrowserTest() {}
