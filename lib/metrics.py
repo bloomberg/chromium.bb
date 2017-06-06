@@ -209,6 +209,7 @@ def SecondsDistribution(name, scale=1, reset_after=False):
   Args:
     name: string name of metric
     scale: scaling factor of buckets, and size of the first bucket. default: 1
+    reset_after: Should the metric be reset after reporting.
   """
   b = ts_mon.GeometricBucketer(growth_factor=_SECONDS_BUCKET_FACTOR,
                                scale=scale)
