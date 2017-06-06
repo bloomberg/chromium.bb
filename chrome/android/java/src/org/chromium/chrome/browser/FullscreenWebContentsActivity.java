@@ -14,6 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.FullScreenActivity;
@@ -32,8 +33,16 @@ public class FullscreenWebContentsActivity extends FullScreenActivity {
                 getIntent(), IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
         TabReparentingParams params = (TabReparentingParams) AsyncTabParamsManager.remove(tabId);
 
-        Tab tab = params.getTabToReparent();
-        tab.attachAndFinishReparenting(this, createTabDelegateFactory(), params);
+        Tab tab;
+        if (params != null) {
+            tab = params.getTabToReparent();
+            tab.attachAndFinishReparenting(this, createTabDelegateFactory(), params);
+        } else {
+            // TODO(peconn): Figure out how this arises - https://crbug.com/729094:37
+            tab = new Tab(Tab.INVALID_TAB_ID, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
+                    TabLaunchType.FROM_CHROME_UI, null, null);
+            tab.initialize(null, getTabContentManager(), createTabDelegateFactory(), false, false);
+        }
         return tab;
     }
 
