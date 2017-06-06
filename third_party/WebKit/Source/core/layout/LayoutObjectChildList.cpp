@@ -82,7 +82,7 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     // selection to avoid problems of invalid pointers.
     // FIXME: The FrameSelection should be responsible for this when it
     // is notified of DOM mutations.
-    if (old_child->IsSelectionBorder())
+    if (old_child->IsSelectionBorder() && owner->View())
       owner->View()->ClearSelection();
 
     owner->NotifyOfSubtreeChange();
