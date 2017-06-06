@@ -22,6 +22,8 @@ source_set("main") {
     "app_delegate.mm",
     "client_connection_view_controller.h",
     "client_connection_view_controller.mm",
+    "host_collection_header_view.h",
+    "host_collection_header_view.mm",
     "host_collection_view_cell.h",
     "host_collection_view_cell.mm",
     "host_collection_view_controller.h",
