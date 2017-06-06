@@ -203,4 +203,43 @@ function (add_gas_asm_library lib_name asm_sources dependent_target)
   set(${asm_sources} ${${asm_sources}} PARENT_SCOPE)
 endfunction ()
 
+# Terminates generation if nasm found in PATH does not meet requirements.
+# Currently checks only for presence of required object formats and support for
+# the -Ox argument (multipass optimization).
+function (test_nasm)
+  execute_process(COMMAND ${AS_EXECUTABLE} -hf
+                  OUTPUT_VARIABLE nasm_helptext)
+
+  if (NOT "${nasm_helptext}" MATCHES "-Ox")
+    message(FATAL_ERROR
+            "Unsupported nasm: multipass optimization not supported.")
+  endif ()
+
+  if ("${AOM_TARGET_CPU}" STREQUAL "x86")
+    if ("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
+      if (NOT "${nasm_helptext}" MATCHES "macho32")
+        message(FATAL_ERROR
+                "Unsupported nasm: macho32 object format not supported.")
+      endif ()
+    elseif ("${AOM_TARGET_SYSTEM}" STREQUAL "Linux")
+      if (NOT "${nasm_helptext}" MATCHES "elf32")
+        message(FATAL_ERROR
+                "Unsupported nasm: elf32 object format not supported.")
+      endif ()
+    endif ()
+  else ()
+    if ("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
+      if (NOT "${nasm_helptext}" MATCHES "macho64")
+        message(FATAL_ERROR
+                "Unsupported nasm: macho64 object format not supported.")
+      endif ()
+    elseif ("${AOM_TARGET_SYSTEM}" STREQUAL "Linux")
+      if (NOT "${nasm_helptext}" MATCHES "elf64")
+        message(FATAL_ERROR
+                "Unsupported nasm: elf64 object format not supported.")
+      endif ()
+    endif ()
+  endif ()
+endfunction ()
+
 endif ()  # AOM_BUILD_CMAKE_AOM_OPTIMIZATION_CMAKE_

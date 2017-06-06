@@ -90,10 +90,9 @@ if (NOT "${AOM_SUPPORTED_CPU_TARGETS}" MATCHES "${AOM_TARGET_CPU}")
 endif ()
 
 if ("${AOM_TARGET_CPU}" STREQUAL "x86" OR "${AOM_TARGET_CPU}" STREQUAL "x86_64")
-  # TODO(tomfinegan): Support nasm at least as well as the existing build
-  # system.
   if (ENABLE_NASM)
     find_program(AS_EXECUTABLE nasm $ENV{NASM_PATH})
+    test_nasm()
     set(AOM_AS_FLAGS ${AOM_AS_FLAGS} -Ox)
   else ()
     find_program(AS_EXECUTABLE yasm $ENV{YASM_PATH})
