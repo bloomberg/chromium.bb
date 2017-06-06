@@ -131,7 +131,7 @@ void CoordinationUnitImpl::GetID(const GetIDCallback& callback) {
   callback.Run(id_);
 }
 
-void CoordinationUnitImpl::Duplicate(mojom::CoordinationUnitRequest request) {
+void CoordinationUnitImpl::AddBinding(mojom::CoordinationUnitRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

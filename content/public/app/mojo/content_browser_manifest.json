@@ -116,6 +116,7 @@
           "media::mojom::Renderer",
           "mojom::MediaDevicesDispatcherHost",
           "payments::mojom::PaymentRequest",
+          "resource_coordinator::mojom::CoordinationUnit",
           "ui::mojom::Gpu"
         ]
       },

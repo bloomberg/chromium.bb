@@ -31,7 +31,7 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   // Overridden from mojom::CoordinationUnit:
   void SendEvent(mojom::EventPtr event) override;
   void GetID(const GetIDCallback& callback) override;
-  void Duplicate(mojom::CoordinationUnitRequest request) override;
+  void AddBinding(mojom::CoordinationUnitRequest request) override;
   void AddChild(const CoordinationUnitID& child_id) override;
   void SetCoordinationPolicyCallback(
       mojom::CoordinationPolicyCallbackPtr callback) override;
