@@ -1256,7 +1256,9 @@ Output.prototype = {
           options.annotation.push(token);
           var msg = node.role;
           var info = Output.ROLE_INFO_[node.role];
-          if (info) {
+          if (node.roleDescription) {
+            msg = node.roleDescription;
+          } else if (info) {
             if (this.formatOptions_.braille)
               msg = Msgs.getMsg(info.msgId + '_brl');
             else

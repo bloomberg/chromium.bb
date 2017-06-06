@@ -711,6 +711,7 @@ var stringAttributes = [
     'liveStatus',
     'name',
     'placeholder',
+    'roleDescription',
     'textInputType',
     'url',
     'value'];

@@ -771,3 +771,19 @@ TEST_F('OutputE2ETest', 'RangeOutput', function() {
           o);
   });
 });
+
+TEST_F('OutputE2ETest', 'RoleDescription', function() {
+  this.runWithLoadedTree(function(root) {/*!
+    <div aria-label="hi" role="button" aria-roledescription="foo"></div>
+  */}, function(root) {
+    var obj = root.find({role: RoleType.BUTTON});
+    var o = new Output().withSpeech(cursors.Range.fromNode(obj));
+    checkSpeechOutput('hi|foo',
+        [
+          {value: 'name', start: 0, end: 2},
+          {value: new Output.EarconAction('BUTTON'), start: 0, end: 2},
+          {value: 'role', start: 3, end: 6}
+        ],
+      o);
+  });
+});

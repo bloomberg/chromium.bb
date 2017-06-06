@@ -398,6 +398,9 @@
     // The placeholder for this text field, if any.
     DOMString? placeholder;
 
+    // The role description for this node.
+    DOMString? roleDescription;
+
     // The accessible name for this node, via the
     // <a href="http://www.w3.org/TR/wai-aria/roles#namecalculation">
     // Accessible Name Calculation</a> process.

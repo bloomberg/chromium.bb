@@ -435,6 +435,13 @@ chrome.automation.AutomationNode.prototype.description;
 chrome.automation.AutomationNode.prototype.placeholder;
 
 /**
+ * The role description for this node.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-roleDescription
+ */
+chrome.automation.AutomationNode.prototype.roleDescription;
+
+/**
  * The accessible name for this node, via the <a href="http://www.w3.org/TR/wai-aria/roles#namecalculation"> Accessible Name Calculation</a> process.
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-name
