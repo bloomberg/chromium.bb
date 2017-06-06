@@ -44,7 +44,8 @@ KeepAliveOperation::KeepAliveOperation(
     BleConnectionManager* connection_manager)
     : MessageTransferOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
-          connection_manager) {}
+          connection_manager),
+      remote_device_(device_to_connect) {}
 
 KeepAliveOperation::~KeepAliveOperation() {}
 
@@ -62,12 +63,38 @@ void KeepAliveOperation::OnDeviceAuthenticated(
 
   SendMessageToDevice(remote_device,
                       base::MakeUnique<MessageWrapper>(KeepAliveTickle()));
+}
+
+void KeepAliveOperation::OnMessageReceived(
+    std::unique_ptr<MessageWrapper> message_wrapper,
+    const cryptauth::RemoteDevice& remote_device) {
+  if (message_wrapper->GetMessageType() !=
+      MessageType::KEEP_ALIVE_TICKLE_RESPONSE) {
+    // If another type of message has been received, ignore it.
+    return;
+  }
+
+  if (!(remote_device == remote_device_)) {
+    // If the message came from another device, ignore it.
+    return;
+  }
+
+  KeepAliveTickleResponse* response =
+      static_cast<KeepAliveTickleResponse*>(message_wrapper->GetProto().get());
+  device_status_ = base::MakeUnique<DeviceStatus>(response->device_status());
+
+  // Now that a response has been received, the device can be unregistered.
   UnregisterDevice(remote_device);
 }
 
 void KeepAliveOperation::OnOperationFinished() {
   for (auto& observer : observer_list_) {
-    observer.OnOperationFinished();
+    // Note: If the operation did not complete successfully, |device_status_|
+    // will still be null.
+    observer.OnOperationFinished(
+        remote_device_, device_status_
+                            ? base::MakeUnique<DeviceStatus>(*device_status_)
+                            : nullptr);
   }
 }
 

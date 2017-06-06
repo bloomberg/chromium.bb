@@ -14,9 +14,8 @@ namespace tether {
 
 class BleConnectionManager;
 
-// Operation which sends a keep-alive message to a tether host.
-// TODO(khorimoto/hansberry): Change protocol to receive a DeviceStatus update
-//                            after sending the KeepAliveTickle message.
+// Operation which sends a keep-alive message to a tether host and receives an
+// update about the host's status.
 class KeepAliveOperation : public MessageTransferOperation {
  public:
   class Factory {
@@ -38,9 +37,11 @@ class KeepAliveOperation : public MessageTransferOperation {
 
   class Observer {
    public:
-    // TODO(khorimoto): This function should take a DeviceStatus once there is
-    //                  keep-alive tickle response.
-    virtual void OnOperationFinished() = 0;
+    // |device_status| points to a valid DeviceStatus if the operation completed
+    // successfully and is null if the operation was not successful.
+    virtual void OnOperationFinished(
+        const cryptauth::RemoteDevice& remote_device,
+        std::unique_ptr<DeviceStatus> device_status) = 0;
   };
 
   KeepAliveOperation(const cryptauth::RemoteDevice& device_to_connect,
@@ -54,14 +55,18 @@ class KeepAliveOperation : public MessageTransferOperation {
   // MessageTransferOperation:
   void OnDeviceAuthenticated(
       const cryptauth::RemoteDevice& remote_device) override;
+  void OnMessageReceived(std::unique_ptr<MessageWrapper> message_wrapper,
+                         const cryptauth::RemoteDevice& remote_device) override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
+
+  std::unique_ptr<DeviceStatus> device_status_;
 
  private:
   friend class KeepAliveOperationTest;
 
+  cryptauth::RemoteDevice remote_device_;
   base::ObserverList<Observer> observer_list_;
-  bool has_authenticated_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveOperation);
 };

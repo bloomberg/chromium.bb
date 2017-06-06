@@ -8,8 +8,11 @@
 #include <vector>
 
 #include "base/timer/mock_timer.h"
+#include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
+#include "chromeos/components/tether/fake_host_scan_cache.h"
+#include "chromeos/components/tether/proto_test_util.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +41,10 @@ class FakeKeepAliveOperation : public KeepAliveOperation {
 
   ~FakeKeepAliveOperation() override { handler_->OnOperationDeleted(); }
 
-  void SendOperationFinishedEvent() { OnOperationFinished(); }
+  void SendOperationFinishedEvent(std::unique_ptr<DeviceStatus> device_status) {
+    device_status_ = std::move(device_status);
+    OnOperationFinished();
+  }
 
   cryptauth::RemoteDevice remote_device() { return remote_device_; }
 
@@ -88,6 +94,9 @@ class KeepAliveSchedulerTest : public testing::Test {
   void SetUp() override {
     fake_active_host_ = base::MakeUnique<FakeActiveHost>();
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
+    fake_host_scan_cache_ = base::MakeUnique<FakeHostScanCache>();
+    device_id_tether_network_guid_map_ =
+        base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,
                                       true /* is_repeating */);
 
@@ -98,6 +107,7 @@ class KeepAliveSchedulerTest : public testing::Test {
 
     scheduler_ = base::WrapUnique(new KeepAliveScheduler(
         fake_active_host_.get(), fake_ble_connection_manager_.get(),
+        fake_host_scan_cache_.get(), device_id_tether_network_guid_map_.get(),
         base::WrapUnique(mock_timer_)));
   }
 
@@ -111,10 +121,37 @@ class KeepAliveSchedulerTest : public testing::Test {
     }
   }
 
+  void SendOperationFinishedEventFromLastCreatedOperation(
+      const std::string& cell_provider,
+      int battery_percentage,
+      int connection_strength) {
+    fake_operation_factory_->last_created()->SendOperationFinishedEvent(
+        base::MakeUnique<DeviceStatus>(CreateTestDeviceStatus(
+            cell_provider, battery_percentage, connection_strength)));
+  }
+
+  void VerifyCacheUpdated(const cryptauth::RemoteDevice& remote_device,
+                          const std::string& carrier,
+                          int battery_percentage,
+                          int signal_strength) {
+    const FakeHostScanCache::CacheEntry* entry =
+        fake_host_scan_cache_->GetCacheEntry(
+            device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
+                remote_device.GetDeviceId()));
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(carrier, entry->carrier);
+    EXPECT_EQ(battery_percentage, entry->battery_percentage);
+    EXPECT_EQ(signal_strength, entry->signal_strength);
+  }
+
   const std::vector<cryptauth::RemoteDevice> test_devices_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
+  std::unique_ptr<FakeHostScanCache> fake_host_scan_cache_;
+  // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
+  std::unique_ptr<DeviceIdTetherNetworkGuidMap>
+      device_id_tether_network_guid_map_;
   base::MockTimer* mock_timer_;
 
   std::unique_ptr<FakeKeepAliveOperationFactory> fake_operation_factory_;
@@ -148,12 +185,15 @@ TEST_F(KeepAliveSchedulerTest, TestSendTickle_OneActiveHost) {
   VerifyTimerRunning(true /* is_running */);
 
   // Ensure that once the operation is finished, it is deleted.
-  fake_operation_factory_->last_created()->SendOperationFinishedEvent();
+  SendOperationFinishedEventFromLastCreatedOperation(
+      "cellProvider", 50 /* battery_percentage */, 2 /* connection_strength */);
   EXPECT_EQ(1u, fake_operation_factory_->num_created());
   EXPECT_EQ(1u, fake_operation_factory_->num_deleted());
   VerifyTimerRunning(true /* is_running */);
+  VerifyCacheUpdated(test_devices_[0], "cellProvider",
+                     50 /* battery_percentage */, 50 /* signal_strength */);
 
-  // Fire the timer; this should result in another tickle being sent.
+  // Fire the timer; this should result in tickle #2 being sent.
   mock_timer_->Fire();
   EXPECT_EQ(2u, fake_operation_factory_->num_created());
   EXPECT_EQ(test_devices_[0],
@@ -161,16 +201,37 @@ TEST_F(KeepAliveSchedulerTest, TestSendTickle_OneActiveHost) {
   EXPECT_EQ(1u, fake_operation_factory_->num_deleted());
   VerifyTimerRunning(true /* is_running */);
 
-  // Finish this operation.
-  fake_operation_factory_->last_created()->SendOperationFinishedEvent();
+  // Finish tickle operation #2.
+  SendOperationFinishedEventFromLastCreatedOperation(
+      "cellProvider", 40 /* battery_percentage */, 3 /* connection_strength */);
   EXPECT_EQ(2u, fake_operation_factory_->num_created());
   EXPECT_EQ(2u, fake_operation_factory_->num_deleted());
   VerifyTimerRunning(true /* is_running */);
+  VerifyCacheUpdated(test_devices_[0], "cellProvider",
+                     40 /* battery_percentage */, 75 /* signal_strength */);
+
+  // Fire the timer; this should result in tickle #3 being sent.
+  mock_timer_->Fire();
+  EXPECT_EQ(3u, fake_operation_factory_->num_created());
+  EXPECT_EQ(test_devices_[0],
+            fake_operation_factory_->last_created()->remote_device());
+  EXPECT_EQ(2u, fake_operation_factory_->num_deleted());
+  VerifyTimerRunning(true /* is_running */);
+
+  // Finish tickler operation #3. This time, simulate a failure to receive a
+  // DeviceStatus back.
+  fake_operation_factory_->last_created()->SendOperationFinishedEvent(nullptr);
+  EXPECT_EQ(3u, fake_operation_factory_->num_created());
+  EXPECT_EQ(3u, fake_operation_factory_->num_deleted());
+  VerifyTimerRunning(true /* is_running */);
+  // The same data returned by tickle #2 should be present.
+  VerifyCacheUpdated(test_devices_[0], "cellProvider",
+                     40 /* battery_percentage */, 75 /* signal_strength */);
 
   // Disconnect that device.
   fake_active_host_->SetActiveHostDisconnected();
-  EXPECT_EQ(2u, fake_operation_factory_->num_created());
-  EXPECT_EQ(2u, fake_operation_factory_->num_deleted());
+  EXPECT_EQ(3u, fake_operation_factory_->num_created());
+  EXPECT_EQ(3u, fake_operation_factory_->num_deleted());
   VerifyTimerRunning(false /* is_running */);
 }
 
@@ -221,10 +282,13 @@ TEST_F(KeepAliveSchedulerTest, TestSendTickle_MultipleActiveHosts) {
   VerifyTimerRunning(true /* is_running */);
 
   // Ensure that once the second operation is finished, it is deleted.
-  fake_operation_factory_->last_created()->SendOperationFinishedEvent();
+  SendOperationFinishedEventFromLastCreatedOperation(
+      "cellProvider", 80 /* battery_percentage */, 4 /* connection_strength */);
   EXPECT_EQ(2u, fake_operation_factory_->num_created());
   EXPECT_EQ(2u, fake_operation_factory_->num_deleted());
   VerifyTimerRunning(true /* is_running */);
+  VerifyCacheUpdated(test_devices_[1], "cellProvider",
+                     80 /* battery_percentage */, 100 /* signal_strength */);
 
   // Disconnect that device.
   fake_active_host_->SetActiveHostDisconnected();

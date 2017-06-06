@@ -42,6 +42,7 @@ class HostScanCache;
 class HostScanner;
 class HostScanScheduler;
 class HostScanDevicePrioritizer;
+class KeepAliveScheduler;
 class LocalDeviceDataProvider;
 class NetworkConfigurationRemover;
 class NotificationPresenter;
@@ -125,6 +126,7 @@ class Initializer : public OAuth2TokenService::Observer {
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>
       device_id_tether_network_guid_map_;
   std::unique_ptr<HostScanCache> host_scan_cache_;
+  std::unique_ptr<KeepAliveScheduler> keep_alive_scheduler_;
   std::unique_ptr<base::DefaultClock> clock_;
   std::unique_ptr<HostScanner> host_scanner_;
   std::unique_ptr<HostScanScheduler> host_scan_scheduler_;
