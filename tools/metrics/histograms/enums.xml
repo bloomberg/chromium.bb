@@ -33636,6 +33636,13 @@ from previous Chrome versions.
   <int value="3" label="Value out of bounds"/>
 </enum>
 
+<enum name="SpareWebContentsStatus" type="int">
+  <int value="0" label="Created"/>
+  <int value="1" label="Used"/>
+  <int value="2" label="Render process gone"/>
+  <int value="3" label="Destroyed"/>
+</enum>
+
 <enum name="SpdyFrameFlowControlState" type="int">
   <int value="0" label="Send not stalled"/>
   <int value="1" label="Send stalled by stream"/>
