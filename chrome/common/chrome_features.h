@@ -60,10 +60,6 @@ extern const base::Feature kCaptureThumbnailOnLoadFinished;
 
 extern const base::Feature kCheckInstallabilityForBannerOnLoad;
 
-#if defined(OS_WIN)
-extern const base::Feature kCleanupToolUI;
-#endif
-
 #if defined(OS_ANDROID)
 extern const base::Feature kConsistentOmniboxGeolocation;
 #endif

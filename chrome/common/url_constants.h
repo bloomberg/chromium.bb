@@ -128,7 +128,6 @@ extern const char kChromeUIMdCupsSettingsURL[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
-extern const char kChromeUICleanupToolURL[];
 extern const char kChromeUIMetroFlowURL[];
 #endif
 
@@ -312,7 +311,6 @@ extern const char kChromeOSAssetPath[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
-extern const char kChromeUICleanupToolHost[];
 extern const char kChromeUIMetroFlowHost[];
 #endif
 

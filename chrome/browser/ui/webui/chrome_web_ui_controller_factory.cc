@@ -171,7 +171,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/webui/cleanup_tool/cleanup_tool_ui.h"
 #include "chrome/browser/ui/webui/conflicts_ui.h"
 #include "chrome/browser/ui/webui/set_as_default_browser_ui_win.h"
 #include "chrome/browser/ui/webui/welcome_win10_ui.h"
@@ -457,9 +456,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<UberUI>;
 #endif  // !defined(OS_ANDROID)
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(features::kCleanupToolUI) &&
-      url.host_piece() == chrome::kChromeUICleanupToolHost)
-    return &NewWebUI<CleanupToolUI>;
   if (url.host_piece() == chrome::kChromeUIConflictsHost)
     return &NewWebUI<ConflictsUI>;
   if (url.host_piece() == chrome::kChromeUIMetroFlowHost)
