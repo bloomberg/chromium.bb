@@ -1009,6 +1009,11 @@ const LayoutBlock* TextAutosizer::DeepestBlockContainingAllText(
 // FIXME: Refactor this to look more like TextAutosizer::deepestCommonAncestor.
 const LayoutBlock* TextAutosizer::DeepestBlockContainingAllText(
     const LayoutBlock* root) const {
+  // To avoid font-size shaking caused by the change of LayoutView's
+  // DeepestBlockContainingAllText.
+  if (root->IsLayoutView())
+    return root;
+
   size_t first_depth = 0;
   const LayoutObject* first_text_leaf = FindTextLeaf(root, first_depth, kFirst);
   if (!first_text_leaf)
