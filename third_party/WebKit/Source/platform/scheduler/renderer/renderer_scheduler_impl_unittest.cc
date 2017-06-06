@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
@@ -3947,5 +3948,50 @@ TEST_F(RendererSchedulerImplTest, UnresponsiveMainThreadWithContention) {
       scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 }
 
+//                  Nav Start     Nav Start            assert
+//                     |             |                   |
+//                     v             v                   v
+//    ------------------------------------------------------------>
+//     |---long task---|---1s task---|-----long task ----|
+//
+//                     (---MaxEQT1---)
+//                                   (---MaxEQT2---)
+//
+// --- EQT untracked---|             |---EQT unflushed-----
+//
+// MaxEQT1 = 500ms is recorded and observed in histogram.
+// MaxEQT2 is recorded but not yet in histogram for not being flushed.
+TEST_F(RendererSchedulerImplTest,
+       MaxQueueingTimeMetricRecordedOnlyDuringNavigation) {
+  base::HistogramTester tester;
+  // Start with a long task whose queueing time will be ignored.
+  AdvanceTimeWithTask(10);
+  // Navigation start.
+  scheduler_->OnCommitProvisionalLoad();
+  // The max queueing time of the following task will be recorded.
+  AdvanceTimeWithTask(1);
+  // The smaller queuing time will be ignored.
+  AdvanceTimeWithTask(0.5);
+  scheduler_->OnCommitProvisionalLoad();
+  // Add another long task after navigation start but without navigation end.
+  // This value won't be recorded as there is not navigation.
+  AdvanceTimeWithTask(10);
+  // The expected queueing time of 1s task in 1s window is 500ms.
+  tester.ExpectUniqueSample("RendererScheduler.MaxQueueingTime", 500, 1);
+}
+
+// Only the max of all the queueing times is recorded.
+TEST_F(RendererSchedulerImplTest, MaxQueueingTimeMetricRecordTheMax) {
+  base::HistogramTester tester;
+  scheduler_->OnCommitProvisionalLoad();
+  // The smaller queuing time will be ignored.
+  AdvanceTimeWithTask(0.5);
+  // The max queueing time of the following task will be recorded.
+  AdvanceTimeWithTask(1);
+  // The smaller queuing time will be ignored.
+  AdvanceTimeWithTask(0.5);
+  scheduler_->OnCommitProvisionalLoad();
+  tester.ExpectUniqueSample("RendererScheduler.MaxQueueingTime", 500, 1);
+}
 }  // namespace scheduler
 }  // namespace blink

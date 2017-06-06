@@ -1,6 +1,7 @@
 include_rules = [
   "+platform/scheduler/base",
   "+platform/scheduler/child",
+  "+base/metrics/single_sample_metrics.h",
   "+source/platform/scheduler/base",
   "+source/platform/scheduler/child",
   "+cc",

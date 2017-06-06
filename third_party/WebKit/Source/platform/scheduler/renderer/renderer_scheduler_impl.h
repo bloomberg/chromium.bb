@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/single_sample_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_log.h"
@@ -108,6 +109,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void AddPendingNavigation(NavigatingFrameType type) override;
   void RemovePendingNavigation(NavigatingFrameType type) override;
   void OnNavigationStarted() override;
+  void OnCommitProvisionalLoad() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
@@ -378,6 +380,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       base::TimeTicks now,
       base::TimeDelta* expected_use_case_duration) const;
 
+  std::unique_ptr<base::SingleSampleMetric> CreateMaxQueueingTimeMetric();
+
   // An input event of some sort happened, the policy may need updating.
   void UpdateForInputEventOnCompositorThread(WebInputEvent::Type type,
                                              InputEventState input_event_state);
@@ -495,6 +499,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool use_virtual_time;
     bool is_audio_playing;
     bool virtual_time_paused;
+    bool has_navigated;
+    std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;
+    base::TimeDelta max_queueing_time;
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.

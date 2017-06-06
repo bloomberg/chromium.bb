@@ -220,6 +220,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       use_virtual_time(false),
       is_audio_playing(false),
       virtual_time_paused(false),
+      has_navigated(false),
       rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
       task_duration_reporter("RendererScheduler.TaskDurationPerQueueType2"),
@@ -1646,11 +1647,30 @@ void RendererSchedulerImpl::RemovePendingNavigation(NavigatingFrameType type) {
   }
 }
 
+std::unique_ptr<base::SingleSampleMetric>
+RendererSchedulerImpl::CreateMaxQueueingTimeMetric() {
+  return base::SingleSampleMetricsFactory::Get()->CreateCustomCountsMetric(
+      "RendererScheduler.MaxQueueingTime", 1, 10000, 50);
+}
+
 void RendererSchedulerImpl::OnNavigationStarted() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::OnNavigationStarted");
   base::AutoLock lock(any_thread_lock_);
   ResetForNavigationLocked();
+}
+
+void RendererSchedulerImpl::OnCommitProvisionalLoad() {
+  // Initialize |max_queueing_time_metric| lazily so that
+  // |SingleSampleMetricsFactory::SetFactory()| is called before
+  // |SingleSampleMetricsFactory::Get()|
+  if (!GetMainThreadOnly().max_queueing_time_metric) {
+    GetMainThreadOnly().max_queueing_time_metric =
+        CreateMaxQueueingTimeMetric();
+  }
+  GetMainThreadOnly().max_queueing_time_metric.reset();
+  GetMainThreadOnly().max_queueing_time = base::TimeDelta();
+  GetMainThreadOnly().has_navigated = true;
 }
 
 void RendererSchedulerImpl::OnFirstMeaningfulPaint() {
@@ -1914,6 +1934,18 @@ void RendererSchedulerImpl::RemoveTaskTimeObserver(
 void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
     base::TimeDelta queueing_time,
     base::TimeTicks window_start_time) {
+  if (GetMainThreadOnly().has_navigated) {
+    if (GetMainThreadOnly().max_queueing_time < queueing_time) {
+      if (!GetMainThreadOnly().max_queueing_time_metric) {
+        GetMainThreadOnly().max_queueing_time_metric =
+            CreateMaxQueueingTimeMetric();
+      }
+      GetMainThreadOnly().max_queueing_time_metric->SetSample(
+          queueing_time.InMilliseconds());
+      GetMainThreadOnly().max_queueing_time = queueing_time;
+    }
+  }
+
   // RendererScheduler reports the queueing time once per window's duration.
   //          |stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|
   // Report:  |-------window EQT------|
