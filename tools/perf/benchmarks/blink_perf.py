@@ -246,8 +246,8 @@ class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Owner(emails=['yukishiino@chromium.org',
-                         'bashi@chromium.org',
+@benchmark.Owner(emails=['jbroman@chromium.org',
+                         'yukishiino@chromium.org',
                          'haraken@chromium.org'])
 class BlinkPerfBindings(_BlinkPerfBenchmark):
   tag = 'bindings'
@@ -288,8 +288,8 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
         '--enable-color-correct-rendering',
     ])
 
-@benchmark.Owner(emails=['yukishiino@chromium.org',
-                         'bashi@chromium.org',
+@benchmark.Owner(emails=['jbroman@chromium.org',
+                         'yukishiino@chromium.org',
                          'haraken@chromium.org'])
 class BlinkPerfDOM(_BlinkPerfBenchmark):
   tag = 'dom'
@@ -324,8 +324,8 @@ class BlinkPerfPaint(_BlinkPerfBenchmark):
 
 
 @benchmark.Disabled('win')  # crbug.com/488493
-@benchmark.Owner(emails=['yukishiino@chromium.org',
-                         'bashi@chromium.org',
+@benchmark.Owner(emails=['jbroman@chromium.org',
+                         'yukishiino@chromium.org',
                          'haraken@chromium.org'])
 class BlinkPerfParser(_BlinkPerfBenchmark):
   tag = 'parser'
