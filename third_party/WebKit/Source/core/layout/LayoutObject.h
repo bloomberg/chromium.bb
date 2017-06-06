@@ -405,11 +405,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return rare_paint_data_ ? rare_paint_data_->PaintProperties() : nullptr;
   }
 
-  LayoutObjectId UniqueId() const {
-    DCHECK(rare_paint_data_);
-    return rare_paint_data_ ? rare_paint_data_->UniqueId() : 0;
-  }
-
   // The complete set of property nodes that should be used as a starting point
   // to paint this LayoutObject. See also the comment for
   // RarePaintData::local_border_box_properties_.
