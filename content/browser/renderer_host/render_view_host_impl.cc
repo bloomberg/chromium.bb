@@ -466,6 +466,11 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   } else if (autoplay_policy ==
              switches::autoplay::kUserGestureRequiredForCrossOriginPolicy) {
     prefs.autoplay_policy = AutoplayPolicy::kUserGestureRequiredForCrossOrigin;
+  } else if (autoplay_policy ==
+             switches::autoplay::kDocumentUserActivationRequiredPolicy) {
+    prefs.autoplay_policy = AutoplayPolicy::kDocumentUserActivationRequired;
+  } else {
+    NOTREACHED();
   }
 
   const std::string touch_enabled_switch =

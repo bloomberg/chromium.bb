@@ -72,6 +72,7 @@ enum class AutoplayPolicy {
   kNoUserGestureRequired,
   kUserGestureRequired,
   kUserGestureRequiredForCrossOrigin,
+  kDocumentUserActivationRequired,
 };
 
 // The ISO 15924 script code for undetermined script aka Common. It's the

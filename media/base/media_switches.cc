@@ -164,6 +164,10 @@ const char kEnableInternalMediaSession[] = "enable-internal-media-session";
 
 namespace autoplay {
 
+// Autoplay policy that requires a document user activation.
+const char kDocumentUserActivationRequiredPolicy[] =
+    "document-user-activation-required";
+
 // Autoplay policy that does not require any user gesture.
 const char kNoUserGestureRequiredPolicy[] = "no-user-gesture-required";
 

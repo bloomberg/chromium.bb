@@ -757,6 +757,9 @@ const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
      switches::kAutoplayPolicy,
      switches::autoplay::kUserGestureRequiredForCrossOriginPolicy},
 #endif
+    {flag_descriptions::kAutoplayPolicyDocumentUserActivation,
+     switches::kAutoplayPolicy,
+     switches::autoplay::kDocumentUserActivationRequiredPolicy},
 };
 
 const FeatureEntry::Choice kForceEffectiveConnectionTypeChoices[] = {

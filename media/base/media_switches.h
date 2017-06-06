@@ -92,6 +92,7 @@ MEDIA_EXPORT extern const char kEnableInternalMediaSession[];
 
 namespace autoplay {
 
+MEDIA_EXPORT extern const char kDocumentUserActivationRequiredPolicy[];
 MEDIA_EXPORT extern const char kNoUserGestureRequiredPolicy[];
 MEDIA_EXPORT extern const char kUserGestureRequiredPolicy[];
 MEDIA_EXPORT extern const char kUserGestureRequiredForCrossOriginPolicy[];

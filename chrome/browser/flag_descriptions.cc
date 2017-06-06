@@ -3104,6 +3104,9 @@ const char kAutoplayPolicyUserGestureRequired[] = "User gesture is required.";
 const char kAutoplayPolicyUserGestureRequiredForCrossOrigin[] =
     "User gesture is required for cross-origin iframes.";
 
+const char kAutoplayPolicyDocumentUserActivation[] =
+    "Document user activation is required.";
+
 const char kOmniboxDisplayTitleForCurrentUrlName[] =
     "Include title for the current URL in the omnibox";
 
