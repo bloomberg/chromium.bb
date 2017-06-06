@@ -403,14 +403,14 @@ TEST_P(WebViewTest, SetBaseBackgroundColor) {
   EXPECT_EQ(kBlue, web_view->BackgroundColor());
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><head><style>body "
                                    "{background-color:#227788}</style></head></"
                                    "html>",
                                    base_url);
   EXPECT_EQ(kDarkCyan, web_view->BackgroundColor());
 
-  FrameTestHelpers::LoadHTMLString(web_view->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><head><style>body "
                                    "{background-color:rgba(255,0,0,0.5)}</"
                                    "style></head></html>",
@@ -423,7 +423,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColor) {
   EXPECT_EQ(0xBFE93A31, web_view->BackgroundColor());
 
   web_view->SetBaseBackgroundColor(kTransparent);
-  FrameTestHelpers::LoadHTMLString(web_view->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<html><head><style>body "
                                    "{background-color:transparent}</style></"
                                    "head></html>",
@@ -816,7 +816,7 @@ TEST_P(WebViewTest, TextInputInfoUpdateStyleAndLayout) {
   // during Document::updateStyleAndLayout code, thus incrementing the DOM tree
   // version and freaking out the EphemeralRange (invalidating it).
   FrameTestHelpers::LoadHTMLString(
-      web_view_impl->MainFrame(),
+      web_view_impl->MainFrameImpl(),
       "<svg height='100%' version='1.1' viewBox='0 0 14 14' width='100%'>"
       "<use xmlns:xlink='http://www.w3.org/1999/xlink' xlink:href='#foo'></use>"
       "<path d='M 100 100 L 300 100 L 200 300 z' fill='#000'></path>"
@@ -2596,7 +2596,7 @@ TEST_P(WebViewTest, ShowPressOnTransformedLink) {
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(
-      web_view_impl->MainFrame(),
+      web_view_impl->MainFrameImpl(),
       "<a href='http://www.test.com' style='position: absolute; left: 20px; "
       "top: 20px; width: 200px; transform:translateZ(0);'>A link to "
       "highlight</a>",
@@ -2835,7 +2835,7 @@ TEST_P(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(
-      web_view_impl->MainFrame(),
+      web_view_impl->MainFrameImpl(),
       "<html><body><iframe src=\"about:blank\"></iframe></body></html>",
       base_url);
 
@@ -4183,7 +4183,7 @@ TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
   web_view->Resize(WebSize(800, 600));
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<style>"
                                    "  body { margin: 0px; }"
                                    "  #vw { width: 100vw; height: 100vh; }"
@@ -4227,7 +4227,7 @@ TEST_P(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
   web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<style>"
                                    "  @media (max-width: 600px) {"
                                    "    div { color: green }"
@@ -4262,7 +4262,7 @@ TEST_P(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
   web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<style>"
                                    "  body { margin: 0 }"
                                    "  #t1 { width: 100% }"
@@ -4300,7 +4300,7 @@ TEST_P(WebViewTest, DeviceEmulationResetScrollbars) {
   web_view->Resize(WebSize(800, 600));
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
                                    "<!doctype html>"
                                    "<meta name='viewport'"
                                    "    content='width=device-width'>"

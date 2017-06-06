@@ -211,13 +211,6 @@ void WebRemoteFrameImpl::LoadRequest(const WebURLRequest&) {
   NOTREACHED();
 }
 
-void WebRemoteFrameImpl::LoadHTMLString(const WebData& html,
-                                        const WebURL& base_url,
-                                        const WebURL& unreachable_url,
-                                        bool replace) {
-  NOTREACHED();
-}
-
 void WebRemoteFrameImpl::StopLoading() {
   // TODO(dcheng,japhet): Calling this method should stop loads
   // in all subframes, both remote and local.

@@ -2133,7 +2133,7 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
 
   RegisterMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
                                    "  body {"
@@ -2215,7 +2215,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 
   RegisterMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
                                    "  body {"
@@ -2324,7 +2324,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
   RegisterMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
   // This time the background is the default attachment.
-  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
                                    "  body {"
@@ -2446,7 +2446,7 @@ TEST_P(VisualViewportTest, AutoResizeNoHeightUsesMinimumHeight) {
   WebViewImpl()->ResizeWithBrowserControls(WebSize(0, 0), 0, false);
   WebViewImpl()->EnableAutoResizeMode(WebSize(25, 25), WebSize(100, 100));
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(WebViewImpl()->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(WebViewImpl()->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
                                    "  body {"

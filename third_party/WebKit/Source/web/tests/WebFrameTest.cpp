@@ -4778,7 +4778,7 @@ TEST_P(ParameterizedWebFrameTest, GetContentAsPlainText) {
   // We set the size because it impacts line wrapping, which changes the
   // resulting text value.
   web_view_helper.Resize(WebSize(640, 480));
-  WebFrame* frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
 
   // Generate a simple test case.
   const char kSimpleSource[] = "<div>Foo bar</div><div></div>baz";
@@ -4802,7 +4802,7 @@ TEST_P(ParameterizedWebFrameTest, GetContentAsPlainText) {
   FrameTestHelpers::LoadHTMLString(frame, kOuterFrameSource, test_url);
 
   // Load something into the subframe.
-  WebFrame* subframe = frame->FirstChild();
+  WebLocalFrame* subframe = frame->FirstChild()->ToWebLocalFrame();
   ASSERT_TRUE(subframe);
   FrameTestHelpers::LoadHTMLString(subframe, "sub<p>text", test_url);
 
@@ -7629,7 +7629,7 @@ TEST_P(ParameterizedWebFrameTest,
 TEST_P(ParameterizedWebFrameTest, WebNodeImageContents) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("about:blank", true);
-  WebFrame* frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
 
   static const char kBluePNG[] =
       "<img "
@@ -8502,7 +8502,7 @@ TEST_P(ParameterizedWebFrameTest, ClearFullscreenConstraintsOnNavigation) {
 
   // Load a new page before exiting fullscreen.
   KURL test_url = ToKURL("about:blank");
-  WebFrame* frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
   FrameTestHelpers::LoadHTMLString(frame, kSource, test_url);
   web_view_impl->DidExitFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
@@ -11699,7 +11699,7 @@ TEST_F(WebFrameTest, DISABLE_ON_TSAN(TestNonCompositedOverlayScrollbarsFade)) {
   web_view_impl->ResizeWithBrowserControls(WebSize(640, 480), 0, false);
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
                                    "  #space {"
@@ -12018,7 +12018,7 @@ bool TestSelectAll(const std::string& html) {
   ContextMenuWebFrameClient frame;
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view = web_view_helper.Initialize(true, &frame);
-  FrameTestHelpers::LoadHTMLString(web_view->MainFrame(), html,
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(), html,
                                    ToKURL("about:blank"));
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
@@ -12054,7 +12054,7 @@ TEST_F(WebFrameTest, ContextMenuDataSelectedText) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view = web_view_helper.Initialize(true, &frame);
   const std::string& html = "<input value=' '>";
-  FrameTestHelpers::LoadHTMLString(web_view->MainFrame(), html,
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(), html,
                                    ToKURL("about:blank"));
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();

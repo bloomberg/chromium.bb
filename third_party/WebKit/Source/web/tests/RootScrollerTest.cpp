@@ -845,7 +845,7 @@ TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
   Initialize();
 
   WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
                                    "  body, html {"
@@ -1122,7 +1122,7 @@ TEST_F(RootScrollerHitTest, HitTestInAreaRevealedByURLBarSameLayer) {
   // that we can hit this target.
   Initialize();
   WebURL baseURL = URLTestHelpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
                                    "  body, html {"
@@ -1171,7 +1171,7 @@ TEST_F(RootScrollerHitTest, HitTestInAreaRevealedByURLBarDifferentLayer) {
   // that we can hit this target.
   Initialize();
   WebURL baseURL = URLTestHelpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrame(),
+  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
                                    "<!DOCTYPE html>"
                                    "<style>"
                                    "  body, html {"

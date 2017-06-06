@@ -25,6 +25,7 @@ class InterfaceProvider;
 class InterfaceRegistry;
 class WebAutofillClient;
 class WebContentSettingsClient;
+class WebData;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
 class WebDoubleSize;
@@ -152,6 +153,13 @@ class WebLocalFrame : public WebFrame {
                     const WebHistoryItem& = WebHistoryItem(),
                     WebHistoryLoadType = kWebHistoryDifferentDocumentLoad,
                     bool is_client_redirect = false) = 0;
+
+  // This method is short-hand for calling LoadData, where mime_type is
+  // "text/html" and text_encoding is "UTF-8".
+  virtual void LoadHTMLString(const WebData& html,
+                              const WebURL& base_url,
+                              const WebURL& unreachable_url = WebURL(),
+                              bool replace = false) = 0;
 
   // Loads the given data with specific mime type and optional text
   // encoding.  For HTML data, baseURL indicates the security origin of

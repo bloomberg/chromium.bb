@@ -68,8 +68,10 @@ class TestWebViewClient;
 // pending resource requests, as well as waiting for the threaded parser to
 // finish, before returning.
 void LoadFrame(WebFrame*, const std::string& url);
-// Same as above, but for WebFrame::loadHTMLString().
-void LoadHTMLString(WebFrame*, const std::string& html, const WebURL& base_url);
+// Same as above, but for WebLocalFrame::LoadHTMLString().
+void LoadHTMLString(WebLocalFrame*,
+                    const std::string& html,
+                    const WebURL& base_url);
 // Same as above, but for WebFrame::loadHistoryItem().
 void LoadHistoryItem(WebFrame*,
                      const WebHistoryItem&,
