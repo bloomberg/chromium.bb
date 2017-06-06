@@ -97,7 +97,11 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
     return requests_;
   }
 
-  const std::vector<bool>& AcceptStates() override { return accept_states_; }
+  const std::vector<bool>& AcceptStates() override {
+    // TODO(crbug.com/728483): Remove this function.
+    CR_DEFINE_STATIC_LOCAL(std::vector<bool>, accept_states, ());
+    return accept_states;
+  }
 
   void AddRequest(const std::string& title) {
     std::unique_ptr<MockPermissionRequest> request =
@@ -116,11 +120,6 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
   NSButton* FindButtonWithTitle(int title_id) {
     return FindButtonWithTitle(l10n_util::GetNSString(title_id),
                                [ConstrainedWindowButton class]);
-  }
-
-  NSButton* FindMenuButtonWithTitle(int title_id) {
-    return FindButtonWithTitle(l10n_util::GetNSString(title_id),
-                               [NSPopUpButton class]);
   }
 
   // IDS_PERMISSION_ALLOW and IDS_PERMISSION_DENY are used for two distinct
@@ -152,15 +151,6 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
       }
     }
     return textField;
-  }
-
-  void ChangePermissionMenuSelection(NSButton* menu_button, int next_title_id) {
-    NSMenu* menu = [base::mac::ObjCCastStrict<NSPopUpButton>(menu_button) menu];
-    NSString* next_title = l10n_util::GetNSString(next_title_id);
-    EXPECT_EQ([[menu itemWithTitle:[menu_button title]] state], NSOnState);
-    NSMenuItem* next_item = [menu itemWithTitle:next_title];
-    EXPECT_EQ([next_item state], NSOffState);
-    [menu performActionForItemAtIndex:[menu indexOfItem:next_item]];
   }
 
  protected:
@@ -203,16 +193,11 @@ TEST_F(PermissionBubbleControllerTest, ShowSinglePermission) {
   EXPECT_TRUE(FindTextFieldWithString(kPermissionA));
   EXPECT_TRUE(FindButtonWithTitle(IDS_PERMISSION_ALLOW));
   EXPECT_TRUE(FindButtonWithTitle(IDS_PERMISSION_DENY));
-  EXPECT_FALSE(FindButtonWithTitle(IDS_OK));
 }
 
 TEST_F(PermissionBubbleControllerTest, ShowMultiplePermissions) {
   AddRequest(kPermissionB);
   AddRequest(kPermissionC);
-
-  accept_states_.push_back(true);  // A
-  accept_states_.push_back(true);  // B
-  accept_states_.push_back(true);  // C
 
   [controller_ showWithDelegate:this];
 
@@ -220,77 +205,20 @@ TEST_F(PermissionBubbleControllerTest, ShowMultiplePermissions) {
   EXPECT_TRUE(FindTextFieldWithString(kPermissionB));
   EXPECT_TRUE(FindTextFieldWithString(kPermissionC));
 
-  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_ALLOW));
-  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_DENY));
-  EXPECT_TRUE(FindButtonWithTitle(IDS_OK));
-}
-
-TEST_F(PermissionBubbleControllerTest, ShowMultiplePermissionsAllow) {
-  AddRequest(kPermissionB);
-
-  accept_states_.push_back(true);  // A
-  accept_states_.push_back(true);  // B
-
-  [controller_ showWithDelegate:this];
-
-  // Test that all menus have 'Allow' visible.
-  EXPECT_TRUE(FindMenuButtonWithTitle(IDS_PERMISSION_ALLOW));
-  EXPECT_FALSE(FindMenuButtonWithTitle(IDS_PERMISSION_DENY));
-
-  EXPECT_TRUE(FindButtonWithTitle(IDS_OK));
-  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_ALLOW));
-  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_DENY));
-}
-
-TEST_F(PermissionBubbleControllerTest, ShowMultiplePermissionsBlock) {
-  AddRequest(kPermissionB);
-
-  accept_states_.push_back(false);  // A
-  accept_states_.push_back(false);  // B
-
-  [controller_ showWithDelegate:this];
-
-  // Test that all menus have 'Block' visible.
-  EXPECT_TRUE(FindMenuButtonWithTitle(IDS_PERMISSION_DENY));
-  EXPECT_FALSE(FindMenuButtonWithTitle(IDS_PERMISSION_ALLOW));
-
-  EXPECT_TRUE(FindButtonWithTitle(IDS_OK));
-  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_ALLOW));
-  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_DENY));
-}
-
-TEST_F(PermissionBubbleControllerTest, ShowMultiplePermissionsMixed) {
-  AddRequest(kPermissionB);
-  AddRequest(kPermissionC);
-
-  accept_states_.push_back(false);  // A
-  accept_states_.push_back(false);  // B
-  accept_states_.push_back(true);   // C
-
-  [controller_ showWithDelegate:this];
-
-  // Test that both 'allow' and 'deny' are visible.
-  EXPECT_TRUE(FindMenuButtonWithTitle(IDS_PERMISSION_DENY));
-  EXPECT_TRUE(FindMenuButtonWithTitle(IDS_PERMISSION_ALLOW));
-
-  EXPECT_TRUE(FindButtonWithTitle(IDS_OK));
-  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_ALLOW));
-  EXPECT_FALSE(FindButtonWithTitle(IDS_PERMISSION_DENY));
-}
-
-TEST_F(PermissionBubbleControllerTest, OK) {
-  AddRequest(kPermissionB);
-
-  accept_states_.push_back(true);  // A
-  accept_states_.push_back(true);  // B
-
-  [controller_ showWithDelegate:this];
-
-  EXPECT_CALL(*this, Accept()).Times(1);
-  [FindButtonWithTitle(IDS_OK) performClick:nil];
+  EXPECT_TRUE(FindButtonWithTitle(IDS_PERMISSION_ALLOW));
+  EXPECT_TRUE(FindButtonWithTitle(IDS_PERMISSION_DENY));
 }
 
 TEST_F(PermissionBubbleControllerTest, Allow) {
+  [controller_ showWithDelegate:this];
+
+  EXPECT_CALL(*this, Accept()).Times(1);
+  [FindButtonWithTitle(IDS_PERMISSION_ALLOW) performClick:nil];
+}
+
+TEST_F(PermissionBubbleControllerTest, AllowMultiple) {
+  AddRequest(kPermissionB);
+
   [controller_ showWithDelegate:this];
 
   EXPECT_CALL(*this, Accept()).Times(1);
@@ -304,20 +232,13 @@ TEST_F(PermissionBubbleControllerTest, Deny) {
   [FindButtonWithTitle(IDS_PERMISSION_DENY) performClick:nil];
 }
 
-TEST_F(PermissionBubbleControllerTest, ChangePermissionSelection) {
+TEST_F(PermissionBubbleControllerTest, DenyMultiple) {
   AddRequest(kPermissionB);
-
-  accept_states_.push_back(true);   // A
-  accept_states_.push_back(false);  // B
 
   [controller_ showWithDelegate:this];
 
-  EXPECT_CALL(*this, ToggleAccept(0, false)).Times(1);
-  EXPECT_CALL(*this, ToggleAccept(1, true)).Times(1);
-  NSButton* menu_a = FindMenuButtonWithTitle(IDS_PERMISSION_ALLOW);
-  NSButton* menu_b = FindMenuButtonWithTitle(IDS_PERMISSION_DENY);
-  ChangePermissionMenuSelection(menu_a, IDS_PERMISSION_DENY);
-  ChangePermissionMenuSelection(menu_b, IDS_PERMISSION_ALLOW);
+  EXPECT_CALL(*this, Deny()).Times(1);
+  [FindButtonWithTitle(IDS_PERMISSION_DENY) performClick:nil];
 }
 
 TEST_F(PermissionBubbleControllerTest, EscapeCloses) {
