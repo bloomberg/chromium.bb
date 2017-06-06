@@ -1739,10 +1739,10 @@ ScrollbarSet LayerTreeImpl::ScrollbarsFor(ElementId scroll_element_id) const {
   return scrollbars;
 }
 
+// TODO(pdr): This function no longer registers the scroll layer. Remove this by
+// inlining it into the only callsite.
 void LayerTreeImpl::RegisterScrollLayer(LayerImpl* layer) {
-  if (layer->scroll_clip_layer_id() == Layer::INVALID_ID)
-    return;
-
+  DCHECK(layer->scrollable());
   if (settings().scrollbar_animator == LayerTreeSettings::AURA_OVERLAY)
     layer->set_needs_show_scrollbars(true);
 }
