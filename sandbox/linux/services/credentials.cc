@@ -154,16 +154,14 @@ int CapabilityToKernelValue(Credentials::Capability cap) {
 bool SetGidAndUidMaps(gid_t gid, uid_t uid) {
   const char kGidMapFile[] = "/proc/self/gid_map";
   const char kUidMapFile[] = "/proc/self/uid_map";
-  struct stat buf;
-  if (stat(kGidMapFile, &buf) || stat(kGidMapFile, &buf)) {
-    return false;
-  }
   if (NamespaceUtils::KernelSupportsDenySetgroups()) {
     PCHECK(NamespaceUtils::DenySetgroups());
   }
   DCHECK(GetRESIds(NULL, NULL));
-  PCHECK(NamespaceUtils::WriteToIdMapFile(kGidMapFile, gid));
-  PCHECK(NamespaceUtils::WriteToIdMapFile(kUidMapFile, uid));
+  if (!NamespaceUtils::WriteToIdMapFile(kGidMapFile, gid) ||
+      !NamespaceUtils::WriteToIdMapFile(kUidMapFile, uid)) {
+    return false;
+  }
   DCHECK(GetRESIds(NULL, NULL));
   return true;
 }
