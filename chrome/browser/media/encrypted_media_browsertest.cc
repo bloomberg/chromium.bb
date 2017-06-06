@@ -596,13 +596,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, EncryptedMediaDisabled) {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-// Crashes on Mac only.  http://crbug.com/621857
-#if defined(OS_MACOSX)
-#define MAYBE_Playback_VideoOnly_MP4 DISABLED_Playback_VideoOnly_MP4
-#else
-#define MAYBE_Playback_VideoOnly_MP4 Playback_VideoOnly_MP4
-#endif
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_Playback_VideoOnly_MP4) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
