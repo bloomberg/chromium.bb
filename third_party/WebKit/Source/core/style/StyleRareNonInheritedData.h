@@ -101,7 +101,7 @@ class CORE_EXPORT StyleRareNonInheritedData
   unsigned draggable_region_mode_ : 2;  // DraggableRegionMode
 
   DataRef<StyleDeprecatedFlexibleBoxData>
-      deprecated_flexible_box_data_data_;  // Flexible box properties
+      deprecated_flexible_box_data_;  // Flexible box properties
   DataRef<StyleFlexibleBoxData> flexible_box_data_;
   DataRef<StyleMultiColData> multi_col_data_;  //  CSS3 multicol properties
   DataRef<StyleTransformData>
