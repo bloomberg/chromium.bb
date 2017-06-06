@@ -116,6 +116,9 @@ class APP_LIST_EXPORT SearchResult {
   views::View* view() const { return view_; }
   void set_view(views::View* view) { view_ = view; }
 
+  bool is_mouse_in_view() const { return mouse_is_in_view_; }
+  void SetIsMouseInView(bool mouse_is_inside);
+
   const std::string& id() const { return id_; }
 
   double relevance() const { return relevance_; }
@@ -200,6 +203,9 @@ class APP_LIST_EXPORT SearchResult {
   // The view has set_owned_by_client() property set. It's a responsibility of
   // SearchProvider to set this property and own this view.
   views::View* view_ = nullptr;
+
+  // If view_ isn't null, indicates whether the mouse cursor is inside view_.
+  bool mouse_is_in_view_ = false;
 
   std::string id_;
   double relevance_;

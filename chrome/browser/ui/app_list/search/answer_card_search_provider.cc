@@ -13,11 +13,13 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/renderer_preferences.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
@@ -74,21 +76,46 @@ class SearchAnswerWebView : public views::WebView {
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
 };
 
-class SearchAnswerResult : public SearchResult {
+class SearchAnswerResult : public SearchResult,
+                           public content::WebContentsObserver {
  public:
   SearchAnswerResult(Profile* profile,
                      const std::string& result_url,
-                     views::View* web_view)
-      : profile_(profile) {
+                     views::View* web_view,
+                     content::WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        profile_(profile),
+        mouse_event_callback_(base::Bind(&SearchAnswerResult::HandleMouseEvent,
+                                         base::Unretained(this))) {
     set_display_type(DISPLAY_CARD);
     set_id(result_url);
     set_relevance(1);
     set_view(web_view);
+    // web_contents may be null if the result is being duplicated after the
+    // search provider's WebContents was destroyed.
+    if (web_contents) {
+      content::RenderViewHost* const rvh = web_contents->GetRenderViewHost();
+      if (rvh) {
+        rvh->GetWidget()->AddMouseEventCallback(mouse_event_callback_);
+      }
+    }
+  }
+
+  ~SearchAnswerResult() override {
+    // WebContentsObserver::web_contents() returns nullptr after destruction of
+    // WebContents.
+    if (web_contents()) {
+      content::RenderViewHost* const rvh = web_contents()->GetRenderViewHost();
+      if (rvh) {
+        rvh->GetWidget()->RemoveMouseEventCallback(mouse_event_callback_);
+      }
+    }
   }
 
   // SearchResult overrides:
   std::unique_ptr<SearchResult> Duplicate() const override {
-    return base::MakeUnique<SearchAnswerResult>(profile_, id(), view());
+    return base::MakeUnique<SearchAnswerResult>(profile_, id(), view(),
+                                                web_contents());
   }
 
   void Open(int event_flags) override {
@@ -99,7 +126,26 @@ class SearchAnswerResult : public SearchResult {
   }
 
  private:
+  bool HandleMouseEvent(const blink::WebMouseEvent& event) {
+    switch (event.GetType()) {
+      case blink::WebInputEvent::kMouseMove:
+      case blink::WebInputEvent::kMouseEnter:
+        if (!is_mouse_in_view())
+          SetIsMouseInView(true);
+        break;
+      case blink::WebInputEvent::kMouseLeave:
+        if (is_mouse_in_view())
+          SetIsMouseInView(false);
+        break;
+      default:
+        break;
+    }
+
+    return false;
+  }
+
   Profile* const profile_;
+  const content::RenderWidgetHost::MouseEventCallback mouse_event_callback_;
 };
 
 }  // namespace
@@ -307,7 +353,7 @@ void AnswerCardSearchProvider::OnResultAvailable(bool is_available) {
   if (is_available) {
     results.reserve(1);
     results.emplace_back(base::MakeUnique<SearchAnswerResult>(
-        profile_, result_url_, web_view_.get()));
+        profile_, result_url_, web_view_.get(), web_contents_.get()));
   }
   SwapResults(&results);
 }
