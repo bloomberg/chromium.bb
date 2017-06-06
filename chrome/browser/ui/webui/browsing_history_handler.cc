@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/large_icon_source.h"
 #include "chrome/common/features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -269,14 +268,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
 
   // Create our favicon data source.
   Profile* profile = Profile::FromWebUI(web_ui());
-
-#if defined(OS_ANDROID)
-  favicon::LargeIconService* large_icon_service =
-      LargeIconServiceFactory::GetForBrowserContext(profile);
-  content::URLDataSource::Add(profile, new LargeIconSource(large_icon_service));
-#else
   content::URLDataSource::Add(profile, new FaviconSource(profile));
-#endif
 
   web_ui()->RegisterMessageCallback("queryHistory",
       base::Bind(&BrowsingHistoryHandler::HandleQueryHistory,
