@@ -18,21 +18,12 @@ class GroupedPermissionInfoBar : public ConfirmInfoBar {
       std::unique_ptr<GroupedPermissionInfoBarDelegate> delegate);
   ~GroupedPermissionInfoBar() override;
 
-  void SetPermissionState(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jbooleanArray>& permissions);
-
-  static bool Register(JNIEnv* env);
-
  private:
   void ProcessButton(int action) override;
 
   // InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
-  void SetJavaInfoBar(
-      const base::android::JavaRef<jobject>& java_info_bar) override;
 
   GroupedPermissionInfoBarDelegate* GetDelegate();
 
