@@ -23,15 +23,21 @@ void InitializeFakeFramePerception(const int index,
   frame_perception->set_frame_height_in_px(4);
   frame_perception->set_timestamp(5);
 
+  // Add a couple fake entities to the frame perception. Note: PERSON
+  // EntityType is currently unused.
   mri::Entity* entity_one = frame_perception->add_entity();
   entity_one->set_id(6);
   entity_one->set_type(mri::Entity::FACE);
   entity_one->set_confidence(7);
 
-  mri::Entity* e_two = frame_perception->add_entity();
-  e_two->set_id(8);
-  e_two->set_type(mri::Entity::PERSON);
-  e_two->set_confidence(9);
+  mri::Distance* distance = entity_one->mutable_depth();
+  distance->set_units(mri::Distance::METERS);
+  distance->set_magnitude(7.5);
+
+  mri::Entity* entity_two = frame_perception->add_entity();
+  entity_two->set_id(8);
+  entity_two->set_type(mri::Entity::MOTION_REGION);
+  entity_two->set_confidence(9);
 
   mri::BoundingBox* bounding_box_one = entity_one->mutable_bounding_box();
   bounding_box_one->mutable_top_left()->set_x(10);
@@ -40,7 +46,7 @@ void InitializeFakeFramePerception(const int index,
   bounding_box_one->mutable_bottom_right()->set_y(13);
   bounding_box_one->set_normalized(false);
 
-  mri::BoundingBox* bounding_box_two = e_two->mutable_bounding_box();
+  mri::BoundingBox* bounding_box_two = entity_two->mutable_bounding_box();
   bounding_box_two->mutable_top_left()->set_x(14);
   bounding_box_two->mutable_top_left()->set_y(15);
   bounding_box_two->set_normalized(true);
@@ -67,13 +73,20 @@ void ValidateFramePerceptionResult(
   EXPECT_EQ(*entity_result_one.confidence, 7);
   EXPECT_EQ(entity_result_one.type, media_perception::ENTITY_TYPE_FACE);
 
+  const media_perception::Distance* distance = entity_result_one.depth.get();
+  ASSERT_TRUE(distance);
+  EXPECT_EQ(media_perception::DISTANCE_UNITS_METERS, distance->units);
+  ASSERT_TRUE(distance->magnitude);
+  EXPECT_EQ(7.5f, *distance->magnitude);
+
   const media_perception::Entity& entity_result_two =
       frame_perception_result.entities->at(1);
   ASSERT_TRUE(entity_result_two.id);
   EXPECT_EQ(*entity_result_two.id, 8);
   ASSERT_TRUE(entity_result_two.confidence);
   EXPECT_EQ(*entity_result_two.confidence, 9);
-  EXPECT_EQ(entity_result_two.type, media_perception::ENTITY_TYPE_PERSON);
+  EXPECT_EQ(entity_result_two.type,
+            media_perception::ENTITY_TYPE_MOTION_REGION);
 
   const media_perception::BoundingBox* bounding_box_result_one =
       entity_result_one.bounding_box.get();
