@@ -10,6 +10,7 @@
 #include "base/ios/block_types.h"
 #include "base/strings/string16.h"
 #import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/payments/contact_info_selection_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_items_display_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_method_selection_coordinator.h"
 #include "ios/chrome/browser/ui/payments/payment_request_error_coordinator.h"
@@ -69,7 +70,8 @@ class PaymentShippingOption;
 // controller. The PR view controller will be presented by the view controller
 // provided in the initializer.
 @interface PaymentRequestCoordinator
-    : ChromeCoordinator<PaymentRequestViewControllerDelegate,
+    : ChromeCoordinator<ContactInfoSelectionCoordinatorDelegate,
+                        PaymentRequestViewControllerDelegate,
                         PaymentRequestErrorCoordinatorDelegate,
                         PaymentItemsDisplayCoordinatorDelegate,
                         PaymentMethodSelectionCoordinatorDelegate,

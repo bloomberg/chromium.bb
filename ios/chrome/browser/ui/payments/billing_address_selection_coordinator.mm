@@ -126,9 +126,6 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, kDelegateNotificationDelayInNanoSeconds),
       dispatch_get_main_queue(), ^{
-        [weakSelf.viewController loadModel];
-        [weakSelf.viewController.collectionView reloadData];
-
         [weakSelf.delegate billingAddressSelectionCoordinator:weakSelf
                                       didSelectBillingAddress:billingAddress];
       });
