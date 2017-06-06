@@ -3,11 +3,14 @@
   "display_name": "Video Capture",
   "interface_provider_specs": {
     "service_manager:connector": {
-      "provides": {
-        "capture": [ "video_capture::mojom::DeviceFactoryProvider" ],
-        "tests": [ "*" ]
+      "provides" : {
+        "capture" : ["video_capture::mojom::DeviceFactoryProvider"],
+        "tests" : [
+          "video_capture::mojom::DeviceFactoryProvider",
+          "video_capture::mojom::TestingControls"
+        ]
       },
-      "requires": {
+      "requires" : {
         "service_manager": [ "service_manager:all_users" ]
       }
     }

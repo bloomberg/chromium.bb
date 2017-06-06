@@ -37,6 +37,8 @@ source_set("lib") {
     "receiver_mojo_to_media_adapter.h",
     "service_impl.cc",
     "service_impl.h",
+    "testing_controls_impl.cc",
+    "testing_controls_impl.h",
   ]
 
   public_deps = [
