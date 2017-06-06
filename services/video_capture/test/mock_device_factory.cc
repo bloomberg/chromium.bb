@@ -56,7 +56,7 @@ MockDeviceFactory::~MockDeviceFactory() = default;
 void MockDeviceFactory::AddMockDevice(
     media::VideoCaptureDevice* device,
     const media::VideoCaptureDeviceDescriptor& descriptor) {
-  devices_[descriptor] = std::move(device);
+  devices_[descriptor] = device;
 }
 
 std::unique_ptr<media::VideoCaptureDevice> MockDeviceFactory::CreateDevice(
