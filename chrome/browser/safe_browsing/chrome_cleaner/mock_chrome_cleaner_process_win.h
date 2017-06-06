@@ -7,7 +7,6 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -64,9 +63,6 @@ class MockChromeCleanerProcess {
     void AddSwitchesToCommandLine(base::CommandLine* command_line) const;
 
     void SetDoFindUws(bool do_find_uws);
-    const std::vector<chrome_cleaner::mojom::UwSPtr>& found_uws() const {
-      return found_uws_;
-    }
     const std::set<base::FilePath>& files_to_delete() const {
       return files_to_delete_;
     }
@@ -83,7 +79,6 @@ class MockChromeCleanerProcess {
                              received_prompt_acceptance) const;
 
    private:
-    std::vector<chrome_cleaner::mojom::UwSPtr> found_uws_;
     std::set<base::FilePath> files_to_delete_;
     bool reboot_required_ = false;
     CrashPoint crash_point_ = CrashPoint::kNone;

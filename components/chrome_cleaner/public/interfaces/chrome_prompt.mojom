@@ -6,39 +6,6 @@ module chrome_cleaner.mojom;
 
 import "mojo/common/file_path.mojom";
 
-// The behaviours that have been observed for a given UwS.
-struct ObservedBehaviours {
-  bool ad_injector;
-  bool settings_hijacker;
-  bool extensions_injector;
-  bool dropper;
-};
-
-// Information about removable Unwanted Software matched by the Software
-// Reporter to be shown in the Chrome prompt.
-struct UwS {
-  // The id of this unwanted software.
-  int32 id;
-
-  // The name of this unwanted software.
-  string name;
-
-  // Behaviors observed for this UwS to be presented to the user in the Chrome
-  // prompt.
-  ObservedBehaviours observed_behaviours;
-
-  // List of fully-qualified paths of the files that will be deleted by the
-  // Chrome Cleanup Tool for this unwanted software.
-  array<mojo.common.mojom.FilePath> files_to_delete;
-};
-
-// Indicates if elevation will be required for cleanup.
-[Extensible]
-enum ElevationStatus {
-  NOT_REQUIRED = 0,
-  REQUIRED = 1,
-};
-
 [Extensible]
 enum PromptAcceptance {
   UNSPECIFIED = 0,
@@ -46,29 +13,22 @@ enum PromptAcceptance {
   // experiment run that shouldn't prompt the user or because the user has
   // been prompted recently).
   NOT_SHOWN = 1,
-  // The user explicitly accepted the Chrome prompt, but didn't opt into
-  // uploading logs to Google.
-  ACCEPTED_WITHOUT_LOGS = 2,
-  // The user explicitly accepted the Chrome prompt and also opted into
-  // uploading logs to Google.
-  ACCEPTED_WITH_LOGS = 3,
+  // The user explicitly accepted the Chrome prompt.
+  ACCEPTED = 2,
   // The user explicitly denied the Chrome prompt.
-  DENIED = 4,
+  DENIED = 3,
   // The user didn't interact with the Chrome prompt after a while.
-  IGNORED = 5,
+  IGNORED = 4,
 };
 
-// Service provided by Chrome to prompt the user to run the Chrome Cleanup Tool
-// if unwanted software is detected on the system. This service is used by the
-// Software Reporter Tool so that all user interaction is provided by Chrome.
+// Service provided by Chrome to prompt the user to start a cleanup if the
+// Chrome Cleanup Tool detects unwanted software on the system.
 interface ChromePrompt {
   // Params:
-  //  - removable_uws_found: the list of UwS detected by the reporter;
-  //  - elevation_status: if the cleaner will need to run in elevated mode.
+  //  - removable_uws_found: list of fully-qualified paths of the files that
+  //                         will be deleted by the Chrome Cleanup Tool.
   // Returns:
-  //  - prompt_acceptance: indicates if the user accepted the prompt; if the
-  //                       prompt is accepted, it also indicates if logs
-  //                       uploading is allowed.
-  PromptUser(array<UwS> removable_uws_found, ElevationStatus elevation_status)
+  //  - prompt_acceptance: indicates if the user accepted the prompt.
+  PromptUser(array<mojo.common.mojom.FilePath> files_to_delete)
       => (PromptAcceptance prompt_acceptance);
 };

@@ -30,11 +30,9 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
                    OnPromptUser on_prompt_user);
   ~ChromePromptImpl() override;
 
-  void PromptUser(
-      std::vector<chrome_cleaner::mojom::UwSPtr> removable_uws_found,
-      chrome_cleaner::mojom::ElevationStatus elevation_status,
-      chrome_cleaner::mojom::ChromePrompt::PromptUserCallback callback)
-      override;
+  void PromptUser(const std::vector<base::FilePath>& files_to_delete,
+                  chrome_cleaner::mojom::ChromePrompt::PromptUserCallback
+                      callback) override;
 
  private:
   mojo::Binding<chrome_cleaner::mojom::ChromePrompt> binding_;
