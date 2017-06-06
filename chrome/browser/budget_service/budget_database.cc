@@ -156,7 +156,7 @@ void BudgetDatabase::GetBudgetAfterSync(const url::Origin& origin,
   // Always add one entry at the front of the list for the total budget now.
   blink::mojom::BudgetStatePtr prediction(blink::mojom::BudgetState::New());
   prediction->budget_at = total;
-  prediction->time = clock_->Now().ToDoubleT();
+  prediction->time = clock_->Now().ToJsTime();
   predictions.push_back(std::move(prediction));
 
   // Starting with the soonest expiring chunks, add entries for the
@@ -166,7 +166,7 @@ void BudgetDatabase::GetBudgetAfterSync(const url::Origin& origin,
     blink::mojom::BudgetStatePtr prediction(blink::mojom::BudgetState::New());
     total -= chunk.amount;
     prediction->budget_at = total;
-    prediction->time = chunk.expiration.ToDoubleT();
+    prediction->time = chunk.expiration.ToJsTime();
     predictions.push_back(std::move(prediction));
   }
 
