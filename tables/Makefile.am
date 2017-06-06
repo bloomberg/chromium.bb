@@ -43,19 +43,18 @@ table_files = \
 	cy-cy-g2.ctb \
 	cy.tbl \
 	Cz-Cz-g1.utb \
-	da-chardefs6.cti \
-	da-dk-common6.uti \
+		da-dk-6miscChars.cti \
 	da-dk.dis \
 	da-dk-g08.ctb \
 	da-dk-g16.ctb \
+	da-dk-g16-lit.ctb \
 	da-dk-g18.ctb \
 	da-dk-g26.ctb \
+	da-dk-g26-lit.ctb \
 	da-dk-g26l.ctb \
-	da-dk-g26-patches.cti \
+	da-dk-g26l-lit.ctb \
 	da-dk-g28.ctb \
 	da-dk-g28l.ctb \
-	da-dk-g2core.cti \
-	da-dk-nocaps.uti \
 	da-dk-octobraille.dis \
 	da-lt.ctb \
 	da.tbl \
