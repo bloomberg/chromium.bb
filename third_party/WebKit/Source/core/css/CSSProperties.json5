@@ -2152,16 +2152,17 @@
       field_template: "keyword",
       keywords: ["capitalize", "uppercase", "lowercase", "none"],
     },
+    // FIXME: Implement support for 'under left' and 'under right' values.
     {
       name: "text-underline-position",
       api_class: true,
       api_methods: ["parseSingleValue"],
       inherited: true,
       runtime_flag: "CSS3TextDecorations",
-      field_template: "storage_only",
+      field_template: "keyword",
       type_name: "TextUnderlinePosition",
-      default_value: "TextUnderlinePosition::kAuto",
-      field_size: 1,
+      default_value: "auto",
+      keywords: ["auto", "under"],
       field_group: "rare-inherited",
     },
     {

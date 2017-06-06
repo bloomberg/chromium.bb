@@ -1480,17 +1480,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
     SET_VAR(rare_non_inherited_data_, text_decoration_style_, v);
   }
 
-  // text-underline-position
-  static TextUnderlinePosition InitialTextUnderlinePosition() {
-    return TextUnderlinePosition::kAuto;
-  }
-  TextUnderlinePosition GetTextUnderlinePosition() const {
-    return TextUnderlinePositionInternal();
-  }
-  void SetTextUnderlinePosition(TextUnderlinePosition v) {
-    SetTextUnderlinePositionInternal(v);
-  }
-
   // text-decoration-skip
   static TextDecorationSkip InitialTextDecorationSkip() {
     return TextDecorationSkip::kObjects;
