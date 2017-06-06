@@ -1133,10 +1133,21 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
     UpdateDragIconProxy(screen_location);
     return true;
   }
-  // Check if we are too far away from the shelf to enter the ripped off state.
-  // Determine the distance to the shelf.
+
+  // Mark the item as dragged off the shelf if the drag distance exceeds
+  // |kRipOffDistance|, or if it's dragged between the main and overflow shelf.
   int delta = CalculateShelfDistance(screen_location);
-  if (delta > kRipOffDistance) {
+  bool dragged_off_shelf = delta > kRipOffDistance;
+  dragged_off_shelf |=
+      (is_overflow_mode() &&
+       main_shelf_->GetBoundsForDragInsertInScreen().Contains(screen_location));
+  dragged_off_shelf |= (!is_overflow_mode() && overflow_bubble_ &&
+                        overflow_bubble_->IsShowing() &&
+                        overflow_bubble_->shelf_view()
+                            ->GetBoundsForDragInsertInScreen()
+                            .Contains(screen_location));
+
+  if (dragged_off_shelf) {
     // Create a proxy view item which can be moved anywhere.
     CreateDragIconProxy(event.root_location(), drag_view_->GetImage(),
                         drag_view_, gfx::Vector2d(0, 0),
