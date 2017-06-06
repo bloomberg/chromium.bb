@@ -75,6 +75,8 @@ class StartupBrowserCreatorImpl {
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineStartupTabs_NewTabPage);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
+                           DetermineStartupTabs_WelcomeBackPage);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineBrowserOpenBehavior_Startup);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineBrowserOpenBehavior_CmdLineTabs);
@@ -141,6 +143,7 @@ class StartupBrowserCreatorImpl {
   // and the interactions between those policies.
   StartupTabs DetermineStartupTabs(const StartupTabProvider& provider,
                                    const StartupTabs& cmd_line_tabs,
+                                   bool process_startup,
                                    bool is_ephemeral_profile,
                                    bool is_post_crash_launch);
 

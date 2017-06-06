@@ -637,9 +637,9 @@ void StartupBrowserCreatorImpl::ProcessLaunchUrlsUsingConsolidatedFlow(
   bool is_incognito_or_guest =
       profile_->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE;
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
-  StartupTabs tabs =
-      DetermineStartupTabs(StartupTabProviderImpl(), cmd_line_tabs,
-                           is_incognito_or_guest, is_post_crash_launch);
+  StartupTabs tabs = DetermineStartupTabs(
+      StartupTabProviderImpl(), cmd_line_tabs, process_startup,
+      is_incognito_or_guest, is_post_crash_launch);
 
   // Return immediately if we start an async restore, since the remainder of
   // that process is self-contained.
@@ -686,6 +686,7 @@ void StartupBrowserCreatorImpl::ProcessLaunchUrlsUsingConsolidatedFlow(
 StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     const StartupTabProvider& provider,
     const StartupTabs& cmd_line_tabs,
+    bool process_startup,
     bool is_incognito_or_guest,
     bool is_post_crash_launch) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
@@ -714,6 +715,14 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
       provider.GetDistributionFirstRunTabs(browser_creator_);
   if (!distribution_tabs.empty())
     return distribution_tabs;
+
+  // This is a launch from a prompt presented to an inactive user who chose to
+  // open Chrome and is being brought to a specific URL for this one launch.
+  // Launch the browser with the desired welcome back URL in the foreground and
+  // the other ordinary URLs (e.g., a restored session) in the background.
+  StartupTabs welcome_back_tabs =
+      provider.GetWelcomeBackTabs(profile_, browser_creator_, process_startup);
+  AppendTabs(welcome_back_tabs, &tabs);
 
   // Policies for onboarding (e.g., first run) may show promotional and
   // introductory content depending on a number of system status factors,

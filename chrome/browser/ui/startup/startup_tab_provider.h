@@ -31,6 +31,12 @@ class StartupTabProvider {
   virtual StartupTabs GetDistributionFirstRunTabs(
       StartupBrowserCreator* browser_creator) const = 0;
 
+  // Returns a "welcome back" tab to be shown if requested for a specific
+  // launch.
+  virtual StartupTabs GetWelcomeBackTabs(Profile* profile,
+                                         StartupBrowserCreator* browser_creator,
+                                         bool process_startup) const = 0;
+
   // Checks for the presence of a trigger indicating the need to offer a Profile
   // Reset on this profile. Returns any tabs which should be shown accordingly.
   virtual StartupTabs GetResetTriggerTabs(Profile* profile) const = 0;
@@ -59,6 +65,14 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // system state relating to making those policy decisions. Exposed for
   // testing.
 
+  // Returns true if showing the standard welcome page is permissable.
+  static bool CanShowWelcome(bool is_signin_allowed, bool is_supervised_user);
+
+  // Returns true if the standard welcome page should be shown in a tab. This
+  // should only be used following a positive result from CanShowWelcome.
+  static bool ShouldShowWelcomeForOnboarding(bool has_seen_welcome_page,
+                                             bool is_signed_in);
+
   // Determines which tabs should be shown according to onboarding/first
   // run policy.
   static StartupTabs GetStandardOnboardingTabsForState(
@@ -69,6 +83,15 @@ class StartupTabProviderImpl : public StartupTabProvider {
       bool is_supervised_user);
 
 #if defined(OS_WIN)
+  // returns true if showing the Windows 10 welcome page is permissable.
+  static bool CanShowWin10Welcome(bool set_default_browser_allowed,
+                                  bool is_supervised_user);
+
+  // Returns true if the Windows 10 welcome page should be shown in a tab. This
+  // should only be used following a positive result from CanShowWin10Welcome.
+  static bool ShouldShowWin10WelcomeForOnboarding(bool has_seen_win10_promo,
+                                                  bool is_default_browser);
+
   // Determines which tabs should be shown according to onboarding/first run
   // policy, including promo content specific to Windows 10.
   static StartupTabs GetWin10OnboardingTabsForState(
@@ -130,6 +153,9 @@ class StartupTabProviderImpl : public StartupTabProvider {
 
   // StartupTabProvider:
   StartupTabs GetOnboardingTabs(Profile* profile) const override;
+  StartupTabs GetWelcomeBackTabs(Profile* profile,
+                                 StartupBrowserCreator* browser_creator,
+                                 bool process_startup) const override;
   StartupTabs GetDistributionFirstRunTabs(
       StartupBrowserCreator* browser_creator) const override;
   StartupTabs GetResetTriggerTabs(Profile* profile) const override;
