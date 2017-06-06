@@ -890,6 +890,8 @@ hooks = [
     'name': 'fetch_telemetry_binary_dependencies',
     'pattern': '.',
     'action': [ 'python',
+                'src/tools/perf/conditionally_execute',
+                '--gyp-condition', 'fetch_telemetry_dependencies=1',
                 'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
     ],
   },
