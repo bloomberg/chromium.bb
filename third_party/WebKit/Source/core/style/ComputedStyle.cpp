@@ -1009,10 +1009,11 @@ void ComputedStyle::SetContent(ContentData* content_data) {
 }
 
 bool ComputedStyle::HasWillChangeCompositingHint() const {
-  for (size_t i = 0;
-       i < rare_non_inherited_data_->will_change_data_->properties_.size();
+  for (size_t i = 0; i < rare_non_inherited_data_->will_change_data_
+                             ->will_change_properties_.size();
        ++i) {
-    switch (rare_non_inherited_data_->will_change_data_->properties_[i]) {
+    switch (rare_non_inherited_data_->will_change_data_
+                ->will_change_properties_[i]) {
       case CSSPropertyOpacity:
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:
@@ -1030,7 +1031,7 @@ bool ComputedStyle::HasWillChangeCompositingHint() const {
 
 bool ComputedStyle::HasWillChangeTransformHint() const {
   for (const auto& property :
-       rare_non_inherited_data_->will_change_data_->properties_) {
+       rare_non_inherited_data_->will_change_data_->will_change_properties_) {
     switch (property) {
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:

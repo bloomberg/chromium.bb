@@ -23,15 +23,16 @@ class StyleWillChangeData : public RefCounted<StyleWillChangeData> {
   }
 
   bool operator==(const StyleWillChangeData& o) const {
-    return properties_ == o.properties_ && contents_ == o.contents_ &&
-           scroll_position_ == o.scroll_position_;
+    return will_change_properties_ == o.will_change_properties_ &&
+           will_change_contents_ == o.will_change_contents_ &&
+           will_change_scroll_position_ == o.will_change_scroll_position_;
   }
 
   bool operator!=(const StyleWillChangeData& o) const { return !(*this == o); }
 
-  Vector<CSSPropertyID> properties_;
-  unsigned contents_ : 1;
-  unsigned scroll_position_ : 1;
+  Vector<CSSPropertyID> will_change_properties_;
+  unsigned will_change_contents_ : 1;
+  unsigned will_change_scroll_position_ : 1;
 
  private:
   StyleWillChangeData();
