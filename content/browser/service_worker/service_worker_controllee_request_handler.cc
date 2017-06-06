@@ -179,8 +179,9 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoaderFactory(
   // never see use_network_ gets true.
   DCHECK(!use_network_);
 
-  url_job_ =
-      base::MakeUnique<ServiceWorkerURLJobWrapper>(std::move(factory_callback));
+  url_job_ = base::MakeUnique<ServiceWorkerURLJobWrapper>(
+      std::move(factory_callback), this, resource_request,
+      blob_storage_context_);
 
   resource_context_ = resource_context;
 

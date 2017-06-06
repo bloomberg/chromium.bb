@@ -85,9 +85,10 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
       mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       const base::Callback<WebContents*(void)>& web_contents_getter,
       mojom::URLLoaderAssociatedRequest url_loader_request,
-      mojom::URLLoaderClientPtr url_loader_client_ptr,
+      mojom::URLLoaderClientPtrInfo url_loader_client_ptr_info,
       std::unique_ptr<service_manager::Connector> connector) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    url_loader_client_ptr_.Bind(std::move(url_loader_client_ptr_info));
     const ResourceType resource_type = request_info->is_main_frame
                                            ? RESOURCE_TYPE_MAIN_FRAME
                                            : RESOURCE_TYPE_SUB_FRAME;
@@ -105,7 +106,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
       factory_ptr->CreateLoaderAndStart(
           std::move(url_loader_request), 0 /* routing_id? */,
           0 /* request_id? */, mojom::kURLLoadOptionSendSSLInfo,
-          *resource_request_, std::move(url_loader_client_ptr));
+          *resource_request_, std::move(url_loader_client_ptr_));
       return;
     }
 
@@ -133,7 +134,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
       // TODO: add appcache code here.
     }
 
-    Restart(std::move(url_loader_request), std::move(url_loader_client_ptr));
+    Restart(std::move(url_loader_request), std::move(url_loader_client_ptr_));
   }
 
   // This could be called multiple times.
@@ -272,7 +273,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
           base::Passed(std::move(factory_for_webui)),
           base::Bind(&GetWebContentsFromFrameTreeNodeID, frame_tree_node_id),
           base::Passed(std::move(loader_associated_request)),
-          base::Passed(std::move(url_loader_client_ptr_to_pass)),
+          base::Passed(url_loader_client_ptr_to_pass.PassInterface()),
           base::Passed(ServiceManagerConnection::GetForProcess()
                            ->GetConnector()
                            ->Clone())));
