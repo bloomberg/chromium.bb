@@ -36,6 +36,7 @@ class MenuItemView;
 class MouseEvent;
 class SubmenuView;
 class View;
+class ViewTracker;
 
 #if defined(USE_AURA)
 class MenuPreTargetHandler;
@@ -524,10 +525,6 @@ class VIEWS_EXPORT MenuController
   // it to null.
   void SendMouseCaptureLostToActiveView();
 
-  // Sets/gets the active mouse view. See UpdateActiveMouseView() for details.
-  void SetActiveMouseView(View* view);
-  View* GetActiveMouseView();
-
   // Sets exit type. Calling this can terminate the active nested message-loop.
   void SetExitType(ExitType type);
 
@@ -644,9 +641,9 @@ class VIEWS_EXPORT MenuController
   // The lock to keep the menu button pressed while a menu is visible.
   std::unique_ptr<MenuButton::PressedLock> pressed_lock_;
 
-  // ViewStorage id used to store the view mouse drag events are forwarded to.
-  // See UpdateActiveMouseView() for details.
-  const int active_mouse_view_id_;
+  // ViewTracker used to store the View mouse drag events are forwarded to. See
+  // UpdateActiveMouseView() for details.
+  std::unique_ptr<ViewTracker> active_mouse_view_tracker_;
 
   // Current hot tracked child button if any.
   CustomButton* hot_button_;

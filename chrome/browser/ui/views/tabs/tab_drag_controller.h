@@ -27,6 +27,7 @@ class ListSelectionModel;
 }
 namespace views {
 class View;
+class ViewTracker;
 }
 class Browser;
 class Tab;
@@ -493,10 +494,10 @@ class TabDragController : public views::WidgetObserver,
   // This is used to calculate |window_create_point_|.
   gfx::Point first_source_tab_point_;
 
-  // Storage ID in ViewStorage where the last view that had focus in the window
-  // containing |source_tab_| is saved. This is saved so that focus can be
-  // restored properly when a drag begins and ends within this same window.
-  const int old_focused_view_id_;
+  // Used to track the view that had focus in the window containing
+  // |source_tab_|. This is saved so that focus can be restored properly when
+  // a drag begins and ends within this same window.
+  std::unique_ptr<views::ViewTracker> old_focused_view_tracker_;
 
   // The horizontal position of the mouse cursor in screen coordinates at the
   // time of the last re-order event.

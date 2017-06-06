@@ -40,7 +40,6 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/focus/view_storage.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/native_widget.h"
@@ -1235,94 +1234,6 @@ TEST_F(ViewTest, PaintLocalBounds) {
 void TestView::SchedulePaintInRect(const gfx::Rect& rect) {
   scheduled_paint_rects_.push_back(rect);
   View::SchedulePaintInRect(rect);
-}
-
-TEST_F(ViewTest, RemoveNotification) {
-  ViewStorage* vs = ViewStorage::GetInstance();
-  Widget* widget = new Widget;
-  widget->Init(CreateParams(Widget::InitParams::TYPE_POPUP));
-  View* root_view = widget->GetRootView();
-
-  View* v1 = new View;
-  int s1 = vs->CreateStorageID();
-  vs->StoreView(s1, v1);
-  root_view->AddChildView(v1);
-  View* v11 = new View;
-  int s11 = vs->CreateStorageID();
-  vs->StoreView(s11, v11);
-  v1->AddChildView(v11);
-  View* v111 = new View;
-  int s111 = vs->CreateStorageID();
-  vs->StoreView(s111, v111);
-  v11->AddChildView(v111);
-  View* v112 = new View;
-  int s112 = vs->CreateStorageID();
-  vs->StoreView(s112, v112);
-  v11->AddChildView(v112);
-  View* v113 = new View;
-  int s113 = vs->CreateStorageID();
-  vs->StoreView(s113, v113);
-  v11->AddChildView(v113);
-  View* v1131 = new View;
-  int s1131 = vs->CreateStorageID();
-  vs->StoreView(s1131, v1131);
-  v113->AddChildView(v1131);
-  View* v12 = new View;
-  int s12 = vs->CreateStorageID();
-  vs->StoreView(s12, v12);
-  v1->AddChildView(v12);
-
-  View* v2 = new View;
-  int s2 = vs->CreateStorageID();
-  vs->StoreView(s2, v2);
-  root_view->AddChildView(v2);
-  View* v21 = new View;
-  int s21 = vs->CreateStorageID();
-  vs->StoreView(s21, v21);
-  v2->AddChildView(v21);
-  View* v211 = new View;
-  int s211 = vs->CreateStorageID();
-  vs->StoreView(s211, v211);
-  v21->AddChildView(v211);
-
-  size_t stored_views = vs->view_count();
-
-  // Try removing a leaf view.
-  v21->RemoveChildView(v211);
-  EXPECT_EQ(stored_views - 1, vs->view_count());
-  EXPECT_EQ(NULL, vs->RetrieveView(s211));
-  delete v211;  // We won't use this one anymore.
-
-  // Now try removing a view with a hierarchy of depth 1.
-  v11->RemoveChildView(v113);
-  EXPECT_EQ(stored_views - 3, vs->view_count());
-  EXPECT_EQ(NULL, vs->RetrieveView(s113));
-  EXPECT_EQ(NULL, vs->RetrieveView(s1131));
-  delete v113;  // We won't use this one anymore.
-
-  // Now remove even more.
-  root_view->RemoveChildView(v1);
-  EXPECT_EQ(NULL, vs->RetrieveView(s1));
-  EXPECT_EQ(NULL, vs->RetrieveView(s11));
-  EXPECT_EQ(NULL, vs->RetrieveView(s12));
-  EXPECT_EQ(NULL, vs->RetrieveView(s111));
-  EXPECT_EQ(NULL, vs->RetrieveView(s112));
-
-  // Put v1 back for more tests.
-  root_view->AddChildView(v1);
-  vs->StoreView(s1, v1);
-
-  // Synchronously closing the window deletes the view hierarchy, which should
-  // remove all its views from ViewStorage.
-  widget->CloseNow();
-  EXPECT_EQ(stored_views - 10, vs->view_count());
-  EXPECT_EQ(NULL, vs->RetrieveView(s1));
-  EXPECT_EQ(NULL, vs->RetrieveView(s12));
-  EXPECT_EQ(NULL, vs->RetrieveView(s11));
-  EXPECT_EQ(NULL, vs->RetrieveView(s12));
-  EXPECT_EQ(NULL, vs->RetrieveView(s21));
-  EXPECT_EQ(NULL, vs->RetrieveView(s111));
-  EXPECT_EQ(NULL, vs->RetrieveView(s112));
 }
 
 namespace {
@@ -4539,17 +4450,6 @@ TEST_F(ViewTest, FocusableAssertions) {
   EXPECT_EQ(View::FocusBehavior::NEVER, view.focus_behavior());
   view.SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
   EXPECT_EQ(View::FocusBehavior::ACCESSIBLE_ONLY, view.focus_behavior());
-}
-
-// Verifies when a view is deleted it is removed from ViewStorage.
-TEST_F(ViewTest, UpdateViewStorageOnDelete) {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  const int storage_id = view_storage->CreateStorageID();
-  {
-    View view;
-    view_storage->StoreView(storage_id, &view);
-  }
-  EXPECT_TRUE(view_storage->RetrieveView(storage_id) == NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -4,6 +4,7 @@
 
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -14,9 +15,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/view_tracker.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -158,7 +159,7 @@ void BubbleDialogDelegateView::OnWidgetBoundsChanged(
 }
 
 View* BubbleDialogDelegateView::GetAnchorView() const {
-  return ViewStorage::GetInstance()->RetrieveView(anchor_view_storage_id_);
+  return anchor_view_tracker_->view();
 }
 
 gfx::Rect BubbleDialogDelegateView::GetAnchorRect() const {
@@ -206,15 +207,15 @@ BubbleDialogDelegateView::BubbleDialogDelegateView()
 BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    BubbleBorder::Arrow arrow)
     : close_on_deactivate_(true),
-      anchor_view_storage_id_(ViewStorage::GetInstance()->CreateStorageID()),
-      anchor_widget_(NULL),
+      anchor_view_tracker_(base::MakeUnique<ViewTracker>()),
+      anchor_widget_(nullptr),
       arrow_(arrow),
       mirror_arrow_in_rtl_(PlatformStyle::kMirrorBubbleArrowInRTLByDefault),
       shadow_(BubbleBorder::SMALL_SHADOW),
       color_explicitly_set_(false),
       accept_events_(true),
       adjust_if_offscreen_(true),
-      parent_window_(NULL) {
+      parent_window_(nullptr) {
   LayoutProvider* provider = LayoutProvider::Get();
   margins_ = provider->GetInsetsMetric(INSETS_BUBBLE_CONTENTS);
   title_margins_ = provider->GetInsetsMetric(INSETS_BUBBLE_TITLE);
@@ -262,12 +263,7 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
     }
   }
 
-  // Remove the old storage item and set the new (if there is one).
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (view_storage->RetrieveView(anchor_view_storage_id_))
-    view_storage->RemoveView(anchor_view_storage_id_);
-  if (anchor_view)
-    view_storage->StoreView(anchor_view_storage_id_, anchor_view);
+  anchor_view_tracker_->SetView(anchor_view);
 
   // Do not update anchoring for NULL views; this could indicate that our
   // NativeWindow is being destroyed, so it would be dangerous for us to update

@@ -4,11 +4,11 @@
 
 #include "ui/views/accessible_pane_view.h"
 
-#include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/focus/focus_search.h"
-#include "ui/views/focus/view_storage.h"
+#include "ui/views/view_tracker.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -50,9 +50,9 @@ AccessiblePaneView::AccessiblePaneView()
       escape_key_(ui::VKEY_ESCAPE, ui::EF_NONE),
       left_key_(ui::VKEY_LEFT, ui::EF_NONE),
       right_key_(ui::VKEY_RIGHT, ui::EF_NONE),
+      last_focused_view_tracker_(base::MakeUnique<ViewTracker>()),
       method_factory_(this) {
   focus_search_.reset(new AccessiblePaneViewFocusSearch(this));
-  last_focused_view_storage_id_ = ViewStorage::GetInstance()->CreateStorageID();
 }
 
 AccessiblePaneView::~AccessiblePaneView() {
@@ -69,11 +69,8 @@ bool AccessiblePaneView::SetPaneFocus(views::View* initial_focus) {
     focus_manager_ = GetFocusManager();
 
   View* focused_view = focus_manager_->GetFocusedView();
-  if (focused_view && !ContainsForFocusSearch(this, focused_view)) {
-    ViewStorage* view_storage = ViewStorage::GetInstance();
-    view_storage->RemoveView(last_focused_view_storage_id_);
-    view_storage->StoreView(last_focused_view_storage_id_, focused_view);
-  }
+  if (focused_view && !ContainsForFocusSearch(this, focused_view))
+    last_focused_view_tracker_->SetView(focused_view);
 
   // Use the provided initial focus if it's visible and enabled, otherwise
   // use the first focusable child.
@@ -171,8 +168,7 @@ bool AccessiblePaneView::AcceleratorPressed(
   switch (accelerator.key_code()) {
     case ui::VKEY_ESCAPE: {
       RemovePaneFocus();
-      View* last_focused_view = ViewStorage::GetInstance()->RetrieveView(
-          last_focused_view_storage_id_);
+      View* last_focused_view = last_focused_view_tracker_->view();
       if (last_focused_view) {
         focus_manager_->SetFocusedViewWithReason(
             last_focused_view, FocusManager::kReasonFocusRestore);
