@@ -102,36 +102,44 @@ class ArgumentParserTest(LoggingTestCase):
         #        filter categories help.
 
         # Request the usage string.
-        self.assertRaises(SystemExit, parse, ['--help'])
+        with self.assertRaises(SystemExit):
+            parse(['--help'])
         # Request default filter rules and available style categories.
-        self.assertRaises(SystemExit, parse, ['--filter='])
+        with self.assertRaises(SystemExit):
+            parse(['--filter='])
 
     def test_parse_bad_values(self):
         parse = self._parse
 
         # Pass an unsupported argument.
-        self.assertRaises(SystemExit, parse, ['--bad'])
+        with self.assertRaises(SystemExit):
+            parse(['--bad'])
         self.assertLog(['ERROR: no such option: --bad\n'])
 
-        self.assertRaises(SystemExit, parse, ['--min-confidence=bad'])
+        with self.assertRaises(SystemExit):
+            parse(['--min-confidence=bad'])
         self.assertLog(['ERROR: option --min-confidence: '
                         "invalid integer value: 'bad'\n"])
-        self.assertRaises(SystemExit, parse, ['--min-confidence=0'])
+        with self.assertRaises(SystemExit):
+            parse(['--min-confidence=0'])
         self.assertLog(['ERROR: option --min-confidence: invalid integer: 0: '
                         'value must be between 1 and 5\n'])
-        self.assertRaises(SystemExit, parse, ['--min-confidence=6'])
+        with self.assertRaises(SystemExit):
+            parse(['--min-confidence=6'])
         self.assertLog(['ERROR: option --min-confidence: invalid integer: 6: '
                         'value must be between 1 and 5\n'])
         parse(['--min-confidence=1'])  # works
         parse(['--min-confidence=5'])  # works
 
-        self.assertRaises(SystemExit, parse, ['--output=bad'])
+        with self.assertRaises(SystemExit):
+            parse(['--output=bad'])
         self.assertLog(['ERROR: option --output-format: invalid choice: '
                         "'bad' (choose from 'emacs', 'vs7')\n"])
         parse(['--output=vs7'])  # works
 
         # Pass a filter rule not beginning with + or -.
-        self.assertRaises(SystemExit, parse, ['--filter=build'])
+        with self.assertRaises(SystemExit):
+            parse(['--filter=build'])
         self.assertLog(['ERROR: Invalid filter rule "build": '
                         'every rule must start with + or -.\n'])
         parse(['--filter=+build'])  # works

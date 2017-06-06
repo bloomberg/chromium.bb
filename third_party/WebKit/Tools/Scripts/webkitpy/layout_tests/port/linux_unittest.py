@@ -57,8 +57,8 @@ class LinuxPortTest(port_testcase.PortTestCase):
 
         self.assert_version_properties('linux', 'trusty', 'linux-trusty', 'trusty')
         self.assert_version_properties('linux-trusty', None, 'linux-trusty', 'trusty')
-        self.assertRaises(AssertionError, self.assert_version_properties,
-                          'linux-utopic', None, 'ignored', 'ignored', 'ignored')
+        with self.assertRaises(AssertionError):
+            self.assert_version_properties('linux-utopic', None, 'ignored', 'ignored', 'ignored')
 
     def assert_baseline_paths(self, port_name, os_version, *expected_paths):
         port = self.make_port(port_name=port_name, os_version=os_version)
@@ -76,7 +76,8 @@ class LinuxPortTest(port_testcase.PortTestCase):
     def test_check_illegal_port_names(self):
         # FIXME: Check that, for now, these are illegal port names.
         # Eventually we should be able to do the right thing here.
-        self.assertRaises(AssertionError, linux.LinuxPort, MockSystemHost(), port_name='linux-x86')
+        with self.assertRaises(AssertionError):
+            linux.LinuxPort(MockSystemHost(), port_name='linux-x86')
 
     def test_operating_system(self):
         self.assertEqual('linux', self.make_port().operating_system())

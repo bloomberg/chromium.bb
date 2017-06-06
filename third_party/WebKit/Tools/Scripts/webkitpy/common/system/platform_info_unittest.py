@@ -129,10 +129,12 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertFalse(info.is_win())
         self.assertTrue(info.is_freebsd())
 
-        self.assertRaises(AssertionError, self.make_info, fake_sys('vms'))
+        with self.assertRaises(AssertionError):
+            self.make_info(fake_sys('vms'))
 
     def test_os_version(self):
-        self.assertRaises(AssertionError, self.make_info, fake_sys('darwin'), fake_platform('10.6.3'))
+        with self.assertRaises(AssertionError):
+            self.make_info(fake_sys('darwin'), fake_platform('10.6.3'))
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.9.0')).os_version, 'mac10.9')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.10.0')).os_version, 'mac10.10')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.11.0')).os_version, 'mac10.11')
@@ -146,8 +148,10 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertEqual(self.make_info(fake_sys('freebsd8'), fake_platform('', '8.3-PRERELEASE')).os_version, '8.3-PRERELEASE')
         self.assertEqual(self.make_info(fake_sys('freebsd9'), fake_platform('', '9.0-RELEASE')).os_version, '9.0-RELEASE')
 
-        self.assertRaises(AssertionError, self.make_info, fake_sys('win32', tuple([5, 0, 1234])))
-        self.assertRaises(AssertionError, self.make_info, fake_sys('win32', tuple([6, 1, 1234])))
+        with self.assertRaises(AssertionError):
+            self.make_info(fake_sys('win32', tuple([5, 0, 1234])))
+        with self.assertRaises(AssertionError):
+            self.make_info(fake_sys('win32', tuple([6, 1, 1234])))
         self.assertEqual(self.make_info(fake_sys('win32', tuple([10, 1, 1234]))).os_version, 'future')
         self.assertEqual(self.make_info(fake_sys('win32', tuple([10, 0, 1234]))).os_version, '10')
         self.assertEqual(self.make_info(fake_sys('win32', tuple([6, 3, 1234]))).os_version, '8.1')
@@ -157,10 +161,10 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertEqual(self.make_info(fake_sys('win32', tuple([6, 0, 1234]))).os_version, 'vista')
         self.assertEqual(self.make_info(fake_sys('win32', tuple([5, 1, 1234]))).os_version, 'xp')
 
-        self.assertRaises(AssertionError, self.make_info, fake_sys('win32'),
-                          executive=fake_executive('5.0.1234'))
-        self.assertRaises(AssertionError, self.make_info, fake_sys('win32'),
-                          executive=fake_executive('6.1.1234'))
+        with self.assertRaises(AssertionError):
+            self.make_info(fake_sys('win32'), executive=fake_executive('5.0.1234'))
+        with self.assertRaises(AssertionError):
+            self.make_info(fake_sys('win32'), executive=fake_executive('6.1.1234'))
 
     def _assert_file_implies_linux_distribution(self, file_path, distribution):
         info = self.make_info(sys_module=fake_sys('linux2'), filesystem_module=MockFileSystem({file_path: ''}))

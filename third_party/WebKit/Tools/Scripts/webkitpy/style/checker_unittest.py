@@ -793,9 +793,10 @@ class StyleProcessor_CodeCoverageTest(LoggingTestCase):
     def test_process__no_checker_dispatched(self):
         """Test the process() method for a path with no dispatched checker."""
         path = os.path.join('foo', 'do_not_process.txt')
-        self.assertRaises(AssertionError, self._processor.process,
-                          lines=['line1', 'line2'], file_path=path,
-                          line_numbers=[100])
+        with self.assertRaises(AssertionError):
+            self._processor.process(
+                lines=['line1', 'line2'], file_path=path,
+                line_numbers=[100])
 
     def test_process__carriage_returns_not_stripped(self):
         """Test that carriage returns aren't stripped from files that are allowed to contain them."""

@@ -104,7 +104,8 @@ class AndroidPortTest(port_testcase.PortTestCase):
 
     # Test that content_shell currently is the only supported driver.
     def test_non_content_shell_driver(self):
-        self.assertRaises(self.make_port, options=optparse.Values({'driver_name': 'foobar'}))
+        with self.assertRaises(Exception):
+            self.make_port(options=optparse.Values({'driver_name': 'foobar'}))
 
     # Test that the number of child processes to create depends on the devices.
     def test_default_child_processes(self):

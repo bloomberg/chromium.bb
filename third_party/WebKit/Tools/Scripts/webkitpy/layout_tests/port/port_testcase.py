@@ -267,7 +267,8 @@ class PortTestCase(LoggingTestCase):
         port = self.make_port()
 
         port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/path/to/httpd.conf'
-        self.assertRaises(IOError, port.path_to_apache_config_file)
+        with self.assertRaises(IOError):
+            port.path_to_apache_config_file()
         port.host.filesystem.write_text_file('/existing/httpd.conf', 'Hello, world!')
         port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'
         self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')

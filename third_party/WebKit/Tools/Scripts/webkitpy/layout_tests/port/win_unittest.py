@@ -84,7 +84,8 @@ class WinPortTest(port_testcase.PortTestCase):
         self.assert_name('win', 'future', 'win-win10')
         self.assert_name('win-win10', 'future', 'win-win10')
 
-        self.assertRaises(AssertionError, self.assert_name, None, 'w2k', 'win-win7')
+        with self.assertRaises(AssertionError):
+            self.assert_name(None, 'w2k', 'win-win7')
 
     def assert_baseline_paths(self, port_name, *expected_paths):
         port = self.make_port(port_name=port_name)

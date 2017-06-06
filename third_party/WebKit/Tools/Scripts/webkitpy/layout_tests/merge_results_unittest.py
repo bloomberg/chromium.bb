@@ -77,8 +77,8 @@ class JSONMergerTests(unittest.TestCase):
         for expected, (inputa, inputb) in tests:
             self.assertDictEqual(expected, m.merge_dictlike([inputa, inputb]))
 
-        self.assertRaises(
-            merge_results.MergeFailure, m.merge_dictlike, [{'a': 1}, {'a': 2}])
+        with self.assertRaises(merge_results.MergeFailure):
+            m.merge_dictlike([{'a': 1}, {'a': 2}])
 
     def test_merge_compound_dict(self):
         m = merge_results.JSONMerger()
@@ -145,8 +145,8 @@ class JSONMergerTests(unittest.TestCase):
         for expected, (inputa, inputb) in tests:
             self.assertEqual(expected, m.merge([inputa, inputb]))
 
-        self.assertRaises(
-            merge_results.MergeFailure, m.merge, [{'a': 1}, {'a': 2}])
+        with self.assertRaises(merge_results.MergeFailure):
+            m.merge([{'a': 1}, {'a': 2}])
 
         # Ordered values
         a = OrderedDict({'a': 1})
@@ -175,8 +175,8 @@ class JSONMergerTests(unittest.TestCase):
             lambda o, name=None: sum(o))
 
         self.assertDictEqual({'a': 3}, m.merge([{'a': 1}, {'a': 2}]))
-        self.assertRaises(
-            merge_results.MergeFailure, m.merge, [{'b': 1}, {'b': 2}])
+        with self.assertRaises(merge_results.MergeFailure):
+            m.merge([{'b': 1}, {'b': 2}])
 
         # Test that helpers that are added later have precedence.
         m.add_helper(
@@ -203,8 +203,8 @@ class JSONMergerTests(unittest.TestCase):
         self.assertDictEqual({'a': 6}, m.merge([{'a': 3}, {'a': 3}]))
         self.assertDictEqual({'a': 5}, m.merge([{'a': 2}, {'a': 3}]))
         self.assertDictEqual({'a': 7}, m.merge([{'a': 3}, {'a': 4}]))
-        self.assertRaises(
-            merge_results.MergeFailure, m.merge, {'a': 1}, {'a': 2})
+        with self.assertRaises(merge_results.MergeFailure):
+            m.merge([{'a': 1}, {'a': 2}])
 
 
 class MergeFilesOneTests(FileSystemTestCase):
