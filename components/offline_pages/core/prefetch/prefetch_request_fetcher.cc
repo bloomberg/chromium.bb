@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -19,17 +21,28 @@ namespace offline_pages {
 
 namespace {
 
-const char kPrefetchServer[] =
-    "http://staging-offlinepages-pa.sandbox.googleapis.com/";
+const char kPrefetchServer[] = "https://offlinepages-pa.googleapis.com/";
+const char kPrefetchStagingServer[] =
+    "https://staging-offlinepages-pa.sandbox.googleapis.com/";
+
+// Used in all offline prefetch request URLs to specify API Key.
+const char kApiKeyName[] = "key";
 
 // Content type needed in order to communicate with the server in binary
 // proto format.
 const char kRequestContentType[] = "application/x-protobuf";
 
-GURL CompleteURL(const std::string& url_path) {
+GURL CompleteURL(const std::string& url_path, version_info::Channel channel) {
+  bool is_stable_channel = channel == version_info::Channel::STABLE;
+  GURL server_url(is_stable_channel ? kPrefetchServer : kPrefetchStagingServer);
+
   GURL::Replacements replacements;
   replacements.SetPathStr(url_path);
-  return GURL(kPrefetchServer).ReplaceComponents(replacements);
+  GURL url = server_url.ReplaceComponents(replacements);
+
+  std::string api_key = is_stable_channel ? google_apis::GetAPIKey()
+                                          : google_apis::GetNonStableAPIKey();
+  return net::AppendQueryParameter(url, kApiKeyName, api_key);
 }
 
 }  // namespace
@@ -37,25 +50,28 @@ GURL CompleteURL(const std::string& url_path) {
 // static
 std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForGet(
     const std::string& url_path,
+    version_info::Channel channel,
     net::URLRequestContextGetter* request_context_getter,
     const FinishedCallback& callback) {
   return base::WrapUnique(new PrefetchRequestFetcher(
-      url_path, std::string(), request_context_getter, callback));
+      url_path, std::string(), channel, request_context_getter, callback));
 }
 
 // static
 std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForPost(
     const std::string& url_path,
     const std::string& message,
+    version_info::Channel channel,
     net::URLRequestContextGetter* request_context_getter,
     const FinishedCallback& callback) {
   return base::WrapUnique(new PrefetchRequestFetcher(
-      url_path, message, request_context_getter, callback));
+      url_path, message, channel, request_context_getter, callback));
 }
 
 PrefetchRequestFetcher::PrefetchRequestFetcher(
     const std::string& url_path,
     const std::string& message,
+    version_info::Channel channel,
     net::URLRequestContextGetter* request_context_getter,
     const FinishedCallback& callback)
     : request_context_getter_(request_context_getter), callback_(callback) {
@@ -81,7 +97,7 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
             "Not implemented, considered not useful."
         })");
   url_fetcher_ = net::URLFetcher::Create(
-      CompleteURL(url_path),
+      CompleteURL(url_path, channel),
       message.empty() ? net::URLFetcher::GET : net::URLFetcher::POST, this,
       traffic_annotation);
   url_fetcher_->SetRequestContext(request_context_getter_.get());

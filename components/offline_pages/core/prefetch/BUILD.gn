@@ -51,6 +51,8 @@ static_library("prefetch") {
     "//components/ntp_snippets",
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",
+    "//components/version_info",
+    "//google_apis",
     "//net:net",
     "//url",
   ]

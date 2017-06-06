@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
+#include "components/version_info/channel.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -27,6 +28,7 @@ class GetOperationRequest {
   // It is retrieved from the operation data returned in the
   // GeneratePageBundleRequest response.
   GetOperationRequest(const std::string& name,
+                      version_info::Channel channel,
                       net::URLRequestContextGetter* request_context_getter,
                       const PrefetchRequestFinishedCallback& callback);
   ~GetOperationRequest();

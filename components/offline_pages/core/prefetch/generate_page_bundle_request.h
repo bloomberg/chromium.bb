@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
+#include "components/version_info/channel.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -26,6 +27,7 @@ class GeneratePageBundleRequest {
       const std::string& gcm_registration_id,
       int max_bundle_size_bytes,
       const std::vector<std::string>& page_urls,
+      version_info::Channel channel,
       net::URLRequestContextGetter* request_context_getter,
       const PrefetchRequestFinishedCallback& callback);
   ~GeneratePageBundleRequest();
