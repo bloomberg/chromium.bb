@@ -32,7 +32,6 @@ class Size;
 
 namespace cc {
 
-class BeginFrameSource;
 class DirectRenderer;
 class DisplayClient;
 class OutputSurface;
@@ -46,8 +45,7 @@ class TextureMailboxDeleter;
 // (OutputSurface). The client is responsible for creating and sizing the
 // surface IDs used to draw into the display and deciding when to draw.
 class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
-                                   public OutputSurfaceClient,
-                                   public SurfaceObserver {
+                                   public OutputSurfaceClient {
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
   // case, DrawAndSwap must be called externally when needed.
@@ -55,7 +53,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
           gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           const RendererSettings& settings,
           const FrameSinkId& frame_sink_id,
-          BeginFrameSource* begin_frame_source,
           std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<DisplayScheduler> scheduler,
           std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter);
@@ -78,21 +75,15 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   // DisplaySchedulerClient implementation.
   bool DrawAndSwap() override;
   bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const override;
+  bool SurfaceDamaged(const SurfaceId& surface_id,
+                      const BeginFrameAck& ack) override;
+  void SurfaceDiscarded(const SurfaceId& surface_id) override;
 
   // OutputSurfaceClient implementation.
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
   void DidReceiveSwapBuffersAck() override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
-
-  // SurfaceObserver implementation.
-  bool OnSurfaceDamaged(const SurfaceId& surface,
-                        const BeginFrameAck& ack) override;
-  void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
-  void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
-  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
-  void OnSurfaceDamageExpected(const SurfaceId& surface_id,
-                               const BeginFrameArgs& args) override;
 
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
@@ -120,9 +111,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   bool swapped_since_resize_ = false;
   bool output_is_secure_ = false;
 
-  // The begin_frame_source_ is not owned here, and also often known by the
-  // output_surface_ and the scheduler_.
-  BeginFrameSource* begin_frame_source_;
   std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<DisplayScheduler> scheduler_;
   std::unique_ptr<ResourceProvider> resource_provider_;
