@@ -77,13 +77,15 @@ unsigned long RoundRtt(const Optional<TimeDelta>& rtt) {
 // Rounds |downlink_mbps| to the nearest 25 kbps as per the NetInfo spec. The
 // returned value is in Mbps.
 double RoundMbps(const Optional<double>& downlink_mbps) {
+  double downlink_kbps = 0;
   if (!downlink_mbps.has_value()) {
     // Throughput is unavailable. So, return the fastest value.
-    return std::numeric_limits<double>::infinity();
+    downlink_kbps = (std::numeric_limits<double>::max());
+  } else {
+    downlink_kbps = downlink_mbps.value() * 1000;
   }
 
-  DCHECK_LE(0, downlink_mbps.value());
-  double downlink_kbps = downlink_mbps.value() * 1000;
+  DCHECK_LE(0, downlink_kbps);
   double downlink_kbps_rounded = std::round(downlink_kbps / 25) * 25;
   return downlink_kbps_rounded / 1000;
 }

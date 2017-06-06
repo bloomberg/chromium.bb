@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>  // For std::modf.
 #include <map>
 #include <string>
 
@@ -92,7 +93,13 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
 
   double RunScriptExtractDouble(const std::string& script) {
     double data = 0.0;
-    EXPECT_TRUE(base::StringToDouble(RunScriptExtractString(script), &data));
+    EXPECT_TRUE(ExecuteScriptAndExtractDouble(shell(), script, &data));
+    return data;
+  }
+
+  int RunScriptExtractInt(const std::string& script) {
+    int data = 0;
+    EXPECT_TRUE(ExecuteScriptAndExtractInt(shell(), script, &data));
     return data;
   }
 };
@@ -164,7 +171,8 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, TwoRenderViewsInOneProcess) {
 }
 
 // Verify that when the network quality notifications are not sent, the
-// Javascript API returns invalid estimate.
+// Javascript API returns a valid estimate that is multiple of 25 msec and 25
+// kbps.
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
                        NetworkQualityEstimatorNotInitialized) {
   base::HistogramTester histogram_tester;
@@ -177,9 +185,22 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/net_info.html")));
 
-  EXPECT_EQ(0, RunScriptExtractDouble("getRtt()"));
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            RunScriptExtractDouble("getDownlink()"));
+  EXPECT_EQ(0, RunScriptExtractInt("getRtt()"));
+  EXPECT_EQ(0, RunScriptExtractInt("getRtt()") % 25);
+
+  double downlink_mbps = RunScriptExtractDouble("getDownlink()");
+  EXPECT_LE(0, downlink_mbps);
+
+  // Verify that |downlink_mbps| is a multiple of 25 kbps. For example, a value
+  // of 1.250 mbps satisfies that constraint, but a value of 1.254 mbps does
+  // not.
+  double fraction_part, int_part;
+  fraction_part = std::modf(downlink_mbps, &int_part);
+  // If |fraction_part| is a multiple of 0.025, it implies |downlink_mbps| is
+  // also a multiple of 0.025, and hence |downlink_mbps| is a multiple of 25
+  // kbps.
+  EXPECT_EQ(0, static_cast<int>(fraction_part * 1000) % 25);
+
   EXPECT_EQ("4g", RunScriptExtractString("getEffectiveType()"));
 }
 
@@ -249,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotified) {
       histogram_tester.GetAllSamples("NQE.RenderThreadNotified").empty());
 
   EXPECT_EQ(network_quality_1.transport_rtt().InMilliseconds(),
-            RunScriptExtractDouble("getRtt()"));
+            RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(
       static_cast<double>(network_quality_1.downstream_throughput_kbps()) /
           1000,
@@ -262,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotified) {
       network_quality_2);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(network_quality_2.transport_rtt().InMilliseconds(),
-            RunScriptExtractDouble("getRtt()"));
+            RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(
       static_cast<double>(network_quality_2.downstream_throughput_kbps()) /
           1000,
@@ -289,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeRounded) {
   EXPECT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/net_info.html")));
-  EXPECT_EQ(200, RunScriptExtractDouble("getRtt()"));
+  EXPECT_EQ(200, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(0.300, RunScriptExtractDouble("getDownlink()"));
 
   net::nqe::internal::NetworkQuality network_quality_2(
@@ -298,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeRounded) {
   estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
       network_quality_2);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1225, RunScriptExtractDouble("getRtt()"));
+  EXPECT_EQ(1225, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(1.325, RunScriptExtractDouble("getDownlink()"));
 
   net::nqe::internal::NetworkQuality network_quality_3(
@@ -307,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeRounded) {
   estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
       network_quality_3);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, RunScriptExtractDouble("getRtt()"));
+  EXPECT_EQ(0, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(0, RunScriptExtractDouble("getDownlink()"));
 }
 
@@ -329,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotNotified) {
   EXPECT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/net_info.html")));
-  EXPECT_EQ(1200, RunScriptExtractDouble("getRtt()"));
+  EXPECT_EQ(1200, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(1.300, RunScriptExtractDouble("getDownlink()"));
 
   // All the 3 metrics change by less than 10%. So, the observers are not
@@ -340,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotNotified) {
   estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
       network_quality_2);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1200, RunScriptExtractDouble("getRtt()"));
+  EXPECT_EQ(1200, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(1.300, RunScriptExtractDouble("getDownlink()"));
 
   // Transport RTT has changed by more than 10% from the last notified value of
@@ -351,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotNotified) {
   estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
       network_quality_3);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2300, RunScriptExtractDouble("getRtt()"));
+  EXPECT_EQ(2300, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(1.400, RunScriptExtractDouble("getDownlink()"));
 }
 

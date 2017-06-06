@@ -7,7 +7,7 @@ function getType() {
 }
 
 function getDownlinkMax() {
-  sendValueToTest(navigator.connection.downlinkMax.toString());
+  sendValueToTest(navigator.connection.downlinkMax);
 }
 
 function getOnLine() {
@@ -19,11 +19,11 @@ function getEffectiveType() {
 }
 
 function getRtt() {
-  sendValueToTest(navigator.connection.rtt.toString());
+sendValueToTest(navigator.connection.rtt);
 }
 
 function getDownlink() {
-  sendValueToTest(navigator.connection.downlink.toString());
+  sendValueToTest(navigator.connection.downlink);
 }
 
 function sendValueToTest(value) {
