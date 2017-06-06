@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -31,6 +33,53 @@ class BrowsingDataCounterUtilsTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 };
+
+TEST_F(BrowsingDataCounterUtilsTest, CacheCounterResult) {
+  // This test assumes that the strings are served exactly as defined,
+  // i.e. that the locale is set to the default "en".
+  ASSERT_EQ("en", TestingBrowserProcess::GetGlobal()->GetApplicationLocale());
+  const int kBytesInAMegabyte = 1024 * 1024;
+
+  // Test the output for various forms of CacheResults.
+  const struct TestCase {
+    int bytes;
+    bool is_upper_limit;
+    bool is_basic_tab;
+    std::string expected_output;
+  } kTestCases[] = {
+      {42, false, false, "Less than 1 MB"},
+      {42, false, true,
+       "Frees up less than 1 MB. Some sites may load more slowly on your next "
+       "visit."},
+      {2.312 * kBytesInAMegabyte, false, false, "2.3 MB"},
+      {2.312 * kBytesInAMegabyte, false, true,
+       "Frees up 2.3 MB. Some sites may load more slowly on your next visit."},
+      {2.312 * kBytesInAMegabyte, true, false, "Less than 2.3 MB"},
+      // TODO(725401): Fix upper case L in estimate string for desktop.
+      {2.312 * kBytesInAMegabyte, true, true,
+       "Frees up Less than 2.3 MB. Some sites may load more slowly on your "
+       "next visit."},
+      {500.2 * kBytesInAMegabyte, false, false, "500 MB"},
+      {500.2 * kBytesInAMegabyte, true, false, "Less than 500 MB"},
+  };
+
+  for (const TestCase& test_case : kTestCases) {
+    CacheCounter counter(GetProfile());
+    browsing_data::ClearBrowsingDataTab tab =
+        test_case.is_basic_tab ? browsing_data::ClearBrowsingDataTab::BASIC
+                               : browsing_data::ClearBrowsingDataTab::ADVANCED;
+    counter.Init(GetProfile()->GetPrefs(), tab,
+                 browsing_data::BrowsingDataCounter::Callback());
+    CacheCounter::CacheResult result(&counter, test_case.bytes,
+                                     test_case.is_upper_limit);
+    SCOPED_TRACE(base::StringPrintf(
+        "Test params: %d bytes, %d is_upper_limit, %d is_basic_tab.",
+        test_case.bytes, test_case.is_upper_limit, test_case.is_basic_tab));
+
+    base::string16 output = GetChromeCounterTextFromResult(&result);
+    EXPECT_EQ(output, base::ASCIIToUTF16(test_case.expected_output));
+  }
+}
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Tests the complex output of the hosted apps counter.
