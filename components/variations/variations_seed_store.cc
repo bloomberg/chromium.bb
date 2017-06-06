@@ -152,8 +152,7 @@ void RecordFirstRunResult(FirstRunResult result) {
 }  // namespace
 
 VariationsSeedStore::VariationsSeedStore(PrefService* local_state)
-    : local_state_(local_state), seed_has_country_code_(false) {
-}
+    : local_state_(local_state) {}
 
 VariationsSeedStore::~VariationsSeedStore() {
 }
@@ -192,15 +191,7 @@ bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
     return false;
   }
 
-  // Migrate any existing country code from the seed to the pref, if the pref is
-  // empty. TODO(asvitkine): Clean up the code in M50+ when sufficient number
-  // of clients have migrated.
-  if (seed->has_country_code() &&
-      local_state_->GetString(prefs::kVariationsCountry).empty()) {
-    local_state_->SetString(prefs::kVariationsCountry, seed->country_code());
-  }
   variations_serial_number_ = seed->serial_number();
-  seed_has_country_code_ = seed->has_country_code();
   RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_NOT_EMPTY);
   return true;
 }
@@ -470,12 +461,8 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
 #endif
 
   // Update the saved country code only if one was returned from the server.
-  // Prefer the country code that was transmitted in the header over the one in
-  // the seed (which is deprecated).
   if (!country_code.empty())
     local_state_->SetString(prefs::kVariationsCountry, country_code);
-  else if (seed.has_country_code())
-    local_state_->SetString(prefs::kVariationsCountry, seed.country_code());
 
   local_state_->SetString(prefs::kVariationsCompressedSeed, base64_seed_data);
   UpdateSeedDateAndLogDayChange(date_fetched);

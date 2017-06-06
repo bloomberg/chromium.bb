@@ -561,16 +561,9 @@ void VariationsService::DoActualFetch() {
   bool enable_deltas = false;
   if (!seed_store_.variations_serial_number().empty() &&
       !disable_deltas_for_next_request_) {
-    // If the current seed includes a country code, deltas are not supported (as
-    // the serial number doesn't take into account the country code). The server
-    // will update us with a seed that doesn't include a country code which will
-    // enable deltas to work.
-    // TODO(asvitkine): Remove the check in M50+ when the percentage of clients
-    // that have an old seed with a country code becomes miniscule.
-    if (!seed_store_.seed_has_country_code()) {
-      // Tell the server that delta-compressed seeds are supported.
-      enable_deltas = true;
-    }
+    // Tell the server that delta-compressed seeds are supported.
+    enable_deltas = true;
+
     // Get the seed only if its serial number doesn't match what we have.
     pending_seed_request_->AddExtraRequestHeader(
         "If-None-Match:" + seed_store_.variations_serial_number());
