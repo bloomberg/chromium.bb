@@ -9,7 +9,7 @@ suite('<bookmarks-app>', function() {
   function resetStore() {
     store = new bookmarks.TestStore({});
     store.acceptInitOnce();
-    bookmarks.Store.instance_ = store;
+    store.replaceSingleton();
 
     chrome.bookmarks.getTree = function(fn) {
       fn([

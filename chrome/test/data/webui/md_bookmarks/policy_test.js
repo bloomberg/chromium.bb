@@ -17,7 +17,7 @@ suite('Incognito policy', function() {
     });
     store.setReducersEnabled(true);
     store.expectAction('set-incognito-availability');
-    bookmarks.Store.instance_ = store;
+    store.replaceSingleton();
 
     app = document.createElement('bookmarks-app');
     replaceBody(app);

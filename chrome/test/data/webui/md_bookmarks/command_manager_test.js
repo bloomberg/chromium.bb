@@ -39,7 +39,7 @@ suite('<bookmarks-command-manager>', function() {
                 createFolder('21', []),
               ]))
     });
-    bookmarks.Store.instance_ = store;
+    store.replaceSingleton();
 
     commandManager = new TestCommandManager();
     replaceBody(commandManager);
@@ -207,7 +207,7 @@ suite('<bookmarks-item> CommandManager integration', function() {
       selectedFolder: '1',
     });
     store.setReducersEnabled(true);
-    bookmarks.Store.instance_ = store;
+    store.replaceSingleton();
 
     commandManager = document.createElement('bookmarks-command-manager');
 
