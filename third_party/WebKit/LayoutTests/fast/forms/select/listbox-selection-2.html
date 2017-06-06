@@ -76,9 +76,6 @@ shouldBe('selectionPattern("sl1")', '"00000010000000000"');
 mouseDownOnSelect("sl1", 7);
 shouldBe('selectionPattern("sl1")', '"00000001000000000"');
 
-mouseDownOnSelect("sl1", 8);
-shouldBe('selectionPattern("sl1")', '"00000001000000000"');
-
 mouseDownOnSelect("sl1", 0);
 shouldBe('selectionPattern("sl1")', '"10000000000000000"');
 
