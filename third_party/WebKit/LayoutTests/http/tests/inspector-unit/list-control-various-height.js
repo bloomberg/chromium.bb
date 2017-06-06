@@ -38,7 +38,7 @@ UI.inspectorView.element.appendChild(list.element);
 function dumpList()
 {
   var height = list.element.offsetHeight;
-  TestRunner.addResult(`----list[length=${model.length()}][height=${height}]----`);
+  TestRunner.addResult(`----list[length=${model.length}][height=${height}]----`);
   for (var child of list.element.children) {
     var offsetTop = child.getBoundingClientRect().top - list.element.getBoundingClientRect().top;
     var offsetBottom = child.getBoundingClientRect().bottom - list.element.getBoundingClientRect().top;
@@ -53,7 +53,7 @@ function dumpList()
 }
 
 TestRunner.addResult('Adding 0, 1, 2');
-model.replaceAllItems([0, 1, 2]);
+model.replaceAll([0, 1, 2]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 0');
@@ -65,7 +65,7 @@ list.scrollItemIntoView(2);
 dumpList();
 
 TestRunner.addResult('Adding 3-20');
-model.replaceItemsInRange(3, 3, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+model.replaceRange(3, 3, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 11');
@@ -85,7 +85,7 @@ list.scrollItemIntoView(3);
 dumpList();
 
 TestRunner.addResult('Replacing 0, 1 with 25-36');
-model.replaceItemsInRange(0, 2, [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]);
+model.replaceRange(0, 2, [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 18');
@@ -93,11 +93,11 @@ list.scrollItemIntoView(18);
 dumpList();
 
 TestRunner.addResult('Replacing 25-36 with 0-1');
-model.replaceItemsInRange(0, 12, [0, 1]);
+model.replaceRange(0, 12, [0, 1]);
 dumpList();
 
 TestRunner.addResult('Replacing 16-18 with 45');
-model.replaceItemsInRange(16, 19, [45]);
+model.replaceRange(16, 19, [45]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 4');
@@ -105,7 +105,7 @@ list.scrollItemIntoView(4);
 dumpList();
 
 TestRunner.addResult('Replacing 45 with 16-18');
-model.replaceItemsInRange(16, 17, [16, 17, 18]);
+model.replaceRange(16, 17, [16, 17, 18]);
 dumpList();
 
 TestRunner.addResult('Resizing');

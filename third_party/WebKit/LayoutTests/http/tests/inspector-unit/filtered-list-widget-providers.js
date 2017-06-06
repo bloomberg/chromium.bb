@@ -50,10 +50,9 @@ function test() {
       TestRunner.addResult('Output: ' + filteredListWidget._notFoundElement.textContent);
       return;
     }
-    var items = filteredListWidget._items;
     var output = [];
-    for (var i = 0; i < items.length(); ++i)
-      output.push(filteredListWidget._provider.itemKeyAt(items.itemAtIndex(i)));
+    for (var item of filteredListWidget._items)
+      output.push(filteredListWidget._provider.itemKeyAt(item));
     TestRunner.addResult('Output:' + JSON.stringify(output));
   }
 }
