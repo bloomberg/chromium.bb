@@ -174,14 +174,26 @@ TEST_F(PersistentPrefStoreImplTest, InitializationFailure) {
 }
 
 TEST_F(PersistentPrefStoreImplTest, InitialValue) {
+  constexpr char kUnregisteredKey[] = "path.to.unregistered_key";
+  constexpr char kUnregisteredTopLevelKey[] = "unregistered_key";
+  constexpr char kUnregisteredPrefixKey[] = "p";
   auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
   const base::Value value("value");
   backing_pref_store->SetValue(kKey, value.CreateDeepCopy(), 0);
+  backing_pref_store->SetValue(kUnregisteredKey, value.CreateDeepCopy(), 0);
+  backing_pref_store->SetValue(kUnregisteredPrefixKey, value.CreateDeepCopy(),
+                               0);
+  backing_pref_store->SetValue(kUnregisteredTopLevelKey, value.CreateDeepCopy(),
+                               0);
   CreateImpl(backing_pref_store);
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
   const base::Value* output = nullptr;
   ASSERT_TRUE(pref_store()->GetValue(kKey, &output));
   EXPECT_TRUE(value.Equals(output));
+
+  EXPECT_FALSE(pref_store()->GetValue(kUnregisteredKey, nullptr));
+  EXPECT_FALSE(pref_store()->GetValue(kUnregisteredTopLevelKey, nullptr));
+  EXPECT_FALSE(pref_store()->GetValue(kUnregisteredPrefixKey, nullptr));
 }
 
 TEST_F(PersistentPrefStoreImplTest, InitialValueWithoutPathExpansion) {

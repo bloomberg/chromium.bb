@@ -180,6 +180,7 @@ PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
   mojom::PrefStoreObserverPtr observer;
   mojom::PrefStoreObserverRequest observer_request =
       mojo::MakeRequest(&observer);
+  auto values = FilterPrefs(backing_pref_store_->GetValues(), observed_prefs);
   auto connection = base::MakeUnique<Connection>(
       this, mojo::MakeRequest(&pref_store_ptr), std::move(observer),
       std::move(observed_prefs));
@@ -187,7 +188,7 @@ PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
   connections_.insert(std::make_pair(connection_ptr, std::move(connection)));
   return mojom::PersistentPrefStoreConnection::New(
       mojom::PrefStoreConnection::New(std::move(observer_request),
-                                      backing_pref_store_->GetValues(), true),
+                                      std::move(values), true),
       std::move(pref_store_ptr), backing_pref_store_->GetReadError(),
       backing_pref_store_->ReadOnly());
 }

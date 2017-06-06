@@ -5,18 +5,18 @@
 #include "services/preferences/public/cpp/pref_store_impl.h"
 
 #include <memory>
-#include <unordered_set>
+#include <set>
 #include <utility>
 
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "services/preferences/public/cpp/lib/util.h"
 
 namespace prefs {
 
 class PrefStoreImpl::Observer {
  public:
-  Observer(mojom::PrefStoreObserverPtr observer,
-           std::unordered_set<std::string> prefs)
+  Observer(mojom::PrefStoreObserverPtr observer, std::set<std::string> prefs)
       : observer_(std::move(observer)), prefs_(std::move(prefs)) {}
 
   void OnInitializationCompleted(bool succeeded) {
@@ -46,7 +46,7 @@ class PrefStoreImpl::Observer {
 
  private:
   mojom::PrefStoreObserverPtr observer_;
-  const std::unordered_set<std::string> prefs_;
+  const std::set<std::string> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };
@@ -105,13 +105,14 @@ void PrefStoreImpl::AddObserver(
     AddObserverCallback callback) {
   mojom::PrefStoreObserverPtr observer_ptr;
   auto request = mojo::MakeRequest(&observer_ptr);
-  observers_.push_back(base::MakeUnique<Observer>(
-      std::move(observer_ptr),
-      std::unordered_set<std::string>(prefs_to_observe.begin(),
-                                      prefs_to_observe.end())));
+  std::set<std::string> observed_prefs(prefs_to_observe.begin(),
+                                       prefs_to_observe.end());
   std::move(callback).Run(mojom::PrefStoreConnection::New(
-      std::move(request), backing_pref_store_->GetValues(),
+      std::move(request),
+      FilterPrefs(backing_pref_store_->GetValues(), observed_prefs),
       backing_pref_store_->IsInitializationComplete()));
+  observers_.push_back(base::MakeUnique<Observer>(std::move(observer_ptr),
+                                                  std::move(observed_prefs)));
 }
 
 }  // namespace prefs

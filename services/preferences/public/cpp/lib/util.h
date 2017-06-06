@@ -6,6 +6,8 @@
 #define SERVICES_PREFERENCES_PUBLIC_CPP_LIB_UTIL_H_
 
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/strings/string_piece.h"
@@ -22,6 +24,11 @@ namespace prefs {
 void SetValue(base::DictionaryValue* dictionary_value,
               const std::vector<base::StringPiece>& path_components,
               std::unique_ptr<base::Value> value);
+
+// Filters |prefs| to paths contained within |observed_prefs|.
+std::unique_ptr<base::DictionaryValue> FilterPrefs(
+    std::unique_ptr<base::DictionaryValue> prefs,
+    const std::set<std::string>& observed_prefs);
 
 }  // namespace prefs
 
