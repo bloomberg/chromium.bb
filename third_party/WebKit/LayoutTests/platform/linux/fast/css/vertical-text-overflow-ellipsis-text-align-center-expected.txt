@@ -45,13 +45,13 @@ layer at (8,421) size 82x310 backgroundClip at (8,421) size 82x179 clip at (9,42
     LayoutText {#text} at (61,2) size 19x696
       text run at (61,2) width 696: "em ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-layer at (8,793) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 751
+layer at (8,793) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 747
   LayoutBlockFlow {DIV} at (0,785.16) size 32x310 [border: (1px solid #000000)]
-    LayoutText {#text} at (11,4) size 19x182
-      text run at (11,4) width 181: "Lorem ipsum dolor sit amet, "
-    LayoutImage {IMG} at (1,185.50) size 25x25
-    LayoutText {#text} at (11,210) size 19x542
-      text run at (11,210) width 542: " consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (11,1) size 19x181
+      text run at (11,1) width 181: "Lorem ipsum dolor sit amet, "
+    LayoutImage {IMG} at (1,182) size 25x25
+    LayoutText {#text} at (11,207) size 19x542
+      text run at (11,207) width 542: " consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
 layer at (8,1165) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 743
   LayoutBlockFlow {DIV} at (0,1156.88) size 32x310 [border: (1px solid #000000)]
     LayoutText {#text} at (11,1) size 19x271

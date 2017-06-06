@@ -39,8 +39,8 @@ layer at (8,421) size 82x310 backgroundClip at (8,421) size 82x179 clip at (9,42
     LayoutText {#text} at (21,2) size 19x674
       text run at (21,2) width 673: "orem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (41,3) size 19x665
-      text run at (41,3) width 665: "rem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (41,1) size 19x665
+      text run at (41,1) width 665: "rem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
     LayoutText {#text} at (61,3) size 19x661
       text run at (61,3) width 660: "em ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
