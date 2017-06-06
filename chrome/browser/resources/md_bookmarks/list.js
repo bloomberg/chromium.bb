@@ -179,6 +179,15 @@ Polymer({
       }
     }
 
+    // Prevent the iron-list from changing focus on enter.
+    if (e.path[0] instanceof HTMLButtonElement && e.key == 'Enter')
+      handled = true;
+
+    if (!handled) {
+      handled = bookmarks.CommandManager.getInstance().handleKeyEvent(
+          e, this.getState().selection.items);
+    }
+
     if (handled)
       e.stopPropagation();
   },

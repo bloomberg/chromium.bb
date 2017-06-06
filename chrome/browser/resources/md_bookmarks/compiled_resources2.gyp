@@ -83,6 +83,7 @@
       'dependencies': [
         '<(EXTERNS_GYP):chrome_extensions',
         'actions',
+        'command_manager',
         'store_client',
       ],
     },
@@ -103,6 +104,7 @@
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-list/compiled_resources2.gyp:iron-list-extracted',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'actions',
+        'command_manager',
         'store_client',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],

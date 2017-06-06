@@ -217,6 +217,29 @@ cr.define('bookmarks', function() {
       }
     },
 
+    /**
+     * @param {Event} e
+     * @param {!Set<string>} itemIds
+     * @return {boolean} True if the event was handled, triggering a keyboard
+     *     shortcut.
+     */
+    handleKeyEvent: function(e, itemIds) {
+      for (var commandName in this.shortcuts_) {
+        var shortcut = this.shortcuts_[commandName];
+        if (Polymer.IronA11yKeysBehavior.keyboardEventMatchesKeys(
+                e, shortcut) &&
+            this.canExecute(commandName, itemIds)) {
+          this.handle(commandName, itemIds);
+
+          e.stopPropagation();
+          e.preventDefault();
+          return true;
+        }
+      }
+
+      return false;
+    },
+
     ////////////////////////////////////////////////////////////////////////////
     // Private functions:
 
@@ -340,20 +363,8 @@ cr.define('bookmarks', function() {
      */
     onKeydown_: function(e) {
       var selection = this.getState().selection.items;
-      // TODO(tsergeant): Prevent keyboard shortcuts when a dialog is open or
-      // text field is focused.
-      for (var commandName in this.shortcuts_) {
-        var shortcut = this.shortcuts_[commandName];
-        if (Polymer.IronA11yKeysBehavior.keyboardEventMatchesKeys(
-                e, shortcut) &&
-            this.canExecute(commandName, selection)) {
-          this.handle(commandName, selection);
-
-          e.stopPropagation();
-          e.preventDefault();
-          return;
-        }
-      }
+      if (e.target == document.body)
+        this.handleKeyEvent(e, selection);
     },
 
     /**
