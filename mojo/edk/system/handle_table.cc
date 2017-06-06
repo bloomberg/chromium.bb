@@ -181,12 +181,14 @@ bool HandleTable::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     }
   }
 
-  base::trace_event::MemoryAllocatorDump* outer_dump =
-      pmd->CreateAllocatorDump("mojo");
+  pmd->CreateAllocatorDump("mojo");
   for (const auto& entry : handle_count) {
-    outer_dump->AddScalar(GetNameForDispatcherType(entry.first),
-                          base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                          entry.second);
+    base::trace_event::MemoryAllocatorDump* inner_dump =
+        pmd->CreateAllocatorDump(std::string("mojo/") +
+                                 GetNameForDispatcherType(entry.first));
+    inner_dump->AddScalar(
+        base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+        base::trace_event::MemoryAllocatorDump::kUnitsObjects, entry.second);
   }
 
   return true;
