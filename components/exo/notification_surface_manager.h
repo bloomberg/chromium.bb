@@ -16,7 +16,7 @@ class NotificationSurfaceManager {
   // Gets the NotificationSurface associated with the given notification id.
   // Returns nullptr if no NotificationSurface is associated with the id.
   virtual NotificationSurface* GetSurface(
-      const std::string& notification_id) const = 0;
+      const std::string& notification_key) const = 0;
 
   // Adds a NotificationSurface to the manager.
   virtual void AddSurface(NotificationSurface* surface) = 0;

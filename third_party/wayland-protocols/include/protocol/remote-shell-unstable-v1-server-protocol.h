@@ -206,9 +206,9 @@ enum zcr_remote_shell_v1_error {
 	 */
 	ZCR_REMOTE_SHELL_V1_ERROR_ROLE = 0,
 	/**
-	 * invalid notification id
+	 * invalid notification key
 	 */
-	ZCR_REMOTE_SHELL_V1_ERROR_INVALID_NOTIFICATION_ID = 1,
+	ZCR_REMOTE_SHELL_V1_ERROR_INVALID_NOTIFICATION_KEY = 1,
 };
 #endif /* ZCR_REMOTE_SHELL_V1_ERROR_ENUM */
 
@@ -270,13 +270,13 @@ struct zcr_remote_shell_v1_interface {
 	 *
 	 * Creates a notification_surface for the given surface, gives it
 	 * the notification_surface role and associated it with a
-	 * notification id.
+	 * notification key.
 	 */
 	void (*get_notification_surface)(struct wl_client *client,
 					 struct wl_resource *resource,
 					 uint32_t id,
 					 struct wl_resource *surface,
-					 const char *notification_id);
+					 const char *notification_key);
 };
 
 #define ZCR_REMOTE_SHELL_V1_ACTIVATED 0

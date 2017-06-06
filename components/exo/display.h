@@ -86,7 +86,7 @@ class Display {
   // Creates a notification surface for a surface and notification id.
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
       Surface* surface,
-      const std::string& notification_id);
+      const std::string& notification_key);
 
  private:
   NotificationSurfaceManager* const notification_surface_manager_;

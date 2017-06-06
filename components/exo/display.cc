@@ -216,18 +216,18 @@ std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
 
 std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
     Surface* surface,
-    const std::string& notification_id) {
+    const std::string& notification_key) {
   TRACE_EVENT2("exo", "Display::CreateNotificationSurface", "surface",
-               surface->AsTracedValue(), "notification_id", notification_id);
+               surface->AsTracedValue(), "notification_key", notification_key);
 
   if (!notification_surface_manager_ ||
-      notification_surface_manager_->GetSurface(notification_id)) {
-    DLOG(ERROR) << "Invalid notification id, id=" << notification_id;
+      notification_surface_manager_->GetSurface(notification_key)) {
+    DLOG(ERROR) << "Invalid notification key, key=" << notification_key;
     return nullptr;
   }
 
   return base::MakeUnique<NotificationSurface>(notification_surface_manager_,
-                                               surface, notification_id);
+                                               surface, notification_key);
 }
 
 }  // namespace exo

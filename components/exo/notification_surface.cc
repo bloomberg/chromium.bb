@@ -69,10 +69,10 @@ class CustomWindowDelegate : public aura::WindowDelegate {
 
 NotificationSurface::NotificationSurface(NotificationSurfaceManager* manager,
                                          Surface* surface,
-                                         const std::string& notification_id)
+                                         const std::string& notification_key)
     : manager_(manager),
       surface_(surface),
-      notification_id_(notification_id),
+      notification_key_(notification_key),
       window_(new aura::Window(new CustomWindowDelegate(surface))) {
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);

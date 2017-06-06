@@ -686,7 +686,7 @@ void ArcNotificationContentView::OnItemUpdated() {
 
 void ArcNotificationContentView::OnNotificationSurfaceAdded(
     exo::NotificationSurface* surface) {
-  if (surface->notification_id() != notification_key_)
+  if (surface->notification_key() != notification_key_)
     return;
 
   SetSurface(surface);
@@ -694,7 +694,7 @@ void ArcNotificationContentView::OnNotificationSurfaceAdded(
 
 void ArcNotificationContentView::OnNotificationSurfaceRemoved(
     exo::NotificationSurface* surface) {
-  if (surface->notification_id() != notification_key_)
+  if (surface->notification_key() != notification_key_)
     return;
 
   SetSurface(nullptr);

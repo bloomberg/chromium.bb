@@ -2106,8 +2106,8 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
 
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
       Surface* surface,
-      const std::string& notification_id) {
-    return display_->CreateNotificationSurface(surface, notification_id);
+      const std::string& notification_key) {
+    return display_->CreateNotificationSurface(surface, notification_key);
   }
 
   // Overridden from display::DisplayObserver:
@@ -2375,7 +2375,7 @@ void remote_shell_get_notification_surface(wl_client* client,
                                            wl_resource* resource,
                                            uint32_t id,
                                            wl_resource* surface,
-                                           const char* notification_id) {
+                                           const char* notification_key) {
   if (GetUserDataAs<Surface>(surface)->HasSurfaceDelegate()) {
     wl_resource_post_error(resource, ZCR_REMOTE_SHELL_V1_ERROR_ROLE,
                            "surface has already been assigned a role");
@@ -2384,11 +2384,11 @@ void remote_shell_get_notification_surface(wl_client* client,
 
   std::unique_ptr<NotificationSurface> notification_surface =
       GetUserDataAs<WaylandRemoteShell>(resource)->CreateNotificationSurface(
-          GetUserDataAs<Surface>(surface), std::string(notification_id));
+          GetUserDataAs<Surface>(surface), std::string(notification_key));
   if (!notification_surface) {
     wl_resource_post_error(resource,
-                           ZCR_REMOTE_SHELL_V1_ERROR_INVALID_NOTIFICATION_ID,
-                           "invalid notification id");
+                           ZCR_REMOTE_SHELL_V1_ERROR_INVALID_NOTIFICATION_KEY,
+                           "invalid notification key");
     return;
   }
 
