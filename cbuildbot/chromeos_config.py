@@ -2192,7 +2192,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'scarlet',
       'smaug',
       'stout',
-      'strago',
       'stumpy',
       'tricky',
       'veyron_jerry',
