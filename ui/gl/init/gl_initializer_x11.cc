@@ -142,7 +142,9 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
 bool InitializeGLOneOffPlatform() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kHeadless))
+  if (command_line->HasSwitch(switches::kHeadless) &&
+      command_line->GetSwitchValueASCII(switches::kUseGL) ==
+          kGLImplementationOSMesaName)
     return true;
 
   switch (GetGLImplementation()) {

@@ -145,9 +145,12 @@ class HeadlessWebContentsScreenshotTest
  public:
   void SetUp() override {
     EnablePixelOutput();
-    if (GetParam())
+    if (GetParam()) {
       UseSoftwareCompositing();
-    HeadlessAsyncDevTooledBrowserTest::SetUp();
+      SetUpWithoutGPU();
+    } else {
+      HeadlessAsyncDevTooledBrowserTest::SetUp();
+    }
   }
 
   void RunDevTooledTest() override {

@@ -87,11 +87,13 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
 #endif
 
-  if (!browser_->options()->gl_implementation.empty()) {
-    command_line->AppendSwitchASCII(switches::kUseGL,
-                                    browser_->options()->gl_implementation);
-  } else {
-    command_line->AppendSwitch(switches::kDisableGpu);
+  if (!command_line->HasSwitch(switches::kUseGL)) {
+    if (!browser_->options()->gl_implementation.empty()) {
+      command_line->AppendSwitchASCII(switches::kUseGL,
+                                      browser_->options()->gl_implementation);
+    } else {
+      command_line->AppendSwitch(switches::kDisableGpu);
+    }
   }
 
   SetContentClient(&content_client_);
