@@ -12,7 +12,8 @@
         "device": [
           "device:battery_monitor",
           "device:power_monitor",
-          "device:vibration"
+          "device:vibration",
+          "device:wake_lock"
         ]
       }
     }

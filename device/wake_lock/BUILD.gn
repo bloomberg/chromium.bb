@@ -10,6 +10,8 @@ source_set("wake_lock") {
     "wake_lock_service_context.h",
     "wake_lock_service_impl.cc",
     "wake_lock_service_impl.h",
+    "wake_lock_service_impl_for_testing.cc",
+    "wake_lock_service_impl_for_testing.h",
   ]
 
   public_deps = [
