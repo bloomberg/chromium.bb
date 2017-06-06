@@ -79,17 +79,15 @@ SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl(
 }
 
 SpeechRecognitionManagerImpl::~SpeechRecognitionManagerImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(g_speech_recognition_manager_impl);
+
   g_speech_recognition_manager_impl = NULL;
 
   for (SessionsTable::iterator it = sessions_.begin(); it != sessions_.end();
        ++it) {
-    // MediaStreamUIProxy must be deleted on the IO thread.
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
-                              it->second->ui.release());
     delete it->second;
   }
-  sessions_.clear();
 }
 
 int SpeechRecognitionManagerImpl::CreateSession(

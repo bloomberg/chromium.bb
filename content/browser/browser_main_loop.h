@@ -295,6 +295,9 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   std::unique_ptr<midi::MidiService> midi_service_;
 
+  // Must be deleted on the IO thread.
+  std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
+
 #if defined(OS_WIN)
   std::unique_ptr<media::SystemMessageWindowWin> system_message_window_;
 #elif defined(OS_LINUX) && defined(USE_UDEV)
@@ -309,7 +312,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<LoaderDelegateImpl> loader_delegate_;
   std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
-  std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
   scoped_refptr<SaveFileManager> save_file_manager_;
