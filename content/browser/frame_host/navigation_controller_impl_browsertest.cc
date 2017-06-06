@@ -6843,9 +6843,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // unsafe redirect and will result in a blocked navigation and error page.
   // TODO(nasko): Find a different way to cause a blocked navigation, so
   // we test a bit more generic case.
-  GURL redirect_to_blank_url(
+  GURL redirect_to_unsafe_url(
       embedded_test_server()->GetURL("/server-redirect?data:text/html,Hello!"));
-  EXPECT_FALSE(NavigateToURL(shell(), redirect_to_blank_url));
+  EXPECT_FALSE(NavigateToURL(shell(), redirect_to_unsafe_url));
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
 
@@ -6861,11 +6861,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // The expectation is that about:blank was loaded and the virtual URL is set
   // to the URL that was blocked.
+  //
+  // TODO(nasko): Now that the error commits on the previous URL, the blocked
+  // navigation logic is no longer needed. https://crbug.com/723796
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_FALSE(
       controller.GetLastCommittedEntry()->GetURL().SchemeIs(url::kDataScheme));
-  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetVirtualURL().SchemeIs(
-      url::kDataScheme));
+  EXPECT_EQ(redirect_to_unsafe_url,
+            controller.GetLastCommittedEntry()->GetVirtualURL());
   EXPECT_EQ(url::kAboutBlankURL,
             controller.GetLastCommittedEntry()->GetURL().spec());
 }

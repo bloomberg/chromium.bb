@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -959,12 +960,18 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
 
   // The window.open() should have resulted in an error page. The blocked
   // URL should be in the virtual URL, not the actual URL.
+  //
+  // TODO(nasko): Now that the error commits on the previous URL, the blocked
+  // navigation logic is no longer needed. https://crbug.com/723796
   {
     EXPECT_EQ(0, controller->GetLastCommittedEntryIndex());
     NavigationEntry* entry = controller->GetLastCommittedEntry();
     EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
     EXPECT_FALSE(entry->GetURL().SchemeIs(url::kDataScheme));
-    EXPECT_TRUE(entry->GetVirtualURL().SchemeIs(url::kDataScheme));
+    EXPECT_TRUE(base::StartsWith(
+        entry->GetVirtualURL().spec(),
+        embedded_test_server()->GetURL("/server-redirect?").spec(),
+        base::CompareCase::SENSITIVE));
   }
 
   // Navigate forward and then go back to ensure the navigation to data: URL
@@ -981,7 +988,10 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
     NavigationEntry* entry = controller->GetLastCommittedEntry();
     EXPECT_EQ(0, controller->GetLastCommittedEntryIndex());
     EXPECT_FALSE(entry->GetURL().SchemeIs(url::kDataScheme));
-    EXPECT_TRUE(entry->GetVirtualURL().SchemeIs(url::kDataScheme));
+    EXPECT_TRUE(base::StartsWith(
+        entry->GetVirtualURL().spec(),
+        embedded_test_server()->GetURL("/server-redirect?").spec(),
+        base::CompareCase::SENSITIVE));
     EXPECT_EQ(url::kAboutBlankURL, entry->GetURL().spec());
   }
 
@@ -998,7 +1008,10 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
     NavigationEntry* entry = controller->GetLastCommittedEntry();
     EXPECT_EQ(0, controller->GetLastCommittedEntryIndex());
     EXPECT_FALSE(entry->GetURL().SchemeIs(url::kDataScheme));
-    EXPECT_TRUE(entry->GetVirtualURL().SchemeIs(url::kDataScheme));
+    EXPECT_TRUE(base::StartsWith(
+        entry->GetVirtualURL().spec(),
+        embedded_test_server()->GetURL("/server-redirect?").spec(),
+        base::CompareCase::SENSITIVE));
     EXPECT_EQ(url::kAboutBlankURL, entry->GetURL().spec());
   }
 }

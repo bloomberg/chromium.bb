@@ -1515,6 +1515,20 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Http09WeirdPort) {
   ExpectDisplayingLocalErrorPage(browser(), net::ERR_INVALID_HTTP_RESPONSE);
 }
 
+// Test that redirects to invalid URLs show an error. See
+// https://crbug.com/462272.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, RedirectToInvalidURL) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/server-redirect?https://:");
+  ui_test_utils::NavigateToURL(browser(), url);
+  ExpectDisplayingLocalErrorPage(browser(), net::ERR_INVALID_REDIRECT);
+  // The error page should commit before the redirect, not after.
+  EXPECT_EQ(url, browser()
+                     ->tab_strip_model()
+                     ->GetActiveWebContents()
+                     ->GetLastCommittedURL());
+}
+
 class ErrorPageWithHttp09OnNonDefaultPortsTest : public InProcessBrowserTest {
  public:
   // InProcessBrowserTest:

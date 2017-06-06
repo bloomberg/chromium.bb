@@ -1307,7 +1307,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorCodeOnRedirect) {
       ExecuteScript(shell(), base::StringPrintf("location.href = '%s';",
                                                 redirect_url.spec().c_str())));
   same_tab_observer.Wait();
-  EXPECT_EQ(net::ERR_ABORTED, observer.net_error_code());
+  EXPECT_EQ(net::ERR_UNSAFE_REDIRECT, observer.net_error_code());
 }
 
 // This class allows running tests with PlzNavigate enabled, regardless of

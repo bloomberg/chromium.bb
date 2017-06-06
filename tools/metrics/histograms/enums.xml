@@ -25341,6 +25341,7 @@ from previous Chrome versions.
   <int value="300" label="INVALID_URL"/>
   <int value="301" label="DISALLOWED_URL_SCHEME"/>
   <int value="302" label="UNKNOWN_URL_SCHEME"/>
+  <int value="303" label="INVALID_REDIRECT"/>
   <int value="310" label="TOO_MANY_REDIRECTS"/>
   <int value="311" label="UNSAFE_REDIRECT"/>
   <int value="312" label="UNSAFE_PORT"/>
