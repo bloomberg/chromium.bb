@@ -61554,6 +61554,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ResourceScheduler.PeakDelayableRequestsInFlight"
+    units="requests">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Records the highest number of delayable requests that were in-flight when
+    the given request with higher priority was in-flight.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.RequestsCount" units="requests count">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Records the count of number of requests in-flight. Recorded when a request
+    is started by the resource scheduler.
+  </summary>
+</histogram>
+
 <histogram name="ResourceScheduler.RequestTimeDeferred.Active">
   <obsolete>
     Deprecated 1/2016
@@ -93483,6 +93500,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="ResourceScheduler.ClientLoadedTime.Other"/>
   <affected-histogram
       name="ResourceScheduler.ClientLoadedTime.Other.SwitchedToActive"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourceSchedulerPeakDelayableRequestsInFlight">
+  <suffix name="LayoutBlocking"
+      label="Records the highest number of delayable requests that were
+             in-flight at the same time when a layout blocking request was
+             in-flight. Recorded every time a layout blocking request
+             finishes."/>
+  <suffix name="NonDelayable"
+      label="Records the highest number of delayable requests that were
+             in-flight at the same time when a non-delayable request was
+             in-flight. Recorded every time a non-delayable request finishes."/>
+  <affected-histogram name="ResourceScheduler.PeakDelayableRequestsInFlight"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourceSchedulerRequestsCount">
+  <suffix name="All" label="All requests in-flight were counted."/>
+  <suffix name="Delayable" label="Delayable requests in-flight were counted."/>
+  <suffix name="NonDelayable"
+      label="Non-delayable requests in-flight were counted."/>
+  <suffix name="TotalLayoutBlocking"
+      label="Layout blocking requests in-flight were counted."/>
+  <affected-histogram name="ResourceScheduler.RequestsCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ResourceType" separator=".">

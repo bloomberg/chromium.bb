@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
@@ -30,6 +31,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/latency/latency_info.h"
 #include "url/scheme_host_port.h"
@@ -505,15 +507,38 @@ TEST_F(ResourceSchedulerTest, SpdyLowBlocksOtherLowUntilBodyInserted) {
 }
 
 TEST_F(ResourceSchedulerTest, NavigationResetsState) {
+  base::HistogramTester histogram_tester;
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
   scheduler()->OnNavigate(kChildId, kRouteId);
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(low->started());
-  EXPECT_FALSE(low2->started());
+
+  {
+    std::unique_ptr<TestRequest> high(
+        NewRequest("http://host/high", net::HIGHEST));
+    std::unique_ptr<TestRequest> low(
+        NewRequest("http://host/low", net::LOWEST));
+    std::unique_ptr<TestRequest> low2(
+        NewRequest("http://host/low", net::LOWEST));
+    EXPECT_TRUE(high->started());
+    EXPECT_TRUE(low->started());
+    EXPECT_FALSE(low2->started());
+  }
+
+  histogram_tester.ExpectTotalCount("ResourceScheduler.RequestsCount.All", 2);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("ResourceScheduler.RequestsCount.All"),
+      testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
+
+  histogram_tester.ExpectTotalCount("ResourceScheduler.RequestsCount.Delayable",
+                                    2);
+  histogram_tester.ExpectTotalCount(
+      "ResourceScheduler.RequestsCount.NonDelayable", 2);
+  histogram_tester.ExpectTotalCount(
+      "ResourceScheduler.RequestsCount.TotalLayoutBlocking", 2);
+
+  histogram_tester.ExpectUniqueSample(
+      "ResourceScheduler.PeakDelayableRequestsInFlight.LayoutBlocking", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceScheduler.PeakDelayableRequestsInFlight.NonDelayable", 1, 1);
 }
 
 TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
