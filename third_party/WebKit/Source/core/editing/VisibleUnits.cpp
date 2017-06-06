@@ -2027,77 +2027,91 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
             current_node, layout_object->CaretMaxOffset() + text_start_offset);
       }
 
-      // Map offset in DOM node to offset in InlineBox.
-      DCHECK_GE(current_pos.OffsetInLeafNode(),
-                static_cast<int>(text_start_offset));
-      const unsigned text_offset =
-          current_pos.OffsetInLeafNode() - text_start_offset;
-      InlineTextBox* last_text_box = text_layout_object->LastTextBox();
-      for (InlineTextBox* box = text_layout_object->FirstTextBox(); box;
-           box = box->NextTextBox()) {
-        if (text_offset == box->Start()) {
-          if (text_layout_object->IsTextFragment() &&
-              ToLayoutTextFragment(layout_object)
-                  ->IsRemainingTextLayoutObject()) {
-            // |currentPos| is at start of remaining text of
-            // |Text| node with :first-letter.
-            DCHECK_GE(current_pos.OffsetInLeafNode(), 1);
-            LayoutObject* first_letter_layout_object =
-                ToLayoutTextFragment(layout_object)
-                    ->GetFirstLetterPseudoElement()
-                    ->GetLayoutObject();
-            if (first_letter_layout_object &&
-                first_letter_layout_object->Style()->Visibility() ==
-                    EVisibility::kVisible)
-              return current_pos.ComputePosition();
-          }
-          continue;
-        }
-        if (text_offset <= box->Start() + box->Len()) {
-          if (text_offset > box->Start())
-            return current_pos.ComputePosition();
-          continue;
-        }
-
-        if (box == last_text_box ||
-            text_offset != box->Start() + box->Len() + 1)
-          continue;
-
-        // The text continues on the next line only if the last text box is not
-        // on this line and none of the boxes on this line have a larger start
-        // offset.
-
-        bool continues_on_next_line = true;
-        InlineBox* other_box = box;
-        while (continues_on_next_line) {
-          other_box = other_box->NextLeafChild();
-          if (!other_box)
-            break;
-          if (other_box == last_text_box ||
-              (LineLayoutAPIShim::LayoutObjectFrom(
-                   other_box->GetLineLayoutItem()) == text_layout_object &&
-               ToInlineTextBox(other_box)->Start() > text_offset))
-            continues_on_next_line = false;
-        }
-
-        other_box = box;
-        while (continues_on_next_line) {
-          other_box = other_box->PrevLeafChild();
-          if (!other_box)
-            break;
-          if (other_box == last_text_box ||
-              (LineLayoutAPIShim::LayoutObjectFrom(
-                   other_box->GetLineLayoutItem()) == text_layout_object &&
-               ToInlineTextBox(other_box)->Start() > text_offset))
-            continues_on_next_line = false;
-        }
-
-        if (continues_on_next_line)
-          return current_pos.ComputePosition();
+      if (CanBeBackwardCaretPosition(text_layout_object,
+                                     current_pos.OffsetInLeafNode())) {
+        return current_pos.ComputePosition();
       }
     }
   }
   return last_visible.DeprecatedComputePosition();
+}
+
+// TODO(editing-dev): This function is just moved out from
+// |MostBackwardCaretPosition()|. We should study this function more and
+// name it appropriately. See https://trac.webkit.org/changeset/32438/
+// which introduce this.
+static bool CanBeBackwardCaretPosition(const LayoutText* text_layout_object,
+                                       int offset_in_node) {
+  const unsigned text_start_offset = text_layout_object->TextStartOffset();
+  DCHECK_GE(offset_in_node, static_cast<int>(text_start_offset));
+  const unsigned text_offset = offset_in_node - text_start_offset;
+  InlineTextBox* const last_text_box = text_layout_object->LastTextBox();
+  for (InlineTextBox* box = text_layout_object->FirstTextBox(); box;
+       box = box->NextTextBox()) {
+    if (text_offset == box->Start()) {
+      if (text_layout_object->IsTextFragment() &&
+          ToLayoutTextFragment(text_layout_object)
+              ->IsRemainingTextLayoutObject()) {
+        // |offset_in_node| is at start of remaining text of
+        // |Text| node with :first-letter.
+        DCHECK_GE(offset_in_node, 1);
+        LayoutObject* first_letter_layout_object =
+            ToLayoutTextFragment(text_layout_object)
+                ->GetFirstLetterPseudoElement()
+                ->GetLayoutObject();
+        if (first_letter_layout_object &&
+            first_letter_layout_object->Style()->Visibility() ==
+                EVisibility::kVisible)
+          return true;
+      }
+      continue;
+    }
+    if (text_offset <= box->Start() + box->Len()) {
+      if (text_offset > box->Start())
+        return true;
+      continue;
+    }
+
+    if (box == last_text_box || text_offset != box->Start() + box->Len() + 1)
+      continue;
+
+    // TODO(yosin): We should move below code fragment into
+    // |DoesContinueOnNextLine()|. Note: |MostForwardCaretPosition()| has
+    // same code fragment except for comparison on |text_offset|.
+    // Backward: other_box->Start() >  text_offset
+    // Forward:  other_box->Start() >= text_offset
+    // The text continues on the next line only if the last text box is not
+    // on this line and none of the boxes on this line have a larger start
+    // offset.
+    bool continues_on_next_line = true;
+    InlineBox* other_box = box;
+    while (continues_on_next_line) {
+      other_box = other_box->NextLeafChild();
+      if (!other_box)
+        break;
+      if (other_box == last_text_box ||
+          (LineLayoutAPIShim::LayoutObjectFrom(
+               other_box->GetLineLayoutItem()) == text_layout_object &&
+           ToInlineTextBox(other_box)->Start() > text_offset))
+        continues_on_next_line = false;
+    }
+
+    other_box = box;
+    while (continues_on_next_line) {
+      other_box = other_box->PrevLeafChild();
+      if (!other_box)
+        break;
+      if (other_box == last_text_box ||
+          (LineLayoutAPIShim::LayoutObjectFrom(
+               other_box->GetLineLayoutItem()) == text_layout_object &&
+           ToInlineTextBox(other_box)->Start() > text_offset))
+        continues_on_next_line = false;
+    }
+
+    if (continues_on_next_line)
+      return true;
+  }
+  return false;
 }
 
 Position MostBackwardCaretPosition(const Position& position,
