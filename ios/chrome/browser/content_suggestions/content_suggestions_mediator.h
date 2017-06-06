@@ -26,6 +26,7 @@ class MostVisitedSites;
 
 @protocol ContentSuggestionsCommands;
 @class ContentSuggestionIdentifier;
+class GURL;
 
 // Mediator for ContentSuggestions. Makes the interface between a
 // ntp_snippets::ContentSuggestionsService and the Objective-C services using
@@ -51,6 +52,12 @@ initWithContentService:
 // change the UI.
 - (void)dismissSuggestion:
     (nonnull ContentSuggestionIdentifier*)suggestionIdentifier;
+
+// Blacklists the URL from the Most Visited sites.
+- (void)blacklistMostVisitedURL:(GURL)URL;
+
+// Whitelists the URL from the Most Visited sites.
+- (void)whitelistMostVisitedURL:(GURL)URL;
 
 @end
 

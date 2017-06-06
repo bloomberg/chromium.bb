@@ -17,10 +17,15 @@
 // Opens the Most Visited associated with this |item| at the |mostVisitedItem|.
 - (void)openMostVisitedItem:(nonnull CollectionViewItem*)item
                     atIndex:(NSInteger)mostVisitedIndex;
-// Displays a context menu for opening the |articleItem|.
-- (void)displayContextMenuForArticle:(nonnull CollectionViewItem*)item
+// Displays a context menu for the |articleItem|.
+- (void)displayContextMenuForArticle:(nonnull CollectionViewItem*)articleItem
                              atPoint:(CGPoint)touchLocation
                          atIndexPath:(nonnull NSIndexPath*)indexPath;
+// Displays a context menu for the |mostVisitedItem|.
+- (void)displayContextMenuForMostVisitedItem:
+            (nonnull CollectionViewItem*)mostVisitedItem
+                                     atPoint:(CGPoint)touchLocation
+                                 atIndexPath:(nonnull NSIndexPath*)indexPath;
 // Dismisses the context menu if it is displayed.
 - (void)dismissContextMenu;
 
