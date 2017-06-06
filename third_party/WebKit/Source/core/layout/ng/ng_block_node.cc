@@ -241,25 +241,31 @@ String NGBlockNode::ToString() const {
 void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
     NGLayoutResult* layout_result) {
-  NGPhysicalBoxFragment* fragment =
+  NGPhysicalBoxFragment* physical_fragment =
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
 
   if (box_->Style()->SpecifiesColumns())
-    UpdateLegacyMultiColumnFlowThread(box_, fragment);
-  box_->SetWidth(fragment->Size().width);
-  box_->SetHeight(fragment->Size().height);
+    UpdateLegacyMultiColumnFlowThread(box_, physical_fragment);
+  box_->SetWidth(physical_fragment->Size().width);
+  box_->SetHeight(physical_fragment->Size().height);
   NGBoxStrut border_and_padding = ComputeBorders(constraint_space, Style()) +
                                   ComputePadding(constraint_space, Style());
-  LayoutUnit intrinsic_logical_height = box_->Style()->IsHorizontalWritingMode()
-                                            ? fragment->OverflowSize().height
-                                            : fragment->OverflowSize().width;
+  LayoutUnit intrinsic_logical_height =
+      box_->Style()->IsHorizontalWritingMode()
+          ? physical_fragment->OverflowSize().height
+          : physical_fragment->OverflowSize().width;
   intrinsic_logical_height -= border_and_padding.BlockSum();
   box_->SetIntrinsicContentLogicalHeight(intrinsic_logical_height);
 
-  for (const NGPositionedFloat& positioned_float : fragment->PositionedFloats())
+  // TODO(ikilpatrick) is this the right thing to do?
+  if (box_->IsLayoutBlockFlow()) {
+    ToLayoutBlockFlow(box_)->RemoveFloatingObjects();
+  }
+  for (const NGPositionedFloat& positioned_float :
+       physical_fragment->PositionedFloats())
     FloatingObjectPositionedUpdated(positioned_float, box_);
 
-  for (const auto& child_fragment : fragment->Children()) {
+  for (const auto& child_fragment : physical_fragment->Children()) {
     if (child_fragment->IsPlaced())
       FragmentPositionUpdated(ToNGPhysicalBoxFragment(*child_fragment));
 
@@ -270,9 +276,18 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     }
   }
 
-  if (box_->IsLayoutBlock())
+  if (box_->IsLayoutBlock()) {
     ToLayoutBlock(box_)->LayoutPositionedObjects(true);
+    NGWritingMode writing_mode =
+        FromPlatformWritingMode(Style().GetWritingMode());
+    NGBoxFragment fragment(writing_mode, physical_fragment);
+    ToLayoutBlock(box_)->ComputeOverflow(fragment.OverflowSize().block_size -
+                                         border_and_padding.block_end);
+  }
+
+  box_->UpdateAfterLayout();
   box_->ClearNeedsLayout();
+
   if (box_->IsLayoutBlockFlow()) {
     ToLayoutBlockFlow(box_)->UpdateIsSelfCollapsing();
   }
