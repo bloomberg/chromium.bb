@@ -32,6 +32,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.annotation.Nullable;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.widget.ListView;
@@ -94,10 +95,10 @@ public class AccountManagementFragment extends PreferenceFragment
      */
     private static final String SIGN_OUT_ALLOWED = "auto_signed_in_school_account";
 
-    private static final HashMap<String, Pair<String, Bitmap>> sToNamePicture = new HashMap<>();
+    private static final HashMap<String, Pair<String, Drawable>> sToNamePicture = new HashMap<>();
 
     private static String sChildAccountId;
-    private static Bitmap sCachedBadgedPicture;
+    private static Drawable sCachedBadgedPicture;
 
     public static final String PREF_ACCOUNTS_CATEGORY = "accounts_category";
     public static final String PREF_PARENTAL_SETTINGS = "parental_settings";
@@ -190,6 +191,7 @@ public class AccountManagementFragment extends PreferenceFragment
      * Initiate fetching the user accounts data (images and the full name).
      * Fetched data will be sent to observers of ProfileDownloader.
      *
+     * @param context A context to get resources, current theme, etc.
      * @param profile Profile to use.
      */
     private static void startFetchingAccountsInformation(Context context, Profile profile) {
@@ -384,9 +386,8 @@ public class AccountManagementFragment extends PreferenceFragment
             ChromeBasePreference pref = new ChromeBasePreference(getActivity());
             pref.setTitle(account.name);
 
-            pref.setIcon(new BitmapDrawable(getResources(),
-                    isChildAccount ? getBadgedUserPicture(account.name, getResources()) :
-                        getUserPicture(account.name, getResources())));
+            pref.setIcon(isChildAccount ? getBadgedUserPicture(getActivity(), account.name)
+                                        : getUserPicture(getActivity(), account.name));
 
             pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 @Override
@@ -442,7 +443,7 @@ public class AccountManagementFragment extends PreferenceFragment
     @Override
     public void onProfileDownloaded(String accountId, String fullName, String givenName,
             Bitmap bitmap) {
-        updateUserNamePictureCache(accountId, fullName, bitmap);
+        updateUserNamePictureCache(getActivity(), accountId, fullName, bitmap);
         updateAccountsList();
     }
 
@@ -557,27 +558,29 @@ public class AccountManagementFragment extends PreferenceFragment
 
     /**
      * Converts a square user picture to a round user picture.
+     *
+     * @param context A context to get resources, current theme, etc.
      * @param bitmap A bitmap to convert.
      * @return A rounded picture bitmap.
      */
-    public static Bitmap makeRoundUserPicture(Bitmap bitmap) {
+    public static Drawable makeRoundUserPicture(Context context, Bitmap bitmap) {
         if (bitmap == null) return null;
 
-        Bitmap output = Bitmap.createBitmap(
-                bitmap.getWidth(), bitmap.getHeight(), Config.ARGB_8888);
+        int imageSizePx = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
+        Bitmap output = Bitmap.createBitmap(imageSizePx, imageSizePx, Config.ARGB_8888);
         Canvas canvas = new Canvas(output);
 
         final Paint paint = new Paint();
-        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-
         canvas.drawARGB(0, 0, 0, 0);
         paint.setAntiAlias(true);
         paint.setColor(0xFFFFFFFF);
-        canvas.drawCircle(bitmap.getWidth() * 0.5f, bitmap.getHeight() * 0.5f,
-                bitmap.getWidth() * 0.5f, paint);
+        canvas.drawCircle(imageSizePx * 0.5f, imageSizePx * 0.5f, imageSizePx * 0.5f, paint);
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(bitmap, rect, rect, paint);
-        return output;
+
+        Rect srcRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        Rect dstRect = new Rect(0, 0, imageSizePx, imageSizePx);
+        canvas.drawBitmap(bitmap, srcRect, dstRect, paint);
+        return new BitmapDrawable(context.getResources(), output);
     }
 
     /**
@@ -586,9 +589,9 @@ public class AccountManagementFragment extends PreferenceFragment
      * @param badge A bitmap to overlay with.
      * @return A bitmap with the badge overlaying the {@code userPicture}.
      */
-    private static Bitmap overlayChildBadgeOnUserPicture(
-            Bitmap userPicture, Bitmap badge, Resources resources) {
-        assert userPicture.getWidth() == resources.getDimensionPixelSize(R.dimen.user_picture_size);
+    private static Drawable overlayChildBadgeOnUserPicture(
+            Drawable userPicture, Bitmap badge, Resources resources) {
+        int imageSizePx = resources.getDimensionPixelOffset(R.dimen.user_picture_size);
         int borderSize = resources.getDimensionPixelOffset(R.dimen.badge_border_size);
         int badgeRadius = resources.getDimensionPixelOffset(R.dimen.badge_radius);
 
@@ -600,7 +603,8 @@ public class AccountManagementFragment extends PreferenceFragment
         Bitmap badgedPicture = Bitmap.createBitmap(badgedPictureWidth, badgedPictureHeight,
                 Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(badgedPicture);
-        canvas.drawBitmap(userPicture, 0, 0, null);
+        userPicture.setBounds(0, 0, imageSizePx, imageSizePx);
+        userPicture.draw(canvas);
 
         // Cut a transparent hole through the background image.
         // This will serve as a border to the badge being overlaid.
@@ -613,20 +617,22 @@ public class AccountManagementFragment extends PreferenceFragment
 
         // Draw the badge
         canvas.drawBitmap(badge, badgeCenterX - badgeRadius, badgeCenterY - badgeRadius, null);
-        return badgedPicture;
+        return new BitmapDrawable(resources, badgedPicture);
     }
 
     /**
      * Updates the user name and picture in the cache.
+     *
+     * @param context A context to get resources, current theme, etc.
      * @param accountId User's account id.
      * @param fullName User name.
      * @param bitmap User picture.
      */
     public static void updateUserNamePictureCache(
-            String accountId, String fullName, Bitmap bitmap) {
+            Context context, String accountId, String fullName, Bitmap bitmap) {
         sChildAccountId = null;
         sCachedBadgedPicture = null;
-        sToNamePicture.put(accountId, new Pair<>(fullName, makeRoundUserPicture(bitmap)));
+        sToNamePicture.put(accountId, new Pair<>(fullName, makeRoundUserPicture(context, bitmap)));
     }
 
     /**
@@ -634,7 +640,7 @@ public class AccountManagementFragment extends PreferenceFragment
      * @return A cached user name for a given account.
      */
     public static String getCachedUserName(String accountId) {
-        Pair<String, Bitmap> pair = sToNamePicture.get(accountId);
+        Pair<String, Drawable> pair = sToNamePicture.get(accountId);
         return pair != null ? pair.first : null;
     }
 
@@ -642,18 +648,21 @@ public class AccountManagementFragment extends PreferenceFragment
      * Gets the user picture for the account from the cache, or returns the default picture if
      * unavailable.
      *
+     * @param context A context to get resources, current theme, etc.
      * @param accountId A child account.
      * @return A user picture with badge for a given child account.
      */
-    public static Bitmap getBadgedUserPicture(String accountId, Resources res) {
+    private static Drawable getBadgedUserPicture(Context context, String accountId) {
         if (sChildAccountId != null) {
             assert TextUtils.equals(accountId, sChildAccountId);
             return sCachedBadgedPicture;
         }
         sChildAccountId = accountId;
-        Bitmap picture = getUserPicture(accountId, res);
-        Bitmap badge = BitmapFactory.decodeResource(res, R.drawable.ic_account_child_20dp);
-        sCachedBadgedPicture = overlayChildBadgeOnUserPicture(picture, badge, res);
+        Drawable picture = getUserPicture(context, accountId);
+        Bitmap badge = BitmapFactory.decodeResource(
+                context.getResources(), R.drawable.ic_account_child_20dp);
+        sCachedBadgedPicture =
+                overlayChildBadgeOnUserPicture(picture, badge, context.getResources());
         return sCachedBadgedPicture;
     }
 
@@ -661,21 +670,24 @@ public class AccountManagementFragment extends PreferenceFragment
      * Gets the user picture for the account from the cache, or returns the default picture if
      * unavailable.
      *
-     * @param accountId An account.
-     * @param resources The collection containing the application resources.
+     * @param context A context to get resources, current theme, etc.
+     * @param accountId Name of the account to get picture for.
      * @return A user picture for a given account.
      */
-    public static Bitmap getUserPicture(String accountId, Resources resources) {
-        Pair<String, Bitmap> pair = sToNamePicture.get(accountId);
-        return pair != null ? pair.second : BitmapFactory.decodeResource(resources,
-                R.drawable.account_management_no_picture);
+    public static Drawable getUserPicture(Context context, String accountId) {
+        Pair<String, Drawable> pair = sToNamePicture.get(accountId);
+        return pair != null ? pair.second : getAvatarPlaceholder(context);
+    }
+
+    private static Drawable getAvatarPlaceholder(Context context) {
+        return AppCompatResources.getDrawable(context, R.drawable.logo_avatar_anonymous);
     }
 
     /**
      * Initiate fetching of an image and a picture of a given account. Fetched data will be sent to
      * observers of ProfileDownloader.
      *
-     * @param context A context.
+     * @param context A context to get resources, current theme, etc.
      * @param profile A profile.
      * @param accountName An account name.
      */

@@ -7,13 +7,15 @@ package org.chromium.chrome.browser.firstrun;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
@@ -29,22 +31,33 @@ import java.util.List;
  * should be provided by calling {@link #update(List)}
  */
 public class ProfileDataCache implements ProfileDownloader.Observer {
+    /**
+     * Observer to get notifications about changes in profile data.
+     */
+    public interface Observer {
+        /**
+         * Notifies that an account's profile data has been updated.
+         * @param accountId An account ID.
+         */
+        void onProfileDataUpdated(String accountId);
+    }
+
     private static class CacheEntry {
-        public CacheEntry(Bitmap picture, String fullName, String givenName) {
+        public CacheEntry(Drawable picture, String fullName, String givenName) {
             this.picture = picture;
             this.fullName = fullName;
             this.givenName = givenName;
         }
 
-        public Bitmap picture;
+        public Drawable picture;
         public String fullName;
         public String givenName;
     }
 
     private final HashMap<String, CacheEntry> mCacheEntries = new HashMap<>();
 
-    private final Bitmap mPlaceholderImage;
-    private final ObserverList<ProfileDownloader.Observer> mObservers = new ObserverList<>();
+    private final Drawable mPlaceholderImage;
+    private final ObserverList<Observer> mObservers = new ObserverList<>();
 
     private final Context mContext;
     private Profile mProfile;
@@ -53,9 +66,8 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
         mContext = context;
         mProfile = profile;
 
-        Bitmap placeHolder = BitmapFactory.decodeResource(mContext.getResources(),
-                R.drawable.fre_placeholder);
-        mPlaceholderImage = getCroppedBitmap(placeHolder);
+        mPlaceholderImage =
+                AppCompatResources.getDrawable(context, R.drawable.logo_avatar_anonymous);
 
         ProfileDownloader.addObserver(this);
     }
@@ -80,7 +92,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
      * @return Returns the profile image for a given Google account ID if it's in
      *         the cache, otherwise returns a placeholder image.
      */
-    public Bitmap getImage(String accountId) {
+    public Drawable getImage(String accountId) {
         CacheEntry cacheEntry = mCacheEntries.get(accountId);
         if (cacheEntry == null) return mPlaceholderImage;
         return cacheEntry.picture;
@@ -116,28 +128,28 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
     /**
      * @param observer Observer that should be notified when new profile images are available.
      */
-    public void addObserver(ProfileDownloader.Observer observer) {
+    public void addObserver(Observer observer) {
         mObservers.addObserver(observer);
     }
 
     /**
      * @param observer Observer that was added by {@link #addObserver} and should be removed.
      */
-    public void removeObserver(ProfileDownloader.Observer observer) {
+    public void removeObserver(Observer observer) {
         mObservers.removeObserver(observer);
     }
 
     @Override
     public void onProfileDownloaded(String accountId, String fullName, String givenName,
             Bitmap bitmap) {
-        bitmap = getCroppedBitmap(bitmap);
-        mCacheEntries.put(accountId, new CacheEntry(bitmap, fullName, givenName));
-        for (ProfileDownloader.Observer observer : mObservers) {
-            observer.onProfileDownloaded(accountId, fullName, givenName, bitmap);
+        Drawable drawable = getCroppedAvatar(bitmap);
+        mCacheEntries.put(accountId, new CacheEntry(drawable, fullName, givenName));
+        for (Observer observer : mObservers) {
+            observer.onProfileDataUpdated(accountId);
         }
     }
 
-    private Bitmap getCroppedBitmap(Bitmap bitmap) {
+    private Drawable getCroppedAvatar(Bitmap bitmap) {
         Bitmap output = Bitmap.createBitmap(
                 bitmap.getWidth(), bitmap.getHeight(), Config.ARGB_8888);
         Canvas canvas = new Canvas(output);
@@ -154,6 +166,6 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
         paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
         canvas.drawBitmap(bitmap, rect, rect, paint);
 
-        return output;
+        return new BitmapDrawable(mContext.getResources(), output);
     }
 }
