@@ -353,9 +353,6 @@ class PLATFORM_EXPORT DisplayItem {
 
   virtual bool DrawsContent() const { return false; }
 
-  // Override to implement specific analysis strategies.
-  virtual int NumberOfSlowPaths() const { return 0; }
-
 #ifndef NDEBUG
   static WTF::String TypeAsDebugString(DisplayItem::Type);
   const WTF::String ClientDebugString() const { return client_debug_string_; }

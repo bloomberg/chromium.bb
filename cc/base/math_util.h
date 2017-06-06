@@ -159,6 +159,11 @@ class CC_BASE_EXPORT MathUtil {
     return std::min(std::max(value, min), max);
   }
 
+  template <typename T>
+  static bool IsWithinEpsilon(T a, T b) {
+    return std::abs(a - b) < std::numeric_limits<T>::epsilon();
+  }
+
   // Background: Existing transform code does not do the right thing in
   // MapRect / MapQuad / ProjectQuad when there is a perspective projection that
   // causes one of the transformed vertices to go to w < 0. In those cases, it

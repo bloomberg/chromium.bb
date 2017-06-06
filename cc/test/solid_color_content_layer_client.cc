@@ -6,10 +6,8 @@
 
 #include <stddef.h>
 
-#include "cc/paint/drawing_display_item.h"
-#include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/paint/paint_recorder.h"
+#include "cc/paint/paint_op_buffer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/skia_util.h"
@@ -23,34 +21,29 @@ gfx::Rect SolidColorContentLayerClient::PaintableRegion() {
 scoped_refptr<DisplayItemList>
 SolidColorContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
-  PaintRecorder recorder;
-  gfx::Rect clip(PaintableRegion());
-  PaintCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));
+  auto display_list = base::MakeRefCounted<DisplayItemList>();
+  PaintOpBuffer* buffer = display_list->StartPaint();
+  buffer->push<SaveOp>();
 
-  canvas->clear(SK_ColorTRANSPARENT);
+  SkRect clip = gfx::RectToSkRect(PaintableRegion());
+  buffer->push<ClipRectOp>(clip, SkClipOp::kIntersect, false);
+  SkColor color = SK_ColorTRANSPARENT;
+  buffer->push<DrawColorOp>(color, SkBlendMode::kSrc);
 
   if (border_size_ != 0) {
     PaintFlags flags;
     flags.setStyle(PaintFlags::kFill_Style);
     flags.setColor(border_color_);
-    canvas->drawRect(
-        SkRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height()),
-        flags);
+    buffer->push<DrawRectOp>(clip, flags);
   }
 
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(color_);
-  canvas->drawRect(
-      SkRect::MakeXYWH(clip.x() + border_size_, clip.y() + border_size_,
-                       clip.width() - 2 * border_size_,
-                       clip.height() - 2 * border_size_),
-      flags);
+  buffer->push<DrawRectOp>(clip.makeInset(border_size_, border_size_), flags);
 
-  auto display_list = make_scoped_refptr(new DisplayItemList);
-  display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
-      clip, recorder.finishRecordingAsPicture(), gfx::RectToSkRect(clip));
-
+  buffer->push<RestoreOp>();
+  display_list->EndPaintOfUnpaired(PaintableRegion());
   display_list->Finalize();
   return display_list;
 }

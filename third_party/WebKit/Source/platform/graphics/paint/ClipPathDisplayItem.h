@@ -24,8 +24,6 @@ class PLATFORM_EXPORT BeginClipPathDisplayItem final
   void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
 
-  int NumberOfSlowPaths() const override;
-
  private:
 #ifndef NDEBUG
   void DumpPropertiesAsDebugString(WTF::StringBuilder&) const override;

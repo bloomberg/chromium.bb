@@ -234,8 +234,7 @@ sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
 size_t RasterSource::GetMemoryUsage() const {
   if (!display_list_)
     return 0;
-  return display_list_->ApproximateMemoryUsage() +
-         painter_reported_memory_usage_;
+  return display_list_->BytesUsed() + painter_reported_memory_usage_;
 }
 
 bool RasterSource::PerformSolidColorAnalysis(const gfx::Rect& content_rect,

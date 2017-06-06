@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "cc/blink/cc_blink_export.h"
 #include "cc/paint/display_item_list.h"
-#include "cc/paint/paint_record.h"
 #include "third_party/WebKit/public/platform/WebDisplayItemList.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
@@ -28,6 +27,7 @@ struct WebRect;
 
 namespace cc {
 class FilterOperations;
+class PaintOpBuffer;
 }
 
 namespace cc_blink {
@@ -41,7 +41,7 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
 
   // blink::WebDisplayItemList implementation.
   void AppendDrawingItem(const blink::WebRect& visual_rect,
-                         sk_sp<const cc::PaintRecord> record,
+                         sk_sp<const cc::PaintOpBuffer> record,
                          const blink::WebRect& record_bounds) override;
   void AppendClipItem(
       const blink::WebRect& clip_rect,
@@ -66,9 +66,9 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
                         ScrollContainerId) override;
   void AppendEndScrollItem() override;
 
-  void SetNumSlowPaths(int num_slow_paths) override;
-
  private:
+  void AppendRestore();
+
   scoped_refptr<cc::DisplayItemList> display_item_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDisplayItemListImpl);

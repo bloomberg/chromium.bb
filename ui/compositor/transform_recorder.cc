@@ -5,7 +5,7 @@
 #include "ui/compositor/transform_recorder.h"
 
 #include "cc/paint/display_item_list.h"
-#include "cc/paint/transform_display_item.h"
+#include "cc/paint/paint_op_buffer.h"
 #include "ui/compositor/paint_context.h"
 
 namespace ui {
@@ -14,14 +14,24 @@ TransformRecorder::TransformRecorder(const PaintContext& context)
     : context_(context), transformed_(false) {}
 
 TransformRecorder::~TransformRecorder() {
-  if (transformed_)
-    context_.list_->CreateAndAppendPairedEndItem<cc::EndTransformDisplayItem>();
+  if (!transformed_)
+    return;
+
+  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
+  buffer->push<cc::RestoreOp>();
+  context_.list_->EndPaintOfPairedEnd();
 }
 
 void TransformRecorder::Transform(const gfx::Transform& transform) {
   DCHECK(!transformed_);
-  context_.list_->CreateAndAppendPairedBeginItem<cc::TransformDisplayItem>(
-      transform);
+  if (transform.IsIdentity())
+    return;
+
+  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
+  buffer->push<cc::SaveOp>();
+  buffer->push<cc::ConcatOp>(static_cast<SkMatrix>(transform.matrix()));
+  context_.list_->EndPaintOfPairedBegin();
+
   transformed_ = true;
 }
 
