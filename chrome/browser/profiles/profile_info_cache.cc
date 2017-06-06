@@ -63,10 +63,12 @@ const char kSupervisedUserId[] = "managed_user_id";
 const char kProfileIsEphemeral[] = "is_ephemeral";
 const char kActiveTimeKey[] = "active_time";
 const char kIsAuthErrorKey[] = "is_auth_error";
-const char kStatsBrowsingHistoryKey[] = "stats_browsing_history";
-const char kStatsPasswordsKey[] = "stats_passwords";
-const char kStatsBookmarksKey[] = "stats_bookmarks";
-const char kStatsSettingsKey[] = "stats_settings";
+
+// TODO(dullweber): Remove these constants after the stored data is removed.
+const char kStatsBrowsingHistoryKeyDeprecated[] = "stats_browsing_history";
+const char kStatsPasswordsKeyDeprecated[] = "stats_passwords";
+const char kStatsBookmarksKeyDeprecated[] = "stats_bookmarks";
+const char kStatsSettingsKeyDeprecated[] = "stats_settings";
 
 typedef std::vector<unsigned char> ImageData;
 
@@ -171,6 +173,8 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   // profile names.
   if (!disable_avatar_download_for_testing_)
     MigrateLegacyProfileNamesAndDownloadAvatars();
+
+  RemoveDeprecatedStatistics();
 }
 
 ProfileInfoCache::~ProfileInfoCache() {
@@ -478,55 +482,6 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
   return icon_index;
 }
 
-bool ProfileInfoCache::HasStatsBrowsingHistoryOfProfileAtIndex(size_t index)
-    const {
-  int value = 0;
-  return GetInfoForProfileAtIndex(index)->GetInteger(kStatsBrowsingHistoryKey,
-                                                     &value);
-}
-
-int ProfileInfoCache::GetStatsBrowsingHistoryOfProfileAtIndex(size_t index)
-    const {
-  int value = 0;
-  GetInfoForProfileAtIndex(index)->GetInteger(kStatsBrowsingHistoryKey, &value);
-  return value;
-}
-
-bool ProfileInfoCache::HasStatsPasswordsOfProfileAtIndex(size_t index) const {
-  int value = 0;
-  return GetInfoForProfileAtIndex(index)->GetInteger(kStatsPasswordsKey,
-                                                     &value);
-}
-
-int ProfileInfoCache::GetStatsPasswordsOfProfileAtIndex(size_t index) const {
-  int value = 0;
-  GetInfoForProfileAtIndex(index)->GetInteger(kStatsPasswordsKey, &value);
-  return value;
-}
-
-bool ProfileInfoCache::HasStatsBookmarksOfProfileAtIndex(size_t index) const {
-  int value = 0;
-  return GetInfoForProfileAtIndex(index)->GetInteger(kStatsBookmarksKey,
-                                                     &value);
-}
-
-int ProfileInfoCache::GetStatsBookmarksOfProfileAtIndex(size_t index) const {
-  int value = 0;
-  GetInfoForProfileAtIndex(index)->GetInteger(kStatsBookmarksKey, &value);
-  return value;
-}
-
-bool ProfileInfoCache::HasStatsSettingsOfProfileAtIndex(size_t index) const {
-  int value = 0;
-  return GetInfoForProfileAtIndex(index)->GetInteger(kStatsSettingsKey, &value);
-}
-
-int ProfileInfoCache::GetStatsSettingsOfProfileAtIndex(size_t index) const {
-  int value = 0;
-  GetInfoForProfileAtIndex(index)->GetInteger(kStatsSettingsKey, &value);
-  return value;
-}
-
 void ProfileInfoCache::SetProfileActiveTimeAtIndex(size_t index) {
   if (base::Time::Now() - GetProfileActiveTimeAtIndex(index) <
       base::TimeDelta::FromHours(1)) {
@@ -829,38 +784,6 @@ void ProfileInfoCache::SetProfileIsAuthErrorAtIndex(size_t index, bool value) {
   std::unique_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kIsAuthErrorKey, value);
-  SetInfoForProfileAtIndex(index, std::move(info));
-}
-
-void ProfileInfoCache::SetStatsBrowsingHistoryOfProfileAtIndex(size_t index,
-                                                               int value) {
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetInteger(kStatsBrowsingHistoryKey, value);
-  SetInfoForProfileAtIndex(index, std::move(info));
-}
-
-void ProfileInfoCache::SetStatsPasswordsOfProfileAtIndex(size_t index,
-                                                         int value) {
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetInteger(kStatsPasswordsKey, value);
-  SetInfoForProfileAtIndex(index, std::move(info));
-}
-
-void ProfileInfoCache::SetStatsBookmarksOfProfileAtIndex(size_t index,
-                                                         int value) {
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetInteger(kStatsBookmarksKey, value);
-  SetInfoForProfileAtIndex(index, std::move(info));
-}
-
-void ProfileInfoCache::SetStatsSettingsOfProfileAtIndex(size_t index,
-                                                        int value) {
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetInteger(kStatsSettingsKey, value);
   SetInfoForProfileAtIndex(index, std::move(info));
 }
 
@@ -1172,6 +1095,19 @@ void ProfileInfoCache::MigrateLegacyProfileNamesAndDownloadAvatars() {
         GetAvatarIconIndexOfProfileAtIndex(profile_index)));
   }
 #endif
+}
+
+void ProfileInfoCache::RemoveDeprecatedStatistics() {
+  for (size_t i = 0; i < GetNumberOfProfiles(); i++) {
+    if (GetInfoForProfileAtIndex(i)->HasKey(kStatsBookmarksKeyDeprecated)) {
+      auto info = GetInfoForProfileAtIndex(i)->CreateDeepCopy();
+      info->Remove(kStatsBookmarksKeyDeprecated, nullptr);
+      info->Remove(kStatsBrowsingHistoryKeyDeprecated, nullptr);
+      info->Remove(kStatsPasswordsKeyDeprecated, nullptr);
+      info->Remove(kStatsSettingsKeyDeprecated, nullptr);
+      SetInfoForProfileAtIndex(i, std::move(info));
+    }
+  }
 }
 
 void ProfileInfoCache::AddProfile(

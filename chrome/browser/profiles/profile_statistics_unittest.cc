@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_statistics_aggregator.h"
 #include "chrome/browser/profiles/profile_statistics_common.h"
 #include "chrome/browser/profiles/profile_statistics_factory.h"
@@ -24,6 +25,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -69,24 +72,6 @@ class BookmarkStatHelper {
   base::Closure quit_closure_;
   int num_of_times_called_;
 };
-
-void VerifyStatisticsCache(const base::FilePath& profile_path,
-    const std::map<std::string, int>& expected,
-    const std::vector<std::string>& categories_to_check) {
-  const profiles::ProfileCategoryStats actual =
-      ProfileStatistics::GetProfileStatisticsFromAttributesStorage(
-          profile_path);
-
-  EXPECT_EQ(categories_to_check.size(), actual.size());
-
-  std::set<std::string> checked;
-  for (const auto& stat : actual) {
-    bool has_category = expected.count(stat.category);
-    EXPECT_EQ(has_category, stat.success);
-    EXPECT_EQ(has_category ? expected.at(stat.category) : 0, stat.count);
-    EXPECT_TRUE(checked.insert(stat.category).second);
-  }
-}
 }  // namespace
 
 class ProfileStatisticsTest : public testing::Test {
@@ -109,40 +94,15 @@ class ProfileStatisticsTest : public testing::Test {
   TestingProfileManager manager_;
 };
 
-TEST_F(ProfileStatisticsTest, ProfileAttributesStorage) {
-  TestingProfile* profile = manager()->CreateTestingProfile("Test 1");
-  ASSERT_TRUE(profile);
-  base::FilePath profile_path = profile->GetPath();
-
-  std::vector<std::string> categories_to_check;
-  categories_to_check.push_back(profiles::kProfileStatisticsBrowsingHistory);
-  categories_to_check.push_back(profiles::kProfileStatisticsPasswords);
-  categories_to_check.push_back(profiles::kProfileStatisticsBookmarks);
-  categories_to_check.push_back(profiles::kProfileStatisticsSettings);
-
-  std::vector<std::pair<std::string, int>> insertions;
-  int num = 3;
-  // Insert for the first round, overwrite for the second round.
-  for (int i = 0; i < 2; i++) {
-    for (const auto& category : categories_to_check)
-      insertions.push_back(std::make_pair(category, num++));
-  }
-
-  std::map<std::string, int> expected;
-  // Now no keys are set.
-  VerifyStatisticsCache(profile_path, expected, categories_to_check);
-  // Insert items and test after each insert.
-  for (const auto& item : insertions) {
-    ProfileStatistics::SetProfileStatisticsToAttributesStorage(
-        profile_path, item.first, item.second);
-    expected[item.first] = item.second;
-    VerifyStatisticsCache(profile_path, expected, categories_to_check);
-  }
-}
-
 TEST_F(ProfileStatisticsTest, WaitOrCountBookmarks) {
   TestingProfile* profile = manager()->CreateTestingProfile("Test 1");
   ASSERT_TRUE(profile);
+  // We need a history service and a password store for the test to succeed.
+  ASSERT_TRUE(profile->CreateHistoryService(true, false));
+  PasswordStoreFactory::GetInstance()->SetTestingFactory(
+      profile,
+      password_manager::BuildPasswordStore<
+          content::BrowserContext, password_manager::TestPasswordStore>);
 
   bookmarks::BookmarkModel* bookmark_model =
       CreateBookmarkModelWithoutLoad(profile);

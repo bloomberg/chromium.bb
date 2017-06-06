@@ -28,9 +28,6 @@ using browsing_data::BrowsingDataCounter;
 
 namespace {
 
-// Number of statistic categories calculated by StartAggregator.
-const int kProfileStatisticCategories = 4;
-
 // Callback for each pref. Every one that should be counted as a changed
 // user pref will cause *count to be incremented.
 void AccumulatePrefStats(const PrefService* pref_service,
@@ -83,40 +80,26 @@ void ProfileStatisticsAggregator::StartAggregator() {
   // Try to cancel tasks.
   tracker_.TryCancelAll();
   counters_.clear();
-
   // Initiate bookmark counting.
   bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForBrowserContextIfExists(profile_);
-  if (bookmark_model) {
-    AddCounter(
-        base::MakeUnique<browsing_data::BookmarkCounter>(bookmark_model));
-  } else {
-    StatisticsCallbackFailure(profiles::kProfileStatisticsBookmarks);
-  }
+      BookmarkModelFactory::GetForBrowserContext(profile_);
+  AddCounter(base::MakeUnique<browsing_data::BookmarkCounter>(bookmark_model));
 
   // Initiate history counting.
   history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
-
-  if (history_service) {
-    AddCounter(base::MakeUnique<browsing_data::HistoryCounter>(
-        history_service,
-        browsing_data::HistoryCounter::GetUpdatedWebHistoryServiceCallback(),
-        /*sync_service=*/nullptr));
-  } else {
-    StatisticsCallbackFailure(profiles::kProfileStatisticsBrowsingHistory);
-  }
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  AddCounter(base::MakeUnique<browsing_data::HistoryCounter>(
+      history_service,
+      browsing_data::HistoryCounter::GetUpdatedWebHistoryServiceCallback(),
+      /*sync_service=*/nullptr));
 
   // Initiate stored password counting.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  if (password_store) {
-    AddCounter(base::MakeUnique<browsing_data::PasswordsCounter>(
-        password_store, /*sync_service=*/nullptr));
-  } else {
-    StatisticsCallbackFailure(profiles::kProfileStatisticsPasswords);
-  }
+  AddCounter(base::MakeUnique<browsing_data::PasswordsCounter>(
+      password_store, /*sync_service=*/nullptr));
 
   // Initiate preference counting (async).
   tracker_.PostTaskAndReplyWithResult(
@@ -160,11 +143,8 @@ void ProfileStatisticsAggregator::StatisticsCallback(
     stats_callback.Run(profile_category_stats_);
   }
 
-  if (result.success) {
-    ProfileStatistics::SetProfileStatisticsToAttributesStorage(
-        profile_path_, datum.category, result.count);
-  }
-  if (profile_category_stats_.size() == kProfileStatisticCategories) {
+  if (profile_category_stats_.size() ==
+      profiles::kProfileStatisticsCategories.size()) {
     if (done_callback_)
       done_callback_.Run();
   }

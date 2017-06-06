@@ -188,12 +188,9 @@ IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest, GatherStatistics) {
       ProfileStatisticsFactory::GetForProfile(profile);
 
   ProfileStatisticsAggregatorState state;
-  EXPECT_FALSE(profile_stat->HasAggregator());
   profile_stat->GatherStatistics(
       base::Bind(&ProfileStatisticsAggregatorState::StatsCallback,
                  base::Unretained(&state)));
-  ASSERT_TRUE(profile_stat->HasAggregator());
-  EXPECT_EQ(1u, profile_stat->GetAggregator()->GetCallbackCount());
   state.WaitForStats();
 
   EXPECT_EQ(0, state.GetNumOfFails());
@@ -203,10 +200,6 @@ IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest, GatherStatistics) {
     if (stat.category != profiles::kProfileStatisticsSettings)
       EXPECT_EQ(0, stat.count);
   }
-
-  EXPECT_PRED_FORMAT2(AssertionProfileCategoryStatsEqual, stats,
-      ProfileStatistics::GetProfileStatisticsFromAttributesStorage(
-          profile->GetPath()));
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest,
@@ -219,24 +212,16 @@ IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest,
   ProfileStatisticsAggregatorState state1(1u);
   ProfileStatisticsAggregatorState state2;
 
-  EXPECT_FALSE(profile_stat->HasAggregator());
   profile_stat->GatherStatistics(
       base::Bind(&ProfileStatisticsAggregatorState::StatsCallback,
                  base::Unretained(&state1)));
-  ASSERT_TRUE(profile_stat->HasAggregator());
-  EXPECT_EQ(1u, profile_stat->GetAggregator()->GetCallbackCount());
   state1.WaitForStats();
-
-  ASSERT_TRUE(profile_stat->HasAggregator());
-  EXPECT_EQ(1u, profile_stat->GetAggregator()->GetCallbackCount());
 
   state1.SetRequiredStatCountAndCreateRunLoop(stats_categories().size());
 
   profile_stat->GatherStatistics(
       base::Bind(&ProfileStatisticsAggregatorState::StatsCallback,
                  base::Unretained(&state2)));
-  ASSERT_TRUE(profile_stat->HasAggregator());
-  EXPECT_EQ(2u, profile_stat->GetAggregator()->GetCallbackCount());
   state1.WaitForStats();
   state2.WaitForStats();
 
@@ -244,33 +229,4 @@ IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest,
 
   EXPECT_PRED_FORMAT2(AssertionProfileCategoryStatsEqual,
       state1.GetStats(), state2.GetStats());
-}
-
-IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest, CloseBrowser) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  ASSERT_TRUE(profile);
-  ProfileStatistics* profile_stat =
-      ProfileStatisticsFactory::GetForProfile(profile);
-
-  EXPECT_FALSE(profile_stat->HasAggregator());
-  CloseBrowserSynchronously(browser());
-  // The statistics task should be either running or finished.
-  if (profile_stat->HasAggregator()) {
-    EXPECT_EQ(0u, profile_stat->GetAggregator()->GetCallbackCount());
-  } else {
-    // Some of the statistics (e.g. settings) do always succeed. If all the
-    // statistics "failed", it means nothing is stored in profile attributes
-    // storage, and the statistics task was not run.
-    profiles::ProfileCategoryStats stats =
-        ProfileStatistics::GetProfileStatisticsFromAttributesStorage(
-            profile->GetPath());
-    bool has_stats = false;
-    for (const profiles::ProfileCategoryStat& stat : stats) {
-      if (stat.success) {
-        has_stats = true;
-        break;
-      }
-    }
-    EXPECT_TRUE(has_stats);
-  }
 }

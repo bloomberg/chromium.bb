@@ -28,7 +28,9 @@ HistoryCounter::HistoryCounter(
       local_counting_finished_(false),
       web_counting_finished_(false),
       history_sync_enabled_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(history_service_);
+}
 
 HistoryCounter::~HistoryCounter() {
   if (sync_service_)

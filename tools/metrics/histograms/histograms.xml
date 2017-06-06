@@ -58212,6 +58212,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Profile.RemoveUserWarningStatsTime" units="ms">
+  <owner>dullweber@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during profile statistics calculation.
+  </summary>
+</histogram>
+
 <histogram name="Profile.SupervisedProfileCreateError"
     enum="GoogleServiceAuthError">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

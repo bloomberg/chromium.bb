@@ -506,7 +506,12 @@ bool ProfileManager::LoadProfile(const std::string& profile_name,
                                  bool incognito,
                                  const ProfileLoadedCallback& callback) {
   const base::FilePath profile_path = user_data_dir().AppendASCII(profile_name);
+  return LoadProfileByPath(profile_path, incognito, callback);
+}
 
+bool ProfileManager::LoadProfileByPath(const base::FilePath& profile_path,
+                                       bool incognito,
+                                       const ProfileLoadedCallback& callback) {
   ProfileAttributesEntry* entry = nullptr;
   if (!GetProfileAttributesStorage().GetProfileAttributesWithPath(profile_path,
                                                                   &entry)) {
@@ -1188,17 +1193,6 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
       chrome::NOTIFICATION_PROFILE_ADDED,
       content::Source<Profile>(profile),
       content::NotificationService::NoDetails());
-
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
-  // Record statistics to ProfileInfoCache if statistics were not recorded
-  // during shutdown, i.e. the last shutdown was a system shutdown or a crash.
-  if (!profile->IsGuestSession() && !profile->IsSystemProfile() &&
-      !profile->IsNewProfile() && !go_off_the_record &&
-      profile->GetLastSessionExitType() != Profile::EXIT_NORMAL) {
-    ProfileStatisticsFactory::GetForProfile(profile)->GatherStatistics(
-        profiles::ProfileStatisticsCallback());
-  }
-#endif
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
@@ -1694,16 +1688,6 @@ void ProfileManager::BrowserListObserver::OnBrowserRemoved(
     // Delete if the profile is an ephemeral profile.
     g_browser_process->profile_manager()
         ->ScheduleForcedEphemeralProfileForDeletion(path);
-  } else {
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
-    // Gather statistics and store into ProfileInfoCache. For incognito profile
-    // we gather the statistics of its parent profile instead, because a window
-    // of the parent profile was open.
-    if (!profile->IsSystemProfile() && !original_profile->IsSystemProfile()) {
-      ProfileStatisticsFactory::GetForProfile(original_profile)->
-          GatherStatistics(profiles::ProfileStatisticsCallback());
-    }
-#endif
   }
 }
 
