@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,8 +30,8 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
  private:
   // TraitsTestService:
   void EchoEvent(std::unique_ptr<ui::Event> e,
-                 const EchoEventCallback& callback) override {
-    callback.Run(std::move(e));
+                 EchoEventCallback callback) override {
+    std::move(callback).Run(std::move(e));
   }
 
   base::MessageLoop loop_;
