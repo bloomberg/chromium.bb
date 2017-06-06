@@ -289,8 +289,11 @@ public class VrShellNavigationTest {
         // Validate our size is what we expect.
         expectedWidth = VrShellImpl.DEFAULT_CONTENT_WIDTH;
         expectedHeight = VrShellImpl.DEFAULT_CONTENT_HEIGHT;
-        Assert.assertTrue(mVrTestRule.pollJavaScriptBoolean(
-                "screen.width == " + expectedWidth + " && screen.height == " + expectedHeight,
-                POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
+
+        // We aren't comparing for equality because there is some rounding that occurs.
+        Assert.assertTrue(
+                mVrTestRule.pollJavaScriptBoolean("Math.abs(screen.width - " + expectedWidth
+                                + ") < 2 && Math.abs(screen.height - " + expectedHeight + ") < 2",
+                        POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
     }
 }
