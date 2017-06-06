@@ -437,7 +437,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     impl.setRestrictedDoubleMember(restrictedDoubleMember);
   }
 
-  if (RuntimeEnabledFeatures::runtimeFeatureEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     v8::Local<v8::Value> runtimeMemberValue;
     if (!v8Object->Get(context, keys[22].Get(isolate)).ToLocal(&runtimeMemberValue)) {
       exceptionState.RethrowV8Exception(block.Exception());

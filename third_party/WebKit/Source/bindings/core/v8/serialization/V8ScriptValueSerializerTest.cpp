@@ -1573,11 +1573,11 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
 class ScopedEnableCompositorWorker {
  public:
   ScopedEnableCompositorWorker()
-      : was_enabled_(RuntimeEnabledFeatures::compositorWorkerEnabled()) {
-    RuntimeEnabledFeatures::setCompositorWorkerEnabled(true);
+      : was_enabled_(RuntimeEnabledFeatures::CompositorWorkerEnabled()) {
+    RuntimeEnabledFeatures::SetCompositorWorkerEnabled(true);
   }
   ~ScopedEnableCompositorWorker() {
-    RuntimeEnabledFeatures::setCompositorWorkerEnabled(was_enabled_);
+    RuntimeEnabledFeatures::SetCompositorWorkerEnabled(was_enabled_);
   }
 
  private:

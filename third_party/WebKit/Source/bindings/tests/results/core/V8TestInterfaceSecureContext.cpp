@@ -415,7 +415,7 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
       V8DOMConfiguration::InstallAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfig);
   }
   if (executionContext && (executionContext->IsSecureContext())) {
-    if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+    if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
       static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration[] = {
         { "secureContextRuntimeEnabledAttribute", V8TestInterfaceSecureContext::secureContextRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterfaceSecureContext::secureContextRuntimeEnabledAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
       };
@@ -443,7 +443,7 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
   }
   if (executionContext && (executionContext->IsDocument())) {
     if (executionContext && (executionContext->IsSecureContext())) {
-      if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+      if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
         static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration[] = {
           { "secureContextWindowExposedRuntimeEnabledAttribute", V8TestInterfaceSecureContext::secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterfaceSecureContext::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
         };
@@ -454,7 +454,7 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
   }
   if (executionContext && (executionContext->IsWorkerGlobalScope())) {
     if (executionContext && (executionContext->IsSecureContext())) {
-      if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+      if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
         static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration[] = {
           { "secureContextWorkerExposedRuntimeEnabledAttribute", V8TestInterfaceSecureContext::secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterfaceSecureContext::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
         };
@@ -471,7 +471,7 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
       V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
   }
   if (executionContext && (executionContext->IsSecureContext())) {
-    if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+    if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
       const V8DOMConfiguration::MethodConfiguration secureContextRuntimeEnabledMethodMethodConfiguration[] = {
         {"secureContextRuntimeEnabledMethod", V8TestInterfaceSecureContext::secureContextRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
       };
@@ -499,7 +499,7 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
   }
   if (executionContext && (executionContext->IsSecureContext())) {
     if (executionContext && (executionContext->IsDocument())) {
-      if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+      if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
         const V8DOMConfiguration::MethodConfiguration secureContextWindowExposedRuntimeEnabledMethodMethodConfiguration[] = {
           {"secureContextWindowExposedRuntimeEnabledMethod", V8TestInterfaceSecureContext::secureContextWindowExposedRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
         };
@@ -510,7 +510,7 @@ void V8TestInterfaceSecureContext::preparePrototypeAndInterfaceObject(v8::Local<
   }
   if (executionContext && (executionContext->IsSecureContext())) {
     if (executionContext && (executionContext->IsWorkerGlobalScope())) {
-      if (RuntimeEnabledFeatures::secureFeatureEnabled()) {
+      if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
         const V8DOMConfiguration::MethodConfiguration secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration[] = {
           {"secureContextWorkerExposedRuntimeEnabledMethod", V8TestInterfaceSecureContext::secureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
         };

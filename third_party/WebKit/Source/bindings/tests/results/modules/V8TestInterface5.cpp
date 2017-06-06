@@ -856,7 +856,7 @@ static void installV8TestInterface5Template(v8::Isolate* isolate, const DOMWrapp
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface5::wrapperTypeInfo.interface_name, V8TestInterfaceEmpty::domTemplate(isolate, world), V8TestInterface5::internalFieldCount);
 
-  if (!RuntimeEnabledFeatures::featureNameEnabled()) {
+  if (!RuntimeEnabledFeatures::FeatureNameEnabled()) {
     return;
   }
 

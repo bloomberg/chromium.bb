@@ -40,7 +40,7 @@ void V8HTMLConstructor::HtmlConstructor(
     return;
   }
 
-  if (!RuntimeEnabledFeatures::customElementsV1Enabled() ||
+  if (!RuntimeEnabledFeatures::CustomElementsV1Enabled() ||
       !script_state->World().IsMainWorld()) {
     V8ThrowException::ThrowTypeError(isolate, "Illegal constructor");
     return;

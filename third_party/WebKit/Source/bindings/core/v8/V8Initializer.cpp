@@ -427,7 +427,7 @@ void V8Initializer::InitializeMainThread() {
   WTF::ArrayBufferContents::Initialize(AdjustAmountOfExternalAllocatedMemory);
 
   DEFINE_STATIC_LOCAL(ArrayBufferAllocator, array_buffer_allocator, ());
-  auto v8_extras_mode = RuntimeEnabledFeatures::experimentalV8ExtrasEnabled()
+  auto v8_extras_mode = RuntimeEnabledFeatures::ExperimentalV8ExtrasEnabled()
                             ? gin::IsolateHolder::kStableAndExperimentalV8Extras
                             : gin::IsolateHolder::kStableV8Extras;
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
@@ -456,7 +456,7 @@ void V8Initializer::InitializeMainThread() {
       FailedAccessCheckCallbackInMainThread);
   isolate->SetAllowCodeGenerationFromStringsCallback(
       CodeGenerationCheckCallbackInMainThread);
-  if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
+  if (RuntimeEnabledFeatures::V8IdleTasksEnabled()) {
     V8PerIsolateData::EnableIdleTasks(
         isolate, WTF::MakeUnique<V8IdleTaskRunner>(scheduler));
   }

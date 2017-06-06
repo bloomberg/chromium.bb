@@ -115,7 +115,7 @@ def uncapitalize(name):
 
 def runtime_enabled_function(name):
     """Returns a function call of a runtime enabled feature."""
-    return 'RuntimeEnabledFeatures::%sEnabled()' % uncapitalize(name)
+    return 'RuntimeEnabledFeatures::%sEnabled()' % name
 
 
 def unique_by(dict_list, key):
@@ -322,8 +322,8 @@ def exposed(member, interface):
       => context->isDocument()
 
     EXAMPLE: [Exposed(Window Feature1, Window Feature2)]
-      => context->isDocument() && RuntimeEnabledFeatures::feature1Enabled() ||
-         context->isDocument() && RuntimeEnabledFeatures::feature2Enabled()
+      => context->isDocument() && RuntimeEnabledFeatures::Feature1Enabled() ||
+         context->isDocument() && RuntimeEnabledFeatures::Feature2Enabled()
     """
     exposure_set = ExposureSet(
         extended_attribute_value_as_list(member, 'Exposed'))

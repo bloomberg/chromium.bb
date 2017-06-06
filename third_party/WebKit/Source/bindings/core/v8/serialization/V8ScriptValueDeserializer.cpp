@@ -207,7 +207,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       uint32_t properties;
       const uint32_t kValidPropertiesMask = static_cast<uint32_t>(
           (1u << CompositorMutableProperty::kNumProperties) - 1);
-      if (!RuntimeEnabledFeatures::compositorWorkerEnabled() ||
+      if (!RuntimeEnabledFeatures::CompositorWorkerEnabled() ||
           !ReadUint64(&element) || !ReadUint32(&properties) || element == 0 ||
           !properties || (properties & ~kValidPropertiesMask))
         return nullptr;
