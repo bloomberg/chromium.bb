@@ -20,8 +20,6 @@ namespace vr_shell {
 
 namespace {
 
-const SkColor kBackgroundColor = SK_ColorWHITE;
-const SkColor kForegroundColor = 0xFF444444;
 constexpr float kBorderFactor = 0.1;
 constexpr float kIconSizeFactor = 0.7;
 constexpr float kFontSizeFactor = 0.40;
@@ -43,16 +41,16 @@ void InsecureContentPermanentTexture::Draw(SkCanvas* sk_canvas,
   DCHECK(texture_size.height() * 4 == texture_size.width());
   size_.set_height(texture_size.height());
   SkPaint paint;
-  paint.setColor(kBackgroundColor);
+  paint.setColor(color_scheme().permanent_warning_background);
   auto text =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_PERMANENT);
   gfx::FontList fonts;
   GetFontList(size_.height() * kFontSizeFactor, text, &fonts);
   gfx::Rect text_size(0, kTextHeightFactor * size_.height());
 
-  std::vector<std::unique_ptr<gfx::RenderText>> lines =
-      PrepareDrawStringRect(text, fonts, kForegroundColor, &text_size,
-                            kTextAlignmentNone, kWrappingBehaviorNoWrap);
+  std::vector<std::unique_ptr<gfx::RenderText>> lines = PrepareDrawStringRect(
+      text, fonts, color_scheme().permanent_warning_foreground, &text_size,
+      kTextAlignmentNone, kWrappingBehaviorNoWrap);
 
   DCHECK_LE(text_size.width(), kTextWidthFactor * size_.height());
   // Setting background size giving some extra lateral padding to the text.
@@ -68,7 +66,8 @@ void InsecureContentPermanentTexture::Draw(SkCanvas* sk_canvas,
               : size_.height() * kBorderFactor,
       size_.height() * (1.0 - kIconSizeFactor) / 2.0));
   PaintVectorIcon(canvas, ui::kInfoOutlineIcon,
-                  size_.height() * kIconSizeFactor, kForegroundColor);
+                  size_.height() * kIconSizeFactor,
+                  color_scheme().permanent_warning_foreground);
   canvas->Restore();
 
   canvas->Save();

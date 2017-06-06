@@ -188,8 +188,8 @@ ColorScheme::Mode UiScene::mode() const {
   return mode_;
 }
 
-SkColor UiScene::GetBackgroundColor() const {
-  return ColorScheme::GetColorScheme(mode_).horizon;
+SkColor UiScene::GetWorldBackgroundColor() const {
+  return ColorScheme::GetColorScheme(mode_).world_background;
 }
 
 void UiScene::SetBackgroundDistance(float distance) {

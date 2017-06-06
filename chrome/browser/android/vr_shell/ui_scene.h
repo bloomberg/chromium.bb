@@ -70,7 +70,7 @@ class UiScene {
   void SetMode(ColorScheme::Mode mode);
   ColorScheme::Mode mode() const;
 
-  SkColor GetBackgroundColor() const;
+  SkColor GetWorldBackgroundColor() const;
 
   void SetBackgroundDistance(float distance);
   float GetBackgroundDistance() const;

@@ -19,8 +19,6 @@ namespace vr_shell {
 
 namespace {
 
-const SkColor kBackgroundColor = SK_ColorWHITE;
-const SkColor kForegroundColor = 0xFF444444;
 constexpr int kHeightWidthRatio = 8.0;
 constexpr float kBorderFactor = 0.1;
 constexpr float kIconSizeFactor = 0.7;
@@ -46,7 +44,7 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
   DCHECK(texture_size.height() * kHeightWidthRatio == texture_size.width());
   size_.set_height(texture_size.height());
   SkPaint paint;
-  paint.setColor(kBackgroundColor);
+  paint.setColor(color_scheme().system_indicator_background);
 
   base::string16 text = l10n_util::GetStringUTF16(message_id_);
 
@@ -54,9 +52,9 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
   GetFontList(size_.height() * kFontSizeFactor, text, &fonts);
   gfx::Rect text_size(0, kTextHeightFactor * size_.height());
 
-  std::vector<std::unique_ptr<gfx::RenderText>> lines =
-      PrepareDrawStringRect(text, fonts, kForegroundColor, &text_size,
-                            kTextAlignmentNone, kWrappingBehaviorNoWrap);
+  std::vector<std::unique_ptr<gfx::RenderText>> lines = PrepareDrawStringRect(
+      text, fonts, color_scheme().system_indicator_foreground, &text_size,
+      kTextAlignmentNone, kWrappingBehaviorNoWrap);
 
   DCHECK_LE(text_size.width(), kTextWidthFactor * size_.height());
   // Setting background size giving some extra lateral padding to the text.
@@ -73,7 +71,7 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
               : size_.height() * kBorderFactor,
       size_.height() * (1.0 - kIconSizeFactor) / 2.0));
   PaintVectorIcon(canvas, icon_, size_.height() * kIconSizeFactor,
-                  kForegroundColor);
+                  color_scheme().system_indicator_foreground);
   canvas->Restore();
 
   canvas->Save();

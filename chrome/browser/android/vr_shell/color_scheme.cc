@@ -18,50 +18,74 @@ void InitializeColorSchemes() {
     return;
 
   ColorScheme& normal_scheme = kColorSchemes[ColorScheme::kModeNormal];
-  normal_scheme.horizon = 0xFF999999;
+  normal_scheme.world_background = 0xFF999999;
   normal_scheme.floor = 0xFF8C8C8C;
   normal_scheme.ceiling = normal_scheme.floor;
   normal_scheme.floor_grid = 0x26FFFFFF;
-  normal_scheme.background = 0xCCB3B3B3;
-  normal_scheme.background_hover = 0xFFCCCCCC;
-  normal_scheme.background_down = 0xFFF3F3F3;
-  normal_scheme.foreground = 0xFF333333;
-  normal_scheme.emphasized = 0xFF000000;
-  normal_scheme.deemphasized = 0xFF5A5A5A;
+  normal_scheme.element_foreground = 0xFF333333;
+  normal_scheme.element_background = 0xCCB3B3B3;
+  normal_scheme.element_background_hover = 0xFFCCCCCC;
+  normal_scheme.element_background_down = 0xFFF3F3F3;
+  normal_scheme.close_button_foreground = normal_scheme.element_foreground;
+  normal_scheme.close_button_background = normal_scheme.element_background;
+  normal_scheme.close_button_background_hover =
+      normal_scheme.element_background_hover;
+  normal_scheme.close_button_background_down =
+      normal_scheme.element_background_down;
+  normal_scheme.loading_indicator_background = normal_scheme.element_foreground;
+  normal_scheme.loading_indicator_foreground = normal_scheme.floor;
+  normal_scheme.exit_warning_background = 0xCC1A1A1A;
+  normal_scheme.exit_warning_foreground = SK_ColorWHITE;
+  normal_scheme.transient_warning_background =
+      normal_scheme.exit_warning_background;
+  normal_scheme.transient_warning_foreground =
+      normal_scheme.exit_warning_foreground;
+  normal_scheme.permanent_warning_background = SK_ColorWHITE;
+  normal_scheme.permanent_warning_foreground = 0xFF444444;
+  normal_scheme.system_indicator_background =
+      normal_scheme.permanent_warning_background;
+  normal_scheme.system_indicator_foreground =
+      normal_scheme.permanent_warning_foreground;
   normal_scheme.separator = 0xFF9E9E9E;
   normal_scheme.secure = gfx::kGoogleGreen700;
   normal_scheme.insecure = gfx::kGoogleRed700;
-  normal_scheme.warning = normal_scheme.deemphasized;
+  normal_scheme.warning = 0xFF5A5A5A;
+  normal_scheme.url_emphasized = SK_ColorBLACK;
+  normal_scheme.url_deemphasized = normal_scheme.warning;
   normal_scheme.disabled = 0x33333333;
-  normal_scheme.loading_foreground = normal_scheme.foreground;
-  normal_scheme.loading_background = normal_scheme.floor;
+  normal_scheme.dimmer_inner = 0xCC0D0D0D;
+  normal_scheme.dimmer_outer = 0xE6000000;
 
   kColorSchemes[ColorScheme::kModeFullscreen] =
       kColorSchemes[ColorScheme::kModeNormal];
   ColorScheme& fullscreen_scheme = kColorSchemes[ColorScheme::kModeFullscreen];
-  fullscreen_scheme.horizon = 0xFF000714;
+  fullscreen_scheme.world_background = 0xFF000714;
   fullscreen_scheme.floor = 0xFF070F1C;
   fullscreen_scheme.ceiling = 0xFF04080F;
   fullscreen_scheme.floor_grid = 0x40A3E0FF;
+  fullscreen_scheme.element_foreground = 0x80FFFFFF;
+  fullscreen_scheme.element_background = 0xCC2B3E48;
+  fullscreen_scheme.element_background_hover = 0xCC536B77;
+  fullscreen_scheme.element_background_down = 0xCC96AFBB;
 
   ColorScheme& incognito_scheme = kColorSchemes[ColorScheme::kModeIncognito];
-  incognito_scheme.horizon = 0xFF2E2E2E;
+  incognito_scheme.world_background = 0xFF2E2E2E;
   incognito_scheme.floor = 0xFF282828;
   incognito_scheme.ceiling = 0xFF2F2F2F;
   incognito_scheme.floor_grid = 0xCC595959;
-  incognito_scheme.foreground = 0xFFBCBCBC;
-  incognito_scheme.emphasized = 0xFFEDEDED;
-  incognito_scheme.deemphasized = 0xFF878787;
-  incognito_scheme.background = 0xCC454545;
-  incognito_scheme.background_hover = 0xCC505050;
-  incognito_scheme.background_down = 0xCC888888;
+  incognito_scheme.element_foreground = 0xFFBCBCBC;
+  incognito_scheme.element_background = 0xCC454545;
+  incognito_scheme.element_background_hover = 0xCC505050;
+  incognito_scheme.element_background_down = 0xCC888888;
+  incognito_scheme.loading_indicator_foreground = 0xFF454545;
+  incognito_scheme.loading_indicator_background = 0xFF8A8A8A;
   incognito_scheme.separator = 0xFF474747;
-  incognito_scheme.secure = incognito_scheme.emphasized;
-  incognito_scheme.insecure = incognito_scheme.emphasized;
-  incognito_scheme.warning = incognito_scheme.emphasized;
+  incognito_scheme.secure = 0xFFEDEDED;
+  incognito_scheme.insecure = incognito_scheme.secure;
+  incognito_scheme.warning = incognito_scheme.secure;
+  incognito_scheme.url_emphasized = incognito_scheme.secure;
+  incognito_scheme.url_deemphasized = 0xFF878787;
   incognito_scheme.disabled = 0x33E6E6E6;
-  normal_scheme.loading_foreground = 0xFF454545;
-  normal_scheme.loading_background = 0xFF8A8A8A;
 
   initialized = true;
 }

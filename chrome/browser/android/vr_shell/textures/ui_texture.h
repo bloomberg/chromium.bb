@@ -59,6 +59,7 @@ class UiTexture {
 
   virtual void OnSetMode();
   ColorScheme::Mode mode() const { return mode_; }
+  const ColorScheme& color_scheme() const;
 
   // Prepares a set of RenderText objects with the given color and fonts.
   // Attempts to fit the text within the provided size. |flags| specifies how

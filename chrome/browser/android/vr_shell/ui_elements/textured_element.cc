@@ -67,6 +67,7 @@ void TexturedElement::Flush(SkSurface* surface) {
 
 void TexturedElement::OnSetMode() {
   GetTexture()->SetMode(mode());
+  UpdateTexture();
 }
 
 }  // namespace vr_shell
