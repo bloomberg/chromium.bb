@@ -3748,6 +3748,7 @@ test("unit_tests") {
       "../browser/ui/webui/media_router/cast_modes_with_media_sources_unittest.cc",
       "../browser/ui/webui/media_router/media_cast_mode_unittest.cc",
       "../browser/ui/webui/media_router/media_router_dialog_controller_impl_unittest.cc",
+      "../browser/ui/webui/media_router/media_router_file_dialog_unittest.cc",
       "../browser/ui/webui/media_router/media_router_ui_unittest.cc",
       "../browser/ui/webui/media_router/media_router_web_ui_test.cc",
       "../browser/ui/webui/media_router/media_router_web_ui_test.h",

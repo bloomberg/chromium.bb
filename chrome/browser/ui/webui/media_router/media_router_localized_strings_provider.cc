@@ -15,25 +15,26 @@ const char kLocalizedStringsFile[] = "strings.js";
 
 void AddMediaRouterStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("mediaRouterTitle", IDS_MEDIA_ROUTER_TITLE);
-  html_source->AddLocalizedString("learnMoreText",
-                                  IDS_MEDIA_ROUTER_LEARN_MORE);
+  html_source->AddLocalizedString("learnMoreText", IDS_MEDIA_ROUTER_LEARN_MORE);
   html_source->AddLocalizedString("backButtonTitle",
                                   IDS_MEDIA_ROUTER_BACK_BUTTON_TITLE);
   html_source->AddLocalizedString("closeButtonTitle",
                                   IDS_MEDIA_ROUTER_CLOSE_BUTTON_TITLE);
   html_source->AddLocalizedString("searchButtonTitle",
                                   IDS_MEDIA_ROUTER_SEARCH_BUTTON_TITLE);
-  html_source->AddLocalizedString("viewCastModeListButtonTitle",
+  html_source->AddLocalizedString(
+      "viewCastModeListButtonTitle",
       IDS_MEDIA_ROUTER_VIEW_CAST_MODE_LIST_BUTTON_TITLE);
-  html_source->AddLocalizedString("viewDeviceListButtonTitle",
+  html_source->AddLocalizedString(
+      "viewDeviceListButtonTitle",
       IDS_MEDIA_ROUTER_VIEW_DEVICE_LIST_BUTTON_TITLE);
 }
 
 void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("castingActivityStatus",
-      IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS);
+                                  IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS);
   html_source->AddLocalizedString("stopCastingButtonText",
-      IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON);
+                                  IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON);
   html_source->AddLocalizedString("startCastingButtonText",
                                   IDS_MEDIA_ROUTER_START_CASTING_BUTTON);
   html_source->AddLocalizedString("playTitle",
@@ -58,13 +59,18 @@ void AddIssuesStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddMediaRouterContainerStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("castLocalMediaSubheadingText",
+                                  IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_SUBHEADING);
+  html_source->AddLocalizedString("castLocalMediaSelectedFileTitle",
+                                  IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_TITLE);
   html_source->AddLocalizedString("firstRunFlowButtonText",
                                   IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_BUTTON);
   html_source->AddLocalizedString("firstRunFlowText",
                                   IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TEXT);
   html_source->AddLocalizedString("firstRunFlowTitle",
                                   IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TITLE);
-  html_source->AddLocalizedString("firstRunFlowCloudPrefText",
+  html_source->AddLocalizedString(
+      "firstRunFlowCloudPrefText",
       IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_CLOUD_PREF_TEXT);
   html_source->AddLocalizedString("autoCastMode",
                                   IDS_MEDIA_ROUTER_AUTO_CAST_MODE);
@@ -75,8 +81,9 @@ void AddMediaRouterContainerStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("searchNoMatchesText",
                                   IDS_MEDIA_ROUTER_SEARCH_NO_MATCHES);
   html_source->AddLocalizedString("selectCastModeHeaderText",
-      IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER);
-  html_source->AddLocalizedString("shareYourScreenSubheadingText",
+                                  IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER);
+  html_source->AddLocalizedString(
+      "shareYourScreenSubheadingText",
       IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_SUBHEADING);
 }
 

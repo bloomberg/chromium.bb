@@ -170,7 +170,7 @@ paper-menu {
   width: 30px;
 }
 
-#share-screen-text {
+.subheading-text {
   -webkit-padding-start: var(--dialog-padding-start);
   color: var(--paper-grey-600);
   cursor: default;

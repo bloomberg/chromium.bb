@@ -124,6 +124,13 @@ MediaRouterContainerInterface.prototype.onCreateRouteResponseReceived =
     function(sinkId, route, isForDisplay) {};
 
 /**
+ * Handles the result of a requested file dialog.
+ * @param {string} fileName The name of the file that has been selected.
+ */
+MediaRouterContainerInterface.prototype.onFileDialogSuccess = function(
+    fileName) {};
+
+/**
  * Called when a search has completed up to route creation. |sinkId|
  * identifies the sink that should be in |allSinks|, if a sink was found.
  * @param {string} sinkId The ID of the sink that is the result of the

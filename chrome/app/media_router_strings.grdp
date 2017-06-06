@@ -45,13 +45,22 @@
   <message name="IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE" desc="Title for the tab mirror cast mode. This is shown as a dropdown option, and if selected, also appears as the header of a list of devices.">
     Cast tab
   </message>
+  <message name="IDS_MEDIA_ROUTER_LOCAL_FILE_CAST_MODE" desc="Title for choosing a file to cast. This is shown as a dropdown option.">
+    Cast file
+  </message>
 
   <!-- Cast Mode Picker -->
   <message name="IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER" desc="Header for the select cast mode view, which shows a list of cast modes that the user can select.">
    Select source
   </message>
-  <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_SUBHEADING" desc="Subheading for non-default cast modes, which allow screen sharing. The subheading appears above a list of non-default cast modes.">
+  <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_SUBHEADING" desc="Subheading for screen sharing cast modes. The subheading appears above a list of screen sharing cast modes.">
    Share your screen
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_SUBHEADING" desc="Subheading for local file cast modes. The subheading appears above a list of media cast modes.">
+   Stream a video or audio file
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_TITLE" desc="Title of the local file cast mode after a local file is selected for casting.">
+   Cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>
   </message>
 
   <!-- Contextual Menu -->

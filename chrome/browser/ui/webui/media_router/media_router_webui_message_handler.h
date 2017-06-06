@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
@@ -67,6 +68,10 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // invalidated.
   void OnRouteControllerInvalidated();
 
+  // Called when the user has selected a file and the name should be relayed to
+  // the UI.
+  void UserSelectedLocalMediaFile(base::FilePath::StringType file_name);
+
   void SetWebUIForTest(content::WebUI* webui);
   void set_incognito_for_test(bool incognito) { incognito_ = incognito; }
 
@@ -110,6 +115,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnMediaControllerAvailable(const base::ListValue* args);
   void OnMediaControllerClosed(const base::ListValue* args);
   void OnSearchSinksAndCreateRoute(const base::ListValue* args);
+  void OnSelectLocalMediaFile(const base::ListValue* args);
   void OnInitialDataReceived(const base::ListValue* args);
 
   // Handlers for JavaScript messages to control the media.

@@ -68,12 +68,25 @@
               <div><span>[[item.host]]</span></div>
             </paper-item>
           </template>
-          <div id="share-screen-text"
+          <div id="share-screen-text" class="subheading-text"
               hidden$="[[computeShareScreenSubheadingHidden_(castModeList)]]">
             <span>[[i18n('shareYourScreenSubheadingText')]]</span>
           </div>
-          <template is="dom-repeat" id="nonPresentationCastModeList"
-              items="[[computeNonPresentationCastModeList_(castModeList)]]">
+          <template is="dom-repeat" id="shareScreenCastModeList"
+              items="[[computeShareScreenCastModeList_(castModeList)]]">
+            <paper-item on-tap="onCastModeClick_">
+              <iron-icon class="cast-mode-icon"
+                  icon="[[computeCastModeIcon_(item)]]">
+              </iron-icon>
+              <div><span>[[item.description]]</span></div>
+            </paper-item>
+          </template>
+          <div id="cast-local-media-text" class="subheading-text"
+              hidden$="[[computeLocalMediaSubheadingHidden_(castModeList)]]">
+            <span>[[i18n('castLocalMediaSubheadingText')]]</span>
+          </div>
+          <template is="dom-repeat" id="localMediaCastModeList"
+              items="[[computeLocalMediaCastModeList_(castModeList)]]">
             <paper-item on-tap="onCastModeClick_">
               <iron-icon class="cast-mode-icon"
                   icon="[[computeCastModeIcon_(item)]]">

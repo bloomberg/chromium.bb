@@ -18,6 +18,7 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
+#include "chrome/browser/ui/webui/media_router/media_router_file_dialog.h"
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
 #include "chrome/browser/ui/webui/media_router/query_result_manager.h"
 #include "chrome/common/media_router/issue.h"
@@ -38,6 +39,8 @@ namespace U_ICU_NAMESPACE {
 class Collator;
 }
 
+class Browser;
+
 namespace media_router {
 
 class CreatePresentationConnectionRequest;
@@ -50,10 +53,12 @@ class MediaSink;
 class RouteRequestResult;
 
 // Implements the chrome://media-router user interface.
-class MediaRouterUI : public ConstrainedWebDialogUI,
-                      public QueryResultManager::Observer,
-                      public PresentationServiceDelegateImpl::
-                          DefaultPresentationRequestObserver {
+class MediaRouterUI
+    : public ConstrainedWebDialogUI,
+      public QueryResultManager::Observer,
+      public PresentationServiceDelegateImpl::
+          DefaultPresentationRequestObserver,
+      public MediaRouterFileDialog::MediaRouterFileDialogDelegate {
  public:
   // |web_ui| owns this object and is used to initialize the base class.
   explicit MediaRouterUI(content::WebUI* web_ui);
@@ -119,6 +124,9 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Calls MediaRouter to clear the given issue.
   void ClearIssue(const Issue::Id& issue_id);
 
+  // Called to open a file dialog with the media_router_ui file dialog handler.
+  void OpenFileDialog();
+
   // Calls MediaRouter to search route providers for sinks matching
   // |search_criteria| with the source that is currently associated with
   // |cast_mode|. The user's domain |domain| is also used.
@@ -181,7 +189,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
                    content::WebContents* initiator,
                    MediaRouterWebUIMessageHandler* handler,
                    std::unique_ptr<CreatePresentationConnectionRequest>
-                       create_session_request);
+                       create_session_request,
+                   std::unique_ptr<MediaRouterFileDialog> file_dialog);
 
  private:
   friend class MediaRouterUITest;
@@ -191,9 +200,9 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, FilterNonDisplayRoutes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, FilterNonDisplayJoinableRoutes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
-      UIMediaRoutesObserverAssignsCurrentCastModes);
+                           UIMediaRoutesObserverAssignsCurrentCastModes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
-      UIMediaRoutesObserverSkipsUnavailableCastModes);
+                           UIMediaRoutesObserverSkipsUnavailableCastModes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, GetExtensionNameExtensionPresent);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            GetExtensionNameEmptyWhenNotInstalled);
@@ -250,6 +259,17 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   static std::string GetExtensionName(const GURL& url,
                                       extensions::ExtensionRegistry* registry);
+
+  // Retrieves the browser associated with this UI.
+  Browser* GetBrowser();
+
+  // Opens the URL in a tab which is then |initator_|.
+  void OpenTabWithUrl(const GURL url);
+
+  // Methods for MediaRouterFileDialogDelegate
+  void FileDialogFileSelected(const ui::SelectedFileInfo& file_info) override;
+  void FileDialogSelectionFailed(
+      MediaRouterFileDialog::FailureReason reason) override;
 
   // QueryResultManager::Observer
   void OnResultsUpdated(
@@ -395,6 +415,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // The observer for the route controller. Notifies |handler_| of media status
   // updates.
   std::unique_ptr<UIMediaRouteControllerObserver> route_controller_observer_;
+
+  // The dialog that handles opening the file dialog and validating and
+  // returning the results.
+  std::unique_ptr<MediaRouterFileDialog> media_router_file_dialog_;
 
   // If set, a cast mode that is required to be shown first.
   base::Optional<MediaCastMode> forced_cast_mode_;

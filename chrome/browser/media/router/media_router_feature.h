@@ -20,6 +20,9 @@ bool DialLocalDiscoveryEnabled();
 
 // Returns true if browser side Cast discovery is enabled.
 bool CastDiscoveryEnabled();
+
+// Returns true if local media casting is enabled.
+bool CastLocalMediaEnabled();
 #endif
 
 }  // namespace media_router

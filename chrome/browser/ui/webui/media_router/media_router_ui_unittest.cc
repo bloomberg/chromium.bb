@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_test.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/media_router/route_request_result.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -79,6 +81,11 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   MediaRouterUITest() {
     ON_CALL(mock_router_, GetCurrentRoutes())
         .WillByDefault(Return(std::vector<MediaRoute>()));
+
+    // enable and disable features
+    scoped_feature_list_.InitFromCommandLine(
+        "EnableCastLocalMedia" /* enabled features */,
+        std::string() /* disabled features */);
   }
 
   void TearDown() override {
@@ -109,6 +116,12 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
     media_router_ui_ = base::MakeUnique<MediaRouterUI>(&web_ui_);
     message_handler_ = base::MakeUnique<MockMediaRouterWebUIMessageHandler>(
         media_router_ui_.get());
+
+    auto file_dialog =
+        base::MakeUnique<MediaRouterFileDialog>(media_router_ui_.get());
+
+    mock_file_dialog_ = file_dialog.get();
+
     EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
         .WillRepeatedly(Invoke([this](MediaSinksObserver* observer) {
           this->media_sinks_observers_.push_back(observer);
@@ -116,9 +129,9 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
         }));
     EXPECT_CALL(mock_router_, RegisterMediaRoutesObserver(_))
         .Times(AnyNumber());
-    media_router_ui_->InitForTest(&mock_router_, web_contents(),
-                                  message_handler_.get(),
-                                  std::move(create_session_request_));
+    media_router_ui_->InitForTest(
+        &mock_router_, web_contents(), message_handler_.get(),
+        std::move(create_session_request_), std::move(file_dialog));
     message_handler_->SetWebUIForTest(&web_ui_);
   }
 
@@ -161,7 +174,9 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<CreatePresentationConnectionRequest> create_session_request_;
   std::unique_ptr<MediaRouterUI> media_router_ui_;
   std::unique_ptr<MockMediaRouterWebUIMessageHandler> message_handler_;
+  MediaRouterFileDialog* mock_file_dialog_ = nullptr;
   std::vector<MediaSinksObserver*> media_sinks_observers_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
@@ -224,6 +239,33 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
   for (const auto& callback : callbacks)
     callback.Run(*result);
+}
+
+// Tests that if a local file CreateRoute call is made from a new tab, the
+// file will be opened in the new tab.
+TEST_F(MediaRouterUITest, RouteCreationLocalFileModeInTab) {
+  const GURL empty_tab = GURL(chrome::kChromeUINewTabURL);
+  const std::string file_path = "some/url/for/a/file.mp3";
+
+  // Setup the UI
+  CreateMediaRouterUIForURL(profile(), empty_tab);
+
+  mock_file_dialog_->FileSelected(
+      base::FilePath(FILE_PATH_LITERAL("some/url/for/a/file.mp3")), 0, 0);
+
+  content::WebContents* location_file_opened = nullptr;
+
+  // Expect that the media_router_ will make a call to the mock_router
+  // then we will want to check that it made the call with.
+  EXPECT_CALL(mock_router_, CreateRoute(_, _, _, _, _, _, _))
+      .WillOnce(SaveArg<3>(&location_file_opened));
+
+  media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
+                                MediaCastMode::LOCAL_FILE);
+
+  ASSERT_EQ(location_file_opened, web_contents());
+  ASSERT_TRUE(location_file_opened->GetVisibleURL().GetContent().find(
+                  file_path) != std::string::npos);
 }
 
 TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {
@@ -723,8 +765,9 @@ TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
   // initializing the dialog with a presentation request.  The WebUI can handle
   // the forced mode that is not in the initial cast mode set, but is this a
   // bug?
-  CastModeSet expected_modes(
-      {MediaCastMode::TAB_MIRROR, MediaCastMode::DESKTOP_MIRROR});
+  CastModeSet expected_modes({MediaCastMode::TAB_MIRROR,
+                              MediaCastMode::DESKTOP_MIRROR,
+                              MediaCastMode::LOCAL_FILE});
   EXPECT_CALL(*message_handler_,
               UpdateCastModes(
                   expected_modes, "",
@@ -737,7 +780,7 @@ TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
   media_router_ui_->UIInitialized();
   media_router_ui_->InitForTest(&mock_router_, web_contents(),
                                 message_handler_.get(),
-                                std::move(create_session_request_));
+                                std::move(create_session_request_), nullptr);
   // |media_router_ui_| takes ownership of |request_callbacks|.
   media_router_ui_.reset();
 }

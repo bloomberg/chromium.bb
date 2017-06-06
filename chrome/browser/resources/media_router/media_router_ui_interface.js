@@ -198,6 +198,10 @@ cr.define('media_router.ui', function() {
     }
   }
 
+  function userSelectedLocalMediaFile(fileName) {
+    container.onFileDialogSuccess(fileName);
+  }
+
   return {
     onCreateRouteResponseReceived: onCreateRouteResponseReceived,
     onRouteControllerInvalidated: onRouteControllerInvalidated,
@@ -212,5 +216,6 @@ cr.define('media_router.ui', function() {
     setSinkListAndIdentity: setSinkListAndIdentity,
     updateMaxHeight: updateMaxHeight,
     updateRouteStatus: updateRouteStatus,
+    userSelectedLocalMediaFile: userSelectedLocalMediaFile,
   };
 });

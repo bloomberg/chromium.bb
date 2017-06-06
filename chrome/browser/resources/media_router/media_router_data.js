@@ -21,6 +21,7 @@ media_router.CastModeType = {
   PRESENTATION: 0x1,
   TAB_MIRROR: 0x2,
   DESKTOP_MIRROR: 0x4,
+  LOCAL_FILE: 0x8,
 };
 
 /**
