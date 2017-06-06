@@ -9,7 +9,7 @@
 #include "gin/runner.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace content {
@@ -18,7 +18,8 @@ namespace content {
 class MojoMainRunner : public gin::Runner {
  public:
   // Does not take ownership of ContextHolder.
-  MojoMainRunner(blink::WebFrame* frame, gin::ContextHolder* context_holder);
+  MojoMainRunner(blink::WebLocalFrame* frame,
+                 gin::ContextHolder* context_holder);
   ~MojoMainRunner() override;
 
   // Runner overrides:
@@ -32,7 +33,7 @@ class MojoMainRunner : public gin::Runner {
 
  private:
   // Frame to execute script in.
-  blink::WebFrame* frame_;
+  blink::WebLocalFrame* frame_;
 
   // Created by blink bindings to V8.
   gin::ContextHolder* context_holder_;

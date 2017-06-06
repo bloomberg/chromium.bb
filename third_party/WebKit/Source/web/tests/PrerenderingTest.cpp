@@ -211,7 +211,7 @@ class PrerenderingTest : public ::testing::Test {
   }
 
   void ExecuteScript(const char* code) {
-    web_view_helper_.WebView()->MainFrame()->ExecuteScript(
+    web_view_helper_.WebView()->MainFrameImpl()->ExecuteScript(
         WebScriptSource(WebString::FromUTF8(code)));
   }
 

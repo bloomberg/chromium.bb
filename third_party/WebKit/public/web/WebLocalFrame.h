@@ -266,6 +266,10 @@ class WebLocalFrame : public WebFrame {
                                  int page_index) = 0;
 
   // Scripting --------------------------------------------------------------
+
+  // Executes script in the context of the current page.
+  virtual void ExecuteScript(const WebScriptSource&) = 0;
+
   // Executes script in the context of the current page and returns the value
   // that the script evaluated to with callback. Script execution can be
   // suspend.
@@ -568,6 +572,7 @@ class WebLocalFrame : public WebFrame {
   virtual WebInputMethodController* GetInputMethodController() = 0;
 
   // Loading ------------------------------------------------------------------
+
   // Creates and returns a loader. This function can be called only when this
   // frame is attached to a document.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader() = 0;

@@ -145,7 +145,7 @@ void LoadablePluginPlaceholder::UpdateMessage() {
     return;
   std::string script =
       "window.setMessage(" + base::GetQuotedJSONString(message_) + ")";
-  plugin()->web_view()->MainFrame()->ExecuteScript(
+  plugin()->main_frame()->ExecuteScript(
       blink::WebScriptSource(blink::WebString::FromUTF8(script)));
 }
 
@@ -252,7 +252,7 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
     std::string script = base::StringPrintf(
         "window.resizePoster('%dpx', '%dpx', '%dpx', '%dpx')", x, y, width,
         height);
-    plugin()->web_view()->MainFrame()->ExecuteScript(
+    plugin()->main_frame()->ExecuteScript(
         blink::WebScriptSource(blink::WebString::FromUTF8(script)));
   }
 }

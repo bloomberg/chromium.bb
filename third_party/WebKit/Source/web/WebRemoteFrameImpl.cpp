@@ -147,10 +147,6 @@ void WebRemoteFrameImpl::DispatchUnloadEvent() {
   NOTREACHED();
 }
 
-void WebRemoteFrameImpl::ExecuteScript(const WebScriptSource&) {
-  NOTREACHED();
-}
-
 void WebRemoteFrameImpl::ExecuteScriptInIsolatedWorld(
     int world_id,
     const WebScriptSource* sources,

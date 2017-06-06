@@ -99,7 +99,7 @@ const char kPageLoadScriptFormat[] =
 
 const char kPageSetupScriptFormat[] = "setup(%s);";
 
-void ExecuteScript(blink::WebFrame* frame,
+void ExecuteScript(blink::WebLocalFrame* frame,
                    const char* script_format,
                    const base::Value& parameters) {
   std::string json;

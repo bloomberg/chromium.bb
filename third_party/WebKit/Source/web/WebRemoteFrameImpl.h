@@ -46,7 +46,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
   WebDocument GetDocument() const override;
   WebPerformance Performance() const override;
   void DispatchUnloadEvent() override;
-  void ExecuteScript(const WebScriptSource&) override;
   void ExecuteScriptInIsolatedWorld(int world_id,
                                     const WebScriptSource* sources,
                                     unsigned num_sources) override;

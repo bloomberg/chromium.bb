@@ -93,7 +93,7 @@ void ThrowInvalidParameters(const v8::FunctionCallbackInfo<v8::Value>& args) {
       v8::String::NewFromUtf8(isolate, "Invalid parameters")));
 }
 
-void Dispatch(blink::WebFrame* frame, const blink::WebString& script) {
+void Dispatch(blink::WebLocalFrame* frame, const blink::WebString& script) {
   if (!frame) return;
   frame->ExecuteScript(blink::WebScriptSource(script));
 }
@@ -442,7 +442,7 @@ v8::Extension* SearchBoxExtension::Get() {
 
 // static
 void SearchBoxExtension::DispatchChromeIdentityCheckResult(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const base::string16& identity,
     bool identity_match) {
   std::string escaped_identity = base::GetQuotedJSONString(identity);
@@ -453,13 +453,13 @@ void SearchBoxExtension::DispatchChromeIdentityCheckResult(
 }
 
 // static
-void SearchBoxExtension::DispatchFocusChange(blink::WebFrame* frame) {
+void SearchBoxExtension::DispatchFocusChange(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchFocusChangedScript);
 }
 
 // static
 void SearchBoxExtension::DispatchHistorySyncCheckResult(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     bool sync_history) {
   blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
       kDispatchHistorySyncCheckResult, sync_history ? "true" : "false")));
@@ -467,38 +467,38 @@ void SearchBoxExtension::DispatchHistorySyncCheckResult(
 }
 
 // static
-void SearchBoxExtension::DispatchInputCancel(blink::WebFrame* frame) {
+void SearchBoxExtension::DispatchInputCancel(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchInputCancelScript);
 }
 
 // static
-void SearchBoxExtension::DispatchInputStart(blink::WebFrame* frame) {
+void SearchBoxExtension::DispatchInputStart(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchInputStartScript);
 }
 
 // static
-void SearchBoxExtension::DispatchKeyCaptureChange(blink::WebFrame* frame) {
+void SearchBoxExtension::DispatchKeyCaptureChange(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchKeyCaptureChangeScript);
 }
 
 // static
 void SearchBoxExtension::DispatchMostVisitedChanged(
-    blink::WebFrame* frame) {
+    blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchMostVisitedChangedScript);
 }
 
 // static
-void SearchBoxExtension::DispatchSubmit(blink::WebFrame* frame) {
+void SearchBoxExtension::DispatchSubmit(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchSubmitEventScript);
 }
 
 // static
-void SearchBoxExtension::DispatchSuggestionChange(blink::WebFrame* frame) {
+void SearchBoxExtension::DispatchSuggestionChange(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchSuggestionChangeEventScript);
 }
 
 // static
-void SearchBoxExtension::DispatchThemeChange(blink::WebFrame* frame) {
+void SearchBoxExtension::DispatchThemeChange(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchThemeChangeEventScript);
 }
 

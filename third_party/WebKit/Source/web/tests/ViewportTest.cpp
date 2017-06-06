@@ -32,6 +32,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "core/frame/Settings.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/page/Page.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntPoint.h"
@@ -44,6 +45,7 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebFrame.h"
+#include "public/web/WebLocalFrame.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
@@ -77,7 +79,7 @@ class ViewportTest : public ::testing::Test {
         WebString::FromUTF8(file_name));
   }
 
-  void ExecuteScript(WebFrame* frame, const WebString& code) {
+  void ExecuteScript(WebLocalFrame* frame, const WebString& code) {
     frame->ExecuteScript(WebScriptSource(code));
     RunPendingTasks();
   }
@@ -2880,7 +2882,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPRemoveAndAdd) {
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 
-  ExecuteScript(web_view_helper.WebView()->MainFrame(),
+  ExecuteScript(web_view_helper.WebView()->MainFrameImpl(),
                 "originalDoctype = document.doctype;"
                 "document.removeChild(originalDoctype);");
 
@@ -2893,7 +2895,7 @@ TEST_F(ViewportTest, viewportLegacyXHTMLMPRemoveAndAdd) {
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 
-  ExecuteScript(web_view_helper.WebView()->MainFrame(),
+  ExecuteScript(web_view_helper.WebView()->MainFrameImpl(),
                 "document.insertBefore(originalDoctype, document.firstChild);");
 
   constraints = RunViewportTest(page, 320, 352);
