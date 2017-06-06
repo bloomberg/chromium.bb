@@ -47,6 +47,8 @@ source_set("browser_sources") {
     "blacklist_state.h",
     "blob_holder.cc",
     "blob_holder.h",
+    "blob_reader.cc",
+    "blob_reader.h",
     "blocked_action_type.h",
     "browser_context_keyed_api_factory.h",
     "component_extension_resource_manager.h",

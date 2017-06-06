@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/blob_reader.h"
+#include "extensions/browser/blob_reader.h"
 
 #include <limits>
 #include <utility>
@@ -10,8 +10,9 @@
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -19,7 +20,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
-BlobReader::BlobReader(Profile* profile,
+BlobReader::BlobReader(content::BrowserContext* browser_context,
                        const std::string& blob_uuid,
                        BlobReadCallback callback)
     : callback_(callback) {
@@ -38,7 +39,9 @@ BlobReader::BlobReader(Profile* profile,
   // it is scheduled to be removed in (crbug.com/701851).
   fetcher_ = net::URLFetcher::Create(blob_url, net::URLFetcher::GET, this,
                                      NO_TRAFFIC_ANNOTATION_YET);
-  fetcher_->SetRequestContext(profile->GetRequestContext());
+  fetcher_->SetRequestContext(
+      content::BrowserContext::GetDefaultStoragePartition(browser_context)
+          ->GetURLRequestContext());
 }
 
 BlobReader::~BlobReader() { DCHECK_CURRENTLY_ON(content::BrowserThread::UI); }

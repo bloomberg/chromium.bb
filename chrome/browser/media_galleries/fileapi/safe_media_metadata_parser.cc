@@ -7,9 +7,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/extensions/blob_reader.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/blob_reader.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -42,12 +43,13 @@ class SafeMediaMetadataParser::MediaDataSourceImpl
   DISALLOW_COPY_AND_ASSIGN(MediaDataSourceImpl);
 };
 
-SafeMediaMetadataParser::SafeMediaMetadataParser(Profile* profile,
-                                                 const std::string& blob_uuid,
-                                                 int64_t blob_size,
-                                                 const std::string& mime_type,
-                                                 bool get_attached_images)
-    : profile_(profile),
+SafeMediaMetadataParser::SafeMediaMetadataParser(
+    content::BrowserContext* browser_context,
+    const std::string& blob_uuid,
+    int64_t blob_size,
+    const std::string& mime_type,
+    bool get_attached_images)
+    : browser_context_(browser_context),
       blob_uuid_(blob_uuid),
       blob_size_(blob_size),
       mime_type_(mime_type),
@@ -146,7 +148,7 @@ void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   BlobReader* reader = new BlobReader(  // BlobReader is self-deleting.
-      profile_, blob_uuid_,
+      browser_context_, blob_uuid_,
       base::Bind(&SafeMediaMetadataParser::BlobReaderDoneOnUIThread, this,
                  base::Passed(&callback)));
   reader->SetByteRange(position, length);
