@@ -3002,3 +3002,5 @@ crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/reques
 crbug.com/729075 [ Mac10.11 Retina ] css3/blending/background-blend-mode-gif-color-2.html [ Failure Pass ]
 
 crbug.com/729836 [ Win ] fast/workers/worker-document-leak.html [ Pass Failure ]
+
+crbug.com/733071 [ Mac ] css3/blending/svg-blend-multiply-alpha.html [ Failure ]
