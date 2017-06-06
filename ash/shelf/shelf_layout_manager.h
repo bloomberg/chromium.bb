@@ -295,6 +295,10 @@ class ASH_EXPORT ShelfLayoutManager
   void CompleteGestureDrag(const ui::GestureEvent& gesture);
   void CancelGestureDrag();
 
+  // Returns true if the gesture is swiping up on a hidden shelf or swiping down
+  // on a visible shelf; other gestures should not change shelf visibility.
+  bool IsSwipingCorrectDirection();
+
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_;
