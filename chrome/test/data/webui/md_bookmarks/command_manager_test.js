@@ -76,21 +76,21 @@ suite('<bookmarks-command-manager>', function() {
     store.data.selection.items = new Set(['13']);
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document, 67, modifier, 'c');
+    MockInteractions.pressAndReleaseKeyOn(document.body, 67, modifier, 'c');
     commandManager.assertLastCommand('copy', ['13']);
 
     // Doesn't trigger when a folder is selected.
     store.data.selection.items = new Set(['11']);
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document, 67, modifier, 'c');
+    MockInteractions.pressAndReleaseKeyOn(document.body, 67, modifier, 'c');
     commandManager.assertLastCommand(null);
 
     // Doesn't trigger when nothing is selected.
     store.data.selection.items = new Set();
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document, 67, modifier, 'c');
+    MockInteractions.pressAndReleaseKeyOn(document.body, 67, modifier, 'c');
     commandManager.assertLastCommand(null);
   });
 
@@ -98,7 +98,7 @@ suite('<bookmarks-command-manager>', function() {
     store.data.selection.items = new Set(['12', '13']);
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document, 46, '', 'Delete');
+    MockInteractions.pressAndReleaseKeyOn(document.body, 46, '', 'Delete');
     commandManager.assertLastCommand('delete', ['12', '13']);
   });
 
@@ -109,7 +109,7 @@ suite('<bookmarks-command-manager>', function() {
     store.data.selection.items = new Set(['11']);
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document, keyCode, '', key);
+    MockInteractions.pressAndReleaseKeyOn(document.body, keyCode, '', key);
     commandManager.assertLastCommand('edit', ['11']);
   });
 
@@ -119,10 +119,12 @@ suite('<bookmarks-command-manager>', function() {
     var redoModifier = cr.isMac ? ['meta', 'shift'] : 'ctrl'
     var redoKey = cr.isMac ? 'z' : 'y';
 
-    MockInteractions.pressAndReleaseKeyOn(document, '', undoModifier, undoKey);
+    MockInteractions.pressAndReleaseKeyOn(
+        document.body, '', undoModifier, undoKey);
     commandManager.assertLastCommand('undo');
 
-    MockInteractions.pressAndReleaseKeyOn(document, '', redoModifier, redoKey);
+    MockInteractions.pressAndReleaseKeyOn(
+        document.body, '', redoModifier, redoKey);
     commandManager.assertLastCommand('redo');
   });
 
@@ -156,7 +158,7 @@ suite('<bookmarks-command-manager>', function() {
       lastCreate = createConfig;
     };
 
-    MockInteractions.pressAndReleaseKeyOn(document, 13, 'shift', 'Enter');
+    MockInteractions.pressAndReleaseKeyOn(document.body, 13, 'shift', 'Enter');
     commandManager.assertLastCommand(Command.OPEN_NEW_WINDOW, ['12', '13']);
     assertDeepEquals(['http://121/', 'http://13/'], lastCreate.url);
     assertFalse(lastCreate.incognito);

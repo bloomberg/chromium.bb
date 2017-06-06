@@ -24,6 +24,7 @@ MaterialBookmarksFocusTest.prototype = {
       [{switchName: 'enable-features', switchValue: 'MaterialDesignBookmarks'}],
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'test_command_manager.js',
     'test_store.js',
     'test_util.js',
   ]),
@@ -177,6 +178,20 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
           bookmarks.actions.changeFolderOpen('2', false), store.lastAction);
 
       document.body.style.direction = 'ltr';
+    });
+
+    test('keyboard commands are passed to command manager', function() {
+      var commandManager = new TestCommandManager();
+      document.body.appendChild(commandManager);
+      chrome.bookmarkManagerPrivate.removeTrees = function() {}
+
+      store.data.selection.items = new Set(['3', '4']);
+      store.notifyObservers();
+
+      getFolderNode('1').$.container.focus();
+      keydown('1', 'delete');
+
+      commandManager.assertLastCommand(Command.DELETE, ['1']);
     });
   });
 
@@ -343,6 +358,37 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       focusedItem = items[3];
       assertDeepEquals(
           ['2', '4', '5', '6'], normalizeSet(store.data.selection.items));
+    });
+
+    test('keyboard commands are passed to command manager', function() {
+      var commandManager = new TestCommandManager();
+      document.body.appendChild(commandManager);
+      chrome.bookmarkManagerPrivate.removeTrees = function() {}
+
+      store.data.selection.items = new Set(['2', '3']);
+      store.notifyObservers();
+
+      var focusedItem = items[4];
+      focusedItem.focus();
+
+      keydown(focusedItem, 'Delete');
+      // Commands should take affect on the selection, even if something else is
+      // focused.
+      commandManager.assertLastCommand(Command.DELETE, ['2', '3']);
+    });
+
+    test('iron-list does not steal focus on enter', function() {
+      // Iron-list attempts to focus the whole <bookmarks-item> when pressing
+      // enter on the menu button. This checks that we block this behavior
+      // during keydown on <bookmarks-list>.
+      var commandManager = new TestCommandManager();
+      document.body.appendChild(commandManager);
+
+      var button = items[0].$$('.more-vert-button');
+      button.focus();
+      keydown(button, 'Enter');
+
+      assertEquals(button, items[0].root.activeElement);
     });
   });
 

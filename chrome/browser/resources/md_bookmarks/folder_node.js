@@ -110,6 +110,11 @@ Polymer({
     this.changeKeyboardSelection_(
         xDirection, yDirection, this.root.activeElement);
 
+    if (!handled) {
+      handled = bookmarks.CommandManager.getInstance().handleKeyEvent(
+          e, new Set([this.itemId]));
+    }
+
     if (!handled)
       return;
 

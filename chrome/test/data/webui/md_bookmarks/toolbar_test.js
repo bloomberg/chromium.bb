@@ -53,4 +53,15 @@ suite('<bookmarks-toolbar>', function() {
 
     commandManager.assertLastCommand(Command.DELETE, ['2', '3']);
   });
+
+  test('commands do not trigger from the search field', function() {
+    store.data.selection.items = new Set(['2']);
+    store.notifyObservers();
+
+    var input = toolbar.$$('cr-toolbar').getSearchField().getSearchInput();
+    var modifier = cr.isMac ? 'meta' : 'ctrl';
+    MockInteractions.pressAndReleaseKeyOn(input, 67, modifier, 'c');
+
+    commandManager.assertLastCommand(null);
+  });
 });
