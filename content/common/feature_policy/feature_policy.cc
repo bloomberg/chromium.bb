@@ -170,9 +170,9 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
     } else {
       new_policy->inherited_policies_[feature.first] = false;
     }
-    if (parent_policy && !container_policy.empty())
-      new_policy->AddContainerPolicy(container_policy, parent_policy);
   }
+  if (parent_policy && !container_policy.empty())
+    new_policy->AddContainerPolicy(container_policy, parent_policy);
   return new_policy;
 }
 
