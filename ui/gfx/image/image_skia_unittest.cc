@@ -17,14 +17,6 @@
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/switches.h"
 
-// Duplicated from base/threading/non_thread_safe.h so that we can be
-// good citizens there and undef the macro.
-#if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON))
-#define ENABLE_NON_THREAD_SAFE 1
-#else
-#define ENABLE_NON_THREAD_SAFE 0
-#endif
-
 namespace gfx {
 
 namespace {
@@ -355,7 +347,7 @@ TEST_F(ImageSkiaTest, BackedBySameObjectAs) {
   EXPECT_FALSE(copy.BackedBySameObjectAs(unrelated));
 }
 
-#if ENABLE_NON_THREAD_SAFE
+#if DCHECK_IS_ON()
 TEST_F(ImageSkiaTest, EmptyOnThreadTest) {
   ImageSkia empty;
   test::TestOnThread empty_on_thread(&empty);
@@ -481,10 +473,7 @@ TEST_F(ImageSkiaTest, SourceOnThreadTest) {
   EXPECT_TRUE(image.CanRead());
   EXPECT_FALSE(image.CanModify());
 }
-#endif  // ENABLE_NON_THREAD_SAFE
-
-// Just in case we ever get lumped together with other compilation units.
-#undef ENABLE_NON_THREAD_SAFE
+#endif  // DCHECK_IS_ON()
 
 TEST_F(ImageSkiaTest, Unscaled) {
   SkBitmap bitmap;
