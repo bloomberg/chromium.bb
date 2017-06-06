@@ -128,16 +128,16 @@ RefPtr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
   rare_non_inherited_data_.Init();
-  rare_non_inherited_data_.Access()->deprecated_flexible_box_.Init();
-  rare_non_inherited_data_.Access()->flexible_box_.Init();
-  rare_non_inherited_data_.Access()->multi_col_.Init();
-  rare_non_inherited_data_.Access()->transform_.Init();
-  rare_non_inherited_data_.Access()->will_change_.Init();
+  rare_non_inherited_data_.Access()->deprecated_flexible_box_data_data_.Init();
+  rare_non_inherited_data_.Access()->flexible_box_data_.Init();
+  rare_non_inherited_data_.Access()->multi_col_data_.Init();
+  rare_non_inherited_data_.Access()->transform_data_.Init();
+  rare_non_inherited_data_.Access()->will_change_data_.Init();
   rare_non_inherited_data_.Access()->filter_.Init();
   rare_non_inherited_data_.Access()->backdrop_filter_.Init();
-  rare_non_inherited_data_.Access()->grid_.Init();
-  rare_non_inherited_data_.Access()->grid_item_.Init();
-  rare_non_inherited_data_.Access()->scroll_snap_.Init();
+  rare_non_inherited_data_.Access()->grid_data_.Init();
+  rare_non_inherited_data_.Access()->grid_item_data_.Init();
+  rare_non_inherited_data_.Access()->scroll_snap_data_.Init();
   svg_style_.Init();
 }
 
@@ -575,34 +575,36 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
         HasFilters() != other.HasFilters())
       return true;
 
-    if (rare_non_inherited_data_->grid_.Get() !=
-            other.rare_non_inherited_data_->grid_.Get() &&
-        *rare_non_inherited_data_->grid_.Get() !=
-            *other.rare_non_inherited_data_->grid_.Get())
+    if (rare_non_inherited_data_->grid_data_.Get() !=
+            other.rare_non_inherited_data_->grid_data_.Get() &&
+        *rare_non_inherited_data_->grid_data_.Get() !=
+            *other.rare_non_inherited_data_->grid_data_.Get())
       return true;
 
-    if (rare_non_inherited_data_->grid_item_.Get() !=
-            other.rare_non_inherited_data_->grid_item_.Get() &&
-        *rare_non_inherited_data_->grid_item_.Get() !=
-            *other.rare_non_inherited_data_->grid_item_.Get())
+    if (rare_non_inherited_data_->grid_item_data_.Get() !=
+            other.rare_non_inherited_data_->grid_item_data_.Get() &&
+        *rare_non_inherited_data_->grid_item_data_.Get() !=
+            *other.rare_non_inherited_data_->grid_item_data_.Get())
       return true;
 
-    if (rare_non_inherited_data_->deprecated_flexible_box_.Get() !=
-            other.rare_non_inherited_data_->deprecated_flexible_box_.Get() &&
-        *rare_non_inherited_data_->deprecated_flexible_box_.Get() !=
-            *other.rare_non_inherited_data_->deprecated_flexible_box_.Get())
+    if (rare_non_inherited_data_->deprecated_flexible_box_data_data_.Get() !=
+            other.rare_non_inherited_data_->deprecated_flexible_box_data_data_
+                .Get() &&
+        *rare_non_inherited_data_->deprecated_flexible_box_data_data_.Get() !=
+            *other.rare_non_inherited_data_->deprecated_flexible_box_data_data_
+                 .Get())
       return true;
 
-    if (rare_non_inherited_data_->flexible_box_.Get() !=
-            other.rare_non_inherited_data_->flexible_box_.Get() &&
-        *rare_non_inherited_data_->flexible_box_.Get() !=
-            *other.rare_non_inherited_data_->flexible_box_.Get())
+    if (rare_non_inherited_data_->flexible_box_data_.Get() !=
+            other.rare_non_inherited_data_->flexible_box_data_.Get() &&
+        *rare_non_inherited_data_->flexible_box_data_.Get() !=
+            *other.rare_non_inherited_data_->flexible_box_data_.Get())
       return true;
 
-    if (rare_non_inherited_data_->multi_col_.Get() !=
-            other.rare_non_inherited_data_->multi_col_.Get() &&
-        *rare_non_inherited_data_->multi_col_.Get() !=
-            *other.rare_non_inherited_data_->multi_col_.Get())
+    if (rare_non_inherited_data_->multi_col_data_.Get() !=
+            other.rare_non_inherited_data_->multi_col_data_.Get() &&
+        *rare_non_inherited_data_->multi_col_data_.Get() !=
+            *other.rare_non_inherited_data_->multi_col_data_.Get())
       return true;
 
     // If the counter directives change, trigger a relayout to re-calculate
@@ -1008,8 +1010,9 @@ void ComputedStyle::SetContent(ContentData* content_data) {
 
 bool ComputedStyle::HasWillChangeCompositingHint() const {
   for (size_t i = 0;
-       i < rare_non_inherited_data_->will_change_->properties_.size(); ++i) {
-    switch (rare_non_inherited_data_->will_change_->properties_[i]) {
+       i < rare_non_inherited_data_->will_change_data_->properties_.size();
+       ++i) {
+    switch (rare_non_inherited_data_->will_change_data_->properties_[i]) {
       case CSSPropertyOpacity:
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:
@@ -1027,7 +1030,7 @@ bool ComputedStyle::HasWillChangeCompositingHint() const {
 
 bool ComputedStyle::HasWillChangeTransformHint() const {
   for (const auto& property :
-       rare_non_inherited_data_->will_change_->properties_) {
+       rare_non_inherited_data_->will_change_data_->properties_) {
     switch (property) {
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:
@@ -1146,7 +1149,7 @@ void ComputedStyle::ApplyMotionPathTransform(
     const FloatRect& bounding_box,
     TransformationMatrix& transform) const {
   const StyleMotionData& motion_data =
-      rare_non_inherited_data_->transform_->motion_;
+      rare_non_inherited_data_->transform_data_->motion_;
   // TODO(ericwilligers): crbug.com/638055 Apply offset-position.
   if (!motion_data.path_) {
     return;
@@ -1884,8 +1887,8 @@ void ComputedStyle::RestoreParentTextDecorations(
 }
 
 void ComputedStyle::ClearMultiCol() {
-  rare_non_inherited_data_.Access()->multi_col_ = nullptr;
-  rare_non_inherited_data_.Access()->multi_col_.Init();
+  rare_non_inherited_data_.Access()->multi_col_data_ = nullptr;
+  rare_non_inherited_data_.Access()->multi_col_data_.Init();
 }
 
 StyleColor ComputedStyle::DecorationColorIncludingFallback(
@@ -2170,7 +2173,7 @@ void ComputedStyle::SetMarginEnd(const Length& margin) {
 }
 
 void ComputedStyle::SetOffsetPath(RefPtr<BasicShape> path) {
-  rare_non_inherited_data_.Access()->transform_.Access()->motion_.path_ =
+  rare_non_inherited_data_.Access()->transform_data_.Access()->motion_.path_ =
       std::move(path);
 }
 
