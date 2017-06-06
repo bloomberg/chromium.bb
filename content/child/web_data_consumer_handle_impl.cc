@@ -38,7 +38,7 @@ WebDataConsumerHandleImpl::ReaderImpl::ReaderImpl(
     scoped_refptr<Context> context,
     Client* client)
     : context_(context),
-      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC),
+      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       client_(client) {
   if (client_)
     StartWatching();
@@ -77,6 +77,8 @@ Result WebDataConsumerHandleImpl::ReaderImpl::Read(void* data,
                                     &size_to_pass, flags_to_pass);
   if (rv == MOJO_RESULT_OK)
     *read_size = size_to_pass;
+  if (rv == MOJO_RESULT_OK || rv == MOJO_RESULT_SHOULD_WAIT)
+    handle_watcher_.ArmOrNotify();
 
   return HandleReadResult(rv);
 }
@@ -103,6 +105,8 @@ Result WebDataConsumerHandleImpl::ReaderImpl::BeginRead(const void** buffer,
 
 Result WebDataConsumerHandleImpl::ReaderImpl::EndRead(size_t read_size) {
   MojoResult rv = mojo::EndReadDataRaw(context_->handle().get(), read_size);
+  if (rv == MOJO_RESULT_OK)
+    handle_watcher_.ArmOrNotify();
   return rv == MOJO_RESULT_OK ? kOk : kUnexpectedError;
 }
 
@@ -128,6 +132,7 @@ void WebDataConsumerHandleImpl::ReaderImpl::StartWatching() {
   handle_watcher_.Watch(
       context_->handle().get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&ReaderImpl::OnHandleGotReadable, base::Unretained(this)));
+  handle_watcher_.ArmOrNotify();
 }
 
 void WebDataConsumerHandleImpl::ReaderImpl::OnHandleGotReadable(MojoResult) {
