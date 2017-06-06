@@ -1081,42 +1081,21 @@ void ShelfLayoutManager::UpdateGestureDrag(const ui::GestureEvent& gesture) {
 }
 
 void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
-  bool horizontal = shelf_->IsHorizontalAlignment();
   bool should_change = false;
   if (gesture.type() == ui::ET_GESTURE_SCROLL_END) {
     // The visibility of the shelf changes only if the shelf was dragged X%
     // along the correct axis. If the shelf was already visible, then the
     // direction of the drag does not matter.
     const float kDragHideThreshold = 0.4f;
-    gfx::Rect bounds = GetIdealBounds();
-    float drag_ratio = fabs(gesture_drag_amount_) /
-                       (horizontal ? bounds.height() : bounds.width());
-    if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN) {
-      should_change = drag_ratio > kDragHideThreshold;
-    } else {
-      bool correct_direction = false;
-      switch (shelf_->alignment()) {
-        case SHELF_ALIGNMENT_BOTTOM:
-        case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        case SHELF_ALIGNMENT_RIGHT:
-          correct_direction = gesture_drag_amount_ < 0;
-          break;
-        case SHELF_ALIGNMENT_LEFT:
-          correct_direction = gesture_drag_amount_ > 0;
-          break;
-      }
-      should_change = correct_direction && drag_ratio > kDragHideThreshold;
-    }
+    const gfx::Rect bounds = GetIdealBounds();
+    const float drag_ratio =
+        fabs(gesture_drag_amount_) /
+        (shelf_->IsHorizontalAlignment() ? bounds.height() : bounds.width());
+
+    should_change =
+        IsSwipingCorrectDirection() && drag_ratio > kDragHideThreshold;
   } else if (gesture.type() == ui::ET_SCROLL_FLING_START) {
-    if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN) {
-      should_change = horizontal ? fabs(gesture.details().velocity_y()) > 0
-                                 : fabs(gesture.details().velocity_x()) > 0;
-    } else {
-      should_change =
-          SelectValueForShelfAlignment(gesture.details().velocity_y() < 0,
-                                       gesture.details().velocity_x() > 0,
-                                       gesture.details().velocity_x() < 0);
-    }
+    should_change = IsSwipingCorrectDirection();
   } else {
     NOTREACHED();
   }
@@ -1157,6 +1136,22 @@ void ShelfLayoutManager::CancelGestureDrag() {
   gesture_drag_status_ = GESTURE_DRAG_CANCEL_IN_PROGRESS;
   UpdateVisibilityState();
   gesture_drag_status_ = GESTURE_DRAG_NONE;
+}
+
+bool ShelfLayoutManager::IsSwipingCorrectDirection() {
+  switch (shelf_->alignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case SHELF_ALIGNMENT_RIGHT:
+      if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN)
+        return gesture_drag_amount_ > 0;
+      return gesture_drag_amount_ < 0;
+    case SHELF_ALIGNMENT_LEFT:
+      if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN)
+        return gesture_drag_amount_ < 0;
+      return gesture_drag_amount_ > 0;
+  }
+  return false;
 }
 
 }  // namespace ash
