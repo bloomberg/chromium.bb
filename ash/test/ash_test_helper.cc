@@ -188,7 +188,7 @@ void AshTestHelper::SetUp(bool start_session) {
     session_controller_client_->CreatePredefinedUserSessions(1);
 
   // TODO(sky): mash should use this too http://crbug.com/718860.
-  if (config_ != Config::MASH) {
+  if (Shell::ShouldEnableSimplifiedDisplayManagement()) {
     // Tests that change the display configuration generally don't care about
     // the notifications and the popup UI can interfere with things like
     // cursors.
@@ -313,7 +313,7 @@ void AshTestHelper::UpdateDisplayForMash(const std::string& display_spec) {
 }
 
 display::Display AshTestHelper::GetSecondaryDisplay() {
-  if (config_ != Config::MASH)
+  if (Shell::ShouldEnableSimplifiedDisplayManagement())
     return Shell::Get()->display_manager()->GetSecondaryDisplay();
 
   std::vector<RootWindowController*> roots = GetRootsOrderedByDisplayId();
@@ -350,7 +350,7 @@ void AshTestHelper::CreateMashWindowManager() {
       window_manager_app_->window_manager()->window_tree_client();
   window_tree_client_private_ =
       base::MakeUnique<aura::WindowTreeClientPrivate>(window_tree_client);
-  if (config_ == Config::MUS) {
+  if (Shell::ShouldEnableSimplifiedDisplayManagement(config_)) {
     window_tree_client_private_->CallOnConnect();
   } else {
     int next_x = 0;

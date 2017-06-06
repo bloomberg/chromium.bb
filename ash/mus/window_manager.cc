@@ -126,10 +126,8 @@ void WindowManager::Init(
   DCHECK_EQ(nullptr, ash::Shell::window_tree_client());
   ash::Shell::set_window_tree_client(window_tree_client_.get());
 
-  // TODO(sky): remove and use MUS code. This should really be
-  // ShouldEnableSimplifiedDisplayManagement(), but as ShellPort hasn't been
-  // created yet it can't be used here.
-  if (config_ == Config::MASH) {
+  // TODO(sky): remove and use MUS code.
+  if (!Shell::ShouldEnableSimplifiedDisplayManagement(config_)) {
     // |connector_| is null in some tests.
     if (connector_)
       connector_->BindInterface(ui::mojom::kServiceName, &display_controller_);
@@ -339,7 +337,7 @@ void WindowManager::SetWindowManagerClient(aura::WindowManagerClient* client) {
 }
 
 void WindowManager::OnWmConnected() {
-  if (config_ != Config::MUS)
+  if (!Shell::ShouldEnableSimplifiedDisplayManagement(config_))
     return;
 
   CreateShell(nullptr);

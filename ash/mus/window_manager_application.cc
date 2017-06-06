@@ -10,6 +10,7 @@
 #include "ash/mus/network_connect_delegate_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
+#include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/power/power_status.h"
 #include "base/bind.h"
@@ -149,7 +150,8 @@ void WindowManagerApplication::OnStart() {
       base::MakeUnique<aura::WindowTreeClient>(
           context()->connector(), window_manager_.get(), window_manager_.get());
   const bool automatically_create_display_roots =
-      window_manager_->config() == Config::MASH;
+      !Shell::ShouldEnableSimplifiedDisplayManagement(
+          window_manager_->config());
   window_tree_client->ConnectAsWindowManager(
       automatically_create_display_roots);
 
