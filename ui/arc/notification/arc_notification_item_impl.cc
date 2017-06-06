@@ -77,8 +77,14 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
   rich_data.priority = ConvertAndroidPriority(data->priority);
   if (data->small_icon)
     rich_data.small_image = gfx::Image::CreateFrom1xBitmap(*data->small_icon);
-  if (data->accessible_name.has_value())
-    rich_data.accessible_name = base::UTF8ToUTF16(*data->accessible_name);
+  if (data->accessible_name.has_value()) {
+    accessible_name_ = base::UTF8ToUTF16(*data->accessible_name);
+  } else {
+    accessible_name_ = base::JoinString(
+        {base::UTF8ToUTF16(data->title), base::UTF8ToUTF16(data->message)},
+        base::ASCIIToUTF16("\n"));
+  }
+  rich_data.accessible_name = accessible_name_;
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
@@ -193,6 +199,10 @@ const std::string& ArcNotificationItemImpl::GetNotificationKey() const {
 
 const std::string& ArcNotificationItemImpl::GetNotificationId() const {
   return notification_id_;
+}
+
+const base::string16& ArcNotificationItemImpl::GetAccessibleName() const {
+  return accessible_name_;
 }
 
 }  // namespace arc
