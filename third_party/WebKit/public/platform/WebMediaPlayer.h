@@ -282,6 +282,13 @@ class WebMediaPlayer {
                                         double* timestamp) {
     return false;
   }
+
+  // Callback called whenever the media element may have received or last native
+  // controls. It might be called twice with the same value: the caller has to
+  // check if the value have changed if it only wants to handle this case.
+  // This method is not used to say express if the native controls are visible
+  // but if the element is using them.
+  virtual void OnHasNativeControlsChanged(bool) {}
 };
 
 }  // namespace blink

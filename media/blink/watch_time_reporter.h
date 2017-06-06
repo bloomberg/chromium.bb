@@ -114,6 +114,11 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // number of rebuffering events. Reset to zero after a finalize event.
   void OnUnderflow();
 
+  // These methods are used to ensure that the watch time is reported relative
+  // to whether the media is using native controls.
+  void OnNativeControlsEnabled();
+  void OnNativeControlsDisabled();
+
   // Setup the reporting interval to be immediate to avoid spinning real time
   // within the unit test.
   void set_reporting_interval_for_testing() {
@@ -177,6 +182,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   bool is_on_battery_power_ = false;
   bool is_playing_ = false;
   bool is_visible_ = true;
+  bool has_native_controls_ = false;
   double volume_ = 1.0;
   int underflow_count_ = 0;
   std::vector<base::TimeDelta> pending_underflow_events_;
@@ -184,6 +190,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // The last media timestamp seen by UpdateWatchTime().
   base::TimeDelta last_media_timestamp_ = kNoTimestamp;
   base::TimeDelta last_media_power_timestamp_ = kNoTimestamp;
+  base::TimeDelta last_media_controls_timestamp_ = kNoTimestamp;
 
   // The starting and ending timestamps used for reporting watch time.
   base::TimeDelta start_timestamp_;
@@ -193,6 +200,11 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // battery or AC power is being used.
   base::TimeDelta start_timestamp_for_power_;
   base::TimeDelta end_timestamp_for_power_ = kNoTimestamp;
+
+  // Similar to the above but tracks watch time relative to whether or not
+  // native controls are being used.
+  base::TimeDelta start_timestamp_for_controls_;
+  base::TimeDelta end_timestamp_for_controls_ = kNoTimestamp;
 
   // Special case reporter for handling background video watch time. Configured
   // as an audio only WatchTimeReporter with |is_background_| set to true.

@@ -419,6 +419,7 @@ class CORE_EXPORT HTMLMediaElement
   WebMediaPlayer::TrackId GetSelectedVideoTrackId() final;
   bool IsAutoplayingMuted() final;
   void ActivateViewportIntersectionMonitoring(bool) final;
+  bool HasNativeControls() final;
 
   void LoadTimerFired(TimerBase*);
   void ProgressEventTimerFired(TimerBase*);

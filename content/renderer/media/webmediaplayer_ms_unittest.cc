@@ -464,6 +464,7 @@ class WebMediaPlayerMSTest
   blink::WebMediaPlayer::TrackId GetSelectedVideoTrackId() override {
     return blink::WebMediaPlayer::TrackId();
   }
+  bool HasNativeControls() override { return false; }
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;
