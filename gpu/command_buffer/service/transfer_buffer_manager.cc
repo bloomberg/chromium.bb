@@ -40,10 +40,8 @@ TransferBufferManager::TransferBufferManager(
 TransferBufferManager::~TransferBufferManager() {
   while (!registered_buffers_.empty()) {
     BufferMap::iterator it = registered_buffers_.begin();
-    if (it->second->backing()->is_shared()) {
-      DCHECK(shared_memory_bytes_allocated_ >= it->second->size());
-      shared_memory_bytes_allocated_ -= it->second->size();
-    }
+    DCHECK(shared_memory_bytes_allocated_ >= it->second->size());
+    shared_memory_bytes_allocated_ -= it->second->size();
     registered_buffers_.erase(it);
   }
   DCHECK(!shared_memory_bytes_allocated_);
@@ -73,8 +71,8 @@ bool TransferBufferManager::RegisterTransferBuffer(
   DCHECK(!(reinterpret_cast<uintptr_t>(buffer->memory()) &
            (kCommandBufferEntrySize - 1)));
 
-  if (buffer->backing()->is_shared())
-    shared_memory_bytes_allocated_ += buffer->size();
+  shared_memory_bytes_allocated_ += buffer->size();
+
   registered_buffers_[id] = buffer;
 
   return true;
@@ -87,10 +85,9 @@ void TransferBufferManager::DestroyTransferBuffer(int32_t id) {
     return;
   }
 
-  if (it->second->backing()->is_shared()) {
-    DCHECK(shared_memory_bytes_allocated_ >= it->second->size());
-    shared_memory_bytes_allocated_ -= it->second->size();
-  }
+  DCHECK(shared_memory_bytes_allocated_ >= it->second->size());
+  shared_memory_bytes_allocated_ -= it->second->size();
+
   registered_buffers_.erase(it);
 }
 
@@ -132,12 +129,10 @@ bool TransferBufferManager::OnMemoryDump(
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes, buffer->size());
-    if (buffer->backing()->is_shared()) {
-      auto guid = GetBufferGUIDForTracing(memory_tracker_->ClientTracingId(),
-                                          buffer_id);
-      pmd->CreateSharedGlobalAllocatorDump(guid);
-      pmd->AddOwnershipEdge(dump->guid(), guid);
-    }
+    auto guid =
+        GetBufferGUIDForTracing(memory_tracker_->ClientTracingId(), buffer_id);
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    pmd->AddOwnershipEdge(dump->guid(), guid);
   }
 
   return true;
