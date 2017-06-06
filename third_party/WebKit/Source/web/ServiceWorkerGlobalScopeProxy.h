@@ -119,7 +119,8 @@ class ServiceWorkerGlobalScopeProxy final
                                       const WebNotificationData&) override;
   void DispatchPushEvent(int, const WebString& data) override;
   void DispatchSyncEvent(int, const WebString& tag, LastChanceOption) override;
-  void DispatchPaymentRequestEvent(int, const WebPaymentAppRequest&) override;
+  void DispatchPaymentRequestEvent(int,
+                                   const WebPaymentRequestEventData&) override;
   bool HasFetchEventHandler() override;
   void OnNavigationPreloadResponse(
       int fetch_event_id,

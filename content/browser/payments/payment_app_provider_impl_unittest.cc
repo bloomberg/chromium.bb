@@ -65,10 +65,10 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
   }
 
   void InvokePaymentApp(int64_t registration_id,
-                        payments::mojom::PaymentAppRequestPtr app_request,
+                        payments::mojom::PaymentRequestEventDataPtr event_data,
                         PaymentAppProvider::InvokePaymentAppCallback callback) {
     PaymentAppProviderImpl::GetInstance()->InvokePaymentApp(
-        browser_context(), registration_id, std::move(app_request), callback);
+        browser_context(), registration_id, std::move(event_data), callback);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -97,15 +97,15 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
   GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
   ASSERT_EQ(2U, apps.size());
 
-  payments::mojom::PaymentAppRequestPtr app_request =
-      payments::mojom::PaymentAppRequest::New();
-  app_request->method_data.push_back(payments::mojom::PaymentMethodData::New());
-  app_request->total = payments::mojom::PaymentItem::New();
-  app_request->total->amount = payments::mojom::PaymentCurrencyAmount::New();
+  payments::mojom::PaymentRequestEventDataPtr event_data =
+      payments::mojom::PaymentRequestEventData::New();
+  event_data->method_data.push_back(payments::mojom::PaymentMethodData::New());
+  event_data->total = payments::mojom::PaymentItem::New();
+  event_data->total->amount = payments::mojom::PaymentCurrencyAmount::New();
 
   bool called = false;
   InvokePaymentApp(apps[GURL("https://hellopay.com/")][0]->registration_id,
-                   std::move(app_request),
+                   std::move(event_data),
                    base::Bind(&InvokePaymentAppCallback, &called));
   ASSERT_TRUE(called);
 

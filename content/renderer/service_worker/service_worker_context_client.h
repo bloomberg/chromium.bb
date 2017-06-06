@@ -285,7 +285,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       DispatchSyncEventCallback callback) override;
   void DispatchPaymentRequestEvent(
       int payment_request_id,
-      payments::mojom::PaymentAppRequestPtr app_request,
+      payments::mojom::PaymentRequestEventDataPtr event_data,
       payments::mojom::PaymentAppResponseCallbackPtr response_callback,
       DispatchPaymentRequestEventCallback callback) override;
   void Ping(PingCallback callback) override;

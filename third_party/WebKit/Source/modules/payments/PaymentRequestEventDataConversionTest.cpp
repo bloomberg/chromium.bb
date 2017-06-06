@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentAppRequestConversion.h"
+#include "modules/payments/PaymentRequestEventDataConversion.h"
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "platform/bindings/ScriptState.h"
-#include "public/platform/modules/payments/WebPaymentAppRequest.h"
+#include "public/platform/modules/payments/WebPaymentRequestEventData.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,8 +31,8 @@ static WebPaymentMethodData CreateWebPaymentMethodDataForTest() {
   return web_method_data;
 }
 
-static WebPaymentAppRequest CreateWebPaymentAppRequestForTest() {
-  WebPaymentAppRequest web_data;
+static WebPaymentRequestEventData CreateWebPaymentRequestEventDataForTest() {
+  WebPaymentRequestEventData web_data;
   web_data.top_level_origin = WebString::FromUTF8("https://example.com");
   web_data.payment_request_origin = WebString::FromUTF8("https://example.com");
   web_data.payment_request_id = WebString::FromUTF8("payment-request-id");
@@ -44,11 +44,13 @@ static WebPaymentAppRequest CreateWebPaymentAppRequestForTest() {
   return web_data;
 }
 
-TEST(PaymentAppRequestConversionTest, ToPaymentAppRequest) {
+TEST(PaymentRequestEventDataConversionTest, ToPaymentRequestEventData) {
   V8TestingScope scope;
-  WebPaymentAppRequest web_data = CreateWebPaymentAppRequestForTest();
-  PaymentAppRequest data = PaymentAppRequestConversion::ToPaymentAppRequest(
-      scope.GetScriptState(), web_data);
+  WebPaymentRequestEventData web_data =
+      CreateWebPaymentRequestEventDataForTest();
+  PaymentRequestEventInit data =
+      PaymentRequestEventDataConversion::ToPaymentRequestEventInit(
+          scope.GetScriptState(), web_data);
 
   ASSERT_TRUE(data.hasTopLevelOrigin());
   EXPECT_EQ("https://example.com", data.topLevelOrigin());

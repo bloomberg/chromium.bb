@@ -21,8 +21,8 @@
 namespace content {
 namespace {
 
-using ::payments::mojom::PaymentAppRequest;
-using ::payments::mojom::PaymentAppRequestPtr;
+using ::payments::mojom::PaymentRequestEventData;
+using ::payments::mojom::PaymentRequestEventDataPtr;
 using ::payments::mojom::PaymentAppResponsePtr;
 using ::payments::mojom::PaymentCurrencyAmount;
 using ::payments::mojom::PaymentDetailsModifier;
@@ -108,20 +108,20 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
       int64_t registration_id,
       const std::string& supported_method,
       const std::string& instrument_key) {
-    PaymentAppRequestPtr app_request = PaymentAppRequest::New();
+    PaymentRequestEventDataPtr event_data = PaymentRequestEventData::New();
 
-    app_request->top_level_origin = GURL("https://example.com");
+    event_data->top_level_origin = GURL("https://example.com");
 
-    app_request->payment_request_origin = GURL("https://example.com");
+    event_data->payment_request_origin = GURL("https://example.com");
 
-    app_request->payment_request_id = "payment-request-id";
+    event_data->payment_request_id = "payment-request-id";
 
-    app_request->method_data.push_back(PaymentMethodData::New());
-    app_request->method_data[0]->supported_methods = {supported_method};
+    event_data->method_data.push_back(PaymentMethodData::New());
+    event_data->method_data[0]->supported_methods = {supported_method};
 
-    app_request->total = PaymentItem::New();
-    app_request->total->amount = PaymentCurrencyAmount::New();
-    app_request->total->amount->currency = "USD";
+    event_data->total = PaymentItem::New();
+    event_data->total->amount = PaymentCurrencyAmount::New();
+    event_data->total->amount->currency = "USD";
 
     PaymentDetailsModifierPtr modifier = PaymentDetailsModifier::New();
     modifier->total = PaymentItem::New();
@@ -129,15 +129,15 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     modifier->total->amount->currency = "USD";
     modifier->method_data = PaymentMethodData::New();
     modifier->method_data->supported_methods = {supported_method};
-    app_request->modifiers.push_back(std::move(modifier));
+    event_data->modifiers.push_back(std::move(modifier));
 
-    app_request->instrument_key = instrument_key;
+    event_data->instrument_key = instrument_key;
 
     base::RunLoop run_loop;
     PaymentAppResponsePtr response;
     PaymentAppProvider::GetInstance()->InvokePaymentApp(
         shell()->web_contents()->GetBrowserContext(), registration_id,
-        std::move(app_request),
+        std::move(event_data),
         base::Bind(&InvokePaymentAppCallback, run_loop.QuitClosure(),
                    &response));
     run_loop.Run();

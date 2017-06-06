@@ -22,7 +22,7 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
                          GetAllPaymentAppsCallback callback) override;
   void InvokePaymentApp(BrowserContext* browser_context,
                         int64_t registration_id,
-                        payments::mojom::PaymentAppRequestPtr app_request,
+                        payments::mojom::PaymentRequestEventDataPtr event_data,
                         const InvokePaymentAppCallback& callback) override;
 
  private:

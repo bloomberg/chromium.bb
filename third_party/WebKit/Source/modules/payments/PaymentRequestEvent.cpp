@@ -18,10 +18,10 @@ namespace blink {
 
 PaymentRequestEvent* PaymentRequestEvent::Create(
     const AtomicString& type,
-    const PaymentAppRequest& app_request,
+    const PaymentRequestEventInit& initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer) {
-  return new PaymentRequestEvent(type, app_request, respond_with_observer,
+  return new PaymentRequestEvent(type, initializer, respond_with_observer,
                                  wait_until_observer);
 }
 
@@ -119,17 +119,17 @@ DEFINE_TRACE(PaymentRequestEvent) {
 
 PaymentRequestEvent::PaymentRequestEvent(
     const AtomicString& type,
-    const PaymentAppRequest& app_request,
+    const PaymentRequestEventInit& initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer)
     : ExtendableEvent(type, ExtendableEventInit(), wait_until_observer),
-      top_level_origin_(app_request.topLevelOrigin()),
-      payment_request_origin_(app_request.paymentRequestOrigin()),
-      payment_request_id_(app_request.paymentRequestId()),
-      method_data_(std::move(app_request.methodData())),
-      total_(app_request.total()),
-      modifiers_(app_request.modifiers()),
-      instrument_key_(app_request.instrumentKey()),
+      top_level_origin_(initializer.topLevelOrigin()),
+      payment_request_origin_(initializer.paymentRequestOrigin()),
+      payment_request_id_(initializer.paymentRequestId()),
+      method_data_(std::move(initializer.methodData())),
+      total_(initializer.total()),
+      modifiers_(initializer.modifiers()),
+      instrument_key_(initializer.instrumentKey()),
       observer_(respond_with_observer) {}
 
 }  // namespace blink

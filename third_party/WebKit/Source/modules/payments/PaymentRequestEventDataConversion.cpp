@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentAppRequestConversion.h"
+#include "modules/payments/PaymentRequestEventDataConversion.h"
 
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "modules/payments/PaymentAppRequest.h"
 #include "modules/payments/PaymentCurrencyAmount.h"
 #include "modules/payments/PaymentDetailsModifier.h"
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentMethodData.h"
+#include "modules/payments/PaymentRequestEventInit.h"
 #include "platform/bindings/ScriptState.h"
-#include "public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "public/platform/modules/payments/WebPaymentMethodData.h"
+#include "public/platform/modules/payments/WebPaymentRequestEventData.h"
 
 namespace blink {
 namespace {
@@ -83,33 +83,34 @@ PaymentMethodData ToPaymentMethodData(
 
 }  // namespace
 
-PaymentAppRequest PaymentAppRequestConversion::ToPaymentAppRequest(
+PaymentRequestEventInit
+PaymentRequestEventDataConversion::ToPaymentRequestEventInit(
     ScriptState* script_state,
-    const WebPaymentAppRequest& web_app_request) {
+    const WebPaymentRequestEventData& web_event_data) {
   DCHECK(script_state);
 
-  PaymentAppRequest app_request;
+  PaymentRequestEventInit event_data;
   if (!script_state->ContextIsValid())
-    return app_request;
+    return event_data;
 
   ScriptState::Scope scope(script_state);
 
-  app_request.setTopLevelOrigin(web_app_request.top_level_origin);
-  app_request.setPaymentRequestOrigin(web_app_request.payment_request_origin);
-  app_request.setPaymentRequestId(web_app_request.payment_request_id);
+  event_data.setTopLevelOrigin(web_event_data.top_level_origin);
+  event_data.setPaymentRequestOrigin(web_event_data.payment_request_origin);
+  event_data.setPaymentRequestId(web_event_data.payment_request_id);
   HeapVector<PaymentMethodData> method_data;
-  for (const auto& md : web_app_request.method_data) {
+  for (const auto& md : web_event_data.method_data) {
     method_data.push_back(ToPaymentMethodData(script_state, md));
   }
-  app_request.setMethodData(method_data);
-  app_request.setTotal(ToPaymentItem(web_app_request.total));
+  event_data.setMethodData(method_data);
+  event_data.setTotal(ToPaymentItem(web_event_data.total));
   HeapVector<PaymentDetailsModifier> modifiers;
-  for (const auto& modifier : web_app_request.modifiers) {
+  for (const auto& modifier : web_event_data.modifiers) {
     modifiers.push_back(ToPaymentDetailsModifier(script_state, modifier));
   }
-  app_request.setModifiers(modifiers);
-  app_request.setInstrumentKey(web_app_request.instrument_key);
-  return app_request;
+  event_data.setModifiers(modifiers);
+  event_data.setInstrumentKey(web_event_data.instrument_key);
+  return event_data;
 }
 
 }  // namespace blink

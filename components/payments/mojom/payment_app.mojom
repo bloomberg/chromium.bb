@@ -38,7 +38,7 @@ interface PaymentManager {
       => (PaymentHandlerStatus status);
 };
 
-struct PaymentAppRequest {
+struct PaymentRequestEventData {
   url.mojom.Url top_level_origin;
   url.mojom.Url payment_request_origin;
   string payment_request_id;
