@@ -38,6 +38,8 @@ class WakeLockProvider : public mojom::WakeLockProvider {
       const std::string& description,
       mojom::WakeLockServiceRequest request) override;
 
+  static bool is_in_service_unittest_;
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   WakeLockContextCallback native_view_getter_;

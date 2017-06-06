@@ -53,10 +53,10 @@ WakeLockServiceImpl::WakeLockServiceImpl(
     int context_id,
     WakeLockContextCallback native_view_getter,
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
-    : type_(type),
+    : num_lock_requests_(0),
+      type_(type),
       reason_(reason),
       description_(base::MakeUnique<std::string>(description)),
-      num_lock_requests_(0),
 #if defined(OS_ANDROID)
       context_id_(context_id),
       native_view_getter_(native_view_getter),

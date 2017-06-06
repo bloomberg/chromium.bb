@@ -37,16 +37,19 @@ class WakeLockServiceImpl : public mojom::WakeLockService {
   void AddClient(mojom::WakeLockServiceRequest request) override;
   void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override;
 
+ protected:
+  int num_lock_requests_;
+
  private:
-  void UpdateWakeLock();
-  void CreateWakeLock();
-  void RemoveWakeLock();
+  virtual void UpdateWakeLock();
+  virtual void CreateWakeLock();
+  virtual void RemoveWakeLock();
+
   void OnConnectionError();
 
   mojom::WakeLockType type_;
   mojom::WakeLockReason reason_;
   std::unique_ptr<std::string> description_;
-  int num_lock_requests_;
 
 #if defined(OS_ANDROID)
   int context_id_;
