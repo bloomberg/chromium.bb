@@ -59,7 +59,7 @@ class ScopedTaskEnvironment::TestTaskTracker
 
   // internal::TaskSchedulerImpl::TaskTrackerImpl:
   void PerformRunTask(std::unique_ptr<internal::Task> task,
-                      const SequenceToken& sequence_token) override;
+                      internal::Sequence* sequence) override;
 
   // Synchronizes accesses to members below.
   Lock lock_;
@@ -205,7 +205,7 @@ bool ScopedTaskEnvironment::TestTaskTracker::DisallowRunTasks() {
 
 void ScopedTaskEnvironment::TestTaskTracker::PerformRunTask(
     std::unique_ptr<internal::Task> task,
-    const SequenceToken& sequence_token) {
+    internal::Sequence* sequence) {
   {
     AutoLock auto_lock(lock_);
 
@@ -216,7 +216,7 @@ void ScopedTaskEnvironment::TestTaskTracker::PerformRunTask(
   }
 
   internal::TaskSchedulerImpl::TaskTrackerImpl::PerformRunTask(std::move(task),
-                                                               sequence_token);
+                                                               sequence);
 
   {
     AutoLock auto_lock(lock_);
