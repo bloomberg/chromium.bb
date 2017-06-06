@@ -100,7 +100,12 @@
       <message name="IDS_CHOOSE_HOST_BROWSER" desc="Content for the host browser picker dialog, which is used to ask users to pick a browser to launch the installed WebAPK.">
         Please select the browser you'd like to use to run <ph name="WEBAPK_SITE">%1$s<ex>Housing.com</ex></ph>
       </message>
-      
+      <message name="IDS_CHOOSE_HOST_BROWSER_DIALOG_QUIT" desc="Text for the cancel button on the dialog. ">
+        QUIT
+      </message>
+      <message name="IDS_HOST_BROWSER_ITEM_NOT_SUPPORTING_WEBAPKS" desc="Text for the host browser item that doesn't support WebAPKs on the choose host browser dialog. ">
+        <ph name="BROWSER_NAME">%1$s<ex>Chrome</ex></ph>\nUnsupported by <ph name="WEBAPK_SITE">%2$s<ex>Housing.com</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>
