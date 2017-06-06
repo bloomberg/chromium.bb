@@ -599,6 +599,10 @@
       name: "MediaCaptureFromVideo",
       status: "experimental",
     },
+    // Set to reflect the MediaCastOverlayButton feature.
+    {
+      name: "MediaCastOverlayButton",
+    },
     {
       name: "MediaControlsOverlayPlayButton",
       settable_from_internals: true,

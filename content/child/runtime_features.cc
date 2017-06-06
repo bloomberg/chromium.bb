@@ -355,6 +355,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kLoadingWithMojo))
     WebRuntimeFeatures::EnableLoadingWithMojo(true);
 
+  WebRuntimeFeatures::EnableMediaCastOverlayButton(
+      base::FeatureList::IsEnabled(media::kMediaCastOverlayButton));
+
   if (!base::FeatureList::IsEnabled(features::kBlockCredentialedSubresources)) {
     WebRuntimeFeatures::EnableFeatureFromString("BlockCredentialedSubresources",
                                                 false);
