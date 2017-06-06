@@ -4,11 +4,9 @@
 
 // https://w3c.github.io/payment-handler/#paymentrequesteventinit-dictionary
 
-// TODO(zino): Once the spec issue is resolved, we should apply the changes.
-// Please see https://github.com/w3c/payment-handler/pull/162
-dictionary PaymentRequestEventInit {
-    DOMString topLevelOrigin;
-    DOMString paymentRequestOrigin;
+dictionary PaymentRequestEventInit : ExtendableEventInit {
+    USVString topLevelOrigin;
+    USVString paymentRequestOrigin;
     DOMString paymentRequestId;
     sequence<PaymentMethodData> methodData;
     PaymentItem total;

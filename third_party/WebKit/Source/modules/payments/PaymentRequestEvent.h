@@ -24,6 +24,8 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
 
  public:
   static PaymentRequestEvent* Create(const AtomicString& type,
+                                     const PaymentRequestEventInit&);
+  static PaymentRequestEvent* Create(const AtomicString& type,
                                      const PaymentRequestEventInit&,
                                      RespondWithObserver*,
                                      WaitUntilObserver*);

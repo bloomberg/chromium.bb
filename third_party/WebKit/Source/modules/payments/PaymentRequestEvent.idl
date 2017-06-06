@@ -4,14 +4,13 @@
 
 // https://w3c.github.io/payment-handler/#the-paymentrequestevent
 
-// TODO(zino): Once the spec issue is resolved, we should apply the changes.
-// Please see https://github.com/w3c/payment-handler/pull/162
 [
     RuntimeEnabled=PaymentApp,
+    Constructor(DOMString type, PaymentRequestEventInit eventInitDict),
     Exposed=ServiceWorker
 ] interface PaymentRequestEvent : ExtendableEvent {
-    readonly attribute DOMString topLevelOrigin;
-    readonly attribute DOMString paymentRequestOrigin;
+    readonly attribute USVString topLevelOrigin;
+    readonly attribute USVString paymentRequestOrigin;
     readonly attribute DOMString paymentRequestId;
     readonly attribute sequence<PaymentMethodData> methodData;
     readonly attribute PaymentItem total;
