@@ -18,6 +18,12 @@ namespace blink {
 
 PaymentRequestEvent* PaymentRequestEvent::Create(
     const AtomicString& type,
+    const PaymentRequestEventInit& initializer) {
+  return new PaymentRequestEvent(type, initializer, nullptr, nullptr);
+}
+
+PaymentRequestEvent* PaymentRequestEvent::Create(
+    const AtomicString& type,
     const PaymentRequestEventInit& initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer) {
@@ -122,7 +128,7 @@ PaymentRequestEvent::PaymentRequestEvent(
     const PaymentRequestEventInit& initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer)
-    : ExtendableEvent(type, ExtendableEventInit(), wait_until_observer),
+    : ExtendableEvent(type, initializer, wait_until_observer),
       top_level_origin_(initializer.topLevelOrigin()),
       payment_request_origin_(initializer.paymentRequestOrigin()),
       payment_request_id_(initializer.paymentRequestId()),
