@@ -109,7 +109,14 @@ void PresentationRequest::AddedEventListener(
 bool PresentationRequest::HasPendingActivity() const {
   // Prevents garbage collecting of this object when not hold by another
   // object but still has listeners registered.
-  return GetExecutionContext() && HasEventListeners();
+  if (!GetExecutionContext())
+    return false;
+
+  if (HasEventListeners())
+    return true;
+
+  return availability_property_ && availability_property_->GetState() ==
+                                       ScriptPromisePropertyBase::kPending;
 }
 
 ScriptPromise PresentationRequest::start(ScriptState* script_state) {

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+async_test(function(t) {
+    Promise.resolve().then(_ => { gc(); });
+    var request = new PresentationRequest("https://example.com");
+    request.getAvailability().then(_ => { t.done(); });
+  });
+
+</script>
+</body>
+</html>
