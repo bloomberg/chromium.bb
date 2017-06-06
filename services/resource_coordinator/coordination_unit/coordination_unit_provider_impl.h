@@ -13,10 +13,8 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace service_manager {
-
 class ServiceContextRefFactory;
 class ServiceContextRef;
-
 }  // service_manager
 
 namespace resource_coordinator {
