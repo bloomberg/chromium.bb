@@ -50,7 +50,6 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   void ReadMore();
   void DidRead(uint32_t num_bytes, bool completed_synchronously);
   void NotifyCompleted(int error_code);
-  void SendDataPipeIfNecessary();
   void OnConnectionError();
   void OnResponseBodyStreamClosed(MojoResult result);
   void OnResponseBodyStreamReady(MojoResult result);
@@ -64,7 +63,6 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   mojom::URLLoaderClientPtr url_loader_client_;
 
   mojo::ScopedDataPipeProducerHandle response_body_stream_;
-  mojo::ScopedDataPipeConsumerHandle response_body_consumer_handle_;
   scoped_refptr<NetToMojoPendingBuffer> pending_write_;
   mojo::SimpleWatcher writable_handle_watcher_;
   mojo::SimpleWatcher peer_closed_handle_watcher_;

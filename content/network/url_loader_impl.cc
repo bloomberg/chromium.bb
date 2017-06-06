@@ -271,7 +271,8 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
   mojo::DataPipe data_pipe(kDefaultAllocationSize);
 
   response_body_stream_ = std::move(data_pipe.producer_handle);
-  response_body_consumer_handle_ = std::move(data_pipe.consumer_handle);
+  url_loader_client_->OnStartLoadingResponseBody(
+      std::move(data_pipe.consumer_handle));
   peer_closed_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
       base::Bind(&URLLoaderImpl::OnResponseBodyStreamClosed,
@@ -314,7 +315,6 @@ void URLLoaderImpl::ReadMore() {
   if (url_request_->status().is_io_pending()) {
     // Wait for OnReadCompleted.
   } else if (url_request_->status().is_success() && bytes_read > 0) {
-    SendDataPipeIfNecessary();
     DidRead(static_cast<uint32_t>(bytes_read), true);
   } else {
     NotifyCompleted(net::OK);
@@ -350,8 +350,6 @@ void URLLoaderImpl::OnReadCompleted(net::URLRequest* url_request,
     return;
   }
 
-  SendDataPipeIfNecessary();
-
   DidRead(static_cast<uint32_t>(bytes_read), false);
 }
 
@@ -367,14 +365,6 @@ void URLLoaderImpl::NotifyCompleted(int error_code) {
 
   url_loader_client_->OnComplete(request_complete_data);
   DeleteIfNeeded();
-}
-
-void URLLoaderImpl::SendDataPipeIfNecessary() {
-  if (response_body_consumer_handle_.is_valid()) {
-    // Send the data pipe on the first OnReadCompleted call.
-    url_loader_client_->OnStartLoadingResponseBody(
-        std::move(response_body_consumer_handle_));
-  }
 }
 
 void URLLoaderImpl::OnConnectionError() {

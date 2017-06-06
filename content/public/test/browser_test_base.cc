@@ -34,6 +34,7 @@
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/content_browser_sanity_checker.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -408,6 +409,7 @@ void BrowserTestBase::InitializeNetworkProcess() {
   mojom::NetworkServiceTestPtr network_service_test;
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   network_service_test->AddRules(std::move(mojo_rules));
 }
 

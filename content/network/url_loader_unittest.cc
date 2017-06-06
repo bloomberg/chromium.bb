@@ -44,8 +44,13 @@ static ResourceRequest CreateResourceRequest(const char* method,
 }
 
 std::string ReadData(MojoHandle consumer, size_t size) {
-  CHECK_EQ(mojo::Wait(mojo::Handle(consumer), MOJO_HANDLE_SIGNAL_READABLE),
-           MOJO_RESULT_OK);
+  MojoResult rv =
+      mojo::Wait(mojo::Handle(consumer), MOJO_HANDLE_SIGNAL_READABLE);
+  if (!size) {
+    CHECK_EQ(rv, MOJO_RESULT_FAILED_PRECONDITION);
+    return std::string();
+  }
+  CHECK_EQ(rv, MOJO_RESULT_OK);
   std::vector<char> buffer(size);
   uint32_t num_bytes = static_cast<uint32_t>(size);
   CHECK_EQ(MojoReadData(consumer, buffer.data(), &num_bytes,
@@ -114,6 +119,10 @@ class URLLoaderImplTest : public testing::Test {
 
 TEST_F(URLLoaderImplTest, Basic) {
   LoadAndCompareFile("simple_page.html");
+}
+
+TEST_F(URLLoaderImplTest, Empty) {
+  LoadAndCompareFile("empty.html");
 }
 
 TEST_F(URLLoaderImplTest, BasicSSL) {

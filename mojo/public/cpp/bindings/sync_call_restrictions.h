@@ -15,6 +15,10 @@
 #define ENABLE_SYNC_CALL_RESTRICTIONS 0
 #endif
 
+namespace content {
+class BrowserTestBase;
+}
+
 namespace display {
 class ForwardingDisplayDelegate;
 }
@@ -63,6 +67,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
  private:
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to mojo/OWNERS first.
   // BEGIN ALLOWED USAGE.
+  friend class content::BrowserTestBase;  // Test-only.
   friend class ui::Gpu;  // http://crbug.com/620058
   // LevelDBMojoProxy makes same-process sync calls from the DB thread.
   friend class leveldb::LevelDBMojoProxy;
