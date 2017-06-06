@@ -60,6 +60,21 @@ void FakeCentral::SetNextGATTConnectionResponse(
   std::move(callback).Run(true);
 }
 
+void FakeCentral::SetNextGATTDiscoveryResponse(
+    const std::string& address,
+    uint16_t code,
+    SetNextGATTDiscoveryResponseCallback callback) {
+  auto device_iter = devices_.find(address);
+  if (device_iter == devices_.end()) {
+    std::move(callback).Run(false);
+  }
+
+  FakePeripheral* fake_peripheral =
+      static_cast<FakePeripheral*>(device_iter->second.get());
+  fake_peripheral->SetNextGATTDiscoveryResponse(code);
+  std::move(callback).Run(true);
+}
+
 std::string FakeCentral::GetAddress() const {
   NOTREACHED();
   return std::string();

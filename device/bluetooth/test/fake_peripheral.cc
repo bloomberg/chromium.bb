@@ -14,6 +14,7 @@ FakePeripheral::FakePeripheral(FakeCentral* fake_central,
       address_(address),
       system_connected_(false),
       gatt_connected_(false),
+      pending_gatt_discovery_(false),
       weak_ptr_factory_(this) {}
 
 FakePeripheral::~FakePeripheral() {}
@@ -34,6 +35,11 @@ void FakePeripheral::SetNextGATTConnectionResponse(uint16_t code) {
   DCHECK(!next_connection_response_);
   DCHECK(create_gatt_connection_error_callbacks_.empty());
   next_connection_response_ = code;
+}
+
+void FakePeripheral::SetNextGATTDiscoveryResponse(uint16_t code) {
+  DCHECK(!next_discovery_response_);
+  next_discovery_response_ = code;
 }
 
 uint32_t FakePeripheral::GetBluetoothClass() const {
@@ -211,6 +217,31 @@ void FakePeripheral::CreateGattConnection(
   CreateGattConnectionImpl();
 }
 
+bool FakePeripheral::IsGattServicesDiscoveryComplete() const {
+  const bool discovery_complete =
+      BluetoothDevice::IsGattServicesDiscoveryComplete();
+  DCHECK(!(pending_gatt_discovery_ && discovery_complete));
+
+  // There is currently no method to intiate a Service Discovery procedure.
+  // Web Bluetooth keeps a queue of pending getPrimaryServices() requests until
+  // BluetoothAdapter::Observer::GattServicesDiscovered is called.
+  // We use a call to IsGattServicesDiscoveryComplete as a signal that Web
+  // Bluetooth needs to initiate a Service Discovery procedure and post
+  // a task to call GattServicesDiscovered to simulate that the procedure has
+  // completed.
+  // TODO(crbug.com/729456): Remove this override and run
+  // DiscoverGattServices() callback with next_discovery_response_ once
+  // DiscoverGattServices() is implemented.
+  if (!pending_gatt_discovery_ && !discovery_complete) {
+    pending_gatt_discovery_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&FakePeripheral::DispatchDiscoveryResponse,
+                              weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  return discovery_complete;
+}
+
 void FakePeripheral::CreateGattConnectionImpl() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FakePeripheral::DispatchConnectionResponse,
@@ -230,6 +261,21 @@ void FakePeripheral::DispatchConnectionResponse() {
     DidFailToConnectGatt(ERROR_FAILED);
   } else {
     DidFailToConnectGatt(ERROR_UNKNOWN);
+  }
+}
+
+void FakePeripheral::DispatchDiscoveryResponse() {
+  DCHECK(next_discovery_response_);
+
+  uint16_t code = next_discovery_response_.value();
+  next_discovery_response_.reset();
+
+  pending_gatt_discovery_ = false;
+  if (code == mojom::kHCISuccess) {
+    SetGattServicesDiscoveryComplete(true);
+    GetAdapter()->NotifyGattServicesDiscovered(this);
+  } else {
+    SetGattServicesDiscoveryComplete(false);
   }
 }
 
