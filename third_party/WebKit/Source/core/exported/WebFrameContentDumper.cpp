@@ -128,9 +128,10 @@ WebString WebFrameContentDumper::DumpLayoutTreeAsText(
   if (to_show & kLayoutAsTextWithLineTrees)
     behavior |= kLayoutAsTextShowLineTrees;
 
-  if (to_show & kLayoutAsTextDebug)
+  if (to_show & kLayoutAsTextDebug) {
     behavior |= kLayoutAsTextShowCompositedLayers | kLayoutAsTextShowAddresses |
                 kLayoutAsTextShowIDAndClass | kLayoutAsTextShowLayerNesting;
+  }
 
   if (to_show & kLayoutAsTextPrinting)
     behavior |= kLayoutAsTextPrintingMode;

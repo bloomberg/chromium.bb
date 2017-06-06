@@ -30,6 +30,7 @@ blink_core_sources("exported") {
     "WebFileChooserCompletionImpl.h",
     "WebFormControlElement.cpp",
     "WebFormElement.cpp",
+    "WebFrameContentDumper.cpp",
     "WebHeap.cpp",
     "WebHistoryItem.cpp",
     "WebImageCache.cpp",
