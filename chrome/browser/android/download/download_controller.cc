@@ -12,8 +12,10 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/tab_android.h"
@@ -48,6 +50,11 @@ using content::WebContents;
 namespace {
 // Guards download_controller_
 base::LazyInstance<base::Lock>::DestructorAtExit g_download_controller_lock_;
+
+// If received bytes is more than the size limit and resumption will restart
+// from the beginning, throttle it.
+int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
+const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
 
 WebContents* GetWebContents(int render_process_id, int render_view_id) {
   content::RenderViewHost* render_view_host =
@@ -95,15 +102,14 @@ void CreateContextMenuDownload(
   dlm->DownloadUrl(std::move(dl_params));
 }
 
-// Check if an interrupted download item can be auto resumed.
-bool IsInterruptedDownloadAutoResumable(content::DownloadItem* download_item) {
-  int interrupt_reason = download_item->GetLastReason();
-  DCHECK_NE(interrupt_reason, content::DOWNLOAD_INTERRUPT_REASON_NONE);
-  return
-      interrupt_reason == content::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT ||
-      interrupt_reason == content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED ||
-      interrupt_reason ==
-          content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED;
+int GetAutoResumptionSizeLimit() {
+  std::string value = base::GetFieldTrialParamValueByFeature(
+      chrome::android::kDownloadAutoResumptionThrottling,
+      kAutoResumptionSizeLimitParamName);
+  int size_limit;
+  return base::StringToInt(value, &size_limit)
+             ? size_limit
+             : kDefaultAutoResumptionSizeLimit;
 }
 
 }  // namespace
@@ -222,6 +228,26 @@ void DownloadController::CreateAndroidDownload(
                  wc_getter, info));
 }
 
+void DownloadController::AboutToResumeDownload(DownloadItem* download_item) {
+  download_item->AddObserver(this);
+
+  // If a download is resumed from an interrupted state, record its strong
+  // validators so we know whether the resumption causes a restart.
+  if (download_item->GetState() == DownloadItem::IN_PROGRESS ||
+      download_item->GetLastReason() ==
+          content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    return;
+  }
+  if (download_item->GetETag().empty() &&
+      download_item->GetLastModifiedTime().empty()) {
+    return;
+  }
+  strong_validators_map_.emplace(
+      download_item->GetGuid(),
+      std::make_pair(download_item->GetETag(),
+                     download_item->GetLastModifiedTime()));
+}
+
 void DownloadController::StartAndroidDownload(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const DownloadInfo& info) {
@@ -317,6 +343,7 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
       break;
     }
     case DownloadItem::COMPLETE:
+      strong_validators_map_.erase(item->GetGuid());
       // Multiple OnDownloadUpdated() notifications may be issued while the
       // download is in the COMPLETE state. Only handle one.
       item->RemoveObserver(this);
@@ -327,6 +354,7 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
              DownloadController::CANCEL_REASON_NOT_CANCELED);
       break;
     case DownloadItem::CANCELLED:
+      strong_validators_map_.erase(item->GetGuid());
       Java_DownloadController_onDownloadCancelled(env, j_item);
       DownloadController::RecordDownloadCancelReason(
           DownloadController::CANCEL_REASON_OTHER_NATIVE_RESONS);
@@ -369,3 +397,37 @@ void DownloadController::StartContextMenuDownload(
                             is_link, extra_headers));
 }
 
+bool DownloadController::IsInterruptedDownloadAutoResumable(
+    content::DownloadItem* download_item) {
+  if (!download_item->GetURL().SchemeIsHTTPOrHTTPS())
+    return false;
+
+  static int size_limit = GetAutoResumptionSizeLimit();
+  bool exceeds_size_limit = download_item->GetReceivedBytes() > size_limit;
+  std::string etag = download_item->GetETag();
+  std::string last_modified = download_item->GetLastModifiedTime();
+
+  if (exceeds_size_limit && etag.empty() && last_modified.empty())
+    return false;
+
+  // If the download has strong validators, but it caused a restart, stop auto
+  // resumption as the server may always send new strong validators on
+  // resumption.
+  auto strong_validator = strong_validators_map_.find(download_item->GetGuid());
+  if (strong_validator != strong_validators_map_.end()) {
+    if (exceeds_size_limit &&
+        (strong_validator->second.first != etag ||
+         strong_validator->second.second != last_modified)) {
+      return false;
+    }
+  }
+
+  int interrupt_reason = download_item->GetLastReason();
+  DCHECK_NE(interrupt_reason, content::DOWNLOAD_INTERRUPT_REASON_NONE);
+  return interrupt_reason ==
+             content::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT ||
+         interrupt_reason ==
+             content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED ||
+         interrupt_reason ==
+             content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED;
+}

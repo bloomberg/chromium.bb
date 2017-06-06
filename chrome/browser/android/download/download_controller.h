@@ -19,6 +19,9 @@
 #ifndef CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_CONTROLLER_H_
 #define CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_CONTROLLER_H_
 
+#include <map>
+#include <utility>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller_base.h"
@@ -40,6 +43,7 @@ class DownloadController : public DownloadControllerBase {
   void CreateAndroidDownload(
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const DownloadInfo& info) override;
+  void AboutToResumeDownload(content::DownloadItem* download_item) override;
 
   // UMA histogram enum for download cancellation reasons. Keep this
   // in sync with MobileDownloadCancelReason in histograms.xml. This should be
@@ -95,7 +99,17 @@ class DownloadController : public DownloadControllerBase {
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const DownloadInfo& info, bool allowed);
 
+  // Check if an interrupted download item can be auto resumed.
+  bool IsInterruptedDownloadAutoResumable(content::DownloadItem* download_item);
+
   std::string default_file_name_;
+
+  using StrongValidatorsMap =
+      std::map<std::string, std::pair<std::string, std::string>>;
+  // Stores the previous strong validators before a download is resumed. If the
+  // strong validators change after resumption starts, the download will restart
+  // from the beginning and all downloaded data will be lost.
+  StrongValidatorsMap strong_validators_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadController);
 };

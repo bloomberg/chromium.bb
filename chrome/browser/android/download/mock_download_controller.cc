@@ -43,5 +43,8 @@ void MockDownloadController::CreateAndroidDownload(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const DownloadInfo& info) {}
 
+void MockDownloadController::AboutToResumeDownload(
+    content::DownloadItem* download_item) {}
+
 }  // namespace android
 }  // namespace chrome
