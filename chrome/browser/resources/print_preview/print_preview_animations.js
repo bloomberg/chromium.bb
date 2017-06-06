@@ -110,7 +110,7 @@ function onFadeInAnimationEnd(event) {
  */
 function fadeInAnimationCleanup(element) {
   if (element.style.animationName) {
-    var animEl = document.getElementById(element.style.animationName);
+    var animEl = $(element.style.animationName);
     if (animEl)
       animEl.parentNode.removeChild(animEl);
     element.style.animationName = '';

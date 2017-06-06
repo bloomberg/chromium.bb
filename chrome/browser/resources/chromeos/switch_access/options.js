@@ -9,6 +9,7 @@
  * @return {Element}
  */
 let $ = function(id) {
+  // eslint-disable-next-line no-restricted-properties
   return document.getElementById(id);
 };
 

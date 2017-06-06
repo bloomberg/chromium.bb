@@ -85,8 +85,10 @@ keyboard.onKeyDown_ = function(event) {
   //
   // See crbug.com/543865.
   if (document.activeElement ===
-      document.getElementById('oauth-enroll-auth-view'))
+      // eslint-disable-next-line no-restricted-properties
+      document.getElementById('oauth-enroll-auth-view')) {
     return;
+  }
 
   // If we are in networks list dropdown container, let network_dropdown.js
   // handle keyboard events.
