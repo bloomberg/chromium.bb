@@ -27,14 +27,14 @@
 
 #include "platform/graphics/ImageSource.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
 
-ImageSource::ImageSource()
-    : decoder_color_behavior_(ColorBehavior::TransformToGlobalTarget()) {}
+ImageSource::ImageSource() {}
 
 ImageSource::~ImageSource() {}
 
@@ -56,9 +56,13 @@ bool ImageSource::SetData(RefPtr<SharedBuffer> data, bool all_data_received) {
     return true;
   }
 
+  ColorBehavior color_behavior =
+      RuntimeEnabledFeatures::colorCorrectRenderingEnabled()
+          ? ColorBehavior::Tag()
+          : ColorBehavior::TransformToGlobalTarget();
   decoder_ = DeferredImageDecoder::Create(data, all_data_received,
                                           ImageDecoder::kAlphaPremultiplied,
-                                          decoder_color_behavior_);
+                                          color_behavior);
 
   // Insufficient data is not a failure.
   return decoder_ || !ImageDecoder::HasSufficientDataToSniffImageType(*data);
@@ -107,21 +111,9 @@ size_t ImageSource::FrameCount() const {
   return decoder_ ? decoder_->FrameCount() : 0;
 }
 
-sk_sp<SkImage> ImageSource::CreateFrameAtIndex(
-    size_t index,
-    const ColorBehavior& color_behavior) {
+sk_sp<SkImage> ImageSource::CreateFrameAtIndex(size_t index) {
   if (!decoder_)
     return nullptr;
-
-  if (color_behavior != decoder_color_behavior_) {
-    decoder_ = DeferredImageDecoder::Create(Data(), all_data_received_,
-                                            ImageDecoder::kAlphaPremultiplied,
-                                            color_behavior);
-    decoder_color_behavior_ = color_behavior;
-    // The data has already been validated, so changing the color behavior
-    // should always result in a valid decoder.
-    DCHECK(decoder_);
-  }
 
   return decoder_->CreateFrameAtIndex(index);
 }

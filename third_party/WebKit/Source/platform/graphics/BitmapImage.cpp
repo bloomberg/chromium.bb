@@ -26,7 +26,6 @@
 
 #include "platform/graphics/BitmapImage.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/BitmapImageMetrics.h"
@@ -45,16 +44,6 @@
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
-
-namespace {
-
-ColorBehavior DefaultColorBehavior() {
-  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
-    return ColorBehavior::Tag();
-  return ColorBehavior::TransformToGlobalTarget();
-}
-
-}  // namespace
 
 PassRefPtr<BitmapImage> BitmapImage::CreateWithOrientationForTesting(
     const SkBitmap& bitmap,
@@ -159,8 +148,7 @@ sk_sp<SkImage> BitmapImage::DecodeAndCacheFrame(size_t index) {
 
   // We are caching frame snapshots.  This is OK even for partially decoded
   // frames, as they are cleared by dataChanged() when new data arrives.
-  sk_sp<SkImage> image =
-      source_.CreateFrameAtIndex(index, DefaultColorBehavior());
+  sk_sp<SkImage> image = source_.CreateFrameAtIndex(index);
   cached_frame_ = image;
   cached_frame_index_ = index;
 
