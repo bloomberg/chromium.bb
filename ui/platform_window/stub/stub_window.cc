@@ -34,8 +34,9 @@ void StubWindow::Close() {
 void StubWindow::PrepareForShutdown() {}
 
 void StubWindow::SetBounds(const gfx::Rect& bounds) {
-  if (bounds_ == bounds)
-    return;
+  // Even if the pixel bounds didn't change this call to the delegate should
+  // still happen. The device scale factor may have changed which effectively
+  // changes the bounds.
   bounds_ = bounds;
   delegate_->OnBoundsChanged(bounds);
 }
