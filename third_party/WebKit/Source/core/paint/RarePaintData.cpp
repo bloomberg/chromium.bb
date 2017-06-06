@@ -9,7 +9,10 @@
 
 namespace blink {
 
-RarePaintData::RarePaintData() {}
+RarePaintData::RarePaintData() {
+  static LayoutObjectId layout_object_id_counter = 0;
+  unique_id_ = ++layout_object_id_counter;
+}
 
 RarePaintData::~RarePaintData() {}
 
