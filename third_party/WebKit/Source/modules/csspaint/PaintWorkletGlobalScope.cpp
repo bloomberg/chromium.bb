@@ -57,10 +57,6 @@ void PaintWorkletGlobalScope::Dispose() {
   MainThreadDebugger::Instance()->ContextWillBeDestroyed(
       ScriptController()->GetScriptState());
 
-  // Explicitly clear the paint defininitions to break a reference cycle
-  // between them and this global scope.
-  paint_definitions_.clear();
-
   pending_generator_registry_ = nullptr;
   WorkletGlobalScope::Dispose();
 }
@@ -198,7 +194,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       ScriptController()->GetScriptState(), constructor, paint,
       native_invalidation_properties, custom_invalidation_properties,
       input_argument_types, has_alpha);
-  paint_definitions_.Set(name, definition);
+  paint_definitions_.Set(
+      name, TraceWrapperMember<CSSPaintDefinition>(this, definition));
   pending_generator_registry_->SetDefinition(name, definition);
 }
 
@@ -211,6 +208,12 @@ DEFINE_TRACE(PaintWorkletGlobalScope) {
   visitor->Trace(paint_definitions_);
   visitor->Trace(pending_generator_registry_);
   MainThreadWorkletGlobalScope::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(PaintWorkletGlobalScope) {
+  for (auto definition : paint_definitions_)
+    visitor->TraceWrappers(definition.value);
+  MainThreadWorkletGlobalScope::TraceWrappers(visitor);
 }
 
 }  // namespace blink

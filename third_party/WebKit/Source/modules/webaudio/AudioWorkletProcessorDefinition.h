@@ -6,7 +6,8 @@
 #define AudioWorkletProcessorDefinition_h
 
 #include "modules/ModulesExport.h"
-#include "platform/bindings/ScopedPersistent.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
@@ -21,7 +22,8 @@ namespace blink {
 // This is constructed and destroyed on a worker thread, and all methods also
 // must be called on the worker thread.
 class MODULES_EXPORT AudioWorkletProcessorDefinition final
-    : public GarbageCollectedFinalized<AudioWorkletProcessorDefinition> {
+    : public GarbageCollectedFinalized<AudioWorkletProcessorDefinition>,
+      public TraceWrapperBase {
  public:
   static AudioWorkletProcessorDefinition* Create(
       v8::Isolate*,
@@ -36,6 +38,7 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   v8::Local<v8::Function> ProcessLocal(v8::Isolate*);
 
   DEFINE_INLINE_TRACE(){};
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   AudioWorkletProcessorDefinition(v8::Isolate*,
@@ -47,8 +50,8 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
 
   // The definition is per global scope. The active instance of
   // |AudioProcessorWorklet| should be passed into these to perform JS function.
-  ScopedPersistent<v8::Function> constructor_;
-  ScopedPersistent<v8::Function> process_;
+  TraceWrapperV8Reference<v8::Function> constructor_;
+  TraceWrapperV8Reference<v8::Function> process_;
 
   // TODO(hongchan): A container for AudioParamDescriptor objects.
   // ScopedPersistent<v8::Array> m_parameterDescriptors;

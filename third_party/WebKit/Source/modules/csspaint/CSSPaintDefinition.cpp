@@ -55,8 +55,9 @@ CSSPaintDefinition::CSSPaintDefinition(
     Vector<CSSSyntaxDescriptor>& input_argument_types,
     bool has_alpha)
     : script_state_(script_state),
-      constructor_(script_state->GetIsolate(), constructor),
-      paint_(script_state->GetIsolate(), paint),
+      constructor_(script_state->GetIsolate(), this, constructor),
+      paint_(script_state->GetIsolate(), this, paint),
+      instance_(this),
       did_call_constructor_(false),
       has_alpha_(has_alpha) {
   native_invalidation_properties_.swap(native_invalidation_properties);
@@ -143,6 +144,12 @@ void CSSPaintDefinition::MaybeCreatePaintInstance() {
   }
 
   did_call_constructor_ = true;
+}
+
+DEFINE_TRACE_WRAPPERS(CSSPaintDefinition) {
+  visitor->TraceWrappers(constructor_.Cast<v8::Value>());
+  visitor->TraceWrappers(paint_.Cast<v8::Value>());
+  visitor->TraceWrappers(instance_.Cast<v8::Value>());
 }
 
 }  // namespace blink

@@ -12,12 +12,17 @@ namespace blink {
 Animator::Animator(v8::Isolate* isolate,
                    AnimatorDefinition* definition,
                    v8::Local<v8::Object> instance)
-    : definition_(definition), instance_(isolate, instance) {}
+    : definition_(this, definition), instance_(isolate, this, instance) {}
 
 Animator::~Animator() {}
 
 DEFINE_TRACE(Animator) {
   visitor->Trace(definition_);
+}
+
+DEFINE_TRACE_WRAPPERS(Animator) {
+  visitor->TraceWrappers(definition_);
+  visitor->TraceWrappers(instance_.Cast<v8::Value>());
 }
 
 }  // namespace blink

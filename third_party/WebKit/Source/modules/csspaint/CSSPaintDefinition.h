@@ -8,7 +8,9 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/cssom/CSSStyleValue.h"
-#include "platform/bindings/ScopedPersistent.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"
@@ -23,7 +25,8 @@ class ScriptState;
 // the author. It will store the properties for invalidation and input argument
 // types as well.
 class CSSPaintDefinition final
-    : public GarbageCollectedFinalized<CSSPaintDefinition> {
+    : public GarbageCollectedFinalized<CSSPaintDefinition>,
+      public TraceWrapperBase {
  public:
   static CSSPaintDefinition* Create(
       ScriptState*,
@@ -62,6 +65,7 @@ class CSSPaintDefinition final
   }
 
   DEFINE_INLINE_TRACE(){};
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   CSSPaintDefinition(ScriptState*,
@@ -77,13 +81,13 @@ class CSSPaintDefinition final
   RefPtr<ScriptState> script_state_;
 
   // This object keeps the class instance object, constructor function and
-  // paint function alive. This object needs to be destroyed to break a
-  // reference cycle between it and the PaintWorkletGlobalScope.
-  ScopedPersistent<v8::Function> constructor_;
-  ScopedPersistent<v8::Function> paint_;
+  // paint function alive. It participates in wrapper tracing as it holds onto
+  // V8 wrappers.
+  TraceWrapperV8Reference<v8::Function> constructor_;
+  TraceWrapperV8Reference<v8::Function> paint_;
 
   // At the moment there is only ever one instance of a paint class per type.
-  ScopedPersistent<v8::Object> instance_;
+  TraceWrapperV8Reference<v8::Object> instance_;
 
   bool did_call_constructor_;
 

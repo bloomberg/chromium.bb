@@ -5,7 +5,9 @@
 #ifndef Animator_h
 #define Animator_h
 
-#include "platform/bindings/ScopedPersistent.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"
 
@@ -13,19 +15,19 @@ namespace blink {
 
 class AnimatorDefinition;
 
-class Animator final : public GarbageCollectedFinalized<Animator> {
+class Animator final : public GarbageCollectedFinalized<Animator>,
+                       public TraceWrapperBase {
  public:
   Animator(v8::Isolate*, AnimatorDefinition*, v8::Local<v8::Object> instance);
   ~Animator();
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   // This object keeps the definition object, and animator instance alive.
-  // It needs to be destroyed to break a reference cycle between it and the
-  // AnimationWorkletGlobalScope. The reference cycle is broken at
-  // |AnimationWorkletGlobalScope::Dispose()|.
-  Member<AnimatorDefinition> definition_;
-  ScopedPersistent<v8::Object> instance_;
+  // It participates in wrapper tracing as it holds onto V8 wrappers.
+  TraceWrapperMember<AnimatorDefinition> definition_;
+  TraceWrapperV8Reference<v8::Object> instance_;
 };
 
 }  // namespace blink

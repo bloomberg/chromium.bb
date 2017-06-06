@@ -9,6 +9,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "modules/ModulesExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 
@@ -31,7 +32,6 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
                                          WorkerThread*,
                                          WorkerClients*);
   ~AudioWorkletGlobalScope() override;
-  void Dispose() final;
   bool IsAudioWorkletGlobalScope() const final { return true; }
   void registerProcessor(const String& name,
                          const ScriptValue& class_definition,
@@ -51,6 +51,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   AudioWorkletProcessorDefinition* FindDefinition(const String& name);
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   AudioWorkletGlobalScope(const KURL&,
@@ -60,9 +61,11 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
                           WorkerThread*,
                           WorkerClients*);
 
-  typedef HeapHashMap<String, Member<AudioWorkletProcessorDefinition>>
+  typedef HeapHashMap<String,
+                      TraceWrapperMember<AudioWorkletProcessorDefinition>>
       ProcessorDefinitionMap;
-  typedef HeapVector<Member<AudioWorkletProcessor>> ProcessorInstances;
+  typedef HeapVector<TraceWrapperMember<AudioWorkletProcessor>>
+      ProcessorInstances;
 
   ProcessorDefinitionMap processor_definition_map_;
   ProcessorInstances processor_instances_;
