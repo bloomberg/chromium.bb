@@ -46,6 +46,10 @@ class PaymentRequest;
 - (void)paymentRequestViewControllerDidSelectPaymentSummaryItem:
     (PaymentRequestViewController*)controller;
 
+// Notifies the delegate that the user has selected the contact info item.
+- (void)paymentRequestViewControllerDidSelectContactInfoItem:
+    (PaymentRequestViewController*)controller;
+
 // Notifies the delegate that the user has selected the shipping address item.
 - (void)paymentRequestViewControllerDidSelectShippingAddressItem:
     (PaymentRequestViewController*)controller;
@@ -103,6 +107,9 @@ class PaymentRequest;
 
 // Updates the selected payment method.
 - (void)updateSelectedPaymentMethodUI;
+
+// Updates the selected contact info.
+- (void)updateSelectedContactInfoUI;
 
 // Initializes this object with an instance of PaymentRequest which has a copy
 // of web::PaymentRequest as provided by the page invoking the Payment Request
