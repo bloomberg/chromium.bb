@@ -7799,7 +7799,8 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
       return;
     first_ = false;
 
-    sk_sp<const SkImage> image = CreateDiscardableImage(gfx::Size(10, 10));
+    PaintImage image(PaintImage::GetNextId(),
+                     CreateDiscardableImage(gfx::Size(10, 10)));
     auto callback =
         base::Bind(&LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
                    base::Unretained(this));
@@ -7835,7 +7836,7 @@ class LayerTreeHostTestQueueImageDecodeNonLazy : public LayerTreeHostTest {
     first_ = false;
 
     bitmap_.allocN32Pixels(10, 10);
-    sk_sp<const SkImage> image = SkImage::MakeFromBitmap(bitmap_);
+    PaintImage image(PaintImage::GetNextId(), SkImage::MakeFromBitmap(bitmap_));
     auto callback = base::Bind(
         &LayerTreeHostTestQueueImageDecodeNonLazy::ImageDecodeFinished,
         base::Unretained(this));

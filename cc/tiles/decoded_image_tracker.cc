@@ -16,13 +16,13 @@ DecodedImageTracker::~DecodedImageTracker() {
 }
 
 void DecodedImageTracker::QueueImageDecode(
-    sk_sp<const SkImage> image,
+    const PaintImage& image,
     const base::Callback<void(bool)>& callback) {
   DCHECK(image_controller_);
   // Queue the decode in the image controller, but switch out the callback for
   // our own.
   image_controller_->QueueImageDecode(
-      std::move(image), base::Bind(&DecodedImageTracker::ImageDecodeFinished,
+      image.sk_image(), base::Bind(&DecodedImageTracker::ImageDecodeFinished,
                                    base::Unretained(this), callback));
 }
 

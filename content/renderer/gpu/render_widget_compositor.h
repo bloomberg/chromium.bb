@@ -182,7 +182,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // TODO(ianwen): Move this method to WebLayerTreeView and implement main
   // thread scrolling.
   virtual void setBottomControlsHeight(float height);
-  void RequestDecode(sk_sp<SkImage> image,
+  void RequestDecode(const PaintImage& image,
                      const base::Callback<void(bool)>& callback) override;
 
   // cc::LayerTreeHostClient implementation.

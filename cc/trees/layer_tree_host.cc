@@ -1413,10 +1413,10 @@ gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
 }
 
 void LayerTreeHost::QueueImageDecode(
-    sk_sp<const SkImage> image,
+    const PaintImage& image,
     const base::Callback<void(bool)>& callback) {
   TRACE_EVENT0("cc", "LayerTreeHost::QueueImageDecode");
-  queued_image_decodes_.emplace_back(std::move(image), callback);
+  queued_image_decodes_.emplace_back(image, callback);
   SetNeedsCommit();
 }
 

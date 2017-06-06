@@ -3504,9 +3504,9 @@ WebInputMethodController* WebViewImpl::GetActiveWebInputMethodController()
 }
 
 void WebViewImpl::RequestDecode(
-    sk_sp<SkImage> image,
+    const PaintImage& image,
     std::unique_ptr<WTF::Function<void(bool)>> callback) {
-  layer_tree_view_->RequestDecode(std::move(image),
+  layer_tree_view_->RequestDecode(image,
                                   ConvertToBaseCallback(std::move(callback)));
 }
 

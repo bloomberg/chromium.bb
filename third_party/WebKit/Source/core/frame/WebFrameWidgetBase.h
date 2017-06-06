@@ -87,7 +87,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void ShowContextMenu(WebMenuSourceType) override;
 
   // Image decode functionality.
-  void RequestDecode(sk_sp<SkImage>,
+  void RequestDecode(const PaintImage&,
                      std::unique_ptr<WTF::Function<void(bool)>> callback);
 
  protected:

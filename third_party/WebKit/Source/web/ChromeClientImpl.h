@@ -234,7 +234,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void RequestDecode(
       LocalFrame*,
-      sk_sp<SkImage>,
+      const PaintImage&,
       std::unique_ptr<WTF::Function<void(bool)>> callback) override;
 
  private:

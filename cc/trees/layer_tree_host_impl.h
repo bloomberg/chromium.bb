@@ -599,7 +599,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   LayerImpl* ViewportMainScrollLayer();
 
-  void QueueImageDecode(sk_sp<const SkImage> image,
+  void QueueImageDecode(const PaintImage& image,
                         const base::Callback<void(bool)>& embedder_callback);
   std::vector<base::Closure> TakeCompletedImageDecodeCallbacks();
 

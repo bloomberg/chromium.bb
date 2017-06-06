@@ -836,10 +836,10 @@ WebRemoteFrameBase* ChromeClientImpl::GetWebRemoteFrameBase(
 
 void ChromeClientImpl::RequestDecode(
     LocalFrame* frame,
-    sk_sp<SkImage> image,
+    const PaintImage& image,
     std::unique_ptr<WTF::Function<void(bool)>> callback) {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  web_frame->LocalRoot()->FrameWidget()->RequestDecode(std::move(image),
+  web_frame->LocalRoot()->FrameWidget()->RequestDecode(image,
                                                        std::move(callback));
 }
 

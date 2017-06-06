@@ -32,6 +32,7 @@
 #include "WebCompositorMutatorClient.h"
 #include "WebEventListenerProperties.h"
 #include "WebFloatPoint.h"
+#include "WebImageLayer.h"
 #include "WebSize.h"
 #include "base/callback.h"
 #include "cc/surfaces/frame_sink_id.h"
@@ -194,7 +195,7 @@ class WebLayerTreeView {
   // corresponding Swap completes (either with DidSwap or DidNotSwap).
   virtual void NotifySwapTime(ReportTimeCallback callback) {}
 
-  virtual void RequestDecode(sk_sp<SkImage> image,
+  virtual void RequestDecode(const PaintImage& image,
                              const base::Callback<void(bool)>& callback) {}
 };
 
