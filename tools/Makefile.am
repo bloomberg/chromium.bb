@@ -45,6 +45,8 @@ bin_PROGRAMS =					\
 # install lou_checkyaml only if libyaml is found
 if WITH_YAML
 bin_PROGRAMS += lou_checkyaml
+else
+noinst_PROGRAMS = lou_checkyaml
 endif
 
 lou_allround_SOURCES = lou_allround.c
