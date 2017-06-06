@@ -732,7 +732,6 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
       {"utils", IDR_UTILS_JS},
       {"webRequest", IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS},
       {"webRequestEvent", IDR_WEB_REQUEST_EVENT_JS},
-      {"webRequestInternal", IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS},
       // Note: webView not webview so that this doesn't interfere with the
       // chrome.webview API bindings.
       {"webView", IDR_WEB_VIEW_JS},

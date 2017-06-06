@@ -9,7 +9,7 @@ var utils = require('utils');
 var validate = require('schemaUtils').validate;
 var webRequestInternal = getInternalApi ?
     getInternalApi('webRequestInternal') :
-    require('webRequestInternal').binding;
+    require('binding').Binding.create('webRequestInternal').generate();
 
 function getUniqueSubEventName(eventName) {
   return eventName + '/' + idGeneratorNatives.GetNextId();

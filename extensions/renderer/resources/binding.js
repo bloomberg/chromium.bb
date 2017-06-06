@@ -423,6 +423,7 @@ Binding.prototype = {
           } else {
             var optArgs = {
               __proto__: null,
+              forIOThread: functionDef.forIOThread,
               customCallback: this.customCallback
             };
             retval = sendRequest(this.name, args,
