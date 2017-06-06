@@ -98,8 +98,15 @@ class PLATFORM_EXPORT RuntimeCallStats {
   static RuntimeCallStats* From(v8::Isolate*);
 
 // Counters
-#define FOR_EACH_COUNTER(V) \
-  V(TestCounter1)           \
+#define FOR_EACH_COUNTER(V)          \
+  V(UpdateStyle)                     \
+  V(UpdateLayout)                    \
+  V(CollectGarbage)                  \
+  V(PerformIdleLazySweep)            \
+  V(UpdateLayerPositionsAfterLayout) \
+  V(PaintContents)                   \
+  V(ProcessStyleSheet)               \
+  V(TestCounter1)                    \
   V(TestCounter2)
 
   enum class CounterId : uint16_t {
@@ -111,18 +118,12 @@ class PLATFORM_EXPORT RuntimeCallStats {
 
   // Enters a new recording scope by pausing the currently running timer that
   // was started by the current instance, and starting <timer>.
-  void Enter(RuntimeCallTimer* timer, CounterId id) {
-    timer->Start(GetCounter(id), current_timer_);
-    current_timer_ = timer;
-  }
+  virtual void Enter(RuntimeCallTimer*, CounterId);
 
   // Exits the current recording scope, by stopping <timer> (and updating the
   // counter associated with <timer>) and resuming the timer that was paused
   // before entering the current scope.
-  void Leave(RuntimeCallTimer* timer) {
-    DCHECK_EQ(timer, current_timer_);
-    current_timer_ = timer->Stop();
-  }
+  virtual void Leave(RuntimeCallTimer*);
 
   // Reset all the counters.
   void Reset();
@@ -132,6 +133,10 @@ class PLATFORM_EXPORT RuntimeCallStats {
   }
 
   String ToString() const;
+
+  // Use these two functions to stub out RuntimeCallStats in tests.
+  static void SetRuntimeCallStatsForTesting();
+  static void ClearRuntimeCallStatsForTesting();
 
  private:
   RuntimeCallTimer* current_timer_ = nullptr;
@@ -143,8 +148,6 @@ class PLATFORM_EXPORT RuntimeCallStats {
 // A utility class that creates a RuntimeCallTimer and uses it with
 // RuntimeCallStats to measure execution time of a C++ scope.
 class PLATFORM_EXPORT RuntimeCallTimerScope {
-  STATIC_ONLY(RuntimeCallTimerScope);
-
  public:
   RuntimeCallTimerScope(RuntimeCallStats* stats,
                         RuntimeCallStats::CounterId counter)
@@ -156,6 +159,12 @@ class PLATFORM_EXPORT RuntimeCallTimerScope {
  private:
   RuntimeCallStats* call_stats_;
   RuntimeCallTimer timer_;
+};
+
+// Used to stub out RuntimeCallStats for testing.
+class RuntimeCallStatsForTesting : public RuntimeCallStats {
+  void Enter(RuntimeCallTimer*, RuntimeCallStats::CounterId) override {}
+  void Leave(RuntimeCallTimer*) override {}
 };
 
 }  // namespace blink

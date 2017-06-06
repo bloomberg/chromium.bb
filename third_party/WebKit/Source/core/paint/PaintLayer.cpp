@@ -75,6 +75,8 @@
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/RuntimeCallStats.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/TransformState.h"
@@ -286,6 +288,9 @@ void PaintLayer::SetSubpixelAccumulation(const LayoutSize& size) {
 void PaintLayer::UpdateLayerPositionsAfterLayout() {
   TRACE_EVENT0("blink,benchmark",
                "PaintLayer::updateLayerPositionsAfterLayout");
+  RuntimeCallTimerScope runtime_timer_scope(
+      RuntimeCallStats::From(V8PerIsolateData::MainThreadIsolate()),
+      RuntimeCallStats::CounterId::kUpdateLayerPositionsAfterLayout);
 
   Clipper(PaintLayer::kDoNotUseGeometryMapper)
       .ClearClipRectsIncludingDescendants();

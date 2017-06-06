@@ -36,6 +36,7 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
@@ -616,6 +617,10 @@ void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
   // the check just in case.
   if (SweepForbidden())
     return;
+
+  RuntimeCallTimerScope runtime_scope(
+      RuntimeCallStats::From(GetIsolate()),
+      RuntimeCallStats::CounterId::kPerformIdleLazySweep);
 
   TRACE_EVENT1("blink_gc,devtools.timeline",
                "ThreadState::performIdleLazySweep", "idleDeltaInSeconds",
@@ -1436,6 +1441,12 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   // Nested collectGarbage() invocations aren't supported.
   CHECK(!IsGCForbidden());
   CompleteSweep();
+
+  Optional<RuntimeCallTimerScope> timer_scope;
+  if (v8::Isolate* isolate = GetIsolate()) {
+    timer_scope.emplace(RuntimeCallStats::From(isolate),
+                        RuntimeCallStats::CounterId::kCollectGarbage);
+  }
 
   GCForbiddenScope gc_forbidden_scope(this);
 

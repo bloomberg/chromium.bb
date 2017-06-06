@@ -11,6 +11,10 @@
 
 namespace blink {
 
+namespace {
+RuntimeCallStats* g_runtime_call_stats_for_testing = nullptr;
+}
+
 void RuntimeCallTimer::Start(RuntimeCallCounter* counter,
                              RuntimeCallTimer* parent) {
   DCHECK(!IsRunning());
@@ -46,7 +50,19 @@ RuntimeCallStats::RuntimeCallStats() {
 
 // static
 RuntimeCallStats* RuntimeCallStats::From(v8::Isolate* isolate) {
+  if (g_runtime_call_stats_for_testing)
+    return g_runtime_call_stats_for_testing;
   return V8PerIsolateData::From(isolate)->GetRuntimeCallStats();
+}
+
+void RuntimeCallStats::Enter(RuntimeCallTimer* timer, CounterId id) {
+  timer->Start(GetCounter(id), current_timer_);
+  current_timer_ = timer;
+}
+
+void RuntimeCallStats::Leave(RuntimeCallTimer* timer) {
+  DCHECK_EQ(timer, current_timer_);
+  current_timer_ = timer->Stop();
 }
 
 void RuntimeCallStats::Reset() {
@@ -58,14 +74,28 @@ void RuntimeCallStats::Reset() {
 String RuntimeCallStats::ToString() const {
   StringBuilder builder;
   builder.Append("Runtime Call Stats for Blink \n");
-  builder.Append("Name                              Count     Time (ms)\n\n");
+  builder.Append(
+      "Name                                               Count     Time "
+      "(ms)\n\n");
   for (int i = 0; i < number_of_counters_; i++) {
     const RuntimeCallCounter* counter = &counters_[i];
-    builder.Append(String::Format("%-32s  %8" PRIu64 "  %9.3f\n",
+    builder.Append(String::Format("%-50s  %8" PRIu64 "  %9.3f\n",
                                   counter->GetName(), counter->GetCount(),
                                   counter->GetTime().InMillisecondsF()));
   }
   return builder.ToString();
+}
+
+// static
+void RuntimeCallStats::SetRuntimeCallStatsForTesting() {
+  DEFINE_STATIC_LOCAL(RuntimeCallStatsForTesting, s_rcs_for_testing, ());
+  g_runtime_call_stats_for_testing =
+      static_cast<RuntimeCallStats*>(&s_rcs_for_testing);
+}
+
+// static
+void RuntimeCallStats::ClearRuntimeCallStatsForTesting() {
+  g_runtime_call_stats_for_testing = nullptr;
 }
 
 }  // namespace blink

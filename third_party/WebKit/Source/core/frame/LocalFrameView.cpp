@@ -1145,6 +1145,10 @@ void LocalFrameView::UpdateLayout() {
 
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::layout");
 
+  RuntimeCallTimerScope scope(
+      RuntimeCallStats::From(V8PerIsolateData::MainThreadIsolate()),
+      RuntimeCallStats::CounterId::kUpdateLayout);
+
   if (auto_size_info_)
     auto_size_info_->AutoSizeIfNeeded();
 

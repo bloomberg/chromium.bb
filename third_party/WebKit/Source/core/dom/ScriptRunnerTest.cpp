@@ -6,6 +6,7 @@
 
 #include "core/dom/MockScriptElementBase.h"
 #include "core/dom/ScriptLoader.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -44,8 +45,12 @@ class ScriptRunnerTest : public testing::Test {
     // loadingTaskRunner() to be initialized before creating ScriptRunner to
     // save it in constructor.
     script_runner_ = ScriptRunner::Create(document_.Get());
+    RuntimeCallStats::SetRuntimeCallStatsForTesting();
   }
-  void TearDown() override { script_runner_.Release(); }
+  void TearDown() override {
+    script_runner_.Release();
+    RuntimeCallStats::ClearRuntimeCallStatsForTesting();
+  }
 
  protected:
   Persistent<Document> document_;
