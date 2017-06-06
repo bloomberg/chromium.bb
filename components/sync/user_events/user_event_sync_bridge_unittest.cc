@@ -128,6 +128,19 @@ TEST_F(UserEventSyncBridgeTest, MultipleRecords) {
   bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 4));
 }
 
+TEST_F(UserEventSyncBridgeTest, ApplySyncChanges) {
+  bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 1u, 1u));
+  bridge()->RecordUserEvent(SpecificsUniquePtr(2u, 2u, 2u));
+  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 2));
+
+  const std::string storage_key = processor().put_multimap().begin()->first;
+  auto error_on_delete =
+      bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                                 {EntityChange::CreateDelete(storage_key)});
+  EXPECT_FALSE(error_on_delete);
+  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 1));
+}
+
 }  // namespace
 
 }  // namespace syncer

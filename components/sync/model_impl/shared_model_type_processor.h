@@ -40,7 +40,8 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
  public:
   SharedModelTypeProcessor(ModelType type,
                            ModelTypeSyncBridge* bridge,
-                           const base::RepeatingClosure& dump_stack);
+                           const base::RepeatingClosure& dump_stack,
+                           bool commit_only);
   ~SharedModelTypeProcessor() override;
 
   // Whether the processor is allowing changes to its model type. If this is
@@ -217,6 +218,12 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // storage key with UpdateStorageKey() call from within
   // MergeSyncData/ApplySyncChanges.
   std::map<std::string, std::string> storage_key_to_tag_hash_;
+
+  // If the processor should behave as if |type_| is one of the commit only
+  // model types. For this processor, being commit only means that on commit
+  // confirmation, we should delete local data, because the model side never
+  // intends to read it. This includes both data and metadata.
+  bool commit_only_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

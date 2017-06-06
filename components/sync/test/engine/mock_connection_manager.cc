@@ -549,9 +549,12 @@ void MockConnectionManager::ProcessGetUpdates(
   std::string token = response->get_updates().new_progress_marker(0).token();
   response->mutable_get_updates()->clear_new_progress_marker();
   for (int i = 0; i < gu.from_progress_marker_size(); ++i) {
+    int data_type_id = gu.from_progress_marker(i).data_type_id();
+    EXPECT_TRUE(expected_filter_.Has(
+        GetModelTypeFromSpecificsFieldNumber(data_type_id)));
     sync_pb::DataTypeProgressMarker* new_marker =
         response->mutable_get_updates()->add_new_progress_marker();
-    new_marker->set_data_type_id(gu.from_progress_marker(i).data_type_id());
+    new_marker->set_data_type_id(data_type_id);
     new_marker->set_token(token);
   }
 

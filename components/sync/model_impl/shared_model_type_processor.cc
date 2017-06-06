@@ -25,10 +25,12 @@ namespace syncer {
 SharedModelTypeProcessor::SharedModelTypeProcessor(
     ModelType type,
     ModelTypeSyncBridge* bridge,
-    const base::RepeatingClosure& dump_stack)
+    const base::RepeatingClosure& dump_stack,
+    bool commit_only)
     : type_(type),
       bridge_(bridge),
       dump_stack_(dump_stack),
+      commit_only_(commit_only),
       weak_ptr_factory_(this) {
   DCHECK(bridge);
 }
@@ -306,34 +308,44 @@ void SharedModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::unique_ptr<MetadataChangeList> change_list =
+  std::unique_ptr<MetadataChangeList> metadata_change_list =
       bridge_->CreateMetadataChangeList();
+  EntityChangeList entity_change_list;
 
   model_type_state_ = type_state;
-  change_list->UpdateModelTypeState(model_type_state_);
+  metadata_change_list->UpdateModelTypeState(model_type_state_);
 
   for (const CommitResponseData& data : response_list) {
     ProcessorEntityTracker* entity = GetEntityForTagHash(data.client_tag_hash);
     if (entity == nullptr) {
       NOTREACHED() << "Received commit response for missing item."
-                   << " type: " << type_
+                   << " type: " << ModelTypeToString(type_)
                    << " client_tag_hash: " << data.client_tag_hash;
       continue;
     }
 
     entity->ReceiveCommitResponse(data);
 
-    if (entity->CanClearMetadata()) {
-      change_list->ClearMetadata(entity->storage_key());
+    if (commit_only_) {
+      if (!entity->IsUnsynced()) {
+        entity_change_list.push_back(
+            EntityChange::CreateDelete(entity->storage_key()));
+        metadata_change_list->ClearMetadata(entity->storage_key());
+        storage_key_to_tag_hash_.erase(entity->storage_key());
+        entities_.erase(entity->metadata().client_tag_hash());
+      }
+    } else if (entity->CanClearMetadata()) {
+      metadata_change_list->ClearMetadata(entity->storage_key());
       storage_key_to_tag_hash_.erase(entity->storage_key());
       entities_.erase(entity->metadata().client_tag_hash());
     } else {
-      change_list->UpdateMetadata(entity->storage_key(), entity->metadata());
+      metadata_change_list->UpdateMetadata(entity->storage_key(),
+                                           entity->metadata());
     }
   }
 
-  base::Optional<ModelError> error =
-      bridge_->ApplySyncChanges(std::move(change_list), EntityChangeList());
+  base::Optional<ModelError> error = bridge_->ApplySyncChanges(
+      std::move(metadata_change_list), entity_change_list);
   if (error) {
     ReportError(error.value());
   }

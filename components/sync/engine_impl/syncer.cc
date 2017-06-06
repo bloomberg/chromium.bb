@@ -114,13 +114,25 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
                                      SyncCycle* cycle,
                                      const GetUpdatesDelegate& delegate,
                                      bool create_mobile_bookmarks_folder) {
+  // CommitOnlyTypes() should not be included in the GetUpdates, but should be
+  // included in the Commit. We are given a set of types for our SyncShare,
+  // and we must do this filtering. Note that |request_types| is also an out
+  // param, see below where we update it.
+  ModelTypeSet requested_commit_only_types =
+      Intersection(*request_types, CommitOnlyTypes());
+  ModelTypeSet download_types =
+      Difference(*request_types, requested_commit_only_types);
   GetUpdatesProcessor get_updates_processor(
       cycle->context()->model_type_registry()->update_handler_map(), delegate);
   SyncerError download_result = UNSET;
   do {
     download_result = get_updates_processor.DownloadUpdates(
-        request_types, cycle, create_mobile_bookmarks_folder);
+        &download_types, cycle, create_mobile_bookmarks_folder);
   } while (download_result == SERVER_MORE_TO_DOWNLOAD);
+
+  // It is our responsibility to propagate the removal of types that occurred in
+  // GetUpdatesProcessor::DownloadUpdates().
+  *request_types = Union(download_types, requested_commit_only_types);
 
   // Exit without applying if we're shutting down or an error was detected.
   if (download_result != SYNCER_OK || ExitRequested())
@@ -135,7 +147,7 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
     // Apply updates to the other types. May or may not involve cross-thread
     // traffic, depending on the underlying update handlers and the GU type's
     // delegate.
-    get_updates_processor.ApplyUpdates(*request_types,
+    get_updates_processor.ApplyUpdates(download_types,
                                        cycle->mutable_status_controller());
 
     cycle->context()->set_hierarchy_conflict_detected(

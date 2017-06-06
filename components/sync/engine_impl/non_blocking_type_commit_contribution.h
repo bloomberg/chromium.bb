@@ -29,7 +29,8 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
       const sync_pb::DataTypeContext& context,
       const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
       ModelTypeWorker* worker,
-      DataTypeDebugInfoEmitter* debug_info_emitter);
+      DataTypeDebugInfoEmitter* debug_info_emitter,
+      bool clear_client_defined_unique_tags);
   ~NonBlockingTypeCommitContribution() override;
 
   // Implementation of CommitContribution
@@ -59,6 +60,13 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
   bool cleaned_up_;
 
   DataTypeDebugInfoEmitter* debug_info_emitter_;
+
+  // If we should remove all the tag hashes from the commit data that actually
+  // gets sent over the wire. This is used to save bandwidth when we do not need
+  // these entities to have consistent client ids, such as with commit only
+  // types. These ids are still passed into this contribution object so that
+  // they can be set on response before handing back to the |worker_|.
+  bool clear_client_defined_unique_tags_;
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingTypeCommitContribution);
 };

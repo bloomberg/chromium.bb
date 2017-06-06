@@ -541,6 +541,10 @@ ModelTypeSet PriorityCoreTypes() {
   return result;
 }
 
+ModelTypeSet CommitOnlyTypes() {
+  return ModelTypeSet(USER_EVENTS);
+}
+
 const char* ModelTypeToString(ModelType model_type) {
   // This is used in serialization routines as well as for displaying debug
   // information.  Do not attempt to change these string values unless you know

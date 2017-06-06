@@ -17,12 +17,14 @@ NonBlockingTypeCommitContribution::NonBlockingTypeCommitContribution(
     const sync_pb::DataTypeContext& context,
     const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
     ModelTypeWorker* worker,
-    DataTypeDebugInfoEmitter* debug_info_emitter)
+    DataTypeDebugInfoEmitter* debug_info_emitter,
+    bool clear_client_defined_unique_tags)
     : worker_(worker),
       context_(context),
       entities_(entities),
       cleaned_up_(false),
-      debug_info_emitter_(debug_info_emitter) {}
+      debug_info_emitter_(debug_info_emitter),
+      clear_client_defined_unique_tags_(clear_client_defined_unique_tags) {}
 
 NonBlockingTypeCommitContribution::~NonBlockingTypeCommitContribution() {
   DCHECK(cleaned_up_);
@@ -33,8 +35,16 @@ void NonBlockingTypeCommitContribution::AddToCommitMessage(
   sync_pb::CommitMessage* commit_message = msg->mutable_commit();
   entries_start_index_ = commit_message->entries_size();
 
+  int startIndex = commit_message->entries_size();
   std::copy(entities_.begin(), entities_.end(),
             RepeatedPtrFieldBackInserter(commit_message->mutable_entries()));
+
+  if (clear_client_defined_unique_tags_) {
+    for (int i = startIndex; i < commit_message->entries_size(); ++i) {
+      commit_message->mutable_entries(i)->clear_client_defined_unique_tag();
+    }
+  }
+
   if (!context_.context().empty())
     commit_message->add_client_contexts()->CopyFrom(context_);
 
