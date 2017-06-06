@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import json
 import mock
 import re
 import cPickle
@@ -189,6 +190,82 @@ class FindConfigsForBoardTest(cros_test_lib.TestCase):
       external, internal = self.config.FindFullConfigsForBoard(b)
       AtMostOneConfig(b, 'external', external)
       AtMostOneConfig(b, 'internal', internal)
+
+
+class UnifiedBuildConfigTestCase(object):
+  """Base test class that builds a fake config model based on unified builds"""
+
+  def setUp(self):
+    # Code assumes at least one non-unified build exists, so we're accommodating
+    # that by keeping the non-unified reef board.
+    self._fake_ge_build_config_json = '''
+{
+  "metadata_version": "1.0",
+  "release_branch": true,
+  "reference_board_unified_builds": [
+    {
+      "name": "reef-uni",
+      "reference_board_name": "reef-uni",
+      "builder": "RELEASE",
+      "experimental": true,
+      "arch": "X86_INTERNAL",
+      "models" : [
+        {
+          "board_name": "reef"
+        },
+        {
+          "board_name": "pyro"
+        }
+      ]
+    }
+  ],
+  "boards": [
+    {
+      "name": "reef",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "reef",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    }
+  ]
+}
+    '''
+    self._fake_ge_build_config = json.loads(self._fake_ge_build_config_json)
+
+    site_params = chromeos_config.SiteParameters()
+    defaults = chromeos_config.DefaultSettings(site_params)
+    self._site_config = config_lib.SiteConfig(defaults=defaults,
+                                              site_params=site_params)
+    self._ge_build_config = config_lib.LoadGEBuildConfigFromFile()
+    self._boards_dict = chromeos_config.GetBoardTypeToBoardsDict(
+        self._ge_build_config)
+
+    chromeos_config.GeneralTemplates(
+        self._site_config, self._fake_ge_build_config)
+    chromeos_config.ReleaseBuilders(
+        self._site_config, self._boards_dict, self._fake_ge_build_config)
+
+class UnifiedBuildReleaseBuilders(
+    cros_test_lib.OutputTestCase, UnifiedBuildConfigTestCase):
+  """Tests that verify how unified builder configs are generated"""
+
+  def setUp(self):
+    UnifiedBuildConfigTestCase.setUp(self)
+
+  def testUnifiedReleaseBuilders(self):
+    reef_uni_release = self._site_config['reef-uni-release']
+    self.assertIsNotNone(reef_uni_release)
+    models = reef_uni_release['models']
+    self.assertIn('reef', models)
+    self.assertIn('pyro', models)
+
+    master_release = self._site_config['master-release']
+    self.assertIn('reef-uni-release', master_release['slave_configs'])
 
 
 class ConfigPickleTest(ChromeosConfigTestBase):

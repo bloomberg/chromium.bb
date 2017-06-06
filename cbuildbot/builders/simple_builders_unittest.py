@@ -36,9 +36,10 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
       self.called_stages.append(stage_name)
 
     # Parallel version.
-    def run_parallel_stages(_class_instance, stages_list):
-      for stage in stages_list:
-        self.called_stages.append(type(stage))
+    def run_parallel_stages(_class_instance, *_args):
+      # Since parallel stages are forked processes, we can't actually
+      # update anything here unless we want to do interprocesses comms.
+      pass
 
     self.buildroot = os.path.join(self.tempdir, 'buildroot')
     chroot_path = os.path.join(self.buildroot, constants.DEFAULT_CHROOT_DIR)
@@ -58,12 +59,15 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     # Mimic exiting a 'with' statement.
     self._manager.__exit__(None, None, None)
 
-  def _initConfig(self, bot_id, extra_argv=None, override_hw_test_config=None):
+  def _initConfig(
+      self, bot_id, extra_argv=None, override_hw_test_config=None, models=None):
     """Return normal options/build_config for |bot_id|"""
     site_config = config_lib.GetConfig()
     build_config = copy.deepcopy(site_config[bot_id])
     build_config['master'] = False
     build_config['important'] = False
+    if models:
+      build_config['models'] = models
 
     # Use the cbuildbot parser to create properties and populate default values.
     parser = cbuildbot._CreateParser()
@@ -142,3 +146,13 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     self.called_stages = []
     simple_builders.SimpleBuilder(builder_run_with_blocking).RunStages()
     self.assertEqual(without_blocking_stages, self.called_stages)
+
+  def testUnifiedBuildsRunHwTestsForAllModels(self):
+    """Verify hwtests run for model fanout with unified builds"""
+    extra_argv = ['--hwtest']
+    unified_build = self._initConfig(
+        'lumpy-release',
+        extra_argv=extra_argv,
+        models=['model1', 'model2'])
+    unified_build.attrs.chrome_version = 'TheChromeVersion'
+    simple_builders.SimpleBuilder(unified_build).RunStages()

@@ -212,7 +212,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallelDefault('test_artifacts_uploaded', True)
     return test_stages.HWTestStage(
-        self._run, self._current_board, self.suite_config)
+        self._run, self._current_board, self._current_board, self.suite_config)
 
   def _RunHWTestSuite(self, debug=False, fails=False, warns=False,
                       cmd_fail_mode=None):
@@ -485,7 +485,7 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallelDefault('test_artifacts_uploaded', True)
     return test_stages.AUTestStage(
-        self._run, self._current_board, self.suite_config)
+        self._run, self._current_board, self._current_board, self.suite_config)
 
   def _PatchJson(self):
     """Mock out the code that loads from swarming task summary."""

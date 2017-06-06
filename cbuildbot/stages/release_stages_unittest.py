@@ -458,6 +458,28 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           disable_tests=True,
           skip_duts_check=False)
 
+  def testRunPaygenInProcessWithUnifiedBuild(self):
+    self._run.config.models = ["model1", "model2"]
+    with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
+      # Have to patch and verify that the PaygenTestStage is created.
+      stage = self.ConstructStage()
+
+      # CreatePayloads should return a tuple of a suite name and the finished
+      # URI.
+      create_payloads.side_effect = iter([('foo-suite-name',
+                                           'foo-archive-board',
+                                           'foo-archive-build',
+                                           'foo-finished_uri')])
+      with patch(paygen_build_lib, 'ScheduleAutotestTests') as sched_tests:
+        # Call the method under test.
+        stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
+                                  True, False, False, skip_duts_check=False)
+        # Ensure that the first model from the unified build was selected
+        # as the platform to be tested
+        sched_tests.assert_called_once_with(
+            'foo-suite-name', 'model1', 'foo-archive-build',
+            False, True)
+
 
 class PaygenBuildStageTest(generic_stages_unittest.AbstractStageTestCase,
                            cbuildbot_unittest.SimpleBuilderTestCase):

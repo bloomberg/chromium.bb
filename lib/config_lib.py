@@ -83,6 +83,9 @@ CONFIG_TEMPLATE_RELEASE = 'RELEASE'
 CONFIG_TEMPLATE_CONFIGS = 'configs'
 CONFIG_TEMPLATE_ARCH = 'arch'
 CONFIG_TEMPLATE_RELEASE_BRANCH = 'release_branch'
+CONFIG_TEMPLATE_REFERENCE_BOARD_NAME = 'reference_board_name'
+CONFIG_TEMPLATE_MODELS = 'models'
+CONFIG_TEMPLATE_BOARD_NAME = 'board_name'
 
 CONFIG_X86_INTERNAL = 'X86_INTERNAL'
 CONFIG_X86_EXTERNAL = 'X86_EXTERNAL'
@@ -508,6 +511,11 @@ def DefaultSettings():
 
       # A list of boards to build.
       boards=None,
+
+      # A list of all models that are supported by a given unified build.
+      # For unified builds, we still need hardware test coverage to fan out
+      # and test every model, which is what this setting controls.
+      models=[],
 
       # The profile of the variant to set up and build.
       profile=None,
@@ -1351,7 +1359,7 @@ class SiteConfig(dict):
     Args:
       suffix: Config name is <board>-<suffix>.
       boards: A list of board names as strings.
-      per_board: A dictionary of board names to BuilcConfigs, or None.
+      per_board: A dictionary of board names to BuildConfigs, or None.
       template: The template to use for all configs created.
       *args: Mixin templates to apply.
       **kwargs: Additional keyword arguments to be used in AddConfig.
@@ -1507,6 +1515,16 @@ def GeBuildConfigAllBoards(ge_build_config):
   """
   return [b['name'] for b in ge_build_config['boards']]
 
+def GetUnifiedBuildConfigAllBuilds(ge_build_config):
+  """Extract a list of all unified build configurations.
+
+  Args:
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+
+  Returns:
+    A list of unified build configurations (json configs)
+  """
+  return ge_build_config.get('reference_board_unified_builds', [])
 
 class BoardGroup(object):
   """Class holds leader_boards and follower_boards for grouped boards"""
@@ -1593,6 +1611,11 @@ def GetArchBoardDict(ge_build_config):
     for config in b[CONFIG_TEMPLATE_CONFIGS]:
       arch = config[CONFIG_TEMPLATE_ARCH]
       arch_board_dict.setdefault(arch, set()).add(board_name)
+
+  for b in GetUnifiedBuildConfigAllBuilds(ge_build_config):
+    board_name = b[CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
+    arch = b[CONFIG_TEMPLATE_ARCH]
+    arch_board_dict.setdefault(arch, set()).add(board_name)
 
   return arch_board_dict
 

@@ -1586,7 +1586,11 @@ def GeneralTemplates(site_config, ge_build_config):
 def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
   """Create mixin templates for each board."""
   # Extract the full list of board names from GE data.
-  board_names = set(config_lib.GeBuildConfigAllBoards(ge_build_config))
+  separate_board_names = set(config_lib.GeBuildConfigAllBoards(ge_build_config))
+  unified_builds = config_lib.GetUnifiedBuildConfigAllBuilds(ge_build_config)
+  unified_board_names = set([b[config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
+                             for b in unified_builds])
+  board_names = separate_board_names | unified_board_names
 
   # TODO(crbug.com/648473): Remove these, after GE adds them to their data set.
   board_names = board_names.union(boards_dict['all_boards'])
@@ -3103,6 +3107,35 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.release,
   )
 
+  def _GetConfigWaterfall(builder):
+    if builder == config_lib.CONFIG_TEMPLATE_RELEASE:
+      if is_release_branch:
+        return constants.WATERFALL_RELEASE
+      else:
+        return constants.WATERFALL_INTERNAL
+    else:
+      # Currently just support RELEASE builders
+      raise ValueError('Do not support builder %s.' % builder)
+
+  for unibuild in config_lib.GetUnifiedBuildConfigAllBuilds(ge_build_config):
+    active_waterfall = _GetConfigWaterfall(
+        unibuild[config_lib.CONFIG_TEMPLATE_BUILDER])
+    models = [m[config_lib.CONFIG_TEMPLATE_BOARD_NAME]
+              for m in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]]
+    reference_board_name = unibuild[
+        config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
+    config_name = '%s-release' % reference_board_name
+    site_config.AddForBoards(
+        config_lib.CONFIG_TYPE_RELEASE,
+        [reference_board_name],
+        board_configs,
+        site_config.templates.release,
+        models=models,
+        important=not unibuild[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
+        active_waterfall=active_waterfall
+    )
+
+    master_config.AddSlave(site_config[config_name])
 
   def GetReleaseConfigName(board):
     """Convert a board name into a release config name."""
@@ -3118,16 +3151,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   def _GetConfigValues(builder, board):
     """Get and return config values from template"""
-
-    def _GetConfigWaterfall(builder):
-      if builder == config_lib.CONFIG_TEMPLATE_RELEASE:
-        if is_release_branch:
-          return constants.WATERFALL_RELEASE
-        else:
-          return constants.WATERFALL_INTERNAL
-      else:
-        # Currently just support RELEASE builders
-        raise ValueError('Do not support builder %s.' % builder)
 
     config_values = {
         'important': not board[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
