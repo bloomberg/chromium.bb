@@ -24,7 +24,6 @@
 namespace {
 using libaom_test::ACMRandom;
 
-#if !CONFIG_AOM_QM
 typedef void (*QuantizeFunc)(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                              int skip_block, const int16_t *zbin_ptr,
                              const int16_t *round_ptr, const int16_t *quant_ptr,
@@ -32,16 +31,6 @@ typedef void (*QuantizeFunc)(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                              tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
                              const int16_t *dequant_ptr, uint16_t *eob_ptr,
                              const int16_t *scan, const int16_t *iscan);
-#else
-typedef void (*QuantizeFunc)(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                             int skip_block, const int16_t *zbin_ptr,
-                             const int16_t *round_ptr, const int16_t *quant_ptr,
-                             const int16_t *quant_shift_ptr,
-                             tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                             const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                             const int16_t *scan, const int16_t *iscan,
-                             const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr);
-#endif
 
 typedef std::tr1::tuple<QuantizeFunc, QuantizeFunc, TX_SIZE, aom_bit_depth_t>
     QuantizeParam;
@@ -63,7 +52,7 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
 
   virtual void SetUp() {
     qtab_ = reinterpret_cast<QuanTable *>(aom_memalign(16, sizeof(*qtab_)));
-    const int n_coeffs = getCoeffNum();
+    const int n_coeffs = coeff_num();
     coeff_ = reinterpret_cast<tran_low_t *>(
         aom_memalign(16, 6 * n_coeffs * sizeof(tran_low_t)));
     InitQuantizer();
@@ -81,9 +70,9 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
     av1_build_quantizer(bd_, 0, 0, 0, &qtab_->quant, &qtab_->dequant);
   }
 
-  void QuantizeRun(bool isLoop, int q = 0, int testNum = 1) {
+  void QuantizeRun(bool is_loop, int q = 0, int test_num = 1) {
     tran_low_t *coeff_ptr = coeff_;
-    const intptr_t n_coeffs = getCoeffNum();
+    const intptr_t n_coeffs = coeff_num();
     const int skip_block = 0;
 
     tran_low_t *qcoeff_ref = coeff_ptr + n_coeffs;
@@ -104,9 +93,8 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
     const int16_t *dequant = qtab_->dequant.y_dequant[q];
     const size_t bufferSize = n_coeffs;
 
-    int i = 0;
-    while (i < testNum) {
-      if (isLoop) FillCoeffRandom();
+    for (int i = 0; i < test_num; ++i) {
+      if (is_loop) FillCoeffRandom();
 
       memset(qcoeff_ref, 0, 5 * n_coeffs * sizeof(*qcoeff_ref));
 
@@ -118,11 +106,11 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
           coeff_ptr, n_coeffs, skip_block, zbin, round_fp, quant_fp,
           quant_shift, qcoeff, dqcoeff, dequant, &eob[1], sc->scan, sc->iscan));
 
-      CompareResults(qcoeff_ref, qcoeff, bufferSize, "Qcoeff", q, i);
-      CompareResults(dqcoeff_ref, dqcoeff, bufferSize, "Dqcoeff", q, i);
+      ASSERT_NO_FATAL_FAILURE(
+          CompareResults(qcoeff_ref, qcoeff, bufferSize, "Qcoeff", q, i));
+      ASSERT_NO_FATAL_FAILURE(
+          CompareResults(dqcoeff_ref, dqcoeff, bufferSize, "Dqcoeff", q, i));
       ASSERT_EQ(eob[0], eob[1]) << "eobs mismatch on test: " << i;
-
-      i++;
     }
   }
 
@@ -135,29 +123,29 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
     }
   }
 
-  int getCoeffNum() { return tx_size_2d[tx_size_]; }
+  int coeff_num() const { return tx_size_2d[tx_size_]; }
 
-  void FillCoeffGeneric(bool isConstant, tran_low_t c = 0) {
-    const int n_coeffs = getCoeffNum();
-    int i;
-    if (isConstant) {
-      for (i = 0; i < n_coeffs; ++i) {
-        coeff_[i] = c;
-      }
-    } else {
-      FillCoeffZero();
-      int num = rnd_.Rand16() % n_coeffs;
-      for (i = 0; i < num; ++i) {
-        coeff_[i] = GetRandomCoeff();
-      }
+  void FillCoeff(tran_low_t c) {
+    const int n_coeffs = coeff_num();
+    for (int i = 0; i < n_coeffs; ++i) {
+      coeff_[i] = c;
     }
   }
 
-  void FillCoeffZero() { FillCoeffGeneric(true); }
+  void FillCoeffRandom() {
+    const int n_coeffs = coeff_num();
+    FillCoeffZero();
+    int num = rnd_.Rand16() % n_coeffs;
+    for (int i = 0; i < num; ++i) {
+      coeff_[i] = GetRandomCoeff();
+    }
+  }
+
+  void FillCoeffZero() { FillCoeff(0); }
 
   void FillCoeffConstant() {
     tran_low_t c = GetRandomCoeff();
-    FillCoeffGeneric(true, c);
+    FillCoeff(c);
   }
 
   void FillDcOnly() {
@@ -173,10 +161,8 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
     coeff_[0] = -8191;
   }
 
-  void FillCoeffRandom() { FillCoeffGeneric(false); }
-
   tran_low_t GetRandomCoeff() {
-    return clamp((int16_t)rnd_.Rand16(), INT16_MIN + 1, INT16_MAX);
+    return clamp(static_cast<int16_t>(rnd_.Rand16()), INT16_MIN + 1, INT16_MAX);
   }
 
   ACMRandom rnd_;
@@ -222,15 +208,18 @@ INSTANTIATE_TEST_CASE_P(SSE2, QuantizeTest,
 #endif
 
 #if !CONFIG_HIGHBITDEPTH && HAVE_SSSE3 && ARCH_X86_64
-const QuantizeParam kQParamArraySSSE3[] = {
+const QuantizeParam kQ16x16ParamArraySSSE3[] = {
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_ssse3, TX_16X16, AOM_BITS_8),
-  // TODO(any):
-  //  The following test couldn't pass yet
-  // make_tuple(av1_quantize_fp_c, av1_quantize_fp_32x32_ssse3, TX_32X32,
-  // AOM_BITS_8)
 };
 INSTANTIATE_TEST_CASE_P(SSSE3, QuantizeTest,
-                        ::testing::ValuesIn(kQParamArraySSSE3));
+                        ::testing::ValuesIn(kQ16x16ParamArraySSSE3));
+
+// TODO(any):
+//  The following test does not pass yet
+const QuantizeParam kQ32x32ParamArraySSSE3[] = { make_tuple(
+    av1_quantize_fp_c, av1_quantize_fp_32x32_ssse3, TX_32X32, AOM_BITS_8) };
+INSTANTIATE_TEST_CASE_P(DISABLED_SSSE3, QuantizeTest,
+                        ::testing::ValuesIn(kQ32x32ParamArraySSSE3));
 #endif
 
 }  // namespace
