@@ -14,6 +14,8 @@
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/reading_list/core/reading_list_model.h"
+#include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
@@ -29,8 +31,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -146,12 +150,7 @@
   ContentSuggestionsMostVisitedItem* mostVisitedItem =
       base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
 
-  new_tab_page_uma::RecordAction(
-      self.browserState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
-  base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
-
-  ntp_tiles::metrics::RecordTileClick(mostVisitedIndex, mostVisitedItem.source,
-                                      [mostVisitedItem tileType]);
+  [self logMostVisitedOpening:mostVisitedItem atIndex:mostVisitedIndex];
 
   [self.URLLoader loadURL:mostVisitedItem.URL
                  referrer:web::Referrer()
@@ -222,7 +221,7 @@
                  style:UIAlertActionStyleDefault];
 
   NSString* deleteTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_DELETE);
+      l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_REMOVE);
   [self.alertCoordinator addItemWithTitle:deleteTitle
                                    action:^{
                                      // TODO(crbug.com/691979): Add metrics.
@@ -235,6 +234,75 @@
                                    action:^{
                                      // TODO(crbug.com/691979): Add metrics.
                                    }
+                                    style:UIAlertActionStyleCancel];
+
+  [self.alertCoordinator start];
+}
+
+- (void)displayContextMenuForMostVisitedItem:(CollectionViewItem*)item
+                                     atPoint:(CGPoint)touchLocation
+                                 atIndexPath:(NSIndexPath*)indexPath {
+  ContentSuggestionsMostVisitedItem* mostVisitedItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
+  self.alertCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.navigationController
+                           title:nil
+                         message:nil
+                            rect:CGRectMake(touchLocation.x, touchLocation.y, 0,
+                                            0)
+                            view:self.suggestionsViewController.collectionView];
+
+  __weak ContentSuggestionsCoordinator* weakSelf = self;
+  __weak ContentSuggestionsMostVisitedItem* weakItem = mostVisitedItem;
+
+  [self.alertCoordinator
+      addItemWithTitle:l10n_util::GetNSStringWithFixup(
+                           IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
+                action:^{
+                  ContentSuggestionsCoordinator* strongSelf = weakSelf;
+                  ContentSuggestionsMostVisitedItem* strongItem = weakItem;
+                  if (!strongSelf || !strongItem)
+                    return;
+                  [strongSelf logMostVisitedOpening:strongItem
+                                            atIndex:indexPath.item];
+                  [strongSelf openNewTabWithURL:strongItem.URL incognito:NO];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  if (!self.browserState->IsOffTheRecord()) {
+    [self.alertCoordinator
+        addItemWithTitle:l10n_util::GetNSStringWithFixup(
+                             IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
+                  action:^{
+                    ContentSuggestionsCoordinator* strongSelf = weakSelf;
+                    ContentSuggestionsMostVisitedItem* strongItem = weakItem;
+                    if (!strongSelf || !strongItem)
+                      return;
+                    [strongSelf logMostVisitedOpening:strongItem
+                                              atIndex:indexPath.item];
+                    [strongSelf openNewTabWithURL:strongItem.URL incognito:YES];
+                  }
+                   style:UIAlertActionStyleDefault];
+  }
+
+  [self.alertCoordinator
+      addItemWithTitle:l10n_util::GetNSStringWithFixup(
+                           IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)
+                action:^{
+                  ContentSuggestionsCoordinator* strongSelf = weakSelf;
+                  ContentSuggestionsMostVisitedItem* strongItem = weakItem;
+                  if (!strongSelf || !strongItem)
+                    return;
+                  base::RecordAction(
+                      base::UserMetricsAction("MostVisited_UrlBlacklisted"));
+                  [strongSelf.contentSuggestionsMediator
+                      blacklistMostVisitedURL:strongItem.URL];
+                  [strongSelf showMostVisitedUndoForURL:strongItem.URL];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
+                                   action:nil
                                     style:UIAlertActionStyleCancel];
 
   [self.alertCoordinator start];
@@ -268,6 +336,42 @@
   [self.contentSuggestionsMediator
       dismissSuggestion:article.suggestionIdentifier];
   [self.suggestionsViewController dismissEntryAtIndexPath:indexPath];
+}
+
+// Logs a histogram due to a Most Visited item being opened.
+- (void)logMostVisitedOpening:(ContentSuggestionsMostVisitedItem*)item
+                      atIndex:(NSInteger)mostVisitedIndex {
+  new_tab_page_uma::RecordAction(
+      self.browserState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
+  base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
+
+  ntp_tiles::metrics::RecordTileClick(mostVisitedIndex, item.source,
+                                      [item tileType]);
+}
+
+// Shows a snackbar with an action to undo the removal of the most visited item
+// with a |URL|.
+- (void)showMostVisitedUndoForURL:(GURL)URL {
+  GURL copiedURL = URL;
+
+  MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
+  __weak ContentSuggestionsCoordinator* weakSelf = self;
+  action.handler = ^{
+    ContentSuggestionsCoordinator* strongSelf = weakSelf;
+    if (!strongSelf)
+      return;
+    [strongSelf.contentSuggestionsMediator whitelistMostVisitedURL:copiedURL];
+  };
+  action.title = l10n_util::GetNSString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE);
+  action.accessibilityIdentifier = @"Undo";
+
+  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
+  MDCSnackbarMessage* message = [MDCSnackbarMessage
+      messageWithText:l10n_util::GetNSString(
+                          IDS_IOS_NEW_TAB_MOST_VISITED_ITEM_REMOVED)];
+  message.action = action;
+  message.category = @"MostVisitedUndo";
+  [MDCSnackbarManager showMessage:message];
 }
 
 @end

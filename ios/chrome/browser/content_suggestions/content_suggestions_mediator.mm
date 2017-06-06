@@ -125,6 +125,14 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   self.contentService->DismissSuggestion(suggestion_id);
 }
 
+- (void)blacklistMostVisitedURL:(GURL)URL {
+  _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, true);
+}
+
+- (void)whitelistMostVisitedURL:(GURL)URL {
+  _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, false);
+}
+
 #pragma mark - ContentSuggestionsDataSource
 
 - (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {

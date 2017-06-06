@@ -248,16 +248,25 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   CollectionViewItem* touchedItem =
       [self.collectionViewModel itemAtIndexPath:touchedItemIndexPath];
 
-  if ([self.collectionUpdater contentSuggestionTypeForItem:touchedItem] !=
-      ContentSuggestionTypeArticle) {
-    // Only trigger context menu on articles.
-    return;
+  ContentSuggestionType type =
+      [self.collectionUpdater contentSuggestionTypeForItem:touchedItem];
+  switch (type) {
+    case ContentSuggestionTypeArticle:
+      [self.suggestionCommandHandler
+          displayContextMenuForArticle:touchedItem
+                               atPoint:touchLocation
+                           atIndexPath:touchedItemIndexPath];
+      break;
+    case ContentSuggestionTypeMostVisited:
+      [self.suggestionCommandHandler
+          displayContextMenuForMostVisitedItem:touchedItem
+                                       atPoint:touchLocation
+                                   atIndexPath:touchedItemIndexPath];
+      break;
+    default:
+      break;
   }
 
-  [self.suggestionCommandHandler
-      displayContextMenuForArticle:touchedItem
-                           atPoint:touchLocation
-                       atIndexPath:touchedItemIndexPath];
 }
 
 // Checks if the |section| is empty and add an empty element if it is the case.
