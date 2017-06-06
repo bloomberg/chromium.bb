@@ -84,6 +84,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual bool CurrentFrameIsComplete() { return false; }
   virtual bool CurrentFrameIsLazyDecoded() { return false; }
+  virtual size_t FrameCount() { return 0; }
   virtual bool IsTextureBacked() const { return false; }
 
   // Derived classes should override this if they can assure that the current

@@ -35,10 +35,17 @@ class CC_PAINT_EXPORT PaintImage {
   static Id GetNextId();
 
   PaintImage();
+  // - id: stable id for this image; can be generated using GetNextId().
+  // - sk_image: the underlying skia image that this represents.
+  // - animation_type: the animation type of this paint image.
+  // - completion_state: indicates whether the image is completed loading.
+  // - frame_count: the known number of frames in this image. E.g. number of GIF
+  //   frames in an animated GIF.
   explicit PaintImage(Id id,
                       sk_sp<SkImage> sk_image,
                       AnimationType animation_type = AnimationType::STATIC,
-                      CompletionState completion_state = CompletionState::DONE);
+                      CompletionState completion_state = CompletionState::DONE,
+                      size_t frame_count = 0);
   PaintImage(const PaintImage& other);
   PaintImage(PaintImage&& other);
   ~PaintImage();
@@ -53,12 +60,17 @@ class CC_PAINT_EXPORT PaintImage {
   const sk_sp<SkImage>& sk_image() const { return sk_image_; }
   AnimationType animation_type() const { return animation_type_; }
   CompletionState completion_state() const { return completion_state_; }
+  size_t frame_count() const { return frame_count_; }
 
  private:
   Id id_ = kUnknownStableId;
   sk_sp<SkImage> sk_image_;
   AnimationType animation_type_ = AnimationType::UNKNOWN;
   CompletionState completion_state_ = CompletionState::UNKNOWN;
+  // The number of frames known to exist in this image (eg number of GIF frames
+  // loaded). 0 indicates either unknown or only a single frame, both of which
+  // should be treated similarly.
+  size_t frame_count_ = 0;
 };
 
 }  // namespace cc
