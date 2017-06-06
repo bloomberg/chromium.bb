@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS e.style['offset-rotate'] = "none" should not set the property value 
-FAIL e.style['offset-rotate'] = "0" should not set the property value assert_equals: expected "" but got "0deg"
-PASS e.style['offset-rotate'] = "auto reverse" should not set the property value 
-PASS e.style['offset-rotate'] = "reverse 30deg auto" should not set the property value 
-Harness: the test ran to completion.
-
