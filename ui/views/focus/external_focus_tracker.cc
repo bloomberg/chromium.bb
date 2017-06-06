@@ -5,25 +5,24 @@
 #include "ui/views/focus/external_focus_tracker.h"
 
 #include "base/logging.h"
-#include "ui/views/focus/view_storage.h"
+#include "base/memory/ptr_util.h"
 #include "ui/views/view.h"
+#include "ui/views/view_tracker.h"
 
 namespace views {
 
 ExternalFocusTracker::ExternalFocusTracker(View* parent_view,
                                            FocusManager* focus_manager)
     : focus_manager_(focus_manager),
-      parent_view_(parent_view) {
+      parent_view_(parent_view),
+      last_focused_view_tracker_(base::MakeUnique<ViewTracker>()) {
   DCHECK(parent_view);
-  view_storage_ = ViewStorage::GetInstance();
-  last_focused_view_storage_id_ = view_storage_->CreateStorageID();
   // Store the view which is focused when we're created.
   if (focus_manager_)
     StartTracking();
 }
 
 ExternalFocusTracker::~ExternalFocusTracker() {
-  view_storage_->RemoveView(last_focused_view_storage_id_);
   if (focus_manager_)
     focus_manager_->RemoveFocusChangeListener(this);
 }
@@ -42,8 +41,7 @@ void ExternalFocusTracker::OnDidChangeFocus(View* focused_before,
 }
 
 void ExternalFocusTracker::FocusLastFocusedExternalView() {
-  View* last_focused_view =
-      view_storage_->RetrieveView(last_focused_view_storage_id_);
+  View* last_focused_view = last_focused_view_tracker_->view();
   if (last_focused_view)
     last_focused_view->RequestFocus();
 }
@@ -57,11 +55,7 @@ void ExternalFocusTracker::SetFocusManager(FocusManager* focus_manager) {
 }
 
 void ExternalFocusTracker::StoreLastFocusedView(View* view) {
-  view_storage_->RemoveView(last_focused_view_storage_id_);
-  // If the view is NULL, remove the last focused view from storage, but don't
-  // try to store NULL.
-  if (view != NULL)
-    view_storage_->StoreView(last_focused_view_storage_id_, view);
+  last_focused_view_tracker_->SetView(view);
 }
 
 void ExternalFocusTracker::StartTracking() {

@@ -35,7 +35,7 @@
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/views/event_monitor.h"
-#include "ui/views/focus/view_storage.h"
+#include "ui/views/view_tracker.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -192,8 +192,7 @@ TabDragController::TabDragController()
       attached_tabstrip_(NULL),
       can_release_capture_(true),
       offset_to_width_ratio_(0),
-      old_focused_view_id_(
-          views::ViewStorage::GetInstance()->CreateStorageID()),
+      old_focused_view_tracker_(base::MakeUnique<views::ViewTracker>()),
       last_move_screen_loc_(0),
       started_drag_(false),
       active_(true),
@@ -220,8 +219,6 @@ TabDragController::TabDragController()
 }
 
 TabDragController::~TabDragController() {
-  views::ViewStorage::GetInstance()->RemoveView(old_focused_view_id_);
-
   if (instance_ == this)
     instance_ = NULL;
 
@@ -477,11 +474,8 @@ gfx::Point TabDragController::GetWindowCreatePoint(
 
 void TabDragController::SaveFocus() {
   DCHECK(source_tabstrip_);
-  views::View* focused_view =
-      source_tabstrip_->GetFocusManager()->GetFocusedView();
-  if (focused_view)
-    views::ViewStorage::GetInstance()->StoreView(old_focused_view_id_,
-                                                 focused_view);
+  old_focused_view_tracker_->SetView(
+      source_tabstrip_->GetFocusManager()->GetFocusedView());
   source_tabstrip_->GetFocusManager()->SetFocusedView(source_tabstrip_);
   // WARNING: we may have been deleted.
 }
@@ -495,8 +489,7 @@ void TabDragController::RestoreFocus() {
     }
     return;
   }
-  views::View* old_focused_view =
-      views::ViewStorage::GetInstance()->RetrieveView(old_focused_view_id_);
+  views::View* old_focused_view = old_focused_view_tracker_->view();
   if (!old_focused_view)
     return;
   old_focused_view->GetFocusManager()->SetFocusedView(old_focused_view);

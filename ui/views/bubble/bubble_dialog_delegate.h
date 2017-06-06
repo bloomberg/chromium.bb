@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_BUBBLE_BUBBLE_DIALOG_DELEGATE_H_
 #define UI_VIEWS_BUBBLE_BUBBLE_DIALOG_DELEGATE_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -20,6 +22,7 @@ class Rect;
 namespace views {
 
 class BubbleFrameView;
+class ViewTracker;
 
 // BubbleDialogDelegateView is a special DialogDelegateView for bubbles.
 class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
@@ -166,9 +169,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   bool close_on_deactivate_;
 
   // The view and widget to which this bubble is anchored. Since an anchor view
-  // can be deleted without notice, we store it in the ViewStorage and retrieve
+  // can be deleted without notice, we store it in a ViewTracker and retrieve
   // it from there. It will make sure that the view is still valid.
-  const int anchor_view_storage_id_;
+  std::unique_ptr<ViewTracker> anchor_view_tracker_;
   Widget* anchor_widget_;
 
   // The anchor rect used in the absence of an anchor view.

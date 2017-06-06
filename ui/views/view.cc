@@ -53,7 +53,6 @@
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/drag_controller.h"
-#include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/views_delegate.h"
@@ -156,8 +155,6 @@ View::View()
 View::~View() {
   if (parent_)
     parent_->RemoveChildView(this);
-
-  ViewStorage::GetInstance()->ViewRemoved(this);
 
   {
     internal::ScopedChildrenLock lock(this);
@@ -2431,15 +2428,6 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
       context_menu_controller_ : 0;
   View::DragInfo* drag_info = GetDragInfo();
 
-  // TODO(sky): for debugging 360238.
-  int storage_id = 0;
-  if (event.IsOnlyRightMouseButton() && context_menu_controller &&
-      kContextMenuOnMousePress && HitTestPoint(event.location())) {
-    ViewStorage* view_storage = ViewStorage::GetInstance();
-    storage_id = view_storage->CreateStorageID();
-    view_storage->StoreView(storage_id, this);
-  }
-
   const bool enabled = enabled_;
   const bool result = OnMousePressed(event);
 
@@ -2450,10 +2438,8 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
       kContextMenuOnMousePress) {
     // Assume that if there is a context menu controller we won't be deleted
     // from mouse pressed.
-    gfx::Point location(event.location());
-    if (HitTestPoint(location)) {
-      if (storage_id != 0)
-        CHECK_EQ(this, ViewStorage::GetInstance()->RetrieveView(storage_id));
+    if (HitTestPoint(event.location())) {
+      gfx::Point location(event.location());
       ConvertPointToScreen(this, &location);
       ShowContextMenu(location, ui::MENU_SOURCE_MOUSE);
       return true;

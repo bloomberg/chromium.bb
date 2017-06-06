@@ -12,7 +12,7 @@
 namespace views {
 
 class View;
-class ViewStorage;
+class ViewTracker;
 
 // ExternalFocusTracker tracks the last focused view which belongs to the
 // provided focus manager and is not either the provided parent view or one of
@@ -60,16 +60,12 @@ class VIEWS_EXPORT ExternalFocusTracker : public FocusChangeListener {
   // Focus manager which we are a listener for.
   FocusManager* focus_manager_;
 
-  // ID of the last focused view, which we store in view_storage_.
-  int last_focused_view_storage_id_;
-
-  // Used to store the last focused view which is not a child of
-  // ExternalFocusTracker.
-  ViewStorage* view_storage_;
-
   // The parent view of views which we should not track focus changes to. We
   // also do not track changes to parent_view_ itself.
   View* parent_view_;
+
+  // Holds the last focused view.
+  std::unique_ptr<ViewTracker> last_focused_view_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalFocusTracker);
 };
