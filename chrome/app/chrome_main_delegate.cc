@@ -193,6 +193,9 @@ extern int CloudPrintServiceProcessMain(const content::MainFunctionParams&);
 
 namespace {
 
+base::LazyInstance<ChromeMainDelegate::ServiceCatalogFactory>::Leaky
+    g_service_catalog_factory = LAZY_INSTANCE_INITIALIZER;
+
 #if defined(OS_WIN)
 // Early versions of Chrome incorrectly registered a chromehtml: URL handler,
 // which gives us nothing but trouble. Avoid launching chrome this way since
@@ -521,6 +524,12 @@ ChromeMainDelegate::ChromeMainDelegate(base::TimeTicks exe_entry_point_ticks) {
 }
 
 ChromeMainDelegate::~ChromeMainDelegate() {
+}
+
+// static
+void ChromeMainDelegate::InstallServiceCatalogFactory(
+    ServiceCatalogFactory factory) {
+  g_service_catalog_factory.Get() = std::move(factory);
 }
 
 bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
@@ -1128,6 +1137,8 @@ service_manager::ProcessType ChromeMainDelegate::OverrideProcessType() {
 }
 
 std::unique_ptr<base::Value> ChromeMainDelegate::CreateServiceCatalog() {
+  if (!g_service_catalog_factory.Get().is_null())
+    return g_service_catalog_factory.Get().Run();
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
 #if defined(OS_CHROMEOS)

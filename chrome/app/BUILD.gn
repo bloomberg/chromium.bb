@@ -368,6 +368,7 @@ static_library("test_support") {
   if (enable_package_mash_services) {
     deps += [
       "//chrome/app/mash:chrome_mash_catalog",
+      "//chrome/app/mash:chrome_test_catalog",
       "//chrome/app/mash:embedded_services",
       "//mash/common",
       "//mash/quick_launch/public/interfaces:constants",
@@ -417,6 +418,10 @@ service_manifest("chrome_content_browser_manifest_overlay") {
     "//services/identity:manifest",
     "//services/preferences:manifest",
   ]
+}
+
+service_manifest("chrome_test_browser_overlay") {
+  source = "//chrome/browser/chrome_test_browser_overlay.json"
 }
 
 service_manifest("chrome_content_gpu_manifest_overlay") {
@@ -472,6 +477,11 @@ if (use_aura) {
     overlays = [ ":chrome_content_browser_manifest_overlay" ]
   }
 
+  service_manifest("chrome_test_browser_manifest") {
+    source_manifest = ":chrome_content_browser_manifest"
+    overlays = [ ":chrome_test_browser_overlay" ]
+  }
+
   service_manifest("chrome_content_gpu_manifest") {
     source_manifest = "//content/public/app:gpu_manifest"
     overlays = [ ":chrome_content_gpu_manifest_overlay" ]
@@ -523,5 +533,13 @@ if (use_aura) {
     embedded_services =
         chrome_embedded_services +
         [ ":chrome_content_packaged_services_manifest_for_mash" ]
+  }
+
+  catalog("catalog_for_tests_mash") {
+    embedded_services = chrome_embedded_services + [
+                          ":chrome_content_packaged_services_manifest_for_mash",
+                          ":chrome_test_browser_manifest",
+                        ]
+    embedded_services -= [ ":chrome_content_browser_manifest" ]
   }
 }
