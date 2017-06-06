@@ -587,6 +587,10 @@ class ExtensionService
   // Called when the initial extensions load has completed.
   void OnInstalledExtensionsLoaded();
 
+  // Upon reloading an extension, spins up its lazy background page if
+  // necessary.
+  void MaybeSpinUpLazyBackgroundPage(const extensions::Extension* extension_id);
+
   const base::CommandLine* command_line_ = nullptr;
 
   // The normal profile associated with this ExtensionService.

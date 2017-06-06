@@ -38,13 +38,6 @@ enum NotificationType {
   // string with details about why the load failed.
   NOTIFICATION_EXTENSION_LOAD_ERROR,
 
-  // Sent when an extension is enabled. Under most circumstances, listeners will
-  // want to use ExtensionRegistryObserver::OnExtensionLoaded(). This
-  // notification is only fired when the "Enable" button is hit in the
-  // extensions tab. The details are an Extension, and the source is a
-  // BrowserContext*.
-  NOTIFICATION_EXTENSION_ENABLED,
-
   // Sent when attempting to load a new extension, but they are disabled. The
   // details are an Extension, and the source is a BrowserContext*.
   NOTIFICATION_EXTENSION_UPDATE_DISABLED,

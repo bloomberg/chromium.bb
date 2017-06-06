@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/event_router_factory.h"
@@ -25,7 +24,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
@@ -47,8 +45,6 @@ using content::BrowserThread;
 namespace extensions {
 
 namespace {
-
-void DoNothing(ExtensionHost* host) {}
 
 // A dictionary of event names to lists of filters that this extension has
 // registered from its lazy background page.
@@ -142,10 +138,8 @@ EventRouter::EventRouter(BrowserContext* browser_context,
     : browser_context_(browser_context),
       extension_prefs_(extension_prefs),
       extension_registry_observer_(this),
-      listeners_(this) {
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_ENABLED,
-                 content::Source<BrowserContext>(browser_context_));
+      listeners_(this),
+      lazy_event_dispatch_util_(browser_context_) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
@@ -745,21 +739,6 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
   }
 
   filter_list->Append(filter->CreateDeepCopy());
-}
-
-void EventRouter::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_ENABLED, type);
-  // If the extension has a lazy background page, make sure it gets loaded
-  // to register the events the extension is interested in.
-  const Extension* extension = content::Details<const Extension>(details).ptr();
-  if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    LazyBackgroundTaskQueue* queue =
-        LazyBackgroundTaskQueue::Get(browser_context_);
-    queue->AddPendingTask(browser_context_, extension->id(),
-                          base::Bind(&DoNothing));
-  }
 }
 
 void EventRouter::OnExtensionLoaded(content::BrowserContext* browser_context,

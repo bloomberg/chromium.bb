@@ -84,6 +84,8 @@ source_set("browser_sources") {
     "event_router.h",
     "event_router_factory.cc",
     "event_router_factory.h",
+    "events/lazy_event_dispatch_util.cc",
+    "events/lazy_event_dispatch_util.h",
     "extension_api_frame_id_map.cc",
     "extension_api_frame_id_map.h",
     "extension_dialog_auto_confirm.cc",
