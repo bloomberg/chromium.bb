@@ -12,6 +12,7 @@
 
 class GURL;
 class ReadingListEntry;
+@class ReadingListCollectionViewItem;
 @protocol ReadingListDataSink;
 
 // Data Source for the Reading List UI, providing the data sink with the data to
@@ -36,8 +37,14 @@ class ReadingListEntry;
 // Removes the entry associated with |URL|.
 - (void)removeEntryWithURL:(const GURL&)URL;
 
+// Fills the |readArray| and |unreadArray| with the corresponding items from the
+// model. The items are sorted most recent first.
+- (void)fillReadItems:
+            (nullable NSMutableArray<ReadingListCollectionViewItem*>*)readArray
+          unreadItems:(nullable NSMutableArray<ReadingListCollectionViewItem*>*)
+                          unreadArray;
+
 // TODO(crbug.com/721758): Return ReadingListItem directly.
-- (const std::vector<GURL>)keys;
 - (const ReadingListEntry* _Nullable)entryWithURL:(const GURL&)URL;
 
 // TODO(crbug.com/721758): Batch updates should be done in the mediator.
