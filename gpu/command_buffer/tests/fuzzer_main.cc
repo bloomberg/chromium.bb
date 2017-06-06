@@ -141,15 +141,15 @@ class CommandBufferSetup {
         true /* bind_generates_resource */, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
         GpuFeatureInfo(), &discardable_manager_);
-    decoder_.reset(gles2::GLES2Decoder::Create(context_group.get()));
     command_buffer_.reset(new CommandBufferDirect(
-        context_group->transfer_buffer_manager(), decoder_.get(),
-        base::Bind(&gles2::GLES2Decoder::MakeCurrent,
-                   base::Unretained(decoder_.get())),
-        &sync_point_manager_));
+        context_group->transfer_buffer_manager(), &sync_point_manager_));
+
+    decoder_.reset(gles2::GLES2Decoder::Create(command_buffer_->service(),
+                                               context_group.get()));
+    command_buffer_->set_handler(decoder_.get());
+
     InitializeInitialCommandBuffer();
 
-    decoder_->set_command_buffer_service(command_buffer_->service());
     decoder_->SetFenceSyncReleaseCallback(
         base::Bind(&CommandBufferDirect::OnFenceSyncRelease,
                    base::Unretained(command_buffer_.get())));
@@ -181,6 +181,7 @@ class CommandBufferSetup {
       vertex_translator_ = decoder_->GetTranslator(GL_VERTEX_SHADER);
       fragment_translator_ = decoder_->GetTranslator(GL_FRAGMENT_SHADER);
     }
+    decoder_->MakeCurrent();
   }
 
   void ResetDecoder() {

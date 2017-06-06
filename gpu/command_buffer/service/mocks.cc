@@ -12,7 +12,9 @@ using testing::_;
 
 namespace gpu {
 
-AsyncAPIMock::AsyncAPIMock(bool default_do_commands) {
+AsyncAPIMock::AsyncAPIMock(bool default_do_commands,
+                           CommandBufferServiceBase* command_buffer_service)
+    : command_buffer_service_(command_buffer_service) {
   testing::DefaultValue<error::Error>::Set(
       error::kNoError);
 

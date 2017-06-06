@@ -69,7 +69,8 @@ struct PassthroughResources {
 
 class GLES2DecoderPassthroughImpl : public GLES2Decoder {
  public:
-  explicit GLES2DecoderPassthroughImpl(ContextGroup* group);
+  GLES2DecoderPassthroughImpl(CommandBufferServiceBase* command_buffer_service,
+                              ContextGroup* group);
   ~GLES2DecoderPassthroughImpl() override;
 
   Error DoCommands(unsigned int num_commands,

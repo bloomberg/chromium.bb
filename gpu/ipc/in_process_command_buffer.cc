@@ -314,12 +314,10 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                 nullptr /* image_factory */, nullptr /* progress_reporter */,
                 GpuFeatureInfo(), service_->discardable_manager());
 
-  decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
-
   command_buffer_ = base::MakeUnique<CommandBufferService>(
-      this, transfer_buffer_manager_.get(), decoder_.get());
-
-  decoder_->set_command_buffer_service(command_buffer_.get());
+      this, transfer_buffer_manager_.get());
+  decoder_.reset(
+      gles2::GLES2Decoder::Create(command_buffer_.get(), context_group_.get()));
 
   if (!surface_.get()) {
     if (params.is_offscreen) {
@@ -447,13 +445,13 @@ void InProcessCommandBuffer::Destroy() {
 bool InProcessCommandBuffer::DestroyOnGpuThread() {
   CheckSequencedThread();
   gpu_thread_weak_ptr_factory_.InvalidateWeakPtrs();
-  command_buffer_.reset();
   // Clean up GL resources if possible.
   bool have_context = context_.get() && context_->MakeCurrent(surface_.get());
   if (decoder_) {
     decoder_->Destroy(have_context);
     decoder_.reset();
   }
+  command_buffer_.reset();
   context_ = nullptr;
   surface_ = nullptr;
   if (sync_point_order_data_) {
@@ -580,7 +578,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(
   if (!MakeCurrent())
     return;
 
-  command_buffer_->Flush(put_offset);
+  command_buffer_->Flush(put_offset, decoder_.get());
   // Update state before signaling the flush event.
   UpdateLastStateOnGpuThread();
 

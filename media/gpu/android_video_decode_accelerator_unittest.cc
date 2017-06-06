@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_jni_registrar.h"
@@ -137,7 +138,8 @@ class FakeOverlayChooser : public NiceMock<AndroidVideoSurfaceChooser> {
 class AndroidVideoDecodeAcceleratorTest : public testing::Test {
  public:
   // We pick this profile since it's always supported.
-  AndroidVideoDecodeAcceleratorTest() : config_(H264PROFILE_BASELINE) {}
+  AndroidVideoDecodeAcceleratorTest()
+      : gl_decoder_(&command_buffer_service_), config_(H264PROFILE_BASELINE) {}
 
   ~AndroidVideoDecodeAcceleratorTest() override {}
 
@@ -243,6 +245,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  gpu::FakeCommandBufferServiceBase command_buffer_service_;
   NiceMock<gpu::gles2::MockGLES2Decoder> gl_decoder_;
   NiceMock<MockVDAClient> client_;
   FakeCodecAllocator codec_allocator_;

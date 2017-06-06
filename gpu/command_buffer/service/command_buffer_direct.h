@@ -26,14 +26,12 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
   using MakeCurrentCallback = base::Callback<bool()>;
 
   CommandBufferDirect(TransferBufferManager* transfer_buffer_manager,
-                      AsyncAPIInterface* handler,
-                      const MakeCurrentCallback& callback,
                       SyncPointManager* sync_point_manager);
-  CommandBufferDirect(TransferBufferManager* transfer_buffer_manager,
-                      AsyncAPIInterface* handler);
+  explicit CommandBufferDirect(TransferBufferManager* transfer_buffer_manager);
 
   ~CommandBufferDirect() override;
 
+  void set_handler(AsyncAPIInterface* handler) { handler_ = handler; }
   CommandBufferServiceBase* service() { return &service_; }
 
   // CommandBuffer implementation:
@@ -65,9 +63,9 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
 
  private:
   CommandBufferService service_;
-  MakeCurrentCallback make_current_callback_;
   SyncPointManager* sync_point_manager_;
 
+  AsyncAPIInterface* handler_ = nullptr;
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;
   bool pause_commands_ = false;

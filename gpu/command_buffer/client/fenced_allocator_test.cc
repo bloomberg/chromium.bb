@@ -38,7 +38,12 @@ class BaseFencedAllocatorTest : public testing::Test {
   static const int kAllocAlignment = 16;
 
   void SetUp() override {
-    api_mock_.reset(new AsyncAPIMock(true));
+    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
+    command_buffer_.reset(
+        new CommandBufferDirect(transfer_buffer_manager_.get()));
+    api_mock_.reset(new AsyncAPIMock(true, command_buffer_->service()));
+    command_buffer_->set_handler(api_mock_.get());
+
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
     EXPECT_CALL(*api_mock_, DoCommand(cmd::kNoop, 0, _))
@@ -48,21 +53,15 @@ class BaseFencedAllocatorTest : public testing::Test {
         .WillRepeatedly(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
                               Return(error::kNoError)));
 
-    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
-    command_buffer_.reset(new CommandBufferDirect(
-        transfer_buffer_manager_.get(), api_mock_.get()));
-
-    api_mock_->set_command_buffer_service(command_buffer_->service());
-
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kBufferSize);
   }
 
   int32_t GetToken() { return command_buffer_->GetLastState().token; }
 
-  std::unique_ptr<AsyncAPIMock> api_mock_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferDirect> command_buffer_;
+  std::unique_ptr<AsyncAPIMock> api_mock_;
   std::unique_ptr<CommandBufferHelper> helper_;
   base::MessageLoop message_loop_;
 };

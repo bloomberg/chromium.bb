@@ -96,7 +96,8 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder,
   static const unsigned int kDefaultStencilMask;
 
   // Creates a decoder.
-  static GLES2Decoder* Create(ContextGroup* group);
+  static GLES2Decoder* Create(CommandBufferServiceBase* command_buffer_service,
+                              ContextGroup* group);
 
   ~GLES2Decoder() override;
 
@@ -320,7 +321,7 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder,
       unsigned int type) = 0;
 
  protected:
-  GLES2Decoder();
+  explicit GLES2Decoder(CommandBufferServiceBase* command_buffer_service);
 
   base::StringPiece GetLogPrefix() override;
 

@@ -657,6 +657,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   std::unique_ptr<::testing::StrictMock<::gl::MockGLInterface>> gl_;
   scoped_refptr<gl::GLSurfaceStub> surface_;
   scoped_refptr<GLContextMock> context_;
+  std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
   std::unique_ptr<MockGLES2Decoder> mock_decoder_;
   std::unique_ptr<GLES2Decoder> decoder_;
   MemoryTracker* memory_tracker_;
@@ -756,7 +757,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void SetupInitStateManualExpectations(bool es3_capable);
   void SetupInitStateManualExpectationsForDoLineWidth(GLfloat width);
 
-  std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
   GpuPreferences gpu_preferences_;
   gles2::ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;

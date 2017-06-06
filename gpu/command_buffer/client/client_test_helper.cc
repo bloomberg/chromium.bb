@@ -35,7 +35,7 @@ void FakeCommandBufferServiceBase::SetReleaseCount(uint64_t release_count) {
 // Get's the Id of the next transfer buffer that will be returned
 // by CreateTransferBuffer. This is useful for testing expected ids.
 int32_t FakeCommandBufferServiceBase::GetNextFreeTransferBufferId() {
-  for (size_t ii = 0; ii < arraysize(transfer_buffer_buffers_); ++ii) {
+  for (int32_t ii = 0; ii < kMaxTransferBuffers; ++ii) {
     if (!transfer_buffer_buffers_[ii].get()) {
       return kTransferBufferBaseId + ii;
     }

@@ -105,6 +105,8 @@ test("command_buffer_gles2_tests") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "command_buffer/client/client_test_helper.cc",
+    "command_buffer/client/client_test_helper.h",
     "command_buffer/client/gles2_interface_stub.cc",
     "command_buffer/client/gles2_interface_stub.h",
     "command_buffer/service/error_state_mock.cc",
@@ -121,6 +123,7 @@ static_library("test_support") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gl:gl_unittest_utils",
+    "//ui/latency:test_support",
   ]
 }
 
@@ -219,8 +222,6 @@ test("gpu_unittests") {
   sources = [
     "command_buffer/client/buffer_tracker_unittest.cc",
     "command_buffer/client/client_discardable_manager_unittest.cc",
-    "command_buffer/client/client_test_helper.cc",
-    "command_buffer/client/client_test_helper.h",
     "command_buffer/client/cmd_buffer_helper_test.cc",
     "command_buffer/client/fenced_allocator_test.cc",
     "command_buffer/client/gles2_implementation_unittest.cc",

@@ -30,7 +30,8 @@ class CommandBufferServiceBase;
 // Mocks an AsyncAPIInterface, using GMock.
 class AsyncAPIMock : public AsyncAPIInterface {
  public:
-  explicit AsyncAPIMock(bool default_do_commands);
+  explicit AsyncAPIMock(bool default_do_commands,
+                        CommandBufferServiceBase* command_buffer_service);
   virtual ~AsyncAPIMock();
 
   error::Error FakeDoCommands(unsigned int num_commands,
@@ -75,12 +76,6 @@ class AsyncAPIMock : public AsyncAPIInterface {
                             int* entries_processed));
 
   base::StringPiece GetLogPrefix() override { return "None"; }
-
-  // Sets the engine, to forward SetToken commands to it.
-  void set_command_buffer_service(
-      CommandBufferServiceBase* command_buffer_service) {
-    command_buffer_service_ = command_buffer_service;
-  }
 
   // Forwards the SetToken commands to the engine.
   void SetToken(unsigned int command,

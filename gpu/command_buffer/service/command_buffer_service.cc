@@ -41,14 +41,10 @@ class MemoryBufferBacking : public BufferBacking {
 
 CommandBufferService::CommandBufferService(
     CommandBufferServiceClient* client,
-    TransferBufferManager* transfer_buffer_manager,
-    AsyncAPIInterface* handler)
-    : client_(client),
-      transfer_buffer_manager_(transfer_buffer_manager),
-      handler_(handler) {
+    TransferBufferManager* transfer_buffer_manager)
+    : client_(client), transfer_buffer_manager_(transfer_buffer_manager) {
   DCHECK(client_);
   DCHECK(transfer_buffer_manager_);
-  DCHECK(handler_);
   state_.token = 0;
 }
 
@@ -60,14 +56,16 @@ void CommandBufferService::UpdateState() {
     shared_state_->Write(state_);
 }
 
-void CommandBufferService::Flush(int32_t put_offset) {
+void CommandBufferService::Flush(int32_t put_offset,
+                                 AsyncAPIInterface* handler) {
+  DCHECK(handler);
   if (put_offset < 0 || put_offset >= num_entries_) {
     SetParseError(gpu::error::kOutOfBounds);
     return;
   }
 
   TRACE_EVENT1("gpu", "CommandBufferService:PutChanged", "handler",
-               handler_->GetLogPrefix().as_string());
+               handler->GetLogPrefix().as_string());
 
   put_offset_ = put_offset;
 
@@ -83,10 +81,21 @@ void CommandBufferService::Flush(int32_t put_offset) {
     TRACE_COUNTER_ID1("gpu", "CommandBufferService::Paused", this, paused_);
   }
 
-  error::Error error = error::kNoError;
-  handler_->BeginDecoding();
+  handler->BeginDecoding();
+  int end = put_offset_ < state_.get_offset ? num_entries_ : put_offset_;
   while (put_offset_ != state_.get_offset) {
-    error = ProcessCommands(kParseCommandsSlice);
+    int num_entries = end - state_.get_offset;
+    int entries_processed = 0;
+    error::Error error =
+        handler->DoCommands(kParseCommandsSlice, buffer_ + state_.get_offset,
+                            num_entries, &entries_processed);
+
+    state_.get_offset += entries_processed;
+    DCHECK_LE(state_.get_offset, num_entries_);
+    if (state_.get_offset == num_entries_) {
+      end = put_offset_;
+      state_.get_offset = 0;
+    }
 
     if (error::IsError(error)) {
       SetParseError(error);
@@ -104,7 +113,7 @@ void CommandBufferService::Flush(int32_t put_offset) {
       break;
   }
 
-  handler_->EndDecoding();
+  handler->EndDecoding();
 }
 
 void CommandBufferService::SetGetBuffer(int32_t transfer_buffer_id) {
@@ -223,23 +232,6 @@ void CommandBufferService::SetScheduled(bool scheduled) {
   TRACE_EVENT2("gpu", "CommandBufferService:SetScheduled", "this", this,
                "scheduled", scheduled);
   scheduled_ = scheduled;
-}
-
-error::Error CommandBufferService::ProcessCommands(int num_commands) {
-  int num_entries = put_offset_ < state_.get_offset
-                        ? num_entries_ - state_.get_offset
-                        : put_offset_ - state_.get_offset;
-
-  int entries_processed = 0;
-  error::Error result =
-      handler_->DoCommands(num_commands, buffer_ + state_.get_offset,
-                           num_entries, &entries_processed);
-
-  state_.get_offset += entries_processed;
-  if (state_.get_offset == num_entries_)
-    state_.get_offset = 0;
-
-  return result;
 }
 
 }  // namespace gpu

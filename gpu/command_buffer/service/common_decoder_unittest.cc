@@ -56,6 +56,8 @@ TEST(CommonDecoderBucket, SetData) {
 
 class TestCommonDecoder : public CommonDecoder {
  public:
+  explicit TestCommonDecoder(CommandBufferServiceBase* command_buffer_service)
+      : CommonDecoder(command_buffer_service) {}
   error::Error DoCommand(unsigned int command,
                          unsigned int arg_count,
                          const volatile void* cmd_data) {
@@ -71,11 +73,11 @@ class CommonDecoderTest : public testing::Test {
  protected:
   static const size_t kBufferSize = 1024;
   static const uint32_t kInvalidShmId = UINT32_MAX;
+  CommonDecoderTest() : decoder_(&command_buffer_service_) {}
 
   void SetUp() override {
     command_buffer_service_.CreateTransferBufferHelper(kBufferSize,
                                                        &valid_shm_id_);
-    decoder_.set_command_buffer_service(&command_buffer_service_);
   }
 
   void TearDown() override {}
