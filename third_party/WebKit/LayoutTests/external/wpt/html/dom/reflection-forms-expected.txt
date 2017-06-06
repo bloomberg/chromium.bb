@@ -101,11 +101,13 @@ FAIL input.inputMode: setAttribute() to "xkana" assert_equals: IDL get expected 
 FAIL input.inputMode: setAttribute() to "kana\0" assert_equals: IDL get expected "" but got "kana\0"
 FAIL input.inputMode: setAttribute() to "ana" assert_equals: IDL get expected "" but got "ana"
 FAIL input.inputMode: setAttribute() to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
+FAIL input.inputMode: setAttribute() to "Kana" assert_equals: IDL get expected "" but got "Kana"
 PASS input.inputMode: setAttribute() to "katakana" 
 FAIL input.inputMode: setAttribute() to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
 FAIL input.inputMode: setAttribute() to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
 FAIL input.inputMode: setAttribute() to "atakana" assert_equals: IDL get expected "" but got "atakana"
 FAIL input.inputMode: setAttribute() to "KATAKANA" assert_equals: IDL get expected "katakana" but got "KATAKANA"
+FAIL input.inputMode: setAttribute() to "KataKana" assert_equals: IDL get expected "" but got "KataKana"
 PASS input.inputMode: setAttribute() to "numeric" 
 FAIL input.inputMode: setAttribute() to "xnumeric" assert_equals: IDL get expected "" but got "xnumeric"
 FAIL input.inputMode: setAttribute() to "numeric\0" assert_equals: IDL get expected "" but got "numeric\0"
@@ -171,11 +173,13 @@ FAIL input.inputMode: IDL set to "xkana" assert_equals: IDL get expected "" but 
 FAIL input.inputMode: IDL set to "kana\0" assert_equals: IDL get expected "" but got "kana\0"
 FAIL input.inputMode: IDL set to "ana" assert_equals: IDL get expected "" but got "ana"
 FAIL input.inputMode: IDL set to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
+FAIL input.inputMode: IDL set to "Kana" assert_equals: IDL get expected "" but got "Kana"
 PASS input.inputMode: IDL set to "katakana" 
 FAIL input.inputMode: IDL set to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
 FAIL input.inputMode: IDL set to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
 FAIL input.inputMode: IDL set to "atakana" assert_equals: IDL get expected "" but got "atakana"
 FAIL input.inputMode: IDL set to "KATAKANA" assert_equals: IDL get expected "katakana" but got "KATAKANA"
+FAIL input.inputMode: IDL set to "KataKana" assert_equals: IDL get expected "" but got "KataKana"
 PASS input.inputMode: IDL set to "numeric" 
 FAIL input.inputMode: IDL set to "xnumeric" assert_equals: IDL get expected "" but got "xnumeric"
 FAIL input.inputMode: IDL set to "numeric\0" assert_equals: IDL get expected "" but got "numeric\0"
@@ -214,11 +218,19 @@ PASS input.type: 52 tests
 FAIL input.type: setAttribute() to "datetime" assert_equals: IDL get expected "datetime" but got "text"
 PASS input.type: 3 tests
 FAIL input.type: setAttribute() to "DATETIME" assert_equals: IDL get expected "datetime" but got "text"
-PASS input.type: 125 tests
+PASS input.type: 15 tests
+FAIL input.type: setAttribute() to "weeK" assert_equals: IDL get expected "text" but got "week"
+PASS input.type: 30 tests
+FAIL input.type: setAttribute() to "checKbox" assert_equals: IDL get expected "text" but got "checkbox"
+PASS input.type: 80 tests
 FAIL input.type: IDL set to "datetime" assert_equals: IDL get expected "datetime" but got "text"
 PASS input.type: 3 tests
 FAIL input.type: IDL set to "DATETIME" assert_equals: IDL get expected "datetime" but got "text"
-PASS input.type: 75 tests
+PASS input.type: 15 tests
+FAIL input.type: IDL set to "weeK" assert_equals: IDL get expected "text" but got "week"
+PASS input.type: 30 tests
+FAIL input.type: IDL set to "checKbox" assert_equals: IDL get expected "text" but got "checkbox"
+PASS input.type: 30 tests
 PASS input.defaultValue (<input value>): 32 tests
 PASS input.align: 32 tests
 PASS input.useMap: 32 tests
@@ -389,11 +401,13 @@ FAIL textarea.inputMode: setAttribute() to "xkana" assert_equals: IDL get expect
 FAIL textarea.inputMode: setAttribute() to "kana\0" assert_equals: IDL get expected "" but got "kana\0"
 FAIL textarea.inputMode: setAttribute() to "ana" assert_equals: IDL get expected "" but got "ana"
 FAIL textarea.inputMode: setAttribute() to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
+FAIL textarea.inputMode: setAttribute() to "Kana" assert_equals: IDL get expected "" but got "Kana"
 PASS textarea.inputMode: setAttribute() to "katakana" 
 FAIL textarea.inputMode: setAttribute() to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
 FAIL textarea.inputMode: setAttribute() to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
 FAIL textarea.inputMode: setAttribute() to "atakana" assert_equals: IDL get expected "" but got "atakana"
 FAIL textarea.inputMode: setAttribute() to "KATAKANA" assert_equals: IDL get expected "katakana" but got "KATAKANA"
+FAIL textarea.inputMode: setAttribute() to "KataKana" assert_equals: IDL get expected "" but got "KataKana"
 PASS textarea.inputMode: setAttribute() to "numeric" 
 FAIL textarea.inputMode: setAttribute() to "xnumeric" assert_equals: IDL get expected "" but got "xnumeric"
 FAIL textarea.inputMode: setAttribute() to "numeric\0" assert_equals: IDL get expected "" but got "numeric\0"
@@ -459,11 +473,13 @@ FAIL textarea.inputMode: IDL set to "xkana" assert_equals: IDL get expected "" b
 FAIL textarea.inputMode: IDL set to "kana\0" assert_equals: IDL get expected "" but got "kana\0"
 FAIL textarea.inputMode: IDL set to "ana" assert_equals: IDL get expected "" but got "ana"
 FAIL textarea.inputMode: IDL set to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
+FAIL textarea.inputMode: IDL set to "Kana" assert_equals: IDL get expected "" but got "Kana"
 PASS textarea.inputMode: IDL set to "katakana" 
 FAIL textarea.inputMode: IDL set to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
 FAIL textarea.inputMode: IDL set to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
 FAIL textarea.inputMode: IDL set to "atakana" assert_equals: IDL get expected "" but got "atakana"
 FAIL textarea.inputMode: IDL set to "KATAKANA" assert_equals: IDL get expected "katakana" but got "KATAKANA"
+FAIL textarea.inputMode: IDL set to "KataKana" assert_equals: IDL get expected "" but got "KataKana"
 PASS textarea.inputMode: IDL set to "numeric" 
 FAIL textarea.inputMode: IDL set to "xnumeric" assert_equals: IDL get expected "" but got "xnumeric"
 FAIL textarea.inputMode: IDL set to "numeric\0" assert_equals: IDL get expected "" but got "numeric\0"

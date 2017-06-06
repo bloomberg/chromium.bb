@@ -52,13 +52,15 @@ PASS link.as: 5 tests
 FAIL link.as: setAttribute() to "serviceworker" assert_equals: IDL get expected "serviceworker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "SERVICEWORKER" assert_equals: IDL get expected "serviceworker" but got ""
+PASS link.as: setAttribute() to "serviceworKer" 
 FAIL link.as: setAttribute() to "sharedworker" assert_equals: IDL get expected "sharedworker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "SHAREDWORKER" assert_equals: IDL get expected "sharedworker" but got ""
-PASS link.as: 15 tests
+PASS link.as: 17 tests
 FAIL link.as: setAttribute() to "worker" assert_equals: IDL get expected "worker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "WORKER" assert_equals: IDL get expected "worker" but got ""
+PASS link.as: setAttribute() to "worKer" 
 FAIL link.as: setAttribute() to "xslt" assert_equals: IDL get expected "xslt" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "XSLT" assert_equals: IDL get expected "xslt" but got ""
@@ -83,13 +85,15 @@ PASS link.as: 5 tests
 FAIL link.as: IDL set to "serviceworker" assert_equals: IDL get expected "serviceworker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "SERVICEWORKER" assert_equals: IDL get expected "serviceworker" but got ""
+PASS link.as: IDL set to "serviceworKer" 
 FAIL link.as: IDL set to "sharedworker" assert_equals: IDL get expected "sharedworker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "SHAREDWORKER" assert_equals: IDL get expected "sharedworker" but got ""
-PASS link.as: 15 tests
+PASS link.as: 17 tests
 FAIL link.as: IDL set to "worker" assert_equals: IDL get expected "worker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "WORKER" assert_equals: IDL get expected "worker" but got ""
+PASS link.as: IDL set to "worKer" 
 FAIL link.as: IDL set to "xslt" assert_equals: IDL get expected "xslt" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "XSLT" assert_equals: IDL get expected "xslt" but got ""
