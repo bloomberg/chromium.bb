@@ -4,6 +4,8 @@
 
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
 
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
@@ -34,4 +36,16 @@ void ResourceCoordinatorWebContentsObserver::WasShown() {
 void ResourceCoordinatorWebContentsObserver::WasHidden() {
   tab_resource_coordinator_->SendEvent(
       resource_coordinator::EventType::kOnWebContentsHidden);
+}
+
+void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
+  auto* frame_resource_coordinator =
+      navigation_handle->GetRenderFrameHost()->GetFrameResourceCoordinator();
+  tab_resource_coordinator_->AddChild(*frame_resource_coordinator);
 }
