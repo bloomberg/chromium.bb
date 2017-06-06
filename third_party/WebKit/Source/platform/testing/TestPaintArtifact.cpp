@@ -98,8 +98,8 @@ const PaintArtifact& TestPaintArtifact::Build() {
 
   if (!paint_chunks_.IsEmpty())
     paint_chunks_.back().end_index = display_item_list_.size();
-  paint_artifact_ = PaintArtifact(std::move(display_item_list_),
-                                  std::move(paint_chunks_), true);
+  paint_artifact_ =
+      PaintArtifact(std::move(display_item_list_), std::move(paint_chunks_));
   built_ = true;
   return paint_artifact_;
 }

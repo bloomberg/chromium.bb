@@ -4,8 +4,8 @@
 
 #include "ui/compositor/compositing_recorder.h"
 
-#include "cc/paint/compositing_display_item.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_op_buffer.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 
@@ -19,16 +19,19 @@ CompositingRecorder::CompositingRecorder(const PaintContext& context,
   if (!saved_)
     return;
 
-  context_.list_->CreateAndAppendPairedBeginItem<cc::CompositingDisplayItem>(
-      alpha, SkBlendMode::kSrcOver, nullptr /* no bounds */,
-      nullptr /* no color filter */, lcd_text_requires_opaque_layer);
+  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
+  buffer->push<cc::SaveLayerAlphaOp>(nullptr, alpha,
+                                     !lcd_text_requires_opaque_layer);
+  context_.list_->EndPaintOfPairedBegin();
 }
 
 CompositingRecorder::~CompositingRecorder() {
   if (!saved_)
     return;
 
-  context_.list_->CreateAndAppendPairedEndItem<cc::EndCompositingDisplayItem>();
+  cc::PaintOpBuffer* buffer = context_.list_->StartPaint();
+  buffer->push<cc::RestoreOp>();
+  context_.list_->EndPaintOfPairedEnd();
 }
 
 }  // namespace ui

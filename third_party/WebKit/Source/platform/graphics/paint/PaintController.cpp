@@ -575,8 +575,6 @@ void PaintController::CommitNewDisplayItems() {
       !new_display_item_list_.IsEmpty())
     GenerateRasterInvalidations(new_paint_chunks_.LastChunk());
 
-  int num_slow_paths = 0;
-
   current_cache_generation_ =
       DisplayItemClient::CacheGenerationOrInvalidationReason::Next();
 
@@ -593,8 +591,6 @@ void PaintController::CommitNewDisplayItems() {
 
   Vector<const DisplayItemClient*> skipped_cache_clients;
   for (const auto& item : new_display_item_list_) {
-    num_slow_paths += item.NumberOfSlowPaths();
-
     if (item.IsCacheable()) {
       item.Client().SetDisplayItemsCached(current_cache_generation_);
     } else {
@@ -617,7 +613,7 @@ void PaintController::CommitNewDisplayItems() {
   }
   current_paint_artifact_ =
       PaintArtifact(std::move(new_display_item_list_),
-                    new_paint_chunks_.ReleasePaintChunks(), num_slow_paths);
+                    new_paint_chunks_.ReleasePaintChunks());
 
   ResetCurrentListIndices();
   out_of_order_item_indices_.clear();

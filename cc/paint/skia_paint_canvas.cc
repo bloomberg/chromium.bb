@@ -60,7 +60,14 @@ int SkiaPaintCanvas::saveLayer(const SkRect* bounds, const PaintFlags* flags) {
   return canvas_->saveLayer(bounds, ToSkPaint(flags));
 }
 
-int SkiaPaintCanvas::saveLayerAlpha(const SkRect* bounds, uint8_t alpha) {
+int SkiaPaintCanvas::saveLayerAlpha(const SkRect* bounds,
+                                    uint8_t alpha,
+                                    bool preserve_lcd_text_requests) {
+  if (preserve_lcd_text_requests) {
+    SkPaint paint;
+    paint.setAlpha(alpha);
+    return canvas_->saveLayerPreserveLCDTextRequests(bounds, &paint);
+  }
   return canvas_->saveLayerAlpha(bounds, alpha);
 }
 

@@ -6,10 +6,9 @@
 
 #include <stddef.h>
 
+#include "cc/base/math_util.h"
 #include "cc/layers/picture_layer_impl.h"
-#include "cc/paint/drawing_display_item.h"
-#include "cc/paint/paint_canvas.h"
-#include "cc/paint/paint_recorder.h"
+#include "cc/paint/paint_op_buffer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 
@@ -60,27 +59,29 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   DCHECK_GT(image_.sk_image()->height(), 0);
   DCHECK(layer_tree_host());
 
-  auto display_list = make_scoped_refptr(new DisplayItemList);
+  float content_to_layer_scale_x =
+      static_cast<float>(bounds().width()) / image_.sk_image()->width();
+  float content_to_layer_scale_y =
+      static_cast<float>(bounds().height()) / image_.sk_image()->height();
+  bool has_scale = !MathUtil::IsWithinEpsilon(content_to_layer_scale_x, 1.f) ||
+                   !MathUtil::IsWithinEpsilon(content_to_layer_scale_y, 1.f);
 
-  PaintRecorder recorder;
-  PaintCanvas* canvas =
-      recorder.beginRecording(gfx::RectToSkRect(PaintableRegion()));
+  auto display_list = base::MakeRefCounted<DisplayItemList>();
 
-  SkScalar content_to_layer_scale_x = SkFloatToScalar(
-      static_cast<float>(bounds().width()) / image_.sk_image()->width());
-  SkScalar content_to_layer_scale_y = SkFloatToScalar(
-      static_cast<float>(bounds().height()) / image_.sk_image()->height());
-  canvas->scale(content_to_layer_scale_x, content_to_layer_scale_y);
+  PaintOpBuffer* buffer = display_list->StartPaint();
+  if (has_scale) {
+    buffer->push<SaveOp>();
+    buffer->push<ScaleOp>(content_to_layer_scale_x, content_to_layer_scale_y);
+  }
 
   // Because Android WebView resourceless software draw mode rasters directly
-  // to the root canvas, this draw must use the kSrcOver_Mode so that
+  // to the root canvas, this draw must use the SkBlendMode::kSrcOver so that
   // transparent images blend correctly.
-  canvas->drawImage(image_, 0, 0);
+  buffer->push<DrawImageOp>(image_, 0.f, 0.f, nullptr);
 
-  display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
-      PaintableRegion(), recorder.finishRecordingAsPicture(),
-      gfx::RectToSkRect(PaintableRegion()));
-
+  if (has_scale)
+    buffer->push<RestoreOp>();
+  display_list->EndPaintOfUnpaired(PaintableRegion());
   display_list->Finalize();
   return display_list;
 }

@@ -49,32 +49,27 @@ void ComputeChunkBoundsAndOpaqueness(const DisplayItemList& display_items,
 PaintArtifact::PaintArtifact() : display_item_list_(0) {}
 
 PaintArtifact::PaintArtifact(DisplayItemList display_items,
-                             Vector<PaintChunk> paint_chunks,
-                             int num_slow_paths)
+                             Vector<PaintChunk> paint_chunks)
     : display_item_list_(std::move(display_items)),
-      paint_chunks_(std::move(paint_chunks)),
-      num_slow_paths_(num_slow_paths) {
+      paint_chunks_(std::move(paint_chunks)) {
   ComputeChunkBoundsAndOpaqueness(display_item_list_, paint_chunks_);
 }
 
 PaintArtifact::PaintArtifact(PaintArtifact&& source)
     : display_item_list_(std::move(source.display_item_list_)),
-      paint_chunks_(std::move(source.paint_chunks_)),
-      num_slow_paths_(source.num_slow_paths_) {}
+      paint_chunks_(std::move(source.paint_chunks_)) {}
 
 PaintArtifact::~PaintArtifact() {}
 
 PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source) {
   display_item_list_ = std::move(source.display_item_list_);
   paint_chunks_ = std::move(source.paint_chunks_);
-  num_slow_paths_ = source.num_slow_paths_;
   return *this;
 }
 
 void PaintArtifact::Reset() {
   display_item_list_.Clear();
   paint_chunks_.clear();
-  num_slow_paths_ = 0;
 }
 
 size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
@@ -118,7 +113,6 @@ void PaintArtifact::AppendToWebDisplayItemList(
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
   for (const DisplayItem& item : display_item_list_)
     item.AppendToWebDisplayItemList(visual_rect_offset, list);
-  list->SetNumSlowPaths(num_slow_paths_);
 }
 
 }  // namespace blink

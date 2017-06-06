@@ -36,7 +36,7 @@ class PLATFORM_EXPORT PaintArtifact final {
 
  public:
   PaintArtifact();
-  PaintArtifact(DisplayItemList, Vector<PaintChunk>, int num_slow_paths);
+  PaintArtifact(DisplayItemList, Vector<PaintChunk>);
   PaintArtifact(PaintArtifact&&);
   ~PaintArtifact();
 
@@ -56,8 +56,6 @@ class PLATFORM_EXPORT PaintArtifact final {
       size_t index) const {
     return FindChunkInVectorByDisplayItemIndex(paint_chunks_, index);
   }
-
-  int NumSlowPaths() const { return num_slow_paths_; }
 
   // Resets to an empty paint artifact.
   void Reset();
@@ -86,7 +84,6 @@ class PLATFORM_EXPORT PaintArtifact final {
  private:
   DisplayItemList display_item_list_;
   Vector<PaintChunk> paint_chunks_;
-  int num_slow_paths_ = 0;
 };
 
 }  // namespace blink

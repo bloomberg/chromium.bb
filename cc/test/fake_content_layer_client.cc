@@ -6,11 +6,7 @@
 
 #include <stddef.h>
 
-#include "cc/paint/clip_display_item.h"
-#include "cc/paint/drawing_display_item.h"
-#include "cc/paint/paint_canvas.h"
-#include "cc/paint/paint_recorder.h"
-#include "cc/paint/transform_display_item.h"
+#include "cc/paint/paint_op_buffer.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
@@ -50,51 +46,53 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
   auto display_list = make_scoped_refptr(new DisplayItemList);
   display_list->SetRetainVisualRectsForTesting(true);
-  PaintRecorder recorder;
 
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
        it != draw_rects_.end(); ++it) {
     const gfx::RectF& draw_rect = it->first;
     const PaintFlags& flags = it->second;
-    PaintCanvas* canvas =
-        recorder.beginRecording(gfx::RectFToSkRect(draw_rect));
-    canvas->drawRect(gfx::RectFToSkRect(draw_rect), flags);
-    display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
-        ToEnclosingRect(draw_rect), recorder.finishRecordingAsPicture(),
-        gfx::RectFToSkRect(draw_rect));
+
+    PaintOpBuffer* buffer = display_list->StartPaint();
+    buffer->push<DrawRectOp>(gfx::RectFToSkRect(draw_rect), flags);
+    display_list->EndPaintOfUnpaired(ToEnclosingRect(draw_rect));
   }
 
   for (ImageVector::const_iterator it = draw_images_.begin();
        it != draw_images_.end(); ++it) {
     if (!it->transform.IsIdentity()) {
-      display_list->CreateAndAppendPairedBeginItem<TransformDisplayItem>(
-          it->transform);
+      PaintOpBuffer* buffer = display_list->StartPaint();
+      buffer->push<SaveOp>();
+      buffer->push<ConcatOp>(static_cast<SkMatrix>(it->transform.matrix()));
+      display_list->EndPaintOfPairedBegin();
     }
-    PaintCanvas* canvas =
-        recorder.beginRecording(gfx::RectToSkRect(PaintableRegion()));
-    canvas->drawImage(it->image, it->point.x(), it->point.y(), &it->flags);
-    display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
-        PaintableRegion(), recorder.finishRecordingAsPicture(),
-        gfx::RectToSkRect(PaintableRegion()));
+
+    PaintOpBuffer* buffer = display_list->StartPaint();
+    buffer->push<SaveOp>();
+    buffer->push<ClipRectOp>(gfx::RectToSkRect(PaintableRegion()),
+                             SkClipOp::kIntersect, false);
+    buffer->push<DrawImageOp>(it->image, static_cast<float>(it->point.x()),
+                              static_cast<float>(it->point.y()), &it->flags);
+    buffer->push<RestoreOp>();
+    display_list->EndPaintOfUnpaired(PaintableRegion());
+
     if (!it->transform.IsIdentity()) {
-      display_list->CreateAndAppendPairedEndItem<EndTransformDisplayItem>();
+      PaintOpBuffer* buffer = display_list->StartPaint();
+      buffer->push<RestoreOp>();
+      display_list->EndPaintOfPairedEnd();
     }
   }
 
   if (fill_with_nonsolid_color_) {
     gfx::Rect draw_rect = PaintableRegion();
-    bool red = true;
+    PaintFlags flags;
+    flags.setColor(SK_ColorRED);
+
+    PaintOpBuffer* buffer = display_list->StartPaint();
     while (!draw_rect.IsEmpty()) {
-      PaintFlags flags;
-      flags.setColor(red ? SK_ColorRED : SK_ColorBLUE);
-      PaintCanvas* canvas =
-          recorder.beginRecording(gfx::RectToSkRect(draw_rect));
-      canvas->drawIRect(gfx::RectToSkIRect(draw_rect), flags);
-      display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
-          draw_rect, recorder.finishRecordingAsPicture(),
-          gfx::RectToSkRect(draw_rect));
+      buffer->push<DrawIRectOp>(gfx::RectToSkIRect(draw_rect), flags);
       draw_rect.Inset(1, 1);
     }
+    display_list->EndPaintOfUnpaired(PaintableRegion());
   }
 
   display_list->Finalize();

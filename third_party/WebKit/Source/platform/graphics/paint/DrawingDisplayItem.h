@@ -56,8 +56,6 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
     return known_to_be_opaque_;
   }
 
-  int NumberOfSlowPaths() const override;
-
  private:
 #ifndef NDEBUG
   void DumpPropertiesAsDebugString(WTF::StringBuilder&) const override;

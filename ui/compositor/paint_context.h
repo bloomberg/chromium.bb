@@ -85,11 +85,6 @@ class COMPOSITOR_EXPORT PaintContext {
   gfx::Rect ToLayerSpaceRect(const gfx::Rect& rect) const;
 
   cc::DisplayItemList* list_;
-  std::unique_ptr<cc::PaintRecorder> owned_recorder_;
-  // A pointer to the |owned_recorder_| in this PaintContext, or in another one
-  // which this was copied from. We expect a copied-from PaintContext to outlive
-  // copies made from it.
-  cc::PaintRecorder* recorder_;
   // The device scale of the frame being painted. Used to determine which bitmap
   // resources to use in the frame.
   float device_scale_factor_;

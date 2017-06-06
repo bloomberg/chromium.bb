@@ -164,9 +164,9 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
 
         if (memory_used) {
           // Verify we are recording the same thing each time.
-          DCHECK_EQ(memory_used, display_list->ApproximateMemoryUsage());
+          DCHECK_EQ(memory_used, display_list->BytesUsed());
         } else {
-          memory_used = display_list->ApproximateMemoryUsage();
+          memory_used = display_list->BytesUsed();
         }
 
         timer.NextLap();

@@ -34,10 +34,6 @@ bool DrawingDisplayItem::DrawsContent() const {
   return record_.get();
 }
 
-int DrawingDisplayItem::NumberOfSlowPaths() const {
-  return record_ ? record_->numSlowPaths() : 0;
-}
-
 #ifndef NDEBUG
 void DrawingDisplayItem::DumpPropertiesAsDebugString(
     StringBuilder& string_builder) const {
