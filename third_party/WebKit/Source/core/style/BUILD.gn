@@ -48,6 +48,7 @@ blink_core_sources("rendering") {
     "GridPositionsResolver.h",
     "GridTrackSize.h",
     "LineClampValue.h",
+    "MemberCopy.h",
     "NinePieceImage.cpp",
     "NinePieceImage.h",
     "OutlineValue.h",
