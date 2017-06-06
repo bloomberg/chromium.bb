@@ -59,6 +59,12 @@ _GCLIENT_SCHEMA = schema.Schema({
         }
     },
 
+    # Path to GN args file to write selected variables.
+    schema.Optional('gclient_gn_args_file'): basestring,
+
+    # Subset of variables to write to the GN args file (see above).
+    schema.Optional('gclient_gn_args'): [schema.Optional(basestring)],
+
     # Hooks executed after gclient sync (unless suppressed), or explicitly
     # on gclient hooks. See _GCLIENT_HOOKS_SCHEMA for details.
     # Also see 'pre_deps_hooks'.

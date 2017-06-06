@@ -319,6 +319,10 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked2'] = 'git_hooked2'
+    tree['src/gclient.args'] = '\n'.join([
+        '# Generated from \'DEPS\'',
+        'DummyVariable = "repo"',
+    ])
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
     self.parseGclient(
@@ -331,6 +335,10 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
+    tree['src/gclient.args'] = '\n'.join([
+        '# Generated from \'DEPS\'',
+        'DummyVariable = "repo"',
+    ])
     self.assertTree(tree)
 
   def testSyncIgnoredSolutionName(self):
@@ -364,6 +372,10 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
+    tree['src/gclient.args'] = '\n'.join([
+        '# Generated from \'DEPS\'',
+        'DummyVariable = "repo"',
+    ])
     self.assertTree(tree)
 
   def testSyncJobs(self):
@@ -400,6 +412,10 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked2'] = 'git_hooked2'
+    tree['src/gclient.args'] = '\n'.join([
+        '# Generated from \'DEPS\'',
+        'DummyVariable = "repo"',
+    ])
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
     self.parseGclient(
@@ -413,6 +429,10 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
+    tree['src/gclient.args'] = '\n'.join([
+        '# Generated from \'DEPS\'',
+        'DummyVariable = "repo"',
+    ])
     self.assertTree(tree)
 
   def testRunHooks(self):
