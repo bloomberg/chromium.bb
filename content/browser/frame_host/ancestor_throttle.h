@@ -38,8 +38,6 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
 
   ~AncestorThrottle() override;
 
-  NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
-  NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override;
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
@@ -58,9 +56,6 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
   // the parse error.
   HeaderDisposition ParseHeader(const net::HttpResponseHeaders* headers,
                                 std::string* header_value);
-
-  NavigationThrottle::ThrottleCheckResult CheckContentSecurityPolicyFrameSrc(
-      bool is_redirect);
 
   DISALLOW_COPY_AND_ASSIGN(AncestorThrottle);
 };

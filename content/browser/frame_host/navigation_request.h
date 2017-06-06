@@ -174,6 +174,16 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   int nav_entry_id() const { return nav_entry_id_; }
 
  private:
+  // This enum describes the result of a Content Security Policy (CSP) check for
+  // the request.
+  enum ContentSecurityPolicyCheckResult {
+    // The request should be allowed to continue. PASSED could mean that the
+    // request did not violate any CSP, or that it violated a report-only CSP.
+    CONTENT_SECURITY_POLICY_CHECK_PASSED,
+    // The request should be blocked because it violated an enforced CSP.
+    CONTENT_SECURITY_POLICY_CHECK_FAILED,
+  };
+
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
                     const BeginNavigationParams& begin_params,
@@ -208,6 +218,15 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Have a RenderFrameHost commit the navigation. The NavigationRequest will
   // be destroyed after this call.
   void CommitNavigation();
+
+  // Check whether a request should be allowed to continue or should be blocked
+  // because it violates a CSP. This method can have two side effects:
+  // - If a CSP is configured to send reports and the request violates the CSP,
+  //   a report will be sent.
+  // - The navigation request may be upgraded from HTTP to HTTPS if a CSP is
+  //   configured to upgrade insecure requests.
+  ContentSecurityPolicyCheckResult CheckContentSecurityPolicyFrameSrc(
+      bool is_redirect);
 
   FrameTreeNode* frame_tree_node_;
 
