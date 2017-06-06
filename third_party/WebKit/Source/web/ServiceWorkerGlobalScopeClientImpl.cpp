@@ -59,10 +59,16 @@ void ServiceWorkerGlobalScopeClientImpl::GetClients(
   client_.GetClients(options, std::move(callbacks));
 }
 
-void ServiceWorkerGlobalScopeClientImpl::OpenWindow(
+void ServiceWorkerGlobalScopeClientImpl::OpenWindowForClients(
     const WebURL& url,
     std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
-  client_.OpenWindow(url, std::move(callbacks));
+  client_.OpenWindowForClients(url, std::move(callbacks));
+}
+
+void ServiceWorkerGlobalScopeClientImpl::OpenWindowForPaymentHandler(
+    const WebURL& url,
+    std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
+  client_.OpenWindowForPaymentHandler(url, std::move(callbacks));
 }
 
 void ServiceWorkerGlobalScopeClientImpl::SetCachedMetadata(const WebURL& url,

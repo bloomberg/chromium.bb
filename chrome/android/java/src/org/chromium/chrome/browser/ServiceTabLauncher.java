@@ -4,11 +4,19 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.Browser;
+import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
@@ -21,6 +29,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -39,19 +48,34 @@ public class ServiceTabLauncher {
 
     /**
      * Launches the browser activity and launches a tab for |url|.
-     *  @param requestId Id of the request for launching this tab.
-     * @param incognito Whether the tab should be launched in incognito mode.
-     * @param url The URL which should be launched in a tab.
-     * @param disposition The disposition requested by the navigation source.
-     * @param referrerUrl URL of the referrer which is opening the page.
+     *
+     * @param requestId      Id of the request for launching this tab.
+     * @param incognito      Whether the tab should be launched in incognito mode.
+     * @param url            The URL which should be launched in a tab.
+     * @param disposition    The disposition requested by the navigation source.
+     * @param referrerUrl    URL of the referrer which is opening the page.
      * @param referrerPolicy The referrer policy to consider when applying the referrer.
-     * @param extraHeaders Extra headers to apply when requesting the tab's URL.
-     * @param postData Post-data to include in the tab URL's request body.
+     * @param extraHeaders   Extra headers to apply when requesting the tab's URL.
+     * @param postData       Post-data to include in the tab URL's request body.
      */
     @CalledByNative
     public static void launchTab(final int requestId, final boolean incognito, final String url,
             final int disposition, final String referrerUrl, final int referrerPolicy,
             final String extraHeaders, final ResourceRequestBody postData) {
+        // Open popup window in custom tab.
+        // Note that this is used by PaymentRequestEvent.openWindow().
+        if (disposition == WindowOpenDisposition.NEW_POPUP) {
+            if (!createPopupCustomTab(requestId, url, incognito)) {
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onWebContentsForRequestAvailable(requestId, null);
+                    }
+                });
+            }
+            return;
+        }
+
         final TabDelegate tabDelegate = new TabDelegate(incognito);
 
         // 1. Launch WebAPK if one matches the target URL.
@@ -119,14 +143,45 @@ public class ServiceTabLauncher {
     }
 
     /**
+     * Creates a popup custom tab to open the url. The popup tab is animated in from bottom to top
+     * and out from top to bottom.
+     * Note that this is used by PaymentRequestEvent.openWindow().
+     *
+     * @param requestId   The tab launch request ID from the {@link ServiceTabLauncher}.
+     * @param url         The url to open in the new tab.
+     */
+    private static boolean createPopupCustomTab(int requestId, String url, boolean incognito) {
+        // Do not open the popup custom tab if the chrome activity is not in the forground.
+        Activity lastTrackedActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (!(lastTrackedActivity instanceof ChromeActivity)) return false;
+
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        builder.setShowTitle(true);
+        builder.setStartAnimations(lastTrackedActivity, R.anim.slide_in_up, 0);
+        builder.setExitAnimations(lastTrackedActivity, 0, R.anim.slide_out_down);
+        CustomTabsIntent customTabsIntent = builder.build();
+        customTabsIntent.intent.setPackage(ContextUtils.getApplicationContext().getPackageName());
+        customTabsIntent.intent.putExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, requestId);
+        customTabsIntent.intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, incognito);
+        customTabsIntent.intent.putExtra(Browser.EXTRA_APPLICATION_ID,
+                ContextUtils.getApplicationContext().getPackageName());
+
+        customTabsIntent.launchUrl(lastTrackedActivity, Uri.parse(url));
+
+        return true;
+    }
+
+    /**
      * To be called by the activity when the WebContents for |requestId| has been created, or has
      * been recycled from previous use. The |webContents| must not yet have started provisional
      * load for the main frame.
+     * The |webContents| could be null if the request is failed.
      *
      * @param requestId Id of the tab launching request which has been fulfilled.
      * @param webContents The WebContents instance associated with this request.
      */
-    public static void onWebContentsForRequestAvailable(int requestId, WebContents webContents) {
+    public static void onWebContentsForRequestAvailable(
+            int requestId, @Nullable WebContents webContents) {
         nativeOnWebContentsForRequestAvailable(requestId, webContents);
     }
 

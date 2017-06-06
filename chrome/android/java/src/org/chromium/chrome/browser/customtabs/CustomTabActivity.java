@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
+import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -541,6 +542,13 @@ public class CustomTabActivity extends ChromeActivity {
 
         // Put Sync in the correct state by calling tab state initialized. crbug.com/581811.
         getTabModelSelector().markTabStateInitialized();
+
+        // Notify ServiceTabLauncher if this is an asynchronous tab launch.
+        if (getIntent().hasExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA)) {
+            ServiceTabLauncher.onWebContentsForRequestAvailable(
+                    getIntent().getIntExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, 0),
+                    getActivityTab().getWebContents());
+        }
         super.finishNativeInitialization();
     }
 

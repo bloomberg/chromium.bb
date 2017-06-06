@@ -272,8 +272,14 @@ class WebServiceWorkerContextClient {
   // should delete the callbacks after calling either onSuccess or onError.
   // WebServiceWorkerClientInfo and WebServiceWorkerError ownerships are
   // passed to the WebServiceWorkerClientsCallbacks implementation.
-  virtual void OpenWindow(const WebURL&,
-                          std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
+  virtual void OpenWindowForClients(
+      const WebURL&,
+      std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
+
+  // Similar like OpenWindowForClients above.
+  virtual void OpenWindowForPaymentHandler(
+      const WebURL&,
+      std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
 
   // A suggestion to cache this metadata in association with this URL.
   virtual void SetCachedMetadata(const WebURL& url,

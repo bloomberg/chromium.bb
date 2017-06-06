@@ -182,6 +182,7 @@ void OpenWindowOnUI(
     const GURL& script_url,
     int worker_process_id,
     const scoped_refptr<ServiceWorkerContextWrapper>& context_wrapper,
+    WindowOpenDisposition disposition,
     const OpenURLCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -207,8 +208,8 @@ void OpenWindowOnUI(
       url,
       Referrer::SanitizeForRequest(
           url, Referrer(script_url, blink::kWebReferrerPolicyDefault)),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true /* is_renderer_initiated */);
+      disposition, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      true /* is_renderer_initiated */);
 
   GetContentClient()->browser()->OpenURL(browser_context, params,
                                          base::Bind(&DidOpenURLOnUI, callback));
@@ -464,13 +465,14 @@ void OpenWindow(const GURL& url,
                 const GURL& script_url,
                 int worker_process_id,
                 const base::WeakPtr<ServiceWorkerContextCore>& context,
+                WindowOpenDisposition disposition,
                 const NavigationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &OpenWindowOnUI, url, script_url, worker_process_id,
-          make_scoped_refptr(context->wrapper()),
+          make_scoped_refptr(context->wrapper()), disposition,
           base::Bind(&DidNavigate, context, script_url.GetOrigin(), callback)));
 }
 

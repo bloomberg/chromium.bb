@@ -56,8 +56,12 @@ class ServiceWorkerGlobalScopeClientImpl final
                  std::unique_ptr<WebServiceWorkerClientCallbacks>) override;
   void GetClients(const WebServiceWorkerClientQueryOptions&,
                   std::unique_ptr<WebServiceWorkerClientsCallbacks>) override;
-  void OpenWindow(const WebURL&,
-                  std::unique_ptr<WebServiceWorkerClientCallbacks>) override;
+  void OpenWindowForClients(
+      const WebURL&,
+      std::unique_ptr<WebServiceWorkerClientCallbacks>) override;
+  void OpenWindowForPaymentHandler(
+      const WebURL&,
+      std::unique_ptr<WebServiceWorkerClientCallbacks>) override;
   void SetCachedMetadata(const WebURL&, const char*, size_t) override;
   void ClearCachedMetadata(const WebURL&) override;
 

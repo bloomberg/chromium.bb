@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "ui/base/mojo/window_open_disposition.mojom.h"
 
 class GURL;
 
@@ -44,6 +45,7 @@ void OpenWindow(const GURL& url,
                 const GURL& script_url,
                 int worker_process_id,
                 const base::WeakPtr<ServiceWorkerContextCore>& context,
+                WindowOpenDisposition disposition,
                 const NavigationCallback& callback);
 
 // Navigates the client specified by |process_id| and |frame_id| to |url|.
