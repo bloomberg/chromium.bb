@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
-
 #include "ui/ozone/common/display_snapshot_proxy.h"
 
 #include <stddef.h>
 
-#include "ui/ozone/common/display_mode_proxy.h"
+#include "base/memory/ptr_util.h"
+#include "ui/display/types/display_mode.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 
 namespace ui {
@@ -39,7 +38,9 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
           NULL),
       string_representation_(params.string_representation) {
   for (size_t i = 0; i < params.modes.size(); ++i) {
-    modes_.push_back(base::MakeUnique<DisplayModeProxy>(params.modes[i]));
+    modes_.push_back(base::MakeUnique<display::DisplayMode>(
+        params.modes[i].size, params.modes[i].is_interlaced,
+        params.modes[i].refresh_rate));
 
     if (params.has_current_mode &&
         SameModes(params.modes[i], params.current_mode))
