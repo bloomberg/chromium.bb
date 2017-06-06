@@ -83,10 +83,12 @@ source_set("unit_tests") {
     "offline_page_native_content_unittest.mm",
     "reading_list_collection_view_controller_unittest.mm",
     "reading_list_coordinator_unittest.mm",
+    "reading_list_mediator_unittest.mm",
   ]
   deps = [
     ":reading_list",
     "//base",
+    "//base/test:test_support",
     "//components/favicon/core",
     "//components/favicon/core/test:test_support",
     "//components/prefs",
