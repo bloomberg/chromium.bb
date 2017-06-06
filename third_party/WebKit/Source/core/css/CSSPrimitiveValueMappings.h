@@ -1100,38 +1100,6 @@ inline TextDecorationStyle CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(TextUnderlinePosition e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case TextUnderlinePosition::kAuto:
-      value_id_ = CSSValueAuto;
-      break;
-    case TextUnderlinePosition::kUnder:
-      value_id_ = CSSValueUnder;
-      break;
-  }
-
-  // FIXME: Implement support for 'under left' and 'under right' values.
-}
-
-template <>
-inline TextUnderlinePosition CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueAuto:
-      return TextUnderlinePosition::kAuto;
-    case CSSValueUnder:
-      return TextUnderlinePosition::kUnder;
-    default:
-      break;
-  }
-
-  // FIXME: Implement support for 'under left' and 'under right' values.
-
-  NOTREACHED();
-  return TextUnderlinePosition::kAuto;
-}
-
-template <>
 inline TextDecorationSkip CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueObjects:
