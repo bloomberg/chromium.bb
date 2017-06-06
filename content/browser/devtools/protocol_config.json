@@ -67,8 +67,7 @@
                 "domain": "ServiceWorker"
             },
             {
-                "domain": "Storage",
-                "async": ["getUsageAndQuota"]
+                "domain": "Storage"
             },
             {
                 "domain": "SystemInfo",
