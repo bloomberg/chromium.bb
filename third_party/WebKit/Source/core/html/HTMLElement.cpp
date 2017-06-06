@@ -921,7 +921,7 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
   // updated.
   Element::InsertedInto(insertion_point);
 
-  if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled() &&
+  if (RuntimeEnabledFeatures::HideNonceContentAttributeEnabled() &&
       FastHasAttribute(nonceAttr) &&
       GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy() &&
       InActiveDocument()) {

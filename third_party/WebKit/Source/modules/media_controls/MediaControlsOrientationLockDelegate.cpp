@@ -181,7 +181,7 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
   // orientation). Otherwise, don't listen for deviceorientation events and just
   // hold the orientation lock until the user exits fullscreen (which prevents
   // the user rotating to the wrong fullscreen orientation).
-  if (!RuntimeEnabledFeatures::videoRotateToFullscreenEnabled())
+  if (!RuntimeEnabledFeatures::VideoRotateToFullscreenEnabled())
     return;
 
 // Check whether the user locked screen orientation at the OS level.

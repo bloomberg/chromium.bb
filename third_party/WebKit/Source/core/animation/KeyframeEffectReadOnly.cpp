@@ -41,7 +41,7 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
     const DictionarySequenceOrDictionary& effect_input,
     const UnrestrictedDoubleOrKeyframeEffectOptions& options,
     ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
@@ -62,7 +62,7 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
     Element* element,
     const DictionarySequenceOrDictionary& effect_input,
     ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
@@ -89,7 +89,7 @@ void KeyframeEffectReadOnly::Attach(Animation* animation) {
   if (target_) {
     target_->EnsureElementAnimations().Animations().insert(animation);
     target_->SetNeedsAnimationStyleRecalc();
-    if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() &&
+    if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
         target_->IsSVGElement())
       ToSVGElement(target_)->SetWebAnimationsPending();
   }
@@ -187,7 +187,7 @@ void KeyframeEffectReadOnly::ApplyEffects() {
 
   if (changed) {
     target_->SetNeedsAnimationStyleRecalc();
-    if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() &&
+    if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
         target_->IsSVGElement())
       ToSVGElement(*target_).SetWebAnimationsPending();
   }
@@ -201,7 +201,7 @@ void KeyframeEffectReadOnly::ClearEffects() {
   sampled_effect_ = nullptr;
   RestartAnimationOnCompositor();
   target_->SetNeedsAnimationStyleRecalc();
-  if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() &&
+  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
       target_->IsSVGElement())
     ToSVGElement(*target_).ClearWebAnimatedAttributes();
   Invalidate();

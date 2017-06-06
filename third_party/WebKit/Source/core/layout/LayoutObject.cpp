@@ -185,7 +185,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kBlock:
     case EDisplay::kFlowRoot:
     case EDisplay::kInlineBlock:
-      if (RuntimeEnabledFeatures::layoutNGEnabled())
+      if (RuntimeEnabledFeatures::LayoutNGEnabled())
         return new LayoutNGBlockFlow(element);
       return new LayoutBlockFlow(element);
     case EDisplay::kListItem:
@@ -1132,7 +1132,7 @@ LayoutRect LayoutObject::InvalidatePaintRectangle(
 
 void LayoutObject::DeprecatedInvalidateTree(
     const PaintInvalidationState& paint_invalidation_state) {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
   EnsureIsReadyForPaintInvalidation();
 
   // If we didn't need paint invalidation then our children don't need as well.
@@ -1160,7 +1160,7 @@ void LayoutObject::DeprecatedInvalidateTree(
 DISABLE_CFI_PERF
 void LayoutObject::DeprecatedInvalidatePaintOfSubtrees(
     const PaintInvalidationState& child_paint_invalidation_state) {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
 
   for (auto* child = SlowFirstChild(); child; child = child->NextSibling())
     child->DeprecatedInvalidateTree(child_paint_invalidation_state);
@@ -1467,7 +1467,7 @@ StyleDifference LayoutObject::AdjustStyleDifference(
       diff.SetNeedsFullLayout();
   }
 
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     // If transform changed, and the layer does not paint into its own separate
     // backing, then we need to invalidate paints.
     if (diff.TransformChanged()) {
@@ -1741,7 +1741,7 @@ void LayoutObject::SetStyle(PassRefPtr<ComputedStyle> style) {
 
   // Text nodes share style with their parents but the paint properties don't
   // apply to them, hence the !isText() check.
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && !IsText() &&
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() && !IsText() &&
       (diff.TransformChanged() || diff.OpacityChanged() ||
        diff.ZIndexChanged() || diff.FilterChanged() ||
        diff.BackdropFilterChanged() || diff.CssClipChanged())) {
@@ -1751,7 +1751,7 @@ void LayoutObject::SetStyle(PassRefPtr<ComputedStyle> style) {
     // property or paint order change. Mark the painting layer needing repaint
     // for changed paint property or paint order. Raster invalidation will be
     // issued if needed during paint.
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
         !ShouldDoFullPaintInvalidation())
       ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
   }
@@ -1936,7 +1936,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
   if (old_style && old_style->StyleType() == kPseudoIdNone)
     ApplyPseudoStyleChanges(*old_style);
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && old_style &&
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() && old_style &&
       old_style->UsedTransformStyle3D() != StyleRef().UsedTransformStyle3D()) {
     // Change of transform-style may affect descendant transform property nodes.
     SetSubtreeNeedsPaintPropertyUpdate();
@@ -2793,7 +2793,7 @@ void LayoutObject::WillBeRemovedFromTree() {
   if (Parent()->IsSVG())
     Parent()->SetNeedsBoundariesUpdate();
 
-  if (RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
+  if (RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
       bitfields_.IsScrollAnchorObject()) {
     // Clear the bit first so that anchor.clear() doesn't recurse into
     // findReferencingScrollAnchors.
@@ -3562,7 +3562,7 @@ void LayoutObject::SetIsBackgroundAttachmentFixedObject(
 }
 
 PropertyTreeState LayoutObject::ContentsProperties() const {
-  DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
   return rare_paint_data_->ContentsProperties();
 }
 

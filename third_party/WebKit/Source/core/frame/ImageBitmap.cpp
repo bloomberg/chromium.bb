@@ -79,7 +79,7 @@ ParsedOptions ParseOptions(const ImageBitmapOptions& options,
 
   if (options.colorSpaceConversion() != kImageBitmapOptionNone) {
     parsed_options.color_canvas_extensions_enabled =
-        RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
+        RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
     if (!parsed_options.color_canvas_extensions_enabled) {
       DCHECK_EQ(options.colorSpaceConversion(), kImageBitmapOptionDefault);
     } else {
@@ -862,7 +862,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
   }
 
   CanvasColorParams canvas_color_params;
-  if (RuntimeEnabledFeatures::colorCanvasExtensionsEnabled()) {
+  if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled()) {
     ImageDataColorSettings color_settings;
     data->getColorSettings(color_settings);
     CanvasColorSpace canvas_color_space =

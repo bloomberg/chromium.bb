@@ -58,7 +58,7 @@ GLenum ImageCHROMIUMTextureTarget() {
 
 // The target to use when preparing a mailbox texture.
 GLenum DrawingBufferTextureTarget() {
-  if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
+  if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled())
     return ImageCHROMIUMTextureTarget();
   return GL_TEXTURE_2D;
 }

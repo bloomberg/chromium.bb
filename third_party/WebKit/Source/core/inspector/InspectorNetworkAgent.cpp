@@ -294,7 +294,7 @@ String GetReferrerPolicy(ReferrerPolicy policy) {
     case kReferrerPolicyAlways:
       return protocol::Network::Request::ReferrerPolicyEnum::UnsafeUrl;
     case kReferrerPolicyDefault:
-      if (RuntimeEnabledFeatures::reducedReferrerGranularityEnabled()) {
+      if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
         return protocol::Network::Request::ReferrerPolicyEnum::
             NoReferrerWhenDowngradeOriginWhenCrossOrigin;
       } else {

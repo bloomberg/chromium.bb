@@ -370,7 +370,7 @@ void SecurityOrigin::GrantUniversalAccess() {
 }
 
 void SecurityOrigin::AddSuborigin(const Suborigin& suborigin) {
-  DCHECK(RuntimeEnabledFeatures::suboriginsEnabled());
+  DCHECK(RuntimeEnabledFeatures::SuboriginsEnabled());
   // Changing suborigins midstream is bad. Very bad. It should not happen.
   // This is, in fact,  one of the very basic invariants that makes
   // suborigins an effective security tool.

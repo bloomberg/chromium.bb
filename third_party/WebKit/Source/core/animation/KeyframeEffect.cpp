@@ -58,7 +58,7 @@ KeyframeEffect* KeyframeEffect::Create(
     const DictionarySequenceOrDictionary& effect_input,
     const UnrestrictedDoubleOrKeyframeEffectOptions& options,
     ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
@@ -79,7 +79,7 @@ KeyframeEffect* KeyframeEffect::Create(
     Element* element,
     const DictionarySequenceOrDictionary& effect_input,
     ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
   if (element) {
     UseCounter::Count(
         element->GetDocument(),

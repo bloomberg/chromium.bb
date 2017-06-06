@@ -16,7 +16,7 @@ const CSSValue* CSSPropertyAPIImageOrientation::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  DCHECK(RuntimeEnabledFeatures::imageOrientationEnabled());
+  DCHECK(RuntimeEnabledFeatures::ImageOrientationEnabled());
   if (range.Peek().Id() == CSSValueFromImage)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   if (range.Peek().GetType() != kNumberToken) {

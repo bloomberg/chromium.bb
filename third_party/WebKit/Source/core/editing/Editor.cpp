@@ -104,7 +104,7 @@ void DispatchInputEvent(Element* target,
                         InputEvent::InputType input_type,
                         const String& data,
                         InputEvent::EventIsComposing is_composing) {
-  if (!RuntimeEnabledFeatures::inputEventEnabled())
+  if (!RuntimeEnabledFeatures::InputEventEnabled())
     return;
   if (!target)
     return;

@@ -704,7 +704,7 @@ void ObjectPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info,
 #if DCHECK_IS_ON()
 void ObjectPainter::DoCheckPaintOffset(const PaintInfo& paint_info,
                                        const LayoutPoint& paint_offset) {
-  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
   // TODO(pdr): Let painter and paint property tree builder generate the same
   // paint offset for LayoutScrollbarPart. crbug.com/664249.

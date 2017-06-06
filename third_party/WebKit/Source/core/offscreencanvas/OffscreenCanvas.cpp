@@ -252,7 +252,7 @@ ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
     OpacityMode opacity_mode =
         context_->CreationAttributes().hasAlpha() ? kNonOpaque : kOpaque;
     std::unique_ptr<ImageBufferSurface> surface;
-    if (RuntimeEnabledFeatures::accelerated2dCanvasEnabled()) {
+    if (RuntimeEnabledFeatures::Accelerated2dCanvasEnabled()) {
       surface.reset(
           new AcceleratedImageBufferSurface(surface_size, opacity_mode));
     }

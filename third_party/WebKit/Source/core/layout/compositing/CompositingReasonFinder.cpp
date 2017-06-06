@@ -39,7 +39,7 @@ bool CompositingReasonFinder::IsMainFrame() const {
 CompositingReasons CompositingReasonFinder::DirectReasons(
     const PaintLayer* layer,
     bool ignore_lcd_text) const {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return kCompositingReasonNone;
 
   DCHECK_EQ(PotentialCompositingReasonsFromStyle(layer->GetLayoutObject()),
@@ -68,7 +68,7 @@ bool CompositingReasonFinder::RequiresCompositingForScrollableFrame() const {
 CompositingReasons
 CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
     LayoutObject& layout_object) const {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return kCompositingReasonNone;
 
   CompositingReasons reasons = kCompositingReasonNone;
@@ -222,7 +222,7 @@ bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
 
   if (!(ignore_lcd_text ||
         (compositing_triggers_ & kViewportConstrainedPositionedTrigger)) &&
-      (!RuntimeEnabledFeatures::compositeOpaqueFixedPositionEnabled() ||
+      (!RuntimeEnabledFeatures::CompositeOpaqueFixedPositionEnabled() ||
        !layer->BackgroundIsKnownToBeOpaqueInRect(
            LayoutRect(layer->BoundingBoxForCompositing())) ||
        layer->CompositesWithTransform() || layer->CompositesWithOpacity())) {

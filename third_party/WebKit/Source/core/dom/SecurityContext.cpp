@@ -89,11 +89,11 @@ String SecurityContext::addressSpaceForBindings() const {
 // name represents a lack of a suborigin.
 // See: https://w3c.github.io/webappsec-suborigins/index.html
 void SecurityContext::EnforceSuborigin(const Suborigin& suborigin) {
-  if (!RuntimeEnabledFeatures::suboriginsEnabled())
+  if (!RuntimeEnabledFeatures::SuboriginsEnabled())
     return;
 
   DCHECK(!suborigin.GetName().IsEmpty());
-  DCHECK(RuntimeEnabledFeatures::suboriginsEnabled());
+  DCHECK(RuntimeEnabledFeatures::SuboriginsEnabled());
   DCHECK(security_origin_.Get());
   DCHECK(!security_origin_->HasSuborigin() ||
          security_origin_->GetSuborigin()->GetName() == suborigin.GetName());

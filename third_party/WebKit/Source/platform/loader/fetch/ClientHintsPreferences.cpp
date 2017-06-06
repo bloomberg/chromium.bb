@@ -26,12 +26,12 @@ void ClientHintsPreferences::UpdateFrom(
 void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
     const String& header_value,
     Context* context) {
-  if (!RuntimeEnabledFeatures::clientHintsEnabled() || header_value.IsEmpty())
+  if (!RuntimeEnabledFeatures::ClientHintsEnabled() || header_value.IsEmpty())
     return;
 
   CommaDelimitedHeaderSet accept_client_hints_header;
   ParseCommaDelimitedHeader(header_value, accept_client_hints_header);
-  if (RuntimeEnabledFeatures::deviceRAMHeaderEnabled() &&
+  if (RuntimeEnabledFeatures::DeviceRAMHeaderEnabled() &&
       accept_client_hints_header.Contains("device-ram")) {
     if (context)
       context->CountClientHintsDeviceRAM();

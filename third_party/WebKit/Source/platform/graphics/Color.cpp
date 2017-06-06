@@ -128,7 +128,7 @@ static inline bool ParseHexColorInternal(const CharacterType* name,
   if (length != 3 && length != 4 && length != 6 && length != 8)
     return false;
   if ((length == 8 || length == 4) &&
-      !RuntimeEnabledFeatures::cssHexAlphaColorEnabled())
+      !RuntimeEnabledFeatures::CSSHexAlphaColorEnabled())
     return false;
   unsigned value = 0;
   for (unsigned i = 0; i < length; ++i) {

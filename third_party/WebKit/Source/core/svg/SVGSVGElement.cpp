@@ -527,7 +527,7 @@ Node::InsertionNotificationRequest SVGSVGElement::InsertedInto(
     if (root_parent->GetDocument().IsXMLDocument())
       UseCounter::Count(GetDocument(), UseCounter::kSVGSVGElementInXMLDocument);
 
-    if (RuntimeEnabledFeatures::smilEnabled()) {
+    if (RuntimeEnabledFeatures::SMILEnabled()) {
       GetDocument().AccessSVGExtensions().AddTimeContainer(this);
 
       // Animations are started at the end of document parsing and after firing

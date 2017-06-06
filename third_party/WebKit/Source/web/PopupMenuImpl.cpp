@@ -269,7 +269,7 @@ void PopupMenuImpl::WriteDocument(SharedBuffer* data) {
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
   data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
   data->Append(Platform::Current()->GetDataResource("listPicker.css"));
-  if (!RuntimeEnabledFeatures::forceTallerSelectPopupEnabled())
+  if (!RuntimeEnabledFeatures::ForceTallerSelectPopupEnabled())
     PagePopupClient::AddString("@media (any-pointer:coarse) {", data);
   int padding = static_cast<int>(roundf(4 * scale_factor));
   int min_height = static_cast<int>(roundf(24 * scale_factor));
@@ -284,7 +284,7 @@ void PopupMenuImpl::WriteDocument(SharedBuffer* data) {
                                             "}",
                                             padding, padding, min_height),
                              data);
-  if (!RuntimeEnabledFeatures::forceTallerSelectPopupEnabled()) {
+  if (!RuntimeEnabledFeatures::ForceTallerSelectPopupEnabled()) {
     // Closes @media.
     PagePopupClient::AddString("}", data);
   }

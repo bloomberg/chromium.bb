@@ -159,7 +159,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
     }
   }
 
-  if (!RuntimeEnabledFeatures::pointerEventEnabled())
+  if (!RuntimeEnabledFeatures::PointerEventEnabled())
     return WebInputEventResult::kNotHandled;
   if (!check_for_listener || target->HasEventListeners(event_type)) {
     UseCounter::Count(frame_, UseCounter::kPointerEventDispatch);

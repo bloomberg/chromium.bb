@@ -166,7 +166,7 @@ void HTMLIFrameElement::ParseAttribute(
       FrameOwnerPropertiesChanged();
       UpdateContainerPolicy();
     }
-  } else if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
+  } else if (RuntimeEnabledFeatures::EmbedderCSPEnforcementEnabled() &&
              name == cspAttr) {
     if (!ContentSecurityPolicy::IsValidCSPAttr(value.GetString())) {
       csp_ = g_null_atom;
@@ -179,7 +179,7 @@ void HTMLIFrameElement::ParseAttribute(
     csp_ = value;
     if (csp_ != old_csp)
       FrameOwnerPropertiesChanged();
-  } else if (RuntimeEnabledFeatures::featurePolicyEnabled() &&
+  } else if (RuntimeEnabledFeatures::FeaturePolicyEnabled() &&
              name == allowAttr) {
     allow_->DidUpdateAttributeValue(params.old_value, value);
     String invalid_tokens;

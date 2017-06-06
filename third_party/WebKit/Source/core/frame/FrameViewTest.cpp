@@ -173,7 +173,7 @@ TEST_P(FrameViewTest, ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
 TEST_P(FrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
   // When using root layer scrolling there is no concept of viewport constrained
   // objects, so skip this test.
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
 
   GetDocument().body()->setInnerHTML(

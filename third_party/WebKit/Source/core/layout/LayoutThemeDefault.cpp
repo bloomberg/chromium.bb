@@ -92,7 +92,7 @@ Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id) const {
 String LayoutThemeDefault::ExtraDefaultStyleSheet() {
   String extra_style_sheet = LayoutTheme::ExtraDefaultStyleSheet();
   String multiple_fields_style_sheet =
-      RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled()
+      RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()
           ? GetDataResourceAsASCIIString("themeInputMultipleFields.css")
           : String();
   String windows_style_sheet = GetDataResourceAsASCIIString("themeWin.css");

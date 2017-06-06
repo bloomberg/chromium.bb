@@ -36,7 +36,7 @@ const CSSValue* CSSPropertyAPITextIndent::parseSingleValue(
       }
     }
 
-    if (RuntimeEnabledFeatures::css3TextEnabled()) {
+    if (RuntimeEnabledFeatures::CSS3TextEnabled()) {
       CSSValueID id = range.Peek().Id();
       if (!has_each_line && id == CSSValueEachLine) {
         list->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));

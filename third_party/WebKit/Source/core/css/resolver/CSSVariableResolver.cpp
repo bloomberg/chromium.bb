@@ -48,7 +48,7 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
     return nullptr;
   }
 
-  DCHECK(registry_ || !RuntimeEnabledFeatures::cssVariables2Enabled());
+  DCHECK(registry_ || !RuntimeEnabledFeatures::CSSVariables2Enabled());
   const PropertyRegistration* registration =
       registry_ ? registry_->Registration(name) : nullptr;
 
@@ -192,7 +192,7 @@ bool CSSVariableResolver::ResolveTokenRange(
           result_backing_strings, result_is_animation_tainted);
     } else if (range.Peek().GetType() == kAtKeywordToken &&
                EqualIgnoringASCIICase(range.Peek().Value(), "apply") &&
-               RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
+               RuntimeEnabledFeatures::CSSApplyAtRulesEnabled()) {
       ResolveApplyAtRule(range, result, result_backing_strings);
     } else {
       result.push_back(range.Consume());

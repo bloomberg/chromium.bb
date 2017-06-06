@@ -226,7 +226,7 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded() {
           frame_view ? toWebLayer(frame_view->LayoutViewportScrollableArea()
                                       ->LayerForScrolling())
                      : nullptr) {
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
       layout_viewport_scroll_layer->SetBounds(frame_view->ContentsSize());
 
     // If there is a non-root fullscreen element, prevent the viewport from
@@ -246,14 +246,14 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded() {
         visual_viewport_scroll_layer->SetUserScrollable(true, true);
     }
 
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       layout_viewport_scroll_layer->SetUserScrollable(
           frame_view->UserInputScrollable(kHorizontalScrollbar),
           frame_view->UserInputScrollable(kVerticalScrollbar));
     }
   }
 
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     const FrameTree& tree = page_->MainFrame()->Tree();
     for (const Frame* child = tree.FirstChild(); child;
          child = child->Tree().NextSibling()) {
@@ -465,7 +465,7 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
 
       std::unique_ptr<WebScrollbarLayer> web_scrollbar_layer;
       if (settings->GetUseSolidColorScrollbars()) {
-        DCHECK(RuntimeEnabledFeatures::overlayScrollbarsEnabled());
+        DCHECK(RuntimeEnabledFeatures::OverlayScrollbarsEnabled());
         web_scrollbar_layer = CreateSolidColorScrollbarLayer(
             orientation, scrollbar.GetTheme().ThumbThickness(scrollbar),
             scrollbar.GetTheme().TrackPosition(scrollbar),
@@ -539,7 +539,7 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
 
   // Update the viewport layer registration if the outer viewport may have
   // changed.
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
       IsForRootLayer(scrollable_area))
     page_->GetChromeClient().RegisterViewportLayers();
 
@@ -731,7 +731,7 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded() {
                "ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded");
 
   // TODO(chrishtr): implement touch event target rects for SPv2.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   LayerHitTestRects touch_event_target_rects;
@@ -751,7 +751,7 @@ void ScrollingCoordinator::Reset() {
   was_frame_scrollable_ = false;
 
   last_main_thread_scrolling_reasons_ = 0;
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     SetShouldUpdateScrollLayerPositionOnMainThread(0);
 }
 
@@ -877,7 +877,7 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
       if (scrollable_area) {
         if (ScrollAnimatorBase* scroll_animator =
                 scrollable_area->ExistingScrollAnimator()) {
-          DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled() ||
+          DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
                  page_->DeprecatedLocalMainFrame()
                          ->GetDocument()
                          ->Lifecycle()
@@ -891,7 +891,7 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
         if (ScrollAnimatorBase* scroll_animator =
                 visual_viewport_layer->GetScrollableArea()
                     ->ExistingScrollAnimator()) {
-          DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled() ||
+          DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
                  page_->DeprecatedLocalMainFrame()
                          ->GetDocument()
                          ->Lifecycle()

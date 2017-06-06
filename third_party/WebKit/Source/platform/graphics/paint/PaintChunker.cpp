@@ -15,7 +15,7 @@ PaintChunker::~PaintChunker() {}
 void PaintChunker::UpdateCurrentPaintChunkProperties(
     const PaintChunk::Id* chunk_id,
     const PaintChunkProperties& properties) {
-  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
   current_chunk_id_ = WTF::nullopt;
   if (chunk_id)
@@ -24,7 +24,7 @@ void PaintChunker::UpdateCurrentPaintChunkProperties(
 }
 
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
-  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
 #if DCHECK_IS_ON()
   // Property nodes should never be null because they should either be set to
@@ -81,7 +81,7 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
 }
 
 void PaintChunker::DecrementDisplayItemIndex() {
-  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   DCHECK(!chunks_.IsEmpty());
 
   auto& last_chunk = chunks_.back();

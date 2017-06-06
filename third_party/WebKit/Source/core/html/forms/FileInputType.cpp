@@ -146,7 +146,7 @@ void FileInputType::HandleDOMActivateEvent(Event* event) {
     settings.accept_file_extensions = input.AcceptFileExtensions();
     settings.selected_files = file_list_->PathsForUserVisibleFiles();
     settings.use_media_capture =
-        RuntimeEnabledFeatures::mediaCaptureEnabled() &&
+        RuntimeEnabledFeatures::MediaCaptureEnabled() &&
         input.FastHasAttribute(captureAttr);
     chrome_client->OpenFileChooser(input.GetDocument().GetFrame(),
                                    NewFileChooser(settings));

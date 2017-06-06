@@ -28,8 +28,8 @@ class DisableBackgroundThrottlingIsRespectedTest : public SimTest {
 
  private:
   typedef ScopedRuntimeEnabledFeatureForTest<
-      RuntimeEnabledFeatures::timerThrottlingForBackgroundTabsEnabled,
-      RuntimeEnabledFeatures::setTimerThrottlingForBackgroundTabsEnabled>
+      RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled,
+      RuntimeEnabledFeatures::SetTimerThrottlingForBackgroundTabsEnabled>
       ScopedBackgroundTabTimerThrottlingForTest;
 
   std::unique_ptr<ScopedBackgroundTabTimerThrottlingForTest>

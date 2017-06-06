@@ -160,7 +160,7 @@ void HTMLBodyElement::ParseAttribute(
         EventTypeNames::focus,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
                                      EventParameterName()));
-  } else if (RuntimeEnabledFeatures::orientationEventEnabled() &&
+  } else if (RuntimeEnabledFeatures::OrientationEventEnabled() &&
              name == onorientationchangeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::orientationchange,

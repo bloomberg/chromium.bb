@@ -43,7 +43,7 @@ BoxClipper::BoxClipper(const LayoutBox& box,
   if (paint_info_.phase == kPaintPhaseMask)
     return;
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     const auto* object_properties = box_.PaintProperties();
     if (object_properties && object_properties->OverflowClip()) {
       PaintChunkProperties properties(paint_info.context.GetPaintController()

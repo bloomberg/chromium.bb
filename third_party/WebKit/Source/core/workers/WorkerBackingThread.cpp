@@ -69,7 +69,7 @@ void WorkerBackingThread::Initialize() {
       isolate_, V8GCController::TraceDOMWrappers,
       ScriptWrappableVisitor::InvalidateDeadObjectsInMarkingDeque,
       ScriptWrappableVisitor::PerformCleanup);
-  if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
+  if (RuntimeEnabledFeatures::V8IdleTasksEnabled())
     V8PerIsolateData::EnableIdleTasks(
         isolate_, WTF::WrapUnique(new V8IdleTaskRunner(
                       BackingThread().PlatformThread().Scheduler())));

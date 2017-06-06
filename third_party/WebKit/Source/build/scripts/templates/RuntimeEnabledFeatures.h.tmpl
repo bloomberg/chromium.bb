@@ -41,10 +41,6 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   {% else %}
   static void Set{{feature.name}}Enabled(bool isEnabled) { is{{feature.name}}Enabled = isEnabled; }
   static bool {{feature.name}}Enabled() { return {{feature.enabled_condition}}; }
-  // TODO(wangxianzhu): Remove the lowercase-initial version after converting
-  // all .h/.cpp files to use the uppdercase-initial version.
-  static void set{{feature.name}}Enabled(bool isEnabled) { is{{feature.name}}Enabled = isEnabled; }
-  static bool {{feature.first_lowered_name}}Enabled() { return {{feature.enabled_condition}}; }
 
   {% endif %}
   {% endfor %}

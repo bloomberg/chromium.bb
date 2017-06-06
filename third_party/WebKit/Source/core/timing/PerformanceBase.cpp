@@ -412,7 +412,7 @@ void PerformanceBase::AddFirstContentfulPaintTiming(double start_time) {
 
 void PerformanceBase::AddPaintTiming(PerformancePaintTiming::PaintType type,
                                      double start_time) {
-  if (!RuntimeEnabledFeatures::performancePaintTimingEnabled())
+  if (!RuntimeEnabledFeatures::PerformancePaintTimingEnabled())
     return;
 
   PerformanceEntry* entry = new PerformancePaintTiming(

@@ -136,9 +136,9 @@ TEST_F(HTMLMediaElementEventListenersTest,
 TEST_F(HTMLMediaElementEventListenersTest,
        FullscreenDetectorTimerCancelledOnContextDestroy) {
   bool original_video_fullscreen_detection_enabled =
-      RuntimeEnabledFeatures::videoFullscreenDetectionEnabled();
+      RuntimeEnabledFeatures::VideoFullscreenDetectionEnabled();
 
-  RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(true);
+  RuntimeEnabledFeatures::SetVideoFullscreenDetectionEnabled(true);
 
   EXPECT_EQ(Video(), nullptr);
   GetDocument().body()->setInnerHTML("<body><video></video</body>");
@@ -181,7 +181,7 @@ TEST_F(HTMLMediaElementEventListenersTest,
   EXPECT_EQ(1u, observed_results.size());
   EXPECT_FALSE(observed_results[0]);
 
-  RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(
+  RuntimeEnabledFeatures::SetVideoFullscreenDetectionEnabled(
       original_video_fullscreen_detection_enabled);
 }
 

@@ -404,8 +404,8 @@ bool HTMLMediaElement::IsHLSURL(const KURL& url) {
 }
 
 bool HTMLMediaElement::MediaTracksEnabledInternally() {
-  return RuntimeEnabledFeatures::audioVideoTracksEnabled() ||
-         RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled();
+  return RuntimeEnabledFeatures::AudioVideoTracksEnabled() ||
+         RuntimeEnabledFeatures::BackgroundVideoTrackOptimizationEnabled();
 }
 
 // static
@@ -3178,13 +3178,13 @@ void HTMLMediaElement::RemotePlaybackStarted() {
 }
 
 bool HTMLMediaElement::HasSelectedVideoTrack() {
-  DCHECK(RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled());
+  DCHECK(RuntimeEnabledFeatures::BackgroundVideoTrackOptimizationEnabled());
 
   return video_tracks_ && video_tracks_->selectedIndex() != -1;
 }
 
 WebMediaPlayer::TrackId HTMLMediaElement::GetSelectedVideoTrackId() {
-  DCHECK(RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled());
+  DCHECK(RuntimeEnabledFeatures::BackgroundVideoTrackOptimizationEnabled());
   DCHECK(HasSelectedVideoTrack());
 
   int selected_track_index = video_tracks_->selectedIndex();

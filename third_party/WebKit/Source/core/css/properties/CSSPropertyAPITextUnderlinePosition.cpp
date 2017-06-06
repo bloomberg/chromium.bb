@@ -16,10 +16,10 @@ const CSSValue* CSSPropertyAPITextUnderlinePosition::parseSingleValue(
     const CSSParserLocalContext&) {
   // auto | [ under || [ left | right ] ], but we only support auto | under
   // for now
-  DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
   // auto | [ under || [ left | right ] ], but we only support auto | under
   // for now
-  DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
   return CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto, CSSValueUnder>(
       range);
 }

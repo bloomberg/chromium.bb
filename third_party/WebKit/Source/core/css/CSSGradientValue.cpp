@@ -1088,7 +1088,7 @@ void CSSGradientValue::AppendCSSTextForColorStops(
 
   for (const auto& stop : stops_) {
     bool is_color_repeat = false;
-    if (RuntimeEnabledFeatures::multipleColorStopPositionsEnabled()) {
+    if (RuntimeEnabledFeatures::MultipleColorStopPositionsEnabled()) {
       is_color_repeat = stop.color_ && stop.offset_ &&
                         DataEquivalent(stop.color_.Get(), prev_color);
     }

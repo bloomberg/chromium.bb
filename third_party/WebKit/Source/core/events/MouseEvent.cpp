@@ -454,7 +454,7 @@ DispatchEventResult MouseEventDispatchMediator::DispatchEvent(
 
   bool is_click = mouse_event.type() == EventTypeNames::click;
   bool send_to_disabled_form_controls =
-      RuntimeEnabledFeatures::sendMouseEventsDisabledFormControlsEnabled();
+      RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled();
 
   if (send_to_disabled_form_controls && is_click &&
       mouse_event.GetEventPath().DisabledFormControlExistsInPath()) {

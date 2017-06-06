@@ -278,7 +278,7 @@ void LayoutBlock::UpdateFromStyle() {
     if (!should_clip_overflow)
       GetScrollableArea()->InvalidateAllStickyConstraints();
     SetMayNeedPaintInvalidationSubtree();
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
       // The overflow clip paint property depends on whether overflow clip is
       // present so we need to update paint properties if this changes.
       SetNeedsPaintPropertyUpdate();
@@ -1010,7 +1010,7 @@ void LayoutBlock::RemovePositionedObjects(
         // invalidation container.
         // Invalidate it (including non-compositing descendants) on its original
         // paint invalidation container.
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
           // This valid because we need to invalidate based on the current
           // status.
           DisableCompositingQueryAsserts compositing_disabler;

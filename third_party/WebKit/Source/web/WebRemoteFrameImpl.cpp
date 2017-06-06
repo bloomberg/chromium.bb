@@ -386,7 +386,7 @@ void WebRemoteFrameImpl::SetReplicatedName(const WebString& name) {
 
 void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeader(
     const WebParsedFeaturePolicy& parsed_header) {
-  if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+  if (RuntimeEnabledFeatures::FeaturePolicyEnabled()) {
     WebFeaturePolicy* parent_feature_policy = nullptr;
     if (Parent()) {
       Frame* parent_frame = GetFrame()->Client()->Parent();

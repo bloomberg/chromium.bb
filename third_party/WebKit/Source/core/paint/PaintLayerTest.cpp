@@ -71,7 +71,7 @@ TEST_P(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
 
 TEST_P(PaintLayerTest, CompositedBoundsTransformedChild) {
   // TODO(chrishtr): fix this test for SPv2
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   SetBodyInnerHTML(
@@ -91,7 +91,7 @@ TEST_P(PaintLayerTest, CompositedBoundsTransformedChild) {
 TEST_P(PaintLayerTest, RootLayerCompositedBounds) {
   SetBodyInnerHTML(
       "<style> body { width: 1000px; height: 1000px; margin: 0 } </style>");
-  EXPECT_EQ(RuntimeEnabledFeatures::rootLayerScrollingEnabled()
+  EXPECT_EQ(RuntimeEnabledFeatures::RootLayerScrollingEnabled()
                 ? LayoutRect(0, 0, 800, 600)
                 : LayoutRect(0, 0, 1000, 1000),
             GetLayoutView().Layer()->BoundingBoxForCompositing());
@@ -140,8 +140,8 @@ TEST_P(PaintLayerTest, ScrollsWithViewportFixedPosition) {
 TEST_P(PaintLayerTest, ScrollsWithViewportFixedPositionInsideTransform) {
   // We don't intend to launch SPv2 without root layer scrolling, so skip this
   // test in that configuration because it's broken.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-      !RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
   SetBodyInnerHTML(
       "<div style='transform: translateZ(0)'>"
@@ -162,7 +162,7 @@ TEST_P(PaintLayerTest,
 
   // In SPv2 mode, we correctly determine that the frame doesn't scroll at all,
   // and so return true.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     EXPECT_TRUE(layer->FixedToViewport());
   else
     EXPECT_FALSE(layer->FixedToViewport());
@@ -213,7 +213,7 @@ TEST_P(PaintLayerTest, SticksToScrollerStickyPositionInsideScroller) {
 }
 
 TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   EnableCompositing();
@@ -501,7 +501,7 @@ TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
 }
 
 TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   SetBodyInnerHTML(
@@ -572,7 +572,7 @@ TEST_P(PaintLayerTest, CompositingContainerStackedFloatUnderStackingInline) {
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -597,7 +597,7 @@ TEST_P(PaintLayerTest,
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(span,
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -621,7 +621,7 @@ TEST_P(PaintLayerTest, CompositingContainerNonStackedFloatUnderStackingInline) {
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -646,7 +646,7 @@ TEST_P(PaintLayerTest,
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -672,7 +672,7 @@ TEST_P(PaintLayerTest,
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -699,7 +699,7 @@ TEST_P(PaintLayerTest,
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(span,
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -726,7 +726,7 @@ TEST_P(PaintLayerTest,
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -753,7 +753,7 @@ TEST_P(PaintLayerTest,
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -958,7 +958,7 @@ TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
   // SPv2.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(composited_container,
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }

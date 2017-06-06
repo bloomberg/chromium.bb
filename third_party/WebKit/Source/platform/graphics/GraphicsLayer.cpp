@@ -278,7 +278,7 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
                           GraphicsContext::DisabledMode disabled_mode) {
   if (PaintWithoutCommit(interest_rect, disabled_mode)) {
     GetPaintController().CommitNewDisplayItems();
-    if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
+    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
       sk_sp<PaintRecord> record = CaptureRecord();
       CheckPaintUnderInvalidations(record);
       RasterInvalidationTracking& tracking =
@@ -477,7 +477,7 @@ void GraphicsLayer::ResetTrackedRasterInvalidations() {
   if (!tracking)
     return;
 
-  if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     tracking->invalidations.clear();
   else
     GetRasterInvalidationTrackingMap().Remove(this);
@@ -512,7 +512,7 @@ void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
     tracking.invalidations.push_back(info);
   }
 
-  if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
     // invalidation rect.
     IntRect r = rect;
@@ -1203,7 +1203,7 @@ static bool PixelsDiffer(SkColor p1, SkColor p2) {
 }
 
 // This method is used to graphically verify any under invalidation when
-// RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled is being
+// RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled is being
 // used. It compares the last recording made by GraphicsLayer::Paint against
 // |new_record|, by rastering both into bitmaps. Any differences are colored
 // as dark red.

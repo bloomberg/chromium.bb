@@ -91,7 +91,7 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
     // composited. There are no other box decoration on the LayoutView thus we
     // can safely exit here.
     if (layout_view.UsesCompositing() &&
-        !RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+        !RuntimeEnabledFeatures::RootLayerScrollingEnabled())
       return reason;
   }
 
@@ -123,7 +123,7 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
 
   DCHECK(border_box_changed);
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     // Incremental invalidation is not applicable if there is border in the
     // direction of border box size change because we don't know the border
     // width when issuing incremental raster invalidations.
@@ -260,7 +260,7 @@ PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
   if (reason == PaintInvalidationReason::kIncremental) {
     bool invalidated;
     if (box_.IsLayoutView() &&
-        !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+        !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       invalidated = IncrementallyInvalidatePaint(
           reason, context_.old_visual_rect, box_.VisualRect());
     } else {

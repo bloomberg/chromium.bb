@@ -60,7 +60,7 @@ constexpr base::TimeDelta kLongTaskDiscardingThreshold =
     base::TimeDelta::FromSeconds(30);
 
 void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
-  if (!blink::RuntimeEnabledFeatures::timerThrottlingForBackgroundTabsEnabled())
+  if (!blink::RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled())
     return;
 
   int load_percentage = static_cast<int>(load * 100);
@@ -73,7 +73,7 @@ void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
 }
 
 void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
-  if (!blink::RuntimeEnabledFeatures::timerThrottlingForBackgroundTabsEnabled())
+  if (!blink::RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled())
     return;
 
   int load_percentage = static_cast<int>(load * 100);

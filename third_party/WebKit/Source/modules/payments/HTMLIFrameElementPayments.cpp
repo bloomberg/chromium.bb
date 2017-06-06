@@ -49,7 +49,7 @@ HTMLIFrameElementPayments& HTMLIFrameElementPayments::From(
 // static
 bool HTMLIFrameElementPayments::AllowPaymentRequest(
     HTMLIFrameElement& element) {
-  return RuntimeEnabledFeatures::paymentRequestEnabled() &&
+  return RuntimeEnabledFeatures::PaymentRequestEnabled() &&
          element.FastHasAttribute(HTMLNames::allowpaymentrequestAttr);
 }
 

@@ -62,7 +62,7 @@ XSLStyleSheetResource* XSLStyleSheetResource::FetchSynchronously(
 
 XSLStyleSheetResource* XSLStyleSheetResource::Fetch(FetchParameters& params,
                                                     ResourceFetcher* fetcher) {
-  DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+  DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
   ApplyXSLRequestProperties(params);
   return ToXSLStyleSheetResource(
       fetcher->RequestResource(params, XSLStyleSheetResourceFactory()));

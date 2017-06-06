@@ -50,7 +50,7 @@ PaintInvalidationState::PaintInvalidationState(
       container_for_absolute_position_(layout_view),
       pending_delayed_paint_invalidations_(pending_delayed_paint_invalidations),
       painting_layer_(*layout_view.Layer()) {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
 
   if (!SupportsCachedOffsets(layout_view)) {
     cached_offsets_enabled_ = false;
@@ -93,7 +93,7 @@ PaintInvalidationState::PaintInvalidationState(
       pending_delayed_paint_invalidations_(
           parent_state.pending_delayed_paint_invalidations_),
       painting_layer_(parent_state.ChildPaintingLayer(current_object)) {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
   DCHECK_EQ(&painting_layer_, current_object.PaintingLayer());
 
   if (current_object == parent_state.current_object_) {
@@ -101,7 +101,7 @@ PaintInvalidationState::PaintInvalidationState(
 // object (e.g. LayoutView, and the HorriblySlowRectMapping cases in
 // LayoutBlock::invalidatePaintOfSubtreesIfNeeded()).
 // TODO(wangxianzhu): Avoid this for
-// RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled().
+// RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled().
 #if DCHECK_IS_ON()
     did_update_for_children_ = parent_state.did_update_for_children_;
 #endif
@@ -348,7 +348,7 @@ void PaintInvalidationState::UpdateForNormalChildren() {
   const LayoutBox& box = ToLayoutBox(current_object_);
 
   if (box.IsLayoutView()) {
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       if (box != paint_invalidation_container_) {
         paint_offset_ -=
             LayoutSize(ToLayoutView(box).GetFrameView()->GetScrollOffset());

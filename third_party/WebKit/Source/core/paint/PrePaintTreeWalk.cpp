@@ -108,7 +108,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view,
 
 static void UpdateAuxiliaryObjectProperties(const LayoutObject& object,
                                             PrePaintTreeWalkContext& context) {
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   if (!object.HasLayer())

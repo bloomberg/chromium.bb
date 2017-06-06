@@ -106,7 +106,7 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
   layer->UpdateAncestorOverflowLayer(info.last_overflow_clip_layer);
   if (info.last_overflow_clip_layer && layer->NeedsCompositingInputsUpdate() &&
       layer->GetLayoutObject().Style()->GetPosition() == EPosition::kSticky) {
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       if (info.last_overflow_clip_layer != previous_overflow_layer) {
         // Old ancestor scroller should no longer have these constraints.
         DCHECK(!previous_overflow_layer ||
@@ -157,7 +157,7 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
     PaintLayer::AncestorDependentCompositingInputs properties;
 
     if (!layer->IsRootLayer()) {
-      if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
         properties.unclipped_absolute_bounding_box =
             EnclosingIntRect(geometry_map_.AbsoluteRect(
                 FloatRect(layer->BoundingBoxForCompositingOverlapTest())));

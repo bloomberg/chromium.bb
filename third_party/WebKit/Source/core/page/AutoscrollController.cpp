@@ -102,7 +102,7 @@ void AutoscrollController::StopAutoscroll() {
   if (!scrollable)
     return;
 
-  if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled() &&
+  if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled() &&
       MiddleClickAutoscrollInProgress()) {
     if (LocalFrameView* view = scrollable->GetFrame()->View()) {
       view->SetCursor(PointerCursor());
@@ -127,7 +127,7 @@ void AutoscrollController::UpdateAutoscrollLayoutObject() {
 
   LayoutObject* layout_object = autoscroll_layout_object_;
 
-  if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()) {
+  if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     HitTestResult hit_test =
         layout_object->GetFrame()->GetEventHandler().HitTestResultAtPoint(
             middle_click_autoscroll_start_pos_,
@@ -204,7 +204,7 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
 void AutoscrollController::HandleMouseReleaseForMiddleClickAutoscroll(
     LocalFrame* frame,
     const WebMouseEvent& mouse_event) {
-  DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
+  DCHECK(RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled());
   if (!frame->IsMainFrame())
     return;
   switch (autoscroll_type_) {
@@ -231,7 +231,7 @@ bool AutoscrollController::MiddleClickAutoscrollInProgress() const {
 void AutoscrollController::StartMiddleClickAutoscroll(
     LayoutBox* scrollable,
     const IntPoint& last_known_mouse_position) {
-  DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
+  DCHECK(RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled());
   // We don't want to trigger the autoscroll or the middleClickAutoscroll if
   // it's already active.
   if (autoscroll_type_ != kNoAutoscroll)
@@ -330,7 +330,7 @@ void AutoscrollController::Animate(double) {
       break;
     case kAutoscrollForMiddleClickCanStop:
     case kAutoscrollForMiddleClick:
-      DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
+      DCHECK(RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled());
       if (!MiddleClickAutoscrollInProgress()) {
         StopAutoscroll();
         return;
@@ -379,7 +379,7 @@ void AutoscrollController::StartAutoscroll() {
 void AutoscrollController::UpdateMiddleClickAutoscrollState(
     LocalFrameView* view,
     const IntPoint& last_known_mouse_position) {
-  DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
+  DCHECK(RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled());
   // At the original click location we draw a 4 arrowed icon. Over this icon
   // there won't be any scroll, So don't change the cursor over this area.
   bool east = middle_click_autoscroll_start_pos_.X() <

@@ -245,7 +245,7 @@ BlobDataHandle::BlobDataHandle()
     : uuid_(CreateCanonicalUUIDString()),
       size_(0),
       is_single_unknown_size_file_(false) {
-  if (RuntimeEnabledFeatures::mojoBlobsEnabled()) {
+  if (RuntimeEnabledFeatures::MojoBlobsEnabled()) {
     // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
     // ends up going through the main thread. Ideally workers wouldn't need
     // to do that.
@@ -263,7 +263,7 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
       type_(data->ContentType().IsolatedCopy()),
       size_(size),
       is_single_unknown_size_file_(data->IsSingleUnknownSizeFile()) {
-  if (RuntimeEnabledFeatures::mojoBlobsEnabled()) {
+  if (RuntimeEnabledFeatures::MojoBlobsEnabled()) {
     // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
     // ends up going through the main thread. Ideally workers wouldn't need
     // to do that.
@@ -285,7 +285,7 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
       type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),
       size_(size),
       is_single_unknown_size_file_(false) {
-  if (RuntimeEnabledFeatures::mojoBlobsEnabled()) {
+  if (RuntimeEnabledFeatures::MojoBlobsEnabled()) {
     // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
     // ends up going through the main thread. Ideally workers wouldn't need
     // to do that.
@@ -299,7 +299,7 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
 }
 
 BlobDataHandle::~BlobDataHandle() {
-  if (!RuntimeEnabledFeatures::mojoBlobsEnabled())
+  if (!RuntimeEnabledFeatures::MojoBlobsEnabled())
     BlobRegistry::RemoveBlobDataRef(uuid_);
 }
 

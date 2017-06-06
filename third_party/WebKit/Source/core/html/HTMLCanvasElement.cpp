@@ -809,10 +809,10 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (context_ && !Is2d())
     return false;
 
-  if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
+  if (RuntimeEnabledFeatures::ForceDisplayList2dCanvasEnabled())
     return false;
 
-  if (!RuntimeEnabledFeatures::accelerated2dCanvasEnabled())
+  if (!RuntimeEnabledFeatures::Accelerated2dCanvasEnabled())
     return false;
 
   // The following is necessary for handling the special case of canvases in the
@@ -827,7 +827,7 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
     return false;
   int canvas_pixel_count = checked_canvas_pixel_count.ValueOrDie();
 
-  if (RuntimeEnabledFeatures::displayList2dCanvasEnabled()) {
+  if (RuntimeEnabledFeatures::DisplayList2dCanvasEnabled()) {
 #if 0
         // TODO(junov): re-enable this code once we solve the problem of recording
         // GPU-backed images to a PaintRecord for cross-context rendering crbug.com/490328
@@ -875,13 +875,13 @@ bool HTMLCanvasElement::ShouldUseDisplayList() {
   if (!context_->color_params().UsesOutputSpaceBlending())
     return false;
 
-  if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
+  if (RuntimeEnabledFeatures::ForceDisplayList2dCanvasEnabled())
     return true;
 
   if (MemoryCoordinator::IsLowEndDevice())
     return false;
 
-  if (!RuntimeEnabledFeatures::displayList2dCanvasEnabled())
+  if (!RuntimeEnabledFeatures::DisplayList2dCanvasEnabled())
     return false;
 
   return true;
@@ -1276,7 +1276,7 @@ PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     }
   } else {
     if (CanvasHeuristicParameters::kDisableAccelerationToAvoidReadbacks &&
-        !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled() &&
+        !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled() &&
         hint == kPreferNoAcceleration && GetImageBuffer() &&
         GetImageBuffer()->IsAccelerated()) {
       GetImageBuffer()->DisableAcceleration();

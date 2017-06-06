@@ -59,11 +59,11 @@ namespace blink {
 
 InternalSettings::Backup::Backup(Settings* settings)
     : original_csp_(RuntimeEnabledFeatures::
-                        experimentalContentSecurityPolicyFeaturesEnabled()),
+                        ExperimentalContentSecurityPolicyFeaturesEnabled()),
       original_css_sticky_position_enabled_(
-          RuntimeEnabledFeatures::cssStickyPositionEnabled()),
+          RuntimeEnabledFeatures::CSSStickyPositionEnabled()),
       original_overlay_scrollbars_enabled_(
-          RuntimeEnabledFeatures::overlayScrollbarsEnabled()),
+          RuntimeEnabledFeatures::OverlayScrollbarsEnabled()),
       original_editing_behavior_(settings->GetEditingBehaviorType()),
       original_text_autosizing_enabled_(settings->TextAutosizingEnabled()),
       original_text_autosizing_window_size_override_(
@@ -76,21 +76,21 @@ InternalSettings::Backup::Backup(Settings* settings)
       original_mock_gesture_tap_highlights_enabled_(
           settings->GetMockGestureTapHighlightsEnabled()),
       lang_attribute_aware_form_control_ui_enabled_(
-          RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled()),
+          RuntimeEnabledFeatures::LangAttributeAwareFormControlUIEnabled()),
       images_enabled_(settings->GetImagesEnabled()),
       default_video_poster_url_(settings->GetDefaultVideoPosterURL()),
       original_image_animation_policy_(settings->GetImageAnimationPolicy()),
       original_scroll_top_left_interop_enabled_(
-          RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()),
+          RuntimeEnabledFeatures::ScrollTopLeftInteropEnabled()),
       original_compositor_worker_enabled_(
-          RuntimeEnabledFeatures::compositorWorkerEnabled()) {}
+          RuntimeEnabledFeatures::CompositorWorkerEnabled()) {}
 
 void InternalSettings::Backup::RestoreTo(Settings* settings) {
-  RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(
+  RuntimeEnabledFeatures::SetExperimentalContentSecurityPolicyFeaturesEnabled(
       original_csp_);
-  RuntimeEnabledFeatures::setCSSStickyPositionEnabled(
+  RuntimeEnabledFeatures::SetCSSStickyPositionEnabled(
       original_css_sticky_position_enabled_);
-  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(
       original_overlay_scrollbars_enabled_);
   settings->SetEditingBehaviorType(original_editing_behavior_);
   settings->SetTextAutosizingEnabled(original_text_autosizing_enabled_);
@@ -103,15 +103,15 @@ void InternalSettings::Backup::RestoreTo(Settings* settings) {
   settings->SetMockScrollbarsEnabled(original_mock_scrollbars_enabled_);
   settings->SetMockGestureTapHighlightsEnabled(
       original_mock_gesture_tap_highlights_enabled_);
-  RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(
+  RuntimeEnabledFeatures::SetLangAttributeAwareFormControlUIEnabled(
       lang_attribute_aware_form_control_ui_enabled_);
   settings->SetImagesEnabled(images_enabled_);
   settings->SetDefaultVideoPosterURL(default_video_poster_url_);
   settings->GetGenericFontFamilySettings().Reset();
   settings->SetImageAnimationPolicy(original_image_animation_policy_);
-  RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(
+  RuntimeEnabledFeatures::SetScrollTopLeftInteropEnabled(
       original_scroll_top_left_interop_enabled_);
-  RuntimeEnabledFeatures::setCompositorWorkerEnabled(
+  RuntimeEnabledFeatures::SetCompositorWorkerEnabled(
       original_compositor_worker_enabled_);
 }
 
@@ -169,17 +169,17 @@ void InternalSettings::setMockGestureTapHighlightsEnabled(
 }
 
 void InternalSettings::setCSSStickyPositionEnabled(bool enabled) {
-  RuntimeEnabledFeatures::setCSSStickyPositionEnabled(enabled);
+  RuntimeEnabledFeatures::SetCSSStickyPositionEnabled(enabled);
 }
 
 void InternalSettings::setExperimentalContentSecurityPolicyFeaturesEnabled(
     bool enabled) {
-  RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(
+  RuntimeEnabledFeatures::SetExperimentalContentSecurityPolicyFeaturesEnabled(
       enabled);
 }
 
 void InternalSettings::setOverlayScrollbarsEnabled(bool enabled) {
-  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(enabled);
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(enabled);
 }
 
 void InternalSettings::setViewportEnabled(bool enabled,
@@ -357,7 +357,7 @@ void InternalSettings::setEditingBehavior(const String& editing_behavior,
 }
 
 void InternalSettings::setLangAttributeAwareFormControlUIEnabled(bool enabled) {
-  RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(enabled);
+  RuntimeEnabledFeatures::SetLangAttributeAwareFormControlUIEnabled(enabled);
 }
 
 void InternalSettings::setImagesEnabled(bool enabled,
@@ -505,7 +505,7 @@ void InternalSettings::setImageAnimationPolicy(
 }
 
 void InternalSettings::setScrollTopLeftInteropEnabled(bool enabled) {
-  RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(enabled);
+  RuntimeEnabledFeatures::SetScrollTopLeftInteropEnabled(enabled);
 }
 
 void InternalSettings::SetDnsPrefetchLogging(bool enabled,
@@ -524,7 +524,7 @@ void InternalSettings::setCompositorWorkerEnabled(
     bool enabled,
     ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
-  RuntimeEnabledFeatures::setCompositorWorkerEnabled(enabled);
+  RuntimeEnabledFeatures::SetCompositorWorkerEnabled(enabled);
 }
 
 void InternalSettings::setPresentationReceiver(

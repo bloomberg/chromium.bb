@@ -70,7 +70,7 @@ class ObjectPainter {
     // For now this works for SPv2 (implying SlimmingPaintInvalidation) only,
     // but not SlimmingPaintInvalidation on SPv1 because of complexities of
     // paint invalidation containers in SPv1.
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
       DoCheckPaintOffset(paint_info, paint_offset);
 #endif
   }

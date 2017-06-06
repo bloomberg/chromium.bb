@@ -97,7 +97,7 @@ FontResource* CSSFontFaceSrcValue::Fetch(Document* document) const {
                                   kClientRequestedCredentials);
     options.initiator_info.name = FetchInitiatorTypeNames::css;
     FetchParameters params(resource_request, options);
-    if (RuntimeEnabledFeatures::webFontsCacheAwareTimeoutAdaptationEnabled())
+    if (RuntimeEnabledFeatures::WebFontsCacheAwareTimeoutAdaptationEnabled())
       params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
     params.SetContentSecurityCheck(should_check_content_security_policy_);
     SecurityOrigin* security_origin = document->GetSecurityOrigin();

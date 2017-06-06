@@ -517,7 +517,7 @@ void LocalDOMWindow::Reset() {
 }
 
 void LocalDOMWindow::SendOrientationChangeEvent() {
-  DCHECK(RuntimeEnabledFeatures::orientationEventEnabled());
+  DCHECK(RuntimeEnabledFeatures::OrientationEventEnabled());
   DCHECK(GetFrame()->IsLocalRoot());
 
   // Before dispatching the event, build a list of all frames in the page
@@ -540,7 +540,7 @@ void LocalDOMWindow::SendOrientationChangeEvent() {
 }
 
 int LocalDOMWindow::orientation() const {
-  DCHECK(RuntimeEnabledFeatures::orientationEventEnabled());
+  DCHECK(RuntimeEnabledFeatures::OrientationEventEnabled());
 
   if (!GetFrame() || !GetFrame()->GetPage())
     return 0;

@@ -16,7 +16,7 @@ const CSSValue* CSSPropertyAPITranslate::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSIndependentTransformPropertiesEnabled());
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);

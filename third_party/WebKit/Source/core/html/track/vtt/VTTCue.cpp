@@ -892,7 +892,7 @@ VTTCue::CueSetting VTTCue::SettingName(VTTScanner& input) const {
     parsed_setting = kSize;
   else if (input.Scan("align"))
     parsed_setting = kAlign;
-  else if (RuntimeEnabledFeatures::webVTTRegionsEnabled() &&
+  else if (RuntimeEnabledFeatures::WebVTTRegionsEnabled() &&
            input.Scan("region"))
     parsed_setting = kRegionId;
   // Verify that a ':' follows.

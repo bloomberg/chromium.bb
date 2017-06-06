@@ -39,7 +39,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tag_name,
       animation_valid_(false),
       calc_mode_(kCalcModeLinear),
       animation_mode_(kNoAnimation) {
-  DCHECK(RuntimeEnabledFeatures::smilEnabled());
+  DCHECK(RuntimeEnabledFeatures::SMILEnabled());
   UseCounter::Count(document, UseCounter::kSVGAnimationElement);
 }
 

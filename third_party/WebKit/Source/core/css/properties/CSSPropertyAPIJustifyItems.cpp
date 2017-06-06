@@ -16,7 +16,7 @@ const CSSValue* CSSPropertyAPIJustifyItems::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   CSSParserTokenRange range_copy = range;
   CSSIdentifierValue* legacy =
       CSSPropertyParserHelpers::ConsumeIdent<CSSValueLegacy>(range_copy);

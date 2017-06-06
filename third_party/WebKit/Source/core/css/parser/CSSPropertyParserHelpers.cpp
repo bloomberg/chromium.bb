@@ -1021,7 +1021,7 @@ static bool ConsumeGradientColorStops(CSSParserTokenRange& range,
       return false;
     gradient->AddStop(stop);
 
-    if (RuntimeEnabledFeatures::multipleColorStopPositionsEnabled()) {
+    if (RuntimeEnabledFeatures::MultipleColorStopPositionsEnabled()) {
       if (!stop.color_ || !stop.offset_)
         continue;
 
@@ -1217,7 +1217,7 @@ static CSSValue* ConsumeLinearGradient(CSSParserTokenRange& args,
 static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
                                       const CSSParserContext& context,
                                       CSSGradientRepeat repeating) {
-  if (!RuntimeEnabledFeatures::conicGradientEnabled())
+  if (!RuntimeEnabledFeatures::ConicGradientEnabled())
     return nullptr;
 
   const CSSPrimitiveValue* from_angle = nullptr;
@@ -1285,7 +1285,7 @@ static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
 
 static CSSValue* ConsumePaint(CSSParserTokenRange& args,
                               const CSSParserContext* context) {
-  DCHECK(RuntimeEnabledFeatures::cssPaintAPIEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSPaintAPIEnabled());
 
   const CSSParserToken& name_token = args.ConsumeIncludingWhitespace();
   CSSCustomIdentValue* name = ConsumeCustomIdentWithToken(name_token);
@@ -1295,7 +1295,7 @@ static CSSValue* ConsumePaint(CSSParserTokenRange& args,
   if (args.AtEnd())
     return CSSPaintValue::Create(name);
 
-  if (!RuntimeEnabledFeatures::cssPaintAPIArgumentsEnabled()) {
+  if (!RuntimeEnabledFeatures::CSSPaintAPIArgumentsEnabled()) {
     // Arguments not enabled, but exists. Invalid.
     return nullptr;
   }
@@ -1366,7 +1366,7 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
   } else if (id == CSSValueWebkitCrossFade) {
     result = ConsumeCrossFade(args, context);
   } else if (id == CSSValuePaint) {
-    result = RuntimeEnabledFeatures::cssPaintAPIEnabled()
+    result = RuntimeEnabledFeatures::CSSPaintAPIEnabled()
                  ? ConsumePaint(args, context)
                  : nullptr;
   }

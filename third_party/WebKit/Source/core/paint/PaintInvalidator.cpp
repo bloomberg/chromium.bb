@@ -80,7 +80,7 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     }
   }
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     // In SPv2, visual rects are in the space of their local transform node.
     // For SVG, the input rect is in local SVG coordinates in which paint
     // offset doesn't apply.
@@ -172,7 +172,7 @@ LayoutPoint PaintInvalidator::ComputeLocationInBacking(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
   // In SPv2, locationInBacking is in the space of their local transform node.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return object.PaintOffset();
 
   LayoutPoint point;
@@ -267,7 +267,7 @@ class ScopedUndoFrameViewContentClipAndScroll {
             const_cast<PaintPropertyTreeBuilderFragmentContext&>(
                 tree_builder_context)),
         saved_context_(tree_builder_context_.current) {
-    DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+    DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
 
     if (frame_view.ContentClip() == saved_context_.clip) {
       tree_builder_context_.current.clip = saved_context_.clip->Parent();
@@ -395,7 +395,7 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
   Optional<ScopedUndoFrameViewContentClipAndScroll>
       undo_frame_view_content_clip_and_scroll;
 
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
       object.IsLayoutView() && !object.IsPaintInvalidationContainer()) {
     undo_frame_view_content_clip_and_scroll.emplace(
         *ToLayoutView(object).GetFrameView(), *context.tree_builder_context_);
@@ -439,7 +439,7 @@ void PaintInvalidator::InvalidatePaint(
 #endif
   }
 
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     Optional<ScopedUndoFrameViewContentClipAndScroll> undo;
     if (tree_builder_context)
       undo.emplace(frame_view, *context.tree_builder_context_);
@@ -466,7 +466,7 @@ void PaintInvalidator::InvalidatePaint(
   UpdatePaintingLayer(object, context);
 
   if (object.GetDocument().Printing() &&
-      !RuntimeEnabledFeatures::printBrowserEnabled())
+      !RuntimeEnabledFeatures::PrintBrowserEnabled())
     return;  // Don't invalidate paints if we're printing.
 
   // TODO(crbug.com/637313): Use GeometryMapper which now supports filter

@@ -39,18 +39,18 @@ class XSLStyleSheet final : public StyleSheet {
   static XSLStyleSheet* Create(XSLImportRule* parent_import,
                                const String& original_url,
                                const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     return new XSLStyleSheet(parent_import, original_url, final_url);
   }
   static XSLStyleSheet* Create(ProcessingInstruction* parent_node,
                                const String& original_url,
                                const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     return new XSLStyleSheet(parent_node, original_url, final_url, false);
   }
   static XSLStyleSheet* CreateEmbedded(ProcessingInstruction* parent_node,
                                        const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     return new XSLStyleSheet(parent_node, final_url.GetString(), final_url,
                              true);
   }
@@ -62,7 +62,7 @@ class XSLStyleSheet final : public StyleSheet {
                                                Node* stylesheet_root_node,
                                                const String& original_url,
                                                const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     return new XSLStyleSheet(document, stylesheet_root_node, original_url,
                              final_url, false);
   }

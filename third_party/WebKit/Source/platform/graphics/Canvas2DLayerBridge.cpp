@@ -281,7 +281,7 @@ bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
   *out_mailbox =
       cc::TextureMailbox(mailbox, sync_token, texture_target, gfx::Size(size_),
                          is_overlay_candidate, secure_output_only);
-  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+  if (RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
     gfx::ColorSpace color_space = color_params_.GetGfxColorSpace();
     out_mailbox->set_color_space(color_space);
     image_info->gpu_memory_buffer_->SetColorSpaceForScanout(color_space);
@@ -384,7 +384,7 @@ bool Canvas2DLayerBridge::PrepareMailboxFromImage(
   }
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
-  if (RuntimeEnabledFeatures::canvas2dImageChromiumEnabled()) {
+  if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
     if (PrepareIOSurfaceMailboxFromImage(image.get(), out_mailbox))
       return true;
     // Note: if IOSurface backed texture creation failed we fall back to the
@@ -394,7 +394,7 @@ bool Canvas2DLayerBridge::PrepareMailboxFromImage(
 
   mailbox_info.image_ = std::move(image);
 
-  if (RuntimeEnabledFeatures::forceDisable2dCanvasCopyOnWriteEnabled())
+  if (RuntimeEnabledFeatures::ForceDisable2dCanvasCopyOnWriteEnabled())
     surface_->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
 
   // Need to flush skia's internal queue, because the texture is about to be
@@ -784,7 +784,7 @@ void Canvas2DLayerBridge::FlushRecordingOnly() {
     // be done using target space pixel values.
     SkCanvas* canvas = GetOrCreateSurface()->getCanvas();
     std::unique_ptr<SkCanvas> color_transform_canvas;
-    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled() &&
+    if (RuntimeEnabledFeatures::ColorCorrectRenderingEnabled() &&
         color_params_.UsesOutputSpaceBlending()) {
       color_transform_canvas = SkCreateColorSpaceXformCanvas(
           canvas, color_params_.GetSkColorSpace());

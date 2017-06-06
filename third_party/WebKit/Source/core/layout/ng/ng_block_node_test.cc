@@ -14,8 +14,8 @@ namespace blink {
 namespace {
 class NGBlockNodeForTest : public RenderingTest {
  public:
-  NGBlockNodeForTest() { RuntimeEnabledFeatures::setLayoutNGEnabled(true); }
-  ~NGBlockNodeForTest() { RuntimeEnabledFeatures::setLayoutNGEnabled(false); };
+  NGBlockNodeForTest() { RuntimeEnabledFeatures::SetLayoutNGEnabled(true); }
+  ~NGBlockNodeForTest() { RuntimeEnabledFeatures::SetLayoutNGEnabled(false); };
 };
 
 TEST_F(NGBlockNodeForTest, ChildInlineAndBlock) {

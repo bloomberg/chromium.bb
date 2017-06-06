@@ -546,7 +546,7 @@ static void Write(TextStream& ts,
 
   bool report_frame_scroll_info =
       layer.GetLayoutObject().IsLayoutView() &&
-      !RuntimeEnabledFeatures::rootLayerScrollingEnabled();
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled();
 
   if (report_frame_scroll_info) {
     LayoutView& layout_view = ToLayoutView(layer.GetLayoutObject());

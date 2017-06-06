@@ -366,7 +366,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
 
   // Default-Alignment properties.
   static StyleSelfAlignmentData InitialDefaultAlignment() {
-    return StyleSelfAlignmentData(RuntimeEnabledFeatures::cssGridLayoutEnabled()
+    return StyleSelfAlignmentData(RuntimeEnabledFeatures::CSSGridLayoutEnabled()
                                       ? kItemPositionNormal
                                       : kItemPositionStretch,
                                   kOverflowAlignmentDefault);

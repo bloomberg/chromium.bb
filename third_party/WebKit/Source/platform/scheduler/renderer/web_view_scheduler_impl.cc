@@ -342,7 +342,7 @@ void WebViewSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool() {
   if (background_time_budget_pool_)
     return;
 
-  if (!RuntimeEnabledFeatures::expensiveBackgroundTimerThrottlingEnabled())
+  if (!RuntimeEnabledFeatures::ExpensiveBackgroundTimerThrottlingEnabled())
     return;
 
   background_time_budget_pool_ =

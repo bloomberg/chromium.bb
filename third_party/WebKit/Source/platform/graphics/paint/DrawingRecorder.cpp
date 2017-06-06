@@ -37,7 +37,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
 
   // Must check DrawingRecorder::useCachedDrawingIfPossible before creating the
   // DrawingRecorder.
-  DCHECK(RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() ||
+  DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
          !UseCachedDrawingIfPossible(context_, display_item_client_,
                                      display_item_type_));
 
@@ -55,7 +55,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
   context.BeginRecording(recording_bounds_);
 
 #if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintStrictCullRectClippingEnabled()) {
     // Skia depends on the cull rect containing all of the display item
     // commands. When strict cull rect clipping is enabled, make this explicit.
     // This allows us to identify potential incorrect cull rects that might
@@ -78,7 +78,7 @@ DrawingRecorder::~DrawingRecorder() {
     return;
 
 #if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintStrictCullRectClippingEnabled())
     context_.Restore();
 
   context_.SetInDrawingRecorder(false);
@@ -92,7 +92,7 @@ DrawingRecorder::~DrawingRecorder() {
   sk_sp<const PaintRecord> picture = context_.EndRecording();
 
 #if DCHECK_IS_ON()
-  if (!RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled() &&
+  if (!RuntimeEnabledFeatures::SlimmingPaintStrictCullRectClippingEnabled() &&
       !context_.GetPaintController().IsForPaintRecordBuilder() &&
       display_item_client_.PaintedOutputOfObjectHasNoEffectRegardlessOfSize()) {
     DCHECK_EQ(0u, picture->size()) << display_item_client_.DebugName();

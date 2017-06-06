@@ -56,7 +56,7 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
 }
 
 WorkerFetchContext* WorkerOrWorkletGlobalScope::GetFetchContext() {
-  DCHECK(RuntimeEnabledFeatures::offMainThreadFetchEnabled());
+  DCHECK(RuntimeEnabledFeatures::OffMainThreadFetchEnabled());
   DCHECK(!IsMainThreadWorkletGlobalScope());
   if (fetch_context_)
     return fetch_context_;

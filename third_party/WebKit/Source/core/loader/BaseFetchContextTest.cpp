@@ -124,7 +124,7 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {
 
       {"http://localhost/", true},         {"http://127.0.0.1/", true},
       {"http://127.0.0.1:8000/", true}};
-  RuntimeEnabledFeatures::setCorsRFC1918Enabled(false);
+  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(false);
   for (const auto& test : cases) {
     SCOPED_TRACE(test.url);
     ResourceRequest main_request(test.url);
@@ -137,7 +137,7 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {
     EXPECT_FALSE(sub_request.IsExternalRequest());
   }
 
-  RuntimeEnabledFeatures::setCorsRFC1918Enabled(true);
+  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(true);
   for (const auto& test : cases) {
     SCOPED_TRACE(test.url);
     ResourceRequest main_request(test.url);
@@ -170,7 +170,7 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPrivateContext) {
 
       {"http://localhost/", true},         {"http://127.0.0.1/", true},
       {"http://127.0.0.1:8000/", true}};
-  RuntimeEnabledFeatures::setCorsRFC1918Enabled(false);
+  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(false);
   for (const auto& test : cases) {
     SCOPED_TRACE(test.url);
     ResourceRequest main_request(test.url);
@@ -183,7 +183,7 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPrivateContext) {
     EXPECT_FALSE(sub_request.IsExternalRequest());
   }
 
-  RuntimeEnabledFeatures::setCorsRFC1918Enabled(true);
+  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(true);
   for (const auto& test : cases) {
     SCOPED_TRACE(test.url);
     ResourceRequest main_request(test.url);
@@ -217,7 +217,7 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForLocalContext) {
       {"http://localhost/", false},        {"http://127.0.0.1/", false},
       {"http://127.0.0.1:8000/", false}};
 
-  RuntimeEnabledFeatures::setCorsRFC1918Enabled(false);
+  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(false);
   for (const auto& test : cases) {
     ResourceRequest main_request(test.url);
     fetch_context_->AddAdditionalRequestHeaders(main_request,
@@ -229,7 +229,7 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForLocalContext) {
     EXPECT_FALSE(sub_request.IsExternalRequest());
   }
 
-  RuntimeEnabledFeatures::setCorsRFC1918Enabled(true);
+  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(true);
   for (const auto& test : cases) {
     ResourceRequest main_request(test.url);
     fetch_context_->AddAdditionalRequestHeaders(main_request,

@@ -730,7 +730,7 @@ int Element::clientWidth() {
       (in_quirks_mode && IsHTMLElement() && GetDocument().body() == this)) {
     LayoutViewItem layout_view = GetDocument().GetLayoutViewItem();
     if (!layout_view.IsNull()) {
-      if (!RuntimeEnabledFeatures::overlayScrollbarsEnabled() ||
+      if (!RuntimeEnabledFeatures::OverlayScrollbarsEnabled() ||
           !GetDocument().GetFrame()->IsLocalRoot())
         GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
@@ -766,7 +766,7 @@ int Element::clientHeight() {
       (in_quirks_mode && IsHTMLElement() && GetDocument().body() == this)) {
     LayoutViewItem layout_view = GetDocument().GetLayoutViewItem();
     if (!layout_view.IsNull()) {
-      if (!RuntimeEnabledFeatures::overlayScrollbarsEnabled() ||
+      if (!RuntimeEnabledFeatures::OverlayScrollbarsEnabled() ||
           !GetDocument().GetFrame()->IsLocalRoot())
         GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
@@ -1205,7 +1205,7 @@ String Element::computedName() {
 }
 
 AccessibleNode* Element::ExistingAccessibleNode() const {
-  if (!RuntimeEnabledFeatures::accessibilityObjectModelEnabled())
+  if (!RuntimeEnabledFeatures::AccessibilityObjectModelEnabled())
     return nullptr;
 
   if (!HasRareData())
@@ -1215,7 +1215,7 @@ AccessibleNode* Element::ExistingAccessibleNode() const {
 }
 
 AccessibleNode* Element::accessibleNode() {
-  if (!RuntimeEnabledFeatures::accessibilityObjectModelEnabled())
+  if (!RuntimeEnabledFeatures::AccessibilityObjectModelEnabled())
     return nullptr;
 
   ElementRareData& rare_data = EnsureElementRareData();
@@ -4250,7 +4250,7 @@ void Element::AddPropertyToPresentationAttributeStyle(
 }
 
 bool Element::SupportsStyleSharing() const {
-  if (!RuntimeEnabledFeatures::styleSharingEnabled())
+  if (!RuntimeEnabledFeatures::StyleSharingEnabled())
     return false;
   if (!IsStyledElement() || !ParentOrShadowHostElement())
     return false;

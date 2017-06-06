@@ -155,7 +155,7 @@ void LayoutSVGContainer::DescendantIsolationRequirementsChanged(
       break;
   }
   if (SVGLayoutSupport::WillIsolateBlendingDescendantsForObject(this)) {
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
       SetNeedsPaintPropertyUpdate();
     return;
   }

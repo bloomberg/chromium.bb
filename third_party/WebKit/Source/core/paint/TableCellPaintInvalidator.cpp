@@ -24,7 +24,7 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
     const auto& row = *cell_.Row();
     if (row.GetPaintInvalidationReason() == PaintInvalidationReason::kNone &&
         row.StyleRef().HasBackground()) {
-      if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+      if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
         context_.parent_context->painting_layer->SetNeedsRepaint();
       else
         ObjectPaintInvalidator(row).SlowSetPaintingLayerNeedsRepaint();
@@ -45,7 +45,7 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
           section_paints_background = true;
       }
       if (section_paints_background) {
-        if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+        if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
           context_.parent_context->parent_context->painting_layer
               ->SetNeedsRepaint();
         } else {

@@ -14,7 +14,7 @@ namespace blink {
 using namespace HTMLNames;
 
 AccessibleNode::AccessibleNode(Element* element) : element_(element) {
-  DCHECK(RuntimeEnabledFeatures::accessibilityObjectModelEnabled());
+  DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
 }
 
 AccessibleNode::~AccessibleNode() {}

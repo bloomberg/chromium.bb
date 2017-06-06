@@ -52,7 +52,7 @@ DateTimeChooserImpl::DateTimeChooserImpl(
       popup_(0),
       parameters_(parameters),
       locale_(Locale::Create(parameters.locale)) {
-  DCHECK(RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled());
+  DCHECK(RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
   DCHECK(chrome_client_);
   DCHECK(client_);
   popup_ = chrome_client_->OpenPagePopup(this);

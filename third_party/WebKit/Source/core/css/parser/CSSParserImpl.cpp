@@ -644,7 +644,7 @@ StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(
     CSSParserTokenRange prelude,
     CSSParserTokenRange block) {
   // Allow @viewport rules from UA stylesheets even if the feature is disabled.
-  if (!RuntimeEnabledFeatures::cssViewportEnabled() &&
+  if (!RuntimeEnabledFeatures::CSSViewportEnabled() &&
       !IsUASheetBehavior(context_->Mode()))
     return nullptr;
 
@@ -753,7 +753,7 @@ StyleRulePage* CSSParserImpl::ConsumePageRule(CSSParserTokenRange prelude,
 }
 
 void CSSParserImpl::ConsumeApplyRule(CSSParserTokenRange prelude) {
-  DCHECK(RuntimeEnabledFeatures::cssApplyAtRulesEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSApplyAtRulesEnabled());
 
   const CSSParserToken& ident = prelude.ConsumeIncludingWhitespace();
   if (!prelude.AtEnd() || !CSSVariableParser::IsValidVariableName(ident))
@@ -866,7 +866,7 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenRange range,
       case kAtKeywordToken: {
         AllowedRulesType allowed_rules =
             rule_type == StyleRule::kStyle &&
-                    RuntimeEnabledFeatures::cssApplyAtRulesEnabled()
+                    RuntimeEnabledFeatures::CSSApplyAtRulesEnabled()
                 ? kApplyRules
                 : kNoRules;
         StyleRuleBase* rule = ConsumeAtRule(range, allowed_rules);

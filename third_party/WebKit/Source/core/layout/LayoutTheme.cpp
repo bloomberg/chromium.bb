@@ -65,7 +65,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutTheme& LayoutTheme::GetTheme() {
-  if (RuntimeEnabledFeatures::mobileLayoutThemeEnabled()) {
+  if (RuntimeEnabledFeatures::MobileLayoutThemeEnabled()) {
     DEFINE_STATIC_REF(LayoutTheme, layout_theme_mobile,
                       (LayoutThemeMobile::Create()));
     return *layout_theme_mobile;
@@ -842,7 +842,7 @@ bool LayoutTheme::ShouldOpenPickerWithF4Key() const {
 }
 
 bool LayoutTheme::SupportsCalendarPicker(const AtomicString& type) const {
-  DCHECK(RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled());
+  DCHECK(RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
   return type == InputTypeNames::date || type == InputTypeNames::datetime ||
          type == InputTypeNames::datetime_local ||
          type == InputTypeNames::month || type == InputTypeNames::week;

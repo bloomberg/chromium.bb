@@ -47,7 +47,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
 
   bool paint_with_foreign_layer =
       !displaying_poster && !force_software_video_paint &&
-      RuntimeEnabledFeatures::slimmingPaintV2Enabled();
+      RuntimeEnabledFeatures::SlimmingPaintV2Enabled();
   if (paint_with_foreign_layer) {
     if (WebLayer* layer = layout_video_.MediaElement()->PlatformLayer()) {
       IntRect pixel_snapped_rect = PixelSnappedIntRect(content_rect);

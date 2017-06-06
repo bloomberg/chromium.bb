@@ -223,7 +223,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
 }
 
 TEST_F(SecurityOriginTest, Suborigins) {
-  RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+  RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
 
   RefPtr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https://test.com");
@@ -268,7 +268,7 @@ TEST_F(SecurityOriginTest, Suborigins) {
 }
 
 TEST_F(SecurityOriginTest, SuboriginsParsing) {
-  RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+  RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
   String protocol, real_protocol, host, real_host, suborigin;
   protocol = "https";
   host = "test.com";
@@ -310,7 +310,7 @@ TEST_F(SecurityOriginTest, SuboriginsParsing) {
 }
 
 TEST_F(SecurityOriginTest, SuboriginsIsSameSchemeHostPortAndSuborigin) {
-  blink::RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+  blink::RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
   RefPtr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https-so://foobar.test.com");
   RefPtr<SecurityOrigin> other1 =
@@ -330,7 +330,7 @@ TEST_F(SecurityOriginTest, SuboriginsIsSameSchemeHostPortAndSuborigin) {
 }
 
 TEST_F(SecurityOriginTest, CanAccess) {
-  RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+  RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
 
   struct TestCase {
     bool can_access;
@@ -356,7 +356,7 @@ TEST_F(SecurityOriginTest, CanAccess) {
 }
 
 TEST_F(SecurityOriginTest, CanRequest) {
-  RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+  RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
 
   struct TestCase {
     bool can_request;

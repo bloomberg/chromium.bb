@@ -579,7 +579,7 @@ void DocumentLoader::ResponseReceived(
     return;
   }
 
-  if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
+  if (RuntimeEnabledFeatures::EmbedderCSPEnforcementEnabled() &&
       !GetFrameLoader().RequiredCSP().IsEmpty()) {
     SecurityOrigin* parent_security_origin =
         frame_->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin();
@@ -946,7 +946,7 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
     document->ParseAndSetReferrerPolicy(referrer_policy_header);
   }
 
-  if (RuntimeEnabledFeatures::serverTimingEnabled() &&
+  if (RuntimeEnabledFeatures::ServerTimingEnabled() &&
       frame_->GetDocument()->domWindow()) {
     DOMWindowPerformance::performance(*(frame_->GetDocument()->domWindow()))
         ->AddServerTiming(response_,

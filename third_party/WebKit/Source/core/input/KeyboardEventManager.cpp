@@ -172,7 +172,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
     CapsLockStateMayHaveChanged();
 
   if (scroll_manager_->MiddleClickAutoscrollInProgress()) {
-    DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
+    DCHECK(RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled());
     // If a key is pressed while the middleClickAutoscroll is in progress then
     // we want to stop.
     if (initial_key_event.GetType() == WebInputEvent::kKeyDown ||
@@ -341,7 +341,7 @@ void KeyboardEventManager::DefaultSpaceEventHandler(
 void KeyboardEventManager::DefaultBackspaceEventHandler(KeyboardEvent* event) {
   DCHECK_EQ(event->type(), EventTypeNames::keydown);
 
-  if (!RuntimeEnabledFeatures::backspaceDefaultHandlerEnabled())
+  if (!RuntimeEnabledFeatures::BackspaceDefaultHandlerEnabled())
     return;
 
   if (event->ctrlKey() || event->metaKey() || event->altKey())

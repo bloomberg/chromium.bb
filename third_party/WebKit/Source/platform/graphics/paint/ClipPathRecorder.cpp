@@ -14,14 +14,14 @@ ClipPathRecorder::ClipPathRecorder(GraphicsContext& context,
                                    const DisplayItemClient& client,
                                    const Path& clip_path)
     : context_(context), client_(client) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   context_.GetPaintController().CreateAndAppend<BeginClipPathDisplayItem>(
       client_, clip_path);
 }
 
 ClipPathRecorder::~ClipPathRecorder() {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   context_.GetPaintController().EndItem<EndClipPathDisplayItem>(client_);
 }

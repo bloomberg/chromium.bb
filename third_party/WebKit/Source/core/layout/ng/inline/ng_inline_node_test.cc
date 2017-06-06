@@ -62,13 +62,13 @@ class NGInlineNodeTest : public RenderingTest {
  protected:
   void SetUp() override {
     RenderingTest::SetUp();
-    RuntimeEnabledFeatures::setLayoutNGEnabled(true);
+    RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
     style_ = ComputedStyle::Create();
     style_->GetFont().Update(nullptr);
   }
 
   void TearDown() override {
-    RuntimeEnabledFeatures::setLayoutNGEnabled(false);
+    RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
     RenderingTest::TearDown();
   }
 

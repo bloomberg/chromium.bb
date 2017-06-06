@@ -46,7 +46,7 @@ const CSSValue* CSSPropertyAPIFontVariationSettings::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  DCHECK(RuntimeEnabledFeatures::cssVariableFontsEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSVariableFontsEnabled());
   if (range.Peek().Id() == CSSValueNormal)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   CSSValueList* variation_settings = CSSValueList::CreateCommaSeparated();

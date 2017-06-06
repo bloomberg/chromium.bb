@@ -480,7 +480,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
     return WebInputEventResult::kNotHandled;
 
   bool enable_touchpad_scroll_latching =
-      RuntimeEnabledFeatures::touchpadAndWheelScrollLatchingEnabled();
+      RuntimeEnabledFeatures::TouchpadAndWheelScrollLatchingEnabled();
 
   Node* event_target = nullptr;
   Scrollbar* scrollbar = nullptr;

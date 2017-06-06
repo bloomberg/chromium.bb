@@ -610,7 +610,7 @@ String Request::getReferrerPolicy() const {
     case kReferrerPolicyOriginWhenCrossOrigin:
       return "origin-when-cross-origin";
     case kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-      DCHECK(RuntimeEnabledFeatures::reducedReferrerGranularityEnabled());
+      DCHECK(RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled());
       return "no-referrer-when-downgrade-origin-when-cross-origin";
   }
   NOTREACHED();

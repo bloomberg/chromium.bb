@@ -425,7 +425,7 @@ class PLATFORM_EXPORT DrawingBuffer
   void ClearChromiumImageAlpha(const ColorBuffer&);
 
   // Tries to create a CHROMIUM_image backed texture if
-  // RuntimeEnabledFeatures::webGLImageChromiumEnabled() is true. On failure,
+  // RuntimeEnabledFeatures::WebGLImageChromiumEnabled() is true. On failure,
   // or if the flag is false, creates a default texture. Always returns a valid
   // ColorBuffer.
   RefPtr<ColorBuffer> CreateColorBuffer(const IntSize&);
@@ -545,7 +545,7 @@ class PLATFORM_EXPORT DrawingBuffer
 
   // In the case of OffscreenCanvas, we do not want to enable the
   // WebGLImageChromium flag, so we replace all the
-  // RuntimeEnabledFeatures::webGLImageChromiumEnabled() call with
+  // RuntimeEnabledFeatures::WebGLImageChromiumEnabled() call with
   // shouldUseChromiumImage() calls, and set m_chromiumImageUsage to
   // DisallowChromiumImage in the case of OffscreenCanvas.
   ChromiumImageUsage chromium_image_usage_;

@@ -412,7 +412,7 @@ float ScrollbarThemeMac::ThumbOpacity(
 
 // static
 NSScrollerStyle ScrollbarThemeMac::RecommendedScrollerStyle() {
-  if (RuntimeEnabledFeatures::overlayScrollbarsEnabled())
+  if (RuntimeEnabledFeatures::OverlayScrollbarsEnabled())
     return NSScrollerStyleOverlay;
   return g_preferred_scroller_style;
 }

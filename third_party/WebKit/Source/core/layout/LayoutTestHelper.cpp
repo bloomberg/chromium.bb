@@ -54,7 +54,7 @@ void RenderingTest::SetUp() {
                               local_frame_client_, SettingOverrider());
 
   Settings::SetMockScrollbarsEnabled(true);
-  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
   EXPECT_TRUE(ScrollbarTheme::GetTheme().UsesOverlayScrollbars());
 
   // This ensures that the minimal DOM tree gets attached

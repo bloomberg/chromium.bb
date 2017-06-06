@@ -372,7 +372,7 @@ GraphicsLayer* PaintLayerCompositor::ParentForContentLayers() const {
   if (root_content_layer_)
     return root_content_layer_.get();
 
-  DCHECK(RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+  DCHECK(RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   // Iframe content layers will be connected by the parent frame using
   // attachFrameContentLayersToIframeLayer.
   return IsMainFrame() ? GetVisualViewport().ScrollLayer() : nullptr;
@@ -460,10 +460,10 @@ void PaintLayerCompositor::UpdateIfNeeded(
     }
   }
 
-  if (RuntimeEnabledFeatures::compositorWorkerEnabled() && scroll_layer_) {
+  if (RuntimeEnabledFeatures::CompositorWorkerEnabled() && scroll_layer_) {
     // If rootLayerScrolls is enabled, these properties are applied in
     // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties.
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       if (Element* scrolling_element =
               layout_view_.GetDocument().scrollingElement()) {
         uint32_t mutable_properties = CompositorMutableProperty::kNone;
@@ -1161,7 +1161,7 @@ void PaintLayerCompositor::EnsureRootLayer() {
 
   // When RLS is enabled, none of the PLC GraphicsLayers exist.
   bool should_create_own_layers =
-      !RuntimeEnabledFeatures::rootLayerScrollingEnabled();
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled();
 
   if (should_create_own_layers && !root_content_layer_) {
     root_content_layer_ = GraphicsLayer::Create(this);
@@ -1195,7 +1195,7 @@ void PaintLayerCompositor::EnsureRootLayer() {
 
     // In RLS mode, LayoutView scrolling contents layer gets this element ID (in
     // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties).
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       scroll_layer_->SetElementId(CompositorElementIdFromDOMNodeId(
           DOMNodeIds::IdForNode(&layout_view_.GetDocument()),
           CompositorElementIdNamespace::kRootScroll));
@@ -1255,7 +1255,7 @@ void PaintLayerCompositor::DestroyRootLayer() {
 void PaintLayerCompositor::AttachRootLayer() {
   // In Slimming Paint v2, PaintArtifactCompositor is responsible for the root
   // layer.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   if (layout_view_.GetFrame()->IsLocalRoot()) {

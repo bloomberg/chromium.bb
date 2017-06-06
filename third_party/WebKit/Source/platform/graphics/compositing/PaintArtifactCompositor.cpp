@@ -98,7 +98,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
     if (!tracking)
       return;
 
-    if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
+    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
       tracking->invalidations.clear();
     else
       CcLayersRasterInvalidationTrackingMap().Remove(cc_picture_layer_.get());
@@ -168,7 +168,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
 };
 
 PaintArtifactCompositor::PaintArtifactCompositor() {
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   root_layer_ = cc::Layer::Create();
   web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(

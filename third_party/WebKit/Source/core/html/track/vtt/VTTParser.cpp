@@ -213,7 +213,7 @@ void VTTParser::CollectMetadataHeader(const String& line) {
   // WebVTT header parsing (WebVTT parser algorithm step 12)
 
   // The only currently supported header is the "Region" header.
-  if (!RuntimeEnabledFeatures::webVTTRegionsEnabled())
+  if (!RuntimeEnabledFeatures::WebVTTRegionsEnabled())
     return;
 
   // Step 12.4 If line contains the character ":" (A U+003A COLON), then set

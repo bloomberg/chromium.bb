@@ -468,7 +468,7 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewResize) {
   EXPECT_EQ(IntRect(0, 2000, 800, 1000), raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(&GetLayoutView()),
             raster_invalidations[0].client);
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
               raster_invalidations[0].reason);
   } else {
@@ -505,7 +505,7 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
   EXPECT_EQ(IntRect(0, 0, 800, 3000), raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(&GetLayoutView()),
             raster_invalidations[0].client);
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
               raster_invalidations[0].reason);
   } else {

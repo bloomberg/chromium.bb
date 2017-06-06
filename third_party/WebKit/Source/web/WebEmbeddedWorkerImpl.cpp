@@ -417,7 +417,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   ProvideServiceWorkerContainerClientToWorker(
       worker_clients, worker_context_client_->CreateServiceWorkerProvider());
 
-  if (RuntimeEnabledFeatures::offMainThreadFetchEnabled()) {
+  if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
         worker_context_client_->CreateServiceWorkerFetchContext();
     DCHECK(web_worker_fetch_context);

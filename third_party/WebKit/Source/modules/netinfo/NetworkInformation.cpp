@@ -173,7 +173,7 @@ void NetworkInformation::ConnectionChange(
   downlink_mbps_ = new_downlink_mbps;
   DispatchEvent(Event::Create(EventTypeNames::typechange));
 
-  if (RuntimeEnabledFeatures::netInfoDownlinkMaxEnabled())
+  if (RuntimeEnabledFeatures::NetInfoDownlinkMaxEnabled())
     DispatchEvent(Event::Create(EventTypeNames::change));
 }
 

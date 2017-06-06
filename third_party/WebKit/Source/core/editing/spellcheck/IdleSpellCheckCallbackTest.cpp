@@ -28,10 +28,10 @@ class IdleSpellCheckCallbackTest : public SpellCheckTestBase {
         IdleChecker().SetNeedsInvocation();
         break;
       case State::kColdModeTimerStarted:
-        DCHECK(RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled());
+        DCHECK(RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled());
         break;
       case State::kColdModeRequested:
-        DCHECK(RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled());
+        DCHECK(RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled());
         IdleChecker().SkipColdModeTimerForTesting();
         break;
       case State::kInHotModeInvocation:
@@ -44,25 +44,25 @@ class IdleSpellCheckCallbackTest : public SpellCheckTestBase {
 // Test cases for lifecycle state transitions.
 
 TEST_F(IdleSpellCheckCallbackTest, InitializationWithColdMode) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   EXPECT_EQ(State::kColdModeTimerStarted, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, InitializationWithoutColdMode) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenInactive) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kInactive);
@@ -72,7 +72,7 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenInactive) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenHotModeRequested) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kHotModeRequested);
@@ -84,9 +84,9 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenHotModeRequested) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeTimerStarted) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeTimerStarted);
@@ -96,9 +96,9 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeTimerStarted) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeRequested) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeRequested);
@@ -110,9 +110,9 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeRequested) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToInactive) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kHotModeRequested);
@@ -121,9 +121,9 @@ TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToInactive) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToColdMode) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kHotModeRequested);
@@ -132,9 +132,9 @@ TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToColdMode) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, ColdModeTimerStartedToRequested) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeTimerStarted);
@@ -144,9 +144,9 @@ TEST_F(IdleSpellCheckCallbackTest, ColdModeTimerStartedToRequested) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, ColdModeStayAtColdMode) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeRequested);
@@ -156,9 +156,9 @@ TEST_F(IdleSpellCheckCallbackTest, ColdModeStayAtColdMode) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, ColdModeToInactive) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeRequested);
@@ -167,7 +167,7 @@ TEST_F(IdleSpellCheckCallbackTest, ColdModeToInactive) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenInactive) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kInactive);
@@ -176,7 +176,7 @@ TEST_F(IdleSpellCheckCallbackTest, DetachWhenInactive) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenHotModeRequested) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kHotModeRequested);
@@ -185,9 +185,9 @@ TEST_F(IdleSpellCheckCallbackTest, DetachWhenHotModeRequested) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeTimerStarted) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeTimerStarted);
@@ -196,9 +196,9 @@ TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeTimerStarted) {
 }
 
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeRequested) {
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
-  if (!RuntimeEnabledFeatures::idleTimeColdModeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   TransitTo(State::kColdModeRequested);

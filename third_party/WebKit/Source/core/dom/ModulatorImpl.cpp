@@ -77,7 +77,7 @@ void ModulatorImpl::FetchTreeInternal(const ModuleScriptFetchRequest& request,
                                       ModuleTreeClient* client) {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
-  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+  CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 
   tree_linker_registry_->Fetch(request, ancestor_list, level, this, client);
 }
@@ -93,7 +93,7 @@ void ModulatorImpl::FetchSingle(const ModuleScriptFetchRequest& request,
                                 SingleModuleClient* client) {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
-  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+  CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 
   map_->FetchSingleModuleScript(request, level, client);
 }
@@ -104,7 +104,7 @@ void ModulatorImpl::FetchNewSingleModule(
     ModuleScriptLoaderClient* client) {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
-  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+  CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 
   loader_registry_->Fetch(request, level, this, fetcher_.Get(), client);
 }
@@ -170,7 +170,7 @@ void ModulatorImpl::ExecuteModule(const ModuleScript* module_script) {
 
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
-  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+  CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 
   // 1. "Let settings be the settings object of s."
   // The settings object is |this|.

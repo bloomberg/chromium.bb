@@ -1817,7 +1817,7 @@ bool HTMLInputElement::SetupDateTimeChooserParameters(
   parameters.minimum = Minimum();
   parameters.maximum = Maximum();
   parameters.required = IsRequired();
-  if (!RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled()) {
+  if (!RuntimeEnabledFeatures::LangAttributeAwareFormControlUIEnabled()) {
     parameters.locale = DefaultLanguage();
   } else {
     AtomicString computed_locale = ComputeInheritedLanguage();

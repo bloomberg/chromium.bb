@@ -35,7 +35,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
   InlineTextBox& text_inline_box =
       *ToLayoutText(div.firstChild()->GetLayoutObject())->FirstTextBox();
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 2,
         TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
@@ -50,7 +50,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
   div.focus();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 3,
         TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
@@ -83,7 +83,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
   InlineTextBox& first_text_box = *text.FirstTextBox();
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 2,
         TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
@@ -102,7 +102,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
   InlineTextBox& new_first_text_box = *new_text.FirstTextBox();
   InlineTextBox& second_text_box = *new_text.FirstTextBox()->NextTextBox();
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 3,
         TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
@@ -170,7 +170,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingNoFold) {
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2, FrameScrollingContents) {
   // TODO(wangxianzhu): Fix cull rect issue when painting layered contents
   // under overflow clip (in this case the LayoutView).
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
 
   SetBodyInnerHTML(

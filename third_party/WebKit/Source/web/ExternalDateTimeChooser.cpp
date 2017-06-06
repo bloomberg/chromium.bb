@@ -64,7 +64,7 @@ DEFINE_TRACE(ExternalDateTimeChooser) {
 
 ExternalDateTimeChooser::ExternalDateTimeChooser(DateTimeChooserClient* client)
     : client_(client) {
-  DCHECK(!RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled());
+  DCHECK(!RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
   DCHECK(client);
 }
 

@@ -49,7 +49,7 @@ void ImageBitmapRenderingContext::transferFromImageBitmap(
 CanvasRenderingContext* ImageBitmapRenderingContext::Factory::Create(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributes& attrs) {
-  if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled())
+  if (!RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled())
     return nullptr;
   return new ImageBitmapRenderingContext(host, attrs);
 }

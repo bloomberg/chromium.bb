@@ -273,14 +273,14 @@ void DevToolsEmulator::EnableMobileEmulation() {
     return;
   emulate_mobile_enabled_ = true;
   is_overlay_scrollbars_enabled_ =
-      RuntimeEnabledFeatures::overlayScrollbarsEnabled();
-  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+      RuntimeEnabledFeatures::OverlayScrollbarsEnabled();
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
   is_orientation_event_enabled_ =
-      RuntimeEnabledFeatures::orientationEventEnabled();
-  RuntimeEnabledFeatures::setOrientationEventEnabled(true);
+      RuntimeEnabledFeatures::OrientationEventEnabled();
+  RuntimeEnabledFeatures::SetOrientationEventEnabled(true);
   is_mobile_layout_theme_enabled_ =
-      RuntimeEnabledFeatures::mobileLayoutThemeEnabled();
-  RuntimeEnabledFeatures::setMobileLayoutThemeEnabled(true);
+      RuntimeEnabledFeatures::MobileLayoutThemeEnabled();
+  RuntimeEnabledFeatures::SetMobileLayoutThemeEnabled(true);
   ComputedStyle::InvalidateInitialStyle();
   web_view_->GetPage()->GetSettings().SetViewportStyle(
       WebViewportStyle::kMobile);
@@ -315,11 +315,11 @@ void DevToolsEmulator::EnableMobileEmulation() {
 void DevToolsEmulator::DisableMobileEmulation() {
   if (!emulate_mobile_enabled_)
     return;
-  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(
       is_overlay_scrollbars_enabled_);
-  RuntimeEnabledFeatures::setOrientationEventEnabled(
+  RuntimeEnabledFeatures::SetOrientationEventEnabled(
       is_orientation_event_enabled_);
-  RuntimeEnabledFeatures::setMobileLayoutThemeEnabled(
+  RuntimeEnabledFeatures::SetMobileLayoutThemeEnabled(
       is_mobile_layout_theme_enabled_);
   ComputedStyle::InvalidateInitialStyle();
   web_view_->GetPage()->GetSettings().SetViewportEnabled(false);
@@ -471,13 +471,13 @@ void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled) {
     return;
   if (!touch_event_emulation_enabled_) {
     original_touch_event_feature_detection_enabled_ =
-        RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled();
+        RuntimeEnabledFeatures::TouchEventFeatureDetectionEnabled();
     original_device_supports_touch_ =
         web_view_->GetPage()->GetSettings().GetDeviceSupportsTouch();
     original_max_touch_points_ =
         web_view_->GetPage()->GetSettings().GetMaxTouchPoints();
   }
-  RuntimeEnabledFeatures::setTouchEventFeatureDetectionEnabled(
+  RuntimeEnabledFeatures::SetTouchEventFeatureDetectionEnabled(
       enabled ? true : original_touch_event_feature_detection_enabled_);
   if (!original_device_supports_touch_) {
     if (enabled && web_view_->MainFrameImpl()) {

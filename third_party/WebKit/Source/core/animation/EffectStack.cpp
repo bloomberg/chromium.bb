@@ -53,7 +53,7 @@ void CopyToActiveInterpolationsMap(
         target.insert(property, ActiveInterpolations(1));
     ActiveInterpolations& active_interpolations = entry.stored_value->value;
     if (!entry.is_new_entry &&
-        (RuntimeEnabledFeatures::stackedCSSPropertyAnimationsEnabled() ||
+        (RuntimeEnabledFeatures::StackedCSSPropertyAnimationsEnabled() ||
          !property.IsCSSProperty() || property.IsPresentationAttribute()) &&
         interpolation->IsInvalidatableInterpolation() &&
         ToInvalidatableInterpolation(*interpolation)

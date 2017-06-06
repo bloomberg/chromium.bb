@@ -150,7 +150,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
   if (!cull_rect.IntersectsCullRect(frame_rect_))
     return;
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && web_layer_) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && web_layer_) {
     // With Slimming Paint v2, composited plugins should have their layers
     // inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, *element_->GetLayoutObject(),

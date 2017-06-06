@@ -5974,7 +5974,7 @@ class CompositedSelectionBoundsTest : public WebFrameTest {
   CompositedSelectionBoundsTest()
       : fake_selection_layer_tree_view_(
             fake_selection_web_view_client_.SelectionLayerTreeView()) {
-    RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
+    RuntimeEnabledFeatures::SetCompositedSelectionUpdateEnabled(true);
     RegisterMockedHttpURLLoad("Ahem.ttf");
 
     web_view_helper_.Initialize(true, nullptr, &fake_selection_web_view_client_,
@@ -6635,7 +6635,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
   document->execCommand("InsertText", false, "_wellcome_.", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
     document->GetFrame()
         ->GetSpellChecker()
         .GetIdleSpellCheckCallback()
@@ -6682,7 +6682,7 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
   document->execCommand("InsertText", false, "_wellcome_.", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
     document->GetFrame()
         ->GetSpellChecker()
         .GetIdleSpellCheckCallback()
@@ -6734,7 +6734,7 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   document->execCommand("InsertText", false, " wellcome ", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     frame->GetSpellChecker()
         .GetIdleSpellCheckCallback()
         .ForceInvocationForTesting();
@@ -6815,7 +6815,7 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
   document->execCommand("InsertText", false, "he", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
     document->GetFrame()
         ->GetSpellChecker()
         .GetIdleSpellCheckCallback()
@@ -6833,7 +6833,7 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
 // write-after-free when there's no spellcheck client set.
 TEST_P(ParameterizedWebFrameTest, CancelSpellingRequestCrash) {
   // The relevant code paths are obsolete with idle time spell checker.
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   RegisterMockedHttpURLLoad("spell.html");
@@ -6874,7 +6874,7 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
   NonThrowableExceptionState exception_state;
   document->execCommand("InsertText", false, "welcome ", exception_state);
 
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
     document->GetFrame()
         ->GetSpellChecker()
         .GetIdleSpellCheckCallback()
@@ -6913,7 +6913,7 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
   document->execCommand("InsertText", false, "wellcome ", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
     document->GetFrame()
         ->GetSpellChecker()
         .GetIdleSpellCheckCallback()
@@ -6929,7 +6929,7 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
   document->execCommand("InsertText", false, "wellcome ", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
     document->GetFrame()
         ->GetSpellChecker()
         .GetIdleSpellCheckCallback()
@@ -8538,7 +8538,7 @@ class TestFullscreenWebViewClient : public FrameTestHelpers::TestWebViewClient {
 }  // anonymous namespace
 
 TEST_P(ParameterizedWebFrameTest, OverlayFullscreenVideo) {
-  RuntimeEnabledFeatures::setForceOverlayFullscreenVideoEnabled(true);
+  RuntimeEnabledFeatures::SetForceOverlayFullscreenVideoEnabled(true);
   RegisterMockedHttpURLLoad("fullscreen_video.html");
   TestFullscreenWebViewClient web_view_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
@@ -10449,7 +10449,7 @@ TEST_P(WebFrameOverscrollTest, NoOverscrollForSmallvalues) {
 }
 
 TEST_F(WebFrameTest, OrientationFrameDetach) {
-  RuntimeEnabledFeatures::setOrientationEventEnabled(true);
+  RuntimeEnabledFeatures::SetOrientationEventEnabled(true);
   RegisterMockedHttpURLLoad("orientation-frame-detach.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
@@ -11506,7 +11506,7 @@ TEST_F(WebFrameTest, MouseOverScrollbarAndIFrame) {
 TEST_F(WebFrameTest, MouseOverScrollbarAndParentElement) {
   RegisterMockedHttpURLLoad("scrollbar-and-element-hover.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
   WebViewBase* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "scrollbar-and-element-hover.html");
 

@@ -760,7 +760,7 @@ const AXObjectImpl* AXObjectImpl::AriaHiddenRoot() const {
 
 const AXObjectImpl* AXObjectImpl::InertRoot() const {
   const AXObjectImpl* object = this;
-  if (!RuntimeEnabledFeatures::inertAttributeEnabled())
+  if (!RuntimeEnabledFeatures::InertAttributeEnabled())
     return 0;
 
   while (object && !object->IsAXNodeObject())

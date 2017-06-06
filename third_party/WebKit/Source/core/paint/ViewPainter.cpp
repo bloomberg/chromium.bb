@@ -60,7 +60,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   // The background rect always includes at least the visible content size.
   IntRect background_rect(IntRect(layout_view_.ViewRect()));
 
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     background_rect.Unite(layout_view_.DocumentRect());
 
   const DisplayItemClient* display_item_client = &layout_view_;
@@ -197,7 +197,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 
   if (combined_background_color.Alpha()) {
     if (!combined_background_color.HasAlpha() &&
-        RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
       recorder.SetKnownToBeOpaque();
     context.FillRect(
         background_rect, combined_background_color,

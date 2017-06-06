@@ -24,10 +24,10 @@ class ScrollAnchorTest
       public RenderingTest {
  public:
   ScrollAnchorTest() : ScopedRootLayerScrollingForTest(GetParam()) {
-    RuntimeEnabledFeatures::setScrollAnchoringEnabled(true);
+    RuntimeEnabledFeatures::SetScrollAnchoringEnabled(true);
   }
   ~ScrollAnchorTest() {
-    RuntimeEnabledFeatures::setScrollAnchoringEnabled(false);
+    RuntimeEnabledFeatures::SetScrollAnchoringEnabled(false);
   }
 
  protected:

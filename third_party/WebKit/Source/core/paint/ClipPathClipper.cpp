@@ -68,7 +68,7 @@ ClipPathClipper::ClipPathClipper(GraphicsContext& context,
       clipper_state_(ClipperState::kNotApplied),
       layout_object_(layout_object),
       context_(context) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   if (clip_path_operation.GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation& shape =
@@ -106,7 +106,7 @@ ClipPathClipper::ClipPathClipper(GraphicsContext& context,
 }
 
 ClipPathClipper::~ClipPathClipper() {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   if (resource_clipper_)
     FinishEffect();

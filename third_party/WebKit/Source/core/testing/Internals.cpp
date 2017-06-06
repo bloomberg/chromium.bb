@@ -534,7 +534,7 @@ void Internals::disableCompositedAnimation(Animation* animation) {
 }
 
 void Internals::disableCSSAdditiveAnimations() {
-  RuntimeEnabledFeatures::setCSSAdditiveAnimationsEnabled(false);
+  RuntimeEnabledFeatures::SetCSSAdditiveAnimationsEnabled(false);
 }
 
 void Internals::advanceTimeForImage(Element* image,

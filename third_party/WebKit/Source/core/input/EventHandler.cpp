@@ -245,7 +245,7 @@ void EventHandler::UpdateSelectionForMouseDrag() {
 }
 
 void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
-  DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
+  DCHECK(RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled());
   if (!layout_object->IsBox())
     return;
   AutoscrollController* controller = scroll_manager_->GetAutoscrollController();
@@ -641,7 +641,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
       .last_mouse_down_user_gesture_token_ =
       UserGestureIndicator::CurrentToken();
 
-  if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()) {
+  if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     // We store whether middle click autoscroll is in progress before calling
     // stopAutoscroll() because it will set m_autoscrollType to NoAutoscroll on
     // return.
@@ -932,7 +932,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   if (!mouse_event.FromTouch())
     frame_->Selection().SetCaretBlinkingSuspended(false);
 
-  if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()) {
+  if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     if (Page* page = frame_->GetPage())
       page->GetAutoscrollController()
           .HandleMouseReleaseForMiddleClickAutoscroll(frame_, mouse_event);

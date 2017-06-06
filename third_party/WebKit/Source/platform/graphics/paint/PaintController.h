@@ -243,7 +243,7 @@ class PLATFORM_EXPORT PaintController {
         last_cached_subsequence_end_(0) {
     ResetCurrentListIndices();
     SetTracksRasterInvalidations(
-        RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled());
+        RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
 
     // frame_first_paints_ should have one null frame since the beginning, so
     // that PaintController is robust even if it paints outside of BeginFrame
@@ -321,7 +321,7 @@ class PLATFORM_EXPORT PaintController {
                                PaintInvalidationReason);
 
   // The following two methods are for checking under-invalidations
-  // (when RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled).
+  // (when RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled).
   void ShowUnderInvalidationError(const char* reason,
                                   const DisplayItem& new_item,
                                   const DisplayItem* old_item) const;

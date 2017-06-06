@@ -72,11 +72,11 @@ class ImageBitmapTest : public ::testing::Test {
     // Save the state of experimental canvas features and color correct
     // rendering flags to restore them on teardown.
     experimental_canvas_features =
-        RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
+        RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled();
     color_correct_rendering =
-        RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
+        RuntimeEnabledFeatures::ColorCorrectRenderingEnabled();
     color_canvas_extensions =
-        RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
+        RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
   }
   virtual void TearDown() {
     // Garbage collection is required prior to switching out the
@@ -87,11 +87,11 @@ class ImageBitmapTest : public ::testing::Test {
                                            BlinkGC::kForcedGC);
 
     ReplaceMemoryCacheForTesting(global_memory_cache_.Release());
-    RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(
+    RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(
         experimental_canvas_features);
-    RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
+    RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(
         color_correct_rendering);
-    RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(
+    RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(
         color_canvas_extensions);
   }
 
@@ -103,7 +103,7 @@ class ImageBitmapTest : public ::testing::Test {
 };
 
 TEST_F(ImageBitmapTest, ImageResourceConsistency) {
-  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
+  RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
   const ImageBitmapOptions default_options;
   HTMLImageElement* image_element =
       HTMLImageElement::Create(*Document::Create());
@@ -148,7 +148,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
-  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
+  RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
   HTMLImageElement* image = HTMLImageElement::Create(*Document::Create());
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
@@ -217,9 +217,9 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
   // Set the runtime flags
   bool flag = (color_space_conversion !=
                ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
-  RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(true);
-  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(flag);
-  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
+  RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(true);
+  RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(flag);
+  RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
 
   return options;
 }

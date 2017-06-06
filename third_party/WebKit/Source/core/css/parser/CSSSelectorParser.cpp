@@ -444,7 +444,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
   bool has_arguments = token.GetType() == kFunctionToken;
   selector->UpdatePseudoType(value, has_arguments, context_->Mode());
 
-  if (!RuntimeEnabledFeatures::cssSelectorsFocusWithinEnabled() &&
+  if (!RuntimeEnabledFeatures::CSSSelectorsFocusWithinEnabled() &&
       selector->GetPseudoType() == CSSSelector::kPseudoFocusWithin)
     return nullptr;
 
@@ -553,7 +553,7 @@ CSSSelector::RelationType CSSSelectorParser::ConsumeCombinator(
 
     case '>':
       if (!RuntimeEnabledFeatures::
-              shadowPiercingDescendantCombinatorEnabled() ||
+              ShadowPiercingDescendantCombinatorEnabled() ||
           context_->IsDynamicProfile() ||
           range.Peek(1).GetType() != kDelimiterToken ||
           range.Peek(1).Delimiter() != '>') {
