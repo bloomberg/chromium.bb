@@ -144,6 +144,7 @@ android_library("webapk_java") {
   java_files = [
     "src/org/chromium/webapk/shell_apk/DexLoader.java",
     "src/org/chromium/webapk/shell_apk/HostBrowserClassLoader.java",
+    "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
     "src/org/chromium/webapk/shell_apk/MainActivity.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService0.java",
@@ -276,7 +277,7 @@ android_library("shell_apk_javatests") {
 junit_binary("webapk_shell_apk_junit_tests") {
   java_files = [
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserClassLoaderTest.java",
-    "junit/src/org/chromium/webapk/shell_apk/MainActivityTest.java",
+    "junit/src/org/chromium/webapk/shell_apk/WebApkUtilsTest.java",
   ]
   deps = [
     ":webapk_java",

@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Looper;
 import android.util.Log;
 
+import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkVersionUtils;
 
 import java.io.File;
@@ -20,11 +21,6 @@ import java.util.Scanner;
  */
 public class HostBrowserClassLoader {
     private static final String TAG = "cr_HostBrowserClassLoader";
-
-    /**
-     * Name of the shared preferences file.
-     */
-    private static final String PREF_PACKAGE = "org.chromium.webapk.shell_apk";
 
     /**
      * Name of the shared preference for Chrome's version code.
@@ -77,7 +73,7 @@ public class HostBrowserClassLoader {
     public static ClassLoader createClassLoader(
             Context context, Context remoteContext, DexLoader dexLoader, String canaryClassName) {
         SharedPreferences preferences =
-                context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
 
         int runtimeDexVersion = preferences.getInt(RUNTIME_DEX_VERSION_PREF, -1);
         int newRuntimeDexVersion = checkForNewRuntimeDexVersion(preferences, remoteContext);
@@ -104,7 +100,7 @@ public class HostBrowserClassLoader {
         // WebAPK may still be running when the host browser gets upgraded. Prevent ClassLoader from
         // getting reused in this scenario.
         SharedPreferences preferences =
-                context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
         int cachedRemoteVersionCode = preferences.getInt(REMOTE_VERSION_CODE_PREF, -1);
         int remoteVersionCode = getVersionCode(remoteContext);
         return remoteVersionCode == cachedRemoteVersionCode;
