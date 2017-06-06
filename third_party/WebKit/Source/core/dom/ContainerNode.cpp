@@ -178,19 +178,34 @@ bool ContainerNode::CheckAcceptChildGuaranteedNodeTypes(
   return true;
 }
 
-bool ContainerNode::CollectChildrenAndRemoveFromOldParentWithCheck(
+bool ContainerNode::CollectChildrenAndRemoveFromOldParentWithOptionalRecheck(
     const Node* next,
     const Node* old_child,
     Node& new_child,
     NodeVector& new_children,
     ExceptionState& exception_state) const {
+  Document& new_doc = new_child.GetDocument();
+  Document& this_doc = GetDocument();
+  uint64_t original_version_for_new_node = new_doc.DomTreeVersion();
+  uint64_t original_version_for_this = this_doc.DomTreeVersion();
   CollectChildrenAndRemoveFromOldParent(new_child, new_children,
                                         exception_state);
   if (exception_state.HadException() || new_children.IsEmpty())
     return false;
+  // We can skip the following hierarchy check if we have no DOM mutations other
+  // than one in CollectChildrenAndRemoveFromOldParent(). We can detect it by
+  //  - DOM tree version of |new_doc| was increased by at most one.
+  //  - If |this| and |new_child| are in different documents, Document for
+  //    |this| must not be changed.
+  if (new_doc.DomTreeVersion() <= original_version_for_new_node + 1) {
+    if (&new_doc == &this_doc)
+      return true;
+    if (this_doc.DomTreeVersion() == original_version_for_this)
+      return true;
+  }
 
-  // We need this extra check because collectChildrenAndRemoveFromOldParent()
-  // can fire various events.
+  // We need this extra check because synchronous event handlers triggered
+  // while CollectChildrenAndRemoveFromOldParent() modified DOM trees.
   for (const auto& child : new_children) {
     if (child->parentNode()) {
       // A new child was added to another parent before adding to this
@@ -310,7 +325,7 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   DCHECK(new_child);
 
   NodeVector targets;
-  if (!CollectChildrenAndRemoveFromOldParentWithCheck(
+  if (!CollectChildrenAndRemoveFromOldParentWithOptionalRecheck(
           ref_child, nullptr, *new_child, targets, exception_state))
     return new_child;
 
@@ -454,9 +469,11 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
   // 10. Adopt node into parent’s node document.
   // TODO(tkent): Actually we do only RemoveChild() as a part of 'adopt'
   // operation.
-  // Though the following CollectChildrenAndRemoveFromOldParentWithCheck() also
-  // calls RemoveChild(), we'd like to call RemoveChild() here to make a
-  // separated MutationRecord.
+  //
+  // Though the following
+  // CollectChildrenAndRemoveFromOldParentWithOptionalRecheck() also calls
+  // RemoveChild(), we'd like to call RemoveChild() here to make a separated
+  // MutationRecord.
   if (ContainerNode* new_child_parent = new_child->parentNode()) {
     new_child_parent->RemoveChild(new_child, exception_state);
     if (exception_state.HadException())
@@ -488,7 +505,7 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
 
     // 13. Let nodes be node’s children if node is a DocumentFragment node, and
     // a list containing solely node otherwise.
-    if (!CollectChildrenAndRemoveFromOldParentWithCheck(
+    if (!CollectChildrenAndRemoveFromOldParentWithOptionalRecheck(
             next, old_child, *new_child, targets, exception_state))
       return old_child;
 
@@ -722,7 +739,7 @@ Node* ContainerNode::AppendChild(Node* new_child,
   DCHECK(new_child);
 
   NodeVector targets;
-  if (!CollectChildrenAndRemoveFromOldParentWithCheck(
+  if (!CollectChildrenAndRemoveFromOldParentWithOptionalRecheck(
           nullptr, nullptr, *new_child, targets, exception_state))
     return new_child;
 

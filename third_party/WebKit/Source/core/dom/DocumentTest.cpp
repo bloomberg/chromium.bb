@@ -308,6 +308,32 @@ class MockWebApplicationCacheHost
 
 }  // anonymous namespace
 
+TEST_F(DocumentTest, DomTreeVersionForRemoval) {
+  // ContainerNode::CollectChildrenAndRemoveFromOldParentWithCheck assumes this
+  // behavior.
+  Document& doc = GetDocument();
+  {
+    DocumentFragment* fragment = DocumentFragment::Create(doc);
+    fragment->appendChild(Element::Create(HTMLNames::divTag, &doc));
+    fragment->appendChild(Element::Create(HTMLNames::spanTag, &doc));
+    uint64_t original_version = doc.DomTreeVersion();
+    fragment->RemoveChildren();
+    EXPECT_EQ(original_version + 1, doc.DomTreeVersion())
+        << "RemoveChildren() should increase DomTreeVersion by 1.";
+  }
+
+  {
+    DocumentFragment* fragment = DocumentFragment::Create(doc);
+    Node* child = Element::Create(HTMLNames::divTag, &doc);
+    child->appendChild(Element::Create(HTMLNames::spanTag, &doc));
+    fragment->appendChild(child);
+    uint64_t original_version = doc.DomTreeVersion();
+    fragment->removeChild(child);
+    EXPECT_EQ(original_version + 1, doc.DomTreeVersion())
+        << "removeChild() should increase DomTreeVersion by 1.";
+  }
+}
+
 // This tests that we properly resize and re-layout pages for printing in the
 // presence of media queries effecting elements in a subtree layout boundary
 TEST_F(DocumentTest, PrintRelayout) {
