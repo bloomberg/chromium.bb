@@ -310,6 +310,94 @@ TEST_F(WebDataConsumerHandleImplTest, ZeroSizeRead) {
   EXPECT_EQ(WebDataConsumerHandle::Result::kDone, rv);
 }
 
+class CountDidGetReadableClient : public blink::WebDataConsumerHandle::Client {
+ public:
+  ~CountDidGetReadableClient() override {}
+  void DidGetReadable() override { num_did_get_readable_called_++; }
+  int num_did_get_readable_called() { return num_did_get_readable_called_; }
+
+ private:
+  int num_did_get_readable_called_ = 0;
+};
+
+TEST_F(WebDataConsumerHandleImplTest, DidGetReadable) {
+  static constexpr size_t kBlockSize = kDataPipeCapacity / 3;
+  static constexpr size_t kTotalSize = kBlockSize * 3;
+
+  std::unique_ptr<CountDidGetReadableClient> client =
+      base::MakeUnique<CountDidGetReadableClient>();
+  std::unique_ptr<WebDataConsumerHandleImpl> handle(
+      new WebDataConsumerHandleImpl(std::move(consumer_)));
+  std::unique_ptr<WebDataConsumerHandle::Reader> reader(
+      handle->ObtainReader(client.get()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, client->num_did_get_readable_called());
+
+  // Push three blocks.
+  {
+    std::string expected;
+    int index = 0;
+    for (size_t i = 0; i < kTotalSize; ++i) {
+      expected += static_cast<char>(index + 'a');
+      index = (37 * index + 11) % 26;
+    }
+    uint32_t size = expected.size();
+    MojoResult rv = mojo::WriteDataRaw(producer_.get(), expected.data(), &size,
+                                       MOJO_WRITE_DATA_FLAG_NONE);
+    EXPECT_EQ(MOJO_RESULT_OK, rv);
+    EXPECT_EQ(kTotalSize, size);
+  }
+  base::RunLoop().RunUntilIdle();
+  // |client| is notified the pipe gets ready.
+  EXPECT_EQ(1, client->num_did_get_readable_called());
+
+  // Read a block.
+  {
+    char buffer[kBlockSize];
+    size_t size = 0;
+    Result rv = reader->Read(&buffer, sizeof(buffer),
+                             WebDataConsumerHandle::kFlagNone, &size);
+    EXPECT_EQ(Result::kOk, rv);
+    EXPECT_EQ(sizeof(buffer), size);
+  }
+  base::RunLoop().RunUntilIdle();
+  // |client| is notified the pipe is still ready.
+  EXPECT_EQ(2, client->num_did_get_readable_called());
+
+  // Read one more block.
+  {
+    const void* buffer = nullptr;
+    size_t size = sizeof(buffer);
+    Result rv =
+        reader->BeginRead(&buffer, WebDataConsumerHandle::kFlagNone, &size);
+    EXPECT_EQ(Result::kOk, rv);
+    EXPECT_TRUE(buffer);
+    EXPECT_EQ(kTotalSize - kBlockSize, size);
+    base::RunLoop().RunUntilIdle();
+    // |client| is NOT notified until EndRead is called.
+    EXPECT_EQ(2, client->num_did_get_readable_called());
+
+    rv = reader->EndRead(kBlockSize);
+    EXPECT_EQ(Result::kOk, rv);
+  }
+  base::RunLoop().RunUntilIdle();
+  // |client| is notified the pipe is still ready.
+  EXPECT_EQ(3, client->num_did_get_readable_called());
+
+  // Read the final block.
+  {
+    char buffer[kBlockSize];
+    size_t size = 0;
+    Result rv = reader->Read(&buffer, sizeof(buffer),
+                             WebDataConsumerHandle::kFlagNone, &size);
+    EXPECT_EQ(Result::kOk, rv);
+    EXPECT_EQ(sizeof(buffer), size);
+  }
+  base::RunLoop().RunUntilIdle();
+  // |client| is NOT notified because the pipe doesn't have any data.
+  EXPECT_EQ(3, client->num_did_get_readable_called());
+}
+
 }  // namespace
 
 }  // namespace content
