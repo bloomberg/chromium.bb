@@ -293,6 +293,10 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           base::Bind(&BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
                      base::Unretained(this), new_id, request->client_id)));
+  if (request->result) {
+    buffers.find(new_id)->second.shared_memory_guid =
+        request->result->GetHandle().handle.GetGUID();
+  }
   request->event.Signal();
 }
 
@@ -411,6 +415,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
   // client is removed.
   buffer_it->second.type = handle.type;
   buffer_it->second.gpu_host_id = gpu_host_id;
+  buffer_it->second.shared_memory_guid = handle.handle.GetGUID();
 
   callback.Run(handle);
 }

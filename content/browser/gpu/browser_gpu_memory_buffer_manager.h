@@ -82,6 +82,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
     gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
     gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ;
     int gpu_host_id = 0;
+    base::UnguessableToken shared_memory_guid;
   };
 
   struct CreateGpuMemoryBufferRequest;
