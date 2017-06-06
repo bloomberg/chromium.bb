@@ -40,6 +40,11 @@ suiteSetup(function() {
         this.data_ = newData;
       },
 
+      /** Replace the global store instance with this TestStore. */
+      replaceSingleton: function() {
+        bookmarks.Store.instance_ = this;
+      },
+
       /**
        * Enable or disable calling bookmarks.reduceAction for each action.
        * With reducers disabled (the default), TestStore is a stub which
