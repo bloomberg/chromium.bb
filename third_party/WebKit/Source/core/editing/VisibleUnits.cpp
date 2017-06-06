@@ -2203,59 +2203,73 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
             current_node, layout_object->CaretMinOffset() + text_start_offset);
       }
 
-      // Map offset in DOM node to offset in InlineBox.
-      DCHECK_GE(current_pos.OffsetInLeafNode(),
-                static_cast<int>(text_start_offset));
-      const unsigned text_offset =
-          current_pos.OffsetInLeafNode() - text_start_offset;
-      InlineTextBox* last_text_box = text_layout_object->LastTextBox();
-      for (InlineTextBox* box = text_layout_object->FirstTextBox(); box;
-           box = box->NextTextBox()) {
-        if (text_offset <= box->end()) {
-          if (text_offset >= box->Start())
-            return current_pos.ComputePosition();
-          continue;
-        }
-
-        if (box == last_text_box || text_offset != box->Start() + box->Len())
-          continue;
-
-        // The text continues on the next line only if the last text box is not
-        // on this line and none of the boxes on this line have a larger start
-        // offset.
-
-        bool continues_on_next_line = true;
-        InlineBox* other_box = box;
-        while (continues_on_next_line) {
-          other_box = other_box->NextLeafChild();
-          if (!other_box)
-            break;
-          if (other_box == last_text_box ||
-              (LineLayoutAPIShim::LayoutObjectFrom(
-                   other_box->GetLineLayoutItem()) == text_layout_object &&
-               ToInlineTextBox(other_box)->Start() >= text_offset))
-            continues_on_next_line = false;
-        }
-
-        other_box = box;
-        while (continues_on_next_line) {
-          other_box = other_box->PrevLeafChild();
-          if (!other_box)
-            break;
-          if (other_box == last_text_box ||
-              (LineLayoutAPIShim::LayoutObjectFrom(
-                   other_box->GetLineLayoutItem()) == text_layout_object &&
-               ToInlineTextBox(other_box)->Start() >= text_offset))
-            continues_on_next_line = false;
-        }
-
-        if (continues_on_next_line)
-          return current_pos.ComputePosition();
+      if (CanBeForwardCaretPosition(text_layout_object,
+                                    current_pos.OffsetInLeafNode())) {
+        return current_pos.ComputePosition();
       }
     }
   }
-
   return last_visible.DeprecatedComputePosition();
+}
+
+// TODO(editing-dev): This function is just moved out from
+// |MostForwardCaretPosition()|. We should study this function more and
+// name it appropriately. See https://trac.webkit.org/changeset/32438/
+// which introduce this.
+static bool CanBeForwardCaretPosition(const LayoutText* text_layout_object,
+                                      int offset_in_node) {
+  const unsigned text_start_offset = text_layout_object->TextStartOffset();
+  DCHECK_GE(offset_in_node, static_cast<int>(text_start_offset));
+  const unsigned text_offset = offset_in_node - text_start_offset;
+  InlineTextBox* const last_text_box = text_layout_object->LastTextBox();
+  for (InlineTextBox* box = text_layout_object->FirstTextBox(); box;
+       box = box->NextTextBox()) {
+    if (text_offset <= box->end()) {
+      if (text_offset >= box->Start())
+        return true;
+      continue;
+    }
+
+    if (box == last_text_box || text_offset != box->Start() + box->Len())
+      continue;
+
+    // TODO(yosin): We should move below code fragment into
+    // |DoesContinueOnNextLine()|. Note: |MostBackwardCaretPosition()| has
+    // same code fragment except for comparison on |text_offset|.
+    // Backward: other_box->Start() >  text_offset
+    // Forward:  other_box->Start() >= text_offset
+    // The text continues on the next line only if the last text box is not
+    // on this line and none of the boxes on this line have a larger start
+    // offset.
+    bool continues_on_next_line = true;
+    InlineBox* other_box = box;
+    while (continues_on_next_line) {
+      other_box = other_box->NextLeafChild();
+      if (!other_box)
+        break;
+      if (other_box == last_text_box ||
+          (LineLayoutAPIShim::LayoutObjectFrom(
+               other_box->GetLineLayoutItem()) == text_layout_object &&
+           ToInlineTextBox(other_box)->Start() >= text_offset))
+        continues_on_next_line = false;
+    }
+
+    other_box = box;
+    while (continues_on_next_line) {
+      other_box = other_box->PrevLeafChild();
+      if (!other_box)
+        break;
+      if (other_box == last_text_box ||
+          (LineLayoutAPIShim::LayoutObjectFrom(
+               other_box->GetLineLayoutItem()) == text_layout_object &&
+           ToInlineTextBox(other_box)->Start() >= text_offset))
+        continues_on_next_line = false;
+    }
+
+    if (continues_on_next_line)
+      return true;
+  }
+  return false;
 }
 
 Position MostForwardCaretPosition(const Position& position,
