@@ -19,6 +19,7 @@
 namespace blink {
 
 class CSSParserContext;
+class CSSProperty;
 class CSSStringValue;
 class CSSURIValue;
 class CSSValuePair;
@@ -111,6 +112,13 @@ CSSValue* ConsumeImageOrNone(CSSParserTokenRange&, const CSSParserContext*);
 bool IsCSSWideKeyword(StringView);
 
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange&);
+
+void AddProperty(CSSPropertyID resolved_property,
+                 CSSPropertyID current_shorthand,
+                 const CSSValue&,
+                 bool important,
+                 bool implicit,
+                 HeapVector<CSSProperty, 256>& properties);
 
 // Template implementations are at the bottom of the file for readability.
 

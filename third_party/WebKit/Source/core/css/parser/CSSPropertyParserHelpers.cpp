@@ -4,6 +4,7 @@
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
+#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSCrossfadeValue.h"
@@ -1456,6 +1457,32 @@ bool IsCSSWideKeyword(StringView keyword) {
 CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange& range) {
   return ConsumeIdent<CSSValueContentBox, CSSValuePaddingBox, CSSValueBorderBox,
                       CSSValueMarginBox>(range);
+}
+
+void AddProperty(CSSPropertyID resolved_property,
+                 CSSPropertyID current_shorthand,
+                 const CSSValue& value,
+                 bool important,
+                 bool implicit,
+                 HeapVector<CSSProperty, 256>& properties) {
+  DCHECK(!isPropertyAlias(resolved_property));
+
+  int shorthand_index = 0;
+  bool set_from_shorthand = false;
+
+  if (current_shorthand) {
+    Vector<StylePropertyShorthand, 4> shorthands;
+    getMatchingShorthandsForLonghand(resolved_property, &shorthands);
+    set_from_shorthand = true;
+    if (shorthands.size() > 1) {
+      shorthand_index =
+          indexOfShorthandForLonghand(current_shorthand, shorthands);
+    }
+  }
+
+  properties.push_back(CSSProperty(resolved_property, value, important,
+                                   set_from_shorthand, shorthand_index,
+                                   implicit));
 }
 
 }  // namespace CSSPropertyParserHelpers

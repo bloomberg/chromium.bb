@@ -68,28 +68,13 @@ CSSPropertyParser::CSSPropertyParser(
   range_.ConsumeWhitespace();
 }
 
-void CSSPropertyParser::AddProperty(CSSPropertyID property,
-                                    CSSPropertyID current_shorthand,
-                                    const CSSValue& value,
-                                    bool important,
-                                    bool implicit) {
-  DCHECK(!isPropertyAlias(property));
-
-  int shorthand_index = 0;
-  bool set_from_shorthand = false;
-
-  if (current_shorthand) {
-    Vector<StylePropertyShorthand, 4> shorthands;
-    getMatchingShorthandsForLonghand(property, &shorthands);
-    set_from_shorthand = true;
-    if (shorthands.size() > 1)
-      shorthand_index =
-          indexOfShorthandForLonghand(current_shorthand, shorthands);
-  }
-
-  parsed_properties_->push_back(CSSProperty(property, value, important,
-                                            set_from_shorthand, shorthand_index,
-                                            implicit));
+void CSSPropertyParser::AddParsedProperty(CSSPropertyID resolved_property,
+                                          CSSPropertyID current_shorthand,
+                                          const CSSValue& value,
+                                          bool important,
+                                          bool implicit) {
+  AddProperty(resolved_property, current_shorthand, value, important, implicit,
+              *parsed_properties_);
 }
 
 void CSSPropertyParser::AddExpandedPropertyForValue(CSSPropertyID property,
@@ -100,7 +85,7 @@ void CSSPropertyParser::AddExpandedPropertyForValue(CSSPropertyID property,
   DCHECK(shorthand_length);
   const CSSPropertyID* longhands = shorthand.properties();
   for (unsigned i = 0; i < shorthand_length; ++i)
-    AddProperty(longhands[i], property, value, important);
+    AddParsedProperty(longhands[i], property, value, important);
 }
 
 bool CSSPropertyParser::ParseValue(
@@ -165,7 +150,8 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
   } else {
     if (const CSSValue* parsed_value = ParseSingleValue(unresolved_property)) {
       if (range_.AtEnd()) {
-        AddProperty(property_id, CSSPropertyInvalid, *parsed_value, important);
+        AddParsedProperty(property_id, CSSPropertyInvalid, *parsed_value,
+                          important);
         return true;
       }
     }
@@ -182,7 +168,7 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
           *CSSPendingSubstitutionValue::Create(property_id, variable);
       AddExpandedPropertyForValue(property_id, pending_value, important);
     } else {
-      AddProperty(property_id, CSSPropertyInvalid, *variable, important);
+      AddParsedProperty(property_id, CSSPropertyInvalid, *variable, important);
     }
     return true;
   }
@@ -285,7 +271,7 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
   if (!shorthand.length()) {
     if (!CSSPropertyMetadata::IsProperty(unresolved_property))
       return false;
-    AddProperty(property, CSSPropertyInvalid, *value, important);
+    AddParsedProperty(property, CSSPropertyInvalid, *value, important);
   } else {
     AddExpandedPropertyForValue(property, *value, important);
   }
@@ -535,10 +521,10 @@ bool CSSPropertyParser::ConsumeAnimationShorthand(
       return false;
   }
 
-  for (size_t i = 0; i < longhand_count; ++i)
-    AddProperty(shorthand.properties()[i], shorthand.id(), *longhands[i],
-                important);
-
+  for (size_t i = 0; i < longhand_count; ++i) {
+    AddParsedProperty(shorthand.properties()[i], shorthand.id(), *longhands[i],
+                      important);
+  }
   return range_.AtEnd();
 }
 
@@ -731,12 +717,12 @@ bool CSSPropertyParser::ConsumeOffsetShorthand(bool important) {
   if (!offset_path || !offset_distance || !offset_rotate || !range_.AtEnd())
     return false;
 
-  AddProperty(CSSPropertyOffsetPath, CSSPropertyOffset, *offset_path,
-              important);
-  AddProperty(CSSPropertyOffsetDistance, CSSPropertyOffset, *offset_distance,
-              important);
-  AddProperty(CSSPropertyOffsetRotate, CSSPropertyOffset, *offset_rotate,
-              important);
+  AddParsedProperty(CSSPropertyOffsetPath, CSSPropertyOffset, *offset_path,
+                    important);
+  AddParsedProperty(CSSPropertyOffsetDistance, CSSPropertyOffset,
+                    *offset_distance, important);
+  AddParsedProperty(CSSPropertyOffsetRotate, CSSPropertyOffset, *offset_rotate,
+                    important);
 
   return true;
 }
@@ -1955,7 +1941,7 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(CSSPropertyID prop_id) {
   if (!parsed_value || !range_.AtEnd())
     return false;
 
-  AddProperty(prop_id, CSSPropertyInvalid, *parsed_value, false);
+  AddParsedProperty(prop_id, CSSPropertyInvalid, *parsed_value, false);
   return true;
 }
 
@@ -1973,32 +1959,32 @@ bool CSSPropertyParser::ConsumeSystemFont(bool important) {
   LayoutTheme::GetTheme().SystemFont(system_font_id, font_style, font_weight,
                                      font_size, font_family);
 
-  AddProperty(CSSPropertyFontStyle, CSSPropertyFont,
-              *CSSIdentifierValue::Create(font_style == kFontStyleItalic
-                                              ? CSSValueItalic
-                                              : CSSValueNormal),
-              important);
-  AddProperty(CSSPropertyFontWeight, CSSPropertyFont,
-              *CSSIdentifierValue::Create(font_weight), important);
-  AddProperty(CSSPropertyFontSize, CSSPropertyFont,
-              *CSSPrimitiveValue::Create(font_size,
-                                         CSSPrimitiveValue::UnitType::kPixels),
-              important);
+  AddParsedProperty(CSSPropertyFontStyle, CSSPropertyFont,
+                    *CSSIdentifierValue::Create(font_style == kFontStyleItalic
+                                                    ? CSSValueItalic
+                                                    : CSSValueNormal),
+                    important);
+  AddParsedProperty(CSSPropertyFontWeight, CSSPropertyFont,
+                    *CSSIdentifierValue::Create(font_weight), important);
+  AddParsedProperty(CSSPropertyFontSize, CSSPropertyFont,
+                    *CSSPrimitiveValue::Create(
+                        font_size, CSSPrimitiveValue::UnitType::kPixels),
+                    important);
   CSSValueList* font_family_list = CSSValueList::CreateCommaSeparated();
   font_family_list->Append(*CSSFontFamilyValue::Create(font_family));
-  AddProperty(CSSPropertyFontFamily, CSSPropertyFont, *font_family_list,
-              important);
+  AddParsedProperty(CSSPropertyFontFamily, CSSPropertyFont, *font_family_list,
+                    important);
 
-  AddProperty(CSSPropertyFontStretch, CSSPropertyFont,
-              *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddProperty(CSSPropertyFontVariantCaps, CSSPropertyFont,
-              *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont,
-              *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont,
-              *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddProperty(CSSPropertyLineHeight, CSSPropertyFont,
-              *CSSIdentifierValue::Create(CSSValueNormal), important);
+  AddParsedProperty(CSSPropertyFontStretch, CSSPropertyFont,
+                    *CSSIdentifierValue::Create(CSSValueNormal), important);
+  AddParsedProperty(CSSPropertyFontVariantCaps, CSSPropertyFont,
+                    *CSSIdentifierValue::Create(CSSValueNormal), important);
+  AddParsedProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont,
+                    *CSSIdentifierValue::Create(CSSValueNormal), important);
+  AddParsedProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont,
+                    *CSSIdentifierValue::Create(CSSValueNormal), important);
+  AddParsedProperty(CSSPropertyLineHeight, CSSPropertyFont,
+                    *CSSIdentifierValue::Create(CSSValueNormal), important);
   return true;
 }
 
@@ -2046,27 +2032,28 @@ bool CSSPropertyParser::ConsumeFont(bool important) {
   if (range_.AtEnd())
     return false;
 
-  AddProperty(
+  AddParsedProperty(
       CSSPropertyFontStyle, CSSPropertyFont,
       font_style ? *font_style : *CSSIdentifierValue::Create(CSSValueNormal),
       important);
-  AddProperty(CSSPropertyFontVariantCaps, CSSPropertyFont,
-              font_variant_caps ? *font_variant_caps
-                                : *CSSIdentifierValue::Create(CSSValueNormal),
-              important);
-  AddProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont,
-              *CSSIdentifierValue::Create(CSSValueNormal), important);
-  AddProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont,
-              *CSSIdentifierValue::Create(CSSValueNormal), important);
+  AddParsedProperty(CSSPropertyFontVariantCaps, CSSPropertyFont,
+                    font_variant_caps
+                        ? *font_variant_caps
+                        : *CSSIdentifierValue::Create(CSSValueNormal),
+                    important);
+  AddParsedProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont,
+                    *CSSIdentifierValue::Create(CSSValueNormal), important);
+  AddParsedProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont,
+                    *CSSIdentifierValue::Create(CSSValueNormal), important);
 
-  AddProperty(
+  AddParsedProperty(
       CSSPropertyFontWeight, CSSPropertyFont,
       font_weight ? *font_weight : *CSSIdentifierValue::Create(CSSValueNormal),
       important);
-  AddProperty(CSSPropertyFontStretch, CSSPropertyFont,
-              font_stretch ? *font_stretch
-                           : *CSSIdentifierValue::Create(CSSValueNormal),
-              important);
+  AddParsedProperty(CSSPropertyFontStretch, CSSPropertyFont,
+                    font_stretch ? *font_stretch
+                                 : *CSSIdentifierValue::Create(CSSValueNormal),
+                    important);
 
   // Now a font size _must_ come.
   CSSValue* font_size =
@@ -2074,18 +2061,19 @@ bool CSSPropertyParser::ConsumeFont(bool important) {
   if (!font_size || range_.AtEnd())
     return false;
 
-  AddProperty(CSSPropertyFontSize, CSSPropertyFont, *font_size, important);
+  AddParsedProperty(CSSPropertyFontSize, CSSPropertyFont, *font_size,
+                    important);
 
   if (ConsumeSlashIncludingWhitespace(range_)) {
     CSSValue* line_height =
         CSSPropertyFontUtils::ConsumeLineHeight(range_, context_->Mode());
     if (!line_height)
       return false;
-    AddProperty(CSSPropertyLineHeight, CSSPropertyFont, *line_height,
-                important);
+    AddParsedProperty(CSSPropertyLineHeight, CSSPropertyFont, *line_height,
+                      important);
   } else {
-    AddProperty(CSSPropertyLineHeight, CSSPropertyFont,
-                *CSSIdentifierValue::Create(CSSValueNormal), important);
+    AddParsedProperty(CSSPropertyLineHeight, CSSPropertyFont,
+                      *CSSIdentifierValue::Create(CSSValueNormal), important);
   }
 
   // Font family must come now.
@@ -2094,8 +2082,8 @@ bool CSSPropertyParser::ConsumeFont(bool important) {
   if (!parsed_family_value)
     return false;
 
-  AddProperty(CSSPropertyFontFamily, CSSPropertyFont, *parsed_family_value,
-              important);
+  AddParsedProperty(CSSPropertyFontFamily, CSSPropertyFont,
+                    *parsed_family_value, important);
 
   // FIXME: http://www.w3.org/TR/2011/WD-css3-fonts-20110324/#font-prop requires
   // that "font-stretch", "font-size-adjust", and "font-kerning" be reset to
@@ -2106,10 +2094,10 @@ bool CSSPropertyParser::ConsumeFont(bool important) {
 
 bool CSSPropertyParser::ConsumeFontVariantShorthand(bool important) {
   if (IdentMatches<CSSValueNormal, CSSValueNone>(range_.Peek().Id())) {
-    AddProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
-                *ConsumeIdent(range_), important);
-    AddProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
-                *CSSIdentifierValue::Create(CSSValueNormal), important);
+    AddParsedProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
+                      *ConsumeIdent(range_), important);
+    AddParsedProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
+                      *CSSIdentifierValue::Create(CSSValueNormal), important);
     return range_.AtEnd();
   }
 
@@ -2151,11 +2139,11 @@ bool CSSPropertyParser::ConsumeFontVariantShorthand(bool important) {
     }
   } while (!range_.AtEnd());
 
-  AddProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
-              *ligatures_parser.FinalizeValue(), important);
-  AddProperty(CSSPropertyFontVariantNumeric, CSSPropertyFontVariant,
-              *numeric_parser.FinalizeValue(), important);
-  AddProperty(
+  AddParsedProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
+                    *ligatures_parser.FinalizeValue(), important);
+  AddParsedProperty(CSSPropertyFontVariantNumeric, CSSPropertyFontVariant,
+                    *numeric_parser.FinalizeValue(), important);
+  AddParsedProperty(
       CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
       caps_value ? *caps_value : *CSSIdentifierValue::Create(CSSValueNormal),
       important);
@@ -2175,10 +2163,10 @@ bool CSSPropertyParser::ConsumeBorderSpacing(bool important) {
   }
   if (!vertical_spacing || !range_.AtEnd())
     return false;
-  AddProperty(CSSPropertyWebkitBorderHorizontalSpacing,
-              CSSPropertyBorderSpacing, *horizontal_spacing, important);
-  AddProperty(CSSPropertyWebkitBorderVerticalSpacing, CSSPropertyBorderSpacing,
-              *vertical_spacing, important);
+  AddParsedProperty(CSSPropertyWebkitBorderHorizontalSpacing,
+                    CSSPropertyBorderSpacing, *horizontal_spacing, important);
+  AddParsedProperty(CSSPropertyWebkitBorderVerticalSpacing,
+                    CSSPropertyBorderSpacing, *vertical_spacing, important);
   return true;
 }
 
@@ -2238,10 +2226,10 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
       }
       if (!max_width || !range_.AtEnd())
         return false;
-      AddProperty(CSSPropertyMinWidth, CSSPropertyInvalid, *min_width,
-                  important);
-      AddProperty(CSSPropertyMaxWidth, CSSPropertyInvalid, *max_width,
-                  important);
+      AddParsedProperty(CSSPropertyMinWidth, CSSPropertyInvalid, *min_width,
+                        important);
+      AddParsedProperty(CSSPropertyMaxWidth, CSSPropertyInvalid, *max_width,
+                        important);
       return true;
     }
     case CSSPropertyHeight: {
@@ -2256,10 +2244,10 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
       }
       if (!max_height || !range_.AtEnd())
         return false;
-      AddProperty(CSSPropertyMinHeight, CSSPropertyInvalid, *min_height,
-                  important);
-      AddProperty(CSSPropertyMaxHeight, CSSPropertyInvalid, *max_height,
-                  important);
+      AddParsedProperty(CSSPropertyMinHeight, CSSPropertyInvalid, *min_height,
+                        important);
+      AddParsedProperty(CSSPropertyMaxHeight, CSSPropertyInvalid, *max_height,
+                        important);
       return true;
     }
     case CSSPropertyMinWidth:
@@ -2275,7 +2263,7 @@ bool CSSPropertyParser::ParseViewportDescriptor(CSSPropertyID prop_id,
           ConsumeSingleViewportDescriptor(range_, prop_id, context_->Mode());
       if (!parsed_value || !range_.AtEnd())
         return false;
-      AddProperty(prop_id, CSSPropertyInvalid, *parsed_value, important);
+      AddParsedProperty(prop_id, CSSPropertyInvalid, *parsed_value, important);
       return true;
     }
     default:
@@ -2297,10 +2285,10 @@ bool CSSPropertyParser::ConsumeColumns(bool important) {
     column_width = CSSIdentifierValue::Create(CSSValueAuto);
   if (!column_count)
     column_count = CSSIdentifierValue::Create(CSSValueAuto);
-  AddProperty(CSSPropertyColumnWidth, CSSPropertyInvalid, *column_width,
-              important);
-  AddProperty(CSSPropertyColumnCount, CSSPropertyInvalid, *column_count,
-              important);
+  AddParsedProperty(CSSPropertyColumnWidth, CSSPropertyInvalid, *column_width,
+                    important);
+  AddParsedProperty(CSSPropertyColumnCount, CSSPropertyInvalid, *column_count,
+                    important);
   return true;
 }
 
@@ -2326,12 +2314,13 @@ bool CSSPropertyParser::ConsumeShorthandGreedily(
   } while (!range_.AtEnd());
 
   for (size_t i = 0; i < shorthand.length(); ++i) {
-    if (longhands[i])
-      AddProperty(shorthand_properties[i], shorthand.id(), *longhands[i],
-                  important);
-    else
-      AddProperty(shorthand_properties[i], shorthand.id(),
-                  *CSSInitialValue::Create(), important);
+    if (longhands[i]) {
+      AddParsedProperty(shorthand_properties[i], shorthand.id(), *longhands[i],
+                        important);
+    } else {
+      AddParsedProperty(shorthand_properties[i], shorthand.id(),
+                        *CSSInitialValue::Create(), important);
+    }
   }
   return true;
 }
@@ -2388,15 +2377,18 @@ bool CSSPropertyParser::ConsumeFlex(bool important) {
 
   if (!range_.AtEnd())
     return false;
-  AddProperty(CSSPropertyFlexGrow, CSSPropertyFlex,
-              *CSSPrimitiveValue::Create(clampTo<float>(flex_grow),
-                                         CSSPrimitiveValue::UnitType::kNumber),
-              important);
-  AddProperty(CSSPropertyFlexShrink, CSSPropertyFlex,
-              *CSSPrimitiveValue::Create(clampTo<float>(flex_shrink),
-                                         CSSPrimitiveValue::UnitType::kNumber),
-              important);
-  AddProperty(CSSPropertyFlexBasis, CSSPropertyFlex, *flex_basis, important);
+  AddParsedProperty(
+      CSSPropertyFlexGrow, CSSPropertyFlex,
+      *CSSPrimitiveValue::Create(clampTo<float>(flex_grow),
+                                 CSSPrimitiveValue::UnitType::kNumber),
+      important);
+  AddParsedProperty(
+      CSSPropertyFlexShrink, CSSPropertyFlex,
+      *CSSPrimitiveValue::Create(clampTo<float>(flex_shrink),
+                                 CSSPrimitiveValue::UnitType::kNumber),
+      important);
+  AddParsedProperty(CSSPropertyFlexBasis, CSSPropertyFlex, *flex_basis,
+                    important);
   return true;
 }
 
@@ -2468,10 +2460,10 @@ bool CSSPropertyParser::Consume4Values(const StylePropertyShorthand& shorthand,
   if (!left)
     left = right;
 
-  AddProperty(longhands[0], shorthand.id(), *top, important);
-  AddProperty(longhands[1], shorthand.id(), *right, important);
-  AddProperty(longhands[2], shorthand.id(), *bottom, important);
-  AddProperty(longhands[3], shorthand.id(), *left, important);
+  AddParsedProperty(longhands[0], shorthand.id(), *top, important);
+  AddParsedProperty(longhands[1], shorthand.id(), *right, important);
+  AddParsedProperty(longhands[2], shorthand.id(), *bottom, important);
+  AddParsedProperty(longhands[3], shorthand.id(), *left, important);
 
   return range_.AtEnd();
 }
@@ -2490,33 +2482,38 @@ bool CSSPropertyParser::ConsumeBorderImage(CSSPropertyID property,
                                    outset, repeat, default_fill)) {
     switch (property) {
       case CSSPropertyWebkitMaskBoxImage:
-        AddProperty(CSSPropertyWebkitMaskBoxImageSource,
-                    CSSPropertyWebkitMaskBoxImage,
-                    source ? *source : *CSSInitialValue::Create(), important);
-        AddProperty(CSSPropertyWebkitMaskBoxImageSlice,
-                    CSSPropertyWebkitMaskBoxImage,
-                    slice ? *slice : *CSSInitialValue::Create(), important);
-        AddProperty(CSSPropertyWebkitMaskBoxImageWidth,
-                    CSSPropertyWebkitMaskBoxImage,
-                    width ? *width : *CSSInitialValue::Create(), important);
-        AddProperty(CSSPropertyWebkitMaskBoxImageOutset,
-                    CSSPropertyWebkitMaskBoxImage,
-                    outset ? *outset : *CSSInitialValue::Create(), important);
-        AddProperty(CSSPropertyWebkitMaskBoxImageRepeat,
-                    CSSPropertyWebkitMaskBoxImage,
-                    repeat ? *repeat : *CSSInitialValue::Create(), important);
+        AddParsedProperty(
+            CSSPropertyWebkitMaskBoxImageSource, CSSPropertyWebkitMaskBoxImage,
+            source ? *source : *CSSInitialValue::Create(), important);
+        AddParsedProperty(
+            CSSPropertyWebkitMaskBoxImageSlice, CSSPropertyWebkitMaskBoxImage,
+            slice ? *slice : *CSSInitialValue::Create(), important);
+        AddParsedProperty(
+            CSSPropertyWebkitMaskBoxImageWidth, CSSPropertyWebkitMaskBoxImage,
+            width ? *width : *CSSInitialValue::Create(), important);
+        AddParsedProperty(
+            CSSPropertyWebkitMaskBoxImageOutset, CSSPropertyWebkitMaskBoxImage,
+            outset ? *outset : *CSSInitialValue::Create(), important);
+        AddParsedProperty(
+            CSSPropertyWebkitMaskBoxImageRepeat, CSSPropertyWebkitMaskBoxImage,
+            repeat ? *repeat : *CSSInitialValue::Create(), important);
         return true;
       case CSSPropertyBorderImage:
-        AddProperty(CSSPropertyBorderImageSource, CSSPropertyBorderImage,
-                    source ? *source : *CSSInitialValue::Create(), important);
-        AddProperty(CSSPropertyBorderImageSlice, CSSPropertyBorderImage,
-                    slice ? *slice : *CSSInitialValue::Create(), important);
-        AddProperty(CSSPropertyBorderImageWidth, CSSPropertyBorderImage,
-                    width ? *width : *CSSInitialValue::Create(), important);
-        AddProperty(CSSPropertyBorderImageOutset, CSSPropertyBorderImage,
-                    outset ? *outset : *CSSInitialValue::Create(), important);
-        AddProperty(CSSPropertyBorderImageRepeat, CSSPropertyBorderImage,
-                    repeat ? *repeat : *CSSInitialValue::Create(), important);
+        AddParsedProperty(CSSPropertyBorderImageSource, CSSPropertyBorderImage,
+                          source ? *source : *CSSInitialValue::Create(),
+                          important);
+        AddParsedProperty(CSSPropertyBorderImageSlice, CSSPropertyBorderImage,
+                          slice ? *slice : *CSSInitialValue::Create(),
+                          important);
+        AddParsedProperty(CSSPropertyBorderImageWidth, CSSPropertyBorderImage,
+                          width ? *width : *CSSInitialValue::Create(),
+                          important);
+        AddParsedProperty(CSSPropertyBorderImageOutset, CSSPropertyBorderImage,
+                          outset ? *outset : *CSSInitialValue::Create(),
+                          important);
+        AddParsedProperty(CSSPropertyBorderImageRepeat, CSSPropertyBorderImage,
+                          repeat ? *repeat : *CSSInitialValue::Create(),
+                          important);
         return true;
       default:
         NOTREACHED();
@@ -2593,8 +2590,8 @@ bool CSSPropertyParser::ConsumeLegacyBreakProperty(CSSPropertyID property,
     return false;
 
   CSSPropertyID generic_break_property = MapFromLegacyBreakProperty(property);
-  AddProperty(generic_break_property, property,
-              *CSSIdentifierValue::Create(value), important);
+  AddParsedProperty(generic_break_property, property,
+                    *CSSIdentifierValue::Create(value), important);
   return true;
 }
 
@@ -2753,7 +2750,8 @@ bool CSSPropertyParser::ConsumeBackgroundShorthand(
     if (property == CSSPropertyBackgroundSize && longhands[i] &&
         context_->UseLegacyBackgroundSizeShorthandBehavior())
       continue;
-    AddProperty(property, shorthand.id(), *longhands[i], important, implicit);
+    AddParsedProperty(property, shorthand.id(), *longhands[i], important,
+                      implicit);
   }
   return true;
 }
@@ -2780,8 +2778,10 @@ bool CSSPropertyParser::ConsumeGridItemPositionShorthand(
   }
   if (!range_.AtEnd())
     return false;
-  AddProperty(shorthand.properties()[0], shorthand_id, *start_value, important);
-  AddProperty(shorthand.properties()[1], shorthand_id, *end_value, important);
+  AddParsedProperty(shorthand.properties()[0], shorthand_id, *start_value,
+                    important);
+  AddParsedProperty(shorthand.properties()[1], shorthand_id, *end_value,
+                    important);
   return true;
 }
 
@@ -2827,14 +2827,14 @@ bool CSSPropertyParser::ConsumeGridAreaShorthand(bool important) {
                            : CSSIdentifierValue::Create(CSSValueAuto);
   }
 
-  AddProperty(CSSPropertyGridRowStart, CSSPropertyGridArea, *row_start_value,
-              important);
-  AddProperty(CSSPropertyGridColumnStart, CSSPropertyGridArea,
-              *column_start_value, important);
-  AddProperty(CSSPropertyGridRowEnd, CSSPropertyGridArea, *row_end_value,
-              important);
-  AddProperty(CSSPropertyGridColumnEnd, CSSPropertyGridArea, *column_end_value,
-              important);
+  AddParsedProperty(CSSPropertyGridRowStart, CSSPropertyGridArea,
+                    *row_start_value, important);
+  AddParsedProperty(CSSPropertyGridColumnStart, CSSPropertyGridArea,
+                    *column_start_value, important);
+  AddParsedProperty(CSSPropertyGridRowEnd, CSSPropertyGridArea, *row_end_value,
+                    important);
+  AddParsedProperty(CSSPropertyGridColumnEnd, CSSPropertyGridArea,
+                    *column_end_value, important);
   return true;
 }
 
@@ -2889,14 +2889,14 @@ bool CSSPropertyParser::ConsumeGridTemplateRowsAndAreasAndColumns(
   } else {
     columns_value = CSSIdentifierValue::Create(CSSValueNone);
   }
-  AddProperty(CSSPropertyGridTemplateRows, shorthand_id, *template_rows,
-              important);
-  AddProperty(CSSPropertyGridTemplateColumns, shorthand_id, *columns_value,
-              important);
-  AddProperty(CSSPropertyGridTemplateAreas, shorthand_id,
-              *CSSGridTemplateAreasValue::Create(grid_area_map, row_count,
-                                                 column_count),
-              important);
+  AddParsedProperty(CSSPropertyGridTemplateRows, shorthand_id, *template_rows,
+                    important);
+  AddParsedProperty(CSSPropertyGridTemplateColumns, shorthand_id,
+                    *columns_value, important);
+  AddParsedProperty(CSSPropertyGridTemplateAreas, shorthand_id,
+                    *CSSGridTemplateAreasValue::Create(grid_area_map, row_count,
+                                                       column_count),
+                    important);
   return true;
 }
 
@@ -2910,12 +2910,12 @@ bool CSSPropertyParser::ConsumeGridTemplateShorthand(CSSPropertyID shorthand_id,
 
   // 1- 'none' case.
   if (rows_value && range_.AtEnd()) {
-    AddProperty(CSSPropertyGridTemplateRows, shorthand_id,
-                *CSSIdentifierValue::Create(CSSValueNone), important);
-    AddProperty(CSSPropertyGridTemplateColumns, shorthand_id,
-                *CSSIdentifierValue::Create(CSSValueNone), important);
-    AddProperty(CSSPropertyGridTemplateAreas, shorthand_id,
-                *CSSIdentifierValue::Create(CSSValueNone), important);
+    AddParsedProperty(CSSPropertyGridTemplateRows, shorthand_id,
+                      *CSSIdentifierValue::Create(CSSValueNone), important);
+    AddParsedProperty(CSSPropertyGridTemplateColumns, shorthand_id,
+                      *CSSIdentifierValue::Create(CSSValueNone), important);
+    AddParsedProperty(CSSPropertyGridTemplateAreas, shorthand_id,
+                      *CSSIdentifierValue::Create(CSSValueNone), important);
     return true;
   }
 
@@ -2931,12 +2931,12 @@ bool CSSPropertyParser::ConsumeGridTemplateShorthand(CSSPropertyID shorthand_id,
     if (!columns_value || !range_.AtEnd())
       return false;
 
-    AddProperty(CSSPropertyGridTemplateRows, shorthand_id, *rows_value,
-                important);
-    AddProperty(CSSPropertyGridTemplateColumns, shorthand_id, *columns_value,
-                important);
-    AddProperty(CSSPropertyGridTemplateAreas, shorthand_id,
-                *CSSIdentifierValue::Create(CSSValueNone), important);
+    AddParsedProperty(CSSPropertyGridTemplateRows, shorthand_id, *rows_value,
+                      important);
+    AddParsedProperty(CSSPropertyGridTemplateColumns, shorthand_id,
+                      *columns_value, important);
+    AddParsedProperty(CSSPropertyGridTemplateAreas, shorthand_id,
+                      *CSSIdentifierValue::Create(CSSValueNone), important);
     return true;
   }
 
@@ -2977,16 +2977,16 @@ bool CSSPropertyParser::ConsumeGridShorthand(bool important) {
     // It can only be specified the explicit or the implicit grid properties in
     // a single grid declaration. The sub-properties not specified are set to
     // their initial value, as normal for shorthands.
-    AddProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid,
-                *CSSInitialValue::Create(), important);
-    AddProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid,
-                *CSSInitialValue::Create(), important);
-    AddProperty(CSSPropertyGridAutoRows, CSSPropertyGrid,
-                *CSSInitialValue::Create(), important);
-    AddProperty(CSSPropertyGridColumnGap, CSSPropertyGrid,
-                *CSSInitialValue::Create(), important);
-    AddProperty(CSSPropertyGridRowGap, CSSPropertyGrid,
-                *CSSInitialValue::Create(), important);
+    AddParsedProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid,
+                      *CSSInitialValue::Create(), important);
+    AddParsedProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid,
+                      *CSSInitialValue::Create(), important);
+    AddParsedProperty(CSSPropertyGridAutoRows, CSSPropertyGrid,
+                      *CSSInitialValue::Create(), important);
+    AddParsedProperty(CSSPropertyGridColumnGap, CSSPropertyGrid,
+                      *CSSInitialValue::Create(), important);
+    AddParsedProperty(CSSPropertyGridRowGap, CSSPropertyGrid,
+                      *CSSInitialValue::Create(), important);
     return true;
   }
 
@@ -3047,22 +3047,22 @@ bool CSSPropertyParser::ConsumeGridShorthand(bool important) {
   // It can only be specified the explicit or the implicit grid properties in a
   // single grid declaration. The sub-properties not specified are set to their
   // initial value, as normal for shorthands.
-  AddProperty(CSSPropertyGridTemplateColumns, CSSPropertyGrid,
-              *template_columns, important);
-  AddProperty(CSSPropertyGridTemplateRows, CSSPropertyGrid, *template_rows,
-              important);
-  AddProperty(CSSPropertyGridTemplateAreas, CSSPropertyGrid,
-              *CSSInitialValue::Create(), important);
-  AddProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid, *grid_auto_flow,
-              important);
-  AddProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid, *auto_columns_value,
-              important);
-  AddProperty(CSSPropertyGridAutoRows, CSSPropertyGrid, *auto_rows_value,
-              important);
-  AddProperty(CSSPropertyGridColumnGap, CSSPropertyGrid,
-              *CSSInitialValue::Create(), important);
-  AddProperty(CSSPropertyGridRowGap, CSSPropertyGrid,
-              *CSSInitialValue::Create(), important);
+  AddParsedProperty(CSSPropertyGridTemplateColumns, CSSPropertyGrid,
+                    *template_columns, important);
+  AddParsedProperty(CSSPropertyGridTemplateRows, CSSPropertyGrid,
+                    *template_rows, important);
+  AddParsedProperty(CSSPropertyGridTemplateAreas, CSSPropertyGrid,
+                    *CSSInitialValue::Create(), important);
+  AddParsedProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid, *grid_auto_flow,
+                    important);
+  AddParsedProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid,
+                    *auto_columns_value, important);
+  AddParsedProperty(CSSPropertyGridAutoRows, CSSPropertyGrid, *auto_rows_value,
+                    important);
+  AddParsedProperty(CSSPropertyGridColumnGap, CSSPropertyGrid,
+                    *CSSInitialValue::Create(), important);
+  AddParsedProperty(CSSPropertyGridRowGap, CSSPropertyGrid,
+                    *CSSInitialValue::Create(), important);
   return true;
 }
 
@@ -3084,10 +3084,10 @@ bool CSSPropertyParser::ConsumePlaceContentShorthand(bool important) {
   if (!range_.AtEnd())
     return false;
 
-  AddProperty(CSSPropertyAlignContent, CSSPropertyPlaceContent,
-              *align_content_value, important);
-  AddProperty(CSSPropertyJustifyContent, CSSPropertyPlaceContent,
-              *justify_content_value, important);
+  AddParsedProperty(CSSPropertyAlignContent, CSSPropertyPlaceContent,
+                    *align_content_value, important);
+  AddParsedProperty(CSSPropertyJustifyContent, CSSPropertyPlaceContent,
+                    *justify_content_value, important);
   return true;
 }
 
@@ -3114,10 +3114,10 @@ bool CSSPropertyParser::ConsumePlaceItemsShorthand(bool important) {
   if (!range_.AtEnd())
     return false;
 
-  AddProperty(CSSPropertyAlignItems, CSSPropertyPlaceItems, *align_items_value,
-              important);
-  AddProperty(CSSPropertyJustifyItems, CSSPropertyPlaceItems,
-              *justify_items_value, important);
+  AddParsedProperty(CSSPropertyAlignItems, CSSPropertyPlaceItems,
+                    *align_items_value, important);
+  AddParsedProperty(CSSPropertyJustifyItems, CSSPropertyPlaceItems,
+                    *justify_items_value, important);
   return true;
 }
 
@@ -3140,10 +3140,10 @@ bool CSSPropertyParser::ConsumePlaceSelfShorthand(bool important) {
   if (!range_.AtEnd())
     return false;
 
-  AddProperty(CSSPropertyAlignSelf, CSSPropertyPlaceSelf, *align_self_value,
-              important);
-  AddProperty(CSSPropertyJustifySelf, CSSPropertyPlaceSelf, *justify_self_value,
-              important);
+  AddParsedProperty(CSSPropertyAlignSelf, CSSPropertyPlaceSelf,
+                    *align_self_value, important);
+  AddParsedProperty(CSSPropertyJustifySelf, CSSPropertyPlaceSelf,
+                    *justify_self_value, important);
   return true;
 }
 
@@ -3168,34 +3168,35 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
               CSSPropertyWebkitMarginBeforeCollapse, id, context_->Mode()))
         return false;
       CSSValue* before_collapse = CSSIdentifierValue::Create(id);
-      AddProperty(CSSPropertyWebkitMarginBeforeCollapse,
-                  CSSPropertyWebkitMarginCollapse, *before_collapse, important);
+      AddParsedProperty(CSSPropertyWebkitMarginBeforeCollapse,
+                        CSSPropertyWebkitMarginCollapse, *before_collapse,
+                        important);
       if (range_.AtEnd()) {
-        AddProperty(CSSPropertyWebkitMarginAfterCollapse,
-                    CSSPropertyWebkitMarginCollapse, *before_collapse,
-                    important);
+        AddParsedProperty(CSSPropertyWebkitMarginAfterCollapse,
+                          CSSPropertyWebkitMarginCollapse, *before_collapse,
+                          important);
         if (range_.AtEnd()) {
-          AddProperty(CSSPropertyWebkitMarginAfterCollapse,
-                      CSSPropertyWebkitMarginCollapse, *before_collapse,
-                      important);
+          AddParsedProperty(CSSPropertyWebkitMarginAfterCollapse,
+                            CSSPropertyWebkitMarginCollapse, *before_collapse,
+                            important);
           return true;
         }
         id = range_.ConsumeIncludingWhitespace().Id();
         if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
                 CSSPropertyWebkitMarginAfterCollapse, id, context_->Mode()))
           return false;
-        AddProperty(CSSPropertyWebkitMarginAfterCollapse,
-                    CSSPropertyWebkitMarginCollapse, *before_collapse,
-                    important);
+        AddParsedProperty(CSSPropertyWebkitMarginAfterCollapse,
+                          CSSPropertyWebkitMarginCollapse, *before_collapse,
+                          important);
         return true;
       }
       id = range_.ConsumeIncludingWhitespace().Id();
       if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
               CSSPropertyWebkitMarginAfterCollapse, id, context_->Mode()))
         return false;
-      AddProperty(CSSPropertyWebkitMarginAfterCollapse,
-                  CSSPropertyWebkitMarginCollapse,
-                  *CSSIdentifierValue::Create(id), important);
+      AddParsedProperty(CSSPropertyWebkitMarginAfterCollapse,
+                        CSSPropertyWebkitMarginCollapse,
+                        *CSSIdentifierValue::Create(id), important);
       return true;
     }
     case CSSPropertyOverflow: {
@@ -3221,10 +3222,10 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
         overflow_x_value = CSSIdentifierValue::Create(CSSValueAuto);
       else
         overflow_x_value = overflow_y_value;
-      AddProperty(CSSPropertyOverflowX, CSSPropertyOverflow, *overflow_x_value,
-                  important);
-      AddProperty(CSSPropertyOverflowY, CSSPropertyOverflow, *overflow_y_value,
-                  important);
+      AddParsedProperty(CSSPropertyOverflowX, CSSPropertyOverflow,
+                        *overflow_x_value, important);
+      AddParsedProperty(CSSPropertyOverflowY, CSSPropertyOverflow,
+                        *overflow_y_value, important);
       return true;
     }
     case CSSPropertyFont: {
@@ -3273,10 +3274,12 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       const CSSValue* marker = ParseSingleValue(CSSPropertyMarkerStart);
       if (!marker || !range_.AtEnd())
         return false;
-      AddProperty(CSSPropertyMarkerStart, CSSPropertyMarker, *marker,
-                  important);
-      AddProperty(CSSPropertyMarkerMid, CSSPropertyMarker, *marker, important);
-      AddProperty(CSSPropertyMarkerEnd, CSSPropertyMarker, *marker, important);
+      AddParsedProperty(CSSPropertyMarkerStart, CSSPropertyMarker, *marker,
+                        important);
+      AddParsedProperty(CSSPropertyMarkerMid, CSSPropertyMarker, *marker,
+                        important);
+      AddParsedProperty(CSSPropertyMarkerEnd, CSSPropertyMarker, *marker,
+                        important);
       return true;
     }
     case CSSPropertyFlex:
@@ -3294,22 +3297,26 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
               horizontal_radii, vertical_radii, range_, context_->Mode(),
               unresolved_property == CSSPropertyAliasWebkitBorderRadius))
         return false;
-      AddProperty(CSSPropertyBorderTopLeftRadius, CSSPropertyBorderRadius,
-                  *CSSValuePair::Create(horizontal_radii[0], vertical_radii[0],
-                                        CSSValuePair::kDropIdenticalValues),
-                  important);
-      AddProperty(CSSPropertyBorderTopRightRadius, CSSPropertyBorderRadius,
-                  *CSSValuePair::Create(horizontal_radii[1], vertical_radii[1],
-                                        CSSValuePair::kDropIdenticalValues),
-                  important);
-      AddProperty(CSSPropertyBorderBottomRightRadius, CSSPropertyBorderRadius,
-                  *CSSValuePair::Create(horizontal_radii[2], vertical_radii[2],
-                                        CSSValuePair::kDropIdenticalValues),
-                  important);
-      AddProperty(CSSPropertyBorderBottomLeftRadius, CSSPropertyBorderRadius,
-                  *CSSValuePair::Create(horizontal_radii[3], vertical_radii[3],
-                                        CSSValuePair::kDropIdenticalValues),
-                  important);
+      AddParsedProperty(
+          CSSPropertyBorderTopLeftRadius, CSSPropertyBorderRadius,
+          *CSSValuePair::Create(horizontal_radii[0], vertical_radii[0],
+                                CSSValuePair::kDropIdenticalValues),
+          important);
+      AddParsedProperty(
+          CSSPropertyBorderTopRightRadius, CSSPropertyBorderRadius,
+          *CSSValuePair::Create(horizontal_radii[1], vertical_radii[1],
+                                CSSValuePair::kDropIdenticalValues),
+          important);
+      AddParsedProperty(
+          CSSPropertyBorderBottomRightRadius, CSSPropertyBorderRadius,
+          *CSSValuePair::Create(horizontal_radii[2], vertical_radii[2],
+                                CSSValuePair::kDropIdenticalValues),
+          important);
+      AddParsedProperty(
+          CSSPropertyBorderBottomLeftRadius, CSSPropertyBorderRadius,
+          *CSSValuePair::Create(horizontal_radii[3], vertical_radii[3],
+                                CSSValuePair::kDropIdenticalValues),
+          important);
       return true;
     }
     case CSSPropertyBorderColor:
@@ -3347,14 +3354,14 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
                                      result_x, result_y) ||
           !range_.AtEnd())
         return false;
-      AddProperty(property == CSSPropertyBackgroundPosition
-                      ? CSSPropertyBackgroundPositionX
-                      : CSSPropertyWebkitMaskPositionX,
-                  property, *result_x, important);
-      AddProperty(property == CSSPropertyBackgroundPosition
-                      ? CSSPropertyBackgroundPositionY
-                      : CSSPropertyWebkitMaskPositionY,
-                  property, *result_y, important);
+      AddParsedProperty(property == CSSPropertyBackgroundPosition
+                            ? CSSPropertyBackgroundPositionX
+                            : CSSPropertyWebkitMaskPositionX,
+                        property, *result_x, important);
+      AddParsedProperty(property == CSSPropertyBackgroundPosition
+                            ? CSSPropertyBackgroundPositionY
+                            : CSSPropertyWebkitMaskPositionY,
+                        property, *result_y, important);
       return true;
     }
     case CSSPropertyBackgroundRepeat:
@@ -3365,14 +3372,14 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       if (!ConsumeRepeatStyle(range_, result_x, result_y, implicit) ||
           !range_.AtEnd())
         return false;
-      AddProperty(property == CSSPropertyBackgroundRepeat
-                      ? CSSPropertyBackgroundRepeatX
-                      : CSSPropertyWebkitMaskRepeatX,
-                  property, *result_x, important, implicit);
-      AddProperty(property == CSSPropertyBackgroundRepeat
-                      ? CSSPropertyBackgroundRepeatY
-                      : CSSPropertyWebkitMaskRepeatY,
-                  property, *result_y, important, implicit);
+      AddParsedProperty(property == CSSPropertyBackgroundRepeat
+                            ? CSSPropertyBackgroundRepeatX
+                            : CSSPropertyWebkitMaskRepeatX,
+                        property, *result_x, important, implicit);
+      AddParsedProperty(property == CSSPropertyBackgroundRepeat
+                            ? CSSPropertyBackgroundRepeatY
+                            : CSSPropertyWebkitMaskRepeatY,
+                        property, *result_y, important, implicit);
       return true;
     }
     case CSSPropertyBackground:
@@ -3390,10 +3397,10 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
         return false;
       if (!column_gap)
         column_gap = row_gap;
-      AddProperty(CSSPropertyGridRowGap, CSSPropertyGridGap, *row_gap,
-                  important);
-      AddProperty(CSSPropertyGridColumnGap, CSSPropertyGridGap, *column_gap,
-                  important);
+      AddParsedProperty(CSSPropertyGridRowGap, CSSPropertyGridGap, *row_gap,
+                        important);
+      AddParsedProperty(CSSPropertyGridColumnGap, CSSPropertyGridGap,
+                        *column_gap, important);
       return true;
     }
     case CSSPropertyGridColumn:
