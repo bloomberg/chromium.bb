@@ -75,7 +75,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'draw-with-integer-texture-base-level.html',
         ['win', 'nvidia', 'd3d11'], bug=679639)
 
-    # Win10 / NVIDIA Quadro P400 failures
+    # Win10 / NVIDIA Quadro P400 / D3D11 failures
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_interleaved_lines.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
@@ -102,21 +102,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/interpolation_flat.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
-    self.Flaky('conformance2/textures/video/tex-3d-rgba32f-rgba-float.html',
-        ['win10', ('nvidia', 0x1cb3)], bug=728670)
-    self.Flaky('conformance2/textures/image_bitmap_from_video/' +
-        'tex-3d-rg16f-rg-half_float.html',
-        ['win10', ('nvidia', 0x1cb3)], bug=728670)
-    self.Flaky('conformance2/textures/image_bitmap_from_video/' +
-        'tex-3d-rgba8ui-rgba_integer-unsigned_byte.html',
-        ['win10', ('nvidia', 0x1cb3)], bug=728670)
-    self.Flaky('conformance2/textures/video/tex-3d-rgb9_e5-rgb-half_float.html',
-        ['win10', ('nvidia', 0x1cb3)], bug=728670)
-    self.Flaky('conformance2/textures/video/' +
-        'tex-3d-rg8ui-rg_integer-unsigned_byte.html',
-        ['win10', ('nvidia', 0x1cb3)], bug=728670)
+    self.Flaky('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
+    self.Flaky('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
+    self.Flaky('conformance2/textures/video/*',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
+    self.Flaky('conformance2/textures/image_bitmap_from_video/*',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
     self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
-        ['win10', ('nvidia', 0x1cb3)], bug=728670)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
 
     # Win / NVIDIA / OpenGL
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
