@@ -25,11 +25,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
   bool IsWorkerOrWorkletGlobalScope() const final { return true; }
   bool IsJSExecutionForbidden() const final;
   void DisableEval(const String& error_message) final;
-  void PostTask(
-      TaskType,
-      const WebTraceLocation&,
-      std::unique_ptr<ExecutionContextTask>,
-      const String& task_name_for_instrumentation = g_empty_string) final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
 
   virtual ScriptWrappable* GetScriptWrappable() const = 0;
@@ -71,8 +66,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
   virtual void ReportDeprecation(WebFeature) = 0;
 
  private:
-  void RunTask(std::unique_ptr<ExecutionContextTask>, bool is_instrumented);
-
   CrossThreadPersistent<WorkerClients> worker_clients_;
   Member<WorkerFetchContext> fetch_context_;
   Member<WorkerOrWorkletScriptController> script_controller_;

@@ -4,7 +4,6 @@
 
 #include "core/testing/NullExecutionContext.h"
 
-#include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -28,11 +27,6 @@ NullExecutionContext::NullExecutionContext()
     : tasks_need_suspension_(false),
       is_secure_context_(true),
       queue_(new NullEventQueue()) {}
-
-void NullExecutionContext::PostTask(TaskType,
-                                    const WebTraceLocation&,
-                                    std::unique_ptr<ExecutionContextTask>,
-                                    const String&) {}
 
 void NullExecutionContext::SetIsSecureContext(bool is_secure_context) {
   is_secure_context_ = is_secure_context;
