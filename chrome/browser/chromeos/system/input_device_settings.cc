@@ -23,6 +23,18 @@ PrefService* GetActiveProfilePrefs() {
   return profile ? profile->GetPrefs() : nullptr;
 }
 
+// Sets |to_set| to |other| if |other| has a value and the value is not equal to
+// |to_set|. This differs from *to_set = other; in so far as nothing is changed
+// if |other| has no value. Returns true if |to_set| was updated.
+template <typename T>
+bool UpdateIfHasValue(const base::Optional<T>& other,
+                      base::Optional<T>* to_set) {
+  if (!other.has_value() || other == *to_set)
+    return false;
+  *to_set = other;
+  return true;
+}
+
 }  // namespace
 
 TouchpadSettings::TouchpadSettings() {
@@ -42,79 +54,79 @@ TouchpadSettings& TouchpadSettings::operator=(const TouchpadSettings& other) {
 }
 
 void TouchpadSettings::SetSensitivity(int value) {
-  sensitivity_.Set(value);
+  sensitivity_ = value;
 }
 
 int TouchpadSettings::GetSensitivity() const {
-  return sensitivity_.value();
+  return *sensitivity_;
 }
 
 bool TouchpadSettings::IsSensitivitySet() const {
-  return sensitivity_.is_set();
+  return sensitivity_.has_value();
 }
 
 void TouchpadSettings::SetTapToClick(bool enabled) {
-  tap_to_click_.Set(enabled);
+  tap_to_click_ = enabled;
 }
 
 bool TouchpadSettings::GetTapToClick() const {
-  return tap_to_click_.value();
+  return *tap_to_click_;
 }
 
 bool TouchpadSettings::IsTapToClickSet() const {
-  return tap_to_click_.is_set();
+  return tap_to_click_.has_value();
 }
 
 void TouchpadSettings::SetNaturalScroll(bool enabled) {
-  natural_scroll_.Set(enabled);
+  natural_scroll_ = enabled;
 }
 
 bool TouchpadSettings::GetNaturalScroll() const {
-  return natural_scroll_.value();
+  return *natural_scroll_;
 }
 
 bool TouchpadSettings::IsNaturalScrollSet() const {
-  return natural_scroll_.is_set();
+  return natural_scroll_.has_value();
 }
 
 void TouchpadSettings::SetThreeFingerClick(bool enabled) {
-  three_finger_click_.Set(enabled);
+  three_finger_click_ = enabled;
 }
 
 bool TouchpadSettings::GetThreeFingerClick() const {
-  return three_finger_click_.value();
+  return *three_finger_click_;
 }
 
 bool TouchpadSettings::IsThreeFingerClickSet() const {
-  return three_finger_click_.is_set();
+  return three_finger_click_.has_value();
 }
 
 void TouchpadSettings::SetTapDragging(bool enabled) {
-  tap_dragging_.Set(enabled);
+  tap_dragging_ = enabled;
 }
 
 bool TouchpadSettings::GetTapDragging() const {
-  return tap_dragging_.value();
+  return *tap_dragging_;
 }
 
 bool TouchpadSettings::IsTapDraggingSet() const {
-  return tap_dragging_.is_set();
+  return tap_dragging_.has_value();
 }
 
 bool TouchpadSettings::Update(const TouchpadSettings& settings) {
   bool updated = false;
-  if (sensitivity_.Update(settings.sensitivity_))
+  if (UpdateIfHasValue(settings.sensitivity_, &sensitivity_))
     updated = true;
-  if (tap_to_click_.Update(settings.tap_to_click_))
+  if (UpdateIfHasValue(settings.tap_to_click_, &tap_to_click_))
     updated = true;
-  if (three_finger_click_.Update(settings.three_finger_click_))
+  if (UpdateIfHasValue(settings.three_finger_click_, &three_finger_click_))
     updated = true;
-  if (tap_dragging_.Update(settings.tap_dragging_))
+  if (UpdateIfHasValue(settings.tap_dragging_, &tap_dragging_))
     updated = true;
-  natural_scroll_.Update(settings.natural_scroll_);
+  UpdateIfHasValue(settings.natural_scroll_, &natural_scroll_);
   // Always send natural scrolling to the shell command, as a workaround.
   // See crbug.com/406480
-  if (natural_scroll_.is_set())
+  if (natural_scroll_.has_value())
     updated = true;
   return updated;
 }
@@ -124,23 +136,23 @@ void TouchpadSettings::Apply(const TouchpadSettings& touchpad_settings,
                              InputDeviceSettings* input_device_settings) {
   if (!input_device_settings)
     return;
-  if (touchpad_settings.sensitivity_.is_set()) {
+  if (touchpad_settings.sensitivity_.has_value()) {
     input_device_settings->SetTouchpadSensitivity(
         touchpad_settings.sensitivity_.value());
   }
-  if (touchpad_settings.tap_to_click_.is_set()) {
+  if (touchpad_settings.tap_to_click_.has_value()) {
     input_device_settings->SetTapToClick(
         touchpad_settings.tap_to_click_.value());
   }
-  if (touchpad_settings.three_finger_click_.is_set()) {
+  if (touchpad_settings.three_finger_click_.has_value()) {
     input_device_settings->SetThreeFingerClick(
         touchpad_settings.three_finger_click_.value());
   }
-  if (touchpad_settings.tap_dragging_.is_set()) {
+  if (touchpad_settings.tap_dragging_.has_value()) {
     input_device_settings->SetTapDragging(
         touchpad_settings.tap_dragging_.value());
   }
-  if (touchpad_settings.natural_scroll_.is_set()) {
+  if (touchpad_settings.natural_scroll_.has_value()) {
     input_device_settings->SetNaturalScroll(
         touchpad_settings.natural_scroll_.value());
   }
@@ -160,19 +172,19 @@ MouseSettings& MouseSettings::operator=(const MouseSettings& other) {
 }
 
 void MouseSettings::SetSensitivity(int value) {
-  sensitivity_.Set(value);
+  sensitivity_ = value;
 }
 
 int MouseSettings::GetSensitivity() const {
-  return sensitivity_.value();
+  return *sensitivity_;
 }
 
 bool MouseSettings::IsSensitivitySet() const {
-  return sensitivity_.is_set();
+  return sensitivity_.has_value();
 }
 
 void MouseSettings::SetPrimaryButtonRight(bool right) {
-  primary_button_right_.Set(right);
+  primary_button_right_ = right;
 }
 
 bool MouseSettings::GetPrimaryButtonRight() const {
@@ -180,15 +192,17 @@ bool MouseSettings::GetPrimaryButtonRight() const {
 }
 
 bool MouseSettings::IsPrimaryButtonRightSet() const {
-  return primary_button_right_.is_set();
+  return primary_button_right_.has_value();
 }
 
 bool MouseSettings::Update(const MouseSettings& settings) {
   bool updated = false;
-  if (sensitivity_.Update(settings.sensitivity_))
+  if (UpdateIfHasValue(settings.sensitivity_, &sensitivity_))
     updated = true;
-  if (primary_button_right_.Update(settings.primary_button_right_))
+  if (UpdateIfHasValue(settings.primary_button_right_,
+                       &primary_button_right_)) {
     updated = true;
+  }
   return updated;
 }
 
@@ -197,11 +211,11 @@ void MouseSettings::Apply(const MouseSettings& mouse_settings,
                           InputDeviceSettings* input_device_settings) {
   if (!input_device_settings)
     return;
-  if (mouse_settings.sensitivity_.is_set()) {
+  if (mouse_settings.sensitivity_.has_value()) {
     input_device_settings->SetMouseSensitivity(
         mouse_settings.sensitivity_.value());
   }
-  if (mouse_settings.primary_button_right_.is_set()) {
+  if (mouse_settings.primary_button_right_.has_value()) {
     input_device_settings->SetPrimaryButtonRight(
         mouse_settings.primary_button_right_.value());
   }
