@@ -258,7 +258,7 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
         // For non-SPv2, kSubtreeInvalidationChecking may hint change of
         // paint offset. See ObjectPaintInvalidatorWithContext::
         // invalidatePaintIfNeededWithComputedReason().
-        (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+        (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
          (context.subtree_flags &
           PaintInvalidatorContext::kSubtreeInvalidationChecking))) {
       object_invalidator.InvalidateDisplayItemClient(

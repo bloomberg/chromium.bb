@@ -401,7 +401,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // nodes that are created by the layout object. The property nodes should only
   // be updated during InPrePaint phase of the document lifecycle.
   const ObjectPaintProperties* PaintProperties() const {
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+    DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
     return rare_paint_data_ ? rare_paint_data_->PaintProperties() : nullptr;
   }
 
@@ -414,7 +414,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // to paint this LayoutObject. See also the comment for
   // RarePaintData::local_border_box_properties_.
   const PropertyTreeState* LocalBorderBoxProperties() const {
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+    DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
     if (rare_paint_data_)
       return rare_paint_data_->LocalBorderBoxProperties();
     return nullptr;
@@ -1770,7 +1770,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // pre-paint tree walk. TODO(wangxianzhu): Add check of lifecycle states.
     void SetVisualRect(const LayoutRect& r) { layout_object_.SetVisualRect(r); }
     void SetPaintOffset(const LayoutPoint& p) {
-      DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+      DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
       DCHECK_EQ(layout_object_.GetDocument().Lifecycle().GetState(),
                 DocumentLifecycle::kInPrePaint);
       layout_object_.paint_offset_ = p;

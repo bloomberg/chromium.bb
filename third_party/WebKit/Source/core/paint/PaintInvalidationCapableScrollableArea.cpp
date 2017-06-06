@@ -50,7 +50,7 @@ static LayoutRect ScrollControlVisualRect(
   // transform space than their contained box (the scrollbarPaintOffset
   // transform node).
   if (!visual_rect.IsEmpty() &&
-      !RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     // PaintInvalidatorContext::mapLocalRectToPaintInvalidationBacking() treats
     // the rect as in flipped block direction, but scrollbar controls don't
     // flip for block direction, so flip here to undo the flip in the function.

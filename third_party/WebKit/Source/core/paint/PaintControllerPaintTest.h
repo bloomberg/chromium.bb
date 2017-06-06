@@ -26,7 +26,7 @@ class PaintControllerPaintTestBase : private ScopedSlimmingPaintV2ForTest,
  protected:
   LayoutView& GetLayoutView() { return *GetDocument().GetLayoutView(); }
   PaintController& RootPaintController() {
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
       return *GetDocument().View()->GetPaintController();
     return GetLayoutView()
         .Layer()
@@ -41,7 +41,7 @@ class PaintControllerPaintTestBase : private ScopedSlimmingPaintV2ForTest,
 
   bool PaintWithoutCommit(const IntRect* interest_rect = nullptr) {
     GetDocument().View()->Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       if (GetLayoutView().Layer()->NeedsRepaint()) {
         GraphicsContext graphics_context(RootPaintController());
         GetDocument().View()->Paint(graphics_context,

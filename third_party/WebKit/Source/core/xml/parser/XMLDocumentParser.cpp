@@ -1223,7 +1223,7 @@ void XMLDocumentParser::GetProcessingInstruction(const String& target,
   if (pi->IsCSS())
     saw_css_ = true;
 
-  if (!RuntimeEnabledFeatures::xsltEnabled())
+  if (!RuntimeEnabledFeatures::XSLTEnabled())
     return;
 
   saw_xsl_transform_ = !saw_first_element_ && pi->IsXSL();

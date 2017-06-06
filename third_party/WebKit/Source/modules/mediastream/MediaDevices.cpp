@@ -143,7 +143,7 @@ void MediaDevices::DidChangeMediaDevices() {
   Document* document = ToDocument(GetExecutionContext());
   DCHECK(document);
 
-  if (RuntimeEnabledFeatures::onDeviceChangeEnabled())
+  if (RuntimeEnabledFeatures::OnDeviceChangeEnabled())
     ScheduleDispatchEvent(Event::Create(EventTypeNames::devicechange));
 }
 

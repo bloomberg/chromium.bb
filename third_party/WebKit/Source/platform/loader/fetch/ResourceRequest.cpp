@@ -76,7 +76,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       check_for_browser_side_navigation_(true),
       ui_start_time_(0),
       is_external_request_(false),
-      loading_ipc_type_(RuntimeEnabledFeatures::loadingWithMojoEnabled()
+      loading_ipc_type_(RuntimeEnabledFeatures::LoadingWithMojoEnabled()
                             ? WebURLRequest::LoadingIPCType::kMojo
                             : WebURLRequest::LoadingIPCType::kChromeIPC),
       is_same_document_navigation_(false),
@@ -362,7 +362,7 @@ void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
   // TODO(mkwst): This only checks explicit IP addresses. We'll have to move all
   // this up to //net and //content in order to have any real impact on gateway
   // attacks. That turns out to be a TON of work. https://crbug.com/378566
-  if (!RuntimeEnabledFeatures::corsRFC1918Enabled()) {
+  if (!RuntimeEnabledFeatures::CorsRFC1918Enabled()) {
     is_external_request_ = false;
     return;
   }

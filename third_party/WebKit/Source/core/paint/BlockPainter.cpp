@@ -201,7 +201,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
     Optional<ScopedPaintChunkProperties> scoped_scroll_property;
     Optional<ScrollRecorder> scroll_recorder;
     Optional<PaintInfo> scrolled_paint_info;
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       const auto* object_properties = layout_block_.PaintProperties();
       auto* scroll_translation =
           object_properties ? object_properties->ScrollTranslation() : nullptr;

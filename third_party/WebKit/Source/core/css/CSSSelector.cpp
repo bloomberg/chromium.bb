@@ -429,7 +429,7 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
     return CSSSelector::kPseudoUnknown;
 
   if (match->type == CSSSelector::kPseudoDefined &&
-      !RuntimeEnabledFeatures::customElementsV1Enabled())
+      !RuntimeEnabledFeatures::CustomElementsV1Enabled())
     return CSSSelector::kPseudoUnknown;
 
   return static_cast<CSSSelector::PseudoType>(match->type);

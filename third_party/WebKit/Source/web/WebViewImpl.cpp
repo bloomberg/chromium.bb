@@ -600,7 +600,7 @@ bool WebViewImpl::ScrollBy(const WebFloatSize& delta,
 
   if (fling_source_device_ == kWebGestureDeviceTouchpad) {
     bool enable_touchpad_scroll_latching =
-        RuntimeEnabledFeatures::touchpadAndWheelScrollLatchingEnabled();
+        RuntimeEnabledFeatures::TouchpadAndWheelScrollLatchingEnabled();
     WebMouseWheelEvent synthetic_wheel(WebInputEvent::kMouseWheel,
                                        fling_modifier_,
                                        WTF::MonotonicallyIncreasingTime());
@@ -1809,7 +1809,7 @@ void WebViewImpl::UpdateICBAndResizeViewport() {
   // controls hide so that the ICB will always be the same size as the
   // viewport with the browser controls shown.
   IntSize icb_size = size_;
-  if (RuntimeEnabledFeatures::inertTopControlsEnabled() &&
+  if (RuntimeEnabledFeatures::InertTopControlsEnabled() &&
       GetBrowserControls().PermittedState() == kWebBrowserControlsBoth &&
       !GetBrowserControls().ShrinkViewport())
     icb_size.Expand(0, -GetBrowserControls().Height());
@@ -3841,7 +3841,7 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     return;
 
   // In SPv2, setRootLayer is used instead.
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
   visual_viewport.AttachLayerTree(graphics_layer);

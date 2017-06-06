@@ -23,7 +23,7 @@ GraphicsContext* SVGFilterRecordingContext::BeginContent() {
 
   // Content painted into a new PaintRecord in SPv2 will have an
   // independent property tree set.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     paint_controller_->UpdateCurrentPaintChunkProperties(
         nullptr, PropertyTreeState::Root());
   }

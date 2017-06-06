@@ -32,7 +32,7 @@ class XSLImportRule final : public GarbageCollectedFinalized<XSLImportRule> {
  public:
   static XSLImportRule* Create(XSLStyleSheet* parent_sheet,
                                const String& href) {
-    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     return new XSLImportRule(parent_sheet, href);
   }
 

@@ -332,7 +332,7 @@ void ViewportStyleResolver::UpdateViewport(
   if (needs_update_ == kCollectRules) {
     Reset();
     CollectViewportRulesFromUASheets();
-    if (RuntimeEnabledFeatures::cssViewportEnabled())
+    if (RuntimeEnabledFeatures::CSSViewportEnabled())
       collection.CollectViewportRules(*this);
   }
   Resolve();

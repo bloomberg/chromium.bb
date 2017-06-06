@@ -188,7 +188,7 @@ void PaintLayerScrollableArea::Dispose() {
   // destroyed, because LayoutObjectChildList::removeChildNode skips the call to
   // willBeRemovedFromTree,
   // leaving the ScrollAnchor with a stale LayoutObject pointer.
-  if (RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
+  if (RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
       !Box().DocumentBeingDestroyed())
     scroll_anchor_.ClearSelf();
 
@@ -454,11 +454,11 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     Box().SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
   }
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
     // The scrollOffsetTranslation paint property depends on the scroll offset.
     // (see: PaintPropertyTreeBuilder.updateProperties(LocalFrameView&,...) and
     // PaintPropertyTreeBuilder.updateScrollAndScrollTranslation).
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
         Layer()->IsRootLayer()) {
       frame_view->SetNeedsPaintPropertyUpdate();
     } else {
@@ -485,7 +485,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     if (scroll_type != kCompositorScroll)
       ShowOverlayScrollbars();
     frame_view->ClearFragmentAnchor();
-    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
+    if (RuntimeEnabledFeatures::ScrollAnchoringEnabled())
       GetScrollAnchor()->Clear();
   }
 }
@@ -567,7 +567,7 @@ int PaintLayerScrollableArea::VisibleWidth() const {
 }
 
 LayoutSize PaintLayerScrollableArea::ClientSize() const {
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     bool is_main_frame_root_layer =
         layer_.IsRootLayer() && Box().GetDocument().GetFrame()->IsMainFrame();
     if (is_main_frame_root_layer) {
@@ -580,7 +580,7 @@ LayoutSize PaintLayerScrollableArea::ClientSize() const {
 }
 
 IntSize PaintLayerScrollableArea::PixelSnappedClientSize() const {
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     bool is_main_frame_root_layer =
         layer_.IsRootLayer() && Box().GetDocument().GetFrame()->IsMainFrame();
     if (is_main_frame_root_layer) {
@@ -914,7 +914,7 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
   // geometry.
   if (Box().GetNode()->IsElementNode()) {
     ToElement(Box().GetNode())->SetNeedsCompositingUpdate();
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
       Box().SetNeedsPaintPropertyUpdate();
   }
 
@@ -934,7 +934,7 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
 }
 
 bool PaintLayerScrollableArea::ShouldPerformScrollAnchoring() const {
-  return RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
+  return RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
          scroll_anchor_.HasScroller() &&
          GetLayoutBox()->Style()->OverflowAnchor() != EOverflowAnchor::kNone &&
          !Box().GetDocument().FinishingOrIsPrinting();
@@ -992,7 +992,7 @@ bool PaintLayerScrollableArea::HasScrollableVerticalOverflow() const {
 // overflow. Currently, we need to avoid producing scrollbars here if they'll be
 // handled externally in the RLC.
 static bool CanHaveOverflowScrollbars(const LayoutBox& box) {
-  return (RuntimeEnabledFeatures::rootLayerScrollingEnabled() ||
+  return (RuntimeEnabledFeatures::RootLayerScrollingEnabled() ||
           !box.IsLayoutView()) &&
          box.GetDocument().ViewportDefiningElement() != box.GetNode();
 }
@@ -1787,7 +1787,7 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet(bool has_overflow) {
   if (did_scroll_overflow == ScrollsOverflow())
     return;
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
     // The scroll and scroll offset properties depend on |scrollsOverflow| (see:
     // PaintPropertyTreeBuilder::updateScrollAndScrollTranslation).
     Box().SetNeedsPaintPropertyUpdate();
@@ -1867,7 +1867,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   // TODO(flackr): Allow integer transforms as long as all of the ancestor
   // transforms are also integer.
   bool background_supports_lcd_text =
-      RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled() &&
+      RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled() &&
       layer->GetLayoutObject().Style()->IsStackingContext() &&
       layer->GetBackgroundPaintLocation(
           &non_composited_main_thread_scrolling_reasons_) &

@@ -41,7 +41,7 @@ BaseRenderingContext2D::BaseRenderingContext2D()
     : clip_antialiasing_(kNotAntiAliased), color_management_enabled_(false) {
   state_stack_.push_back(CanvasRenderingContext2DState::Create());
   color_management_enabled_ =
-      RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
+      RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
 }
 
 BaseRenderingContext2D::~BaseRenderingContext2D() {}
@@ -902,7 +902,7 @@ static inline CanvasImageSource* ToImageSourceInternal(
     const CanvasImageSourceUnion& value,
     ExceptionState& exception_state) {
   if (value.isCSSImageValue()) {
-    if (RuntimeEnabledFeatures::cssPaintAPIEnabled())
+    if (RuntimeEnabledFeatures::CSSPaintAPIEnabled())
       return value.getAsCSSImageValue();
     exception_state.ThrowTypeError("CSSImageValue is not yet supported");
     return nullptr;

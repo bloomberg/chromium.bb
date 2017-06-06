@@ -60,7 +60,7 @@ CSSPropertyID AnimationInputHelpers::KeyframeAttributeToCSSProperty(
 CSSPropertyID AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(
     const String& property,
     const Element& element) {
-  if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() ||
+  if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() ||
       !element.IsSVGElement() || !IsSVGPrefixed(property))
     return CSSPropertyInvalid;
 
@@ -192,7 +192,7 @@ QualifiedName SvgAttributeName(const String& property) {
 const QualifiedName* AnimationInputHelpers::KeyframeAttributeToSVGAttribute(
     const String& property,
     Element& element) {
-  if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() ||
+  if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() ||
       !element.IsSVGElement() || !IsSVGPrefixed(property))
     return nullptr;
 

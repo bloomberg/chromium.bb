@@ -33,7 +33,7 @@ struct CORE_EXPORT PaintInvalidatorContext {
                                                  LayoutRect&) const;
 
   bool NeedsVisualRectUpdate(const LayoutObject& object) const {
-    if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    if (!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
       return true;
 #if DCHECK_IS_ON()
     if (force_visual_rect_update_for_checking_)

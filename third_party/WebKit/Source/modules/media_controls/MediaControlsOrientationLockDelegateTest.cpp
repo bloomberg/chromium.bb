@@ -104,8 +104,8 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
  protected:
   void SetUp() override {
     previous_video_fullscreen_orientation_lock_value_ =
-        RuntimeEnabledFeatures::videoFullscreenOrientationLockEnabled();
-    RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(true);
+        RuntimeEnabledFeatures::VideoFullscreenOrientationLockEnabled();
+    RuntimeEnabledFeatures::SetVideoFullscreenOrientationLockEnabled(true);
 
     chrome_client_ = new MockChromeClient();
 
@@ -126,7 +126,7 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
   void TearDown() override {
     ::testing::Mock::VerifyAndClear(&GetScreenOrientationController());
 
-    RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(
+    RuntimeEnabledFeatures::SetVideoFullscreenOrientationLockEnabled(
         previous_video_fullscreen_orientation_lock_value_);
   }
 
@@ -219,7 +219,7 @@ TEST_F(MediaControlsOrientationLockDelegateTest, DelegateRequiresFlag) {
   EXPECT_TRUE(HasDelegate(*Video().GetMediaControls()));
 
   // Same with flag off.
-  RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(false);
+  RuntimeEnabledFeatures::SetVideoFullscreenOrientationLockEnabled(false);
   HTMLVideoElement* video = HTMLVideoElement::Create(GetDocument());
   GetDocument().body()->AppendChild(video);
   EXPECT_FALSE(HasDelegate(*video->GetMediaControls()));

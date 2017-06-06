@@ -929,7 +929,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
 
   ClipRects* PreviousClipRects() const {
-    DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
     return previous_clip_rects_.Get();
   }
   void SetPreviousClipRects(ClipRects& clip_rects) {
@@ -1013,11 +1013,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Whether the value of isSelfPaintingLayer() changed since the last clearing
   // (which happens after the flag is chedked during compositing update).
   bool SelfPaintingStatusChanged() const {
-    DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
     return self_painting_status_changed_;
   }
   void ClearSelfPaintingStatusChanged() {
-    DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
     self_painting_status_changed_ = false;
   }
 

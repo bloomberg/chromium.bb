@@ -79,7 +79,7 @@ static const unsigned kMaxTryRestoreContextAttempts = 4;
 static const double kCDeviceScaleFactor = 1.0;  // Canvas is device independent
 
 static bool ContextLostRestoredEventsEnabled() {
-  return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
+  return RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled();
 }
 
 // Drawing methods need to use this instead of SkAutoCanvasRestore in case

@@ -50,7 +50,7 @@ CGContextRef GraphicsContextCanvas::CgContext() {
   // Allocate an offscreen and draw into that, relying on the
   // compositing step to apply skia's clip.
   WTF::RetainPtr<CGColorSpace> color_space(
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled()
+      RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()
           ? CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
           : CGColorSpaceCreateDeviceRGB());
 

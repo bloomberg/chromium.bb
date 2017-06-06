@@ -533,7 +533,7 @@ void MediaSource::DurationChangeAlgorithm(double new_duration,
   }
 
   if (new_duration < highest_buffered_presentation_timestamp) {
-    if (RuntimeEnabledFeatures::mediaSourceNewAbortAndDurationEnabled()) {
+    if (RuntimeEnabledFeatures::MediaSourceNewAbortAndDurationEnabled()) {
       LogAndThrowDOMException(
           exception_state, kInvalidStateError,
           "Setting duration below highest presentation timestamp of any "
@@ -558,7 +558,7 @@ void MediaSource::DurationChangeAlgorithm(double new_duration,
   bool request_seek = attached_element_->currentTime() > new_duration;
   web_media_source_->SetDuration(new_duration);
 
-  if (!RuntimeEnabledFeatures::mediaSourceNewAbortAndDurationEnabled() &&
+  if (!RuntimeEnabledFeatures::MediaSourceNewAbortAndDurationEnabled() &&
       new_duration < old_duration) {
     // Deprecated behavior: if the new duration is less than old duration,
     // then call remove(new duration, old duration) on all all objects in

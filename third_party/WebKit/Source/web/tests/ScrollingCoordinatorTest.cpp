@@ -194,8 +194,8 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
 
 TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   bool orig_fractional_offsets_enabled =
-      RuntimeEnabledFeatures::fractionalScrollOffsetsEnabled();
-  RuntimeEnabledFeatures::setFractionalScrollOffsetsEnabled(true);
+      RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled();
+  RuntimeEnabledFeatures::SetFractionalScrollOffsetsEnabled(true);
 
   RegisterMockedHttpURLLoad("fractional-scroll-div.html");
   NavigateTo(base_url_ + "fractional-scroll-div.html");
@@ -229,7 +229,7 @@ TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   ASSERT_NEAR(1.2f, web_scroll_layer->ScrollPosition().x, 0.01f);
   ASSERT_NEAR(1.2f, web_scroll_layer->ScrollPosition().y, 0.01f);
 
-  RuntimeEnabledFeatures::setFractionalScrollOffsetsEnabled(
+  RuntimeEnabledFeatures::SetFractionalScrollOffsetsEnabled(
       orig_fractional_offsets_enabled);
 }
 
@@ -988,7 +988,7 @@ TEST_P(ScrollingCoordinatorTest,
                                     ->LayerForScrolling();
   WebLayer* web_scroll_layer;
 
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // When RLS is enabled, the LayoutView won't have a scrolling contents
     // because it does not overflow.
     ASSERT_FALSE(scroll_layer);
@@ -1033,7 +1033,7 @@ TEST_P(ScrollingCoordinatorTest,
   scroll_layer = layout_object->GetFrameView()
                      ->LayoutViewportScrollableArea()
                      ->LayerForScrolling();
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // When RLS is enabled, the LayoutView won't have a scrolling contents
     // because it does not overflow.
     ASSERT_FALSE(scroll_layer);

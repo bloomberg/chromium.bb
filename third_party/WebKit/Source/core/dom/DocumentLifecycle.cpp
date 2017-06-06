@@ -134,10 +134,10 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kLayoutClean)
         return true;
-      if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInCompositingUpdate)
         return true;
-      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInPrePaint)
         return true;
       break;
@@ -157,10 +157,10 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kLayoutClean)
         return true;
-      if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInCompositingUpdate)
         return true;
-      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInPrePaint)
         return true;
       break;
@@ -197,21 +197,21 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kStyleClean)
         return true;
-      if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInCompositingUpdate)
         return true;
-      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInPrePaint)
         return true;
       break;
     case kInCompositingUpdate:
-      DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
       // Once we are in the compositing update, we can either just clean the
       // inputs or do the whole of compositing.
       return next_state == kCompositingInputsClean ||
              next_state == kCompositingClean;
     case kCompositingInputsClean:
-      DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
       // We can return to style re-calc, layout, or the start of compositing.
       if (next_state == kInStyleRecalc)
         return true;
@@ -223,14 +223,14 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       if (next_state == kCompositingClean)
         return true;
     case kCompositingClean:
-      DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
       if (next_state == kInStyleRecalc)
         return true;
       if (next_state == kInPreLayout)
         return true;
       if (next_state == kInCompositingUpdate)
         return true;
-      if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+      if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
         if (next_state == kInPrePaint)
           return true;
       } else if (next_state == kInPaintInvalidation) {
@@ -238,10 +238,10 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       }
       break;
     case kInPaintInvalidation:
-      DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
       return next_state == kPaintInvalidationClean;
     case kPaintInvalidationClean:
-      DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
       if (next_state == kInStyleRecalc)
         return true;
       if (next_state == kInPreLayout)
@@ -262,10 +262,10 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kInPreLayout)
         return true;
-      if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInCompositingUpdate)
         return true;
-      if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+      if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
           next_state == kInPrePaint)
         return true;
       break;
@@ -278,10 +278,10 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kInPreLayout)
         return true;
-      if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInCompositingUpdate)
         return true;
-      if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+      if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
           next_state == kInPrePaint)
         return true;
       break;

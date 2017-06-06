@@ -60,7 +60,7 @@ bool CSSPaintValue::ParseInputArguments() {
     return false;
 
   if (parsed_input_arguments_ ||
-      !RuntimeEnabledFeatures::cssPaintAPIArgumentsEnabled())
+      !RuntimeEnabledFeatures::CSSPaintAPIArgumentsEnabled())
     return true;
 
   if (!generator_->IsImageGeneratorReady())

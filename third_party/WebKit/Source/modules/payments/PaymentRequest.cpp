@@ -523,7 +523,7 @@ void StringifyAndParseMethodSpecificData(
     if (exception_state.HadException())
       exception_state.ClearException();
   }
-  if (RuntimeEnabledFeatures::paymentRequestBasicCardEnabled() &&
+  if (RuntimeEnabledFeatures::PaymentRequestBasicCardEnabled() &&
       supported_methods.Contains("basic-card")) {
     SetBasicCardMethodData(input, output, execution_context, exception_state);
     if (exception_state.HadException())

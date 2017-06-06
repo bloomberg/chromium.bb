@@ -224,8 +224,8 @@ HTMLFrameOwnerElement* FindContainerForDescendant(const Document& doc,
 // Fullscreen status affects scroll paint properties through
 // LocalFrameView::userInputScrollable().
 void SetNeedsPaintPropertyUpdate(Document* document) {
-  if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ||
-      RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() ||
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
 
   if (!document)
@@ -268,7 +268,7 @@ Element* Fullscreen::FullscreenElementFrom(Document& document) {
 
 Element* Fullscreen::FullscreenElementForBindingFrom(TreeScope& scope) {
   Element* element = FullscreenElementFrom(scope.GetDocument());
-  if (!element || !RuntimeEnabledFeatures::fullscreenUnprefixedEnabled())
+  if (!element || !RuntimeEnabledFeatures::FullscreenUnprefixedEnabled())
     return element;
 
   // TODO(kochi): Once V0 code is removed, we can use the same logic for
@@ -296,7 +296,7 @@ Element* Fullscreen::CurrentFullScreenElementFrom(Document& document) {
 Element* Fullscreen::CurrentFullScreenElementForBindingFrom(
     Document& document) {
   Element* element = CurrentFullScreenElementFrom(document);
-  if (!element || !RuntimeEnabledFeatures::fullscreenUnprefixedEnabled())
+  if (!element || !RuntimeEnabledFeatures::FullscreenUnprefixedEnabled())
     return element;
 
   // For Shadow DOM V0 compatibility: We allow returning an element in V0 shadow

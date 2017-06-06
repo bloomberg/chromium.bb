@@ -67,7 +67,7 @@ class CompositorWorkerTest
   }
 
   WebLayer* GetRootScrollLayer() {
-    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       DCHECK(GetFrame());
       DCHECK(GetFrame()->View());
       DCHECK(GetFrame()->View()->LayoutViewportScrollableArea());

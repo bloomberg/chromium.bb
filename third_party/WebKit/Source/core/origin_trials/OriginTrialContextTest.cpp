@@ -71,17 +71,17 @@ class MockTokenValidator : public WebTrialTokenValidator {
 class OriginTrialContextTest : public ::testing::Test {
  protected:
   OriginTrialContextTest()
-      : framework_was_enabled_(RuntimeEnabledFeatures::originTrialsEnabled()),
+      : framework_was_enabled_(RuntimeEnabledFeatures::OriginTrialsEnabled()),
         execution_context_(new NullExecutionContext()),
         token_validator_(WTF::MakeUnique<MockTokenValidator>()),
         origin_trial_context_(new OriginTrialContext(*execution_context_,
                                                      token_validator_.get())),
         histogram_tester_(new HistogramTester()) {
-    RuntimeEnabledFeatures::setOriginTrialsEnabled(true);
+    RuntimeEnabledFeatures::SetOriginTrialsEnabled(true);
   }
 
   ~OriginTrialContextTest() {
-    RuntimeEnabledFeatures::setOriginTrialsEnabled(framework_was_enabled_);
+    RuntimeEnabledFeatures::SetOriginTrialsEnabled(framework_was_enabled_);
   }
 
   MockTokenValidator* TokenValidator() { return token_validator_.get(); }

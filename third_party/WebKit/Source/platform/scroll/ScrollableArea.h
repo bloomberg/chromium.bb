@@ -167,7 +167,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   // TODO(szager): Now that scroll offsets are floats everywhere, can we get rid
   // of this?
   virtual bool ShouldUseIntegerScrollOffset() const {
-    return !RuntimeEnabledFeatures::fractionalScrollOffsetsEnabled();
+    return !RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled();
   }
 
   virtual bool IsActive() const = 0;

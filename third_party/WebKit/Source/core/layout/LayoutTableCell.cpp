@@ -1477,7 +1477,7 @@ bool LayoutTableCell::UsesCompositedCellDisplayItemClients() const {
   // paint content for the cell into the table graphics layer backing and so
   // must use the table's visual rect.
   return (HasLayer() && Layer()->GetCompositingState() != kNotComposited) ||
-         RuntimeEnabledFeatures::slimmingPaintV2Enabled();
+         RuntimeEnabledFeatures::SlimmingPaintV2Enabled();
 }
 
 void LayoutTableCell::InvalidateDisplayItemClients(

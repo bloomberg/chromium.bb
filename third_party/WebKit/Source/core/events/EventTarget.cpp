@@ -204,7 +204,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
     }
   }
 
-  if (RuntimeEnabledFeatures::passiveDocumentEventListenersEnabled() &&
+  if (RuntimeEnabledFeatures::PassiveDocumentEventListenersEnabled() &&
       IsTouchScrollBlockingEvent(event_type)) {
     if (!options.hasPassive()) {
       if (Node* node = ToNode()) {
@@ -226,7 +226,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   // For mousewheel event listeners that have the target as the window and
   // a bound function name of "ssc_wheel" treat and no passive value default
   // passive to true. See crbug.com/501568.
-  if (RuntimeEnabledFeatures::smoothScrollJSInterventionEnabled() &&
+  if (RuntimeEnabledFeatures::SmoothScrollJSInterventionEnabled() &&
       event_type == EventTypeNames::mousewheel && ToLocalDOMWindow() &&
       event_listener && !options.hasPassive()) {
     if (V8AbstractEventListener* v8_listener =

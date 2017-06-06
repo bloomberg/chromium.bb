@@ -223,7 +223,7 @@ class DraggedNodeImageBuilder {
     PaintRecordBuilder builder(DeviceSpaceBounds(bounding_box, *local_frame_));
     PaintLayerPainter(*layer).Paint(builder.Context(), painting_info, flags);
     PropertyTreeState border_box_properties = PropertyTreeState::Root();
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       border_box_properties =
           *layer->GetLayoutObject().LocalBorderBoxProperties();
     }
@@ -398,7 +398,7 @@ void LocalFrame::Reload(FrameLoadType load_type,
     request.SetClientRedirect(client_redirect_policy);
     loader_.Load(request, load_type);
   } else {
-    DCHECK_EQ(RuntimeEnabledFeatures::locationHardReloadEnabled()
+    DCHECK_EQ(RuntimeEnabledFeatures::LocationHardReloadEnabled()
                   ? kFrameLoadTypeReloadBypassingCache
                   : kFrameLoadTypeReload,
               load_type);
@@ -628,7 +628,7 @@ void LocalFrame::SetPrinting(bool printing,
       ToLocalFrame(child)->SetPrinting(printing, FloatSize(), FloatSize(), 0);
   }
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     View()->SetSubtreeNeedsPaintPropertyUpdate();
 
   if (!printing)
@@ -854,7 +854,7 @@ String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
     return String();
 
   std::unique_ptr<JSONObject> layers;
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     layers = View()->CompositedLayersAsJSON(static_cast<LayerTreeFlags>(flags));
   } else {
     layers = ContentLayoutItem().Compositor()->LayerTreeAsJSON(
@@ -974,7 +974,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame) {
     // now blocked if the document initiating the navigation has never received
     // a user gesture.
     if (!RuntimeEnabledFeatures::
-            framebustingNeedsSameOriginOrUserGestureEnabled()) {
+            FramebustingNeedsSameOriginOrUserGestureEnabled()) {
       String target_frame_description =
           target_frame.IsLocalFrame() ? "with URL '" +
                                             ToLocalFrame(target_frame)

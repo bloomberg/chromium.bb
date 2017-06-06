@@ -222,7 +222,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void SetTracksRasterInvalidations(bool);
   bool IsTrackingOrCheckingRasterInvalidations() const {
-    return RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() ||
+    return RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
            is_tracking_raster_invalidations_;
   }
 

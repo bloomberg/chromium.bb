@@ -61,7 +61,7 @@ Database* DOMWindowWebDatabase::openDatabase(
   Database* database = nullptr;
   DatabaseManager& db_manager = DatabaseManager::Manager();
   DatabaseError error = DatabaseError::kNone;
-  if (RuntimeEnabledFeatures::databaseEnabled() &&
+  if (RuntimeEnabledFeatures::DatabaseEnabled() &&
       window.document()->GetSecurityOrigin()->CanAccessDatabase()) {
     String error_message;
     database = db_manager.OpenDatabase(window.document(), name, version,

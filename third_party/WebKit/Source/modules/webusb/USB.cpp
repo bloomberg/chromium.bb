@@ -82,7 +82,7 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
         script_state, DOMException::Create(kNotSupportedError));
   }
 
-  if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+  if (RuntimeEnabledFeatures::FeaturePolicyEnabled()) {
     if (!frame->IsFeatureEnabled(WebFeaturePolicyFeature::kUsb)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -111,7 +111,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
         script_state, DOMException::Create(kNotSupportedError));
   }
 
-  if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+  if (RuntimeEnabledFeatures::FeaturePolicyEnabled()) {
     if (!frame->IsFeatureEnabled(WebFeaturePolicyFeature::kUsb)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -257,7 +257,7 @@ void USB::AddedEventListener(const AtomicString& event_type,
   if (!frame)
     return;
 
-  if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
+  if (RuntimeEnabledFeatures::FeaturePolicyEnabled()) {
     if (frame->IsFeatureEnabled(WebFeaturePolicyFeature::kUsb))
       EnsureDeviceManagerConnection();
   } else if (frame->IsMainFrame()) {

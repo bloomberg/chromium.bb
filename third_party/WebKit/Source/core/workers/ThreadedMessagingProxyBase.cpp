@@ -40,7 +40,7 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
   DCHECK(IsParentContextThread());
   g_live_messaging_proxy_count++;
 
-  if (RuntimeEnabledFeatures::offMainThreadFetchEnabled()) {
+  if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
     Document* document = ToDocument(execution_context_);
     WebLocalFrameBase* web_frame =
         WebLocalFrameBase::FromFrame(document->GetFrame());

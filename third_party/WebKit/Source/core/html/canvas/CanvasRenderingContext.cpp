@@ -39,7 +39,7 @@ CanvasRenderingContext::CanvasRenderingContext(
     : host_(host),
       color_params_(kLegacyCanvasColorSpace, kRGBA8CanvasPixelFormat),
       creation_attributes_(attrs) {
-  if (RuntimeEnabledFeatures::colorCanvasExtensionsEnabled()) {
+  if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled()) {
     // Set the default color space to SRGB and continue
     CanvasColorSpace color_space = kSRGBCanvasColorSpace;
     if (creation_attributes_.colorSpace() == kRec2020CanvasColorSpaceName)
@@ -153,7 +153,7 @@ CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
   if (id == "webgl2")
     return kContextWebgl2;
   if (id == "bitmaprenderer" &&
-      RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled()) {
+      RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled()) {
     return kContextImageBitmap;
   }
   return kContextTypeCount;

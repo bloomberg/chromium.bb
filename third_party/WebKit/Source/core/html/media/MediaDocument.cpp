@@ -203,7 +203,7 @@ void MediaDocumentParser::CreateDocumentStructure() {
                             options_or_boolean);
   }
 
-  if (RuntimeEnabledFeatures::mediaDocumentDownloadButtonEnabled()) {
+  if (RuntimeEnabledFeatures::MediaDocumentDownloadButtonEnabled()) {
     HTMLAnchorElement* anchor = HTMLAnchorElement::Create(*GetDocument());
     anchor->setAttribute(downloadAttr, "");
     anchor->SetURL(GetDocument()->Url());

@@ -743,7 +743,7 @@ void FrameSelection::NotifyAccessibilityForSelectionChange() {
 }
 
 void FrameSelection::NotifyCompositorForSelectionChange() {
-  if (!RuntimeEnabledFeatures::compositedSelectionUpdateEnabled())
+  if (!RuntimeEnabledFeatures::CompositedSelectionUpdateEnabled())
     return;
 
   ScheduleVisualUpdate();

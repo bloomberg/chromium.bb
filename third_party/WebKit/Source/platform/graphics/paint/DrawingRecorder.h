@@ -42,7 +42,7 @@ class PLATFORM_EXPORT DrawingRecorder final {
   ~DrawingRecorder();
 
   void SetKnownToBeOpaque() {
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
     known_to_be_opaque_ = true;
   }
 

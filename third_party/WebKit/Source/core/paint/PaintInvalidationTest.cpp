@@ -72,7 +72,7 @@ TEST_P(PaintInvalidationTest, RecalcOverflowInvalidatesBackground) {
 
 TEST_P(PaintInvalidationTest, UpdateVisualRectOnFrameBorderWidthChange) {
   // TODO(wangxianzhu): enable for SPv2.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   SetBodyInnerHTML(

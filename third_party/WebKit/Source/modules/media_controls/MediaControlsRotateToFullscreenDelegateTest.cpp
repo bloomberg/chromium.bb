@@ -94,11 +94,11 @@ class MediaControlsRotateToFullscreenDelegateTest : public ::testing::Test {
 
   void SetUp() override {
     previous_video_fullscreen_orientation_lock_value_ =
-        RuntimeEnabledFeatures::videoFullscreenOrientationLockEnabled();
+        RuntimeEnabledFeatures::VideoFullscreenOrientationLockEnabled();
     previous_video_rotate_to_fullscreen_value_ =
-        RuntimeEnabledFeatures::videoRotateToFullscreenEnabled();
-    RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(true);
-    RuntimeEnabledFeatures::setVideoRotateToFullscreenEnabled(true);
+        RuntimeEnabledFeatures::VideoRotateToFullscreenEnabled();
+    RuntimeEnabledFeatures::SetVideoFullscreenOrientationLockEnabled(true);
+    RuntimeEnabledFeatures::SetVideoRotateToFullscreenEnabled(true);
 
     chrome_client_ = new MockChromeClient();
 
@@ -116,9 +116,9 @@ class MediaControlsRotateToFullscreenDelegateTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(
+    RuntimeEnabledFeatures::SetVideoFullscreenOrientationLockEnabled(
         previous_video_fullscreen_orientation_lock_value_);
-    RuntimeEnabledFeatures::setVideoRotateToFullscreenEnabled(
+    RuntimeEnabledFeatures::SetVideoRotateToFullscreenEnabled(
         previous_video_rotate_to_fullscreen_value_);
   }
 
@@ -241,7 +241,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest, DelegateRequiresFlag) {
   EXPECT_TRUE(HasDelegate(GetMediaControls()));
 
   // No delegate when flag is off.
-  RuntimeEnabledFeatures::setVideoRotateToFullscreenEnabled(false);
+  RuntimeEnabledFeatures::SetVideoRotateToFullscreenEnabled(false);
   HTMLVideoElement* video = HTMLVideoElement::Create(GetDocument());
   GetDocument().body()->AppendChild(video);
   EXPECT_FALSE(HasDelegate(*video->GetMediaControls()));

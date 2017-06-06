@@ -28,7 +28,7 @@ PaintRecordBuilder::PaintRecordBuilder(const FloatRect& bounds,
     paint_controller_ = paint_controller_ptr_.get();
   }
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     paint_controller_->UpdateCurrentPaintChunkProperties(
         nullptr, PropertyTreeState::Root());
   }
@@ -62,7 +62,7 @@ sk_sp<PaintRecord> PaintRecordBuilder::EndRecording() {
 void PaintRecordBuilder::EndRecording(
     PaintCanvas& canvas,
     const PropertyTreeState& property_tree_state) {
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     canvas.drawPicture(EndRecording());
   } else {
     paint_controller_->CommitNewDisplayItems();

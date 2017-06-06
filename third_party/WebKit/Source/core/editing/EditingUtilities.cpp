@@ -2124,7 +2124,7 @@ DispatchEventResult DispatchBeforeInputInsertText(
     const String& data,
     InputEvent::InputType input_type,
     const StaticRangeVector* ranges) {
-  if (!RuntimeEnabledFeatures::inputEventEnabled())
+  if (!RuntimeEnabledFeatures::InputEventEnabled())
     return DispatchEventResult::kNotCanceled;
   if (!target)
     return DispatchEventResult::kNotCanceled;
@@ -2141,7 +2141,7 @@ DispatchEventResult DispatchBeforeInputEditorCommand(
     Node* target,
     InputEvent::InputType input_type,
     const StaticRangeVector* ranges) {
-  if (!RuntimeEnabledFeatures::inputEventEnabled())
+  if (!RuntimeEnabledFeatures::InputEventEnabled())
     return DispatchEventResult::kNotCanceled;
   if (!target)
     return DispatchEventResult::kNotCanceled;
@@ -2155,7 +2155,7 @@ DispatchEventResult DispatchBeforeInputDataTransfer(
     Node* target,
     InputEvent::InputType input_type,
     DataTransfer* data_transfer) {
-  if (!RuntimeEnabledFeatures::inputEventEnabled())
+  if (!RuntimeEnabledFeatures::InputEventEnabled())
     return DispatchEventResult::kNotCanceled;
   if (!target)
     return DispatchEventResult::kNotCanceled;

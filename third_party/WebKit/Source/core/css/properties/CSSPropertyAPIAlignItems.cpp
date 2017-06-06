@@ -15,7 +15,7 @@ const CSSValue* CSSPropertyAPIAlignItems::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   // align-items property does not allow the 'auto' value.
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueAuto>(range.Peek().Id()))
     return nullptr;

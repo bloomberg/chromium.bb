@@ -16,7 +16,7 @@ using ObjectPaintInvalidatorTest = RenderingTest;
 
 TEST_F(ObjectPaintInvalidatorTest,
        TraverseNonCompositingDescendantsInPaintOrder) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   EnableCompositing();
@@ -66,7 +66,7 @@ TEST_F(ObjectPaintInvalidatorTest,
 }
 
 TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   EnableCompositing();
@@ -152,7 +152,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
 
 TEST_F(ObjectPaintInvalidatorTest,
        TraverseFloatUnderMultiLevelCompositedInlines) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   EnableCompositing();
@@ -219,7 +219,7 @@ TEST_F(ObjectPaintInvalidatorTest,
 }
 
 TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   EnableCompositing();

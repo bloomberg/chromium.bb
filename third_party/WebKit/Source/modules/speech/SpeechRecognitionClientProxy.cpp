@@ -68,7 +68,7 @@ void SpeechRecognitionClientProxy::Start(SpeechRecognition* recognition,
     web_speech_grammars[i] = grammar_list->item(i);
 
   WebMediaStreamTrack track;
-  if (RuntimeEnabledFeatures::mediaStreamSpeechEnabled() && audio_track)
+  if (RuntimeEnabledFeatures::MediaStreamSpeechEnabled() && audio_track)
     track.Assign(audio_track->Component());
   WebSpeechRecognitionParams params(
       web_speech_grammars, lang, continuous, interim_results, max_alternatives,

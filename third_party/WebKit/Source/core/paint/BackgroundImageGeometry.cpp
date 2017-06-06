@@ -452,7 +452,7 @@ void BackgroundImageGeometry::Calculate(
   // inside transforms.
   bool fixed_attachment = fill_layer.Attachment() == kFixedBackgroundAttachment;
 
-  if (RuntimeEnabledFeatures::fastMobileScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::FastMobileScrollingEnabled()) {
     // As a side effect of an optimization to blit on scroll, we do not honor
     // the CSS property "background-attachment: fixed" because it may result in
     // rendering artifacts. Note, these artifacts only appear if we are blitting

@@ -74,7 +74,7 @@ class CORE_EXPORT DocumentLifecycle {
     kPaintInvalidationClean,
 
     // In InPrePaint step, any data needed by painting are prepared.
-    // When RuntimeEnabledFeatures::slimmingPaintV2Enabled, paint property trees
+    // When RuntimeEnabledFeatures::SlimmingPaintV2Enabled, paint property trees
     // are built.
     // Otherwise these steps are not applicable.
     kInPrePaint,

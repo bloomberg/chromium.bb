@@ -61,7 +61,7 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
   if (media_feature == scanMediaFeature)
     return ident == CSSValueInterlace || ident == CSSValueProgressive;
 
-  if (RuntimeEnabledFeatures::mediaQueryShapeEnabled()) {
+  if (RuntimeEnabledFeatures::MediaQueryShapeEnabled()) {
     if (media_feature == shapeMediaFeature)
       return ident == CSSValueRect || ident == CSSValueRound;
   }

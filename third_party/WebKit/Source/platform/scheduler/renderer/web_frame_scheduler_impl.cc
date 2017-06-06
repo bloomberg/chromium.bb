@@ -309,7 +309,7 @@ WebFrameSchedulerImpl::OnActiveConnectionCreated() {
 bool WebFrameSchedulerImpl::ShouldThrottleTimers() const {
   if (page_throttled_)
     return true;
-  return RuntimeEnabledFeatures::timerThrottlingForHiddenFramesEnabled() &&
+  return RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled() &&
          !frame_visible_ && cross_origin_;
 }
 

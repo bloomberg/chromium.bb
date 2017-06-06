@@ -127,7 +127,7 @@ void LayoutMenuList::AdjustInnerStyle() {
   }
 
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     SetNeedsPaintPropertyUpdate();
 }
 
@@ -144,7 +144,7 @@ void LayoutMenuList::AddChild(LayoutObject* new_child,
     cache->ChildrenChanged(this);
 
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     SetNeedsPaintPropertyUpdate();
 }
 

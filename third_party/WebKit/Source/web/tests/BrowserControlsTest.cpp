@@ -71,7 +71,7 @@ class BrowserControlsTest : public ::testing::Test {
   }
 
   WebViewBase* Initialize(const std::string& page_name = "large-div.html") {
-    RuntimeEnabledFeatures::setInertTopControlsEnabled(true);
+    RuntimeEnabledFeatures::SetInertTopControlsEnabled(true);
 
     // Load a page with large body and set viewport size to 400x400 to ensure
     // main frame is scrollable.

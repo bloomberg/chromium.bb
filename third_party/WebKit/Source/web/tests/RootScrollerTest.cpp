@@ -157,7 +157,7 @@ class RootScrollerTest : public ::testing::Test {
 
   WebViewBase* InitializeInternal(const std::string& url,
                                   FrameTestHelpers::TestWebViewClient* client) {
-    RuntimeEnabledFeatures::setSetRootScrollerEnabled(true);
+    RuntimeEnabledFeatures::SetSetRootScrollerEnabled(true);
 
     helper_.InitializeAndLoad(url, true, nullptr, client, nullptr,
                               &ConfigureSettings);

@@ -132,7 +132,7 @@ EffectModel* CreateEffectModelFromKeyframes(
   StringKeyframeEffectModel* keyframe_effect_model =
       StringKeyframeEffectModel::Create(keyframes,
                                         LinearTimingFunction::Shared());
-  if (!RuntimeEnabledFeatures::cssAdditiveAnimationsEnabled()) {
+  if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled()) {
     for (const auto& keyframe_group :
          keyframe_effect_model->GetPropertySpecificKeyframeGroups()) {
       PropertyHandle property = keyframe_group.key;

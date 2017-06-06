@@ -151,7 +151,7 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
 
   // Record if it will be blocked by Data Saver or Autoplay setting.
   if (element_->IsHTMLVideoElement() && element_->muted() &&
-      RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
+      RuntimeEnabledFeatures::AutoplayMutedVideosEnabled()) {
     bool data_saver_enabled =
         element_->GetDocument().GetSettings() &&
         element_->GetDocument().GetSettings()->GetDataSaverEnabled();

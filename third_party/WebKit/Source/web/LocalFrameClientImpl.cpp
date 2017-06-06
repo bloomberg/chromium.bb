@@ -180,10 +180,10 @@ void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld() {
       NavigatorGamepad::From(*document);
       NavigatorServiceWorker::From(*document);
       DOMWindowStorageController::From(*document);
-      if (RuntimeEnabledFeatures::webVREnabled() ||
+      if (RuntimeEnabledFeatures::WebVREnabled() ||
           OriginTrials::webVREnabled(document->GetExecutionContext()))
         NavigatorVR::From(*document);
-      if (RuntimeEnabledFeatures::presentationEnabled() &&
+      if (RuntimeEnabledFeatures::PresentationEnabled() &&
           web_frame_->GetFrame()->GetSettings()->GetPresentationReceiver()) {
         // Call this in order to ensure the object is created.
         PresentationReceiver::From(*document);
@@ -254,7 +254,7 @@ void LocalFrameClientImpl::DidUpdateCurrentHistoryItem() {
 
 bool LocalFrameClientImpl::AllowContentInitiatedDataUrlNavigations(
     const KURL& url) {
-  if (RuntimeEnabledFeatures::allowContentInitiatedDataUrlNavigationsEnabled())
+  if (RuntimeEnabledFeatures::AllowContentInitiatedDataUrlNavigationsEnabled())
     return true;
   if (web_frame_->Client())
     return web_frame_->Client()->AllowContentInitiatedDataUrlNavigations(url);

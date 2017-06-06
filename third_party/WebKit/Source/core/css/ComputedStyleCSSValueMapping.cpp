@@ -673,7 +673,7 @@ ValueForContentPositionAndDistributionWithOverflowAlignment(
       // Handle 'normal' value, not valid as content-distribution fallback.
       if (data.Distribution() == kContentDistributionDefault) {
         result->Append(*CSSIdentifierValue::Create(
-            RuntimeEnabledFeatures::cssGridLayoutEnabled()
+            RuntimeEnabledFeatures::CSSGridLayoutEnabled()
                 ? CSSValueNormal
                 : normal_behavior_value_id));
       }
@@ -2480,7 +2480,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return list;
     }
     case CSSPropertyFontVariationSettings: {
-      DCHECK(RuntimeEnabledFeatures::cssVariableFontsEnabled());
+      DCHECK(RuntimeEnabledFeatures::CSSVariableFontsEnabled());
       const FontVariationSettings* variation_settings =
           style.GetFontDescription().VariationSettings();
       if (!variation_settings || !variation_settings->size())
@@ -2825,7 +2825,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyTextAlignLast:
       return CSSIdentifierValue::Create(style.TextAlignLast());
     case CSSPropertyTextDecoration:
-      if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
+      if (RuntimeEnabledFeatures::CSS3TextDecorationsEnabled())
         return ValuesForShorthandProperty(textDecorationShorthand(), style,
                                           layout_object, styled_node,
                                           allow_visited_style);
@@ -2876,7 +2876,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyTextIndent: {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       list->Append(*ZoomAdjustedPixelValueForLength(style.TextIndent(), style));
-      if (RuntimeEnabledFeatures::css3TextEnabled() &&
+      if (RuntimeEnabledFeatures::CSS3TextEnabled() &&
           (style.GetTextIndentLine() == TextIndentLine::kEachLine ||
            style.GetTextIndentType() == TextIndentType::kHanging)) {
         if (style.GetTextIndentLine() == TextIndentLine::kEachLine)

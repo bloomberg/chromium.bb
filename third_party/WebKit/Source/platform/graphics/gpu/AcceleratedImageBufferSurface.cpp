@@ -65,7 +65,7 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
 
   canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(
       surface_->getCanvas(),
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled() &&
+      RuntimeEnabledFeatures::ColorCorrectRenderingEnabled() &&
               color_params.UsesOutputSpaceBlending()
           ? color_params.GetSkColorSpace()
           : nullptr));

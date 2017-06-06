@@ -18,17 +18,17 @@ class ImageDataTest : public ::testing::Test {
     // Save the state of experimental canvas features and color correct
     // rendering flags to restore them on teardown.
     experimental_canvas_features =
-        RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
+        RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled();
     color_correct_rendering =
-        RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
-    RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(true);
-    RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(true);
+        RuntimeEnabledFeatures::ColorCorrectRenderingEnabled();
+    RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(true);
+    RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(true);
   }
 
   virtual void TearDown() {
-    RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(
+    RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(
         experimental_canvas_features);
-    RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
+    RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(
         color_correct_rendering);
   }
 

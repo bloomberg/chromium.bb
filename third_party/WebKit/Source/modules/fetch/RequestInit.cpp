@@ -47,7 +47,7 @@ RequestInit::RequestInit(ExecutionContext* context,
   are_any_members_set |= is_header_set;
 
   are_any_members_set |= DictionaryHelper::Get(options, "mode", mode);
-  if (RuntimeEnabledFeatures::fetchRequestCacheEnabled())
+  if (RuntimeEnabledFeatures::FetchRequestCacheEnabled())
     are_any_members_set |= DictionaryHelper::Get(options, "cache", cache);
 
   are_any_members_set |= DictionaryHelper::Get(options, "redirect", redirect);
@@ -95,7 +95,7 @@ RequestInit::RequestInit(ExecutionContext* context,
         referrer.referrer_policy = kReferrerPolicyAlways;
       } else if (referrer_policy_string ==
                      "no-referrer-when-downgrade-origin-when-cross-origin" &&
-                 RuntimeEnabledFeatures::reducedReferrerGranularityEnabled()) {
+                 RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
         referrer.referrer_policy =
             kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
       } else {

@@ -14,7 +14,7 @@ const CSSValue* CSSPropertyAPIFontSizeAdjust::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  DCHECK(RuntimeEnabledFeatures::cssFontSizeAdjustEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSFontSizeAdjustEnabled());
   if (range.Peek().Id() == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);

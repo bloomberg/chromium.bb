@@ -332,7 +332,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
 
     UpdateScrollSnapMappingAfterStyleChange(&new_style, old_style);
 
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
         ShouldClipOverflow()) {
       // The overflow clip paint property depends on border sizes through
       // overflowClipRect(), and border radii, so we update properties on
@@ -362,7 +362,7 @@ void LayoutBox::UpdateBackgroundAttachmentFixedStatusAfterStyleChange() {
   // page, we can acclerate scrolling (via blitting) if we ignore the CSS
   // property "background-attachment: fixed".
   bool ignore_fixed_background_attachment =
-      RuntimeEnabledFeatures::fastMobileScrollingEnabled();
+      RuntimeEnabledFeatures::FastMobileScrollingEnabled();
   if (ignore_fixed_background_attachment)
     return;
 
@@ -2409,7 +2409,7 @@ bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   // If the box has any kind of clip, we need issue paint invalidation to cover
   // the changed part of children when the box got resized. In SPv2 this is
   // handled by detecting paint property changes.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     if (HasClipRelatedProperty())
       return false;
   }
@@ -2429,7 +2429,7 @@ LayoutRect LayoutBox::LocalVisualRect() const {
     return LayoutRect();
 
   if (HasMask() && !ShouldClipOverflow() &&
-      !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return LayoutRect(Layer()->BoxForFilterOrMask());
 
   return SelfVisualOverflowRect();

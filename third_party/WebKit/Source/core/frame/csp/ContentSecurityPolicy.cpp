@@ -94,7 +94,7 @@ bool CheckHeaderTypeMatches(
 }  // namespace
 
 bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
-  if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled()) {
+  if (RuntimeEnabledFeatures::HideNonceContentAttributeEnabled()) {
     if (element->nonce().IsNull())
       return false;
   } else if (!element->FastHasAttribute(HTMLNames::nonceAttr)) {
@@ -132,7 +132,7 @@ bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
   // This behavior is locked behind the experimental flag for the moment; if we
   // decide to ship it, drop this check. https://crbug.com/639293
   return !RuntimeEnabledFeatures::
-             experimentalContentSecurityPolicyFeaturesEnabled() ||
+             ExperimentalContentSecurityPolicyFeaturesEnabled() ||
          nonceable;
 }
 
@@ -559,7 +559,7 @@ bool IsAllowedByAll(const CSPDirectiveListVector& policies,
     // behavior to ship. https://crbug.com/653521
     if (parser_disposition == kNotParserInserted ||
         !RuntimeEnabledFeatures::
-            experimentalContentSecurityPolicyFeaturesEnabled()) {
+            ExperimentalContentSecurityPolicyFeaturesEnabled()) {
       return true;
     }
   }
@@ -1039,7 +1039,7 @@ void ContentSecurityPolicy::EnforceSandboxFlags(SandboxFlags mask) {
 }
 
 void ContentSecurityPolicy::TreatAsPublicAddress() {
-  if (!RuntimeEnabledFeatures::corsRFC1918Enabled())
+  if (!RuntimeEnabledFeatures::CorsRFC1918Enabled())
     return;
   treat_as_public_address_ = true;
 }
@@ -1529,7 +1529,7 @@ void ContentSecurityPolicy::ReportBlockedScriptExecutionToInspector(
 
 bool ContentSecurityPolicy::ExperimentalFeaturesEnabled() const {
   return RuntimeEnabledFeatures::
-      experimentalContentSecurityPolicyFeaturesEnabled();
+      ExperimentalContentSecurityPolicyFeaturesEnabled();
 }
 
 bool ContentSecurityPolicy::ShouldSendCSPHeader(Resource::Type type) const {

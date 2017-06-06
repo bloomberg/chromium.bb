@@ -30,9 +30,9 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   // around and not be valid in the exit frame of the next custom property
   // animation.
 
-  RuntimeEnabledFeatures::setCSSVariables2Enabled(true);
-  RuntimeEnabledFeatures::setCSSAdditiveAnimationsEnabled(true);
-  RuntimeEnabledFeatures::setStackedCSSPropertyAnimationsEnabled(true);
+  RuntimeEnabledFeatures::SetCSSVariables2Enabled(true);
+  RuntimeEnabledFeatures::SetCSSAdditiveAnimationsEnabled(true);
+  RuntimeEnabledFeatures::SetStackedCSSPropertyAnimationsEnabled(true);
 
   WebView().GetPage()->Animator().Clock().DisableSyntheticTimeForTesting();
 

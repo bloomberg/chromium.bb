@@ -35,7 +35,7 @@ class DOMContentLoadedListener final
   bool operator==(const EventListener&) const override { return true; }
 
   virtual void HandleEvent(ScriptState* script_state, Event* event) {
-    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     DCHECK_EQ(event->type(), "DOMContentLoaded");
     ScriptState::Scope scope(script_state);
 
@@ -130,7 +130,7 @@ bool DocumentXSLT::ProcessingInstructionInsertedIntoDocument(
   if (!pi->IsXSL())
     return false;
 
-  if (!RuntimeEnabledFeatures::xsltEnabled() || !document.GetFrame())
+  if (!RuntimeEnabledFeatures::XSLTEnabled() || !document.GetFrame())
     return true;
 
   ScriptState* script_state = ToScriptStateForMainWorld(document.GetFrame());
@@ -153,7 +153,7 @@ bool DocumentXSLT::ProcessingInstructionRemovedFromDocument(
   if (!pi->EventListenerForXSLT())
     return true;
 
-  DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+  DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
   document.removeEventListener(EventTypeNames::DOMContentLoaded,
                                pi->EventListenerForXSLT(), false);
   pi->ClearEventListenerForXSLT();
@@ -164,7 +164,7 @@ bool DocumentXSLT::SheetLoaded(Document& document, ProcessingInstruction* pi) {
   if (!pi->IsXSL())
     return false;
 
-  if (RuntimeEnabledFeatures::xsltEnabled() && !document.Parsing() &&
+  if (RuntimeEnabledFeatures::XSLTEnabled() && !document.Parsing() &&
       !pi->IsLoading() && !DocumentXSLT::HasTransformSourceDocument(document)) {
     if (FindXSLStyleSheet(document) == pi)
       ApplyXSLTransform(document, pi);

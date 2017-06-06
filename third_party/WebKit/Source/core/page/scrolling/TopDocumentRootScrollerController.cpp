@@ -49,7 +49,7 @@ void TopDocumentRootScrollerController::DidResizeViewport() {
   // paint so we need to do that manually here.
   GlobalRootScroller()->SetNeedsCompositingUpdate();
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
     if (GlobalRootScroller()->GetLayoutObject())
       GlobalRootScroller()->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
   }

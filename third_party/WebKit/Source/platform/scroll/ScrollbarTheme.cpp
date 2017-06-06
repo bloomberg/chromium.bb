@@ -395,7 +395,7 @@ void ScrollbarTheme::SplitTrack(const ScrollbarThemeClient& scrollbar,
 
 ScrollbarTheme& ScrollbarTheme::GetTheme() {
   if (ScrollbarTheme::MockScrollbarsEnabled()) {
-    if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
+    if (RuntimeEnabledFeatures::OverlayScrollbarsEnabled()) {
       DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlay_mock_theme, ());
       return overlay_mock_theme;
     }

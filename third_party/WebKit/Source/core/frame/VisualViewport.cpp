@@ -87,7 +87,7 @@ void VisualViewport::UpdateStyleAndLayoutIgnorePendingStylesheets() const {
 }
 
 void VisualViewport::EnqueueScrollEvent() {
-  if (!RuntimeEnabledFeatures::visualViewportAPIEnabled())
+  if (!RuntimeEnabledFeatures::VisualViewportAPIEnabled())
     return;
 
   if (Document* document = MainFrame()->GetDocument())
@@ -95,7 +95,7 @@ void VisualViewport::EnqueueScrollEvent() {
 }
 
 void VisualViewport::EnqueueResizeEvent() {
-  if (!RuntimeEnabledFeatures::visualViewportAPIEnabled())
+  if (!RuntimeEnabledFeatures::VisualViewportAPIEnabled())
     return;
 
   if (Document* document = MainFrame()->GetDocument())

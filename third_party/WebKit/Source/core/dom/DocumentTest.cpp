@@ -803,7 +803,7 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
 }
 
 TEST_F(DocumentTest, SuboriginDisablesAppCache) {
-  RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+  RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
   RefPtr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https://test.com");
   Suborigin suborigin;

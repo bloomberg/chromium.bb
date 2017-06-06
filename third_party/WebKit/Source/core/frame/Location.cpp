@@ -228,7 +228,7 @@ void Location::reload(LocalDOMWindow* current_window) {
   if (GetDocument()->Url().ProtocolIsJavaScript())
     return;
   dom_window_->GetFrame()->Reload(
-      RuntimeEnabledFeatures::locationHardReloadEnabled()
+      RuntimeEnabledFeatures::LocationHardReloadEnabled()
           ? kFrameLoadTypeReloadBypassingCache
           : kFrameLoadTypeReload,
       ClientRedirectPolicy::kClientRedirect);

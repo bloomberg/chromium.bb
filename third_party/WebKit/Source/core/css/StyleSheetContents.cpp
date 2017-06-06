@@ -373,7 +373,7 @@ void StyleSheetContents::ParseAuthorStyleSheet(
   const CSSParserContext* context =
       CSSParserContext::CreateWithStyleSheetContents(ParserContext(), this);
   CSSParser::ParseSheet(context, this, sheet_text,
-                        RuntimeEnabledFeatures::lazyParseCSSEnabled());
+                        RuntimeEnabledFeatures::LazyParseCSSEnabled());
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, parse_histogram,
                       ("Style.AuthorStyleSheet.ParseTime", 0, 10000000, 50));

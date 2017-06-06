@@ -86,7 +86,7 @@ std::unique_ptr<UChar[]> TextRun::NormalizedUTF16(
                character != kNoBreakSpaceCharacter) {
       character = kSpaceCharacter;
     } else if (!RuntimeEnabledFeatures::
-                   renderUnicodeControlCharactersEnabled() &&
+                   RenderUnicodeControlCharactersEnabled() &&
                Character::LegacyTreatAsZeroWidthSpaceInComplexScript(
                    character)) {
       character = kZeroWidthSpaceCharacter;

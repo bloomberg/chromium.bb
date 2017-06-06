@@ -46,7 +46,7 @@ RendererWebSchedulerImpl::CreateWebViewScheduler(
   return base::WrapUnique(new WebViewSchedulerImpl(
       intervention_reporter, settings, renderer_scheduler_,
       !blink::RuntimeEnabledFeatures::
-          timerThrottlingForBackgroundTabsEnabled()));
+          TimerThrottlingForBackgroundTabsEnabled()));
 }
 
 RendererScheduler* RendererWebSchedulerImpl::GetRendererSchedulerForTest() {

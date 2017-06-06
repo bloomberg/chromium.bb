@@ -45,7 +45,7 @@ static bool UpdatePreTranslation(
     PassRefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin) {
-  DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+  DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   if (auto* existing_pre_translation = frame_view.PreTranslation()) {
     existing_pre_translation->Update(std::move(parent), matrix, origin);
     return false;
@@ -61,7 +61,7 @@ static bool UpdateContentClip(
     PassRefPtr<const ClipPaintPropertyNode> parent,
     PassRefPtr<const TransformPaintPropertyNode> local_transform_space,
     const FloatRoundedRect& clip_rect) {
-  DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+  DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   if (auto* existing_content_clip = frame_view.ContentClip()) {
     existing_content_clip->Update(std::move(parent),
                                   std::move(local_transform_space), clip_rect);
@@ -86,7 +86,7 @@ static bool UpdateScrollTranslation(
     bool user_scrollable_vertical,
     MainThreadScrollingReasons main_thread_scrolling_reasons,
     WebLayerScrollClient* scroll_client) {
-  DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+  DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   if (auto* existing_scroll_translation = frame_view.ScrollTranslation()) {
     auto existing_reasons = existing_scroll_translation->ScrollNode()
                                 ->GetMainThreadScrollingReasons();
@@ -129,7 +129,7 @@ void PaintPropertyTreeBuilder::UpdateProperties(
     full_context.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
 
   PaintPropertyTreeBuilderFragmentContext& context = full_context.fragments[0];
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // With root layer scrolling, the LayoutView (a LayoutObject) properties are
     // updated like other objects (see updatePropertiesAndContextForSelf and
     // updatePropertiesAndContextForChildren) instead of needing LayoutView-
@@ -228,14 +228,14 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   if (!object.IsBoxModelObject())
     return false;
   const LayoutBoxModelObject& box_model = ToLayoutBoxModelObject(object);
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
       box_model.IsLayoutView()) {
     // Root layer scrolling always creates a translation node for LayoutView to
     // ensure fixed and absolute contexts use the correct transform space.
     return true;
-  } else if (box_model.HasLayer() &&
-             box_model.Layer()->PaintsWithTransform(
-                 kGlobalPaintFlattenCompositingLayers)) {
+  }
+  if (box_model.HasLayer() && box_model.Layer()->PaintsWithTransform(
+                                  kGlobalPaintFlattenCompositingLayers)) {
     return true;
   }
   return false;
@@ -285,7 +285,7 @@ void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
 
     context.current.transform = properties.PaintOffsetTranslation();
     context.current.paint_offset = fractional_paint_offset;
-    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
         object.IsLayoutView()) {
       context.absolute_position.transform = properties.PaintOffsetTranslation();
       context.fixed_position.transform = properties.PaintOffsetTranslation();
@@ -991,7 +991,7 @@ void PaintPropertyTreeBuilder::UpdateOutOfFlowContext(
     context.absolute_position = context.current;
 
   if (object.IsLayoutView()) {
-    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       const auto* initial_fixed_transform = context.fixed_position.transform;
       const auto* initial_fixed_scroll = context.fixed_position.scroll;
 
@@ -1122,7 +1122,7 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     // the entire subtree on paint offset changes.
     force_subtree_update = true;
 
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       object.GetMutableForPainting().SetShouldDoFullPaintInvalidation(
           PaintInvalidationReason::kGeometry);
     }
@@ -1138,7 +1138,7 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
   // CSS mask and clip-path comes with an implicit clip to the border box.
   // Currently only SPv2 generate and take advantage of those.
   const bool box_generates_property_nodes_for_mask_and_clip_path =
-      RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       (box.HasMask() || box.HasClipPath());
   // The overflow clip paint property depends on the border box rect through
   // overflowClipRect(). The border box rect's size equals the frame rect's
@@ -1219,7 +1219,7 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
                     full_context.force_subtree_update);
     UpdateCssClip(object, *properties, context,
                   full_context.force_subtree_update);
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       UpdateEffect(object, *properties, context,
                    full_context.force_subtree_update);
       UpdateFilter(object, *properties, context,
@@ -1231,7 +1231,7 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
   if (object.PaintProperties()) {
     ObjectPaintProperties* properties =
         object.GetMutableForPainting().PaintProperties();
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       UpdateScrollbarPaintOffset(object, *properties, context,
                                  full_context.force_subtree_update);
     }

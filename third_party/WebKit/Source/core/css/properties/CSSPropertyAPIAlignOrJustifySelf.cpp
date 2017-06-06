@@ -14,7 +14,7 @@ const CSSValue* CSSPropertyAPIAlignOrJustifySelf::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   return CSSPropertyAlignmentUtils::ConsumeSelfPositionOverflowPosition(range);
 }
 

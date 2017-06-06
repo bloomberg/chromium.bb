@@ -50,14 +50,14 @@ class RemotePlaybackTest : public ::testing::Test {
  protected:
   void SetUp() override {
     was_remote_playback_backend_enabled_ =
-        RuntimeEnabledFeatures::remotePlaybackBackendEnabled();
+        RuntimeEnabledFeatures::RemotePlaybackBackendEnabled();
     // Pretend the backend is enabled by default to test the API with backend
     // implemented.
-    RuntimeEnabledFeatures::setRemotePlaybackBackendEnabled(true);
+    RuntimeEnabledFeatures::SetRemotePlaybackBackendEnabled(true);
   }
 
   void TearDown() override {
-    RuntimeEnabledFeatures::setRemotePlaybackBackendEnabled(
+    RuntimeEnabledFeatures::SetRemotePlaybackBackendEnabled(
         was_remote_playback_backend_enabled_);
   }
 
@@ -289,7 +289,7 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
 }
 
 TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
-  RuntimeEnabledFeatures::setRemotePlaybackBackendEnabled(false);
+  RuntimeEnabledFeatures::SetRemotePlaybackBackendEnabled(false);
   V8TestingScope scope;
 
   auto page_holder = DummyPageHolder::Create();
@@ -320,7 +320,7 @@ TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
 }
 
 TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
-  RuntimeEnabledFeatures::setRemotePlaybackBackendEnabled(false);
+  RuntimeEnabledFeatures::SetRemotePlaybackBackendEnabled(false);
   V8TestingScope scope;
 
   auto page_holder = DummyPageHolder::Create();

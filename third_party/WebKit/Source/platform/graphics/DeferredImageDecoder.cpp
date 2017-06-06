@@ -260,7 +260,7 @@ void DeferredImageDecoder::ActivateLazyDecoding() {
   filename_extension_ = actual_decoder_->FilenameExtension();
   // JPEG images support YUV decoding; other decoders do not. (WebP could in the
   // future.)
-  can_yuv_decode_ = RuntimeEnabledFeatures::decodeToYUVEnabled() &&
+  can_yuv_decode_ = RuntimeEnabledFeatures::DecodeToYUVEnabled() &&
                     (filename_extension_ == "jpg");
   has_embedded_color_space_ = actual_decoder_->HasEmbeddedColorSpace();
   color_space_for_sk_images_ = actual_decoder_->ColorSpaceForSkImages();

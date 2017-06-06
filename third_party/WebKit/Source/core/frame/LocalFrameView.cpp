@@ -272,7 +272,7 @@ void LocalFrameView::Reset() {
   // throttle it here or it seems the root compositor doesn't get setup
   // properly.
   if (RuntimeEnabledFeatures::
-          renderingPipelineThrottlingLoadingIframesEnabled())
+          RenderingPipelineThrottlingLoadingIframesEnabled())
     lifecycle_updates_throttled_ = !GetFrame().IsMainFrame();
   has_pending_layout_ = false;
   layout_scheduling_enabled_ = true;
@@ -582,8 +582,8 @@ void LocalFrameView::SetFrameRect(const IntRect& frame_rect) {
 
   UpdateParentScrollableAreaSet();
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
-      !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // The overflow clip property depends on the frame size and the pre
     // translation property depends on the frame location.
     SetNeedsPaintPropertyUpdate();
@@ -984,8 +984,8 @@ void LocalFrameView::PerformPreLayoutTasks() {
 }
 
 bool LocalFrameView::ShouldPerformScrollAnchoring() const {
-  return RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
-         !RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+  return RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
+         !RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
          scroll_anchor_.HasScroller() &&
          GetLayoutBox()->Style()->OverflowAnchor() != EOverflowAnchor::kNone &&
          !frame_->GetDocument()->FinishingOrIsPrinting();
@@ -1086,7 +1086,7 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
       layout_subtree_root_list_.Clear();
     } else {
       if (HasOrthogonalWritingModeRoots() &&
-          !RuntimeEnabledFeatures::layoutNGEnabled())
+          !RuntimeEnabledFeatures::LayoutNGEnabled())
         LayoutOrthogonalWritingModeRoots();
       GetLayoutView()->UpdateLayout();
     }
@@ -1333,7 +1333,7 @@ void LocalFrameView::UpdateLayout() {
 
 void LocalFrameView::DeprecatedInvalidateTree(
     const PaintInvalidationState& paint_invalidation_state) {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
 
   if (ShouldThrottleRendering())
     return;
@@ -1361,13 +1361,13 @@ void LocalFrameView::DeprecatedInvalidateTree(
 void LocalFrameView::InvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
   CHECK(!GetLayoutViewItem().IsNull());
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     InvalidatePaintOfScrollControlsIfNeeded(paint_invalidation_state);
 }
 
 void LocalFrameView::SetNeedsPaintPropertyUpdate() {
   needs_paint_property_update_ = true;
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     if (auto* layout_view = this->GetLayoutView()) {
       layout_view->SetNeedsPaintPropertyUpdate();
       return;
@@ -1411,7 +1411,7 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
   layout_size.SetHeight(layout_view_item.ViewHeight(kIncludeScrollbars) / zoom);
 
   BrowserControls& browser_controls = frame_->GetPage()->GetBrowserControls();
-  if (RuntimeEnabledFeatures::inertTopControlsEnabled() &&
+  if (RuntimeEnabledFeatures::InertTopControlsEnabled() &&
       browser_controls.PermittedState() != kWebBrowserControlsHidden) {
     // We use the layoutSize rather than frameRect to calculate viewport units
     // so that we get correct results on mobile where the page is laid out into
@@ -1570,7 +1570,7 @@ void LocalFrameView::AddBackgroundAttachmentFixedObject(LayoutObject* object) {
   }
 
   // Ensure main thread scrolling reasons are recomputed.
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
     SetNeedsPaintPropertyUpdate();
     // The object's scroll properties are not affected by its own background.
     object->SetAncestorsNeedPaintPropertyUpdateForMainThreadScrolling();
@@ -1589,7 +1589,7 @@ void LocalFrameView::RemoveBackgroundAttachmentFixedObject(
   }
 
   // Ensure main thread scrolling reasons are recomputed.
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
     SetNeedsPaintPropertyUpdate();
     // The object's scroll properties are not affected by its own background.
     object->SetAncestorsNeedPaintPropertyUpdateForMainThreadScrolling();
@@ -1628,7 +1628,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
   DCHECK(frame_->GetPage());
 
   bool root_layer_scrolling_enabled =
-      RuntimeEnabledFeatures::rootLayerScrollingEnabled();
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled();
 
   if (LayoutView* layout_view = this->GetLayoutView()) {
     // If this is the main frame, we might have got here by hiding/showing the
@@ -1646,7 +1646,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
     if (layout_view->UsesCompositing()) {
       if (root_layer_scrolling_enabled) {
         layout_view->Layer()->SetNeedsCompositingInputsUpdate();
-        if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+        if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
           SetNeedsPaintPropertyUpdate();
       } else {
         layout_view->Compositor()->FrameViewDidChangeSize();
@@ -1659,7 +1659,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
 
   ShowOverlayScrollbars();
 
-  if (RuntimeEnabledFeatures::inertTopControlsEnabled() && GetLayoutView() &&
+  if (RuntimeEnabledFeatures::InertTopControlsEnabled() && GetLayoutView() &&
       frame_->IsMainFrame() &&
       frame_->GetPage()->GetBrowserControls().Height()) {
     if (GetLayoutView()->Style()->HasFixedBackgroundImage()) {
@@ -2101,7 +2101,7 @@ bool LocalFrameView::ComputeCompositedSelection(
 }
 
 void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
-  if (!RuntimeEnabledFeatures::compositedSelectionUpdateEnabled())
+  if (!RuntimeEnabledFeatures::CompositedSelectionUpdateEnabled())
     return;
 
   TRACE_EVENT0("blink", "LocalFrameView::updateCompositedSelectionIfNeeded");
@@ -2173,7 +2173,7 @@ void LocalFrameView::ScrollbarExistenceDidChange() {
       UpdateLayout();
 
     if (frame_->IsMainFrame() &&
-        RuntimeEnabledFeatures::visualViewportAPIEnabled())
+        RuntimeEnabledFeatures::VisualViewportAPIEnabled())
       frame_->GetDocument()->EnqueueVisualViewportResizeEvent();
   }
 
@@ -2448,7 +2448,7 @@ void LocalFrameView::ScrollToFragmentAnchor() {
     LayoutRect rect;
     if (anchor_node != frame_->GetDocument()) {
       rect = anchor_node->BoundingBox();
-    } else if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    } else if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       if (Element* document_element = frame_->GetDocument()->documentElement())
         rect = document_element->BoundingBox();
     }
@@ -2613,7 +2613,7 @@ void LocalFrameView::SendResizeEventIfNeeded() {
   last_viewport_size_ = GetLayoutSize(kIncludeScrollbars);
   last_zoom_factor_ = layout_view_item.Style()->Zoom();
 
-  if (RuntimeEnabledFeatures::visualViewportAPIEnabled())
+  if (RuntimeEnabledFeatures::VisualViewportAPIEnabled())
     frame_->GetDocument()->EnqueueVisualViewportResizeEvent();
 
   frame_->GetDocument()->EnqueueResizeEvent();
@@ -2753,7 +2753,7 @@ LocalFrameView::ScrollingReasons LocalFrameView::GetScrollingReasons() const {
 }
 
 void LocalFrameView::UpdateParentScrollableAreaSet() {
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
 
   // That ensures that only inner frames are cached.
@@ -2926,7 +2926,7 @@ void LocalFrameView::DidChangeGlobalRootScroller() {
   // geometry.
   LayoutViewItem view = GetLayoutViewItem();
   SetNeedsCompositingUpdate(view, kCompositingUpdateAfterGeometryChange);
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     SetNeedsPaintPropertyUpdate();
 
   // Avoid drawing two sets of scrollbars when visual viewport provides
@@ -2973,7 +2973,7 @@ void LocalFrameView::UpdateAllLifecyclePhases() {
 
 // TODO(chrishtr): add a scrolling update lifecycle phase.
 void LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     UpdateAllLifecyclePhasesExceptPaint();
   } else {
     GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
@@ -2984,7 +2984,7 @@ void LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
 void LocalFrameView::UpdateLifecycleToCompositingInputsClean() {
   // When SPv2 is enabled, the standard compositing lifecycle steps do not
   // exist; compositing is done after paint instead.
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kCompositingInputsClean);
 }
@@ -3109,7 +3109,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     return;
   }
 
-  if (RuntimeEnabledFeatures::printBrowserEnabled())
+  if (RuntimeEnabledFeatures::PrintBrowserEnabled())
     SetupPrintContext();
   else
     ClearPrintContext();
@@ -3141,7 +3141,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data",
                    InspectorUpdateLayerTreeEvent::Data(frame_.Get()));
 
-      if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
         view.Compositor()->UpdateIfNeededRecursive(target_state);
       } else {
         ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -3159,10 +3159,10 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       }
 
       if (target_state >= DocumentLifecycle::kPrePaintClean) {
-        if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+        if (!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
           DeprecatedInvalidateTreeRecursive();
 
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
           if (view.Compositor()->InCompositingMode())
             GetScrollingCoordinator()->UpdateAfterCompositingChangeIfNeeded();
         }
@@ -3185,10 +3185,10 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 
     if (target_state == DocumentLifecycle::kPaintClean) {
       if (!frame_->GetDocument()->Printing() ||
-          RuntimeEnabledFeatures::printBrowserEnabled())
+          RuntimeEnabledFeatures::PrintBrowserEnabled())
         PaintTree();
 
-      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
         Optional<CompositorElementIdSet> composited_element_ids =
             CompositorElementIdSet();
         PushPaintArtifactToCompositor(composited_element_ids.value());
@@ -3246,7 +3246,7 @@ void LocalFrameView::PrePaint() {
     }
   });
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
     PrePaintTreeWalk().Walk(*this);
   }
@@ -3269,10 +3269,10 @@ void LocalFrameView::PaintTree() {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     if (GetLayoutView()->Layer()->NeedsRepaint()) {
       GraphicsContext graphics_context(*paint_controller_);
-      if (RuntimeEnabledFeatures::printBrowserEnabled())
+      if (RuntimeEnabledFeatures::PrintBrowserEnabled())
         graphics_context.SetPrinting(true);
       Paint(graphics_context, CullRect(LayoutRect::InfiniteIntRect()));
       paint_controller_->CommitNewDisplayItems();
@@ -3315,7 +3315,7 @@ void LocalFrameView::PaintTree() {
 
 void LocalFrameView::PaintGraphicsLayerRecursively(
     GraphicsLayer* graphics_layer) {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   if (graphics_layer->DrawsContent()) {
     graphics_layer->Paint(nullptr);
   }
@@ -3334,7 +3334,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(
     CompositorElementIdSet& composited_element_ids) {
   TRACE_EVENT0("blink", "LocalFrameView::pushPaintArtifactToCompositor");
 
-  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
   Page* page = GetFrame().GetPage();
   if (!page)
@@ -3452,7 +3452,7 @@ void LocalFrameView::DeprecatedInvalidateTreeRecursive() {
 }
 
 void LocalFrameView::DeprecatedInvalidateTreeRecursiveInternal() {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
   CHECK(GetLayoutView());
 
   // We need to stop recursing here since a child frame view might not be
@@ -3758,7 +3758,7 @@ void LocalFrameView::SetTracksPaintInvalidations(
           WTF::WrapUnique(track_paint_invalidations
                               ? new Vector<ObjectPaintInvalidation>
                               : nullptr);
-      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
         if (!paint_controller_)
           paint_controller_ = PaintController::Create();
         paint_controller_->SetTracksRasterInvalidations(
@@ -3877,7 +3877,7 @@ void LocalFrameView::Attach() {
 
 void LocalFrameView::Detach() {
   DCHECK(is_attached_);
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     ParentFrameView()->RemoveScrollableArea(this);
   SetParentVisible(false);
   is_attached_ = false;
@@ -4096,7 +4096,7 @@ void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,
   if (scroll_delta.IsZero())
     return;
 
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // Don't scroll the LocalFrameView!
     NOTREACHED();
   }
@@ -4154,7 +4154,7 @@ void LocalFrameView::DidChangeScrollOffset() {
 }
 
 void LocalFrameView::ClearScrollAnchor() {
-  if (!RuntimeEnabledFeatures::scrollAnchoringEnabled())
+  if (!RuntimeEnabledFeatures::ScrollAnchoringEnabled())
     return;
   scroll_anchor_.Clear();
 }
@@ -4183,7 +4183,7 @@ void LocalFrameView::ComputeScrollbarExistence(
   new_has_horizontal_scrollbar = has_horizontal_scrollbar;
   new_has_vertical_scrollbar = has_vertical_scrollbar;
 
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
 
   ScrollbarMode h_scroll = horizontal_scrollbar_mode_;
@@ -4351,10 +4351,10 @@ void LocalFrameView::UpdateScrollbarsIfNeeded() {
 void LocalFrameView::UpdateScrollbars() {
   needs_scrollbars_update_ = false;
 
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     SetNeedsPaintPropertyUpdate();
 
   // Avoid drawing two sets of scrollbars when visual viewport is enabled.
@@ -4426,8 +4426,8 @@ void LocalFrameView::ScrollContents(const IntSize& scroll_delta) {
   if (!ScrollContentsFastPath(-scroll_delta))
     ScrollContentsSlowPath();
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
-      !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // Need to update scroll translation property.
     SetNeedsPaintPropertyUpdate();
   }
@@ -4614,7 +4614,7 @@ bool LocalFrameView::UserInputScrollable(
   if (fullscreen_element && fullscreen_element != document->documentElement())
     return false;
 
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return false;
 
   ScrollbarMode mode = (orientation == kHorizontalScrollbar)
@@ -4834,8 +4834,8 @@ void LocalFrameView::Show() {
     SetNeedsCompositingUpdate(GetLayoutViewItem(),
                               kCompositingUpdateRebuildTree);
     UpdateParentScrollableAreaSet();
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
-        !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
+        !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       // The existance of scrolling properties depends on visibility through
       // isScrollable() so ensure properties are updated if visibility changes.
       SetNeedsPaintPropertyUpdate();
@@ -4862,8 +4862,8 @@ void LocalFrameView::Hide() {
     SetNeedsCompositingUpdate(GetLayoutViewItem(),
                               kCompositingUpdateRebuildTree);
     UpdateParentScrollableAreaSet();
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
-        !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
+        !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       // The existance of scrolling properties depends on visibility through
       // isScrollable() so ensure properties are updated if visibility changes.
       SetNeedsPaintPropertyUpdate();
@@ -4884,7 +4884,7 @@ ScrollableArea* LocalFrameView::GetScrollableArea() {
 }
 
 ScrollableArea* LocalFrameView::LayoutViewportScrollableArea() {
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return this;
 
   LayoutViewItem layout_view_item = this->GetLayoutViewItem();
@@ -5122,7 +5122,7 @@ bool LocalFrameView::ShouldThrottleRendering() const {
 bool LocalFrameView::CanThrottleRendering() const {
   if (lifecycle_updates_throttled_)
     return true;
-  if (!RuntimeEnabledFeatures::renderingPipelineThrottlingEnabled())
+  if (!RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled())
     return false;
   if (subtree_throttled_)
     return true;
@@ -5310,7 +5310,7 @@ MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
 }
 
 String LocalFrameView::MainThreadScrollingReasonsAsText() const {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
 
     // Slimming paint v2 stores main thread scrolling reasons on property

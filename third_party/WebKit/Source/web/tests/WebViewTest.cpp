@@ -2931,8 +2931,8 @@ TEST_P(WebViewTest, DISABLED_ChooseValueFromDateTimeChooser) {
 TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
 #endif
   bool original_multiple_fields_flag =
-      RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled();
-  RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(false);
+      RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled();
+  RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(false);
   DateTimeChooserWebViewClient client;
   std::string url = RegisterMockedHttpURLLoad("date_time_chooser.html");
   WebViewBase* web_view_impl =
@@ -3006,7 +3006,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   // Clear the WebViewClient from the webViewHelper to avoid use-after-free in
   // the WebViewHelper destructor.
   web_view_helper_.Reset();
-  RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(
+  RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(
       original_multiple_fields_flag);
 }
 
@@ -4312,7 +4312,7 @@ TEST_P(WebViewTest, DeviceEmulationResetScrollbars) {
   WebLocalFrameBase* frame = web_view->MainFrameImpl();
   auto* frame_view = frame->GetFrameView();
   EXPECT_FALSE(frame_view->VisualViewportSuppliesScrollbars());
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     EXPECT_NE(nullptr,
               frame_view->LayoutViewportScrollableArea()->VerticalScrollbar());
   } else {
@@ -4336,7 +4336,7 @@ TEST_P(WebViewTest, DeviceEmulationResetScrollbars) {
 
   // The view should once again provide the scrollbars.
   EXPECT_FALSE(frame_view->VisualViewportSuppliesScrollbars());
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     EXPECT_NE(nullptr,
               frame_view->LayoutViewportScrollableArea()->VerticalScrollbar());
   } else {

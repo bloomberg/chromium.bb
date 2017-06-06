@@ -26,7 +26,7 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphics_context,
     : graphics_context_(graphics_context),
       layout_object_(layout_object),
       clip_type_(clip_type) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
   Vector<FloatRoundedRect> rounded_rects;
@@ -106,7 +106,7 @@ void LayerClipRecorder::CollectRoundedRectClips(
 }
 
 LayerClipRecorder::~LayerClipRecorder() {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   graphics_context_.GetPaintController().EndItem<EndClipDisplayItem>(
       layout_object_, DisplayItem::ClipTypeToEndClipType(clip_type_));

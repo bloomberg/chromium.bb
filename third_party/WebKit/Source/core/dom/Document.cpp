@@ -821,7 +821,7 @@ Element* Document::createElement(const AtomicString& local_name,
   bool is_v1 = string_or_options.isDictionary() || !RegistrationContext();
   bool create_v1_builtin =
       string_or_options.isDictionary() &&
-      RuntimeEnabledFeatures::customElementsBuiltinEnabled();
+      RuntimeEnabledFeatures::CustomElementsBuiltinEnabled();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.isString();
 
@@ -835,7 +835,7 @@ Element* Document::createElement(const AtomicString& local_name,
   if (is_v1) {
     // Is the runtime flag enabled for customized builtin elements?
     const CustomElementDescriptor desc =
-        RuntimeEnabledFeatures::customElementsBuiltinEnabled()
+        RuntimeEnabledFeatures::CustomElementsBuiltinEnabled()
             ? CustomElementDescriptor(name, converted_local_name)
             : CustomElementDescriptor(converted_local_name,
                                       converted_local_name);
@@ -931,7 +931,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
   bool is_v1 = string_or_options.isDictionary() || !RegistrationContext();
   bool create_v1_builtin =
       string_or_options.isDictionary() &&
-      RuntimeEnabledFeatures::customElementsBuiltinEnabled();
+      RuntimeEnabledFeatures::CustomElementsBuiltinEnabled();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.isString();
 
@@ -951,7 +951,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
   CustomElementDefinition* definition = nullptr;
   if (is_v1) {
     const CustomElementDescriptor desc =
-        RuntimeEnabledFeatures::customElementsBuiltinEnabled()
+        RuntimeEnabledFeatures::CustomElementsBuiltinEnabled()
             ? CustomElementDescriptor(name, qualified_name)
             : CustomElementDescriptor(qualified_name, qualified_name);
     if (CustomElementRegistry* registry = CustomElement::Registry(*this))
@@ -1468,13 +1468,13 @@ Range* Document::caretRangeFromPoint(int x, int y) {
 }
 
 Element* Document::scrollingElement() {
-  if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled() && InQuirksMode())
+  if (RuntimeEnabledFeatures::ScrollTopLeftInteropEnabled() && InQuirksMode())
     UpdateStyleAndLayoutTree();
   return ScrollingElementNoLayout();
 }
 
 Element* Document::ScrollingElementNoLayout() {
-  if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+  if (RuntimeEnabledFeatures::ScrollTopLeftInteropEnabled()) {
     if (InQuirksMode()) {
       DCHECK(lifecycle_.GetState() >= DocumentLifecycle::kStyleClean);
       HTMLBodyElement* body = FirstBodyElement();
@@ -2401,7 +2401,7 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
   // we need to also clean compositing inputs.
   if (View() && node->GetLayoutObject() &&
       node->GetLayoutObject()->StyleRef().SubtreeIsSticky()) {
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       // In SPv2, compositing inputs are cleaned as part of PrePaint.
       View()->UpdateAllLifecyclePhasesExceptPaint();
     } else {
@@ -4649,7 +4649,7 @@ Event* Document::createEvent(ScriptState* script_state,
       // createEvent for TouchEvent should throw DOM exception if touch event
       // feature detection is not enabled. See crbug.com/392584#c22
       if (DeprecatedEqualIgnoringCase(event_type, "TouchEvent") &&
-          !RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled())
+          !RuntimeEnabledFeatures::TouchEventFeatureDetectionEnabled())
         break;
       return event;
     }
@@ -5630,7 +5630,7 @@ HTMLLinkElement* Document::LinkManifest() const {
 }
 
 void Document::SetFeaturePolicy(const String& feature_policy_header) {
-  if (!RuntimeEnabledFeatures::featurePolicyEnabled())
+  if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
     return;
 
   WebFeaturePolicy* parent_feature_policy = nullptr;
@@ -6332,7 +6332,7 @@ bool Document::ThreadedParsingEnabledForTesting() {
 }
 
 SnapCoordinator* Document::GetSnapCoordinator() {
-  if (RuntimeEnabledFeatures::cssScrollSnapPointsEnabled() &&
+  if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled() &&
       !snap_coordinator_)
     snap_coordinator_ = SnapCoordinator::Create();
 
@@ -6469,7 +6469,7 @@ bool Document::HaveScriptBlockingStylesheetsLoaded() const {
 }
 
 bool Document::HaveRenderBlockingStylesheetsLoaded() const {
-  if (RuntimeEnabledFeatures::cssInBodyDoesNotBlockPaintEnabled())
+  if (RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled())
     return style_engine_->HaveRenderBlockingStylesheetsLoaded();
   return style_engine_->HaveScriptBlockingStylesheetsLoaded();
 }
@@ -6477,7 +6477,7 @@ bool Document::HaveRenderBlockingStylesheetsLoaded() const {
 Locale& Document::GetCachedLocale(const AtomicString& locale) {
   AtomicString locale_key = locale;
   if (locale.IsEmpty() ||
-      !RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
+      !RuntimeEnabledFeatures::LangAttributeAwareFormControlUIEnabled())
     return Locale::DefaultLocale();
   LocaleIdentifierToLocaleMap::AddResult result =
       locale_cache_.insert(locale_key, nullptr);
@@ -6673,7 +6673,7 @@ LayoutViewItem Document::GetLayoutViewItem() const {
 
 PropertyRegistry* Document::GetPropertyRegistry() {
   // TODO(timloh): When the flag is removed, return a reference instead.
-  if (!property_registry_ && RuntimeEnabledFeatures::cssVariables2Enabled())
+  if (!property_registry_ && RuntimeEnabledFeatures::CSSVariables2Enabled())
     property_registry_ = PropertyRegistry::Create();
   return property_registry_;
 }

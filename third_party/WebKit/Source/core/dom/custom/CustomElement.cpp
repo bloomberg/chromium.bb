@@ -62,7 +62,7 @@ bool CustomElement::IsHyphenatedSpecElementName(const AtomicString& name) {
 }
 
 bool CustomElement::ShouldCreateCustomElement(const AtomicString& name) {
-  return RuntimeEnabledFeatures::customElementsV1Enabled() && IsValidName(name);
+  return RuntimeEnabledFeatures::CustomElementsV1Enabled() && IsValidName(name);
 }
 
 bool CustomElement::ShouldCreateCustomElement(const QualifiedName& tag_name) {
@@ -74,7 +74,7 @@ bool CustomElement::ShouldCreateCustomizedBuiltinElement(
     const AtomicString& local_name) {
   return htmlElementTypeForTag(local_name) !=
              HTMLElementType::kHTMLUnknownElement &&
-         RuntimeEnabledFeatures::customElementsBuiltinEnabled();
+         RuntimeEnabledFeatures::CustomElementsBuiltinEnabled();
 }
 
 bool CustomElement::ShouldCreateCustomizedBuiltinElement(

@@ -330,7 +330,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   ProvideIndexedDBClientToWorker(worker_clients,
                                  IndexedDBClientImpl::Create(*worker_clients));
 
-  if (RuntimeEnabledFeatures::offMainThreadFetchEnabled()) {
+  if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
         client_->CreateWorkerFetchContext(
             WebLocalFrameBase::FromFrame(main_frame_->GetFrame())

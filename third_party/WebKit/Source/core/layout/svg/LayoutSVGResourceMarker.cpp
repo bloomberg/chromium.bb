@@ -136,7 +136,7 @@ bool LayoutSVGResourceMarker::ShouldPaint() const {
 
 void LayoutSVGResourceMarker::SetNeedsTransformUpdate() {
   SetMayNeedPaintInvalidationSubtree();
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
     // The transform paint property relies on the SVG transform being up-to-date
     // (see: PaintPropertyTreeBuilder::updateTransformForNonRootSVG).
     SetNeedsPaintPropertyUpdate();

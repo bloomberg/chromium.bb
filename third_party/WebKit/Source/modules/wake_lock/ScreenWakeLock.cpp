@@ -36,7 +36,7 @@ const char* ScreenWakeLock::SupplementName() {
 
 // static
 ScreenWakeLock* ScreenWakeLock::From(LocalFrame* frame) {
-  if (!RuntimeEnabledFeatures::wakeLockEnabled())
+  if (!RuntimeEnabledFeatures::WakeLockEnabled())
     return nullptr;
   ScreenWakeLock* supplement = static_cast<ScreenWakeLock*>(
       Supplement<LocalFrame>::From(frame, SupplementName()));

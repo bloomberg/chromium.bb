@@ -625,8 +625,8 @@ bool WebGLRenderingContextBase::SupportOwnOffscreenSurface(
   //
   // At this time, treat this as an experimental rendering optimization
   // that needs a separate opt-in. See crbug.com/691102 for details.
-  if (RuntimeEnabledFeatures::webVRExperimentalRenderingEnabled()) {
-    if (RuntimeEnabledFeatures::webVREnabled() ||
+  if (RuntimeEnabledFeatures::WebVRExperimentalRenderingEnabled()) {
+    if (RuntimeEnabledFeatures::WebVREnabled() ||
         OriginTrials::webVREnabled(execution_context)) {
       DVLOG(1) << "Requesting supportOwnOffscreenSurface";
       return true;
@@ -2769,7 +2769,7 @@ bool WebGLRenderingContextBase::ExtensionTracker::MatchesNameWithPrefixes(
 bool WebGLRenderingContextBase::ExtensionSupportedAndAllowed(
     const ExtensionTracker* tracker) {
   if (tracker->Draft() &&
-      !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
+      !RuntimeEnabledFeatures::WebGLDraftExtensionsEnabled())
     return false;
   if (!tracker->Supported(this))
     return false;

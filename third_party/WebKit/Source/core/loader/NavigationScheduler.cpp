@@ -268,7 +268,7 @@ class ScheduledReload final : public ScheduledNavigation {
     std::unique_ptr<UserGestureIndicator> gesture_indicator =
         CreateUserGestureIndicator();
     ResourceRequest resource_request = frame->Loader().ResourceRequestForReload(
-        RuntimeEnabledFeatures::locationHardReloadEnabled()
+        RuntimeEnabledFeatures::LocationHardReloadEnabled()
             ? kFrameLoadTypeReloadBypassingCache
             : kFrameLoadTypeReload,
         KURL(), ClientRedirectPolicy::kClientRedirect);
@@ -279,7 +279,7 @@ class ScheduledReload final : public ScheduledNavigation {
     MaybeLogScheduledNavigationClobber(
         ScheduledNavigationType::kScheduledReload, frame);
     frame->Loader().Load(request,
-                         RuntimeEnabledFeatures::locationHardReloadEnabled()
+                         RuntimeEnabledFeatures::LocationHardReloadEnabled()
                              ? kFrameLoadTypeReloadBypassingCache
                              : kFrameLoadTypeReload);
   }

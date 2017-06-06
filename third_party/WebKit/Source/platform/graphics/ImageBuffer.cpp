@@ -148,7 +148,7 @@ bool ImageBuffer::IsSurfaceValid() const {
 void ImageBuffer::FinalizeFrame() {
   if (IsAccelerated() &&
       CanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration &&
-      !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
+      !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled()) {
     if (gpu_readback_invoked_in_current_frame_) {
       gpu_readback_successive_frames_++;
       gpu_readback_invoked_in_current_frame_ = false;

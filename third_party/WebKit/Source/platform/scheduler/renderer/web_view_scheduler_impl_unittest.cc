@@ -692,8 +692,8 @@ namespace {
 
 using ScopedExpensiveBackgroundTimerThrottlingForTest =
     ScopedRuntimeEnabledFeatureForTest<
-        RuntimeEnabledFeatures::expensiveBackgroundTimerThrottlingEnabled,
-        RuntimeEnabledFeatures::setExpensiveBackgroundTimerThrottlingEnabled>;
+        RuntimeEnabledFeatures::ExpensiveBackgroundTimerThrottlingEnabled,
+        RuntimeEnabledFeatures::SetExpensiveBackgroundTimerThrottlingEnabled>;
 
 void ExpensiveTestTask(base::SimpleTestTickClock* clock,
                        std::vector<base::TimeTicks>* run_times) {

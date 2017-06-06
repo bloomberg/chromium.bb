@@ -400,7 +400,7 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
     std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
         WTF::WrapUnique(
             new WebGraphicsContext3DProviderForTests(std::move(gl)));
-    RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
+    RuntimeEnabledFeatures::SetWebGLImageChromiumEnabled(true);
     GLES2InterfaceForTests* gl_ =
         static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
     image_id0_ = gl_->NextImageIdToBeCreated();
@@ -414,7 +414,7 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
   }
 
   void TearDown() override {
-    RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(false);
+    RuntimeEnabledFeatures::SetWebGLImageChromiumEnabled(false);
     platform_.reset();
   }
 

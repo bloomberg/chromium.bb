@@ -161,7 +161,7 @@ void HTMLFrameSetElement::ParseAttribute(
         EventTypeNames::focusout,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
                                      EventParameterName()));
-  } else if (RuntimeEnabledFeatures::orientationEventEnabled() &&
+  } else if (RuntimeEnabledFeatures::OrientationEventEnabled() &&
              name == onorientationchangeAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::orientationchange,

@@ -57,7 +57,7 @@ bool ImageSource::SetData(RefPtr<SharedBuffer> data, bool all_data_received) {
   }
 
   ColorBehavior color_behavior =
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled()
+      RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()
           ? ColorBehavior::Tag()
           : ColorBehavior::TransformToGlobalTarget();
   decoder_ = DeferredImageDecoder::Create(data, all_data_received,

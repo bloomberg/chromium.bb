@@ -32,12 +32,12 @@ bool IsEffectiveConnectionTypeSlowFor(Document* document) {
 
   WebEffectiveConnectionType threshold_type =
       WebEffectiveConnectionType::kTypeUnknown;
-  if (RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled()) {
+  if (RuntimeEnabledFeatures::WebFontsInterventionV2With2GEnabled()) {
     threshold_type = WebEffectiveConnectionType::kType2G;
-  } else if (RuntimeEnabledFeatures::webFontsInterventionV2With3GEnabled()) {
+  } else if (RuntimeEnabledFeatures::WebFontsInterventionV2With3GEnabled()) {
     threshold_type = WebEffectiveConnectionType::kType3G;
   } else if (RuntimeEnabledFeatures::
-                 webFontsInterventionV2WithSlow2GEnabled()) {
+                 WebFontsInterventionV2WithSlow2GEnabled()) {
     threshold_type = WebEffectiveConnectionType::kTypeSlow2G;
   }
   DCHECK_NE(WebEffectiveConnectionType::kTypeUnknown, threshold_type);
@@ -52,9 +52,9 @@ bool IsConnectionTypeSlow() {
 }
 
 bool IsInterventionV2Enabled() {
-  return RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled() ||
-         RuntimeEnabledFeatures::webFontsInterventionV2With3GEnabled() ||
-         RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled();
+  return RuntimeEnabledFeatures::WebFontsInterventionV2With2GEnabled() ||
+         RuntimeEnabledFeatures::WebFontsInterventionV2With3GEnabled() ||
+         RuntimeEnabledFeatures::WebFontsInterventionV2WithSlow2GEnabled();
 }
 
 }  // namespace
@@ -198,7 +198,7 @@ void RemoteFontFaceSource::SwitchToFailurePeriod() {
 }
 
 bool RemoteFontFaceSource::ShouldTriggerWebFontsIntervention() {
-  if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled())
+  if (RuntimeEnabledFeatures::WebFontsInterventionTriggerEnabled())
     return true;
   if (histograms_.GetDataSource() == FontLoadHistograms::kFromMemoryCache ||
       histograms_.GetDataSource() == FontLoadHistograms::kFromDataURL)

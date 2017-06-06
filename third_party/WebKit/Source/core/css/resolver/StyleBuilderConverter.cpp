@@ -537,7 +537,7 @@ StyleContentAlignmentData StyleBuilderConverter::ConvertContentAlignmentData(
     const CSSValue& value) {
   StyleContentAlignmentData alignment_data =
       ComputedStyle::InitialContentAlignment();
-  if (!RuntimeEnabledFeatures::cssGridLayoutEnabled()) {
+  if (!RuntimeEnabledFeatures::CSSGridLayoutEnabled()) {
     const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
     switch (identifier_value.GetValueID()) {
       case CSSValueStretch:

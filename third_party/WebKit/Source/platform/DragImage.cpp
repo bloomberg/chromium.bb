@@ -115,7 +115,7 @@ PaintImage DragImage::ResizeAndOrientImage(
 
   SkCanvas* canvas = surface->getCanvas();
   std::unique_ptr<SkCanvas> color_transform_canvas;
-  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+  if (RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
     color_transform_canvas =
         SkCreateColorSpaceXformCanvas(canvas, SkColorSpace::MakeSRGB());
     canvas = color_transform_canvas.get();

@@ -111,7 +111,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   // Disable cache in under-invalidation checking mode for MediaSliderPart
   // because we always paint using the latest data (buffered ranges, current
   // time and duration) which may be different from the cached data.
-  if ((RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() &&
+  if ((RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
        style.Appearance() == kMediaSliderPart)
       // We may paint a delayed-invalidation object before it's actually
       // invalidated. Note this would be handled for us by

@@ -69,7 +69,7 @@ using namespace cssvalue;
 
 static const CSSPropertyID& TextDecorationPropertyForEditing() {
   static const CSSPropertyID kProperty =
-      RuntimeEnabledFeatures::css3TextDecorationsEnabled()
+      RuntimeEnabledFeatures::CSS3TextDecorationsEnabled()
           ? CSSPropertyTextDecorationLine
           : CSSPropertyTextDecoration;
   return kProperty;
@@ -105,7 +105,7 @@ static const Vector<CSSPropertyID>& AllEditingProperties() {
     CSSPropertyMetadata::FilterEnabledCSSPropertiesIntoVector(
         kStaticEditingProperties, WTF_ARRAY_LENGTH(kStaticEditingProperties),
         properties);
-    if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
+    if (RuntimeEnabledFeatures::CSS3TextDecorationsEnabled())
       properties.erase(properties.Find(CSSPropertyTextDecoration));
   }
   return properties;
@@ -850,7 +850,7 @@ bool EditingStyle::ConflictsWithInlineStyleOfElement(
       conflicting_properties->push_back(CSSPropertyTextDecoration);
       // Because text-decoration expands to text-decoration-line when CSS3
       // Text Decoration is enabled, we also state it as conflicting.
-      if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
+      if (RuntimeEnabledFeatures::CSS3TextDecorationsEnabled())
         conflicting_properties->push_back(CSSPropertyTextDecorationLine);
       if (extracted_style)
         extracted_style->SetProperty(

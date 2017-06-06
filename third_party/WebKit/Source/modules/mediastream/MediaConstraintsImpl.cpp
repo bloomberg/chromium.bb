@@ -313,7 +313,7 @@ static void ParseOldStyleNames(
       result.media_stream_source.SetExact(constraint.value_);
     } else if (constraint.name_.Equals(kDisableLocalEcho) &&
                RuntimeEnabledFeatures::
-                   desktopCaptureDisableLocalEchoControlEnabled()) {
+                   DesktopCaptureDisableLocalEchoControlEnabled()) {
       result.disable_local_echo.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kMediaStreamSourceId) ||
                constraint.name_.Equals(kMediaStreamSourceInfoId)) {

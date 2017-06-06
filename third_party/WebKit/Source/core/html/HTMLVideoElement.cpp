@@ -75,7 +75,7 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
         AtomicString(document.GetSettings()->GetDefaultVideoPosterURL());
   }
 
-  if (RuntimeEnabledFeatures::videoFullscreenDetectionEnabled()) {
+  if (RuntimeEnabledFeatures::VideoFullscreenDetectionEnabled()) {
     custom_controls_fullscreen_detector_ =
         new MediaCustomControlsFullscreenDetector(*this);
   }
@@ -387,7 +387,7 @@ bool HTMLVideoElement::webkitDisplayingFullscreen() {
 }
 
 bool HTMLVideoElement::UsesOverlayFullscreenVideo() const {
-  if (RuntimeEnabledFeatures::forceOverlayFullscreenVideoEnabled())
+  if (RuntimeEnabledFeatures::ForceOverlayFullscreenVideoEnabled())
     return true;
 
   return GetWebMediaPlayer() &&

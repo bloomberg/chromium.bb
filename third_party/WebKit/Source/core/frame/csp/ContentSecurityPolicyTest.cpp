@@ -97,7 +97,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
-  RuntimeEnabledFeatures::setCorsRFC1918Enabled(false);
+  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(false);
   execution_context->SetAddressSpace(kWebAddressSpacePrivate);
   EXPECT_EQ(kWebAddressSpacePrivate, execution_context->AddressSpace());
 
@@ -109,7 +109,7 @@ TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled) {
-  RuntimeEnabledFeatures::setCorsRFC1918Enabled(true);
+  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(true);
   execution_context->SetAddressSpace(kWebAddressSpacePrivate);
   EXPECT_EQ(kWebAddressSpacePrivate, execution_context->AddressSpace());
 

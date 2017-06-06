@@ -565,7 +565,7 @@ ColorChooser* ChromeClientImpl::OpenColorChooser(
   if (frame->GetDocument()->GetSettings()->GetPagePopupsSuppressed())
     return nullptr;
 
-  if (RuntimeEnabledFeatures::pagePopupEnabled())
+  if (RuntimeEnabledFeatures::PagePopupEnabled())
     controller =
         ColorChooserPopupUIController::Create(frame, this, chooser_client);
   else
@@ -584,7 +584,7 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
     return nullptr;
 
   NotifyPopupOpeningObservers();
-  if (RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled())
+  if (RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled())
     return DateTimeChooserImpl::Create(this, picker_client, parameters);
   return ExternalDateTimeChooser::Create(this, web_view_->Client(),
                                          picker_client, parameters);
@@ -690,7 +690,7 @@ String ChromeClientImpl::AcceptLanguages() {
 
 void ChromeClientImpl::AttachRootGraphicsLayer(GraphicsLayer* root_layer,
                                                LocalFrame* local_frame) {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   WebLocalFrameImpl* web_frame =
       WebLocalFrameImpl::FromFrame(local_frame)->LocalRoot();
 
@@ -790,7 +790,7 @@ PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
   if (WebViewBase::UseExternalPopupMenus())
     return new ExternalPopupMenu(frame, select, *web_view_);
 
-  DCHECK(RuntimeEnabledFeatures::pagePopupEnabled());
+  DCHECK(RuntimeEnabledFeatures::PagePopupEnabled());
   return PopupMenuImpl::Create(this, select);
 }
 
@@ -1138,9 +1138,9 @@ void ChromeClientImpl::InstallSupplements(LocalFrame& frame) {
 
   ScreenOrientationControllerImpl::ProvideTo(
       frame, client->GetWebScreenOrientationClient());
-  if (RuntimeEnabledFeatures::presentationEnabled())
+  if (RuntimeEnabledFeatures::PresentationEnabled())
     PresentationController::ProvideTo(frame, client->PresentationClient());
-  if (RuntimeEnabledFeatures::audioOutputDevicesEnabled()) {
+  if (RuntimeEnabledFeatures::AudioOutputDevicesEnabled()) {
     ProvideAudioOutputDeviceClientTo(frame,
                                      new AudioOutputDeviceClientImpl(frame));
   }

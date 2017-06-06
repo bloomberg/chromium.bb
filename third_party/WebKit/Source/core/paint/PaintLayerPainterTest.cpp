@@ -36,7 +36,7 @@ class PaintLayerPainterTest
                                     bool expected_value) {
     // The optimization to skip painting for effectively-invisible content is
     // limited to SPv1.
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
       return;
 
     PaintLayer* target_layer =
@@ -47,7 +47,7 @@ class PaintLayerPainterTest
         PaintLayerPainter(*target_layer).PaintedOutputInvisible(painting_info);
     EXPECT_EQ(expected_value, invisible)
         << "Failed painted output visibility [spv2_enabled="
-        << RuntimeEnabledFeatures::slimmingPaintV2Enabled()
+        << RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
         << ", expected=" << expected_value << ", actual=" << invisible << "].";
   }
 
@@ -97,7 +97,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   LayoutObject& content2 =
       *GetDocument().getElementById("content2")->GetLayoutObject();
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,
         TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
@@ -126,7 +126,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
 
   Commit();
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,
         TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
@@ -148,7 +148,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   // TODO(wangxianzhu): SPv2 deals with interest rect differently, so disable
   // this test for SPv2 temporarily.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   SetBodyInnerHTML(
@@ -253,7 +253,7 @@ TEST_P(PaintLayerPainterTest,
   LayoutObject& content2 =
       *GetDocument().getElementById("content2")->GetLayoutObject();
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,
         TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
@@ -282,7 +282,7 @@ TEST_P(PaintLayerPainterTest,
 
   Commit();
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,
         TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
@@ -668,7 +668,7 @@ TEST_P(PaintLayerPainterTest,
        TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgrounds) {
   // TODO(wangxianzhu): Enable this test slimmingPaintInvalidation when its
   // fully functional.
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     return;
 
   // "position: relative" makes the table and td self-painting layers.
@@ -692,7 +692,7 @@ TEST_P(PaintLayerPainterTest,
        TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgroundsDynamic) {
   // TODO(wangxianzhu): Enable this test slimmingPaintInvalidation when its
   // fully functional.
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     return;
 
   SetBodyInnerHTML(

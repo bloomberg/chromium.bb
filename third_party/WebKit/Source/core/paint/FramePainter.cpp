@@ -38,8 +38,8 @@ void FramePainter::Paint(GraphicsContext& context,
       GetFrameView().Location(), GetFrameView().VisibleContentRect().Size());
   IntPoint content_offset =
       -GetFrameView().Location() + GetFrameView().ScrollOffsetInt();
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-      !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     auto content_cull_rect = rect;
     content_cull_rect.UpdateForScrollingContents(
         visible_area_without_scrollbars,
@@ -63,8 +63,8 @@ void FramePainter::Paint(GraphicsContext& context,
     // settings()->rootLayerScrolls() is enabled.
     // TODO(pdr): Make this conditional on the rootLayerScrolls setting.
     Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-        !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+        !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       if (const PropertyTreeState* contents_state =
               frame_view_->TotalPropertyTreeStateForContents()) {
         PaintChunkProperties properties(
@@ -82,7 +82,7 @@ void FramePainter::Paint(GraphicsContext& context,
             GetFrameView().X() - GetFrameView().ScrollX(),
             GetFrameView().Y() - GetFrameView().ScrollY()));
 
-    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       PaintContents(context, global_paint_flags, document_dirty_rect);
     } else {
       ClipRecorder clip_recorder(context, *GetFrameView().GetLayoutView(),
@@ -94,7 +94,7 @@ void FramePainter::Paint(GraphicsContext& context,
   }
 
   if (should_paint_scrollbars) {
-    DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+    DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
     IntRect scroll_view_dirty_rect = rect.rect_;
     IntRect visible_area_with_scrollbars(
         GetFrameView().Location(),
@@ -103,7 +103,7 @@ void FramePainter::Paint(GraphicsContext& context,
     scroll_view_dirty_rect.MoveBy(-GetFrameView().Location());
 
     Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       if (const PropertyTreeState* contents_state =
               frame_view_->TotalPropertyTreeStateForContents()) {
         // The scrollbar's property nodes are similar to the frame view's

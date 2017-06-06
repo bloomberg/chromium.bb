@@ -52,7 +52,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
   FloatRect GetPaintRecordBounds() const { return record_bounds_; }
 
   bool KnownToBeOpaque() const {
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
     return known_to_be_opaque_;
   }
 

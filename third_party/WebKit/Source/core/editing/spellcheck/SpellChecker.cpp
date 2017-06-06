@@ -138,7 +138,7 @@ void SpellChecker::ToggleSpellCheckingEnabled() {
 }
 
 void SpellChecker::DidBeginEditing(Element* element) {
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   if (!IsSpellCheckingEnabled())
@@ -321,7 +321,7 @@ void SpellChecker::ShowSpellingGuessPanel() {
 
 void SpellChecker::MarkMisspellingsForMovingParagraphs(
     const VisibleSelection& moving_selection) {
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
@@ -356,7 +356,7 @@ void SpellChecker::MarkMisspellingsInternal(const VisibleSelection& selection) {
 
 void SpellChecker::MarkMisspellingsAfterApplyingCommand(
     const CompositeEditCommand& cmd) {
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   if (!IsSpellCheckingEnabled())
@@ -676,7 +676,7 @@ void SpellChecker::MarkAndReplaceFor(
 
 void SpellChecker::UpdateMarkersForWordsAffectedByEditing(
     bool do_not_remove_if_selection_at_word_boundary) {
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   DCHECK(GetFrame().Selection().IsAvailable());
@@ -788,7 +788,7 @@ void SpellChecker::DidEndEditingOnTextField(Element* e) {
 
   // Remove markers when deactivating a selection in an <input type="text"/>.
   // Prevent new ones from appearing too.
-  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     spell_check_requester_->CancelCheck();
   TextControlElement* text_control_element = ToTextControlElement(e);
   HTMLElement* inner_editor = text_control_element->InnerEditorElement();
@@ -905,7 +905,7 @@ static bool ShouldCheckOldSelection(const Position& old_selection_start) {
 void SpellChecker::RespondToChangedSelection(
     const Position& old_selection_start,
     FrameSelection::SetSelectionOptions options) {
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
     idle_spell_check_callback_->SetNeedsInvocation();
     return;
   }
@@ -956,7 +956,7 @@ void SpellChecker::RespondToChangedSelection(
 
 void SpellChecker::RespondToChangedContents() {
   UpdateMarkersForWordsAffectedByEditing(true);
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     idle_spell_check_callback_->SetNeedsInvocation();
 }
 
@@ -974,7 +974,7 @@ void SpellChecker::RemoveSpellingMarkersUnderWords(
 }
 
 void SpellChecker::SpellCheckAfterBlur() {
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     return;
 
   // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
@@ -1082,7 +1082,7 @@ void SpellChecker::CancelCheck() {
 }
 
 void SpellChecker::DocumentAttached(Document* document) {
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     idle_spell_check_callback_->DocumentAttached(document);
 }
 
@@ -1094,7 +1094,7 @@ DEFINE_TRACE(SpellChecker) {
 
 void SpellChecker::PrepareForLeakDetection() {
   spell_check_requester_->PrepareForLeakDetection();
-  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
     idle_spell_check_callback_->Deactivate();
 }
 

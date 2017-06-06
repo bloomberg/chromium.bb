@@ -136,7 +136,7 @@ PerformanceTiming* Performance::timing() const {
 }
 
 PerformanceNavigationTiming* Performance::CreateNavigationTimingInstance() {
-  if (!RuntimeEnabledFeatures::performanceNavigationTiming2Enabled())
+  if (!RuntimeEnabledFeatures::PerformanceNavigationTiming2Enabled())
     return nullptr;
   if (!GetFrame())
     return nullptr;

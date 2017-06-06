@@ -14,7 +14,7 @@ TransformRecorder::TransformRecorder(GraphicsContext& context,
                                      const DisplayItemClient& client,
                                      const AffineTransform& transform)
     : context_(context), client_(client) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   skip_recording_for_identity_transform_ = transform.IsIdentity();
 
@@ -26,7 +26,7 @@ TransformRecorder::TransformRecorder(GraphicsContext& context,
 }
 
 TransformRecorder::~TransformRecorder() {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   if (skip_recording_for_identity_transform_)
     return;

@@ -87,7 +87,7 @@ bool NeedsIncrementalInsertion(const LocalFrame& frame,
 void DispatchBeforeInputFromComposition(EventTarget* target,
                                         InputEvent::InputType input_type,
                                         const String& data) {
-  if (!RuntimeEnabledFeatures::inputEventEnabled())
+  if (!RuntimeEnabledFeatures::InputEventEnabled())
     return;
   if (!target)
     return;
@@ -1138,7 +1138,7 @@ int InputMethodController::TextInputFlags() const {
 }
 
 WebTextInputMode InputMethodController::InputModeOfFocusedElement() const {
-  if (!RuntimeEnabledFeatures::inputModeAttributeEnabled())
+  if (!RuntimeEnabledFeatures::InputModeAttributeEnabled())
     return kWebTextInputModeDefault;
 
   AtomicString mode = GetInputModeAttribute(GetDocument().FocusedElement());

@@ -308,7 +308,7 @@ void HTMLFormElement::PrepareForSubmission(
         ToHTMLFormControlElement(element)->BlocksFormSubmission()) {
       UseCounter::Count(GetDocument(),
                         UseCounter::kFormSubmittedWithUnclosedFormControl);
-      if (RuntimeEnabledFeatures::unclosedFormControlIsInvalidEnabled()) {
+      if (RuntimeEnabledFeatures::UnclosedFormControlIsInvalidEnabled()) {
         String tag_name = ToHTMLFormControlElement(element)->tagName();
         GetDocument().AddConsoleMessage(ConsoleMessage::Create(
             kSecurityMessageSource, kErrorMessageLevel,

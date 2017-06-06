@@ -556,9 +556,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return (value_id >= CSSValueInline && value_id <= CSSValueInlineFlex) ||
              value_id == CSSValueWebkitFlex ||
              value_id == CSSValueWebkitInlineFlex || value_id == CSSValueNone ||
-             (RuntimeEnabledFeatures::cssGridLayoutEnabled() &&
+             (RuntimeEnabledFeatures::CSSGridLayoutEnabled() &&
               (value_id == CSSValueGrid || value_id == CSSValueInlineGrid)) ||
-             (RuntimeEnabledFeatures::cssDisplayContentsEnabled() &&
+             (RuntimeEnabledFeatures::CSSDisplayContentsEnabled() &&
               value_id == CSSValueContents);
     case CSSPropertyDominantBaseline:
       return value_id == CSSValueAuto || value_id == CSSValueAlphabetic ||
@@ -630,14 +630,14 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyPosition:
       return value_id == CSSValueStatic || value_id == CSSValueRelative ||
              value_id == CSSValueAbsolute || value_id == CSSValueFixed ||
-             (RuntimeEnabledFeatures::cssStickyPositionEnabled() &&
+             (RuntimeEnabledFeatures::CSSStickyPositionEnabled() &&
               value_id == CSSValueSticky);
     case CSSPropertyResize:
       return value_id == CSSValueNone || value_id == CSSValueBoth ||
              value_id == CSSValueHorizontal || value_id == CSSValueVertical ||
              value_id == CSSValueAuto;
     case CSSPropertyScrollBehavior:
-      DCHECK(RuntimeEnabledFeatures::cssomSmoothScrollEnabled());
+      DCHECK(RuntimeEnabledFeatures::CSSOMSmoothScrollEnabled());
       return value_id == CSSValueAuto || value_id == CSSValueSmooth;
     case CSSPropertyShapeRendering:
       return value_id == CSSValueAuto || value_id == CSSValueOptimizeSpeed ||
@@ -670,12 +670,12 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyTextCombineUpright:
       return value_id == CSSValueNone || value_id == CSSValueAll;
     case CSSPropertyTextDecorationStyle:
-      DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+      DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return value_id == CSSValueSolid || value_id == CSSValueDouble ||
              value_id == CSSValueDotted || value_id == CSSValueDashed ||
              value_id == CSSValueWavy;
     case CSSPropertyTextJustify:
-      DCHECK(RuntimeEnabledFeatures::css3TextEnabled());
+      DCHECK(RuntimeEnabledFeatures::CSS3TextEnabled());
       return value_id == CSSValueInterWord || value_id == CSSValueDistribute ||
              value_id == CSSValueAuto || value_id == CSSValueNone;
     case CSSPropertyTextOrientation:
@@ -842,7 +842,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueNormal || value_id == CSSValueBreakAll ||
              value_id == CSSValueKeepAll || value_id == CSSValueBreakWord;
     case CSSPropertyScrollSnapType:
-      DCHECK(RuntimeEnabledFeatures::cssScrollSnapPointsEnabled());
+      DCHECK(RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled());
       return value_id == CSSValueNone || value_id == CSSValueMandatory ||
              value_id == CSSValueProximity;
     default:
@@ -963,7 +963,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyAlignContent:
     case CSSPropertyAlignItems:
     case CSSPropertyAlignSelf:
-      return !RuntimeEnabledFeatures::cssGridLayoutEnabled();
+      return !RuntimeEnabledFeatures::CSSGridLayoutEnabled();
     default:
       return false;
   }

@@ -438,7 +438,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(
     int event_id,
     const WebString& tag,
     LastChanceOption last_chance) {
-  if (!RuntimeEnabledFeatures::backgroundSyncEnabled()) {
+  if (!RuntimeEnabledFeatures::BackgroundSyncEnabled()) {
     ServiceWorkerGlobalScopeClient::From(WorkerGlobalScope())
         ->DidHandleSyncEvent(event_id, kWebServiceWorkerEventResultCompleted,
                              WTF::CurrentTime());

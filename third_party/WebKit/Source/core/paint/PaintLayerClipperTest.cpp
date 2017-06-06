@@ -52,13 +52,13 @@ TEST_P(PaintLayerClipperTest, LayoutSVGRoot) {
       kIgnorePlatformOverlayScrollbarSize, LayoutSize(FloatSize(0.25, 0.35)));
   // When RLS is enabled, the LayoutView will have a composited scrolling layer,
   // so don't apply an overflow clip.
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     context.SetIgnoreOverflowClip();
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   target_paint_layer->Clipper(option).CalculateRects(
       context, LayoutRect(LayoutRect::InfiniteIntRect()), layer_bounds,
@@ -83,13 +83,13 @@ TEST_P(PaintLayerClipperTest, ControlClip) {
                            kUncachedClipRects);
   // When RLS is enabled, the LayoutView will have a composited scrolling layer,
   // so don't apply an overflow clip.
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     context.SetIgnoreOverflowClip();
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   target_paint_layer->Clipper(option).CalculateRects(
       context, LayoutRect(LayoutRect::InfiniteIntRect()), layer_bounds,
@@ -125,14 +125,14 @@ TEST_P(PaintLayerClipperTest, RoundedClip) {
                            kUncachedClipRects);
   // When RLS is enabled, the LayoutView will have a composited scrolling layer,
   // so don't apply an overflow clip.
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     context.SetIgnoreOverflowClip();
 
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   target_paint_layer->Clipper(option).CalculateRects(
       context, LayoutRect(LayoutRect::InfiniteIntRect()), layer_bounds,
@@ -171,7 +171,7 @@ TEST_P(PaintLayerClipperTest, RoundedClipNested) {
   ClipRect background_rect, foreground_rect;
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   child_paint_layer->Clipper(option).CalculateRects(
       context, LayoutRect(LayoutRect::InfiniteIntRect()), layer_bounds,
@@ -199,13 +199,13 @@ TEST_P(PaintLayerClipperTest, ControlClipSelect) {
                            kUncachedClipRects);
   // When RLS is enabled, the LayoutView will have a composited scrolling layer,
   // so don't apply an overflow clip.
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     context.SetIgnoreOverflowClip();
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   target_paint_layer->Clipper(option).CalculateRects(
       context, LayoutRect(LayoutRect::InfiniteIntRect()), layer_bounds,
@@ -238,7 +238,7 @@ TEST_P(PaintLayerClipperTest, LayoutSVGRootChild) {
   ClipRect background_rect, foreground_rect;
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   target_paint_layer->Clipper(option).CalculateRects(
       context, LayoutRect(LayoutRect::InfiniteIntRect()), layer_bounds,
@@ -263,7 +263,7 @@ TEST_P(PaintLayerClipperTest, ContainPaintClip) {
   ClipRect background_rect, foreground_rect;
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   layer->Clipper(option).CalculateRects(context, infinite_rect, layer_bounds,
                                         background_rect, foreground_rect);
@@ -299,7 +299,7 @@ TEST_P(PaintLayerClipperTest, NestedContainPaintClip) {
   ClipRect background_rect, foreground_rect;
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   layer->Clipper(option).CalculateRects(context, infinite_rect, layer_bounds,
                                         background_rect, foreground_rect);
@@ -336,7 +336,7 @@ TEST_P(PaintLayerClipperTest, LocalClipRectFixedUnderTransform) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("fixed"))->Layer();
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   EXPECT_EQ(LayoutRect(0, 0, 100, 100),
             transformed->Clipper(option).LocalClipRect(*transformed));
@@ -347,7 +347,7 @@ TEST_P(PaintLayerClipperTest, LocalClipRectFixedUnderTransform) {
 TEST_P(PaintLayerClipperTest, ClearClipRectsRecursive) {
   // SPv2 will re-use a global GeometryMapper, so this
   // logic does not apply.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   SetBodyInnerHTML(
@@ -372,7 +372,7 @@ TEST_P(PaintLayerClipperTest, ClearClipRectsRecursive) {
   EXPECT_TRUE(child->GetClipRectsCache());
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   parent->Clipper(option).ClearClipRectsIncludingDescendants();
 
@@ -383,7 +383,7 @@ TEST_P(PaintLayerClipperTest, ClearClipRectsRecursive) {
 TEST_P(PaintLayerClipperTest, ClearClipRectsRecursiveChild) {
   // SPv2 will re-use a global GeometryMapper, so this
   // logic does not apply.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   SetBodyInnerHTML(
@@ -408,7 +408,7 @@ TEST_P(PaintLayerClipperTest, ClearClipRectsRecursiveChild) {
   EXPECT_TRUE(child->GetClipRectsCache());
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   child->Clipper(option).ClearClipRectsIncludingDescendants();
 
@@ -419,7 +419,7 @@ TEST_P(PaintLayerClipperTest, ClearClipRectsRecursiveChild) {
 TEST_P(PaintLayerClipperTest, ClearClipRectsRecursiveOneType) {
   // SPv2 will re-use a global GeometryMapper, so this
   // logic does not apply.
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     return;
 
   SetBodyInnerHTML(
@@ -446,7 +446,7 @@ TEST_P(PaintLayerClipperTest, ClearClipRectsRecursiveOneType) {
   EXPECT_TRUE(child->GetClipRectsCache()->Get(kAbsoluteClipRects).root);
 
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   parent->Clipper(option).ClearClipRectsIncludingDescendants(
       kAbsoluteClipRects);
@@ -471,7 +471,7 @@ TEST_P(PaintLayerClipperTest, CSSClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
   ClipRectsContext context(target, kUncachedClipRects);
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   LayoutRect layer_bounds(infinite_rect);
@@ -499,7 +499,7 @@ TEST_P(PaintLayerClipperTest, Filter) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
   ClipRectsContext context(target, kUncachedClipRects);
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   LayoutRect layer_bounds(infinite_rect);
@@ -540,7 +540,7 @@ TEST_P(PaintLayerClipperTest, IgnoreRootLayerClipWithCSSClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
   ClipRectsContext context(root, kPaintingClipRectsIgnoringOverflowClip);
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   LayoutRect layer_bounds(infinite_rect);
@@ -574,7 +574,7 @@ TEST_P(PaintLayerClipperTest, IgnoreRootLayerClipWithOverflowClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
   ClipRectsContext context(root, kPaintingClipRectsIgnoringOverflowClip);
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   LayoutRect layer_bounds(infinite_rect);
@@ -609,7 +609,7 @@ TEST_P(PaintLayerClipperTest, IgnoreRootLayerClipWithBothClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
   ClipRectsContext context(root, kPaintingClipRectsIgnoringOverflowClip);
   PaintLayer::GeometryMapperOption option = PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     option = PaintLayer::kUseGeometryMapper;
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   LayoutRect layer_bounds(infinite_rect);

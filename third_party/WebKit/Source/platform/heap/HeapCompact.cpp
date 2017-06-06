@@ -290,7 +290,7 @@ bool HeapCompact::ShouldCompact(ThreadState* state,
 #if !ENABLE_HEAP_COMPACTION
   return false;
 #else
-  if (!RuntimeEnabledFeatures::heapCompactionEnabled())
+  if (!RuntimeEnabledFeatures::HeapCompactionEnabled())
     return false;
 
   LOG_HEAP_COMPACTION("shouldCompact(): gc=%s count=%zu free=%zu\n",
@@ -336,7 +336,7 @@ bool HeapCompact::ShouldCompact(ThreadState* state,
 }
 
 void HeapCompact::Initialize(ThreadState* state) {
-  DCHECK(RuntimeEnabledFeatures::heapCompactionEnabled());
+  DCHECK(RuntimeEnabledFeatures::HeapCompactionEnabled());
   LOG_HEAP_COMPACTION("Compacting: free=%zu\n", free_list_size_);
   do_compact_ = true;
   freed_pages_ = 0;

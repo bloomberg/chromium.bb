@@ -112,7 +112,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   // Get input argument types. Parse the argument type values only when
   // cssPaintAPIArguments is enabled.
   Vector<CSSSyntaxDescriptor> input_argument_types;
-  if (RuntimeEnabledFeatures::cssPaintAPIArgumentsEnabled()) {
+  if (RuntimeEnabledFeatures::CSSPaintAPIArgumentsEnabled()) {
     v8::Local<v8::Value> input_argument_type_values;
     if (!constructor->Get(context, V8String(isolate, "inputArguments"))
              .ToLocal(&input_argument_type_values))

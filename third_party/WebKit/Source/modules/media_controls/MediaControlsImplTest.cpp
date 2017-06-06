@@ -144,7 +144,7 @@ class MediaControlsImplTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     // Enable the cast overlay button as this is enabled by default.
-    RuntimeEnabledFeatures::setMediaCastOverlayButtonEnabled(true);
+    RuntimeEnabledFeatures::SetMediaCastOverlayButtonEnabled(true);
 
     InitializePage();
   }
@@ -364,7 +364,7 @@ TEST_F(MediaControlsImplTest, CastOverlayDefault) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisabled) {
-  RuntimeEnabledFeatures::setMediaCastOverlayButtonEnabled(false);
+  RuntimeEnabledFeatures::SetMediaCastOverlayButtonEnabled(false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");
@@ -411,7 +411,7 @@ TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisabledMediaControlsDisabled) {
-  RuntimeEnabledFeatures::setMediaCastOverlayButtonEnabled(false);
+  RuntimeEnabledFeatures::SetMediaCastOverlayButtonEnabled(false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");

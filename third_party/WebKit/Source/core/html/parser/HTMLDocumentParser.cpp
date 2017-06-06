@@ -1146,7 +1146,7 @@ void HTMLDocumentParser::DidAddPendingStylesheetInBody() {
   // token so don't actually set the bit to block parsing here, just track
   // the state of the added sheet in case it does persist beyond a single
   // token.
-  if (RuntimeEnabledFeatures::cssInBodyDoesNotBlockPaintEnabled())
+  if (RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled())
     added_pending_stylesheet_in_body_ = true;
 }
 
@@ -1295,7 +1295,7 @@ void HTMLDocumentParser::EvaluateAndPreloadScriptForDocumentWrite(
     return;
   GetDocument()->Loader()->DidObserveLoadingBehavior(
       WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteEvaluator);
-  if (!RuntimeEnabledFeatures::documentWriteEvaluatorEnabled())
+  if (!RuntimeEnabledFeatures::DocumentWriteEvaluatorEnabled())
     return;
   TRACE_EVENT0("blink",
                "HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite");

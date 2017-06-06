@@ -240,7 +240,7 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
   // We only prevent click event when the click may cause contextmenu to popup.
   // However, we always send auxclick.
   bool context_menu_event =
-      !RuntimeEnabledFeatures::auxclickEnabled() &&
+      !RuntimeEnabledFeatures::AuxclickEnabled() &&
       mev.Event().button == WebPointerProperties::Button::kRight;
 #if OS(MACOSX)
   // FIXME: The Mac port achieves the same behavior by checking whether the
@@ -292,10 +292,10 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
 
   if ((click_element_ && click_element_->CanParticipateInFlatTree() &&
        click_element_->isConnected()) ||
-      RuntimeEnabledFeatures::clickRetargettingEnabled()) {
+      RuntimeEnabledFeatures::ClickRetargettingEnabled()) {
     return DispatchMouseEvent(
         click_target_node,
-        !RuntimeEnabledFeatures::auxclickEnabled() ||
+        !RuntimeEnabledFeatures::AuxclickEnabled() ||
                 (mev.Event().button == WebPointerProperties::Button::kLeft)
             ? EventTypeNames::click
             : EventTypeNames::auxclick,

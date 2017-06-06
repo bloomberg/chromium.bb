@@ -876,7 +876,7 @@ TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
 }
 
 TEST_P(GeometryMapperTest, InvertedClip) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(

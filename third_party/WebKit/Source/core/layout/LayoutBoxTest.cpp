@@ -233,7 +233,7 @@ TEST_F(LayoutBoxTest, ControlClip) {
 }
 
 TEST_F(LayoutBoxTest, LocalVisualRectWithMask) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   SetBodyInnerHTML(
@@ -248,7 +248,7 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMask) {
 }
 
 TEST_F(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   SetBodyInnerHTML(

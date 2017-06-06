@@ -108,7 +108,7 @@ void AutoplayPolicy::DidMoveToNewDocument(Document& old_document) {
 
 bool AutoplayPolicy::IsEligibleForAutoplayMuted() const {
   return element_->IsHTMLVideoElement() && element_->muted() &&
-         RuntimeEnabledFeatures::autoplayMutedVideosEnabled();
+         RuntimeEnabledFeatures::AutoplayMutedVideosEnabled();
 }
 
 void AutoplayPolicy::StartAutoplayMutedWhenVisible() {
@@ -212,7 +212,7 @@ bool AutoplayPolicy::IsAutoplayingMuted() const {
 
 bool AutoplayPolicy::IsAutoplayingMutedInternal(bool muted) const {
   if (!element_->IsHTMLVideoElement() ||
-      !RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
+      !RuntimeEnabledFeatures::AutoplayMutedVideosEnabled()) {
     return false;
   }
 
@@ -260,7 +260,7 @@ bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
   // - Preload was not disabled (low end devices);
   // - Autoplay is enabled in settings;
   if (element_->IsHTMLVideoElement() && element_->muted() &&
-      RuntimeEnabledFeatures::autoplayMutedVideosEnabled() &&
+      RuntimeEnabledFeatures::AutoplayMutedVideosEnabled() &&
       !(element_->GetDocument().GetSettings() &&
         element_->GetDocument().GetSettings()->GetDataSaverEnabled()) &&
       !(element_->GetDocument().GetSettings() &&

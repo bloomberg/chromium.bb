@@ -162,7 +162,7 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
     return promise;
   }
 
-  if (!RuntimeEnabledFeatures::remotePlaybackBackendEnabled()) {
+  if (!RuntimeEnabledFeatures::RemotePlaybackBackendEnabled()) {
     resolver->Reject(DOMException::Create(
         kNotSupportedError,
         "The RemotePlayback API is disabled on this platform."));
@@ -275,7 +275,7 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
   switch (state_) {
     case WebRemotePlaybackState::kConnecting:
       DispatchEvent(Event::Create(EventTypeNames::connecting));
-      if (RuntimeEnabledFeatures::newRemotePlaybackPipelineEnabled() &&
+      if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled() &&
           media_element_->IsHTMLVideoElement()) {
         toHTMLVideoElement(media_element_)->MediaRemotingStarted();
       }
@@ -285,7 +285,7 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
       break;
     case WebRemotePlaybackState::kDisconnected:
       DispatchEvent(Event::Create(EventTypeNames::disconnect));
-      if (RuntimeEnabledFeatures::newRemotePlaybackPipelineEnabled() &&
+      if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled() &&
           media_element_->IsHTMLVideoElement()) {
         toHTMLVideoElement(media_element_)->MediaRemotingStopped();
       }

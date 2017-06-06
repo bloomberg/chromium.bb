@@ -138,7 +138,7 @@ bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature feature) {
     case WebFeaturePolicyFeature::kPayment:
       return true;
     case WebFeaturePolicyFeature::kVibrate:
-      return RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled();
+      return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
     default:
       return false;
   }
@@ -151,7 +151,7 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  WebFeaturePolicyFeature::kFullscreen);
     default_feature_name_map.Set("payment", WebFeaturePolicyFeature::kPayment);
     default_feature_name_map.Set("usb", WebFeaturePolicyFeature::kUsb);
-    if (RuntimeEnabledFeatures::featurePolicyExperimentalFeaturesEnabled()) {
+    if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
       default_feature_name_map.Set("vibrate",
                                    WebFeaturePolicyFeature::kVibrate);
       default_feature_name_map.Set("camera", WebFeaturePolicyFeature::kCamera);

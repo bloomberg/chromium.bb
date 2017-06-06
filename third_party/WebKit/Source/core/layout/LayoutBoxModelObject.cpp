@@ -363,7 +363,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
     if ((old_style && old_style->GetPosition() != StyleRef().GetPosition()) ||
         had_layer != HasLayer()) {
       // This may affect paint properties of the current object, and descendants
@@ -558,7 +558,7 @@ void LayoutBoxModelObject::AddLayerHitTestRects(
 DISABLE_CFI_PERF
 void LayoutBoxModelObject::DeprecatedInvalidateTree(
     const PaintInvalidationState& paint_invalidation_state) {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
   EnsureIsReadyForPaintInvalidation();
 
   PaintInvalidationState new_paint_invalidation_state(paint_invalidation_state,

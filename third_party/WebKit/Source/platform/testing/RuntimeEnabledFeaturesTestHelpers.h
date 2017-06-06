@@ -29,40 +29,40 @@ class ScopedRuntimeEnabledFeatureForTest {
 };
 
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::compositeOpaqueFixedPositionEnabled,
-    RuntimeEnabledFeatures::setCompositeOpaqueFixedPositionEnabled>
+    RuntimeEnabledFeatures::CompositeOpaqueFixedPositionEnabled,
+    RuntimeEnabledFeatures::SetCompositeOpaqueFixedPositionEnabled>
     ScopedCompositeFixedPositionForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled,
-    RuntimeEnabledFeatures::setCompositeOpaqueScrollersEnabled>
+    RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled,
+    RuntimeEnabledFeatures::SetCompositeOpaqueScrollersEnabled>
     ScopedCompositeOpaqueScrollersForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::compositorWorkerEnabled,
-    RuntimeEnabledFeatures::setCompositorWorkerEnabled>
+    RuntimeEnabledFeatures::CompositorWorkerEnabled,
+    RuntimeEnabledFeatures::SetCompositorWorkerEnabled>
     ScopedCompositorWorkerForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::rootLayerScrollingEnabled,
-    RuntimeEnabledFeatures::setRootLayerScrollingEnabled>
+    RuntimeEnabledFeatures::RootLayerScrollingEnabled,
+    RuntimeEnabledFeatures::SetRootLayerScrollingEnabled>
     ScopedRootLayerScrollingForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::slimmingPaintV2Enabled,
-    RuntimeEnabledFeatures::setSlimmingPaintV2Enabled>
+    RuntimeEnabledFeatures::SlimmingPaintV2Enabled,
+    RuntimeEnabledFeatures::SetSlimmingPaintV2Enabled>
     ScopedSlimmingPaintV2ForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled,
-    RuntimeEnabledFeatures::setSlimmingPaintInvalidationEnabled>
+    RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled,
+    RuntimeEnabledFeatures::SetSlimmingPaintInvalidationEnabled>
     ScopedSlimmingPaintInvalidationForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled,
-    RuntimeEnabledFeatures::setPaintUnderInvalidationCheckingEnabled>
+    RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled,
+    RuntimeEnabledFeatures::SetPaintUnderInvalidationCheckingEnabled>
     ScopedPaintUnderInvalidationCheckingForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::accessibilityObjectModelEnabled,
-    RuntimeEnabledFeatures::setAccessibilityObjectModelEnabled>
+    RuntimeEnabledFeatures::AccessibilityObjectModelEnabled,
+    RuntimeEnabledFeatures::SetAccessibilityObjectModelEnabled>
     ScopedAccessibilityObjectModelForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::mojoBlobsEnabled,
-    RuntimeEnabledFeatures::setMojoBlobsEnabled>
+    RuntimeEnabledFeatures::MojoBlobsEnabled,
+    RuntimeEnabledFeatures::SetMojoBlobsEnabled>
     ScopedMojoBlobsForTest;
 
 }  // namespace blink

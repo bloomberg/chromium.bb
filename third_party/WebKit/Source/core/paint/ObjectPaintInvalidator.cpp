@@ -287,7 +287,7 @@ static void InvalidatePaintRectangleOnWindow(
     return;
 
   if (paint_invalidation_container.GetDocument().Printing() &&
-      !RuntimeEnabledFeatures::printBrowserEnabled())
+      !RuntimeEnabledFeatures::PrintBrowserEnabled())
     return;
 
   DCHECK(frame_view->GetFrame().OwnerLayoutItem().IsNull());
@@ -346,14 +346,14 @@ void ObjectPaintInvalidator::InvalidatePaintUsingContainer(
     PaintInvalidationReason invalidation_reason) {
   // TODO(wangxianzhu): Enable the following assert after paint invalidation for
   // spv2 is ready.
-  // DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  // DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
   if (paint_invalidation_container.GetFrameView()->ShouldThrottleRendering())
     return;
 
   DCHECK(g_disable_paint_invalidation_state_asserts ||
          object_.GetDocument().Lifecycle().GetState() ==
-             (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()
+             (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()
                   ? DocumentLifecycle::kInPrePaint
                   : DocumentLifecycle::kInPaintInvalidation));
 
@@ -401,7 +401,7 @@ LayoutRect ObjectPaintInvalidator::InvalidatePaintRectangle(
     return LayoutRect();
 
   if (object_.View()->GetDocument().Printing() &&
-      !RuntimeEnabledFeatures::printBrowserEnabled())
+      !RuntimeEnabledFeatures::PrintBrowserEnabled())
     return LayoutRect();  // Don't invalidate paints if we're printing.
 
   const LayoutBoxModelObject& paint_invalidation_container =
@@ -636,7 +636,7 @@ ObjectPaintInvalidatorWithContext::InvalidatePaintWithComputedReason(
       // for paint offset mutation, but incurs no pixel difference (i.e. bounds
       // stay the same) so no rect-based invalidation is issued. See
       // crbug.com/508383 and crbug.com/515977.
-      if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           (context_.subtree_flags &
            PaintInvalidatorContext::kSubtreeInvalidationChecking) &&
           !object_.IsSVGChild()) {

@@ -124,7 +124,7 @@ bool NavigatorBeacon::SendBeaconImpl(
       UseCounter::Count(context,
                         UseCounter::kSendBeaconWithNonSimpleContentType);
       if (RuntimeEnabledFeatures::
-              sendBeaconThrowForBlobWithNonSimpleTypeEnabled()) {
+              SendBeaconThrowForBlobWithNonSimpleTypeEnabled()) {
         exception_state.ThrowSecurityError(
             "sendBeacon() with a Blob whose type is not any of the "
             "CORS-safelisted values for the Content-Type request header is "

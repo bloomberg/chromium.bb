@@ -15,14 +15,14 @@ ClipRecorder::ClipRecorder(GraphicsContext& context,
                            DisplayItem::Type type,
                            const IntRect& clip_rect)
     : client_(client), context_(context), type_(type) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   context_.GetPaintController().CreateAndAppend<ClipDisplayItem>(client_, type,
                                                                  clip_rect);
 }
 
 ClipRecorder::~ClipRecorder() {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   context_.GetPaintController().EndItem<EndClipDisplayItem>(
       client_, DisplayItem::ClipTypeToEndClipType(type_));

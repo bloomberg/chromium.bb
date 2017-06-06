@@ -149,7 +149,7 @@ size_t QuantizeMemorySize(size_t size) {
 }
 
 MemoryInfo::MemoryInfo() {
-  if (RuntimeEnabledFeatures::preciseMemoryInfoEnabled())
+  if (RuntimeEnabledFeatures::PreciseMemoryInfoEnabled())
     GetHeapSize(info_);
   else
     HeapSizeCache::ForCurrentThread().GetCachedHeapSize(info_);

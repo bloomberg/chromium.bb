@@ -74,7 +74,7 @@ Notification* Notification::Create(ExecutionContext* context,
                                    ExceptionState& exception_state) {
   // The Notification constructor may be disabled through a runtime feature when
   // the platform does not support non-persistent notifications.
-  if (!RuntimeEnabledFeatures::notificationConstructorEnabled()) {
+  if (!RuntimeEnabledFeatures::NotificationConstructorEnabled()) {
     exception_state.ThrowTypeError(
         "Illegal constructor. Use ServiceWorkerRegistration.showNotification() "
         "instead.");

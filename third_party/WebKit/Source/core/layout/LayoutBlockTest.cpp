@@ -22,7 +22,7 @@ TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle) {
 }
 
 TEST_F(LayoutBlockTest, WidthAvailableToChildrenChanged) {
-  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
       "<div id='list' style='overflow-y:auto; width:150px; height:100px'>"

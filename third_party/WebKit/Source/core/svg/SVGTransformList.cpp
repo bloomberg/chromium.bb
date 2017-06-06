@@ -403,7 +403,7 @@ SVGParsingError SVGTransformList::SetValueAsString(const String& value) {
 
 SVGPropertyBase* SVGTransformList::CloneForAnimation(
     const String& value) const {
-  DCHECK(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
+  DCHECK(RuntimeEnabledFeatures::WebAnimationsSVGEnabled());
   return SVGListPropertyHelper::CloneForAnimation(value);
 }
 

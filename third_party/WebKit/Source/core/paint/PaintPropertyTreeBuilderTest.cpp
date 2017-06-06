@@ -23,7 +23,7 @@ void PaintPropertyTreeBuilderTest::LoadTestData(const char* file_name) {
 const TransformPaintPropertyNode*
 PaintPropertyTreeBuilderTest::FramePreTranslation() {
   LocalFrameView* frame_view = GetDocument().View();
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return frame_view->GetLayoutView()
         ->PaintProperties()
         ->PaintOffsetTranslation();
@@ -33,14 +33,14 @@ PaintPropertyTreeBuilderTest::FramePreTranslation() {
 const TransformPaintPropertyNode*
 PaintPropertyTreeBuilderTest::FrameScrollTranslation() {
   LocalFrameView* frame_view = GetDocument().View();
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return frame_view->GetLayoutView()->PaintProperties()->ScrollTranslation();
   return frame_view->ScrollTranslation();
 }
 
 const ClipPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameContentClip() {
   LocalFrameView* frame_view = GetDocument().View();
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return frame_view->GetLayoutView()->PaintProperties()->OverflowClip();
   return frame_view->ContentClip();
 }
@@ -49,7 +49,7 @@ const ScrollPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameScroll(
     LocalFrameView* frame_view) {
   if (!frame_view)
     frame_view = GetDocument().View();
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     const auto* scroll_translation =
         frame_view->GetLayoutView()->PaintProperties()->ScrollTranslation();
     return scroll_translation ? scroll_translation->ScrollNode() : nullptr;
@@ -271,7 +271,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional) {
   EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), FrameContentClip()->ClipRect());
   EXPECT_TRUE(FrameContentClip()->Parent()->IsRoot());
 
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // No scroll properties should be present.
     EXPECT_EQ(nullptr, frame_view->GetLayoutView()->PaintProperties());
   }

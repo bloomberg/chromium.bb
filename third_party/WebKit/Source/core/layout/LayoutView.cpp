@@ -207,7 +207,7 @@ bool LayoutView::CanHaveChildren() const {
   FrameOwner* owner = GetFrame()->Owner();
   if (!owner)
     return true;
-  if (!RuntimeEnabledFeatures::displayNoneIFrameCreatesNoLayoutObjectEnabled())
+  if (!RuntimeEnabledFeatures::DisplayNoneIFrameCreatesNoLayoutObjectEnabled())
     return true;
   return !owner->IsDisplayNone();
 }
@@ -253,7 +253,7 @@ void LayoutView::UpdateLayout() {
   // TODO(wangxianzhu): Move this into ViewPaintInvalidator when
   // rootLayerScrolling is permanently enabled.
   IncludeScrollbarsInRect include_scrollbars =
-      RuntimeEnabledFeatures::rootLayerScrollingEnabled() ? kIncludeScrollbars
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled() ? kIncludeScrollbars
                                                           : kExcludeScrollbars;
   SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
       OffsetWidth() != GetLayoutSize(include_scrollbars).Width(),
@@ -318,7 +318,7 @@ void LayoutView::UpdateLayout() {
 LayoutRect LayoutView::VisualOverflowRect() const {
   // In root layer scrolling mode, the LayoutView performs overflow clipping
   // like a regular scrollable div.
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return LayoutBlockFlow::VisualOverflowRect();
 
   // Ditto when not in compositing mode.
@@ -469,7 +469,7 @@ static void SetShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(
 }
 
 void LayoutView::SetShouldDoFullPaintInvalidationForViewAndAllDescendants() {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
   else
     SetShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(this);
@@ -764,13 +764,13 @@ int LayoutView::ViewLogicalHeight(
 }
 
 int LayoutView::ViewLogicalWidthForBoxSizing() const {
-  return ViewLogicalWidth(RuntimeEnabledFeatures::rootLayerScrollingEnabled()
+  return ViewLogicalWidth(RuntimeEnabledFeatures::RootLayerScrollingEnabled()
                               ? kIncludeScrollbars
                               : kExcludeScrollbars);
 }
 
 int LayoutView::ViewLogicalHeightForBoxSizing() const {
-  return ViewLogicalHeight(RuntimeEnabledFeatures::rootLayerScrollingEnabled()
+  return ViewLogicalHeight(RuntimeEnabledFeatures::RootLayerScrollingEnabled()
                                ? kIncludeScrollbars
                                : kExcludeScrollbars);
 }
@@ -875,7 +875,7 @@ void LayoutView::UpdateFromStyle() {
 }
 
 bool LayoutView::AllowsOverflowClip() const {
-  return RuntimeEnabledFeatures::rootLayerScrollingEnabled();
+  return RuntimeEnabledFeatures::RootLayerScrollingEnabled();
 }
 
 ScrollResult LayoutView::Scroll(ScrollGranularity granularity,
@@ -913,7 +913,7 @@ bool LayoutView::UpdateLogicalWidthAndColumnWidth() {
 
 bool LayoutView::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   // Frame scroll corner is painted using LayoutView as the display item client.
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
       (GetFrameView()->HorizontalScrollbar() ||
        GetFrameView()->VerticalScrollbar()))
     return false;

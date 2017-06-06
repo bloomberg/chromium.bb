@@ -14,10 +14,10 @@ namespace {
 class NGOutOfFlowLayoutPartTest : public RenderingTest {
  public:
   NGOutOfFlowLayoutPartTest() {
-    RuntimeEnabledFeatures::setLayoutNGEnabled(true);
+    RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
   };
   ~NGOutOfFlowLayoutPartTest() {
-    RuntimeEnabledFeatures::setLayoutNGEnabled(false);
+    RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
   };
 };
 

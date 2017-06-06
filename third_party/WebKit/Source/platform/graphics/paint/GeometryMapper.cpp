@@ -128,7 +128,7 @@ void GeometryMapper::LocalToAncestorVisualRectInternal(
     // |rectToMap|.
     rect_to_map = clip_rect;
     rect_to_map.Intersect(mapped_rect);
-  } else if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  } else if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     // On SPv1 we may fail when the paint invalidation container creates an
     // overflow clip (in ancestorState) which is not in localState of an
     // out-of-flow positioned descendant. See crbug.com/513108 and layout test
@@ -264,7 +264,7 @@ const FloatClipRect& GeometryMapper::SourceToDestinationClipRectInternal(
   const FloatClipRect& result2 = LocalToAncestorClipRectInternal(
       source_state.Clip(), lca_state.Clip(), lca_state.Transform(), success);
   if (!success) {
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       // On SPv1 we may fail when the paint invalidation container creates an
       // overflow clip (in ancestorState) which is not in localState of an
       // out-of-flow positioned descendant. See crbug.com/513108 and layout

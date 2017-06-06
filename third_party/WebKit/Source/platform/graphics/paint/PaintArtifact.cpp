@@ -85,7 +85,7 @@ size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
 void PaintArtifact::Replay(const FloatRect& bounds,
                            GraphicsContext& graphics_context) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     for (const DisplayItem& display_item : display_item_list_)
       display_item.Replay(graphics_context);
   } else {
@@ -97,7 +97,7 @@ void PaintArtifact::Replay(const FloatRect& bounds,
                            PaintCanvas& canvas,
                            const PropertyTreeState& replay_state) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   Vector<const PaintChunk*> pointer_paint_chunks;
   pointer_paint_chunks.ReserveInitialCapacity(PaintChunks().size());
 

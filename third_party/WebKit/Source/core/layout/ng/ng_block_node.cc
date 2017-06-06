@@ -230,7 +230,7 @@ bool NGBlockNode::CanUseNewLayout() const {
 
   if (!box_->IsLayoutBlockFlow())
     return false;
-  return RuntimeEnabledFeatures::layoutNGEnabled();
+  return RuntimeEnabledFeatures::LayoutNGEnabled();
 }
 
 String NGBlockNode::ToString() const {

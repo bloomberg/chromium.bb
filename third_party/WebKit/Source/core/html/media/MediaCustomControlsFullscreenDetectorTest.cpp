@@ -27,16 +27,16 @@ class MediaCustomControlsFullscreenDetectorTest : public ::testing::Test {
  protected:
   void SetUp() override {
     original_video_fullscreen_detection_enabled_ =
-        RuntimeEnabledFeatures::videoFullscreenDetectionEnabled();
+        RuntimeEnabledFeatures::VideoFullscreenDetectionEnabled();
 
-    RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(true);
+    RuntimeEnabledFeatures::SetVideoFullscreenDetectionEnabled(true);
 
     page_holder_ = DummyPageHolder::Create();
     new_page_holder_ = DummyPageHolder::Create();
   }
 
   void TearDown() override {
-    RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(
+    RuntimeEnabledFeatures::SetVideoFullscreenDetectionEnabled(
         original_video_fullscreen_detection_enabled_);
   }
 

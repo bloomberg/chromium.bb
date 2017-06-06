@@ -422,7 +422,7 @@ void ImageResource::ResponseReceived(
         response, response.MultipartBoundary(), this);
   }
   Resource::ResponseReceived(response, std::move(handle));
-  if (RuntimeEnabledFeatures::clientHintsEnabled()) {
+  if (RuntimeEnabledFeatures::ClientHintsEnabled()) {
     device_pixel_ratio_header_value_ =
         this->GetResponse()
             .HttpHeaderField(HTTPNames::Content_DPR)

@@ -98,7 +98,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
           "Blocked call to navigator.vibrate inside a cross-origin "
           "iframe because the frame has never been activated by the user: "
           "https://www.chromestatus.com/feature/5682658461876224.";
-    } else if (RuntimeEnabledFeatures::vibrateRequiresUserGestureEnabled()) {
+    } else if (RuntimeEnabledFeatures::VibrateRequiresUserGestureEnabled()) {
       // The actual blocking is targeting M60.
       message =
           "Blocked call to navigator.vibrate because user hasn't tapped "

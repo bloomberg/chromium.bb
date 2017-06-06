@@ -492,7 +492,7 @@ TEST_P(FrameThrottlingTest, ChangeOriginInThrottledFrame) {
 TEST_P(FrameThrottlingTest, ThrottledFrameWithFocus) {
   WebView().GetSettings()->SetJavaScriptEnabled(true);
   WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
-  RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
+  RuntimeEnabledFeatures::SetCompositedSelectionUpdateEnabled(true);
 
   // Create a hidden frame which is throttled and has a text selection.
   SimRequest main_resource("https://example.com/", "text/html");
@@ -1128,7 +1128,7 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
 }
 
 TEST_P(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
-  if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
     return;
 
   SimRequest main_resource("https://example.com/", "text/html");

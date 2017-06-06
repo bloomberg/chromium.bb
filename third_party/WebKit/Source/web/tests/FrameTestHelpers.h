@@ -123,23 +123,23 @@ class UseMockScrollbarSettings {
   UseMockScrollbarSettings()
       : original_mock_scrollbar_enabled_(Settings::MockScrollbarsEnabled()),
         original_overlay_scrollbars_enabled_(
-            RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
+            RuntimeEnabledFeatures::OverlayScrollbarsEnabled()) {
     Settings::SetMockScrollbarsEnabled(true);
-    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+    RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
     EXPECT_TRUE(ScrollbarTheme::GetTheme().UsesOverlayScrollbars());
   }
 
   UseMockScrollbarSettings(bool use_mock, bool use_overlay)
       : original_mock_scrollbar_enabled_(Settings::MockScrollbarsEnabled()),
         original_overlay_scrollbars_enabled_(
-            RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
+            RuntimeEnabledFeatures::OverlayScrollbarsEnabled()) {
     Settings::SetMockScrollbarsEnabled(use_mock);
-    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(use_overlay);
+    RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(use_overlay);
   }
 
   ~UseMockScrollbarSettings() {
     Settings::SetMockScrollbarsEnabled(original_mock_scrollbar_enabled_);
-    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(
+    RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(
         original_overlay_scrollbars_enabled_);
   }
 

@@ -372,7 +372,7 @@ void PaintLayerClipper::CalculateClipRects(const ClipRectsContext& context,
                                            ClipRects& clip_rects) const {
   const LayoutBoxModelObject& layout_object = layer_.GetLayoutObject();
   if (!layer_.Parent() &&
-      !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // The root layer's clip rect is always infinite.
     clip_rects.Reset(LayoutRect(LayoutRect::InfiniteIntRect()));
     return;

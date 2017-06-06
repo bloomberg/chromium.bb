@@ -39,7 +39,7 @@ int ScrollbarThemeMock::ScrollbarThickness(ScrollbarControlSize control_size) {
 }
 
 bool ScrollbarThemeMock::UsesOverlayScrollbars() const {
-  return RuntimeEnabledFeatures::overlayScrollbarsEnabled();
+  return RuntimeEnabledFeatures::OverlayScrollbarsEnabled();
 }
 
 IntRect ScrollbarThemeMock::TrackRect(const ScrollbarThemeClient& scrollbar,

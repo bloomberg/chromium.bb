@@ -37,7 +37,7 @@ class PrePaintTreeWalkTest
 
   const TransformPaintPropertyNode* FramePreTranslation() {
     LocalFrameView* frame_view = GetDocument().View();
-    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       return frame_view->GetLayoutView()
           ->PaintProperties()
           ->PaintOffsetTranslation();
@@ -47,7 +47,7 @@ class PrePaintTreeWalkTest
 
   const TransformPaintPropertyNode* FrameScrollTranslation() {
     LocalFrameView* frame_view = GetDocument().View();
-    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       return frame_view->GetLayoutView()
           ->PaintProperties()
           ->ScrollTranslation();
@@ -152,7 +152,7 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithCSSTransformInvalidation) {
 
 TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithOpacityInvalidation) {
   // In SPv1 mode, we don't need or store property tree nodes for effects.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   SetBodyInnerHTML(
       "<style>"
@@ -334,7 +334,7 @@ TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {
 
   // In SPv2 mode, VisualRects are in the space of the containing transform
   // node without applying any ancestor property nodes, including clip.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     EXPECT_EQ(200, grandchild->VisualRect().Height());
   else
     EXPECT_EQ(75, grandchild->VisualRect().Height());

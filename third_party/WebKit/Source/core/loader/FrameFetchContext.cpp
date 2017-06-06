@@ -382,7 +382,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
                                                        identifier, response);
 
   // MainResource responses were already added, skip them here.
-  if (RuntimeEnabledFeatures::serverTimingEnabled() &&
+  if (RuntimeEnabledFeatures::ServerTimingEnabled() &&
       resource->GetType() != Resource::kMainResource &&
       GetFrame()->GetDocument() && GetFrame()->GetDocument()->domWindow()) {
     LocalDOMWindow* localDOMWindow = GetFrame()->GetDocument()->domWindow();
@@ -635,7 +635,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
-  if (!RuntimeEnabledFeatures::clientHintsEnabled() || !GetDocument())
+  if (!RuntimeEnabledFeatures::ClientHintsEnabled() || !GetDocument())
     return;
 
   bool should_send_device_ram =

@@ -914,8 +914,8 @@ TEST_F(CanvasRenderingContext2DTest, ContextDisposedBeforeCanvas) {
 
 TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
   bool saved_fixed_rendering_mode =
-      RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled();
-  RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(false);
+      RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled();
+  RuntimeEnabledFeatures::SetCanvas2dFixedRenderingModeEnabled(false);
 
   CreateContext(kNonOpaque);
   FakeGLES2Interface gl;
@@ -961,14 +961,14 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
   }
 
   // Restore global state to prevent side-effects on other tests
-  RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(
+  RuntimeEnabledFeatures::SetCanvas2dFixedRenderingModeEnabled(
       saved_fixed_rendering_mode);
 }
 
 TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
   bool saved_fixed_rendering_mode =
-      RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled();
-  RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(false);
+      RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled();
+  RuntimeEnabledFeatures::SetCanvas2dFixedRenderingModeEnabled(false);
 
   enum TestVariants {
     kLargeTextureDisablesAcceleration = 0,
@@ -1028,7 +1028,7 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
     }
   }
   // Restore global state to prevent side-effects on other tests
-  RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(
+  RuntimeEnabledFeatures::SetCanvas2dFixedRenderingModeEnabled(
       saved_fixed_rendering_mode);
 }
 
@@ -1083,19 +1083,19 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
   // Set the runtime flags
   bool flag = (color_space_conversion !=
                ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
-  RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(true);
-  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(flag);
-  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
+  RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(true);
+  RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(flag);
+  RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
   return options;
 }
 
 TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
   bool experimental_canvas_features_runtime_flag =
-      RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
+      RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled();
   bool color_correct_rendering_runtime_flag =
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
+      RuntimeEnabledFeatures::ColorCorrectRenderingEnabled();
   bool color_canvas_extensions_flag =
-      RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
+      RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
 
   Persistent<HTMLCanvasElement> canvas =
       Persistent<HTMLCanvasElement>(CanvasElement());
@@ -1182,11 +1182,11 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
     ASSERT_EQ(compare, 0);
   }
 
-  RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(
+  RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(
       experimental_canvas_features_runtime_flag);
-  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
+  RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(
       color_correct_rendering_runtime_flag);
-  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(
+  RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(
       color_canvas_extensions_flag);
 }
 
@@ -1288,14 +1288,14 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
     CanvasColorSpaceSettings canvas_colorspace_setting,
     float color_tolerance) {
   bool experimental_canvas_features_runtime_flag =
-      RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
+      RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled();
   bool color_correct_rendering_runtime_flag =
-      RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
+      RuntimeEnabledFeatures::ColorCorrectRenderingEnabled();
   bool color_canvas_extensions_flag =
-      RuntimeEnabledFeatures::colorCanvasExtensionsEnabled();
-  RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(true);
-  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(true);
-  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(true);
+      RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
+  RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(true);
+  RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(true);
+  RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
 
   bool test_passed = true;
   unsigned num_image_data_color_spaces = 3;
@@ -1454,11 +1454,11 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   delete[] u16_pixels;
   delete[] f32_pixels;
 
-  RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(
+  RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(
       experimental_canvas_features_runtime_flag);
-  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
+  RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(
       color_correct_rendering_runtime_flag);
-  RuntimeEnabledFeatures::setColorCanvasExtensionsEnabled(
+  RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(
       color_canvas_extensions_flag);
 }
 

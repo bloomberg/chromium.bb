@@ -322,7 +322,7 @@ static inline bool TransformUsesBoxSize(
 static FloatRect ComputeTransformReferenceBox(const SVGElement& element) {
   const LayoutObject& layout_object = *element.GetLayoutObject();
   const ComputedStyle& style = layout_object.StyleRef();
-  if (!RuntimeEnabledFeatures::cssTransformBoxEnabled()) {
+  if (!RuntimeEnabledFeatures::CSSTransformBoxEnabled()) {
     FloatRect reference_box = layout_object.ObjectBoundingBox();
     // Set the reference origin to zero when transform-origin (x/y) has a
     // non-percentage unit.
@@ -411,7 +411,7 @@ Node::InsertionNotificationRequest SVGElement::InsertedInto(
 
   if (hasAttribute(nonceAttr) && getAttribute(nonceAttr) != g_empty_atom) {
     setNonce(getAttribute(nonceAttr));
-    if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled() &&
+    if (RuntimeEnabledFeatures::HideNonceContentAttributeEnabled() &&
         InActiveDocument() &&
         GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy()) {
       setAttribute(nonceAttr, g_empty_atom);
@@ -1030,7 +1030,7 @@ void SVGElement::SvgAttributeBaseValChanged(const QualifiedName& attribute) {
 }
 
 void SVGElement::EnsureAttributeAnimValUpdated() {
-  if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled())
+  if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled())
     return;
 
   if ((HasSVGRareData() && SvgRareData()->WebAnimatedAttributesDirty()) ||

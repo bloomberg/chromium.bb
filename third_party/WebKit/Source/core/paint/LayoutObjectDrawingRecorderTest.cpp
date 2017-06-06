@@ -144,7 +144,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, CullRectMatchesProvidedClip) {
 #if 0  // TODO(wangxianzhu): Rewrite this test for slimmingPaintInvalidation.
 TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(true);
+    RuntimeEnabledFeatures::SetSlimmingPaintOffsetCachingEnabled(true);
 
     GraphicsContext context(rootPaintController());
     LayoutRect bounds = layoutView().viewRect();

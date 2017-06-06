@@ -83,7 +83,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
                                           const String& referrer) {
   ReferrerPolicy referrer_policy_no_default = referrer_policy;
   if (referrer_policy_no_default == kReferrerPolicyDefault) {
-    if (RuntimeEnabledFeatures::reducedReferrerGranularityEnabled()) {
+    if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
       referrer_policy_no_default =
           kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
     } else {

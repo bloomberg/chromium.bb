@@ -12,10 +12,10 @@ namespace {
 class NGConstraintSpaceBuilderTest {
  public:
   NGConstraintSpaceBuilderTest() {
-    RuntimeEnabledFeatures::setLayoutNGEnabled(true);
+    RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
   };
   ~NGConstraintSpaceBuilderTest() {
-    RuntimeEnabledFeatures::setLayoutNGEnabled(false);
+    RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
   };
 };
 

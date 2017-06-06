@@ -1646,7 +1646,7 @@ void CompositedLayerMapping::UpdateInternalHierarchy() {
   // TODO(pdr): Ensure painting uses the correct GraphicsLayer when root layer
   // scrolls is enabled.  crbug.com/638719
   if (is_main_frame_layout_view_layer_ &&
-      !RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     bottom_layer = GetLayoutObject()
                        .GetFrame()
                        ->GetPage()
@@ -2215,7 +2215,7 @@ struct AnimatingData {
 };
 
 void GetAnimatingData(PaintLayer& paint_layer, AnimatingData& data) {
-  if (!RuntimeEnabledFeatures::compositorWorkerEnabled())
+  if (!RuntimeEnabledFeatures::CompositorWorkerEnabled())
     return;
 
   data.owning_node = paint_layer.GetLayoutObject().GetNode();
@@ -2226,12 +2226,12 @@ void GetAnimatingData(PaintLayer& paint_layer, AnimatingData& data) {
   Document& document = data.owning_node->GetDocument();
   Element* scrolling_element = document.ScrollingElementNoLayout();
   if (data.owning_node->IsElementNode() &&
-      (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() ||
+      (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() ||
        data.owning_node != scrolling_element)) {
     data.animating_element = ToElement(data.owning_node);
     data.animating_style = paint_layer.GetLayoutObject().Style();
   } else if (data.owning_node->IsDocumentNode() &&
-             RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+             RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     data.owning_node = data.animating_element = scrolling_element;
     if (scrolling_element && scrolling_element->GetLayoutObject())
       data.animating_style = scrolling_element->GetLayoutObject()->Style();
@@ -2954,7 +2954,7 @@ void CompositedLayerMapping::SetContentsNeedDisplayInRect(
   DCHECK(!owning_layer_.GetLayoutObject().UsesCompositedScrolling());
   // TODO(wangxianzhu): Enable the following assert after paint invalidation for
   // spv2 is ready.
-  // DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  // DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
   SetContentsNeedsDisplayInRectFunctor functor = {
       EnclosingIntRect(LayoutRect(
@@ -2970,7 +2970,7 @@ void CompositedLayerMapping::SetNonScrollingContentsNeedDisplayInRect(
   DCHECK(owning_layer_.GetLayoutObject().UsesCompositedScrolling());
   // TODO(wangxianzhu): Enable the following assert after paint invalidation for
   // spv2 is ready.
-  // DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  // DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
   SetContentsNeedsDisplayInRectFunctor functor = {
       EnclosingIntRect(LayoutRect(
@@ -2986,7 +2986,7 @@ void CompositedLayerMapping::SetScrollingContentsNeedDisplayInRect(
   DCHECK(owning_layer_.GetLayoutObject().UsesCompositedScrolling());
   // TODO(wangxianzhu): Enable the following assert after paint invalidation for
   // spv2 is ready.
-  // DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  // DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
 
   SetContentsNeedsDisplayInRectFunctor functor = {
       EnclosingIntRect(LayoutRect(

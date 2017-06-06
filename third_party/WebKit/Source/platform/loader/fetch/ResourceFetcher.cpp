@@ -126,7 +126,7 @@ ResourceLoadPriority TypeToPriority(Resource::Type type) {
       // Also parser-blocking scripts (set explicitly in loadPriority)
       return kResourceLoadPriorityVeryHigh;
     case Resource::kXSLStyleSheet:
-      DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     case Resource::kRaw:
     case Resource::kImportResource:
     case Resource::kScript:
@@ -247,7 +247,7 @@ WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
       // http://fetch.spec.whatwg.org/#concept-request-context-frame-type
       return WebURLRequest::kRequestContextHyperlink;
     case Resource::kXSLStyleSheet:
-      DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     case Resource::kCSSStyleSheet:
       return WebURLRequest::kRequestContextStyle;
     case Resource::kScript:

@@ -307,7 +307,7 @@ TEST_P(CompositedLayerMappingTest, ClippedBigLayer) {
 }
 
 TEST_P(CompositedLayerMappingTest, ClippingMaskLayer) {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
   const AtomicString style_without_clipping =

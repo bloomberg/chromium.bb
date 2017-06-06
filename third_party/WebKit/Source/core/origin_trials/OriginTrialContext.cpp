@@ -205,7 +205,7 @@ void OriginTrialContext::InitializePendingFeatures() {
 }
 
 bool OriginTrialContext::IsTrialEnabled(const String& trial_name) {
-  if (!RuntimeEnabledFeatures::originTrialsEnabled())
+  if (!RuntimeEnabledFeatures::OriginTrialsEnabled())
     return false;
 
   return enabled_trials_.Contains(trial_name);

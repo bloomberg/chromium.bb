@@ -58,7 +58,7 @@ TEST(CSSPropertyParserTest, CSSPaint_TrailingComma) {
 }
 
 TEST(CSSPropertyParserTest, CSSPaint_PaintArgumentsDiabled) {
-  RuntimeEnabledFeatures::setCSSPaintAPIArgumentsEnabled(false);
+  RuntimeEnabledFeatures::SetCSSPaintAPIArgumentsEnabled(false);
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyBackgroundImage, "paint(bar, 10px, red)");
   ASSERT_FALSE(value);

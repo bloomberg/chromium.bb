@@ -74,7 +74,7 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
     } else if (DeprecatedEqualIgnoringCase(
                    sandbox_token, "allow-top-navigation-by-user-activation") &&
                RuntimeEnabledFeatures::
-                   topNavByUserActivationInSandboxEnabled()) {
+                   TopNavByUserActivationInSandboxEnabled()) {
       flags &= ~kSandboxTopNavigationByUserActivation;
     } else {
       token_errors.Append(token_errors.IsEmpty() ? "'" : ", '");
