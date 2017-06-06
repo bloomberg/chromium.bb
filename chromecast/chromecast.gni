@@ -36,6 +36,11 @@ declare_args() {
 
   # Set true to enable assistant features.
   enable_assistant = false
+
+  # Set to true on devices that support multizone. Only indicates that the
+  # device supports multizone. The command line flag --enable-multizone must
+  # still be used to enable multizone.
+  supports_multizone = is_cast_audio_only && !is_cast_desktop_build
 }
 
 declare_args() {
