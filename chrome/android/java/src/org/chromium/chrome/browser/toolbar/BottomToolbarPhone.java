@@ -326,16 +326,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
     }
 
     @Override
-    protected int getBoundsAfterAccountingForLeftButton() {
-        int padding = super.getBoundsAfterAccountingForLeftButton();
-        if (!mUseToolbarHandle && mExpandButton.getVisibility() != GONE
-                && !mShouldHideToolbarButtons) {
-            padding = mExpandButton.getMeasuredWidth();
-        }
-        return padding;
-    }
-
-    @Override
     protected int getLeftPositionOfLocationBarBackground(VisualState visualState) {
         if (!mAnimatingToolbarButtonAppearance && !mAnimatingToolbarButtonDisappearance) {
             mLocationBarBackgroundLeftPosition =
@@ -366,19 +356,15 @@ public class BottomToolbarPhone extends ToolbarPhone {
     }
 
     private int getLocationBarBackgroundLeftOffset() {
-        if (!ApiCompatibilityUtils.isLayoutRtl(this)) {
-            return !mUseToolbarHandle ? mExpandButton.getMeasuredWidth() - mToolbarSidePadding : 0;
-        } else {
-            return mToolbarButtonsContainer.getMeasuredWidth() - mToolbarSidePadding;
-        }
+        return !ApiCompatibilityUtils.isLayoutRtl(this)
+                ? 0
+                : mToolbarButtonsContainer.getMeasuredWidth() - mToolbarSidePadding;
     }
 
     private int getLocationBarBackgroundRightOffset() {
-        if (!ApiCompatibilityUtils.isLayoutRtl(this)) {
-            return mToolbarButtonsContainer.getMeasuredWidth() - mToolbarSidePadding;
-        } else {
-            return !mUseToolbarHandle ? mExpandButton.getMeasuredWidth() - mToolbarSidePadding : 0;
-        }
+        return !ApiCompatibilityUtils.isLayoutRtl(this)
+                ? mToolbarButtonsContainer.getMeasuredWidth() - mToolbarSidePadding
+                : 0;
     }
 
     @Override
@@ -387,15 +373,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (!mUseToolbarHandle) {
             mExpandButton.setVisibility(
                     urlHasFocus() || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
-        }
-    }
-
-    @Override
-    protected void updateUrlExpansionAnimation() {
-        super.updateUrlExpansionAnimation();
-
-        if (!mUseToolbarHandle) {
-            mExpandButton.setVisibility(mShouldHideToolbarButtons ? View.INVISIBLE : View.VISIBLE);
         }
     }
 
@@ -643,12 +620,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 mToolbarButtonsContainer.setVisibility(View.VISIBLE);
                 mToolbarButtonsContainer.setTranslationX(0);
 
-                if (!mUseToolbarHandle) {
-                    mExpandButton.setAlpha(1.f);
-                    mExpandButton.setVisibility(View.VISIBLE);
-                    mExpandButton.setTranslationX(0);
-                }
-
                 requestLayout();
             } else {
                 mToolbarButtonVisibilityPercent = 0.f;
@@ -727,18 +698,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mToolbarButtonsContainer.setAlpha(mToolbarButtonVisibilityPercent);
         mToolbarButtonsContainer.setVisibility(
                 mToolbarButtonVisibilityPercent > 0.f ? View.VISIBLE : View.INVISIBLE);
-
-        if (!mUseToolbarHandle) {
-            float expandButtonWidth = mExpandButton.getMeasuredWidth();
-            float expandButtonTranslationX =
-                    expandButtonWidth * (1.f - mToolbarButtonVisibilityPercent);
-            if (!isRtl) expandButtonTranslationX *= -1;
-
-            mExpandButton.setTranslationX(expandButtonTranslationX);
-            mExpandButton.setAlpha(mToolbarButtonVisibilityPercent);
-            mExpandButton.setVisibility(
-                    mToolbarButtonVisibilityPercent > 0.f ? View.VISIBLE : View.INVISIBLE);
-        }
 
         float locationBarTranslationX;
         boolean isLocationBarRtl = ApiCompatibilityUtils.isLayoutRtl(mLocationBar);
