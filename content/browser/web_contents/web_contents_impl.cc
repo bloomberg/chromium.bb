@@ -2643,10 +2643,10 @@ device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockContext() {
   return wake_lock_context_host_->GetWakeLockContext();
 }
 
-device::mojom::WakeLockService* WebContentsImpl::GetRendererWakeLock() {
-  // WebContents creates a long-lived connection to one WakeLockServiceImpl.
+device::mojom::WakeLock* WebContentsImpl::GetRendererWakeLock() {
+  // WebContents creates a long-lived connection to one WakeLock.
   // All the frames' requests will be added into the BindingSet of
-  // WakeLockServiceImpl via this connection.
+  // WakeLock via this connection.
   if (!renderer_wake_lock_) {
     device::mojom::WakeLockContext* wake_lock_context = GetWakeLockContext();
     if (!wake_lock_context) {

@@ -4,7 +4,7 @@
 
 module device.mojom;
 
-import "device/wake_lock/public/interfaces/wake_lock_service.mojom";
+import "device/wake_lock/public/interfaces/wake_lock.mojom";
 
 enum WakeLockType {
     // Prevent the application from being suspended. On some platforms, apps may
@@ -30,11 +30,11 @@ enum WakeLockReason {
     ReasonOther = 2,
 };
 
-// Context in which WakeLockService instances operate.
+// Context in which WakeLock instances operate.
 interface WakeLockContext {
-  // Gets a WakeLockService within this context.
+  // Gets a WakeLock within this context.
   GetWakeLock(WakeLockType type,
               WakeLockReason reason,
               string description,
-              WakeLockService& wake_lock);
+              WakeLock& wake_lock);
 };

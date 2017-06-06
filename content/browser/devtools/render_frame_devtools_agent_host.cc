@@ -604,13 +604,13 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
 
   frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
 #if defined(OS_ANDROID)
-  GetWakeLockService()->RequestWakeLock();
+  GetWakeLock()->RequestWakeLock();
 #endif
 }
 
 void RenderFrameDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
-  GetWakeLockService()->CancelWakeLock();
+  GetWakeLock()->CancelWakeLock();
 #endif
   frame_trace_recorder_.reset();
   in_navigation_protocol_message_buffer_.clear();
@@ -826,12 +826,10 @@ bool RenderFrameDevToolsAgentHost::CheckConsistency() {
 }
 
 #if defined(OS_ANDROID)
-device::mojom::WakeLockService*
-RenderFrameDevToolsAgentHost::GetWakeLockService() {
+device::mojom::WakeLock* RenderFrameDevToolsAgentHost::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
-    device::mojom::WakeLockServiceRequest request =
-        mojo::MakeRequest(&wake_lock_);
+    device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
     device::mojom::WakeLockContext* wake_lock_context =
         web_contents()->GetWakeLockContext();
     if (wake_lock_context) {
@@ -914,13 +912,13 @@ void RenderFrameDevToolsAgentHost::DidDetachInterstitialPage() {
 
 void RenderFrameDevToolsAgentHost::WasShown() {
 #if defined(OS_ANDROID)
-  GetWakeLockService()->RequestWakeLock();
+  GetWakeLock()->RequestWakeLock();
 #endif
 }
 
 void RenderFrameDevToolsAgentHost::WasHidden() {
 #if defined(OS_ANDROID)
-  GetWakeLockService()->CancelWakeLock();
+  GetWakeLock()->CancelWakeLock();
 #endif
 }
 

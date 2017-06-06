@@ -62,7 +62,7 @@ source_set("tests") {
     "power_monitor/power_monitor_message_broadcaster_unittest.cc",
     "public/cpp/power_monitor/power_monitor_broadcast_source_unittest.cc",
     "vibration/vibration_manager_impl_unittest.cc",
-    "wake_lock/wake_lock_service_impl_unittest.cc",
+    "wake_lock/wake_lock_unittest.cc",
   ]
 
   deps = [

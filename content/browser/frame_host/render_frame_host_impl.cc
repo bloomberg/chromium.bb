@@ -104,8 +104,8 @@
 #include "content/public/common/url_utils.h"
 #include "device/geolocation/geolocation_service_context.h"
 #include "device/vr/features/features.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
-#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
@@ -2786,9 +2786,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                    base::Unretained(geolocation_service_context)));
   }
 
-  GetInterfaceRegistry()->AddInterface<device::mojom::WakeLockService>(
-      base::Bind(&RenderFrameHostImpl::BindWakeLockServiceRequest,
-                 base::Unretained(this)));
+  GetInterfaceRegistry()->AddInterface<device::mojom::WakeLock>(base::Bind(
+      &RenderFrameHostImpl::BindWakeLockRequest, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc)) {
@@ -3887,10 +3886,10 @@ void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
   media_interface_proxy_.reset();
 }
 
-void RenderFrameHostImpl::BindWakeLockServiceRequest(
+void RenderFrameHostImpl::BindWakeLockRequest(
     const service_manager::BindSourceInfo& source_info,
-    device::mojom::WakeLockServiceRequest request) {
-  device::mojom::WakeLockService* renderer_wake_lock =
+    device::mojom::WakeLockRequest request) {
+  device::mojom::WakeLock* renderer_wake_lock =
       delegate_ ? delegate_->GetRendererWakeLock() : nullptr;
   if (renderer_wake_lock)
     renderer_wake_lock->AddClient(std::move(request));

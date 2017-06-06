@@ -4,14 +4,14 @@
 
 source_set("wake_lock") {
   sources = [
+    "wake_lock.cc",
+    "wake_lock.h",
+    "wake_lock_context.cc",
+    "wake_lock_context.h",
+    "wake_lock_for_testing.cc",
+    "wake_lock_for_testing.h",
     "wake_lock_provider.cc",
     "wake_lock_provider.h",
-    "wake_lock_service_context.cc",
-    "wake_lock_service_context.h",
-    "wake_lock_service_impl.cc",
-    "wake_lock_service_impl.h",
-    "wake_lock_service_impl_for_testing.cc",
-    "wake_lock_service_impl_for_testing.h",
   ]
 
   public_deps = [

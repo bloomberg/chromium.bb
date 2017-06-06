@@ -24,10 +24,10 @@
 namespace blink {
 namespace {
 
-using device::mojom::blink::WakeLockService;
-using device::mojom::blink::WakeLockServiceRequest;
+using device::mojom::blink::WakeLock;
+using device::mojom::blink::WakeLockRequest;
 
-// This class allows binding interface requests to a MockWakeLockService.
+// This class allows binding interface requests to a MockWakeLock.
 class MockInterfaceProvider : public InterfaceProvider {
  public:
   MockInterfaceProvider() : wake_lock_status_(false) {}
@@ -39,34 +39,32 @@ class MockInterfaceProvider : public InterfaceProvider {
   void SetWakeLockStatus(bool status) { wake_lock_status_ = status; }
 
  private:
-  // A mock WakeLockService used to intercept calls to the mojo methods.
-  class MockWakeLockService : public WakeLockService {
+  // A mock WakeLock used to intercept calls to the mojo methods.
+  class MockWakeLock : public WakeLock {
    public:
-    MockWakeLockService(MockInterfaceProvider* registry,
-                        WakeLockServiceRequest request)
+    MockWakeLock(MockInterfaceProvider* registry, WakeLockRequest request)
         : binding_(this, std::move(request)), registry_(registry) {}
-    ~MockWakeLockService() {}
+    ~MockWakeLock() {}
 
    private:
-    // mojom::WakeLockService
+    // mojom::WakeLock
     void RequestWakeLock() override { registry_->SetWakeLockStatus(true); }
     void CancelWakeLock() override { registry_->SetWakeLockStatus(false); }
-    void AddClient(
-        device::mojom::blink::WakeLockServiceRequest wake_lock) override {}
+    void AddClient(device::mojom::blink::WakeLockRequest wake_lock) override {}
     void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override {}
 
-    mojo::Binding<WakeLockService> binding_;
+    mojo::Binding<WakeLock> binding_;
     MockInterfaceProvider* const registry_;
   };
-  std::unique_ptr<MockWakeLockService> mock_wake_lock_service_;
+  std::unique_ptr<MockWakeLock> mock_wake_lock_;
 
   bool wake_lock_status_;
 };
 
 void MockInterfaceProvider::GetInterface(const char* name,
                                          mojo::ScopedMessagePipeHandle handle) {
-  mock_wake_lock_service_.reset(
-      new MockWakeLockService(this, WakeLockServiceRequest(std::move(handle))));
+  mock_wake_lock_.reset(
+      new MockWakeLock(this, WakeLockRequest(std::move(handle))));
 }
 
 // A TestWebFrameClient to allow overriding the interfaceProvider() with a mock.

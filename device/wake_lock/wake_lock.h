@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_
-#define DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_
+#ifndef DEVICE_WAKE_LOCK_WAKE_LOCK_H_
+#define DEVICE_WAKE_LOCK_WAKE_LOCK_H_
 
 #include <memory>
 
@@ -11,30 +11,29 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "device/power_save_blocker/power_save_blocker.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
-#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
-#include "device/wake_lock/wake_lock_service_context.h"
+#include "device/wake_lock/wake_lock_context.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace device {
 
-class WakeLockServiceImpl : public mojom::WakeLockService {
+class WakeLock : public mojom::WakeLock {
  public:
-  WakeLockServiceImpl(
-      mojom::WakeLockServiceRequest request,
-      mojom::WakeLockType type,
-      mojom::WakeLockReason reason,
-      const std::string& description,
-      int context_id,
-      WakeLockContextCallback native_view_getter,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
-  ~WakeLockServiceImpl() override;
+  WakeLock(mojom::WakeLockRequest request,
+           mojom::WakeLockType type,
+           mojom::WakeLockReason reason,
+           const std::string& description,
+           int context_id,
+           WakeLockContextCallback native_view_getter,
+           scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+  ~WakeLock() override;
 
   // WakeLockSevice implementation.
   void RequestWakeLock() override;
   void CancelWakeLock() override;
-  void AddClient(mojom::WakeLockServiceRequest request) override;
+  void AddClient(mojom::WakeLockRequest request) override;
   void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override;
 
  protected:
@@ -63,15 +62,15 @@ class WakeLockServiceImpl : public mojom::WakeLockService {
   std::unique_ptr<PowerSaveBlocker> wake_lock_;
 
   // Multiple clients that associate to the same WebContents share the same one
-  // WakeLockServiceImpl instance. Two consecutive |RequestWakeLock| requests
+  // WakeLock instance. Two consecutive |RequestWakeLock| requests
   // from the same client should be coalesced as one request. Everytime a new
   // client is being added into the BindingSet, we create an unique_ptr<bool>
   // as its context, which records this client's request status.
-  mojo::BindingSet<mojom::WakeLockService, std::unique_ptr<bool>> binding_set_;
+  mojo::BindingSet<mojom::WakeLock, std::unique_ptr<bool>> binding_set_;
 
-  DISALLOW_COPY_AND_ASSIGN(WakeLockServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(WakeLock);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_IMPL_H_
+#endif  // DEVICE_WAKE_LOCK_WAKE_LOCK_H_

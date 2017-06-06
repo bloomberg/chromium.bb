@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
-#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
 #include "device/wake_lock/wake_lock_provider.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/device/device_service_test_base.h"
@@ -15,20 +15,20 @@ namespace device {
 
 namespace {
 
-class WakeLockServiceImplTest : public DeviceServiceTestBase {
+class WakeLockTest : public DeviceServiceTestBase {
  public:
-  WakeLockServiceImplTest() = default;
-  ~WakeLockServiceImplTest() override = default;
+  WakeLockTest() = default;
+  ~WakeLockTest() override = default;
 
  protected:
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
     connector()->BindInterface(mojom::kServiceName, &wake_lock_provider_);
 
-    WakeLockProvider::is_in_service_unittest_ = true;
+    WakeLockProvider::is_in_unittest_ = true;
     wake_lock_provider_->GetWakeLockWithoutContext(
         device::mojom::WakeLockType::PreventAppSuspension,
-        device::mojom::WakeLockReason::ReasonOther, "WakeLockServiceImplTest",
+        device::mojom::WakeLockReason::ReasonOther, "WakeLockTest",
         mojo::MakeRequest(&wake_lock_));
   }
 
@@ -41,9 +41,9 @@ class WakeLockServiceImplTest : public DeviceServiceTestBase {
     has_wakelock_ = false;
 
     base::RunLoop run_loop;
-    wake_lock_->HasWakeLockForTests(
-        base::Bind(&WakeLockServiceImplTest::OnHasWakeLock,
-                   base::Unretained(this), run_loop.QuitClosure()));
+    wake_lock_->HasWakeLockForTests(base::Bind(&WakeLockTest::OnHasWakeLock,
+                                               base::Unretained(this),
+                                               run_loop.QuitClosure()));
     run_loop.Run();
 
     return has_wakelock_;
@@ -52,13 +52,13 @@ class WakeLockServiceImplTest : public DeviceServiceTestBase {
   bool has_wakelock_;
 
   mojom::WakeLockProviderPtr wake_lock_provider_;
-  mojom::WakeLockServicePtr wake_lock_;
+  mojom::WakeLockPtr wake_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(WakeLockServiceImplTest);
+  DISALLOW_COPY_AND_ASSIGN(WakeLockTest);
 };
 
 // Request a wake lock, then cancel.
-TEST_F(WakeLockServiceImplTest, RequestThenCancel) {
+TEST_F(WakeLockTest, RequestThenCancel) {
   EXPECT_FALSE(HasWakeLock());
 
   wake_lock_->RequestWakeLock();
@@ -69,7 +69,7 @@ TEST_F(WakeLockServiceImplTest, RequestThenCancel) {
 }
 
 // Cancel a wake lock first, which should have no effect.
-TEST_F(WakeLockServiceImplTest, CancelThenRequest) {
+TEST_F(WakeLockTest, CancelThenRequest) {
   EXPECT_FALSE(HasWakeLock());
 
   wake_lock_->CancelWakeLock();
@@ -83,7 +83,7 @@ TEST_F(WakeLockServiceImplTest, CancelThenRequest) {
 }
 
 // Send multiple requests, which should be coalesced as one request.
-TEST_F(WakeLockServiceImplTest, MultipleRequests) {
+TEST_F(WakeLockTest, MultipleRequests) {
   EXPECT_FALSE(HasWakeLock());
 
   wake_lock_->RequestWakeLock();
@@ -95,8 +95,8 @@ TEST_F(WakeLockServiceImplTest, MultipleRequests) {
   EXPECT_FALSE(HasWakeLock());
 }
 
-// WakeLockProvider connection broken doesn't affect WakeLockService.
-TEST_F(WakeLockServiceImplTest, OnWakeLockProviderConnectionError) {
+// WakeLockProvider connection broken doesn't affect WakeLock.
+TEST_F(WakeLockTest, OnWakeLockProviderConnectionError) {
   EXPECT_FALSE(HasWakeLock());
 
   wake_lock_->RequestWakeLock();
@@ -110,13 +110,13 @@ TEST_F(WakeLockServiceImplTest, OnWakeLockProviderConnectionError) {
   EXPECT_FALSE(HasWakeLock());
 }
 
-// One WakeLockService instance can serve multiple clients at same time.
-TEST_F(WakeLockServiceImplTest, MultipleClients) {
+// One WakeLock instance can serve multiple clients at same time.
+TEST_F(WakeLockTest, MultipleClients) {
   EXPECT_FALSE(HasWakeLock());
 
-  mojom::WakeLockServicePtr wake_lock_1;
-  mojom::WakeLockServicePtr wake_lock_2;
-  mojom::WakeLockServicePtr wake_lock_3;
+  mojom::WakeLockPtr wake_lock_1;
+  mojom::WakeLockPtr wake_lock_2;
+  mojom::WakeLockPtr wake_lock_3;
   wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_1));
   wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_2));
   wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_3));
@@ -136,14 +136,14 @@ TEST_F(WakeLockServiceImplTest, MultipleClients) {
   EXPECT_FALSE(HasWakeLock());
 }
 
-// WakeLockService should update the wake lock status correctly when
+// WakeLock should update the wake lock status correctly when
 // connection error happens.
-TEST_F(WakeLockServiceImplTest, OnWakeLockConnectionError) {
+TEST_F(WakeLockTest, OnWakeLockConnectionError) {
   EXPECT_FALSE(HasWakeLock());
 
-  mojom::WakeLockServicePtr wake_lock_1;
-  mojom::WakeLockServicePtr wake_lock_2;
-  mojom::WakeLockServicePtr wake_lock_3;
+  mojom::WakeLockPtr wake_lock_1;
+  mojom::WakeLockPtr wake_lock_2;
+  mojom::WakeLockPtr wake_lock_3;
   wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_1));
   wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_2));
   wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_3));
@@ -166,12 +166,12 @@ TEST_F(WakeLockServiceImplTest, OnWakeLockConnectionError) {
 }
 
 // Test mixed operations.
-TEST_F(WakeLockServiceImplTest, MixedTest) {
+TEST_F(WakeLockTest, MixedTest) {
   EXPECT_FALSE(HasWakeLock());
 
-  mojom::WakeLockServicePtr wake_lock_1;
-  mojom::WakeLockServicePtr wake_lock_2;
-  mojom::WakeLockServicePtr wake_lock_3;
+  mojom::WakeLockPtr wake_lock_1;
+  mojom::WakeLockPtr wake_lock_2;
+  mojom::WakeLockPtr wake_lock_3;
   wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_1));
   wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_2));
   wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_3));

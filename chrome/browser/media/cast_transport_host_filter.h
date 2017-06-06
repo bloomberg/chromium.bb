@@ -15,7 +15,7 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/cast_remoting_sender.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport.h"
@@ -90,7 +90,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       int32_t channel_id,
       const std::vector<media::cast::FrameEvent>& events);
 
-  device::mojom::WakeLockService* GetWakeLockService();
+  device::mojom::WakeLock* GetWakeLock();
 
   IDMap<std::unique_ptr<media::cast::CastTransport>> id_map_;
 
@@ -101,7 +101,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   // hold a wake lock. This prevents Chrome from being suspended while remoting
   // content. If any wake lock is held upon destruction, it's implicitly
   // canceled when this object is destroyed.
-  device::mojom::WakeLockServicePtr wake_lock_;
+  device::mojom::WakeLockPtr wake_lock_;
 
   // This map records all active remoting senders. It uses the unique RTP
   // stream ID as the key.

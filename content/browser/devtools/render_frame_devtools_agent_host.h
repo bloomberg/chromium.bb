@@ -25,7 +25,7 @@ class CompositorFrameMetadata;
 }
 
 #if defined(OS_ANDROID)
-#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #endif
 
 namespace content {
@@ -151,7 +151,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   bool CheckConsistency();
 
 #if defined(OS_ANDROID)
-  device::mojom::WakeLockService* GetWakeLockService();
+  device::mojom::WakeLock* GetWakeLock();
 #endif
 
   void SynchronousSwapCompositorFrame(
@@ -167,7 +167,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
-  device::mojom::WakeLockServicePtr wake_lock_;
+  device::mojom::WakeLockPtr wake_lock_;
 #endif
   RenderFrameHostImpl* handlers_frame_host_;
   bool current_frame_crashed_;

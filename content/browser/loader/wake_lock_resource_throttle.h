@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/resource_throttle.h"
-#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 
 namespace content {
 
@@ -34,9 +34,9 @@ class WakeLockResourceThrottle : public ResourceThrottle {
   base::OneShotTimer timer_;
 
   // Destruction of wake_lock_ will trigger
-  // WakeLockServicImpl::OnConnectionError on the service side, so there is no
+  // WakeLock::OnConnectionError on the service side, so there is no
   // need to call CancelWakeLock() in the destructor.
-  device::mojom::WakeLockServicePtr wake_lock_;
+  device::mojom::WakeLockPtr wake_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WakeLockResourceThrottle);
 };
