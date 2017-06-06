@@ -67,10 +67,12 @@
               skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
           NSString* monogram =
               base::SysUTF16ToNSString(favicon::GetFallbackIconText(blockURL));
-          attributes =
-              [FaviconAttributes attributesWithMonogram:monogram
-                                              textColor:textColor
-                                        backgroundColor:backgroundColor];
+          attributes = [FaviconAttributes
+              attributesWithMonogram:monogram
+                           textColor:textColor
+                     backgroundColor:backgroundColor
+              defaultBackgroundColor:result.fallback_icon_style->
+                                     is_default_background_color];
         }
         DCHECK(attributes);
         completion(attributes);

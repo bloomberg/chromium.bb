@@ -26,6 +26,7 @@ source_set("content_suggestions") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/ntp_tiles",
     "//ios/chrome/browser/reading_list",

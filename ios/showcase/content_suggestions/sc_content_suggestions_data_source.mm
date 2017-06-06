@@ -176,7 +176,8 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 
   return [FaviconAttributes attributesWithMonogram:monogram
                                          textColor:textColor
-                                   backgroundColor:backgroundColor];
+                                   backgroundColor:backgroundColor
+                            defaultBackgroundColor:NO];
 }
 
 // Returns a random date between now and three days before now.

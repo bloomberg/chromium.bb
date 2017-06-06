@@ -11,10 +11,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
+#include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -23,6 +25,7 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
@@ -131,6 +134,26 @@
       base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
 
   [self.URLLoader loadURL:suggestionItem.URL
+                 referrer:web::Referrer()
+               transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
+        rendererInitiated:NO];
+
+  [self stop];
+}
+
+- (void)openMostVisitedItem:(CollectionViewItem*)item
+                    atIndex:(NSInteger)mostVisitedIndex {
+  ContentSuggestionsMostVisitedItem* mostVisitedItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
+
+  new_tab_page_uma::RecordAction(
+      self.browserState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
+  base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
+
+  ntp_tiles::metrics::RecordTileClick(mostVisitedIndex, mostVisitedItem.source,
+                                      [mostVisitedItem tileType]);
+
+  [self.URLLoader loadURL:mostVisitedItem.URL
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
         rendererInitiated:NO];

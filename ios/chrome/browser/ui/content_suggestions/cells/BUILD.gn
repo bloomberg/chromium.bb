@@ -12,6 +12,7 @@ source_set("cells") {
   deps = [
     ":cells_ui",
     "//base",
+    "//components/ntp_tiles",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
