@@ -138,7 +138,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": false,
+          "experimental": true,
           "leader_board": false,
           "board_group": "gru",
           "arch": "ARM_INTERNAL"
