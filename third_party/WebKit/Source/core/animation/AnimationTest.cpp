@@ -807,8 +807,8 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
   Optional<CompositorElementIdSet> composited_element_ids =
       CompositorElementIdSet();
   CompositorElementId expected_compositor_element_id =
-      CompositorElementIdFromLayoutObjectId(
-          ToLayoutBoxModelObject(object_composited)->UniqueId(),
+      CompositorElementIdFromPaintLayerId(
+          ToLayoutBoxModelObject(object_composited)->Layer()->UniqueId(),
           CompositorElementIdNamespace::kPrimary);
   composited_element_ids->insert(expected_compositor_element_id);
 

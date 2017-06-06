@@ -647,7 +647,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
       EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       ClipPaintPropertyNode::Root(), kColorFilterNone,
       CompositorFilterOperations(), 0.5, SkBlendMode::kSrcOver,
-      kCompositingReasonAll, CompositorElementId(2));
+      kCompositingReasonAll);
   RefPtr<EffectPaintPropertyNode> effect2 = EffectPaintPropertyNode::Create(
       effect1, TransformPaintPropertyNode::Root(),
       ClipPaintPropertyNode::Root(), kColorFilterNone,
@@ -684,13 +684,10 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
 
   const cc::EffectNode& converted_root_effect = *effect_tree.Node(1);
   EXPECT_EQ(-1, converted_root_effect.parent_id);
-  EXPECT_EQ(CompositorElementIdFromRootEffectId(1).id_,
-            converted_root_effect.stable_id);
 
   const cc::EffectNode& converted_effect1 = *effect_tree.Node(2);
   EXPECT_EQ(converted_root_effect.id, converted_effect1.parent_id);
   EXPECT_FLOAT_EQ(0.5, converted_effect1.opacity);
-  EXPECT_EQ(2u, converted_effect1.stable_id);
 
   const cc::EffectNode& converted_effect2 = *effect_tree.Node(3);
   EXPECT_EQ(converted_effect1.id, converted_effect2.parent_id);

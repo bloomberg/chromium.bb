@@ -51,9 +51,6 @@ class CORE_EXPORT RarePaintData {
   // to contents.
   PropertyTreeState ContentsProperties() const;
 
-  // An id for this object that is unique for the lifetime of the WebView.
-  LayoutObjectId UniqueId() const { return unique_id_; }
-
  private:
   // The PaintLayer associated with this LayoutBoxModelObject. This can be null
   // depending on the return value of LayoutBoxModelObject::layerTypeRequired().
@@ -72,8 +69,6 @@ class CORE_EXPORT RarePaintData {
   //   properties would have a transform node that points to the div's
   //   ancestor transform space.
   std::unique_ptr<PropertyTreeState> local_border_box_properties_;
-
-  LayoutObjectId unique_id_;
 };
 
 }  // namespace blink

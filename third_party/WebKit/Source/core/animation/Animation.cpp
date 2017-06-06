@@ -756,10 +756,11 @@ bool Animation::CanStartAnimationOnCompositor(
     if (target_element->GetLayoutObject() &&
         target_element->GetLayoutObject()->IsBoxModelObject() &&
         target_element->GetLayoutObject()->HasLayer()) {
+      PaintLayer* paint_layer =
+          ToLayoutBoxModelObject(target_element->GetLayoutObject())->Layer();
       CompositorElementId target_element_id =
-          CompositorElementIdFromLayoutObjectId(
-              target_element->GetLayoutObject()->UniqueId(),
-              CompositorElementIdNamespace::kPrimary);
+          CompositorElementIdFromPaintLayerId(
+              paint_layer->UniqueId(), CompositorElementIdNamespace::kPrimary);
       if (!composited_element_ids->Contains(target_element_id))
         return false;
     } else {
