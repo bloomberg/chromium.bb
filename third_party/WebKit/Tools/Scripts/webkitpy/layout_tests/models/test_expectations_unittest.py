@@ -91,7 +91,8 @@ Bug(test) failures/expected/image.html [ Crash Mac ]
         self.assert_exp_list(test, [result])
 
     def assert_bad_expectations(self, expectations, overrides=None):
-        self.assertRaises(ParseError, self.parse_exp, expectations, is_lint_mode=True, overrides=overrides)
+        with self.assertRaises(ParseError):
+            self.parse_exp(expectations, is_lint_mode=True, overrides=overrides)
 
 
 class BasicTests(Base):
@@ -170,8 +171,8 @@ class MiscTests(Base):
         self.parse_exp(exp_str)
         test_name = 'failures/expected/unknown-test.html'
         unknown_test = test_name
-        self.assertRaises(KeyError, self._exp.get_expectations,
-                          unknown_test)
+        with self.assertRaises(KeyError):
+            self._exp.get_expectations(unknown_test)
         self.assert_exp_list('failures/expected/crash.html', [PASS])
 
     def test_get_expectations_string(self):
@@ -181,8 +182,8 @@ class MiscTests(Base):
     def test_expectation_to_string(self):
         # Normal cases are handled by other tests.
         self.parse_exp(self.get_basic_expectations())
-        self.assertRaises(ValueError, self._exp.expectation_to_string,
-                          -1)
+        with self.assertRaises(ValueError):
+            self._exp.expectation_to_string(-1)
 
     def test_get_test_set(self):
         # Handle some corner cases for this routine not covered by other tests.
@@ -288,21 +289,19 @@ Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ Needs
 
     def test_error_on_different_platform(self):
         # parse_exp uses a Windows port. Assert errors on Mac show up in lint mode.
-        self.assertRaises(
-            ParseError,
-            self.parse_exp,
-            ('Bug(test) [ Mac ] failures/expected/text.html [ Failure ]\n'
-             'Bug(test) [ Mac ] failures/expected/text.html [ Failure ]'),
-            is_lint_mode=True)
+        with self.assertRaises(ParseError):
+            self.parse_exp(
+                'Bug(test) [ Mac ] failures/expected/text.html [ Failure ]\n'
+                'Bug(test) [ Mac ] failures/expected/text.html [ Failure ]',
+                is_lint_mode=True)
 
     def test_error_on_different_build_type(self):
         # parse_exp uses a Release port. Assert errors on DEBUG show up in lint mode.
-        self.assertRaises(
-            ParseError,
-            self.parse_exp,
-            ('Bug(test) [ Debug ] failures/expected/text.html [ Failure ]\n'
-             'Bug(test) [ Debug ] failures/expected/text.html [ Failure ]'),
-            is_lint_mode=True)
+        with self.assertRaises(ParseError):
+            self.parse_exp(
+                'Bug(test) [ Debug ] failures/expected/text.html [ Failure ]\n'
+                'Bug(test) [ Debug ] failures/expected/text.html [ Failure ]',
+                is_lint_mode=True)
 
     def test_overrides(self):
         self.parse_exp('Bug(exp) failures/expected/text.html [ Failure ]',
@@ -417,8 +416,10 @@ class SkippedTests(Base):
         self.check(expectations='', overrides=None, skips=['failures/expected/text.html'], expected_results=[WONTFIX, SKIP])
 
     def test_duplicate_skipped_test_fails_lint(self):
-        self.assertRaises(ParseError, self.check, expectations='Bug(x) failures/expected/text.html [ Failure ]\n',
-                          overrides=None, skips=['failures/expected/text.html'], lint=True)
+        with self.assertRaises(ParseError):
+            self.check(
+                expectations='Bug(x) failures/expected/text.html [ Failure ]\n',
+                overrides=None, skips=['failures/expected/text.html'], lint=True)
 
     def test_skipped_file_overrides_expectations(self):
         self.check(expectations='Bug(x) failures/expected/text.html [ Failure ]\n', overrides=None,
@@ -538,7 +539,8 @@ class ExpectationSyntaxTests(Base):
 class SemanticTests(Base):
 
     def test_bug_format(self):
-        self.assertRaises(ParseError, self.parse_exp, 'BUG1234 failures/expected/text.html [ Failure ]', is_lint_mode=True)
+        with self.assertRaises(ParseError):
+            self.parse_exp('BUG1234 failures/expected/text.html [ Failure ]', is_lint_mode=True)
 
     def test_bad_bugid(self):
         try:
@@ -570,17 +572,18 @@ class SemanticTests(Base):
 
     def test_rebaseline(self):
         # Can't lint a file w/ 'REBASELINE' in it.
-        self.assertRaises(ParseError, self.parse_exp,
-                          'Bug(test) failures/expected/text.html [ Failure Rebaseline ]',
-                          is_lint_mode=True)
+        with self.assertRaises(ParseError):
+            self.parse_exp(
+                'Bug(test) failures/expected/text.html [ Failure Rebaseline ]',
+                is_lint_mode=True)
 
     def test_duplicates(self):
         self.assertRaises(ParseError, self.parse_exp, """
 Bug(exp) failures/expected/text.html [ Failure ]
 Bug(exp) failures/expected/text.html [ Timeout ]""", is_lint_mode=True)
-
-        self.assertRaises(ParseError, self.parse_exp,
-                          self.get_basic_expectations(), overrides="""
+        with self.assertRaises(ParseError):
+            self.parse_exp(
+                self.get_basic_expectations(), overrides="""
 Bug(override) failures/expected/text.html [ Failure ]
 Bug(override) failures/expected/text.html [ Timeout ]""", is_lint_mode=True)
 

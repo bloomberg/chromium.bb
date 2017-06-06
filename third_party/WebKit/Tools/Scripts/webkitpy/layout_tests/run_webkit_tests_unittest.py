@@ -253,15 +253,14 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Exceptions raised in a separate process are re-packaged into
         # WorkerExceptions (a subclass of BaseException), which have a string capture of the stack which can
         # be printed, but don't display properly in the unit test exception handlers.
-        self.assertRaises(BaseException, logging_run,
-                          ['failures/expected/exception.html', '--child-processes', '1'], tests_included=True)
+        with self.assertRaises(BaseException):
+            logging_run(['failures/expected/exception.html', '--child-processes', '1'], tests_included=True)
 
-        self.assertRaises(
-            BaseException,
-            logging_run,
-            ['--child-processes', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'],
-            tests_included=True,
-            shared_port=False)
+        with self.assertRaises(BaseException):
+            logging_run(
+                ['--child-processes', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'],
+                tests_included=True,
+                shared_port=False)
 
     def test_device_failure(self):
         # Test that we handle a device going offline during a test properly.
@@ -517,9 +516,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(tests_run, ['perf/foo/test.html'])
 
     def test_sharding_incorrect_arguments(self):
-        self.assertRaises(ValueError, get_tests_run, ['--shard-index', '3'])
-        self.assertRaises(ValueError, get_tests_run, ['--total-shards', '3'])
-        self.assertRaises(ValueError, get_tests_run, ['--shard-index', '3', '--total-shards', '3'])
+        with self.assertRaises(ValueError):
+            get_tests_run(['--shard-index', '3'])
+        with self.assertRaises(ValueError):
+            get_tests_run(['--total-shards', '3'])
+        with self.assertRaises(ValueError):
+            get_tests_run(['--shard-index', '3', '--total-shards', '3'])
 
     def test_sharding_environ(self):
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']

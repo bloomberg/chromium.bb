@@ -69,10 +69,12 @@ class FactoryTest(unittest.TestCase):
                          cls=win.WinPort)
 
     def test_unknown_specified(self):
-        self.assertRaises(NotImplementedError, factory.PortFactory(MockHost()).get, port_name='unknown')
+        with self.assertRaises(NotImplementedError):
+            factory.PortFactory(MockHost()).get(port_name='unknown')
 
     def test_unknown_default(self):
-        self.assertRaises(NotImplementedError, factory.PortFactory(MockHost(os_name='vms')).get)
+        with self.assertRaises(NotImplementedError):
+            factory.PortFactory(MockHost(os_name='vms')).get()
 
     def test_get_from_builder_name(self):
         self.assertEqual(factory.PortFactory(MockHost()).get_from_builder_name('WebKit Mac10.11').name(),
@@ -147,8 +149,10 @@ class FactoryTest(unittest.TestCase):
         self.assertEqual(port._options.target, 'foo')
 
     def test_unknown_dir(self):
-        self.assertRaises(ValueError, self.get_port, target='unknown')
+        with self.assertRaises(ValueError):
+            self.get_port(target='unknown')
 
     def test_both_configuration_and_target_is_an_error(self):
-        self.assertRaises(ValueError, self.get_port, target='Debug', configuration='Release',
+        with self.assertRaises(ValueError):
+            self.get_port(target='Debug', configuration='Release',
                           files={'out/Debug/toolchain.ninja': ''})

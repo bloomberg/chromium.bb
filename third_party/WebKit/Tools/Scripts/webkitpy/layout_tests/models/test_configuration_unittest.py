@@ -82,7 +82,8 @@ class TestConfigurationTest(unittest.TestCase):
         def query_unknown_key():
             return config_dict[TestConfiguration('win7', 'x86', 'debug')]
 
-        self.assertRaises(KeyError, query_unknown_key)
+        with self.assertRaises(KeyError):
+            query_unknown_key()
         self.assertIn(TestConfiguration('win7', 'x86', 'release'), config_dict)
         self.assertNotIn(TestConfiguration('win7', 'x86', 'debug'), config_dict)
         configs_list = [TestConfiguration('win7', 'x86', 'release'), TestConfiguration(

@@ -64,11 +64,13 @@ class CommandTest(unittest.TestCase):
         self.assertEqual(command.name_with_arguments(), "trivial [options]")
 
     def test_parse_required_arguments(self):
+        # Unit test for protected method - pylint: disable=protected-access
         self.assertEqual(Command._parse_required_arguments("ARG1 ARG2"), ["ARG1", "ARG2"])
         self.assertEqual(Command._parse_required_arguments("[ARG1] [ARG2]"), [])
         self.assertEqual(Command._parse_required_arguments("[ARG1] ARG2"), ["ARG2"])
         # Note: We might make our arg parsing smarter in the future and allow this type of arguments string.
-        self.assertRaises(Exception, Command._parse_required_arguments, "[ARG1 ARG2]")
+        with self.assertRaises(Exception):
+            Command._parse_required_arguments("[ARG1 ARG2]")
 
     def test_required_arguments(self):
         class TrivialCommandWithRequiredAndOptionalArgs(TrivialCommand):

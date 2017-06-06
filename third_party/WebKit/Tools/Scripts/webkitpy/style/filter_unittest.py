@@ -73,8 +73,8 @@ class ValidateFilterRulesTest(unittest.TestCase):
         ]
 
         for rule in bad_rules:
-            self.assertRaises(ValueError, validate_filter_rules,
-                              [rule], all_categories)
+            with self.assertRaises(ValueError):
+                validate_filter_rules([rule], all_categories)
 
         for rule in good_rules:
             # This works: no error.

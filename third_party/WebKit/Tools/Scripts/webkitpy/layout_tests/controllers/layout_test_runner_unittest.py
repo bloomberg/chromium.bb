@@ -96,6 +96,8 @@ class LockCheckingRunner(LayoutTestRunner):
 
 class LayoutTestRunnerTests(unittest.TestCase):
 
+    # pylint: disable=protected-access
+
     def _runner(self, port=None):
         # FIXME: we shouldn't have to use run_webkit_tests.py to get the options we need.
         options = run_webkit_tests.parse_args(['--platform', 'test-mac-mac10.11'])[0]
@@ -115,7 +117,7 @@ class LayoutTestRunnerTests(unittest.TestCase):
         runner._options.exit_after_n_failures = None
         runner._options.exit_after_n_crashes_or_times = None
         test_names = ['passes/text.html', 'passes/image.html']
-        runner._test_inputs = [TestInput(test_name, timeout_ms=6000) for test_name in test_names]  # pylint: disable=protected-access
+        runner._test_inputs = [TestInput(test_name, timeout_ms=6000) for test_name in test_names]
 
         run_results = TestRunResults(TestExpectations(runner._port, test_names), len(test_names))
         run_results.unexpected_failures = 100
@@ -131,13 +133,15 @@ class LayoutTestRunnerTests(unittest.TestCase):
 
         # Interrupt if we've exceeded either limit:
         runner._options.exit_after_n_crashes_or_timeouts = 10
-        self.assertRaises(TestRunInterruptedException, runner._interrupt_if_at_failure_limits, run_results)
+        with self.assertRaises(TestRunInterruptedException):
+            runner._interrupt_if_at_failure_limits(run_results)
         self.assertEqual(run_results.results_by_name['passes/text.html'].type, test_expectations.SKIP)
         self.assertEqual(run_results.results_by_name['passes/image.html'].type, test_expectations.SKIP)
 
         runner._options.exit_after_n_crashes_or_timeouts = None
         runner._options.exit_after_n_failures = 10
-        self.assertRaises(TestRunInterruptedException, runner._interrupt_if_at_failure_limits, run_results)
+        with self.assertRaises(TestRunInterruptedException):
+            runner._interrupt_if_at_failure_limits(run_results)
 
     def test_update_summary_with_result(self):
         # Reftests expected to be image mismatch should be respected when pixel_tests=False.

@@ -175,7 +175,8 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
         newdir = '/dirdoesnotexist'
         if sys.platform == 'win32':
             newdir = 'c:\\dirdoesnotexist'
-        self.assertRaises(OSError, fs.chdir, newdir)
+        with self.assertRaises(OSError):
+            fs.chdir(newdir)
 
     def test_exists__true(self):
         fs = FileSystem()
@@ -256,7 +257,8 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
 
             # Now try to create a sub directory - should fail.
             sub_dir = fs.join(d, 'subdir')
-            self.assertRaises(OSError, fs.maybe_make_directory, sub_dir)
+            with self.assertRaises(OSError):
+                fs.maybe_make_directory(sub_dir)
 
             # Clean up in case the test failed and we did create the
             # directory.
@@ -308,11 +310,13 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
 
     def test_read_binary_file__missing(self):
         fs = FileSystem()
-        self.assertRaises(IOError, fs.read_binary_file, self._missing_file)
+        with self.assertRaises(IOError):
+            fs.read_binary_file(self._missing_file)
 
     def test_read_text_file__missing(self):
         fs = FileSystem()
-        self.assertRaises(IOError, fs.read_text_file, self._missing_file)
+        with self.assertRaises(IOError):
+            fs.read_text_file(self._missing_file)
 
     def test_remove_file_with_retry(self):
         RealFileSystemTest._remove_failures = 2
