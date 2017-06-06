@@ -17,8 +17,8 @@ namespace {
 // kFooFeature --> kFooFeatureVariation. This is intended to be used with
 // VARIATION_ENTRY below to be able to insert it into an array of
 // flags_ui::FeatureEntry::FeatureVariation.
-#define DEFINE_VARIATION_PARAM(base_feature)                               \
-  const flags_ui::FeatureEntry::FeatureParam base_feature##Variation[] = { \
+#define DEFINE_VARIATION_PARAM(base_feature)                                   \
+  constexpr flags_ui::FeatureEntry::FeatureParam base_feature##Variation[] = { \
       {kIPHDemoModeFeatureChoiceParam, base_feature.name}}
 
 // Defines a single flags_ui::FeatureEntry::FeatureVariation entry, fully
@@ -47,8 +47,8 @@ DEFINE_VARIATION_PARAM(kIPHDownloadHomeFeature);
 
 const char kIPHDemoModeFeatureChoiceParam[] = "chosen_feature";
 
-const flags_ui::FeatureEntry::FeatureVariation kIPHDemoModeChoiceVariations[] =
-    {
+constexpr flags_ui::FeatureEntry::FeatureVariation
+    kIPHDemoModeChoiceVariations[] = {
         VARIATION_ENTRY(kIPHDataSaverPreviewFeature),
         VARIATION_ENTRY(kIPHDataSaverDetailFeature),
         VARIATION_ENTRY(kIPHDownloadPageFeature),
