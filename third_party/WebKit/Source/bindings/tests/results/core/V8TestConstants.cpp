@@ -105,13 +105,13 @@ static void installV8TestConstantsTemplate(v8::Isolate* isolate, const DOMWrappe
       {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::kConstantTypeShort},
   };
   V8DOMConfiguration::InstallConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestConstantsConstants, WTF_ARRAY_LENGTH(V8TestConstantsConstants));
-  if (RuntimeEnabledFeatures::featureName1Enabled()) {
+  if (RuntimeEnabledFeatures::FeatureName1Enabled()) {
     const V8DOMConfiguration::ConstantConfiguration constantFeature1EnabledConst1Configuration = {"FEATURE1_ENABLED_CONST1", 1, 0, V8DOMConfiguration::kConstantTypeShort};
     V8DOMConfiguration::InstallConstant(isolate, interfaceTemplate, prototypeTemplate, constantFeature1EnabledConst1Configuration);
     const V8DOMConfiguration::ConstantConfiguration constantFeature1EnabledConst2Configuration = {"FEATURE1_ENABLED_CONST2", 2, 0, V8DOMConfiguration::kConstantTypeShort};
     V8DOMConfiguration::InstallConstant(isolate, interfaceTemplate, prototypeTemplate, constantFeature1EnabledConst2Configuration);
   }
-  if (RuntimeEnabledFeatures::featureName2Enabled()) {
+  if (RuntimeEnabledFeatures::FeatureName2Enabled()) {
     const V8DOMConfiguration::ConstantConfiguration constantFeature2EnabledConst1Configuration = {"FEATURE2_ENABLED_CONST1", 3, 0, V8DOMConfiguration::kConstantTypeShort};
     V8DOMConfiguration::InstallConstant(isolate, interfaceTemplate, prototypeTemplate, constantFeature2EnabledConst1Configuration);
     const V8DOMConfiguration::ConstantConfiguration constantFeature2EnabledConst2Configuration = {"FEATURE2_ENABLED_CONST2", 4, 0, V8DOMConfiguration::kConstantTypeShort};

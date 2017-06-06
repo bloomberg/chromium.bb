@@ -88,7 +88,7 @@ void V8TestInterface2Partial::installV8TestInterface2Template(v8::Isolate* isola
   // Register DOM constants, attributes and operations.
   V8DOMConfiguration::InstallMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
 
-  if (RuntimeEnabledFeatures::interface2PartialFeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::Interface2PartialFeatureNameEnabled()) {
     const V8DOMConfiguration::MethodConfiguration voidMethodPartial1MethodConfiguration[] = {
       {"voidMethodPartial1", V8TestInterface2Partial::voidMethodPartial1MethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
     };

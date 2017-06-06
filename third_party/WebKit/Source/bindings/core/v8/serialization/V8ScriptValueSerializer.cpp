@@ -202,7 +202,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     return true;
   }
   if (wrapper_type_info == &V8CompositorProxy::wrapperTypeInfo) {
-    DCHECK(RuntimeEnabledFeatures::compositorWorkerEnabled());
+    DCHECK(RuntimeEnabledFeatures::CompositorWorkerEnabled());
     CompositorProxy* proxy = wrappable->ToImpl<CompositorProxy>();
     if (!proxy->Connected()) {
       exception_state.ThrowDOMException(kDataCloneError,
