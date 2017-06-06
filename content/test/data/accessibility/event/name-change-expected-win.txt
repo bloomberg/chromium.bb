@@ -1,1 +1,1 @@
-EVENT_OBJECT_NAMECHANGE on role=h1 name="After"
+EVENT_OBJECT_NAMECHANGE on role=H1 name="After"

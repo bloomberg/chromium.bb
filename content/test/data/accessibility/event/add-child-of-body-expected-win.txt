@@ -1,1 +1,1 @@
-EVENT_OBJECT_SHOW on role=div
+EVENT_OBJECT_SHOW on role=DIV

@@ -710,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibleChecker checkbox_checker(std::wstring(), ROLE_SYSTEM_CHECKBUTTON,
                                      std::wstring());
   checkbox_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
-  AccessibleChecker body_checker(std::wstring(), L"body", IA2_ROLE_SECTION,
+  AccessibleChecker body_checker(std::wstring(), L"BODY", IA2_ROLE_SECTION,
                                  std::wstring());
   AccessibleChecker document_checker(std::wstring(), ROLE_SYSTEM_DOCUMENT,
                                      std::wstring());
@@ -844,7 +844,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibleChecker text_field_checker(std::wstring(), ROLE_SYSTEM_TEXT,
                                        L"old value");
   text_field_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
-  AccessibleChecker body_checker(std::wstring(), L"body", IA2_ROLE_SECTION,
+  AccessibleChecker body_checker(std::wstring(), L"BODY", IA2_ROLE_SECTION,
                                  std::wstring());
   AccessibleChecker document_checker(std::wstring(), ROLE_SYSTEM_DOCUMENT,
                                      std::wstring());
