@@ -22,6 +22,10 @@ struct IceConfig {
 
   bool is_null() const { return expiration_time.is_null(); }
 
+  // Parses JSON representation of the config. Returns null config if parsing
+  // fails.
+  static IceConfig Parse(const std::string& config_json);
+
   // Time when the config will stop being valid and need to be refreshed.
   base::Time expiration_time;
 

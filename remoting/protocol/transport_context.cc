@@ -26,6 +26,14 @@
 namespace remoting {
 namespace protocol {
 
+namespace {
+
+// Ensure ICE config is correct at least one hour after session starts.
+constexpr base::TimeDelta kMinimumIceConfigLifetime =
+    base::TimeDelta::FromHours(1);
+
+}  // namespace
+
 #if !defined(OS_NACL)
 // static
 scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
@@ -80,7 +88,8 @@ void TransportContext::EnsureFreshIceConfig() {
   }
 
   if (ice_config_[relay_mode_].is_null() ||
-      base::Time::Now() > ice_config_[relay_mode_].expiration_time) {
+      base::Time::Now() + kMinimumIceConfigLifetime >
+          ice_config_[relay_mode_].expiration_time) {
     std::unique_ptr<IceConfigRequest> request;
     switch (relay_mode_) {
       case RelayMode::TURN:
