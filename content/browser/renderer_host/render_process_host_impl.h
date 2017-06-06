@@ -186,6 +186,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
+  resource_coordinator::ResourceCoordinatorInterface*
+  GetProcessResourceCoordinator() override;
+
   void SetIsNeverSuitableForReuse() override;
   bool MayReuseHost() override;
 
@@ -683,6 +686,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Tracks active audio streams within the render process; used to determine if
   // if a process should be backgrounded.
   int audio_stream_count_ = 0;
+
+  std::unique_ptr<resource_coordinator::ResourceCoordinatorInterface>
+      process_resource_coordinator_;
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend
   // WeakPtrs which are invalidated any time the RPHI is recycled.

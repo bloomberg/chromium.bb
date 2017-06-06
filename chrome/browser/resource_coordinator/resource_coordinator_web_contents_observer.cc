@@ -6,6 +6,7 @@
 
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
@@ -45,7 +46,14 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
     return;
   }
 
+  content::RenderFrameHost* render_frame_host =
+      navigation_handle->GetRenderFrameHost();
+
   auto* frame_resource_coordinator =
-      navigation_handle->GetRenderFrameHost()->GetFrameResourceCoordinator();
+      render_frame_host->GetFrameResourceCoordinator();
   tab_resource_coordinator_->AddChild(*frame_resource_coordinator);
+
+  auto* process_resource_coordinator =
+      render_frame_host->GetProcess()->GetProcessResourceCoordinator();
+  process_resource_coordinator->AddChild(*frame_resource_coordinator);
 }
