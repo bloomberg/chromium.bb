@@ -1577,6 +1577,7 @@ source_set("unit_tests") {
     "arc/accessibility/arc_accessibility_helper_bridge_unittest.cc",
     "arc/arc_play_store_enabled_preference_handler_unittest.cc",
     "arc/arc_session_manager_unittest.cc",
+    "arc/arc_support_host_unittest.cc",
     "arc/arc_util_unittest.cc",
     "arc/downloads_watcher/arc_downloads_watcher_service_unittest.cc",
     "arc/extensions/arc_support_message_host_unittest.cc",

@@ -23,7 +23,7 @@ class ArcOptInPreferenceHandler;
 // Handles the Terms-of-service agreement user action via default OptIn UI.
 class ArcTermsOfServiceDefaultNegotiator
     : public ArcTermsOfServiceNegotiator,
-      public ArcSupportHost::Observer,
+      public ArcSupportHost::TermsOfServiceDelegate,
       public ArcOptInPreferenceHandlerObserver {
  public:
   ArcTermsOfServiceDefaultNegotiator(PrefService* pref_service,
@@ -31,14 +31,12 @@ class ArcTermsOfServiceDefaultNegotiator
   ~ArcTermsOfServiceDefaultNegotiator() override;
 
  private:
-  // ArcSupportHost::Observer:
-  void OnWindowClosed() override;
+  // ArcSupportHost::TermsOfServiceDelegate:
   void OnTermsAgreed(bool is_metrics_enabled,
                      bool is_backup_and_restore_enabled,
                      bool is_location_service_enabled) override;
-  void OnAuthSucceeded(const std::string& auth_code) override;
-  void OnRetryClicked() override;
-  void OnSendFeedbackClicked() override;
+  void OnTermsRejected() override;
+  void OnTermsRetryClicked() override;
 
   // ArcOptInPreferenceHandlerObserver:
   void OnMetricsModeChanged(bool enabled, bool managed) override;

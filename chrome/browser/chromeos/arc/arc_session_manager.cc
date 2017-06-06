@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -416,7 +417,7 @@ void ArcSessionManager::SetProfile(Profile* profile) {
       !IsArcKioskMode()) {
     DCHECK(!support_host_);
     support_host_ = base::MakeUnique<ArcSupportHost>(profile_);
-    support_host_->AddObserver(this);
+    support_host_->SetErrorDelegate(this);
   }
 
   DCHECK_EQ(State::NOT_INITIALIZED, state_);
@@ -438,8 +439,8 @@ void ArcSessionManager::Shutdown() {
   enable_requested_ = false;
   ShutdownSession();
   if (support_host_) {
+    support_host_->SetErrorDelegate(nullptr);
     support_host_->Close();
-    support_host_->RemoveObserver(this);
     support_host_.reset();
   }
   context_.reset();
@@ -955,36 +956,25 @@ void ArcSessionManager::MaybeReenableArc() {
 }
 
 void ArcSessionManager::OnWindowClosed() {
-  DCHECK(support_host_);
-  if (terms_of_service_negotiator_) {
-    // In this case, ArcTermsOfServiceNegotiator should handle the case.
-    // Do nothing.
-    return;
-  }
   CancelAuthCode();
-}
-
-void ArcSessionManager::OnTermsAgreed(bool is_metrics_enabled,
-                                      bool is_backup_and_restore_enabled,
-                                      bool is_location_service_enabled) {
-  DCHECK(support_host_);
-  DCHECK(terms_of_service_negotiator_);
-  // This should be handled in ArcTermsOfServiceNegotiator. Do nothing here.
 }
 
 void ArcSessionManager::OnRetryClicked() {
   DCHECK(support_host_);
+  DCHECK_EQ(support_host_->ui_page(), ArcSupportHost::UIPage::ERROR);
+  DCHECK(!terms_of_service_negotiator_);
+  DCHECK(!support_host_->HasAuthDelegate());
 
   UpdateOptInActionUMA(OptInActionType::RETRY);
 
-  // TODO(hidehiko): Simplify the retry logic.
-  if (terms_of_service_negotiator_) {
-    // Currently Terms of service is shown. ArcTermsOfServiceNegotiator should
-    // handle this.
-  } else if (!profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
+    // This can currently happen when an error page is shown when re-opt-in
+    // right after opt-out (this is a bug as it should not show an error).  When
+    // the user click the retry button on this error page, we may start terms of
+    // service negotiation instead of recreating the instance.
+    // TODO(hidehiko): consider removing this case after fixing the bug.
     MaybeStartTermsOfServiceNegotiation();
-  } else if (support_host_->ui_page() == ArcSupportHost::UIPage::ERROR &&
-             !arc_session_runner_->IsStopped()) {
+  } else if (!arc_session_runner_->IsStopped()) {
     // ERROR_WITH_FEEDBACK is set in OnSignInFailed(). In the case, stopping
     // ARC was postponed to contain its internal state into the report.
     // Here, on retry, stop it, then restart.
@@ -992,9 +982,6 @@ void ArcSessionManager::OnRetryClicked() {
     support_host_->ShowArcLoading();
     ShutdownSession();
     reenable_arc_ = true;
-  } else if (state_ == State::ACTIVE) {
-    // This case is handled in ArcAuthService.
-    // Do nothing.
   } else {
     // Otherwise, we restart ARC. Note: this is the first boot case.
     // For second or later boot, either ERROR_WITH_FEEDBACK case or ACTIVE

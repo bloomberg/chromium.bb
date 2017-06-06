@@ -162,6 +162,11 @@ ArcSupportHost::ArcSupportHost(Profile* profile)
 }
 
 ArcSupportHost::~ArcSupportHost() {
+  // Delegates should have been reset to nullptr at this point.
+  DCHECK(!auth_delegate_);
+  DCHECK(!tos_delegate_);
+  DCHECK(!error_delegate_);
+
   if (message_host_)
     DisconnectMessageHost();
 }
@@ -176,6 +181,25 @@ void ArcSupportHost::RemoveObserver(Observer* observer) {
 
 bool ArcSupportHost::HasObserver(Observer* observer) {
   return observer_list_.HasObserver(observer);
+}
+
+void ArcSupportHost::SetAuthDelegate(AuthDelegate* delegate) {
+  // Since AuthDelegate and TermsOfServiceDelegate should not have overlapping
+  // life cycle, both delegates can't be non-null at the same time.
+  DCHECK(!(delegate && tos_delegate_));
+  auth_delegate_ = delegate;
+}
+
+void ArcSupportHost::SetTermsOfServiceDelegate(
+    TermsOfServiceDelegate* delegate) {
+  // Since AuthDelegate and TermsOfServiceDelegate should not have overlapping
+  // life cycle, both delegates can't be non-null at the same time.
+  DCHECK(!(delegate && auth_delegate_));
+  tos_delegate_ = delegate;
+}
+
+void ArcSupportHost::SetErrorDelegate(ErrorDelegate* delegate) {
+  error_delegate_ = delegate;
 }
 
 void ArcSupportHost::SetArcManaged(bool is_arc_managed) {
@@ -518,41 +542,53 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
   }
 
   if (event == kEventOnWindowClosed) {
-    for (auto& observer : observer_list_)
-      observer.OnWindowClosed();
-  } else if (event == kEventOnAuthSucceeded) {
-    std::string code;
-    if (message.GetString(kCode, &code)) {
-      for (auto& observer : observer_list_)
-        observer.OnAuthSucceeded(code);
+    // If ToS negotiation is ongoing, call the specific function.
+    if (tos_delegate_) {
+      tos_delegate_->OnTermsRejected();
     } else {
-      NOTREACHED();
+      DCHECK(error_delegate_);
+      error_delegate_->OnWindowClosed();
     }
+  } else if (event == kEventOnAuthSucceeded) {
+    DCHECK(auth_delegate_);
+    std::string code;
+    if (!message.GetString(kCode, &code)) {
+      NOTREACHED();
+      return;
+    }
+    auth_delegate_->OnAuthSucceeded(code);
   } else if (event == kEventOnAuthFailed) {
-    for (auto& observer : observer_list_)
-      observer.OnAuthFailed();
+    DCHECK(auth_delegate_);
+    auth_delegate_->OnAuthFailed();
   } else if (event == kEventOnAgreed) {
+    DCHECK(tos_delegate_);
     bool is_metrics_enabled;
     bool is_backup_restore_enabled;
     bool is_location_service_enabled;
-    if (message.GetBoolean(kIsMetricsEnabled, &is_metrics_enabled) &&
-        message.GetBoolean(kIsBackupRestoreEnabled,
-                           &is_backup_restore_enabled) &&
-        message.GetBoolean(kIsLocationServiceEnabled,
-                           &is_location_service_enabled)) {
-      for (auto& observer : observer_list_) {
-        observer.OnTermsAgreed(is_metrics_enabled, is_backup_restore_enabled,
-                               is_location_service_enabled);
-      }
-    } else {
+    if (!message.GetBoolean(kIsMetricsEnabled, &is_metrics_enabled) ||
+        !message.GetBoolean(kIsBackupRestoreEnabled,
+                            &is_backup_restore_enabled) ||
+        !message.GetBoolean(kIsLocationServiceEnabled,
+                            &is_location_service_enabled)) {
       NOTREACHED();
+      return;
     }
+    tos_delegate_->OnTermsAgreed(is_metrics_enabled, is_backup_restore_enabled,
+                                 is_location_service_enabled);
   } else if (event == kEventOnRetryClicked) {
-    for (auto& observer : observer_list_)
-      observer.OnRetryClicked();
+    // If ToS negotiation or manual authentication is ongoing, call the
+    // corresponding delegate.  Otherwise, call the general retry function.
+    if (tos_delegate_) {
+      tos_delegate_->OnTermsRetryClicked();
+    } else if (auth_delegate_) {
+      auth_delegate_->OnAuthRetryClicked();
+    } else {
+      DCHECK(error_delegate_);
+      error_delegate_->OnRetryClicked();
+    }
   } else if (event == kEventOnSendFeedbackClicked) {
-    for (auto& observer : observer_list_)
-      observer.OnSendFeedbackClicked();
+    DCHECK(error_delegate_);
+    error_delegate_->OnSendFeedbackClicked();
   } else {
     LOG(ERROR) << "Unknown message: " << event;
     NOTREACHED();
