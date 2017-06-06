@@ -12,8 +12,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "storage/browser/quota/quota_manager.h"
-#include "storage/common/quota/quota_status_code.h"
 
 namespace content {
 namespace protocol {
@@ -29,20 +27,6 @@ static const char kWebSQL[] = "websql";
 static const char kServiceWorkers[] = "service_workers";
 static const char kCacheStorage[] = "cache_storage";
 static const char kAll[] = "all";
-
-void QuotaAndUsageDataCallback(
-    std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback,
-    storage::QuotaStatusCode code,
-    int64_t usage,
-    int64_t quota) {
-  if (code != storage::kQuotaStatusOk) {
-    callback->sendFailure(
-        Response::Error("Quota information is not available"));
-    return;
-  }
-  callback->sendSuccess(
-      Storage::QuotaAndUsage::Create().SetQuota(quota).SetUsage(usage).Build());
-}
 }
 
 StorageHandler::StorageHandler()
@@ -102,21 +86,6 @@ Response StorageHandler::ClearDataForOrigin(
       partition->GetURLRequestContext(),
       base::Bind(&base::DoNothing));
   return Response::OK();
-}
-
-void StorageHandler::GetUsageAndQuota(
-    const String& origin,
-    std::unique_ptr<GetUsageAndQuotaCallback> callback) {
-  if (!host_)
-    return callback->sendFailure(Response::InternalError());
-
-  storage::QuotaManager* manager =
-      host_->GetProcess()->GetStoragePartition()->GetQuotaManager();
-  GURL origin_url(origin);
-  manager->GetUsageAndQuotaForWebApps(
-      origin_url, storage::kStorageTypeTemporary,
-      base::Bind(&QuotaAndUsageDataCallback,
-                 base::Passed(std::move(callback))));
 }
 
 }  // namespace protocol
