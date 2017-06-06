@@ -51,11 +51,6 @@ DEFAULT_TARGET_VERSION_MAP = {
 TARGET_VERSION_MAP = {
     'host' : {
         'gdb' : PACKAGE_NONE,
-        'ex_go' : PACKAGE_NONE,
-        'ex_compiler-rt': PACKAGE_NONE,
-        'ex_llvm-libunwind': PACKAGE_NONE,
-        'ex_libcxxabi': PACKAGE_NONE,
-        'ex_libcxx': PACKAGE_NONE,
     },
 }
 
