@@ -42,6 +42,8 @@
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -97,6 +99,8 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   IOSChromePasswordManagerSettingMigratorServiceFactory::GetInstance();
   IOSChromePasswordStoreFactory::GetInstance();
   IOSChromeProfileInvalidationProviderFactory::GetInstance();
+  IOSChromeProfileSyncServiceFactory::GetInstance();
+  IOSUserEventServiceFactory::GetInstance();
   GoogleLogoServiceFactory::GetInstance();
   OAuth2TokenServiceFactory::GetInstance();
   ReadingListModelFactory::GetInstance();
