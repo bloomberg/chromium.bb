@@ -82,7 +82,6 @@ struct MasterPrefs {
   std::vector<GURL> bookmarks;
   std::string import_bookmarks_path;
   std::string compressed_variations_seed;
-  std::string variations_seed;
   std::string variations_seed_signature;
   std::string suppress_default_browser_prompt_for_version;
 };

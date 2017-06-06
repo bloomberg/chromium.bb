@@ -479,13 +479,15 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
     net::TestURLFetcherFactory factory;
     service.DoActualFetch();
-    EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+    EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsCompressedSeed)
+                    ->IsDefaultValue());
 
     net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
     SimulateServerResponse(non_ok_status_codes[i], fetcher);
     service.OnURLFetchComplete(fetcher);
 
-    EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+    EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsCompressedSeed)
+                    ->IsDefaultValue());
   }
 }
 

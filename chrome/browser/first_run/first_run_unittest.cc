@@ -27,12 +27,13 @@ class FirstRunTest : public testing::Test {
 };
 
 TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_VariationsSeed) {
-  installer::MasterPreferences install_prefs("{ \"variations_seed\":\"xyz\" }");
+  installer::MasterPreferences install_prefs(
+      "{\"variations_compressed_seed\":\"xyz\"}");
   EXPECT_EQ(1U, install_prefs.master_dictionary().size());
 
   MasterPrefs out_prefs;
   internal::SetupMasterPrefsFromInstallPrefs(install_prefs, &out_prefs);
-  EXPECT_EQ("xyz", out_prefs.variations_seed);
+  EXPECT_EQ("xyz", out_prefs.compressed_variations_seed);
   // Variations prefs should have been extracted (removed) from the dictionary.
   EXPECT_TRUE(install_prefs.master_dictionary().empty());
 }
@@ -43,18 +44,19 @@ TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_NoVariationsSeed) {
 
   MasterPrefs out_prefs;
   internal::SetupMasterPrefsFromInstallPrefs(install_prefs, &out_prefs);
-  EXPECT_TRUE(out_prefs.variations_seed.empty());
+  EXPECT_TRUE(out_prefs.compressed_variations_seed.empty());
   EXPECT_TRUE(out_prefs.variations_seed_signature.empty());
 }
 
 TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_VariationsSeedSignature) {
   installer::MasterPreferences install_prefs(
-      "{ \"variations_seed\":\"xyz\", \"variations_seed_signature\":\"abc\" }");
+      "{\"variations_compressed_seed\":\"xyz\","
+      " \"variations_seed_signature\":\"abc\"}");
   EXPECT_EQ(2U, install_prefs.master_dictionary().size());
 
   MasterPrefs out_prefs;
   internal::SetupMasterPrefsFromInstallPrefs(install_prefs, &out_prefs);
-  EXPECT_EQ("xyz", out_prefs.variations_seed);
+  EXPECT_EQ("xyz", out_prefs.compressed_variations_seed);
   EXPECT_EQ("abc", out_prefs.variations_seed_signature);
   // Variations prefs should have been extracted (removed) from the dictionary.
   EXPECT_TRUE(install_prefs.master_dictionary().empty());

@@ -17,7 +17,6 @@ extern const char kVariationsPermanentConsistencyCountry[];
 extern const char kVariationsPermutedEntropyCache[];
 extern const char kVariationsCountry[];
 extern const char kVariationsRestrictParameter[];
-extern const char kVariationsSeed[];
 extern const char kVariationsSeedDate[];
 extern const char kVariationsSeedSignature[];
 

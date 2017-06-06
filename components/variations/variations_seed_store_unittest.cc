@@ -127,16 +127,12 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
 }
 
 TEST(VariationsSeedStoreTest, GetInvalidSignature) {
-  const variations::VariationsSeed seed = CreateTestSeed();
-  const std::string base64_seed = SerializeSeedBase64(seed);
-
   TestingPrefServiceSimple prefs;
   VariationsSeedStore::RegisterPrefs(prefs.registry());
-  prefs.SetString(prefs::kVariationsSeed, base64_seed);
 
   // The below seed and signature pair were generated using the server's
   // private key.
-  const std::string base64_seed_data =
+  const std::string uncompressed_base64_seed_data =
       "CigxZDI5NDY0ZmIzZDc4ZmYxNTU2ZTViNTUxYzY0NDdjYmM3NGU1ZmQwEr0BCh9VTUEtVW5p"
       "Zm9ybWl0eS1UcmlhbC0xMC1QZXJjZW50GICckqUFOAFCB2RlZmF1bHRKCwoHZGVmYXVsdBAB"
       "SgwKCGdyb3VwXzAxEAFKDAoIZ3JvdXBfMDIQAUoMCghncm91cF8wMxABSgwKCGdyb3VwXzA0"
@@ -149,8 +145,16 @@ TEST(VariationsSeedStoreTest, GetInvalidSignature) {
       "AEQCIDD1IVxjzWYncun+9IGzqYjZvqxxujQEayJULTlbTGA/AiAr0oVmEgVUQZBYq5VLOSvy"
       "96JkMYgzTkHPwbv7K/CmgA==";
 
+  std::string uncompressed_seed_data;
+  ASSERT_TRUE(base::Base64Decode(uncompressed_base64_seed_data,
+                                 &uncompressed_seed_data));
+  std::string compressed_base64_seed_data;
+  base::Base64Encode(Compress(uncompressed_seed_data),
+                     &compressed_base64_seed_data);
+
   // Set seed and valid signature in prefs.
-  prefs.SetString(prefs::kVariationsSeed, base64_seed_data);
+  prefs.SetString(prefs::kVariationsCompressedSeed,
+                  compressed_base64_seed_data);
   prefs.SetString(prefs::kVariationsSeedSignature, base64_seed_signature);
 
   VariationsSeedStore seed_store(&prefs);
