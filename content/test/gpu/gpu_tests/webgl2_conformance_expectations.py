@@ -756,8 +756,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # This test causes a lost device and then the next test fails.
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['linux', ('nvidia', 0x1cb3)], bug=709320)
-    self.Fail('deqp/functional/gles3/multisample.html',
-        ['linux', ('nvidia', 0x1cb3)], bug=702861)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
