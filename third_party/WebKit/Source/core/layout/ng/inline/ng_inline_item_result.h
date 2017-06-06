@@ -39,8 +39,12 @@ struct CORE_EXPORT NGInlineItemResult {
   // NGLayoutResult for atomic inline items.
   RefPtr<NGLayoutResult> layout_result;
 
-  // NGBoxStrut for atomic inline items.
+  // Margins for atomic inline items and open/close tags.
   NGBoxStrut margins;
+
+  // Borders/padding for open tags.
+  LayoutUnit borders_paddings_block_start;
+  LayoutUnit borders_paddings_block_end;
 
   // Inside of this is not breakable.
   // Used only during line breaking.

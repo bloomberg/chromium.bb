@@ -10,24 +10,35 @@
 
 namespace blink {
 
-namespace NGBorderEdges {
-
 // Which border edges should be painted. Due to fragmentation one or more may
 // be skipped.
-enum Physical { kTop = 1, kRight = 2, kBottom = 4, kLeft = 8 };
+struct CORE_EXPORT NGBorderEdges {
+  unsigned block_start : 1;
+  unsigned line_right : 1;
+  unsigned block_end : 1;
+  unsigned line_left : 1;
 
-enum Logical {
-  kBlockStart = Physical::kTop,
-  kLineRight = Physical::kRight,
-  kBlockEnd = Physical::kBottom,
-  kLineLeft = Physical::kLeft,
-  kAll = kBlockStart | kLineRight | kBlockEnd | kLineLeft
+  NGBorderEdges()
+      : block_start(true), line_right(true), block_end(true), line_left(true) {}
+  NGBorderEdges(bool block_start,
+                bool line_right,
+                bool block_end,
+                bool line_left)
+      : block_start(block_start),
+        line_right(line_right),
+        block_end(block_end),
+        line_left(line_left) {}
+
+  enum Physical {
+    kTop = 1,
+    kRight = 2,
+    kBottom = 4,
+    kLeft = 8,
+    kAll = kTop | kRight | kBottom | kLeft
+  };
+  static NGBorderEdges FromPhysical(unsigned, NGWritingMode);
+  unsigned ToPhysical(NGWritingMode) const;
 };
-
-CORE_EXPORT Physical ToPhysical(Logical, NGWritingMode);
-CORE_EXPORT Logical ToLogical(Physical, NGWritingMode);
-
-}  // namespace NGBorderEdges
 
 }  // namespace blink
 

@@ -34,7 +34,7 @@ class CORE_EXPORT NGFragment {
   LayoutUnit BlockOffset() const;
   NGLogicalOffset Offset() const;
 
-  NGBorderEdges::Logical BorderEdges() const;
+  NGBorderEdges BorderEdges() const;
 
   NGPhysicalFragment::NGFragmentType Type() const;
 

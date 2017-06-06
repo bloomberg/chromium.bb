@@ -259,20 +259,13 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       box->ComputeTextMetrics(*item.Style(), baseline_type_);
       text_builder.SetDirection(box->style->Direction());
       // TODO(kojii): We may need more conditions to create box fragments.
-      if (item.Style()->HasBoxDecorationBackground()) {
-        // TODO(kojii): These are once computed in NGLineBreaker. Should copy to
-        // NGInlineItemResult to reuse here.
-        NGBoxStrut borders = ComputeBorders(*constraint_space_, *item.Style());
-        NGBoxStrut paddings = ComputePadding(*constraint_space_, *item.Style());
-        // TODO(kojii): Set paint edges.
-        box->SetNeedsBoxFragment(position,
-                                 borders.block_start + paddings.block_start,
-                                 borders.BlockSum() + paddings.BlockSum());
-      }
+      if (item.Style()->HasBoxDecorationBackground())
+        box->SetNeedsBoxFragment(item, item_result, position);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
       position += item_result.inline_size;
-      box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_,
-                                   position);
+      if (box->needs_box_fragment)
+        box->SetLineRightForBoxFragment(item, item_result, position);
+      box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_);
       continue;
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       box = PlaceAtomicInline(item, &item_result, position, &line_box,
@@ -387,8 +380,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
       item_result->end_offset);
   line_box->AddChild(std::move(text_fragment), {position, line_top});
 
-  return box_states_.OnCloseTag(item, line_box, box, baseline_type_,
-                                LayoutUnit(0));
+  return box_states_.OnCloseTag(item, line_box, box, baseline_type_);
 }
 
 void NGInlineLayoutAlgorithm::ApplyTextAlign(LayoutUnit* line_left,
