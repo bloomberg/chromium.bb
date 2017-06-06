@@ -43,4 +43,18 @@ static_library("discovery") {
     "media_sink_service_base.cc",
     "media_sink_service_base.h",
   ]
+
+  if (!is_android) {
+    sources += [
+      "discovery_network_info.cc",
+      "discovery_network_info.h",
+      "discovery_network_list.h",
+      "discovery_network_list_posix.cc",
+      "discovery_network_list_wifi.h",
+      "discovery_network_list_wifi_linux.cc",
+      "discovery_network_list_win.cc",
+      "discovery_network_monitor.cc",
+      "discovery_network_monitor.h",
+    ]
+  }
 }
