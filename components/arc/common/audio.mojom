@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc.mojom;
 
@@ -13,9 +13,15 @@ enum AudioSwitch {
   SW_MICROPHONE_INSERT = 0x04
 };
 
+// Next method ID:2
 interface AudioHost {
   // Tells the host to show the volume controls.
   ShowVolumeControls@0();
+
+  // Request that the volume be changed to |volume|.
+  // This is a privileged API and should only be used on whitelisted cases.
+  // |percent| is of the range [0, 100].
+  [MinVersion=3] OnSystemVolumeUpdateRequest@1(int32 percent);
 };
 
 // Next method ID: 3

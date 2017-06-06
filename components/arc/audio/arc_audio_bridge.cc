@@ -39,6 +39,16 @@ void ArcAudioBridge::ShowVolumeControls() {
   ash::TrayAudio::ShowPopUpVolumeView();
 }
 
+void ArcAudioBridge::OnSystemVolumeUpdateRequest(int32_t percent) {
+  if (percent < 0 || percent > 100)
+    return;
+  cras_audio_handler_->SetOutputVolumePercent(percent);
+  bool is_muted =
+      percent <= cras_audio_handler_->GetOutputDefaultVolumeMuteThreshold();
+  if (cras_audio_handler_->IsOutputMuted() != is_muted)
+    cras_audio_handler_->SetOutputMute(is_muted);
+}
+
 void ArcAudioBridge::OnAudioNodesChanged() {
   uint64_t output_id = cras_audio_handler_->GetPrimaryActiveOutputNode();
   const chromeos::AudioDevice* output_device =
