@@ -36,6 +36,8 @@
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -88,8 +90,9 @@ struct ResourceLoaderOptions {
 
   FetchInitiatorInfo initiator_info;
 
-  // When adding members, CrossThreadResourceLoaderOptionsData should be
-  // updated.
+  // ATTENTION: When adding members, update
+  // CrossThreadResourceLoaderOptionsData, too.
+
   DataBufferingPolicy data_buffering_policy;
 
   ContentSecurityPolicyDisposition content_security_policy_option;
@@ -127,7 +130,8 @@ struct CrossThreadResourceLoaderOptionsData {
         security_origin(options.security_origin
                             ? options.security_origin->IsolatedCopy()
                             : nullptr),
-        content_security_policy_nonce(options.content_security_policy_nonce),
+        content_security_policy_nonce(
+            options.content_security_policy_nonce.IsolatedCopy()),
         integrity_metadata(options.integrity_metadata),
         parser_disposition(options.parser_disposition),
         cache_aware_loading_enabled(options.cache_aware_loading_enabled) {}
