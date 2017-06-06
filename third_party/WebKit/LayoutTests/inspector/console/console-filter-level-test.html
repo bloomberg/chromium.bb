@@ -29,13 +29,23 @@ function test()
 {
     function dumpVisibleMessages()
     {
-        var messages = Console.ConsoleView.instance()._visibleViewMessages;
+        var menuText = Console.ConsoleView.instance()._filter._levelMenuButton.text();
+        InspectorTest.addResult("Level menu: " + menuText);
 
+        var messages = Console.ConsoleView.instance()._visibleViewMessages;
         for (var i = 0; i < messages.length; i++)
             InspectorTest.addResult(">" + messages[i].toMessageElement().deepTextContent());
     }
 
     var testSuite = [
+        function dumpLevels(next) {
+            InspectorTest.addResult('All levels');
+            InspectorTest.addObject(Console.ConsoleViewFilter.allLevelsFilterValue());
+            InspectorTest.addResult('Default levels');
+            InspectorTest.addObject(Console.ConsoleViewFilter.defaultLevelsFilterValue());
+            next();
+        },
+
         function beforeFilter(next)
         {
             InspectorTest.addResult(arguments.callee.name);
@@ -43,37 +53,44 @@ function test()
             next();
         },
 
+        function allLevels(next)
+        {
+            Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleViewFilter.allLevelsFilterValue());
+            dumpVisibleMessages();
+            next();
+        },
+
+        function defaultLevels(next)
+        {
+            Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleViewFilter.defaultLevelsFilterValue());
+            dumpVisibleMessages();
+            next();
+        },
+
         function verbose(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Verbose);
+            Console.ConsoleViewFilter.levelFilterSetting().set({verbose: true});
             dumpVisibleMessages();
             next();
         },
         
         function info(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Info);
+            Console.ConsoleViewFilter.levelFilterSetting().set({'info': true});
             dumpVisibleMessages();
             next();
         },
 
-        function warning(next)
+        function warningsAndErrors(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Warning);
+            Console.ConsoleViewFilter.levelFilterSetting().set({'warning': true, 'error': true});
             dumpVisibleMessages();
             next();
         },
-              
-        function error(next)
-        {
-            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Error);
-            dumpVisibleMessages();
-            next();
-        },
-       
+
         function abcMessagePlain(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Verbose);
+            Console.ConsoleViewFilter.levelFilterSetting().set({verbose: true});
             Console.ConsoleView.instance()._filter._textFilterUI.setValue("abc");
             Console.ConsoleView.instance()._filter._textFilterChanged();
             dumpVisibleMessages();
@@ -90,7 +107,7 @@ function test()
 
         function abcMessageRegexWarning(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Warning);
+            Console.ConsoleViewFilter.levelFilterSetting().set({'warning': true});
             dumpVisibleMessages();
             next();
         }

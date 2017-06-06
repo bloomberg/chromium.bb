@@ -42,7 +42,7 @@ function onload()
 
 function test()
 {
-    Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Verbose);
+    Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleViewFilter.allLevelsFilterValue());
     InspectorTest.dumpConsoleMessagesWithClasses();
     InspectorTest.completeTest();
 }

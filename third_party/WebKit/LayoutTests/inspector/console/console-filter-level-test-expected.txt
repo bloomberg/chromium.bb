@@ -10,8 +10,25 @@ CONSOLE WARNING: line 20: def warn
 Tests that console can filter messages by source.
 
 
+Running: dumpLevels
+All levels
+{
+    error : true
+    info : true
+    verbose : true
+    warning : true
+}
+Default levels
+{
+    error : true
+    info : true
+    verbose : false
+    warning : true
+}
+
 Running: beforeFilter
 beforeFilter
+Level menu: Default levels
 >console-filter-level-test.html:5 sample info
 >console-filter-level-test.html:6 sample log
 >console-filter-level-test.html:7 sample warning
@@ -27,7 +44,8 @@ onload @ console-filter-level-test.html:15
 >'Should be always visible'
 >"Should be always visible"
 
-Running: verbose
+Running: allLevels
+Level menu: All levels
 >console-filter-level-test.html:5 sample info
 >console-filter-level-test.html:6 sample log
 >console-filter-level-test.html:7 sample warning
@@ -44,7 +62,8 @@ onload @ console-filter-level-test.html:15
 >'Should be always visible'
 >"Should be always visible"
 
-Running: info
+Running: defaultLevels
+Level menu: Default levels
 >console-filter-level-test.html:5 sample info
 >console-filter-level-test.html:6 sample log
 >console-filter-level-test.html:7 sample warning
@@ -60,7 +79,23 @@ onload @ console-filter-level-test.html:15
 >'Should be always visible'
 >"Should be always visible"
 
-Running: warning
+Running: verbose
+Level menu: Verbose only
+>console-filter-level-test.html:8 sample debug
+>'Should be always visible'
+>"Should be always visible"
+
+Running: info
+Level menu: Info only
+>console-filter-level-test.html:5 sample info
+>console-filter-level-test.html:6 sample log
+>console-filter-level-test.html:11 abc info
+>console-filter-level-test.html:12 def info
+>'Should be always visible'
+>"Should be always visible"
+
+Running: warningsAndErrors
+Level menu: Custom levels
 >console-filter-level-test.html:7 sample warning
 onload @ console-filter-level-test.html:7
 >console-filter-level-test.html:9 sample error
@@ -72,27 +107,18 @@ onload @ console-filter-level-test.html:15
 >'Should be always visible'
 >"Should be always visible"
 
-Running: error
->console-filter-level-test.html:9 sample error
-onload @ console-filter-level-test.html:9
->'Should be always visible'
->"Should be always visible"
-
 Running: abcMessagePlain
->console-filter-level-test.html:11 abc info
->console-filter-level-test.html:14 abc warn
-onload @ console-filter-level-test.html:14
+Level menu: Verbose only
 >'Should be always visible'
 >"Should be always visible"
 
 Running: abcMessageRegex
->console-filter-level-test.html:11 abc info
->console-filter-level-test.html:14 abc warn
-onload @ console-filter-level-test.html:14
+Level menu: Verbose only
 >'Should be always visible'
 >"Should be always visible"
 
 Running: abcMessageRegexWarning
+Level menu: Warnings only
 >console-filter-level-test.html:14 abc warn
 onload @ console-filter-level-test.html:14
 >'Should be always visible'
