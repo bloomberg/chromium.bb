@@ -40,6 +40,7 @@ source_set("wayland") {
       "wayland_xkb_keyboard_layout_engine.cc",
       "wayland_xkb_keyboard_layout_engine.h",
     ]
+    configs += [ "//ui/events/ozone:xkbcommon" ]
   }
 
   deps = [
