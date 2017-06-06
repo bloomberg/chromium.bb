@@ -1213,6 +1213,11 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     midi_service_->Shutdown();
   }
 
+  TRACE_EVENT0("shutdown",
+               "BrowserMainLoop::Subsystem:SpeechRecognitionManager");
+  io_thread_->task_runner()->DeleteSoon(FROM_HERE,
+                                        speech_recognition_manager_.release());
+
   memory_pressure_monitor_.reset();
 
 #if defined(OS_MACOSX)
