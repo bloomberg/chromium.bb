@@ -199,9 +199,6 @@ class PermissionRequestManager
   // Whether the response to each request should be persisted.
   bool persist_;
 
-  // Whether each of the requests in |requests_| is accepted by the user.
-  std::vector<bool> accept_states_;
-
   base::ObserverList<Observer> observer_list_;
   AutoResponseType auto_response_for_test_;
 

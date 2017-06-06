@@ -191,10 +191,8 @@ void PermissionRequestManager::CancelRequest(PermissionRequest* request) {
   }
 
   std::vector<PermissionRequest*>::iterator requests_iter;
-  std::vector<bool>::iterator accepts_iter = accept_states_.begin();
-  for (requests_iter = requests_.begin(), accepts_iter = accept_states_.begin();
-       requests_iter != requests_.end();
-       requests_iter++, accepts_iter++) {
+  for (requests_iter = requests_.begin(); requests_iter != requests_.end();
+       requests_iter++) {
     if (*requests_iter != request)
       continue;
 
@@ -204,7 +202,6 @@ void PermissionRequestManager::CancelRequest(PermissionRequest* request) {
     if (can_erase) {
       RequestFinishedIncludingDuplicates(*requests_iter);
       requests_.erase(requests_iter);
-      accept_states_.erase(accepts_iter);
 
       if (view_) {
         view_->Hide();
@@ -338,12 +335,13 @@ const std::vector<PermissionRequest*>& PermissionRequestManager::Requests() {
 }
 
 const std::vector<bool>& PermissionRequestManager::AcceptStates() {
-  return accept_states_;
+  // TODO(crbug.com/728483): Remove this function.
+  CR_DEFINE_STATIC_LOCAL(std::vector<bool>, accept_states, ());
+  return accept_states;
 }
 
 void PermissionRequestManager::ToggleAccept(int request_index, bool new_value) {
-  DCHECK(request_index < static_cast<int>(accept_states_.size()));
-  accept_states_[request_index] = new_value;
+  // TODO(crbug.com/728483): Remove this function.
 }
 
 void PermissionRequestManager::TogglePersist(bool new_value) {
@@ -351,24 +349,17 @@ void PermissionRequestManager::TogglePersist(bool new_value) {
 }
 
 void PermissionRequestManager::Accept() {
-  PermissionUmaUtil::PermissionPromptAccepted(requests_, accept_states_);
+  PermissionUmaUtil::PermissionPromptAccepted(requests_);
 
   std::vector<PermissionRequest*>::iterator requests_iter;
-  std::vector<bool>::iterator accepts_iter = accept_states_.begin();
-  for (requests_iter = requests_.begin(), accepts_iter = accept_states_.begin();
-       requests_iter != requests_.end();
-       requests_iter++, accepts_iter++) {
-    if (*accepts_iter) {
-      PermissionGrantedIncludingDuplicates(*requests_iter);
-    } else {
-      PermissionDeniedIncludingDuplicates(*requests_iter);
-    }
+  for (requests_iter = requests_.begin(); requests_iter != requests_.end();
+       requests_iter++) {
+    PermissionGrantedIncludingDuplicates(*requests_iter);
   }
   FinalizeBubble();
 }
 
 void PermissionRequestManager::Deny() {
-  DCHECK_EQ(1u, requests_.size());
   PermissionUmaUtil::PermissionPromptDenied(requests_);
 
   std::vector<PermissionRequest*>::iterator requests_iter;
@@ -421,9 +412,6 @@ void PermissionRequestManager::DequeueRequestsAndShowBubble() {
     queued_requests_.pop_front();
   }
 
-  // Sets the default value for each request to be 'accept'.
-  accept_states_.resize(requests_.size(), true);
-
   ShowBubble();
 }
 
@@ -452,7 +440,6 @@ void PermissionRequestManager::FinalizeBubble() {
     RequestFinishedIncludingDuplicates(*requests_iter);
   }
   requests_.clear();
-  accept_states_.clear();
   if (queued_requests_.size())
     DequeueRequestsAndShowBubble();
 }
@@ -547,14 +534,7 @@ void PermissionRequestManager::DoAutoResponseForTesting() {
       Accept();
       break;
     case DENY_ALL:
-      // Deny() assumes there is only 1 request.
-      if (accept_states_.size() == 1) {
-        Deny();
-      } else {
-        for (size_t i = 0; i < accept_states_.size(); ++i)
-          accept_states_[i] = false;
-        Accept();
-      }
+      Deny();
       break;
     case DISMISS:
       Closing();
