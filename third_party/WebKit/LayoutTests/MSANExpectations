@@ -53,11 +53,13 @@ crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
 # These tests use OpenGl, which crashes on MSAN builds due to missing instrumentation
 crbug.com/555703 [ Linux ] virtual/media-gpu-accelerated [ Skip ]
 
-# These tests are just a tad bit too slow on MSAN bots, give them more time.
-crbug.com/729136 [ Linux ] external/wpt/encoding/textdecoder-fatal-single-byte.html [ Slow ]
-crbug.com/729136 [ Linux ] fast/css/css-selector-deeply-nested.html [ Slow ]
-crbug.com/729136 [ Linux ] http/tests/inspector/forced-layout-in-microtask.html [ Slow ]
-crbug.com/729136 [ Linux ] http/tests/inspector/tracing/timeline-xhr-response-type-blob-event.html [ Slow ]
-crbug.com/729136 [ Linux ] inspector/components/file-path-scoring.html [ Slow ]
-crbug.com/729136 [ Linux ] inspector/elements/styles-4/styles-should-not-force-sync-style-recalc.html [ Slow ]
-crbug.com/729136 [ Linux ] webaudio/mixing.html [ Slow ]
+# These tests are just a tad bit too slow on MSAN bots and time out. Setting
+# them as "Slow" doesn't seem to help the problem (see discussion on bug), so
+# marking them as "Timeout" while crbug.com/729136 is worked out.
+crbug.com/729136 [ Linux ] external/wpt/encoding/textdecoder-fatal-single-byte.html [ Timeout ]
+crbug.com/729136 [ Linux ] fast/css/css-selector-deeply-nested.html [ Timeout ]
+crbug.com/729136 [ Linux ] http/tests/inspector/forced-layout-in-microtask.html [ Timeout ]
+crbug.com/729136 [ Linux ] http/tests/inspector/tracing/timeline-xhr-response-type-blob-event.html [ Timeout ]
+crbug.com/729136 [ Linux ] inspector/components/file-path-scoring.html [ Timeout ]
+crbug.com/729136 [ Linux ] inspector/elements/styles-4/styles-should-not-force-sync-style-recalc.html [ Timeout ]
+crbug.com/729136 [ Linux ] webaudio/mixing.html [ Timeout ]
