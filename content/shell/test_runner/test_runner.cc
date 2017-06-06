@@ -2558,8 +2558,12 @@ void TestRunner::DumpPermissionClientCallbacks() {
 void TestRunner::SetDisallowedSubresourcePathSuffixes(
     const std::vector<std::string>& suffixes) {
   DCHECK(main_view_);
-  main_view_->MainFrame()->DataSource()->SetSubresourceFilter(
-      new MockWebDocumentSubresourceFilter(suffixes));
+  if (!main_view_->MainFrame()->IsWebLocalFrame())
+    return;
+  main_view_->MainFrame()
+      ->ToWebLocalFrame()
+      ->DataSource()
+      ->SetSubresourceFilter(new MockWebDocumentSubresourceFilter(suffixes));
 }
 
 void TestRunner::DumpSpellCheckCallbacks() {
@@ -2791,7 +2795,11 @@ void TestRunner::CheckResponseMimeType() {
   if (!main_view_)
     return;
 
-  WebDataSource* data_source = main_view_->MainFrame()->DataSource();
+  if (!main_view_->MainFrame()->IsWebLocalFrame())
+    return;
+
+  WebDataSource* data_source =
+      main_view_->MainFrame()->ToWebLocalFrame()->DataSource();
   if (!data_source)
     return;
 

@@ -320,7 +320,7 @@ void NetErrorHelper::ReloadPage(bool bypass_cache) {
 }
 
 void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
-  blink::WebFrame* web_frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
   DCHECK_NE("POST", web_frame->DataSource()->GetRequest().HttpMethod().Ascii());
 
   blink::WebURLRequest request(page_url);

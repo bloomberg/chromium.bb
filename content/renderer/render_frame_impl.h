@@ -93,6 +93,7 @@ struct FrameMsg_TextTrackSettings_Params;
 
 namespace blink {
 class WebContentDecryptionModule;
+class WebLocalFrame;
 class WebPresentationClient;
 class WebPushClient;
 class WebSecurityOrigin;
@@ -826,7 +827,7 @@ class CONTENT_EXPORT RenderFrameImpl
   const RenderFrameImpl* GetLocalRoot() const;
 
   // Builds and sends DidCommitProvisionalLoad to the host.
-  void SendDidCommitProvisionalLoad(blink::WebFrame* frame,
+  void SendDidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                     blink::WebHistoryCommitType commit_type);
 
   // Swaps the current frame into the frame tree, replacing the

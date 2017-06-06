@@ -4348,7 +4348,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadWhileProvisional) {
       web_view_helper.WebView()->MainFrame());
 
   WebDataSource* data_source =
-      web_view_helper.WebView()->MainFrame()->DataSource();
+      web_view_helper.WebView()->MainFrameImpl()->DataSource();
   ASSERT_TRUE(data_source);
   EXPECT_EQ(ToKURL(base_url_ + "fixed_layout.html"),
             KURL(data_source->GetRequest().Url()));
@@ -4362,7 +4362,7 @@ TEST_P(ParameterizedWebFrameTest, AppendRedirects) {
   web_view_helper.InitializeAndLoad(first_url, true);
 
   WebDataSource* data_source =
-      web_view_helper.WebView()->MainFrame()->DataSource();
+      web_view_helper.WebView()->MainFrameImpl()->DataSource();
   ASSERT_TRUE(data_source);
   data_source->AppendRedirect(ToKURL(second_url));
 
@@ -4387,8 +4387,8 @@ TEST_P(ParameterizedWebFrameTest, IframeRedirect) {
   WebFrame* iframe =
       web_view_helper.WebView()->MainFrameImpl()->FindFrameByName(
           WebString::FromUTF8("ifr"));
-  ASSERT_TRUE(iframe);
-  WebDataSource* iframe_data_source = iframe->DataSource();
+  ASSERT_TRUE(iframe && iframe->IsWebLocalFrame());
+  WebDataSource* iframe_data_source = iframe->ToWebLocalFrame()->DataSource();
   ASSERT_TRUE(iframe_data_source);
   WebVector<WebURL> redirects;
   iframe_data_source->RedirectChain(redirects);
@@ -7342,7 +7342,7 @@ TEST_P(ParameterizedWebFrameTest, BackToReload) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "fragment_middle_click.html",
                                     true);
-  WebFrame* frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
   const FrameLoader& main_frame_loader =
       web_view_helper.WebView()->MainFrameImpl()->GetFrame()->Loader();
   Persistent<HistoryItem> first_item =
@@ -7401,7 +7401,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadPost) {
   RegisterMockedHttpURLLoad("reload_post.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "reload_post.html", true);
-  WebFrame* frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
 
   FrameTestHelpers::LoadFrame(web_view_helper.WebView()->MainFrame(),
                               "javascript:document.forms[0].submit()");
@@ -7424,7 +7424,7 @@ TEST_P(ParameterizedWebFrameTest, LoadHistoryItemReload) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "fragment_middle_click.html",
                                     true);
-  WebFrame* frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
   const FrameLoader& main_frame_loader =
       web_view_helper.WebView()->MainFrameImpl()->GetFrame()->Loader();
   Persistent<HistoryItem> first_item =
@@ -8729,7 +8729,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadBypassingCache) {
   RegisterMockedHttpURLLoad("foo.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "foo.html", true);
-  WebFrame* frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
   FrameTestHelpers::ReloadFrameBypassingCache(frame);
   EXPECT_EQ(WebCachePolicy::kBypassingCache,
             frame->DataSource()->GetRequest().GetCachePolicy());
