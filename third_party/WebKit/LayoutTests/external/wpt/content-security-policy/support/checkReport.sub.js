@@ -51,7 +51,7 @@
           }
           // Firefox expands 'self' or origins in a policy to the actual origin value
           // so "www.example.com" becomes "http://www.example.com:80".
-          // Accommodate this by just testing that the correct directive name
+          // Accomodate this by just testing that the correct directive name
           // is reported, not the details...
 
           if(data["csp-report"] != undefined && data["csp-report"][reportField] != undefined) {

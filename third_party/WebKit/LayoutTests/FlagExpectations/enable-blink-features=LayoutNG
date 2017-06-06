@@ -22601,7 +22601,6 @@ crbug.com/591099 virtual/display_list_2d_canvas/fast/canvas/webgl/texture-color-
 crbug.com/591099 virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-texture-binding-preserved.html [ Failure ]
 crbug.com/591099 virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-viewport-parameters-preserved.html [ Failure ]
 crbug.com/591099 virtual/display_list_2d_canvas/fast/canvas/zero-size-fill-rect.html [ Crash ]
-crbug.com/591099 virtual/enable_wasm/external/wpt/wasm/wasm_local_iframe_test.html [ Crash Timeout ]
 crbug.com/591099 virtual/gpu/fast/canvas/2d.composite.globalAlpha.fillPath.html [ Crash ]
 crbug.com/591099 virtual/gpu/fast/canvas/2d.fillText.gradient.html [ Crash ]
 crbug.com/591099 virtual/gpu/fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Crash ]

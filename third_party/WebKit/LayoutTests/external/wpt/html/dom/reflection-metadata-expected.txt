@@ -31,7 +31,7 @@ PASS link.tabIndex: 24 tests
 PASS link.href: 38 tests
 PASS link.crossOrigin: 52 tests
 PASS link.rel: 32 tests
-PASS link.as: 22 tests
+PASS link.as: 27 tests
 FAIL link.as: setAttribute() to "document" assert_equals: IDL get expected "document" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "DOCUMENT" assert_equals: IDL get expected "document" but got ""
@@ -64,7 +64,7 @@ PASS link.as: setAttribute() to "worKer"
 FAIL link.as: setAttribute() to "xslt" assert_equals: IDL get expected "xslt" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "XSLT" assert_equals: IDL get expected "xslt" but got ""
-PASS link.as: 20 tests
+PASS link.as: 25 tests
 FAIL link.as: IDL set to "document" assert_equals: IDL get expected "document" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "DOCUMENT" assert_equals: IDL get expected "document" but got ""
