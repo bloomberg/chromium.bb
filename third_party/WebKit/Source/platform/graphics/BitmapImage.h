@@ -88,6 +88,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
   bool CurrentFrameIsComplete() override;
   bool CurrentFrameIsLazyDecoded() override;
+  size_t FrameCount() override;
 
   ImageOrientation CurrentFrameOrientation();
 
@@ -118,7 +119,6 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
             ImageClampingMode) override;
 
   size_t CurrentFrame() const { return current_frame_; }
-  size_t FrameCount();
 
   sk_sp<SkImage> FrameAtIndex(size_t);
 

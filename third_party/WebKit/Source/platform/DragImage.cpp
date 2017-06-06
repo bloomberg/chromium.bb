@@ -124,7 +124,8 @@ PaintImage DragImage::ResizeAndOrientImage(
   canvas->drawImage(image.sk_image(), 0, 0, &paint);
 
   return PaintImage(image.stable_id(), surface->makeImageSnapshot(),
-                    image.animation_type(), image.completion_state());
+                    image.animation_type(), image.completion_state(),
+                    image.frame_count());
 }
 
 FloatSize DragImage::ClampedImageScale(const IntSize& image_size,

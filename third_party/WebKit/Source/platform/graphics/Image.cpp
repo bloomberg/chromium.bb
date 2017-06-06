@@ -298,10 +298,10 @@ void Image::DrawPattern(GraphicsContext& context,
   // Fetch this now as subsetting may swap the image.
   auto image_id = image.sk_image()->uniqueID();
 
-  image =
-      PaintImage(stable_image_id_,
-                 image.sk_image()->makeSubset(EnclosingIntRect(norm_src_rect)),
-                 image.animation_type(), image.completion_state());
+  image = PaintImage(
+      stable_image_id_,
+      image.sk_image()->makeSubset(EnclosingIntRect(norm_src_rect)),
+      image.animation_type(), image.completion_state(), image.frame_count());
   if (!image)
     return;
 
@@ -349,7 +349,7 @@ PaintImage Image::PaintImageForCurrentFrame() {
                               ? PaintImage::CompletionState::DONE
                               : PaintImage::CompletionState::PARTIALLY_DONE;
   return PaintImage(stable_image_id_, ImageForCurrentFrame(), animation_type,
-                    completion_state);
+                    completion_state, FrameCount());
 }
 
 bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
