@@ -58,6 +58,10 @@ const AtomicString& FrameTree::GetName() const {
     if (frame) {
       UseCounter::Count(frame,
                         UseCounter::kCrossOriginMainFrameNulledNameAccessed);
+      if (!name_.IsEmpty()) {
+        UseCounter::Count(
+            frame, UseCounter::kCrossOriginMainFrameNulledNonEmptyNameAccessed);
+      }
     }
   }
   return name_;
