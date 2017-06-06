@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS delete() removes the value from the property when set in element.style 
-FAIL delete() removes the value from the property when set in element.styleMap Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-PASS delete() works when mixed case is used for the property name 
-PASS delete() does nothing if the property isn't set 
-PASS Attempting to delete an invalid property throws 
-Harness: the test ran to completion.
-

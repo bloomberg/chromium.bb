@@ -4,12 +4,23 @@
 
 #include "core/css/cssom/CSSNumericValue.h"
 
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/CSSUnitValue.h"
+
 namespace blink {
 
 CSSNumericValue* CSSNumericValue::parse(const String& css_text,
                                         ExceptionState&) {
   // TODO(meade): Implement
   return nullptr;
+}
+
+CSSNumericValue* CSSNumericValue::FromCSSValue(const CSSPrimitiveValue& value) {
+  if (value.IsCalculated()) {
+    // TODO(meade): Implement this case.
+    return nullptr;
+  }
+  return CSSUnitValue::FromCSSValue(value);
 }
 
 }  // namespace blink

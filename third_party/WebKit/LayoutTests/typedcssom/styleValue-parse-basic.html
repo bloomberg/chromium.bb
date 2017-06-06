@@ -9,7 +9,7 @@ test(function() {
   assert_not_equals(result, null);
   assert_equals(result.constructor.name, CSSUnitValue.name);
   assert_equals(result.value, 10);
-  assert_equals(result.type, 'px');
+  assert_equals(result.unit, 'px');
 }, 'Parsing 10px results in a CSSUnitValue');
 
 test(function() {
