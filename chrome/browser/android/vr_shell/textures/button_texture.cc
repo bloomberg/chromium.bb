@@ -10,6 +10,10 @@ ButtonTexture::ButtonTexture() = default;
 
 ButtonTexture::~ButtonTexture() = default;
 
+void ButtonTexture::OnSetMode() {
+  set_dirty();
+}
+
 void ButtonTexture::SetPressed(bool pressed) {
   if (pressed_ != pressed)
     set_dirty();

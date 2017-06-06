@@ -65,6 +65,10 @@ void UiTexture::SetMode(ColorScheme::Mode mode) {
 
 void UiTexture::OnSetMode() {}
 
+const ColorScheme& UiTexture::color_scheme() const {
+  return ColorScheme::GetColorScheme(mode());
+}
+
 std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
     const base::string16& text,
     const gfx::FontList& font_list,

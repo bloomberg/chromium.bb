@@ -21,6 +21,7 @@ class ButtonTexture : public UiTexture {
   bool hovered() const { return hovered_; }
 
  private:
+  void OnSetMode() override;
   bool pressed_ = false;
   bool hovered_ = false;
 };

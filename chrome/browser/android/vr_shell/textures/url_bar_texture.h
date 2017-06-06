@@ -61,7 +61,6 @@ class UrlBarTexture : public UiTexture {
   bool HitsTransparentRegion(const gfx::PointF& meters, bool left) const;
   void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& bounds);
   void OnSetMode() override;
-  const ColorScheme& color_scheme() const;
 
   gfx::SizeF size_;
   bool hovered_ = false;

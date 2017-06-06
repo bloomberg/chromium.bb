@@ -7,14 +7,11 @@
 #include "base/logging.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 namespace vr_shell {
 
 namespace {
 
-static constexpr SkColor kBackground = 0xFF8C8C8C;
-static constexpr SkColor kForeground = 0xFF333333;
 static constexpr float kWidth = 0.24;
 static constexpr float kHeight = 0.008;
 
@@ -58,12 +55,12 @@ void LoadingIndicatorTexture::Draw(SkCanvas* canvas,
   canvas->scale(size_.width() / kWidth, size_.width() / kWidth);
 
   SkPaint paint;
-  paint.setColor(kBackground);
+  paint.setColor(color_scheme().loading_indicator_background);
   canvas->drawRoundRect({0, 0, kWidth, kHeight}, kHeight / 2, kHeight / 2,
                         paint);
 
   if (loading_) {
-    paint.setColor(kForeground);
+    paint.setColor(color_scheme().loading_indicator_foreground);
     float progress_width = kHeight + (kWidth - kHeight) * progress_;
     canvas->drawRoundRect({0, 0, progress_width, kHeight}, kHeight / 2,
                           kHeight / 2, paint);

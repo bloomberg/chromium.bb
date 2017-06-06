@@ -46,11 +46,25 @@ static constexpr float kContentVerticalOffset = -0.1 * kContentDistance;
 static constexpr float kBackplaneSize = 1000.0;
 static constexpr float kBackgroundDistanceMultiplier = 1.414;
 
+static constexpr float kFullscreenDistance = 3;
+static constexpr float kFullscreenHeight = 0.64 * kFullscreenDistance;
+static constexpr float kFullscreenWidth = 1.138 * kFullscreenDistance;
+static constexpr float kFullscreenVerticalOffset = -0.1 * kFullscreenDistance;
+
 static constexpr float kUrlBarDistance = 2.4;
 static constexpr float kUrlBarWidth = 0.672 * kUrlBarDistance;
 static constexpr float kUrlBarHeight = 0.088 * kUrlBarDistance;
 static constexpr float kUrlBarVerticalOffset = -0.516 * kUrlBarDistance;
 static constexpr float kUrlBarRotationRad = -0.175;
+
+static constexpr float kCloseButtonDistance = 2.4;
+static constexpr float kCloseButtonHeight = 0.088 * kCloseButtonDistance;
+static constexpr float kCloseButtonWidth = 0.088 * kCloseButtonDistance;
+static constexpr float kCloseButtonFullscreenDistance = 2.9;
+static constexpr float kCloseButtonFullscreenHeight =
+    0.088 * kCloseButtonDistance;
+static constexpr float kCloseButtonFullscreenWidth =
+    0.088 * kCloseButtonDistance;
 
 static constexpr float kLoadingIndicatorWidth = 0.24 * kUrlBarDistance;
 static constexpr float kLoadingIndicatorHeight = 0.008 * kUrlBarDistance;
@@ -64,11 +78,6 @@ static constexpr float kLoadingIndicatorDepthOffset =
 static constexpr float kSceneSize = 25.0;
 static constexpr float kSceneHeight = 4.0;
 static constexpr int kFloorGridlineCount = 40;
-
-static constexpr float kFullscreenDistance = 3;
-static constexpr float kFullscreenHeight = 0.64 * kFullscreenDistance;
-static constexpr float kFullscreenWidth = 1.138 * kFullscreenDistance;
-static constexpr float kFullscreenVerticalOffset = -0.1 * kFullscreenDistance;
 
 // Tiny distance to offset textures that should appear in the same plane.
 static constexpr float kTextureOffset = 0.01;
@@ -89,8 +98,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateSecurityWarnings();
   CreateSystemIndicators();
   CreateUrlBar();
-  if (in_cct_)
-    CreateCloseButton();
+  CreateCloseButton();
   CreateScreenDimmer();
 
   ConfigureScene();
@@ -295,9 +303,9 @@ void UiSceneManager::CreateCloseButton() {
   element->set_fill(vr_shell::Fill::NONE);
   element->set_translation(
       gfx::Vector3dF(0, kContentVerticalOffset - (kContentHeight / 2) - 0.3,
-                     -kContentDistance + 0.4));
-  element->set_size(gfx::Vector3dF(0.2, 0.2, 1));
-  control_elements_.push_back(element.get());
+                     -kCloseButtonDistance));
+  element->set_size(gfx::Vector3dF(kCloseButtonWidth, kCloseButtonHeight, 1));
+  close_button_ = element.get();
   scene_->AddUiElement(std::move(element));
 }
 
@@ -326,6 +334,10 @@ void UiSceneManager::ConfigureScene() {
     element->SetEnabled(controls_visible);
   }
 
+  // Close button is a special control element that needs to be hidden when in
+  // WebVR, but it needs to be visible when in cct or fullscreen.
+  close_button_->SetEnabled(!web_vr_mode_ && (fullscreen_ || in_cct_));
+
   // Content elements.
   for (UiElement* element : content_elements_) {
     element->SetEnabled(!web_vr_mode_);
@@ -337,11 +349,23 @@ void UiSceneManager::ConfigureScene() {
     main_content_->set_translation(
         {0, kFullscreenVerticalOffset, -kFullscreenDistance});
     main_content_->set_size({kFullscreenWidth, kFullscreenHeight, 1});
+
+    close_button_->set_translation(gfx::Vector3dF(
+        0, kFullscreenVerticalOffset - (kFullscreenHeight / 2) - 0.35,
+        -kCloseButtonFullscreenDistance));
+    close_button_->set_size(gfx::Vector3dF(kCloseButtonFullscreenWidth,
+                                           kCloseButtonFullscreenHeight, 1));
   } else {
     // Note that main_content_ is already visible in this case.
     main_content_->set_translation(
         {0, kContentVerticalOffset, -kContentDistance});
     main_content_->set_size({kContentWidth, kContentHeight, 1});
+
+    close_button_->set_translation(
+        gfx::Vector3dF(0, kContentVerticalOffset - (kContentHeight / 2) - 0.3,
+                       -kCloseButtonDistance));
+    close_button_->set_size(
+        gfx::Vector3dF(kCloseButtonWidth, kCloseButtonHeight, 1));
   }
 
   scene_->SetMode(mode());
@@ -354,9 +378,9 @@ void UiSceneManager::UpdateBackgroundColor() {
   // TODO(vollick): it would be nice if ceiling, floor and the grid were
   // UiElement subclasses and could respond to the OnSetMode signal.
   ceiling_->set_center_color(color_scheme().ceiling);
-  ceiling_->set_edge_color(color_scheme().horizon);
+  ceiling_->set_edge_color(color_scheme().world_background);
   floor_->set_center_color(color_scheme().floor);
-  floor_->set_edge_color(color_scheme().horizon);
+  floor_->set_edge_color(color_scheme().world_background);
   floor_->set_grid_color(color_scheme().floor_grid);
 }
 
@@ -453,7 +477,12 @@ void UiSceneManager::SetHistoryButtonsEnabled(bool can_go_back,
 }
 
 void UiSceneManager::OnCloseButtonClicked() {
-  browser_->ExitCct();
+  if (fullscreen_) {
+    browser_->ExitFullscreen();
+  }
+  if (in_cct_) {
+    browser_->ExitCct();
+  }
 }
 
 void UiSceneManager::OnUnsupportedMode(UiUnsupportedMode mode) {

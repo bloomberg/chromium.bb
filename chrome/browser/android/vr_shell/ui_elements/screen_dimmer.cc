@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/ui_elements/screen_dimmer.h"
 
+#include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/ui_element_renderer.h"
 #include "device/vr/vr_math.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -11,8 +12,6 @@
 namespace vr_shell {
 
 namespace {
-static const SkColor kDimmerInnerColor = 0xCC0D0D0D;
-static const SkColor kDimmerOuterColor = 0xE6000000;
 static const float kDimmerOpacity = 0.9f;
 }  // namespace
 
@@ -29,8 +28,12 @@ void ScreenDimmer::Render(UiElementRenderer* renderer,
   vr::Mat4f m;
   vr::SetIdentityM(&m);
   vr::ScaleM(m, {2.0f, 2.0f, 1.0f}, &m);
-  renderer->DrawGradientQuad(m, kDimmerOuterColor, kDimmerInnerColor,
-                             kDimmerOpacity);
+
+  // Always use normal scheme for dimmer.
+  const ColorScheme& color_scheme =
+      ColorScheme::GetColorScheme(ColorScheme::kModeNormal);
+  renderer->DrawGradientQuad(m, color_scheme.dimmer_outer,
+                             color_scheme.dimmer_inner, kDimmerOpacity);
 }
 
 }  // namespace vr_shell

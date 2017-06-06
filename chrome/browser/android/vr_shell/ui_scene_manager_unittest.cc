@@ -109,16 +109,33 @@ TEST_F(UiSceneManagerTest, WebVrWarningsDoNotShowWhenInitiallyOutsideWebVr) {
   EXPECT_TRUE(IsVisible(kWebVrTransientHttpSecurityWarning));
 }
 
-TEST_F(UiSceneManagerTest, CctButtonVisibleInCct) {
+TEST_F(UiSceneManagerTest, CloseButtonVisibleInCctFullscreen) {
+  // Button should be visible in cct.
   MakeManager(kInCct, kNotInWebVr);
   EXPECT_TRUE(IsVisible(kCloseButton));
 
+  // Button should not be visible when not in cct or fullscreen.
   MakeManager(kNotInCct, kNotInWebVr);
   EXPECT_FALSE(IsVisible(kCloseButton));
 
+  // Button should be visible in fullscreen and hidden when leaving fullscreen.
+  manager_->SetFullscreen(true);
+  EXPECT_TRUE(IsVisible(kCloseButton));
+  manager_->SetFullscreen(false);
+  EXPECT_FALSE(IsVisible(kCloseButton));
+
+  // Button should not be visible when in WebVR.
   MakeManager(kInCct, kInWebVr);
   EXPECT_FALSE(IsVisible(kCloseButton));
   manager_->SetWebVrMode(false);
+  EXPECT_TRUE(IsVisible(kCloseButton));
+
+  // Button should be visible in Cct across transistions in fullscreen.
+  MakeManager(kInCct, kNotInWebVr);
+  EXPECT_TRUE(IsVisible(kCloseButton));
+  manager_->SetFullscreen(true);
+  EXPECT_TRUE(IsVisible(kCloseButton));
+  manager_->SetFullscreen(false);
   EXPECT_TRUE(IsVisible(kCloseButton));
 }
 
@@ -126,54 +143,54 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
   MakeManager(kNotInCct, kNotInWebVr);
 
   // Hold onto the background color to make sure it changes.
-  SkColor initial_background = scene_->GetBackgroundColor();
+  SkColor initial_background = scene_->GetWorldBackgroundColor();
   manager_->SetFullscreen(true);
 
   {
     SCOPED_TRACE("Entered Fullsceen");
     // Make sure background has changed for fullscreen.
-    EXPECT_NE(initial_background, scene_->GetBackgroundColor());
+    EXPECT_NE(initial_background, scene_->GetWorldBackgroundColor());
   }
 
-  SkColor fullscreen_background = scene_->GetBackgroundColor();
+  SkColor fullscreen_background = scene_->GetWorldBackgroundColor();
 
   manager_->SetIncognito(true);
 
   {
     SCOPED_TRACE("Entered Incognito");
     // Make sure background has changed for incognito.
-    EXPECT_NE(fullscreen_background, scene_->GetBackgroundColor());
-    EXPECT_NE(initial_background, scene_->GetBackgroundColor());
+    EXPECT_NE(fullscreen_background, scene_->GetWorldBackgroundColor());
+    EXPECT_NE(initial_background, scene_->GetWorldBackgroundColor());
   }
 
-  SkColor incognito_background = scene_->GetBackgroundColor();
+  SkColor incognito_background = scene_->GetWorldBackgroundColor();
 
   manager_->SetIncognito(false);
 
   {
     SCOPED_TRACE("Exited Incognito");
-    EXPECT_EQ(fullscreen_background, scene_->GetBackgroundColor());
+    EXPECT_EQ(fullscreen_background, scene_->GetWorldBackgroundColor());
   }
 
   manager_->SetFullscreen(false);
 
   {
     SCOPED_TRACE("Exited Fullsceen");
-    EXPECT_EQ(initial_background, scene_->GetBackgroundColor());
+    EXPECT_EQ(initial_background, scene_->GetWorldBackgroundColor());
   }
 
   manager_->SetIncognito(true);
 
   {
     SCOPED_TRACE("Entered Incognito");
-    EXPECT_EQ(incognito_background, scene_->GetBackgroundColor());
+    EXPECT_EQ(incognito_background, scene_->GetWorldBackgroundColor());
   }
 
   manager_->SetIncognito(false);
 
   {
     SCOPED_TRACE("Exited Incognito");
-    EXPECT_EQ(initial_background, scene_->GetBackgroundColor());
+    EXPECT_EQ(initial_background, scene_->GetWorldBackgroundColor());
   }
 }
 
@@ -183,13 +200,14 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
       UiElementDebugId::kCeiling,     UiElementDebugId::kFloor,
       UiElementDebugId::kUrlBar,      UiElementDebugId::kLoadingIndicator};
   std::set<UiElementDebugId> visible_in_fullscreen = {
-      UiElementDebugId::kContentQuad, UiElementDebugId::kBackplane,
-      UiElementDebugId::kCeiling, UiElementDebugId::kFloor};
+      UiElementDebugId::kContentQuad, UiElementDebugId::kCloseButton,
+      UiElementDebugId::kBackplane, UiElementDebugId::kCeiling,
+      UiElementDebugId::kFloor};
 
   MakeManager(kNotInCct, kNotInWebVr);
 
   // Hold onto the background color to make sure it changes.
-  SkColor initial_background = scene_->GetBackgroundColor();
+  SkColor initial_background = scene_->GetWorldBackgroundColor();
 
   for (const auto& element : scene_->GetUiElements()) {
     SCOPED_TRACE(element->debug_id());
@@ -212,7 +230,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   {
     SCOPED_TRACE("Entered Fullsceen");
     // Make sure background has changed for fullscreen.
-    EXPECT_NE(initial_background, scene_->GetBackgroundColor());
+    EXPECT_NE(initial_background, scene_->GetWorldBackgroundColor());
   }
 
   // Exit fullscreen.
@@ -227,7 +245,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   }
   {
     SCOPED_TRACE("Exited Fullsceen");
-    EXPECT_EQ(initial_background, scene_->GetBackgroundColor());
+    EXPECT_EQ(initial_background, scene_->GetWorldBackgroundColor());
   }
 }
 

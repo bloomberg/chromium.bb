@@ -65,12 +65,12 @@ SkColor getSchemeColor(SecurityLevel level, const ColorScheme& color_scheme) {
   switch (level) {
     case SecurityLevel::NONE:
     case SecurityLevel::HTTP_SHOW_WARNING:
-      return color_scheme.deemphasized;
+      return color_scheme.url_deemphasized;
     case SecurityLevel::EV_SECURE:
     case SecurityLevel::SECURE:
       return color_scheme.secure;
     case SecurityLevel::SECURITY_WARNING:
-      return color_scheme.deemphasized;
+      return color_scheme.url_deemphasized;
     case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:  // ChromeOS only.
       return color_scheme.insecure;
     case SecurityLevel::DANGEROUS:
@@ -86,7 +86,7 @@ void setEmphasis(vr_shell::RenderTextWrapper* render_text,
                  const gfx::Range& range,
                  const ColorScheme& color_scheme) {
   SkColor color =
-      emphasis ? color_scheme.emphasized : color_scheme.deemphasized;
+      emphasis ? color_scheme.url_emphasized : color_scheme.url_deemphasized;
   if (range.IsValid()) {
     render_text->ApplyColor(color, range);
   } else {
@@ -169,10 +169,6 @@ void UrlBarTexture::OnSetMode() {
   set_dirty();
 }
 
-const ColorScheme& UrlBarTexture::color_scheme() const {
-  return ColorScheme::GetColorScheme(mode());
-}
-
 void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   size_.set_height(texture_size.height());
   size_.set_width(texture_size.width());
@@ -189,19 +185,19 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   SkVector rounded_corner = {kHeight / 2, kHeight / 2};
   SkVector left_corners[4] = {rounded_corner, {0, 0}, {0, 0}, rounded_corner};
   round_rect.setRectRadii({0, 0, kHeight, kHeight}, left_corners);
-  SkColor color = color_scheme().background;
+  SkColor color = color_scheme().element_background;
   if (can_go_back_) {
     if (pressed_)
-      color = color_scheme().background_down;
+      color = color_scheme().element_background_down;
     else if (hovered_)
-      color = color_scheme().background_hover;
+      color = color_scheme().element_background_hover;
   }
   SkPaint paint;
   paint.setColor(color);
   canvas->drawRRect(round_rect, paint);
 
   // URL area.
-  paint.setColor(color_scheme().background);
+  paint.setColor(color_scheme().element_background);
   SkVector right_corners[4] = {{0, 0}, rounded_corner, rounded_corner, {0, 0}};
   round_rect.setRectRadii({kHeight, 0, kWidth, kHeight}, right_corners);
   canvas->drawRRect(round_rect, paint);
@@ -218,9 +214,9 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   int icon_default_height = GetDefaultSizeOfVectorIcon(ui::kBackArrowIcon);
   float icon_scale = kBackIconHeight / icon_default_height;
   canvas->scale(icon_scale, icon_scale);
-  PaintVectorIcon(
-      &gfx_canvas, ui::kBackArrowIcon,
-      can_go_back_ ? color_scheme().foreground : color_scheme().disabled);
+  PaintVectorIcon(&gfx_canvas, ui::kBackArrowIcon,
+                  can_go_back_ ? color_scheme().element_foreground
+                               : color_scheme().disabled);
   canvas->restore();
 
   // Site security state icon.
