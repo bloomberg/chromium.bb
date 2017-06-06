@@ -25,17 +25,13 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
 
   // mojom::DeviceFactoryProvider implementation.
   void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
-  void ConnectToFakeDeviceFactory(mojom::DeviceFactoryRequest request) override;
   void SetShutdownDelayInSeconds(float seconds) override;
 
  private:
   void LazyInitializeDeviceFactory();
-  void LazyInitializeFakeDeviceFactory();
 
   mojo::BindingSet<mojom::DeviceFactory> factory_bindings_;
-  mojo::BindingSet<mojom::DeviceFactory> fake_factory_bindings_;
   std::unique_ptr<DeviceFactoryMediaToMojoAdapter> device_factory_;
-  std::unique_ptr<DeviceFactoryMediaToMojoAdapter> fake_device_factory_;
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   base::Callback<void(float)> set_shutdown_delay_cb_;

@@ -7,16 +7,11 @@ module video_capture.mojom;
 import "services/video_capture/public/interfaces/device_factory.mojom";
 
 // Entry point to the Video Capture Service API.
-// The service hosts two DeviceFactories. The "regular" factory
-// provides access to the capture devices connected to the system. The "fake"
-// factory provides access to a single fake device that generates test frames.
-// Note: Despite the name, the fake factory is a production feature that is
-// shipped in release builds of Chromium. It is useful for Web Developers who
-// want to test video capture code without having to use an actual capture
-// device.
+// The factory provides access to the capture devices connected to the system.
+// By using command-line switches, it is possible to replace this with a "fake"
+// factory, which provides access to fake devices that generates test frames.
 interface DeviceFactoryProvider  {
   ConnectToDeviceFactory(DeviceFactory& request);
-  ConnectToFakeDeviceFactory(DeviceFactory& request);
 
   // The service shuts down after a certain delay when no client is connected.
   // This method allows clients to customize this delay.
