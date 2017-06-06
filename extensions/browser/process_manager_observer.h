@@ -39,12 +39,6 @@ class ProcessManagerObserver {
   virtual void OnExtensionFrameUnregistered(
       const std::string& extension_id,
       content::RenderFrameHost* render_frame_host) {}
-
-  // Called when a RenderFrameHost was navigated to another page within the
-  // extension process.
-  virtual void OnExtensionFrameNavigated(
-      const std::string& extension_id,
-      content::RenderFrameHost* render_frame_host) {}
 };
 
 }  // namespace extensions

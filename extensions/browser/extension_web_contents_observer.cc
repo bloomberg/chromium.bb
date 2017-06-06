@@ -147,14 +147,8 @@ void ExtensionWebContentsObserver::DidFinishNavigation(
   const Extension* frame_extension =
       GetExtensionFromFrame(render_frame_host, true);
   if (pm->IsRenderFrameHostRegistered(render_frame_host)) {
-    if (frame_extension && !navigation_handle->IsSameDocument()) {
-      // Notify ProcessManager, because some clients do not just want to know
-      // whether the frame is in an extension process, but also whether the
-      // frame was navigated.
-      pm->DidNavigateRenderFrameHost(render_frame_host);
-    } else if (!frame_extension) {
+    if (!frame_extension)
       pm->UnregisterRenderFrameHost(render_frame_host);
-    }
   } else if (frame_extension) {
     pm->RegisterRenderFrameHost(web_contents(), render_frame_host,
                                 frame_extension);
