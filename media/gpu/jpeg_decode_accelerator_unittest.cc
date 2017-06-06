@@ -392,11 +392,11 @@ bool JpegDecodeAcceleratorTestEnvironment::CreateTestJpegImage(
     int width,
     int height,
     base::FilePath* filename) {
-  const int kBytesPerPixel = 3;
+  const int kBytesPerPixel = 4;
   const int kJpegQuality = 100;
   std::vector<unsigned char> input_buffer(width * height * kBytesPerPixel);
   std::vector<unsigned char> encoded;
-  if (!gfx::JPEGCodec::Encode(&input_buffer[0], gfx::JPEGCodec::FORMAT_RGB,
+  if (!gfx::JPEGCodec::Encode(&input_buffer[0], gfx::JPEGCodec::FORMAT_RGBA,
                               width, height, width * kBytesPerPixel,
                               kJpegQuality, &encoded)) {
     return false;
