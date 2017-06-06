@@ -71,6 +71,7 @@ class VulcanizeGnTest(unittest.TestCase):
     self.assertFalse('element.html' in fast_html)
     self.assertFalse('element.js' in fast_html)
     self.assertTrue('got here!' in fast_html)
+    self.assertTrue('<script src="fast.js"></script>' in fast_html)
 
     fast_js = self._read_out_file('fast.js')
     self.assertTrue('yay' in fast_js)
