@@ -42,6 +42,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -903,7 +904,14 @@ void ServiceWorkerVersion::OnDetached(EmbeddedWorkerStatus old_status) {
 }
 
 void ServiceWorkerVersion::OnScriptLoaded() {
-  DCHECK(GetMainScriptHttpResponseInfo());
+  DCHECK(GetMainScriptHttpResponseInfo() ||
+         // TODO(scottmg|falken): This DCHECK is currently triggered in
+         // --network-service because ServiceWorkerReadFromCacheJob isn't being
+         // used to retrieve the service worker js. This should be removed once
+         // that's done.
+         (IsBrowserSideNavigationEnabled() &&
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableNetworkService)));
   if (IsInstalled(status()))
     UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", true);
 }
