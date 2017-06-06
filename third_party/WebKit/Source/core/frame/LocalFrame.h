@@ -59,6 +59,7 @@ class EventHandler;
 class FetchParameters;
 class FloatSize;
 class FrameConsole;
+class FrameResourceCoordinator;
 class FrameSelection;
 class InputMethodController;
 class CoreProbeSink;
@@ -231,6 +232,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   LocalFrameClient* Client() const;
 
   ContentSettingsClient* GetContentSettingsClient();
+  FrameResourceCoordinator* GetFrameResourceCoordinator() {
+    return frame_resource_coordinator_;
+  }
 
   PluginData* GetPluginData() const;
 
@@ -316,6 +320,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   InterfaceRegistry* const interface_registry_;
 
   IntRect remote_viewport_intersection_;
+  Member<FrameResourceCoordinator> frame_resource_coordinator_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {
