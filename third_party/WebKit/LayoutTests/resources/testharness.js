@@ -591,7 +591,7 @@ policies and contribution forms [3].
 
         /**
          * Returns a Promise that will resolve after the specified event or
-         * series of events has occurred.
+         * series of events has occured.
          */
         this.wait_for = function(types) {
             if (waitingFor) {
@@ -971,7 +971,7 @@ policies and contribution forms [3].
     function assert_approx_equals(actual, expected, epsilon, description)
     {
         /*
-         * Test if two primitive numbers are equal within +/- epsilon
+         * Test if two primitive numbers are equal withing +/- epsilon
          */
         assert(typeof actual === "number",
                "assert_approx_equals", description,
@@ -1371,12 +1371,14 @@ policies and contribution forms [3].
             this._structured_clone = merge({
                 name:String(this.name),
                 properties:merge({}, this.properties),
+                phases:merge({}, this.phases)
             }, Test.statuses);
         }
         this._structured_clone.status = this.status;
         this._structured_clone.message = this.message;
         this._structured_clone.stack = this.stack;
         this._structured_clone.index = this.index;
+        this._structured_clone.phase = this.phase;
         return this._structured_clone;
     };
 
@@ -1547,10 +1549,12 @@ policies and contribution forms [3].
         var clone = {};
         Object.keys(this).forEach(
                 (function(key) {
-                    if (typeof(this[key]) === "object") {
-                        clone[key] = merge({}, this[key]);
+                    var value = this[key];
+
+                    if (typeof value === "object" && value !== null) {
+                        clone[key] = merge({}, value);
                     } else {
-                        clone[key] = this[key];
+                        clone[key] = value;
                     }
                 }).bind(this));
         clone.phases = merge({}, this.phases);

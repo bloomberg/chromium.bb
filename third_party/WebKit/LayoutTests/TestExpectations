@@ -2120,6 +2120,11 @@ crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objec
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/payment-request/payment-request-show-method.https.html [ Pass Failure ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-createOffer.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-onnegotiationneeded.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setLocalDescription.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Timeout ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_arcto_001.htm [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_beziercurveto_001.htm [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_canvas_11.html [ Failure ]

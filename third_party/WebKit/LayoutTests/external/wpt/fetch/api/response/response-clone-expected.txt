@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS Check Response's clone with default values, without body 
 PASS Check Response's clone has the expected attribute values 
-PASS Check original response's body after cloning 
+PASS Check orginal response's body after cloning 
 PASS Check cloned response's body 
 PASS Cannot clone a disturbed response 
 PASS Cloned responses should provide the same data 
