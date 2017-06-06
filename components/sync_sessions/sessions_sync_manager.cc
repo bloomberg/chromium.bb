@@ -153,7 +153,7 @@ SessionsSyncManager::SessionsSyncManager(
       current_device_type_(sync_pb::SyncEnums_DeviceType_TYPE_OTHER),
       local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
-      local_event_router_(std::move(router)),
+      local_event_router_(router),
       page_revisit_broadcaster_(this, sessions_client),
       sessions_updated_callback_(sessions_updated_callback),
       datatype_refresh_callback_(datatype_refresh_callback),
