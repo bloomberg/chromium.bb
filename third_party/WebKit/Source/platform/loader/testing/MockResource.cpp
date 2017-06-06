@@ -35,7 +35,9 @@ MockResource* MockResource::Fetch(FetchParameters& params,
 
 // static
 MockResource* MockResource::Create(const ResourceRequest& request) {
-  return new MockResource(request, ResourceLoaderOptions());
+  ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
+                                kClientDidNotRequestCredentials);
+  return new MockResource(request, options);
 }
 
 MockResource::MockResource(const ResourceRequest& request,

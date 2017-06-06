@@ -43,6 +43,7 @@
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -104,10 +105,10 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
                reinterpret_cast<const char*>(uri));
       xmlFree(base);
 
-      ResourceLoaderOptions fetch_options(
-          ResourceFetcher::DefaultResourceOptions());
-      FetchParameters params(ResourceRequest(url), FetchInitiatorTypeNames::xml,
-                             fetch_options);
+      ResourceLoaderOptions fetch_options(kAllowStoredCredentials,
+                                          kClientRequestedCredentials);
+      fetch_options.initiator_info.name = FetchInitiatorTypeNames::xml;
+      FetchParameters params(ResourceRequest(url), fetch_options);
       params.SetOriginRestriction(FetchParameters::kRestrictToSameOrigin);
       Resource* resource =
           RawResource::FetchSynchronously(params, g_global_resource_fetcher);

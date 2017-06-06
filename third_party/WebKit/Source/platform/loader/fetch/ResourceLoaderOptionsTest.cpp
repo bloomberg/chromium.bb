@@ -29,7 +29,8 @@ TEST(ResourceLoaderOptionsTest, DeepCopy) {
   static_assert(std::is_enum<CORSEnabled>::value,
                 "CORSEnabled should be an enum");
 
-  ResourceLoaderOptions original;
+  ResourceLoaderOptions original(kDoNotAllowStoredCredentials,
+                                 kClientDidNotRequestCredentials);
   RefPtr<SecurityOrigin> security_origin =
       SecurityOrigin::CreateFromString("http://www.google.com");
   original.security_origin = security_origin;

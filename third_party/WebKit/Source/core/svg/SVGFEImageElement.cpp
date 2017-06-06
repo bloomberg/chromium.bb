@@ -30,6 +30,7 @@
 #include "platform/graphics/Image.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 
 namespace blink {
 
@@ -70,8 +71,11 @@ void SVGFEImageElement::ClearResourceReferences() {
 }
 
 void SVGFEImageElement::FetchImageResource() {
+  ResourceLoaderOptions options(kAllowStoredCredentials,
+                                kClientRequestedCredentials);
+  options.initiator_info.name = localName();
   FetchParameters params(
-      ResourceRequest(GetDocument().CompleteURL(HrefString())), localName());
+      ResourceRequest(GetDocument().CompleteURL(HrefString())), options);
   cached_image_ = ImageResourceContent::Fetch(params, GetDocument().Fetcher());
 
   if (cached_image_)

@@ -305,8 +305,9 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
   if (!url.IsNull() && !url.IsEmpty()) {
     // Unlike raw <img>, we block mixed content inside of <picture> or
     // <img srcset>.
-    ResourceLoaderOptions resource_loader_options =
-        ResourceFetcher::DefaultResourceOptions();
+    ResourceLoaderOptions resource_loader_options(kAllowStoredCredentials,
+                                                  kClientRequestedCredentials);
+    resource_loader_options.initiator_info.name = GetElement()->localName();
     ResourceRequest resource_request(url);
     if (update_behavior == kUpdateForcedReload) {
       resource_request.SetCachePolicy(WebCachePolicy::kBypassingCache);
@@ -322,8 +323,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
         !GetElement()->FastGetAttribute(HTMLNames::srcsetAttr).IsNull())
       resource_request.SetRequestContext(
           WebURLRequest::kRequestContextImageSet);
-    FetchParameters params(resource_request, GetElement()->localName(),
-                           resource_loader_options);
+    FetchParameters params(resource_request, resource_loader_options);
     ConfigureRequest(params, bypass_behavior, *element_,
                      document.GetClientHintsPreferences());
 

@@ -27,6 +27,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceClient.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebDataConsumerHandle.h"
 
@@ -52,7 +53,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 
   // Exposed for testing
   static RawResource* Create(const ResourceRequest& request, Type type) {
-    return new RawResource(request, type, ResourceLoaderOptions());
+    ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
+                                  kClientDidNotRequestCredentials);
+    return new RawResource(request, type, options);
   }
 
   // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and

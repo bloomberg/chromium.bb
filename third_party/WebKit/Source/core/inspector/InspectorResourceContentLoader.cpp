@@ -19,6 +19,7 @@
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -124,8 +125,10 @@ void InspectorResourceContentLoader::Start() {
 
     if (!resource_request.Url().GetString().IsEmpty()) {
       urls_to_fetch.insert(resource_request.Url().GetString());
-      FetchParameters params(resource_request,
-                             FetchInitiatorTypeNames::internal);
+      ResourceLoaderOptions options(kAllowStoredCredentials,
+                                    kClientRequestedCredentials);
+      options.initiator_info.name = FetchInitiatorTypeNames::internal;
+      FetchParameters params(resource_request, options);
       Resource* resource = RawResource::Fetch(params, document->Fetcher());
       if (resource) {
         // Prevent garbage collection by holding a reference to this resource.
@@ -148,8 +151,10 @@ void InspectorResourceContentLoader::Start() {
       ResourceRequest resource_request(url);
       resource_request.SetRequestContext(
           WebURLRequest::kRequestContextInternal);
-      FetchParameters params(resource_request,
-                             FetchInitiatorTypeNames::internal);
+      ResourceLoaderOptions options(kAllowStoredCredentials,
+                                    kClientRequestedCredentials);
+      options.initiator_info.name = FetchInitiatorTypeNames::internal;
+      FetchParameters params(resource_request, options);
       Resource* resource =
           CSSStyleSheetResource::Fetch(params, document->Fetcher());
       if (!resource)

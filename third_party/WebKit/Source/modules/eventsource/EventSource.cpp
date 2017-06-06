@@ -53,6 +53,7 @@
 #include "modules/eventsource/EventSourceInit.h"
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -156,14 +157,15 @@ void EventSource::Connect() {
           ? kDoNotEnforceContentSecurityPolicy
           : kEnforceContentSecurityPolicy;
 
-  ResourceLoaderOptions resource_loader_options;
-  resource_loader_options.allow_credentials =
+  StoredCredentials allow_credentials =
       (origin->CanRequestNoSuborigin(current_url_) || with_credentials_)
           ? kAllowStoredCredentials
           : kDoNotAllowStoredCredentials;
-  resource_loader_options.credentials_requested =
+  CredentialRequest credentials_requested =
       with_credentials_ ? kClientRequestedCredentials
                         : kClientDidNotRequestCredentials;
+  ResourceLoaderOptions resource_loader_options(allow_credentials,
+                                                credentials_requested);
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
   resource_loader_options.security_origin = origin;
 

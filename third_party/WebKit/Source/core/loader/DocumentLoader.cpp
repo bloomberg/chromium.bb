@@ -72,6 +72,7 @@
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
@@ -859,12 +860,11 @@ void DocumentLoader::StartLoadingMainResource() {
     GetTiming().MarkFetchStart();
   }
 
-  DEFINE_STATIC_LOCAL(
-      ResourceLoaderOptions, main_resource_load_options,
-      (kDoNotBufferData, kAllowStoredCredentials, kClientRequestedCredentials,
-       kCheckContentSecurityPolicy, kDocumentContext));
-  FetchParameters fetch_params(request_, FetchInitiatorTypeNames::document,
-                               main_resource_load_options);
+  ResourceLoaderOptions options(kAllowStoredCredentials,
+                                kClientRequestedCredentials);
+  options.data_buffering_policy = kDoNotBufferData;
+  options.initiator_info.name = FetchInitiatorTypeNames::document;
+  FetchParameters fetch_params(request_, options);
   main_resource_ =
       RawResource::FetchMainResource(fetch_params, Fetcher(), substitute_data_);
 

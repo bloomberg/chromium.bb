@@ -31,6 +31,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 
 #include "platform/loader/fetch/RawResource.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/testing/MockResourceClient.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -46,7 +47,9 @@ class MemoryCacheTest : public ::testing::Test {
    public:
     static FakeDecodedResource* Create(const ResourceRequest& request,
                                        Type type) {
-      return new FakeDecodedResource(request, type, ResourceLoaderOptions());
+      ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
+                                    kClientDidNotRequestCredentials);
+      return new FakeDecodedResource(request, type, options);
     }
 
     virtual void AppendData(const char* data, size_t len) {
@@ -66,7 +69,9 @@ class MemoryCacheTest : public ::testing::Test {
   class FakeResource final : public Resource {
    public:
     static FakeResource* Create(const ResourceRequest& request, Type type) {
-      return new FakeResource(request, type, ResourceLoaderOptions());
+      ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
+                                    kClientDidNotRequestCredentials);
+      return new FakeResource(request, type, options);
     }
 
     void FakeEncodedSize(size_t size) { SetEncodedSize(size); }

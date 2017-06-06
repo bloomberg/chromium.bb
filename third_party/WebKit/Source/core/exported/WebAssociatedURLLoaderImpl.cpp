@@ -44,6 +44,7 @@
 #include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/PtrUtil.h"
@@ -392,10 +393,11 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
         static_cast<PreflightPolicy>(options_.preflight_policy);
     options.fetch_request_mode = options_.fetch_request_mode;
 
-    ResourceLoaderOptions resource_loader_options;
-    resource_loader_options.allow_credentials =
-        options_.allow_credentials ? kAllowStoredCredentials
-                                   : kDoNotAllowStoredCredentials;
+    StoredCredentials allow_credentials = options_.allow_credentials
+                                              ? kAllowStoredCredentials
+                                              : kDoNotAllowStoredCredentials;
+    ResourceLoaderOptions resource_loader_options(
+        allow_credentials, kClientDidNotRequestCredentials);
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
     const ResourceRequest& webcore_request = new_request.ToResourceRequest();

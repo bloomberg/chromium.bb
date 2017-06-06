@@ -44,6 +44,7 @@
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -210,7 +211,10 @@ void SVGUseElement::UpdateTargetReference() {
       (resource_ &&
        EqualIgnoringFragmentIdentifier(resolved_url, resource_->Url())))
     return;
-  FetchParameters params(ResourceRequest(resolved_url), localName());
+  ResourceLoaderOptions options(kAllowStoredCredentials,
+                                kClientRequestedCredentials);
+  options.initiator_info.name = localName();
+  FetchParameters params(ResourceRequest(resolved_url), options);
   SetDocumentResource(
       DocumentResource::FetchSVGDocument(params, GetDocument().Fetcher()));
 }

@@ -29,7 +29,6 @@
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/PlatformExport.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
-#include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -74,13 +73,8 @@ class PLATFORM_EXPORT FetchParameters {
     ResourceWidth() : width(0), is_set(false) {}
   };
 
-  FetchParameters(const ResourceRequest&,
-                  const AtomicString& initiator,
-                  const String& charset = String());
-  FetchParameters(const ResourceRequest&,
-                  const AtomicString& initiator,
-                  const ResourceLoaderOptions&);
-  FetchParameters(const ResourceRequest&, const FetchInitiatorInfo&);
+  explicit FetchParameters(const ResourceRequest&);
+  FetchParameters(const ResourceRequest&, const ResourceLoaderOptions&);
   ~FetchParameters();
 
   ResourceRequest& MutableResourceRequest() { return resource_request_; }

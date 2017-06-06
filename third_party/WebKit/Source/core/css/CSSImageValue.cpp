@@ -30,6 +30,7 @@
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
@@ -60,9 +61,12 @@ StyleImage* CSSImageValue::CacheImage(const Document& document,
     ResourceRequest resource_request(absolute_url_);
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
-    FetchParameters params(resource_request, initiator_name_.IsEmpty()
-                                                 ? FetchInitiatorTypeNames::css
-                                                 : initiator_name_);
+    ResourceLoaderOptions options(kAllowStoredCredentials,
+                                  kClientRequestedCredentials);
+    options.initiator_info.name = initiator_name_.IsEmpty()
+                                      ? FetchInitiatorTypeNames::css
+                                      : initiator_name_;
+    FetchParameters params(resource_request, options);
 
     if (cross_origin != kCrossOriginAttributeNotSet) {
       params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),

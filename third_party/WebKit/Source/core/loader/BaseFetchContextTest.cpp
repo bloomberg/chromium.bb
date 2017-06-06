@@ -256,12 +256,13 @@ TEST_F(BaseFetchContextTest, RedirectChecksReportedAndEnforcedCSP) {
   KURL url(KURL(), "http://baz.test");
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
-  EXPECT_EQ(
-      ResourceRequestBlockedReason::CSP,
-      fetch_context_->CanFollowRedirect(
-          Resource::kScript, resource_request, url, ResourceLoaderOptions(),
-          SecurityViolationReportingPolicy::kReport,
-          FetchParameters::kUseDefaultOriginRestrictionForType));
+  ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
+                                kClientDidNotRequestCredentials);
+  EXPECT_EQ(ResourceRequestBlockedReason::CSP,
+            fetch_context_->CanFollowRedirect(
+                Resource::kScript, resource_request, url, options,
+                SecurityViolationReportingPolicy::kReport,
+                FetchParameters::kUseDefaultOriginRestrictionForType));
   EXPECT_EQ(2u, policy->violation_reports_sent_.size());
 }
 
@@ -278,9 +279,11 @@ TEST_F(BaseFetchContextTest, AllowResponseChecksReportedAndEnforcedCSP) {
   KURL url(KURL(), "http://baz.test");
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
+                                kClientDidNotRequestCredentials);
   EXPECT_EQ(ResourceRequestBlockedReason::CSP,
             fetch_context_->AllowResponse(Resource::kScript, resource_request,
-                                          url, ResourceLoaderOptions()));
+                                          url, options));
   EXPECT_EQ(2u, policy->violation_reports_sent_.size());
 }
 
