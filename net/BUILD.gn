@@ -3365,6 +3365,8 @@ bundle_data("net_unittests_bundle_data") {
     "data/certificate_policies_unittest/policy_1_2_3_and_1_2_4_with_qualifiers.pem",
     "data/certificate_policies_unittest/policy_1_2_3_with_custom_qualifier.pem",
     "data/certificate_policies_unittest/policy_1_2_3_with_qualifier.pem",
+    "data/embedded_test_server/mock-headers-without-crlf.html",
+    "data/embedded_test_server/mock-headers-without-crlf.html.mock-http-headers",
     "data/filter_unittests/google.br",
     "data/filter_unittests/google.txt",
     "data/name_constraints_unittest/directoryname-excludeall.pem",
