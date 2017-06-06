@@ -1077,24 +1077,6 @@ crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure 
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
-crbug.com/729318 [ Win ] editing/selection/select-text-overflow-ellipsis.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux Win ] fast/css/text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux Win ] fast/css/text-overflow-ellipsis-text-align-justify.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux Win ] fast/css/text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux Win ] fast/css/text-overflow-ellipsis-text-align-right.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux Win ] fast/css/text-overflow-input.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux Win ] fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux Win ] fast/css/vertical-text-overflow-ellipsis-text-align-right.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux Win ] fast/overflow/line-clamp.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux ] fast/text/ellipsis-ltr-text-in-rtl-flow-leading-space.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux ] fast/text/place-mixed-ellipsis-in-inline-blocks-2.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux ] fast/text/place-mixed-ellipsis-in-inline-blocks-align-center-2.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux ] fast/text/place-mixed-ellipsis-in-inline-blocks-align-left-2.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux ] fast/text/place-mixed-ellipsis-in-inline-blocks-align-left.html [ NeedsRebaseline ]
-crbug.com/729318 [ Linux ] fast/text/place-mixed-ellipsis-in-inline-blocks-align-right-2.html [ NeedsRebaseline ]
-crbug.com/729318 [ Win ] paint/spellmarkers/inline_spelling_markers.html [ NeedsRebaseline ]
-crbug.com/729318 [ Win ] virtual/disable-spinvalidation/paint/spellmarkers/inline_spelling_markers.html [ NeedsRebaseline ]
-
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 
