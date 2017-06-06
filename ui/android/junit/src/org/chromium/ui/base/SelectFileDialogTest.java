@@ -5,10 +5,16 @@
 package org.chromium.ui.base;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import android.webkit.MimeTypeMap;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowMimeTypeMap;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -86,5 +92,30 @@ public class SelectFileDialogTest {
                 scopeForFileTypes("image/jpeg", "video/ogg"));
         assertEquals(SelectFileDialog.SELECT_FILE_DIALOG_SCOPE_GENERIC,
                 scopeForFileTypes("video/*", "image/*", "text/plain"));
+    }
+
+    @Test
+    public void testPhotoPickerLaunchAndMimeTypes() throws Throwable {
+        ShadowMimeTypeMap shadowMimeTypeMap = Shadows.shadowOf(MimeTypeMap.getSingleton());
+        shadowMimeTypeMap.addExtensionMimeTypMapping("jpg", "image/jpeg");
+        shadowMimeTypeMap.addExtensionMimeTypMapping("gif", "image/gif");
+        shadowMimeTypeMap.addExtensionMimeTypMapping("txt", "text/plain");
+        shadowMimeTypeMap.addExtensionMimeTypMapping("mpg", "audio/mpeg");
+
+        assertEquals("", SelectFileDialog.ensureMimeType(""));
+        assertEquals("image/jpeg", SelectFileDialog.ensureMimeType(".jpg"));
+        assertEquals("image/jpeg", SelectFileDialog.ensureMimeType("image/jpeg"));
+        // Unknown extension, expect default response:
+        assertEquals("application/octet-stream", SelectFileDialog.ensureMimeType(".flv"));
+
+        assertFalse(SelectFileDialog.usePhotoPicker(Arrays.asList("")));
+        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList(".jpg")));
+        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList("image/jpeg")));
+        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList(".jpg", "image/jpeg")));
+        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList(".gif", "image/jpeg")));
+        // Returns false because generic picker is required (due to addition of .txt file).
+        assertFalse(SelectFileDialog.usePhotoPicker(Arrays.asList(".txt", ".jpg", "image/jpeg")));
+        // Returns false because video file is included.
+        assertFalse(SelectFileDialog.usePhotoPicker(Arrays.asList(".jpg", "image/jpeg", ".mpg")));
     }
 }

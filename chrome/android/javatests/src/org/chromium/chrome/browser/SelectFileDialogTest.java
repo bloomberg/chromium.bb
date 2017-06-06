@@ -4,10 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
@@ -35,8 +31,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.SelectFileDialog;
-
-import java.util.Arrays;
 
 /**
  * Integration test for select file dialog used for <input type="file" />
@@ -206,26 +200,5 @@ public class SelectFileDialogTest {
         });
         mActivityWindowAndroidForTest.lastCallback = null;
         mActivityWindowAndroidForTest.lastIntent = null;
-    }
-
-    @Test
-    @MediumTest
-    @DisabledTest
-    public void testPhotoPickerLaunchAndMimeTypes() throws Throwable {
-        assertEquals("", SelectFileDialog.ensureMimeType(""));
-        assertEquals("image/jpeg", SelectFileDialog.ensureMimeType(".jpg"));
-        assertEquals("image/jpeg", SelectFileDialog.ensureMimeType("image/jpeg"));
-        // Unknown extension, expect default response:
-        assertEquals("application/octet-stream", SelectFileDialog.ensureMimeType(".flv"));
-
-        assertFalse(SelectFileDialog.usePhotoPicker(Arrays.asList("")));
-        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList(".jpg")));
-        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList("image/jpeg")));
-        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList(".jpg", "image/jpeg")));
-        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList(".gif", "image/jpeg")));
-        // Returns false because generic picker is required (due to addition of .txt file).
-        assertFalse(SelectFileDialog.usePhotoPicker(Arrays.asList(".txt", ".jpg", "image/jpeg")));
-        // Returns false because video file is included.
-        assertFalse(SelectFileDialog.usePhotoPicker(Arrays.asList(".jpg", "image/jpeg", ".mpg")));
     }
 }
