@@ -10,11 +10,17 @@ namespace blink {
 
 CSSSupportsParser::SupportsResult CSSSupportsParser::SupportsCondition(
     CSSParserTokenRange range,
-    CSSParserImpl& parser) {
-  // TODO(timloh): The spec allows leading whitespace in @supports but not
-  // CSS.supports, but major browser vendors allow it in CSS.supports also.
+    CSSParserImpl& parser,
+    SupportsParsingMode parsing_mode) {
   range.ConsumeWhitespace();
-  return CSSSupportsParser(parser).ConsumeCondition(range);
+  CSSSupportsParser supports_parser(parser);
+  SupportsResult result = supports_parser.ConsumeCondition(range);
+  if (parsing_mode != kForWindowCSS || result != kInvalid)
+    return result;
+  // window.CSS.supports requires to parse as-if it was wrapped in parenthesis.
+  // The only wrapped production that wouldn't have parsed above is the
+  // declaration condition production.
+  return supports_parser.ConsumeDeclarationCondition(range);
 }
 
 enum ClauseType { kUnresolved, kConjunction, kDisjunction };
@@ -90,10 +96,14 @@ CSSSupportsParser::ConsumeConditionInParenthesis(CSSParserTokenRange& range) {
   SupportsResult result = ConsumeCondition(inner_range);
   if (result != kInvalid)
     return result;
-  return inner_range.Peek().GetType() == kIdentToken &&
-                 parser_.SupportsDeclaration(inner_range)
-             ? kSupported
-             : kUnsupported;
+  return ConsumeDeclarationCondition(inner_range);
+}
+
+CSSSupportsParser::SupportsResult
+CSSSupportsParser::ConsumeDeclarationCondition(CSSParserTokenRange& range) {
+  if (range.Peek().GetType() != kIdentToken)
+    return kUnsupported;
+  return parser_.SupportsDeclaration(range) ? kSupported : kUnsupported;
 }
 
 }  // namespace blink

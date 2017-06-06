@@ -17,14 +17,18 @@ class CSSSupportsParser {
 
  public:
   enum SupportsResult { kUnsupported = false, kSupported = true, kInvalid };
+  enum SupportsParsingMode { kForAtRule, kForWindowCSS };
 
-  static SupportsResult SupportsCondition(CSSParserTokenRange, CSSParserImpl&);
+  static SupportsResult SupportsCondition(CSSParserTokenRange,
+                                          CSSParserImpl&,
+                                          SupportsParsingMode);
 
  private:
   CSSSupportsParser(CSSParserImpl& parser) : parser_(parser) {}
 
   SupportsResult ConsumeCondition(CSSParserTokenRange);
   SupportsResult ConsumeNegation(CSSParserTokenRange);
+  SupportsResult ConsumeDeclarationCondition(CSSParserTokenRange&);
 
   SupportsResult ConsumeConditionInParenthesis(CSSParserTokenRange&);
 
