@@ -228,6 +228,7 @@ FAIL menuitem.type: setAttribute() to "xcheckbox" assert_equals: IDL get expecte
 FAIL menuitem.type: setAttribute() to "checkbox\0" assert_equals: IDL get expected (string) "command" but got (undefined) undefined
 FAIL menuitem.type: setAttribute() to "heckbox" assert_equals: IDL get expected (string) "command" but got (undefined) undefined
 FAIL menuitem.type: setAttribute() to "CHECKBOX" assert_equals: IDL get expected (string) "checkbox" but got (undefined) undefined
+FAIL menuitem.type: setAttribute() to "checKbox" assert_equals: IDL get expected (string) "command" but got (undefined) undefined
 FAIL menuitem.type: setAttribute() to "radio" assert_equals: IDL get expected (string) "radio" but got (undefined) undefined
 FAIL menuitem.type: setAttribute() to "xradio" assert_equals: IDL get expected (string) "command" but got (undefined) undefined
 FAIL menuitem.type: setAttribute() to "radio\0" assert_equals: IDL get expected (string) "command" but got (undefined) undefined
@@ -258,6 +259,7 @@ FAIL menuitem.type: IDL set to "xcheckbox" assert_equals: getAttribute() expecte
 FAIL menuitem.type: IDL set to "checkbox\0" assert_equals: getAttribute() expected "checkbox\0" but got "RADIO"
 FAIL menuitem.type: IDL set to "heckbox" assert_equals: getAttribute() expected "heckbox" but got "RADIO"
 FAIL menuitem.type: IDL set to "CHECKBOX" assert_equals: getAttribute() expected "CHECKBOX" but got "RADIO"
+FAIL menuitem.type: IDL set to "checKbox" assert_equals: getAttribute() expected "checKbox" but got "RADIO"
 FAIL menuitem.type: IDL set to "radio" assert_equals: getAttribute() expected "radio" but got "RADIO"
 FAIL menuitem.type: IDL set to "xradio" assert_equals: getAttribute() expected "xradio" but got "RADIO"
 FAIL menuitem.type: IDL set to "radio\0" assert_equals: getAttribute() expected "radio\0" but got "RADIO"
