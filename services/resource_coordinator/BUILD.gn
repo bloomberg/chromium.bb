@@ -16,6 +16,8 @@ source_set("lib") {
     "coordination_unit/coordination_unit_factory.h",
     "coordination_unit/coordination_unit_impl.cc",
     "coordination_unit/coordination_unit_impl.h",
+    "coordination_unit/coordination_unit_manager.cc",
+    "coordination_unit/coordination_unit_manager.h",
     "coordination_unit/coordination_unit_provider_impl.cc",
     "coordination_unit/coordination_unit_provider_impl.h",
     "coordination_unit/process_coordination_unit_impl.cc",

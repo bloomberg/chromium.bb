@@ -8,10 +8,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "base/logging.h"
-#include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
@@ -28,16 +25,13 @@ CUIDMap& g_cu_map() {
 
 }  // namespace
 
+const double CoordinationUnitImpl::kCPUUsageMinimumForTesting = 0.0;
+const double CoordinationUnitImpl::kCPUUsageUnmeasuredForTesting = -1.0;
+
 CoordinationUnitImpl::CoordinationUnitImpl(
     const CoordinationUnitID& id,
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
-  if (!id.id) {
-    id_ = CoordinationUnitID(id.type,
-                             base::UnguessableToken().Create().ToString());
-  } else {
-    id_ = id;
-  }
-
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
+    : id_(id.type, id.id) {
   auto it = g_cu_map().insert(std::make_pair(id_, this));
   DCHECK(it.second);  // Inserted successfully
 
@@ -219,7 +213,7 @@ void CoordinationUnitImpl::UnregisterCoordinationPolicyCallback() {
 }
 
 double CoordinationUnitImpl::GetCPUUsageForTesting() {
-  return -1.0;
+  return kCPUUsageUnmeasuredForTesting;
 }
 
 }  // namespace resource_coordinator

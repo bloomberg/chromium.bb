@@ -36,10 +36,18 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   void SetCoordinationPolicyCallback(
       mojom::CoordinationPolicyCallbackPtr callback) override;
 
+  const CoordinationUnitID& id() const { return id_; }
+  const std::set<CoordinationUnitImpl*>& children() const { return children_; }
+  const std::set<CoordinationUnitImpl*>& parents() const { return parents_; }
+
+  static const double kCPUUsageMinimumForTesting;
+  static const double kCPUUsageUnmeasuredForTesting;
   virtual double GetCPUUsageForTesting();
 
  protected:
-  CoordinationUnitID id_;
+  const CoordinationUnitID id_;
+  std::set<CoordinationUnitImpl*> children_;
+  std::set<CoordinationUnitImpl*> parents_;
 
  private:
   bool AddChild(CoordinationUnitImpl* child);
@@ -62,9 +70,6 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
 
   std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   mojo::BindingSet<mojom::CoordinationUnit> bindings_;
-
-  std::set<CoordinationUnitImpl*> children_;
-  std::set<CoordinationUnitImpl*> parents_;
 
   mojom::CoordinationPolicyCallbackPtr policy_callback_;
   mojom::CoordinationPolicyPtr current_policy_;
