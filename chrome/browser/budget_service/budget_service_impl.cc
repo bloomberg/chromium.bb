@@ -68,7 +68,8 @@ void BudgetServiceImpl::GetBudget(const url::Origin& origin,
       blink::mojom::PermissionStatus::GRANTED) {
     blink::mojom::BudgetStatePtr empty_state(blink::mojom::BudgetState::New());
     empty_state->budget_at = 0;
-    empty_state->time = base::Time::Now().ToDoubleT();
+    empty_state->time =
+        base::Time::Now().ToDoubleT() * base::Time::kMillisecondsPerSecond;
 
     std::vector<blink::mojom::BudgetStatePtr> predictions;
     predictions.push_back(std::move(empty_state));
