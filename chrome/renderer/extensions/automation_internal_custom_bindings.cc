@@ -25,6 +25,7 @@
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
+#include "gin/data_object_builder.h"
 #include "ipc/message_filter.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node.h"
@@ -53,39 +54,14 @@ v8::Local<v8::String> CreateV8String(v8::Isolate* isolate,
   return gin::StringToSymbol(isolate, str);
 }
 
-// Note: when building up an object to return from one of the
-// automation API bindings like a rect ({left: 0, top: 0, ...}) or
-// something like that, we should use this function instead of
-// v8::Object::Set, because a malicious extension author could use
-// Object.defineProperty to override a setter and trigger all sorts of
-// things to happen in the middle of one of our functions below.
-//
-// This is only safe when we're creating the object to return and
-// we're setting properties on it before it's been exposed to
-// untrusted scripts.
-void SafeSetV8Property(v8::Isolate* isolate,
-                       v8::Local<v8::Object> object,
-                       base::StringPiece key,
-                       v8::Local<v8::Value> value) {
-  v8::Maybe<bool> maybe = object->CreateDataProperty(
-      isolate->GetCurrentContext(), CreateV8String(isolate, key), value);
-
-  // There's no legit reason CreateDataProperty should fail.
-  CHECK(maybe.IsJust() && maybe.FromJust());
-}
-
 v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
                                      const gfx::Rect& rect) {
-  v8::Local<v8::Object> result(v8::Object::New(isolate));
-  SafeSetV8Property(isolate, result, "left",
-                    v8::Integer::New(isolate, rect.x()));
-  SafeSetV8Property(isolate, result, "top",
-                    v8::Integer::New(isolate, rect.y()));
-  SafeSetV8Property(isolate, result, "width",
-                    v8::Integer::New(isolate, rect.width()));
-  SafeSetV8Property(isolate, result, "height",
-                    v8::Integer::New(isolate, rect.height()));
-  return result;
+  return gin::DataObjectBuilder(isolate)
+      .Set("left", rect.x())
+      .Set("top", rect.y())
+      .Set("width", rect.width())
+      .Set("height", rect.height())
+      .Build();
 }
 
 // Adjust the bounding box of a node from local to global coordinates,
@@ -793,32 +769,24 @@ void AutomationInternalCustomBindings::StartCachingAccessibilityTrees(
 
 void AutomationInternalCustomBindings::GetSchemaAdditions(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  v8::Local<v8::Object> additions = v8::Object::New(GetIsolate());
+  v8::Isolate* isolate = GetIsolate();
 
-  v8::Local<v8::Object> name_from_type(v8::Object::New(GetIsolate()));
-  for (int i = ui::AX_NAME_FROM_NONE; i <= ui::AX_NAME_FROM_LAST; ++i) {
-    name_from_type->Set(
-        v8::Integer::New(GetIsolate(), i),
-        CreateV8String(GetIsolate(),
-                       ui::ToString(static_cast<ui::AXNameFrom>(i))));
-  }
+  gin::DataObjectBuilder name_from_type(isolate);
+  for (int i = ui::AX_NAME_FROM_NONE; i <= ui::AX_NAME_FROM_LAST; ++i)
+    name_from_type.Set(i, ui::ToString(static_cast<ui::AXNameFrom>(i)));
 
-  additions->Set(v8::String::NewFromUtf8(GetIsolate(), "NameFromType"),
-                 name_from_type);
-
-  v8::Local<v8::Object> description_from_type(v8::Object::New(GetIsolate()));
+  gin::DataObjectBuilder description_from_type(isolate);
   for (int i = ui::AX_DESCRIPTION_FROM_NONE; i <= ui::AX_DESCRIPTION_FROM_LAST;
        ++i) {
-    description_from_type->Set(
-        v8::Integer::New(GetIsolate(), i),
-        CreateV8String(GetIsolate(),
-                       ui::ToString(static_cast<ui::AXDescriptionFrom>(i))));
+    description_from_type.Set(
+        i, ui::ToString(static_cast<ui::AXDescriptionFrom>(i)));
   }
 
-  additions->Set(v8::String::NewFromUtf8(GetIsolate(), "DescriptionFromType"),
-                 description_from_type);
-
-  args.GetReturnValue().Set(additions);
+  args.GetReturnValue().Set(
+      gin::DataObjectBuilder(isolate)
+          .Set("NameFromType", name_from_type.Build())
+          .Set("DescriptionFromType", description_from_type.Build())
+          .Build());
 }
 
 void AutomationInternalCustomBindings::DestroyAccessibilityTree(
@@ -938,13 +906,10 @@ void AutomationInternalCustomBindings::GetFocus(
   if (!GetFocusInternal(cache, &focused_tree_cache, &focused_node))
     return;
 
-  v8::Isolate* isolate = GetIsolate();
-  v8::Local<v8::Object> result(v8::Object::New(isolate));
-  SafeSetV8Property(isolate, result, "treeId",
-                    v8::Integer::New(isolate, focused_tree_cache->tree_id));
-  SafeSetV8Property(isolate, result, "nodeId",
-                    v8::Integer::New(isolate, focused_node->id()));
-  args.GetReturnValue().Set(result);
+  args.GetReturnValue().Set(gin::DataObjectBuilder(GetIsolate())
+                                .Set("treeId", focused_tree_cache->tree_id)
+                                .Set("nodeId", focused_node->id())
+                                .Build());
 }
 
 void AutomationInternalCustomBindings::GetHtmlAttributes(
@@ -964,14 +929,10 @@ void AutomationInternalCustomBindings::GetHtmlAttributes(
   if (!node)
     return;
 
-  v8::Local<v8::Object> dst(v8::Object::New(isolate));
-  base::StringPairs src = node->data().html_attributes;
-  for (size_t i = 0; i < src.size(); i++) {
-    std::string& key = src[i].first;
-    std::string& value = src[i].second;
-    SafeSetV8Property(isolate, dst, key, CreateV8String(isolate, value));
-  }
-  args.GetReturnValue().Set(dst);
+  gin::DataObjectBuilder dst(isolate);
+  for (const auto& pair : node->data().html_attributes)
+    dst.Set(pair.first, pair.second);
+  args.GetReturnValue().Set(dst.Build());
 }
 
 void AutomationInternalCustomBindings::GetState(
@@ -991,13 +952,11 @@ void AutomationInternalCustomBindings::GetState(
   if (!node)
     return;
 
-  v8::Local<v8::Object> state(v8::Object::New(isolate));
+  gin::DataObjectBuilder state(isolate);
   uint32_t state_pos = 0, state_shifter = node->data().state;
   while (state_shifter) {
-    if (state_shifter & 1) {
-      std::string key = ToString(static_cast<ui::AXState>(state_pos));
-      SafeSetV8Property(isolate, state, key, v8::Boolean::New(isolate, true));
-    }
+    if (state_shifter & 1)
+      state.Set(ToString(static_cast<ui::AXState>(state_pos)), true);
     state_shifter = state_shifter >> 1;
     state_pos++;
   }
@@ -1007,18 +966,14 @@ void AutomationInternalCustomBindings::GetState(
     top_cache = cache;
   TreeCache* focused_cache = nullptr;
   ui::AXNode* focused_node = nullptr;
-  if (GetFocusInternal(top_cache, &focused_cache, &focused_node)) {
-    if (focused_cache == cache && focused_node == node) {
-      SafeSetV8Property(isolate, state, "focused",
-                        v8::Boolean::New(isolate, true));
-    }
-  }
-  if (cache->tree.data().focus_id == node->id()) {
-    SafeSetV8Property(isolate, state, "focused",
-                      v8::Boolean::New(isolate, true));
-  }
+  const bool focused =
+      (GetFocusInternal(top_cache, &focused_cache, &focused_node) &&
+       focused_cache == cache && focused_node == node) ||
+      cache->tree.data().focus_id == node->id();
+  if (focused)
+    state.Set("focused", true);
 
-  args.GetReturnValue().Set(state);
+  args.GetReturnValue().Set(state.Build());
 }
 
 void AutomationInternalCustomBindings::UpdateOverallTreeChangeObserverFilter() {

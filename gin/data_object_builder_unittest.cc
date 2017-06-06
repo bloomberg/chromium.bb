@@ -115,5 +115,39 @@ TEST_F(DataObjectBuilderTest, ReplacesExistingProperties) {
   EXPECT_EQ(55, value);
 }
 
+// It should work for array indices, too.
+TEST_F(DataObjectBuilderTest, CreatesDataPropertiesForIndices) {
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = context_.Get(isolate);
+
+  v8::Local<v8::Object> object = DataObjectBuilder(isolate)
+                                     .Set(42, base::StringPiece("forty-two"))
+                                     .Build();
+  ASSERT_TRUE(object->HasOwnProperty(context, 42).ToChecked());
+
+  v8::Local<v8::Value> descriptor_object;
+  ASSERT_TRUE(
+      object->GetOwnPropertyDescriptor(context, StringToSymbol(isolate, "42"))
+          .ToLocal(&descriptor_object));
+  gin::Dictionary descriptor(isolate, descriptor_object.As<v8::Object>());
+
+  std::string value;
+  ASSERT_TRUE(descriptor.Get("value", &value));
+  EXPECT_EQ("forty-two", value);
+
+  bool writable = false;
+  ASSERT_TRUE(descriptor.Get("writable", &writable));
+  EXPECT_TRUE(writable);
+
+  bool enumerable = false;
+  ASSERT_TRUE(descriptor.Get("enumerable", &enumerable));
+  EXPECT_TRUE(enumerable);
+
+  bool configurable = false;
+  ASSERT_TRUE(descriptor.Get("configurable", &configurable));
+  EXPECT_TRUE(configurable);
+}
+
 }  // namespace
 }  // namespace gin
