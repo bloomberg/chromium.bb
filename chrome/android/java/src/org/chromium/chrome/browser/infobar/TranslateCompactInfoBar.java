@@ -104,6 +104,7 @@ public class TranslateCompactInfoBar extends InfoBar
     private TintedImageButton mMenuButton;
 
     private boolean mMenuExpanded;
+    private boolean mIsFirstLayout = true;
 
     /** The controller for translate UI snackbars. */
     class TranslateSnackbarController implements SnackbarController {
@@ -187,12 +188,27 @@ public class TranslateCompactInfoBar extends InfoBar
 
         mTabLayout.addOnTabSelectedListener(this);
 
-        // Dismiss all menus when there is layout changed. (which will cause menu misplacement.)
+        // Dismiss all menus and end peeking animation when there is layout changed.
         mTabLayout.addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                dismissMenus();
+                if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
+                    // Dismiss all menus to prevent menu misplacement.
+                    dismissMenus();
+
+                    if (mIsFirstLayout) {
+                        // If this pages is auto-translated (mInitialStep == TRANSLATING_INFOBAR),
+                        // peeking animation will scroll to end without scrolling back to start.
+                        mTabLayout.startPeekingAnimationIfNeeded(
+                                mInitialStep == TRANSLATING_INFOBAR);
+                        mIsFirstLayout = false;
+                        return;
+                    }
+
+                    // End peeking animation because the scroll distance might be changed.
+                    mTabLayout.endPeekingAnimationIfPlaying();
+                }
             }
         });
 
@@ -200,6 +216,7 @@ public class TranslateCompactInfoBar extends InfoBar
         mMenuButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                mTabLayout.endPeekingAnimationIfPlaying();
                 recordInfobarAction(INFOBAR_OPTIONS);
                 initMenuHelper(TranslateMenu.MENU_OVERFLOW);
                 mOverflowMenuHelper.show(TranslateMenu.MENU_OVERFLOW);
@@ -294,6 +311,7 @@ public class TranslateCompactInfoBar extends InfoBar
 
     @Override
     public void onCloseButtonClicked() {
+        mTabLayout.endPeekingAnimationIfPlaying();
         closeInfobar(true);
     }
 
