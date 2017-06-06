@@ -37,6 +37,8 @@ class MockDownloadController : public DownloadControllerBase {
   void CreateAndroidDownload(
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const DownloadInfo& info) override;
+  void AboutToResumeDownload(content::DownloadItem* download_item) override;
+
  private:
   bool approve_file_access_request_;
   DISALLOW_COPY_AND_ASSIGN(MockDownloadController);

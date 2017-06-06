@@ -353,7 +353,7 @@ void DownloadManagerService::ResumeDownloadInternal(
     OnResumptionFailed(download_guid);
     return;
   }
-  item->AddObserver(DownloadControllerBase::Get());
+  DownloadControllerBase::Get()->AboutToResumeDownload(item);
   item->Resume();
   if (!resume_callback_for_testing_.is_null())
     resume_callback_for_testing_.Run(true);
