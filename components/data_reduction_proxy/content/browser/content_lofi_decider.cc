@@ -73,7 +73,8 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
 
   // Do not add the Chrome-Proxy-Accept-Transform header when the page load
   // explicitly forbids previews transformations.
-  if (previews_state & content::PREVIEWS_NO_TRANSFORM) {
+  if (previews_state & content::PREVIEWS_NO_TRANSFORM ||
+      previews_state & content::PREVIEWS_OFF) {
     return;
   }
 
