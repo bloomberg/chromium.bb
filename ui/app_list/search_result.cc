@@ -57,6 +57,12 @@ void SearchResult::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
     observer.OnBadgeIconChanged();
 }
 
+void SearchResult::SetIsMouseInView(bool mouse_is_inside) {
+  mouse_is_in_view_ = mouse_is_inside;
+  for (auto& observer : observers_)
+    observer.OnViewHoverStateChanged();
+}
+
 void SearchResult::SetActions(const Actions& sets) {
   actions_ = sets;
   for (auto& observer : observers_)
