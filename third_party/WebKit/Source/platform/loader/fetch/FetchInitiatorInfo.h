@@ -40,8 +40,8 @@ struct FetchInitiatorInfo {
         start_time(0.0),
         is_link_preload(false) {}
 
-  // When adding members, CrossThreadFetchInitiatorInfoData should be
-  // updated.
+  // ATTENTION: When adding members, update CrossThreadFetchInitiatorInfoData,
+  // too.
   AtomicString name;
   TextPosition position;
   double start_time;
