@@ -279,16 +279,6 @@ void AppendTabs(const StartupTabs& from, StartupTabs* to) {
     to->insert(to->end(), from.begin(), from.end());
 }
 
-// Prevent profiles created in M56 from seeing Welcome page. See
-// crbug.com/704977.
-// TODO(tmartino): Remove this in ~M60.
-void ProcessErroneousWelcomePagePrefs(Profile* profile) {
-  const std::string kVersionErroneousWelcomeFixed = "58.0.0.0";
-  if (profile->WasCreatedByVersionOrLater(kVersionErroneousWelcomeFixed))
-    return;
-  profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-}
-
 }  // namespace
 
 namespace internals {
@@ -628,8 +618,6 @@ void StartupBrowserCreatorImpl::ProcessLaunchUrlsUsingConsolidatedFlow(
   // Don't open any browser windows if starting up in "background mode".
   if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow))
     return;
-
-  ProcessErroneousWelcomePagePrefs(profile_);
 
   StartupTabs cmd_line_tabs;
   UrlsToTabs(cmd_line_urls, &cmd_line_tabs);
