@@ -163,7 +163,31 @@
         await this.fake_central_ptr_.setNextGATTConnectionResponse(
           this.address, code);
 
-      if (success !== true) throw 'Cannot set next response.';
+      if (success !== true) throw 'setNextGATTConnectionResponse failed.';
+    }
+
+    // Sets the next GATT Discovery request response for peripheral with
+    // |address| to |code|. |code| could be an HCI Error Code from
+    // BT 4.2 Vol 2 Part D 1.3 List Of Error Codes or a number outside that
+    // range returned by specific platforms e.g. Android returns 0x101 to signal
+    // a GATT failure
+    // https://developer.android.com/reference/android/bluetooth/BluetoothGatt.html#GATT_FAILURE
+    //
+    // The following procedures defined at BT 4.2 Vol 3 Part G Section 4.
+    // "GATT Feature Requirements" are used to discover attributes of the
+    // GATT Server:
+    //  - Primary Service Discovery
+    //  - Relationship Discovery
+    //  - Characteristic Discovery
+    //  - Characteristic Descriptor Discovery
+    // This method aims to simulate the response once all of these procedures
+    // have completed or if there was an error during any of them.
+    async setNextGATTDiscoveryResponse({code}) {
+      let {success} =
+        await this.fake_central_ptr_.setNextGATTDiscoveryResponse(
+          this.address, code);
+
+      if (success !== true) throw 'setNextGATTDiscoveryResponse failed.';
     }
   }
 

@@ -461,9 +461,12 @@ function setUpHealthThermometerAndHeartRateDevices() {
 function getHealthThermometerDevice(options) {
   return getDiscoveredHealthThermometerDevice(options)
     .then(([device, fake_peripheral]) => {
-      return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
+      return fake_peripheral
+        .setNextGATTConnectionResponse({code: HCI_SUCCESS})
         .then(() => device.gatt.connect())
-        .then(gatt => [gatt.device, fake_peripheral]);
+        .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
+          code: HCI_SUCCESS}))
+        .then(() => [device, fake_peripheral]);
     });
 }
 
