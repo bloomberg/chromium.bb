@@ -33,10 +33,9 @@ function test() {
         function dump()
         {
             TestRunner.addResult("Query:" + JSON.stringify(filteredSelectionDialog._value()));
-            var items = filteredSelectionDialog._items;
             var output = [];
-            for (var i = 0; i < items.length(); ++i)
-                output.push(provider.itemKeyAt(items.itemAtIndex(i)));
+            for (var item of filteredSelectionDialog._items)
+                output.push(provider.itemKeyAt(item));
             TestRunner.addResult("Output:" + JSON.stringify(output));
         }
 

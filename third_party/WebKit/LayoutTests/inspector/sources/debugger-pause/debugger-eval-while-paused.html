@@ -37,7 +37,7 @@ var test = function()
     {
         InspectorTest.addResult("Evaluated script on the top frame: " + result);
         var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
-        pane._list.selectItem(pane._list._model.itemAtIndex(1));
+        pane._list.selectItem(pane._list._model.at(1));
         InspectorTest.deprecatedRunAfterPendingDispatches(step4);
     }
 
