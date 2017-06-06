@@ -11,11 +11,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/tether/active_host.h"
+#include "chromeos/components/tether/device_status_util.h"
 #include "chromeos/components/tether/keep_alive_operation.h"
 
 namespace chromeos {
 
 namespace tether {
+
+class HostScanCache;
+class DeviceIdTetherNetworkGuidMap;
 
 // Schedules keep-alive messages to be sent when this device is connected to a
 // remote device's tether hotspot. When a device connects, a keep-alive message
@@ -24,8 +28,11 @@ namespace tether {
 class KeepAliveScheduler : public ActiveHost::Observer,
                            public KeepAliveOperation::Observer {
  public:
-  KeepAliveScheduler(ActiveHost* active_host,
-                     BleConnectionManager* connection_manager);
+  KeepAliveScheduler(
+      ActiveHost* active_host,
+      BleConnectionManager* connection_manager,
+      HostScanCache* host_scan_cache,
+      DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
   virtual ~KeepAliveScheduler();
 
   // ActiveHost::Observer:
@@ -33,14 +40,19 @@ class KeepAliveScheduler : public ActiveHost::Observer,
       const ActiveHost::ActiveHostChangeInfo& change_info) override;
 
   // KeepAliveOperation::Observer:
-  void OnOperationFinished() override;
+  void OnOperationFinished(
+      const cryptauth::RemoteDevice& remote_device,
+      std::unique_ptr<DeviceStatus> device_status) override;
 
  private:
   friend class KeepAliveSchedulerTest;
 
-  KeepAliveScheduler(ActiveHost* active_host,
-                     BleConnectionManager* connection_manager,
-                     std::unique_ptr<base::Timer> timer);
+  KeepAliveScheduler(
+      ActiveHost* active_host,
+      BleConnectionManager* connection_manager,
+      HostScanCache* host_scan_cache,
+      DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
+      std::unique_ptr<base::Timer> timer);
 
   void SendKeepAliveTickle();
 
@@ -48,6 +60,8 @@ class KeepAliveScheduler : public ActiveHost::Observer,
 
   ActiveHost* active_host_;
   BleConnectionManager* connection_manager_;
+  HostScanCache* host_scan_cache_;
+  DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
 
   std::unique_ptr<base::Timer> timer_;
   std::shared_ptr<cryptauth::RemoteDevice> active_host_device_;

@@ -10,6 +10,7 @@
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
+#include "chromeos/components/tether/proto_test_util.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,15 +28,38 @@ class TestObserver : public KeepAliveOperation::Observer {
 
   bool has_run_callback() { return has_run_callback_; }
 
-  void OnOperationFinished() override { has_run_callback_ = true; }
+  cryptauth::RemoteDevice last_remote_device_received() {
+    return last_remote_device_received_;
+  }
+
+  DeviceStatus* last_device_status_received() {
+    return last_device_status_received_.get();
+  }
+
+  void OnOperationFinished(
+      const cryptauth::RemoteDevice& remote_device,
+      std::unique_ptr<DeviceStatus> device_status) override {
+    has_run_callback_ = true;
+    last_remote_device_received_ = remote_device;
+    last_device_status_received_ = std::move(device_status);
+  }
 
  private:
   bool has_run_callback_;
+  cryptauth::RemoteDevice last_remote_device_received_;
+  std::unique_ptr<DeviceStatus> last_device_status_received_;
 };
 
 std::string CreateKeepAliveTickleString() {
   KeepAliveTickle tickle;
   return MessageWrapper(tickle).ToRawMessage();
+}
+
+std::string CreateKeepAliveTickleResponseString() {
+  KeepAliveTickleResponse response;
+  response.mutable_device_status()->CopyFrom(
+      CreateDeviceStatusWithFakeFields());
+  return MessageWrapper(response).ToRawMessage();
 }
 
 }  // namespace
@@ -81,10 +105,40 @@ class KeepAliveOperationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(KeepAliveOperationTest);
 };
 
-TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickle) {
+TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickleAndReceivesResponse) {
   EXPECT_FALSE(test_observer_->has_run_callback());
+
   SimulateDeviceAuthenticationAndVerifyMessageSent();
+  EXPECT_FALSE(test_observer_->has_run_callback());
+
+  fake_ble_connection_manager_->ReceiveMessage(
+      test_device_, CreateKeepAliveTickleResponseString());
   EXPECT_TRUE(test_observer_->has_run_callback());
+  EXPECT_EQ(test_device_, test_observer_->last_remote_device_received());
+  ASSERT_TRUE(test_observer_->last_device_status_received());
+  EXPECT_EQ(CreateDeviceStatusWithFakeFields().SerializeAsString(),
+            test_observer_->last_device_status_received()->SerializeAsString());
+}
+
+TEST_F(KeepAliveOperationTest, TestCannotConnect) {
+  // Simulate the device failing to connect.
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_device_, cryptauth::SecureChannel::Status::CONNECTING);
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_device_, cryptauth::SecureChannel::Status::DISCONNECTED);
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_device_, cryptauth::SecureChannel::Status::CONNECTING);
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_device_, cryptauth::SecureChannel::Status::DISCONNECTED);
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_device_, cryptauth::SecureChannel::Status::CONNECTING);
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_device_, cryptauth::SecureChannel::Status::DISCONNECTED);
+
+  // The maximum number of connection failures has occurred.
+  EXPECT_TRUE(test_observer_->has_run_callback());
+  EXPECT_EQ(test_device_, test_observer_->last_remote_device_received());
+  EXPECT_FALSE(test_observer_->last_device_status_received());
 }
 
 }  // namespace tether
