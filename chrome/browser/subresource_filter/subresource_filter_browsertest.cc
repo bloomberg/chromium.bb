@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -543,6 +544,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
+  content::ConsoleObserverDelegate console_observer(
+      web_contents(), kDisallowSubframeConsoleMessage + "*");
+  web_contents()->SetDelegate(&console_observer);
+
   GURL url(GetTestUrl(kTestFrameSetPath));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
@@ -557,6 +562,57 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
 
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
                            1);
+
+  // Console message for subframe blocking should be displayed.
+  EXPECT_TRUE(base::MatchPattern(
+      console_observer.message(),
+      kDisallowSubframeConsoleMessage + "*included_script.js*"));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       ActivationDisabled_NoConsoleMessage) {
+  content::ConsoleObserverDelegate console_observer(
+      web_contents(), kDisallowSubframeConsoleMessage + "*");
+  web_contents()->SetDelegate(&console_observer);
+
+  Configuration config(
+      subresource_filter::ActivationLevel::DISABLED,
+      subresource_filter::ActivationScope::ACTIVATION_LIST,
+      subresource_filter::ActivationList::PHISHING_INTERSTITIAL);
+  ResetConfiguration(std::move(config));
+
+  GURL url(GetTestUrl(kTestFrameSetPath));
+  ConfigureAsPhishingURL(url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Console message for subframe blocking should not be displayed as filtering
+  // is disabled.
+  EXPECT_TRUE(console_observer.message().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       ActivationDryRun_NoConsoleMessage) {
+  content::ConsoleObserverDelegate console_observer(
+      web_contents(), kDisallowSubframeConsoleMessage + "*");
+  web_contents()->SetDelegate(&console_observer);
+
+  Configuration config(
+      subresource_filter::ActivationLevel::DRYRUN,
+      subresource_filter::ActivationScope::ACTIVATION_LIST,
+      subresource_filter::ActivationList::PHISHING_INTERSTITIAL);
+  ResetConfiguration(std::move(config));
+
+  GURL url(GetTestUrl(kTestFrameSetPath));
+  ConfigureAsPhishingURL(url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Console message for subframe blocking should not be displayed as filtering
+  // is enabled in dryrun mode.
+  EXPECT_TRUE(console_observer.message().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
