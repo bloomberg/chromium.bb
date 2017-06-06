@@ -117,6 +117,7 @@ class BackgroundContentsService : private content::NotificationObserver,
   // Source..
   BackgroundContents* CreateBackgroundContents(
       scoped_refptr<content::SiteInstance> site,
+      content::RenderFrameHost* opener,
       int32_t route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,

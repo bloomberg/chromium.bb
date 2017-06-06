@@ -268,9 +268,7 @@ bool GetInnerWebContentsHelper(
   return false;
 }
 
-}  // namespace
-
-WebContents* WebContents::Create(const WebContents::CreateParams& params) {
+FrameTreeNode* FindOpener(const WebContents::CreateParams& params) {
   FrameTreeNode* opener_node = nullptr;
   if (params.opener_render_frame_id != MSG_ROUTING_NONE) {
     RenderFrameHostImpl* opener_rfh = RenderFrameHostImpl::FromID(
@@ -278,13 +276,21 @@ WebContents* WebContents::Create(const WebContents::CreateParams& params) {
     if (opener_rfh)
       opener_node = opener_rfh->frame_tree_node();
   }
-  return WebContentsImpl::CreateWithOpener(params, opener_node);
+  return opener_node;
+}
+
+}  // namespace
+
+WebContents* WebContents::Create(const WebContents::CreateParams& params) {
+  return WebContentsImpl::CreateWithOpener(params, FindOpener(params));
 }
 
 WebContents* WebContents::CreateWithSessionStorage(
     const WebContents::CreateParams& params,
     const SessionStorageNamespaceMap& session_storage_namespace_map) {
   WebContentsImpl* new_contents = new WebContentsImpl(params.browser_context);
+  new_contents->SetOpenerForNewContents(FindOpener(params),
+                                        params.opener_suppressed);
 
   for (SessionStorageNamespaceMap::const_iterator it =
            session_storage_namespace_map.begin();
@@ -650,27 +656,14 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
     FrameTreeNode* opener) {
   TRACE_EVENT0("browser", "WebContentsImpl::CreateWithOpener");
   WebContentsImpl* new_contents = new WebContentsImpl(params.browser_context);
-
-  FrameTreeNode* new_root = new_contents->GetFrameTree()->root();
-
-  if (opener) {
-    // For the "original opener", track the opener's main frame instead, because
-    // if the opener is a subframe, the opener tracking could be easily bypassed
-    // by spawning from a subframe and deleting the subframe.
-    // https://crbug.com/705316
-    new_root->SetOriginalOpener(opener->frame_tree()->root());
-
-    if (!params.opener_suppressed) {
-      new_root->SetOpener(opener);
-      new_contents->created_with_opener_ = true;
-    }
-  }
+  new_contents->SetOpenerForNewContents(opener, params.opener_suppressed);
 
   // If the opener is sandboxed, a new popup must inherit the opener's sandbox
   // flags, and these flags take effect immediately.  An exception is if the
   // opener's sandbox flags lack the PropagatesToAuxiliaryBrowsingContexts
   // bit (which is controlled by the "allow-popups-to-escape-sandbox" token).
   // See https://html.spec.whatwg.org/#attr-iframe-sandbox.
+  FrameTreeNode* new_root = new_contents->GetFrameTree()->root();
   if (opener) {
     blink::WebSandboxFlags opener_flags = opener->effective_sandbox_flags();
     const blink::WebSandboxFlags inherit_flag =
@@ -2227,10 +2220,11 @@ void WebContentsImpl::CreateNewWindow(
 
   if (delegate_ &&
       !delegate_->ShouldCreateWebContents(
-          this, source_site_instance, render_view_route_id, main_frame_route_id,
-          main_frame_widget_route_id, params.window_container_type,
-          opener->GetLastCommittedURL(), params.frame_name, params.target_url,
-          partition_id, session_storage_namespace)) {
+          this, opener, source_site_instance, render_view_route_id,
+          main_frame_route_id, main_frame_widget_route_id,
+          params.window_container_type, opener->GetLastCommittedURL(),
+          params.frame_name, params.target_url, partition_id,
+          session_storage_namespace)) {
     // Note: even though we're not creating a WebContents here, it could have
     // been created by the embedder so ensure that the RenderFrameHost is
     // properly initialized.
@@ -3410,18 +3404,18 @@ bool WebContentsImpl::HasOpener() const {
   return GetOpener() != NULL;
 }
 
-WebContentsImpl* WebContentsImpl::GetOpener() const {
+RenderFrameHostImpl* WebContentsImpl::GetOpener() const {
   FrameTreeNode* opener_ftn = frame_tree_.root()->opener();
-  return opener_ftn ? FromFrameTreeNode(opener_ftn) : nullptr;
+  return opener_ftn ? opener_ftn->current_frame_host() : nullptr;
 }
 
 bool WebContentsImpl::HasOriginalOpener() const {
   return GetOriginalOpener() != NULL;
 }
 
-WebContents* WebContentsImpl::GetOriginalOpener() const {
+RenderFrameHostImpl* WebContentsImpl::GetOriginalOpener() const {
   FrameTreeNode* opener_ftn = frame_tree_.root()->original_opener();
-  return opener_ftn ? FromFrameTreeNode(opener_ftn) : nullptr;
+  return opener_ftn ? opener_ftn->current_frame_host() : nullptr;
 }
 
 void WebContentsImpl::DidChooseColorInColorChooser(SkColor color) {
@@ -5680,6 +5674,24 @@ void WebContentsImpl::NotifyPreferencesChanged() {
   }
   for (RenderViewHost* render_view_host : render_view_host_set)
     render_view_host->OnWebkitPreferencesChanged();
+}
+
+void WebContentsImpl::SetOpenerForNewContents(FrameTreeNode* opener,
+                                              bool opener_suppressed) {
+  if (opener) {
+    FrameTreeNode* new_root = GetFrameTree()->root();
+
+    // For the "original opener", track the opener's main frame instead, because
+    // if the opener is a subframe, the opener tracking could be easily bypassed
+    // by spawning from a subframe and deleting the subframe.
+    // https://crbug.com/705316
+    new_root->SetOriginalOpener(opener->frame_tree()->root());
+
+    if (!opener_suppressed) {
+      new_root->SetOpener(opener);
+      created_with_opener_ = true;
+    }
+  }
 }
 
 }  // namespace content

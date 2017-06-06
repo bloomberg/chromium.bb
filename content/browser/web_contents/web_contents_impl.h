@@ -431,9 +431,9 @@ class CONTENT_EXPORT WebContentsImpl
   gfx::Size GetPreferredSize() const override;
   bool GotResponseToLockMouseRequest(bool allowed) override;
   bool HasOpener() const override;
-  WebContentsImpl* GetOpener() const override;
+  RenderFrameHostImpl* GetOpener() const override;
   bool HasOriginalOpener() const override;
-  WebContents* GetOriginalOpener() const override;
+  RenderFrameHostImpl* GetOriginalOpener() const override;
   void DidChooseColorInColorChooser(SkColor color) override;
   void DidEndColorChooser() override;
   int DownloadImage(const GURL& url,
@@ -1186,6 +1186,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Sends a Page message IPC.
   void SendPageMessage(IPC::Message* msg);
+
+  void SetOpenerForNewContents(FrameTreeNode* opener, bool opener_suppressed);
 
   // Tracking loading progress -------------------------------------------------
 

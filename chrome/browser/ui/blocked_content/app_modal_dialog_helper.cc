@@ -35,12 +35,16 @@ AppModalDialogHelper::AppModalDialogHelper(content::WebContents* dialog_host)
   if (active_browser) {
     content::WebContents* active_web_contents =
         active_browser->tab_strip_model()->GetActiveWebContents();
-    if (active_browser->is_type_popup() && active_web_contents &&
-        active_web_contents->GetOriginalOpener() == actual_host) {
-      // It's indeed a popup from the dialog opening WebContents. Store it, so
-      // we can focus it later.
-      popup_ = active_web_contents;
-      Observe(popup_);
+    if (active_browser->is_type_popup() && active_web_contents) {
+      content::WebContents* original_opener =
+          content::WebContents::FromRenderFrameHost(
+              active_web_contents->GetOriginalOpener());
+      if (original_opener == actual_host) {
+        // It's indeed a popup from the dialog opening WebContents. Store it, so
+        // we can focus it later.
+        popup_ = active_web_contents;
+        Observe(popup_);
+      }
     }
   }
 }
