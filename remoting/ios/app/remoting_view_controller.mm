@@ -68,23 +68,28 @@ static UIColor* kChromotingBlueBackground =
     _appBar = [[MDCAppBar alloc] init];
     [self addChildViewController:_appBar.headerViewController];
 
-    _appBar.headerViewController.headerView.backgroundColor =
-        kChromotingBlueBackground;
-    _appBar.navigationBar.tintColor = [UIColor whiteColor];
+    self.navigationItem.title = @"Chrome Remote Desktop";
 
     UIBarButtonItem* menuButton =
-        [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"Settings"]
+        [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"ic_menu"]
                                          style:UIBarButtonItemStyleDone
                                         target:self
                                         action:@selector(didSelectSettings)];
     self.navigationItem.leftBarButtonItem = menuButton;
 
-    UIBarButtonItem* refreshButton =
-        [[UIBarButtonItem alloc] initWithTitle:@"Refresh"
-                                         style:UIBarButtonItemStyleDone
-                                        target:self
-                                        action:@selector(didSelectRefresh)];
+    UIBarButtonItem* refreshButton = [[UIBarButtonItem alloc]
+        initWithImage:[UIImage imageNamed:@"ic_refresh"]
+                style:UIBarButtonItemStyleDone
+               target:self
+               action:@selector(didSelectRefresh)];
     self.navigationItem.rightBarButtonItem = refreshButton;
+
+    _appBar.headerViewController.headerView.backgroundColor =
+        kChromotingBlueBackground;
+    _appBar.navigationBar.backgroundColor = kChromotingBlueBackground;
+    MDCNavigationBarTextColorAccessibilityMutator* mutator =
+        [[MDCNavigationBarTextColorAccessibilityMutator alloc] init];
+    [mutator mutate:_appBar.navigationBar];
   }
   return self;
 }

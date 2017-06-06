@@ -12,11 +12,13 @@
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
+#import "remoting/ios/app/host_collection_header_view.h"
 
 static NSString* const kReusableIdentifierItem =
     @"remotingHostCollectionViewControllerItem";
 
 static CGFloat kHostCollectionViewControllerCellHeight = 70.f;
+static CGFloat kHostCollectionHeaderViewHeight = 25.f;
 
 @implementation HostCollectionViewController
 
@@ -31,6 +33,10 @@ static CGFloat kHostCollectionViewControllerCellHeight = 70.f;
     [self.collectionView registerClass:[HostCollectionViewCell class]
             forCellWithReuseIdentifier:NSStringFromClass(
                                            [HostCollectionViewCell class])];
+
+    [self.collectionView registerClass:[HostCollectionHeaderView class]
+            forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+                   withReuseIdentifier:UICollectionElementKindSectionHeader];
   }
   return self;
 }
@@ -39,7 +45,7 @@ static CGFloat kHostCollectionViewControllerCellHeight = 70.f;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
+  self.styler.cellStyle = MDCCollectionViewCellStyleDefault;
   self.styler.cellLayoutType = MDCCollectionViewCellLayoutTypeList;
 }
 
@@ -74,6 +80,19 @@ static CGFloat kHostCollectionViewControllerCellHeight = 70.f;
   return cell;
 }
 
+- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
+          viewForSupplementaryElementOfKind:(NSString*)kind
+                                atIndexPath:(NSIndexPath*)indexPath {
+  HostCollectionHeaderView* supplementaryView =
+      [collectionView dequeueReusableSupplementaryViewOfKind:kind
+                                         withReuseIdentifier:kind
+                                                forIndexPath:indexPath];
+  if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
+    supplementaryView.text = @"Remote devices";
+  }
+  return supplementaryView;
+}
+
 #pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView*)collectionView
@@ -98,6 +117,16 @@ static CGFloat kHostCollectionViewControllerCellHeight = 70.f;
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   [self.flexHeaderContainerViewController.headerViewController
       scrollViewDidScroll:scrollView];
+}
+
+#pragma mark - UICollectionViewDelegateFlowLayout
+
+- (CGSize)collectionView:(UICollectionView*)collectionView
+                             layout:
+                                 (UICollectionViewLayout*)collectionViewLayout
+    referenceSizeForHeaderInSection:(NSInteger)section {
+  return CGSizeMake(collectionView.bounds.size.width,
+                    kHostCollectionHeaderViewHeight);
 }
 
 #pragma mark - Private
