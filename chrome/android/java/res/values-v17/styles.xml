@@ -635,6 +635,7 @@
         <item name="android:layout_marginTop">12dp</item>
         <item name="android:layout_marginBottom">10dp</item>
         <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/black_alpha_54</item>
     </style>
     <style name="DownloadRowContainer">
         <item name="android:layout_width">match_parent</item>
