@@ -158,7 +158,6 @@
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "chrome/browser/ui/android/infobars/autofill_save_card_infobar.h"
-#include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/infobars/reader_mode_infobar.h"
@@ -328,7 +327,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"FontSizePrefsAndroid", FontSizePrefsAndroid::Register},
     {"ForeignSessionHelper",
      ForeignSessionHelper::RegisterForeignSessionHelper},
-    {"GroupedPermissionInfoBar", GroupedPermissionInfoBar::Register},
     {"HistoryReportJniBridge", history_report::RegisterHistoryReportJniBridge},
     {"InfoBarContainer", RegisterInfoBarContainer},
     {"InstantAppsInfobarDelegate", RegisterInstantAppsInfoBarDelegate},
