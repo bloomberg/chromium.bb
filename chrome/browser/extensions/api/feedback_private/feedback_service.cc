@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/blob_reader.h"
 #include "net/base/network_change_notifier.h"
 
 using content::BrowserThread;

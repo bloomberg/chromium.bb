@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_BLOB_READER_H_
-#define CHROME_BROWSER_EXTENSIONS_BLOB_READER_H_
+#ifndef EXTENSIONS_BROWSER_BLOB_READER_H_
+#define EXTENSIONS_BROWSER_BLOB_READER_H_
 
 #include <stdint.h>
 
@@ -17,7 +17,10 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
+
 namespace net {
 class URLFetcher;
 }
@@ -32,7 +35,7 @@ class BlobReader : public net::URLFetcherDelegate {
                               int64_t blob_total_size)>
       BlobReadCallback;
 
-  BlobReader(Profile* profile,
+  BlobReader(content::BrowserContext* browser_context,
              const std::string& blob_uuid,
              BlobReadCallback callback);
   ~BlobReader() override;
@@ -51,4 +54,4 @@ class BlobReader : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(BlobReader);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_BLOB_READER_H_
+#endif  // EXTENSIONS_BROWSER_BLOB_READER_H_

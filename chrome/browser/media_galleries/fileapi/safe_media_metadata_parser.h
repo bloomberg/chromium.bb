@@ -20,7 +20,9 @@
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "content/public/browser/utility_process_mojo_client.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace metadata {
 
@@ -37,7 +39,7 @@ class SafeMediaMetadataParser
       std::unique_ptr<std::vector<AttachedImage>> attached_images)>
       DoneCallback;
 
-  SafeMediaMetadataParser(Profile* profile,
+  SafeMediaMetadataParser(content::BrowserContext* browser_context,
                           const std::string& blob_uuid,
                           int64_t blob_size,
                           const std::string& mime_type,
@@ -87,7 +89,7 @@ class SafeMediaMetadataParser
       std::unique_ptr<std::string> data);
 
   // All member variables are only accessed on the IO thread.
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
   const std::string blob_uuid_;
   const int64_t blob_size_;
   const std::string mime_type_;

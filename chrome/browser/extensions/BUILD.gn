@@ -458,8 +458,6 @@ static_library("extensions") {
     "blacklist_factory.h",
     "blacklist_state_fetcher.cc",
     "blacklist_state_fetcher.h",
-    "blob_reader.cc",
-    "blob_reader.h",
     "bookmark_app_helper.cc",
     "bookmark_app_helper.h",
     "browser_action_test_util.h",
