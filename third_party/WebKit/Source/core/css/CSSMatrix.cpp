@@ -193,12 +193,12 @@ String CSSMatrix::toString() const {
   // FIXME - Need to ensure valid CSS floating point values
   // (https://bugs.webkit.org/show_bug.cgi?id=20674)
   if (matrix_->IsAffine())
-    return String::Format("matrix(%f, %f, %f, %f, %f, %f)", matrix_->A(),
+    return String::Format("matrix(%g, %g, %g, %g, %g, %g)", matrix_->A(),
                           matrix_->B(), matrix_->C(), matrix_->D(),
                           matrix_->E(), matrix_->F());
   return String::Format(
-      "matrix3d(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, "
-      "%f)",
+      "matrix3d(%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, "
+      "%g)",
       matrix_->M11(), matrix_->M12(), matrix_->M13(), matrix_->M14(),
       matrix_->M21(), matrix_->M22(), matrix_->M23(), matrix_->M24(),
       matrix_->M31(), matrix_->M32(), matrix_->M33(), matrix_->M34(),

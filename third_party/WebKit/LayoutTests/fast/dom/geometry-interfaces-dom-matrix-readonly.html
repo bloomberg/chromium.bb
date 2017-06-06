@@ -60,19 +60,41 @@ test(() => {
 }, "DOMMatrixReadOnly(transformList) - transformList");
 
 test(() => {
-  var matrix2d = new DOMMatrixReadOnly([1, 2, 3, 3.1, 2, 1]);
+  var matrix2d = new DOMMatrixReadOnly([1, 2, 3, 3.1, 2, 1.1]);
   assert_true(matrix2d.is2D);
-  assert_equals(matrix2d.toString(), "matrix(1, 2, 3, 3.1, 2, 1)");
+  assert_equals(matrix2d.toString(), "matrix(1, 2, 3, 3.1, 2, 1.1)");
 }, "DOMMatrixReadOnly toString() - 2D matrix");
 
 test(() => {
   var matrix3d = new DOMMatrixReadOnly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]);
   assert_false(matrix3d.is2D);
+
   assert_equals(matrix3d.toString(), "matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6)");
 }, "DOMMatrixReadOnly toString() - 3D matrix");
 
-test(() => {
-  var identity_matrix = DOMMatrixReadOnly.fromMatrix();
+[NaN, Infinity, -Infinity].forEach(num => {
+  test(() => {
+    for (let i = 0; i < 6; ++i) {
+      let seq = [1, 0, 0, 1, 0, 0];
+      seq[i] = num;
+      var matrix2d = new DOMMatrixReadOnly(seq, 6);
+      assert_true(matrix2d.is2D);
+      assert_throws("InvalidStateError", () => { matrix2d.toString() });
+    }
+  }, `DOMMatrixReadOnly toString() - 2D matrix with ${num}`);
+
+  test(() => {
+    for (let i = 0; i < 12; ++i) {
+      let seq = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+      seq[i] = num;
+      var matrix3d = new DOMMatrixReadOnly(seq, 12);
+      assert_false(matrix3d.is2D);
+      assert_throws("InvalidStateError", () => { matrix3d.toString() });
+    }
+  }, `DOMMatrixReadOnly toString() - 3D matrix with ${num}`);
+});
+
+test(() => {  var identity_matrix = DOMMatrixReadOnly.fromMatrix();
   assert_true(identity_matrix.is2D);
   assert_object_equals(identity_matrix.toJSON(),
     { a : 1, b : 0, c : 0, d : 1, e : 0, f : 0,

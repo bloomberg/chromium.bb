@@ -322,21 +322,83 @@ NotShared<DOMFloat64Array> DOMMatrixReadOnly::toFloat64Array() const {
   return NotShared<DOMFloat64Array>(DOMFloat64Array::Create(array, 16));
 }
 
-const String DOMMatrixReadOnly::toString() const {
-  std::stringstream stream;
-  if (is2D()) {
-    stream << "matrix(" << a() << ", " << b() << ", " << c() << ", " << d()
-           << ", " << e() << ", " << f();
-  } else {
-    stream << "matrix3d(" << m11() << ", " << m12() << ", " << m13() << ", "
-           << m14() << ", " << m21() << ", " << m22() << ", " << m23() << ", "
-           << m24() << ", " << m31() << ", " << m32() << ", " << m33() << ", "
-           << m34() << ", " << m41() << ", " << m42() << ", " << m43() << ", "
-           << m44();
-  }
-  stream << ")";
+const String DOMMatrixReadOnly::toString(
+    ExceptionState& exception_state) const {
+  const char* kComma = ", ";
+  String result;
 
-  return String(stream.str().c_str());
+  if (is2D()) {
+    if (!std::isfinite(a()) || !std::isfinite(b()) || !std::isfinite(c()) ||
+        !std::isfinite(d()) || !std::isfinite(e()) || !std::isfinite(f())) {
+      exception_state.ThrowDOMException(
+          kInvalidStateError,
+          "DOMMatrix cannot be serialized with NaN or Infinity values.");
+      return String();
+    }
+
+    result.append("matrix(");
+    result.append(String::NumberToStringECMAScript(a()));
+    result.append(kComma);
+    result.append(String::NumberToStringECMAScript(b()));
+    result.append(kComma);
+    result.append(String::NumberToStringECMAScript(c()));
+    result.append(kComma);
+    result.append(String::NumberToStringECMAScript(d()));
+    result.append(kComma);
+    result.append(String::NumberToStringECMAScript(e()));
+    result.append(kComma);
+    result.append(String::NumberToStringECMAScript(f()));
+    result.append(")");
+    return result;
+  }
+
+  if (!std::isfinite(m11()) || !std::isfinite(m12()) || !std::isfinite(m13()) ||
+      !std::isfinite(m14()) || !std::isfinite(m21()) || !std::isfinite(m22()) ||
+      !std::isfinite(m23()) || !std::isfinite(m24()) || !std::isfinite(m31()) ||
+      !std::isfinite(m32()) || !std::isfinite(m33()) || !std::isfinite(m34()) ||
+      !std::isfinite(m41()) || !std::isfinite(m42()) || !std::isfinite(m43()) ||
+      !std::isfinite(m44())) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "DOMMatrix cannot be serialized with NaN or Infinity values.");
+    return String();
+  }
+
+  result.append("matrix3d(");
+  result.append(String::NumberToStringECMAScript(m11()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m12()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m13()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m14()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m21()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m22()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m23()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m24()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m31()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m32()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m33()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m34()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m41()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m42()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m43()));
+  result.append(kComma);
+  result.append(String::NumberToStringECMAScript(m44()));
+  result.append(")");
+
+  return result;
 }
 
 ScriptValue DOMMatrixReadOnly::toJSONForBinding(
