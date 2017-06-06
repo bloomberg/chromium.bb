@@ -12,6 +12,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
+#include "net/nqe/effective_connection_type.h"
+#include "net/nqe/network_quality_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::AnyNumber;
@@ -23,25 +25,12 @@ namespace {
 const char kTestUrl1[] = "https://www.google.com/";
 const char kTestUrl2[] = "https://www.example.com/";
 
-class MockNetworkQualityProvider
-    : public net::NetworkQualityEstimator::NetworkQualityProvider {
+class MockNetworkQualityProvider : public net::NetworkQualityProvider {
  public:
   MOCK_CONST_METHOD0(GetEffectiveConnectionType,
                      net::EffectiveConnectionType());
   MOCK_CONST_METHOD0(GetHttpRTT, base::Optional<base::TimeDelta>());
   MOCK_CONST_METHOD0(GetTransportRTT, base::Optional<base::TimeDelta>());
-  MOCK_METHOD1(
-      AddEffectiveConnectionTypeObserver,
-      void(net::NetworkQualityEstimator::EffectiveConnectionTypeObserver*));
-  MOCK_METHOD1(
-      RemoveEffectiveConnectionTypeObserver,
-      void(net::NetworkQualityEstimator::EffectiveConnectionTypeObserver*));
-  MOCK_METHOD1(
-      AddRTTAndThroughputEstimatesObserver,
-      void(net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver*));
-  MOCK_METHOD1(
-      RemoveRTTAndThroughputEstimatesObserver,
-      void(net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver*));
 };
 
 }  // namespace

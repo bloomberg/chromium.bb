@@ -23,8 +23,10 @@
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/cached_network_quality.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_id.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/rtt_throughput_estimates_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class Profile;
@@ -32,14 +34,13 @@ class Profile;
 namespace {
 
 class TestEffectiveConnectionTypeObserver
-    : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver {
+    : public net::EffectiveConnectionTypeObserver {
  public:
   TestEffectiveConnectionTypeObserver()
       : effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
   ~TestEffectiveConnectionTypeObserver() override {}
 
-  // net::NetworkQualityEstimator::EffectiveConnectionTypeObserver
-  // implementation:
+  // net::EffectiveConnectionTypeObserver implementation:
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override {
     effective_connection_type_ = type;
@@ -57,7 +58,7 @@ class TestEffectiveConnectionTypeObserver
 };
 
 class TestRTTAndThroughputEstimatesObserver
-    : public net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver {
+    : public net::RTTAndThroughputEstimatesObserver {
  public:
   TestRTTAndThroughputEstimatesObserver()
       : http_rtt_(base::TimeDelta::FromMilliseconds(-1)),
@@ -65,8 +66,7 @@ class TestRTTAndThroughputEstimatesObserver
         downstream_throughput_kbps_(-1) {}
   ~TestRTTAndThroughputEstimatesObserver() override {}
 
-  // net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver
-  // implementation:
+  // net::RTTAndThroughputEstimatesObserver implementation:
   void OnRTTOrThroughputEstimatesComputed(
       base::TimeDelta http_rtt,
       base::TimeDelta transport_rtt,

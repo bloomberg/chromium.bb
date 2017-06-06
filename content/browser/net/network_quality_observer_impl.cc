@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "net/nqe/network_quality_estimator.h"
 
 namespace {
 
@@ -213,7 +214,7 @@ void NetworkQualityObserverImpl::OnRTTOrThroughputEstimatesComputed(
                      last_notified_network_quality_));
 }
 
-std::unique_ptr<net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver>
+std::unique_ptr<net::RTTAndThroughputEstimatesObserver>
 CreateNetworkQualityObserver(
     net::NetworkQualityEstimator* network_quality_estimator) {
   return base::MakeUnique<NetworkQualityObserverImpl>(

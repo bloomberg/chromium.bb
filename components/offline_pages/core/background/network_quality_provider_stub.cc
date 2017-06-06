@@ -30,20 +30,6 @@ void NetworkQualityProviderStub::SetUserData(
   supports_user_data->SetUserData(&kOfflineNQPKey, std::move(stub));
 }
 
-void NetworkQualityProviderStub::AddEffectiveConnectionTypeObserver(
-    net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer) {}
-
-void NetworkQualityProviderStub::RemoveEffectiveConnectionTypeObserver(
-    net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer) {}
-
-void NetworkQualityProviderStub::AddRTTAndThroughputEstimatesObserver(
-    net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer) {
-}
-
-void NetworkQualityProviderStub::RemoveRTTAndThroughputEstimatesObserver(
-    net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver* observer) {
-}
-
 net::EffectiveConnectionType
 NetworkQualityProviderStub::GetEffectiveConnectionType() const {
   return connection_type_;

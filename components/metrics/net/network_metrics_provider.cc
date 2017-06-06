@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
+#include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_quality_estimator.h"
 
 #if defined(OS_CHROMEOS)
@@ -45,7 +46,7 @@ void GetAndSetNetworkQualityEstimator(
 
 // Listens to the changes in the effective conection type.
 class NetworkMetricsProvider::EffectiveConnectionTypeObserver
-    : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver {
+    : public net::EffectiveConnectionTypeObserver {
  public:
   // |network_quality_estimator| is used to provide the network quality
   // estimates. Guaranteed to be non-null. |callback| is run on
