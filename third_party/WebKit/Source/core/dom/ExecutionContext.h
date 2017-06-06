@@ -49,7 +49,6 @@ class DOMTimerCoordinator;
 class ErrorEvent;
 class EventQueue;
 class EventTarget;
-class ExecutionContextTask;
 class LocalDOMWindow;
 class SuspendableObject;
 class PublicURLManager;
@@ -95,12 +94,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual void DisableEval(const String& error_message) = 0;
   virtual LocalDOMWindow* ExecutingWindow() const { return nullptr; }
   virtual String UserAgent() const = 0;
-  // Executes the task on context's thread asynchronously.
-  virtual void PostTask(
-      TaskType,
-      const WebTraceLocation&,
-      std::unique_ptr<ExecutionContextTask>,
-      const String& task_name_for_instrumentation = g_empty_string) = 0;
 
   // Gets the DOMTimerCoordinator which maintains the "active timer
   // list" of tasks created by setTimeout and setInterval. The

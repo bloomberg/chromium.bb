@@ -1193,7 +1193,6 @@ source_set("unit_tests") {
     "dom/DocumentTest.cpp",
     "dom/ElementTest.cpp",
     "dom/ElementVisibilityObserverTest.cpp",
-    "dom/ExecutionContextTaskTest.cpp",
     "dom/IdleDeadlineTest.cpp",
     "dom/LayoutTreeBuilderTraversalTest.cpp",
     "dom/MockScriptElementBase.h",

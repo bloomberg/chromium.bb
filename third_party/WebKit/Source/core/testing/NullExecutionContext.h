@@ -30,12 +30,6 @@ class NullExecutionContext
   void DisableEval(const String&) override {}
   String UserAgent() const override { return String(); }
 
-  void PostTask(
-      TaskType,
-      const WebTraceLocation&,
-      std::unique_ptr<ExecutionContextTask>,
-      const String& task_name_for_instrumentation = g_empty_string) override;
-
   EventTarget* ErrorEventTarget() override { return nullptr; }
   EventQueue* GetEventQueue() const override { return queue_.Get(); }
 

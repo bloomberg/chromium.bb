@@ -155,7 +155,6 @@ blink_core_sources("dom") {
     "ExceptionCode.h",
     "ExecutionContext.cpp",
     "ExecutionContext.h",
-    "ExecutionContextTask.h",
     "FirstLetterPseudoElement.cpp",
     "FirstLetterPseudoElement.h",
     "FlexibleArrayBufferView.h",

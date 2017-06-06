@@ -1000,12 +1000,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsDNSPrefetchEnabled() const { return is_dns_prefetch_enabled_; }
   void ParseDNSPrefetchControlHeader(const String&);
 
-  void PostTask(TaskType,
-                const WebTraceLocation&,
-                std::unique_ptr<ExecutionContextTask>,
-                const String& task_name_for_instrumentation = g_empty_string)
-      override;  // Executes the task on context's thread asynchronously.
-
   void TasksWereSuspended() final;
   void TasksWereResumed() final;
   bool TasksNeedSuspension() final;
@@ -1447,9 +1441,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void SendSensitiveInputVisibility();
   void SendSensitiveInputVisibilityInternal();
-
-  void RunExecutionContextTask(std::unique_ptr<ExecutionContextTask>,
-                               bool instrumenting);
 
   bool HaveImportsLoaded() const;
 

@@ -79,7 +79,6 @@
 #include "core/dom/ElementRegistrationOptions.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/IntersectionObserverController.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
@@ -216,6 +215,7 @@
 #include "core/timing/Performance.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "core/xml/parser/XMLDocumentParser.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/DateComponents.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Histogram.h"
@@ -4632,13 +4632,6 @@ void Document::SendSensitiveInputVisibilityInternal() {
   sensitive_input_service_ptr->AllPasswordFieldsInInsecureContextInvisible();
 }
 
-void Document::RunExecutionContextTask(
-    std::unique_ptr<ExecutionContextTask> task,
-    bool is_instrumented) {
-  probe::AsyncTask async_task(this, task.get(), nullptr, is_instrumented);
-  task->PerformTask(this);
-}
-
 void Document::RegisterEventFactory(
     std::unique_ptr<EventFactoryBase> event_factory) {
   DCHECK(!EventFactories().Contains(event_factory.get()));
@@ -6043,22 +6036,6 @@ void Document::AddConsoleMessage(ConsoleMessage* console_message) {
         SourceLocation::Create(Url().GetString(), line_number, 0, nullptr));
   }
   frame_->Console().AddMessage(console_message);
-}
-
-void Document::PostTask(TaskType task_type,
-                        const WebTraceLocation& location,
-                        std::unique_ptr<ExecutionContextTask> task,
-                        const String& task_name_for_instrumentation) {
-  if (!task_name_for_instrumentation.IsEmpty()) {
-    probe::AsyncTaskScheduled(this, task_name_for_instrumentation, task.get());
-  }
-
-  TaskRunnerHelper::Get(task_type, this)
-      ->PostTask(location,
-                 CrossThreadBind(&Document::RunExecutionContextTask,
-                                 WrapCrossThreadWeakPersistent(this),
-                                 WTF::Passed(std::move(task)),
-                                 !task_name_for_instrumentation.IsEmpty()));
 }
 
 void Document::TasksWereSuspended() {

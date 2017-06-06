@@ -5,7 +5,6 @@
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -73,26 +72,6 @@ void WorkerOrWorkletGlobalScope::DisableEval(const String& error_message) {
   script_controller_->DisableEval(error_message);
 }
 
-void WorkerOrWorkletGlobalScope::PostTask(
-    TaskType type,
-    const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task,
-    const String& task_name_for_instrumentation) {
-  if (!GetThread())
-    return;
-
-  bool is_instrumented = !task_name_for_instrumentation.IsEmpty();
-  if (is_instrumented) {
-    probe::AsyncTaskScheduled(this, "Worker task", task.get());
-  }
-
-  TaskRunnerHelper::Get(type, this)
-      ->PostTask(location, CrossThreadBind(&WorkerOrWorkletGlobalScope::RunTask,
-                                           WrapCrossThreadWeakPersistent(this),
-                                           WTF::Passed(std::move(task)),
-                                           is_instrumented));
-}
-
 bool WorkerOrWorkletGlobalScope::CanExecuteScripts(
     ReasonForCallingCanExecuteScripts) {
   return !IsJSExecutionForbidden();
@@ -108,14 +87,6 @@ DEFINE_TRACE(WorkerOrWorkletGlobalScope) {
   visitor->Trace(fetch_context_);
   visitor->Trace(script_controller_);
   ExecutionContext::Trace(visitor);
-}
-
-void WorkerOrWorkletGlobalScope::RunTask(
-    std::unique_ptr<ExecutionContextTask> task,
-    bool is_instrumented) {
-  DCHECK(GetThread()->IsCurrentThread());
-  probe::AsyncTask async_task(this, task.get(), nullptr, is_instrumented);
-  task->PerformTask(this);
 }
 
 }  // namespace blink
