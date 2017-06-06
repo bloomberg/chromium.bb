@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstring>
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -55,7 +56,7 @@ const ProcessPhase
 // with them.
 struct ProfilesState {
   ProfilesState(const CallStackProfileParams& params,
-                base::StackSamplingProfiler::CallStackProfiles profiles,
+                StackSamplingProfiler::CallStackProfiles profiles,
                 base::TimeTicks start_timestamp);
   ProfilesState(ProfilesState&&);
   ProfilesState& operator=(ProfilesState&&);
@@ -65,7 +66,7 @@ struct ProfilesState {
   CallStackProfileParams params;
 
   // The call stack profiles collected by the profiler.
-  base::StackSamplingProfiler::CallStackProfiles profiles;
+  StackSamplingProfiler::CallStackProfiles profiles;
 
   // The time at which the CallStackProfileMetricsProvider became aware of the
   // request for profiling. In particular, this is when callback was requested
@@ -77,10 +78,9 @@ struct ProfilesState {
   DISALLOW_COPY_AND_ASSIGN(ProfilesState);
 };
 
-ProfilesState::ProfilesState(
-    const CallStackProfileParams& params,
-    base::StackSamplingProfiler::CallStackProfiles profiles,
-    base::TimeTicks start_timestamp)
+ProfilesState::ProfilesState(const CallStackProfileParams& params,
+                             StackSamplingProfiler::CallStackProfiles profiles,
+                             base::TimeTicks start_timestamp)
     : params(params),
       profiles(std::move(profiles)),
       start_timestamp(start_timestamp) {}
@@ -284,47 +284,40 @@ void CopyProfileToProto(
   if (profile.samples.empty())
     return;
 
-  if (ordering_spec == CallStackProfileParams::PRESERVE_ORDER) {
-    // Collapse only consecutive repeated samples together.
-    CallStackProfile::Sample* current_sample_proto = nullptr;
-    uint32_t milestones = 0;
-    for (auto it = profile.samples.begin(); it != profile.samples.end(); ++it) {
-      // Check if the sample is different than the previous one. Samples match
+  const bool preserve_order =
+      (ordering_spec == CallStackProfileParams::PRESERVE_ORDER);
+
+  std::map<StackSamplingProfiler::Sample, int> sample_index;
+  uint32_t milestones = 0;
+  for (auto it = profile.samples.begin(); it != profile.samples.end(); ++it) {
+    int existing_sample_index = -1;
+    if (preserve_order) {
+      // Collapse sample with the previous one if they match. Samples match
       // if the frame and all annotations are the same.
-      if (!current_sample_proto || *it != *(it - 1)) {
-        current_sample_proto = proto_profile->add_sample();
-        CopySampleToProto(*it, profile.modules, current_sample_proto);
-        current_sample_proto->set_count(1);
-        CopyAnnotationsToProto(it->process_milestones & ~milestones,
-                               current_sample_proto);
-        milestones = it->process_milestones;
-      } else {
-        current_sample_proto->set_count(current_sample_proto->count() + 1);
-      }
-    }
-  } else {
-    // Collapse all repeated samples together.
-    std::map<StackSamplingProfiler::Sample, int> sample_index;
-    uint32_t milestones = 0;
-    for (auto it = profile.samples.begin(); it != profile.samples.end(); ++it) {
-      // Check for a sample already seen. Samples match if the frame and all
-      // annotations are the same.
+      if (proto_profile->sample_size() > 0 && *it == *(it - 1))
+        existing_sample_index = proto_profile->sample_size() - 1;
+    } else {
       auto location = sample_index.find(*it);
-      if (location == sample_index.end()) {
-        CallStackProfile::Sample* sample_proto = proto_profile->add_sample();
-        CopySampleToProto(*it, profile.modules, sample_proto);
-        sample_proto->set_count(1);
-        CopyAnnotationsToProto(it->process_milestones & ~milestones,
-                               sample_proto);
-        sample_index.insert(
-            std::make_pair(
-                *it, static_cast<int>(proto_profile->sample().size()) - 1));
-        milestones = it->process_milestones;
-      } else {
-        CallStackProfile::Sample* sample_proto =
-            proto_profile->mutable_sample()->Mutable(location->second);
-        sample_proto->set_count(sample_proto->count() + 1);
-      }
+      if (location != sample_index.end())
+        existing_sample_index = location->second;
+    }
+
+    if (existing_sample_index != -1) {
+      CallStackProfile::Sample* sample_proto =
+          proto_profile->mutable_sample()->Mutable(existing_sample_index);
+      sample_proto->set_count(sample_proto->count() + 1);
+      continue;
+    }
+
+    CallStackProfile::Sample* sample_proto = proto_profile->add_sample();
+    CopySampleToProto(*it, profile.modules, sample_proto);
+    sample_proto->set_count(1);
+    CopyAnnotationsToProto(it->process_milestones & ~milestones, sample_proto);
+    milestones = it->process_milestones;
+
+    if (!preserve_order) {
+      sample_index.insert(std::make_pair(
+          *it, static_cast<int>(proto_profile->sample_size()) - 1));
     }
   }
 
@@ -433,7 +426,7 @@ CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {
 }
 
 // This function can be invoked on an abitrary thread.
-base::StackSamplingProfiler::CompletedCallback
+StackSamplingProfiler::CompletedCallback
 CallStackProfileMetricsProvider::GetProfilerCallback(
     const CallStackProfileParams& params) {
   // Ignore the profiles if the collection is disabled. If the collection state
@@ -450,7 +443,7 @@ CallStackProfileMetricsProvider::GetProfilerCallback(
 void CallStackProfileMetricsProvider::ReceiveCompletedProfiles(
     const CallStackProfileParams& params,
     base::TimeTicks start_timestamp,
-    base::StackSamplingProfiler::CallStackProfiles profiles) {
+    StackSamplingProfiler::CallStackProfiles profiles) {
   ReceiveCompletedProfilesImpl(params, start_timestamp, std::move(profiles));
 }
 
