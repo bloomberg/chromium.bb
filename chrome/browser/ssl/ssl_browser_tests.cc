@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_restrictions.h"
@@ -1306,12 +1307,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
   EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
 }
 
-// Ensure that non-standard origins are marked correctly when the
-// MarkNonSecureAs field trial is enabled.
+// Ensure that non-standard origins are marked as neutral when the
+// MarkNonSecureAs Dangerous flag is enabled.
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkFileAsNonSecure) {
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::CreateFieldTrial(
-          "MarkNonSecureAs", security_state::switches::kMarkHttpAsDangerous);
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsDangerous);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1327,10 +1329,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkFileAsNonSecure) {
   EXPECT_EQ(security_state::NONE, security_info.security_level);
 }
 
+// Ensure that about-protocol origins are marked as neutral when the
+// MarkNonSecureAs Dangerous flag is enabled.
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkAboutAsNonSecure) {
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::CreateFieldTrial(
-          "MarkNonSecureAs", security_state::switches::kMarkHttpAsDangerous);
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsDangerous);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1362,10 +1367,34 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
   EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 }
 
+// Ensure that HTTP-protocol origins are marked as Dangerous when the
+// MarkNonSecureAs Dangerous flag is enabled.
+IN_PROC_BROWSER_TEST_F(SSLUITest, MarkHTTPAsDangerous) {
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsDangerous);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a non-local HTTP page.
+  ui_test_utils::NavigateToURL(browser(), GURL("http://example.com/"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
+  ASSERT_TRUE(helper);
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+}
+
+// Ensure that blob-protocol origins are marked as neutral when the
+// MarkNonSecureAs Dangerous flag is enabled.
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkBlobAsNonSecure) {
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::CreateFieldTrial(
-          "MarkNonSecureAs", security_state::switches::kMarkHttpAsDangerous);
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsDangerous);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
