@@ -21,6 +21,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/base/timestamp_constants.h"
@@ -321,8 +322,9 @@ void VideoCaptureDeviceMac::AllocateAndStart(
 
   [capture_device_ setFrameReceiver:this];
 
-  if (![capture_device_ setCaptureDevice:deviceId]) {
-    SetErrorState(FROM_HERE, "Could not open capture device.");
+  NSString* errorMessage = nil;
+  if (![capture_device_ setCaptureDevice:deviceId errorMessage:&errorMessage]) {
+    SetErrorState(FROM_HERE, base::SysNSStringToUTF8(errorMessage));
     return;
   }
 
@@ -367,7 +369,10 @@ void VideoCaptureDeviceMac::StopAndDeAllocate() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kCapturing || state_ == kError) << state_;
 
-  [capture_device_ setCaptureDevice:nil];
+  NSString* errorMessage = nil;
+  if (![capture_device_ setCaptureDevice:nil errorMessage:&errorMessage])
+    LogMessage(base::SysNSStringToUTF8(errorMessage));
+
   [capture_device_ setFrameReceiver:nil];
   client_.reset();
   state_ = kIdle;

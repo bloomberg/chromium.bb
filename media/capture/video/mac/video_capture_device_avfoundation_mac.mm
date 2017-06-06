@@ -218,7 +218,8 @@ void ExtractBaseAddressAndLength(char** base_address,
   frameReceiver_ = frameReceiver;
 }
 
-- (BOOL)setCaptureDevice:(NSString*)deviceId {
+- (BOOL)setCaptureDevice:(NSString*)deviceId
+            errorMessage:(NSString**)outMessage {
   DCHECK(captureSession_);
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
@@ -240,9 +241,8 @@ void ExtractBaseAddressAndLength(char** base_address,
   // Look for input device with requested name.
   captureDevice_ = [AVCaptureDevice deviceWithUniqueID:deviceId];
   if (!captureDevice_) {
-    [self
-        sendErrorString:[NSString stringWithUTF8String:
-                                      "Could not open video capture device."]];
+    *outMessage =
+        [NSString stringWithUTF8String:"Could not open video capture device."];
     return NO;
   }
 
@@ -252,11 +252,10 @@ void ExtractBaseAddressAndLength(char** base_address,
       [AVCaptureDeviceInput deviceInputWithDevice:captureDevice_ error:&error];
   if (!captureDeviceInput_) {
     captureDevice_ = nil;
-    [self sendErrorString:
-              [NSString stringWithFormat:
-                            @"Could not create video capture input (%@): %@",
-                            [error localizedDescription],
-                            [error localizedFailureReason]]];
+    *outMessage = [NSString
+        stringWithFormat:@"Could not create video capture input (%@): %@",
+                         [error localizedDescription],
+                         [error localizedFailureReason]];
     return NO;
   }
   [captureSession_ addInput:captureDeviceInput_];
@@ -272,8 +271,8 @@ void ExtractBaseAddressAndLength(char** base_address,
   captureVideoDataOutput_.reset([[AVCaptureVideoDataOutput alloc] init]);
   if (!captureVideoDataOutput_) {
     [captureSession_ removeInput:captureDeviceInput_];
-    [self sendErrorString:[NSString stringWithUTF8String:
-                                        "Could not create video data output."]];
+    *outMessage =
+        [NSString stringWithUTF8String:"Could not create video data output."];
     return NO;
   }
   [captureVideoDataOutput_ setAlwaysDiscardsLateVideoFrames:true];
