@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -25,7 +24,6 @@
 #include "components/url_formatter/elide_url.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -34,12 +32,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/controls/combobox/combobox.h"
-#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -50,102 +43,14 @@ const int kIconSize = 18;
 
 }  // namespace
 
-// This class is a MenuButton which is given a PermissionMenuModel. It
-// shows the current checked item in the menu model, and notifies its listener
-// about any updates to the state of the selection.
-// TODO(gbillock): refactor PermissionMenuButton to work like this and re-use?
-class PermissionCombobox : public views::MenuButton,
-                           public views::MenuButtonListener {
- public:
-  // Get notifications when the selection changes.
-  class Listener {
-   public:
-    virtual void PermissionSelectionChanged(int index, bool allowed) = 0;
-  };
-
-  PermissionCombobox(Profile* profile,
-                     Listener* listener,
-                     int index,
-                     const GURL& url,
-                     ContentSetting setting);
-  ~PermissionCombobox() override;
-
-  int index() const { return index_; }
-
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
-  // MenuButtonListener:
-  void OnMenuButtonClicked(views::MenuButton* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
-
-  // Callback when a permission's setting is changed.
-  void PermissionChanged(const PageInfoUI::PermissionInfo& permission);
-
- private:
-  int index_;
-  Listener* listener_;
-  std::unique_ptr<PermissionMenuModel> model_;
-  std::unique_ptr<views::MenuRunner> menu_runner_;
-};
-
-PermissionCombobox::PermissionCombobox(Profile* profile,
-                                       Listener* listener,
-                                       int index,
-                                       const GURL& url,
-                                       ContentSetting setting)
-    : MenuButton(base::string16(), this, true),
-      index_(index),
-      listener_(listener),
-      model_(new PermissionMenuModel(
-          profile,
-          url,
-          setting,
-          base::Bind(&PermissionCombobox::PermissionChanged,
-                     base::Unretained(this)))) {
-  SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(setting)));
-  SizeToPreferredSize();
-}
-
-PermissionCombobox::~PermissionCombobox() {}
-
-void PermissionCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  MenuButton::GetAccessibleNodeData(node_data);
-  node_data->SetValue(GetText());
-}
-
-void PermissionCombobox::OnMenuButtonClicked(views::MenuButton* source,
-                                             const gfx::Point& point,
-                                             const ui::Event* event) {
-  menu_runner_.reset(
-      new views::MenuRunner(model_.get(), views::MenuRunner::HAS_MNEMONICS));
-
-  gfx::Point p(point);
-  p.Offset(-source->width(), 0);
-  menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), this,
-                          gfx::Rect(p, gfx::Size()), views::MENU_ANCHOR_TOPLEFT,
-                          ui::MENU_SOURCE_NONE);
-}
-
-void PermissionCombobox::PermissionChanged(
-    const PageInfoUI::PermissionInfo& permission) {
-  SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(permission.setting)));
-  SizeToPreferredSize();
-
-  listener_->PermissionSelectionChanged(
-      index_, permission.setting == CONTENT_SETTING_ALLOW);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // View implementation for the permissions bubble.
 class PermissionsBubbleDialogDelegateView
-    : public views::BubbleDialogDelegateView,
-      public PermissionCombobox::Listener {
+    : public views::BubbleDialogDelegateView {
  public:
   PermissionsBubbleDialogDelegateView(
       PermissionPromptImpl* owner,
-      const std::vector<PermissionRequest*>& requests,
-      const std::vector<bool>& accept_state);
+      const std::vector<PermissionRequest*>& requests);
   ~PermissionsBubbleDialogDelegateView() override;
 
   void CloseBubble();
@@ -164,9 +69,6 @@ class PermissionsBubbleDialogDelegateView
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
-  // PermissionCombobox::Listener:
-  void PermissionSelectionChanged(int index, bool allowed) override;
-
   // Updates the anchor's arrow and view. Also repositions the bubble so it's
   // displayed in the correct location.
   void UpdateAnchor(views::View* anchor_view,
@@ -175,10 +77,7 @@ class PermissionsBubbleDialogDelegateView
 
  private:
   PermissionPromptImpl* owner_;
-  bool multiple_requests_;
   base::string16 display_origin_;
-  std::unique_ptr<PermissionMenuModel> menu_button_model_;
-  std::vector<PermissionCombobox*> customize_comboboxes_;
   views::Checkbox* persist_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsBubbleDialogDelegateView);
@@ -186,11 +85,8 @@ class PermissionsBubbleDialogDelegateView
 
 PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     PermissionPromptImpl* owner,
-    const std::vector<PermissionRequest*>& requests,
-    const std::vector<bool>& accept_state)
-    : owner_(owner),
-      multiple_requests_(requests.size() > 1),
-      persist_checkbox_(nullptr) {
+    const std::vector<PermissionRequest*>& requests)
+    : owner_(owner), persist_checkbox_(nullptr) {
   DCHECK(!requests.empty());
 
   set_close_on_deactivate(false);
@@ -206,20 +102,6 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
 
   bool show_persistence_toggle = true;
   for (size_t index = 0; index < requests.size(); index++) {
-    DCHECK(index < accept_state.size());
-    // The row is laid out containing a leading-aligned label area and a
-    // trailing column which will be filled if there are multiple permission
-    // requests.
-    views::View* row = new views::View();
-    views::GridLayout* row_layout = new views::GridLayout(row);
-    row->SetLayoutManager(row_layout);
-    views::ColumnSet* columns = row_layout->AddColumnSet(0);
-    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                       0, views::GridLayout::USE_PREF, 0, 0);
-    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
-                       100, views::GridLayout::USE_PREF, 0, 0);
-    row_layout->StartRow(0, 0);
-
     views::View* label_container = new views::View();
     int indent =
         provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT);
@@ -236,22 +118,11 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
         new views::Label(requests.at(index)->GetMessageTextFragment());
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_container->AddChildView(label);
-    row_layout->AddView(label_container);
+    AddChildView(label_container);
 
     // Only show the toggle if every request wants to show it.
     show_persistence_toggle = show_persistence_toggle &&
                               requests[index]->ShouldShowPersistenceToggle();
-    if (requests.size() > 1) {
-      PermissionCombobox* combobox = new PermissionCombobox(
-          owner->GetProfile(), this, index, requests[index]->GetOrigin(),
-          accept_state[index] ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
-      row_layout->AddView(combobox);
-      customize_comboboxes_.push_back(combobox);
-    } else {
-      row_layout->AddView(new views::View());
-    }
-
-    AddChildView(row);
   }
 
   if (show_persistence_toggle) {
@@ -316,10 +187,7 @@ int PermissionsBubbleDialogDelegateView::GetDefaultDialogButton() const {
 }
 
 int PermissionsBubbleDialogDelegateView::GetDialogButtons() const {
-  int buttons = ui::DIALOG_BUTTON_OK;
-  if (!multiple_requests_)
-    buttons |= ui::DIALOG_BUTTON_CANCEL;
-  return buttons;
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 base::string16 PermissionsBubbleDialogDelegateView::GetDialogButtonLabel(
@@ -352,12 +220,6 @@ bool PermissionsBubbleDialogDelegateView::Accept() {
 bool PermissionsBubbleDialogDelegateView::Close() {
   // Neither explicit accept nor explicit deny.
   return true;
-}
-
-void PermissionsBubbleDialogDelegateView::PermissionSelectionChanged(
-    int index,
-    bool allowed) {
-  owner_->ToggleAccept(index, allowed);
 }
 
 void PermissionsBubbleDialogDelegateView::UpdateAnchor(
@@ -403,8 +265,8 @@ void PermissionPromptImpl::Show() {
   if (bubble_delegate_)
     bubble_delegate_->CloseBubble();
 
-  bubble_delegate_ = new PermissionsBubbleDialogDelegateView(
-      this, delegate_->Requests(), delegate_->AcceptStates());
+  bubble_delegate_ =
+      new PermissionsBubbleDialogDelegateView(this, delegate_->Requests());
 
   // Set |parent_window| because some valid anchors can become hidden.
   bubble_delegate_->set_parent_window(
@@ -482,8 +344,4 @@ void PermissionPromptImpl::Accept() {
 void PermissionPromptImpl::Deny() {
   if (delegate_)
     delegate_->Deny();
-}
-
-Profile* PermissionPromptImpl::GetProfile() {
-  return browser_->profile();
 }
