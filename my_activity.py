@@ -95,11 +95,11 @@ rietveld_instances = [
 gerrit_instances = [
   {
     'url': 'chromium-review.googlesource.com',
-    'shorturl': 'crosreview.com',
+    'shorturl': 'crrev.com/c',
   },
   {
     'url': 'chrome-internal-review.googlesource.com',
-    'shorturl': 'crosreview.com/i',
+    'shorturl': 'crrev.com/i',
   },
   {
     'url': 'android-review.googlesource.com',
