@@ -238,6 +238,7 @@ source_set("common_sources") {
     "url_constants.cc",
     "url_constants.h",
     "url_fetcher.h",
+    "url_loader_throttle.h",
     "url_utils.cc",
     "url_utils.h",
     "user_agent.h",

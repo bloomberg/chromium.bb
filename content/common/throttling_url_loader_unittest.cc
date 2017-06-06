@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/throttling_url_loader.h"
+#include "content/common/throttling_url_loader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
-#include "content/public/child/url_loader_throttle.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
