@@ -49,6 +49,15 @@ class GIN_EXPORT DataObjectBuilder {
     return *this;
   }
 
+  template <typename T>
+  DataObjectBuilder& Set(uint32_t index, T&& value) {
+    DCHECK(!object_.IsEmpty());
+    v8::Local<v8::Value> v8_value =
+        ConvertToV8(isolate_, std::forward<T>(value));
+    CHECK(object_->CreateDataProperty(context_, index, v8_value).ToChecked());
+    return *this;
+  }
+
   v8::Local<v8::Object> Build() {
     DCHECK(!object_.IsEmpty());
     v8::Local<v8::Object> result = object_;
