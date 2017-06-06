@@ -881,6 +881,8 @@ STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kUserGestureRequired,
 STATIC_ASSERT_ENUM(
     WebSettings::AutoplayPolicy::kUserGestureRequiredForCrossOrigin,
     AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin);
+STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kDocumentUserActivationRequired,
+                   AutoplayPolicy::Type::kDocumentUserActivationRequired);
 
 // This ensures that the version number published in
 // WebSerializedScriptValueVersion.h matches the serializer's understanding.
