@@ -8,11 +8,22 @@
 #       Specifies the path suffix that output files are generated under. This
 #       path will be appended to root_gen_dir.
 #
-#       Targets that depend on the proto target will be able to include the
-#       resulting flatbuffers header with an include like:
+#       Targets that depend on the flatbuffer target will be able to include
+#       the resulting FlatBuffers header with an include like:
 #         #include "dir/for/my_flatbuffer/buffer_generated.h"
 #       If undefined, this defaults to matchign the input directory for each
 #       .fbs file (you should almost always use the default mode).
+#
+#   flatc_include_dirs (optional)
+#       Specifies the directories which FlatBuffers compiler uses to find
+#       included .fbs files in.
+#
+#       The directories will be tried in the order given, and if all fail (or,
+#       as by default, none are specified) it will try to load relative to the
+#       directory of the schema file being parsed.
+#
+#       TODO(pkalinnikov): Add repository root to this list, to allow including
+#       by absolute path.
 #
 #   deps (optional)
 #       Additional dependencies.
@@ -68,8 +79,18 @@ template("flatbuffer") {
       "$out_dir/{{source_name_part}}_generated.h",
     ]
 
-    args = [
-      "-c",
+    args = [ "-c" ]
+
+    if (defined(invoker.flatc_include_dirs)) {
+      foreach(include_dir, invoker.flatc_include_dirs) {
+        args += [
+          "-I",
+          rebase_path(include_dir, "$root_build_dir"),
+        ]
+      }
+    }
+
+    args += [
       "-o",
       "$out_dir",
       "{{source}}",
@@ -101,7 +122,7 @@ template("flatbuffer") {
     public_configs = [ "//third_party/flatbuffers:flatbuffers_config" ]
 
     public_deps = [
-      # The generated headers reference headers within flatbuffers, so
+      # The generated headers reference headers within FlatBuffers, so
       # dependencies must be able to find those headers too.
       "//third_party/flatbuffers",
     ]
