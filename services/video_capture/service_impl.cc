@@ -8,6 +8,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/video_capture/device_factory_provider_impl.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
+#include "services/video_capture/testing_controls_impl.h"
 
 namespace video_capture {
 
@@ -27,6 +28,10 @@ void ServiceImpl::OnStart() {
   registry_.AddInterface<mojom::DeviceFactoryProvider>(
       // Unretained |this| is safe because |registry_| is owned by |this|.
       base::Bind(&ServiceImpl::OnDeviceFactoryProviderRequest,
+                 base::Unretained(this)));
+  registry_.AddInterface<mojom::TestingControls>(
+      // Unretained |this| is safe because |registry_| is owned by |this|.
+      base::Bind(&ServiceImpl::OnTestingControlsRequest,
                  base::Unretained(this)));
 }
 
@@ -57,6 +62,15 @@ void ServiceImpl::OnDeviceFactoryProviderRequest(
           // reference created by ref_factory->CreateRef().
           base::Bind(&ServiceImpl::SetShutdownDelayInSeconds,
                      base::Unretained(this))),
+      std::move(request));
+}
+
+void ServiceImpl::OnTestingControlsRequest(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::TestingControlsRequest request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  mojo::MakeStrongBinding(
+      base::MakeUnique<TestingControlsImpl>(ref_factory_->CreateRef()),
       std::move(request));
 }
 

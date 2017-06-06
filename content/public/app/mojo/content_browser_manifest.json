@@ -86,7 +86,7 @@
 
         ],
         "resource_coordinator": [ "coordination_unit" ],
-        "video_capture": [ "capture" ]
+        "video_capture": [ "capture", "tests" ]
       }
     },
     "navigation:frame": {
