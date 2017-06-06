@@ -7471,6 +7471,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Chrome.UmaPageloadCounter" enum="BooleanHit">
+  <obsolete>
+    Deprecated 6/2017. No longer tracked.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Records when a page load happens, based on the same logic as the PageLoad
