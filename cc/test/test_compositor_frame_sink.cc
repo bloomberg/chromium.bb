@@ -79,15 +79,14 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
                                             renderer_settings_.refresh_rate));
     }
     scheduler.reset(new DisplayScheduler(
-        task_runner_.get(),
+        begin_frame_source_.get(), task_runner_.get(),
         display_output_surface->capabilities().max_frames_pending));
   }
 
-  display_.reset(
-      new Display(shared_bitmap_manager(), gpu_memory_buffer_manager(),
-                  renderer_settings_, frame_sink_id_, begin_frame_source_.get(),
-                  std::move(display_output_surface), std::move(scheduler),
-                  base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
+  display_ = base::MakeUnique<Display>(
+      shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings_,
+      frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
+      base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
 
   // We want the Display's OutputSurface to hear about lost context, and when
   // this shares a context with it we should not be listening for lost context
@@ -102,7 +101,10 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
       this, surface_manager_.get(), frame_sink_id_, is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
   client_->SetBeginFrameSource(&external_begin_frame_source_);
-
+  if (begin_frame_source_) {
+    surface_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
+                                               frame_sink_id_);
+  }
   display_->Initialize(this, surface_manager_.get());
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
@@ -111,6 +113,8 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
 }
 
 void TestCompositorFrameSink::DetachFromClient() {
+  if (begin_frame_source_)
+    surface_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
   client_->SetBeginFrameSource(nullptr);
   support_ = nullptr;
   display_ = nullptr;

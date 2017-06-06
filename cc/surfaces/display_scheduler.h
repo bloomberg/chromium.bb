@@ -15,6 +15,7 @@
 #include "cc/output/renderer_settings.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_observer.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
@@ -28,38 +29,47 @@ class CC_SURFACES_EXPORT DisplaySchedulerClient {
 
   virtual bool DrawAndSwap() = 0;
   virtual bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const = 0;
+  virtual bool SurfaceDamaged(const SurfaceId& surface_id,
+                              const BeginFrameAck& ack) = 0;
+  virtual void SurfaceDiscarded(const SurfaceId& surface_id) = 0;
 };
 
-class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
+class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase,
+                                            public SurfaceObserver {
  public:
-  DisplayScheduler(base::SingleThreadTaskRunner* task_runner,
+  DisplayScheduler(BeginFrameSource* begin_frame_source,
+                   base::SingleThreadTaskRunner* task_runner,
                    int max_pending_swaps);
   ~DisplayScheduler() override;
 
   void SetClient(DisplaySchedulerClient* client);
-  void SetBeginFrameSource(BeginFrameSource* begin_frame_source);
 
   void SetVisible(bool visible);
   void SetRootSurfaceResourcesLocked(bool locked);
   void ForceImmediateSwapIfPossible();
   virtual void DisplayResized();
   virtual void SetNewRootSurface(const SurfaceId& root_surface_id);
-  virtual void SurfaceDamaged(const SurfaceId& surface_id,
-                              const BeginFrameAck& ack,
-                              bool display_damaged);
-  void SurfaceCreated(const SurfaceInfo& surface_info);
-  void SurfaceDestroyed(const SurfaceId& surface_id);
-  void SurfaceDamageExpected(const SurfaceId& surface_id,
-                             const BeginFrameArgs& args);
+  virtual void ProcessSurfaceDamage(const SurfaceId& surface_id,
+                                    const BeginFrameAck& ack,
+                                    bool display_damaged);
 
   virtual void DidSwapBuffers();
   void DidReceiveSwapBuffersAck();
 
   void OutputSurfaceLost();
 
-  // BeginFrameObserverBase implementation
+  // BeginFrameObserverBase implementation.
   bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
+
+  // SurfaceObserver implementation.
+  void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
+  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
+  bool OnSurfaceDamaged(const SurfaceId& surface_id,
+                        const BeginFrameAck& ack) override;
+  void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
+  void OnSurfaceDamageExpected(const SurfaceId& surface_id,
+                               const BeginFrameArgs& args) override;
 
  protected:
   base::TimeTicks DesiredBeginFrameDeadlineTime();

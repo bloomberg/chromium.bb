@@ -233,15 +233,17 @@ void InProcessContextFactory::CreateCompositorFrameSink(
           base::MakeUnique<cc::DelayBasedTimeSource>(
               compositor->task_runner().get())));
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      compositor->task_runner().get(),
+      begin_frame_source.get(), compositor->task_runner().get(),
       display_output_surface->capabilities().max_frames_pending));
 
   data->display = base::MakeUnique<cc::Display>(
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_, renderer_settings_,
-      compositor->frame_sink_id(), begin_frame_source.get(),
-      std::move(display_output_surface), std::move(scheduler),
+      compositor->frame_sink_id(), std::move(display_output_surface),
+      std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(
           compositor->task_runner().get()));
+  GetSurfaceManager()->RegisterBeginFrameSource(begin_frame_source.get(),
+                                                compositor->frame_sink_id());
   // Note that we are careful not to destroy a prior |data->begin_frame_source|
   // until we have reset |data->display|.
   data->begin_frame_source = std::move(begin_frame_source);
@@ -286,6 +288,8 @@ void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
+  GetSurfaceManager()->UnregisterBeginFrameSource(
+      data->begin_frame_source.get());
   DCHECK(data);
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
   if (data->surface_handle)

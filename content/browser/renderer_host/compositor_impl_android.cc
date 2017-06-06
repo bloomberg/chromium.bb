@@ -436,6 +436,8 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       compositor_frame_sink_request_pending_(false),
       weak_factory_(this) {
   GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
+  GetSurfaceManager()->RegisterBeginFrameSource(
+      root_window_->GetBeginFrameSource(), frame_sink_id_);
   DCHECK(client);
   DCHECK(root_window);
   DCHECK(root_window->GetLayer() == nullptr);
@@ -453,6 +455,8 @@ CompositorImpl::~CompositorImpl() {
   root_window_->SetLayer(nullptr);
   // Clean-up any surface references.
   SetSurface(NULL);
+  GetSurfaceManager()->UnregisterBeginFrameSource(
+      root_window_->GetBeginFrameSource());
   GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
@@ -775,14 +779,14 @@ void CompositorImpl::InitializeDisplay(
   cc::SurfaceManager* manager = GetSurfaceManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      task_runner, display_output_surface->capabilities().max_frames_pending));
+      root_window_->GetBeginFrameSource(), task_runner,
+      display_output_surface->capabilities().max_frames_pending));
 
   display_.reset(new cc::Display(
       viz::HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
       host_->GetSettings().renderer_settings, frame_sink_id_,
-      root_window_->GetBeginFrameSource(), std::move(display_output_surface),
-      std::move(scheduler),
+      std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
   auto compositor_frame_sink =

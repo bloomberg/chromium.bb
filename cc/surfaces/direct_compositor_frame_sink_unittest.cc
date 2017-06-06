@@ -56,13 +56,13 @@ class DirectCompositorFrameSinkTest : public testing::Test {
         base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
 
     int max_frames_pending = 2;
-    std::unique_ptr<DisplayScheduler> scheduler(
-        new DisplayScheduler(task_runner_.get(), max_frames_pending));
+    std::unique_ptr<DisplayScheduler> scheduler(new DisplayScheduler(
+        begin_frame_source_.get(), task_runner_.get(), max_frames_pending));
 
     display_.reset(new Display(
         &bitmap_manager_, &gpu_memory_buffer_manager_, RendererSettings(),
-        kArbitraryFrameSinkId, begin_frame_source_.get(),
-        std::move(display_output_surface), std::move(scheduler),
+        kArbitraryFrameSinkId, std::move(display_output_surface),
+        std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
     compositor_frame_sink_.reset(new TestDirectCompositorFrameSink(
         kArbitraryFrameSinkId, &surface_manager_, display_.get(),
