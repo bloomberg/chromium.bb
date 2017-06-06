@@ -1328,8 +1328,6 @@ source_set("chromeos") {
     "system/automatic_reboot_manager.cc",
     "system/automatic_reboot_manager.h",
     "system/automatic_reboot_manager_observer.h",
-    "system/device_change_handler.cc",
-    "system/device_change_handler.h",
     "system/device_disabling_manager.cc",
     "system/device_disabling_manager.h",
     "system/device_disabling_manager_default_delegate.cc",
