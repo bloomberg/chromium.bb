@@ -12,8 +12,6 @@ class KeyMobileSitesPage(page_module.Page):
 
   def __init__(self, url, page_set, name='', tags=None,
                action_on_load_complete=False):
-    if name == '':
-      name = url
     super(KeyMobileSitesPage, self).__init__(
         url=url, page_set=page_set, name=name,
         shared_page_state_class=shared_page_state.SharedMobilePageState,
@@ -29,8 +27,7 @@ class KeyMobileSitesPageSet(story.StorySet):
   def __init__(self):
     super(KeyMobileSitesPageSet, self).__init__(
       archive_data_file='data/key_mobile_sites.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
 
     # Add pages with predefined classes that contain custom navigation logic.
