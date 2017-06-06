@@ -35,7 +35,7 @@ enum class ProvisioningResult : int;
 // This class proxies the request from the client to fetch an auth code from
 // LSO. It lives on the UI thread.
 class ArcSessionManager : public ArcSessionRunner::Observer,
-                          public ArcSupportHost::Observer {
+                          public ArcSupportHost::ErrorDelegate {
  public:
   // Represents each State of ARC session.
   // NOT_INITIALIZED: represents the state that the Profile is not yet ready
@@ -194,11 +194,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // periodically.
   void RecordArcState();
 
-  // ArcSupportHost::Observer:
+  // ArcSupportHost:::ErrorDelegate:
   void OnWindowClosed() override;
-  void OnTermsAgreed(bool is_metrics_enabled,
-                     bool is_backup_and_restore_enabled,
-                     bool is_location_service_enabled) override;
   void OnRetryClicked() override;
   void OnSendFeedbackClicked() override;
 

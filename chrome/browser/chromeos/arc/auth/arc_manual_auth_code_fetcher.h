@@ -23,7 +23,7 @@ class ArcAuthContext;
 // Implements the auth token fetching procedure with user's "SIGN IN" button
 // click.
 class ArcManualAuthCodeFetcher : public ArcAuthCodeFetcher,
-                                 public ArcSupportHost::Observer {
+                                 public ArcSupportHost::AuthDelegate {
  public:
   ArcManualAuthCodeFetcher(ArcAuthContext* context,
                            ArcSupportHost* support_host);
@@ -38,10 +38,10 @@ class ArcManualAuthCodeFetcher : public ArcAuthCodeFetcher,
   // Called when HTTP request gets ready.
   void OnContextPrepared(net::URLRequestContextGetter* request_context_getter);
 
-  // ArcSupportHost::Observer:
+  // ArcSupportHost::AuthDelegate:
   void OnAuthSucceeded(const std::string& auth_code) override;
   void OnAuthFailed() override;
-  void OnRetryClicked() override;
+  void OnAuthRetryClicked() override;
 
   ArcAuthContext* const context_;
   ArcSupportHost* const support_host_;

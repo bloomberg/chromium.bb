@@ -24,8 +24,9 @@ FakeArcSupport::FakeArcSupport(ArcSupportHost* support_host)
 
 FakeArcSupport::~FakeArcSupport() {
   // Ensure that message host is disconnected.
-  if (native_message_host_)
-    Close();
+  if (!native_message_host_)
+    return;
+  UnsetMessageHost();
 }
 
 void FakeArcSupport::Open(Profile* profile) {
@@ -39,13 +40,24 @@ void FakeArcSupport::Open(Profile* profile) {
 void FakeArcSupport::Close() {
   DCHECK(native_message_host_);
   native_message_host_->OnMessage("{\"event\": \"onWindowClosed\"}");
-  support_host_->UnsetMessageHost(
-      static_cast<ArcSupportMessageHost*>(native_message_host_.get()));
-  native_message_host_.reset();
+  UnsetMessageHost();
+}
+
+void FakeArcSupport::EmulateAuthCodeResponse(const std::string& auth_code) {
+  DCHECK_EQ(ui_page_, ArcSupportHost::UIPage::LSO);
+  base::DictionaryValue message;
+  message.SetString("event", "onAuthSucceeded");
+  message.SetString("code", auth_code);
+  OnMessage(message);
+}
+
+void FakeArcSupport::EmulateAuthFailure() {
+  DCHECK(native_message_host_);
+  DCHECK_EQ(ui_page_, ArcSupportHost::UIPage::LSO);
+  native_message_host_->OnMessage("{\"event\": \"onAuthFailed\"}");
 }
 
 void FakeArcSupport::ClickAgreeButton() {
-  DCHECK(native_message_host_);
   DCHECK_EQ(ui_page_, ArcSupportHost::UIPage::TERMS);
 
   base::DictionaryValue message;
@@ -53,19 +65,25 @@ void FakeArcSupport::ClickAgreeButton() {
   message.SetBoolean("isMetricsEnabled", metrics_mode_);
   message.SetBoolean("isBackupRestoreEnabled", backup_and_restore_mode_);
   message.SetBoolean("isLocationServiceEnabled", location_service_mode_);
-
-  std::string message_string;
-  if (!base::JSONWriter::Write(message, &message_string)) {
-    NOTREACHED();
-    return;
-  }
-  native_message_host_->OnMessage(message_string);
+  OnMessage(message);
 }
 
 void FakeArcSupport::ClickRetryButton() {
   DCHECK(native_message_host_);
   DCHECK_EQ(ui_page_, ArcSupportHost::UIPage::ERROR);
   native_message_host_->OnMessage("{\"event\": \"onRetryClicked\"}");
+}
+
+void FakeArcSupport::ClickSendFeedbackButton() {
+  DCHECK(native_message_host_);
+  DCHECK_EQ(ui_page_, ArcSupportHost::UIPage::ERROR);
+  native_message_host_->OnMessage("{\"event\": \"onSendFeedbackClicked\"}");
+}
+
+void FakeArcSupport::UnsetMessageHost() {
+  support_host_->UnsetMessageHost(
+      static_cast<ArcSupportMessageHost*>(native_message_host_.get()));
+  native_message_host_.reset();
 }
 
 void FakeArcSupport::PostMessageFromNativeHost(
@@ -122,6 +140,16 @@ void FakeArcSupport::PostMessageFromNativeHost(
 
 void FakeArcSupport::CloseChannel(const std::string& error_message) {
   NOTREACHED();
+}
+
+void FakeArcSupport::OnMessage(const base::DictionaryValue& message) {
+  DCHECK(native_message_host_);
+  std::string message_string;
+  if (!base::JSONWriter::Write(message, &message_string)) {
+    NOTREACHED();
+    return;
+  }
+  native_message_host_->OnMessage(message_string);
 }
 
 }  // namespace arc

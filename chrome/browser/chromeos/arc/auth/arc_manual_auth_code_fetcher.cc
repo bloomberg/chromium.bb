@@ -17,11 +17,11 @@ ArcManualAuthCodeFetcher::ArcManualAuthCodeFetcher(ArcAuthContext* context,
     : context_(context), support_host_(support_host), weak_ptr_factory_(this) {
   DCHECK(context_);
   DCHECK(support_host_);
-  support_host_->AddObserver(this);
+  support_host_->SetAuthDelegate(this);
 }
 
 ArcManualAuthCodeFetcher::~ArcManualAuthCodeFetcher() {
-  support_host_->RemoveObserver(this);
+  support_host_->SetAuthDelegate(nullptr);
 }
 
 void ArcManualAuthCodeFetcher::Fetch(const FetchCallback& callback) {
@@ -61,7 +61,7 @@ void ArcManualAuthCodeFetcher::OnAuthFailed() {
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 
-void ArcManualAuthCodeFetcher::OnRetryClicked() {
+void ArcManualAuthCodeFetcher::OnAuthRetryClicked() {
   DCHECK(!pending_callback_.is_null());
   FetchInternal();
 }

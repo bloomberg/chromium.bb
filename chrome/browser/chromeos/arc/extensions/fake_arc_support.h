@@ -28,6 +28,10 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   // Emulates clicking Close button.
   void Close();
 
+  // Authentication page emulation.
+  void EmulateAuthCodeResponse(const std::string& auth_code);
+  void EmulateAuthFailure();
+
   // Terms of service page emulation.
   // Emulates clicking Agree button.
   void ClickAgreeButton();
@@ -45,14 +49,18 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
 
   // Error page emulation.
   void ClickRetryButton();
+  void ClickSendFeedbackButton();
 
   // Returns the current page.
   ArcSupportHost::UIPage ui_page() const { return ui_page_; }
 
  private:
+  void UnsetMessageHost();
+
   // extensions::NativeMessageHost::Client:
   void PostMessageFromNativeHost(const std::string& message) override;
   void CloseChannel(const std::string& error_message) override;
+  void OnMessage(const base::DictionaryValue& message);
 
   ArcSupportHost* const support_host_;
 

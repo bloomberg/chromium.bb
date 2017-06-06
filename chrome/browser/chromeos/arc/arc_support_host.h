@@ -44,30 +44,61 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
     SIGN_IN_UNKNOWN_ERROR,
   };
 
-  // Observer to notify UI event.
-  class Observer {
+  // Delegate to handle manual authentication related events.
+  class AuthDelegate {
    public:
-    virtual ~Observer() = default;
-
-    // Called when the ARC support window is closed.
-    virtual void OnWindowClosed() {}
-
-    // Called when the user press AGREE button on ToS page.
-    virtual void OnTermsAgreed(bool is_metrics_enabled,
-                               bool is_backup_and_restore_enabled,
-                               bool is_location_service_enabled) {}
-
     // Called when LSO auth token fetch is successfully completed.
-    virtual void OnAuthSucceeded(const std::string& auth_code) {}
+    virtual void OnAuthSucceeded(const std::string& auth_code) = 0;
 
     // Called when LSO auth token fetch has failed.
-    virtual void OnAuthFailed() {}
+    virtual void OnAuthFailed() = 0;
 
-    // Called when "RETRY" button on the error page is clicked.
-    virtual void OnRetryClicked() {}
+    // Called when "RETRY" button on the error page is clicked during
+    // authentication.
+    virtual void OnAuthRetryClicked() = 0;
+
+   protected:
+    virtual ~AuthDelegate() = default;
+  };
+
+  // Delegate to handle manual authentication related events.
+  class TermsOfServiceDelegate {
+   public:
+    // Called when the user press AGREE button on terms of service page.
+    virtual void OnTermsAgreed(bool is_metrics_enabled,
+                               bool is_backup_and_restore_enabled,
+                               bool is_location_service_enabled) = 0;
+
+    // Called when the user rejects the terms of service or closes the page.
+    virtual void OnTermsRejected() = 0;
+
+    // Called when "RETRY" button on the error page is clicked during terms of
+    // service negotiation.
+    virtual void OnTermsRetryClicked() = 0;
+
+   protected:
+    virtual ~TermsOfServiceDelegate() = default;
+  };
+
+  // Delegate to handle general error events. Note that some of the callback
+  // will only be called when more the specific callback in the other delegate
+  // is not appropriate.
+  class ErrorDelegate {
+   public:
+    // Called when the window is closed but only when terms of service
+    // negotiation is not ongoing, in which case OnTermsRejected will be called.
+    virtual void OnWindowClosed() = 0;
+
+    // Called when "RETRY" button on the error page is clicked, except when
+    // terms of service negotiation or manual authentication is onging. In those
+    // cases, the more specific retry function in the other delegates is called.
+    virtual void OnRetryClicked() = 0;
 
     // Called when send feedback button on error page is clicked.
-    virtual void OnSendFeedbackClicked() {}
+    virtual void OnSendFeedbackClicked() = 0;
+
+   protected:
+    virtual ~ErrorDelegate() = default;
   };
 
   static const char kStorageId[];
@@ -80,6 +111,12 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   bool HasObserver(Observer* observer);
+
+  void SetAuthDelegate(AuthDelegate* delegate);
+  void SetTermsOfServiceDelegate(TermsOfServiceDelegate* delegate);
+  void SetErrorDelegate(ErrorDelegate* delegate);
+
+  bool HasAuthDelegate() const { return auth_delegate_ != nullptr; }
 
   // Called when the communication to arc_support Chrome App is ready.
   void SetMessageHost(arc::ArcSupportMessageHost* message_host);
@@ -165,6 +202,9 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
   RequestOpenAppCallback request_open_app_callback_;
 
   base::ObserverList<Observer> observer_list_;
+  AuthDelegate* auth_delegate_ = nullptr;           // not owned
+  TermsOfServiceDelegate* tos_delegate_ = nullptr;  // not owned
+  ErrorDelegate* error_delegate_ = nullptr;         // not owned
 
   // True, if ARC support app is requested to start, but the connection is not
   // yet established. Reset to false, when the app is started and the
