@@ -94,7 +94,7 @@ class WebAXObject {
     return *this;
   }
 
-  BLINK_EXPORT static WebAXObject FromWebNode(WebNode&);
+  BLINK_EXPORT static WebAXObject FromWebNode(const WebNode&);
   BLINK_EXPORT static WebAXObject FromWebView(WebView&);
   BLINK_EXPORT static WebAXObject FromWebDocument(const WebDocument&);
   BLINK_EXPORT static WebAXObject FromWebDocumentByID(const WebDocument&, int);

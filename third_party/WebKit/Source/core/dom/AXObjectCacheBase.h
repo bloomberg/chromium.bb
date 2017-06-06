@@ -25,7 +25,7 @@ class CORE_EXPORT AXObjectCacheBase : public AXObjectCache {
  public:
   virtual ~AXObjectCacheBase();
 
-  virtual AXObjectImpl* Get(Node*) = 0;
+  virtual AXObjectImpl* Get(const Node*) = 0;
 
  protected:
   AXObjectCacheBase();
