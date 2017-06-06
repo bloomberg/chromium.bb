@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
-#include "device/wake_lock/wake_lock_service_context.h"
+#include "device/wake_lock/wake_lock_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -32,13 +32,12 @@ class WakeLockProvider : public mojom::WakeLockProvider {
       int context_id,
       mojo::InterfaceRequest<mojom::WakeLockContext> request) override;
 
-  void GetWakeLockWithoutContext(
-      mojom::WakeLockType type,
-      mojom::WakeLockReason reason,
-      const std::string& description,
-      mojom::WakeLockServiceRequest request) override;
+  void GetWakeLockWithoutContext(mojom::WakeLockType type,
+                                 mojom::WakeLockReason reason,
+                                 const std::string& description,
+                                 mojom::WakeLockRequest request) override;
 
-  static bool is_in_service_unittest_;
+  static bool is_in_unittest_;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;

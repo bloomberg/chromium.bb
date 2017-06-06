@@ -6,13 +6,13 @@
 
 #include <utility>
 
-#include "device/wake_lock/wake_lock_service_impl.h"
-#include "device/wake_lock/wake_lock_service_impl_for_testing.h"
+#include "device/wake_lock/wake_lock.h"
+#include "device/wake_lock/wake_lock_for_testing.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
-bool WakeLockProvider::is_in_service_unittest_ = false;
+bool WakeLockProvider::is_in_unittest_ = false;
 
 // static
 void WakeLockProvider::Create(
@@ -37,8 +37,8 @@ void WakeLockProvider::GetWakeLockContextForID(
     mojo::InterfaceRequest<mojom::WakeLockContext> request) {
   DCHECK(context_id >= 0);
   mojo::MakeStrongBinding(
-      base::MakeUnique<WakeLockServiceContext>(context_id, file_task_runner_,
-                                               native_view_getter_),
+      base::MakeUnique<WakeLockContext>(context_id, file_task_runner_,
+                                        native_view_getter_),
       std::move(request));
 }
 
@@ -46,18 +46,17 @@ void WakeLockProvider::GetWakeLockWithoutContext(
     mojom::WakeLockType type,
     mojom::WakeLockReason reason,
     const std::string& description,
-    mojom::WakeLockServiceRequest request) {
-  if (is_in_service_unittest_) {
-    // Create WakeLockServiceImplForTesting.
-    new WakeLockServiceImplForTesting(
-        std::move(request), type, reason, description,
-        WakeLockServiceContext::WakeLockInvalidContextId, native_view_getter_,
-        file_task_runner_);
+    mojom::WakeLockRequest request) {
+  if (is_in_unittest_) {
+    // Create WakeLockForTesting.
+    new WakeLockForTesting(std::move(request), type, reason, description,
+                           WakeLockContext::WakeLockInvalidContextId,
+                           native_view_getter_, file_task_runner_);
   } else {
-    // WakeLockServiceImpl owns itself.
-    new WakeLockServiceImpl(std::move(request), type, reason, description,
-                            WakeLockServiceContext::WakeLockInvalidContextId,
-                            native_view_getter_, file_task_runner_);
+    // WakeLock owns itself.
+    new WakeLock(std::move(request), type, reason, description,
+                 WakeLockContext::WakeLockInvalidContextId, native_view_getter_,
+                 file_task_runner_);
   }
 }
 

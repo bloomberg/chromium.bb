@@ -5,7 +5,7 @@
 module device.mojom;
 
 import "device/wake_lock/public/interfaces/wake_lock_context.mojom";
-import "device/wake_lock/public/interfaces/wake_lock_service.mojom";
+import "device/wake_lock/public/interfaces/wake_lock.mojom";
 
 interface WakeLockProvider {
 
@@ -21,5 +21,5 @@ interface WakeLockProvider {
   GetWakeLockWithoutContext(WakeLockType type,
                             WakeLockReason reason,
                             string description,
-                            WakeLockService& wake_lock);
+                            WakeLock& wake_lock);
 };

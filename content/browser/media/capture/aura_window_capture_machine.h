@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/media/capture/cursor_renderer_aura.h"
-#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "media/capture/content/screen_capture_device_core.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -124,7 +124,7 @@ class AuraWindowCaptureMachine
 
   // TODO(jiayl): Remove wake_lock_ when there is an API to keep the
   // screen from sleeping for the drive-by web.
-  device::mojom::WakeLockServicePtr wake_lock_;
+  device::mojom::WakeLockPtr wake_lock_;
 
   // False while frame capture has been suspended. All other aspects of the
   // machine are maintained.

@@ -549,19 +549,18 @@ void WebRTCInternals::UpdateWakeLock() {
     DVLOG(1)
         << ("Cancel the wake lock on application suspension since no "
             "PeerConnections are active anymore.");
-    GetWakeLockService()->CancelWakeLock();
+    GetWakeLock()->CancelWakeLock();
   } else if (num_open_connections_ != 0) {
     DVLOG(1) << ("Preventing the application from being suspended while one or "
                  "more PeerConnections are active.");
-    GetWakeLockService()->RequestWakeLock();
+    GetWakeLock()->RequestWakeLock();
   }
 }
 
-device::mojom::WakeLockService* WebRTCInternals::GetWakeLockService() {
+device::mojom::WakeLock* WebRTCInternals::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
-  if (!wake_lock_service_) {
-    device::mojom::WakeLockServiceRequest request =
-        mojo::MakeRequest(&wake_lock_service_);
+  if (!wake_lock_) {
+    device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
     // In some testing contexts, the service manager connection isn't
     // initialized.
     if (ServiceManagerConnection::GetForProcess()) {
@@ -577,7 +576,7 @@ device::mojom::WakeLockService* WebRTCInternals::GetWakeLockService() {
           "WebRTC has active PeerConnections", std::move(request));
     }
   }
-  return wake_lock_service_.get();
+  return wake_lock_.get();
 }
 
 void WebRTCInternals::ProcessPendingUpdates() {

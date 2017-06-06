@@ -920,9 +920,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();
 
-  void BindWakeLockServiceRequest(
-      const service_manager::BindSourceInfo& source_info,
-      device::mojom::WakeLockServiceRequest request);
+  void BindWakeLockRequest(const service_manager::BindSourceInfo& source_info,
+                           device::mojom::WakeLockRequest request);
 
 #if defined(OS_ANDROID)
   void BindNFCRequest(const service_manager::BindSourceInfo& source_info,

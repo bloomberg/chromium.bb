@@ -45,7 +45,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
-#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "net/base/load_states.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/features/features.h"
@@ -522,7 +522,7 @@ class CONTENT_EXPORT WebContentsImpl
       int browser_plugin_instance_id) override;
   device::GeolocationServiceContext* GetGeolocationServiceContext() override;
   device::mojom::WakeLockContext* GetWakeLockContext() override;
-  device::mojom::WakeLockService* GetRendererWakeLock() override;
+  device::mojom::WakeLock* GetRendererWakeLock() override;
 #if defined(OS_ANDROID)
   void GetNFC(device::mojom::NFCRequest request) override;
 #endif
@@ -1544,7 +1544,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
 
-  device::mojom::WakeLockServicePtr renderer_wake_lock_;
+  device::mojom::WakeLockPtr renderer_wake_lock_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<NFCHost> nfc_host_;

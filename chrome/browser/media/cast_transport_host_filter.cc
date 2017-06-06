@@ -165,7 +165,7 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
   if (id_map_.IsEmpty()) {
     DVLOG(1) << ("Preventing the application from being suspended while one or "
                  "more transports are active for Cast Streaming.");
-    GetWakeLockService()->RequestWakeLock();
+    GetWakeLock()->RequestWakeLock();
   }
 
   if (id_map_.Lookup(channel_id)) {
@@ -211,7 +211,7 @@ void CastTransportHostFilter::OnDelete(int32_t channel_id) {
     DVLOG(1)
         << ("Releasing the block on application suspension since no transports "
             "are active anymore for Cast Streaming.");
-    GetWakeLockService()->CancelWakeLock();
+    GetWakeLock()->CancelWakeLock();
   }
 }
 
@@ -397,11 +397,10 @@ void CastTransportHostFilter::OnCastRemotingSenderEvents(
                              std::vector<media::cast::PacketEvent>(), events));
 }
 
-device::mojom::WakeLockService* CastTransportHostFilter::GetWakeLockService() {
+device::mojom::WakeLock* CastTransportHostFilter::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
-    device::mojom::WakeLockServiceRequest request =
-        mojo::MakeRequest(&wake_lock_);
+    device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
 
     // Service manager connection might be not initialized in some testing
     // contexts.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_CONTEXT_H_
-#define DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_CONTEXT_H_
+#ifndef DEVICE_WAKE_LOCK_WAKE_LOCK_CONTEXT_H_
+#define DEVICE_WAKE_LOCK_WAKE_LOCK_CONTEXT_H_
 
 #include <memory>
 #include <utility>
@@ -21,20 +21,19 @@ namespace device {
 // embedder.
 using WakeLockContextCallback = base::Callback<gfx::NativeView(int)>;
 
-// Serves requests for WakeLockService connections within a given context.
-class WakeLockServiceContext : public mojom::WakeLockContext {
+// Serves requests for WakeLock connections within a given context.
+class WakeLockContext : public mojom::WakeLockContext {
  public:
-  WakeLockServiceContext(
-      int context_id,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-      const WakeLockContextCallback& native_view_getter);
-  ~WakeLockServiceContext() override;
+  WakeLockContext(int context_id,
+                  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+                  const WakeLockContextCallback& native_view_getter);
+  ~WakeLockContext() override;
 
   // mojom::WakeLockContext:
   void GetWakeLock(mojom::WakeLockType type,
                    mojom::WakeLockReason reason,
                    const std::string& description,
-                   mojom::WakeLockServiceRequest request) override;
+                   mojom::WakeLockRequest request) override;
 
   static const int WakeLockInvalidContextId;
 
@@ -43,9 +42,9 @@ class WakeLockServiceContext : public mojom::WakeLockContext {
   int context_id_;
   WakeLockContextCallback native_view_getter_;
 
-  DISALLOW_COPY_AND_ASSIGN(WakeLockServiceContext);
+  DISALLOW_COPY_AND_ASSIGN(WakeLockContext);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_WAKE_LOCK_WAKE_LOCK_SERVICE_CONTEXT_H_
+#endif  // DEVICE_WAKE_LOCK_WAKE_LOCK_CONTEXT_H_

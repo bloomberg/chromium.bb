@@ -45,16 +45,16 @@ class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
   base::RunLoop* loop_;
 };
 
-class MockWakeLockService : public device::mojom::WakeLockService {
+class MockWakeLock : public device::mojom::WakeLock {
  public:
-  MockWakeLockService(device::mojom::WakeLockServiceRequest request)
+  MockWakeLock(device::mojom::WakeLockRequest request)
       : binding_(this, std::move(request)), has_wakelock_(false) {}
-  ~MockWakeLockService() override {}
+  ~MockWakeLock() override {}
 
-  // Implement device::mojom::WakeLockService:
+  // Implement device::mojom::WakeLock:
   void RequestWakeLock() override { has_wakelock_ = true; }
   void CancelWakeLock() override { has_wakelock_ = false; }
-  void AddClient(device::mojom::WakeLockServiceRequest request) override {}
+  void AddClient(device::mojom::WakeLockRequest request) override {}
   void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override {}
 
   bool HasWakeLock() {
@@ -63,7 +63,7 @@ class MockWakeLockService : public device::mojom::WakeLockService {
   }
 
  private:
-  mojo::Binding<device::mojom::WakeLockService> binding_;
+  mojo::Binding<device::mojom::WakeLock> binding_;
   bool has_wakelock_;
 };
 
@@ -74,12 +74,12 @@ class WebRTCInternalsForTest : public NON_EXPORTED_BASE(WebRTCInternals) {
  public:
   WebRTCInternalsForTest()
       : WebRTCInternals(1, true),
-        mock_wake_lock_service_(mojo::MakeRequest(&wake_lock_service_)) {}
+        mock_wake_lock_(mojo::MakeRequest(&wake_lock_)) {}
   ~WebRTCInternalsForTest() override {}
-  bool HasWakeLock() { return mock_wake_lock_service_.HasWakeLock(); }
+  bool HasWakeLock() { return mock_wake_lock_.HasWakeLock(); }
 
  private:
-  MockWakeLockService mock_wake_lock_service_;
+  MockWakeLock mock_wake_lock_;
 };
 
 }  // namespace

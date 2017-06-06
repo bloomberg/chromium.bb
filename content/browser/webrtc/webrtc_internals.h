@@ -19,7 +19,7 @@
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "device/wake_lock/public/interfaces/wake_lock_service.mojom.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "media/media_features.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -118,7 +118,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   WebRTCInternals(int aggregate_updates_ms, bool should_block_power_saving);
   ~WebRTCInternals() override;
 
-  device::mojom::WakeLockServicePtr wake_lock_service_;
+  device::mojom::WakeLockPtr wake_lock_;
 
  private:
   friend struct base::LazyInstanceTraitsBase<WebRTCInternals>;
@@ -167,7 +167,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // saving.
   void UpdateWakeLock();
 
-  device::mojom::WakeLockService* GetWakeLockService();
+  device::mojom::WakeLock* GetWakeLock();
 
   // Called on a timer to deliver updates to javascript.
   // We throttle and bulk together updates to avoid DOS like scenarios where

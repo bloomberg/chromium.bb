@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/wake_lock/wake_lock_service_impl.h"
+#include "device/wake_lock/wake_lock.h"
 
 #include <utility>
 
@@ -45,14 +45,13 @@ PowerSaveBlocker::Reason ToPowerSaveBlockerReason(
 
 }  // namespace
 
-WakeLockServiceImpl::WakeLockServiceImpl(
-    mojom::WakeLockServiceRequest request,
-    mojom::WakeLockType type,
-    mojom::WakeLockReason reason,
-    const std::string& description,
-    int context_id,
-    WakeLockContextCallback native_view_getter,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+WakeLock::WakeLock(mojom::WakeLockRequest request,
+                   mojom::WakeLockType type,
+                   mojom::WakeLockReason reason,
+                   const std::string& description,
+                   int context_id,
+                   WakeLockContextCallback native_view_getter,
+                   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : num_lock_requests_(0),
       type_(type),
       reason_(reason),
@@ -64,18 +63,18 @@ WakeLockServiceImpl::WakeLockServiceImpl(
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       file_task_runner_(std::move(file_task_runner)) {
   AddClient(std::move(request));
-  binding_set_.set_connection_error_handler(base::Bind(
-      &WakeLockServiceImpl::OnConnectionError, base::Unretained(this)));
+  binding_set_.set_connection_error_handler(
+      base::Bind(&WakeLock::OnConnectionError, base::Unretained(this)));
 }
 
-WakeLockServiceImpl::~WakeLockServiceImpl() {}
+WakeLock::~WakeLock() {}
 
-void WakeLockServiceImpl::AddClient(mojom::WakeLockServiceRequest request) {
+void WakeLock::AddClient(mojom::WakeLockRequest request) {
   binding_set_.AddBinding(this, std::move(request),
                           base::MakeUnique<bool>(false));
 }
 
-void WakeLockServiceImpl::RequestWakeLock() {
+void WakeLock::RequestWakeLock() {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(binding_set_.dispatch_context());
 
@@ -90,7 +89,7 @@ void WakeLockServiceImpl::RequestWakeLock() {
   UpdateWakeLock();
 }
 
-void WakeLockServiceImpl::CancelWakeLock() {
+void WakeLock::CancelWakeLock() {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(binding_set_.dispatch_context());
 
@@ -103,11 +102,11 @@ void WakeLockServiceImpl::CancelWakeLock() {
   UpdateWakeLock();
 }
 
-void WakeLockServiceImpl::HasWakeLockForTests(
-    HasWakeLockForTestsCallback callback) {
+void WakeLock::HasWakeLockForTests(HasWakeLockForTestsCallback callback) {
   std::move(callback).Run(!!wake_lock_);
 }
-void WakeLockServiceImpl::UpdateWakeLock() {
+
+void WakeLock::UpdateWakeLock() {
   DCHECK(num_lock_requests_ >= 0);
 
   if (num_lock_requests_) {
@@ -119,7 +118,7 @@ void WakeLockServiceImpl::UpdateWakeLock() {
   }
 }
 
-void WakeLockServiceImpl::CreateWakeLock() {
+void WakeLock::CreateWakeLock() {
   DCHECK(!wake_lock_);
 
   // TODO(heke): Switch PowerSaveBlocker to use mojom::WakeLockType and
@@ -133,7 +132,7 @@ void WakeLockServiceImpl::CreateWakeLock() {
     return;
 
 #if defined(OS_ANDROID)
-  if (context_id_ == WakeLockServiceContext::WakeLockInvalidContextId) {
+  if (context_id_ == WakeLockContext::WakeLockInvalidContextId) {
     LOG(ERROR) << "Client must pass a valid context_id when requests wake lock "
                   "on Android.";
     return;
@@ -145,12 +144,12 @@ void WakeLockServiceImpl::CreateWakeLock() {
 #endif
 }
 
-void WakeLockServiceImpl::RemoveWakeLock() {
+void WakeLock::RemoveWakeLock() {
   DCHECK(wake_lock_);
   wake_lock_.reset();
 }
 
-void WakeLockServiceImpl::OnConnectionError() {
+void WakeLock::OnConnectionError() {
   // If this client has an outstanding wake lock request, decrease the
   // num_lock_requests and call UpdateWakeLock().
   if (*binding_set_.dispatch_context() && num_lock_requests_ > 0) {

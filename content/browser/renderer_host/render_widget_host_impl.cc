@@ -1515,7 +1515,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   // display/GPU are in a power-saving mode, so make sure display
   // does not go to sleep for the duration of reading a snapshot.
   if (pending_browser_snapshots_.empty())
-    GetWakeLockService()->RequestWakeLock();
+    GetWakeLock()->RequestWakeLock();
 #endif
   pending_browser_snapshots_.insert(std::make_pair(id, callback));
   ui::LatencyInfo latency_info;
@@ -2461,7 +2461,7 @@ void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
   }
 #if defined(OS_MACOSX)
   if (pending_browser_snapshots_.empty())
-    GetWakeLockService()->CancelWakeLock();
+    GetWakeLock()->CancelWakeLock();
 #endif
 }
 
@@ -2643,11 +2643,10 @@ void RenderWidgetHostImpl::ProcessSwapMessages(
 }
 
 #if defined(OS_MACOSX)
-device::mojom::WakeLockService* RenderWidgetHostImpl::GetWakeLockService() {
+device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
-    device::mojom::WakeLockServiceRequest request =
-        mojo::MakeRequest(&wake_lock_);
+    device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
     // In some testing contexts, the service manager connection isn't
     // initialized.
     if (ServiceManagerConnection::GetForProcess()) {

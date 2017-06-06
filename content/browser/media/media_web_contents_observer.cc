@@ -222,10 +222,10 @@ void MediaWebContentsObserver::ClearWakeLocks(
   }
 }
 
-device::mojom::WakeLockService* MediaWebContentsObserver::GetAudioWakeLock() {
+device::mojom::WakeLock* MediaWebContentsObserver::GetAudioWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!audio_wake_lock_) {
-    device::mojom::WakeLockServiceRequest request =
+    device::mojom::WakeLockRequest request =
         mojo::MakeRequest(&audio_wake_lock_);
     device::mojom::WakeLockContext* wake_lock_context =
         web_contents()->GetWakeLockContext();
@@ -239,10 +239,10 @@ device::mojom::WakeLockService* MediaWebContentsObserver::GetAudioWakeLock() {
   return audio_wake_lock_.get();
 }
 
-device::mojom::WakeLockService* MediaWebContentsObserver::GetVideoWakeLock() {
+device::mojom::WakeLock* MediaWebContentsObserver::GetVideoWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!video_wake_lock_) {
-    device::mojom::WakeLockServiceRequest request =
+    device::mojom::WakeLockRequest request =
         mojo::MakeRequest(&video_wake_lock_);
     device::mojom::WakeLockContext* wake_lock_context =
         web_contents()->GetWakeLockContext();

@@ -67,7 +67,7 @@ class WakeLockTest : public ContentBrowserTest {
     return GetNestedFrameNode()->current_frame_host();
   }
 
-  device::mojom::WakeLockService* GetRendererWakeLock() {
+  device::mojom::WakeLock* GetRendererWakeLock() {
     return GetWebContentsImpl()->GetRendererWakeLock();
   }
 
@@ -84,9 +84,9 @@ class WakeLockTest : public ContentBrowserTest {
   void WaitForPossibleUpdate() {
     // As Mojo channels have no common FIFO order in respect to each other and
     // to the Chromium IPC, we cannot assume that when screen.keepAwake state
-    // is changed from within a script, mojom::WakeLockService will receive an
+    // is changed from within a script, mojom::WakeLock will receive an
     // update request before ExecuteScript() returns. Therefore, some time slack
-    // is needed to make sure that mojom::WakeLockService has received any
+    // is needed to make sure that mojom::WakeLock has received any
     // possible update requests before checking the resulting wake lock state.
     base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
     RunAllPendingInMessageLoop();
