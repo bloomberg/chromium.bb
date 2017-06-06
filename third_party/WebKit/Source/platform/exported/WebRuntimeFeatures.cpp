@@ -406,4 +406,8 @@ void WebRuntimeFeatures::EnableRemotePlaybackBackend(bool enable) {
   RuntimeEnabledFeatures::setRemotePlaybackBackendEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableMediaCastOverlayButton(bool enable) {
+  RuntimeEnabledFeatures::setMediaCastOverlayButtonEnabled(enable);
+}
+
 }  // namespace blink

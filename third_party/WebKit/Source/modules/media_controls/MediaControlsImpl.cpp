@@ -72,6 +72,7 @@
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
 #include "modules/remoteplayback/RemotePlayback.h"
 #include "platform/EventDispatchForbiddenScope.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -742,7 +743,8 @@ void MediaControlsImpl::RefreshCastButtonVisibilityWithoutUpdate() {
     // non-cast changes (e.g., resize) occur.  If the panel button
     // is shown, however, compute...() will take control of the
     // overlay cast button if it needs to hide it from the panel.
-    overlay_cast_button_->TryShowOverlay();
+    if (RuntimeEnabledFeatures::mediaCastOverlayButtonEnabled())
+      overlay_cast_button_->TryShowOverlay();
     cast_button_->SetIsWanted(false);
   } else if (MediaElement().ShouldShowControls()) {
     overlay_cast_button_->SetIsWanted(false);
@@ -752,7 +754,8 @@ void MediaControlsImpl::RefreshCastButtonVisibilityWithoutUpdate() {
 
 void MediaControlsImpl::ShowOverlayCastButtonIfNeeded() {
   if (MediaElement().ShouldShowControls() ||
-      !ShouldShowCastButton(MediaElement())) {
+      !ShouldShowCastButton(MediaElement()) ||
+      !RuntimeEnabledFeatures::mediaCastOverlayButtonEnabled()) {
     return;
   }
 

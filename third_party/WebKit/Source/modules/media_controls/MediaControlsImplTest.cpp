@@ -27,6 +27,7 @@
 #include "modules/media_controls/elements/MediaControlVolumeSliderElement.h"
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
 #include "modules/remoteplayback/RemotePlayback.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/HistogramTester.h"
@@ -141,7 +142,12 @@ enum DownloadActionMetrics {
 
 class MediaControlsImplTest : public ::testing::Test {
  protected:
-  virtual void SetUp() { InitializePage(); }
+  virtual void SetUp() {
+    // Enable the cast overlay button as this is enabled by default.
+    RuntimeEnabledFeatures::setMediaCastOverlayButtonEnabled(true);
+
+    InitializePage();
+  }
 
   void InitializePage() {
     Page::PageClients clients;
@@ -357,6 +363,17 @@ TEST_F(MediaControlsImplTest, CastOverlayDefault) {
   ASSERT_TRUE(IsElementVisible(*cast_overlay_button));
 }
 
+TEST_F(MediaControlsImplTest, CastOverlayDisabled) {
+  RuntimeEnabledFeatures::setMediaCastOverlayButtonEnabled(false);
+
+  Element* cast_overlay_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-overlay-cast-button");
+  ASSERT_NE(nullptr, cast_overlay_button);
+
+  SimulateRouteAvailable();
+  ASSERT_FALSE(IsElementVisible(*cast_overlay_button));
+}
+
 TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");
@@ -391,6 +408,24 @@ TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
 
   GetDocument().GetSettings()->SetMediaControlsEnabled(true);
   EXPECT_TRUE(IsElementVisible(*cast_overlay_button));
+}
+
+TEST_F(MediaControlsImplTest, CastOverlayDisabledMediaControlsDisabled) {
+  RuntimeEnabledFeatures::setMediaCastOverlayButtonEnabled(false);
+
+  Element* cast_overlay_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-overlay-cast-button");
+  ASSERT_NE(nullptr, cast_overlay_button);
+
+  EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
+  SimulateRouteAvailable();
+  EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
+
+  GetDocument().GetSettings()->SetMediaControlsEnabled(false);
+  EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
+
+  GetDocument().GetSettings()->SetMediaControlsEnabled(true);
+  EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
 }
 
 TEST_F(MediaControlsImplTest, KeepControlsVisibleIfOverflowListVisible) {
