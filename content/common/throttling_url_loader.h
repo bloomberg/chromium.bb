@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_THROTTLING_URL_LOADER_H_
-#define CONTENT_CHILD_THROTTLING_URL_LOADER_H_
+#ifndef CONTENT_COMMON_THROTTLING_URL_LOADER_H_
+#define CONTENT_COMMON_THROTTLING_URL_LOADER_H_
 
 #include <memory>
 
 #include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
-#include "content/public/child/url_loader_throttle.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -114,4 +114,4 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_THROTTLING_URL_LOADER_H_
+#endif  // CONTENT_COMMON_THROTTLING_URL_LOADER_H_

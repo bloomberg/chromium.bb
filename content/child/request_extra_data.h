@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/common/url_loader_factory.mojom.h"
-#include "content/public/child/url_loader_throttle.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"

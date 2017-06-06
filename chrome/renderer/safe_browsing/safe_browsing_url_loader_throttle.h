@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/safe_browsing.mojom.h"
-#include "content/public/child/url_loader_throttle.h"
+#include "content/public/common/url_loader_throttle.h"
 
 namespace chrome {
 namespace mojom {
