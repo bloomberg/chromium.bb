@@ -7,16 +7,18 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-#import "base/ios/weak_nsobject.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CRWTestWKWebViewEvaluator : NSObject<CRWJSInjectionEvaluator> {
   // Web view for JavaScript evaluation.
-  base::scoped_nsobject<WKWebView> _webView;
+  WKWebView* _webView;
   // Set to track injected script managers.
-  base::scoped_nsobject<NSMutableSet> _injectedScriptManagers;
+  NSMutableSet* _injectedScriptManagers;
 }
 @end
 
@@ -24,8 +26,8 @@
 
 - (instancetype)init {
   if (self = [super init]) {
-    _webView.reset([[WKWebView alloc] init]);
-    _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
+    _webView = [[WKWebView alloc] init];
+    _injectedScriptManagers = [[NSMutableSet alloc] init];
   }
   return self;
 }
@@ -50,17 +52,17 @@
 @end
 
 @interface CRWTestJSInjectionReceiver () {
-  base::scoped_nsobject<CRWTestWKWebViewEvaluator> evaluator_;
+  CRWTestWKWebViewEvaluator* evaluator_;
 }
 @end
 
 @implementation CRWTestJSInjectionReceiver
 
 - (id)init {
-  base::scoped_nsobject<CRWTestWKWebViewEvaluator> evaluator(
-      [[CRWTestWKWebViewEvaluator alloc] init]);
+  CRWTestWKWebViewEvaluator* evaluator =
+      [[CRWTestWKWebViewEvaluator alloc] init];
   if (self = [super initWithEvaluator:evaluator])
-    evaluator_.swap(evaluator);
+    evaluator_ = evaluator;
   return self;
 }
 

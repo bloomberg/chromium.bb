@@ -8,7 +8,6 @@
 #include <vector>
 
 #import "ios/web/public/java_script_dialog_presenter.h"
-#import "base/mac/scoped_nsobject.h"
 
 namespace web {
 
@@ -19,8 +18,8 @@ struct TestJavaScriptDialog {
   WebState* web_state = nullptr;
   GURL origin_url;
   JavaScriptDialogType java_script_dialog_type;
-  base::scoped_nsobject<NSString> message_text;
-  base::scoped_nsobject<NSString> default_prompt_text;
+  NSString* message_text;
+  NSString* default_prompt_text;
 };
 
 // Test presenter to check that the JavaScriptDialogPresenter methods are called
@@ -55,14 +54,14 @@ class TestJavaScriptDialogPresenter : public JavaScriptDialogPresenter {
 
   // Sets |user_input| argument to be used for RunJavaScriptDialog callback.
   void set_callback_user_input_argument(NSString* user_input) {
-    callback_user_input_argument_.reset(user_input);
+    callback_user_input_argument_ = user_input;
   }
 
  private:
   bool cancel_dialogs_called_ = false;
   std::vector<TestJavaScriptDialog> requested_dialogs_;
   bool callback_success_argument_ = false;
-  base::scoped_nsobject<NSString> callback_user_input_argument_;
+  NSString* callback_user_input_argument_;
 };
 
 }  // namespace web

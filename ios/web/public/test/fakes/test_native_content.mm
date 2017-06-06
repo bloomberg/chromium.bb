@@ -4,12 +4,14 @@
 
 #import "ios/web/public/test/fakes/test_native_content.h"
 
-#import "base/mac/scoped_nsobject.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @implementation TestNativeContent {
   GURL _URL;
   GURL _virtualURL;
-  base::scoped_nsobject<UIView> _view;
+  UIView* _view;
 }
 - (instancetype)initWithURL:(const GURL&)URL
                  virtualURL:(const GURL&)virtualURL {

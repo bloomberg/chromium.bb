@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #include "base/compiler_specific.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_client.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
@@ -50,7 +49,7 @@ class TestWebClient : public web::WebClient {
   bool last_cert_error_overridable() { return last_cert_error_overridable_; }
 
  private:
-  base::scoped_nsobject<NSString> early_page_script_;
+  NSString* early_page_script_;
   // Last arguments passed to AllowCertificateError.
   int last_cert_error_code_;
   net::SSLInfo last_cert_error_ssl_info_;

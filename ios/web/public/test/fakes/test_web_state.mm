@@ -10,6 +10,10 @@
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 void TestWebState::AddObserver(WebStateObserver* observer) {
@@ -59,7 +63,7 @@ bool TestWebState::ShouldSuppressDialogs() const {
 void TestWebState::SetShouldSuppressDialogs(bool should_suppress) {}
 
 UIView* TestWebState::GetView() {
-  return view_.get();
+  return view_;
 }
 
 const NavigationManager* TestWebState::GetNavigationManager() const {
@@ -90,7 +94,7 @@ void TestWebState::SetNavigationManager(
 }
 
 void TestWebState::SetView(UIView* view) {
-  view_.reset([view retain]);
+  view_ = view;
 }
 
 CRWJSInjectionReceiver* TestWebState::GetJSInjectionReceiver() const {
@@ -194,16 +198,16 @@ void TestWebState::OnRenderProcessGone() {
 
 void TestWebState::ShowTransientContentView(CRWContentView* content_view) {
   if (content_view) {
-    transient_content_view_.reset([content_view retain]);
+    transient_content_view_ = content_view;
   }
 }
 
 void TestWebState::ClearTransientContentView() {
-  transient_content_view_.reset();
+  transient_content_view_ = nil;
 }
 
 CRWContentView* TestWebState::GetTransientContentView() {
-  return transient_content_view_.get();
+  return transient_content_view_;
 }
 
 void TestWebState::SetCurrentURL(const GURL& url) {

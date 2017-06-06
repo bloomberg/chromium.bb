@@ -10,7 +10,6 @@
 #include <memory>
 #include <set>
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_java_script_dialog_presenter.h"
 
@@ -53,8 +52,8 @@ struct TestAuthenticationRequest {
   TestAuthenticationRequest(const TestAuthenticationRequest&);
   ~TestAuthenticationRequest();
   WebState* web_state = nullptr;
-  base::scoped_nsobject<NSURLProtectionSpace> protection_space;
-  base::scoped_nsobject<NSURLCredential> credential;
+  NSURLProtectionSpace* protection_space;
+  NSURLCredential* credential;
   WebStateDelegate::AuthCallback auth_callback;
 };
 

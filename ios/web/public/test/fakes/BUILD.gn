@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("fakes") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
   deps = [
