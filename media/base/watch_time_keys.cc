@@ -69,6 +69,16 @@ const char kMeanTimeBetweenRebuffersAudioVideoMse[] =
 const char kMeanTimeBetweenRebuffersAudioVideoEme[] =
     "Media.MeanTimeBetweenRebuffers.AudioVideo.EME";
 
+const char kRebuffersCountAudioSrc[] = "Media.RebuffersCount.Audio.SRC";
+const char kRebuffersCountAudioMse[] = "Media.RebuffersCount.Audio.MSE";
+const char kRebuffersCountAudioEme[] = "Media.RebuffersCount.Audio.EME";
+const char kRebuffersCountAudioVideoSrc[] =
+    "Media.RebuffersCount.AudioVideo.SRC";
+const char kRebuffersCountAudioVideoMse[] =
+    "Media.RebuffersCount.AudioVideo.MSE";
+const char kRebuffersCountAudioVideoEme[] =
+    "Media.RebuffersCount.AudioVideo.EME";
+
 base::flat_set<base::StringPiece> GetWatchTimeKeys() {
   return base::flat_set<base::StringPiece>(
       {
