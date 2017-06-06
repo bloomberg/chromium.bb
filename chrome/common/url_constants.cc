@@ -66,7 +66,6 @@ const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIInstantURL[] = "chrome://instant/";
 const char kChromeUIInterstitialURL[] = "chrome://interstitials/";
 const char kChromeUIInvalidationsURL[] = "chrome://invalidations/";
-const char kChromeUILargeIconURL[] = "chrome://large-icon/";
 const char kChromeUIMdPolicyURL[] = "chrome://md-policy/";
 const char kChromeUIMdSettingsURL[] = "chrome://md-settings/";
 const char kChromeUINaClURL[] = "chrome://nacl/";

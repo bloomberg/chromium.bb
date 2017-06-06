@@ -646,12 +646,7 @@ split_static_library("ui") {
     ]
   }
 
-  if (is_android) {
-    sources += [
-      "webui/large_icon_source.cc",
-      "webui/large_icon_source.h",
-    ]
-  } else {
+  if (!is_android) {
     sources += [
       "apps/app_info_dialog.h",
       "apps/chrome_app_delegate.cc",

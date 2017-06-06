@@ -15,8 +15,6 @@ static_library("favicon_base") {
     "favicon_usage_data.h",
     "favicon_util.cc",
     "favicon_util.h",
-    "large_icon_url_parser.cc",
-    "large_icon_url_parser.h",
     "select_favicon_frames.cc",
     "select_favicon_frames.h",
   ]
@@ -39,7 +37,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "favicon_url_parser_unittest.cc",
-    "large_icon_url_parser_unittest.cc",
     "select_favicon_frames_unittest.cc",
   ]
 
