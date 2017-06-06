@@ -3703,6 +3703,10 @@ test("unit_tests") {
       "../utility/importer/firefox_importer_unittest_utils.h",
       "../utility/importer/firefox_importer_unittest_utils_mac.cc",
       "../utility/importer/safari_importer_unittest.mm",
+
+      # In-browser discovery is not used by Android for now.
+      "../browser/media/router/discovery/discovery_network_list_unittest.cc",
+      "../browser/media/router/discovery/discovery_network_monitor_unittest.cc",
     ]
     sources -=
         [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
