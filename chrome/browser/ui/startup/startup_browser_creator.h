@@ -30,6 +30,19 @@ class CommandLine;
 // initialize the profile.
 class StartupBrowserCreator {
  public:
+  // The type of page to be shown in a tab when the user is being welcomed back
+  // to Chrome.
+  enum class WelcomeBackPage {
+    kNone,
+#if defined(OS_WIN)
+    // chrome://welcome-win10/ if Chrome's default browser UX may be shown;
+    // otherwise, see kWelcomeStandard.
+    kWelcomeWin10,
+#endif
+    // chrome://welcome/ if sign-in is allowed; otherwise, none.
+    kWelcomeStandard,
+  };
+
   typedef std::vector<Profile*> Profiles;
 
   StartupBrowserCreator();
@@ -38,6 +51,15 @@ class StartupBrowserCreator {
   // Adds a url to be opened during first run. This overrides the standard
   // tabs shown at first run.
   void AddFirstRunTab(const GURL& url);
+
+  // Configures the instance to include the specified "welcome back" page in a
+  // tab before other tabs (e.g., those from session restore). This is used for
+  // specific launches via retention experiments for which no URLs are provided
+  // on the command line. No "welcome back" page is shown to supervised users.
+  void set_welcome_back_page(WelcomeBackPage welcome_back_page) {
+    welcome_back_page_ = welcome_back_page;
+  }
+  WelcomeBackPage welcome_back_page() const { return welcome_back_page_; }
 
   // This function is equivalent to ProcessCommandLine but should only be
   // called during actual process startup.
@@ -160,6 +182,9 @@ class StartupBrowserCreator {
 
   // Additional tabs to open during first run.
   std::vector<GURL> first_run_tabs_;
+
+  // The page to be shown in a tab when welcoming a user back to Chrome.
+  WelcomeBackPage welcome_back_page_ = WelcomeBackPage::kNone;
 
   // True if the set-as-default dialog has been explicitly suppressed.
   // This information is used to allow the default browser prompt to show on

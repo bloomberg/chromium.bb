@@ -1123,3 +1123,60 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, MAYBE_WelcomePages) {
 }
 
 #endif  // !defined(OS_CHROMEOS)
+
+class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
+ protected:
+  StartupBrowserCreatorWelcomeBackTest() = default;
+  void SetUpOnMainThread() override {
+    profile_ = browser()->profile();
+
+    // Keep the browser process running when all browsers are closed.
+    scoped_keep_alive_ = base::MakeUnique<ScopedKeepAlive>(
+        KeepAliveOrigin::BROWSER, KeepAliveRestartOption::DISABLED);
+
+    // Close the browser opened by InProcessBrowserTest.
+    CloseBrowserSynchronously(browser());
+    ASSERT_EQ(0U, BrowserList::GetInstance()->size());
+  }
+
+  void StartBrowser(StartupBrowserCreator::WelcomeBackPage welcome_back_page) {
+    browser_creator_.set_welcome_back_page(welcome_back_page);
+    ASSERT_TRUE(browser_creator_.Start(
+        base::CommandLine(base::CommandLine::NO_PROGRAM), base::FilePath(),
+        profile_,
+        g_browser_process->profile_manager()->GetLastOpenedProfiles()));
+    ASSERT_EQ(1U, BrowserList::GetInstance()->size());
+  }
+
+  void ExpectUrlInBrowserAtPosition(const GURL& url, int tab_index) {
+    Browser* browser = BrowserList::GetInstance()->get(0);
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    EXPECT_EQ(url, tab_strip->GetWebContentsAt(tab_index)->GetURL());
+  }
+
+  void TearDownOnMainThread() override { scoped_keep_alive_.reset(); }
+
+ private:
+  Profile* profile_ = nullptr;
+  std::unique_ptr<ScopedKeepAlive> scoped_keep_alive_;
+  StartupBrowserCreator browser_creator_;
+
+  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorWelcomeBackTest);
+};
+
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest, WelcomeBackWin10) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10));
+  ExpectUrlInBrowserAtPosition(
+      StartupTabProviderImpl::GetWin10WelcomePageUrl(false), 0);
+}
+#endif  // defined(OS_WIN)
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
+                       WelcomeBackStandard) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard));
+  ExpectUrlInBrowserAtPosition(StartupTabProviderImpl::GetWelcomePageUrl(false),
+                               0);
+}
