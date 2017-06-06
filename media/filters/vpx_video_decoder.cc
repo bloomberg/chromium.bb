@@ -120,7 +120,7 @@ static VpxOffloadThread* GetOffloadThread() {
 // not to since current day CPUs tend to be multi-core and we measured
 // performance benefits on older machines such as P4s with hyperthreading.
 static const int kDecodeThreads = 2;
-static const int kMaxDecodeThreads = 16;
+static const int kMaxDecodeThreads = 32;
 
 // Returns the number of threads.
 static int GetThreadCount(const VideoDecoderConfig& config) {
@@ -134,9 +134,14 @@ static int GetThreadCount(const VideoDecoderConfig& config) {
       // For VP9 decode when using the default thread count, increase the number
       // of decode threads to equal the maximum number of tiles possible for
       // higher resolution streams.
-      if (config.coded_size().width() >= 2048)
+      const int width = config.coded_size().width();
+      if (width >= 8192)
+        decode_threads = 32;
+      else if (width >= 4096)
+        decode_threads = 16;
+      else if (width >= 2048)
         decode_threads = 8;
-      else if (config.coded_size().width() >= 1024)
+      else if (width >= 1024)
         decode_threads = 4;
     }
 
