@@ -182,15 +182,7 @@ class TestDistillerPageWebContents : public DistillerPageWebContents {
   bool new_web_contents_created_;
 };
 
-// Consistently failing for no obvious reason on Android.
-// See: crbug.com/728960.
-#if defined(OS_ANDROID)
-#define MAYBE_BasicDistillationWorks DISABLED_BasicDistillationWorks
-#else
-#define MAYBE_BasicDistillationWorks BasicDistillationWorks
-#endif
-IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
-                       MAYBE_BasicDistillationWorks) {
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, BasicDistillationWorks) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
       shell()->web_contents()->GetContainerBounds().size(),
@@ -210,15 +202,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
   EXPECT_EQ("", distiller_result_->pagination_info().prev_page());
 }
 
-// Consistently failing for no obvious reason on Android.
-// See: crbug.com/728960.
-#if defined(OS_ANDROID)
-#define MAYBE_HandlesRelativeLinks DISABLED_HandlesRelativeLinks
-#else
-#define MAYBE_HandlesRelativeLinks HandlesRelativeLinks
-#endif
-IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
-                       MAYBE_HandlesRelativeLinks) {
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeLinks) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
       shell()->web_contents()->GetContainerBounds().size(),
@@ -236,15 +220,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
               HasSubstr("href=\"http://www.google.com/absolutelink.html\""));
 }
 
-// Consistently failing for no obvious reason on Android.
-// See: crbug.com/728960.
-#if defined(OS_ANDROID)
-#define MAYBE_HandlesRelativeImages DISABLED_HandlesRelativeImages
-#else
-#define MAYBE_HandlesRelativeImages HandlesRelativeImages
-#endif
-IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
-                       MAYBE_HandlesRelativeImages) {
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
       shell()->web_contents()->GetContainerBounds().size(),
@@ -262,15 +238,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
               HasSubstr("src=\"http://www.google.com/absoluteimage.png\""));
 }
 
-// Consistently failing for no obvious reason on Android.
-// See: crbug.com/728960.
-#if defined(OS_ANDROID)
-#define MAYBE_HandlesRelativeVideos DISABLED_HandlesRelativeVideos
-#else
-#define MAYBE_HandlesRelativeVideos HandlesRelativeVideos
-#endif
-IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
-                       MAYBE_HandlesRelativeVideos) {
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeVideos) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
       shell()->web_contents()->GetContainerBounds().size(),
@@ -293,15 +261,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
               HasSubstr("src=\"http://www.google.com/absolute_track_fr.vtt\""));
 }
 
-// Consistently failing for no obvious reason on Android.
-// See: crbug.com/728960.
-#if defined(OS_ANDROID)
-#define MAYBE_VisibilityDetection DISABLED_VisibilityDetection
-#else
-#define MAYBE_VisibilityDetection VisibilityDetection
-#endif
-IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
-                       MAYBE_VisibilityDetection) {
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, VisibilityDetection) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
       shell()->web_contents()->GetContainerBounds().size(),
@@ -328,16 +288,8 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
   }
 }
 
-// Consistently failing for no obvious reason on Android.
-// See: crbug.com/728960.
-#if defined(OS_ANDROID)
-#define MAYBE_UsingCurrentWebContentsWrongUrl \
-  DISABLED_UsingCurrentWebContentsWrongUrl
-#else
-#define MAYBE_UsingCurrentWebContentsWrongUrl UsingCurrentWebContentsWrongUrl
-#endif
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
-                       MAYBE_UsingCurrentWebContentsWrongUrl) {
+                       UsingCurrentWebContentsWrongUrl) {
   std::string url("/bogus");
   bool expect_new_web_contents = true;
   bool setup_main_frame_observer = true;
@@ -348,17 +300,8 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
                                wait_for_document_loaded);
 }
 
-// Consistently failing for no obvious reason on Android.
-// See: crbug.com/728960.
-#if defined(OS_ANDROID)
-#define MAYBE_UsingCurrentWebContentsNoMainFrameObserver \
-  DISABLED_UsingCurrentWebContentsNoMainFrameObserver
-#else
-#define MAYBE_UsingCurrentWebContentsNoMainFrameObserver \
-  UsingCurrentWebContentsNoMainFrameObserver
-#endif
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
-                       MAYBE_UsingCurrentWebContentsNoMainFrameObserver) {
+                       UsingCurrentWebContentsNoMainFrameObserver) {
   std::string url(kSimpleArticlePath);
   bool expect_new_web_contents = true;
   bool setup_main_frame_observer = false;
@@ -473,14 +416,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
   run_loop.Run();
 }
 
-// Consistently failing for no obvious reason on Android.
-// See: crbug.com/728960.
-#if defined(OS_ANDROID)
-#define MAYBE_MarkupInfo DISABLED_MarkupInfo
-#else
-#define MAYBE_MarkupInfo MarkupInfo
-#endif
-IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MAYBE_MarkupInfo) {
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MarkupInfo) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
       shell()->web_contents()->GetContainerBounds().size(),
