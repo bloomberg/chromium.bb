@@ -329,6 +329,12 @@ using bookmarks::BookmarkNode;
   cocoa_l10n_util::FlipAllSubviewsIfNecessary([nameTextField_ superview]);
   // Relative order of the done and options buttons.
   cocoa_l10n_util::FlipAllSubviewsIfNecessary(trailingButtonContainer_);
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+    // Fix up pop-up button from the nib.
+    [folderPopUpButton_ setUserInterfaceLayoutDirection:
+                            NSUserInterfaceLayoutDirectionRightToLeft];
+    [folderPopUpButton_ setAlignment:NSNaturalTextAlignment];
+  }
 }
 
 @end  // BookmarkBubbleController
