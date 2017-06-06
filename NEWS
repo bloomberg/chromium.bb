@@ -28,6 +28,13 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   tables. Thanks to Paul Wood and James Bowden.
 - Fixes to UEB grade 2 (en-ueb-g2.ctb) thanks to Mike Gray.
 - Vastly improved Danish tables thanks to Bue Vester-Andersen.
+  - New literary tables for 6 dots, mainly for embossing (no
+    back-translation).
+  - Improved back-translation in 6 dots tables, all grades.
+  - New support for many unicode characters in all 6 dots tables.
+  - Strengthened internal tests to prevent breaking of tables due to
+    changes in the code.
+  - Fixed 8 dots tables which were broken in the previous version.
 - New Braille tables for Sinhala script thanks to Ashoka Bandula
   Weerawardhana.
 - New Hungarian grade 2 Braille table thanks to Attila Hammer.
@@ -41,10 +48,22 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - The doctests are gone. They have been superseded by the YAML tests.
 
 ** New, renamed or removed tables
-- sin.cti (new)
-- sin.utb (new)
+*** New
+- sin.cti
+- sin.utb
 - hu-hu-g2.ctb (new)
+- da-dk-6miscChars.cti (new)
+- da-dk-g16-lit.ctb (new)
+- da-dk-g26-lit.ctb (new)
+- da-dk-g26l-lit.ctb (new)
+*** Renamed
 - gr-gr-g1.utb (removed and replaced by el.ctb)
+*** Removed
+- da-chardefs6.cti
+- da-dk-common6.uti
+- da-dk-g26-patches.cti
+- da-dk-g2core.cti
+- da-dk-nocaps.uti
 
 * Noteworthy changes in release 3.1.0 (2017-03-06)
 An influx of new contributors have made sure that liblouis continues
