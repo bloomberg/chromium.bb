@@ -105,6 +105,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnReportSelectedCastMode(const base::ListValue* args);
   void OnReportSinkCount(const base::ListValue* args);
   void OnReportTimeToClickSink(const base::ListValue* args);
+  void OnReportWebUIRouteControllerLoaded(const base::ListValue* args);
   void OnReportTimeToInitialActionClose(const base::ListValue* args);
   void OnMediaControllerAvailable(const base::ListValue* args);
   void OnMediaControllerClosed(const base::ListValue* args);

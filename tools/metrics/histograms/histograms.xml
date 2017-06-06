@@ -30432,6 +30432,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MediaRouter.Ui.Dialog.LoadedWebUiRouteController" units="ms">
+  <owner>takumif@chromium.org</owner>
+  <summary>
+    Duration in milliseconds it takes the WebUI route controls in the route
+    details view to be populated after the view is opened.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Ui.Dialog.LoadedWithData" units="ms">
   <owner>apacible@chromium.org</owner>
   <summary>

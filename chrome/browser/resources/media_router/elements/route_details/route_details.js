@@ -56,6 +56,19 @@ Polymer({
     },
 
     /**
+     * The timestamp for when the route details view was opened. We initialize
+     * the value in a function so that the value is set when the element is
+     * loaded, rather than at page load.
+     * @private {number}
+     */
+    openTime_: {
+      type: Number,
+      value: function() {
+        return Date.now();
+      },
+    },
+
+    /**
      * The route to show.
      * @type {?media_router.Route|undefined}
      */

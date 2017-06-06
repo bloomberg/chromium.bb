@@ -215,6 +215,16 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Reports the time, in ms, it took the WebUI route controller to load media
+   * status info.
+   *
+   * @param {number} timeMs
+   */
+  function reportWebUIRouteControllerLoaded(timeMs) {
+    chrome.send('reportWebUIRouteControllerLoaded', [timeMs]);
+  }
+
+  /**
    * Requests data to initialize the WebUI with.
    * The data will be returned via media_router.ui.setInitialData.
    */
@@ -309,6 +319,7 @@ cr.define('media_router.browserApi', function() {
     reportSinkCount: reportSinkCount,
     reportTimeToClickSink: reportTimeToClickSink,
     reportTimeToInitialActionClose: reportTimeToInitialActionClose,
+    reportWebUIRouteControllerLoaded: reportWebUIRouteControllerLoaded,
     requestInitialData: requestInitialData,
     requestRoute: requestRoute,
     searchSinksAndCreateRoute: searchSinksAndCreateRoute,

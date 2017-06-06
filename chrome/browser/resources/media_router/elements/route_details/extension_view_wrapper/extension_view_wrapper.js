@@ -9,6 +9,16 @@ Polymer({
 
   properties: {
     /**
+     * Whether the extension view is ready to be shown.
+     * @type {boolean}
+     */
+    isExtensionViewReady: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
+
+    /**
      * The route to show the custom controller for.
      * @type {?media_router.Route|undefined}
      */
@@ -18,13 +28,12 @@ Polymer({
     },
 
     /**
-     * Whether the extension view is ready to be shown.
-     * @type {boolean}
+     * The timestamp for when the route details view was opened.
+     * @type {number}
      */
-    isExtensionViewReady: {
-      type: Boolean,
-      value: false,
-      notify: true,
+    routeDetailsOpenTime: {
+      type: Number,
+      value: 0,
     },
   },
 
@@ -36,21 +45,32 @@ Polymer({
   },
 
   /**
+   * @return {?string}
+   */
+  getCustomControllerPath_: function() {
+    if (!this.route || !this.route.customControllerPath) {
+      return null;
+    }
+    return this.route.customControllerPath +
+        '&requestTimestamp=' + this.routeDetailsOpenTime;
+  },
+
+  /**
    * Loads the custom controller if the controller path for the current route is
    * valid.
    */
   maybeLoadExtensionView_: function() {
-    var extensionview = this.$['custom-controller'];
+    /** @const */ var extensionview = this.$['custom-controller'];
+    /** @const */ var controllerPath = this.getCustomControllerPath_();
 
     // Do nothing if the controller path doesn't exist or is already shown in
     // the extension view.
-    if (!this.route || !this.route.customControllerPath ||
-        this.route.customControllerPath == extensionview.src) {
+    if (!controllerPath || controllerPath == extensionview.src) {
       return;
     }
 
-    var that = this;
-    extensionview.load(this.route.customControllerPath)
+    /** @const */ var that = this;
+    extensionview.load(controllerPath)
         .then(
             function() {
               // Load was successful; show the custom controller.

@@ -19,6 +19,13 @@ cr.define('route_details', function() {
       var fakeRouteOne;
 
       /**
+       * The custom controller path for |fakeRouteOne|.
+       * @const @type {string}
+       */
+      var fakeRouteOneControllerPath =
+          'chrome-extension://123/custom_view.html';
+
+      /**
        * Second fake route created before each test.
        * @type {media_router.Route}
        */
@@ -84,9 +91,9 @@ cr.define('route_details', function() {
         document.body.appendChild(details);
 
         // Initialize routes and sinks.
-        fakeRouteOne = new media_router.Route('route id 1', 'sink id 1',
-            'Video 1', 1, true, false,
-            'chrome-extension://123/custom_view.html');
+        fakeRouteOne = new media_router.Route(
+            'route id 1', 'sink id 1', 'Video 1', 1, true, false,
+            fakeRouteOneControllerPath);
         fakeRouteTwo = new media_router.Route('route id 2', 'sink id 2',
             'Video 2', 2, false, true);
         fakeSinkOne = new media_router.Sink(
@@ -205,7 +212,9 @@ cr.define('route_details', function() {
         details.$$('extension-view-wrapper').$$('#custom-controller').load =
             function(url) {
           setTimeout(function() {
-            assertEquals('chrome-extension://123/custom_view.html', url);
+            assertEquals(
+                fakeRouteOneControllerPath,
+                url.substring(0, fakeRouteOneControllerPath.length));
             checkCustomControllerIsShown();
             done();
           });
