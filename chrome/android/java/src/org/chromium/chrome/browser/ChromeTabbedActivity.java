@@ -2167,6 +2167,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     @Override
     public boolean supportsFullscreenActivity() {
-        return true;
+        return !VrShellDelegate.isInVr();
     }
 }
