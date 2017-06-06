@@ -76,6 +76,8 @@ void FakeRendererScheduler::OnRendererBackgrounded() {}
 
 void FakeRendererScheduler::OnRendererForegrounded() {}
 
+void FakeRendererScheduler::OnCommitProvisionalLoad() {}
+
 void FakeRendererScheduler::SuspendRenderer() {}
 
 void FakeRendererScheduler::ResumeRenderer() {}

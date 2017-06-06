@@ -3662,7 +3662,10 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
       if (commit_type != blink::kWebHistoryInertCommit ||
           PageTransitionCoreTypeIs(navigation_state->GetTransitionType(),
                                    ui::PAGE_TRANSITION_RELOAD)) {
+        // TODO(maxlg): remove OnNavigationStarted and migrate this part into
+        // OnCommitProvisionalLoad.
         render_thread_impl->GetRendererScheduler()->OnNavigationStarted();
+        render_thread_impl->GetRendererScheduler()->OnCommitProvisionalLoad();
       }
     }
   }

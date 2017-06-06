@@ -39,6 +39,7 @@ class FakeRendererScheduler : public RendererScheduler {
   void DidAnimateForInputOnCompositorThread() override;
   void OnRendererBackgrounded() override;
   void OnRendererForegrounded() override;
+  void OnCommitProvisionalLoad() override;
   void SuspendRenderer() override;
   void ResumeRenderer() override;
   void AddPendingNavigation(NavigatingFrameType type) override;

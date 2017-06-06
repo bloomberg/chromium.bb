@@ -60258,6 +60258,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.MaxQueueingTime" units="ms">
+  <owner>maxlg@chromium.org</owner>
+  <summary>
+    The single maximum estimated queueing duration (or max queueing time)
+    between when user starts navigation and user navigates away. Navigate-away
+    is defined as a fast shutdown or a natural ending of renderer, or the new
+    navigation start which replacing the old navigation.
+
+    The queueing time is estimated on a sliding window basis. The width of the
+    sliding window is 1 second, the sliding step being 50ms. The max queueing
+    time keeps track of the largest queueing time on each slide.
+
+    This metric resets itself at navigation start, updates the max of queueing
+    time with the sliding window moving, reports the max queueing times to the
+    histogram at the next navigation start of the same or different renderer
+    process.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.NumberOfTasksPerQueueType"
     enum="RendererSchedulerTaskQueueType">
   <obsolete>
