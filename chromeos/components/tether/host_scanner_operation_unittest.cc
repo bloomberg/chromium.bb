@@ -15,6 +15,7 @@
 #include "chromeos/components/tether/mock_host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
+#include "chromeos/components/tether/proto_test_util.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,18 +78,8 @@ std::string CreateTetherAvailabilityRequestString() {
 }
 
 DeviceStatus CreateFakeDeviceStatus(std::string cell_provider_name) {
-  WifiStatus wifi_status;
-  wifi_status.set_status_code(
-      WifiStatus_StatusCode::WifiStatus_StatusCode_CONNECTED);
-  wifi_status.set_ssid("Google A");
-
-  DeviceStatus device_status;
-  device_status.set_battery_percentage(75);
-  device_status.set_cell_provider(cell_provider_name);
-  device_status.set_connection_strength(4);
-  device_status.mutable_wifi_status()->CopyFrom(wifi_status);
-
-  return device_status;
+  return CreateTestDeviceStatus(cell_provider_name, 75 /* battery_percentage */,
+                                4 /* connection_strength */);
 }
 
 std::string CreateTetherAvailabilityResponseString(

@@ -21,6 +21,7 @@
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
+#include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,38 +112,6 @@ std::string GenerateCellProviderForDevice(
   return "cellProvider" + remote_device.GetTruncatedDeviceIdForLogs();
 }
 
-const char kDoNotSetStringField[] = "doNotSetField";
-const int kDoNotSetIntField = -100;
-
-// Creates a DeviceStatus object using the parameters provided. If
-// |kDoNotSetStringField| or |kDoNotSetIntField| are passed, these fields will
-// not be set in the output.
-DeviceStatus CreateFakeDeviceStatus(const std::string& cell_provider_name,
-                                    int battery_percentage,
-                                    int connection_strength) {
-  // TODO(khorimoto): Once a ConnectedWifiSsid field is added as a property of
-  // Tether networks, give an option to pass a parameter for that field as well.
-  WifiStatus wifi_status;
-  wifi_status.set_status_code(
-      WifiStatus_StatusCode::WifiStatus_StatusCode_CONNECTED);
-  wifi_status.set_ssid("Google A");
-
-  DeviceStatus device_status;
-  if (battery_percentage != kDoNotSetIntField) {
-    device_status.set_battery_percentage(battery_percentage);
-  }
-  if (cell_provider_name != kDoNotSetStringField) {
-    device_status.set_cell_provider(cell_provider_name);
-  }
-  if (connection_strength != kDoNotSetIntField) {
-    device_status.set_connection_strength(connection_strength);
-  }
-
-  device_status.mutable_wifi_status()->CopyFrom(wifi_status);
-
-  return device_status;
-}
-
 std::vector<HostScannerOperation::ScannedDeviceInfo>
 CreateFakeScannedDeviceInfos(
     const std::vector<cryptauth::RemoteDevice>& remote_devices) {
@@ -163,9 +132,9 @@ CreateFakeScannedDeviceInfos(
     int connection_strength;
     switch (i % 4) {
       case 0:
-        cell_provider_name = kDoNotSetStringField;
-        battery_percentage = kDoNotSetIntField;
-        connection_strength = kDoNotSetIntField;
+        cell_provider_name = proto_test_util::kDoNotSetStringField;
+        battery_percentage = proto_test_util::kDoNotSetIntField;
+        connection_strength = proto_test_util::kDoNotSetIntField;
         break;
       case 1:
         cell_provider_name = GenerateCellProviderForDevice(remote_devices[i]);
@@ -192,7 +161,7 @@ CreateFakeScannedDeviceInfos(
         break;
     }
 
-    DeviceStatus device_status = CreateFakeDeviceStatus(
+    DeviceStatus device_status = CreateTestDeviceStatus(
         cell_provider_name, battery_percentage, connection_strength);
 
     // Require set-up for odd-numbered device indices.
