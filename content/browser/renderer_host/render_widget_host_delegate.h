@@ -272,6 +272,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Reset the auto-size value, to indicate that auto-size is no longer active.
   virtual void ResetAutoResizeSize() {}
 
+  // Returns true if there is context menu shown on page.
+  virtual bool IsShowingContextMenuOnPage() const;
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };

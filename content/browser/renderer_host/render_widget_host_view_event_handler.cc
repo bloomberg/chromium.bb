@@ -577,7 +577,7 @@ bool RenderWidgetHostViewEventHandler::CanRendererHandleEvent(
     // Don't forward the mouse leave message which is received when the context
     // menu is displayed by the page. This confuses the page and causes state
     // changes.
-    if (host_view_->IsShowingContextMenu())
+    if (host_->delegate() && host_->delegate()->IsShowingContextMenuOnPage())
       return false;
 #endif
     return true;

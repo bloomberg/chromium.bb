@@ -119,4 +119,8 @@ WebContents* RenderWidgetHostDelegate::GetAsWebContents() {
   return nullptr;
 }
 
+bool RenderWidgetHostDelegate::IsShowingContextMenuOnPage() const {
+  return false;
+}
+
 }  // namespace content

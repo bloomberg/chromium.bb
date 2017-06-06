@@ -1134,8 +1134,6 @@ void RenderWidgetHostViewMac::StopSpeaking() {
 //
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
-  RenderWidgetHostViewBase::SetShowingContextMenu(showing);
-
   // Create a fake mouse event to inform the render widget that the mouse
   // left or entered.
   NSWindow* window = [cocoa_view_ window];
