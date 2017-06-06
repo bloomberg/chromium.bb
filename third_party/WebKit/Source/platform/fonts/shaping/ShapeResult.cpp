@@ -100,10 +100,21 @@ float ShapeResult::RunInfo::XPositionForOffset(
   return position;
 }
 
+static bool TargetPastEdge(bool rtl, float target_x, float next_x) {
+  // In LTR, the edge belongs to the character on right.
+  if (!rtl)
+    return target_x < next_x;
+
+  // In RTL, the edge belongs to the character on left.
+  return target_x <= next_x;
+}
+
 int ShapeResult::RunInfo::CharacterIndexForXPosition(
     float target_x,
     bool include_partial_glyphs) const {
   DCHECK(target_x >= 0 && target_x <= width_);
+  if (target_x <= 0)
+    return !Rtl() ? 0 : num_characters_;
   const unsigned num_glyphs = glyph_data_.size();
   float current_x = 0;
   float current_advance = 0;
@@ -125,12 +136,15 @@ int ShapeResult::RunInfo::CharacterIndexForXPosition(
       // character.
       current_advance = current_advance / 2.0;
       next_x = current_x + prev_advance + current_advance;
+      // When include_partial_glyphs, "<=" or "<" is not a big deal because
+      // |next_x| is not at the character boundary.
+      if (target_x <= next_x)
+        return Rtl() ? prev_character_index : current_character_index;
     } else {
       next_x = current_x + current_advance;
+      if (TargetPastEdge(Rtl(), target_x, next_x))
+        return current_character_index;
     }
-    if (current_x <= target_x && target_x <= next_x)
-      return include_partial_glyphs && Rtl() ? prev_character_index
-                                             : current_character_index;
     current_x = next_x;
     prev_character_index = current_character_index;
     ++glyph_index;
