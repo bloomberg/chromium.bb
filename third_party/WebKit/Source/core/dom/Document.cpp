@@ -1792,6 +1792,9 @@ void Document::ScheduleLayoutTreeUpdate() {
   DCHECK(ShouldScheduleLayoutTreeUpdate());
   DCHECK(NeedsLayoutTreeUpdate());
 
+  // TODO(szager): Remove this CHECK after checking crash reports.
+  CHECK(lifecycle_.GetState() != DocumentLifecycle::kInPerformLayout);
+
   if (!View()->CanThrottleRendering())
     GetPage()->Animator().ScheduleVisualUpdate(GetFrame());
   lifecycle_.EnsureStateAtMost(DocumentLifecycle::kVisualUpdatePending);
