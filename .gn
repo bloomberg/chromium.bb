@@ -28,6 +28,11 @@ secondary_source = "//build/secondary/"
 # repo should define a flag that toggles on a behavior that implements the
 # additional logic required by Chrome to set the variables.
 default_args = {
+  # TODO(brettw) bug 684096: Chrome on iOS does not build v8, so "gn gen" prints
+  # a warning that "Build argument has no effect". When adding a v8 variable, it
+  # also needs to be defined to src/ios/BUILD.gn (respectively removed from both
+  # location when it is removed).
+
   v8_extra_library_files = [
     # Dependencies used by the extra libraries. Putting them here causes them
     # to be executed first during snapshot creation.
