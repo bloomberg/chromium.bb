@@ -22,12 +22,6 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
   constexpr int kBodyTextLargeSize = 13;
   constexpr int kDefaultSize = 12;
 
-#if defined(OS_WIN)
-  constexpr gfx::Font::Weight kButtonFontWeight = gfx::Font::Weight::BOLD;
-#else
-  constexpr gfx::Font::Weight kButtonFontWeight = gfx::Font::Weight::MEDIUM;
-#endif
-
   int size_delta = kDefaultSize - gfx::PlatformFont::kDefaultBaseFontSize;
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
 
@@ -37,7 +31,7 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
 
   switch (context) {
     case views::style::CONTEXT_BUTTON_MD:
-      font_weight = WeightNotLighterThanNormal(kButtonFontWeight);
+      font_weight = WeightNotLighterThanNormal(gfx::Font::Weight::MEDIUM);
       break;
     case views::style::CONTEXT_DIALOG_TITLE:
       size_delta = kTitleSize - gfx::PlatformFont::kDefaultBaseFontSize;
