@@ -433,6 +433,16 @@ void WebMediaPlayerImpl::SetIsEffectivelyFullscreen(
   delegate_->SetIsEffectivelyFullscreen(delegate_id_, isEffectivelyFullscreen);
 }
 
+void WebMediaPlayerImpl::OnHasNativeControlsChanged(bool has_native_controls) {
+  if (!watch_time_reporter_)
+    return;
+
+  if (has_native_controls)
+    watch_time_reporter_->OnNativeControlsEnabled();
+  else
+    watch_time_reporter_->OnNativeControlsDisabled();
+}
+
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 const blink::WebURL& url,
                                 CORSMode cors_mode) {
@@ -2295,6 +2305,10 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
     watch_time_reporter_->OnHidden();
   else
     watch_time_reporter_->OnShown();
+  if (client_->HasNativeControls())
+    watch_time_reporter_->OnNativeControlsEnabled();
+  else
+    watch_time_reporter_->OnNativeControlsDisabled();
 }
 
 bool WebMediaPlayerImpl::IsHidden() const {

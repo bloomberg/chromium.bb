@@ -117,6 +117,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void MediaRemotingStarted() {}
   virtual void MediaRemotingStopped() {}
 
+  // Returns whether the media element has native controls. It does not mean
+  // that the controls are currently visible.
+  virtual bool HasNativeControls() = 0;
+
  protected:
   ~WebMediaPlayerClient() {}
 };
