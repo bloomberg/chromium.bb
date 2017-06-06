@@ -1300,7 +1300,7 @@ gfx::Size DXVAVideoDecodeAccelerator::GetMaxResolution(
     static const gfx::Size kCachedH264Resolution = GetMaxResolutionForGUIDs(
         kDefaultMax, {DXVA2_ModeH264_E, DXVA2_Intel_ModeH264_E},
         {gfx::Size(2560, 1440), gfx::Size(3840, 2160), gfx::Size(4096, 2160),
-         gfx::Size(4096, 2304), gfx::Size(7680, 4320)});
+         gfx::Size(4096, 2304)});
     return kCachedH264Resolution;
   }
 
