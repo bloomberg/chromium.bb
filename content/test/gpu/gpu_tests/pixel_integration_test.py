@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import glob
-import logging
 import os
 import re
 import sys
@@ -49,18 +48,6 @@ test_harness_script = r"""
 
 class PixelIntegrationTest(
     cloud_storage_integration_test_base.CloudStorageIntegrationTestBase):
-
-  # We store a deep copy of the original browser finder options in
-  # order to be able to restart the browser multiple times, with a
-  # different set of command line arguments each time.
-  _original_finder_options = None
-
-  # We keep track of the set of command line arguments used to launch
-  # the browser most recently in order to figure out whether we need
-  # to relaunch it, if a new pixel test requires a different set of
-  # arguments.
-  _last_launched_browser_args = set()
-
   @classmethod
   def Name(cls):
     """The name by which this test is invoked on the command line."""
@@ -68,37 +55,24 @@ class PixelIntegrationTest(
 
   @classmethod
   def SetUpProcess(cls):
-    super(cls, PixelIntegrationTest).SetUpProcess()
-    cls._original_finder_options = cls._finder_options.Copy()
-    cls.CustomizeBrowserArgs([])
+    super(PixelIntegrationTest, cls).SetUpProcess()
+    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
     cls.SetStaticServerDirs(test_data_dirs)
 
-  @classmethod
-  def CustomizeBrowserArgs(cls, browser_args):
+  @staticmethod
+  def _AddDefaultArgs(browser_args):
     if not browser_args:
       browser_args = []
-    cls._finder_options = cls._original_finder_options.Copy()
-    browser_options = cls._finder_options.browser_options
-    # All tests receive these options. They aren't recorded in the
-    # _last_launched_browser_args.
-    browser_options.AppendExtraBrowserArgs(['--enable-gpu-benchmarking',
-                                            '--test-type=gpu'])
-    # Append the new arguments.
-    browser_options.AppendExtraBrowserArgs(browser_args)
-    cls._last_launched_browser_args = set(browser_args)
-    cls.SetBrowserOptions(cls._finder_options)
+    # All tests receive the following options.
+    return [
+      '--enable-gpu-benchmarking',
+      '--test-type=gpu'] + browser_args
 
   @classmethod
-  def RestartBrowserIfNecessaryWithArgs(cls, browser_args):
-    if not browser_args:
-      browser_args = []
-    if set(browser_args) != cls._last_launched_browser_args:
-      logging.warning('Restarting browser with arguments: ' + str(browser_args))
-      cls.StopBrowser()
-      cls.ResetGpuInfo()
-      cls.CustomizeBrowserArgs(browser_args)
-      cls.StartBrowser()
+  def StopBrowser(cls):
+    super(PixelIntegrationTest, cls).StopBrowser()
+    cls.ResetGpuInfo()
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
@@ -132,7 +106,8 @@ class PixelIntegrationTest(
     # Some pixel tests require non-standard browser arguments. Need to
     # check before running each page that it can run in the current
     # browser instance.
-    self.RestartBrowserIfNecessaryWithArgs(page.browser_args)
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs(
+      page.browser_args))
     url = self.UrlOfStaticFilePath(test_path)
     # This property actually comes off the class, not 'self'.
     tab = self.tab

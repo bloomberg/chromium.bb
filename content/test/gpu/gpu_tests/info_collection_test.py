@@ -31,7 +31,7 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def SetUpProcess(cls):
     super(cls, InfoCollectionTest).SetUpProcess()
-    cls.SetBrowserOptions(cls._finder_options)
+    cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
 
   def RunActualGpuTest(self, test_path, *args):
