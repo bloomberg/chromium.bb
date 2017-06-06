@@ -1035,6 +1035,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       settings->SetAutoplayPolicy(
           WebSettings::AutoplayPolicy::kUserGestureRequiredForCrossOrigin);
       break;
+    case AutoplayPolicy::kDocumentUserActivationRequired:
+      settings->SetAutoplayPolicy(
+          WebSettings::AutoplayPolicy::kDocumentUserActivationRequired);
+      break;
   }
 
   settings->SetViewportEnabled(prefs.viewport_enabled);

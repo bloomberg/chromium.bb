@@ -52,6 +52,7 @@ extern const char kAutoplayPolicyDescription[];
 extern const char kAutoplayPolicyUserGestureRequiredForCrossOrigin[];
 extern const char kAutoplayPolicyNoUserGestureRequired[];
 extern const char kAutoplayPolicyUserGestureRequired[];
+extern const char kAutoplayPolicyDocumentUserActivation[];
 
 extern const char kBackgroundVideoTrackOptimizationName[];
 extern const char kBackgroundVideoTrackOptimizationDescription[];
