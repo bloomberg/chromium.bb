@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Perspective read from a StyleMap is correct assert_equals: expected "CSSTransformValue" but got "CSSStyleValue"
-PASS Set Perspective into the inline StylePropertyMap 
-Harness: the test ran to completion.
-

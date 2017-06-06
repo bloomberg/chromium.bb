@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL getAll() returns a list of values Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-FAIL getAll is case-insensitive for the property name Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-PASS getAll() returns an empty list if the property isn't set 
-PASS getAll() throws if you try to get an invalid property 
-Harness: the test ran to completion.
-

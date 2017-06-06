@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Adding a property while iterating over entries() doesn't affect iterator assert_equals: expected "CSSUnitValue" but got "CSSStyleValue"
-FAIL Adding a property while iterating over values() doesn't affect current iterator assert_equals: expected "CSSUnitValue" but got "CSSStyleValue"
-PASS Adding a property while iterating over keys() doesn't affect iterator 
-Harness: the test ran to completion.
-

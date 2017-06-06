@@ -22,10 +22,7 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
 
  public:
   static CSSNumericValue* parse(const String& css_text, ExceptionState&);
-  static CSSNumericValue* FromCSSValue(const CSSValue&) {
-    // TODO(meade): Implement.
-    return nullptr;
-  }
+  static CSSNumericValue* FromCSSValue(const CSSPrimitiveValue&);
 
   virtual CSSNumericValue* add(const CSSNumericValue*, ExceptionState&) {
     // TODO(meade): Implement.

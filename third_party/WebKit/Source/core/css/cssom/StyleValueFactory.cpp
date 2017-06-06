@@ -7,6 +7,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/cssom/CSSKeywordValue.h"
+#include "core/css/cssom/CSSNumericValue.h"
 #include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/CSSStyleVariableReferenceValue.h"
@@ -18,11 +19,6 @@
 namespace blink {
 
 namespace {
-
-CSSStyleValue* CreateStyleValueFromPrimitiveValue(
-    const CSSPrimitiveValue& primitive_value) {
-  return nullptr;
-}
 
 CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
                                                     const CSSValue& value) {
@@ -41,7 +37,7 @@ CSSStyleValue* CreateStyleValue(const CSSValue& value) {
       value.IsCustomIdentValue())
     return CSSKeywordValue::FromCSSValue(value);
   if (value.IsPrimitiveValue())
-    return CreateStyleValueFromPrimitiveValue(ToCSSPrimitiveValue(value));
+    return CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value));
   if (value.IsVariableReferenceValue())
     return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
   if (value.IsImageValue()) {
