@@ -17,13 +17,11 @@ settings.FingerprintSetupStep = {
 (function() {
 
 /**
- * The estimated amount of complete scans needed to enroll a fingerprint. Used
- * to help us estimate the progress of an enroll session.
- * TODO(xiaoyinh@): This will be replaced by percentage of completion in the
- * future.
+ * The duration in ms of a fingerprint icon flash when a user touches the
+ * fingerprint sensor during an enroll session.
  * @const {number}
  */
-var SUCCESSFUL_SCANS_TO_COMPLETE = 15;
+var FLASH_DURATION_MS = 300;
 
 /**
  * The amount of millseconds after a successful but not completed scan before a
@@ -31,6 +29,15 @@ var SUCCESSFUL_SCANS_TO_COMPLETE = 15;
  * @const {number}
  */
 var SHOW_TAP_SENSOR_MESSAGE_DELAY_MS = 2000;
+
+/**
+ * The estimated amount of complete scans needed to enroll a fingerprint. Used
+ * to help us estimate the progress of an enroll session.
+ * TODO(xiaoyinh@): This will be replaced by percentage of completion in the
+ * future.
+ * @const {number}
+ */
+var SUCCESSFUL_SCANS_TO_COMPLETE = 15;
 
 Polymer({
   is: 'settings-setup-fingerprint-dialog',
@@ -161,6 +168,14 @@ Polymer({
           this.setProblem_(scan.result);
           if (scan.result == settings.FingerprintResultType.SUCCESS) {
             this.problemMessage_ = '';
+            // Flash the fingerprint icon blue so that users get some feedback
+            // when a successful scan has been registered.
+            this.$.image.animate(
+                {
+                  fill: ['var(--google-blue-700)', 'var(--google-grey-500)'],
+                  opacity: [0.7, 1.0],
+                },
+                FLASH_DURATION_MS);
             this.$.arc.animate(this.receivedScanCount_ * slice,
                 (this.receivedScanCount_ + 1) * slice);
             this.receivedScanCount_++;
