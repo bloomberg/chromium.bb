@@ -213,8 +213,10 @@ class CastAudioOutputStream::Backend
   void OnEndOfStream() override {}
 
   void OnDecoderError() override {
+    VLOG(1) << this << ": " << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    OnPushBufferComplete(MediaPipelineBackend::kBufferFailed);
+    if (source_callback_)
+      source_callback_->OnError();
   }
 
   void OnKeyStatusChanged(const std::string& key_id,
