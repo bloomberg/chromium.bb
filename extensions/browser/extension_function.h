@@ -604,6 +604,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 // performance is critical (e.g. the webRequest API which can block network
 // requests). Generally, UIThreadExtensionFunction is more appropriate and will
 // be easier to use and interface with the rest of the browser.
+// To use this, specify `"forIOThread": true` in the function's schema.
 class IOThreadExtensionFunction : public ExtensionFunction {
  public:
   IOThreadExtensionFunction();

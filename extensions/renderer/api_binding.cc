@@ -85,14 +85,18 @@ void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
 }  // namespace
 
 struct APIBinding::MethodData {
-  MethodData(std::string full_name, const APISignature* signature)
-      : full_name(std::move(full_name)), signature(signature) {}
+  MethodData(std::string full_name,
+             const APISignature* signature,
+             binding::RequestThread thread)
+      : full_name(std::move(full_name)), signature(signature), thread(thread) {}
 
   // The fully-qualified name of this api (e.g. runtime.sendMessage instead of
   // sendMessage).
-  std::string full_name;
+  const std::string full_name;
   // The expected API signature.
   const APISignature* signature;
+  // Thread to invoke the method on.
+  const binding::RequestThread thread;
   // The callback used by the v8 function.
   APIBinding::HandlerCallback callback;
 };
@@ -204,10 +208,17 @@ APIBinding::APIBinding(const std::string& api_name,
 
       const base::ListValue* params = nullptr;
       CHECK(func_dict->GetList("parameters", &params));
+
+      bool for_io_thread = false;
+      func_dict->GetBoolean("forIOThread", &for_io_thread);
+
       auto signature = base::MakeUnique<APISignature>(*params);
       std::string full_name =
           base::StringPrintf("%s.%s", api_name_.c_str(), name.c_str());
-      methods_[name] = base::MakeUnique<MethodData>(full_name, signature.get());
+      methods_[name] = base::MakeUnique<MethodData>(
+          full_name, signature.get(),
+          for_io_thread ? binding::RequestThread::IO
+                        : binding::RequestThread::UI);
       type_refs->AddAPIMethodSignature(full_name, std::move(signature));
     }
   }
@@ -363,7 +374,7 @@ void APIBinding::InitializeTemplate(v8::Isolate* isolate) {
     DCHECK(method.callback.is_null());
     method.callback =
         base::Bind(&APIBinding::HandleCall, weak_factory_.GetWeakPtr(),
-                   method.full_name, method.signature);
+                   method.full_name, method.signature, method.thread);
 
     object_template->Set(
         gin::StringToSymbol(isolate, key_value.first),
@@ -521,6 +532,7 @@ void APIBinding::GetCustomPropertyObject(
 
 void APIBinding::HandleCall(const std::string& name,
                             const APISignature* signature,
+                            const binding::RequestThread thread,
                             gin::Arguments* arguments) {
   std::string error;
   v8::Isolate* isolate = arguments->isolate();
@@ -617,8 +629,7 @@ void APIBinding::HandleCall(const std::string& name,
   }
 
   request_handler_->StartRequest(context, name, std::move(converted_arguments),
-                                 callback, custom_callback,
-                                 binding::RequestThread::UI);
+                                 callback, custom_callback, thread);
 }
 
 }  // namespace extensions

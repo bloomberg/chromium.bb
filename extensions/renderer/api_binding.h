@@ -31,6 +31,10 @@ class APIRequestHandler;
 class APISignature;
 class APITypeReferenceMap;
 
+namespace binding {
+enum class RequestThread;
+}
+
 // A class that vends v8::Objects for extension APIs. These APIs have function
 // interceptors for all exposed methods, which call back into the APIBinding.
 // The APIBinding then matches the calling arguments against an expected method
@@ -97,10 +101,11 @@ class APIBinding {
       v8::Local<v8::Name> property,
       const v8::PropertyCallbackInfo<v8::Value>& info);
 
-  // Handles a call an API method with the given |name| and matches the
-  // arguments against |signature|.
+  // Handles calling of an API method with the given |name| on the given
+  // |thread| and matches the arguments against |signature|.
   void HandleCall(const std::string& name,
                   const APISignature* signature,
+                  const binding::RequestThread thread,
                   gin::Arguments* args);
 
   // The root name of the API, e.g. "tabs" for chrome.tabs.
