@@ -57,7 +57,6 @@ class Visitor;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 class WebDOMEvent;
-class WebData;
 class WebDataSource;
 class WebDocument;
 class WebElement;
@@ -304,13 +303,6 @@ class WebFrame {
 
   // Load the given URL.
   virtual void LoadRequest(const WebURLRequest&) = 0;
-
-  // This method is short-hand for calling LoadData, where mime_type is
-  // "text/html" and text_encoding is "UTF-8".
-  virtual void LoadHTMLString(const WebData& html,
-                              const WebURL& base_url,
-                              const WebURL& unreachable_url = WebURL(),
-                              bool replace = false) = 0;
 
   // Stops any pending loads on the frame and its children.
   virtual void StopLoading() = 0;

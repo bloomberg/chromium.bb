@@ -103,7 +103,7 @@ void LoadFrame(WebFrame* frame, const std::string& url) {
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
-void LoadHTMLString(WebFrame* frame,
+void LoadHTMLString(WebLocalFrame* frame,
                     const std::string& html,
                     const WebURL& base_url) {
   frame->LoadHTMLString(WebData(html.data(), html.size()), base_url);

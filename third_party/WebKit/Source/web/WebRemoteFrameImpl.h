@@ -71,10 +71,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void ReloadWithOverrideURL(const WebURL& override_url,
                              WebFrameLoadType) override;
   void LoadRequest(const WebURLRequest&) override;
-  void LoadHTMLString(const WebData& html,
-                      const WebURL& base_url,
-                      const WebURL& unreachable_url,
-                      bool replace) override;
   void StopLoading() override;
   WebDataSource* ProvisionalDataSource() const override;
   WebDataSource* DataSource() const override;

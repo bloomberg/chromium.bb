@@ -91,7 +91,7 @@ class ScrollingCoordinatorTest : public ::testing::Test,
   }
 
   void LoadHTML(const std::string& html) {
-    FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrame(), html,
+    FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(), html,
                                      URLTestHelpers::ToKURL("about:blank"));
   }
 
