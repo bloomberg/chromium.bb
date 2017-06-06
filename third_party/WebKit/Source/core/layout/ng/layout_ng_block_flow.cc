@@ -44,8 +44,6 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   for (NGBlockNode descendant : result->OutOfFlowDescendants())
     descendant.UseOldOutOfFlowPositioning();
 
-  UpdateAfterLayout();
-  ClearNeedsLayout();
 }
 
 NGInlineNodeData& LayoutNGBlockFlow::GetNGInlineNodeData() const {
