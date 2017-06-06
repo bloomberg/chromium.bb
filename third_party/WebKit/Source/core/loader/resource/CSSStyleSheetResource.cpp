@@ -34,6 +34,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/CurrentTime.h"
 
@@ -55,7 +56,9 @@ CSSStyleSheetResource* CSSStyleSheetResource::Fetch(FetchParameters& params,
 CSSStyleSheetResource* CSSStyleSheetResource::CreateForTest(
     const ResourceRequest& request,
     const String& charset) {
-  return new CSSStyleSheetResource(request, ResourceLoaderOptions(), charset);
+  ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
+                                kClientDidNotRequestCredentials);
+  return new CSSStyleSheetResource(request, options, charset);
 }
 
 CSSStyleSheetResource::CSSStyleSheetResource(

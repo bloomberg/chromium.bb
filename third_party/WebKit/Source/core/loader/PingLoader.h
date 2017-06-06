@@ -37,7 +37,6 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebURLLoaderClient.h"

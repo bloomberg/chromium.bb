@@ -97,6 +97,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarTestSuite.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -8655,8 +8656,7 @@ TEST_P(ParameterizedWebFrameTest, NotifyManifestChange) {
 }
 
 static Resource* FetchManifest(Document* document, const KURL& url) {
-  FetchParameters fetch_parameters =
-      FetchParameters(ResourceRequest(url), FetchInitiatorInfo());
+  FetchParameters fetch_parameters{ResourceRequest(url)};
   fetch_parameters.SetRequestContext(WebURLRequest::kRequestContextManifest);
 
   return RawResource::FetchSynchronously(fetch_parameters, document->Fetcher());
@@ -9788,7 +9788,8 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess) {
 
   // First try to load the request with regular access. Should fail.
   options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
-  ResourceLoaderOptions resource_loader_options;
+  ResourceLoaderOptions resource_loader_options(
+      kDoNotAllowStoredCredentials, kClientDidNotRequestCredentials);
   DocumentThreadableLoader::LoadResourceSynchronously(
       *frame->GetDocument(), request, client, options, resource_loader_options);
   EXPECT_TRUE(client.Failed());

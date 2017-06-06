@@ -127,8 +127,6 @@ class PLATFORM_EXPORT ResourceFetcher
   void HandleLoaderError(Resource*, const ResourceError&);
   bool IsControlledByServiceWorker() const;
 
-  static const ResourceLoaderOptions& DefaultResourceOptions();
-
   String GetCacheIdentifier() const;
 
   enum IsImageSet { kImageNotImageSet, kImageIsImageSet };

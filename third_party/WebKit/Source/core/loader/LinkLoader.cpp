@@ -52,6 +52,7 @@
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "public/platform/WebPrerender.h"
 
@@ -356,8 +357,11 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
         referrer_policy, href, document.OutgoingReferrer()));
   }
 
-  FetchParameters link_fetch_params(
-      resource_request, FetchInitiatorTypeNames::link, document.EncodingName());
+  ResourceLoaderOptions options(kAllowStoredCredentials,
+                                kClientRequestedCredentials);
+  options.initiator_info.name = FetchInitiatorTypeNames::link;
+  FetchParameters link_fetch_params(resource_request, options);
+  link_fetch_params.SetCharset(document.EncodingName());
 
   if (cross_origin != kCrossOriginAttributeNotSet) {
     link_fetch_params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
@@ -388,8 +392,10 @@ static Resource* PrefetchIfNeeded(Document& document,
           referrer_policy, href, document.OutgoingReferrer()));
     }
 
-    FetchParameters link_fetch_params(resource_request,
-                                      FetchInitiatorTypeNames::link);
+    ResourceLoaderOptions options(kAllowStoredCredentials,
+                                  kClientRequestedCredentials);
+    options.initiator_info.name = FetchInitiatorTypeNames::link;
+    FetchParameters link_fetch_params(resource_request, options);
     if (cross_origin != kCrossOriginAttributeNotSet) {
       link_fetch_params.SetCrossOriginAccessControl(
           document.GetSecurityOrigin(), cross_origin);

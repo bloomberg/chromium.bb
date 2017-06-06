@@ -26,6 +26,7 @@
 #include "core/dom/Script.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/html/CrossOriginAttribute.h"
+#include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"

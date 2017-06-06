@@ -111,8 +111,8 @@ void NotificationImageLoader::Start(
 
   // TODO(mvanouwerkerk): Add an entry for notifications to
   // FetchInitiatorTypeNames and use it.
-  ResourceLoaderOptions resource_loader_options;
-  resource_loader_options.allow_credentials = kAllowStoredCredentials;
+  ResourceLoaderOptions resource_loader_options(
+      kAllowStoredCredentials, kClientDidNotRequestCredentials);
   if (execution_context->IsWorkerGlobalScope())
     resource_loader_options.request_initiator_context = kWorkerContext;
 

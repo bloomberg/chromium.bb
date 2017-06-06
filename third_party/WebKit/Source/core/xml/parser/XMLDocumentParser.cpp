@@ -648,8 +648,10 @@ static void* OpenFunc(const char* uri) {
     Document* document = XMLDocumentParserScope::current_document_;
     XMLDocumentParserScope scope(0);
     // FIXME: We should restore the original global error handler as well.
-    FetchParameters params(ResourceRequest(url), FetchInitiatorTypeNames::xml,
-                           ResourceFetcher::DefaultResourceOptions());
+    ResourceLoaderOptions options(kAllowStoredCredentials,
+                                  kClientRequestedCredentials);
+    options.initiator_info.name = FetchInitiatorTypeNames::xml;
+    FetchParameters params(ResourceRequest(url), options);
     Resource* resource =
         RawResource::FetchSynchronously(params, document->Fetcher());
     if (resource && !resource->ErrorOccurred()) {

@@ -10,6 +10,7 @@
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 
 namespace blink {
 
@@ -135,7 +136,10 @@ void SVGElementProxy::RemoveClient(SVGResourceClient* client) {
 void SVGElementProxy::Resolve(Document& document) {
   if (is_local_ || id_.IsEmpty() || url_.IsEmpty())
     return;
-  FetchParameters params(ResourceRequest(url_), FetchInitiatorTypeNames::css);
+  ResourceLoaderOptions options(kAllowStoredCredentials,
+                                kClientRequestedCredentials);
+  options.initiator_info.name = FetchInitiatorTypeNames::css;
+  FetchParameters params(ResourceRequest(url_), options);
   document_ = DocumentResource::FetchSVGDocument(params, document.Fetcher());
   url_ = String();
 }

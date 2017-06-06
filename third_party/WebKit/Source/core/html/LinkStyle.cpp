@@ -16,6 +16,7 @@
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "platform/Histogram.h"
 #include "platform/loader/fetch/FetchParameters.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/mime/ContentType.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
@@ -325,7 +326,11 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
         referrer_policy, url, GetDocument().OutgoingReferrer()));
   }
 
-  FetchParameters params(resource_request, owner_->localName(), charset);
+  ResourceLoaderOptions options(kAllowStoredCredentials,
+                                kClientRequestedCredentials);
+  options.initiator_info.name = owner_->localName();
+  FetchParameters params(resource_request, options);
+  params.SetCharset(charset);
 
   // Load stylesheets that are not needed for the layout immediately with low
   // priority.  When the link element is created by scripts, load the

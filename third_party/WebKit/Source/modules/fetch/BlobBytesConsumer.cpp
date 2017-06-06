@@ -11,6 +11,7 @@
 #include "platform/blob/BlobURL.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -282,10 +283,12 @@ ThreadableLoader* BlobBytesConsumer::CreateLoader() {
   options.fetch_request_mode = WebURLRequest::kFetchRequestModeSameOrigin;
   options.content_security_policy_enforcement =
       kDoNotEnforceContentSecurityPolicy;
-  options.initiator = FetchInitiatorTypeNames::internal;
 
-  ResourceLoaderOptions resource_loader_options;
+  ResourceLoaderOptions resource_loader_options(
+      kDoNotAllowStoredCredentials, kClientDidNotRequestCredentials);
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
+  resource_loader_options.initiator_info.name =
+      FetchInitiatorTypeNames::internal;
 
   return ThreadableLoader::Create(*GetExecutionContext(), this, options,
                                   resource_loader_options);

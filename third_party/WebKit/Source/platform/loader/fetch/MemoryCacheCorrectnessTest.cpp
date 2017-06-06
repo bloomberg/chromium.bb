@@ -84,13 +84,12 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
   RawResource* FetchRawResource() {
     ResourceRequest resource_request(KURL(kParsedURLString, kResourceURL));
     resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
-    FetchParameters fetch_params(resource_request, FetchInitiatorInfo());
+    FetchParameters fetch_params(resource_request);
     return RawResource::Fetch(fetch_params, Fetcher());
   }
   MockResource* FetchMockResource() {
     FetchParameters fetch_params(
-        ResourceRequest(KURL(kParsedURLString, kResourceURL)),
-        FetchInitiatorInfo());
+        ResourceRequest(KURL(kParsedURLString, kResourceURL)));
     return MockResource::Fetch(fetch_params, Fetcher());
   }
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
@@ -436,7 +435,7 @@ TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
 
   ResourceRequest request2(KURL(kParsedURLString, kResourceURL));
   request2.SetHTTPMethod(HTTPNames::POST);
-  FetchParameters fetch2(request2, FetchInitiatorInfo());
+  FetchParameters fetch2(request2);
   RawResource* resource2 = RawResource::FetchSynchronously(fetch2, Fetcher());
 
   EXPECT_EQ(resource2, GetMemoryCache()->ResourceForURL(request2.Url()));

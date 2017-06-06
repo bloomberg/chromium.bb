@@ -33,22 +33,16 @@
 
 namespace blink {
 
-FetchParameters::FetchParameters(const ResourceRequest& resource_request,
-                                 const AtomicString& initiator,
-                                 const String& charset)
+FetchParameters::FetchParameters(const ResourceRequest& resource_request)
     : resource_request_(resource_request),
-      charset_(charset),
-      options_(ResourceFetcher::DefaultResourceOptions()),
+      options_(kAllowStoredCredentials, kClientRequestedCredentials),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       preload_discovery_time_(0.0),
       defer_(kNoDefer),
       origin_restriction_(kUseDefaultOriginRestrictionForType),
-      placeholder_image_request_type_(kDisallowPlaceholder) {
-  options_.initiator_info.name = initiator;
-}
+      placeholder_image_request_type_(kDisallowPlaceholder) {}
 
 FetchParameters::FetchParameters(const ResourceRequest& resource_request,
-                                 const AtomicString& initiator,
                                  const ResourceLoaderOptions& options)
     : resource_request_(resource_request),
       options_(options),
@@ -56,23 +50,7 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request,
       preload_discovery_time_(0.0),
       defer_(kNoDefer),
       origin_restriction_(kUseDefaultOriginRestrictionForType),
-      placeholder_image_request_type_(
-          PlaceholderImageRequestType::kDisallowPlaceholder) {
-  options_.initiator_info.name = initiator;
-}
-
-FetchParameters::FetchParameters(const ResourceRequest& resource_request,
-                                 const FetchInitiatorInfo& initiator)
-    : resource_request_(resource_request),
-      options_(ResourceFetcher::DefaultResourceOptions()),
-      speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
-      preload_discovery_time_(0.0),
-      defer_(kNoDefer),
-      origin_restriction_(kUseDefaultOriginRestrictionForType),
-      placeholder_image_request_type_(
-          PlaceholderImageRequestType::kDisallowPlaceholder) {
-  options_.initiator_info = initiator;
-}
+      placeholder_image_request_type_(kDisallowPlaceholder) {}
 
 FetchParameters::~FetchParameters() {}
 

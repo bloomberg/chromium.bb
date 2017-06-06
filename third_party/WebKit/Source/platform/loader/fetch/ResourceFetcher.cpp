@@ -1636,14 +1636,6 @@ void ResourceFetcher::LogPreloadStats(ClearPreloadsPolicy policy) {
     raw_preload_misses.Count(raw_misses);
 }
 
-const ResourceLoaderOptions& ResourceFetcher::DefaultResourceOptions() {
-  DEFINE_STATIC_LOCAL(
-      ResourceLoaderOptions, options,
-      (kBufferData, kAllowStoredCredentials, kClientRequestedCredentials,
-       kCheckContentSecurityPolicy, kDocumentContext));
-  return options;
-}
-
 String ResourceFetcher::GetCacheIdentifier() const {
   if (Context().IsControlledByServiceWorker())
     return String::Number(Context().ServiceWorkerID());
@@ -1659,7 +1651,9 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
     return;
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(request_context);
-  FetchParameters params(resource_request, initiator_name, resource->Options());
+  ResourceLoaderOptions options = resource->Options();
+  options.initiator_info.name = initiator_name;
+  FetchParameters params(resource_request, options);
   Context().CanRequest(resource->GetType(), resource->LastResourceRequest(),
                        resource->LastResourceRequest().Url(), params.Options(),
                        SecurityViolationReportingPolicy::kReport,

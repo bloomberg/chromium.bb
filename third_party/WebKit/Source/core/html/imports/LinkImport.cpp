@@ -38,6 +38,7 @@
 #include "core/html/imports/HTMLImportTreeRoot.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "platform/loader/fetch/FetchParameters.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
@@ -96,7 +97,11 @@ void LinkImport::Process() {
         referrer_policy, url, GetDocument().OutgoingReferrer()));
   }
 
-  FetchParameters params(resource_request, owner_->localName(), GetCharset());
+  ResourceLoaderOptions options(kAllowStoredCredentials,
+                                kClientRequestedCredentials);
+  options.initiator_info.name = owner_->localName();
+  FetchParameters params(resource_request, options);
+  params.SetCharset(GetCharset());
   params.SetContentSecurityPolicyNonce(owner_->nonce());
 
   child_ = controller->Load(parent, this, params);

@@ -83,28 +83,13 @@ struct ResourceLoaderOptions {
   USING_FAST_MALLOC(ResourceLoaderOptions);
 
  public:
-  ResourceLoaderOptions()
+  ResourceLoaderOptions(StoredCredentials allow_credentials,
+                        CredentialRequest credentials_requested)
       : data_buffering_policy(kBufferData),
-        allow_credentials(kDoNotAllowStoredCredentials),
-        credentials_requested(kClientDidNotRequestCredentials),
-        content_security_policy_option(kCheckContentSecurityPolicy),
-        request_initiator_context(kDocumentContext),
-        synchronous_policy(kRequestAsynchronously),
-        cors_enabled(kNotCORSEnabled),
-        parser_disposition(kParserInserted),
-        cache_aware_loading_enabled(kNotCacheAwareLoadingEnabled) {}
-
-  ResourceLoaderOptions(
-      DataBufferingPolicy data_buffering_policy,
-      StoredCredentials allow_credentials,
-      CredentialRequest credentials_requested,
-      ContentSecurityPolicyDisposition content_security_policy_option,
-      RequestInitiatorContext request_initiator_context)
-      : data_buffering_policy(data_buffering_policy),
         allow_credentials(allow_credentials),
         credentials_requested(credentials_requested),
-        content_security_policy_option(content_security_policy_option),
-        request_initiator_context(request_initiator_context),
+        content_security_policy_option(kCheckContentSecurityPolicy),
+        request_initiator_context(kDocumentContext),
         synchronous_policy(kRequestAsynchronously),
         cors_enabled(kNotCORSEnabled),
         parser_disposition(kParserInserted),
@@ -174,10 +159,8 @@ struct CrossThreadResourceLoaderOptionsData {
         cache_aware_loading_enabled(options.cache_aware_loading_enabled) {}
 
   operator ResourceLoaderOptions() const {
-    ResourceLoaderOptions options;
+    ResourceLoaderOptions options(allow_credentials, credentials_requested);
     options.data_buffering_policy = data_buffering_policy;
-    options.allow_credentials = allow_credentials;
-    options.credentials_requested = credentials_requested;
     options.content_security_policy_option = content_security_policy_option;
     options.initiator_info = initiator_info;
     options.request_initiator_context = request_initiator_context;
