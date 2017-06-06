@@ -7,7 +7,7 @@ Dumping release note text:
 Highlights from Chrome 100 update
 Improved Performance and Memory panels
 Edit cookies directly from the Application panel
-LEARN MORECLOSE
+Learn moreClose
 
 Last version of release note seen should be updated:
 99
