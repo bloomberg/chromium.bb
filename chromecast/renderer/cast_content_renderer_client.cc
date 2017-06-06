@@ -166,6 +166,14 @@ bool CastContentRendererClient::IsSupportedVideoConfig(
 #endif
 }
 
+bool CastContentRendererClient::IsSupportedBitstreamAudioCodec(
+    ::media::AudioCodec codec) {
+  return (codec == ::media::kCodecAC3 &&
+          media::MediaCapabilities::HdmiSinkSupportsAC3()) ||
+         (codec == ::media::kCodecEAC3 &&
+          media::MediaCapabilities::HdmiSinkSupportsEAC3());
+}
+
 blink::WebPrescientNetworking*
 CastContentRendererClient::GetPrescientNetworking() {
   return prescient_networking_dispatcher_.get();

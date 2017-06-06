@@ -194,6 +194,11 @@ bool ContentRendererClient::IsSupportedVideoConfig(
   return ::media::IsSupportedVideoConfig(config);
 }
 
+bool ContentRendererClient::IsSupportedBitstreamAudioCodec(
+    media::AudioCodec codec) {
+  return false;
+}
+
 std::unique_ptr<MediaStreamRendererFactory>
 ContentRendererClient::CreateMediaStreamRendererFactory() {
   return nullptr;

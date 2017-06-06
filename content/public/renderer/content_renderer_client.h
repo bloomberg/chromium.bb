@@ -275,6 +275,9 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows embedder to describe customized video capabilities.
   virtual bool IsSupportedVideoConfig(const media::VideoConfig& config);
 
+  // Return true if the bitstream format |codec| is supported by the audio sink.
+  virtual bool IsSupportedBitstreamAudioCodec(media::AudioCodec codec);
+
   // Returns true if we should report a detailed message (including a stack
   // trace) for console [logs|errors|exceptions]. |source| is the WebKit-
   // reported source for the error; this can point to a page or a script,

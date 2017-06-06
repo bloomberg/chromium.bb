@@ -25,6 +25,7 @@ class CONTENT_EXPORT RenderMediaClient : public media::MediaClient {
   bool IsKeySystemsUpdateNeeded() final;
   bool IsSupportedAudioConfig(const media::AudioConfig& config) final;
   bool IsSupportedVideoConfig(const media::VideoConfig& config) final;
+  bool IsSupportedBitstreamAudioCodec(media::AudioCodec codec) final;
 
  private:
   RenderMediaClient();

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "media/base/audio_codecs.h"
 #include "media/base/decode_capabilities.h"
 #include "media/base/key_system_properties.h"
 #include "media/base/media_export.h"
@@ -52,6 +53,10 @@ class MEDIA_EXPORT MediaClient {
 
   // Returns true if the given video config is supported.
   virtual bool IsSupportedVideoConfig(const VideoConfig& config) = 0;
+
+  // Returns true if the compressed audio |codec| format is supported by the
+  // audio sink.
+  virtual bool IsSupportedBitstreamAudioCodec(AudioCodec codec) = 0;
 };
 
 }  // namespace media

@@ -228,6 +228,7 @@ class TestMediaClient : public MediaClient {
                                   key_systems_properties) override;
   bool IsSupportedAudioConfig(const media::AudioConfig& config) final;
   bool IsSupportedVideoConfig(const media::VideoConfig& config) final;
+  bool IsSupportedBitstreamAudioCodec(AudioCodec codec) final;
 
   // Helper function to test the case where IsKeySystemsUpdateNeeded() is true
   // after AddSupportedKeySystems() is called.
@@ -271,6 +272,10 @@ bool TestMediaClient::IsSupportedAudioConfig(const media::AudioConfig& config) {
 
 bool TestMediaClient::IsSupportedVideoConfig(const media::VideoConfig& config) {
   return true;
+}
+
+bool TestMediaClient::IsSupportedBitstreamAudioCodec(AudioCodec codec) {
+  return false;
 }
 
 void TestMediaClient::SetKeySystemsUpdateNeeded() {

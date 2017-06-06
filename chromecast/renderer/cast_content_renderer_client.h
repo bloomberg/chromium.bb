@@ -40,6 +40,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
           key_systems_properties) override;
   bool IsSupportedAudioConfig(const ::media::AudioConfig& config) override;
   bool IsSupportedVideoConfig(const ::media::VideoConfig& config) override;
+  bool IsSupportedBitstreamAudioCodec(::media::AudioCodec codec) override;
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
   void DeferMediaLoad(content::RenderFrame* render_frame,
                       bool render_frame_has_played_media_before,
