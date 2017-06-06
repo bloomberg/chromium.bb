@@ -467,6 +467,7 @@ void DelegatedFrameHost::SubmitCompositorFrame(
                                    frame_size);
       client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
           surface_info, manager->reference_factory());
+      client_->DelegatedFrameHostGetLayer()->SetFallbackSurface(surface_info);
       current_surface_size_ = frame_size;
       current_scale_factor_ = frame_device_scale_factor;
     }

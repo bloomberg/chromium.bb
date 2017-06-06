@@ -134,12 +134,14 @@ void WindowPortLocal::OnSurfaceChanged(const cc::SurfaceId& surface_id,
   // mirror layer to update its surface using the latest bounds.
   window_->layer()->SetBounds(
       gfx::Rect(window_->layer()->bounds().origin(), surface_size));
-  window_->layer()->SetShowPrimarySurface(
-      cc::SurfaceInfo(surface_id, 1.0f, surface_size),
+  cc::SurfaceInfo surface_info(surface_id, 1.0f, surface_size);
+  scoped_refptr<cc::SurfaceReferenceFactory> reference_factory =
       aura::Env::GetInstance()
           ->context_factory_private()
           ->GetSurfaceManager()
-          ->reference_factory());
+          ->reference_factory();
+  window_->layer()->SetShowPrimarySurface(surface_info, reference_factory);
+  window_->layer()->SetFallbackSurface(surface_info);
 }
 
 }  // namespace aura

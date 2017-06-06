@@ -108,6 +108,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
 
   auto layer = SurfaceLayer::Create(ref_factory);
   layer->SetPrimarySurfaceInfo(info);
+  layer->SetFallbackSurfaceInfo(info);
   layer_tree_host_->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(1, 1));
   layer_tree_host_->SetRootLayer(layer);
@@ -118,6 +119,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
                                 animation_host2.get());
   auto layer2 = SurfaceLayer::Create(ref_factory);
   layer2->SetPrimarySurfaceInfo(info);
+  layer2->SetFallbackSurfaceInfo(info);
   layer_tree_host2->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(2, 2));
   layer_tree_host2->SetRootLayer(layer2);
@@ -158,10 +160,8 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
                 LocalSurfaceId(1, base::UnguessableToken::Create())),
       1.f, gfx::Size(1, 1));
   layer->SetPrimarySurfaceInfo(primary_info);
+  layer->SetFallbackSurfaceInfo(primary_info);
 
-  // As surface synchronization is not enabled, the primary surface id should
-  // be recorded on the layer tree host.
-  EXPECT_FALSE(layer_tree_host_->GetSettings().enable_surface_synchronization);
   EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
   EXPECT_EQ(layer_tree_host_->SurfaceLayerIds().size(), 1u);
 
@@ -183,10 +183,9 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
   // Verify we have reset the state on layer tree host.
   EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
 
-  // Verify that the primary SurfaceInfo is pushed through and that there is
-  // no valid fallback SurfaceInfo.
+  // Verify that the primary and fallback SurfaceInfos are pushed through.
   EXPECT_EQ(primary_info, layer_impl->primary_surface_info());
-  EXPECT_EQ(SurfaceInfo(), layer_impl->fallback_surface_info());
+  EXPECT_EQ(primary_info, layer_impl->fallback_surface_info());
 
   SurfaceInfo fallback_info(
       SurfaceId(kArbitraryFrameSinkId,
@@ -196,7 +195,7 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
 
   // Verify that fallback surface id is not recorded on the layer tree host as
   // surface synchronization is not enabled.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+  EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
   EXPECT_EQ(layer_tree_host_->SurfaceLayerIds().size(), 1u);
 
   TreeSynchronizer::PushLayerProperties(layer_tree_host_.get(),
@@ -231,6 +230,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
         SurfaceId(kArbitraryFrameSinkId, LocalSurfaceId(1, kArbitraryToken)),
         1.f, gfx::Size(1, 1));
     layer_->SetPrimarySurfaceInfo(info);
+    layer_->SetFallbackSurfaceInfo(info);
     testing::Mock::VerifyAndClearExpectations(ref_factory_.get());
 
     // Add the layer to the tree. A sequence must be required.
