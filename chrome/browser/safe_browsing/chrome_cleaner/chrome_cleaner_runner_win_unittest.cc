@@ -359,7 +359,8 @@ TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
              cleaner_process_options_.crash_point() ==
                  MockChromeCleanerProcess::CrashPoint::kAfterResponseReceived));
 
-  if (on_prompt_user_called_ && !cleaner_process_options_.found_uws().empty()) {
+  if (on_prompt_user_called_ &&
+      !cleaner_process_options_.files_to_delete().empty()) {
     EXPECT_EQ(*received_files_to_delete_,
               cleaner_process_options_.files_to_delete());
   }
@@ -394,9 +395,7 @@ INSTANTIATE_TEST_CASE_P(
                MockChromeCleanerProcess::CrashPoint::kAfterConnection,
                MockChromeCleanerProcess::CrashPoint::kAfterRequestSent,
                MockChromeCleanerProcess::CrashPoint::kAfterResponseReceived),
-        Values(PromptAcceptance::DENIED,
-               PromptAcceptance::ACCEPTED_WITH_LOGS,
-               PromptAcceptance::ACCEPTED_WITHOUT_LOGS)));
+        Values(PromptAcceptance::DENIED, PromptAcceptance::ACCEPTED)));
 
 }  // namespace
 }  // namespace safe_browsing

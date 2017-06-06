@@ -170,10 +170,7 @@ void ChromeCleanerController::ReplyWithUserResponse(
   State new_state = State::kIdle;
   switch (user_response) {
     case UserResponse::kAccepted:
-      // The ACCEPTED_WITHOUT_LOGS and ACCEPTED_WITH_LOGS values are going to be
-      // merged. Right now, it makes no difference which one we are sending in
-      // the response.
-      acceptance = PromptAcceptance::ACCEPTED_WITHOUT_LOGS;
+      acceptance = PromptAcceptance::ACCEPTED;
       new_state = State::kCleaning;
       break;
     case UserResponse::kDenied:  // Fallthrough
