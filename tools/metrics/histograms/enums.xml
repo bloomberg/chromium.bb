@@ -29867,8 +29867,9 @@ from previous Chrome versions.
   <int value="23" label="Margarita"/>
   <int value="24" label="Note"/>
   <int value="25" label="Sun And Cloud"/>
-  <int value="26" label="Unknown"/>
-  <int value="27" label="GAIA"/>
+  <int value="26" label="Placeholder"/>
+  <int value="27" label="Unknown"/>
+  <int value="28" label="GAIA"/>
 </enum>
 
 <enum name="ProfileCreateResult" type="int">
