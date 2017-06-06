@@ -123,7 +123,7 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
   // the bubble should be smaller, so use an empty border to shrink down the
   // content bounds so the background gets painted correctly.
   SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(LocationBarView::kBubbleVerticalPadding, 0)));
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
 
   set_notify_enter_exit_on_child(true);
 

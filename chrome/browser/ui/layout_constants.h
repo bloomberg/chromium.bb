@@ -9,6 +9,10 @@
 #include "ui/gfx/geometry/size.h"
 
 enum LayoutConstant {
+  // The vertical padding (additional to TOOLBAR_ELEMENT_PADDING) above and
+  // below location bar bubbles.
+  LOCATION_BAR_BUBBLE_VERTICAL_PADDING,
+
   // The vertical padding between the edge of a location bar bubble and its
   // contained text.
   LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING,

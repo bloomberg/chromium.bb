@@ -12,8 +12,10 @@ int GetLayoutConstant(LayoutConstant constant) {
   const bool hybrid = ui::MaterialDesignController::GetMode() ==
                       ui::MaterialDesignController::MATERIAL_HYBRID;
   switch (constant) {
+    case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
+      return hybrid ? 1 : 3;
     case LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING:
-      return hybrid ? 4 : 2;
+      return hybrid ? 3 : 2;
     case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
       if (ui::MaterialDesignController::IsSecondaryUiMaterial())
         return 1;
