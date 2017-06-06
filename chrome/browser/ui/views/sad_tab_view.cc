@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,7 +25,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -42,8 +42,8 @@ views::Label* CreateFormattedLabel(const base::string16& message) {
 
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetLineHeight(views::kPanelSubVerticalSpacing);
-
+  label->SetLineHeight(ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_UNRELATED_CONTROL_VERTICAL));
   return label;
 }
 
@@ -60,18 +60,27 @@ SadTabView::SadTabView(content::WebContents* web_contents,
 
   const int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);
-  columns->AddPaddingColumn(1, views::kPanelSubVerticalSpacing);
+
+  // TODO(ananta)
+  // This view should probably be styled as web UI.
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const int unrelated_horizontal_spacing = provider->GetDistanceMetric(
+          DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+  columns->AddPaddingColumn(1, unrelated_horizontal_spacing);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::USE_PREF, 0, kMinColumnWidth);
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING, 0,
                      views::GridLayout::USE_PREF, 0, kMinColumnWidth);
-  columns->AddPaddingColumn(1, views::kPanelSubVerticalSpacing);
+  columns->AddPaddingColumn(1, unrelated_horizontal_spacing);
 
   views::ImageView* image = new views::ImageView();
 
   image->SetImage(
       gfx::CreateVectorIcon(kCrashedTabIcon, 48, gfx::kChromeIconGrey));
-  layout->AddPaddingRow(1, views::kPanelVerticalSpacing);
+
+  const int unrelated_vertical_spacing_large = provider->GetDistanceMetric(
+      DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE);
+  layout->AddPaddingRow(1, unrelated_vertical_spacing_large);
   layout->StartRow(0, column_set_id);
   layout->AddView(image, 2, 1);
 
@@ -81,19 +90,20 @@ SadTabView::SadTabView(content::WebContents* web_contents,
   title_->SetMultiLine(true);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->StartRowWithPadding(0, column_set_id, 0,
-                              views::kPanelVerticalSpacing);
+      unrelated_vertical_spacing_large);
   layout->AddView(title_, 2, 1);
 
   message_ = CreateFormattedLabel(l10n_util::GetStringUTF16(GetMessage()));
   layout->StartRowWithPadding(0, column_set_id, 0, kTitleBottomSpacing);
   layout->AddView(message_, 2, 1, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
+
   size_t bullet_id = 0;
   int bullet_string_id = GetSubMessage(bullet_id);
   if (bullet_string_id) {
     const int bullet_columnset_id = 1;
     views::ColumnSet* column_set = layout->AddColumnSet(bullet_columnset_id);
-    column_set->AddPaddingColumn(1, views::kPanelSubVerticalSpacing);
+    column_set->AddPaddingColumn(1, unrelated_horizontal_spacing);
     column_set->AddColumn(views::GridLayout::TRAILING,
                           views::GridLayout::LEADING, 0,
                           views::GridLayout::FIXED, kBulletWidth, 0);
@@ -103,7 +113,7 @@ SadTabView::SadTabView(content::WebContents* web_contents,
                           views::GridLayout::USE_PREF,
                           0,  // No fixed width.
                           0);
-    column_set->AddPaddingColumn(1, views::kPanelSubVerticalSpacing);
+    column_set->AddPaddingColumn(1, unrelated_horizontal_spacing);
 
     while (bullet_string_id) {
       const base::string16 bullet_character(base::WideToUTF16(L"\u2022"));
@@ -126,13 +136,14 @@ SadTabView::SadTabView(content::WebContents* web_contents,
   help_link_ = new views::Link(l10n_util::GetStringUTF16(GetHelpLinkTitle()));
   help_link_->set_listener(this);
   layout->StartRowWithPadding(0, column_set_id, 0,
-                              views::kPanelVerticalSpacing);
+      unrelated_vertical_spacing_large);
   layout->AddView(help_link_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
   layout->AddView(action_button_, 1, 1, views::GridLayout::TRAILING,
                   views::GridLayout::LEADING);
 
-  layout->AddPaddingRow(2, views::kPanelSubVerticalSpacing);
+  layout->AddPaddingRow(2, provider->GetDistanceMetric(
+      DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   views::Widget::InitParams sad_tab_params(
       views::Widget::InitParams::TYPE_CONTROL);
@@ -172,12 +183,13 @@ void SadTabView::ButtonPressed(views::Button* sender,
 void SadTabView::Layout() {
   // Specify the maximum message width explicitly.
   const int max_width =
-      std::min(width() - views::kPanelSubVerticalSpacing * 2, kMaxContentWidth);
+      std::min(width() - ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_UNRELATED_CONTROL_HORIZONTAL) * 2, kMaxContentWidth);
 
   message_->SizeToFit(max_width);
   title_->SizeToFit(max_width);
 
-  // Bullet labels need to take into acocunt the size of the bullet.
+  // Bullet labels need to take into account the size of the bullet.
   for (views::Label* label : bullet_labels_)
     label->SizeToFit(max_width - kBulletWidth - kBulletPadding);
 
