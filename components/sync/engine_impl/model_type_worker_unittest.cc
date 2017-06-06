@@ -101,6 +101,12 @@ void EncryptUpdate(const KeyParams& params, EntitySpecifics* specifics) {
   specifics->mutable_encrypted()->set_blob(encrypted);
 }
 
+void VerifyCommitCount(const NonBlockingTypeDebugInfoEmitter& emitter,
+                       int expected_count) {
+  EXPECT_EQ(expected_count, emitter.GetCommitCounters().num_commits_attempted);
+  EXPECT_EQ(expected_count, emitter.GetCommitCounters().num_commits_success);
+}
+
 }  // namespace
 
 // Tests the ModelTypeWorker.
@@ -136,9 +142,11 @@ class ModelTypeWorkerTest : public ::testing::Test {
       : foreign_encryption_key_index_(0),
         update_encryption_filter_index_(0),
         mock_type_processor_(nullptr),
-        mock_server_(kModelType),
+        mock_server_(base::MakeUnique<SingleTypeMockServer>(kModelType)),
         is_processor_disconnected_(false),
-        preferences_emitter_(kModelType, &type_observers_) {}
+        emitter_(base::MakeUnique<NonBlockingTypeDebugInfoEmitter>(
+            kModelType,
+            &type_observers_)) {}
 
   ~ModelTypeWorkerTest() override {}
 
@@ -153,7 +161,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     initial_state.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(kModelType));
 
-    InitializeWithState(initial_state, UpdateResponseDataList());
+    InitializeWithState(kModelType, initial_state, UpdateResponseDataList());
   }
 
   // Initializes with some existing data type state. Allows us to start
@@ -173,13 +181,26 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
     initial_state.set_initial_sync_done(true);
 
-    InitializeWithState(initial_state, initial_pending_updates);
+    InitializeWithState(kModelType, initial_state, initial_pending_updates);
 
     mock_nudge_handler_.ClearCounters();
   }
 
+  void InitializeCommitOnly() {
+    mock_server_ = base::MakeUnique<SingleTypeMockServer>(USER_EVENTS);
+    emitter_ = base::MakeUnique<NonBlockingTypeDebugInfoEmitter>(
+        USER_EVENTS, &type_observers_);
+
+    // Don't set progress marker, commit only types don't use them.
+    ModelTypeState initial_state;
+    initial_state.set_initial_sync_done(true);
+
+    InitializeWithState(USER_EVENTS, initial_state, UpdateResponseDataList());
+  }
+
   // Initialize with a custom initial ModelTypeState and pending updates.
   void InitializeWithState(
+      const ModelType type,
       const ModelTypeState& state,
       const UpdateResponseDataList& initial_pending_updates) {
     DCHECK(!worker_);
@@ -197,9 +218,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
     // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
     worker_ = base::MakeUnique<ModelTypeWorker>(
-        kModelType, state, !state.initial_sync_done(),
-        std::move(cryptographer_copy), &mock_nudge_handler_,
-        std::move(processor), &preferences_emitter_);
+        type, state, !state.initial_sync_done(), std::move(cryptographer_copy),
+        &mock_nudge_handler_, std::move(processor), emitter_.get());
   }
 
   // Introduce a new key that the local cryptographer can't decrypt.
@@ -273,10 +293,13 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // Modifications on the model thread that get sent to the worker under test.
 
   void CommitRequest(const std::string& name, const std::string& value) {
-    const std::string tag_hash = GenerateTagHash(name);
-    CommitRequestData data = mock_type_processor_->CommitRequest(
-        tag_hash, GenerateSpecifics(name, value));
-    worker_->EnqueueForCommit({data});
+    CommitRequest(GenerateTagHash(name), GenerateSpecifics(name, value));
+  }
+
+  void CommitRequest(const std::string& tag_hash,
+                     const EntitySpecifics& specifics) {
+    worker_->EnqueueForCommit(
+        {mock_type_processor_->CommitRequest(tag_hash, specifics)});
   }
 
   void DeleteRequest(const std::string& tag) {
@@ -288,9 +311,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // Pretend to receive update messages from the server.
 
   void TriggerTypeRootUpdateFromServer() {
-    SyncEntity entity = mock_server_.TypeRootUpdate();
-    worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                       mock_server_.GetContext(), {&entity},
+    SyncEntity entity = mock_server_->TypeRootUpdate();
+    worker_->ProcessGetUpdatesResponse(mock_server_->GetProgress(),
+                                       mock_server_->GetContext(), {&entity},
                                        nullptr);
     worker_->PassiveApplyUpdates(nullptr);
   }
@@ -298,7 +321,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   void TriggerPartialUpdateFromServer(int64_t version_offset,
                                       const std::string& tag,
                                       const std::string& value) {
-    SyncEntity entity = mock_server_.UpdateFromServer(
+    SyncEntity entity = mock_server_->UpdateFromServer(
         version_offset, GenerateTagHash(tag), GenerateSpecifics(tag, value));
 
     if (update_encryption_filter_index_ != 0) {
@@ -306,8 +329,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
                     entity.mutable_specifics());
     }
 
-    worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                       mock_server_.GetContext(), {&entity},
+    worker_->ProcessGetUpdatesResponse(mock_server_->GetProgress(),
+                                       mock_server_->GetContext(), {&entity},
                                        nullptr);
   }
 
@@ -321,15 +344,15 @@ class ModelTypeWorkerTest : public ::testing::Test {
   void TriggerTombstoneFromServer(int64_t version_offset,
                                   const std::string& tag) {
     SyncEntity entity =
-        mock_server_.TombstoneFromServer(version_offset, GenerateTagHash(tag));
+        mock_server_->TombstoneFromServer(version_offset, GenerateTagHash(tag));
 
     if (update_encryption_filter_index_ != 0) {
       EncryptUpdate(GetNthKeyParams(update_encryption_filter_index_),
                     entity.mutable_specifics());
     }
 
-    worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                       mock_server_.GetContext(), {&entity},
+    worker_->ProcessGetUpdatesResponse(mock_server_->GetProgress(),
+                                       mock_server_->GetContext(), {&entity},
                                        nullptr);
     worker_->ApplyUpdates(nullptr);
   }
@@ -345,7 +368,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // protocol. Try to use the other, higher level methods if possible.
   void DeliverRawUpdates(const SyncEntityList& list) {
     worker_->ProcessGetUpdatesResponse(
-        mock_server_.GetProgress(), mock_server_.GetContext(), list, nullptr);
+        mock_server_->GetProgress(), mock_server_->GetContext(), list, nullptr);
     worker_->ApplyUpdates(nullptr);
   }
 
@@ -389,7 +412,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     contribution->AddToCommitMessage(&message);
 
     sync_pb::ClientToServerResponse response =
-        mock_server_.DoSuccessfulCommit(message);
+        mock_server_->DoSuccessfulCommit(message);
 
     contribution->ProcessCommitResponse(response, nullptr);
     contribution->CleanUp();
@@ -416,7 +439,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   }
 
   // Returns the name of the encryption key in the cryptographer last passed to
-  // the CommitQueue. Returns an empty string if no crypgorapher is
+  // the CommitQueue. Returns an empty string if no cryptographer is
   // in use. See also: DecryptPendingKey().
   std::string GetLocalCryptographerKeyName() const {
     if (!cryptographer_) {
@@ -427,8 +450,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   MockModelTypeProcessor* processor() { return mock_type_processor_; }
   ModelTypeWorker* worker() { return worker_.get(); }
-  SingleTypeMockServer* server() { return &mock_server_; }
-  NonBlockingTypeDebugInfoEmitter* emitter() { return &preferences_emitter_; }
+  SingleTypeMockServer* server() { return mock_server_.get(); }
+  NonBlockingTypeDebugInfoEmitter* emitter() { return emitter_.get(); }
 
  private:
   // An encryptor for our cryptographer.
@@ -455,7 +478,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // A mock that emulates enough of the sync server that it can be used
   // a single UpdateHandler and CommitContributor pair. In this test
   // harness, the |worker_| is both of them.
-  SingleTypeMockServer mock_server_;
+  std::unique_ptr<SingleTypeMockServer> mock_server_;
 
   // A mock to track the number of times the CommitQueue requests to
   // sync.
@@ -465,7 +488,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   base::ObserverList<TypeDebugInfoObserver> type_observers_;
 
-  NonBlockingTypeDebugInfoEmitter preferences_emitter_;
+  std::unique_ptr<NonBlockingTypeDebugInfoEmitter> emitter_;
 };
 
 // Requests a commit and verifies the messages sent to the client and server as
@@ -482,8 +505,7 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   EXPECT_FALSE(WillCommit());
   EXPECT_EQ(0U, server()->GetNumCommitMessages());
   EXPECT_EQ(0U, processor()->GetNumCommitResponses());
-  EXPECT_EQ(0, emitter()->GetCommitCounters().num_commits_attempted);
-  EXPECT_EQ(0, emitter()->GetCommitCounters().num_commits_success);
+  VerifyCommitCount(*emitter(), 0);
 
   CommitRequest(kTag1, kValue1);
 
@@ -509,9 +531,7 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   EXPECT_FALSE(entity.deleted());
   EXPECT_EQ(kValue1, entity.specifics().preference().value());
 
-  // Verify the counters update correctly.
-  EXPECT_EQ(1, emitter()->GetCommitCounters().num_commits_attempted);
-  EXPECT_EQ(1, emitter()->GetCommitCounters().num_commits_success);
+  VerifyCommitCount(*emitter(), 1);
 
   // Exhaustively verify the commit response returned to the model thread.
   ASSERT_EQ(1U, processor()->GetNumCommitResponses());
@@ -537,14 +557,11 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
   // Step 1 is to create and commit a new entity.
   CommitRequest(kTag1, kValue1);
   EXPECT_EQ(1, GetNumCommitNudges());
-  EXPECT_EQ(0, emitter()->GetCommitCounters().num_commits_attempted);
-  EXPECT_EQ(0, emitter()->GetCommitCounters().num_commits_success);
+  VerifyCommitCount(*emitter(), 0);
   ASSERT_TRUE(WillCommit());
   DoSuccessfulCommit();
 
-  // Verify the counters update correctly.
-  EXPECT_EQ(1, emitter()->GetCommitCounters().num_commits_attempted);
-  EXPECT_EQ(1, emitter()->GetCommitCounters().num_commits_success);
+  VerifyCommitCount(*emitter(), 1);
 
   ASSERT_TRUE(processor()->HasCommitResponse(kHash1));
   const CommitResponseData& initial_commit_response =
@@ -556,9 +573,7 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
   ASSERT_TRUE(WillCommit());
   DoSuccessfulCommit();
 
-  // Verify the counters update correctly.
-  EXPECT_EQ(2, emitter()->GetCommitCounters().num_commits_attempted);
-  EXPECT_EQ(2, emitter()->GetCommitCounters().num_commits_success);
+  VerifyCommitCount(*emitter(), 2);
 
   // Verify the SyncEntity sent in the commit message.
   ASSERT_EQ(2U, server()->GetNumCommitMessages());
@@ -694,7 +709,6 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   EXPECT_EQ(kTag1, entity.specifics.preference().name());
   EXPECT_EQ(kValue1, entity.specifics.preference().value());
 
-  // Verify the counters update correctly.
   EXPECT_EQ(1, emitter()->GetUpdateCounters().num_updates_received);
   EXPECT_EQ(1, emitter()->GetUpdateCounters().num_updates_applied);
 }
@@ -1170,6 +1184,46 @@ TEST_F(ModelTypeWorkerTest, RecreateDeletedEntity) {
     const SyncEntity& entity = server()->GetLastCommittedEntity(kHash1);
     EXPECT_FALSE(entity.deleted());
   }
+}
+
+TEST_F(ModelTypeWorkerTest, CommitOnly) {
+  InitializeCommitOnly();
+
+  int id = 123456789;
+  EntitySpecifics specifics;
+  specifics.mutable_user_event()->set_event_time_usec(id);
+  CommitRequest(kHash1, specifics);
+
+  EXPECT_EQ(1, GetNumCommitNudges());
+
+  ASSERT_TRUE(WillCommit());
+  DoSuccessfulCommit();
+
+  ASSERT_EQ(1U, server()->GetNumCommitMessages());
+  EXPECT_EQ(1, server()->GetNthCommitMessage(0).commit().entries_size());
+  const SyncEntity entity =
+      server()->GetNthCommitMessage(0).commit().entries(0);
+
+  EXPECT_EQ(0, entity.attachment_id_size());
+  EXPECT_FALSE(entity.has_ctime());
+  EXPECT_FALSE(entity.has_deleted());
+  EXPECT_FALSE(entity.has_folder());
+  EXPECT_FALSE(entity.has_id_string());
+  EXPECT_FALSE(entity.has_mtime());
+  EXPECT_FALSE(entity.has_version());
+  EXPECT_FALSE(entity.has_name());
+  EXPECT_TRUE(entity.specifics().has_user_event());
+  EXPECT_EQ(id, entity.specifics().user_event().event_time_usec());
+
+  VerifyCommitCount(*emitter(), 1);
+
+  ASSERT_EQ(1U, processor()->GetNumCommitResponses());
+  EXPECT_EQ(1U, processor()->GetNthCommitResponse(0).size());
+  ASSERT_TRUE(processor()->HasCommitResponse(kHash1));
+  const CommitResponseData& commit_response =
+      processor()->GetCommitResponse(kHash1);
+  EXPECT_EQ(kHash1, commit_response.client_tag_hash);
+  EXPECT_FALSE(commit_response.specifics_hash.empty());
 }
 
 }  // namespace syncer

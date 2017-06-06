@@ -84,7 +84,15 @@ base::Optional<ModelError> UserEventSyncBridge::MergeSyncData(
 base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
-  NOTREACHED();
+  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  for (EntityChange& change : entity_changes) {
+    DCHECK_EQ(EntityChange::ACTION_DELETE, change.type());
+    batch->DeleteData(change.storage_key());
+  }
+  batch->TransferMetadataChanges(std::move(metadata_change_list));
+  store_->CommitWriteBatch(
+      std::move(batch),
+      base::Bind(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));
   return {};
 }
 

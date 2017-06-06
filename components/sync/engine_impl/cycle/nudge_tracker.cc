@@ -24,6 +24,7 @@ base::TimeDelta GetDefaultDelayForType(ModelType model_type,
                                        base::TimeDelta minimum_delay) {
   switch (model_type) {
     case AUTOFILL:
+    case USER_EVENTS:
       // Accompany types rely on nudges from other types, and hence have long
       // nudge delays.
       return base::TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds);

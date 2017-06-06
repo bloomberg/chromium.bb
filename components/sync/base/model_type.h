@@ -245,6 +245,9 @@ ModelTypeSet CoreTypes();
 // Those core types that have high priority (includes ControlTypes()).
 ModelTypeSet PriorityCoreTypes();
 
+// Types that may commit data, but should never be included in a GetUpdates.
+ModelTypeSet CommitOnlyTypes();
+
 // Determine a model type from the field number of its associated
 // EntitySpecifics field.  Returns UNSPECIFIED if the field number is
 // not recognized.

@@ -539,6 +539,7 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
 
   types_to_download.PutAll(clean_types);
   types_to_download.RemoveAll(ProxyTypes());
+  types_to_download.RemoveAll(CommitOnlyTypes());
   if (!types_to_download.Empty())
     types_to_download.Put(NIGORI);
 

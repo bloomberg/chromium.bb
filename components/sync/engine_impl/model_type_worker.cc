@@ -290,7 +290,7 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
 
   return base::MakeUnique<NonBlockingTypeCommitContribution>(
       model_type_state_.type_context(), commit_entities, this,
-      debug_info_emitter_);
+      debug_info_emitter_, CommitOnlyTypes().Has(GetModelType()));
 }
 
 void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
@@ -312,7 +312,7 @@ void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
 
     entity->ReceiveCommitResponse(&response);
 
-    if (is_deletion) {
+    if (is_deletion || CommitOnlyTypes().Has(GetModelType())) {
       entities_.erase(response.client_tag_hash);
     }
   }
@@ -346,8 +346,7 @@ base::WeakPtr<ModelTypeWorker> ModelTypeWorker::AsWeakPtr() {
 }
 
 bool ModelTypeWorker::IsTypeInitialized() const {
-  return model_type_state_.initial_sync_done() &&
-         !model_type_state_.progress_marker().token().empty();
+  return model_type_state_.initial_sync_done();
 }
 
 bool ModelTypeWorker::CanCommitItems() const {
@@ -397,6 +396,21 @@ void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
   AddDefaultFieldValue(type_, sync_entity->mutable_specifics());
 
   // TODO(crbug.com/516866): Set parent_id_string for hierarchical types here.
+
+  if (CommitOnlyTypes().Has(GetModelType())) {
+    DCHECK(!cryptographer_);
+    // Remove absolutely everything we can get away with. We do not want to
+    // remove |client_defined_unique_tag| yet because the commit contribution
+    // needs the id to track the responses. They will remove it instead.
+    sync_entity->clear_attachment_id();
+    sync_entity->clear_ctime();
+    sync_entity->clear_deleted();
+    sync_entity->clear_folder();
+    sync_entity->clear_id_string();
+    sync_entity->clear_mtime();
+    sync_entity->clear_name();
+    sync_entity->clear_version();
+  }
 }
 
 void ModelTypeWorker::OnCryptographerUpdated() {

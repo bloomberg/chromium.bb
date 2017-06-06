@@ -59,15 +59,20 @@ std::unique_ptr<EntityData> GenerateEntityData(const std::string& key,
   return FakeModelTypeSyncBridge::GenerateEntityData(key, value);
 }
 
+std::unique_ptr<ModelTypeChangeProcessor>
+CreateProcessor(bool commit_only, ModelType type, ModelTypeSyncBridge* bridge) {
+  return base::MakeUnique<SharedModelTypeProcessor>(
+      type, bridge, base::RepeatingClosure(), commit_only);
+}
+
 class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
  public:
-  TestModelTypeSyncBridge()
-      : FakeModelTypeSyncBridge(base::Bind(&ModelTypeChangeProcessor::Create,
-                                           base::RepeatingClosure())) {}
+  explicit TestModelTypeSyncBridge(bool commit_only)
+      : FakeModelTypeSyncBridge(base::Bind(&CreateProcessor, commit_only)) {}
 
-  explicit TestModelTypeSyncBridge(
-      std::unique_ptr<TestModelTypeSyncBridge> other)
-      : TestModelTypeSyncBridge() {
+  TestModelTypeSyncBridge(std::unique_ptr<TestModelTypeSyncBridge> other,
+                          bool commit_only)
+      : TestModelTypeSyncBridge(commit_only) {
     std::swap(db_, other->db_);
   }
 
@@ -174,7 +179,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 class SharedModelTypeProcessorTest : public ::testing::Test {
  public:
   SharedModelTypeProcessorTest()
-      : bridge_(base::MakeUnique<TestModelTypeSyncBridge>()) {}
+      : bridge_(base::MakeUnique<TestModelTypeSyncBridge>(false)) {}
 
   ~SharedModelTypeProcessorTest() override { CheckPostConditions(); }
 
@@ -220,10 +225,10 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
     return specifics;
   }
 
-  void ResetState(bool keep_db) {
-    bridge_ =
-        keep_db ? base::MakeUnique<TestModelTypeSyncBridge>(std::move(bridge_))
-                : base::MakeUnique<TestModelTypeSyncBridge>();
+  void ResetState(bool keep_db, bool commit_only = false) {
+    bridge_ = keep_db ? base::MakeUnique<TestModelTypeSyncBridge>(
+                            std::move(bridge_), commit_only)
+                      : base::MakeUnique<TestModelTypeSyncBridge>(commit_only);
     worker_ = nullptr;
     CheckPostConditions();
   }
@@ -689,6 +694,48 @@ TEST_F(SharedModelTypeProcessorTest, LocalCreateItem) {
   EXPECT_EQ(1, acked_metadata.sequence_number());
   EXPECT_EQ(1, acked_metadata.acked_sequence_number());
   EXPECT_EQ(1, acked_metadata.server_version());
+}
+
+// Test that commit only types are deleted after commit response.
+TEST_F(SharedModelTypeProcessorTest, CommitOnlySimple) {
+  ResetState(false, true);
+  InitializeToReadyState();
+
+  bridge()->WriteItem(kKey1, kValue1);
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_EQ(1U, db().metadata_count());
+
+  worker()->VerifyPendingCommits({kHash1});
+  worker()->AckOnePendingCommit();
+  EXPECT_EQ(0U, db().data_count());
+  EXPECT_EQ(0U, db().metadata_count());
+}
+
+// Test that commit only types maintain tracking of entities while unsynced
+// changes exist.
+TEST_F(SharedModelTypeProcessorTest, CommitOnlyUnsyncedChanges) {
+  ResetState(false, true);
+  InitializeToReadyState();
+
+  bridge()->WriteItem(kKey1, kValue1);
+  worker()->VerifyPendingCommits({kHash1});
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_EQ(1U, db().metadata_count());
+
+  bridge()->WriteItem(kKey1, kValue2);
+  worker()->VerifyPendingCommits({kHash1, kHash1});
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_EQ(1U, db().metadata_count());
+
+  worker()->AckOnePendingCommit();
+  worker()->VerifyPendingCommits({kHash1});
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_EQ(1U, db().metadata_count());
+
+  worker()->AckOnePendingCommit();
+  worker()->VerifyPendingCommits(std::vector<std::string>());
+  EXPECT_EQ(0U, db().data_count());
+  EXPECT_EQ(0U, db().metadata_count());
 }
 
 // Test that an error applying metadata changes from a commit response is

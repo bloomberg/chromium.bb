@@ -5088,6 +5088,48 @@ TEST_F(SyncerTest, ProgressMarkerOnlyUpdateCreatesRootFolder) {
   EXPECT_TRUE(directory()->InitialSyncEndedForType(PREFERENCES));
 }
 
+// Verify that commit only types are never requested in GetUpdates, but still
+// make it into the commit messages. Additionally, make sure failing GU types
+// are correctly removed before commit.
+TEST_F(SyncerTest, CommitOnlyTypes) {
+  mock_server_->set_partial_failure(true);
+  mock_server_->SetPartialFailureTypes(ModelTypeSet(PREFERENCES));
+
+  EnableDatatype(USER_EVENTS);
+  {
+    syncable::WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+
+    MutableEntry pref(&trans, CREATE, PREFERENCES, ids_.root(), "name");
+    ASSERT_TRUE(pref.good());
+    pref.PutUniqueClientTag("tag1");
+    pref.PutIsUnsynced(true);
+
+    MutableEntry ext(&trans, CREATE, EXTENSIONS, ids_.root(), "name");
+    ASSERT_TRUE(ext.good());
+    ext.PutUniqueClientTag("tag2");
+    ext.PutIsUnsynced(true);
+
+    MutableEntry event(&trans, CREATE, USER_EVENTS, ids_.root(), "name");
+    ASSERT_TRUE(event.good());
+    event.PutUniqueClientTag("tag3");
+    event.PutIsUnsynced(true);
+  }
+
+  EXPECT_TRUE(SyncShareNudge());
+
+  ASSERT_EQ(2U, mock_server_->requests().size());
+  ASSERT_TRUE(mock_server_->requests()[0].has_get_updates());
+  // MockConnectionManager will ensure USER_EVENTS was not included in the GU.
+  EXPECT_EQ(
+      4, mock_server_->requests()[0].get_updates().from_progress_marker_size());
+
+  ASSERT_TRUE(mock_server_->requests()[1].has_commit());
+  const sync_pb::CommitMessage commit = mock_server_->requests()[1].commit();
+  EXPECT_EQ(2, commit.entries_size());
+  EXPECT_TRUE(commit.entries(0).specifics().has_extension());
+  EXPECT_TRUE(commit.entries(1).specifics().has_user_event());
+}
+
 // Tests specifically related to bookmark (and therefore no client tags) sync
 // logic. Entities without client tags have custom logic in parts of the code,
 // and hence are not covered by e.g. the Undeletion tests below.
