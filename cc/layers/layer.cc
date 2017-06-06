@@ -492,7 +492,7 @@ void Layer::SetOpacity(float opacity) {
   if (layer_tree_host_ && !force_rebuild) {
     PropertyTrees* property_trees = layer_tree_host_->property_trees();
     if (EffectNode* node =
-            property_trees->effect_tree.UpdateNodeFromOwningLayerId(id())) {
+            property_trees->effect_tree.Node(effect_tree_index())) {
       node->opacity = opacity;
       node->effect_changed = true;
       property_trees->effect_tree.set_needs_update(true);

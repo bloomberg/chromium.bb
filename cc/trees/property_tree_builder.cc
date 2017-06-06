@@ -964,8 +964,6 @@ bool AddEffectNodeIfNeeded(
       node->closest_ancestor_with_copy_request_id;
   data_for_children->effect_tree_parent = node_id;
   layer->SetEffectTreeIndex(node_id);
-  data_for_children->property_trees->effect_tree.SetOwningLayerIdForNode(
-      effect_tree.back(), layer->id());
 
   // For animation subsystem purposes, if this layer has a compositor element
   // id, we build a map from that id to this effect node.

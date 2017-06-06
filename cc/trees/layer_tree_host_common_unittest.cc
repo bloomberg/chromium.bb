@@ -9851,8 +9851,8 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   EXPECT_TRUE(property_trees->needs_rebuild);
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_NE(property_trees->effect_tree.FindNodeFromOwningLayerId(child->id()),
-            nullptr);
+  EXPECT_NE(property_trees->effect_tree.Node(child->effect_tree_index()),
+            property_trees->effect_tree.Node(root->effect_tree_index()));
 
   // child already has an effect node. Changing its opacity shouldn't trigger
   // a property trees rebuild.
@@ -9861,8 +9861,8 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   EXPECT_FALSE(property_trees->needs_rebuild);
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_NE(property_trees->effect_tree.FindNodeFromOwningLayerId(child->id()),
-            nullptr);
+  EXPECT_NE(property_trees->effect_tree.Node(child->effect_tree_index()),
+            property_trees->effect_tree.Node(root->effect_tree_index()));
 
   // Changing the opacity from non-1 value to 1 should trigger a rebuild of
   // property trees as the effect node may no longer be needed.
@@ -9871,8 +9871,8 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   EXPECT_TRUE(property_trees->needs_rebuild);
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_EQ(property_trees->effect_tree.FindNodeFromOwningLayerId(child->id()),
-            nullptr);
+  EXPECT_EQ(property_trees->effect_tree.Node(child->effect_tree_index()),
+            property_trees->effect_tree.Node(root->effect_tree_index()));
 }
 
 TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
