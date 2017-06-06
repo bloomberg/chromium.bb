@@ -505,6 +505,15 @@ bail0:
     return 0;
 }
 
+/* When the language isn't found, the return value r is such that:
+ *  1) r < 0
+ *  2) -r -1 is the index of the first language in fcLangCharSets that comes
+ *     after the 'lang' argument in lexicographic order.
+ *
+ *  The -1 is necessary to avoid problems with language id 0 (otherwise, we
+ *  wouldn't be able to distinguish between “language found, id is 0” and
+ *  “language not found, sorts right before the language with id 0”).
+ */
 static int
 FcLangSetIndex (const FcChar8 *lang)
 {
@@ -529,7 +538,7 @@ FcLangSetIndex (const FcChar8 *lang)
 	high = fcLangCharSetRanges[firstChar - 'a'].end;
 	/* no matches */
 	if (low > high)
-	    return -low; /* next entry after where it would be */
+	    return -(low+1); /* one past next entry after where it would be */
     }
 
     while (low <= high)
