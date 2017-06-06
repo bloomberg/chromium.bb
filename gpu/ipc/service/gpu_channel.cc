@@ -780,7 +780,7 @@ GpuChannel::GpuChannel(
       mailbox_manager_(mailbox_manager),
       image_manager_(new gles2::ImageManager()),
       watchdog_(watchdog),
-      discardable_manager_(std::move(discardable_manager)),
+      discardable_manager_(discardable_manager),
       is_gpu_host_(is_gpu_host),
       weak_factory_(this) {
   DCHECK(gpu_channel_manager_);
