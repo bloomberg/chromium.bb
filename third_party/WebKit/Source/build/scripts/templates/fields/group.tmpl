@@ -32,7 +32,11 @@ class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
 
   {{group.type_name}}(const {{group.type_name}}& other) :
   {% for field in group.fields %}
+      {% if field.wrapper_pointer_name %}
+      {{field.name}}(MemberCopy(other.{{field.name}})){{print_if(not loop.last, ',')}}
+      {% else %}
       {{field.name}}(other.{{field.name}}){{print_if(not loop.last, ',')}}
+      {% endif %}
   {% endfor %}
   {}
 };
