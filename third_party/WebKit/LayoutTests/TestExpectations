@@ -3012,3 +3012,5 @@ crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/basic-
 crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/request-animation-frame.html [ Pass Failure Timeout Crash ]
 
 crbug.com/729075 [ Mac10.11 Retina ] css3/blending/background-blend-mode-gif-color-2.html [ Failure Pass ]
+
+crbug.com/729836 [ Win ] fast/workers/worker-document-leak.html [ Pass Failure ]
