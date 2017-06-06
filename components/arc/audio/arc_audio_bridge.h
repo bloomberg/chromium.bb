@@ -31,6 +31,7 @@ class ArcAudioBridge : public ArcService,
 
   // mojom::AudioHost overrides.
   void ShowVolumeControls() override;
+  void OnSystemVolumeUpdateRequest(int32_t percent) override;
 
  private:
   mojo::Binding<mojom::AudioHost> binding_;
