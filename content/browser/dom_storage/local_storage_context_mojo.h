@@ -28,8 +28,8 @@ class DOMStorageTaskRunner;
 class LevelDBWrapperImpl;
 struct LocalStorageUsageInfo;
 
-// Used for mojo-based LocalStorage implementation (behind --mojo-local-storage
-// for now).
+// Used for mojo-based LocalStorage implementation (can be disabled with
+// --disable-mojo-local-storage for now).
 // Created on the UI thread, but all further methods are called on the IO
 // thread. Furthermore since destruction of this class can involve asynchronous
 // steps, it can only be deleted by calling ShutdownAndDelete (on the IO
@@ -70,7 +70,8 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   // storage for a particular origin will reload the data from the database.
   void PurgeMemory();
 
-  leveldb::mojom::LevelDBDatabaseAssociatedRequest DatabaseRequestForTesting();
+  void SetDatabaseForTesting(
+      leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
 
   // Converts a string from the old storage format to the new storage format.
   static std::vector<uint8_t> MigrateString(const base::string16& input);

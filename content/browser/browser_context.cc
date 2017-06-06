@@ -479,8 +479,8 @@ void BrowserContext::Initialize(
 
     // New embedded service factories should be added to |connection| here.
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kMojoLocalStorage)) {
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableMojoLocalStorage)) {
       ServiceInfo info;
       // TODO(mek): Use sequenced task runner rather than single thread task
       // runner when mojo supports that (http://crbug.com/678155).

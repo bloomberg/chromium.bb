@@ -341,14 +341,12 @@ void LocalStorageContextMojo::PurgeMemory() {
     it.second->level_db_wrapper()->PurgeMemory();
 }
 
-leveldb::mojom::LevelDBDatabaseAssociatedRequest
-LocalStorageContextMojo::DatabaseRequestForTesting() {
+void LocalStorageContextMojo::SetDatabaseForTesting(
+    leveldb::mojom::LevelDBDatabaseAssociatedPtr database) {
   DCHECK_EQ(connection_state_, NO_CONNECTION);
   connection_state_ = CONNECTION_IN_PROGRESS;
-  leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
-      MakeIsolatedRequest(&database_);
+  database_ = std::move(database);
   OnDatabaseOpened(true, leveldb::mojom::DatabaseError::OK);
-  return request;
 }
 
 // static
@@ -388,7 +386,14 @@ void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
 
 void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
-  CHECK(connector_);
+
+  // Unit tests might not always have a Connector, use in-memory only if that
+  // happens.
+  if (!connector_) {
+    OnDatabaseOpened(false, leveldb::mojom::DatabaseError::OK);
+    return;
+  }
+
   if (!subdirectory_.empty() && !in_memory_only) {
     // We were given a subdirectory to write to. Get it and use a disk backed
     // database.
@@ -607,6 +612,13 @@ LevelDBWrapperImpl* LocalStorageContextMojo::GetOrCreateDBWrapper(
 
 void LocalStorageContextMojo::RetrieveStorageUsage(
     GetStorageUsageCallback callback) {
+  if (!database_) {
+    // If for whatever reason no leveldb database is available, no storage is
+    // used, so return an empty array.
+    std::move(callback).Run(std::vector<LocalStorageUsageInfo>());
+    return;
+  }
+
   database_->GetPrefixed(
       std::vector<uint8_t>(kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix)),
       base::Bind(&LocalStorageContextMojo::OnGotMetaData,

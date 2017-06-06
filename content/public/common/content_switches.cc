@@ -205,6 +205,9 @@ const char kDisableLogging[]                = "disable-logging";
 // Disables using CODECAPI_AVLowLatencyMode when creating DXVA decoders.
 const char kDisableLowLatencyDxva[]         = "disable-low-latency-dxva";
 
+// Dont use a Mojo-based LocalStorage implementation.
+const char kDisableMojoLocalStorage[] = "disable-mojo-local-storage";
+
 // Disables usage of the namespace sandbox.
 const char kDisableNamespaceSandbox[]       = "disable-namespace-sandbox";
 
@@ -636,9 +639,6 @@ const char kMHTMLSkipNostoreAll[]           = "skip-nostore-all";
 
 // Use Mojo-based Input Event routing.
 const char kMojoInputMessages[] = "mojo-input-messages";
-
-// Use a Mojo-based LocalStorage implementation.
-const char kMojoLocalStorage[]              = "mojo-local-storage";
 
 // Mutes audio sent to the audio device so it is not audible during
 // automated testing.

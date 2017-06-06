@@ -13,7 +13,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/leveldb/public/cpp/util.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/local_storage_usage_info.h"
@@ -21,6 +23,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/mock_leveldb_database.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -65,15 +68,6 @@ const GURL kOrigin1(kTestOrigin1);
 const GURL kOrigin2(kTestOrigin2);
 const GURL kOrigin3(kTestOrigin3);
 const GURL kOriginDevTools(kTestOriginDevTools);
-
-const base::FilePath::CharType kDomStorageOrigin1[] =
-    FILE_PATH_LITERAL("http_host1_1.localstorage");
-
-const base::FilePath::CharType kDomStorageOrigin2[] =
-    FILE_PATH_LITERAL("http_host2_1.localstorage");
-
-const base::FilePath::CharType kDomStorageOrigin3[] =
-    FILE_PATH_LITERAL("http_host3_1.localstorage");
 
 const storage::StorageType kTemporary = storage::kStorageTypeTemporary;
 const storage::StorageType kPersistent = storage::kStorageTypePersistent;
@@ -183,7 +177,9 @@ class RemoveCookieTester {
 class RemoveLocalStorageTester {
  public:
   explicit RemoveLocalStorageTester(TestBrowserContext* profile)
-      : profile_(profile), dom_storage_context_(NULL) {
+      : dom_storage_context_(NULL),
+        mock_db_(&mock_data_),
+        db_binding_(&mock_db_) {
     dom_storage_context_ =
         content::BrowserContext::GetDefaultStoragePartition(profile)->
             GetDOMStorageContext();
@@ -202,35 +198,64 @@ class RemoveLocalStorageTester {
 
   void AddDOMStorageTestData() {
     // Note: This test depends on details of how the dom_storage library
-    // stores data in the host file system.
-    base::FilePath storage_path =
-        profile_->GetPath().AppendASCII("Local Storage");
-    base::CreateDirectory(storage_path);
+    // stores data in the database.
+    leveldb::mojom::LevelDBDatabaseAssociatedPtr database_ptr;
+    leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
+        MakeIsolatedRequest(&database_ptr);
+    static_cast<DOMStorageContextWrapper*>(dom_storage_context_)
+        ->SetLocalStorageDatabaseForTesting(std::move(database_ptr));
+    db_binding_.Bind(std::move(request));
 
-    // Write some files.
-    base::WriteFile(storage_path.Append(kDomStorageOrigin1), NULL, 0);
-    base::WriteFile(storage_path.Append(kDomStorageOrigin2), NULL, 0);
-    base::WriteFile(storage_path.Append(kDomStorageOrigin3), NULL, 0);
+    LocalStorageOriginMetaData data;
 
-    // Tweak their dates.
     base::Time now = base::Time::Now();
-    base::TouchFile(storage_path.Append(kDomStorageOrigin1), now, now);
+    data.set_last_modified(now.ToInternalValue());
+    data.set_size_bytes(16);
+    mock_data_[CreateMetaDataKey(url::Origin(kOrigin1))] =
+        leveldb::StdStringToUint8Vector(data.SerializeAsString());
+    mock_data_[CreateDataKey(url::Origin(kOrigin1))] = {};
 
     base::Time one_day_ago = now - base::TimeDelta::FromDays(1);
-    base::TouchFile(storage_path.Append(kDomStorageOrigin2),
-                    one_day_ago, one_day_ago);
+    data.set_last_modified(one_day_ago.ToInternalValue());
+    mock_data_[CreateMetaDataKey(url::Origin(kOrigin2))] =
+        leveldb::StdStringToUint8Vector(data.SerializeAsString());
+    mock_data_[CreateDataKey(url::Origin(kOrigin2))] = {};
 
     base::Time sixty_days_ago = now - base::TimeDelta::FromDays(60);
-    base::TouchFile(storage_path.Append(kDomStorageOrigin3),
-                    sixty_days_ago, sixty_days_ago);
+    data.set_last_modified(sixty_days_ago.ToInternalValue());
+    mock_data_[CreateMetaDataKey(url::Origin(kOrigin3))] =
+        leveldb::StdStringToUint8Vector(data.SerializeAsString());
+    mock_data_[CreateDataKey(url::Origin(kOrigin3))] = {};
   }
 
  private:
+  std::vector<uint8_t> CreateDataKey(const url::Origin& origin) {
+    auto serialized_origin =
+        leveldb::StdStringToUint8Vector(origin.Serialize());
+    std::vector<uint8_t> key = {'_'};
+    key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
+    key.push_back(0);
+    key.push_back('X');
+    return key;
+  }
+
+  std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
+    const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
+    auto serialized_origin =
+        leveldb::StdStringToUint8Vector(origin.Serialize());
+    std::vector<uint8_t> key;
+    key.reserve(arraysize(kMetaPrefix) + serialized_origin.size());
+    key.insert(key.end(), kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix));
+    key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
+    return key;
+  }
+
   void GetLocalStorageUsage() {
     dom_storage_context_->GetLocalStorageUsage(
         base::Bind(&RemoveLocalStorageTester::OnGotLocalStorageUsage,
                    base::Unretained(this)));
   }
+
   void OnGotLocalStorageUsage(
       const std::vector<content::LocalStorageUsageInfo>& infos) {
     infos_ = infos;
@@ -238,8 +263,11 @@ class RemoveLocalStorageTester {
   }
 
   // We don't own these pointers.
-  TestBrowserContext* profile_;
   content::DOMStorageContext* dom_storage_context_;
+
+  std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
+  MockLevelDBDatabase mock_db_;
+  mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding_;
 
   std::vector<content::LocalStorageUsageInfo> infos_;
 
@@ -1155,6 +1183,10 @@ TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
                  partition, base::Time(), base::Time::Max(),
                  base::Bind(&DoesOriginMatchForUnprotectedWeb), &run_loop));
   run_loop.Run();
+  // ClearData only guarantees that tasks to delete data are scheduled when its
+  // callback is invoked. It doesn't guarantee data has actually been cleared.
+  // So run all scheduled tasks to make sure data is cleared.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
@@ -1187,6 +1219,10 @@ TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
                  base::Bind(&DoesOriginMatchForBothProtectedAndUnprotectedWeb),
                  &run_loop));
   run_loop.Run();
+  // ClearData only guarantees that tasks to delete data are scheduled when its
+  // callback is invoked. It doesn't guarantee data has actually been cleared.
+  // So run all scheduled tasks to make sure data is cleared.
+  base::RunLoop().RunUntilIdle();
 
   // Even if kOrigin1 is protected, it will be deleted since we specify
   // ClearData to delete protected data.
@@ -1216,6 +1252,10 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
                  base::Bind(&DoesOriginMatchForBothProtectedAndUnprotectedWeb),
                  &run_loop));
   run_loop.Run();
+  // ClearData only guarantees that tasks to delete data are scheduled when its
+  // callback is invoked. It doesn't guarantee data has actually been cleared.
+  // So run all scheduled tasks to make sure data is cleared.
+  base::RunLoop().RunUntilIdle();
 
   // kOrigin1 and kOrigin2 do not have age more than a week.
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));
