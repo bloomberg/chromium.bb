@@ -31,18 +31,6 @@ const int kMinDiscoveryRSSI = -90;
 // advertising device to the scanning device.
 const size_t kMinNumBytesInServiceData = 4;
 
-// Returns out |string|s data as a hex string.
-std::string StringToHexOfContents(const std::string& string) {
-  std::stringstream ss;
-  ss << "0x" << std::hex;
-
-  for (size_t i = 0; i < string.size(); i++) {
-    ss << static_cast<int>(string.data()[i]);
-  }
-
-  return ss.str();
-}
-
 }  // namespace
 
 BleScanner::ServiceDataProviderImpl::ServiceDataProviderImpl() {}
@@ -263,17 +251,16 @@ void BleScanner::CheckForMatchingScanFilters(
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
           service_data, registered_remote_devices_, beacon_seeds);
 
-  if (identified_device) {
-    PA_LOG(INFO) << "Received advertisement from remote device with ID "
-                 << identified_device->GetTruncatedDeviceIdForLogs() << ".";
-    for (auto& observer : observer_list_) {
-      observer.OnReceivedAdvertisementFromDevice(bluetooth_device->GetAddress(),
-                                                 *identified_device);
-    }
-  } else {
-    PA_LOG(INFO) << "Received advertisement remote device, but could not "
-                 << "identify the device. Service data: "
-                 << StringToHexOfContents(service_data) << ".";
+  // If the service data does not correspond to an advertisement from a device
+  // on this account, ignore it.
+  if (!identified_device)
+    return;
+
+  PA_LOG(INFO) << "Received advertisement from remote device with ID "
+               << identified_device->GetTruncatedDeviceIdForLogs() << ".";
+  for (auto& observer : observer_list_) {
+    observer.OnReceivedAdvertisementFromDevice(bluetooth_device->GetAddress(),
+                                               *identified_device);
   }
 }
 
