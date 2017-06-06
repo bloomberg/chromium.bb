@@ -40,6 +40,15 @@ Polymer({
     },
 
     /**
+     * The timestamp for when the initial media status was loaded.
+     * @private {number}
+     */
+    initialLoadTime_: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
      * Set to true when the user is dragging the seek bar. Updates for the
      * current time from the browser will be ignored when set to true.
      * @private {boolean}
@@ -57,6 +66,15 @@ Polymer({
     isVolumeChanging_: {
       type: Boolean,
       value: false,
+    },
+
+    /**
+     * The timestamp for when the route details view was opened.
+     * @type {number}
+     */
+    routeDetailsOpenTime: {
+      type: Number,
+      value: 0,
     },
 
     /**
@@ -172,15 +190,6 @@ Polymer({
   },
 
   /**
-   * Resets the route controls. Called when the route details view is closed.
-   */
-  reset: function() {
-    this.routeStatus = new media_router.RouteStatus(
-        '', '', false, false, false, false, false, false, 0, 0, 0);
-    media_router.ui.setRouteControls(null);
-  },
-
-  /**
    * Updates seek and volume bars if the user is not currently dragging on
    * them.
    * @param {!media_router.RouteStatus} newRouteStatus
@@ -196,6 +205,11 @@ Polymer({
     }
     if (newRouteStatus.description !== '') {
       this.displayedDescription_ = newRouteStatus.description;
+    }
+    if (!this.initialLoadTime_) {
+      this.initialLoadTime_ = Date.now();
+      media_router.browserApi.reportWebUIRouteControllerLoaded(
+          this.initialLoadTime_ - this.routeDetailsOpenTime);
     }
   },
 
@@ -257,5 +271,14 @@ Polymer({
     this.isVolumeChanging_ = true;
     var target = /** @type {{immediateValue: number}} */ (e.target);
     this.volumeSliderValue_ = target.immediateValue;
+  },
+
+  /**
+   * Resets the route controls. Called when the route details view is closed.
+   */
+  reset: function() {
+    this.routeStatus = new media_router.RouteStatus(
+        '', '', false, false, false, false, false, false, 0, 0, 0);
+    media_router.ui.setRouteControls(null);
   },
 });

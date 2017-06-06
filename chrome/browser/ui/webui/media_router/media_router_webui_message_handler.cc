@@ -60,6 +60,8 @@ const char kReportSelectedCastMode[] = "reportSelectedCastMode";
 const char kReportSinkCount[] = "reportSinkCount";
 const char kReportTimeToClickSink[] = "reportTimeToClickSink";
 const char kReportTimeToInitialActionClose[] = "reportTimeToInitialActionClose";
+const char kReportWebUIRouteControllerLoaded[] =
+    "reportWebUIRouteControllerLoaded";
 const char kSearchSinksAndCreateRoute[] = "searchSinksAndCreateRoute";
 const char kOnInitialDataReceived[] = "onInitialDataReceived";
 const char kOnMediaControllerAvailable[] = "onMediaControllerAvailable";
@@ -429,6 +431,11 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       kReportTimeToInitialActionClose,
       base::Bind(
           &MediaRouterWebUIMessageHandler::OnReportTimeToInitialActionClose,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kReportWebUIRouteControllerLoaded,
+      base::Bind(
+          &MediaRouterWebUIMessageHandler::OnReportWebUIRouteControllerLoaded,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kSearchSinksAndCreateRoute,
@@ -806,6 +813,18 @@ void MediaRouterWebUIMessageHandler::OnReportTimeToClickSink(
   }
   UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Action.StartLocal.Latency",
                       base::TimeDelta::FromMillisecondsD(time_to_click));
+}
+
+void MediaRouterWebUIMessageHandler::OnReportWebUIRouteControllerLoaded(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnReportWebUIRouteControllerLoaded";
+  double load_time;
+  if (!args->GetDouble(0, &load_time)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+  UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Dialog.LoadedWebUiRouteController",
+                      base::TimeDelta::FromMillisecondsD(load_time));
 }
 
 void MediaRouterWebUIMessageHandler::OnReportTimeToInitialActionClose(

@@ -13,12 +13,14 @@
     </div>
     <template is="dom-if" if="[[!useWebUiRouteControls]]">
       <extension-view-wrapper id="extension-view-wrapper" route="[[route]]"
+          route-details-open-time="[[openTime_]]"
           is-extension-view-ready="{{isExtensionViewReady}}"
           hidden$="[[!shouldShowExtensionView_(controllerType_)]]">
       </extension-view-wrapper>
     </template>
     <template is="dom-if" if="[[shouldShowWebUiControls_(controllerType_)]]">
-      <route-controls id="route-controls"></route-controls>
+      <route-controls id="route-controls"
+          route-details-open-time="[[openTime_]]"></route-controls>
     </template>
     <div id="route-action-buttons" class="layout">
       <paper-button flat class="route-button button"
