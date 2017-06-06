@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
-#include "chrome/browser/chromeos/dbus/mus_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
@@ -295,20 +294,13 @@ class DBusServices {
     service_providers.push_back(
         base::MakeUnique<LivenessServiceProvider>(kLibCrosServiceInterface));
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
-    // TODO(sky): once mash supports simplified display mode we should always
-    // use ChromeConsoleServiceProviderDelegate.
-    if (GetAshConfig() != ash::Config::MASH) {
-      std::unique_ptr<ChromeConsoleServiceProviderDelegate>
-          console_service_provider_delegate =
-              base::MakeUnique<ChromeConsoleServiceProviderDelegate>();
-      console_service_provider_delegate_ =
-          console_service_provider_delegate->AsWeakPtr();
-      service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
-          std::move(console_service_provider_delegate)));
-    } else {
-      service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
-          base::MakeUnique<MusConsoleServiceProviderDelegate>()));
-    }
+    std::unique_ptr<ChromeConsoleServiceProviderDelegate>
+        console_service_provider_delegate =
+            base::MakeUnique<ChromeConsoleServiceProviderDelegate>();
+    console_service_provider_delegate_ =
+        console_service_provider_delegate->AsWeakPtr();
+    service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
+        std::move(console_service_provider_delegate)));
     // TODO(teravest): Remove this provider once all callers are using
     // |kiosk_info_service_| instead: http://crbug.com/703229
     service_providers.push_back(base::MakeUnique<KioskInfoService>(

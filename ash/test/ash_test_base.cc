@@ -241,7 +241,7 @@ display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
 }
 
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  if (Shell::GetAshConfig() == Config::MASH) {
+  if (!Shell::ShouldEnableSimplifiedDisplayManagement()) {
     ash_test_helper_->UpdateDisplayForMash(display_specs);
   } else {
     display::test::DisplayManagerTestApi(Shell::Get()->display_manager())

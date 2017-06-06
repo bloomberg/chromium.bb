@@ -268,6 +268,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Returns true if simplified display management should be enabled.
   // TODO(sky): remove this; temporary until http://crbug.com/718860 is done.
   static bool ShouldEnableSimplifiedDisplayManagement();
+  // Use this variant if you have a Config and the Shell may not have been
+  // initialized yet.
+  static bool ShouldEnableSimplifiedDisplayManagement(ash::Config config);
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.

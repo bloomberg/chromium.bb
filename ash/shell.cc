@@ -324,7 +324,11 @@ void Shell::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 bool Shell::ShouldEnableSimplifiedDisplayManagement() {
-  return GetAshConfig() != Config::MASH;
+  return ShouldEnableSimplifiedDisplayManagement(GetAshConfig());
+}
+
+bool Shell::ShouldEnableSimplifiedDisplayManagement(Config config) {
+  return true;
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -368,6 +372,7 @@ void Shell::DeactivateKeyboard() {
 }
 
 bool Shell::ShouldSaveDisplaySettings() {
+  // This function is only called from Chrome, hence the DCHECK for not-MASH.
   DCHECK(GetAshConfig() != Config::MASH);
   return !(
       screen_orientation_controller_->ignore_display_configuration_updates() ||
@@ -590,7 +595,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   gpu_support_.reset(shell_delegate_->CreateGPUSupport());
 
   // Don't use Shell::GetAshConfig() as |instance_| has not yet been set.
-  if (shell_port_->GetAshConfig() != Config::MASH) {
+  if (ShouldEnableSimplifiedDisplayManagement(shell_port_->GetAshConfig())) {
     display_manager_.reset(ScreenAsh::CreateDisplayManager());
     window_tree_host_manager_.reset(new WindowTreeHostManager);
     user_metrics_recorder_.reset(new UserMetricsRecorder);
@@ -633,7 +638,7 @@ Shell::~Shell() {
   RemovePreTargetHandler(event_transformation_handler_.get());
   RemovePreTargetHandler(toplevel_window_event_handler_.get());
   RemovePostTargetHandler(toplevel_window_event_handler_.get());
-  if (config != Config::MASH) {
+  if (ShouldEnableSimplifiedDisplayManagement()) {
     RemovePreTargetHandler(system_gesture_filter_.get());
     RemovePreTargetHandler(mouse_cursor_filter_.get());
   }
@@ -856,16 +861,15 @@ void Shell::Init(const ShellInitParams& init_params) {
   }
 
   shell_delegate_->PreInit();
-  // TODO(sky): remove MASH from here.
-  bool display_initialized =
-      (config == Config::MASH || display_manager_->InitFromCommandLine());
-  if (config == Config::MUS && !display_initialized) {
+  bool display_initialized = (!ShouldEnableSimplifiedDisplayManagement() ||
+                              display_manager_->InitFromCommandLine());
+  if (!display_initialized && config != Config::CLASSIC &&
+      ShouldEnableSimplifiedDisplayManagement()) {
     // Run display configuration off device in mus mode.
     display_manager_->set_configure_displays(true);
     display_configurator_->set_configure_display(true);
   }
-  if (config != Config::MASH) {
-    // TODO(sky): should work in mash too.
+  if (ShouldEnableSimplifiedDisplayManagement()) {
     display_configuration_controller_.reset(new DisplayConfigurationController(
         display_manager_.get(), window_tree_host_manager_.get()));
     display_configurator_->Init(shell_port_->CreateNativeDisplayDelegate(),
@@ -880,10 +884,9 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_configurator_->AddObserver(projecting_observer_.get());
   AddShellObserver(projecting_observer_.get());
 
-  // TODO(sky): once simplified display management is enabled for mash
-  // config == Config::MUS should be config != Config::CLASSIC.
-  if (!display_initialized &&
-      (config == Config::MUS || chromeos::IsRunningAsSystemCompositor())) {
+  if (!display_initialized && ((config != Config::CLASSIC &&
+                                ShouldEnableSimplifiedDisplayManagement()) ||
+                               chromeos::IsRunningAsSystemCompositor())) {
     display_change_observer_ = base::MakeUnique<display::DisplayChangeObserver>(
         display_configurator_.get(), display_manager_.get());
 
@@ -910,9 +913,11 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();
 
-  if (config == Config::CLASSIC) {
+  // TODO(sky): move this to chrome for mash. http://crbug.com/729824.
+  if (ShouldEnableSimplifiedDisplayManagement())
     display_manager_->RefreshFontParams();
 
+  if (config == Config::CLASSIC) {
     aura::Env::GetInstance()->set_context_factory(init_params.context_factory);
     aura::Env::GetInstance()->set_context_factory_private(
         init_params.context_factory_private);
@@ -940,7 +945,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   shell_port_->CreatePrimaryHost();
   root_window_for_new_windows_ = GetPrimaryRootWindow();
 
-  if (config != Config::MASH) {
+  if (ShouldEnableSimplifiedDisplayManagement()) {
     resolution_notification_controller_.reset(
         new ResolutionNotificationController);
   }
@@ -1013,7 +1018,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   screenshot_controller_.reset(new ScreenshotController());
   // TODO: evaluate if MouseCursorEventFilter needs to work for mash.
   // http://crbug.com/706474.
-  if (config != Config::MASH) {
+  if (ShouldEnableSimplifiedDisplayManagement()) {
     mouse_cursor_filter_.reset(new MouseCursorEventFilter());
     PrependPreTargetHandler(mouse_cursor_filter_.get());
   }
@@ -1095,7 +1100,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   video_activity_notifier_.reset(
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
-  if (config != Config::MASH) {
+  if (ShouldEnableSimplifiedDisplayManagement()) {
     screen_orientation_controller_.reset(new ScreenOrientationController());
     screen_layout_observer_.reset(new ScreenLayoutObserver());
   }
@@ -1104,7 +1109,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
   // is started.
-  if (config != Config::MASH)
+  if (ShouldEnableSimplifiedDisplayManagement())
     display_manager_->CreateMirrorWindowAsyncIfAny();
 
   for (auto& observer : shell_observers_)
