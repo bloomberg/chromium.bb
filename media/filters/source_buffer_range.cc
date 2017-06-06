@@ -545,18 +545,18 @@ bool SourceBufferRange::CanAppendBuffersToEnd(
     DecodeTimestamp new_buffers_group_start_timestamp) const {
   DCHECK(!buffers_.empty());
   if (new_buffers_group_start_timestamp == kNoDecodeTimestamp()) {
-    return IsNextInSequence(buffers.front()->GetDecodeTimestamp());
+    return IsNextInDecodeSequence(buffers.front()->GetDecodeTimestamp());
   }
   DCHECK(new_buffers_group_start_timestamp >= GetEndTimestamp());
   DCHECK(buffers.front()->GetDecodeTimestamp() >=
          new_buffers_group_start_timestamp);
-  return IsNextInSequence(new_buffers_group_start_timestamp);
+  return IsNextInDecodeSequence(new_buffers_group_start_timestamp);
 }
 
 bool SourceBufferRange::BelongsToRange(DecodeTimestamp timestamp) const {
   DCHECK(!buffers_.empty());
 
-  return (IsNextInSequence(timestamp) ||
+  return (IsNextInDecodeSequence(timestamp) ||
           (GetStartTimestamp() <= timestamp && timestamp <= GetEndTimestamp()));
 }
 
@@ -631,13 +631,6 @@ DecodeTimestamp SourceBufferRange::KeyframeBeforeTimestamp(
   return GetFirstKeyframeAtOrBefore(timestamp)->first;
 }
 
-bool SourceBufferRange::IsNextInSequence(DecodeTimestamp timestamp) const {
-  DecodeTimestamp end = buffers_.back()->GetDecodeTimestamp();
-  return (end == timestamp ||
-          (end < timestamp &&
-           (gap_policy_ == ALLOW_GAPS || timestamp <= end + GetFudgeRoom())));
-}
-
 base::TimeDelta SourceBufferRange::GetFudgeRoom() const {
   // Because we do not know exactly when is the next timestamp, any buffer
   // that starts within 2x the approximate duration of a buffer is considered
@@ -649,6 +642,16 @@ base::TimeDelta SourceBufferRange::GetApproximateDuration() const {
   base::TimeDelta max_interbuffer_distance = interbuffer_distance_cb_.Run();
   DCHECK(max_interbuffer_distance != kNoTimestamp);
   return max_interbuffer_distance;
+}
+
+bool SourceBufferRange::IsNextInDecodeSequence(
+    DecodeTimestamp decode_timestamp) const {
+  CHECK(!buffers_.empty());
+  DecodeTimestamp end = buffers_.back()->GetDecodeTimestamp();
+  return (
+      end == decode_timestamp ||
+      (end < decode_timestamp && (gap_policy_ == ALLOW_GAPS ||
+                                  decode_timestamp <= end + GetFudgeRoom())));
 }
 
 bool SourceBufferRange::GetBuffersInRange(DecodeTimestamp start,

@@ -231,9 +231,11 @@ class SourceBufferRange {
   // the beginning of |range|.
   bool EndOverlaps(const SourceBufferRange& range) const;
 
-  // Returns true if |timestamp| is the timestamp of the next buffer in
-  // sequence after |buffers_.back()|, false otherwise.
-  bool IsNextInSequence(DecodeTimestamp timestamp) const;
+  // Returns true if |decode_timestamp| is allowed in this range as the decode
+  // timestamp of the next buffer in decode sequence at or after the last buffer
+  // in |buffers_|'s decode timestamp.  |buffers_| must not be empty. Uses
+  // |gap_policy_| to potentially allow gaps.
+  bool IsNextInDecodeSequence(DecodeTimestamp decode_timestamp) const;
 
   // Adds all buffers which overlap [start, end) to the end of |buffers|.  If
   // no buffers exist in the range returns false, true otherwise.
