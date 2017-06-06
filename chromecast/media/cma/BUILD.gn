@@ -74,9 +74,7 @@ source_set("unittests") {
   ]
 
   # MultizoneBackendTest verifies rendering delay reported by the backend.
-  # Since rendering delay is optional on video platforms, enable this test
-  # on audio devices only.
-  if (is_cast_audio_only && !is_cast_desktop_build) {
+  if (supports_multizone) {
     sources += [ "backend/multizone_backend_unittest.cc" ]
   }
 }
