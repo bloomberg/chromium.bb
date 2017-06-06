@@ -260,7 +260,13 @@ public class FeatureUtilities {
      */
     public static boolean isChromeHomeEnabled() {
         if (sChromeHomeEnabled == null) {
-            sChromeHomeEnabled = ChromePreferenceManager.getInstance().isChromeHomeEnabled();
+            // Allow disk access for preferences while Chrome Home is in experimentation.
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            try {
+                sChromeHomeEnabled = ChromePreferenceManager.getInstance().isChromeHomeEnabled();
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
         }
 
         return sChromeHomeEnabled;
