@@ -83,6 +83,7 @@ class ProcessSingletonPosixTest : public testing::Test {
 
     ProcessSingleton::DisablePromptForTesting();
     ProcessSingleton::SkipIsChromeProcessCheckForTesting(false);
+    ProcessSingleton::SetUserOptedUnlockInUseProfileForTesting(false);
     // Put the lock in a temporary directory.  Doesn't need to be a
     // full profile to test this code.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -338,9 +339,10 @@ TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessHostChanged) {
   CheckNotified();
 }
 
-// Test that we fail when lock says process is on another host and we can't
-// notify it over the socket.
+// Test that we kill hung browser when lock says process is on another host and
+// we can't notify it over the socket.
 TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessDifferingHost) {
+  base::HistogramTester histogram_tester;
   CreateProcessSingletonOnThread();
 
   BlockWorkerThread();
@@ -348,16 +350,27 @@ TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessDifferingHost) {
   EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
   EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
 
-  EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE, NotifyOtherProcess(false));
+  EXPECT_EQ(ProcessSingleton::PROCESS_NONE, NotifyOtherProcess(true));
+  ASSERT_EQ(1, kill_callbacks_);
 
-  ASSERT_EQ(0, unlink(lock_path_.value().c_str()));
+  // lock_path_ should be unlinked in NotifyOtherProcess().
+  base::FilePath target_path;
+  EXPECT_FALSE(base::ReadSymbolicLink(lock_path_, &target_path));
 
   UnblockWorkerThread();
+
+  histogram_tester.ExpectUniqueSample(
+      "Chrome.ProcessSingleton.RemoteHungProcessTerminateReason",
+      ProcessSingleton::SOCKET_READ_FAILED, 1u);
 }
 
-// Test that we fail when lock says process is on another host and we can't
-// notify it over the socket.
-TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessOrCreate_DifferingHost) {
+// Test that we'll start creating ProcessSingleton when we have old lock file
+// that says process is on another host and there is browser with the same pid
+// but with another user data dir. Also suppose that user opted to unlock
+// profile.
+TEST_F(ProcessSingletonPosixTest,
+       NotifyOtherProcessDifferingHost_UnlockedProfileBeforeKill) {
+  base::HistogramTester histogram_tester;
   CreateProcessSingletonOnThread();
 
   BlockWorkerThread();
@@ -365,12 +378,56 @@ TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessOrCreate_DifferingHost) {
   EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
   EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
 
+  // Remove socket so that we will not be able to notify the existing browser.
+  EXPECT_EQ(0, unlink(socket_path_.value().c_str()));
+
+  // Unlock profile that was locked by process on another host.
+  ProcessSingleton::SetUserOptedUnlockInUseProfileForTesting(true);
+  // Treat process with pid 1234 as browser with different user data dir.
+  ProcessSingleton::SkipIsChromeProcessCheckForTesting(true);
+
+  EXPECT_EQ(ProcessSingleton::PROCESS_NONE, NotifyOtherProcess(false));
+
+  // lock_path_ should be unlinked in NotifyOtherProcess().
+  base::FilePath target_path;
+  EXPECT_FALSE(base::ReadSymbolicLink(lock_path_, &target_path));
+
+  UnblockWorkerThread();
+
+  histogram_tester.ExpectUniqueSample(
+      "Chrome.ProcessSingleton.RemoteHungProcessTerminateReason",
+      ProcessSingleton::NOTIFY_ATTEMPTS_EXCEEDED, 1u);
+  histogram_tester.ExpectUniqueSample(
+      "Chrome.ProcessSingleton.RemoteProcessInteractionResult",
+      ProcessSingleton::PROFILE_UNLOCKED_BEFORE_KILL, 1u);
+}
+
+// Test that we unlock profile when lock says process is on another host and we
+// can't notify it over the socket.
+TEST_F(ProcessSingletonPosixTest, NotifyOtherProcessOrCreate_DifferingHost) {
+  base::HistogramTester histogram_tester;
+  CreateProcessSingletonOnThread();
+
+  BlockWorkerThread();
+
+  EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
+  EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
+
+  // Remove socket so that we will not be able to notify the existing browser.
+  EXPECT_EQ(0, unlink(socket_path_.value().c_str()));
+  // Unlock profile that was locked by process on another host.
+  ProcessSingleton::SetUserOptedUnlockInUseProfileForTesting(true);
+
   std::string url("about:blank");
-  EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE, NotifyOtherProcessOrCreate(url));
+  EXPECT_EQ(ProcessSingleton::PROCESS_NONE, NotifyOtherProcessOrCreate(url));
 
   ASSERT_EQ(0, unlink(lock_path_.value().c_str()));
 
   UnblockWorkerThread();
+
+  histogram_tester.ExpectUniqueSample(
+      "Chrome.ProcessSingleton.RemoteProcessInteractionResult",
+      ProcessSingleton::PROFILE_UNLOCKED, 1u);
 }
 
 // Test that Create fails when another browser is using the profile directory.
