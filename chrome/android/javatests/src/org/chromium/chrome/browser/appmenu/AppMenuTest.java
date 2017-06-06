@@ -11,7 +11,6 @@ import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListPopupWindow;
 import android.widget.ListView;
 
 import org.junit.Assert;
@@ -99,7 +98,7 @@ public class AppMenuTest {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAppMenu.getPopup().getListView().setSelection(0);
+                mAppMenu.getListView().setSelection(0);
             }
         });
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
@@ -289,7 +288,7 @@ public class AppMenuTest {
     }
 
     private void pressKey(final int keycode) {
-        final View view = mAppMenu.getPopup().getListView();
+        final View view = mAppMenu.getListView();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -301,15 +300,14 @@ public class AppMenuTest {
     }
 
     private int getCurrentFocusedRow() {
-        ListPopupWindow popup = mAppMenu.getPopup();
-        if (popup == null || popup.getListView() == null) return ListView.INVALID_POSITION;
-        ListView listView = popup.getListView();
+        ListView listView = mAppMenu.getListView();
+        if (listView == null) return ListView.INVALID_POSITION;
         return listView.getSelectedItemPosition();
     }
 
     private int getCount() {
-        ListPopupWindow popup = mAppMenu.getPopup();
-        if (popup == null || popup.getListView() == null) return 0;
-        return popup.getListView().getCount();
+        ListView listView = mAppMenu.getListView();
+        if (listView == null) return 0;
+        return listView.getCount();
     }
 }

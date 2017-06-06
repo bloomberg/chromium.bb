@@ -253,6 +253,10 @@
         <item name="android:windowEnterAnimation">@anim/menu_enter</item>
         <item name="android:windowExitAnimation">@anim/menu_exit</item>
     </style>
+    <style name="OverflowMenuAnimBottom">
+        <item name="android:windowEnterAnimation">@anim/menu_enter_from_bottom</item>
+        <item name="android:windowExitAnimation">@anim/menu_exit_from_bottom</item>
+    </style>
     <style name="DistilledPagePrefThemeButton">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
