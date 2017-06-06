@@ -1,3 +1,6 @@
+# Do not add files to this whitelist unless you are adding a new OS or
+# changing the GN arguments on bots.
+
 ash/accelerators/accelerator_controller_delegate.h
 ash/accelerators/accelerator_controller_delegate_aura.h
 ash/accelerators/accelerator_table.h
