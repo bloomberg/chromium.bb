@@ -86,7 +86,11 @@ function startWrite(fileWriter) {
     blob = tenXBlob(blob);
     toBeWritten = blob.size;
     writer = fileWriter;
-    fileWriter.onerror = onError;
+    fileWriter.onerror = function(e) {
+      debug(fileWriter.error.name);
+      debug(fileWriter.error.message);
+      onError(e);
+    };
     fileWriter.onwritestart = onWriteStart;
     fileWriter.onprogress = onProgress;
     fileWriter.onwrite = onWrite;
