@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.signin;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -29,7 +28,6 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountTrackerService.OnSystemAccountsSeededListener;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
 import org.chromium.components.signin.AccountManagerHelper;
@@ -50,8 +48,7 @@ import java.util.concurrent.TimeUnit;
  * {@link AccountSigninView#setDelegate(Delegate)} after the view has been inflated.
  */
 
-public class AccountSigninView extends FrameLayout implements ProfileDownloader.Observer {
-
+public class AccountSigninView extends FrameLayout {
     /**
      * Callbacks for various account selection events.
      */
@@ -147,7 +144,12 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     public void init(ProfileDataCache profileData, boolean isChildAccount, String forcedAccountName,
             Delegate delegate, Listener listener) {
         mProfileData = profileData;
-        mProfileData.addObserver(this);
+        mProfileData.addObserver(new ProfileDataCache.Observer() {
+            @Override
+            public void onProfileDataUpdated(String accountId) {
+                updateProfileData();
+            }
+        });
         mIsChildAccount = isChildAccount;
         mForcedAccountName = TextUtils.isEmpty(forcedAccountName) ? null : forcedAccountName;
         mDelegate = delegate;
@@ -368,9 +370,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         return new AccountSelectionResult(0, false);
     }
 
-    @Override
-    public void onProfileDownloaded(String accountId, String fullName, String givenName,
-            Bitmap bitmap) {
+    public void updateProfileData() {
         mSigninChooseView.updateAccountProfileImages(mProfileData);
 
         if (mSignedIn) updateSignedInAccountInfo();
@@ -378,7 +378,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
     private void updateSignedInAccountInfo() {
         String selectedAccountEmail = getSelectedAccountName();
-        mSigninAccountImage.setImageBitmap(mProfileData.getImage(selectedAccountEmail));
+        mSigninAccountImage.setImageDrawable(mProfileData.getImage(selectedAccountEmail));
         String name = null;
         if (mIsChildAccount) name = mProfileData.getGivenName(selectedAccountEmail);
         if (name == null) name = mProfileData.getFullName(selectedAccountEmail);
