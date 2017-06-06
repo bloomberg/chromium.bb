@@ -181,6 +181,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     #             \- ArchiveStandaloneArtifact
     #          \- ArchiveZipFiles
     #          \- ArchiveHWQual
+    #          \- ArchiveLicenseFile
     #       \- PushImage (blocks on BuildAndArchiveAllImages)
     #    \- ArchiveManifest
     #    \- ArchiveStrippedPackages
@@ -266,6 +267,12 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
                                           image_dir)
         self._release_upload_queue.put([filename])
 
+    def ArchiveLicenseFile():
+      """Archive licensing file."""
+      filename = 'license_credits.html'
+      shutil.copy(os.path.join(image_dir, filename), archive_path)
+      self._release_upload_queue.put([filename])
+
     def ArchiveFirmwareImages():
       """Archive firmware images built from source if available."""
       archive = commands.BuildFirmwareArchive(buildroot, board, archive_path)
@@ -297,6 +304,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       if config['images']:
         steps = [
             BuildAndArchiveFactoryImages,
+            ArchiveLicenseFile,
             ArchiveHWQual,
             ArchiveStandaloneArtifacts,
             ArchiveZipFiles,
