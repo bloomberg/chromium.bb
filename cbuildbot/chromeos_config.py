@@ -440,6 +440,7 @@ _arm_internal_release_boards = frozenset([
     'lasilla-ground',
     'lasilla-sky',
     'oak',
+    'octavius',
     'peach_pi',
     'peach_pit',
     'rowan',
@@ -638,6 +639,7 @@ _loonix_boards = frozenset([
     'gonzo',
     'lasilla-ground',
     'lasilla-sky',
+    'octavius',
     'wooten',
 ])
 
@@ -2238,12 +2240,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'cobblepot', # contact:jkoleszar@
-      'gonzo', # contact:jkoleszar@
+      'gonzo', # contact:icoolidge@
       'guado_moblab', # Known lab flakes are too common - contact:haddowk@
-      'lasilla-ground', # contact:jkoleszar@
-      'lasilla-sky', # contact:jkoleszar@
+      'lasilla-ground', # contact:jemele@
+      'lasilla-sky', # contact:jemele@
+      'octavius', # contact:dpjacques@
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
-      'wooten', # contact:jkoleszar@
+      'wooten', # contact:icoolidge@
   ])
 
   _paladin_active = _paladin_important_boards | _paladin_experimental_boards
