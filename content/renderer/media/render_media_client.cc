@@ -44,4 +44,9 @@ bool RenderMediaClient::IsSupportedVideoConfig(
   return GetContentClient()->renderer()->IsSupportedVideoConfig(config);
 }
 
+bool RenderMediaClient::IsSupportedBitstreamAudioCodec(
+    media::AudioCodec codec) {
+  return GetContentClient()->renderer()->IsSupportedBitstreamAudioCodec(codec);
+}
+
 }  // namespace content
