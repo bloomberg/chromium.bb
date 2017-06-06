@@ -6,5 +6,8 @@
   "default_locale": "en",
   "manifest_version": 2,
   "content_security_policy": "default-src 'self' blob: filesystem:; img-src 'self' blob: filesystem: data:;",
-  "incognito": "split"
+  "incognito": "split",
+  "permissions": [
+    "storage"
+  ]
 }
