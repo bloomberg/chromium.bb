@@ -628,8 +628,14 @@ back_selectRule (void)
 		      return;
 		    case CTO_LetterRule:
 		    case CTO_NoContractRule:
-		      if (!(beforeAttributes &
-			    CTC_Letter) && (afterAttributes & CTC_Letter))
+		      // BF: This is just a heuristic test. During forward translation, the
+		      // nocontractsign is inserted either when in numeric mode and the next
+		      // character is not numeric (CTC_Digit | CTC_LitDigit | CTC_NumericMode),
+		      // or when a "contraction" rule is matched and the characters are
+		      // preceded and followed by space or punctuation (CTC_Space |
+		      // CTC_Punctuation).
+		      if (!(beforeAttributes & CTC_Letter)
+			    && (afterAttributes & (CTC_Letter | CTC_Sign)))
 			return;
 		      break;
 		    case CTO_MultInd:
