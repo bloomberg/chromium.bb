@@ -689,14 +689,13 @@ static CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
 static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
                                      const CSSParserContext& context) {
   CSSValue* angle =
-      ConsumeAngle(range, context, UseCounter::kUnitlessZeroAngleOffsetRotate);
+      ConsumeAngle(range, context, Optional<UseCounter::Feature>());
   CSSValue* keyword = ConsumeIdent<CSSValueAuto, CSSValueReverse>(range);
   if (!angle && !keyword)
     return nullptr;
 
   if (!angle) {
-    angle = ConsumeAngle(range, context,
-                         UseCounter::kUnitlessZeroAngleOffsetRotate);
+    angle = ConsumeAngle(range, context, Optional<UseCounter::Feature>());
   }
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
