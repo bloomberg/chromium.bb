@@ -383,7 +383,25 @@ void NavigationRequest::BeginNavigation() {
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "BeginNavigation");
+
   state_ = STARTED;
+
+  // Check Content Security Policy before the NavigationThrottles run. This
+  // gives CSP a chance to modify requests that NavigationThrottles would
+  // otherwise block. Similarly, the NavigationHandle is created afterwards, so
+  // that it gets the request URL after potentially being modified by CSP.
+  if (CheckContentSecurityPolicyFrameSrc(false /* is redirect */) ==
+      CONTENT_SECURITY_POLICY_CHECK_FAILED) {
+    // Create a navigation handle so that the correct error code can be set on
+    // it by OnRequestFailed().
+    CreateNavigationHandle();
+    OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
+    return;
+  }
+
   CreateNavigationHandle();
 
   RenderFrameDevToolsAgentHost::OnBeforeNavigation(navigation_handle_.get());
@@ -507,6 +525,18 @@ void NavigationRequest::OnRequestRedirected(
   common_params_.referrer.url = GURL(redirect_info.new_referrer);
   common_params_.referrer =
       Referrer::SanitizeForRequest(common_params_.url, common_params_.referrer);
+
+  // Check Content Security Policy before the NavigationThrottles run. This
+  // gives CSP a chance to modify requests that NavigationThrottles would
+  // otherwise block.
+  if (CheckContentSecurityPolicyFrameSrc(true /* is redirect */) ==
+      CONTENT_SECURITY_POLICY_CHECK_FAILED) {
+    OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
+    return;
+  }
 
   // For non browser initiated navigations we need to check if the source has
   // access to the URL. We always allow browser initiated requests.
@@ -892,6 +922,34 @@ void NavigationRequest::CommitNavigation() {
                                       request_params_, is_view_source_);
 
   frame_tree_node_->ResetNavigationRequest(true, true);
+}
+
+NavigationRequest::ContentSecurityPolicyCheckResult
+NavigationRequest::CheckContentSecurityPolicyFrameSrc(bool is_redirect) {
+  if (common_params_.url.SchemeIs(url::kAboutScheme))
+    return CONTENT_SECURITY_POLICY_CHECK_PASSED;
+
+  if (common_params_.should_check_main_world_csp ==
+      CSPDisposition::DO_NOT_CHECK) {
+    return CONTENT_SECURITY_POLICY_CHECK_PASSED;
+  }
+
+  // The CSP frame-src directive only applies to subframes.
+  if (frame_tree_node()->IsMainFrame())
+    return CONTENT_SECURITY_POLICY_CHECK_PASSED;
+
+  FrameTreeNode* parent_ftn = frame_tree_node()->parent();
+  DCHECK(parent_ftn);
+  RenderFrameHostImpl* parent = parent_ftn->current_frame_host();
+  DCHECK(parent);
+
+  if (parent->IsAllowedByCsp(
+          CSPDirective::FrameSrc, common_params_.url, is_redirect,
+          common_params_.source_location.value_or(SourceLocation()))) {
+    return CONTENT_SECURITY_POLICY_CHECK_PASSED;
+  }
+
+  return CONTENT_SECURITY_POLICY_CHECK_FAILED;
 }
 
 }  // namespace content

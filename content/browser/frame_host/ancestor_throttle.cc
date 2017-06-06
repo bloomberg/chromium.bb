@@ -175,45 +175,6 @@ const char* AncestorThrottle::GetNameForLogging() {
   return "AncestorThrottle";
 }
 
-NavigationThrottle::ThrottleCheckResult
-AncestorThrottle::CheckContentSecurityPolicyFrameSrc(bool is_redirect) {
-  // If PlzNavigate is enabled, "frame-src" is enforced on the browser side,
-  // else on the renderer side.
-  if (!IsBrowserSideNavigationEnabled())
-    return NavigationThrottle::PROCEED;
-
-  const GURL& url = navigation_handle()->GetURL();
-  if (url.SchemeIs(url::kAboutScheme))
-    return NavigationThrottle::PROCEED;
-
-  NavigationHandleImpl* handle =
-      static_cast<NavigationHandleImpl*>(navigation_handle());
-
-  if (handle->should_check_main_world_csp() == CSPDisposition::DO_NOT_CHECK)
-    return NavigationThrottle::PROCEED;
-
-  FrameTreeNode* parent_ftn = handle->frame_tree_node()->parent();
-  DCHECK(parent_ftn);
-  RenderFrameHostImpl* parent = parent_ftn->current_frame_host();
-  DCHECK(parent);
-
-  if (parent->IsAllowedByCsp(CSPDirective::FrameSrc, url, is_redirect,
-                             handle->source_location())) {
-    return NavigationThrottle::PROCEED;
-  }
-
-  return NavigationThrottle::BLOCK_REQUEST;
-}
-
-NavigationThrottle::ThrottleCheckResult AncestorThrottle::WillStartRequest() {
-  return CheckContentSecurityPolicyFrameSrc(false);
-}
-
-NavigationThrottle::ThrottleCheckResult
-AncestorThrottle::WillRedirectRequest() {
-  return CheckContentSecurityPolicyFrameSrc(true);
-}
-
 AncestorThrottle::AncestorThrottle(NavigationHandle* handle)
     : NavigationThrottle(handle) {}
 
