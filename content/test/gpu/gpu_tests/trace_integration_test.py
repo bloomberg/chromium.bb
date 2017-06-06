@@ -64,12 +64,6 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return 'trace_test'
 
   @classmethod
-  def CustomizeOptions(cls):
-    options = cls._finder_options.browser_options
-    options.AppendExtraBrowserArgs('--enable-logging')
-    options.AppendExtraBrowserArgs('--enable-experimental-canvas-features')
-
-  @classmethod
   def GenerateGpuTests(cls, options):
     # Include the device level trace tests, even though they're
     # currently skipped on all platforms, to give a hint that they
@@ -125,10 +119,11 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def SetUpProcess(cls):
-    super(cls, TraceIntegrationTest).SetUpProcess()
+    super(TraceIntegrationTest, cls).SetUpProcess()
     path_util.SetupTelemetryPaths()
-    cls.CustomizeOptions()
-    cls.SetBrowserOptions(cls._finder_options)
+    cls.CustomizeBrowserArgs([
+      '--enable-logging',
+      '--enable-experimental-canvas-features'])
     cls.StartBrowser()
     cls.SetStaticServerDirs(data_paths)
 

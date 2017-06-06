@@ -52,17 +52,6 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return 'depth_capture'
 
   @classmethod
-  def CustomizeOptions(cls):
-    options = cls._finder_options.browser_options
-    options.AppendExtraBrowserArgs('--disable-domain-blocking-for-3d-apis')
-    options.AppendExtraBrowserArgs('--enable-es3-apis')
-    options.AppendExtraBrowserArgs('--use-fake-ui-for-media-stream')
-    options.AppendExtraBrowserArgs(
-        '--use-fake-device-for-media-stream=device-count=2')
-    # Required for about:gpucrash handling from Telemetry.
-    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
-
-  @classmethod
   def GenerateGpuTests(cls, options):
     tests = (('DepthCapture_depthStreamToRGBAUint8Texture',
               'getusermedia-depth-capture.html?query=RGBAUint8'),
@@ -89,9 +78,14 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def SetUpProcess(cls):
-    super(cls, DepthCaptureIntegrationTest).SetUpProcess()
-    cls.CustomizeOptions()
-    cls.SetBrowserOptions(cls._finder_options)
+    super(DepthCaptureIntegrationTest, cls).SetUpProcess()
+    cls.CustomizeBrowserArgs([
+      '--disable-domain-blocking-for-3d-apis',
+      '--enable-es3-apis',
+      '--use-fake-ui-for-media-stream',
+      '--use-fake-device-for-media-stream=device-count=2',
+      # Required for about:gpucrash handling from Telemetry.
+      '--enable-gpu-benchmarking'])
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])
 

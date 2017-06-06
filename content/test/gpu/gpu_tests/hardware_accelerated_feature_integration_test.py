@@ -39,7 +39,7 @@ class HardwareAcceleratedFeatureIntegrationTest(
   @classmethod
   def SetUpProcess(cls):
     super(cls, HardwareAcceleratedFeatureIntegrationTest).SetUpProcess()
-    cls.SetBrowserOptions(cls._finder_options)
+    cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
     cls.SetStaticServerDirs([])
 

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
 import os
 import random
 import sys
@@ -22,17 +21,6 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   which they were requested.
   """
 
-  # We store a deep copy of the original browser finder options in
-  # order to be able to restart the browser multiple times, with a
-  # different set of command line arguments each time.
-  _original_finder_options = None
-
-  # We keep track of the set of command line arguments used to launch
-  # the browser most recently in order to figure out whether we need
-  # to relaunch it, if a new pixel test requires a different set of
-  # arguments.
-  _last_launched_browser_args = set()
-
   @classmethod
   def Name(cls):
     """The name by which this test is invoked on the command line."""
@@ -41,37 +29,15 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def SetUpProcess(cls):
     super(cls, ScreenshotSyncIntegrationTest).SetUpProcess()
-    cls._original_finder_options = cls._finder_options.Copy()
-    cls.CustomizeBrowserArgs([])
+    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])
 
-  @classmethod
-  def CustomizeBrowserArgs(cls, browser_args):
-    if not browser_args:
-      browser_args = []
-    cls._finder_options = cls._original_finder_options.Copy()
-    browser_options = cls._finder_options.browser_options
-    # All tests receive the following options. They aren't recorded in
-    # the _last_launched_browser_args.
-    #
-    # --test-type=gpu is used only to suppress the "Google API Keys are missing"
-    # infobar, which causes flakiness in tests.
-    browser_options.AppendExtraBrowserArgs(['--test-type=gpu'])
-    # Append the new arguments.
-    browser_options.AppendExtraBrowserArgs(browser_args)
-    cls._last_launched_browser_args = set(browser_args)
-    cls.SetBrowserOptions(cls._finder_options)
-
-  @classmethod
-  def RestartBrowserIfNecessaryWithArgs(cls, browser_args):
-    if not browser_args:
-      browser_args = []
-    if set(browser_args) != cls._last_launched_browser_args:
-      logging.info('Restarting browser with arguments: ' + str(browser_args))
-      cls.StopBrowser()
-      cls.CustomizeBrowserArgs(browser_args)
-      cls.StartBrowser()
+  @staticmethod
+  def _AddDefaultArgs(browser_args):
+    # --test-type=gpu is used to suppress the "Google API Keys are
+    # missing" infobar, which causes flakiness in tests.
+    return ['--test-type=gpu'] + browser_args
 
   @classmethod
   def _CreateExpectations(cls):
@@ -129,7 +95,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def RunActualGpuTest(self, test_path, *args):
     browser_arg = args[0]
-    self.RestartBrowserIfNecessaryWithArgs([browser_arg])
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([browser_arg]))
     self._Navigate(test_path)
     repetitions = 20
     for _ in range(0, repetitions):

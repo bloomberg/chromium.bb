@@ -11,8 +11,6 @@ from gpu_tests import path_util
 from gpu_tests import webgl_conformance_expectations
 from gpu_tests import webgl2_conformance_expectations
 
-from telemetry.internal.browser import browser_finder
-
 conformance_relcomps = (
   'third_party', 'webgl', 'src', 'sdk', 'tests')
 
@@ -249,23 +247,24 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._CheckTestCompletion()
 
   @classmethod
-  def CustomizeOptions(cls):
-    assert cls._webgl_version == 1 or cls._webgl_version == 2
-    browser_options = cls._finder_options.browser_options
+  def SetupWebGLBrowserArgs(cls, browser_args):
     # --test-type=gpu is used only to suppress the "Google API Keys are missing"
     # infobar, which causes flakiness in tests.
-    browser_options.AppendExtraBrowserArgs([
-        '--ignore-autoplay-restrictions',
-        '--disable-domain-blocking-for-3d-apis',
-        '--disable-gpu-process-crash-limit',
-        '--test-type=gpu',
-        '--enable-experimental-canvas-features',
-        # Try disabling the GPU watchdog to see if this affects the
-        # intermittent GPU process hangs that have been seen on the
-        # waterfall. crbug.com/596622 crbug.com/609252
-        '--disable-gpu-watchdog'
-    ])
-
+    browser_args += [
+      '--ignore-autoplay-restrictions',
+      '--disable-domain-blocking-for-3d-apis',
+      '--disable-gpu-process-crash-limit',
+      '--test-type=gpu',
+      '--enable-experimental-canvas-features',
+      # Try disabling the GPU watchdog to see if this affects the
+      # intermittent GPU process hangs that have been seen on the
+      # waterfall. crbug.com/596622 crbug.com/609252
+      '--disable-gpu-watchdog'
+    ]
+    # Note that the overriding of the default --js-flags probably
+    # won't interact well with RestartBrowserIfNecessaryWithArgs, but
+    # we don't use that in this test.
+    browser_options = cls._finder_options.browser_options
     builtin_js_flags = '--js-flags=--expose-gc'
     found_js_flags = False
     user_js_flags = ''
@@ -280,25 +279,8 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       logging.warning(' Original flags: ' + builtin_js_flags)
       logging.warning(' New flags: ' + user_js_flags)
     else:
-      browser_options.AppendExtraBrowserArgs([builtin_js_flags])
-
-    if cls._webgl_version == 2:
-      browser_options.AppendExtraBrowserArgs([
-        '--enable-es3-apis',
-      ])
-    browser = browser_finder.FindBrowser(browser_options.finder_options)
-    if (browser.target_os.startswith('android') and
-      browser.browser_type == 'android-webview-instrumentation'):
-      # TODO(kbr): this is overly broad. We'd like to do this only on
-      # Nexus 9. It'll go away shortly anyway. crbug.com/499928
-      #
-      # The --ignore_egl_sync_failures is only there to work around
-      # some strange failure on the Nexus 9 bot, not reproducible on
-      # local hardware.
-      browser_options.AppendExtraBrowserArgs([
-        '--disable-gl-extensions=GL_EXT_disjoint_timer_query',
-        '--ignore_egl_sync_failures',
-      ])
+      browser_args += [builtin_js_flags]
+    cls.CustomizeBrowserArgs(browser_args)
 
   @classmethod
   def _CreateExpectations(cls):
@@ -315,8 +297,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def SetUpProcess(cls):
     super(WebGLConformanceIntegrationTest, cls).SetUpProcess()
-    cls.CustomizeOptions()
-    cls.SetBrowserOptions(cls._finder_options)
+    cls.SetupWebGLBrowserArgs([])
     cls.StartBrowser()
     # By setting multiple server directories, the root of the server
     # implicitly becomes the common base directory, i.e., the Chromium

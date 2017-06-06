@@ -58,15 +58,14 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def Name(cls):
     return 'context_lost'
 
-  @classmethod
-  def CustomizeOptions(cls):
-    options = cls._finder_options.browser_options
-    options.AppendExtraBrowserArgs(
-        '--disable-domain-blocking-for-3d-apis')
-    options.AppendExtraBrowserArgs(
-        '--disable-gpu-process-crash-limit')
-    # Required for about:gpucrash handling from Telemetry.
-    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+  @staticmethod
+  def _AddDefaultArgs(browser_args):
+    # These are options specified for every test.
+    return [
+      '--disable-domain-blocking-for-3d-apis',
+      '--disable-gpu-process-crash-limit',
+      # Required for about:gpucrash handling from Telemetry.
+      '--enable-gpu-benchmarking'] + browser_args
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -98,9 +97,8 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def SetUpProcess(cls):
-    super(cls, ContextLostIntegrationTest).SetUpProcess()
-    cls.CustomizeOptions()
-    cls.SetBrowserOptions(cls._finder_options)
+    super(ContextLostIntegrationTest, cls).SetUpProcess()
+    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])
 

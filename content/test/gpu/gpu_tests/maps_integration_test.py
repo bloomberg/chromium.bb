@@ -61,8 +61,8 @@ class MapsIntegrationTest(
 
   @classmethod
   def SetUpProcess(cls):
-    super(cls, MapsIntegrationTest).SetUpProcess()
-    cls.SetBrowserOptions(cls._finder_options)
+    super(MapsIntegrationTest, cls).SetUpProcess()
+    cls.CustomizeBrowserArgs([])
     cls.StartWPRServer(os.path.join(data_path, 'maps_004.wpr.updated'),
                        cloud_storage.PUBLIC_BUCKET)
     cls.StartBrowser()
