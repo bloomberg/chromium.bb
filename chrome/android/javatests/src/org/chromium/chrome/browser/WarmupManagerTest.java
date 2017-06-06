@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
@@ -148,6 +149,61 @@ public class WarmupManagerTest {
                 Assert.assertNull(mWarmupManager.takeSpareWebContents(false, true));
                 Assert.assertNull(mWarmupManager.takeSpareWebContents(true, true));
                 Assert.assertTrue(mWarmupManager.hasSpareWebContents());
+            }
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testClearsDeadWebContents() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mWarmupManager.createSpareWebContents();
+                mWarmupManager.mSpareWebContents.simulateRendererKilledForTesting(false);
+                Assert.assertNull(mWarmupManager.takeSpareWebContents(false, false));
+            }
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testRecordSpareWebContentsStatus() throws Throwable {
+        mUiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String name = WarmupManager.WEBCONTENTS_STATUS_HISTOGRAM;
+                MetricsUtils.HistogramDelta createdDelta = new MetricsUtils.HistogramDelta(
+                        name, WarmupManager.WEBCONTENTS_STATUS_CREATED);
+                MetricsUtils.HistogramDelta usedDelta = new MetricsUtils.HistogramDelta(
+                        name, WarmupManager.WEBCONTENTS_STATUS_USED);
+                MetricsUtils.HistogramDelta killedDelta = new MetricsUtils.HistogramDelta(
+                        name, WarmupManager.WEBCONTENTS_STATUS_KILLED);
+                MetricsUtils.HistogramDelta destroyedDelta = new MetricsUtils.HistogramDelta(
+                        name, WarmupManager.WEBCONTENTS_STATUS_DESTROYED);
+
+                // Created, used.
+                mWarmupManager.createSpareWebContents();
+                Assert.assertEquals(1, createdDelta.getDelta());
+                Assert.assertNotNull(mWarmupManager.takeSpareWebContents(false, false));
+                Assert.assertEquals(1, usedDelta.getDelta());
+
+                // Created, killed.
+                mWarmupManager.createSpareWebContents();
+                Assert.assertEquals(2, createdDelta.getDelta());
+                Assert.assertNotNull(mWarmupManager.mSpareWebContents);
+                mWarmupManager.mSpareWebContents.simulateRendererKilledForTesting(false);
+                Assert.assertEquals(1, killedDelta.getDelta());
+                Assert.assertNull(mWarmupManager.takeSpareWebContents(false, false));
+
+                // Created, destroyed.
+                mWarmupManager.createSpareWebContents();
+                Assert.assertEquals(3, createdDelta.getDelta());
+                Assert.assertNotNull(mWarmupManager.mSpareWebContents);
+                mWarmupManager.destroySpareWebContents();
+                Assert.assertEquals(1, destroyedDelta.getDelta());
             }
         });
     }

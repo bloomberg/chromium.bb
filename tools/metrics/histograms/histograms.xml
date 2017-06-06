@@ -10162,6 +10162,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.SpareWebContents.Status"
+    enum="SpareWebContentsStatus">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Android: When a spare WebContents is created from Custom Tabs, record
+    creation, and whether it was used, killed or destroyed. Creation is recorded
+    to get the &quot;abandoned&quot; case, that is when Chrome is killed before
+    the renderer.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.SpareWebContents.TimeBeforeDeath" units="ms">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Android: When a spare WebContents is created from Custom Tabs, record how
+    long is took before the render process was killed.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.Visible" enum="VisibleTab">
   <owner>yusufo@chromium.org</owner>
   <summary>
