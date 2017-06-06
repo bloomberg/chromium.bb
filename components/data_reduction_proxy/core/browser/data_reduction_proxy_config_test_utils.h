@@ -40,10 +40,7 @@ class TestDataReductionProxyParams;
 // change the underlying state.
 class TestDataReductionProxyConfig : public DataReductionProxyConfig {
  public:
-  // Creates a |TestDataReductionProxyConfig| with the provided |params_flags|.
   TestDataReductionProxyConfig(
-      int params_flags,
-      unsigned int params_definitions,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
@@ -65,7 +62,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
                       int policy) override;
 
   // Allows tests to reset the params being used for configuration.
-  void ResetParamFlagsForTest(int flags);
+  void ResetParamFlagsForTest();
 
   // Retrieves the test params being used for the configuration.
   TestDataReductionProxyParams* test_params();

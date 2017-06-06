@@ -454,7 +454,7 @@ void DataReductionProxyConfig::ReloadConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(configurator_);
 
-  if (enabled_by_user_ && !config_values_->holdback() &&
+  if (enabled_by_user_ && !params::IsIncludedInHoldbackFieldTrial() &&
       !config_values_->proxies_for_http().empty()) {
     configurator_->Enable(!secure_proxy_allowed_ || is_captive_portal_,
                           config_values_->proxies_for_http());
@@ -734,12 +734,6 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
   }
 
   return false;
-}
-
-// Returns true if the Data Reduction Proxy promo may be shown. This is not
-// tied to whether the Data Reduction Proxy is enabled.
-bool DataReductionProxyConfig::promo_allowed() const {
-  return config_values_->promo_allowed();
 }
 
 void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {

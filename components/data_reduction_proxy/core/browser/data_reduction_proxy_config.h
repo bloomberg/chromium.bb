@@ -186,10 +186,6 @@ class DataReductionProxyConfig
   virtual bool ContainsDataReductionProxy(
       const net::ProxyConfig::ProxyRules& proxy_rules) const;
 
-  // Returns true if the Data Reduction Proxy promo may be shown. This is not
-  // tied to whether the Data Reduction Proxy is enabled.
-  bool promo_allowed() const;
-
   // Sets |lofi_off_| to true.
   void SetLoFiModeOff();
 

@@ -50,12 +50,8 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   void SetUp() override;
 
   template <class C>
-  void ResetSettings(std::unique_ptr<base::Clock> clock,
-                     bool promo_allowed,
-                     bool holdback);
-  virtual void ResetSettings(std::unique_ptr<base::Clock> clock,
-                             bool promo_allowed,
-                             bool holdback) = 0;
+  void ResetSettings(std::unique_ptr<base::Clock> clock);
+  virtual void ResetSettings(std::unique_ptr<base::Clock> clock) = 0;
 
   void ExpectSetProxyPrefs(bool expected_enabled,
                            bool expected_at_startup);
@@ -88,11 +84,9 @@ class ConcreteDataReductionProxySettingsTest
     : public DataReductionProxySettingsTestBase {
  public:
   typedef MockDataReductionProxySettings<C> MockSettings;
-  void ResetSettings(std::unique_ptr<base::Clock> clock,
-                     bool promo_allowed,
-                     bool holdback) override {
+  void ResetSettings(std::unique_ptr<base::Clock> clock) override {
     return DataReductionProxySettingsTestBase::ResetSettings<C>(
-        std::move(clock), promo_allowed, holdback);
+        std::move(clock));
   }
 };
 

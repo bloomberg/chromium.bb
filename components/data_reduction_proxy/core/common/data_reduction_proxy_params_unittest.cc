@@ -26,10 +26,8 @@ namespace data_reduction_proxy {
 class DataReductionProxyParamsTest : public testing::Test {
  public:
   void CheckParams(const TestDataReductionProxyParams& params,
-                   bool expected_init_result,
-                   bool expected_promo_allowed) {
+                   bool expected_init_result) {
     EXPECT_EQ(expected_init_result, params.init_result());
-    EXPECT_EQ(expected_promo_allowed, params.promo_allowed());
   }
   void CheckValues(const TestDataReductionProxyParams& params,
                    const std::string& expected_origin,
@@ -55,10 +53,8 @@ class DataReductionProxyParamsTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
-  TestDataReductionProxyParams params(
-      DataReductionProxyParams::kPromoAllowed,
-      TestDataReductionProxyParams::HAS_EVERYTHING);
-  CheckParams(params, true, true);
+  TestDataReductionProxyParams params;
+  CheckParams(params, true);
   std::vector<DataReductionProxyServer> expected_proxies;
 
   // Both the origin and fallback proxy must have type CORE.
@@ -87,10 +83,8 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxySecureProxyCheckURL,
       TestDataReductionProxyParams::FlagSecureProxyCheckURL());
-  TestDataReductionProxyParams params(
-      DataReductionProxyParams::kPromoAllowed,
-      TestDataReductionProxyParams::HAS_EVERYTHING);
-  CheckParams(params, true, true);
+  TestDataReductionProxyParams params;
+  CheckParams(params, true);
   CheckValues(params, TestDataReductionProxyParams::FlagOrigin(),
               TestDataReductionProxyParams::FlagFallbackOrigin(),
               TestDataReductionProxyParams::FlagSecureProxyCheckURL());
@@ -103,7 +97,7 @@ TEST_F(DataReductionProxyParamsTest, CarrierTestFlag) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableDataReductionProxyCarrierTest, kCarrierTestOrigin);
-  DataReductionProxyParams params(0);
+  DataReductionProxyParams params;
   std::vector<DataReductionProxyServer> proxies_for_http;
   proxies_for_http.push_back(DataReductionProxyServer(
       net::ProxyServer::FromURI(kCarrierTestOrigin,
@@ -116,34 +110,10 @@ TEST_F(DataReductionProxyParamsTest, CarrierTestFlag) {
   EXPECT_EQ(params.proxies_for_http(), proxies_for_http);
 }
 
-TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
-  const struct {
-    bool promo_allowed;
-    unsigned int missing_definitions;
-    bool expected_result;
-  } tests[] = {
-      {true, TestDataReductionProxyParams::HAS_NOTHING, true},
-      {true, TestDataReductionProxyParams::HAS_ORIGIN, false},
-      {true, TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN, false},
-      {true, TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    int flags = 0;
-    if (tests[i].promo_allowed)
-      flags |= DataReductionProxyParams::kPromoAllowed;
-    TestDataReductionProxyParams params(
-        flags,
-        TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~(tests[i].missing_definitions));
-    EXPECT_EQ(tests[i].expected_result, params.init_result()) << i;
-  }
-}
-
 TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {
-  EXPECT_TRUE(params::IsIncludedInAndroidOnePromoFieldTrial(
+  EXPECT_TRUE(params::IsIncludedInAndroidOnePromoFieldTrialForTesting(
       "google/sprout/sprout:4.4.4/KPW53/1379542:user/release-keys"));
-  EXPECT_FALSE(params::IsIncludedInAndroidOnePromoFieldTrial(
+  EXPECT_FALSE(params::IsIncludedInAndroidOnePromoFieldTrialForTesting(
       "google/hammerhead/hammerhead:5.0/LRX210/1570415:user/release-keys"));
 }
 
@@ -560,7 +530,7 @@ TEST(DataReductionProxyParamsStandaloneTest, OverrideProxiesForHttp) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyHttpProxies,
       "http://override-first.net;http://override-second.net");
-  DataReductionProxyParams params(0);
+  DataReductionProxyParams params;
 
   // Overriding proxies must have type UNSPECIFIED_TYPE.
   std::vector<DataReductionProxyServer> expected_override_proxies_for_http;
