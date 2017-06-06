@@ -233,9 +233,15 @@ static ScopedJavaLocalRef<jobject> GetOfflinePageBridgeForProfile(
     const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
 
+  // Return null if there is no reasonable context for the provided Java
+  // profile.
+  if (profile == nullptr)
+    return ScopedJavaLocalRef<jobject>();
+
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(profile);
 
+  // Return null if we cannot get an offline page model for provided profile.
   if (offline_page_model == nullptr)
     return ScopedJavaLocalRef<jobject>();
 
