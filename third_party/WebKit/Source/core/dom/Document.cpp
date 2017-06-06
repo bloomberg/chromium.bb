@@ -2118,6 +2118,9 @@ void Document::UpdateActiveStyle() {
 void Document::UpdateStyle() {
   DCHECK(!View()->ShouldThrottleRendering());
   TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
+  RuntimeCallTimerScope scope(
+      RuntimeCallStats::From(V8PerIsolateData::MainThreadIsolate()),
+      RuntimeCallStats::CounterId::kUpdateStyle);
   double start_time = MonotonicallyIncreasingTime();
 
   unsigned initial_element_count = GetStyleEngine().StyleForElementCount();
