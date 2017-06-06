@@ -47,6 +47,10 @@ Current patches:
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
     In Chromium, all codecs should use the safe bitstream reader.
 
+  libavcodec/decode.c
+    Check expanded side data properly.
+    https://trac.ffmpeg.org/ticket/6439
+
   libavcodec/flacdsp.c
     #define SUINT for better overflow detection
 
