@@ -116,10 +116,10 @@
      =1 {and 1 more}
      other {and # more}}
   </message>
-  <message name="IDS_DEL_MEDIA_LICENSES_COUNTER_GENERAL_COMMENT" desc="A static message shown in the Clear Browsing Data dialog explaining to the user that clearing media licenses will result in the user being unable to play some premium content">
-    You may lose access to premium content from some sites.
+  <message name="IDS_DEL_MEDIA_LICENSES_COUNTER_GENERAL_COMMENT" desc="A static message shown in the Clear Browsing Data dialog explaining to the user that clearing media licenses will result in the user being unable to play some protected content">
+    You may lose access to protected content from some sites.
   </message>
-  <message name="IDS_DEL_MEDIA_LICENSES_COUNTER_SITE_COMMENT" desc="A message shown in the Clear Browsing Data dialog explaining to the user that clearing media licenses will result in the user being unable to play some premium content from at least one specific web site">
-     You may lose access to premium content from <ph name="SITE">$1<ex>youtube.com</ex></ph> and some other sites.
+  <message name="IDS_DEL_MEDIA_LICENSES_COUNTER_SITE_COMMENT" desc="A message shown in the Clear Browsing Data dialog explaining to the user that clearing media licenses will result in the user being unable to play some protected content from at least one specific web site">
+     You may lose access to protected content from <ph name="SITE">$1<ex>youtube.com</ex></ph> and some other sites.
   </message>
 </grit-part>
