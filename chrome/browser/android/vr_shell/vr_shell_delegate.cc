@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/callback_helpers.h"
 #include "chrome/browser/android/vr_shell/non_presenting_gvr_delegate.h"
+#include "chrome/browser/android/vr_shell/vr_metrics_util.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
@@ -16,6 +17,7 @@
 
 using base::android::JavaParamRef;
 using base::android::AttachCurrentThread;
+using base::android::ScopedJavaLocalRef;
 
 namespace vr_shell {
 
@@ -38,8 +40,7 @@ VrShellDelegate::~VrShellDelegate() {
 
 device::GvrDelegateProvider* VrShellDelegate::CreateVrShellDelegate() {
   JNIEnv* env = AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> jdelegate =
-      Java_VrShellDelegate_getInstance(env);
+  ScopedJavaLocalRef<jobject> jdelegate = Java_VrShellDelegate_getInstance(env);
   if (!jdelegate.is_null())
     return GetNativeVrShellDelegate(env, jdelegate.obj());
   return nullptr;
@@ -56,9 +57,9 @@ void VrShellDelegate::SetPresentingDelegate(
     gvr_context* context) {
   presenting_delegate_ = delegate;
   // Clean up the non-presenting delegate.
+  JNIEnv* env = AttachCurrentThread();
   if (presenting_delegate_ && non_presenting_delegate_) {
     non_presenting_delegate_ = nullptr;
-    JNIEnv* env = AttachCurrentThread();
     Java_VrShellDelegate_shutdownNonPresentingNativeContext(
         env, j_vr_shell_delegate_.obj());
   }
@@ -74,6 +75,9 @@ void VrShellDelegate::SetPresentingDelegate(
     base::ResetAndReturn(&present_callback_).Run(true);
     pending_successful_present_request_ = false;
   }
+
+  std::unique_ptr<VrCoreInfo> vr_core_info = MakeVrCoreInfo(env);
+  VrMetricsUtil::LogGvrVersionForVrViewerType(context, *vr_core_info);
 }
 
 void VrShellDelegate::RemoveDelegate() {
@@ -205,6 +209,11 @@ void VrShellDelegate::ExitWebVRPresent() {
   }
 }
 
+std::unique_ptr<VrCoreInfo> VrShellDelegate::MakeVrCoreInfo(JNIEnv* env) {
+  return base::WrapUnique(reinterpret_cast<VrCoreInfo*>(
+      Java_VrShellDelegate_getVrCoreInfo(env, j_vr_shell_delegate_.obj())));
+}
+
 void VrShellDelegate::CreateNonPresentingDelegate() {
   JNIEnv* env = AttachCurrentThread();
   gvr_context* context = reinterpret_cast<gvr_context*>(
@@ -214,6 +223,8 @@ void VrShellDelegate::CreateNonPresentingDelegate() {
       base::MakeUnique<NonPresentingGvrDelegate>(context);
   non_presenting_delegate_->UpdateVSyncInterval(timebase_nanos_,
                                                 interval_seconds_);
+  std::unique_ptr<VrCoreInfo> vr_core_info = MakeVrCoreInfo(env);
+  VrMetricsUtil::LogGvrVersionForVrViewerType(context, *vr_core_info);
 }
 
 void VrShellDelegate::OnActivateDisplayHandled(bool will_not_present) {
