@@ -135,6 +135,10 @@ public abstract class InfoBar implements InfoBarView {
     @Override
     public CharSequence getAccessibilityText() {
         if (mView == null) return "";
+        // Compact layout doesn't have a proper view to provide meaningful message, so we return a
+        // general message to let users know there is a bar on the bottom.
+        // TODO(googleo): Fetch the accessibility message from the compact layout.
+        if (usesCompactLayout()) return mContext.getString(R.string.bottom_bar_screen_position);
         TextView messageView = (TextView) mView.findViewById(R.id.infobar_message);
         if (messageView == null) return "";
         return messageView.getText() + mContext.getString(R.string.bottom_bar_screen_position);
