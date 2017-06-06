@@ -1022,7 +1022,6 @@ virtual/threaded/printing/page-and-element-geometry-match.html
 virtual/without-smil/svg/animations/exposed/effect.html
 wake_lock/wakelock-api.html
 wake_lock/wakelock-in-nested-frame.html
-web-animations-api/the-effect-value-of-a-keyframe-effect.html
 webaudio/AudioBufferSource/audiobuffersource-ended.html
 webaudio/AudioBufferSource/audiobuffersource-playbackrate-zero.html
 webaudio/AudioNode/channel-mode-interp-basic.html
