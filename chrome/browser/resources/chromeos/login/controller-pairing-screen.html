@@ -13,9 +13,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-icon-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <!--
@@ -107,7 +107,12 @@ controller-pairing-page::shadow #top {
   <link rel="stylesheet" href="oobe_screen_controller_pairing.css">
 
   <template>
-    <paper-material class="fit">
+    <style>
+      div.elevate {
+        @apply(--shadow-elevation-2dp);
+      }
+    </style>
+    <div class="fit elevate">
       <neon-animated-pages id="pages" selected="{{C.page}}"
           attr-for-selected="name" class="fit">
         <controller-pairing-page name="devices-discovery" class="big-font">
@@ -262,6 +267,6 @@ controller-pairing-page::shadow #top {
           </paper-button>
         </controller-pairing-page>
       </neon-animated-pages>
-    </paper-material>
+    </div>
   </template>
 </dom-module>
