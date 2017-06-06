@@ -1,6 +1,6 @@
 # Liblouis: Persian 8 dot computer Braille table
 #
-# Copyright (C) 2016 by Mohammadreza Rashad <mohammadreza5712@gmail.com>
+# Copyright (C) 2017 by Mohammadreza Rashad <mohammadreza5712@gmail.com>
 #
 #  This file is part of liblouis.
 #
@@ -18,12 +18,12 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-space \t 7 tab
+space \t 67 tab
 space \s 0 blank
 space \x00a0 a unbreakable space
 sign \x000a 78 newline
 space \x000d 0 carriage return
-sign \x200C 8 (نیم‌فاصله)
+sign \x200C 68 (نیم‌فاصله)
 
 # Persian alphabets and diacritics 
 

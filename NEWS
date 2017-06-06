@@ -34,6 +34,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Improvements to UEB in particular to symbols specified mostly on the
   Appendix 3 (Symbols List) from the Rules of Unified English Braille
   Second Edition 2013 document thanks to Victor Montalvão.
+- Improvements to Persian 8 dot computer Braille table thanks to
+  Mohammadreza Rashad.
 ** Backwards incompatible changes
 - The old Greek table gr-gr-g1.utb is gone. Use el.ctb instead
 - The doctests are gone. They have been superseded by the YAML tests.
