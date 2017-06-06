@@ -23,8 +23,7 @@ NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
       direction_(TextDirection::kLtr),
       node_(node),
       layout_object_(node.GetLayoutObject()),
-      did_break_(false),
-      border_edges_(NGBorderEdges::kAll) {}
+      did_break_(false) {}
 
 NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
                                      LayoutObject* layout_object)
@@ -230,8 +229,7 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   RefPtr<NGPhysicalBoxFragment> fragment = AdoptRef(new NGPhysicalBoxFragment(
       layout_object_, physical_size, overflow_.ConvertToPhysical(writing_mode_),
       children_, positioned_floats_, bfc_offset_, end_margin_strut_,
-      NGBorderEdges::ToPhysical(border_edges_, writing_mode_),
-      std::move(break_token)));
+      border_edges_.ToPhysical(writing_mode_), std::move(break_token)));
 
   return AdoptRef(
       new NGLayoutResult(std::move(fragment), out_of_flow_descendants_,

@@ -292,20 +292,26 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
 
 void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
                                   NGInlineItemResult* item_result) {
-  if (item.HasStartEdge()) {
-    DCHECK(item.Style());
-    // TODO(kojii): We compute 16 values and discard 12 out of that, and do it 3
-    // times per element. We may want to cache this. crrev.com/2865903002/#msg14
-    NGBoxStrut margins = ComputeMargins(*constraint_space_, *item.Style(),
-                                        constraint_space_->WritingMode(),
-                                        constraint_space_->Direction());
-    NGBoxStrut borders = ComputeBorders(*constraint_space_, *item.Style());
-    NGBoxStrut paddings = ComputePadding(*constraint_space_, *item.Style());
-    item_result->inline_size =
-        margins.inline_start + borders.inline_start + paddings.inline_start;
-    position_ += item_result->inline_size;
+  DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
+  if (style.HasBorder() || style.HasPadding() ||
+      (style.HasMargin() && item.HasStartEdge())) {
+    NGBoxStrut borders = ComputeBorders(*constraint_space_, style);
+    NGBoxStrut paddings = ComputePadding(*constraint_space_, style);
+    item_result->borders_paddings_block_start =
+        borders.block_start + paddings.block_start;
+    item_result->borders_paddings_block_end =
+        borders.block_end + paddings.block_end;
+    if (item.HasStartEdge()) {
+      item_result->margins = ComputeMargins(*constraint_space_, style,
+                                            constraint_space_->WritingMode(),
+                                            constraint_space_->Direction());
+      item_result->inline_size = item_result->margins.inline_start +
+                                 borders.inline_start + paddings.inline_start;
+      position_ += item_result->inline_size;
+    }
   }
-  UpdateBreakIterator(*item.Style());
+  UpdateBreakIterator(style);
   MoveToNextOf(item);
 }
 
@@ -313,13 +319,13 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
                                    NGInlineItemResult* item_result) {
   if (item.HasEndEdge()) {
     DCHECK(item.Style());
-    NGBoxStrut margins = ComputeMargins(*constraint_space_, *item.Style(),
-                                        constraint_space_->WritingMode(),
-                                        constraint_space_->Direction());
+    item_result->margins = ComputeMargins(*constraint_space_, *item.Style(),
+                                          constraint_space_->WritingMode(),
+                                          constraint_space_->Direction());
     NGBoxStrut borders = ComputeBorders(*constraint_space_, *item.Style());
     NGBoxStrut paddings = ComputePadding(*constraint_space_, *item.Style());
-    item_result->inline_size =
-        margins.inline_end + borders.inline_end + paddings.inline_end;
+    item_result->inline_size = item_result->margins.inline_end +
+                               borders.inline_end + paddings.inline_end;
     position_ += item_result->inline_size;
   }
   DCHECK(item.GetLayoutObject() && item.GetLayoutObject()->Parent());

@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/inline/ng_inline_box_state.h"
 
+#include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "core/layout/ng/inline/ng_text_fragment_builder.h"
@@ -38,16 +39,6 @@ void NGInlineBoxState::AccumulateUsedFonts(const NGInlineItem& item,
   }
 }
 
-void NGInlineBoxState::SetNeedsBoxFragment(
-    LayoutUnit position,
-    LayoutUnit borders_paddings_block_start,
-    LayoutUnit borders_paddings_block_height) {
-  needs_box_fragment = true;
-  line_left_position = position;
-  this->borders_paddings_block_start = borders_paddings_block_start;
-  this->borders_paddings_block_height = borders_paddings_block_height;
-}
-
 NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     const ComputedStyle* line_style,
     FontBaseline baseline_type) {
@@ -61,6 +52,8 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     for (auto& box : stack_) {
       box.fragment_start = 0;
       box.metrics = NGLineHeightMetrics();
+      // Existing box states are wrapped boxes, and hence no left edges.
+      box.border_edges.line_left = false;
       DCHECK(box.pending_descendants.IsEmpty());
     }
   }
@@ -92,9 +85,8 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
     const NGInlineItem& item,
     NGLineBoxFragmentBuilder* line_box,
     NGInlineBoxState* box,
-    FontBaseline baseline_type,
-    LayoutUnit position) {
-  EndBoxState(box, line_box, baseline_type, position);
+    FontBaseline baseline_type) {
+  EndBoxState(box, line_box, baseline_type);
   // TODO(kojii): When the algorithm restarts from a break token, the stack may
   // underflow. We need either synthesize a missing box state, or push all
   // parents on initialize.
@@ -108,7 +100,8 @@ void NGInlineLayoutStateStack::OnEndPlaceItems(
     LayoutUnit position) {
   for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
     NGInlineBoxState* box = &(*it);
-    EndBoxState(box, line_box, baseline_type, position);
+    box->line_right_position = position;
+    EndBoxState(box, line_box, baseline_type);
   }
 
   if (!box_placeholders_.IsEmpty())
@@ -120,10 +113,9 @@ void NGInlineLayoutStateStack::OnEndPlaceItems(
 
 void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
                                            NGLineBoxFragmentBuilder* line_box,
-                                           FontBaseline baseline_type,
-                                           LayoutUnit position) {
+                                           FontBaseline baseline_type) {
   if (box->needs_box_fragment)
-    AddBoxFragmentPlaceholder(box, line_box, baseline_type, position);
+    AddBoxFragmentPlaceholder(box, line_box, baseline_type);
 
   PositionPending position_pending =
       ApplyBaselineShift(box, line_box, baseline_type);
@@ -134,6 +126,36 @@ void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
   }
 }
 
+void NGInlineBoxState::SetNeedsBoxFragment(
+    const NGInlineItem& item,
+    const NGInlineItemResult& item_result,
+    LayoutUnit position) {
+  needs_box_fragment = true;
+  line_left_position = position + item_result.margins.inline_start;
+  borders_paddings_block_start = item_result.borders_paddings_block_start;
+  borders_paddings_block_end = item_result.borders_paddings_block_end;
+  // We have left edge on open tag, and if the box is not a continuation.
+  // TODO(kojii): Needs review when we change SplitInlines().
+  bool has_line_left_edge = item.Style()->IsLeftToRightDirection()
+                                ? item.HasStartEdge()
+                                : item.HasEndEdge();
+  border_edges = {true, false, true, has_line_left_edge};
+}
+
+void NGInlineBoxState::SetLineRightForBoxFragment(
+    const NGInlineItem& item,
+    const NGInlineItemResult& item_result,
+    LayoutUnit position) {
+  DCHECK(needs_box_fragment);
+  line_right_position = position - item_result.margins.inline_end;
+  // We have right edge on close tag, and if the box does not have a
+  // continuation.
+  // TODO(kojii): Needs review when we change SplitInlines().
+  border_edges.line_right = item.Style()->IsLeftToRightDirection()
+                                ? item.HasEndEdge()
+                                : item.HasStartEdge();
+}
+
 // Crete a placeholder for a box fragment.
 // We keep a flat list of fragments because it is more suitable for operations
 // such as ApplyBaselineShift. Later, CreateBoxFragments() creates box fragments
@@ -141,16 +163,14 @@ void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
 void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
     NGInlineBoxState* box,
     NGLineBoxFragmentBuilder* line_box,
-    FontBaseline baseline_type,
-    LayoutUnit position) {
-  if (box->fragment_start == line_box->Children().size()) {
-    // Don't create a placeholder if the inline box is empty.
+    FontBaseline baseline_type) {
+  LayoutUnit inline_size = box->line_right_position - box->line_left_position;
+  if (box->fragment_start == line_box->Children().size() && inline_size <= 0) {
+    // Don't create a box if the inline box is "empty".
+    // Inline boxes with inline margins/borders/paddings are not "empty",
+    // but background doesn't make difference in this context.
     // Whether to create this box or not affects layout when the line contains
     // only this box, since this box participates the line height.
-    // TODO(kojii): Testing indicates that we should create a box if it has
-    // borders, but not for backgrounds. But creating such a RootInlineBox needs
-    // additional code. The plan is to enable such line box when NG paint is
-    // enabled.
     return;
   }
 
@@ -165,9 +185,9 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   // direction is already included into positions in NGLineBreaker.
   NGLogicalRect bounds(
       box->line_left_position,
-      -metrics.ascent - box->borders_paddings_block_start,
-      position - box->line_left_position,
-      metrics.LineHeight() + box->borders_paddings_block_height);
+      -metrics.ascent - box->borders_paddings_block_start, inline_size,
+      metrics.LineHeight() + box->borders_paddings_block_start +
+          box->borders_paddings_block_end);
 
   // The start is marked only in BoxFragmentPlaceholder, while end is marked
   // in both BoxFragmentPlaceholder and the list itself.
@@ -180,8 +200,9 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   // The "null" is added to the list to compute baseline shift of the box
   // separately from text fragments.
   unsigned fragment_end = line_box->Children().size();
-  box_placeholders_.push_back(BoxFragmentPlaceholder{
-      box->fragment_start, fragment_end, box->item, bounds.size});
+  box_placeholders_.push_back(
+      BoxFragmentPlaceholder{box->fragment_start, fragment_end, box->item,
+                             bounds.size, box->border_edges});
   line_box->AddChild(nullptr, bounds.offset);
 }
 
@@ -216,6 +237,10 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
 
     box.SetWritingMode(line_box->WritingMode());
     box.SetDirection(placeholder.item->Direction());
+    // Inline boxes have block start/end borders, even when its containing block
+    // was fragmented. Fragmenting a line box in block direction is not
+    // supported today.
+    box.SetBorderEdges(placeholder.border_edges);
     box.SetSize(placeholder.size);
     // TODO(kojii): Overflow size should be computed from children.
     box.SetOverflowSize(placeholder.size);

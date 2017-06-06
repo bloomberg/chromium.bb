@@ -37,6 +37,7 @@ namespace {
 struct FragmentPosition {
   NGLogicalOffset offset;
   LayoutUnit inline_size;
+  NGBorderEdges border_edges;
 };
 
 // Create BidiRuns from a list of NGPhysicalFragment.
@@ -85,12 +86,20 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
           ToNGPhysicalBoxFragment(child.Get());
       NGBoxFragment fragment(constraint_space.WritingMode(), physical_fragment);
       NGLogicalOffset child_offset = fragment.Offset() + parent_offset;
-      CreateBidiRuns(bidi_runs, physical_fragment->Children(), constraint_space,
-                     child_offset, items, text_offsets,
-                     positions_for_bidi_runs_out, positions_out);
+      if (physical_fragment->Children().size()) {
+        CreateBidiRuns(bidi_runs, physical_fragment->Children(),
+                       constraint_space, child_offset, items, text_offsets,
+                       positions_for_bidi_runs_out, positions_out);
+      } else {
+        // An empty inline needs a BidiRun for itself.
+        LayoutObject* layout_object = physical_fragment->GetLayoutObject();
+        BidiRun* run = new BidiRun(0, 1, 0, LineLayoutItem(layout_object));
+        bidi_runs->AddRun(run);
+      }
       // Store box fragments in a map by LineLayoutItem.
       positions_out->Set(LineLayoutItem(child->GetLayoutObject()),
-                         FragmentPosition{child_offset, fragment.InlineSize()});
+                         FragmentPosition{child_offset, fragment.InlineSize(),
+                                          fragment.BorderEdges()});
     }
   }
 }
@@ -110,17 +119,20 @@ unsigned PlaceInlineBoxChildren(
   for (InlineBox* inline_box = parent->FirstChild(); inline_box;
        inline_box = inline_box->NextOnLine()) {
     if (inline_box->IsInlineFlowBox()) {
+      InlineFlowBox* flow_box = ToInlineFlowBox(inline_box);
       const auto& iter = positions.find(inline_box->GetLineLayoutItem());
       if (iter != positions.end()) {
         const FragmentPosition& position = iter->value;
         inline_box->SetLogicalLeft(position.offset.inline_offset);
         inline_box->SetLogicalTop(position.offset.block_offset);
         inline_box->SetLogicalWidth(position.inline_size);
+        flow_box->SetEdges(position.border_edges.line_left,
+                           position.border_edges.line_right);
       }
 
-      text_index = PlaceInlineBoxChildren(ToInlineFlowBox(inline_box),
-                                          positions_for_bidi_runs, positions,
-                                          text_index, iter == positions.end());
+      text_index =
+          PlaceInlineBoxChildren(flow_box, positions_for_bidi_runs, positions,
+                                 text_index, iter == positions.end());
     } else {
       const FragmentPosition& position = positions_for_bidi_runs[text_index++];
       inline_box->SetLogicalLeft(position.offset.inline_offset);

@@ -16,7 +16,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     Vector<NGPositionedFloat>& positioned_floats,
     const WTF::Optional<NGLogicalOffset>& bfc_offset,
     const NGMarginStrut& end_margin_strut,
-    NGBorderEdges::Physical border_edges,
+    unsigned border_edges,  // NGBorderEdges::Physical
     RefPtr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
                          size,

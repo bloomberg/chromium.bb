@@ -6,47 +6,31 @@
 
 namespace blink {
 
-namespace NGBorderEdges {
-
-Physical ToPhysical(Logical logical_edges, NGWritingMode writing_mode) {
-  static_assert(kBlockStart == static_cast<Logical>(kTop) &&
-                    kBlockEnd == static_cast<Logical>(kBottom) &&
-                    kLineLeft == static_cast<Logical>(kLeft) &&
-                    kLineRight == static_cast<Logical>(kRight),
-                "Physical and Logical must match");
-
-  if (writing_mode == kHorizontalTopBottom || logical_edges == kAll)
-    return static_cast<Physical>(logical_edges);
-
-  if (writing_mode != kSidewaysLeftRight) {
-    return static_cast<Physical>((logical_edges & kBlockStart ? kRight : 0) |
-                                 (logical_edges & kBlockEnd ? kLeft : 0) |
-                                 (logical_edges & kLineLeft ? kTop : 0) |
-                                 (logical_edges & kLineRight ? kBottom : 0));
+NGBorderEdges NGBorderEdges::FromPhysical(unsigned physical_edges,
+                                          NGWritingMode writing_mode) {
+  if (writing_mode == kHorizontalTopBottom) {
+    return NGBorderEdges(physical_edges & kTop, physical_edges & kRight,
+                         physical_edges & kBottom, physical_edges & kLeft);
   }
-  return static_cast<Physical>((logical_edges & kBlockStart ? kLeft : 0) |
-                               (logical_edges & kBlockEnd ? kRight : 0) |
-                               (logical_edges & kLineLeft ? kBottom : 0) |
-                               (logical_edges & kLineRight ? kTop : 0));
+  if (writing_mode != kSidewaysLeftRight) {
+    return NGBorderEdges(physical_edges & kRight, physical_edges & kBottom,
+                         physical_edges & kLeft, physical_edges & kTop);
+  }
+  return NGBorderEdges(physical_edges & kLeft, physical_edges & kTop,
+                       physical_edges & kRight, physical_edges & kBottom);
 }
 
-Logical ToLogical(Physical physical_edges, NGWritingMode writing_mode) {
-  if (writing_mode == kHorizontalTopBottom ||
-      physical_edges == static_cast<Physical>(kAll))
-    return static_cast<Logical>(physical_edges);
-
-  if (writing_mode != kSidewaysLeftRight) {
-    return static_cast<Logical>((physical_edges & kTop ? kLineLeft : 0) |
-                                (physical_edges & kBottom ? kLineRight : 0) |
-                                (physical_edges & kLeft ? kBlockEnd : 0) |
-                                (physical_edges & kRight ? kBlockStart : 0));
+unsigned NGBorderEdges::ToPhysical(NGWritingMode writing_mode) const {
+  if (writing_mode == kHorizontalTopBottom) {
+    return (block_start ? kTop : 0) | (line_right ? kRight : 0) |
+           (block_end ? kBottom : 0) | (line_left ? kLeft : 0);
   }
-  return static_cast<Logical>((physical_edges & kTop ? kLineRight : 0) |
-                              (physical_edges & kBottom ? kLineLeft : 0) |
-                              (physical_edges & kLeft ? kBlockStart : 0) |
-                              (physical_edges & kRight ? kBlockEnd : 0));
+  if (writing_mode != kSidewaysLeftRight) {
+    return (block_start ? kRight : 0) | (line_right ? kBottom : 0) |
+           (block_end ? kLeft : 0) | (line_left ? kTop : 0);
+  }
+  return (block_start ? kLeft : 0) | (line_right ? kTop : 0) |
+         (block_end ? kRight : 0) | (line_left ? kBottom : 0);
 }
-
-}  // namespace NGBorderEdges
 
 }  // namespace blink

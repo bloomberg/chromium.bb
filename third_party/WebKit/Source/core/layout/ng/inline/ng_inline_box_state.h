@@ -16,6 +16,7 @@
 namespace blink {
 
 class NGInlineItem;
+struct NGInlineItemResult;
 class NGLineBoxFragmentBuilder;
 
 // Fragments that require the layout position/size of ancestor are packed in
@@ -30,6 +31,7 @@ struct NGPendingPositions {
 // Represents the current box while NGInlineLayoutAlgorithm performs layout.
 // Used 1) to cache common values for a box, and 2) to layout children that
 // require ancestor position or size.
+// This is a transient object only while building line boxes in a block.
 struct NGInlineBoxState {
   unsigned fragment_start;
   const NGInlineItem* item;
@@ -41,8 +43,10 @@ struct NGInlineBoxState {
   // These values are to create a box fragment. Set only when needs_box_fragment
   // is set.
   LayoutUnit line_left_position;
+  LayoutUnit line_right_position;
   LayoutUnit borders_paddings_block_start;
-  LayoutUnit borders_paddings_block_height;
+  LayoutUnit borders_paddings_block_end;
+  NGBorderEdges border_edges;
 
   Vector<NGPendingPositions> pending_descendants;
   bool include_used_fonts = false;
@@ -56,9 +60,12 @@ struct NGInlineBoxState {
                            FontBaseline);
 
   // Create a box fragment for this box.
-  void SetNeedsBoxFragment(LayoutUnit line_left_position,
-                           LayoutUnit borders_paddings_block_start,
-                           LayoutUnit borders_paddings_block_height);
+  void SetNeedsBoxFragment(const NGInlineItem&,
+                           const NGInlineItemResult&,
+                           LayoutUnit position);
+  void SetLineRightForBoxFragment(const NGInlineItem&,
+                                  const NGInlineItemResult&,
+                                  LayoutUnit position);
 };
 
 // Represents the inline tree structure. This class provides:
@@ -81,8 +88,7 @@ class NGInlineLayoutStateStack {
   NGInlineBoxState* OnCloseTag(const NGInlineItem&,
                                NGLineBoxFragmentBuilder*,
                                NGInlineBoxState*,
-                               FontBaseline,
-                               LayoutUnit position);
+                               FontBaseline);
 
   // Compute all the pending positioning at the end of a line.
   void OnEndPlaceItems(NGLineBoxFragmentBuilder*,
@@ -92,15 +98,11 @@ class NGInlineLayoutStateStack {
  private:
   // End of a box state, either explicitly by close tag, or implicitly at the
   // end of a line.
-  void EndBoxState(NGInlineBoxState*,
-                   NGLineBoxFragmentBuilder*,
-                   FontBaseline,
-                   LayoutUnit position);
+  void EndBoxState(NGInlineBoxState*, NGLineBoxFragmentBuilder*, FontBaseline);
 
   void AddBoxFragmentPlaceholder(NGInlineBoxState*,
                                  NGLineBoxFragmentBuilder*,
-                                 FontBaseline,
-                                 LayoutUnit position);
+                                 FontBaseline);
   void CreateBoxFragments(NGLineBoxFragmentBuilder*);
 
   enum PositionPending { kPositionNotPending, kPositionPending };
@@ -116,11 +118,13 @@ class NGInlineLayoutStateStack {
                                      FontBaseline);
 
   // Data for a box fragment placeholder. See AddBoxFragmentPlaceholder().
+  // This is a transient object only while building a line box.
   struct BoxFragmentPlaceholder {
     unsigned fragment_start;
     unsigned fragment_end;
     const NGInlineItem* item;
     NGLogicalSize size;
+    NGBorderEdges border_edges;
   };
 
   Vector<NGInlineBoxState, 4> stack_;

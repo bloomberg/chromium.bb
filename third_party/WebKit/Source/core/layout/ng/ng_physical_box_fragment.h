@@ -24,7 +24,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                         Vector<NGPositionedFloat>& positioned_floats,
                         const WTF::Optional<NGLogicalOffset>& bfc_offset,
                         const NGMarginStrut& end_margin_strut,
-                        NGBorderEdges::Physical,
+                        unsigned,  // NGBorderEdges::Physical
                         RefPtr<NGBreakToken> break_token = nullptr);
 
   // Returns the total size, including the contents outside of the border-box.

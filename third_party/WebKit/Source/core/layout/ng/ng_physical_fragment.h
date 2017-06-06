@@ -54,10 +54,8 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
   // Returns the border-box size.
   NGPhysicalSize Size() const { return size_; }
 
-  // Bitmask for border edges, see NGPaintBorderEdge.
-  NGBorderEdges::Physical BorderEdges() const {
-    return static_cast<NGBorderEdges::Physical>(border_edge_);
-  }
+  // Bitmask for border edges, see NGBorderEdges::Physical.
+  unsigned BorderEdges() const { return border_edge_; }
   NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
 
   // Returns the offset relative to the parent fragment's content-box.
@@ -104,7 +102,7 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
 
   unsigned type_ : 2;  // NGFragmentType
   unsigned is_placed_ : 1;
-  unsigned border_edge_ : 4;  // NGPhysicalBorderEdges
+  unsigned border_edge_ : 4;  // NGBorderEdges::Physical
 
  private:
   void Destroy() const;
