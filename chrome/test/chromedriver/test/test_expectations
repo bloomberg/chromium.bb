@@ -108,13 +108,6 @@ _REVISION_NEGATIVE_FILTER['58'] = (
         'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
     ]
 )
-_REVISION_NEGATIVE_FILTER['57'] = (
-    _REVISION_NEGATIVE_FILTER['HEAD'] + [
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1625
-        'TakesScreenshotTest.*',
-        'WindowTest.*',
-    ]
-)
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
