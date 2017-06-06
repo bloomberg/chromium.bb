@@ -224,9 +224,6 @@ class WebFrame {
 
   // Scripting ----------------------------------------------------------
 
-  // Executes script in the context of the current page.
-  virtual void ExecuteScript(const WebScriptSource&) = 0;
-
   // Executes JavaScript in a new world associated with the web frame.
   // The script gets its own global scope and its own prototypes for
   // intrinsic JavaScript objects (String, Array, and so-on). It also

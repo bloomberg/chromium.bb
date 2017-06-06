@@ -3960,7 +3960,7 @@ TEST_P(WebViewTest, SubframeBeforeUnloadUseCounter) {
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "single_iframe.html", true);
 
-  WebFrame* frame = web_view_helper_.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper_.WebView()->MainFrameImpl();
   Document* document =
       ToLocalFrame(web_view_helper_.WebView()->GetPage()->MainFrame())
           ->GetDocument();

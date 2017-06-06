@@ -212,7 +212,7 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
 
   // Does the actual work of removing the iframe "frame1" from the document.
   void RemoveIframe() {
-    blink::WebFrame* main_frame = GetMainFrame();
+    blink::WebLocalFrame* main_frame = GetMainFrame();
     ASSERT_TRUE(main_frame);
     main_frame->ExecuteScript(blink::WebString(
         "document.body.removeChild(document.getElementById('frame1'));"));

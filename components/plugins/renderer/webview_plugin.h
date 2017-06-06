@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebViewClient.h"
 
 namespace blink {
+class WebLocalFrame;
 class WebMouseEvent;
 }
 
@@ -68,7 +69,7 @@ class WebViewPlugin : public blink::WebPlugin,
                                const std::string& html_data,
                                const GURL& url);
 
-  blink::WebView* web_view() { return web_view_helper_.web_view(); }
+  blink::WebLocalFrame* main_frame() { return web_view_helper_.main_frame(); }
 
   const blink::WebString& old_title() const { return old_title_; }
 
@@ -116,6 +117,8 @@ class WebViewPlugin : public blink::WebPlugin,
                 const content::WebPreferences& preferences);
   ~WebViewPlugin() override;
 
+  blink::WebView* web_view() { return web_view_helper_.web_view(); }
+
   // content::RenderViewObserver methods:
   void OnDestruct() override {}
   void OnZoomLevelChanged() override;
@@ -151,6 +154,7 @@ class WebViewPlugin : public blink::WebPlugin,
     ~WebViewHelper() override;
 
     blink::WebView* web_view() { return web_view_; }
+    blink::WebLocalFrame* main_frame();
 
     // WebViewClient methods:
     bool AcceptsLoadDrops() override;

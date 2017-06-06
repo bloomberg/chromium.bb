@@ -453,8 +453,7 @@ TEST_P(ParameterizedWebFrameTest, RequestExecuteScript) {
   ScriptExecutionCallbackHelper callback_helper(
       web_view_helper.WebView()->MainFrame()->MainWorldScriptContext());
   web_view_helper.WebView()
-      ->MainFrame()
-      ->ToWebLocalFrame()
+      ->MainFrameImpl()
       ->RequestExecuteScriptAndReturnValue(
           WebScriptSource(WebString("'hello';")), false, &callback_helper);
   RunPendingTasks();
@@ -4221,8 +4220,7 @@ TEST_P(ParameterizedWebFrameTest, FirstRectForCharacterRangeWithPinchZoom) {
   web_view_helper.InitializeAndLoad(base_url_ + "textbox.html", true);
   web_view_helper.Resize(WebSize(640, 480));
 
-  WebLocalFrame* main_frame =
-      web_view_helper.WebView()->MainFrame()->ToWebLocalFrame();
+  WebLocalFrame* main_frame = web_view_helper.WebView()->MainFrameImpl();
   main_frame->ExecuteScript(WebScriptSource("selectRange();"));
 
   WebRect old_rect;
@@ -4677,7 +4675,7 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds) {
   int isolated_world_id = 42;
   WebScriptSource script_source("hi!");
   int num_sources = 1;
-  web_view_helper.WebView()->MainFrame()->ExecuteScriptInIsolatedWorld(
+  web_view_helper.WebView()->MainFrameImpl()->ExecuteScriptInIsolatedWorld(
       isolated_world_id, &script_source, num_sources);
 
   // We should now have a new create notification.
@@ -6968,13 +6966,13 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBody) {
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebView* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame(), true);
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
 
   // Access the initial document by modifying the body.
-  new_view->MainFrame()->ExecuteScript(
+  new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
   RunPendingTasks();
   EXPECT_EQ(2, web_frame_client.did_access_initial_document_);
@@ -6991,14 +6989,14 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentOpen) {
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebView* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame(), true);
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
 
   // Access the initial document by calling document.open(), which allows
   // arbitrary modification of the initial document.
-  new_view->MainFrame()->ExecuteScript(
+  new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.document.open();"));
   RunPendingTasks();
   EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
@@ -7015,13 +7013,13 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentNavigator) {
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebView* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame(), true);
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
 
   // Access the initial document to get to the navigator object.
-  new_view->MainFrame()->ExecuteScript(
+  new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("console.log(window.opener.navigator);"));
   RunPendingTasks();
   EXPECT_EQ(3, web_frame_client.did_access_initial_document_);
@@ -7055,19 +7053,19 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebView* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame(), true);
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
 
   // Access the initial document by modifying the body.
-  new_view->MainFrame()->ExecuteScript(
+  new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
   EXPECT_EQ(2, web_frame_client.did_access_initial_document_);
 
   // Run a modal dialog, which used to run a nested run loop and require
   // a special case for notifying about the access.
-  new_view->MainFrame()->ExecuteScript(
+  new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.confirm('Modal');"));
   EXPECT_EQ(3, web_frame_client.did_access_initial_document_);
 
@@ -7088,21 +7086,21 @@ TEST_P(ParameterizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebView* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame(), true);
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
 
   // Access the initial document with document.write, which moves us past the
   // initial empty document state of the state machine.
-  new_view->MainFrame()->ExecuteScript(
+  new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.document.write('Modified'); "
                       "window.opener.document.close();"));
   EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
 
   // Run a modal dialog, which used to run a nested run loop and require
   // a special case for notifying about the access.
-  new_view->MainFrame()->ExecuteScript(
+  new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.confirm('Modal');"));
   EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
 
@@ -7763,7 +7761,7 @@ TEST_P(ParameterizedWebFrameTest, FirstBlankSubframeNavigation) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("about:blank", true, &client);
 
-  WebFrame* frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
 
   frame->ExecuteScript(WebScriptSource(WebString::FromUTF8(
       "document.body.appendChild(document.createElement('iframe'))")));
@@ -7837,8 +7835,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   ASSERT_FALSE(web_scroll_layer->UserScrollableVertical());
 
   // Call javascript to make the layer scrollable, and verify it.
-  WebLocalFrameBase* frame =
-      (WebLocalFrameBase*)web_view_helper.WebView()->MainFrame();
+  WebLocalFrameBase* frame = web_view_helper.WebView()->MainFrameImpl();
   frame->ExecuteScript(WebScriptSource("allowScroll();"));
   web_view_helper.WebView()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(web_scroll_layer->UserScrollableHorizontal());
@@ -8898,8 +8895,8 @@ class WebFrameSwapTest : public WebFrameTest {
   }
 
   void Reset() { web_view_helper_.Reset(); }
-  WebFrame* MainFrame() const {
-    return web_view_helper_.WebView()->MainFrame();
+  WebLocalFrame* MainFrame() const {
+    return web_view_helper_.WebView()->MainFrameImpl();
   }
   WebViewBase* WebView() const { return web_view_helper_.WebView(); }
 
@@ -9560,7 +9557,6 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   remote_frame->SetReplicatedOrigin(
       WebSecurityOrigin::CreateFromString("http://127.0.0.1"));
 
-  ASSERT_TRUE(MainFrame()->IsWebLocalFrame());
   ASSERT_TRUE(MainFrame()->FirstChild()->IsWebRemoteFrame());
   LocalDOMWindow* main_window =
       ToWebLocalFrameBase(MainFrame())->GetFrame()->DomWindow();
@@ -9842,14 +9838,14 @@ TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow) {
   // first window.
   FrameTestHelpers::WebViewHelper popup_web_view_helper;
   TestConsoleMessageWebFrameClient popup_web_frame_client;
-  WebView* popup_view = popup_web_view_helper.InitializeAndLoad(
+  WebViewBase* popup_view = popup_web_view_helper.InitializeAndLoad(
       chrome_url_ + "hello_world.html", true, &popup_web_frame_client);
   popup_view->MainFrame()->SetOpener(web_view_helper.WebView()->MainFrame());
 
   // Attempt a blocked navigation of an opener's subframe, and ensure that
   // the error shows up on the popup (calling) window's console, rather than
   // the target window.
-  popup_view->MainFrame()->ExecuteScript(WebScriptSource(
+  popup_view->MainFrameImpl()->ExecuteScript(WebScriptSource(
       "try { opener.frames[1].location.href='data:text/html,foo'; } catch (e) "
       "{}"));
   EXPECT_TRUE(web_frame_client.messages.IsEmpty());
@@ -9860,7 +9856,7 @@ TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow) {
 
   // Try setting a cross-origin iframe element's source to a javascript: URL,
   // and check that this error is also printed on the calling window.
-  popup_view->MainFrame()->ExecuteScript(
+  popup_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("opener.document.querySelectorAll('iframe')[1].src='"
                       "javascript:alert()'"));
   EXPECT_TRUE(web_frame_client.messages.IsEmpty());
@@ -10551,7 +10547,7 @@ class WebFrameVisibilityChangeTest : public WebFrameTest {
     RegisterMockedHttpURLLoad("single_iframe.html");
     frame_ = web_view_helper_
                  .InitializeAndLoad(base_url_ + "single_iframe.html", true)
-                 ->MainFrame();
+                 ->MainFrameImpl();
     web_remote_frame_ = RemoteFrameClient()->GetFrame();
   }
 
@@ -10568,7 +10564,7 @@ class WebFrameVisibilityChangeTest : public WebFrameTest {
     RemoteFrame()->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
   }
 
-  WebFrame* MainFrame() { return frame_; }
+  WebLocalFrame* MainFrame() { return frame_; }
   WebRemoteFrameImpl* RemoteFrame() { return web_remote_frame_; }
   TestWebRemoteFrameClientForVisibility* RemoteFrameClient() {
     return &remote_frame_client_;
@@ -10577,7 +10573,7 @@ class WebFrameVisibilityChangeTest : public WebFrameTest {
  private:
   TestWebRemoteFrameClientForVisibility remote_frame_client_;
   FrameTestHelpers::WebViewHelper web_view_helper_;
-  WebFrame* frame_;
+  WebLocalFrame* frame_;
   Persistent<WebRemoteFrameImpl> web_remote_frame_;
 };
 

@@ -8,7 +8,7 @@
 #include "gin/modules/module_registry.h"
 #include "gin/per_context_data.h"
 #include "gin/public/context_holder.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 
 using v8::Context;
@@ -20,10 +20,9 @@ using v8::Script;
 
 namespace content {
 
-MojoMainRunner::MojoMainRunner(blink::WebFrame* frame,
+MojoMainRunner::MojoMainRunner(blink::WebLocalFrame* frame,
                                gin::ContextHolder* context_holder)
-    : frame_(frame),
-      context_holder_(context_holder) {
+    : frame_(frame), context_holder_(context_holder) {
   DCHECK(frame_);
   v8::Isolate::Scope isolate_scope(context_holder->isolate());
   HandleScope handle_scope(context_holder->isolate());

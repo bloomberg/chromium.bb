@@ -1012,13 +1012,13 @@ TEST_P(VisualViewportTest,
   WebRect extent_rect;
 
   WebViewImpl()->SetPageScaleFactor(2);
-  WebFrame* mainFrame = WebViewImpl()->MainFrame();
+  WebLocalFrame* mainFrame = WebViewImpl()->MainFrameImpl();
 
   // Select some text and get the base and extent rects (that's the start of
   // the range and its end). Do a sanity check that the expected text is
   // selected
   mainFrame->ExecuteScript(WebScriptSource("selectRange();"));
-  EXPECT_EQ("ir", mainFrame->ToWebLocalFrame()->SelectionAsText().Utf8());
+  EXPECT_EQ("ir", mainFrame->SelectionAsText().Utf8());
 
   WebViewImpl()->SelectionBounds(base_rect, extent_rect);
   WebPoint initialPoint(base_rect.x, base_rect.y);
@@ -1029,8 +1029,8 @@ TEST_P(VisualViewportTest,
   // right and down one line.
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   visual_viewport.Move(ScrollOffset(60, 25));
-  mainFrame->ToWebLocalFrame()->MoveRangeSelection(initialPoint, endPoint);
-  EXPECT_EQ("t ", mainFrame->ToWebLocalFrame()->SelectionAsText().Utf8());
+  mainFrame->MoveRangeSelection(initialPoint, endPoint);
+  EXPECT_EQ("t ", mainFrame->SelectionAsText().Utf8());
 }
 
 // Test that the scrollFocusedEditableElementIntoRect method works with the
@@ -1635,7 +1635,7 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
 
   LocalFrameView& frame_view = *WebViewImpl()->MainFrameImpl()->GetFrameView();
 
-  WebViewImpl()->MainFrame()->ExecuteScript(
+  WebViewImpl()->MainFrameImpl()->ExecuteScript(
       WebScriptSource("var content = document.getElementById(\"content\");"
                       "content.style.width = \"1500px\";"
                       "content.style.height = \"2400px\";"));
