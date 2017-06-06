@@ -346,7 +346,19 @@ class MediaInternalsWatchTimeTest : public testing::Test,
         histogram_tester_(new base::HistogramTester()),
         test_recorder_(new ukm::TestUkmRecorder()),
         watch_time_keys_(media::GetWatchTimeKeys()),
-        watch_time_power_keys_(media::GetWatchTimePowerKeys()) {
+        watch_time_power_keys_(media::GetWatchTimePowerKeys()),
+        mtbr_keys_({media::kMeanTimeBetweenRebuffersAudioSrc,
+                    media::kMeanTimeBetweenRebuffersAudioMse,
+                    media::kMeanTimeBetweenRebuffersAudioEme,
+                    media::kMeanTimeBetweenRebuffersAudioVideoSrc,
+                    media::kMeanTimeBetweenRebuffersAudioVideoMse,
+                    media::kMeanTimeBetweenRebuffersAudioVideoEme}),
+        smooth_keys_({media::kRebuffersCountAudioSrc,
+                      media::kRebuffersCountAudioMse,
+                      media::kRebuffersCountAudioEme,
+                      media::kRebuffersCountAudioVideoSrc,
+                      media::kRebuffersCountAudioVideoMse,
+                      media::kRebuffersCountAudioVideoEme}) {
     media_log_->AddEvent(media_log_->CreateCreatedEvent(kTestOrigin));
   }
 
@@ -382,12 +394,29 @@ class MediaInternalsWatchTimeTest : public testing::Test,
     }
   }
 
+  void ExpectHelper(const std::vector<base::StringPiece>& full_key_list,
+                    const std::vector<base::StringPiece>& keys,
+                    int64_t value) {
+    for (auto key : full_key_list) {
+      auto it = std::find(keys.begin(), keys.end(), key);
+      if (it == keys.end())
+        histogram_tester_->ExpectTotalCount(key.as_string(), 0);
+      else
+        histogram_tester_->ExpectUniqueSample(key.as_string(), value, 1);
+    }
+  }
+
   void ExpectMtbrTime(const std::vector<base::StringPiece>& keys,
                       base::TimeDelta value) {
-    for (auto key : keys) {
-      histogram_tester_->ExpectUniqueSample(key.as_string(),
-                                            value.InMilliseconds(), 1);
-    }
+    ExpectHelper(mtbr_keys_, keys, value.InMilliseconds());
+  }
+
+  void ExpectZeroRebuffers(const std::vector<base::StringPiece>& keys) {
+    ExpectHelper(smooth_keys_, keys, 0);
+  }
+
+  void ExpectRebuffers(const std::vector<base::StringPiece>& keys, int count) {
+    ExpectHelper(smooth_keys_, keys, count);
   }
 
   void ExpectUkmWatchTime(size_t entry, size_t size, base::TimeDelta value) {
@@ -415,6 +444,8 @@ class MediaInternalsWatchTimeTest : public testing::Test,
   std::unique_ptr<media::WatchTimeReporter> wtr_;
   const base::flat_set<base::StringPiece> watch_time_keys_;
   const base::flat_set<base::StringPiece> watch_time_power_keys_;
+  const std::vector<base::StringPiece> mtbr_keys_;
+  const std::vector<base::StringPiece> smooth_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsWatchTimeTest);
 };
@@ -447,6 +478,8 @@ TEST_F(MediaInternalsWatchTimeTest, BasicAudio) {
   ExpectMtbrTime({media::kMeanTimeBetweenRebuffersAudioMse,
                   media::kMeanTimeBetweenRebuffersAudioEme},
                  kWatchTimeLate / 2);
+  ExpectRebuffers(
+      {media::kRebuffersCountAudioMse, media::kRebuffersCountAudioEme}, 2);
 
   ASSERT_EQ(1U, test_recorder_->sources_count());
   ExpectUkmWatchTime(0, 5, kWatchTimeLate);
@@ -482,6 +515,9 @@ TEST_F(MediaInternalsWatchTimeTest, BasicVideo) {
   ExpectMtbrTime({media::kMeanTimeBetweenRebuffersAudioVideoSrc,
                   media::kMeanTimeBetweenRebuffersAudioVideoEme},
                  kWatchTimeLate / 2);
+  ExpectRebuffers({media::kRebuffersCountAudioVideoSrc,
+                   media::kRebuffersCountAudioVideoEme},
+                  2);
 
   ASSERT_EQ(1U, test_recorder_->sources_count());
   ExpectUkmWatchTime(0, 5, kWatchTimeLate);
@@ -546,6 +582,8 @@ TEST_F(MediaInternalsWatchTimeTest, BasicPower) {
   ASSERT_EQ(2U, test_recorder_->sources_count());
   ASSERT_EQ(2U, test_recorder_->entries_count());
   ExpectUkmWatchTime(0, 1, kWatchTime2);
+  ExpectZeroRebuffers({media::kRebuffersCountAudioVideoSrc,
+                       media::kRebuffersCountAudioVideoEme});
 
   // Verify Media.WatchTime keys are properly stripped for UKM reporting.
   EXPECT_TRUE(test_recorder_->FindMetric(test_recorder_->GetEntry(0),
@@ -693,6 +731,21 @@ TEST_F(MediaInternalsWatchTimeTest, BasicHidden) {
   EXPECT_TRUE(test_recorder_->GetSourceForUrl(kTestOrigin));
 }
 
+TEST_F(MediaInternalsWatchTimeTest, FinalizeWithoutWatchTime) {
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillRepeatedly(testing::Return(base::TimeDelta()));
+  Initialize(true, true, false, true);
+  wtr_->OnPlaying();
+  wtr_.reset();
+
+  // No watch time should have been recorded even though a finalize event will
+  // be sent.
+  ExpectWatchTime(std::vector<base::StringPiece>(), base::TimeDelta());
+  ExpectMtbrTime(std::vector<base::StringPiece>(), base::TimeDelta());
+  ExpectZeroRebuffers(std::vector<base::StringPiece>());
+  ASSERT_EQ(0U, test_recorder_->sources_count());
+}
+
 TEST_F(MediaInternalsWatchTimeTest, PlayerDestructionFinalizes) {
   constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(5);
   constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(10);
@@ -700,7 +753,7 @@ TEST_F(MediaInternalsWatchTimeTest, PlayerDestructionFinalizes) {
       .WillOnce(testing::Return(base::TimeDelta()))
       .WillOnce(testing::Return(kWatchTimeEarly))
       .WillRepeatedly(testing::Return(kWatchTimeLate));
-  Initialize(true, true, false, true);
+  Initialize(true, true, true, true);
   wtr_->OnPlaying();
 
   // No log should have been generated yet since the message loop has not had
@@ -714,11 +767,13 @@ TEST_F(MediaInternalsWatchTimeTest, PlayerDestructionFinalizes) {
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
   ExpectWatchTime(
-      {media::kWatchTimeAudioVideoAll, media::kWatchTimeAudioVideoSrc,
+      {media::kWatchTimeAudioVideoAll, media::kWatchTimeAudioVideoMse,
        media::kWatchTimeAudioVideoEme, media::kWatchTimeAudioVideoAc,
        media::kWatchTimeAudioVideoNativeControlsOff,
        media::kWatchTimeAudioVideoEmbeddedExperience},
       kWatchTimeLate);
+  ExpectZeroRebuffers({media::kRebuffersCountAudioVideoMse,
+                       media::kRebuffersCountAudioVideoEme});
 
   ASSERT_EQ(1U, test_recorder_->sources_count());
   ExpectUkmWatchTime(0, 5, kWatchTimeLate);
@@ -751,6 +806,8 @@ TEST_F(MediaInternalsWatchTimeTest, ProcessDestructionFinalizes) {
        media::kWatchTimeAudioVideoNativeControlsOff,
        media::kWatchTimeAudioVideoEmbeddedExperience},
       kWatchTimeLate);
+  ExpectZeroRebuffers({media::kRebuffersCountAudioVideoSrc,
+                       media::kRebuffersCountAudioVideoEme});
 }
 
 }  // namespace content

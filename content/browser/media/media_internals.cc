@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -351,20 +352,22 @@ class MediaInternals::MediaInternalsUMAHandler {
   void RecordWatchTime(base::StringPiece key,
                        base::TimeDelta value,
                        bool is_mtbr = false) {
-    base::Histogram::FactoryTimeGet(
-        key.as_string(),
+    base::UmaHistogramCustomTimes(
+        key.as_string(), value,
         // There are a maximum of 5 underflow events possible in a given 7s
         // watch time period, so the minimum value is 1.4s.
         is_mtbr ? base::TimeDelta::FromSecondsD(1.4)
                 : base::TimeDelta::FromSeconds(7),
-        base::TimeDelta::FromHours(10), 50,
-        base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->AddTime(value);
+        base::TimeDelta::FromHours(10), 50);
   }
 
   void RecordMeanTimeBetweenRebuffers(base::StringPiece key,
                                       base::TimeDelta value) {
     RecordWatchTime(key, value, true);
+  }
+
+  void RecordRebuffersCount(base::StringPiece key, int underflow_count) {
+    base::UmaHistogramCounts100(key.as_string(), underflow_count);
   }
 
   void RecordWatchTimeWithFilter(
@@ -413,19 +416,19 @@ class MediaInternals::MediaInternalsUMAHandler {
 
     switch (finalize_type) {
       case FinalizeType::EVERYTHING:
-        if (*underflow_count) {
-          // Check for watch times entries that have corresponding MTBR entries
-          // and report the MTBR value using watch_time / |underflow_count|
-          for (auto& kv : mtbr_keys_) {
-            auto it = watch_time_info->find(kv.first);
-            if (it == watch_time_info->end())
-              continue;
-            RecordMeanTimeBetweenRebuffers(kv.second,
+        // Check for watch times entries that have corresponding MTBR entries
+        // and report the MTBR value using watch_time / |underflow_count|
+        for (auto& mapping : rebuffer_keys_) {
+          auto it = watch_time_info->find(mapping.watch_time_key);
+          if (it == watch_time_info->end())
+            continue;
+          if (*underflow_count) {
+            RecordMeanTimeBetweenRebuffers(mapping.mtbr_key,
                                            it->second / *underflow_count);
           }
-
-          *underflow_count = 0;
+          RecordRebuffersCount(mapping.smooth_rate_key, *underflow_count);
         }
+        *underflow_count = 0;
 
         RecordWatchTimeWithFilter(url, watch_time_info,
                                   base::flat_set<base::StringPiece>());
@@ -458,8 +461,14 @@ class MediaInternals::MediaInternalsUMAHandler {
   // Set of only the controls related watch time keys.
   const base::flat_set<base::StringPiece> watch_time_controls_keys_;
 
-  // Mapping of WatchTime metric keys to MeanTimeBetweenRebuffers (MTBR) keys.
-  const base::flat_map<base::StringPiece, base::StringPiece> mtbr_keys_;
+  // Mapping of WatchTime metric keys to MeanTimeBetweenRebuffers (MTBR) and
+  // smooth rate (had zero rebuffers) keys.
+  struct RebufferMapping {
+    base::StringPiece watch_time_key;
+    base::StringPiece mtbr_key;
+    base::StringPiece smooth_rate_key;
+  };
+  const std::vector<RebufferMapping> rebuffer_keys_;
 
   content::MediaInternals* const media_internals_;
 
@@ -471,19 +480,22 @@ MediaInternals::MediaInternalsUMAHandler::MediaInternalsUMAHandler(
     : watch_time_keys_(media::GetWatchTimeKeys()),
       watch_time_power_keys_(media::GetWatchTimePowerKeys()),
       watch_time_controls_keys_(media::GetWatchTimeControlsKeys()),
-      mtbr_keys_({{media::kWatchTimeAudioSrc,
-                   media::kMeanTimeBetweenRebuffersAudioSrc},
-                  {media::kWatchTimeAudioMse,
-                   media::kMeanTimeBetweenRebuffersAudioMse},
-                  {media::kWatchTimeAudioEme,
-                   media::kMeanTimeBetweenRebuffersAudioEme},
-                  {media::kWatchTimeAudioVideoSrc,
-                   media::kMeanTimeBetweenRebuffersAudioVideoSrc},
-                  {media::kWatchTimeAudioVideoMse,
-                   media::kMeanTimeBetweenRebuffersAudioVideoMse},
-                  {media::kWatchTimeAudioVideoEme,
-                   media::kMeanTimeBetweenRebuffersAudioVideoEme}},
-                 base::KEEP_FIRST_OF_DUPES),
+      rebuffer_keys_(
+          {{media::kWatchTimeAudioSrc, media::kMeanTimeBetweenRebuffersAudioSrc,
+            media::kRebuffersCountAudioSrc},
+           {media::kWatchTimeAudioMse, media::kMeanTimeBetweenRebuffersAudioMse,
+            media::kRebuffersCountAudioMse},
+           {media::kWatchTimeAudioEme, media::kMeanTimeBetweenRebuffersAudioEme,
+            media::kRebuffersCountAudioEme},
+           {media::kWatchTimeAudioVideoSrc,
+            media::kMeanTimeBetweenRebuffersAudioVideoSrc,
+            media::kRebuffersCountAudioVideoSrc},
+           {media::kWatchTimeAudioVideoMse,
+            media::kMeanTimeBetweenRebuffersAudioVideoMse,
+            media::kRebuffersCountAudioVideoMse},
+           {media::kWatchTimeAudioVideoEme,
+            media::kMeanTimeBetweenRebuffersAudioVideoEme,
+            media::kRebuffersCountAudioVideoEme}}),
       media_internals_(media_internals) {}
 
 void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
@@ -685,11 +697,9 @@ void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
     return;
 
   if (player_info.has_video && player_info.has_audio) {
-    base::LinearHistogram::FactoryGet(
-        GetUMANameForAVStream(player_info), 1, media::PIPELINE_STATUS_MAX,
-        media::PIPELINE_STATUS_MAX + 1,
-        base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(player_info.last_pipeline_status);
+    base::UmaHistogramExactLinear(GetUMANameForAVStream(player_info),
+                                  player_info.last_pipeline_status,
+                                  media::PIPELINE_STATUS_MAX);
   } else if (player_info.has_audio) {
     UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioOnly",
                               player_info.last_pipeline_status,
