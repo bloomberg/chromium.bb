@@ -45,17 +45,19 @@ AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
 AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() {}
 
 DEFINE_TRACE(AnimationWorkletGlobalScope) {
-  visitor->Trace(m_animatorDefinitions);
-  visitor->Trace(m_animators);
+  visitor->Trace(animator_definitions_);
+  visitor->Trace(animators_);
   ThreadedWorkletGlobalScope::Trace(visitor);
 }
 
-void AnimationWorkletGlobalScope::Dispose() {
-  DCHECK(IsContextThread());
-  // Clear animators and definitions to avoid reference cycle.
-  m_animatorDefinitions.clear();
-  m_animators.clear();
-  ThreadedWorkletGlobalScope::Dispose();
+DEFINE_TRACE_WRAPPERS(AnimationWorkletGlobalScope) {
+  for (auto animator : animators_)
+    visitor->TraceWrappers(animator);
+
+  for (auto definition : animator_definitions_)
+    visitor->TraceWrappers(definition.value);
+
+  ThreadedWorkletGlobalScope::TraceWrappers(visitor);
 }
 
 void AnimationWorkletGlobalScope::registerAnimator(
@@ -63,7 +65,7 @@ void AnimationWorkletGlobalScope::registerAnimator(
     const ScriptValue& ctorValue,
     ExceptionState& exceptionState) {
   DCHECK(IsContextThread());
-  if (m_animatorDefinitions.Contains(name)) {
+  if (animator_definitions_.Contains(name)) {
     exceptionState.ThrowDOMException(
         kNotSupportedError,
         "A class with name:'" + name + "' is already registered.");
@@ -122,16 +124,18 @@ void AnimationWorkletGlobalScope::registerAnimator(
 
   AnimatorDefinition* definition =
       new AnimatorDefinition(isolate, constructor, animate);
-  m_animatorDefinitions.Set(name, definition);
+  animator_definitions_.Set(
+      name, TraceWrapperMember<AnimatorDefinition>(this, definition));
 
   // Immediately instantiate an animator for the registered definition.
   // TODO(majidvp): Remove this once you add alternative way to instantiate
-  m_animators.push_back(CreateInstance(name));
+  Animator* animator = CreateInstance(name);
+  animators_.push_back(TraceWrapperMember<Animator>(this, animator));
 }
 
 Animator* AnimationWorkletGlobalScope::CreateInstance(const String& name) {
   DCHECK(IsContextThread());
-  AnimatorDefinition* definition = m_animatorDefinitions.at(name);
+  AnimatorDefinition* definition = animator_definitions_.at(name);
   if (!definition)
     return nullptr;
 

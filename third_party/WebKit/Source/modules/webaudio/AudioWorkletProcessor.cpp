@@ -22,7 +22,7 @@ AudioWorkletProcessor* AudioWorkletProcessor::Create(
 AudioWorkletProcessor::AudioWorkletProcessor(
     AudioWorkletGlobalScope* global_scope,
     const String& name)
-    : global_scope_(global_scope), name_(name) {}
+    : global_scope_(global_scope), name_(name), instance_(this) {}
 
 AudioWorkletProcessor::~AudioWorkletProcessor() {}
 
@@ -46,6 +46,10 @@ void AudioWorkletProcessor::Process(AudioBuffer* input_buffer,
 
 DEFINE_TRACE(AudioWorkletProcessor) {
   visitor->Trace(global_scope_);
+}
+
+DEFINE_TRACE_WRAPPERS(AudioWorkletProcessor) {
+  visitor->TraceWrappers(instance_.Cast<v8::Value>());
 }
 
 }  // namespace blink

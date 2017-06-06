@@ -10,6 +10,7 @@
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "modules/ModulesExport.h"
 #include "modules/csspaint/PaintWorkletPendingGeneratorRegistry.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/graphics/ImageBuffer.h"
 
 namespace blink {
@@ -40,6 +41,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
   CSSPaintDefinition* FindDefinition(const String& name);
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   PaintWorkletGlobalScope(LocalFrame*,
@@ -51,7 +53,8 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
 
   // The implementation of the "paint definition" concept:
   // https://drafts.css-houdini.org/css-paint-api/#paint-definition
-  typedef HeapHashMap<String, Member<CSSPaintDefinition>> DefinitionMap;
+  typedef HeapHashMap<String, TraceWrapperMember<CSSPaintDefinition>>
+      DefinitionMap;
   DefinitionMap paint_definitions_;
 
   Member<PaintWorkletPendingGeneratorRegistry> pending_generator_registry_;

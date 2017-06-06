@@ -45,13 +45,6 @@ AudioWorkletGlobalScope::AudioWorkletGlobalScope(
 
 AudioWorkletGlobalScope::~AudioWorkletGlobalScope() {}
 
-void AudioWorkletGlobalScope::Dispose() {
-  DCHECK(IsContextThread());
-  processor_definition_map_.clear();
-  processor_instances_.clear();
-  ThreadedWorkletGlobalScope::Dispose();
-}
-
 void AudioWorkletGlobalScope::registerProcessor(
     const String& name,
     const ScriptValue& class_definition,
@@ -120,7 +113,9 @@ void AudioWorkletGlobalScope::registerProcessor(
           isolate, name, class_definition_local, process_function_local);
   DCHECK(definition);
 
-  processor_definition_map_.Set(name, definition);
+  processor_definition_map_.Set(
+      name,
+      TraceWrapperMember<AudioWorkletProcessorDefinition>(this, definition));
 }
 
 AudioWorkletProcessor* AudioWorkletGlobalScope::CreateInstance(
@@ -145,7 +140,8 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateInstance(
   DCHECK(processor);
 
   processor->SetInstance(isolate, instance_local);
-  processor_instances_.push_back(processor);
+  processor_instances_.push_back(
+      TraceWrapperMember<AudioWorkletProcessor>(this, processor));
 
   return processor;
 }
@@ -193,6 +189,16 @@ DEFINE_TRACE(AudioWorkletGlobalScope) {
   visitor->Trace(processor_definition_map_);
   visitor->Trace(processor_instances_);
   ThreadedWorkletGlobalScope::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(AudioWorkletGlobalScope) {
+  for (auto definition : processor_definition_map_)
+    visitor->TraceWrappers(definition.value);
+
+  for (auto processor : processor_instances_)
+    visitor->TraceWrappers(processor);
+
+  ThreadedWorkletGlobalScope::TraceWrappers(visitor);
 }
 
 }  // namespace blink

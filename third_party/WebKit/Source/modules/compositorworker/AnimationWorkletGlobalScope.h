@@ -9,6 +9,7 @@
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "modules/compositorworker/Animator.h"
 #include "modules/compositorworker/AnimatorDefinition.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 
@@ -26,8 +27,7 @@ class AnimationWorkletGlobalScope : public ThreadedWorkletGlobalScope {
                                              WorkerClients*);
   ~AnimationWorkletGlobalScope() override;
   DECLARE_TRACE();
-
-  void Dispose() final;
+  DECLARE_TRACE_WRAPPERS();
 
   void registerAnimator(const String& name,
                         const ScriptValue& ctorValue,
@@ -43,11 +43,12 @@ class AnimationWorkletGlobalScope : public ThreadedWorkletGlobalScope {
                               WorkerThread*,
                               WorkerClients*);
 
-  typedef HeapHashMap<String, Member<AnimatorDefinition>> DefinitionMap;
-  DefinitionMap m_animatorDefinitions;
+  typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>
+      DefinitionMap;
+  DefinitionMap animator_definitions_;
 
-  typedef HeapVector<Member<Animator>> AnimatorList;
-  AnimatorList m_animators;
+  typedef HeapVector<TraceWrapperMember<Animator>> AnimatorList;
+  AnimatorList animators_;
 };
 
 }  // namespace blink

@@ -6,7 +6,8 @@
 #define AudioWorkletProcessor_h
 
 #include "modules/ModulesExport.h"
-#include "platform/bindings/ScopedPersistent.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
@@ -24,7 +25,8 @@ class AudioWorkletProcessorDefinition;
 // This is constructed and destroyed on a worker thread, and all methods also
 // must be called on the worker thread.
 class MODULES_EXPORT AudioWorkletProcessor
-    : public GarbageCollectedFinalized<AudioWorkletProcessor> {
+    : public GarbageCollectedFinalized<AudioWorkletProcessor>,
+      public TraceWrapperBase {
  public:
   static AudioWorkletProcessor* Create(AudioWorkletGlobalScope*,
                                        const String& name);
@@ -40,13 +42,14 @@ class MODULES_EXPORT AudioWorkletProcessor
   const String& GetName() const { return name_; }
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   AudioWorkletProcessor(AudioWorkletGlobalScope*, const String& name);
 
   Member<AudioWorkletGlobalScope> global_scope_;
   const String name_;
-  ScopedPersistent<v8::Object> instance_;
+  TraceWrapperV8Reference<v8::Object> instance_;
 };
 
 }  // namespace blink
