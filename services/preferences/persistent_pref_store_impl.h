@@ -6,6 +6,7 @@
 #define SERVICES_PREFERENCES_PERSISTENT_PREF_STORE_IMPL_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
