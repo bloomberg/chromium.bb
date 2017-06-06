@@ -14185,6 +14185,7 @@
             "veyron_pinky-paladin",
             "veyron_rialto-paladin",
             "veyron_speedy-paladin",
+            "veyron_tiger-paladin",
             "whirlwind-paladin",
             "winky-paladin",
             "wolf-paladin",
@@ -25992,6 +25993,7 @@
     },
     "veyron_tiger-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_tiger"
         ],

@@ -2215,6 +2215,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'tatl',
       'veyron_jaq',
       'veyron_jerry',
+      'veyron_tiger',
       'whirlwind',
       'wooten',
   ])
