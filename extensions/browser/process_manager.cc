@@ -292,19 +292,6 @@ void ProcessManager::UnregisterRenderFrameHost(
   }
 }
 
-void ProcessManager::DidNavigateRenderFrameHost(
-    content::RenderFrameHost* render_frame_host) {
-  ExtensionRenderFrames::iterator frame =
-      all_extension_frames_.find(render_frame_host);
-
-  if (frame != all_extension_frames_.end()) {
-    std::string extension_id = GetExtensionID(render_frame_host);
-
-    for (auto& observer : observer_list_)
-      observer.OnExtensionFrameNavigated(extension_id, render_frame_host);
-  }
-}
-
 scoped_refptr<content::SiteInstance> ProcessManager::GetSiteInstanceForURL(
     const GURL& url) {
   return site_instance_->GetRelatedSiteInstance(url);

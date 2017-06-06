@@ -64,7 +64,6 @@ class ProcessManager : public KeyedService,
                                content::RenderFrameHost* render_frame_host,
                                const Extension* extension);
   void UnregisterRenderFrameHost(content::RenderFrameHost* render_frame_host);
-  void DidNavigateRenderFrameHost(content::RenderFrameHost* render_frame_host);
 
   // Returns the SiteInstance that the given URL belongs to.
   // TODO(aa): This only returns correct results for extensions and packaged
