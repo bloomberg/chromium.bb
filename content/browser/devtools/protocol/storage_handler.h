@@ -27,6 +27,9 @@ class StorageHandler : public DevToolsDomainHandler,
   Response ClearDataForOrigin(
       const std::string& origin,
       const std::string& storage_types) override;
+  void GetUsageAndQuota(
+      const String& origin,
+      std::unique_ptr<GetUsageAndQuotaCallback> callback) override;
 
  private:
   RenderFrameHostImpl* host_;
