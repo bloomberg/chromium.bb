@@ -1684,7 +1684,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebglDraftExtensionsDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)},
 #if !defined(OS_ANDROID)
-    {"enable-account-consistency", flag_descriptions::kAccountConsistencyName,
+    {"account-consistency", flag_descriptions::kAccountConsistencyName,
      flag_descriptions::kAccountConsistencyDescription,
      kOsWin | kOsLinux | kOsMac, MULTI_VALUE_TYPE(kAccountConsistencyChoices)},
 #endif

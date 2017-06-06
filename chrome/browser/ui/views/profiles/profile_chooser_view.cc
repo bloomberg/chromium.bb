@@ -656,7 +656,7 @@ void ProfileChooserView::OnRefreshTokenAvailable(
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
     // The account management UI is only available through the
-    // --enable-account-consistency flag.
+    // --account-consistency=mirror flag.
     ShowViewFromMode(switches::IsAccountConsistencyMirrorEnabled()
                          ? profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT
                          : profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
@@ -832,7 +832,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT);
   } else if (sender == gaia_signin_cancel_button_) {
     // The account management view is only available with the
-    // --enable-account-consistency flag.
+    // --account-consistency=mirror flag.
     bool account_management_available =
         SigninManagerFactory::GetForProfile(browser_->profile())
             ->IsAuthenticated() &&
