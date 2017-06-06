@@ -1061,12 +1061,12 @@ static bool ParseColor(const String& value,
   return true;
 }
 
-static WTF::Optional<CompositionMarker::Thickness> ThicknessFrom(
+static WTF::Optional<StyleableMarker::Thickness> ThicknessFrom(
     const String& thickness) {
   if (EqualIgnoringASCIICase(thickness, "thin"))
-    return CompositionMarker::Thickness::kThin;
+    return StyleableMarker::Thickness::kThin;
   if (EqualIgnoringASCIICase(thickness, "thick"))
-    return CompositionMarker::Thickness::kThick;
+    return StyleableMarker::Thickness::kThick;
   return WTF::nullopt;
 }
 
@@ -1078,7 +1078,7 @@ void Internals::addCompositionMarker(const Range* range,
   DCHECK(range);
   range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  WTF::Optional<CompositionMarker::Thickness> thickness =
+  WTF::Optional<StyleableMarker::Thickness> thickness =
       ThicknessFrom(thickness_value);
   if (!thickness) {
     exception_state.ThrowDOMException(

@@ -11,25 +11,14 @@ CompositionMarker::CompositionMarker(unsigned start_offset,
                                      Color underline_color,
                                      Thickness thickness,
                                      Color background_color)
-    : DocumentMarker(start_offset, end_offset),
-      underline_color_(underline_color),
-      background_color_(background_color),
-      thickness_(thickness) {}
+    : StyleableMarker(start_offset,
+                      end_offset,
+                      underline_color,
+                      thickness,
+                      background_color) {}
 
 DocumentMarker::MarkerType CompositionMarker::GetType() const {
   return DocumentMarker::kComposition;
-}
-
-Color CompositionMarker::UnderlineColor() const {
-  return underline_color_;
-}
-
-bool CompositionMarker::IsThick() const {
-  return thickness_ == Thickness::kThick;
-}
-
-Color CompositionMarker::BackgroundColor() const {
-  return background_color_;
 }
 
 }  // namespace blink
