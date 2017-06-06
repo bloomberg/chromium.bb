@@ -431,6 +431,7 @@ public class DownloadNotificationServiceTest extends
 
     @SmallTest
     @Feature({"Download"})
+    @RetryOnFailure
     public void testServiceWillStopOnCompletedDownload() throws Exception {
         // On versions of Android that use a foreground service, the service will currently die with
         // the notifications.
@@ -450,6 +451,7 @@ public class DownloadNotificationServiceTest extends
 
     @SmallTest
     @Feature({"Download"})
+    @RetryOnFailure
     public void testServiceWillStopOnFailedDownload() throws Exception {
         // On versions of Android that use a foreground service, the service will currently die with
         // the notifications.
@@ -468,6 +470,7 @@ public class DownloadNotificationServiceTest extends
 
     @SmallTest
     @Feature({"Download"})
+    @RetryOnFailure
     public void testServiceWillStopOnCancelledDownload() throws Exception {
         // On versions of Android that use a foreground service, the service will currently die with
         // the notifications.
@@ -522,6 +525,7 @@ public class DownloadNotificationServiceTest extends
 
     @SmallTest
     @Feature({"Download"})
+    @RetryOnFailure
     public void testServiceWillNotStopWithOneOngoingDownload() throws Exception {
         // On versions of Android that use a foreground service, the service will currently die with
         // the notifications.
