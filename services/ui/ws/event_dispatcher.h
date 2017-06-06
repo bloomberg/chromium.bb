@@ -158,7 +158,39 @@ class EventDispatcher : public ServerWindowObserver,
  private:
   friend class test::EventDispatcherTestApi;
 
+  // Keeps track of state associated with an active pointer.
+  struct PointerTarget {
+    PointerTarget()
+        : window(nullptr),
+          is_mouse_event(false),
+          in_nonclient_area(false),
+          is_pointer_down(false) {}
+
+    // The target window, which may be null. null is used in two situations:
+    // when there is no valid window target, or there was a target but the
+    // window is destroyed before a corresponding release/cancel.
+    ServerWindow* window;
+
+    bool is_mouse_event;
+
+    // Did the pointer event start in the non-client area.
+    bool in_nonclient_area;
+
+    bool is_pointer_down;
+  };
+
   void SetMouseCursorSourceWindow(ServerWindow* window);
+
+  // Called after we found the target for the current mouse cursor to see if
+  // |mouse_pointer_last_location_| and |mouse_pointer_display_id_| need to be
+  // updated based on the new target we found. No need to call delegate's
+  // OnMouseCursorLocationChanged since mouse location is the same in
+  // screen-coord.
+  // TODO(riajiang): No need to update mouse location after ozone drm can tell
+  // us the right display the cursor is on for drag-n-drop events.
+  // crbug.com/726470
+  void SetMousePointerLocation(const gfx::Point& new_mouse_location,
+                               int64_t new_mouse_display_id);
 
   void ProcessKeyEvent(const ui::KeyEvent& event,
                        AcceleratorMatchPhase match_phase);
@@ -189,7 +221,8 @@ class EventDispatcher : public ServerWindowObserver,
   // pointer sends the appropriate event to the delegate and updates the
   // currently tracked PointerTarget appropriately.
   void UpdateTargetForPointer(int32_t pointer_id,
-                              const ui::LocatedEvent& event);
+                              const ui::PointerEvent& event,
+                              const PointerTarget& pointer_target);
 
   // Returns true if any pointers are in the pressed/down state.
   bool AreAnyPointersDown() const;

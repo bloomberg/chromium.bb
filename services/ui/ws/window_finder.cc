@@ -46,7 +46,7 @@ gfx::Transform TransformFromParent(const ServerWindow* window,
   return transform;
 }
 
-bool FindDeepestVisibleWindowForEventsImpl(
+bool FindDeepestVisibleWindowForLocationImpl(
     ServerWindow* window,
     const gfx::Point& location_in_root,
     const gfx::Point& location_in_window,
@@ -91,7 +91,7 @@ bool FindDeepestVisibleWindowForEventsImpl(
         continue;
       }
 
-      if (FindDeepestVisibleWindowForEventsImpl(
+      if (FindDeepestVisibleWindowForLocationImpl(
               child, location_in_root, location_in_child, child_transform,
               deepest_window)) {
         return true;
@@ -109,11 +109,11 @@ bool FindDeepestVisibleWindowForEventsImpl(
 
 }  // namespace
 
-DeepestWindow FindDeepestVisibleWindowForEvents(ServerWindow* root_window,
-                                                const gfx::Point& location) {
+DeepestWindow FindDeepestVisibleWindowForLocation(ServerWindow* root_window,
+                                                  const gfx::Point& location) {
   DeepestWindow result;
-  FindDeepestVisibleWindowForEventsImpl(root_window, location, location,
-                                        gfx::Transform(), &result);
+  FindDeepestVisibleWindowForLocationImpl(root_window, location, location,
+                                          gfx::Transform(), &result);
   return result;
 }
 
