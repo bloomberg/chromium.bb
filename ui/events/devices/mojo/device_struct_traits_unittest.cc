@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -28,14 +30,13 @@ class DeviceStructTraitsTest : public testing::Test,
  private:
   // mojom::DeviceStructTraitsTest:
   void EchoInputDevice(const InputDevice& in,
-                       const EchoInputDeviceCallback& callback) override {
-    callback.Run(in);
+                       EchoInputDeviceCallback callback) override {
+    std::move(callback).Run(in);
   }
 
-  void EchoTouchscreenDevice(
-      const TouchscreenDevice& in,
-      const EchoTouchscreenDeviceCallback& callback) override {
-    callback.Run(in);
+  void EchoTouchscreenDevice(const TouchscreenDevice& in,
+                             EchoTouchscreenDeviceCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   base::MessageLoop loop_;  // A MessageLoop is needed for mojo IPC to work.
