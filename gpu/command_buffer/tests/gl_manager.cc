@@ -175,14 +175,9 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 class CommandBufferCheckLostContext : public CommandBufferDirect {
  public:
   CommandBufferCheckLostContext(TransferBufferManager* transfer_buffer_manager,
-                                AsyncAPIInterface* handler,
-                                const MakeCurrentCallback& callback,
                                 SyncPointManager* sync_point_manager,
                                 bool context_lost_allowed)
-      : CommandBufferDirect(transfer_buffer_manager,
-                            handler,
-                            callback,
-                            sync_point_manager),
+      : CommandBufferDirect(transfer_buffer_manager, sync_point_manager),
         context_lost_allowed_(context_lost_allowed) {}
 
   ~CommandBufferCheckLostContext() override {}
@@ -323,17 +318,17 @@ void GLManager::InitializeWithCommandLine(
         &discardable_manager_);
   }
 
-  decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));
+  command_buffer_.reset(new CommandBufferCheckLostContext(
+      context_group->transfer_buffer_manager(), options.sync_point_manager,
+      options.context_lost_allowed));
+
+  decoder_.reset(::gpu::gles2::GLES2Decoder::Create(command_buffer_->service(),
+                                                    context_group));
   if (options.force_shader_name_hashing) {
     decoder_->SetForceShaderNameHashingForTest(true);
   }
-  command_buffer_.reset(new CommandBufferCheckLostContext(
-      decoder_->GetContextGroup()->transfer_buffer_manager(), decoder_.get(),
-      base::Bind(&gles2::GLES2Decoder::MakeCurrent,
-                 base::Unretained(decoder_.get())),
-      options.sync_point_manager, options.context_lost_allowed));
 
-  decoder_->set_command_buffer_service(command_buffer_->service());
+  command_buffer_->set_handler(decoder_.get());
 
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
@@ -416,6 +411,8 @@ void GLManager::SetupBaseContext() {
 
 void GLManager::MakeCurrent() {
   ::gles2::SetGLContext(gles2_implementation_.get());
+  if (!decoder_->MakeCurrent())
+    command_buffer_->service()->SetParseError(error::kLostContext);
 }
 
 void GLManager::SetSurface(gl::GLSurface* surface) {

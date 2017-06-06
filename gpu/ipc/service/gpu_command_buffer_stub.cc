@@ -633,17 +633,14 @@ bool GpuCommandBufferStub::Initialize(
     use_virtualized_gl_context_ = false;
 #endif
 
-
-  decoder_.reset(gles2::GLES2Decoder::Create(context_group_.get()));
-
   command_buffer_.reset(new CommandBufferService(
-      this, context_group_->transfer_buffer_manager(), decoder_.get()));
+      this, context_group_->transfer_buffer_manager()));
+  decoder_.reset(
+      gles2::GLES2Decoder::Create(command_buffer_.get(), context_group_.get()));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(
           CommandBufferNamespace::GPU_IO, command_buffer_id_, sequence_id_);
-
-  decoder_->set_command_buffer_service(command_buffer_.get());
 
   if (offscreen) {
     // Do we want to create an offscreen rendering context suitable
@@ -970,7 +967,7 @@ void GpuCommandBufferStub::OnAsyncFlush(
   last_flush_count_ = flush_count;
   CommandBuffer::State pre_state = command_buffer_->GetState();
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
-  command_buffer_->Flush(put_offset);
+  command_buffer_->Flush(put_offset, decoder_.get());
   CommandBuffer::State post_state = command_buffer_->GetState();
 
   if (pre_state.get_offset != post_state.get_offset)

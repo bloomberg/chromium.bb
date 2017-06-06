@@ -126,16 +126,17 @@ bool CommonDecoder::Bucket::GetAsStrings(
   return true;
 }
 
-CommonDecoder::CommonDecoder()
-    : command_buffer_service_(nullptr),
-      max_bucket_size_(kDefaultMaxBucketSize) {}
+CommonDecoder::CommonDecoder(CommandBufferServiceBase* command_buffer_service)
+    : command_buffer_service_(command_buffer_service),
+      max_bucket_size_(kDefaultMaxBucketSize) {
+  DCHECK(command_buffer_service_);
+}
 
 CommonDecoder::~CommonDecoder() {}
 
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
                                             unsigned int data_offset,
                                             unsigned int data_size) {
-  CHECK(command_buffer_service_);
   scoped_refptr<gpu::Buffer> buffer =
       command_buffer_service_->GetTransferBuffer(shm_id);
   if (!buffer.get())
@@ -147,7 +148,6 @@ void* CommonDecoder::GetAddressAndSize(unsigned int shm_id,
                                        unsigned int data_offset,
                                        unsigned int minimum_size,
                                        unsigned int* data_size) {
-  CHECK(command_buffer_service_);
   scoped_refptr<gpu::Buffer> buffer =
       command_buffer_service_->GetTransferBuffer(shm_id);
   if (!buffer.get() || buffer->GetRemainingSize(data_offset) < minimum_size)
@@ -157,7 +157,6 @@ void* CommonDecoder::GetAddressAndSize(unsigned int shm_id,
 
 unsigned int CommonDecoder::GetSharedMemorySize(unsigned int shm_id,
                                                 unsigned int offset) {
-  CHECK(command_buffer_service_);
   scoped_refptr<gpu::Buffer> buffer =
       command_buffer_service_->GetTransferBuffer(shm_id);
   if (!buffer.get())

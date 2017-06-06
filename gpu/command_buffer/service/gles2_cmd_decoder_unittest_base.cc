@@ -231,7 +231,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   // We initialize the ContextGroup with a MockGLES2Decoder so that
   // we can use the ContextGroup to figure out how the real GLES2Decoder
   // will initialize itself.
-  mock_decoder_.reset(new MockGLES2Decoder());
+  command_buffer_service_.reset(new FakeCommandBufferServiceBase());
+  mock_decoder_.reset(new MockGLES2Decoder(command_buffer_service_.get()));
 
   EXPECT_TRUE(group_->Initialize(mock_decoder_.get(), init.context_type,
                                  DisallowedFeatures()));
@@ -458,7 +459,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   }
 #endif
 
-  command_buffer_service_.reset(new FakeCommandBufferServiceBase());
   scoped_refptr<gpu::Buffer> buffer =
       command_buffer_service_->CreateTransferBufferHelper(kSharedBufferSize,
                                                           &shared_memory_id_);
@@ -476,7 +476,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       normalized_init.lose_context_when_out_of_memory;
   attribs.context_type = init.context_type;
 
-  decoder_.reset(GLES2Decoder::Create(group_.get()));
+  decoder_.reset(
+      GLES2Decoder::Create(command_buffer_service_.get(), group_.get()));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
   ASSERT_TRUE(decoder_->Initialize(surface_, context_, false,
@@ -488,7 +489,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
         .WillOnce(Return(GL_NO_ERROR));
   }
   decoder_->MakeCurrent();
-  decoder_->set_command_buffer_service(command_buffer_service_.get());
   decoder_->BeginDecoding();
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))

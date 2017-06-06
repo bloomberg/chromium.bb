@@ -13,27 +13,17 @@ namespace gpu {
 namespace {
 
 uint64_t g_next_command_buffer_id = 1;
-bool AlwaysTrue() {
-  return true;
-}
 
 }  // anonymous namespace
 
 CommandBufferDirect::CommandBufferDirect(
-    TransferBufferManager* transfer_buffer_manager,
-    AsyncAPIInterface* handler)
-    : CommandBufferDirect(transfer_buffer_manager,
-                          handler,
-                          base::Bind(&AlwaysTrue),
-                          nullptr) {}
+    TransferBufferManager* transfer_buffer_manager)
+    : CommandBufferDirect(transfer_buffer_manager, nullptr) {}
 
 CommandBufferDirect::CommandBufferDirect(
     TransferBufferManager* transfer_buffer_manager,
-    AsyncAPIInterface* handler,
-    const MakeCurrentCallback& callback,
     SyncPointManager* sync_point_manager)
-    : service_(this, transfer_buffer_manager, handler),
-      make_current_callback_(callback),
+    : service_(this, transfer_buffer_manager),
       sync_point_manager_(sync_point_manager),
       command_buffer_id_(
           CommandBufferId::FromUnsafeValue(g_next_command_buffer_id++)) {
@@ -84,10 +74,7 @@ CommandBuffer::State CommandBufferDirect::WaitForGetOffsetInRange(
 }
 
 void CommandBufferDirect::Flush(int32_t put_offset) {
-  if (!make_current_callback_.Run()) {
-    service_.SetParseError(error::kLostContext);
-    return;
-  }
+  DCHECK(handler_);
   uint32_t order_num = 0;
   if (sync_point_manager_) {
     // If sync point manager is supported, assign order numbers to commands.
@@ -109,7 +96,7 @@ void CommandBufferDirect::Flush(int32_t put_offset) {
     return;
   }
 
-  service_.Flush(put_offset);
+  service_.Flush(put_offset, handler_);
   if (sync_point_manager_) {
     // Finish processing order number here.
     sync_point_order_data_->FinishProcessingOrderNumber(order_num);

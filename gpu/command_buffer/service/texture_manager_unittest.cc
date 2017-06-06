@@ -12,6 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
@@ -674,7 +675,8 @@ class TextureTestBase : public GpuServiceTest {
         kMaxCubeMapTextureSize, kMaxRectangleTextureSize, kMax3DTextureSize,
         kMaxArrayTextureLayers, kUseDefaultTextures, nullptr,
         &discardable_manager_));
-    decoder_.reset(new ::testing::StrictMock<gles2::MockGLES2Decoder>());
+    decoder_.reset(new ::testing::StrictMock<gles2::MockGLES2Decoder>(
+        &command_buffer_service_));
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
     manager_->CreateTexture(kClient1Id, kService1Id);
     texture_ref_ = manager_->GetTexture(kClient1Id);
@@ -706,6 +708,7 @@ class TextureTestBase : public GpuServiceTest {
         texture_ref, pname, value, error);
   }
 
+  FakeCommandBufferServiceBase command_buffer_service_;
   std::unique_ptr<MockGLES2Decoder> decoder_;
   std::unique_ptr<MockErrorState> error_state_;
   scoped_refptr<FeatureInfo> feature_info_;

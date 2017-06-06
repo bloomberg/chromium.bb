@@ -479,11 +479,11 @@ uint32_t GLES2Decoder::GetAndClearBackbufferClearBitsForTest() {
   return 0;
 }
 
-GLES2Decoder::GLES2Decoder()
-    : initialized_(false),
+GLES2Decoder::GLES2Decoder(CommandBufferServiceBase* command_buffer_service)
+    : CommonDecoder(command_buffer_service),
+      initialized_(false),
       debug_(false),
-      log_commands_(false) {
-}
+      log_commands_(false) {}
 
 GLES2Decoder::~GLES2Decoder() {
 }
@@ -500,7 +500,8 @@ base::StringPiece GLES2Decoder::GetLogPrefix() {
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
  public:
-  explicit GLES2DecoderImpl(ContextGroup* group);
+  GLES2DecoderImpl(CommandBufferServiceBase* command_buffer_service,
+                   ContextGroup* group);
   ~GLES2DecoderImpl() override;
 
   error::Error DoCommands(unsigned int num_commands,
@@ -3060,15 +3061,19 @@ GLenum BackFramebuffer::CheckStatus() {
   return glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
 }
 
-GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
+GLES2Decoder* GLES2Decoder::Create(
+    CommandBufferServiceBase* command_buffer_service,
+    ContextGroup* group) {
   if (group->gpu_preferences().use_passthrough_cmd_decoder) {
-    return new GLES2DecoderPassthroughImpl(group);
+    return new GLES2DecoderPassthroughImpl(command_buffer_service, group);
   }
-  return new GLES2DecoderImpl(group);
+  return new GLES2DecoderImpl(command_buffer_service, group);
 }
 
-GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
-    : GLES2Decoder(),
+GLES2DecoderImpl::GLES2DecoderImpl(
+    CommandBufferServiceBase* command_buffer_service,
+    ContextGroup* group)
+    : GLES2Decoder(command_buffer_service),
       group_(group),
       logger_(&debug_marker_manager_),
       state_(group_->feature_info(), this, &logger_),
@@ -4314,7 +4319,7 @@ bool GLES2DecoderImpl::MakeCurrent() {
 
 void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
   ProcessPendingReadPixels(false);
-  if (command_buffer_service() && query_manager_.get())
+  if (query_manager_.get())
     query_manager_->ProcessPendingTransferQueries();
 }
 

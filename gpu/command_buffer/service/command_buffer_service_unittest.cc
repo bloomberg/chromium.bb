@@ -33,9 +33,6 @@ class CommandBufferServiceTest : public testing::Test,
   MOCK_METHOD0(OnCommandProcessed, void());
 
  protected:
-  virtual void SetUp() { api_mock_.reset(new AsyncAPIMock(false)); }
-  virtual void TearDown() {}
-
   void AddDoCommandsExpect(error::Error _return,
                            int num_entries,
                            int num_processed) {
@@ -49,7 +46,8 @@ class CommandBufferServiceTest : public testing::Test,
   void MakeService(unsigned int entry_count) {
     transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
     command_buffer_service_ = base::MakeUnique<CommandBufferService>(
-        this, transfer_buffer_manager_.get(), api_mock());
+        this, transfer_buffer_manager_.get());
+    api_mock_.reset(new AsyncAPIMock(false, command_buffer_service_.get()));
     SetNewGetBuffer(entry_count * sizeof(CommandBufferEntry));
   }
 
@@ -65,7 +63,7 @@ class CommandBufferServiceTest : public testing::Test,
   int32_t GetPut() { return command_buffer_service_->put_offset(); }
 
   error::Error SetPutAndProcessAllCommands(int32_t put) {
-    command_buffer_service_->Flush(put);
+    command_buffer_service_->Flush(put, api_mock());
     EXPECT_EQ(put, GetPut());
     return command_buffer_service_->GetState().error;
   }
@@ -98,9 +96,9 @@ class CommandBufferServiceTest : public testing::Test,
   MOCK_METHOD0(OnParseError, void());
 
  private:
-  std::unique_ptr<AsyncAPIMock> api_mock_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferService> command_buffer_service_;
+  std::unique_ptr<AsyncAPIMock> api_mock_;
   scoped_refptr<Buffer> buffer_;
   Sequence sequence_;
 };
@@ -306,7 +304,7 @@ TEST_F(CommandBufferServiceTest, TestError) {
   EXPECT_EQ(2, GetPut());
 
   EXPECT_CALL(*this, OnParseError()).Times(1);
-  command_buffer_service()->Flush(kNumEntries + 1);
+  command_buffer_service()->Flush(kNumEntries + 1, api_mock());
   CommandBuffer::State state1 = command_buffer_service()->GetState();
   EXPECT_EQ(2, GetPut());
   EXPECT_EQ(error::kOutOfBounds, state1.error);
@@ -317,7 +315,7 @@ TEST_F(CommandBufferServiceTest, TestError) {
   EXPECT_EQ(2, GetPut());
 
   EXPECT_CALL(*this, OnParseError()).Times(1);
-  command_buffer_service()->Flush(-1);
+  command_buffer_service()->Flush(-1, api_mock());
   CommandBuffer::State state2 = command_buffer_service()->GetState();
   EXPECT_EQ(2, GetPut());
   EXPECT_EQ(error::kOutOfBounds, state2.error);
@@ -356,7 +354,7 @@ TEST_F(CommandBufferServiceTest, SetBuffer) {
 
   // Trying to execute commands should fail however.
   EXPECT_CALL(*this, OnParseError()).Times(1);
-  command_buffer_service()->Flush(2);
+  command_buffer_service()->Flush(2, api_mock());
   CommandBuffer::State state4 = command_buffer_service()->GetState();
   EXPECT_EQ(0, GetPut());
   EXPECT_EQ(error::kOutOfBounds, state4.error);
@@ -378,7 +376,7 @@ TEST_F(CommandBufferServiceTest, InvalidSetBuffer) {
 
   // Trying to execute commands should fail however.
   EXPECT_CALL(*this, OnParseError()).Times(1);
-  command_buffer_service()->Flush(2);
+  command_buffer_service()->Flush(2, api_mock());
   CommandBuffer::State state3 = command_buffer_service()->GetState();
   EXPECT_EQ(0, GetPut());
   EXPECT_EQ(error::kOutOfBounds, state3.error);

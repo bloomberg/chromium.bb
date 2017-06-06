@@ -109,15 +109,9 @@ class GPU_EXPORT CommonDecoder {
     DISALLOW_COPY_AND_ASSIGN(Bucket);
   };
 
-  CommonDecoder();
+  explicit CommonDecoder(CommandBufferServiceBase* command_buffer_service);
   ~CommonDecoder();
 
-  // Sets the engine, to get shared memory buffers from, and to set the token
-  // to.
-  void set_command_buffer_service(
-      CommandBufferServiceBase* command_buffer_service) {
-    command_buffer_service_ = command_buffer_service;
-  }
   CommandBufferServiceBase* command_buffer_service() const {
     return command_buffer_service_;
   }

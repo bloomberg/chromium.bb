@@ -42,9 +42,8 @@ const int32_t kUnusedCommandId = 5;  // we use 0 and 2 currently.
 class CommandBufferDirectLocked : public CommandBufferDirect {
  public:
   explicit CommandBufferDirectLocked(
-      TransferBufferManager* transfer_buffer_manager,
-      AsyncAPIInterface* handler)
-      : CommandBufferDirect(transfer_buffer_manager, handler),
+      TransferBufferManager* transfer_buffer_manager)
+      : CommandBufferDirect(transfer_buffer_manager),
         flush_locked_(false),
         last_flush_(-1),
         previous_put_offset_(0),
@@ -98,18 +97,16 @@ class CommandBufferDirectLocked : public CommandBufferDirect {
 class CommandBufferHelperTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    api_mock_.reset(new AsyncAPIMock(true));
+    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
+    command_buffer_.reset(
+        new CommandBufferDirectLocked(transfer_buffer_manager_.get()));
+    api_mock_.reset(new AsyncAPIMock(true, command_buffer_->service()));
+    command_buffer_->set_handler(api_mock_.get());
 
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
     EXPECT_CALL(*api_mock_, DoCommand(cmd::kNoop, _, _))
         .WillRepeatedly(Return(error::kNoError));
-
-    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
-    command_buffer_.reset(new CommandBufferDirectLocked(
-        transfer_buffer_manager_.get(), api_mock_.get()));
-
-    api_mock_->set_command_buffer_service(command_buffer_->service());
 
     helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
@@ -253,9 +250,9 @@ class CommandBufferHelperTest : public testing::Test {
 
   CommandBufferOffset get_helper_put() { return helper_->put_; }
 
-  std::unique_ptr<AsyncAPIMock> api_mock_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferDirectLocked> command_buffer_;
+  std::unique_ptr<AsyncAPIMock> api_mock_;
   std::unique_ptr<CommandBufferHelper> helper_;
   std::vector<std::unique_ptr<CommandBufferEntry[]>> test_command_args_;
   unsigned int test_command_next_id_;

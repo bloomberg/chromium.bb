@@ -73,8 +73,7 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   static const int kParseCommandsSlice = 20;
 
   CommandBufferService(CommandBufferServiceClient* client,
-                       TransferBufferManager* transfer_buffer_manager,
-                       AsyncAPIInterface* handler);
+                       TransferBufferManager* transfer_buffer_manager);
   ~CommandBufferService() override;
 
   // CommandBufferServiceBase implementation:
@@ -92,9 +91,8 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   // state transfer buffer.
   void UpdateState();
 
-  // Flushes up to the put_offset and calls the PutOffsetChangeCallback to
-  // execute commands.
-  void Flush(int32_t put_offset);
+  // Flushes up to the put_offset and execute commands with the handler.
+  void Flush(int32_t put_offset, AsyncAPIInterface* handler);
 
   // Sets the get buffer and call the GetBufferChangeCallback.
   void SetGetBuffer(int32_t transfer_buffer_id);
@@ -123,11 +121,8 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   int32_t put_offset() const { return put_offset_; }
 
  private:
-  error::Error ProcessCommands(int num_commands);
-
   CommandBufferServiceClient* client_;
   TransferBufferManager* transfer_buffer_manager_;
-  AsyncAPIInterface* handler_;
 
   CommandBuffer::State state_;
   int32_t put_offset_ = 0;

@@ -70,8 +70,11 @@ void PassthroughResources::Destroy(bool have_context) {
   texture_object_map.clear();
 }
 
-GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(ContextGroup* group)
-    : commands_to_process_(0),
+GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
+    CommandBufferServiceBase* command_buffer_service,
+    ContextGroup* group)
+    : GLES2Decoder(command_buffer_service),
+      commands_to_process_(0),
       debug_marker_manager_(),
       logger_(&debug_marker_manager_),
       surface_(),
