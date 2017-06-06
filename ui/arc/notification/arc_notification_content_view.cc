@@ -10,7 +10,6 @@
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "ui/accessibility/ax_action_data.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/arc/notification/arc_notification_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -253,7 +252,6 @@ ArcNotificationContentView::ArcNotificationContentView(
   // Create a layer as an anchor to insert surface copy during a slide.
   SetPaintToLayer();
   UpdatePreferredSize();
-  UpdateAccessibleName();
 }
 
 ArcNotificationContentView::~ArcNotificationContentView() {
@@ -487,14 +485,6 @@ bool ArcNotificationContentView::ShouldUpdateControlButtonsColor() const {
   return false;
 }
 
-void ArcNotificationContentView::UpdateAccessibleName() {
-  // Don't update the accessible name when we are about to be destroyed.
-  if (!item_)
-    return;
-
-  accessible_name_ = item_->GetAccessibleName();
-}
-
 void ArcNotificationContentView::ViewHierarchyChanged(
     const views::View::ViewHierarchyChangedDetails& details) {
   views::Widget* widget = GetWidget();
@@ -635,12 +625,6 @@ bool ArcNotificationContentView::HandleAccessibleAction(
   return false;
 }
 
-void ArcNotificationContentView::GetAccessibleNodeData(
-    ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_BUTTON;
-  node_data->SetName(accessible_name_);
-}
-
 void ArcNotificationContentView::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
   if (item_ && !item_->GetPinned() && sender == close_button_.get()) {
@@ -677,7 +661,6 @@ void ArcNotificationContentView::OnItemDestroying() {
 }
 
 void ArcNotificationContentView::OnItemUpdated() {
-  UpdateAccessibleName();
   UpdatePinnedState();
   UpdateSnapshot();
   if (ShouldUpdateControlButtonsColor())
