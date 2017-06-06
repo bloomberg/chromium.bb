@@ -46,10 +46,10 @@ base::TimeDelta usToDelta(uint64_t us) {
 TEST(UiElements, AnimateSize) {
   UiElement rect;
   rect.set_size({10, 100, 1});
-  std::unique_ptr<Animation> animation(
-      new Animation(0, Animation::Property::SIZE,
-                    std::unique_ptr<easing::Easing>(new easing::Linear()), {},
-                    {20, 200}, usToTicks(50000), usToDelta(10000)));
+  std::unique_ptr<Animation> animation(new Animation(
+      0, Animation::Property::SIZE,
+      std::unique_ptr<easing::Easing>(new easing::Linear()),
+      std::vector<float>(), {20, 200}, usToTicks(50000), usToDelta(10000)));
   rect.animations().emplace_back(std::move(animation));
   rect.Animate(usToTicks(50000));
   EXPECT_VEC3F_EQ(gfx::Vector3dF(10, 100, 1), rect.size());
@@ -62,8 +62,9 @@ TEST(UiElements, AnimateTranslation) {
   rect.set_translation({10, 100, 1000});
   std::unique_ptr<Animation> animation(
       new Animation(0, Animation::Property::TRANSLATION,
-                    std::unique_ptr<easing::Easing>(new easing::Linear()), {},
-                    {20, 200, 2000}, usToTicks(50000), usToDelta(10000)));
+                    std::unique_ptr<easing::Easing>(new easing::Linear()),
+                    std::vector<float>(), {20, 200, 2000}, usToTicks(50000),
+                    usToDelta(10000)));
   rect.animations().emplace_back(std::move(animation));
   rect.Animate(usToTicks(50000));
   EXPECT_VEC3F_EQ(gfx::Vector3dF(10, 100, 1000), rect.translation());
@@ -74,10 +75,11 @@ TEST(UiElements, AnimateTranslation) {
 TEST(UiElements, AnimateRotation) {
   UiElement rect;
   rect.set_rotation({10, 100, 1000, 10000});
-  std::unique_ptr<Animation> animation(new Animation(
-      0, Animation::Property::ROTATION,
-      std::unique_ptr<easing::Easing>(new easing::Linear()), {},
-      {20, 200, 2000, 20000}, usToTicks(50000), usToDelta(10000)));
+  std::unique_ptr<Animation> animation(
+      new Animation(0, Animation::Property::ROTATION,
+                    std::unique_ptr<easing::Easing>(new easing::Linear()),
+                    std::vector<float>(), {20, 200, 2000, 20000},
+                    usToTicks(50000), usToDelta(10000)));
   rect.animations().emplace_back(std::move(animation));
   rect.Animate(usToTicks(50000));
   EXPECT_ROTATION(vr::RotationAxisAngle({10, 100, 1000, 10000}),
@@ -146,12 +148,14 @@ TEST(UiElements, AnimationOverlap) {
   UiElement rect;
   std::unique_ptr<Animation> animation(
       new Animation(0, Animation::Property::TRANSLATION,
-                    std::unique_ptr<easing::Easing>(new easing::Linear()), {},
-                    {20, 200, 2000}, usToTicks(50000), usToDelta(10000)));
+                    std::unique_ptr<easing::Easing>(new easing::Linear()),
+                    std::vector<float>(), {20, 200, 2000}, usToTicks(50000),
+                    usToDelta(10000)));
   std::unique_ptr<Animation> animation2(
       new Animation(0, Animation::Property::TRANSLATION,
-                    std::unique_ptr<easing::Easing>(new easing::Linear()), {},
-                    {50, 500, 5000}, usToTicks(55000), usToDelta(10000)));
+                    std::unique_ptr<easing::Easing>(new easing::Linear()),
+                    std::vector<float>(), {50, 500, 5000}, usToTicks(55000),
+                    usToDelta(10000)));
   rect.animations().emplace_back(std::move(animation));
   rect.animations().emplace_back(std::move(animation2));
   rect.Animate(usToTicks(55000));

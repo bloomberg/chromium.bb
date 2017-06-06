@@ -47,7 +47,7 @@ class MailboxToSurfaceBridge;
 class SlidingAverage;
 class UiElement;
 class UiScene;
-class VrBrowserInterface;
+class GlBrowserInterface;
 class VrController;
 class VrShell;
 class VrShellRenderer;
@@ -66,7 +66,7 @@ struct WebVrBounds {
 // It is not threadsafe and must only be used on the GL thread.
 class VrShellGl : public device::mojom::VRVSyncProvider {
  public:
-  VrShellGl(VrBrowserInterface* browser,
+  VrShellGl(GlBrowserInterface* browser,
             gvr_context* gvr_api,
             bool initially_web_vr,
             bool reprojected_rendering,
@@ -266,7 +266,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   mojo::Binding<device::mojom::VRVSyncProvider> binding_;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
 
-  VrBrowserInterface* browser_;
+  GlBrowserInterface* browser_;
 
   UiScene* scene_ = nullptr;
 

@@ -11,8 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/android/vr_shell/gl_browser_interface.h"
+#include "chrome/browser/android/vr_shell/ui_browser_interface.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
-#include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 class GURL;
@@ -25,8 +26,9 @@ class VrShell;
 class VrShellGl;
 
 class VrGLThread : public base::Thread,
-                   public UiInterface,
-                   public VrBrowserInterface {
+                   public GlBrowserInterface,
+                   public UiBrowserInterface,
+                   public UiInterface {
  public:
   VrGLThread(
       const base::WeakPtr<VrShell>& weak_vr_shell,
@@ -43,7 +45,7 @@ class VrGLThread : public base::Thread,
     return weak_scene_manager_;
   }
 
-  // VrBrowserInterface implementation (VrShellGl calling to UI and VrShell).
+  // GlBrowserInterface implementation (VrShellGl calling to VrShell).
   void ContentSurfaceChanged(jobject surface) override;
   void GvrDelegateReady() override;
   void UpdateGamepadData(device::GvrGamepadData) override;
@@ -52,18 +54,20 @@ class VrGLThread : public base::Thread,
   void ProcessContentGesture(
       std::unique_ptr<blink::WebInputEvent> event) override;
   void ForceExitVr() override;
-  void ExitPresent() override;
-  void ExitFullscreen() override;
   void RunVRDisplayInfoCallback(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       device::mojom::VRDisplayInfoPtr* info) override;
   void OnContentPaused(bool enabled) override;
+  void ToggleCardboardGamepad(bool enabled) override;
+
+  // UiBrowserInterface implementation (UI calling to VrShell).
+  void ExitPresent() override;
+  void ExitFullscreen() override;
   void NavigateBack() override;
   void ExitCct() override;
-  void ToggleCardboardGamepad(bool enabled) override;
   void OnUnsupportedMode(UiUnsupportedMode mode) override;
 
-  // UiInterface implementation (VrShell calling to the UI).
+  // UiInterface implementation (VrShell and GL calling to the UI).
   void SetFullscreen(bool enabled) override;
   void SetIncognito(bool incognito) override;
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;

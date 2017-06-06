@@ -48,7 +48,7 @@ void addAnimation(UiScene* scene,
                   int animation_id,
                   Animation::Property property) {
   std::unique_ptr<easing::Easing> easing = base::MakeUnique<easing::Linear>();
-  std::vector<float> from = {};
+  std::vector<float> from;
   std::vector<float> to = {1, 1, 1, 1};
   auto animation =
       base::MakeUnique<Animation>(animation_id, property, std::move(easing),

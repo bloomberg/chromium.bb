@@ -5,11 +5,12 @@
 #include "chrome/browser/android/vr_shell/ui_scene_manager.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/android/vr_shell/ui_browser_interface.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element_debug_id.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
-#include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,35 +20,16 @@ namespace vr_shell {
 
 namespace {
 
-class MockBrowserInterface : public VrBrowserInterface {
+class MockBrowserInterface : public UiBrowserInterface {
  public:
   MockBrowserInterface() {}
   ~MockBrowserInterface() override {}
 
-  MOCK_METHOD1(ContentSurfaceChanged, void(jobject));
-  MOCK_METHOD0(GvrDelegateReady, void());
-  MOCK_METHOD1(UpdateGamepadData, void(device::GvrGamepadData));
-  MOCK_METHOD1(AppButtonGesturePerformed, void(UiInterface::Direction));
-
-  MOCK_METHOD0(AppButtonClicked, void());
-  MOCK_METHOD0(ForceExitVr, void());
   MOCK_METHOD0(ExitPresent, void());
   MOCK_METHOD0(ExitFullscreen, void());
-  MOCK_METHOD2(
-      RunVRDisplayInfoCallback,
-      void(const base::Callback<void(device::mojom::VRDisplayInfoPtr)>&,
-           device::mojom::VRDisplayInfoPtr*));
-  MOCK_METHOD1(OnContentPaused, void(bool));
   MOCK_METHOD0(NavigateBack, void());
-  MOCK_METHOD1(SetVideoCapturingIndicator, void(bool));
-  MOCK_METHOD1(SetScreenCapturingIndicator, void(bool));
-  MOCK_METHOD1(SetAudioCapturingIndicator, void(bool));
   MOCK_METHOD0(ExitCct, void());
-  MOCK_METHOD1(ToggleCardboardGamepad, void(bool));
-  MOCK_METHOD1(OnUnsupportedMode, void(UiUnsupportedMode));
-
-  // Stub this as scoped pointers don't work as mock method parameters.
-  void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent>) {}
+  MOCK_METHOD1(OnUnsupportedMode, void(UiUnsupportedMode mode));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBrowserInterface);

@@ -17,14 +17,14 @@
 namespace vr_shell {
 
 class LoadingIndicator;
+class UiBrowserInterface;
 class UiElement;
 class UiScene;
 class UrlBar;
-class VrBrowserInterface;
 
 class UiSceneManager {
  public:
-  UiSceneManager(VrBrowserInterface* browser,
+  UiSceneManager(UiBrowserInterface* browser,
                  UiScene* scene,
                  bool in_cct,
                  bool in_web_vr);
@@ -72,7 +72,7 @@ class UiSceneManager {
   ColorScheme::Mode mode() const;
   const ColorScheme& color_scheme() const;
 
-  VrBrowserInterface* browser_;
+  UiBrowserInterface* browser_;
   UiScene* scene_;
 
   // UI element pointers (not owned by the scene manager).
