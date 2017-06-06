@@ -12,6 +12,7 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using testing::_;
 using testing::DoAll;
@@ -21,6 +22,7 @@ using testing::SaveArg;
 namespace offline_pages {
 
 namespace {
+const version_info::Channel kTestChannel = version_info::Channel::UNKNOWN;
 const char kTestMethodName[] = "Test name";
 }  // namespace
 
@@ -31,8 +33,8 @@ class GetOperationRequestTest : public PrefetchRequestTestBase {
  public:
   std::unique_ptr<GetOperationRequest> CreateRequest(
       const PrefetchRequestFinishedCallback& callback) {
-    return std::unique_ptr<GetOperationRequest>(
-        new GetOperationRequest(kTestMethodName, request_context(), callback));
+    return std::unique_ptr<GetOperationRequest>(new GetOperationRequest(
+        kTestMethodName, kTestChannel, request_context(), callback));
   }
 };
 
@@ -41,6 +43,10 @@ TEST_F(GetOperationRequestTest, RequestData) {
   std::unique_ptr<GetOperationRequest> request(CreateRequest(callback.Get()));
 
   net::TestURLFetcher* fetcher = GetRunningFetcher();
+  EXPECT_TRUE(fetcher->GetOriginalURL().SchemeIs(url::kHttpsScheme));
+  EXPECT_TRUE(base::StartsWith(fetcher->GetOriginalURL().query(), "key",
+                               base::CompareCase::SENSITIVE));
+
   net::HttpRequestHeaders headers;
   fetcher->GetExtraRequestHeaders(&headers);
   std::string content_type_header;

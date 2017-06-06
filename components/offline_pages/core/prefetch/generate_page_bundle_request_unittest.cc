@@ -12,6 +12,7 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using testing::_;
 using testing::DoAll;
@@ -21,6 +22,7 @@ using testing::SaveArg;
 namespace offline_pages {
 
 namespace {
+const version_info::Channel kTestChannel = version_info::Channel::UNKNOWN;
 const char kTestURL[] = "http://example.com";
 const char kTestURL2[] = "http://example.com/2";
 const char kTestUserAgent[] = "Test User Agent";
@@ -37,9 +39,9 @@ class GeneratePageBundleRequestTest : public PrefetchRequestTestBase {
       const PrefetchRequestFinishedCallback& callback) {
     std::vector<std::string> page_urls = {kTestURL, kTestURL2};
     return std::unique_ptr<GeneratePageBundleRequest>(
-        new GeneratePageBundleRequest(kTestUserAgent, kTestGCMID,
-                                      kTestMaxBundleSize, page_urls,
-                                      request_context(), callback));
+        new GeneratePageBundleRequest(
+            kTestUserAgent, kTestGCMID, kTestMaxBundleSize, page_urls,
+            kTestChannel, request_context(), callback));
   }
 };
 
@@ -49,6 +51,10 @@ TEST_F(GeneratePageBundleRequestTest, RequestData) {
       CreateRequest(callback.Get()));
 
   net::TestURLFetcher* fetcher = GetRunningFetcher();
+  EXPECT_TRUE(fetcher->GetOriginalURL().SchemeIs(url::kHttpsScheme));
+  EXPECT_TRUE(base::StartsWith(fetcher->GetOriginalURL().query(), "key",
+                               base::CompareCase::SENSITIVE));
+
   EXPECT_FALSE(fetcher->upload_content_type().empty());
   EXPECT_FALSE(fetcher->upload_data().empty());
 

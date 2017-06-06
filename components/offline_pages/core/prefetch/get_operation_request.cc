@@ -20,13 +20,14 @@ const char kGetOperationURLPath[] = "v1/operations/";
 
 GetOperationRequest::GetOperationRequest(
     const std::string& name,
+    version_info::Channel channel,
     net::URLRequestContextGetter* request_context_getter,
     const PrefetchRequestFinishedCallback& callback)
     : callback_(callback) {
   std::string path(kGetOperationURLPath);
   path += name;
   fetcher_ = PrefetchRequestFetcher::CreateForGet(
-      path, request_context_getter,
+      path, channel, request_context_getter,
       base::Bind(&GetOperationRequest::OnCompleted,
                  // Fetcher is owned by this instance.
                  base::Unretained(this)));

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
+#include "components/version_info/channel.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
@@ -26,6 +27,7 @@ class PrefetchRequestFetcher : public net::URLFetcherDelegate {
   // Creates a fetcher that will sends a GET request to the server.
   static std::unique_ptr<PrefetchRequestFetcher> CreateForGet(
       const std::string& url_path,
+      version_info::Channel channel,
       net::URLRequestContextGetter* request_context_getter,
       const FinishedCallback& callback);
 
@@ -33,6 +35,7 @@ class PrefetchRequestFetcher : public net::URLFetcherDelegate {
   static std::unique_ptr<PrefetchRequestFetcher> CreateForPost(
       const std::string& url_path,
       const std::string& message,
+      version_info::Channel channel,
       net::URLRequestContextGetter* request_context_getter,
       const FinishedCallback& callback);
 
@@ -46,6 +49,7 @@ class PrefetchRequestFetcher : public net::URLFetcherDelegate {
   // is sent with |message| as post data.
   PrefetchRequestFetcher(const std::string& url_path,
                          const std::string& message,
+                         version_info::Channel channel,
                          net::URLRequestContextGetter* request_context_getter,
                          const FinishedCallback& callback);
 

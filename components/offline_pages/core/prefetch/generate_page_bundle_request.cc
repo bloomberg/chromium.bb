@@ -24,6 +24,7 @@ GeneratePageBundleRequest::GeneratePageBundleRequest(
     const std::string& gcm_registration_id,
     int max_bundle_size_bytes,
     const std::vector<std::string>& page_urls,
+    version_info::Channel channel,
     net::URLRequestContextGetter* request_context_getter,
     const PrefetchRequestFinishedCallback& callback)
     : callback_(callback) {
@@ -43,7 +44,8 @@ GeneratePageBundleRequest::GeneratePageBundleRequest(
   request.SerializeToString(&upload_data);
 
   fetcher_ = PrefetchRequestFetcher::CreateForPost(
-      kGeneratePageBundleRequestURLPath, upload_data, request_context_getter,
+      kGeneratePageBundleRequestURLPath, upload_data, channel,
+      request_context_getter,
       base::Bind(&GeneratePageBundleRequest::OnCompleted,
                  // Fetcher is owned by this instance.
                  base::Unretained(this)));

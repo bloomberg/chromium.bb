@@ -23,6 +23,7 @@ using testing::SaveArg;
 namespace offline_pages {
 
 namespace {
+const version_info::Channel kTestChannel = version_info::Channel::UNKNOWN;
 const char kTestURL[] = "http://example.com";
 const char kTestURL2[] = "http://example.com/2";
 const char kTestURL3[] = "http://example.com/3";
@@ -53,7 +54,7 @@ class GeneratePageBundleRequestBuilder : public RequestBuilder {
                      const PrefetchRequestFinishedCallback& callback) override {
     std::vector<std::string> pages = {kTestURL, kTestURL2};
     fetcher_.reset(new GeneratePageBundleRequest(
-        kTestUserAgent, kTestGCMID, kTestMaxBundleSize, pages,
+        kTestUserAgent, kTestGCMID, kTestMaxBundleSize, pages, kTestChannel,
         request_context_getter, callback));
   }
 
@@ -65,7 +66,7 @@ class GetOperationRequestBuilder : public RequestBuilder {
  public:
   void CreateRequest(net::URLRequestContextGetter* request_context_getter,
                      const PrefetchRequestFinishedCallback& callback) override {
-    fetcher_.reset(new GetOperationRequest(kTestMethodName,
+    fetcher_.reset(new GetOperationRequest(kTestMethodName, kTestChannel,
                                            request_context_getter, callback));
   }
 
