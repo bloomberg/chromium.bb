@@ -57,7 +57,6 @@ class Visitor;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 class WebDOMEvent;
-class WebDataSource;
 class WebDocument;
 class WebElement;
 class WebLocalFrame;
@@ -306,12 +305,6 @@ class WebFrame {
 
   // Stops any pending loads on the frame and its children.
   virtual void StopLoading() = 0;
-
-  // Returns the data source that is currently loading.  May be null.
-  virtual WebDataSource* ProvisionalDataSource() const = 0;
-
-  // Returns the data source that is currently loaded.
-  virtual WebDataSource* DataSource() const = 0;
 
   // View-source rendering mode.  Set this before loading an URL to cause
   // it to be rendered in view-source mode.

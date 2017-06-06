@@ -3325,12 +3325,14 @@ void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
   }
 
   // Carry over the user agent override flag, if it exists.
+  // TODO(lukasza): https://crbug.com/426555: Need OOPIF support for propagating
+  // user agent overrides.
   blink::WebView* webview = render_view_->webview();
   if (content_initiated && webview && webview->MainFrame() &&
       webview->MainFrame()->IsWebLocalFrame() &&
-      webview->MainFrame()->DataSource()) {
-    DocumentState* old_document_state =
-        DocumentState::FromDataSource(webview->MainFrame()->DataSource());
+      webview->MainFrame()->ToWebLocalFrame()->DataSource()) {
+    DocumentState* old_document_state = DocumentState::FromDataSource(
+        webview->MainFrame()->ToWebLocalFrame()->DataSource());
     if (old_document_state) {
       InternalDocumentStateData* internal_data =
           InternalDocumentStateData::FromDocumentState(document_state);
@@ -4568,10 +4570,11 @@ blink::WebString RenderFrameImpl::UserAgentOverride() {
   // return early and fix properly as part of https://crbug.com/426555.
   if (render_view_->webview()->MainFrame()->IsWebRemoteFrame())
     return blink::WebString();
+  WebLocalFrame* main_frame =
+      render_view_->webview()->MainFrame()->ToWebLocalFrame();
 
   // If we're in the middle of committing a load, the data source we need
   // will still be provisional.
-  WebFrame* main_frame = render_view_->webview()->MainFrame();
   WebDataSource* data_source = NULL;
   if (main_frame->ProvisionalDataSource())
     data_source = main_frame->ProvisionalDataSource();
@@ -4754,7 +4757,7 @@ const RenderFrameImpl* RenderFrameImpl::GetLocalRoot() const {
 
 // Tell the embedding application that the URL of the active page has changed.
 void RenderFrameImpl::SendDidCommitProvisionalLoad(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     blink::WebHistoryCommitType commit_type) {
   DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->DataSource();

@@ -26,6 +26,7 @@ class InterfaceRegistry;
 class WebAutofillClient;
 class WebContentSettingsClient;
 class WebData;
+class WebDataSource;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
 class WebDoubleSize;
@@ -177,6 +178,12 @@ class WebLocalFrame : public WebFrame {
                         const WebHistoryItem& = WebHistoryItem(),
                         WebHistoryLoadType = kWebHistoryDifferentDocumentLoad,
                         bool is_client_redirect = false) = 0;
+
+  // Returns the data source that is currently loading.  May be null.
+  virtual WebDataSource* ProvisionalDataSource() const = 0;
+
+  // Returns the data source that is currently loaded.
+  virtual WebDataSource* DataSource() const = 0;
 
   enum FallbackContentResult {
     // An error page should be shown instead of fallback.

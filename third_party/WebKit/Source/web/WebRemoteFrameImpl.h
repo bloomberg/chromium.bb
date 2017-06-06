@@ -72,8 +72,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
                              WebFrameLoadType) override;
   void LoadRequest(const WebURLRequest&) override;
   void StopLoading() override;
-  WebDataSource* ProvisionalDataSource() const override;
-  WebDataSource* DataSource() const override;
   void EnableViewSourceMode(bool enable) override;
   bool IsViewSourceModeEnabled() const override;
   void SetReferrerForRequest(WebURLRequest&, const WebURL& referrer) override;

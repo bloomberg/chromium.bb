@@ -216,16 +216,6 @@ void WebRemoteFrameImpl::StopLoading() {
   // in all subframes, both remote and local.
 }
 
-WebDataSource* WebRemoteFrameImpl::ProvisionalDataSource() const {
-  NOTREACHED();
-  return nullptr;
-}
-
-WebDataSource* WebRemoteFrameImpl::DataSource() const {
-  NOTREACHED();
-  return nullptr;
-}
-
 void WebRemoteFrameImpl::EnableViewSourceMode(bool enable) {
   NOTREACHED();
 }
