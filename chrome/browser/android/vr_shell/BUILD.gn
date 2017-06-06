@@ -24,6 +24,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "font_fallback.h",
       "fps_meter.cc",
       "fps_meter.h",
+      "gl_browser_interface.h",
       "gltf_asset.cc",
       "gltf_asset.h",
       "gltf_parser.cc",
@@ -48,6 +49,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "textures/ui_texture.h",
       "textures/url_bar_texture.cc",
       "textures/url_bar_texture.h",
+      "ui_browser_interface.h",
       "ui_elements/audio_capture_indicator.cc",
       "ui_elements/audio_capture_indicator.h",
       "ui_elements/button.cc",
@@ -79,13 +81,14 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "ui_scene_manager.cc",
       "ui_scene_manager.h",
       "ui_unsupported_mode.h",
-      "vr_browser_interface.h",
     ]
 
     deps = [
       "//base",
       "//cc/paint",
+      "//chrome/app:generated_resources",
       "//components/security_state/core",
+      "//components/strings",
       "//components/toolbar:vector_icons",
       "//components/url_formatter",
       "//components/vector_icons",
@@ -101,6 +104,8 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
     ]
   }
 
+  # This library contains the VR code specific to Android.
+  # TODO(cjgrant): It should be renamed to reflect this.
   static_library("vr_common") {
     defines = []
 

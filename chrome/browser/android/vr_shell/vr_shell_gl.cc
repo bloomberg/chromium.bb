@@ -15,11 +15,11 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/vr_shell/fps_meter.h"
+#include "chrome/browser/android/vr_shell/gl_browser_interface.h"
 #include "chrome/browser/android/vr_shell/mailbox_to_surface_bridge.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
-#include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
@@ -221,7 +221,7 @@ void LoadControllerModelTask(
 
 }  // namespace
 
-VrShellGl::VrShellGl(VrBrowserInterface* browser,
+VrShellGl::VrShellGl(GlBrowserInterface* browser,
                      gvr_context* gvr_api,
                      bool initially_web_vr,
                      bool reprojected_rendering,

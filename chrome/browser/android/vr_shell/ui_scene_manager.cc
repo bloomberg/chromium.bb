@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/textures/close_button_texture.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
+#include "chrome/browser/android/vr_shell/ui_browser_interface.h"
 #include "chrome/browser/android/vr_shell/ui_elements/audio_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/button.h"
 #include "chrome/browser/android/vr_shell/ui_elements/exit_warning.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/android/vr_shell/ui_elements/url_bar.h"
 #include "chrome/browser/android/vr_shell/ui_elements/video_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
-#include "chrome/browser/android/vr_shell/vr_browser_interface.h"
 
 namespace vr_shell {
 
@@ -75,7 +75,7 @@ static constexpr float kTextureOffset = 0.01;
 
 }  // namespace
 
-UiSceneManager::UiSceneManager(VrBrowserInterface* browser,
+UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
                                UiScene* scene,
                                bool in_cct,
                                bool in_web_vr)
