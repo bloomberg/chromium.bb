@@ -8,62 +8,35 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-
-namespace gfx {
-class Point;
-}
+#include "services/ui/ws/window_finder.h"
+#include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ui {
-class LocatedEvent;
-
 namespace ws {
-struct DeepestWindow;
 class EventTargeterDelegate;
-class ModalWindowController;
-class ServerWindow;
 
-// Keeps track of state associated with an active pointer.
-struct PointerTarget {
-  PointerTarget()
-      : window(nullptr),
-        is_mouse_event(false),
-        in_nonclient_area(false),
-        is_pointer_down(false) {}
-
-  // The target window, which may be null. null is used in two situations:
-  // when there is no valid window target, or there was a target but the
-  // window is destroyed before a corresponding release/cancel.
-  ServerWindow* window;
-
-  bool is_mouse_event;
-
-  // Did the pointer event start in the non-client area.
-  bool in_nonclient_area;
-
-  bool is_pointer_down;
+// The target |window| for a given location, |location| and |display_id| are
+// associated with the display |window| is on.
+struct LocationTarget {
+  DeepestWindow deepest_window;
+  gfx::Point location_in_root;
+  int64_t display_id = display::kInvalidDisplayId;
 };
 
-// Finds the PointerTarget for an event or the DeepestWindow for a location.
+// Finds the target window for a location.
 class EventTargeter {
  public:
-  EventTargeter(EventTargeterDelegate* event_targeter_delegate,
-                ModalWindowController* modal_window_controller);
+  explicit EventTargeter(EventTargeterDelegate* event_targeter_delegate);
   ~EventTargeter();
 
-  // Returns a PointerTarget for the supplied |event|. If there is no valid
-  // event target for the specified location |window| in the returned value is
-  // null.
-  PointerTarget PointerTargetForEvent(const ui::LocatedEvent& event,
-                                      int64_t* display_id);
-
-  // Returns a DeepestWindow for the supplied |location|. If there is no valid
+  // Returns a LocationTarget for the supplied |location|. If there is no valid
   // root window, |window| in the returned value is null.
-  DeepestWindow FindDeepestVisibleWindowForEvents(gfx::Point* location,
-                                                  int64_t* display_id);
+  LocationTarget FindTargetForLocation(const gfx::Point& location,
+                                       int64_t display_id);
 
  private:
   EventTargeterDelegate* event_targeter_delegate_;
-  ModalWindowController* modal_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(EventTargeter);
 };
