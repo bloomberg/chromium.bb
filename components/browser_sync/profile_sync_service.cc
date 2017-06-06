@@ -234,7 +234,7 @@ void ProfileSyncService::Initialize() {
       url_request_context_, syncer::SyncStoppedReporter::ResultCallback());
   sessions_sync_manager_ = base::MakeUnique<SessionsSyncManager>(
       sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
-      std::move(router),
+      router,
       base::Bind(&ProfileSyncService::NotifyForeignSessionUpdated,
                  sync_enabled_weak_factory_.GetWeakPtr()),
       base::Bind(&ProfileSyncService::TriggerRefresh,
