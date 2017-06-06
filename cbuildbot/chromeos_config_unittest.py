@@ -552,7 +552,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for slave_config in self._getSlaveConfigsForMaster('master-paladin'):
       paladin_boards.update(slave_config.boards)
 
-    for pfq_master in ('master-chromium-pfq', 'master-android-pfq'):
+    for pfq_master in (constants.PFQ_MASTER,
+                       constants.MNC_ANDROID_PFQ_MASTER,
+                       constants.NYC_ANDROID_PFQ_MASTER):
       pfq_configs = self._getSlaveConfigsForMaster(pfq_master)
 
       failures = set()
@@ -560,9 +562,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
         self.assertEqual(len(config.boards), 1)
         if config.boards[0] not in paladin_boards:
           failures.add(config.name)
-
-      # TODO(dgarrett): Remove after  crbug.com/679022
-      failures.discard('veyron_jerry-chromium-pfq')
 
       if failures:
         self.fail("Some active PFQ configs don't have active Paladins: %s" % (
