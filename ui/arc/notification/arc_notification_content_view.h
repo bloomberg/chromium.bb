@@ -86,6 +86,7 @@ class ArcNotificationContentView
   void ActivateToast();
   void StartControlButtonsColorAnimation();
   bool ShouldUpdateControlButtonsColor() const;
+  void UpdateAccessibleName();
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
@@ -98,6 +99,7 @@ class ArcNotificationContentView
   void OnBlur() override;
   views::FocusTraversable* GetFocusTraversable() override;
   bool HandleAccessibleAction(const ui::AXActionData& action) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -152,6 +154,8 @@ class ArcNotificationContentView
   bool in_layout_ = false;
 
   std::unique_ptr<gfx::LinearAnimation> control_button_color_animation_;
+
+  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationContentView);
 };
