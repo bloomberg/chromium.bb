@@ -5,7 +5,7 @@
 #ifndef CompositionMarker_h
 #define CompositionMarker_h
 
-#include "core/editing/markers/DocumentMarker.h"
+#include "core/editing/markers/StyleableMarker.h"
 
 namespace blink {
 
@@ -14,10 +14,8 @@ namespace blink {
 // transparent), whether the underline should be thick or not, and what
 // background color should be used under the marked text (also possibly
 // transparent).
-class CORE_EXPORT CompositionMarker final : public DocumentMarker {
+class CORE_EXPORT CompositionMarker final : public StyleableMarker {
  public:
-  enum class Thickness { kThin, kThick };
-
   CompositionMarker(unsigned start_offset,
                     unsigned end_offset,
                     Color underline_color,
@@ -27,16 +25,7 @@ class CORE_EXPORT CompositionMarker final : public DocumentMarker {
   // DocumentMarker implementations
   MarkerType GetType() const final;
 
-  // CompositionMarker-specific
-  Color UnderlineColor() const;
-  bool IsThick() const;
-  Color BackgroundColor() const;
-
  private:
-  const Color underline_color_;
-  const Color background_color_;
-  const Thickness thickness_;
-
   DISALLOW_COPY_AND_ASSIGN(CompositionMarker);
 };
 

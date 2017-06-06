@@ -62,7 +62,7 @@ class CORE_EXPORT DocumentMarkerController final
   void AddTextMatchMarker(const EphemeralRange&, TextMatchMarker::MatchStatus);
   void AddCompositionMarker(const EphemeralRange&,
                             Color underline_color,
-                            CompositionMarker::Thickness,
+                            StyleableMarker::Thickness,
                             Color background_color);
 
   void MoveMarkers(Node* src_node, int length, Node* dst_node);
