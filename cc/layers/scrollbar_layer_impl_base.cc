@@ -265,4 +265,9 @@ void ScrollbarLayerImplBase::SetOverlayScrollbarLayerOpacityAnimated(
   layer_tree_impl()->set_needs_update_draw_properties();
 }
 
+LayerTreeSettings::ScrollbarAnimator
+ScrollbarLayerImplBase::GetScrollbarAnimator() const {
+  return layer_tree_impl()->settings().scrollbar_animator;
+}
+
 }  // namespace cc

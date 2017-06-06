@@ -1693,7 +1693,9 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
     scrollbar_ids.vertical = scrollbar_layer->id();
   }
 
-  if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar()) {
+  if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar() &&
+      scrollbar_layer->GetScrollbarAnimator() !=
+          LayerTreeSettings::NO_ANIMATOR) {
     layer_tree_host_impl_->RegisterScrollbarAnimationController(
         scroll_element_id, scrollbar_layer->Opacity());
   }

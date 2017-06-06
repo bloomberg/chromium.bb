@@ -57,6 +57,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
 
   int ThumbThickness() const override;
 
+  LayerTreeSettings::ScrollbarAnimator GetScrollbarAnimator() const override;
+
  protected:
   PaintedScrollbarLayerImpl(LayerTreeImpl* tree_impl,
                             int id,
