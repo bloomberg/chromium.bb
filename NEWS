@@ -1,7 +1,12 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.2.0 (2017-06-06)
-** New features
+Aside from the usual improvements to Braille tables this release
+focuses on improving the internal infrastructure. Numerous bugs have
+been fixed, the CI infrastructure also checks mingw builds now and MSVC
+compatibility has been massively improved. For a detailed list of all
+the changes refer to [[https://github.com/liblouis/liblouis/milestone/10?closed=1][the list of closed issues]].
+
 ** Bug fixes
 - Fix capsnocont opcode. Also mark capital letters with capsletter
   symbol when capsnocont is defined but no begcapsword indicator is
@@ -13,7 +18,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   Chris Brannon
 - lou_checkyaml is now only installed if libyaml is available. Thanks
   to Christian Egli
-- Major internal changes to improve MSVC compatibilty. Thanks to Davy
+- Major internal changes to improve MSVC compatibility. Thanks to Davy
   Kager
 - Enhance documentation on usage of display tables in particular
   in conjunction with Unicode dot patterns. Thanks to Bert Frees
@@ -31,7 +36,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   - New literary tables for 6 dots, mainly for embossing (no
     back-translation).
   - Improved back-translation in 6 dots tables, all grades.
-  - New support for many unicode characters in all 6 dots tables.
+  - New support for many Unicode characters in all 6 dots tables.
   - Strengthened internal tests to prevent breaking of tables due to
     changes in the code.
   - Fixed 8 dots tables which were broken in the previous version.
