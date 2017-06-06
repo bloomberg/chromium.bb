@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -52,12 +53,12 @@ class ImageTraitsTest : public testing::Test,
  private:
   // mojom::ImageTraitsTestService:
   void EchoImageSkiaRep(const ImageSkiaRep& in,
-                        const EchoImageSkiaRepCallback& callback) override {
-    callback.Run(in);
+                        EchoImageSkiaRepCallback callback) override {
+    std::move(callback).Run(in);
   }
   void EchoImageSkia(const ImageSkia& in,
-                     const EchoImageSkiaCallback& callback) override {
-    callback.Run(in);
+                     EchoImageSkiaCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   base::MessageLoop loop_;

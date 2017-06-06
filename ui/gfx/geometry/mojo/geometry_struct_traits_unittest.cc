@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,49 +26,45 @@ class GeometryStructTraitsTest : public testing::Test,
 
  private:
   // GeometryTraitsTestService:
-  void EchoPoint(const Point& p, const EchoPointCallback& callback) override {
-    callback.Run(p);
+  void EchoPoint(const Point& p, EchoPointCallback callback) override {
+    std::move(callback).Run(p);
   }
 
-  void EchoPointF(const PointF& p,
-                  const EchoPointFCallback& callback) override {
-    callback.Run(p);
+  void EchoPointF(const PointF& p, EchoPointFCallback callback) override {
+    std::move(callback).Run(p);
   }
 
-  void EchoSize(const Size& s, const EchoSizeCallback& callback) override {
-    callback.Run(s);
+  void EchoSize(const Size& s, EchoSizeCallback callback) override {
+    std::move(callback).Run(s);
   }
 
-  void EchoSizeF(const SizeF& s, const EchoSizeFCallback& callback) override {
-    callback.Run(s);
+  void EchoSizeF(const SizeF& s, EchoSizeFCallback callback) override {
+    std::move(callback).Run(s);
   }
 
-  void EchoRect(const Rect& r, const EchoRectCallback& callback) override {
-    callback.Run(r);
+  void EchoRect(const Rect& r, EchoRectCallback callback) override {
+    std::move(callback).Run(r);
   }
 
-  void EchoRectF(const RectF& r, const EchoRectFCallback& callback) override {
-    callback.Run(r);
+  void EchoRectF(const RectF& r, EchoRectFCallback callback) override {
+    std::move(callback).Run(r);
   }
 
-  void EchoInsets(const Insets& i,
-                  const EchoInsetsCallback& callback) override {
-    callback.Run(i);
+  void EchoInsets(const Insets& i, EchoInsetsCallback callback) override {
+    std::move(callback).Run(i);
   }
 
-  void EchoInsetsF(const InsetsF& i,
-                   const EchoInsetsFCallback& callback) override {
-    callback.Run(i);
+  void EchoInsetsF(const InsetsF& i, EchoInsetsFCallback callback) override {
+    std::move(callback).Run(i);
   }
 
-  void EchoVector2d(const Vector2d& v,
-                    const EchoVector2dCallback& callback) override {
-    callback.Run(v);
+  void EchoVector2d(const Vector2d& v, EchoVector2dCallback callback) override {
+    std::move(callback).Run(v);
   }
 
   void EchoVector2dF(const Vector2dF& v,
-                     const EchoVector2dFCallback& callback) override {
-    callback.Run(v);
+                     EchoVector2dFCallback callback) override {
+    std::move(callback).Run(v);
   }
 
   base::MessageLoop loop_;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,25 +36,24 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
  private:
   // TraitsTestService:
   void EchoSelectionBound(const SelectionBound& s,
-                          const EchoSelectionBoundCallback& callback) override {
-    callback.Run(s);
+                          EchoSelectionBoundCallback callback) override {
+    std::move(callback).Run(s);
   }
 
   void EchoTransform(const Transform& t,
-                     const EchoTransformCallback& callback) override {
-    callback.Run(t);
+                     EchoTransformCallback callback) override {
+    std::move(callback).Run(t);
   }
 
-  void EchoAcceleratedWidget(
-      const AcceleratedWidget& t,
-      const EchoAcceleratedWidgetCallback& callback) override {
-    callback.Run(t);
+  void EchoAcceleratedWidget(const AcceleratedWidget& t,
+                             EchoAcceleratedWidgetCallback callback) override {
+    std::move(callback).Run(t);
   }
 
   void EchoGpuMemoryBufferHandle(
       const GpuMemoryBufferHandle& handle,
-      const EchoGpuMemoryBufferHandleCallback& callback) override {
-    callback.Run(handle);
+      EchoGpuMemoryBufferHandleCallback callback) override {
+    std::move(callback).Run(handle);
   }
 
   base::MessageLoop loop_;

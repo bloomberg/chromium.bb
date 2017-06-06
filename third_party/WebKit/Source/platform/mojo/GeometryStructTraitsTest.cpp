@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,53 +26,54 @@ class GeometryStructTraitsTest
 
  private:
   // GeometryTraitsTestService:
-  void EchoPoint(gfx::mojom::blink::PointPtr, const EchoPointCallback&) {
+  void EchoPoint(gfx::mojom::blink::PointPtr, EchoPointCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
 
-  void EchoPointF(gfx::mojom::blink::PointFPtr, const EchoPointFCallback&) {
+  void EchoPointF(gfx::mojom::blink::PointFPtr, EchoPointFCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
 
-  void EchoSize(const WebSize& s, const EchoSizeCallback& callback) {
-    callback.Run(s);
+  void EchoSize(const WebSize& s, EchoSizeCallback callback) override {
+    std::move(callback).Run(s);
   }
 
-  void EchoSizeF(gfx::mojom::blink::SizeFPtr, const EchoSizeFCallback&) {
+  void EchoSizeF(gfx::mojom::blink::SizeFPtr, EchoSizeFCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
 
-  void EchoRect(gfx::mojom::blink::RectPtr, const EchoRectCallback&) {
+  void EchoRect(gfx::mojom::blink::RectPtr, EchoRectCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
 
-  void EchoRectF(gfx::mojom::blink::RectFPtr, const EchoRectFCallback&) {
+  void EchoRectF(gfx::mojom::blink::RectFPtr, EchoRectFCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
 
-  void EchoInsets(gfx::mojom::blink::InsetsPtr, const EchoInsetsCallback&) {
+  void EchoInsets(gfx::mojom::blink::InsetsPtr, EchoInsetsCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
 
-  void EchoInsetsF(gfx::mojom::blink::InsetsFPtr, const EchoInsetsFCallback&) {
+  void EchoInsetsF(gfx::mojom::blink::InsetsFPtr,
+                   EchoInsetsFCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
 
   void EchoVector2d(gfx::mojom::blink::Vector2dPtr,
-                    const EchoVector2dCallback&) {
+                    EchoVector2dCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
 
   void EchoVector2dF(gfx::mojom::blink::Vector2dFPtr,
-                     const EchoVector2dFCallback&) {
+                     EchoVector2dFCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
