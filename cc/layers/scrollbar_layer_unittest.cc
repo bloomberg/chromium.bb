@@ -839,6 +839,7 @@ TEST_F(ScrollbarLayerTest, LayerChangesAffectingScrollbarGeometries) {
   impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
 
   scroll_layer->SetScrollClipLayer(clip_layer->id());
+  scroll_layer->SetScrollable();
   DCHECK(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
   impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
 

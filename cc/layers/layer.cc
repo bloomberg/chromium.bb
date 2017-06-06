@@ -54,6 +54,7 @@ Layer::Inputs::Inputs(int layer_id)
       use_parent_backface_visibility(false),
       background_color(0),
       scroll_clip_layer_id(INVALID_ID),
+      scrollable(false),
       user_scrollable_horizontal(true),
       user_scrollable_vertical(true),
       main_thread_scrolling_reasons(
@@ -818,13 +819,26 @@ void Layer::SetScrollClipLayerId(int clip_layer_id) {
   if (inputs_.scroll_clip_layer_id == clip_layer_id)
     return;
   inputs_.scroll_clip_layer_id = clip_layer_id;
+
   SetPropertyTreesNeedRebuild();
+
+  bool scrollable = clip_layer_id != Layer::INVALID_ID;
+  SetScrollable(scrollable);
+
   SetNeedsCommit();
 }
 
 Layer* Layer::scroll_clip_layer() const {
   DCHECK(layer_tree_host_);
   return layer_tree_host_->LayerById(inputs_.scroll_clip_layer_id);
+}
+
+void Layer::SetScrollable(bool scrollable) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.scrollable == scrollable)
+    return;
+  inputs_.scrollable = scrollable;
+  SetNeedsCommit();
 }
 
 void Layer::SetUserScrollable(bool horizontal, bool vertical) {
@@ -1171,6 +1185,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
   layer->SetScrollClipLayer(inputs_.scroll_clip_layer_id);
+  layer->SetScrollable(inputs_.scrollable);
   layer->SetMutableProperties(inputs_.mutable_properties);
 
   // The property trees must be safe to access because they will be used below
