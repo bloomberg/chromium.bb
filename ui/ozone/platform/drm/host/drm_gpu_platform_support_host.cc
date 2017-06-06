@@ -293,8 +293,9 @@ bool DrmGpuPlatformSupportHost::OnMessageReceivedForDrmOverlayManager(
 
 void DrmGpuPlatformSupportHost::OnOverlayResult(
     gfx::AcceleratedWidget widget,
-    const std::vector<OverlayCheck_Params>& params) {
-  overlay_manager_->GpuSentOverlayResult(widget, params);
+    const std::vector<OverlayCheck_Params>& params,
+    const std::vector<OverlayCheckReturn_Params>& returns) {
+  overlay_manager_->GpuSentOverlayResult(widget, params, returns);
 }
 
 bool DrmGpuPlatformSupportHost::GpuCheckOverlayCapabilities(

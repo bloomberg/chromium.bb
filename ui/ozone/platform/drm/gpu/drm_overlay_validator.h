@@ -13,6 +13,7 @@ namespace ui {
 class DrmWindow;
 class ScanoutBufferGenerator;
 struct OverlayCheck_Params;
+struct OverlayCheckReturn_Params;
 
 class DrmOverlayValidator {
  public:
@@ -23,7 +24,7 @@ class DrmOverlayValidator {
   // Tests if configurations |params| are compatible with |window_| and finds
   // which of these configurations can be promoted to Overlay composition
   // without failing the page flip. It expects |params| to be sorted by z_order.
-  std::vector<OverlayCheck_Params> TestPageFlip(
+  std::vector<OverlayCheckReturn_Params> TestPageFlip(
       const std::vector<OverlayCheck_Params>& params,
       const OverlayPlaneList& last_used_planes);
 

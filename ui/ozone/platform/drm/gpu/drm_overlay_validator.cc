@@ -104,17 +104,17 @@ DrmOverlayValidator::DrmOverlayValidator(
 
 DrmOverlayValidator::~DrmOverlayValidator() {}
 
-std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
+std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
     const std::vector<OverlayCheck_Params>& params,
     const OverlayPlaneList& last_used_planes) {
-  std::vector<OverlayCheck_Params> validated_params = params;
+  std::vector<OverlayCheckReturn_Params> returns(params.size());
   HardwareDisplayController* controller = window_->GetController();
   if (!controller) {
-    // Nothing much we can do here.
-    for (auto& overlay : validated_params)
-      overlay.is_overlay_candidate = false;
+    // The controller is not yet installed.
+    for (auto& param : returns)
+      param.status = OverlayCheckReturn_Params::Status::NOT;
 
-    return validated_params;
+    return returns;
   }
 
   OverlayPlaneList test_list;
@@ -124,32 +124,35 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
   for (const auto& plane : last_used_planes)
     reusable_buffers.push_back(plane.buffer);
 
-  for (auto& overlay : validated_params) {
-    if (!overlay.is_overlay_candidate)
+  for (size_t i = 0; i < params.size(); ++i) {
+    if (!params[i].is_overlay_candidate) {
+      returns[i].status = OverlayCheckReturn_Params::Status::NOT;
       continue;
+    }
 
     gfx::Size scaled_buffer_size = GetScaledSize(
-        overlay.buffer_size, overlay.display_rect, overlay.crop_rect);
+        params[i].buffer_size, params[i].display_rect, params[i].crop_rect);
 
     uint32_t original_format =
-        overlay.plane_z_order
-            ? GetFourCCFormatFromBufferFormat(overlay.format)
-            : GetFourCCFormatForOpaqueFramebuffer(overlay.format);
+        params[i].plane_z_order
+            ? GetFourCCFormatFromBufferFormat(params[i].format)
+            : GetFourCCFormatForOpaqueFramebuffer(params[i].format);
     scoped_refptr<ScanoutBuffer> buffer =
-        GetBufferForPageFlipTest(drm, overlay.buffer_size, original_format,
+        GetBufferForPageFlipTest(drm, params[i].buffer_size, original_format,
                                  buffer_generator_, &reusable_buffers);
 
-    OverlayPlane plane(buffer, overlay.plane_z_order, overlay.transform,
-                       overlay.display_rect, overlay.crop_rect);
+    OverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
+                       params[i].display_rect, params[i].crop_rect);
     test_list.push_back(plane);
 
     if (buffer && controller->TestPageFlip(test_list)) {
-      overlay.is_overlay_candidate = true;
+      returns[i].status = OverlayCheckReturn_Params::Status::ABLE;
 
       // If size scaling is needed, find an optimal format.
-      if (overlay.plane_z_order && scaled_buffer_size != overlay.buffer_size) {
+      if (params[i].plane_z_order &&
+          scaled_buffer_size != params[i].buffer_size) {
         uint32_t optimal_format = FindOptimalBufferFormat(
-            original_format, overlay.plane_z_order, overlay.display_rect,
+            original_format, params[i].plane_z_order, params[i].display_rect,
             window_->bounds(), controller);
 
         if (original_format != optimal_format) {
@@ -160,9 +163,9 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
                                        buffer_generator_, &reusable_buffers);
           DCHECK(optimal_buffer);
 
-          OverlayPlane optimal_plane(optimal_buffer, overlay.plane_z_order,
-                                     overlay.transform, overlay.display_rect,
-                                     overlay.crop_rect);
+          OverlayPlane optimal_plane(
+              optimal_buffer, params[i].plane_z_order, params[i].transform,
+              params[i].display_rect, params[i].crop_rect);
           test_list.push_back(optimal_plane);
 
           // If test failed here, it means even though optimal_format is
@@ -183,14 +186,14 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
       // hardware resources and they might be already in use by other planes.
       // For example this plane has requested scaling capabilities and all
       // available scalars are already in use by other planes.
-      overlay.is_overlay_candidate = false;
+      returns[i].status = OverlayCheckReturn_Params::Status::NOT;
       test_list.pop_back();
     }
   }
 
   UpdateOverlayHintsCache(test_list);
 
-  return validated_params;
+  return returns;
 }
 
 OverlayPlaneList DrmOverlayValidator::PrepareBuffersForPageFlip(

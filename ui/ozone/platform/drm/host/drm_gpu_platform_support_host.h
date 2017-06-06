@@ -110,7 +110,8 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
 
   bool OnMessageReceivedForDrmOverlayManager(const IPC::Message& message);
   void OnOverlayResult(gfx::AcceleratedWidget widget,
-                       const std::vector<OverlayCheck_Params>& params);
+                       const std::vector<OverlayCheck_Params>& params,
+                       const std::vector<OverlayCheckReturn_Params>& returns);
 
   int host_id_ = -1;
   bool channel_established_ = false;
