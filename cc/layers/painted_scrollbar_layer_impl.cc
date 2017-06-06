@@ -209,4 +209,9 @@ const char* PaintedScrollbarLayerImpl::LayerTypeAsString() const {
   return "cc::PaintedScrollbarLayerImpl";
 }
 
+LayerTreeSettings::ScrollbarAnimator
+PaintedScrollbarLayerImpl::GetScrollbarAnimator() const {
+  return LayerTreeSettings::NO_ANIMATOR;
+}
+
 }  // namespace cc

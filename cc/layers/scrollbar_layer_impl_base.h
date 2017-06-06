@@ -11,6 +11,7 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/trees/layer_tree_settings.h"
 
 namespace cc {
 
@@ -62,6 +63,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   // TODO(crbug.com/702832): No need for this function once there is element id
   // on overlay scrollbar layers.
   void SetOverlayScrollbarLayerOpacityAnimated(float opacity);
+
+  virtual LayerTreeSettings::ScrollbarAnimator GetScrollbarAnimator() const;
 
  protected:
   ScrollbarLayerImplBase(LayerTreeImpl* tree_impl,
