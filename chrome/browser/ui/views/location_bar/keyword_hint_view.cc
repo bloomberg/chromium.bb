@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -65,7 +66,7 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
   chip_label_->SetBackgroundColor(tab_bg_color);
 
   chip_container_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(LocationBarView::kBubbleVerticalPadding, 0)));
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
   chip_container_->SetBackground(base::MakeUnique<BackgroundWith1PxBorder>(
       tab_bg_color, tab_border_color));
   chip_container_->AddChildView(chip_label_);

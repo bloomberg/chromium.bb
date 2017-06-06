@@ -173,7 +173,7 @@ void LocationBarView::Init() {
 
   // Determine the font for use inside the bubbles.
   const int bubble_padding =
-      kBubbleVerticalPadding +
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
       GetLayoutConstant(LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING);
   const int bubble_height = location_height - (bubble_padding * 2);
 

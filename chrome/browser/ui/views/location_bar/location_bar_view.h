@@ -106,9 +106,6 @@ class LocationBarView : public LocationBar,
   // each icon view should be kIconWidth + 2 * kIconInteriorPadding.
   static constexpr int kIconInteriorPadding = 4;
 
-  // The additional vertical padding of a bubble.
-  static constexpr int kBubbleVerticalPadding = 3;
-
   // The location bar view's class name.
   static const char kViewClassName[];
 
