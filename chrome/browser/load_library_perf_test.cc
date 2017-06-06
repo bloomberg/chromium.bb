@@ -20,7 +20,6 @@
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
 
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
-#include "chrome/browser/media/pepper_cdm_test_constants.h"
 #include "media/cdm/cdm_paths.h"
 #endif
 
@@ -90,12 +89,12 @@ TEST(LoadCDMPerfTest, WidevineAdapter) {
 
 TEST(LoadCDMPerfTest, ExternalClearKey) {
   MeasureSizeAndTimeToLoadCdm(
-      kClearKeyCdmBaseDirectory,
+      media::kClearKeyCdmBaseDirectory,
       base::GetNativeLibraryName(media::kClearKeyCdmLibraryName));
 }
 
 TEST(LoadCDMPerfTest, ExternalClearKeyAdapter) {
-  MeasureSizeAndTimeToLoadCdm(kClearKeyCdmBaseDirectory,
-                              kClearKeyCdmAdapterFileName);
+  MeasureSizeAndTimeToLoadCdm(media::kClearKeyCdmBaseDirectory,
+                              media::kClearKeyCdmAdapterFileName);
 }
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
