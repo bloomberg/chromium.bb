@@ -608,7 +608,7 @@ void LayerImpl::SetContentsOpaque(bool opaque) {
 }
 
 float LayerImpl::Opacity() const {
-  if (const EffectNode* node = GetEffectTree().FindNodeFromOwningLayerId(id()))
+  if (const EffectNode* node = GetEffectTree().Node(effect_tree_index()))
     return node->opacity;
   else
     return 1.f;

@@ -833,9 +833,9 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
     const TransformNode* child_transform_node =
         property_trees->transform_tree.FindNodeFromOwningLayerId(child_->id());
     const EffectNode* root_effect_node =
-        property_trees->effect_tree.FindNodeFromOwningLayerId(root_->id());
+        property_trees->effect_tree.Node(root_->effect_tree_index());
     const EffectNode* child_effect_node =
-        property_trees->effect_tree.FindNodeFromOwningLayerId(child_->id());
+        property_trees->effect_tree.Node(child_->effect_tree_index());
     const ClipNode* root_clip_node =
         property_trees->clip_tree.FindNodeFromOwningLayerId(root_->id());
     const ClipNode* child_clip_node =
@@ -856,7 +856,7 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
         EXPECT_EQ(root_scroll_node->id, root_->scroll_tree_index());
         EXPECT_EQ(root_clip_node, nullptr);
         EXPECT_EQ(child_transform_node, nullptr);
-        EXPECT_EQ(child_effect_node, nullptr);
+        EXPECT_EQ(child_effect_node, root_effect_node);
         EXPECT_EQ(child_clip_node, nullptr);
         EXPECT_EQ(child_scroll_node, nullptr);
         break;
@@ -865,7 +865,7 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
         // node.
         EXPECT_NE(child_transform_node, nullptr);
         EXPECT_EQ(child_transform_node->id, child_->transform_tree_index());
-        EXPECT_NE(child_effect_node, nullptr);
+        EXPECT_NE(child_effect_node, root_effect_node);
         EXPECT_EQ(child_effect_node->id, child_->effect_tree_index());
         EXPECT_EQ(child_clip_node, nullptr);
         EXPECT_EQ(child_scroll_node, nullptr);
@@ -883,7 +883,7 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
       case 4:
         // child_ should not create any property tree nodes.
         EXPECT_EQ(child_transform_node, nullptr);
-        EXPECT_EQ(child_effect_node, nullptr);
+        EXPECT_EQ(child_effect_node, root_effect_node);
         EXPECT_EQ(child_clip_node, nullptr);
         EXPECT_EQ(child_scroll_node, nullptr);
         EndTest();

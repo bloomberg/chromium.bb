@@ -791,6 +791,12 @@ float EffectTree::EffectiveOpacity(const EffectNode* node) const {
   return node->subtree_hidden ? 0.f : node->opacity;
 }
 
+#if DCHECK_IS_ON()
+bool EffectTree::SupportsNodeLookupFromOwningLayerId() const {
+  return false;
+}
+#endif
+
 void EffectTree::UpdateOpacities(EffectNode* node, EffectNode* parent_node) {
   node->screen_space_opacity = EffectiveOpacity(node);
 
@@ -1807,7 +1813,6 @@ void PropertyTrees::RemoveIdFromIdToIndexMaps(int id) {
   transform_tree.SetOwningLayerIdForNode(nullptr, id);
   clip_tree.SetOwningLayerIdForNode(nullptr, id);
   scroll_tree.SetOwningLayerIdForNode(nullptr, id);
-  effect_tree.SetOwningLayerIdForNode(nullptr, id);
 }
 
 void PropertyTrees::UpdateChangeTracking() {

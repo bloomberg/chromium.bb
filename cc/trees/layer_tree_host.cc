@@ -1344,8 +1344,7 @@ void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
   layer->OnOpacityAnimated(opacity);
 
   if (EffectNode* node =
-          property_trees_.effect_tree.UpdateNodeFromOwningLayerId(
-              layer->id())) {
+          property_trees_.effect_tree.Node(layer->effect_tree_index())) {
     DCHECK_EQ(layer->effect_tree_index(), node->id);
     if (node->opacity == opacity)
       return;

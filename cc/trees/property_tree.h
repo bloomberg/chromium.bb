@@ -103,9 +103,15 @@ class CC_EXPORT PropertyTree {
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
   const T* FindNodeFromOwningLayerId(int id) const {
+#if DCHECK_IS_ON()
+    DCHECK(SupportsNodeLookupFromOwningLayerId());
+#endif
     return Node(FindNodeIndexFromOwningLayerId(id));
   }
   T* UpdateNodeFromOwningLayerId(int id) {
+#if DCHECK_IS_ON()
+    DCHECK(SupportsNodeLookupFromOwningLayerId());
+#endif
     int index = FindNodeIndexFromOwningLayerId(id);
     if (index == kInvalidNodeId) {
       DCHECK(property_trees()->is_main_thread);
@@ -116,6 +122,9 @@ class CC_EXPORT PropertyTree {
   }
 
   int FindNodeIndexFromOwningLayerId(int id) const {
+#if DCHECK_IS_ON()
+    DCHECK(SupportsNodeLookupFromOwningLayerId());
+#endif
     auto iter = owning_layer_id_to_node_index_.find(id);
     if (iter == owning_layer_id_to_node_index_.end())
       return kInvalidNodeId;
@@ -124,6 +133,9 @@ class CC_EXPORT PropertyTree {
   }
 
   void SetOwningLayerIdForNode(const T* node, int id) {
+#if DCHECK_IS_ON()
+    DCHECK(SupportsNodeLookupFromOwningLayerId());
+#endif
     if (!node) {
       owning_layer_id_to_node_index_[id] = kInvalidNodeId;
       return;
@@ -132,6 +144,11 @@ class CC_EXPORT PropertyTree {
     DCHECK(node == Node(node->id));
     owning_layer_id_to_node_index_[id] = node->id;
   }
+
+ protected:
+#if DCHECK_IS_ON()
+  virtual bool SupportsNodeLookupFromOwningLayerId() const { return true; }
+#endif
 
  private:
   std::vector<T> nodes_;
@@ -410,6 +427,11 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   bool CreateOrReuseRenderSurfaces(
       std::vector<std::unique_ptr<RenderSurfaceImpl>>* old_render_surfaces,
       LayerTreeImpl* layer_tree_impl);
+
+ protected:
+#if DCHECK_IS_ON()
+  bool SupportsNodeLookupFromOwningLayerId() const override;
+#endif
 
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
