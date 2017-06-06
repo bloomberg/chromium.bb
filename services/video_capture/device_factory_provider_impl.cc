@@ -39,13 +39,6 @@ void DeviceFactoryProviderImpl::ConnectToDeviceFactory(
   factory_bindings_.AddBinding(device_factory_.get(), std::move(request));
 }
 
-void DeviceFactoryProviderImpl::ConnectToFakeDeviceFactory(
-    mojom::DeviceFactoryRequest request) {
-  LazyInitializeFakeDeviceFactory();
-  fake_factory_bindings_.AddBinding(fake_device_factory_.get(),
-                                    std::move(request));
-}
-
 void DeviceFactoryProviderImpl::SetShutdownDelayInSeconds(float seconds) {
   set_shutdown_delay_cb_.Run(seconds);
 }
@@ -67,19 +60,6 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
   device_factory_ = base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
       service_ref_->Clone(), std::move(video_capture_system),
       base::Bind(CreateJpegDecoder));
-}
-
-void DeviceFactoryProviderImpl::LazyInitializeFakeDeviceFactory() {
-  if (fake_device_factory_)
-    return;
-
-  auto factory = base::MakeUnique<media::FakeVideoCaptureDeviceFactory>();
-  auto video_capture_system =
-      base::MakeUnique<media::VideoCaptureSystemImpl>(std::move(factory));
-
-  fake_device_factory_ = base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
-      service_ref_->Clone(), std::move(video_capture_system),
-      base::Bind(&CreateJpegDecoder));
 }
 
 }  // namespace video_capture

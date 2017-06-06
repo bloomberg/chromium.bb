@@ -4,6 +4,8 @@
 
 #include "services/video_capture/test/device_factory_provider_test.h"
 
+#include "base/command_line.h"
+#include "media/base/media_switches.h"
 #include "services/service_manager/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
@@ -23,6 +25,9 @@ DeviceFactoryProviderTest::DeviceFactoryProviderTest()
 DeviceFactoryProviderTest::~DeviceFactoryProviderTest() = default;
 
 void DeviceFactoryProviderTest::SetUp() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kUseFakeDeviceForMediaStream);
+
   service_manager::test::ServiceTest::SetUp();
 
   service_manager::mojom::ServiceManagerPtr service_manager;
@@ -37,7 +42,7 @@ void DeviceFactoryProviderTest::SetUp() {
 
   connector()->BindInterface(mojom::kServiceName, &factory_provider_);
   factory_provider_->SetShutdownDelayInSeconds(0.0f);
-  factory_provider_->ConnectToFakeDeviceFactory(mojo::MakeRequest(&factory_));
+  factory_provider_->ConnectToDeviceFactory(mojo::MakeRequest(&factory_));
 }
 
 }  // namespace video_capture
