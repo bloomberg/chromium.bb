@@ -108,16 +108,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
-  // Statistics
-  bool HasStatsBrowsingHistoryOfProfileAtIndex(size_t index) const;
-  int GetStatsBrowsingHistoryOfProfileAtIndex(size_t index) const;
-  bool HasStatsPasswordsOfProfileAtIndex(size_t index) const;
-  int GetStatsPasswordsOfProfileAtIndex(size_t index) const;
-  bool HasStatsBookmarksOfProfileAtIndex(size_t index) const;
-  int GetStatsBookmarksOfProfileAtIndex(size_t index) const;
-  bool HasStatsSettingsOfProfileAtIndex(size_t index) const;
-  int GetStatsSettingsOfProfileAtIndex(size_t index) const;
-
   void SetProfileActiveTimeAtIndex(size_t index);
   // Warning: This will re-sort profiles and thus may change indices!
   void SetNameOfProfileAtIndex(size_t index, const base::string16& name);
@@ -147,12 +137,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetProfileIsUsingDefaultNameAtIndex(size_t index, bool value);
   void SetProfileIsUsingDefaultAvatarAtIndex(size_t index, bool value);
   void SetProfileIsAuthErrorAtIndex(size_t index, bool value);
-
-  // Statistics
-  void SetStatsBrowsingHistoryOfProfileAtIndex(size_t index, int value);
-  void SetStatsPasswordsOfProfileAtIndex(size_t index, int value);
-  void SetStatsBookmarksOfProfileAtIndex(size_t index, int value);
-  void SetStatsSettingsOfProfileAtIndex(size_t index, int value);
 
   // Notify IsSignedInRequired to all observer
   void NotifyIsSigninRequiredChanged(const base::FilePath& profile_path);
@@ -245,6 +229,10 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // new style default names ("Person 1"), and download and high-res avatars
   // used by the profiles.
   void MigrateLegacyProfileNamesAndDownloadAvatars();
+
+  // Remove statistics values that have previously been stored and are not used
+  // anymore.
+  void RemoveDeprecatedStatistics();
 
   std::vector<std::string> sorted_keys_;
 

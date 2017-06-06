@@ -131,9 +131,6 @@ void ProfileInfoHandler::HandleGetProfileInfo(const base::ListValue* args) {
 void ProfileInfoHandler::HandleGetProfileStats(const base::ListValue* args) {
   AllowJavascript();
 
-  // Because there is open browser window for the current profile, statistics
-  // from the ProfileAttributesStorage may not be up-to-date or may be missing
-  // (e.g., |item.success| is false). Therefore, query the actual statistics.
   ProfileStatisticsFactory::GetForProfile(profile_)->GatherStatistics(
       base::Bind(&ProfileInfoHandler::PushProfileStatsCount,
                  callback_weak_ptr_factory_.GetWeakPtr()));

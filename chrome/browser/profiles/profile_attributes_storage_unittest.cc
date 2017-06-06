@@ -267,11 +267,6 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultName);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultAvatar);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsAuthError);
-
-  TEST_STAT_ACCESSORS(ProfileAttributesEntry, entry, StatsBrowsingHistory);
-  TEST_STAT_ACCESSORS(ProfileAttributesEntry, entry, StatsBookmarks);
-  TEST_STAT_ACCESSORS(ProfileAttributesEntry, entry, StatsPasswords);
-  TEST_STAT_ACCESSORS(ProfileAttributesEntry, entry, StatsSettings);
 }
 
 TEST_F(ProfileAttributesStorageTest, AuthInfo) {

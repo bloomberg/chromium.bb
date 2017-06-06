@@ -86,10 +86,13 @@ class UserManagerScreenHandler
   void HandleRemoveUserWarningLoadStats(const base::ListValue* args);
   void HandleGetRemoveWarningDialogMessage(const base::ListValue* args);
 
+  // Function used to gather statistics from a profile.
+  void GatherStatistics(base::Time start_time, Profile* profile);
+
   // Callback function used by HandleRemoveUserWarningLoadStats
-  void RemoveUserDialogLoadStatsCallback(
-      base::FilePath profile_path,
-      profiles::ProfileCategoryStats result);
+  void RemoveUserDialogLoadStatsCallback(base::FilePath profile_path,
+                                         base::Time start_time,
+                                         profiles::ProfileCategoryStats result);
 
   // Handle GAIA auth results.
   void OnGetTokenInfoResponse(

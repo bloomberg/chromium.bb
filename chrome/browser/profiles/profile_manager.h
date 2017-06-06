@@ -104,6 +104,9 @@ class ProfileManager : public content::NotificationObserver,
   bool LoadProfile(const std::string& profile_name,
                    bool incognito,
                    const ProfileLoadedCallback& callback);
+  bool LoadProfileByPath(const base::FilePath& profile_path,
+                         bool incognito,
+                         const ProfileLoadedCallback& callback);
 
   // Explicit asynchronous creation of a profile located at |profile_path|.
   // If the profile has already been created then callback is called

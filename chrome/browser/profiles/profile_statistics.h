@@ -11,9 +11,6 @@
 #include "chrome/browser/profiles/profile_statistics_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
 class Profile;
 class ProfileStatisticsAggregator;
 
@@ -24,29 +21,11 @@ class ProfileStatistics : public KeyedService {
   // Profile Statistics --------------------------------------------------------
 
   // This function collects statistical information about |profile|, also
-  // returns the information via |callback| if |callback| is not null. The
-  // statistical information is also copied to ProfileAttributesStorage.
+  // returns the information via |callback| if |callback| is not null.
   // Currently bookmarks, history, logins and preferences are counted. The
   // callback function will probably be called more than once, so binding
-  // parameters with bind::Passed() is prohibited. Most of the async tasks
-  // involved in this function can be cancelled if |tracker| is not null.
+  // parameters with bind::Passed() is prohibited.
   void GatherStatistics(const profiles::ProfileStatisticsCallback& callback);
-
-  bool HasAggregator() const;
-  ProfileStatisticsAggregator* GetAggregator() const;
-
-  // ProfileAttributesStorage --------------------------------------------------
-
-  // Gets statistical information from the profiles attributes storage.
-  static profiles::ProfileCategoryStats
-      GetProfileStatisticsFromAttributesStorage(
-           const base::FilePath& profile_path);
-
-  // Sets an individual statistic to the profiles attributes storage.
-  static void SetProfileStatisticsToAttributesStorage(
-      const base::FilePath& profile_path,
-      const std::string& category,
-      int count);
 
  private:
   friend class ProfileStatisticsFactory;
