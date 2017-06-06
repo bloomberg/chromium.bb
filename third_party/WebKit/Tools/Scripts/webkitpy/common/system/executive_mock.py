@@ -38,12 +38,12 @@ _log = logging.getLogger(__name__)
 
 class MockProcess(object):
 
-    def __init__(self, stdout='MOCK STDOUT\n', stderr=''):
+    def __init__(self, stdout='MOCK STDOUT\n', stderr='', returncode=0):
         self.pid = 42
         self.stdout = StringIO.StringIO(stdout)
         self.stderr = StringIO.StringIO(stderr)
         self.stdin = StringIO.StringIO()
-        self.returncode = 0
+        self.returncode = returncode
 
     def wait(self):
         return
@@ -75,7 +75,8 @@ class MockExecutive(object):
 
     def __init__(self, should_log=False, should_throw=False,
                  output='MOCK output of child process', stderr='',
-                 exit_code=0, exception=None, run_command_fn=None):
+                 exit_code=0, exception=None, run_command_fn=None,
+                 proc=None):
         self._should_log = should_log
         self._should_throw = should_throw
         # FIXME: Once executive wraps os.getpid() we can just use a static pid for "this" process.
@@ -85,7 +86,7 @@ class MockExecutive(object):
         self._exit_code = exit_code
         self._exception = exception
         self._run_command_fn = run_command_fn
-        self._proc = None
+        self._proc = proc
         self.full_calls = []
 
     def _append_call(self, args, env=None):
