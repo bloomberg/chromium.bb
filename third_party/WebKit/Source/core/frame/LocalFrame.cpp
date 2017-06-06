@@ -92,6 +92,7 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
+#include "platform/instrumentation/resource_coordinator/FrameResourceCoordinator.h"
 #include "platform/json/JSONValues.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -370,6 +371,7 @@ DEFINE_TRACE(LocalFrame) {
   visitor->Trace(event_handler_);
   visitor->Trace(console_);
   visitor->Trace(input_method_controller_);
+  visitor->Trace(frame_resource_coordinator_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
 }
@@ -908,6 +910,10 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       in_view_source_mode_(false),
       interface_provider_(interface_provider),
       interface_registry_(interface_registry) {
+  if (FrameResourceCoordinator::IsEnabled()) {
+    frame_resource_coordinator_ =
+        FrameResourceCoordinator::Create(interface_provider);
+  }
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
     performance_monitor_ = new PerformanceMonitor(this);

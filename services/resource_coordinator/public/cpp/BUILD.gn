@@ -28,11 +28,15 @@ component("resource_coordinator_cpp") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//services/resource_coordinator/public/interfaces:interfaces_internal",
+    "//services/resource_coordinator/public/interfaces:interfaces_internal_blink",
     "//services/service_manager/public/cpp",
     "//third_party/smhasher:murmurhash2",
   ]
 
-  allow_circular_includes_from = [ "//services/resource_coordinator/public/interfaces:interfaces_internal" ]
+  allow_circular_includes_from = [
+    "//services/resource_coordinator/public/interfaces:interfaces_internal",
+    "//services/resource_coordinator/public/interfaces:interfaces_internal_blink",
+  ]
 }
 
 source_set("struct_traits") {
