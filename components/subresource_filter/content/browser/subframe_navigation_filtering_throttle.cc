@@ -4,13 +4,19 @@
 
 #include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
 
+#include <sstream>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/console_message_level.h"
 
 namespace subresource_filter {
 
@@ -86,6 +92,16 @@ void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
   total_defer_time_ += base::TimeTicks::Now() - last_defer_timestamp_;
 
   if (policy == LoadPolicy::DISALLOW) {
+    if (parent_frame_filter_->activation_state().enable_logging) {
+      std::ostringstream oss(kDisallowSubframeConsoleMessage);
+      oss << navigation_handle()->GetURL() << ".";
+      navigation_handle()
+          ->GetWebContents()
+          ->GetMainFrame()
+          ->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
+                                oss.str());
+    }
+
     parent_frame_filter_->ReportDisallowedLoad();
     // Other load policies will be reported in WillProcessResponse.
     NotifyLoadPolicy();

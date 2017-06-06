@@ -50,6 +50,9 @@ extern const base::FilePath::CharType kUnindexedRulesetDataFileName[];
 // Console message to be displayed on activation.
 extern const std::string kActivationConsoleMessage;
 
+// Console message to be displayed on disallowing subframe.
+extern const std::string kDisallowSubframeConsoleMessage;
+
 }  // namespace subresource_filter
 
 #endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CONSTANTS_H_
