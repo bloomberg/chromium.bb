@@ -12,6 +12,8 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/android/vr_shell/vr_core_info.h"
+#include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
@@ -69,10 +71,10 @@ class VrShellDelegate : public device::GvrDelegateProvider {
                            const base::Callback<void(bool)>& callback) override;
   device::GvrDelegate* GetDelegate() override;
   void SetListeningForActivate(bool listening) override;
-
   void CreateNonPresentingDelegate();
-
   void OnActivateDisplayHandled(bool will_not_present);
+
+  std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
 
   std::unique_ptr<NonPresentingGvrDelegate> non_presenting_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;

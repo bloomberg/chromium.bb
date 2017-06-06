@@ -1149,6 +1149,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
   "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContext.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrClassesWrapper.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrCoreInfo.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCoreVersionChecker.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrDaydreamApi.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrFeedbackStatus.java",
