@@ -122,6 +122,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
+  resource_coordinator::ResourceCoordinatorInterface*
+  GetProcessResourceCoordinator() override;
+
   void SetIsNeverSuitableForReuse() override;
   bool MayReuseHost() override;
 

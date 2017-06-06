@@ -335,6 +335,12 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
   return renderer_interface_->get();
 }
 
+resource_coordinator::ResourceCoordinatorInterface*
+MockRenderProcessHost::GetProcessResourceCoordinator() {
+  NOTREACHED();
+  return nullptr;
+}
+
 void MockRenderProcessHost::SetIsNeverSuitableForReuse() {
   NOTREACHED();
 }

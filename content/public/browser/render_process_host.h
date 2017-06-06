@@ -33,6 +33,10 @@ namespace service_manager {
 class Identity;
 }
 
+namespace resource_coordinator {
+class ResourceCoordinatorInterface;
+}
+
 namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
@@ -350,6 +354,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // internal use only, and is only exposed here to support
   // MockRenderProcessHost usage in tests.
   virtual mojom::Renderer* GetRendererInterface() = 0;
+
+  // Acquires the interface to the Global Resource Coordinator for this process.
+  virtual resource_coordinator::ResourceCoordinatorInterface*
+  GetProcessResourceCoordinator() = 0;
 
   // Whether this process is locked out from ever being reused for sites other
   // than the ones it currently has.

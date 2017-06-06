@@ -184,6 +184,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -1750,6 +1751,18 @@ void RenderProcessHostImpl::Resume() {
 
 mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
   return renderer_interface_.get();
+}
+
+resource_coordinator::ResourceCoordinatorInterface*
+RenderProcessHostImpl::GetProcessResourceCoordinator() {
+  if (!process_resource_coordinator_) {
+    process_resource_coordinator_ =
+        base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
+            ServiceManagerConnection::GetForProcess()->GetConnector(),
+            resource_coordinator::CoordinationUnitType::kProcess,
+            base::Process(GetHandle()).Pid());
+  }
+  return process_resource_coordinator_.get();
 }
 
 void RenderProcessHostImpl::SetIsNeverSuitableForReuse() {
