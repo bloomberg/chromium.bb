@@ -116,6 +116,8 @@ static_library("test_support") {
     "mock_local_device_data_provider.h",
     "mock_tether_host_response_recorder.cc",
     "mock_tether_host_response_recorder.h",
+    "proto_test_util.cc",
+    "proto_test_util.h",
   ]
 
   public_deps = [
@@ -125,6 +127,7 @@ static_library("test_support") {
   deps = [
     "//base",
     "//chromeos",
+    "//chromeos/components/tether/proto",
     "//components/cryptauth",
     "//testing/gmock",
     "//testing/gtest",

@@ -7,6 +7,7 @@
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
+#include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -146,27 +147,13 @@ class TestTimerFactory : public TimerFactory {
   std::unordered_map<std::string, base::MockTimer*> device_id_to_timer_map_;
 };
 
-DeviceStatus CreateFakeDeviceStatus() {
-  WifiStatus wifi_status;
-  wifi_status.set_status_code(
-      WifiStatus_StatusCode::WifiStatus_StatusCode_CONNECTED);
-  wifi_status.set_ssid("Google A");
-
-  DeviceStatus device_status;
-  device_status.set_battery_percentage(75);
-  device_status.set_cell_provider("Google Fi");
-  device_status.set_connection_strength(4);
-  device_status.mutable_wifi_status()->CopyFrom(wifi_status);
-
-  return device_status;
-}
-
 TetherAvailabilityResponse CreateTetherAvailabilityResponse() {
   TetherAvailabilityResponse response;
   response.set_response_code(
       TetherAvailabilityResponse_ResponseCode::
           TetherAvailabilityResponse_ResponseCode_TETHER_AVAILABLE);
-  response.mutable_device_status()->CopyFrom(CreateFakeDeviceStatus());
+  response.mutable_device_status()->CopyFrom(
+      CreateDeviceStatusWithFakeFields());
   return response;
 }
 
