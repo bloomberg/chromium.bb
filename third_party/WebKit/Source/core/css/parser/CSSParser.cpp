@@ -197,8 +197,9 @@ StyleRuleKeyframe* CSSParser::ParseKeyframeRule(const CSSParserContext* context,
 bool CSSParser::ParseSupportsCondition(const String& condition) {
   CSSTokenizer tokenizer(condition);
   CSSParserImpl parser(StrictCSSParserContext());
-  return CSSSupportsParser::SupportsCondition(tokenizer.TokenRange(), parser) ==
-         CSSSupportsParser::kSupported;
+  return CSSSupportsParser::SupportsCondition(
+             tokenizer.TokenRange(), parser,
+             CSSSupportsParser::kForWindowCSS) == CSSSupportsParser::kSupported;
 }
 
 bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {

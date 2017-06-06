@@ -614,7 +614,8 @@ StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
     CSSParserTokenRange prelude,
     CSSParserTokenRange block) {
   CSSSupportsParser::SupportsResult supported =
-      CSSSupportsParser::SupportsCondition(prelude, *this);
+      CSSSupportsParser::SupportsCondition(prelude, *this,
+                                           CSSSupportsParser::kForAtRule);
   if (supported == CSSSupportsParser::kInvalid)
     return nullptr;  // Parse error, invalid @supports condition
 
