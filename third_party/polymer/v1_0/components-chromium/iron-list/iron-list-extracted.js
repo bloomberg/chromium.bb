@@ -126,6 +126,14 @@
       scrollOffset: {
         type: Number,
         value: 0
+      },
+
+      /**
+       * If set to true, focus on an element will be preserved after rerender.
+       */
+      preserveFocus: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -895,6 +903,15 @@
      * to `items`, splices or updates to a single item.
      */
     _itemsChanged: function(change) {
+      var rendering = /^items(\.splices){0,1}$/.test(change.path);
+      var lastFocusedIndex, focusedElement;
+      if (rendering && this.preserveFocus) {
+        lastFocusedIndex = this._focusedIndex;
+        focusedElement = this.querySelector('* /deep/ *:focus');
+      }
+
+      var preservingFocus = rendering && this.preserveFocus && focusedElement;
+
       if (change.path === 'items') {
         this._virtualStart = 0;
         this._physicalTop = 0;
@@ -907,12 +924,11 @@
         this._physicalItems = this._physicalItems || [];
         this._physicalSizes = this._physicalSizes || [];
         this._physicalStart = 0;
-        if (this._scrollTop > this._scrollOffset) {
+        if (this._scrollTop > this._scrollOffset && !preservingFocus) {
           this._resetScrollPosition(0);
         }
         this._removeFocusedItem();
         this._debounceTemplate(this._render);
-
       } else if (change.path === 'items.splices') {
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
@@ -920,6 +936,17 @@
         this._debounceTemplate(this._render);
       } else {
         this._forwardItemPath(change.path.split('.').slice(1).join('.'), change.value);
+      }
+
+      // If the list was in focus when updated, preserve the focus on item.
+      if (preservingFocus) {
+        Polymer.dom.flush();
+        focusedElement.blur(); // paper- elements breaks when focused twice.
+        this._focusPhysicalItem(
+            Math.min(this.items.length - 1, lastFocusedIndex));
+        if (!this._isIndexVisible(this._focusedIndex)) {
+          this.scrollToIndex(this._focusedIndex);
+        }
       }
     },
 
