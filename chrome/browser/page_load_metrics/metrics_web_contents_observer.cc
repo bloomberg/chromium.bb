@@ -202,11 +202,10 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
   // WebContent's opener. This is more accurate than using referrers due to
   // referrer sanitizing and origin referrers. Note that this could potentially
   // be inaccurate if the opener has since navigated.
-  content::WebContents* opener = web_contents()->GetOpener();
-  const GURL& opener_url =
-      !has_navigated_ && opener
-          ? web_contents()->GetOpener()->GetLastCommittedURL()
-          : GURL::EmptyGURL();
+  content::RenderFrameHost* opener = web_contents()->GetOpener();
+  const GURL& opener_url = !has_navigated_ && opener
+                               ? opener->GetLastCommittedURL()
+                               : GURL::EmptyGURL();
   const GURL& currently_committed_url =
       committed_load_ ? committed_load_->url() : opener_url;
   has_navigated_ = true;

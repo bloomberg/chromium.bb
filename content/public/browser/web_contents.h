@@ -668,7 +668,7 @@ class WebContents : public PageNavigator,
   virtual bool HasOpener() const = 0;
 
   // Returns the opener if HasOpener() is true, or nullptr otherwise.
-  virtual WebContents* GetOpener() const = 0;
+  virtual RenderFrameHost* GetOpener() const = 0;
 
   // Returns true if this WebContents was opened by another WebContents, even
   // if the opener was suppressed. In contrast to HasOpener/GetOpener, the
@@ -678,7 +678,7 @@ class WebContents : public PageNavigator,
 
   // Returns the original opener if HasOriginalOpener() is true, or nullptr
   // otherwise.
-  virtual WebContents* GetOriginalOpener() const = 0;
+  virtual RenderFrameHost* GetOriginalOpener() const = 0;
 
   // Returns the WakeLockContext accociated with this WebContents.
   virtual device::mojom::WakeLockContext* GetWakeLockContext() = 0;

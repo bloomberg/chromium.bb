@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
@@ -33,6 +35,7 @@ using content::WebContents;
 
 BackgroundContents::BackgroundContents(
     scoped_refptr<SiteInstance> site_instance,
+    content::RenderFrameHost* opener,
     int32_t routing_id,
     int32_t main_frame_routing_id,
     int32_t main_frame_widget_routing_id,
@@ -46,6 +49,10 @@ BackgroundContents::BackgroundContents(
       site_instance->GetBrowserContext());
 
   WebContents::CreateParams create_params(profile_, std::move(site_instance));
+  create_params.opener_render_process_id =
+      opener ? opener->GetProcess()->GetID() : MSG_ROUTING_NONE;
+  create_params.opener_render_frame_id =
+      opener ? opener->GetRoutingID() : MSG_ROUTING_NONE;
   create_params.routing_id = routing_id;
   create_params.main_frame_routing_id = main_frame_routing_id;
   create_params.main_frame_widget_routing_id = main_frame_widget_routing_id;

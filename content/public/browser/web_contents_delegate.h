@@ -318,6 +318,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   //       RenderViewHost in |source_site_instance| with |route_id|.
   virtual bool ShouldCreateWebContents(
       WebContents* web_contents,
+      RenderFrameHost* opener,
       SiteInstance* source_site_instance,
       int32_t route_id,
       int32_t main_frame_route_id,

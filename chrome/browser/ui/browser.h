@@ -625,6 +625,7 @@ class Browser : public TabStripModelObserver,
   void ShowRepostFormWarningDialog(content::WebContents* source) override;
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
+      content::RenderFrameHost* opener,
       content::SiteInstance* source_site_instance,
       int32_t route_id,
       int32_t main_frame_route_id,
@@ -863,6 +864,7 @@ class Browser : public TabStripModelObserver,
   // created.
   bool MaybeCreateBackgroundContents(
       content::SiteInstance* source_site_instance,
+      content::RenderFrameHost* opener,
       const GURL& opener_url,
       int32_t route_id,
       int32_t main_frame_route_id,
