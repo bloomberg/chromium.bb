@@ -2172,7 +2172,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
   // preloadResponse must be resolve with an opaque redirect response. But
   // currently Chrome handles the invalid location URL in the browser process as
   // an error. crbug.com/707185
-  EXPECT_EQ("NetworkError: " + kNavigationPreloadAbortError,
+  EXPECT_EQ("NetworkError: " + kNavigationPreloadNetworkError,
             LoadNavigationPreloadTestPage(page_url, worker_url, "REJECTED"));
 
   // The page request must be sent only once, since the worker responded with
