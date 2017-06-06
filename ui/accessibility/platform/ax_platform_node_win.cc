@@ -10,6 +10,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "base/strings/string_util.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
@@ -503,7 +504,8 @@ STDMETHODIMP AXPlatformNodeWin::get_accRole(
   // For historical reasons, we return a string (typically
   // containing the HTML tag name) as the MSAA role, rather
   // than a int.
-  std::string role_string = target->StringOverrideForMSAARole();
+  std::string role_string =
+      base::ToUpperASCII(target->StringOverrideForMSAARole());
   if (!role_string.empty()) {
     role->vt = VT_BSTR;
     std::wstring wsTmp(role_string.begin(), role_string.end());
@@ -1388,13 +1390,13 @@ std::string AXPlatformNodeWin::StringOverrideForMSAARole() {
 
     case ui::AX_ROLE_CANVAS:
       if (GetData().GetBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK)) {
-        // TODO(dougt) why not just use the html_tag?
-        return "canvas";
+        return html_tag;
       }
       break;
 
     case ui::AX_ROLE_FORM:
-      // TODO(dougt) why not just use the html_tag?
+      // This could be a div with the role of form
+      // so we return just the string "form".
       return "form";
 
     case ui::AX_ROLE_HEADING:
@@ -1403,8 +1405,7 @@ std::string AXPlatformNodeWin::StringOverrideForMSAARole() {
       break;
 
     case ui::AX_ROLE_PARAGRAPH:
-      // TODO(dougt) why not just use the html_tag and why upper case?
-      return "P";
+      return html_tag;
 
     case ui::AX_ROLE_GENERIC_CONTAINER:
       // TODO(dougt) why can't we always use div in this case?
