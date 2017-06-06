@@ -456,6 +456,8 @@ class CONTENT_EXPORT WebContentsImpl
   void SetIsOverlayContent(bool is_overlay_content) override;
   bool IsFocusedElementEditable() override;
   void ClearFocusedElement() override;
+  bool IsShowingContextMenu() const override;
+  void SetShowingContextMenu(bool showing) override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
@@ -720,6 +722,7 @@ class CONTENT_EXPORT WebContentsImpl
                              ukm::SourceId ukm_source_id) override;
   void FocusedNodeTouched(bool editable) override;
   void DidReceiveCompositorFrame() override;
+  bool IsShowingContextMenuOnPage() const override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 
@@ -1606,6 +1609,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Whether this WebContents is for content overlay.
   bool is_overlay_content_;
+
+  bool showing_context_menu_;
 
   int currently_playing_video_count_ = 0;
 

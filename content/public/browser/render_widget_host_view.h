@@ -122,12 +122,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Retrieve the bounds of the View, in screen coordinates.
   virtual gfx::Rect GetViewBounds() const = 0;
 
-  // Returns true if the View's context menu is showing.
-  virtual bool IsShowingContextMenu() const = 0;
-
-  // Tells the View whether the context menu is showing.
-  virtual void SetShowingContextMenu(bool showing) = 0;
-
   // Returns the currently selected text.
   virtual base::string16 GetSelectedText() = 0;
 

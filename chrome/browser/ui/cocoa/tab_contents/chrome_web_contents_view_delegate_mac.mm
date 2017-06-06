@@ -74,8 +74,7 @@ void ChromeWebContentsViewDelegateMac::ShowMenu(
   // the second mouse event arrives. In this case, |ShowContextMenu()| will
   // get called multiple times - if so, don't create another context menu.
   // TODO(asvitkine): Fix the renderer so that it doesn't do this.
-  content::RenderWidgetHostView* widget_view = GetActiveRenderWidgetHostView();
-  if (widget_view && widget_view->IsShowingContextMenu())
+  if (web_contents_->IsShowingContextMenu())
     return;
 
   context_menu_->Show();

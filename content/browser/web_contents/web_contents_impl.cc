@@ -522,6 +522,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #endif  // !defined(OS_ANDROID)
       mouse_lock_widget_(nullptr),
       is_overlay_content_(false),
+      showing_context_menu_(false),
       loading_weak_factory_(this),
       weak_factory_(this) {
   frame_tree_.SetFrameRemoveListener(
@@ -4394,7 +4395,7 @@ void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
                                       const ContextMenuParams& params) {
   // If a renderer fires off a second command to show a context menu before the
   // first context menu is closed, just ignore it. https://crbug.com/707534
-  if (GetRenderWidgetHostView()->IsShowingContextMenu())
+  if (showing_context_menu_)
     return;
 
   ContextMenuParams context_menu_params(params);
@@ -4506,6 +4507,21 @@ bool WebContentsImpl::HasActiveEffectivelyFullscreenVideo() const {
 bool WebContentsImpl::IsFocusedElementEditable() {
   RenderFrameHostImpl* frame = GetFocusedFrame();
   return frame && frame->has_focused_editable_element();
+}
+
+bool WebContentsImpl::IsShowingContextMenu() const {
+  return showing_context_menu_;
+}
+
+void WebContentsImpl::SetShowingContextMenu(bool showing) {
+  DCHECK_NE(showing_context_menu_, showing);
+  showing_context_menu_ = showing;
+
+  if (auto* view = GetRenderWidgetHostView()) {
+    // Notify the main frame's RWHV to run the platform-specific code, if any.
+    static_cast<RenderWidgetHostViewBase*>(view)->SetShowingContextMenu(
+        showing);
+  }
 }
 
 void WebContentsImpl::ClearFocusedElement() {
@@ -5658,6 +5674,10 @@ void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
                          "visitors' data is vulnerable to theft and "
                          "tampering. Get a valid SSL certificate before"
                          " releasing your website to the public."));
+}
+
+bool WebContentsImpl::IsShowingContextMenuOnPage() const {
+  return showing_context_menu_;
 }
 
 void WebContentsImpl::NotifyPreferencesChanged() {

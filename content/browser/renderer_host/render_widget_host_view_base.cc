@@ -35,7 +35,6 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
     : is_fullscreen_(false),
       popup_type_(blink::kWebPopupTypeNone),
       mouse_locked_(false),
-      showing_context_menu_(false),
       current_device_scale_factor_(0),
       current_display_rotation_(display::Display::ROTATE_0),
       text_input_manager_(nullptr),
@@ -161,15 +160,6 @@ void RenderWidgetHostViewBase::CopyFromSurfaceToVideoFrame(
     const base::Callback<void(const gfx::Rect&, bool)>& callback) {
   NOTIMPLEMENTED();
   callback.Run(gfx::Rect(), false);
-}
-
-bool RenderWidgetHostViewBase::IsShowingContextMenu() const {
-  return showing_context_menu_;
-}
-
-void RenderWidgetHostViewBase::SetShowingContextMenu(bool showing) {
-  DCHECK_NE(showing_context_menu_, showing);
-  showing_context_menu_ = showing;
 }
 
 base::string16 RenderWidgetHostViewBase::GetSelectedText() {

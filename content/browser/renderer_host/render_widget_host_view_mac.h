@@ -269,7 +269,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void WasUnOccluded() override;
   void WasOccluded() override;
   gfx::Rect GetViewBounds() const override;
-  void SetShowingContextMenu(bool showing) override;
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   bool SupportsSpeech() const override;
@@ -463,6 +462,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Exposed for testing.
   cc::SurfaceId SurfaceIdForTesting() const override;
+
+  void SetShowingContextMenu(bool showing) override;
 
   // Helper method to obtain ui::TextInputType for the active widget from the
   // TextInputManager.

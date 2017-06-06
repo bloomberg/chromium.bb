@@ -103,8 +103,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   ui::TextInputClient* GetTextInputClient() override;
   void WasUnOccluded() override {}
   void WasOccluded() override {}
-  bool IsShowingContextMenu() const override;
-  void SetShowingContextMenu(bool showing_menu) override;
   void SetIsInVR(bool is_in_vr) override;
   base::string16 GetSelectedText() override;
   bool IsMouseLocked() override;
@@ -410,6 +408,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // main frame.
   virtual void OnDidNavigateMainFrameToNewPage();
 
+  // Called by WebContentsImpl to notify the view about a change in visibility
+  // of context menu. The view can then perform platform specific tasks and
+  // changes.
+  virtual void SetShowingContextMenu(bool showing) {}
+
   // Add and remove observers for lifetime event notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be
   // sure to remove the observer before they go away.
@@ -464,9 +467,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // indicates what the change in position of the mouse would be had it not been
   // locked.
   bool mouse_locked_;
-
-  // Whether we are showing a context menu.
-  bool showing_context_menu_;
 
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;

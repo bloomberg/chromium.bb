@@ -782,6 +782,12 @@ class WebContents : public PageNavigator,
   // Returns true if the current focused element is editable.
   virtual bool IsFocusedElementEditable() = 0;
 
+  // Returns true if a context menu is showing on the page.
+  virtual bool IsShowingContextMenu() const = 0;
+
+  // Tells the WebContents whether the context menu is showing.
+  virtual void SetShowingContextMenu(bool showing) = 0;
+
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       const base::android::JavaRef<jobject>& jweb_contents_android);
