@@ -5,6 +5,7 @@
 // Redefine '$' here rather than including 'cr.js', since this is
 // the only function needed.  This allows this file to be loaded
 // in a browser directly for layout and some testing purposes.
+// eslint-disable-next-line no-restricted-properties
 var $ = function(id) { return document.getElementById(id); };
 
 /**

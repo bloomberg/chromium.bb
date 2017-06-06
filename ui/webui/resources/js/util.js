@@ -10,6 +10,9 @@
  * @return {HTMLElement} The found element or null if not found.
  */
 function $(id) {
+  // Disable getElementById restriction here, since we are instructing other
+  // places to re-use the $() that is defined here.
+  // eslint-disable-next-line no-restricted-properties
   var el = document.getElementById(id);
   return el ? assertInstanceof(el, HTMLElement) : null;
 }
@@ -22,6 +25,9 @@ function $(id) {
  * @return {Element} The found element or null if not found.
  */
 function getSVGElement(id) {
+  // Disable getElementById restriction here, since it is not suitable for SVG
+  // elements.
+  // eslint-disable-next-line no-restricted-properties
   var el = document.getElementById(id);
   return el ? assertInstanceof(el, Element) : null;
 }

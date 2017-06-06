@@ -4,6 +4,8 @@
 
 'use strict';
 
+/* eslint-disable no-restricted-properties */
+
 /**
  * @fileoverview This is the audio client content script injected into eligible
  *  Google.com and New tab pages for interaction between the Webpage and the

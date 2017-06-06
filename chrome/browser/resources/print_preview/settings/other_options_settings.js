@@ -69,8 +69,7 @@ cr.define('print_preview', function() {
 
     /** Initializes container and checkbox */
     decorate: function() {
-      this.container_ = /** @type {HTMLElement} */(
-          document.getElementById(this.cssId_));
+      this.container_ = $(this.cssId_);
       this.checkbox_ = /** @type {HTMLElement} */(
           this.container_.querySelector('.checkbox'));
     },
