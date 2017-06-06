@@ -14,8 +14,17 @@ namespace media {
 // Name of the ClearKey CDM library.
 extern const char kClearKeyCdmLibraryName[];
 
+extern const char kClearKeyCdmBaseDirectory[];
+
 // Platform-specific filename relative to kClearKeyCdmBaseDirectory.
 extern const char kClearKeyCdmAdapterFileName[];
+
+// Display name for Clear Key CDM.
+extern const char kClearKeyCdmDisplayName[];
+
+// Pepper type for Clear Key CDM.
+// TODO(xhwang): Remove after switching to mojo CDM.
+extern const char kClearKeyCdmPepperMimeType[];
 
 // Returns the path of a CDM relative to DIR_COMPONENTS.
 // On platforms where a platform specific path is used, returns

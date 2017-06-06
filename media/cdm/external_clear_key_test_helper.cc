@@ -21,8 +21,6 @@ namespace media {
 #define STRINGIFY(X) #X
 #define MAKE_STRING(X) STRINGIFY(X)
 
-const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
-
 ExternalClearKeyTestHelper::ExternalClearKeyTestHelper() {
   LoadLibrary();
 }
