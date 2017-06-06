@@ -175,7 +175,7 @@ EarconEngine.prototype.loadSound = function(name, url) {
   // Decode asynchronously.
   request.onload = (function() {
     this.context_.decodeAudioData(
-        /** @type {ArrayBuffer} */ (request.response),
+        /** @type {!ArrayBuffer} */ (request.response),
         (function(buffer) {
           this.buffers_[name] = buffer;
         }).bind(this));

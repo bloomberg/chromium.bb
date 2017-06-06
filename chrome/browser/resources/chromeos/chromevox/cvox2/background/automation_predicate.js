@@ -278,7 +278,7 @@ AutomationPredicate.linebreak = function(first, second) {
 AutomationPredicate.container = function(node) {
   return AutomationPredicate.match({
     anyRole: [
-      Role.DIV,
+      Role.GENERIC_CONTAINER,
       Role.DOCUMENT,
       Role.GROUP,
       Role.LIST_ITEM,
@@ -372,7 +372,7 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
   return AutomationPredicate.leaf(node) &&
       (AutomationPredicate.roles([Role.CLIENT,
                                   Role.COLUMN,
-                                  Role.DIV,
+                                  Role.GENERIC_CONTAINER,
                                   Role.GROUP,
                                   Role.IMAGE,
                                   Role.STATIC_TEXT,
