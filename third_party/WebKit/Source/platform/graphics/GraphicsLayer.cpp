@@ -785,7 +785,7 @@ void GraphicsLayer::LayersAsJSONArray(
   }
 }
 
-String GraphicsLayer::LayerTreeAsText(LayerTreeFlags flags) const {
+String GraphicsLayer::GetLayerTreeAsTextForTesting(LayerTreeFlags flags) const {
   return LayerTreeAsJSON(flags)->ToPrettyJSONString();
 }
 
@@ -1294,7 +1294,7 @@ void showGraphicsLayerTree(const blink::GraphicsLayer* layer) {
     return;
   }
 
-  String output = layer->LayerTreeAsText(0xffffffff);  // with all flags.
+  String output = layer->GetLayerTreeAsTextForTesting(0xffffffff);
   LOG(INFO) << output.Utf8().data();
 }
 
@@ -1304,8 +1304,8 @@ void showGraphicsLayers(const blink::GraphicsLayer* layer) {
     return;
   }
 
-  String output =
-      layer->LayerTreeAsText(0xffffffff & ~blink::kOutputAsLayerTree);
+  String output = layer->GetLayerTreeAsTextForTesting(
+      0xffffffff & ~blink::kOutputAsLayerTree);
   LOG(INFO) << output.Utf8().data();
 }
 #endif

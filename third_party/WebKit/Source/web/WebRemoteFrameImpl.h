@@ -97,8 +97,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
 
   WebRect SelectionBoundsRect() const override;
 
-  WebString LayerTreeAsText(bool show_debug_info = false) const override;
-
   // WebRemoteFrame methods:
   WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                   const WebString& name,

@@ -849,7 +849,7 @@ void LocalFrame::RemoveSpellingMarkersUnderWords(const Vector<String>& words) {
   GetSpellChecker().RemoveSpellingMarkersUnderWords(words);
 }
 
-String LocalFrame::LayerTreeAsText(unsigned flags) const {
+String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
   if (ContentLayoutItem().IsNull())
     return String();
 

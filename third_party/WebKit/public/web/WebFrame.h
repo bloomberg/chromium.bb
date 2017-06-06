@@ -397,10 +397,6 @@ class WebFrame {
   // empty ((0,0), (0,0)).
   virtual WebRect SelectionBoundsRect() const = 0;
 
-  // Dumps the layer tree, used by the accelerated compositor, in
-  // text form. This is used only by layout tests.
-  virtual WebString LayerTreeAsText(bool show_debug_info = false) const = 0;
-
   // Returns the frame inside a given frame or iframe element. Returns 0 if
   // the given element is not a frame, iframe or if the frame is empty.
   BLINK_EXPORT static WebFrame* FromFrameOwnerElement(const WebElement&);

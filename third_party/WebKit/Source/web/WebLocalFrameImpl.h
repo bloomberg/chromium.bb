@@ -236,7 +236,8 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   WebRect SelectionBoundsRect() const override;
 
-  WebString LayerTreeAsText(bool show_debug_info = false) const override;
+  WebString GetLayerTreeAsTextForTesting(
+      bool show_debug_info = false) const override;
 
   // WebLocalFrame methods:
   WebLocalFrameImpl* CreateLocalChild(WebTreeScopeType,
