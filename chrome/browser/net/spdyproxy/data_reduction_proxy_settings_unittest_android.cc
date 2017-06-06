@@ -61,19 +61,11 @@ class TestDataReductionProxySettingsAndroid
 
 template <class C>
 void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
-    std::unique_ptr<base::Clock> clock,
-    bool promo_allowed,
-    bool holdback) {
-  int flags = 0;
-  if (promo_allowed)
-    flags |= DataReductionProxyParams::kPromoAllowed;
-  if (holdback)
-    flags |= DataReductionProxyParams::kHoldback;
+    std::unique_ptr<base::Clock> clock) {
   MockDataReductionProxySettings<C>* settings =
       new MockDataReductionProxySettings<C>();
   settings->config_ = test_context_->config();
-  test_context_->config()->ResetParamFlagsForTest(flags);
-  settings->UpdateConfigValues();
+  test_context_->config()->ResetParamFlagsForTest();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
       .Times(AnyNumber())
       .WillRepeatedly(Return(test_context_->pref_service()));
@@ -87,9 +79,7 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
 
 template void
 data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings<
-    DataReductionProxyChromeSettings>(std::unique_ptr<base::Clock> clock,
-                                      bool promo_allowed,
-                                      bool holdback);
+    DataReductionProxyChromeSettings>(std::unique_ptr<base::Clock> clock);
 
 class DataReductionProxySettingsAndroidTest
     : public data_reduction_proxy::ConcreteDataReductionProxySettingsTest<

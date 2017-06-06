@@ -53,13 +53,10 @@ class DataReductionProxyService;
 // the IO thread.
 class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
  public:
-  // Constructs a DataReductionProxyIOData object. |param_flags| is used to
-  // set information about the DNS names used by the proxy, and allowable
-  // configurations. |enabled| sets the initial state of the Data Reduction
-  // Proxy.
+  // Constructs a DataReductionProxyIOData object. |enabled| sets the initial
+  // state of the Data Reduction Proxy.
   DataReductionProxyIOData(
       Client client,
-      int param_flags,
       net::NetLog* net_log,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,

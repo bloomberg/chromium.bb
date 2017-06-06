@@ -66,7 +66,7 @@ DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyPromoAllowed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return Settings()->PromoAllowed();
+  return data_reduction_proxy::params::IsIncludedInPromoFieldTrial();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(

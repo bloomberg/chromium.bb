@@ -46,8 +46,10 @@ const char* GetTrustedSpdyProxyFieldTrialName();
 bool IsIncludedInTrustedSpdyProxyFieldTrial();
 
 // Returns true if this client is part of the field trial that should display
-// a promotion for the data reduction proxy on Android One devices.
-bool IsIncludedInAndroidOnePromoFieldTrial(base::StringPiece build_fingerprint);
+// a promotion for the data reduction proxy on Android One devices. This is for
+// testing purposes and should not be called outside of tests.
+bool IsIncludedInAndroidOnePromoFieldTrialForTesting(
+    base::StringPiece build_fingerprint);
 
 // Returns the name of the Lo-Fi field trial.
 const char* GetLoFiFieldTrialName();
@@ -186,17 +188,9 @@ struct DataReductionProxyTypeInfo {
 // Reduction Proxy.
 class DataReductionProxyParams : public DataReductionProxyConfigValues {
  public:
-  // Flags used during construction that specify if the promotion is allowed to
-  // be shown, and if this instance is part of a holdback experiment.
-  static const unsigned int kPromoAllowed = (1 << 2);
-  static const unsigned int kHoldback = (1 << 3);
-
-  // Constructs configuration parameters. If |kPromoAllowed|, the client may
-  // show a promotion for the data reduction proxy.
-  //
-  // A standard configuration has a primary proxy, and a fallback proxy for
-  // HTTP traffic.
-  explicit DataReductionProxyParams(int flags);
+  // Constructs configuration parameters. A standard configuration has a primary
+  // proxy, and a fallback proxy for HTTP traffic.
+  DataReductionProxyParams();
 
   // Updates |proxies_for_http_|.
   void SetProxiesForHttpForTesting(
@@ -209,14 +203,9 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   const GURL& secure_proxy_check_url() const override;
 
-  bool promo_allowed() const override;
-
-  bool holdback() const override;
-
  protected:
   // Test constructor that optionally won't call Init();
-  DataReductionProxyParams(int flags,
-                           bool should_call_init);
+  explicit DataReductionProxyParams(bool should_call_init);
 
   // Initialize the values of the proxies, and secure proxy check URL, from
   // command line flags and preprocessor constants, and check that there are
@@ -240,9 +229,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   net::ProxyServer fallback_origin_;
 
   GURL secure_proxy_check_url_;
-
-  bool promo_allowed_;
-  bool holdback_;
 
   bool use_override_proxies_for_http_;
   std::vector<DataReductionProxyServer> override_data_reduction_proxy_servers_;

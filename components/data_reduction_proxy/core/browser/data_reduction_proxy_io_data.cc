@@ -91,7 +91,6 @@ BasicHTTPURLRequestContextGetter::~BasicHTTPURLRequestContextGetter() {
 
 DataReductionProxyIOData::DataReductionProxyIOData(
     Client client,
-    int param_flags,
     net::NetLog* net_log,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -113,7 +112,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   DCHECK(io_task_runner_);
   DCHECK(ui_task_runner_);
   std::unique_ptr<DataReductionProxyParams> params(
-      new DataReductionProxyParams(param_flags));
+      new DataReductionProxyParams());
   event_creator_.reset(new DataReductionProxyEventCreator(this));
   configurator_.reset(
       new DataReductionProxyConfigurator(net_log, event_creator_.get()));

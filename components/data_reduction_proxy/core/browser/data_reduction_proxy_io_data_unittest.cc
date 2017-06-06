@@ -103,7 +103,7 @@ class DataReductionProxyIODataTest : public testing::Test {
 
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
   std::unique_ptr<DataReductionProxyIOData> io_data(
-      new DataReductionProxyIOData(Client::UNKNOWN, 0, net_log(), task_runner(),
+      new DataReductionProxyIOData(Client::UNKNOWN, net_log(), task_runner(),
                                    task_runner(), false /* enabled */,
                                    std::string() /* user_agent */,
                                    std::string() /* channel */));
@@ -153,7 +153,6 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
   net::TestURLRequestContext context(false);
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
-          .WithParamsFlags(DataReductionProxyParams::kPromoAllowed)
           .WithURLRequestContext(&context)
           .SkipSettingsInitialization()
           .Build();
@@ -191,10 +190,11 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
 
 TEST_F(DataReductionProxyIODataTest, HoldbackConfiguresProxies) {
   net::TestURLRequestContext context(false);
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "DataCompressionProxyHoldback", "Enabled"));
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
-          .WithParamsFlags(DataReductionProxyParams::kPromoAllowed |
-                           DataReductionProxyParams::kHoldback)
           .WithURLRequestContext(&context)
           .SkipSettingsInitialization()
           .Build();

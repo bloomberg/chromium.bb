@@ -19,6 +19,10 @@
 #include "net/proxy/proxy_server.h"
 #include "url/url_constants.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 using base::FieldTrialList;
 
 namespace {
@@ -35,8 +39,6 @@ const char kCarrierTestOrigin[] =
 const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
 const char kDefaultSecureProxyCheckUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://check.googlezip.net/generate_204";
-
-const char kAndroidOneIdentifier[] = "sprout";
 
 const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
 
@@ -80,22 +82,37 @@ std::string GetStringValueForVariationParamWithDefaultValue(
   return it->second;
 }
 
+bool IsIncludedInAndroidOnePromoFieldTrial(
+    base::StringPiece build_fingerprint) {
+  static const char kAndroidOneIdentifier[] = "sprout";
+  return build_fingerprint.find(kAndroidOneIdentifier) != std::string::npos;
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
 namespace params {
 
 bool IsIncludedInPromoFieldTrial() {
-  return IsIncludedInFieldTrial("DataCompressionProxyPromoVisibility");
+  if (IsIncludedInFieldTrial("DataCompressionProxyPromoVisibility"))
+    return true;
+
+#if defined(OS_ANDROID)
+  base::StringPiece android_build_fingerprint =
+      base::android::BuildInfo::GetInstance()->android_build_fp();
+
+  return IsIncludedInAndroidOnePromoFieldTrial(android_build_fingerprint);
+#endif
+  return false;
+}
+
+bool IsIncludedInAndroidOnePromoFieldTrialForTesting(
+    base::StringPiece build_fingerprint) {
+  return IsIncludedInAndroidOnePromoFieldTrial(build_fingerprint);
 }
 
 bool IsIncludedInHoldbackFieldTrial() {
   return IsIncludedInFieldTrial("DataCompressionProxyHoldback");
-}
-
-bool IsIncludedInAndroidOnePromoFieldTrial(
-    base::StringPiece build_fingerprint) {
-  return build_fingerprint.find(kAndroidOneIdentifier) != std::string::npos;
 }
 
 const char* GetTrustedSpdyProxyFieldTrialName() {
@@ -406,16 +423,13 @@ DataReductionProxyTypeInfo::DataReductionProxyTypeInfo(
 
 DataReductionProxyTypeInfo::~DataReductionProxyTypeInfo() {}
 
-DataReductionProxyParams::DataReductionProxyParams(int flags)
-    : DataReductionProxyParams(flags, true) {}
+DataReductionProxyParams::DataReductionProxyParams()
+    : DataReductionProxyParams(true) {}
 
 DataReductionProxyParams::~DataReductionProxyParams() {}
 
-DataReductionProxyParams::DataReductionProxyParams(int flags,
-                                                   bool should_call_init)
-    : promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
-      holdback_((flags & kHoldback) == kHoldback),
-      use_override_proxies_for_http_(false) {
+DataReductionProxyParams::DataReductionProxyParams(bool should_call_init)
+    : use_override_proxies_for_http_(false) {
   if (should_call_init) {
     bool result = Init();
     DCHECK(result);
@@ -503,19 +517,6 @@ DataReductionProxyParams::proxies_for_http() const {
 // used.
 const GURL& DataReductionProxyParams::secure_proxy_check_url() const {
   return secure_proxy_check_url_;
-}
-
-// Returns true if the data reduction proxy promo may be shown.
-// This is idependent of whether the data reduction proxy is allowed.
-// TODO(bengr): maybe tie to whether proxy is allowed.
-bool DataReductionProxyParams::promo_allowed() const {
-  return promo_allowed_;
-}
-
-// Returns true if the data reduction proxy should not actually use the
-// proxy if enabled.
-bool DataReductionProxyParams::holdback() const {
-  return holdback_;
 }
 
 // TODO(kundaji): Remove tests for macro definitions.

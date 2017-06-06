@@ -17,15 +17,6 @@ class DataReductionProxyConfigValues {
  public:
   virtual ~DataReductionProxyConfigValues() {}
 
-  // Returns true if the data reduction proxy promo may be shown.
-  // This is independent of whether the data reduction proxy is allowed.
-  // TODO(bengr): maybe tie to whether proxy is allowed.
-  virtual bool promo_allowed() const = 0;
-
-  // Returns true if the data reduction proxy should not actually use the
-  // proxy if enabled.
-  virtual bool holdback() const = 0;
-
   // Returns the HTTP proxy servers to be used.
   virtual const std::vector<DataReductionProxyServer>& proxies_for_http()
       const = 0;

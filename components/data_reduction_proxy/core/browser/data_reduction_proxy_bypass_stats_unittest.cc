@@ -258,7 +258,6 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
 
   void SetUp() override {
     drp_test_context_ = DataReductionProxyTestContext::Builder()
-                            .WithParamsFlags(0)
                             .WithURLRequestContext(&context_)
                             .WithMockClientSocketFactory(&mock_socket_factory_)
                             .Build();

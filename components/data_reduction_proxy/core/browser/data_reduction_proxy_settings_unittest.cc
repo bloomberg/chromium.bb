@@ -649,7 +649,7 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
   std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
   base::SimpleTestClock* clock_ptr = clock.get();
   clock_ptr->Advance(base::TimeDelta::FromDays(1));
-  ResetSettings(std::move(clock), false, false);
+  ResetSettings(std::move(clock));
 
   base::Time last_enabled_time = clock_ptr->Now();
 
@@ -733,7 +733,7 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
   std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
   base::SimpleTestClock* clock_ptr = clock.get();
   clock_ptr->Advance(base::TimeDelta::FromDays(1));
-  ResetSettings(std::move(clock), false, false);
+  ResetSettings(std::move(clock));
 
   InitPrefMembers();
   base::HistogramTester histogram_tester;

@@ -33,10 +33,6 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif
-
 namespace content {
 class BrowserContext;
 }
@@ -84,25 +80,13 @@ CreateDataReductionProxyChromeIOData(
   DCHECK(net_log);
   DCHECK(prefs);
 
-  int flags = 0;
-  if (data_reduction_proxy::params::IsIncludedInPromoFieldTrial())
-    flags |= DataReductionProxyParams::kPromoAllowed;
-  if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())
-    flags |= DataReductionProxyParams::kHoldback;
-#if defined(OS_ANDROID)
-  if (data_reduction_proxy::params::IsIncludedInAndroidOnePromoFieldTrial(
-          base::android::BuildInfo::GetInstance()->android_build_fp())) {
-    flags |= DataReductionProxyParams::kPromoAllowed;
-  }
-#endif
-
   bool enabled =
       prefs->GetBoolean(prefs::kDataSaverEnabled) ||
       data_reduction_proxy::params::ShouldForceEnableDataReductionProxy();
   std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(
-              DataReductionProxyChromeSettings::GetClient(), flags, net_log,
+              DataReductionProxyChromeSettings::GetClient(), net_log,
               io_task_runner, ui_task_runner, enabled, GetUserAgent(),
               version_info::GetChannelString(chrome::GetChannel())));
 

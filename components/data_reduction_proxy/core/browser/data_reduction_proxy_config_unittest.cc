@@ -123,21 +123,12 @@ class DataReductionProxyConfigTest : public testing::Test {
                         .WithMockDataReductionProxyService()
                         .Build();
 
-    ResetSettings(true, false);
+    ResetSettings();
 
-    expected_params_.reset(new TestDataReductionProxyParams(
-        DataReductionProxyParams::kPromoAllowed,
-        TestDataReductionProxyParams::HAS_EVERYTHING));
+    expected_params_.reset(new TestDataReductionProxyParams());
   }
 
-  void ResetSettings(bool promo_allowed, bool holdback) {
-    int flags = 0;
-    if (promo_allowed)
-      flags |= DataReductionProxyParams::kPromoAllowed;
-    if (holdback)
-      flags |= DataReductionProxyParams::kHoldback;
-    config()->ResetParamFlagsForTest(flags);
-  }
+  void ResetSettings() { config()->ResetParamFlagsForTest(); }
 
   const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() {
     return message_loop_.task_runner();
@@ -235,13 +226,17 @@ class DataReductionProxyConfigTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "DataCompressionProxyHoldback", "Enabled"));
+
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
       "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
   SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
 
-  ResetSettings(true, true);
+  ResetSettings();
 
   config()->UpdateConfigForTesting(true, false);
   config()->ReloadConfig();
@@ -256,7 +251,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
       "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
 
   SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
-  ResetSettings(true, false);
+  ResetSettings();
 
   // The proxy is enabled initially.
   config()->UpdateConfigForTesting(true, true);
@@ -367,7 +362,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     base::HistogramTester histogram_tester;
     SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
 
-    ResetSettings(true, false);
+    ResetSettings();
 
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
@@ -383,9 +378,8 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
                                            "Enabled");
 
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-    TestDataReductionProxyConfig config(
-        0, TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
-        configurator(), event_creator());
+    TestDataReductionProxyConfig config(task_runner(), nullptr, configurator(),
+                                        event_creator());
 
     scoped_refptr<net::URLRequestContextGetter> request_context_getter_ =
         new net::TestURLRequestContextGetter(task_runner());
@@ -593,10 +587,8 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
 
     rules.ParseFromString(proxy_rules);
 
-    int flags = 0;
-    unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
     std::unique_ptr<TestDataReductionProxyParams> params(
-        new TestDataReductionProxyParams(flags, has_definitions));
+        new TestDataReductionProxyParams());
     std::unique_ptr<DataReductionProxyConfig> config =
         BuildConfig(std::move(params));
 
@@ -635,10 +627,8 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassedRetryDelay) {
 
   rules.ParseFromString(proxy_rules);
 
-  int flags = 0;
-  unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
   std::unique_ptr<TestDataReductionProxyParams> params(
-      new TestDataReductionProxyParams(flags, has_definitions));
+      new TestDataReductionProxyParams());
   std::unique_ptr<DataReductionProxyConfig> config =
       BuildConfig(std::move(params));
 
@@ -703,10 +693,8 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
        net::ProxyServer(), true},
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    int flags = 0;
-    unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
     std::unique_ptr<TestDataReductionProxyParams> params(
-        new TestDataReductionProxyParams(flags, has_definitions));
+        new TestDataReductionProxyParams());
     DataReductionProxyTypeInfo proxy_type_info;
     std::unique_ptr<DataReductionProxyConfig> config(
         new DataReductionProxyConfig(task_runner(), net_log(),
@@ -1273,9 +1261,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracy) {
   std::vector<base::TimeDelta> lofi_accuracy_recording_intervals;
   lofi_accuracy_recording_intervals.push_back(base::TimeDelta::FromSeconds(0));
 
-  TestDataReductionProxyConfig config(
-      0, TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
-      configurator(), event_creator());
+  TestDataReductionProxyConfig config(task_runner(), nullptr, configurator(),
+                                      event_creator());
   config.SetLofiAccuracyRecordingIntervals(lofi_accuracy_recording_intervals);
   config.SetTickClock(tick_clock.get());
 
@@ -1361,9 +1348,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracyNonZeroDelay) {
   std::vector<base::TimeDelta> lofi_accuracy_recording_intervals;
   lofi_accuracy_recording_intervals.push_back(base::TimeDelta::FromSeconds(1));
 
-  TestDataReductionProxyConfig config(
-      0, TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
-      configurator(), event_creator());
+  TestDataReductionProxyConfig config(task_runner(), nullptr, configurator(),
+                                      event_creator());
   config.SetLofiAccuracyRecordingIntervals(lofi_accuracy_recording_intervals);
   config.SetTickClock(tick_clock.get());
 
