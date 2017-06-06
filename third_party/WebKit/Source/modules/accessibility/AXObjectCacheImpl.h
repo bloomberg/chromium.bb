@@ -129,7 +129,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   AXObjectImpl* GetOrCreate(AbstractInlineTextBox*);
 
   // will only return the AXObjectImpl if it already exists
-  AXObjectImpl* Get(Node*) override;
+  AXObjectImpl* Get(const Node*) override;
   AXObjectImpl* Get(LayoutObject*);
   AXObjectImpl* Get(AbstractInlineTextBox*);
 
@@ -203,7 +203,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
   // do not use HeapHashMap for those mappings.
   HashMap<LayoutObject*, AXID> layout_object_mapping_;
-  HeapHashMap<Member<Node>, AXID> node_object_mapping_;
+  HeapHashMap<Member<const Node>, AXID> node_object_mapping_;
   HashMap<AbstractInlineTextBox*, AXID> inline_text_box_object_mapping_;
   int modification_count_;
 
