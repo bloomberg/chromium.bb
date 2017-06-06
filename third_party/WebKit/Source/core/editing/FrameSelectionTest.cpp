@@ -963,4 +963,23 @@ TEST_F(FrameSelectionTest, RangeOutsideFocus) {
   EXPECT_FALSE(Selection().IsHidden());  // Range still visible.
 }
 
+// crbug.com/725457
+TEST_F(FrameSelectionTest, InconsistentVisibleSelectionNoCrash) {
+  SetBodyContent("foo<div id=host><span id=anchor>bar</span></div>baz");
+  SetShadowContent("shadow", "host");
+
+  Element* anchor = GetDocument().getElementById("anchor");
+
+  // |start| and |end| are valid Positions in DOM tree, but do not participate
+  // in flat tree. They should be canonicalized to null VisiblePositions, but
+  // are currently not. See crbug.com/729636 for details.
+  const Position& start = Position::BeforeNode(anchor);
+  const Position& end = Position::AfterNode(anchor);
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build());
+
+  // Shouldn't crash inside.
+  EXPECT_FALSE(Selection().SelectionHasFocus());
+}
+
 }  // namespace blink
