@@ -139,8 +139,8 @@ std::unique_ptr<cc::SharedBitmap>
 ChildSharedBitmapManager::GetBitmapForSharedMemory(base::SharedMemory* mem) {
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
   NotifyAllocatedSharedBitmap(mem, cc::SharedBitmap::GenerateId());
-  return base::MakeUnique<ChildSharedBitmap>(shared_bitmap_manager_ptr_,
-                                             std::move(mem), id);
+  return base::MakeUnique<ChildSharedBitmap>(shared_bitmap_manager_ptr_, mem,
+                                             id);
 }
 
 // Notifies the browser process that a shared bitmap with the given ID was

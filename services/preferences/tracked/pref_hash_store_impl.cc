@@ -90,7 +90,7 @@ PrefHashStoreImpl::~PrefHashStoreImpl() {}
 std::unique_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction(
     HashStoreContents* storage) {
   return std::unique_ptr<PrefHashStoreTransaction>(
-      new PrefHashStoreTransactionImpl(this, std::move(storage)));
+      new PrefHashStoreTransactionImpl(this, storage));
 }
 
 std::string PrefHashStoreImpl::ComputeMac(const std::string& path,
@@ -126,7 +126,7 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::PrefHashStoreTransactionImpl(
     PrefHashStoreImpl* outer,
     HashStoreContents* storage)
     : outer_(outer),
-      contents_(std::move(storage)),
+      contents_(storage),
       super_mac_valid_(false),
       super_mac_dirty_(false) {
   if (!outer_->use_super_mac_)
