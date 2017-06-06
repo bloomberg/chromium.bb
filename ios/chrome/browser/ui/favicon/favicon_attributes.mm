@@ -15,11 +15,15 @@
 @synthesize monogramString = _monogramString;
 @synthesize textColor = _textColor;
 @synthesize backgroundColor = _backgroundColor;
+@synthesize defaultBackgroundColor = _defaultBackgroundColor;
 
+// Designated initializer. Either |image| or all of |textColor|,
+// |backgroundColor| and |monogram| must be not nil.
 - (instancetype)initWithImage:(UIImage*)image
                      monogram:(NSString*)monogram
                     textColor:(UIColor*)textColor
-              backgroundColor:(UIColor*)backgroundColor {
+              backgroundColor:(UIColor*)backgroundColor
+       defaultBackgroundColor:(BOOL)defaultBackgroundColor {
   DCHECK(image || (monogram && textColor && backgroundColor));
   self = [super init];
   if (self) {
@@ -27,37 +31,30 @@
     _monogramString = [monogram copy];
     _textColor = textColor;
     _backgroundColor = backgroundColor;
+    _defaultBackgroundColor = defaultBackgroundColor;
   }
 
   return self;
 }
 
-- (instancetype)initWithImage:(UIImage*)image {
-  DCHECK(image);
-  return
-      [self initWithImage:image monogram:nil textColor:nil backgroundColor:nil];
-}
-
-- (instancetype)initWithMonogram:(NSString*)monogram
-                       textColor:(UIColor*)textColor
-                 backgroundColor:(UIColor*)backgroundColor {
-  DCHECK(monogram && textColor && backgroundColor);
-  return [self initWithImage:nil
-                    monogram:monogram
-                   textColor:textColor
-             backgroundColor:backgroundColor];
-}
-
 + (instancetype)attributesWithImage:(UIImage*)image {
-  return [[self alloc] initWithImage:image];
+  DCHECK(image);
+  return [[self alloc] initWithImage:image
+                            monogram:nil
+                           textColor:nil
+                     backgroundColor:nil
+              defaultBackgroundColor:NO];
 }
 
 + (instancetype)attributesWithMonogram:(NSString*)monogram
                              textColor:(UIColor*)textColor
-                       backgroundColor:(UIColor*)backgroundColor {
-  return [[self alloc] initWithMonogram:monogram
-                              textColor:textColor
-                        backgroundColor:backgroundColor];
+                       backgroundColor:(UIColor*)backgroundColor
+                defaultBackgroundColor:(BOOL)defaultBackgroundColor {
+  return [[self alloc] initWithImage:nil
+                            monogram:monogram
+                           textColor:textColor
+                     backgroundColor:backgroundColor
+              defaultBackgroundColor:defaultBackgroundColor];
 }
 
 @end

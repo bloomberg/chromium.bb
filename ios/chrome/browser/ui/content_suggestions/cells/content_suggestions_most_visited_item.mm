@@ -22,6 +22,7 @@
 @synthesize URL = _URL;
 @synthesize delegate = _delegate;
 @synthesize image = _image;
+@synthesize source = _source;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -36,6 +37,17 @@
   cell.titleLabel.text = self.title;
   cell.accessibilityLabel = self.title;
   [cell.faviconView configureWithAttributes:self.attributes];
+}
+
+- (ntp_tiles::TileVisualType)tileType {
+  if (!self.attributes) {
+    return ntp_tiles::TileVisualType::NONE;
+  } else if (self.attributes.faviconImage) {
+    return ntp_tiles::TileVisualType::ICON_REAL;
+  }
+  return self.attributes.defaultBackgroundColor
+             ? ntp_tiles::TileVisualType::ICON_DEFAULT
+             : ntp_tiles::TileVisualType::ICON_COLOR;
 }
 
 @end

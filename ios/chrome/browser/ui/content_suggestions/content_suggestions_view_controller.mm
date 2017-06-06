@@ -141,10 +141,13 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   switch ([self.collectionUpdater contentSuggestionTypeForItem:item]) {
     case ContentSuggestionTypeReadingList:
     case ContentSuggestionTypeArticle:
+      [self unfocusOmnibox];
       [self.suggestionCommandHandler openPageForItem:item];
       break;
     case ContentSuggestionTypeMostVisited:
-      // TODO(crbug.com/707754): Open the most visited site.
+      [self unfocusOmnibox];
+      [self.suggestionCommandHandler openMostVisitedItem:item
+                                                 atIndex:indexPath.item];
       break;
     case ContentSuggestionTypeEmpty:
       break;
@@ -266,6 +269,12 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   NSIndexPath* emptyItem =
       [self.collectionUpdater addEmptyItemForSection:section];
   [self.collectionView insertItemsAtIndexPaths:@[ emptyItem ]];
+}
+
+// Tells WebToolbarController to resign focus to the omnibox.
+- (void)unfocusOmnibox {
+  // TODO(crbug.com/700375): once the omnibox is part of Content Suggestions,
+  // remove the fake omnibox focus here.
 }
 
 @end

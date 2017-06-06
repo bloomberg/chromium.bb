@@ -39,7 +39,8 @@ TEST(ContentSuggestionsMostVisitedItemTest, Configure) {
   item.attributes =
       [FaviconAttributes attributesWithMonogram:@"C"
                                       textColor:[UIColor whiteColor]
-                                backgroundColor:[UIColor blackColor]];
+                                backgroundColor:[UIColor blackColor]
+                         defaultBackgroundColor:NO];
   ContentSuggestionsMostVisitedCell* cell = [[[item cellClass] alloc] init];
   id faviconViewMock = OCMPartialMock(cell.faviconView);
   OCMExpect([faviconViewMock configureWithAttributes:item.attributes]);

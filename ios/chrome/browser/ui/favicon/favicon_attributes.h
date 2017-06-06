@@ -13,32 +13,26 @@
 
 // Favicon image. Can be nil. If it is nil, monogram string and color are
 // guaranteed to be not nil.
-@property(nonatomic, readonly, strong) UIImage* faviconImage;
+@property(nonatomic, readonly, strong, nullable) UIImage* faviconImage;
 // Favicon monogram. Only available when there is no image.
-@property(nonatomic, readonly, copy) NSString* monogramString;
+@property(nonatomic, readonly, copy, nullable) NSString* monogramString;
 // Favicon monogram color. Only available when there is no image.
-@property(nonatomic, readonly, strong) UIColor* textColor;
+@property(nonatomic, readonly, strong, nullable) UIColor* textColor;
 // Favicon monogram background color. Only available when there is no image.
-@property(nonatomic, readonly, strong) UIColor* backgroundColor;
+@property(nonatomic, readonly, strong, nullable) UIColor* backgroundColor;
+// Whether the background color is the default one.Only available when there is
+// no image.
+@property(nonatomic, readonly, assign, getter=isDefaultBackgroundColor)
+    BOOL defaultBackgroundColor;
 
-+ (instancetype)attributesWithImage:(UIImage*)image;
-+ (instancetype)attributesWithMonogram:(NSString*)monogram
-                             textColor:(UIColor*)textColor
-                       backgroundColor:(UIColor*)backgroundColor;
++ (nullable instancetype)attributesWithImage:(nonnull UIImage*)image;
++ (nullable instancetype)attributesWithMonogram:(nonnull NSString*)monogram
+                                      textColor:(nonnull UIColor*)textColor
+                                backgroundColor:
+                                    (nonnull UIColor*)backgroundColor
+                         defaultBackgroundColor:(BOOL)defaultBackgroundColor;
 
-// Designated initializer. Either |image| or all of |textColor|,
-// |backgroundColor| and |monogram| must be not nil.
-- (instancetype)initWithImage:(UIImage*)image
-                     monogram:(NSString*)monogram
-                    textColor:(UIColor*)textColor
-              backgroundColor:(UIColor*)backgroundColor
-    NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithImage:(UIImage*)image;
-- (instancetype)initWithMonogram:(NSString*)monogram
-                       textColor:(UIColor*)textColor
-                 backgroundColor:(UIColor*)backgroundColor;
-
-- (instancetype)init NS_UNAVAILABLE;
+- (nullable instancetype)init NS_UNAVAILABLE;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_FAVICON_FAVICON_ATTRIBUTES_H_

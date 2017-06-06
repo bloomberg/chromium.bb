@@ -14,6 +14,9 @@
 - (void)openReadingList;
 // Opens the page associated with this |item|.
 - (void)openPageForItem:(nonnull CollectionViewItem*)item;
+// Opens the Most Visited associated with this |item| at the |mostVisitedItem|.
+- (void)openMostVisitedItem:(nonnull CollectionViewItem*)item
+                    atIndex:(NSInteger)mostVisitedIndex;
 // Displays a context menu for opening the |articleItem|.
 - (void)displayContextMenuForArticle:(nonnull CollectionViewItem*)item
                              atPoint:(CGPoint)touchLocation
