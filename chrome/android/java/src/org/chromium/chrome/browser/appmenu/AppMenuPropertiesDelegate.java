@@ -230,13 +230,13 @@ public class AppMenuPropertiesDelegate {
      * @param menu The {@link AppMenu} that was shown.
      */
     public void onShow(final AppMenu menu) {
-        View promptView = menu.getPromptView();
-        if (!(promptView instanceof AppMenuIconRowFooter)) {
+        View footerView = menu.getFooterView();
+        if (!(footerView instanceof AppMenuIconRowFooter)) {
             mAppMenuIconRowFooter = null;
             return;
         }
 
-        mAppMenuIconRowFooter = (AppMenuIconRowFooter) promptView;
+        mAppMenuIconRowFooter = (AppMenuIconRowFooter) footerView;
         mAppMenuIconRowFooter.initialize(mActivity, menu, mBookmarkBridge);
     }
 
