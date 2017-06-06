@@ -65,7 +65,7 @@ source_set("embedded_services") {
   }
 }
 
-catalog("catalog") {
+catalog("catalog_common") {
   embedded_services = [
     "//ash/autoclick/mus:manifest",
     "//ash/touch_hud/mus:manifest",
@@ -76,7 +76,6 @@ catalog("catalog") {
     "//services/ui:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
   ]
-  catalog_deps = [ "//chrome/app:catalog_for_mash" ]
   standalone_services = [
     "//mash/example/views_examples:manifest",
     "//mash/simple_wm:manifest",
@@ -95,9 +94,28 @@ catalog("catalog") {
   }
 }
 
+catalog("catalog") {
+  catalog_deps = [
+    ":catalog_common",
+    "//chrome/app:catalog_for_mash",
+  ]
+}
+
 catalog_cpp_source("chrome_mash_catalog") {
   catalog = ":catalog"
   generated_function_name = "CreateChromeMashCatalog"
+}
+
+catalog("catalog_test") {
+  catalog_deps = [
+    ":catalog_common",
+    "//chrome/app:catalog_for_tests_mash",
+  ]
+}
+
+catalog_cpp_source("chrome_test_catalog") {
+  catalog = ":catalog_test"
+  generated_function_name = "CreateChromeTestCatalog"
 }
 
 if (is_chromeos) {

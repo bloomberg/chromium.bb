@@ -126,191 +126,219 @@ if (!is_android && !is_mac) {
     }
   }
 
-  executable("chrome_initial") {
+  template("chrome_binary") {
+    executable(target_name) {
+      output_name = invoker.output_name
+      sources = invoker.sources
+      if (defined(invoker.deps)) {
+        deps = invoker.deps
+      } else {
+        deps = []
+      }
+
+      if (!is_win || is_clang) {
+        # Normally, we need to pass specific flags to the linker to
+        # create an executable that gathers profile data. However, when
+        # using MSVC, we need to make sure we *don't* pass /GENPROFILE
+        # when linking without generating any code, or else the linker
+        # will give us fatal error LNK1264. So we add the PGO flags
+        # on all configurations, execpt MSVC on Windows.
+        configs += [ "//build/config/compiler/pgo:default_pgo_flags" ]
+      }
+
+      # Because the sources list varies so significantly per-platform, generally
+      # each platform lists its own files rather than relying on filtering or
+      # removing unused files.
+      sources += [ "app/chrome_exe_resource.h" ]
+      defines = []
+      public_deps = []
+      deps += [
+        "//build/config:exe_and_shlib_deps",
+        "//printing/features",
+      ]
+
+      data = [
+        "$root_out_dir/resources.pak",
+      ]
+      if (is_linux || is_win) {
+        data += [
+          "$root_out_dir/chrome_100_percent.pak",
+          "$root_out_dir/locales/en-US.pak",
+          "$root_out_dir/locales/fr.pak",
+        ]
+      }
+
+      data_deps = []
+
+      if (is_win) {
+        sources += [
+          "app/chrome_exe.rc",
+          "app/chrome_exe_load_config_win.cc",
+          "app/chrome_exe_main_win.cc",
+          "app/chrome_watcher_client_win.cc",
+          "app/chrome_watcher_client_win.h",
+          "app/chrome_watcher_command_line_win.cc",
+          "app/chrome_watcher_command_line_win.h",
+          "app/main_dll_loader_win.cc",
+          "app/main_dll_loader_win.h",
+          "common/crash_keys.cc",
+          "common/crash_keys.h",
+        ]
+
+        deps += [
+          ":chrome_dll",
+          ":chrome_exe_version",
+          ":copy_first_run",
+          ":file_pre_reader",
+          ":visual_elements_resources",
+          "//base",
+          "//breakpad:breakpad_handler",
+          "//breakpad:breakpad_sender",
+          "//chrome/app/version_assembly:chrome_exe_manifest",
+          "//chrome/browser:chrome_process_finder",
+          "//chrome/chrome_watcher",
+          "//chrome/chrome_watcher:client",
+          "//chrome/common:constants",
+          "//chrome/common:metrics_constants_util_win",
+          "//chrome/install_static:secondary_module",
+          "//chrome/installer/util:with_no_strings",
+          "//chrome_elf",
+          "//components/browser_watcher:browser_watcher_client",
+          "//components/crash/content/app:run_as_crashpad_handler",
+          "//components/flags_ui:switches",
+          "//content:sandbox_helper_win",
+          "//content/public/common:static_switches",
+          "//crypto",
+          "//gpu/config:crash_keys",
+          "//sandbox",
+        ]
+        data_deps = [
+          "//chrome/app/version_assembly:version_assembly_manifest",
+        ]
+
+        if (win_console_app) {
+          defines += [ "WIN_CONSOLE_APP" ]
+        } else {
+          # Set /SUBSYSTEM:WINDOWS for chrome.exe itself, unless a console build
+          # has been requested.
+          configs -= [ "//build/config/win:console" ]
+          configs += [ "//build/config/win:windowed" ]
+        }
+
+        ldflags = [
+          "/DELAYLOAD:dbghelp.dll",
+          "/DELAYLOAD:dwmapi.dll",
+          "/DELAYLOAD:uxtheme.dll",
+          "/DELAYLOAD:ole32.dll",
+          "/DELAYLOAD:oleaut32.dll",
+        ]
+
+        if (current_cpu == "x64") {
+          # Increase the initial stack size. The default is 1MB, this is 2MB.
+          ldflags += [ "/STACK:2097152" ]
+        }
+      }
+
+      if (is_linux) {
+        sources += [
+          "app/chrome_dll_resource.h",
+          "app/chrome_main.cc",
+          "app/chrome_main_delegate.cc",
+          "app/chrome_main_delegate.h",
+        ]
+
+        deps += [
+          # On Linux, link the dependencies (libraries) that make up actual
+          # Chromium functionality directly into the executable.
+          ":browser_dependencies",
+          ":child_dependencies",
+          ":manpage",
+
+          # Needed to use the master_preferences functions
+          "//chrome/installer/util:with_no_strings",
+          "//content/public/app:both",
+          "//content/public/common:service_names",
+
+          # For headless mode.
+          "//headless:headless_shell_lib",
+          "//services/service_manager/embedder",
+        ]
+
+        public_deps = [
+          ":xdg_mime",  # Needs to be public for installer to consume files.
+          "//chrome/common:features",
+        ]
+
+        ldflags = [ "-pie" ]
+
+        # Chrome OS debug builds for arm need to pass --long-plt to the linker.
+        # See https://bugs.chromium.org/p/chromium/issues/detail?id=583532
+        if (is_chromeos && is_debug && target_cpu == "arm") {
+          ldflags += [ "-Wl,--long-plt" ]
+        }
+
+        if (use_pango || use_cairo) {
+          # Needed for chrome_main.cc initialization of libraries.
+          configs += [ "//build/config/linux/pangocairo" ]
+        }
+
+        if (use_x11) {
+          configs += [
+            "//build/config/linux:x11",
+            "//build/config/linux:xext",
+          ]
+        }
+
+        if (enable_package_mash_services) {
+          deps += embedded_mash_service_deps
+        }
+      }
+
+      # These files are used by the installer so we need a public dep.
+      public_deps += [ ":packed_resources" ]
+
+      # Only ChromeOS has precompiled Flash that needs to get copied to the output
+      # directory. On other platforms, Flash is either component-updated only or
+      # not supported at all.
+      if (is_chromeos) {
+        deps += [ "//third_party/adobe/flash:flapper_binaries" ]
+      }
+
+      data_deps += [ "//third_party/widevine/cdm:widevinecdmadapter" ]
+
+      if (is_multi_dll_chrome) {
+        defines += [ "CHROME_MULTIPLE_DLL" ]
+        data_deps += [ ":chrome_child" ]
+      }
+    }
+  }
+
+  chrome_binary("chrome_initial") {
     if (is_win) {
       output_name = "initialexe/chrome"
     } else {
       output_name = "chrome"
     }
 
-    if (!is_win || is_clang) {
-      # Normally, we need to pass specific flags to the linker to
-      # create an executable that gathers profile data. However, when
-      # using MSVC, we need to make sure we *don't* pass /GENPROFILE
-      # when linking without generating any code, or else the linker
-      # will give us fatal error LNK1264. So we add the PGO flags
-      # on all configurations, execpt MSVC on Windows.
-      configs += [ "//build/config/compiler/pgo:default_pgo_flags" ]
-    }
-
-    # Because the sources list varies so significantly per-platform, generally
-    # each platform lists its own files rather than relying on filtering or
-    # removing unused files.
-    sources = [
-      "app/chrome_exe_resource.h",
-    ]
-    defines = []
-    public_deps = []
-    deps = [
-      "//build/config:exe_and_shlib_deps",
-      "//printing/features",
-    ]
-
-    data = [
-      "$root_out_dir/resources.pak",
-    ]
-    if (is_linux || is_win) {
-      data += [
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/locales/en-US.pak",
-        "$root_out_dir/locales/fr.pak",
-      ]
-    }
-
-    data_deps = []
-
-    if (is_win) {
-      sources += [
-        "app/chrome_exe.rc",
-        "app/chrome_exe_load_config_win.cc",
-        "app/chrome_exe_main_win.cc",
-        "app/chrome_watcher_client_win.cc",
-        "app/chrome_watcher_client_win.h",
-        "app/chrome_watcher_command_line_win.cc",
-        "app/chrome_watcher_command_line_win.h",
-        "app/main_dll_loader_win.cc",
-        "app/main_dll_loader_win.h",
-        "common/crash_keys.cc",
-        "common/crash_keys.h",
-      ]
-
-      deps += [
-        ":chrome_dll",
-        ":chrome_exe_version",
-        ":copy_first_run",
-        ":file_pre_reader",
-        ":visual_elements_resources",
-        "//base",
-        "//breakpad:breakpad_handler",
-        "//breakpad:breakpad_sender",
-        "//chrome/app/version_assembly:chrome_exe_manifest",
-        "//chrome/browser:chrome_process_finder",
-        "//chrome/chrome_watcher",
-        "//chrome/chrome_watcher:client",
-        "//chrome/common:constants",
-        "//chrome/common:metrics_constants_util_win",
-        "//chrome/install_static:secondary_module",
-        "//chrome/installer/util:with_no_strings",
-        "//chrome_elf",
-        "//components/browser_watcher:browser_watcher_client",
-        "//components/crash/content/app:run_as_crashpad_handler",
-        "//components/flags_ui:switches",
-        "//content:sandbox_helper_win",
-        "//content/public/common:static_switches",
-        "//crypto",
-        "//gpu/config:crash_keys",
-        "//sandbox",
-      ]
-      data_deps = [
-        "//chrome/app/version_assembly:version_assembly_manifest",
-      ]
-
-      if (win_console_app) {
-        defines += [ "WIN_CONSOLE_APP" ]
-      } else {
-        # Set /SUBSYSTEM:WINDOWS for chrome.exe itself, unless a console build
-        # has been requested.
-        configs -= [ "//build/config/win:console" ]
-        configs += [ "//build/config/win:windowed" ]
-      }
-
-      ldflags = [
-        "/DELAYLOAD:dbghelp.dll",
-        "/DELAYLOAD:dwmapi.dll",
-        "/DELAYLOAD:uxtheme.dll",
-        "/DELAYLOAD:ole32.dll",
-        "/DELAYLOAD:oleaut32.dll",
-      ]
-
-      if (current_cpu == "x64") {
-        # Increase the initial stack size. The default is 1MB, this is 2MB.
-        ldflags += [ "/STACK:2097152" ]
-      }
-    } else if (use_aura) {
+    sources = []
+    if (!is_win && use_aura) {
       # Non-Windows aura entrypoint.
       sources += [ "app/chrome_exe_main_aura.cc" ]
     }
+  }
 
-    if (is_linux) {
-      sources += [
-        "app/chrome_dll_resource.h",
-        "app/chrome_main.cc",
-        "app/chrome_main_delegate.cc",
-        "app/chrome_main_delegate.h",
+  if (enable_package_mash_services) {
+    chrome_binary("chrome_test") {
+      # Note that the output name needs to end with "chrome", because that's what
+      # telemetry test-runner expects.
+      output_name = "test_chrome"
+      sources = []
+      deps = [
+        "//chrome/app/mash:chrome_test_catalog",
       ]
-
-      deps += [
-        # On Linux, link the dependencies (libraries) that make up actual
-        # Chromium functionality directly into the executable.
-        ":browser_dependencies",
-        ":child_dependencies",
-        ":manpage",
-
-        # Needed to use the master_preferences functions
-        "//chrome/installer/util:with_no_strings",
-        "//content/public/app:both",
-        "//content/public/common:service_names",
-
-        # For headless mode.
-        "//headless:headless_shell_lib",
-        "//services/service_manager/embedder",
-      ]
-
-      public_deps = [
-        ":xdg_mime",  # Needs to be public for installer to consume files.
-        "//chrome/common:features",
-      ]
-
-      ldflags = [ "-pie" ]
-
-      # Chrome OS debug builds for arm need to pass --long-plt to the linker.
-      # See https://bugs.chromium.org/p/chromium/issues/detail?id=583532
-      if (is_chromeos && is_debug && target_cpu == "arm") {
-        ldflags += [ "-Wl,--long-plt" ]
+      if (!is_win && use_aura) {
+        sources += [ "app/chrome_test_exe_main_aura.cc" ]
       }
-
-      if (use_pango || use_cairo) {
-        # Needed for chrome_main.cc initialization of libraries.
-        configs += [ "//build/config/linux/pangocairo" ]
-      }
-
-      if (use_x11) {
-        configs += [
-          "//build/config/linux:x11",
-          "//build/config/linux:xext",
-        ]
-      }
-
-      if (enable_package_mash_services) {
-        deps += embedded_mash_service_deps
-      }
-    }
-
-    # These files are used by the installer so we need a public dep.
-    public_deps += [ ":packed_resources" ]
-
-    # Only ChromeOS has precompiled Flash that needs to get copied to the output
-    # directory. On other platforms, Flash is either component-updated only or
-    # not supported at all.
-    if (is_chromeos) {
-      deps += [ "//third_party/adobe/flash:flapper_binaries" ]
-    }
-
-    data_deps += [ "//third_party/widevine/cdm:widevinecdmadapter" ]
-
-    if (is_multi_dll_chrome) {
-      defines += [ "CHROME_MULTIPLE_DLL" ]
-      data_deps += [ ":chrome_child" ]
     }
   }
 }  # !is_android && !is_mac
