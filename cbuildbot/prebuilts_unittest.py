@@ -208,7 +208,9 @@ class BinhostConfWriterTest(
 
     # Provide a sample of private/public slave boards that are expected.
     public_slave_boards = ('amd64-generic', 'x86-generic')
-    private_slave_boards = ('cyan', 'samus', 'lumpy', 'daisy_spring')
+    # TODO: 20170606 temporarily removed cyan due to crbug.com/730272
+    #private_slave_boards = ('cyan', 'samus', 'lumpy', 'daisy_spring')
+    private_slave_boards = ('samus', 'lumpy', 'daisy_spring')
 
     self._VerifyResults(public_slave_boards=public_slave_boards,
                         private_slave_boards=private_slave_boards)
