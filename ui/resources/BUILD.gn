@@ -41,6 +41,13 @@ grit("webui_resources_grd") {
     "grit/webui_resources_map.h",
     "webui_resources.pak",
   ]
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+  deps = [
+    "//mojo/public/js:bindings",
+  ]
 }
 
 if (!is_mac) {

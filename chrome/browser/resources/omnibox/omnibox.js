@@ -106,7 +106,7 @@
    * @const
    */
   var PROPERTY_OUTPUT_ORDER = [
-    new PresentationInfoRecord('Provider', '', 'provider_name', true,
+    new PresentationInfoRecord('Provider', '', 'providerName', true,
         'The AutocompleteProvider suggesting this result.'),
     new PresentationInfoRecord('Type', '', 'type', true,
         'The type of the result.'),
@@ -115,7 +115,7 @@
     new PresentationInfoRecord('Contents', '', 'contents', true,
         'The text that is presented identifying the result.'),
     new PresentationInfoRecord(
-        'Can Be Default', '', 'allowed_to_be_default_match', false,
+        'Can Be Default', '', 'allowedToBeDefaultMatch', false,
         'A green checkmark indicates that the result can be the default ' +
         'match (i.e., can be the match that pressing enter in the omnibox ' +
         'navigates to).'),
@@ -123,18 +123,18 @@
         'A green checkmark indicates that the result has been bookmarked.'),
     new PresentationInfoRecord('Description', '', 'description', false,
         'The page title of the result.'),
-    new PresentationInfoRecord('URL', '', 'destination_url', true,
+    new PresentationInfoRecord('URL', '', 'destinationUrl', true,
         'The URL for the result.'),
-    new PresentationInfoRecord('Fill Into Edit', '', 'fill_into_edit', false,
+    new PresentationInfoRecord('Fill Into Edit', '', 'fillIntoEdit', false,
         'The text shown in the omnibox when the result is selected.'),
     new PresentationInfoRecord(
-        'Inline Autocompletion', '', 'inline_autocompletion', false,
+        'Inline Autocompletion', '', 'inlineAutocompletion', false,
         'The text shown in the omnibox as a blue highlight selection ' +
         'following the cursor, if this match is shown inline.'),
     new PresentationInfoRecord('Del', '', 'deletable', false,
         'A green checkmark indicates that the result can be deleted from ' +
         'the visit history.'),
-    new PresentationInfoRecord('Prev', '', 'from_previous', false, ''),
+    new PresentationInfoRecord('Prev', '', 'fromPrevious', false, ''),
     new PresentationInfoRecord(
         'Tran',
         'http://code.google.com/codesearch#OAMlx_jo-ck/src/content/public/' +
@@ -142,11 +142,11 @@
         'transition', false,
         'How the user got to the result.'),
     new PresentationInfoRecord(
-        'Done', '', 'provider_done', false,
+        'Done', '', 'providerDone', false,
         'A green checkmark indicates that the provider is done looking for ' +
         'more results.'),
     new PresentationInfoRecord(
-        'Associated Keyword', '', 'associated_keyword', false,
+        'Associated Keyword', '', 'associatedKeyword', false,
         'If non-empty, a "press tab to search" hint will be shown and will ' +
         'engage this keyword.'),
     new PresentationInfoRecord(
@@ -157,14 +157,14 @@
         'The number of matches that have been marked as duplicates of this ' +
         'match.'),
     new PresentationInfoRecord(
-        'Additional Info', '', 'additional_info', false,
+        'Additional Info', '', 'additionalInfo', false,
         'Provider-specific information about the result.')
   ];
 
   /**
    * Returns an HTML Element of type table row that contains the
    * headers we'll use for labeling the columns.  If we're in
-   * detailed_mode, we use all the headers.  If not, we only use ones
+   * detailedMode, we use all the headers.  If not, we only use ones
    * marked displayAlways.
    */
   function createAutocompleteResultTableHeader() {
@@ -203,9 +203,9 @@
                                                   propertyName) {
     var cell = document.createElement('td');
     if (propertyName in autocompleteSuggestion) {
-      if (propertyName == 'additional_info') {
-        // |additional_info| embeds a two-column table of provider-specific data
-        // within this cell. |additional_info| is an array of
+      if (propertyName == 'additionalInfo') {
+        // |additionalInfo| embeds a two-column table of provider-specific data
+        // within this cell. |additionalInfo| is an array of
         // AutocompleteAdditionalInfo.
         var additionalInfoTable = document.createElement('table');
         for (var i = 0; i < autocompleteSuggestion[propertyName].length; i++) {
@@ -281,18 +281,18 @@
     if (inDetailedMode || showIncompleteResults) {
       var p1 = document.createElement('p');
       p1.textContent = 'elapsed time = ' +
-          result.time_since_omnibox_started_ms + 'ms';
+          result.timeSinceOmniboxStartedMs + 'ms';
       output.appendChild(p1);
       var p2 = document.createElement('p');
       p2.textContent = 'all providers done = ' + result.done;
       output.appendChild(p2);
       var p3 = document.createElement('p');
       p3.textContent = 'host = ' + result.host;
-      if ('is_typed_host' in result) {
-        // Only output the is_typed_host information if available.  (It may
+      if ('isTypedHost' in result) {
+        // Only output the isTypedHost information if available.  (It may
         // be missing if the history database lookup failed.)
-        p3.textContent = p3.textContent + ' has is_typed_host = ' +
-            result.is_typed_host;
+        p3.textContent = p3.textContent + ' has isTypedHost = ' +
+            result.isTypedHost;
       }
       output.appendChild(p3);
     }
@@ -305,7 +305,7 @@
 
     // Add combined/merged result table.
     var p = document.createElement('p');
-    p.appendChild(addResultTableToOutput(result.combined_results));
+    p.appendChild(addResultTableToOutput(result.combinedResults));
     output.appendChild(p);
 
     // Move forward only if you want to display per provider results.
@@ -322,8 +322,8 @@
     // Add the per-provider result tables with labels. We do not append the
     // combined/merged result table since we already have the per provider
     // results.
-    for (var i = 0; i < result.results_by_provider.length; i++) {
-      var providerResults = result.results_by_provider[i];
+    for (var i = 0; i < result.resultsByProvider.length; i++) {
+      var providerResults = result.resultsByProvider[i];
       // If we have no results we do not display anything.
       if (providerResults.results.length == 0) {
         continue;
@@ -414,39 +414,30 @@
   var browserProxy = null;
 
   function initializeProxies() {
-    return importModules([
-      'mojo/public/js/bindings',
-      'chrome/browser/ui/webui/omnibox/omnibox.mojom',
-      'content/public/renderer/frame_interfaces',
-    ]).then(function(modules) {
-      var bindings = modules[0];
-      var mojom = modules[1];
-      var frameInterfaces = modules[2];
+    browserProxy = new mojom.OmniboxPageHandlerPtr;
+    Mojo.bindInterface(mojom.OmniboxPageHandler.name,
+                       mojo.makeRequest(browserProxy).handle);
 
-      browserProxy = new mojom.OmniboxPageHandlerPtr(
-          frameInterfaces.getInterface(mojom.OmniboxPageHandler.name));
+    /** @constructor */
+    var OmniboxPageImpl = function(request) {
+      this.binding_ = new mojo.Binding(mojom.OmniboxPage, this, request);
+    };
 
-      /** @constructor */
-      var OmniboxPageImpl = function() {
-        this.binding = new bindings.Binding(mojom.OmniboxPage, this);
-      };
+    OmniboxPageImpl.prototype = {
+      /** @override */
+      handleNewAutocompleteResult: function(result) {
+        progressiveAutocompleteResults.push(result);
+        refresh();
+      },
+    };
 
-      OmniboxPageImpl.prototype = {
-        /** @override */
-        handleNewAutocompleteResult: function(result) {
-          progressiveAutocompleteResults.push(result);
-          refresh();
-        },
-      };
-
-      pageImpl = new OmniboxPageImpl();
-      browserProxy.setClientPage(pageImpl.binding.createInterfacePtrAndBind());
-    });
+    var client = new mojom.OmniboxPagePtr;
+    pageImpl = new OmniboxPageImpl(mojo.makeRequest(client));
+    browserProxy.setClientPage(client);
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    return initializeProxies().then(function() {
-      initialize();
-    });
+    initializeProxies();
+    initialize();
   });
 })();
