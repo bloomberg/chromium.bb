@@ -1078,6 +1078,58 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
   }
 }
 
+TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  GraphicsContext context(GetPaintController());
+
+  FakeDisplayItemClient root("root");
+  auto root_properties = DefaultPaintChunkProperties();
+  PaintChunk::Id root_id(root, DisplayItem::kCaret);
+  // Record a first chunk with backface_hidden == false
+  GetPaintController().UpdateCurrentPaintChunkProperties(&root_id,
+                                                         root_properties);
+  DrawRect(context, root, kBackgroundDrawingType,
+           FloatRect(100, 100, 100, 100));
+
+  FakeDisplayItemClient container("container");
+  {
+    // Record a second chunk with backface_hidden == true
+    auto container_properties = DefaultPaintChunkProperties();
+    container_properties.backface_hidden = true;
+    PaintChunk::Id container_id(container, DisplayItem::kCaret);
+
+    SubsequenceRecorder r(context, container);
+    GetPaintController().UpdateCurrentPaintChunkProperties(
+        &container_id, container_properties);
+    DrawRect(context, container, kBackgroundDrawingType,
+             FloatRect(100, 100, 100, 100));
+    DrawRect(context, container, kForegroundDrawingType,
+             FloatRect(100, 100, 100, 100));
+  }
+  GetPaintController().CommitNewDisplayItems();
+
+  root_properties.backface_hidden = true;
+  // This time, record the fist chunk with backface_hidden == true
+  GetPaintController().UpdateCurrentPaintChunkProperties(&root_id,
+                                                         root_properties);
+  DrawRect(context, root, kBackgroundDrawingType,
+           FloatRect(100, 100, 100, 100));
+  EXPECT_TRUE(GetPaintController().UseCachedSubsequenceIfPossible(container));
+  GetPaintController().CommitNewDisplayItems();
+
+  // Even though the paint properties match, |container| should receive its
+  // own PaintChunk because it is a cached subsequence.
+  EXPECT_EQ(2u, GetPaintController().GetPaintArtifact().PaintChunks().size());
+  EXPECT_EQ(
+      root,
+      GetPaintController().GetPaintArtifact().PaintChunks()[0].id->client);
+  EXPECT_EQ(
+      container,
+      GetPaintController().GetPaintArtifact().PaintChunks()[1].id->client);
+}
+
 TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   FakeDisplayItemClient container1("container1",
                                    LayoutRect(100, 100, 100, 100));

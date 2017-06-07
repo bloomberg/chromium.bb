@@ -72,12 +72,14 @@ class PLATFORM_EXPORT PaintController {
 
   void InvalidateAll();
 
-  // These methods are called during painting.
+  // These methods are called during painting.u
 
   // Provide a new set of paint chunk properties to apply to recorded display
   // items, for Slimming Paint v2.
-  void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
-                                         const PaintChunkProperties&);
+  void UpdateCurrentPaintChunkProperties(
+      const PaintChunk::Id*,
+      const PaintChunkProperties&,
+      NewChunkForceState force_new_chunk = DontForceNewChunk);
 
   // Retrieve the current paint properties.
   const PaintChunkProperties& CurrentPaintChunkProperties() const;

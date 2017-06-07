@@ -86,7 +86,6 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
       "  <div id='content2' style='position: absolute; width: 100px; height: "
       "100px; background-color: green'></div>"
       "</div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutObject& container1 =
       *GetDocument().getElementById("container1")->GetLayoutObject();
@@ -105,6 +104,17 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
         TestDisplayItem(content1, kBackgroundType),
         TestDisplayItem(container2, kBackgroundType),
         TestDisplayItem(content2, kBackgroundType));
+
+    // check that new paint chunks were forced for |container1| and
+    // |container2|.
+    Vector<PaintChunk> paint_chunks =
+        RootPaintController().GetPaintArtifact().PaintChunks();
+    EXPECT_EQ(3u, paint_chunks.size());
+    EXPECT_EQ(GetLayoutView().Layer(), &paint_chunks[0].id->client);
+    EXPECT_EQ(ToLayoutBoxModelObject(container1).Layer(),
+              &paint_chunks[1].id->client);
+    EXPECT_EQ(ToLayoutBoxModelObject(container2).Layer(),
+              &paint_chunks[2].id->client);
   } else {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,

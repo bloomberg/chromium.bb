@@ -19,25 +19,31 @@ class ScopedPaintChunkProperties {
   WTF_MAKE_NONCOPYABLE(ScopedPaintChunkProperties);
 
  public:
-  ScopedPaintChunkProperties(PaintController& paint_controller,
-                             const DisplayItemClient& client,
-                             DisplayItem::Type type,
-                             const PaintChunkProperties& properties)
+  ScopedPaintChunkProperties(
+      PaintController& paint_controller,
+      const DisplayItemClient& client,
+      DisplayItem::Type type,
+      const PaintChunkProperties& properties,
+      NewChunkForceState force_new_chunk = DontForceNewChunk)
       : paint_controller_(paint_controller),
         previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
     PaintChunk::Id id(client, type);
-    paint_controller_.UpdateCurrentPaintChunkProperties(&id, properties);
+    paint_controller_.UpdateCurrentPaintChunkProperties(&id, properties,
+                                                        force_new_chunk);
   }
 
   // Omits the type parameter, in case that the client creates only one
   // PaintChunkProperties node during each painting.
-  ScopedPaintChunkProperties(PaintController& paint_controller,
-                             const DisplayItemClient& client,
-                             const PaintChunkProperties& properties)
+  ScopedPaintChunkProperties(
+      PaintController& paint_controller,
+      const DisplayItemClient& client,
+      const PaintChunkProperties& properties,
+      NewChunkForceState force_new_chunk = DontForceNewChunk)
       : ScopedPaintChunkProperties(paint_controller,
                                    client,
                                    DisplayItem::kUninitializedType,
-                                   properties) {}
+                                   properties,
+                                   force_new_chunk) {}
 
   ~ScopedPaintChunkProperties() {
     // We should not return to the previous id, because that may cause a new

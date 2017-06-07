@@ -119,9 +119,6 @@ crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html 
 crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Timeout ]
 
-# This test fails only when spv2 is enabled.
-crbug.com/719533 compositing/overflow/absolute-element-in-isolated-composited-ancestor.html [ Failure ]
-
 # ====== Paint team owned tests to here ======
 
 #### external/wpt/css/css-position-3

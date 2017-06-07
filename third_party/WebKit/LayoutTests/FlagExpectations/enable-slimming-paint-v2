@@ -2109,3 +2109,7 @@ crbug.com/706066 paint/invalidation/relayout-fixed-position-after-scale.html [ C
 
 Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 Bug(none) paint/pagination/composited-paginated-inline.html [ Failure ]
+
+Bug(none) paint/invalidation/absolute-display-block-to-none.html [ Failure ]
+Bug(none) paint/invalidation/overhanging-float-detach-repaint.html [ Failure ]
+Bug(none) paint/invalidation/trailing-floats-root-line-box-overflow.html [ Failure ]
