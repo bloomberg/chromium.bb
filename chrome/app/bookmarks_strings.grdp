@@ -419,6 +419,19 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
     Bookmarks
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_FOLDER_SORTED" desc="Label displayed in toast popup message when a folder's children are sorted.">
+    Folder sorted
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEM_DELETED" desc="Label displayed in toast popup message when an item is deleted.">
+    '<ph name="DELETED_ITEM_NAME">$1</ph>' has been deleted
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_DELETED" desc="Label displayed in toast popup message when several items are deleted.">
+    {COUNT, plural,
+      other {# bookmarks deleted}}
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_URL_COPIED" desc="Label displayed in toast popup message when a URL is copied.">
+    URL copied
+  </message>
   <!-- End of material design Bookmarks Manager strings. -->
 
   <!-- Begin of Bookmarks Menu (in the Main Menu) strings. -->
