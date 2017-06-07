@@ -66,10 +66,10 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   // Associates the Browser Plugin with |element_instance_id| to a
   // guest that has ID of |guest_instance_id| and sets initialization
   // parameters, |params| for it.
-  void AttachGuest(int embedder_process_id,
-                   int element_instance_id,
-                   int guest_instance_id,
-                   const base::DictionaryValue& attach_params);
+  virtual void AttachGuest(int embedder_process_id,
+                           int element_instance_id,
+                           int guest_instance_id,
+                           const base::DictionaryValue& attach_params);
 
   // Removes the association between |element_instance_id| and a guest instance
   // ID if one exists.
