@@ -8,8 +8,6 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/threaded/MultiThreadedTestUtil.h"
 #include "core/style/FilterOperation.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontDescription.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
