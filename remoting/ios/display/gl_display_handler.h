@@ -5,8 +5,8 @@
 #ifndef REMOTING_IOS_DISPLAY_GL_DISPLAY_HANDLER_H_
 #define REMOTING_IOS_DISPLAY_GL_DISPLAY_HANDLER_H_
 
+#import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
-#import <GLKit/GLKit.h>
 
 #import "remoting/client/display/sys_opengl.h"
 
@@ -24,6 +24,8 @@ class CursorShapeStub;
 
 }  // namespace protocol
 }  // namespace remoting
+
+@class EAGLView;
 
 // This protocol is for receiving notifications from the renderer when its state
 // changes. Implementations can use this to reposition viewport, process
@@ -43,7 +45,7 @@ class CursorShapeStub;
 - (void)stop;
 
 // Called once the GLKView created.
-- (void)onSurfaceCreated:(GLKView*)view;
+- (void)onSurfaceCreated:(EAGLView*)view;
 
 // Called every time the GLKView dimension is initialized or changed.
 - (void)onSurfaceChanged:(const CGRect&)frame;
@@ -52,8 +54,6 @@ class CursorShapeStub;
 - (std::unique_ptr<remoting::RendererProxy>)CreateRendererProxy;
 - (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer;
 - (std::unique_ptr<remoting::protocol::CursorShapeStub>)CreateCursorShapeStub;
-
-- (EAGLContext*)GetEAGLContext;
 
 // This is write-only but @property doesn't support write-only modifier.
 @property id<GlDisplayHandlerDelegate> delegate;

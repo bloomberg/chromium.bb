@@ -12,6 +12,7 @@
 
 #import "base/mac/bind_objc_block.h"
 #import "remoting/client/display/sys_opengl.h"
+#import "remoting/ios/display/eagl_view.h"
 #import "remoting/ios/display/gl_demo_screen.h"
 
 #include "base/bind.h"
@@ -56,11 +57,10 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   void OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
                        const base::Closure& done);
   void Stop();
-  void SurfaceCreated(GLKView* view);
+  void SurfaceCreated(EAGLView* view);
   void SurfaceChanged(int width, int height);
 
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
-  EAGLContext* GetEAGLContext();
   base::WeakPtr<Core> GetWeakPtr();
 
  private:
@@ -189,11 +189,11 @@ void Core::Stop() {
   // demo_screen_ = nil;
 }
 
-void Core::SurfaceCreated(GLKView* view) {
+void Core::SurfaceCreated(EAGLView* view) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  DCHECK(eagl_context_);
 
-  // Bind the view's framebuffer object to OpenGL.
-  [view bindDrawable];
+  [view startWithContext:eagl_context_];
 
   renderer_->OnSurfaceCreated(
       base::MakeUnique<GlCanvas>(static_cast<int>([eagl_context_ API])));
@@ -208,10 +208,6 @@ void Core::SurfaceCreated(GLKView* view) {
 void Core::SurfaceChanged(int width, int height) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   renderer_->OnSurfaceChanged(width, height);
-}
-
-EAGLContext* Core::GetEAGLContext() {
-  return eagl_context_;
 }
 
 base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
@@ -264,11 +260,7 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
       _core->GetWeakPtr(), _runtime->display_task_runner());
 }
 
-- (EAGLContext*)GetEAGLContext {
-  return _core->GetEAGLContext();
-}
-
-- (void)onSurfaceCreated:(GLKView*)view {
+- (void)onSurfaceCreated:(EAGLView*)view {
   _runtime->display_task_runner()->PostTask(
       FROM_HERE, base::Bind(&remoting::GlDisplayHandler::Core::SurfaceCreated,
                             _core->GetWeakPtr(), view));

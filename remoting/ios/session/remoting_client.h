@@ -5,6 +5,7 @@
 #ifndef REMOTING_IOS_SESSION_REMOTING_CLIENT_H_
 #define REMOTING_IOS_SESSION_REMOTING_CLIENT_H_
 
+#import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
 #import "remoting/ios/display/gl_display_handler.h"
