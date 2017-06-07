@@ -7,7 +7,7 @@
 
 #include <string>
 
-class GURL;
+#include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
@@ -38,6 +38,11 @@ bool CanBeIncognitoEnabled(const Extension* extension);
 // Returns true if |extension_id| can run in an incognito window.
 bool IsIncognitoEnabled(const std::string& extension_id,
                         content::BrowserContext* context);
+
+// Returns the site of the |extension_id|, given the associated |context|.
+// Suitable for use with BrowserContext::GetStoragePartitionForSite().
+GURL GetSiteForExtensionId(const std::string& extension_id,
+                           content::BrowserContext* context);
 
 content::StoragePartition* GetStoragePartitionForExtensionId(
     const std::string& extension_id,

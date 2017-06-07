@@ -36,6 +36,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -266,12 +267,6 @@ bool IsExtensionIdle(const std::string& extension_id,
       return false;
   }
   return true;
-}
-
-GURL GetSiteForExtensionId(const std::string& extension_id,
-                           content::BrowserContext* context) {
-  return content::SiteInstance::GetSiteForURL(
-      context, Extension::GetBaseURLFromExtensionId(extension_id));
 }
 
 std::unique_ptr<base::DictionaryValue> GetExtensionInfo(
