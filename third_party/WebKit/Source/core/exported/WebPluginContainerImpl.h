@@ -187,7 +187,7 @@ class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   void Dispose() override;
 
  private:
-  LocalFrameView* ParentFrameView() const;
+  LocalFrameView& ParentFrameView() const;
   // Sets |windowRect| to the content rect of the plugin in screen space.
   // Sets |clippedAbsoluteRect| to the visible rect for the plugin, clipped to
   // the visible screen of the root frame, in local space of the plugin.
@@ -224,7 +224,6 @@ class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
 
   friend class WebPluginContainerTest;
 
-  bool is_attached_;
   Member<HTMLPlugInElement> element_;
   WebPlugin* web_plugin_;
   WebLayer* web_layer_;
@@ -234,7 +233,7 @@ class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   bool wants_wheel_events_;
   bool self_visible_;
   bool parent_visible_;
-  bool is_disposed_;
+  bool is_attached_;
 };
 
 DEFINE_TYPE_CASTS(WebPluginContainerImpl,
