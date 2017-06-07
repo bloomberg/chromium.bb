@@ -37297,6 +37297,7 @@ from previous Chrome versions.
   <int value="0" label="Unhandled code point in URL"/>
   <int value="1" label="Could not elide URL"/>
   <int value="2" label="Unhandled PageInfo"/>
+  <int value="3" label="URL contained strong RTL chars"/>
 </enum>
 
 <enum name="VRViewerType" type="int">
