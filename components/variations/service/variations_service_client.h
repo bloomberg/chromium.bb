@@ -12,10 +12,6 @@
 #include "base/version.h"
 #include "components/version_info/version_info.h"
 
-namespace base {
-class SequencedWorkerPool;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -35,14 +31,9 @@ class VariationsServiceClient {
   // Returns the current application locale (e.g. "en-US").
   virtual std::string GetApplicationLocale() = 0;
 
-  // Returns the SequencedWorkerPool on which the VariationsService should run
-  // tasks that may block.
-  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
-
   // Returns a callback that when run returns the base::Version to use for
   // variations seed simulation. VariationsService guarantees that the callback
-  // will be run on the pool returned by
-  // VariationsServiceClient::GetBlockingPool().
+  // will be run on a background threadt that permits blocking.
   virtual base::Callback<base::Version(void)>
   GetVersionForSimulationCallback() = 0;
 

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "components/variations/service/variations_service_client.h"
 
 // ChromeVariationsServiceClient provides an implementation of
@@ -21,7 +20,6 @@ class ChromeVariationsServiceClient
 
   // variations::VariationsServiceClient:
   std::string GetApplicationLocale() override;
-  base::SequencedWorkerPool* GetBlockingPool() override;
   base::Callback<base::Version(void)> GetVersionForSimulationCallback()
       override;
   net::URLRequestContextGetter* GetURLRequestContext() override;

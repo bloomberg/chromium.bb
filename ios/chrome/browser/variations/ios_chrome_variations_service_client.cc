@@ -9,7 +9,6 @@
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/web/public/web_thread.h"
 
 namespace {
 
@@ -29,10 +28,6 @@ IOSChromeVariationsServiceClient::~IOSChromeVariationsServiceClient() {}
 
 std::string IOSChromeVariationsServiceClient::GetApplicationLocale() {
   return GetApplicationContext()->GetApplicationLocale();
-}
-
-base::SequencedWorkerPool* IOSChromeVariationsServiceClient::GetBlockingPool() {
-  return web::WebThread::GetBlockingPool();
 }
 
 base::Callback<base::Version()>

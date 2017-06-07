@@ -19,7 +19,6 @@ class IOSChromeVariationsServiceClient
  private:
   // variations::VariationsServiceClient implementation.
   std::string GetApplicationLocale() override;
-  base::SequencedWorkerPool* GetBlockingPool() override;
   base::Callback<base::Version()> GetVersionForSimulationCallback() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
