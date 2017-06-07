@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
+#import "chrome/browser/ui/cocoa/dialog_text_field_editor.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/url_formatter/url_fixer.h"
@@ -79,6 +80,22 @@ using bookmarks::BookmarkNode;
   [super awakeFromNib];
   [self expandNodes:
       [self bookmarkModel]->expanded_state_tracker()->GetExpandedNodes()];
+}
+
+- (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
+  if (obj == urlField_) {
+    if (!urlFieldEditor_)
+      urlFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
+
+    return urlFieldEditor_.autorelease();
+  } else if (obj == nameTextField_) {
+    if (!nameFieldEditor_)
+      nameFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
+
+    return nameFieldEditor_.autorelease();
+  }
+
+  return nil;
 }
 
 - (void)nodeRemoved:(const BookmarkNode*)node

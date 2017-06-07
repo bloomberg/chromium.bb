@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -20,14 +21,17 @@
 #import "chrome/browser/ui/cocoa/subresource_filter/subresource_filter_bubble_controller.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::PluginService;
@@ -84,6 +88,13 @@ const int kMIDISysExPadding = 8;
 
 // Padding between host names in the MIDI bubble.
 const int kMIDISysExHostPadding = 4;
+
+// Touch bar identifier.
+NSString* const kContentSettingsBubbleTouchBarId = @"content-settings-bubble";
+
+// Touch bar item identifiers.
+NSString* const kManageTouchBarId = @"MANAGE";
+NSString* const kDoneTouchBarId = @"DONE";
 
 void SetControlSize(NSControl* control, NSControlSize controlSize) {
   CGFloat fontSize = [NSFont systemFontSizeForControlSize:controlSize];
@@ -851,6 +862,58 @@ const ContentTypeToNibPath kNibPaths[] = {
 - (void)awakeFromNib {
   [super awakeFromNib];
   [self layoutView];
+}
+
+- (NSTouchBar*)makeTouchBar {
+  if (!base::FeatureList::IsEnabled(features::kBrowserTouchBar))
+    return nil;
+
+  if (!manageButton_ && !doneButton_)
+    return nil;
+
+  base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
+  [touchBar setCustomizationIdentifier:ui::GetTouchBarId(
+                                           kContentSettingsBubbleTouchBarId)];
+  [touchBar setDelegate:self];
+
+  NSMutableArray* dialogItems = [NSMutableArray array];
+  if (manageButton_) {
+    [dialogItems
+        addObject:ui::GetTouchBarItemId(kContentSettingsBubbleTouchBarId,
+                                        kManageTouchBarId)];
+  }
+
+  if (doneButton_) {
+    [dialogItems
+        addObject:ui::GetTouchBarItemId(kContentSettingsBubbleTouchBarId,
+                                        kDoneTouchBarId)];
+  }
+
+  [touchBar setDefaultItemIdentifiers:dialogItems];
+  [touchBar setCustomizationAllowedItemIdentifiers:dialogItems];
+  return touchBar.autorelease();
+}
+
+- (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
+  NSButton* button = nil;
+  if ([identifier hasSuffix:kManageTouchBarId]) {
+    NSString* title = base::SysUTF16ToNSString(
+        contentSettingBubbleModel_->bubble_content().manage_text);
+    button = [NSButton buttonWithTitle:title
+                                target:self
+                                action:@selector(manageBlocking:)];
+  } else if ([identifier hasSuffix:kDoneTouchBarId]) {
+    button = ui::GetBlueTouchBarButton(l10n_util::GetNSString(IDS_DONE), self,
+                                       @selector(closeBubble:));
+  } else {
+    return nil;
+  }
+
+  base::scoped_nsobject<NSCustomTouchBarItem> item(
+      [[ui::NSCustomTouchBarItem() alloc] initWithIdentifier:identifier]);
+  [item setView:button];
+  return item.autorelease();
 }
 
 - (void)layoutView {

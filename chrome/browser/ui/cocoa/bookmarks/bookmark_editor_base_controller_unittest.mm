@@ -4,11 +4,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -16,12 +20,26 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkExpandedStateTracker;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+
+namespace {
+
+// Touch bar identifier.
+NSString* const kBookmarkEditDialogTouchBarId = @"bookmark-edit-dialog";
+
+// Touch bar item identifiers.
+NSString* const kNewFolderTouchBarId = @"NEW-FOLDER";
+NSString* const kCancelTouchBarId = @"CANCEL";
+NSString* const kSaveTouchBarId = @"SAVE";
+
+}  // end namespace
 
 class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
  public:
@@ -258,6 +276,31 @@ TEST_F(BookmarkEditorBaseControllerTest, ExpandedState) {
   actual = [controller_ getExpandedNodes];
 
   EXPECT_EQ(nodes, actual);
+
+  [controller_ cancel:nil];
+}
+
+// Verifies the dialog's touch bar.
+TEST_F(BookmarkEditorBaseControllerTest, TouchBar) {
+  if (!base::mac::IsAtLeastOS10_12()) {
+    [controller_ cancel:nil];
+    return;
+  }
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
+
+  NSTouchBar* touch_bar = [controller_ makeTouchBar];
+  NSArray* touch_bar_items = [touch_bar itemIdentifiers];
+  EXPECT_TRUE([touch_bar_items
+      containsObject:ui::GetTouchBarItemId(kBookmarkEditDialogTouchBarId,
+                                           kNewFolderTouchBarId)]);
+  EXPECT_TRUE([touch_bar_items
+      containsObject:ui::GetTouchBarItemId(kBookmarkEditDialogTouchBarId,
+                                           kCancelTouchBarId)]);
+  EXPECT_TRUE([touch_bar_items
+      containsObject:ui::GetTouchBarItemId(kBookmarkEditDialogTouchBarId,
+                                           kSaveTouchBarId)]);
 
   [controller_ cancel:nil];
 }

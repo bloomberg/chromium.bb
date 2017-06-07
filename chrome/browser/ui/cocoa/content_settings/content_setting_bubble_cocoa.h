@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
 #include "content/public/common/media_stream_request.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
 class ContentSettingBubbleModel;
 class ContentSettingBubbleWebContentsObserverBridge;
@@ -54,7 +55,8 @@ using MediaMenuPartsMap =
 }  // namespace content_setting_bubble
 
 // Manages a "content blocked" bubble.
-@interface ContentSettingBubbleController : OmniboxDecorationBubbleController {
+@interface ContentSettingBubbleController
+    : OmniboxDecorationBubbleController<NSTouchBarDelegate> {
  @protected
   IBOutlet NSTextField* titleLabel_;
   IBOutlet NSTextField* messageLabel_;
@@ -100,6 +102,9 @@ showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
 parentWindow:(NSWindow*)parentWindow
   decoration:(ContentSettingDecoration*)decoration
   anchoredAt:(NSPoint)anchoredAt;
+
+// Override to customize the touch bar.
+- (NSTouchBar*)makeTouchBar;
 
 // Initializes the layout of all the UI elements.
 - (void)layoutView;

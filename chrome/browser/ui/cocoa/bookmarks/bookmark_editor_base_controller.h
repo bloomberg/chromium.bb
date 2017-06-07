@@ -12,6 +12,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
 class BookmarkEditorBaseControllerBridge;
 @class BookmarkTreeBrowserCell;
@@ -27,7 +28,7 @@ class BookmarkModel;
 // BookmarkEditor::Show static function found in the accompanying
 // implementation, that function will need to be update.
 @interface BookmarkEditorBaseController
-    : NSWindowController<NSOutlineViewDelegate> {
+    : NSWindowController<NSOutlineViewDelegate, NSTouchBarDelegate> {
  @private
   IBOutlet NSButton* newFolderButton_;
   IBOutlet NSButton* okButton_;  // Used for unit testing only.
@@ -67,6 +68,9 @@ class BookmarkModel;
                        url:(const GURL&)url
                      title:(const base::string16&)title
              configuration:(BookmarkEditor::Configuration)configuration;
+
+// Override to customize the touch bar.
+- (NSTouchBar*)makeTouchBar;
 
 // Run the bookmark editor as a modal sheet.  Does not block.
 - (void)runAsModalSheet;

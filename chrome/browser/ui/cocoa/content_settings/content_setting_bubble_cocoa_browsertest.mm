@@ -7,9 +7,11 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -20,12 +22,25 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/common/media_stream_request.h"
 #include "testing/gtest_mac.h"
+#include "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+// Touch bar identifier.
+NSString* const kContentSettingsBubbleTouchBarId = @"content-settings-bubble";
+
+// Touch bar item identifiers.
+NSString* const kManageTouchBarId = @"MANAGE";
+NSString* const kDoneTouchBarId = @"DONE";
+
+}  // namespace
 
 class ContentSettingBubbleControllerTest : public InProcessBrowserTest {
  protected:
@@ -181,6 +196,35 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
   label =
       base::SysUTF16ToNSString(l10n_util::GetStringUTF16(IDS_APP_MENU_RELOAD));
   EXPECT_NSEQ([doneButton title], label);
+
+  [parent_ close];
+}
+
+// Verifies the bubble's touch bar.
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest, TouchBar) {
+  if (!base::mac::IsAtLeastOS10_12()) {
+    [parent_ close];
+    return;
+  }
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
+
+  TabSpecificContentSettings::FromWebContents(web_contents())
+      ->BlockAllContentForTesting();
+  ContentSettingBubbleController* controller =
+      CreateBubbleController(new ContentSettingMediaStreamBubbleModel(
+          nullptr, web_contents(), profile()));
+  EXPECT_TRUE(controller);
+
+  NSTouchBar* touch_bar = [controller makeTouchBar];
+  NSArray* touch_bar_items = [touch_bar itemIdentifiers];
+  EXPECT_TRUE([touch_bar_items
+      containsObject:ui::GetTouchBarItemId(kContentSettingsBubbleTouchBarId,
+                                           kDoneTouchBarId)]);
+  EXPECT_TRUE([touch_bar_items
+      containsObject:ui::GetTouchBarItemId(kContentSettingsBubbleTouchBarId,
+                                           kManageTouchBarId)]);
 
   [parent_ close];
 }

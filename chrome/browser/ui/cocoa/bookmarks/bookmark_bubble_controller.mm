@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 
 #include "base/mac/bundle_locations.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_observer.h"
@@ -13,26 +14,42 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bubble_sync_promo_controller.h"
+#import "chrome/browser/ui/cocoa/dialog_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+
+namespace {
+
+// Touch bar identifier.
+NSString* const kBookmarkBubbleTouchBarId = @"bookmark-bubble";
+
+// Touch bar item identifiers.
+NSString* const kRemoveTouchBarId = @"REMOVE";
+NSString* const kEditTouchBarId = @"EDIT";
+NSString* const kDoneTouchBarId = @"DONE";
+
+}  // end namespace
 
 @interface BookmarkBubbleController (PrivateAPI)
 - (void)updateBookmarkNode;
@@ -194,6 +211,63 @@ using bookmarks::BookmarkNode;
                          withAnimation:YES];
 
   [super close];
+}
+
+- (NSTouchBar*)makeTouchBar {
+  if (!base::FeatureList::IsEnabled(features::kBrowserTouchBar))
+    return nil;
+
+  base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
+  [touchBar
+      setCustomizationIdentifier:ui::GetTouchBarId(kBookmarkBubbleTouchBarId)];
+  [touchBar setDelegate:self];
+
+  NSArray* dialogItems = @[
+    ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId, kRemoveTouchBarId),
+    ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId, kEditTouchBarId),
+    ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId, kDoneTouchBarId)
+  ];
+
+  [touchBar setDefaultItemIdentifiers:dialogItems];
+  [touchBar setCustomizationAllowedItemIdentifiers:dialogItems];
+  return touchBar.autorelease();
+}
+
+- (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
+  NSButton* button = nil;
+  if ([identifier hasSuffix:kRemoveTouchBarId]) {
+    button = [NSButton buttonWithTitle:l10n_util::GetNSString(
+                                           IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK)
+                                target:self
+                                action:@selector(remove:)];
+  } else if ([identifier hasSuffix:kEditTouchBarId]) {
+    button = [NSButton
+        buttonWithTitle:l10n_util::GetNSString(IDS_BOOKMARK_BUBBLE_OPTIONS)
+                 target:self
+                 action:@selector(edit:)];
+  } else if ([identifier hasSuffix:kDoneTouchBarId]) {
+    button = ui::GetBlueTouchBarButton(l10n_util::GetNSString(IDS_DONE), self,
+                                       @selector(ok:));
+  } else {
+    return nil;
+  }
+
+  base::scoped_nsobject<NSCustomTouchBarItem> item(
+      [[ui::NSCustomTouchBarItem() alloc] initWithIdentifier:identifier]);
+  [item setView:button];
+  return item.autorelease();
+}
+
+// Delegate method: see |NSWindowDelegate| protocol.
+- (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
+  if (obj != nameTextField_)
+    return nil;
+
+  if (!textFieldEditor_)
+    textFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
+
+  return textFieldEditor_.get();
 }
 
 // Shows the bookmark editor sheet for more advanced editing.

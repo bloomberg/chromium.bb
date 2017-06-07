@@ -2678,6 +2678,8 @@ split_static_library("ui") {
         "cocoa/dev_tools_controller.mm",
         "cocoa/device_chooser_content_view_cocoa.h",
         "cocoa/device_chooser_content_view_cocoa.mm",
+        "cocoa/dialog_text_field_editor.h",
+        "cocoa/dialog_text_field_editor.mm",
         "cocoa/download/background_theme.h",
         "cocoa/download/background_theme.mm",
         "cocoa/download/download_danger_prompt_impl.cc",
