@@ -142,8 +142,13 @@ void ContentVerifyJob::DoneReading() {
 }
 
 bool ContentVerifyJob::FinishBlock() {
-  if (!done_reading_ && current_hash_byte_count_ == 0)
-    return true;
+  if (current_hash_byte_count_ == 0) {
+    if (!done_reading_ ||
+        // If we have checked all blocks already, then nothing else to do here.
+        current_block_ == hash_reader_->block_count()) {
+      return true;
+    }
+  }
   if (!current_hash_) {
     // This happens when we fail to read the resource. Compute empty content's
     // hash in this case.

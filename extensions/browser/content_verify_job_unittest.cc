@@ -259,4 +259,38 @@ TEST_F(ContentVerifyJobUnittest, LegitimateZeroByteFile) {
   }
 }
 
+// Tests that extension resources of different interesting sizes work properly.
+// Regression test for https://crbug.com/720597, where content verification
+// always failed for sizes multiple of content hash's block size (4096 bytes).
+TEST_F(ContentVerifyJobUnittest, DifferentSizedFiles) {
+  base::FilePath test_dir_base =
+      GetTestPath(base::FilePath(FILE_PATH_LITERAL("different_sized_files")));
+  base::FilePath unzipped_path;
+  scoped_refptr<Extension> extension = UnzipToTempDirAndLoad(
+      test_dir_base.AppendASCII("source.zip"), &unzipped_path);
+  ASSERT_TRUE(extension.get());
+  // Make sure there is a verified_contents.json file there as this test cannot
+  // fetch it.
+  EXPECT_TRUE(
+      base::PathExists(file_util::GetVerifiedContentsPath(extension->path())));
+
+  const struct {
+    const char* name;
+    size_t byte_size;
+  } kFilesToTest[] = {
+      {"1024.js", 1024}, {"4096.js", 4096}, {"8192.js", 8192},
+      {"8191.js", 8191}, {"8193.js", 8193},
+  };
+  for (const auto& file_to_test : kFilesToTest) {
+    base::FilePath resource_path =
+        base::FilePath::FromUTF8Unsafe(file_to_test.name);
+    std::string contents;
+    base::ReadFileToString(unzipped_path.AppendASCII(file_to_test.name),
+                           &contents);
+    EXPECT_EQ(file_to_test.byte_size, contents.size());
+    EXPECT_EQ(ContentVerifyJob::NONE,
+              RunContentVerifyJob(*extension.get(), resource_path, contents));
+  }
+}
+
 }  // namespace extensions
