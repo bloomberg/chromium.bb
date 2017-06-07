@@ -10,8 +10,8 @@ if (is_android) {
 static_library("internal") {
   visibility = [
     ":*",
-    "//components/download",
-    "//components/download/content",
+    "//components/download/content/factory",
+    "//components/download/content/internal",
     "//components/download/internal/test:test_support",
   ]
 
@@ -67,11 +67,10 @@ static_library("internal") {
 source_set("unit_tests") {
   testonly = true
 
-  visibility = [ "//components/download:unit_tests" ]
-
   sources = [
     "client_set_unittest.cc",
     "controller_impl_unittest.cc",
+    "download_service_impl_unittest.cc",
     "download_store_unittest.cc",
     "entry_utils_unittest.cc",
     "model_impl_unittest.cc",

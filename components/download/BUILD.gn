@@ -2,25 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_android) {
-  import("//build/config/android/config.gni")
-  import("//build/config/android/rules.gni")
-}
-
-group("download") {
-  public_deps = [
-    "//components/download/public",
-  ]
-
-  deps = [
-    "//components/download/internal",
-  ]
-}
-
+# TODO(dtrainor): Remove this file and have components_unittests depend on
+# //components/download/internal:unit_tests directly.
 group("unit_tests") {
   testonly = true
 
   deps = [
     "//components/download/internal:unit_tests",
+  ]
+
+  data_deps = [
+    ":components_unittests_gtest_filter",
+  ]
+}
+
+source_set("components_unittests_gtest_filter") {
+  testonly = true
+
+  data = [
+    "components_unittests.filter",
   ]
 }

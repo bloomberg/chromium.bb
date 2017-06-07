@@ -27,7 +27,7 @@ class Controller {
   virtual void Initialize() = 0;
 
   // Returns the status of Controller.
-  virtual const StartupStatus& GetStartupStatus() = 0;
+  virtual const StartupStatus* GetStartupStatus() = 0;
 
   // Starts a download with |params|.  See DownloadParams::StartCallback and
   // DownloadParams::StartResponse for information on how a caller can determine

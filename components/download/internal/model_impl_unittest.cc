@@ -59,8 +59,8 @@ TEST_F(DownloadServiceModelImplTest, SuccessfulLifecycle) {
 }
 
 TEST_F(DownloadServiceModelImplTest, SuccessfulInitWithEntries) {
-  Entry entry1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
-  Entry entry2 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry1 = test::BuildBasicEntry();
+  Entry entry2 = test::BuildBasicEntry();
   std::vector<Entry> entries = {entry1, entry2};
 
   InSequence sequence;
@@ -83,8 +83,8 @@ TEST_F(DownloadServiceModelImplTest, BadInit) {
 }
 
 TEST_F(DownloadServiceModelImplTest, Add) {
-  Entry entry1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
-  Entry entry2 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry1 = test::BuildBasicEntry();
+  Entry entry2 = test::BuildBasicEntry();
 
   InSequence sequence;
   EXPECT_CALL(client_, OnModelReady(true)).Times(1);
@@ -108,7 +108,7 @@ TEST_F(DownloadServiceModelImplTest, Add) {
 }
 
 TEST_F(DownloadServiceModelImplTest, Update) {
-  Entry entry1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry1 = test::BuildBasicEntry();
 
   Entry entry2(entry1);
   entry2.state = Entry::State::AVAILABLE;
@@ -142,8 +142,8 @@ TEST_F(DownloadServiceModelImplTest, Update) {
 }
 
 TEST_F(DownloadServiceModelImplTest, Remove) {
-  Entry entry1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
-  Entry entry2 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry1 = test::BuildBasicEntry();
+  Entry entry2 = test::BuildBasicEntry();
   std::vector<Entry> entries = {entry1, entry2};
 
   InSequence sequence;
@@ -168,7 +168,7 @@ TEST_F(DownloadServiceModelImplTest, Remove) {
 }
 
 TEST_F(DownloadServiceModelImplTest, Get) {
-  Entry entry = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry = test::BuildBasicEntry();
 
   std::vector<Entry> entries = {entry};
 
@@ -183,8 +183,8 @@ TEST_F(DownloadServiceModelImplTest, Get) {
 }
 
 TEST_F(DownloadServiceModelImplTest, PeekEntries) {
-  Entry entry1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
-  Entry entry2 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry1 = test::BuildBasicEntry();
+  Entry entry2 = test::BuildBasicEntry();
   std::vector<Entry> entries = {entry1, entry2};
 
   InSequence sequence;
@@ -199,7 +199,7 @@ TEST_F(DownloadServiceModelImplTest, PeekEntries) {
 }
 
 TEST_F(DownloadServiceModelImplTest, TestRemoveAfterAdd) {
-  Entry entry = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry = test::BuildBasicEntry();
 
   InSequence sequence;
   EXPECT_CALL(client_, OnModelReady(true)).Times(1);
@@ -220,7 +220,7 @@ TEST_F(DownloadServiceModelImplTest, TestRemoveAfterAdd) {
 }
 
 TEST_F(DownloadServiceModelImplTest, TestRemoveAfterUpdate) {
-  Entry entry1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry1 = test::BuildBasicEntry();
 
   Entry entry2(entry1);
   entry2.state = Entry::State::AVAILABLE;

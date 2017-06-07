@@ -36,8 +36,8 @@ void ControllerImpl::Initialize() {
   model_->Initialize(this);
 }
 
-const StartupStatus& ControllerImpl::GetStartupStatus() {
-  return startup_status_;
+const StartupStatus* ControllerImpl::GetStartupStatus() {
+  return &startup_status_;
 }
 
 void ControllerImpl::StartDownload(const DownloadParams& params) {

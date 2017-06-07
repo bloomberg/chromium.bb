@@ -40,7 +40,7 @@ class ControllerImpl : public Controller,
 
   // Controller implementation.
   void Initialize() override;
-  const StartupStatus& GetStartupStatus() override;
+  const StartupStatus* GetStartupStatus() override;
   void StartDownload(const DownloadParams& params) override;
   void PauseDownload(const std::string& guid) override;
   void ResumeDownload(const std::string& guid) override;

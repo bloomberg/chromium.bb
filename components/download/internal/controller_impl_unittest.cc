@@ -99,19 +99,19 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitModelFirst) {
 
   controller_->Initialize();
   EXPECT_TRUE(store_->init_called());
-  EXPECT_FALSE(controller_->GetStartupStatus().Complete());
+  EXPECT_FALSE(controller_->GetStartupStatus()->Complete());
 
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
-  EXPECT_FALSE(controller_->GetStartupStatus().Complete());
-  EXPECT_FALSE(controller_->GetStartupStatus().driver_ok.has_value());
-  EXPECT_TRUE(controller_->GetStartupStatus().model_ok.value());
+  EXPECT_FALSE(controller_->GetStartupStatus()->Complete());
+  EXPECT_FALSE(controller_->GetStartupStatus()->driver_ok.has_value());
+  EXPECT_TRUE(controller_->GetStartupStatus()->model_ok.value());
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
 
   driver_->MakeReady();
-  EXPECT_TRUE(controller_->GetStartupStatus().Complete());
-  EXPECT_TRUE(controller_->GetStartupStatus().driver_ok.value());
-  EXPECT_TRUE(controller_->GetStartupStatus().Ok());
+  EXPECT_TRUE(controller_->GetStartupStatus()->Complete());
+  EXPECT_TRUE(controller_->GetStartupStatus()->driver_ok.value());
+  EXPECT_TRUE(controller_->GetStartupStatus()->Ok());
 
   task_runner_->RunUntilIdle();
 }
@@ -121,26 +121,26 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitDriverFirst) {
 
   controller_->Initialize();
   EXPECT_TRUE(store_->init_called());
-  EXPECT_FALSE(controller_->GetStartupStatus().Complete());
+  EXPECT_FALSE(controller_->GetStartupStatus()->Complete());
 
   driver_->MakeReady();
-  EXPECT_FALSE(controller_->GetStartupStatus().Complete());
-  EXPECT_FALSE(controller_->GetStartupStatus().model_ok.has_value());
-  EXPECT_TRUE(controller_->GetStartupStatus().driver_ok.value());
+  EXPECT_FALSE(controller_->GetStartupStatus()->Complete());
+  EXPECT_FALSE(controller_->GetStartupStatus()->model_ok.has_value());
+  EXPECT_TRUE(controller_->GetStartupStatus()->driver_ok.value());
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
 
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
-  EXPECT_TRUE(controller_->GetStartupStatus().Complete());
-  EXPECT_TRUE(controller_->GetStartupStatus().model_ok.value());
-  EXPECT_TRUE(controller_->GetStartupStatus().Ok());
+  EXPECT_TRUE(controller_->GetStartupStatus()->Complete());
+  EXPECT_TRUE(controller_->GetStartupStatus()->model_ok.value());
+  EXPECT_TRUE(controller_->GetStartupStatus()->Ok());
 
   task_runner_->RunUntilIdle();
 }
 
 TEST_F(DownloadServiceControllerImplTest, SuccessfulInitWithExistingDownload) {
-  Entry entry1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
-  Entry entry2 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry1 = test::BuildBasicEntry();
+  Entry entry2 = test::BuildBasicEntry();
   Entry entry3 =
       test::BuildEntry(DownloadClient::INVALID, base::GenerateGUID());
 
@@ -169,7 +169,7 @@ TEST_F(DownloadServiceControllerImplTest, FailedInitWithBadModel) {
 }
 
 TEST_F(DownloadServiceControllerImplTest, GetOwnerOfDownload) {
-  Entry entry = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry = test::BuildBasicEntry();
   std::vector<Entry> entries = {entry};
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
@@ -210,7 +210,7 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadAccepted) {
 TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithBackoff) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
 
-  Entry entry = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry = test::BuildBasicEntry();
   std::vector<Entry> entries = {entry};
 
   // Set up the Controller.
@@ -238,7 +238,7 @@ TEST_F(DownloadServiceControllerImplTest,
        AddDownloadFailsWithDuplicateGuidInModel) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
 
-  Entry entry = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
+  Entry entry = test::BuildBasicEntry();
   std::vector<Entry> entries = {entry};
 
   // Set up the Controller.

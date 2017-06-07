@@ -5,6 +5,11 @@
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
+  visibility = [
+    "//components/download/content/factory",
+    "//components/download/internal:*",
+  ]
+
   sources = [
     "entry.proto",
     "request.proto",

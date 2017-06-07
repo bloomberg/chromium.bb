@@ -30,6 +30,7 @@ struct SchedulingParams;
 // feature requesting a download will have to implement a download::Client
 // interface so this class knows who to contact when a download completes after
 // a process restart.
+// See the embedder specific factories for creation options.
 class DownloadService : public KeyedService {
  public:
   // The current status of the Service.
@@ -46,21 +47,6 @@ class DownloadService : public KeyedService {
     // error on some internal component like the persistence layer.
     UNAVAILABLE = 2,
   };
-
-  // |clients| is a map of DownloadClient -> std::unique_ptr<Client>.  This
-  // represents all of the clients that are allowed to have requests made on
-  // their behalf.  This cannot be changed after startup.  Any existing requests
-  // no longer associated with a client will be cancelled.
-  // |storage_dir| is a path to where all the local storage will be.  This will
-  // hold the internal database as well as any temporary files on disk.  If this
-  // is an empty path, the service will not persist any information to disk and
-  // will act as an in-memory only service (this means no auto-retries after
-  // restarts, no files written on completion, etc.).
-  // |background_task_runner| will be used for all disk reads and writes.
-  static DownloadService* Create(
-      std::unique_ptr<DownloadClientMap> clients,
-      const base::FilePath& storage_dir,
-      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
 
   // Whether or not the DownloadService is currently available, initialized
   // successfully, and ready to be used.
