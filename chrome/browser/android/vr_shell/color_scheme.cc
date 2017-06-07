@@ -47,6 +47,13 @@ void InitializeColorSchemes() {
   normal_scheme.system_indicator_foreground =
       normal_scheme.permanent_warning_foreground;
   normal_scheme.separator = 0xFF9E9E9E;
+  normal_scheme.prompt_foreground = 0xCC000000;
+  normal_scheme.prompt_primary_button_background = 0xBFFFFFFF;
+  normal_scheme.prompt_secondary_button_background = 0x66FFFFFF;
+  normal_scheme.prompt_primary_button_forground = 0xA6000000;
+  normal_scheme.prompt_secondary_button_foreground = 0xA6000000;
+  normal_scheme.prompt_button_background_down = 0xE6FFFFFF;
+  normal_scheme.prompt_button_background_hover = 0xFFFFFFFF;
   normal_scheme.secure = gfx::kGoogleGreen700;
   normal_scheme.insecure = gfx::kGoogleRed700;
   normal_scheme.warning = 0xFF5A5A5A;
@@ -85,6 +92,13 @@ void InitializeColorSchemes() {
   incognito_scheme.warning = incognito_scheme.secure;
   incognito_scheme.url_emphasized = incognito_scheme.secure;
   incognito_scheme.url_deemphasized = 0xFF878787;
+  incognito_scheme.prompt_foreground = 0xCCFFFFFF;
+  incognito_scheme.prompt_primary_button_background = 0xD9FFFFFF;
+  incognito_scheme.prompt_secondary_button_background = 0x80FFFFFF;
+  incognito_scheme.prompt_primary_button_forground = 0xD9000000;
+  incognito_scheme.prompt_secondary_button_foreground = 0xD9000000;
+  incognito_scheme.prompt_button_background_hover = 0xFF8C8C8C;
+  incognito_scheme.prompt_button_background_down = 0xE6FFFFFF;
   incognito_scheme.disabled = 0x33E6E6E6;
 
   initialized = true;

@@ -90,11 +90,12 @@ import java.util.List;
  */
 public class PageInfoPopup implements OnClickListener {
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({OPENED_FROM_MENU, OPENED_FROM_TOOLBAR})
+    @IntDef({OPENED_FROM_MENU, OPENED_FROM_TOOLBAR, OPENED_FROM_VR})
     private @interface OpenedFromSource {}
 
     public static final int OPENED_FROM_MENU = 1;
     public static final int OPENED_FROM_TOOLBAR = 2;
+    public static final int OPENED_FROM_VR = 3;
 
     /**
      * An entry in the settings dropdown for a given permission. There are two options for each
@@ -997,6 +998,8 @@ public class PageInfoPopup implements OnClickListener {
             RecordUserAction.record("MobileWebsiteSettingsOpenedFromMenu");
         } else if (source == OPENED_FROM_TOOLBAR) {
             RecordUserAction.record("MobileWebsiteSettingsOpenedFromToolbar");
+        } else if (source == OPENED_FROM_VR) {
+            RecordUserAction.record("MobileWebsiteSettingsOpenedFromVR");
         } else {
             assert false : "Invalid source passed";
         }

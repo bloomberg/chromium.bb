@@ -13,6 +13,7 @@ namespace vr_shell {
 enum class UiUnsupportedMode : int {
   kUnhandledCodePoint = 0,
   kCouldNotElideURL,
+  kUnhandledPageInfo,
 
   // This must be last.
   kCount,

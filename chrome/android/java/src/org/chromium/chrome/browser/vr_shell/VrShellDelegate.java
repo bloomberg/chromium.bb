@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
+import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -140,6 +141,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private Boolean mInVrAtChromeLaunch;
     private boolean mShowingDaydreamDoff;
     private boolean mDoffOptional;
+    // Whether we should show the PageInfo UI. This is shown when we force exit the user
+    // out of VR when they attempt to view the PageInfo.
+    private boolean mShouldShowPageInfo;
     private boolean mExitingCct;
     private boolean mPaused;
     private int mRestoreSystemUiVisibilityFlag = -1;
@@ -486,6 +490,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             case ActivityState.RESUMED:
                 if (mInVr && activity != mActivity) {
                     if (mShowingDaydreamDoff) {
+                        mShouldShowPageInfo = false;
                         onExitVrResult(true);
                     } else {
                         // We should never reach this state currently, but just in case...
@@ -627,6 +632,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
         mVrClassesWrapper.setVrModeEnabled(mActivity, true);
         mInVr = true;
+        mShouldShowPageInfo = false;
         // Lock orientation to landscape after enter VR.
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -899,8 +905,12 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         // If Doff is not optional and user backed out, keep trying to exit.
         if (!mDoffOptional && !success && showDoff(false /* optional */)) return;
+
         mShowingDaydreamDoff = false;
         if (success) {
+            if (mShouldShowPageInfo) {
+                sInstance.showPageInfoPopup();
+            }
             shutdownVr(true /* disableVrMode */, false /* canReenter */,
                     !mExitingCct /* stayingInChrome */);
             if (mExitingCct) ((CustomTabActivity) mActivity).finishAndClose(false);
@@ -988,12 +998,21 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (disableVrMode) mVrClassesWrapper.setVrModeEnabled(mActivity, false);
 
         promptForFeedbackIfNeeded(stayingInChrome);
+        // We don't want to show the PageInfo prompt if we return to Chrome
+        // after shutting down for reasons other than a successful DOFF (e.g.
+        // clicking the controller home button and returning to Chrome).
+        mShouldShowPageInfo = false;
     }
 
-    /* package */ void showDoffAndExitVr() {
+    /* package */ void showDoffAndExitVr(boolean optional) {
         if (mShowingDaydreamDoff) return;
-        if (showDoff(false /* optional */)) return;
+        if (showDoff(optional)) return;
         shutdownVr(true /* disableVrMode */, false /* canReenter */, true /* stayingInChrome */);
+    }
+
+    /* package */ void onUnhandledPageInfo() {
+        mShouldShowPageInfo = true;
+        showDoffAndExitVr(true);
     }
 
     /* package */ void exitCct() {
@@ -1008,6 +1027,15 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                     true /* disableVrMode */, false /* canReenter */, false /* stayingInChrome */);
             ((CustomTabActivity) mActivity).finishAndClose(false);
         }
+    }
+
+    private void showPageInfoPopup() {
+        assert mShouldShowPageInfo;
+        // Note: we don't set mShouldShowPageInfo to false here because we don't
+        // want to show the feedback prompt when the user exits VR to view PageInfo. So this gets
+        // reset in shutdownVr.
+        PageInfoPopup.show(
+                mActivity, mActivity.getActivityTab(), null, PageInfoPopup.OPENED_FROM_VR);
     }
 
     private static void startFeedback(Tab tab) {
@@ -1051,12 +1079,14 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         // 1) The user hasn't explicitly opted-out of it in the past
         // 2) The user has performed VR browsing
         // 3) The user is exiting VR and going back into 2D Chrome
-        // 4) Every n'th visit (where n = mFeedbackFrequency)
+        // 4) We're not exiting to complete an unsupported VR action in 2D (e.g. viewing PageInfo)
+        // 5) Every n'th visit (where n = mFeedbackFrequency)
 
         if (!activitySupportsExitFeedback(mActivity)) return;
         if (!stayingInChrome) return;
         if (VrFeedbackStatus.getFeedbackOptOut()) return;
         if (!mVrBrowserUsed) return;
+        if (mShouldShowPageInfo) return;
 
         int exitCount = VrFeedbackStatus.getUserExitedAndEntered2DCount();
         VrFeedbackStatus.setUserExitedAndEntered2DCount((exitCount + 1) % mFeedbackFrequency);

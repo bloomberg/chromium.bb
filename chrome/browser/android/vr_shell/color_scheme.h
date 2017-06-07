@@ -50,6 +50,15 @@ struct ColorScheme {
   SkColor system_indicator_background;
   SkColor system_indicator_foreground;
 
+  // The colors used for text and buttons on prompts.
+  SkColor prompt_foreground;
+  SkColor prompt_primary_button_background;
+  SkColor prompt_secondary_button_background;
+  SkColor prompt_primary_button_forground;
+  SkColor prompt_secondary_button_foreground;
+  SkColor prompt_button_background_hover;
+  SkColor prompt_button_background_down;
+
   // If you have a segmented element, its separators should use this color.
   SkColor separator;
 

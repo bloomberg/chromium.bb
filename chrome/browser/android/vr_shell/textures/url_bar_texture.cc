@@ -142,6 +142,19 @@ bool UrlBarTexture::HitsUrlBar(const gfx::PointF& position) const {
   return rect.Contains(meters) && !HitsTransparentRegion(meters, false);
 }
 
+gfx::PointF UrlBarTexture::SecurityIconPositionMeters() const {
+  float x = kBackButtonWidth + kSeparatorWidth + kSecurityFieldWidth / 2 -
+            kSecurityIconHeight / 2;
+  float y = kHeight / 2 - kSecurityIconHeight / 2;
+  return gfx::PointF(x, y);
+}
+
+bool UrlBarTexture::HitsSecurityIcon(const gfx::PointF& position) const {
+  gfx::RectF rect(SecurityIconPositionMeters(),
+                  gfx::SizeF(kSecurityIconHeight, kSecurityIconHeight));
+  return rect.Contains(percentToMeters(position));
+}
+
 bool UrlBarTexture::HitsTransparentRegion(const gfx::PointF& meters,
                                           bool left) const {
   const float radius = kHeight / 2.0f;
@@ -222,10 +235,8 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   // Site security state icon.
   if (!gurl_.is_empty()) {
     canvas->save();
-    canvas->translate(
-        kBackButtonWidth + kSeparatorWidth + kSecurityFieldWidth / 2,
-        kHeight / 2);
-    canvas->translate(-kSecurityIconHeight / 2, -kSecurityIconHeight / 2);
+    gfx::PointF icon_position = SecurityIconPositionMeters();
+    canvas->translate(icon_position.x(), icon_position.y());
     const gfx::VectorIcon& icon = getSecurityIcon(security_level_);
     icon_default_height = GetDefaultSizeOfVectorIcon(icon);
     icon_scale = kSecurityIconHeight / icon_default_height;
