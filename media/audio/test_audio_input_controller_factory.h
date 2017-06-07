@@ -74,7 +74,7 @@ class TestAudioInputController : public AudioInputController {
   void Record() override;
 
   // Ensure that the closure is run on the audio-manager thread.
-  void Close(const base::Closure& closed_task) override;
+  void Close(base::OnceClosure closed_task) override;
 
   const AudioParameters& audio_parameters() const {
     return audio_parameters_;

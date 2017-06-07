@@ -200,7 +200,7 @@ class MEDIA_EXPORT AudioInputController
   // It is safe to call this method more than once. Calls after the first one
   // will have no effect.
   // This method trampolines to the audio thread.
-  virtual void Close(const base::Closure& closed_task);
+  virtual void Close(base::OnceClosure closed_task);
 
   // Sets the capture volume of the input stream. The value 0.0 corresponds
   // to muted and 1.0 to maximum volume.
