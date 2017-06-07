@@ -241,6 +241,12 @@ GaiaScreenHandler::~GaiaScreenHandler() {
 }
 
 void GaiaScreenHandler::MaybePreloadAuthExtension() {
+  // We shall not have network portal detector initialized, which unnecessarily
+  // polls captive portal checking URL if we don't need to load gaia. See
+  // go/bad-portal for more context.
+  if (!signin_screen_handler_->ShouldLoadGaia())
+    return;
+
   VLOG(1) << "MaybePreloadAuthExtension";
 
   if (!network_portal_detector_) {
@@ -254,8 +260,7 @@ void GaiaScreenHandler::MaybePreloadAuthExtension() {
 
   // If cookies clearing was initiated or |dns_clear_task_running_| then auth
   // extension showing has already been initiated and preloading is pointless.
-  if (signin_screen_handler_->ShouldLoadGaia() && !gaia_silent_load_ &&
-      !cookies_cleared_ && !dns_clear_task_running_ &&
+  if (!gaia_silent_load_ && !cookies_cleared_ && !dns_clear_task_running_ &&
       network_state_informer_->state() == NetworkStateInformer::ONLINE) {
     gaia_silent_load_ = true;
     gaia_silent_load_network_ = network_state_informer_->network_path();
