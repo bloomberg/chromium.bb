@@ -600,11 +600,11 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   SkColor colors[3] = {startEndColors[0], startEndColors[0], startEndColors[1]};
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
-      gradient_bounds, colors, NULL, 3, SkShader::kClamp_TileMode)));
+  flags.setShader(cc::PaintShader::MakeLinearGradient(
+      gradient_bounds, colors, nullptr, 3, SkShader::kClamp_TileMode));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);
-  flags.setShader(NULL);
+  flags.setShader(nullptr);
 
   // Draw the border.
   if (state == kHovered)
@@ -681,11 +681,11 @@ void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
 
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
-      gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode)));
+  flags.setShader(cc::PaintShader::MakeLinearGradient(
+      gradient_bounds, colors, nullptr, 2, SkShader::kClamp_TileMode));
 
   canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), flags);
-  flags.setShader(NULL);
+  flags.setShader(nullptr);
 
   if (button.has_border) {
     int border_alpha = state == kHovered ? 0x80 : 0x55;

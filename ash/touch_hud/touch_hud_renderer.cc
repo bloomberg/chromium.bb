@@ -84,7 +84,7 @@ class TouchPointView : public views::View,
       alpha = static_cast<int>(fadeout_->CurrentValueBetween(alpha, 0));
     fill_flags_.setAlpha(alpha);
     stroke_flags_.setAlpha(alpha);
-    fill_flags_.setShader(SkGradientShader::MakeRadial(
+    fill_flags_.setShader(cc::PaintShader::MakeRadialGradient(
         gradient_center_, SkIntToScalar(kPointRadius), gradient_colors_,
         gradient_pos_, arraysize(gradient_colors_),
         SkShader::kMirror_TileMode));

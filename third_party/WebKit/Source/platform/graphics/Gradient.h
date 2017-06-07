@@ -102,14 +102,16 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
 
   using ColorBuffer = Vector<SkColor, 8>;
   using OffsetBuffer = Vector<SkScalar, 8>;
-  virtual sk_sp<SkShader> CreateShader(const ColorBuffer&,
-                                       const OffsetBuffer&,
-                                       SkShader::TileMode,
-                                       uint32_t flags,
-                                       const SkMatrix&) const = 0;
+  virtual std::unique_ptr<PaintShader> CreateShader(const ColorBuffer&,
+                                                    const OffsetBuffer&,
+                                                    SkShader::TileMode,
+                                                    uint32_t flags,
+                                                    const SkMatrix&,
+                                                    SkColor) const = 0;
 
  private:
-  sk_sp<PaintShader> CreateShaderInternal(const SkMatrix& local_matrix);
+  std::unique_ptr<PaintShader> CreateShaderInternal(
+      const SkMatrix& local_matrix);
 
   void SortStopsIfNecessary();
   void FillSkiaStops(ColorBuffer&, OffsetBuffer&) const;
@@ -121,7 +123,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   Vector<ColorStop, 2> stops_;
   bool stops_sorted_;
 
-  mutable sk_sp<PaintShader> cached_shader_;
+  mutable std::unique_ptr<PaintShader> cached_shader_;
 };
 
 }  // namespace blink
