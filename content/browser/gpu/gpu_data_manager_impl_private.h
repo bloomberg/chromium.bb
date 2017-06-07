@@ -10,6 +10,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -19,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "gpu/config/gpu_blacklist.h"
@@ -91,7 +93,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void ProcessCrashed(base::TerminationStatus exit_code);
 
-  base::ListValue* GetLogMessages() const;
+  std::unique_ptr<base::ListValue> GetLogMessages() const;
 
   void HandleGpuSwitch();
 

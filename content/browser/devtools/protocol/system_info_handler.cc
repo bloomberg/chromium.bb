@@ -110,7 +110,7 @@ void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
   gpu_info.EnumerateFields(&enumerator);
 
   std::unique_ptr<base::DictionaryValue> base_feature_status =
-      base::WrapUnique(GetFeatureStatus());
+      GetFeatureStatus();
   std::unique_ptr<protocol::DictionaryValue> feature_status =
       protocol::DictionaryValue::cast(
           protocol::toProtocolValue(base_feature_status.get(), 1000));

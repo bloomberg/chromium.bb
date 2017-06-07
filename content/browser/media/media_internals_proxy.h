@@ -60,7 +60,7 @@ class MediaInternalsProxy
   ~MediaInternalsProxy() override;
 
   // Build a dictionary mapping constant names to values.
-  base::Value* GetConstants();
+  std::unique_ptr<base::Value> GetConstants();
 
   void ObserveMediaInternalsOnIOThread();
   void StopObservingMediaInternalsOnIOThread();
@@ -75,9 +75,9 @@ class MediaInternalsProxy
   // Send all pending events to the page.
   void SendNetEventsOnUIThread();
 
-  // Call a JavaScript function on the page. Takes ownership of |args|.
+  // Call a JavaScript function on the page.
   void CallJavaScriptFunctionOnUIThread(const std::string& function,
-                                        base::Value* args);
+                                        std::unique_ptr<base::Value> args);
 
   MediaInternalsMessageHandler* handler_;
   std::unique_ptr<base::ListValue> pending_net_updates_;

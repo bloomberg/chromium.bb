@@ -4,8 +4,11 @@
 
 #include "content/shell/renderer/layout_test/leak_detector.h"
 
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
@@ -76,71 +79,71 @@ void LeakDetector::OnLeakDetectionComplete(
 
   if (previous_result_.number_of_live_audio_nodes <
       result.number_of_live_audio_nodes) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_audio_nodes);
     list->AppendInteger(result.number_of_live_audio_nodes);
-    detail.Set("numberOfLiveAudioNodes", list);
+    detail.Set("numberOfLiveAudioNodes", std::move(list));
   }
   if (previous_result_.number_of_live_documents <
       result.number_of_live_documents) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_documents);
     list->AppendInteger(result.number_of_live_documents);
-    detail.Set("numberOfLiveDocuments", list);
+    detail.Set("numberOfLiveDocuments", std::move(list));
   }
   if (previous_result_.number_of_live_nodes < result.number_of_live_nodes) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_nodes);
     list->AppendInteger(result.number_of_live_nodes);
-    detail.Set("numberOfLiveNodes", list);
+    detail.Set("numberOfLiveNodes", std::move(list));
   }
   if (previous_result_.number_of_live_layout_objects <
       result.number_of_live_layout_objects) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_layout_objects);
     list->AppendInteger(result.number_of_live_layout_objects);
-    detail.Set("numberOfLiveLayoutObjects", list);
+    detail.Set("numberOfLiveLayoutObjects", std::move(list));
   }
   if (previous_result_.number_of_live_resources <
       result.number_of_live_resources) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_resources);
     list->AppendInteger(result.number_of_live_resources);
-    detail.Set("numberOfLiveResources", list);
+    detail.Set("numberOfLiveResources", std::move(list));
   }
   if (previous_result_.number_of_live_suspendable_objects <
       result.number_of_live_suspendable_objects) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_suspendable_objects);
     list->AppendInteger(result.number_of_live_suspendable_objects);
-    detail.Set("numberOfLiveSuspendableObjects", list);
+    detail.Set("numberOfLiveSuspendableObjects", std::move(list));
   }
   if (previous_result_.number_of_live_script_promises <
       result.number_of_live_script_promises) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_script_promises);
     list->AppendInteger(result.number_of_live_script_promises);
-    detail.Set("numberOfLiveScriptPromises", list);
+    detail.Set("numberOfLiveScriptPromises", std::move(list));
   }
   if (previous_result_.number_of_live_frames < result.number_of_live_frames) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_frames);
     list->AppendInteger(result.number_of_live_frames);
-    detail.Set("numberOfLiveFrames", list);
+    detail.Set("numberOfLiveFrames", std::move(list));
   }
   if (previous_result_.number_of_live_v8_per_context_data <
       result.number_of_live_v8_per_context_data) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_v8_per_context_data);
     list->AppendInteger(result.number_of_live_v8_per_context_data);
-    detail.Set("numberOfLiveV8PerContextData", list);
+    detail.Set("numberOfLiveV8PerContextData", std::move(list));
   }
   if (previous_result_.number_of_worker_global_scopes <
       result.number_of_worker_global_scopes) {
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_worker_global_scopes);
     list->AppendInteger(result.number_of_worker_global_scopes);
-    detail.Set("numberOfWorkerGlobalScopes", list);
+    detail.Set("numberOfWorkerGlobalScopes", std::move(list));
   }
 
   if (!detail.empty()) {

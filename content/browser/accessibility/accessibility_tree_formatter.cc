@@ -58,8 +58,7 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
     const BrowserAccessibility& node, base::DictionaryValue* dict) {
   AddProperties(node, dict);
 
-  base::ListValue* children = new base::ListValue;
-  dict->Set(kChildrenDictAttr, children);
+  auto children = base::MakeUnique<base::ListValue>();
 
   for (size_t i = 0; i < ChildCount(node); ++i) {
     BrowserAccessibility* child_node = GetChild(node, i);
@@ -68,6 +67,7 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
     RecursiveBuildAccessibilityTree(*child_node, child_dict.get());
     children->Append(std::move(child_dict));
   }
+  dict->Set(kChildrenDictAttr, std::move(children));
 }
 
 void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(

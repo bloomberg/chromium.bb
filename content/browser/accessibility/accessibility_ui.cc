@@ -5,6 +5,7 @@
 #include "content/browser/accessibility/accessibility_ui.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -142,7 +143,7 @@ bool HandleRequestCallback(BrowserContext* current_context,
   }
 
   base::DictionaryValue data;
-  data.Set("list", rvh_list.release());
+  data.Set("list", std::move(rvh_list));
   AccessibilityMode mode =
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
   bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -322,7 +323,7 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
     std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
     result->SetInteger(kProcessIdField, process_id);
     result->SetInteger(kRouteIdField, route_id);
-    result->Set("error", new base::Value("Renderer no longer exists."));
+    result->SetString("error", "Renderer no longer exists.");
     web_ui()->CallJavascriptFunctionUnsafe("accessibility.showTree",
                                            *(result.get()));
     return;
@@ -351,8 +352,7 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   DCHECK(ax_mgr);
   formatter->FormatAccessibilityTree(ax_mgr->GetRoot(),
                                      &accessibility_contents_utf16);
-  result->Set("tree",
-              new base::Value(base::UTF16ToUTF8(accessibility_contents_utf16)));
+  result->SetString("tree", base::UTF16ToUTF8(accessibility_contents_utf16));
   web_ui()->CallJavascriptFunctionUnsafe("accessibility.showTree",
                                          *(result.get()));
 }

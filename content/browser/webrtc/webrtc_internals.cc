@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -44,10 +45,8 @@ base::LazyInstance<WebRTCInternals>::Leaky g_webrtc_internals =
 // Makes sure that |dict| has a ListValue under path "log".
 base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
   base::ListValue* log = NULL;
-  if (!dict->GetList("log", &log)) {
-    log = new base::ListValue();
-    dict->Set("log", log);
-  }
+  if (!dict->GetList("log", &log))
+    log = dict->SetList("log", base::MakeUnique<base::ListValue>());
   return log;
 }
 
@@ -191,7 +190,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
   if (!observers_.might_have_observers())
     return;
 
-  std::unique_ptr<base::DictionaryValue> log_entry(new base::DictionaryValue());
+  auto log_entry = base::MakeUnique<base::DictionaryValue>();
 
   double epoch_time = base::Time::Now().ToJsTime();
   string time = base::DoubleToString(epoch_time);
@@ -199,7 +198,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
   log_entry->SetString("type", type);
   log_entry->SetString("value", value);
 
-  std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue());
+  auto update = base::MakeUnique<base::DictionaryValue>();
   update->SetInteger("pid", static_cast<int>(pid));
   update->SetInteger("lid", lid);
   update->MergeDictionary(log_entry.get());
@@ -215,11 +214,11 @@ void WebRTCInternals::OnAddStats(base::ProcessId pid, int lid,
   if (!observers_.might_have_observers())
     return;
 
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetInteger("lid", lid);
 
-  dict->Set("reports", value.CreateDeepCopy());
+  dict->Set("reports", base::MakeUnique<base::Value>(value));
 
   SendUpdate("addStats", std::move(dict));
 }
@@ -233,7 +232,7 @@ void WebRTCInternals::OnGetUserMedia(int rid,
                                      const std::string& video_constraints) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("rid", rid);
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetString("origin", origin);

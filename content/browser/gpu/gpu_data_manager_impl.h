@@ -147,9 +147,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   void ProcessCrashed(base::TerminationStatus exit_code);
 
-  // Returns a new copy of the ListValue.  Caller is responsible to release
-  // the returned value.
-  base::ListValue* GetLogMessages() const;
+  // Returns a new copy of the ListValue.
+  std::unique_ptr<base::ListValue> GetLogMessages() const;
 
   // Called when switching gpu.
   void HandleGpuSwitch();

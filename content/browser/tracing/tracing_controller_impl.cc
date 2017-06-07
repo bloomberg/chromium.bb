@@ -14,6 +14,7 @@
 #include "base/guid.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
@@ -21,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/tracing/common/process_metrics_memory_dump_provider.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
@@ -819,7 +821,8 @@ void TracingControllerImpl::AddFilteredMetadata(
   for (base::DictionaryValue::Iterator it(*metadata); !it.IsAtEnd();
        it.Advance()) {
     if (filter.Run(it.key()))
-      filtered_metadata->Set(it.key(), it.value().DeepCopy());
+      filtered_metadata->Set(it.key(),
+                             base::MakeUnique<base::Value>(it.value()));
     else
       filtered_metadata->SetString(it.key(), "__stripped__");
   }

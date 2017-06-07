@@ -249,7 +249,7 @@ void GpuDataManagerImpl::ProcessCrashed(
   private_->ProcessCrashed(exit_code);
 }
 
-base::ListValue* GpuDataManagerImpl::GetLogMessages() const {
+std::unique_ptr<base::ListValue> GpuDataManagerImpl::GetLogMessages() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetLogMessages();
 }

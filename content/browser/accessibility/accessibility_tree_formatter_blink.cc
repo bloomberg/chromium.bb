@@ -4,9 +4,13 @@
 
 #include <stddef.h>
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -120,7 +124,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
     if (node.HasIntListAttribute(attr)) {
       std::vector<int32_t> values;
       node.GetIntListAttribute(attr, &values);
-      base::ListValue* value_list = new base::ListValue;
+      auto value_list = base::MakeUnique<base::ListValue>();
       for (size_t i = 0; i < values.size(); ++i) {
         if (ui::IsNodeIdIntListAttribute(attr)) {
           BrowserAccessibility* target = node.manager()->GetFromID(values[i]);
@@ -132,7 +136,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
           value_list->AppendInteger(values[i]);
         }
       }
-      dict->Set(ui::ToString(attr), value_list);
+      dict->Set(ui::ToString(attr), std::move(value_list));
     }
   }
 

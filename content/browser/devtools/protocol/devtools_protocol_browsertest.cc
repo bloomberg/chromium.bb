@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/base64.h"
@@ -180,7 +181,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     command.SetInteger(kIdParam, ++last_sent_id_);
     command.SetString(kMethodParam, method);
     if (params)
-      command.Set(kParamsParam, params.release());
+      command.Set(kParamsParam, std::move(params));
 
     std::string json_command;
     base::JSONWriter::Write(command, &json_command);
