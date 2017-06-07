@@ -3319,6 +3319,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'vm_tests':[],
       },
 
+      'quawks-release': {
+          'useflags': append_useflags(['kernel_afdo']),
+      },
+
       'lumpy-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },

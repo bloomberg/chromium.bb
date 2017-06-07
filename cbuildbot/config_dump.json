@@ -18649,6 +18649,11 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal",
+            "kernel_afdo"
+        ],
         "vm_tests": []
     },
     "quawks-release-afdo": {
