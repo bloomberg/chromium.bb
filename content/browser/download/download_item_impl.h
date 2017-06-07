@@ -102,6 +102,54 @@ class CONTENT_EXPORT DownloadItemImpl
     base::Time start_time;
   };
 
+  // Information about the current state of the download destination.
+  struct CONTENT_EXPORT DestinationInfo {
+    DestinationInfo(const base::FilePath& target_path,
+                    const base::FilePath& current_path,
+                    int64_t received_bytes,
+                    bool all_data_saved,
+                    const std::string& hash,
+                    base::Time end_time);
+    DestinationInfo();
+    DestinationInfo(TargetDisposition target_disposition);
+    DestinationInfo(const DestinationInfo& other);
+    ~DestinationInfo();
+
+    // Whether the target should be overwritten, uniquified or prompted for.
+    TargetDisposition target_disposition = TARGET_DISPOSITION_OVERWRITE;
+
+    // Target path of an in-progress download. We may be downloading to a
+    // temporary or intermediate file (specified by |current_path|).  Once the
+    // download completes, we will rename the file to |target_path|.
+    base::FilePath target_path;
+
+    // Full path to the downloaded or downloading file. This is the path to the
+    // physical file, if one exists. The final target path is specified by
+    // |target_path|. |current_path| can be empty if the in-progress path
+    // hasn't been determined.
+    base::FilePath current_path;
+
+    // Current received bytes.
+    int64_t received_bytes = 0;
+
+    // True if we've saved all the data for the download. If true, then the file
+    // at |current_path| contains |received_bytes|, which constitute the
+    // entirety of what we expect to save there. A digest of its contents can be
+    // found at |hash|.
+    bool all_data_saved = false;
+
+    // SHA256 hash of the possibly partial content. The hash is updated each
+    // time the download is interrupted, and when the all the data has been
+    // transferred. |hash| contains the raw binary hash and is not hex encoded.
+    //
+    // While the download is in progress, and while resuming, |hash| will be
+    // empty.
+    std::string hash;
+
+    // Time last update was written to target file.
+    base::Time end_time;
+  };
+
   // The maximum number of attempts we will make to resume automatically.
   static const int kMaxAutoResumeAttempts;
 
@@ -587,16 +635,8 @@ class CONTENT_EXPORT DownloadItemImpl
   uint32_t download_id_ = kInvalidId;
 
   // Display name for the download. If this is empty, then the display name is
-  // considered to be |target_path_.BaseName()|.
+  // considered to be |GetTargetFilePath().BaseName()|.
   base::FilePath display_name_;
-
-  // Target path of an in-progress download. We may be downloading to a
-  // temporary or intermediate file (specified by |current_path_|.  Once the
-  // download completes, we will rename the file to |target_path_|.
-  base::FilePath target_path_;
-
-  // Whether the target should be overwritten, uniquified or prompted for.
-  TargetDisposition target_disposition_ = TARGET_DISPOSITION_OVERWRITE;
 
   // Information from the response.
 
@@ -632,9 +672,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // The views of this item in the download shelf and download contents.
   base::ObserverList<Observer> observers_;
-
-  // Time the download completed.
-  base::Time end_time_;
 
   // Our delegate.
   DownloadItemImplDelegate* delegate_ = nullptr;
@@ -682,35 +719,15 @@ class CONTENT_EXPORT DownloadItemImpl
   // the IN_PROGRESS state.
   std::unique_ptr<DownloadFile> download_file_;
 
-  // Full path to the downloaded or downloading file. This is the path to the
-  // physical file, if one exists. The final target path is specified by
-  // |target_path_|. |current_path_| can be empty if the in-progress path hasn't
-  // been determined.
-  base::FilePath current_path_;
-
-  // Current received bytes.
-  int64_t received_bytes_ = 0;
+  // Information about |download_file_|.
+  DestinationInfo destination_info_;
 
   // Current speed. Calculated by the DownloadFile.
   int64_t bytes_per_sec_ = 0;
 
-  // True if we've saved all the data for the download. If true, then the file
-  // at |current_path_| contains |received_bytes_|, which constitute the
-  // entirety of what we expect to save there. A digest of its contents can be
-  // found at |hash_|.
-  bool all_data_saved_ = false;
-
   // The number of times this download has been resumed automatically. Will be
   // reset to 0 if a resumption is performed in response to a Resume() call.
   int auto_resume_count_ = 0;
-
-  // SHA256 hash of the possibly partial content. The hash is updated each time
-  // the download is interrupted, and when the all the data has been
-  // transferred. |hash_| contains the raw binary hash and is not hex encoded.
-  //
-  // While the download is in progress, and while resuming, |hash_| will be
-  // empty.
-  std::string hash_;
 
   // In the event of an interruption, the DownloadDestinationObserver interface
   // exposes the partial hash state. This state can be held by the download item
