@@ -10,6 +10,8 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/quads/stream_video_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_test_common.h"
@@ -371,6 +373,86 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
             (yuv_draw_quad->ya_tex_size.height() + 1) / 2);
   EXPECT_EQ(yuv_draw_quad->uv_tex_size.width(),
             (yuv_draw_quad->ya_tex_size.width() + 1) / 2);
+}
+
+TEST(VideoLayerImplTest, NativeARGBFrameGeneratesStreamVideoQuad) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+  DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
+
+  gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
+  mailbox_holders[0].texture_target = GL_TEXTURE_EXTERNAL_OES;
+  mailbox_holders[0].mailbox.name[0] = 1;
+
+  gfx::Size resource_size = gfx::Size(10, 10);
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::WrapNativeTextures(
+          media::PIXEL_FORMAT_ARGB, mailbox_holders, base::Bind(EmptyCallback),
+          resource_size, gfx::Rect(10, 10), resource_size, base::TimeDelta());
+  ASSERT_TRUE(video_frame);
+  video_frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
+                                      true);
+  FakeVideoFrameProvider provider;
+  provider.set_frame(video_frame);
+
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+  impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
+
+  gfx::Rect occluded;
+  impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
+
+  EXPECT_EQ(1u, impl.quad_list().size());
+  const DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
+  ASSERT_EQ(DrawQuad::STREAM_VIDEO_CONTENT, draw_quad->material);
+
+  const StreamVideoDrawQuad* video_draw_quad =
+      StreamVideoDrawQuad::MaterialCast(draw_quad);
+  EXPECT_EQ(video_draw_quad->resource_size_in_pixels(), resource_size);
+}
+
+TEST(VideoLayerImplTest, NativeARGBFrameGeneratesTextureQuad) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+  DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
+
+  gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
+  mailbox_holders[0].texture_target = GL_TEXTURE_2D;
+  mailbox_holders[0].mailbox.name[0] = 1;
+
+  gfx::Size resource_size = gfx::Size(10, 10);
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::WrapNativeTextures(
+          media::PIXEL_FORMAT_ARGB, mailbox_holders, base::Bind(EmptyCallback),
+          resource_size, gfx::Rect(10, 10), resource_size, base::TimeDelta());
+  ASSERT_TRUE(video_frame);
+  video_frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
+                                      true);
+  FakeVideoFrameProvider provider;
+  provider.set_frame(video_frame);
+
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+  impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
+
+  gfx::Rect occluded;
+  impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
+
+  EXPECT_EQ(1u, impl.quad_list().size());
+  const DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
+  ASSERT_EQ(DrawQuad::TEXTURE_CONTENT, draw_quad->material);
+
+  const TextureDrawQuad* texture_draw_quad =
+      TextureDrawQuad::MaterialCast(draw_quad);
+  EXPECT_EQ(texture_draw_quad->resource_size_in_pixels(), resource_size);
 }
 
 }  // namespace
