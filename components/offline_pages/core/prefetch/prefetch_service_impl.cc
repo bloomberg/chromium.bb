@@ -8,8 +8,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
-#include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
+#include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_store.h"
+#include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 
 namespace offline_pages {
 
@@ -17,11 +19,13 @@ PrefetchServiceImpl::PrefetchServiceImpl(
     std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector,
     std::unique_ptr<PrefetchDispatcher> dispatcher,
     std::unique_ptr<PrefetchGCMHandler> gcm_handler,
-    std::unique_ptr<PrefetchStore> store)
+    std::unique_ptr<PrefetchStore> store,
+    std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer)
     : offline_metrics_collector_(std::move(offline_metrics_collector)),
       prefetch_dispatcher_(std::move(dispatcher)),
       prefetch_gcm_handler_(std::move(gcm_handler)),
-      prefetch_store_(std::move(store)) {
+      prefetch_store_(std::move(store)),
+      suggested_articles_observer_(std::move(suggested_articles_observer)) {
   prefetch_dispatcher_->SetService(this);
 }
 
@@ -43,12 +47,12 @@ PrefetchStore* PrefetchServiceImpl::GetPrefetchStore() {
   return prefetch_store_.get();
 }
 
-void PrefetchServiceImpl::ObserveContentSuggestionsService(
-    ntp_snippets::ContentSuggestionsService* service) {
-  suggested_articles_observer_ =
-      base::MakeUnique<SuggestedArticlesObserver>(service, this);
+SuggestedArticlesObserver* PrefetchServiceImpl::GetSuggestedArticlesObserver() {
+  return suggested_articles_observer_.get();
 }
 
-void PrefetchServiceImpl::Shutdown() {}
+void PrefetchServiceImpl::Shutdown() {
+  suggested_articles_observer_.reset();
+}
 
 }  // namespace offline_pages

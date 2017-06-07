@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
-#include "components/offline_pages/core/prefetch/prefetch_service.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 
 namespace ntp_snippets {
 class Category;
@@ -25,11 +25,13 @@ namespace offline_pages {
 class SuggestedArticlesObserver
     : public ntp_snippets::ContentSuggestionsService::Observer {
  public:
-  SuggestedArticlesObserver(
-      // This can be |nullptr| in test.
-      ntp_snippets::ContentSuggestionsService* content_suggestions_service,
-      PrefetchService* prefetch_service);
+  // |dispatcher| is unowned, lifetime must be managed by the owner of
+  // SuggestedArticlesObserver.
+  SuggestedArticlesObserver(PrefetchDispatcher* dispatcher);
   ~SuggestedArticlesObserver() override;
+
+  void SetContentSuggestionsServiceAndObserve(
+      ntp_snippets::ContentSuggestionsService* service);
 
   // ContentSuggestionsService::Observer overrides.
   void OnNewSuggestions(ntp_snippets::Category category) override;
@@ -48,10 +50,11 @@ class SuggestedArticlesObserver
  private:
   // Unowned, only used when we are called by observer methods (so the
   // pointer will be valid).
-  ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service_ =
+      nullptr;
 
-  // This class is owned by the prefetch service.
-  PrefetchService* prefetch_service_;
+  // Unowned. (see constructor comment).
+  PrefetchDispatcher* prefetch_dispatcher_;
 
   // Normally null, but can be set in tests to override the default behavior.
   std::unique_ptr<std::vector<ntp_snippets::ContentSuggestion>> test_articles_;

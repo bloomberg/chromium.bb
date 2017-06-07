@@ -68,7 +68,7 @@ class TestingPrefetchDispatcher : public PrefetchDispatcher {
 
 class TestingPrefetchService : public PrefetchService {
  public:
-  TestingPrefetchService() = default;
+  TestingPrefetchService() : observer(&dispatcher) {}
 
   OfflineMetricsCollector* GetOfflineMetricsCollector() override {
     return nullptr;
@@ -76,25 +76,23 @@ class TestingPrefetchService : public PrefetchService {
   PrefetchDispatcher* GetPrefetchDispatcher() override { return &dispatcher; }
   PrefetchGCMHandler* GetPrefetchGCMHandler() override { return nullptr; }
   PrefetchStore* GetPrefetchStore() override { return nullptr; }
-  void ObserveContentSuggestionsService(
-      ntp_snippets::ContentSuggestionsService* content_suggestions_service)
-      override {}
+  SuggestedArticlesObserver* GetSuggestedArticlesObserver() override {
+    return &observer;
+  }
 
   TestingPrefetchDispatcher dispatcher;
+  SuggestedArticlesObserver observer;
 };
 
 }  // namespace
 
 class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
  public:
-  OfflinePageSuggestedArticlesObserverTest() = default;
+  OfflinePageSuggestedArticlesObserverTest() {}
 
-  void SetUp() override {
-    observer_ = base::MakeUnique<SuggestedArticlesObserver>(
-        nullptr, test_prefetch_service());
+  SuggestedArticlesObserver* observer() {
+    return &(test_prefetch_service()->observer);
   }
-
-  SuggestedArticlesObserver* observer() { return observer_.get(); }
 
   TestingPrefetchService* test_prefetch_service() { return &prefetch_service_; }
 
@@ -107,7 +105,6 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
       Category::FromKnownCategory(ntp_snippets::KnownCategories::ARTICLES);
 
  private:
-  std::unique_ptr<SuggestedArticlesObserver> observer_;
   TestingPrefetchService prefetch_service_;
 };
 
