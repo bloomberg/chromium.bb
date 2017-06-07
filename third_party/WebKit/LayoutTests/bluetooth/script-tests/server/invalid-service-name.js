@@ -1,12 +1,9 @@
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gatt => {
+  return getHealthThermometerDevice()
+    .then(([device]) => {
       return assert_promise_rejects_with_message(
-        gatt.CALLS([
+        device.gatt.CALLS([
           getPrimaryService('wrong_name')|
           getPrimaryServices('wrong_name')
         ]),

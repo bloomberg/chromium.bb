@@ -19,7 +19,6 @@ bluetooth/idl/idl-NavigatorBluetooth.html
 bluetooth/requestDevice/canonicalizeFilter/no-arguments.html
 bluetooth/requestDevice/chooser/device-removed.html
 bluetooth/requestDevice/name-missing-device-from-name-prefix-filter.html
-bluetooth/server/device-same-object.html
 bluetooth/server/disconnect/disconnect-fires-event.html
 bluetooth/server/getPrimaryServices/delayed-discovery-no-permission-present-service-with-uuid.html
 bluetooth/server/getPrimaryServices/device-goes-out-of-range.html

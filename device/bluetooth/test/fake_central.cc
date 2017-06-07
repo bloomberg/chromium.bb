@@ -37,11 +37,27 @@ void FakeCentral::SimulatePreconnectedPeripheral(
   FakePeripheral* fake_peripheral =
       static_cast<FakePeripheral*>(device_iter->second.get());
   fake_peripheral->SetName(name);
-  fake_peripheral->SetGattConnected(true);
+  fake_peripheral->SetSystemConnected(true);
   fake_peripheral->SetServiceUUIDs(device::BluetoothDevice::UUIDSet(
       known_service_uuids.begin(), known_service_uuids.end()));
 
   std::move(callback).Run();
+}
+
+void FakeCentral::SetNextGATTConnectionResponse(
+    const std::string& address,
+    uint16_t code,
+    SetNextGATTConnectionResponseCallback callback) {
+  auto device_iter = devices_.find(address);
+  if (device_iter == devices_.end()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  FakePeripheral* fake_peripheral =
+      static_cast<FakePeripheral*>(device_iter->second.get());
+  fake_peripheral->SetNextGATTConnectionResponse(code);
+  std::move(callback).Run(true);
 }
 
 std::string FakeCentral::GetAddress() const {

@@ -139,7 +139,7 @@
 
       let peripheral = this.peripherals_.get(address);
       if (peripheral === undefined) {
-        peripheral = new FakePeripheral(address, this);
+        peripheral = new FakePeripheral(address, this.fake_central_ptr_);
         this.peripherals_.set(address, peripheral);
       }
 
@@ -148,9 +148,22 @@
   }
 
   class FakePeripheral {
-    constructor(address, fake_central) {
+    constructor(address, fake_central_ptr) {
       this.address = address;
-      this.fake_central_ = fake_central;
+      this.fake_central_ptr_ = fake_central_ptr;
+    }
+
+    // Sets the next GATT Connection request response to |code|. |code| could be
+    // an HCI Error Code from BT 4.2 Vol 2 Part D 1.3 List Of Error Codes or a
+    // number outside that range returned by specific platforms e.g. Android
+    // returns 0x101 to signal a GATT failure
+    // https://developer.android.com/reference/android/bluetooth/BluetoothGatt.html#GATT_FAILURE
+    async setNextGATTConnectionResponse({code}) {
+      let {success} =
+        await this.fake_central_ptr_.setNextGATTConnectionResponse(
+          this.address, code);
+
+      if (success !== true) throw 'Cannot set next response.';
     }
   }
 
