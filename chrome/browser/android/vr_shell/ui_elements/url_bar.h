@@ -22,6 +22,8 @@ class UrlBarTexture;
 class UrlBar : public TexturedElement {
  public:
   UrlBar(int preferred_width,
+         const base::Callback<void()>& back_button_callback,
+         const base::Callback<void()>& security_icon_callback,
          const base::Callback<void(UiUnsupportedMode)>& failure_callback);
   ~UrlBar() override;
 
@@ -38,7 +40,6 @@ class UrlBar : public TexturedElement {
   void SetHistoryButtonsEnabled(bool can_go_back);
   void SetURL(const GURL& gurl);
   void SetSecurityLevel(security_state::SecurityLevel level);
-  void SetBackButtonCallback(const base::Callback<void()>& callback);
 
  private:
   void UpdateTexture() override;
@@ -47,9 +48,11 @@ class UrlBar : public TexturedElement {
 
   std::unique_ptr<UrlBarTexture> texture_;
   base::Callback<void()> back_button_callback_;
+  base::Callback<void()> security_icon_callback_;
   bool enabled_ = false;
   bool can_go_back_ = false;
   bool down_ = false;
+  bool security_icon_down_ = false;
   base::TimeTicks last_begin_frame_time_;
   base::TimeTicks last_update_time_;
 

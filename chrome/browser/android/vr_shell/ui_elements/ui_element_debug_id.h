@@ -25,6 +25,7 @@ enum UiElementDebugId {
   kCloseButton,
   kScreenDimmer,
   kExitWarning,
+  kExitPrompt,
 };
 
 }  // namespace vr_shell

@@ -20,9 +20,13 @@ constexpr int64_t kUpdateDelayMS = 50;
 }  // namespace
 
 UrlBar::UrlBar(int preferred_width,
+               const base::Callback<void()>& back_button_callback,
+               const base::Callback<void()>& security_icon_callback,
                const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<UrlBarTexture>(failure_callback)) {}
+      texture_(base::MakeUnique<UrlBarTexture>(failure_callback)),
+      back_button_callback_(back_button_callback),
+      security_icon_callback_(security_icon_callback) {}
 
 UrlBar::~UrlBar() = default;
 
@@ -51,6 +55,8 @@ void UrlBar::OnMove(const gfx::PointF& position) {
 void UrlBar::OnButtonDown(const gfx::PointF& position) {
   if (texture_->HitsBackButton(position))
     down_ = true;
+  else if (texture_->HitsSecurityIcon(position))
+    security_icon_down_ = true;
   OnStateUpdated(position);
 }
 
@@ -59,6 +65,9 @@ void UrlBar::OnButtonUp(const gfx::PointF& position) {
   OnStateUpdated(position);
   if (can_go_back_ && texture_->HitsBackButton(position))
     back_button_callback_.Run();
+  else if (security_icon_down_ && texture_->HitsSecurityIcon(position))
+    security_icon_callback_.Run();
+  security_icon_down_ = false;
 }
 
 bool UrlBar::HitTest(const gfx::PointF& position) const {
@@ -90,10 +99,6 @@ void UrlBar::SetHistoryButtonsEnabled(bool can_go_back) {
 
 void UrlBar::SetSecurityLevel(security_state::SecurityLevel level) {
   texture_->SetSecurityLevel(level);
-}
-
-void UrlBar::SetBackButtonCallback(const base::Callback<void()>& callback) {
-  back_button_callback_ = callback;
 }
 
 void UrlBar::OnStateUpdated(const gfx::PointF& position) {

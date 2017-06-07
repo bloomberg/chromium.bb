@@ -585,6 +585,13 @@ void VrShell::ExitFullscreen() {
 }
 
 void VrShell::ExitVrDueToUnsupportedMode(UiUnsupportedMode mode) {
+  if (mode == UiUnsupportedMode::kUnhandledPageInfo) {
+    UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,
+                              UiUnsupportedMode::kCount);
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_VrShellImpl_onUnhandledPageInfo(env, j_vr_shell_.obj());
+    return;
+  }
   ui_->SetIsExiting();
   main_thread_task_runner_->PostDelayedTask(
       FROM_HERE,

@@ -357,7 +357,14 @@ public class VrShellImpl
     // Exits VR, telling the user to remove their headset, and returning to Chromium.
     @CalledByNative
     public void forceExitVr() {
-        mDelegate.showDoffAndExitVr();
+        mDelegate.showDoffAndExitVr(false);
+    }
+
+    // Called because showing PageInfo isn't supported in VR. This happens when the user clicks on
+    // the security icon in the URL bar.
+    @CalledByNative
+    public void onUnhandledPageInfo() {
+        mDelegate.onUnhandledPageInfo();
     }
 
     // Exits CCT, returning to the app that opened it.

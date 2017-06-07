@@ -14,8 +14,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::InSequence;
-
 namespace vr_shell {
 
 namespace {
@@ -34,6 +32,9 @@ class MockBrowserInterface : public UiBrowserInterface {
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBrowserInterface);
 };
+
+std::set<UiElementDebugId> kElementsVisibleInBrowsing = {
+    kContentQuad, kBackplane, kCeiling, kFloor, kUrlBar, kLoadingIndicator};
 
 }  // namespace
 
@@ -195,14 +196,8 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
 }
 
 TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
-  std::set<UiElementDebugId> visible_in_browsing = {
-      UiElementDebugId::kContentQuad, UiElementDebugId::kBackplane,
-      UiElementDebugId::kCeiling,     UiElementDebugId::kFloor,
-      UiElementDebugId::kUrlBar,      UiElementDebugId::kLoadingIndicator};
   std::set<UiElementDebugId> visible_in_fullscreen = {
-      UiElementDebugId::kContentQuad, UiElementDebugId::kCloseButton,
-      UiElementDebugId::kBackplane, UiElementDebugId::kCeiling,
-      UiElementDebugId::kFloor};
+      kContentQuad, kCloseButton, kBackplane, kCeiling, kFloor};
 
   MakeManager(kNotInCct, kNotInWebVr);
 
@@ -211,8 +206,9 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
 
   for (const auto& element : scene_->GetUiElements()) {
     SCOPED_TRACE(element->debug_id());
-    bool should_be_visible = visible_in_browsing.find(element->debug_id()) !=
-                             visible_in_browsing.end();
+    bool should_be_visible =
+        kElementsVisibleInBrowsing.find(element->debug_id()) !=
+        kElementsVisibleInBrowsing.end();
     EXPECT_EQ(should_be_visible, element->visible());
   }
 
@@ -239,13 +235,50 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   // Everything should return to original state after leaving fullscreen.
   for (const auto& element : scene_->GetUiElements()) {
     SCOPED_TRACE(element->debug_id());
-    bool should_be_visible = visible_in_browsing.find(element->debug_id()) !=
-                             visible_in_browsing.end();
+    bool should_be_visible =
+        kElementsVisibleInBrowsing.find(element->debug_id()) !=
+        kElementsVisibleInBrowsing.end();
     EXPECT_EQ(should_be_visible, element->visible());
   }
   {
     SCOPED_TRACE("Exited Fullsceen");
     EXPECT_EQ(initial_background, scene_->GetWorldBackgroundColor());
+  }
+}
+
+TEST_F(UiSceneManagerTest, UiUpdatesExitPrompt) {
+  std::set<UiElementDebugId> visible_when_prompting = {kExitPrompt, kBackplane,
+                                                       kCeiling, kFloor};
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  manager_->SetWebVrSecureOrigin(true);
+
+  // Initial state.
+  for (const auto& element : scene_->GetUiElements()) {
+    SCOPED_TRACE(element->debug_id());
+    bool should_be_visible =
+        kElementsVisibleInBrowsing.find(element->debug_id()) !=
+        kElementsVisibleInBrowsing.end();
+    EXPECT_EQ(should_be_visible, element->visible());
+  }
+
+  // Exit prompt visible state.
+  manager_->OnSecurityIconClicked();
+  for (const auto& element : scene_->GetUiElements()) {
+    SCOPED_TRACE(element->debug_id());
+    bool should_be_visible = visible_when_prompting.find(element->debug_id()) !=
+                             visible_when_prompting.end();
+    EXPECT_EQ(should_be_visible, element->visible());
+  }
+
+  // Back to initial state.
+  manager_->OnExitPromptPrimaryButtonClicked();
+  for (const auto& element : scene_->GetUiElements()) {
+    SCOPED_TRACE(element->debug_id());
+    bool should_be_visible =
+        kElementsVisibleInBrowsing.find(element->debug_id()) !=
+        kElementsVisibleInBrowsing.end();
+    EXPECT_EQ(should_be_visible, element->visible());
   }
 }
 

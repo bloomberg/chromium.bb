@@ -44,6 +44,7 @@ class UrlBarTexture : public UiTexture {
 
   bool HitsBackButton(const gfx::PointF& position) const;
   bool HitsUrlBar(const gfx::PointF& position) const;
+  bool HitsSecurityIcon(const gfx::PointF& position) const;
 
   void SetHovered(bool hovered);
   void SetPressed(bool pressed);
@@ -61,6 +62,7 @@ class UrlBarTexture : public UiTexture {
   bool HitsTransparentRegion(const gfx::PointF& meters, bool left) const;
   void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& bounds);
   void OnSetMode() override;
+  gfx::PointF SecurityIconPositionMeters() const;
 
   gfx::SizeF size_;
   bool hovered_ = false;

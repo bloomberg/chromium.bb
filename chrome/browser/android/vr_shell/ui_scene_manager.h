@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_SCENE_MANAGER_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_UI_SCENE_MANAGER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -52,6 +53,8 @@ class UiSceneManager {
   void OnAppButtonGesturePerformed(UiInterface::Direction direction);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(UiSceneManagerTest, UiUpdatesExitPrompt);
+
   void CreateScreenDimmer();
   void CreateSecurityWarnings();
   void CreateSystemIndicators();
@@ -59,13 +62,15 @@ class UiSceneManager {
   void CreateBackground();
   void CreateUrlBar();
   void CreateCloseButton();
-  void CreateExitWarning();
 
   void ConfigureScene();
   void ConfigureSecurityWarnings();
   void UpdateBackgroundColor();
   void OnSecurityWarningTimer();
   void OnBackButtonClicked();
+  void OnSecurityIconClicked();
+  void OnExitPromptPrimaryButtonClicked();
+  void OnExitPromptSecondaryButtonClicked();
   void OnCloseButtonClicked();
   void OnUnsupportedMode(UiUnsupportedMode mode);
   int AllocateId();
@@ -78,8 +83,10 @@ class UiSceneManager {
   // UI element pointers (not owned by the scene manager).
   UiElement* permanent_security_warning_ = nullptr;
   UiElement* transient_security_warning_ = nullptr;
+  UiElement* exit_prompt_ = nullptr;
   UiElement* exit_warning_ = nullptr;
   UiElement* main_content_ = nullptr;
+  UiElement* main_content_backplane_ = nullptr;
   UiElement* audio_capture_indicator_ = nullptr;
   UiElement* video_capture_indicator_ = nullptr;
   UiElement* screen_capture_indicator_ = nullptr;
@@ -95,7 +102,6 @@ class UiSceneManager {
   bool secure_origin_ = false;
   bool fullscreen_ = false;
   bool incognito_ = false;
-  bool is_exiting_ = false;
   bool audio_capturing_ = false;
   bool video_capturing_ = false;
   bool screen_capturing_ = false;
@@ -103,6 +109,7 @@ class UiSceneManager {
   int next_available_id_ = 1;
 
   std::vector<UiElement*> content_elements_;
+  std::vector<UiElement*> background_elements_;
   std::vector<UiElement*> control_elements_;
 
   base::OneShotTimer security_warning_timer_;

@@ -212,6 +212,10 @@ void UiScene::set_is_exiting() {
   is_exiting_ = true;
 }
 
+void UiScene::set_is_prompting_to_exit(bool prompting) {
+  is_prompting_to_exit_ = prompting;
+}
+
 const std::vector<std::unique_ptr<UiElement>>& UiScene::GetUiElements() const {
   return ui_elements_;
 }
