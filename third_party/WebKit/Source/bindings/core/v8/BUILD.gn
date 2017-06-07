@@ -10,167 +10,6 @@ import("//third_party/WebKit/Source/core/core_idl_files.gni")
 
 visibility = [ "//third_party/WebKit/Source/*" ]
 
-generated_core_dictionary_files = [
-  "$blink_core_output_dir/animation/AnimationEffectTimingProperties.cpp",
-  "$blink_core_output_dir/animation/AnimationEffectTimingProperties.h",
-  "$blink_core_output_dir/animation/ComputedTimingProperties.cpp",
-  "$blink_core_output_dir/animation/ComputedTimingProperties.h",
-  "$blink_core_output_dir/animation/KeyframeAnimationOptions.cpp",
-  "$blink_core_output_dir/animation/KeyframeAnimationOptions.h",
-  "$blink_core_output_dir/animation/KeyframeEffectOptions.cpp",
-  "$blink_core_output_dir/animation/KeyframeEffectOptions.h",
-  "$blink_core_output_dir/css/FontFaceDescriptors.cpp",
-  "$blink_core_output_dir/css/FontFaceDescriptors.h",
-  "$blink_core_output_dir/css/FontFaceSetLoadEventInit.cpp",
-  "$blink_core_output_dir/css/FontFaceSetLoadEventInit.h",
-  "$blink_core_output_dir/css/MediaQueryListEventInit.cpp",
-  "$blink_core_output_dir/css/MediaQueryListEventInit.h",
-  "$blink_core_output_dir/css/PropertyDescriptor.cpp",
-  "$blink_core_output_dir/css/PropertyDescriptor.h",
-  "$blink_core_output_dir/css/cssom/CSSCalcDictionary.cpp",
-  "$blink_core_output_dir/css/cssom/CSSCalcDictionary.h",
-  "$blink_core_output_dir/dom/ElementCreationOptions.cpp",
-  "$blink_core_output_dir/dom/ElementCreationOptions.h",
-  "$blink_core_output_dir/dom/ElementDefinitionOptions.cpp",
-  "$blink_core_output_dir/dom/ElementDefinitionOptions.h",
-  "$blink_core_output_dir/dom/ElementRegistrationOptions.cpp",
-  "$blink_core_output_dir/dom/ElementRegistrationOptions.h",
-  "$blink_core_output_dir/dom/GetRootNodeOptions.cpp",
-  "$blink_core_output_dir/dom/GetRootNodeOptions.h",
-  "$blink_core_output_dir/dom/IdleRequestOptions.cpp",
-  "$blink_core_output_dir/dom/IdleRequestOptions.h",
-  "$blink_core_output_dir/dom/IntersectionObserverInit.cpp",
-  "$blink_core_output_dir/dom/IntersectionObserverInit.h",
-  "$blink_core_output_dir/dom/MutationObserverInit.cpp",
-  "$blink_core_output_dir/dom/MutationObserverInit.h",
-  "$blink_core_output_dir/dom/shadow/ShadowRootInit.cpp",
-  "$blink_core_output_dir/dom/shadow/ShadowRootInit.h",
-  "$blink_core_output_dir/dom/TouchInit.cpp",
-  "$blink_core_output_dir/dom/TouchInit.h",
-  "$blink_core_output_dir/events/AddEventListenerOptions.cpp",
-  "$blink_core_output_dir/events/AddEventListenerOptions.h",
-  "$blink_core_output_dir/events/AnimationEventInit.cpp",
-  "$blink_core_output_dir/events/AnimationEventInit.h",
-  "$blink_core_output_dir/events/AnimationPlaybackEventInit.cpp",
-  "$blink_core_output_dir/events/AnimationPlaybackEventInit.h",
-  "$blink_core_output_dir/events/ApplicationCacheErrorEventInit.cpp",
-  "$blink_core_output_dir/events/ApplicationCacheErrorEventInit.h",
-  "$blink_core_output_dir/events/ClipboardEventInit.cpp",
-  "$blink_core_output_dir/events/ClipboardEventInit.h",
-  "$blink_core_output_dir/events/CompositionEventInit.cpp",
-  "$blink_core_output_dir/events/CompositionEventInit.h",
-  "$blink_core_output_dir/events/CustomEventInit.cpp",
-  "$blink_core_output_dir/events/CustomEventInit.h",
-  "$blink_core_output_dir/events/DragEventInit.cpp",
-  "$blink_core_output_dir/events/DragEventInit.h",
-  "$blink_core_output_dir/events/ErrorEventInit.cpp",
-  "$blink_core_output_dir/events/ErrorEventInit.h",
-  "$blink_core_output_dir/events/EventInit.cpp",
-  "$blink_core_output_dir/events/EventInit.h",
-  "$blink_core_output_dir/events/EventListenerOptions.cpp",
-  "$blink_core_output_dir/events/EventListenerOptions.h",
-  "$blink_core_output_dir/events/EventModifierInit.cpp",
-  "$blink_core_output_dir/events/EventModifierInit.h",
-  "$blink_core_output_dir/events/FocusEventInit.cpp",
-  "$blink_core_output_dir/events/FocusEventInit.h",
-  "$blink_core_output_dir/events/HashChangeEventInit.cpp",
-  "$blink_core_output_dir/events/HashChangeEventInit.h",
-  "$blink_core_output_dir/events/InputEventInit.cpp",
-  "$blink_core_output_dir/events/InputEventInit.h",
-  "$blink_core_output_dir/events/KeyboardEventInit.cpp",
-  "$blink_core_output_dir/events/KeyboardEventInit.h",
-  "$blink_core_output_dir/events/MessageEventInit.cpp",
-  "$blink_core_output_dir/events/MessageEventInit.h",
-  "$blink_core_output_dir/events/MouseEventInit.cpp",
-  "$blink_core_output_dir/events/MouseEventInit.h",
-  "$blink_core_output_dir/events/PageTransitionEventInit.cpp",
-  "$blink_core_output_dir/events/PageTransitionEventInit.h",
-  "$blink_core_output_dir/events/PointerEventInit.cpp",
-  "$blink_core_output_dir/events/PointerEventInit.h",
-  "$blink_core_output_dir/events/PopStateEventInit.cpp",
-  "$blink_core_output_dir/events/PopStateEventInit.h",
-  "$blink_core_output_dir/events/ProgressEventInit.cpp",
-  "$blink_core_output_dir/events/ProgressEventInit.h",
-  "$blink_core_output_dir/events/PromiseRejectionEventInit.cpp",
-  "$blink_core_output_dir/events/PromiseRejectionEventInit.h",
-  "$blink_core_output_dir/events/SecurityPolicyViolationEventInit.cpp",
-  "$blink_core_output_dir/events/SecurityPolicyViolationEventInit.h",
-  "$blink_core_output_dir/events/TouchEventInit.cpp",
-  "$blink_core_output_dir/events/TouchEventInit.h",
-  "$blink_core_output_dir/events/TransitionEventInit.cpp",
-  "$blink_core_output_dir/events/TransitionEventInit.h",
-  "$blink_core_output_dir/events/UIEventInit.cpp",
-  "$blink_core_output_dir/events/UIEventInit.h",
-  "$blink_core_output_dir/events/WheelEventInit.cpp",
-  "$blink_core_output_dir/events/WheelEventInit.h",
-  "$blink_core_output_dir/fileapi/BlobPropertyBag.cpp",
-  "$blink_core_output_dir/fileapi/BlobPropertyBag.h",
-  "$blink_core_output_dir/fileapi/FilePropertyBag.cpp",
-  "$blink_core_output_dir/fileapi/FilePropertyBag.h",
-  "$blink_core_output_dir/frame/ScrollOptions.cpp",
-  "$blink_core_output_dir/frame/ScrollOptions.h",
-  "$blink_core_output_dir/frame/ScrollToOptions.cpp",
-  "$blink_core_output_dir/frame/ScrollToOptions.h",
-  "$blink_core_output_dir/geometry/DOMMatrixInit.cpp",
-  "$blink_core_output_dir/geometry/DOMMatrixInit.h",
-  "$blink_core_output_dir/geometry/DOMPointInit.cpp",
-  "$blink_core_output_dir/geometry/DOMPointInit.h",
-  "$blink_core_output_dir/geometry/DOMQuadInit.cpp",
-  "$blink_core_output_dir/geometry/DOMQuadInit.h",
-  "$blink_core_output_dir/geometry/DOMRectInit.cpp",
-  "$blink_core_output_dir/geometry/DOMRectInit.h",
-  "$blink_core_output_dir/html/AssignedNodesOptions.cpp",
-  "$blink_core_output_dir/html/AssignedNodesOptions.h",
-  "$blink_core_output_dir/html/ImageDataColorSettings.cpp",
-  "$blink_core_output_dir/html/ImageDataColorSettings.h",
-  "$blink_core_output_dir/html/canvas/CanvasContextCreationAttributes.cpp",
-  "$blink_core_output_dir/html/canvas/CanvasContextCreationAttributes.h",
-  "$blink_core_output_dir/html/track/TrackEventInit.cpp",
-  "$blink_core_output_dir/html/track/TrackEventInit.h",
-  "$blink_core_output_dir/imagebitmap/ImageBitmapOptions.cpp",
-  "$blink_core_output_dir/imagebitmap/ImageBitmapOptions.h",
-  "$blink_core_output_dir/input/InputDeviceCapabilitiesInit.cpp",
-  "$blink_core_output_dir/input/InputDeviceCapabilitiesInit.h",
-  "$blink_core_output_dir/mojo/MojoCreateDataPipeOptions.cpp",
-  "$blink_core_output_dir/mojo/MojoCreateDataPipeOptions.h",
-  "$blink_core_output_dir/mojo/MojoCreateDataPipeResult.cpp",
-  "$blink_core_output_dir/mojo/MojoCreateDataPipeResult.h",
-  "$blink_core_output_dir/mojo/MojoCreateMessagePipeResult.cpp",
-  "$blink_core_output_dir/mojo/MojoCreateMessagePipeResult.h",
-  "$blink_core_output_dir/mojo/MojoCreateSharedBufferResult.cpp",
-  "$blink_core_output_dir/mojo/MojoCreateSharedBufferResult.h",
-  "$blink_core_output_dir/mojo/MojoDiscardDataOptions.cpp",
-  "$blink_core_output_dir/mojo/MojoDiscardDataOptions.h",
-  "$blink_core_output_dir/mojo/MojoDuplicateBufferHandleOptions.cpp",
-  "$blink_core_output_dir/mojo/MojoDuplicateBufferHandleOptions.h",
-  "$blink_core_output_dir/mojo/MojoHandleSignals.cpp",
-  "$blink_core_output_dir/mojo/MojoHandleSignals.h",
-  "$blink_core_output_dir/mojo/MojoMapBufferResult.cpp",
-  "$blink_core_output_dir/mojo/MojoMapBufferResult.h",
-  "$blink_core_output_dir/mojo/MojoReadDataOptions.cpp",
-  "$blink_core_output_dir/mojo/MojoReadDataOptions.h",
-  "$blink_core_output_dir/mojo/MojoReadDataResult.cpp",
-  "$blink_core_output_dir/mojo/MojoReadDataResult.h",
-  "$blink_core_output_dir/mojo/MojoReadMessageFlags.cpp",
-  "$blink_core_output_dir/mojo/MojoReadMessageFlags.h",
-  "$blink_core_output_dir/mojo/MojoReadMessageResult.cpp",
-  "$blink_core_output_dir/mojo/MojoReadMessageResult.h",
-  "$blink_core_output_dir/mojo/MojoWriteDataOptions.cpp",
-  "$blink_core_output_dir/mojo/MojoWriteDataOptions.h",
-  "$blink_core_output_dir/mojo/MojoWriteDataResult.cpp",
-  "$blink_core_output_dir/mojo/MojoWriteDataResult.h",
-  "$blink_core_output_dir/mojo/testing/MojoInterfaceRequestEventInit.cpp",
-  "$blink_core_output_dir/mojo/testing/MojoInterfaceRequestEventInit.h",
-  "$blink_core_output_dir/offscreencanvas/ImageEncodeOptions.cpp",
-  "$blink_core_output_dir/offscreencanvas/ImageEncodeOptions.h",
-  "$blink_core_output_dir/page/scrolling/ScrollStateInit.cpp",
-  "$blink_core_output_dir/page/scrolling/ScrollStateInit.h",
-  "$blink_core_output_dir/timing/PerformanceObserverInit.cpp",
-  "$blink_core_output_dir/timing/PerformanceObserverInit.h",
-  "$blink_core_output_dir/workers/WorkletOptions.cpp",
-  "$blink_core_output_dir/workers/WorkletOptions.h",
-]
-
 bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/AddEventListenerOptionsOrBoolean.cpp",
   "$bindings_core_v8_output_dir/AddEventListenerOptionsOrBoolean.h",
@@ -246,15 +85,6 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/VideoTrackOrAudioTrackOrTextTrack.h",
 ]
 
-generated_core_testing_dictionary_files = [
-  "$blink_core_output_dir/testing/InternalDictionary.cpp",
-  "$blink_core_output_dir/testing/InternalDictionary.h",
-  "$blink_core_output_dir/testing/InternalDictionaryDerived.cpp",
-  "$blink_core_output_dir/testing/InternalDictionaryDerived.h",
-  "$blink_core_output_dir/testing/InternalDictionaryDerivedDerived.cpp",
-  "$blink_core_output_dir/testing/InternalDictionaryDerivedDerived.h",
-]
-
 generated_core_testing_callback_function_files = [
   "$bindings_core_v8_output_dir/TestCallback.cpp",
   "$bindings_core_v8_output_dir/TestCallback.h",
@@ -324,22 +154,32 @@ aggregate_generated_bindings("generate_bindings_core_v8_all_interfaces") {
 }
 
 idl_impl("bindings_core_impl_generated") {
-  sources = core_dictionary_idl_files + core_testing_dictionary_idl_files
-  outputs = bindings_core_generated_union_type_files +
-            generated_core_dictionary_files +
-            generated_core_testing_dictionary_files +
-            generated_core_testing_callback_function_files +
-            generated_core_callback_function_files
-  output_dir = bindings_core_v8_output_dir
+  dict_idls = core_dictionary_idl_files + core_testing_dictionary_idl_files
+  non_dict_outputs = bindings_core_generated_union_type_files +
+                     generated_core_testing_callback_function_files +
+                     generated_core_callback_function_files
+  non_dict_output_dir = bindings_core_v8_output_dir
   target_component = "core"
 }
 
+# Even though the idl_impl() call above generates .cpp and .h files for both
+# |core_dictionary_idl_files| and |core_testing_dictionary_idl_files|, we need
+# to do some manual processing because the generated files are used in
+# different targets.
+generated_core_testing_dictionary_files =
+    process_file_template(
+        core_testing_dictionary_idl_files,
+        [
+          "$blink_core_output_dir/testing/{{source_name_part}}.cpp",
+          "$blink_core_output_dir/testing/{{source_name_part}}.h",
+        ])
+
 # Compile the non-test sources generated above.
 blink_core_sources("bindings_core_impl") {
-  sources = bindings_core_generated_union_type_files +
-            generated_core_dictionary_files +
-            bindings_core_generated_interface_files +
-            generated_core_callback_function_files
+  _non_testing_sources = get_target_outputs(":bindings_core_impl_generated") -
+                         generated_core_testing_dictionary_files -
+                         generated_core_testing_callback_function_files
+  sources = _non_testing_sources + bindings_core_generated_interface_files
 
   deps = [
     ":bindings_core_v8_generated",
