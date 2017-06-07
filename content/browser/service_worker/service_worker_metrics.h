@@ -337,11 +337,14 @@ class ServiceWorkerMetrics {
   // |start_situation| describe the preparation needed.
   // |response_start| is the time it took until the navigation preload response
   // started.
+  // |resource_type| must be RESOURCE_TYPE_MAIN_FRAME or
+  // RESOURCE_TYPE_SUB_FRAME.
   CONTENT_EXPORT static void RecordNavigationPreloadResponse(
       base::TimeDelta worker_start,
       base::TimeDelta response_start,
       EmbeddedWorkerStatus initial_worker_status,
-      StartSituation start_situation);
+      StartSituation start_situation,
+      ResourceType resource_type);
 
   // Records the result of trying to handle a request for a service worker
   // script.

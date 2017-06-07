@@ -15,14 +15,17 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
@@ -33,6 +36,7 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/blob_handle.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
@@ -77,13 +81,17 @@ class MockHttpProtocolHandler
         blob_storage_context_(blob_storage_context),
         job_(nullptr),
         delegate_(delegate),
-        resource_type_(RESOURCE_TYPE_MAIN_FRAME) {}
+        resource_type_(RESOURCE_TYPE_MAIN_FRAME),
+        simulate_navigation_preload_(false) {}
 
   ~MockHttpProtocolHandler() override {}
 
   void set_resource_type(ResourceType type) { resource_type_ = type; }
   void set_custom_timeout(base::Optional<base::TimeDelta> timeout) {
     custom_timeout_ = timeout;
+  }
+  void set_simulate_navigation_preload() {
+    simulate_navigation_preload_ = true;
   }
 
   net::URLRequestJob* MaybeCreateJob(
@@ -104,6 +112,9 @@ class MockHttpProtocolHandler
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
         scoped_refptr<ResourceRequestBodyImpl>(), ServiceWorkerFetchType::FETCH,
         custom_timeout_, delegate_);
+    if (simulate_navigation_preload_) {
+      job_->set_simulate_navigation_preload_for_test();
+    }
     job_->ForwardToServiceWorker();
     return job_;
   }
@@ -116,6 +127,7 @@ class MockHttpProtocolHandler
   mutable ServiceWorkerURLRequestJob* job_;
   ServiceWorkerURLRequestJob::Delegate* delegate_;
   ResourceType resource_type_;
+  bool simulate_navigation_preload_;
   base::Optional<base::TimeDelta> custom_timeout_;
 };
 
@@ -137,11 +149,19 @@ std::unique_ptr<ServiceWorkerHeaderMap> MakeHeaders() {
   return headers;
 }
 
+void SaveStatusCallback(ServiceWorkerStatusCode* out_status,
+                        ServiceWorkerStatusCode status) {
+  *out_status = status;
+}
+
 }  // namespace
 
 class ServiceWorkerURLRequestJobTest
     : public testing::Test,
       public ServiceWorkerURLRequestJob::Delegate {
+ public:
+  MockHttpProtocolHandler* handler() { return http_protocol_handler_; }
+
  protected:
   ServiceWorkerURLRequestJobTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
@@ -228,6 +248,7 @@ class ServiceWorkerURLRequestJobTest
     version_ = nullptr;
     registration_ = nullptr;
     helper_.reset();
+    request_.reset();
   }
 
   void TestRequestResult(int expected_status_code,
@@ -339,6 +360,24 @@ class ServiceWorkerURLRequestJobTest
     base::RunLoop().RunUntilIdle();
   }
 
+  // Starts a navigation request with navigation preload enabled.
+  void SetUpNavigationPreloadTest(ResourceType resource_type) {
+    version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+    http_protocol_handler_->set_resource_type(resource_type);
+    http_protocol_handler_->set_simulate_navigation_preload();
+    request_ = url_request_context_.CreateRequest(
+        GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+        &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
+    ResourceRequestInfo::AllocateForTesting(
+        request_.get(), resource_type, browser_context_->GetResourceContext(),
+        -1, -1, -1, resource_type == RESOURCE_TYPE_MAIN_FRAME, false, true,
+        true, PREVIEWS_OFF);
+
+    request_->set_method("GET");
+    request_->Start();
+    base::RunLoop().RunUntilIdle();
+  }
+
   TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<TestBrowserContext> browser_context_;
@@ -383,6 +422,229 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
   EXPECT_FALSE(info->response_is_in_cache_storage());
   EXPECT_EQ(std::string(), info->response_cache_storage_cache_name());
+}
+
+// Helper for controlling when to start a worker and respond to a fetch event.
+class DelayHelper : public EmbeddedWorkerTestHelper {
+ public:
+  DelayHelper(ServiceWorkerURLRequestJobTest* test)
+      : EmbeddedWorkerTestHelper(base::FilePath()), test_(test) {}
+  ~DelayHelper() override {}
+
+  void CompleteNavigationPreload() {
+    test_->handler()->job()->OnNavigationPreloadResponse();
+  }
+
+  void CompleteStartWorker() {
+    EmbeddedWorkerTestHelper::OnStartWorker(
+        embedded_worker_id_, service_worker_version_id_, scope_, script_url_,
+        pause_after_download_, std::move(start_worker_request_),
+        std::move(start_worker_instance_host_));
+  }
+
+  void Respond() {
+    response_callback_->OnResponse(
+        ServiceWorkerResponse(
+            base::MakeUnique<std::vector<GURL>>(), 200, "OK",
+            blink::kWebServiceWorkerResponseTypeDefault,
+            base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0,
+            blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
+            false /* response_is_in_cache_storage */,
+            std::string() /* response_cache_storage_cache_name */,
+            base::MakeUnique<
+                ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
+        base::Time::Now());
+    std::move(finish_callback_).Run(SERVICE_WORKER_OK, base::Time::Now());
+  }
+
+ protected:
+  void OnStartWorker(int embedded_worker_id,
+                     int64_t service_worker_version_id,
+                     const GURL& scope,
+                     const GURL& script_url,
+                     bool pause_after_download,
+                     mojom::ServiceWorkerEventDispatcherRequest request,
+                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+                         instance_host) override {
+    embedded_worker_id_ = embedded_worker_id;
+    service_worker_version_id_ = service_worker_version_id;
+    scope_ = scope;
+    script_url_ = script_url;
+    pause_after_download_ = pause_after_download;
+    start_worker_request_ = std::move(request);
+    start_worker_instance_host_ = std::move(instance_host);
+  }
+
+  void OnFetchEvent(
+      int embedded_worker_id,
+      int fetch_event_id,
+      const ServiceWorkerFetchRequest& /* request */,
+      mojom::FetchEventPreloadHandlePtr preload_handle,
+      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      FetchCallback finish_callback) override {
+    embedded_worker_id_ = embedded_worker_id;
+    fetch_event_id_ = fetch_event_id;
+    response_callback_ = std::move(response_callback);
+    finish_callback_ = std::move(finish_callback);
+    preload_handle_ = std::move(preload_handle);
+  }
+
+ private:
+  int64_t service_worker_version_id_;
+  GURL scope_;
+  GURL script_url_;
+  bool pause_after_download_;
+  mojom::ServiceWorkerEventDispatcherRequest start_worker_request_;
+  mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+      start_worker_instance_host_;
+  int embedded_worker_id_ = 0;
+  int fetch_event_id_ = 0;
+  mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
+  mojom::FetchEventPreloadHandlePtr preload_handle_;
+  FetchCallback finish_callback_;
+  ServiceWorkerURLRequestJobTest* test_;
+  DISALLOW_COPY_AND_ASSIGN(DelayHelper);
+};
+
+TEST_F(ServiceWorkerURLRequestJobTest,
+       NavPreloadMetrics_WorkerAlreadyStarted_MainFrame) {
+  SetUpWithHelper(base::MakeUnique<DelayHelper>(this));
+  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+
+  // Start the worker before the navigation.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  base::HistogramTester histogram_tester;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        base::Bind(&SaveStatusCallback, &status));
+  base::RunLoop().RunUntilIdle();
+  helper->CompleteStartWorker();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+
+  // Do the navigation.
+  SetUpNavigationPreloadTest(RESOURCE_TYPE_MAIN_FRAME);
+  helper->CompleteNavigationPreload();
+  helper->Respond();
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
+      "NavigationPreloadEnabled",
+      static_cast<int>(ServiceWorkerMetrics::WorkerPreparationType::RUNNING),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
+      "StartWorkerExistingProcess",
+      0);
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest,
+       NavPreloadMetrics_WorkerFirst_MainFrame) {
+  SetUpWithHelper(base::MakeUnique<DelayHelper>(this));
+  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+
+  base::HistogramTester histogram_tester;
+  SetUpNavigationPreloadTest(RESOURCE_TYPE_MAIN_FRAME);
+
+  // Worker finishes first.
+  helper->CompleteStartWorker();
+  helper->CompleteNavigationPreload();
+  helper->Respond();
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
+      "NavigationPreloadEnabled",
+      static_cast<int>(ServiceWorkerMetrics::WorkerPreparationType::
+                           START_IN_EXISTING_PROCESS),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
+      "StartWorkerExistingProcess",
+      false, 1);
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest,
+       NavPreloadMetrics_NavPreloadFirst_MainFrame) {
+  SetUpWithHelper(base::MakeUnique<DelayHelper>(this));
+  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+
+  base::HistogramTester histogram_tester;
+  SetUpNavigationPreloadTest(RESOURCE_TYPE_MAIN_FRAME);
+
+  // Nav preload finishes first.
+  helper->CompleteNavigationPreload();
+  helper->CompleteStartWorker();
+  helper->Respond();
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
+      "NavigationPreloadEnabled",
+      static_cast<int>(ServiceWorkerMetrics::WorkerPreparationType::
+                           START_IN_EXISTING_PROCESS),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
+      "StartWorkerExistingProcess",
+      true, 1);
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest, NavPreloadMetrics_WorkerFirst_SubFrame) {
+  SetUpWithHelper(base::MakeUnique<DelayHelper>(this));
+  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+
+  base::HistogramTester histogram_tester;
+  SetUpNavigationPreloadTest(RESOURCE_TYPE_SUB_FRAME);
+
+  // Worker finishes first.
+  helper->CompleteStartWorker();
+  helper->CompleteNavigationPreload();
+  helper->Respond();
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
+      "NavigationPreloadEnabled",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame", 0);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
+      "StartWorkerExistingProcess",
+      0);
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest,
+       NavPreloadMetrics_NavPreloadFirst_SubFrame) {
+  SetUpWithHelper(base::MakeUnique<DelayHelper>(this));
+  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+
+  base::HistogramTester histogram_tester;
+  SetUpNavigationPreloadTest(RESOURCE_TYPE_SUB_FRAME);
+
+  // Nav preload finishes first.
+  helper->CompleteNavigationPreload();
+  helper->CompleteStartWorker();
+  helper->Respond();
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
+      "NavigationPreloadEnabled",
+      0);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame", 0);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
+      "StartWorkerExistingProcess",
+      0);
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, CustomTimeout) {
@@ -1137,54 +1399,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, EarlyResponse) {
   EXPECT_FALSE(version_->HasWork());
 }
 
-// Helper for controlling when to respond to a fetch event.
-class DelayedResponseHelper : public EmbeddedWorkerTestHelper {
- public:
-  DelayedResponseHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
-  ~DelayedResponseHelper() override {}
-
-  void Respond() {
-    response_callback_->OnResponse(
-        ServiceWorkerResponse(
-            base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-            blink::kWebServiceWorkerResponseTypeDefault,
-            base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0,
-            blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
-            false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */,
-            base::MakeUnique<
-                ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-        base::Time::Now());
-    std::move(finish_callback_).Run(SERVICE_WORKER_OK, base::Time::Now());
-  }
-
- protected:
-  void OnFetchEvent(
-      int embedded_worker_id,
-      int fetch_event_id,
-      const ServiceWorkerFetchRequest& /* request */,
-      mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      FetchCallback finish_callback) override {
-    embedded_worker_id_ = embedded_worker_id;
-    fetch_event_id_ = fetch_event_id;
-    response_callback_ = std::move(response_callback);
-    finish_callback_ = std::move(finish_callback);
-  }
-
- private:
-  int embedded_worker_id_ = 0;
-  int fetch_event_id_ = 0;
-  mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
-  FetchCallback finish_callback_;
-  DISALLOW_COPY_AND_ASSIGN(DelayedResponseHelper);
-};
-
 // Test cancelling the URLRequest while the fetch event is in flight.
 TEST_F(ServiceWorkerURLRequestJobTest, CancelRequest) {
-  SetUpWithHelper(base::MakeUnique<DelayedResponseHelper>());
-  DelayedResponseHelper* helper =
-      static_cast<DelayedResponseHelper*>(helper_.get());
+  SetUpWithHelper(base::MakeUnique<DelayHelper>(this));
+  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
 
   // Start the URL request. The job will be waiting for the
   // worker to respond to the fetch event.
@@ -1194,6 +1412,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, CancelRequest) {
       &url_request_delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
   request_->set_method("GET");
   request_->Start();
+  base::RunLoop().RunUntilIdle();
+  helper->CompleteStartWorker();
   base::RunLoop().RunUntilIdle();
 
   // Cancel the URL request.

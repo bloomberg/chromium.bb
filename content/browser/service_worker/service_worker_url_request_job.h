@@ -105,6 +105,15 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   const ResourceContext* resource_context() const { return resource_context_; }
   bool did_navigation_preload() const { return did_navigation_preload_; }
 
+  // When set, this job will pretend that navigation preload was triggered, but
+  // not actually do navigation preload. This is to aid unit tests that check
+  // UMA logging. It's difficult to get navigation preload to work in a unit
+  // test: there is a much setup of ResourceRequestInfoImpl,
+  // ResourceRequesterInfo, etc. required.
+  void set_simulate_navigation_preload_for_test() {
+    simulate_navigation_preload_for_test_ = true;
+  }
+
   // Sets the response type.
   // When an in-flight request possibly needs CORS check, use
   // FallbackToNetworkOrRenderer. This method will decide whether the request
@@ -151,6 +160,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
  private:
   class FileSizeResolver;
+  class NavigationPreloadMetrics;
+  friend class DelayHelper;
+  friend class ServiceWorkerURLRequestJobTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            LostActiveVersion);
 
@@ -176,6 +188,12 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   // This must not be called until all files in |body_| with unknown size have
   // their sizes populated.
   void CreateRequestBodyBlob(std::string* blob_uuid, uint64_t* blob_size);
+
+  // Returns true if this job performed a navigation that should be logged to
+  // performance-related UMA. It returns false in certain cases that are not
+  // relevant to performance analysis, such as if the worker was not already
+  // activated or DevTools was attached to the worker.
+  bool ShouldRecordNavigationMetrics(const ServiceWorkerVersion* version) const;
 
   // For FORWARD_TO_SERVICE_WORKER case.
   void DidPrepareFetchEvent(scoped_refptr<ServiceWorkerVersion> version);
@@ -277,9 +295,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   // True if navigation preload was enabled.
   bool did_navigation_preload_ = false;
+  bool simulate_navigation_preload_for_test_ = false;
 
-  // True if navigation preload metrics were reported.
-  bool reported_navigation_preload_metrics_ = false;
+  std::unique_ptr<NavigationPreloadMetrics> nav_preload_metrics_;
 
   ResponseType response_type_;
 

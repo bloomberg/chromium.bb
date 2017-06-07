@@ -216,6 +216,92 @@ class ServiceWorkerURLRequestJob::FileSizeResolver {
   DISALLOW_COPY_AND_ASSIGN(FileSizeResolver);
 };
 
+// A helper for recording navigation preload UMA. The UMA is recorded
+// after both service worker preparation finished and the
+// navigation preload response arrived.
+class ServiceWorkerURLRequestJob::NavigationPreloadMetrics {
+ public:
+  explicit NavigationPreloadMetrics(ServiceWorkerURLRequestJob* owner)
+      : owner_(owner) {}
+  ~NavigationPreloadMetrics() {}
+
+  // Called when service worker preparation finished.
+  void ReportWorkerPreparationFinished() {
+    DCHECK(!owner_->worker_start_time_.is_null());
+    DCHECK(!owner_->worker_ready_time_.is_null());
+    switch (phase_) {
+      case Phase::INITIAL:
+        phase_ = Phase::WORKER_PREPARATION_FINISHED;
+        break;
+      case Phase::NAV_PRELOAD_FINISHED:
+        phase_ = Phase::BOTH_FINISHED;
+        Complete();
+        break;
+      case Phase::DO_NOT_RECORD:
+        return;
+      case Phase::BOTH_FINISHED:
+      case Phase::WORKER_PREPARATION_FINISHED:
+      case Phase::RECORDED:
+        NOTREACHED();
+    }
+  }
+
+  // Called when the navigation preload response arrived.
+  void ReportNavigationPreloadFinished() {
+    navigation_preload_response_time_ = base::TimeTicks::Now();
+    switch (phase_) {
+      case Phase::INITIAL:
+        phase_ = Phase::NAV_PRELOAD_FINISHED;
+        break;
+      case Phase::WORKER_PREPARATION_FINISHED:
+        phase_ = Phase::BOTH_FINISHED;
+        Complete();
+        break;
+      case Phase::DO_NOT_RECORD:
+        return;
+      case Phase::BOTH_FINISHED:
+      case Phase::NAV_PRELOAD_FINISHED:
+      case Phase::RECORDED:
+        NOTREACHED();
+    }
+  }
+
+  // After Abort() is called, no navigation preload UMA will be recorded for
+  // this navigation.
+  void Abort() {
+    DCHECK_NE(phase_, Phase::RECORDED);
+    phase_ = Phase::DO_NOT_RECORD;
+  }
+
+ private:
+  enum class Phase {
+    INITIAL,
+    WORKER_PREPARATION_FINISHED,
+    NAV_PRELOAD_FINISHED,
+    BOTH_FINISHED,
+    RECORDED,
+    DO_NOT_RECORD
+  };
+
+  void Complete() {
+    DCHECK_EQ(phase_, Phase::BOTH_FINISHED);
+    ServiceWorkerMetrics::RecordNavigationPreloadResponse(
+        owner_->worker_ready_time_ - owner_->worker_start_time_,
+        navigation_preload_response_time_ - owner_->worker_start_time_,
+        owner_->initial_worker_status_, owner_->worker_start_situation_,
+        owner_->resource_type_);
+    phase_ = Phase::RECORDED;
+  }
+
+  // Owns and must outlive |this|.
+  ServiceWorkerURLRequestJob* owner_;
+
+  base::TimeTicks navigation_preload_response_time_;
+  Phase phase_ = Phase::INITIAL;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationPreloadMetrics);
+};
+
 bool ServiceWorkerURLRequestJob::Delegate::RequestStillValid(
     ServiceWorkerMetrics::URLRequestJobResult* result) {
   return true;
@@ -518,46 +604,57 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   *blob_size = request_body_blob_data_handle_->size();
 }
 
+bool ServiceWorkerURLRequestJob::ShouldRecordNavigationMetrics(
+    const ServiceWorkerVersion* version) const {
+  // Don't record navigation metrics in the following situations.
+  // 1) The worker was in state INSTALLED or ACTIVATING, and the browser had to
+  //    wait for it to become ACTIVATED. This is to avoid including the time to
+  //    execute the activate event handlers in the worker's script.
+  if (!worker_already_activated_) {
+    return false;
+  }
+  // 2) The worker was started for the fetch AND DevTools was attached during
+  //    startup. This is intended to avoid including the time for debugging.
+  if (version->skip_recording_startup_time() &&
+      initial_worker_status_ != EmbeddedWorkerStatus::RUNNING) {
+    return false;
+  }
+  // 3) The request is for New Tab Page. This is because it tends to dominate
+  //    the stats and makes the results largely skewed.
+  if (ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(
+          version->site_for_uma())) {
+    return false;
+  }
+
+  return true;
+}
+
 void ServiceWorkerURLRequestJob::DidPrepareFetchEvent(
     scoped_refptr<ServiceWorkerVersion> version) {
   worker_ready_time_ = base::TimeTicks::Now();
   load_timing_info_.send_start = worker_ready_time_;
-
-  // Record the time taken for the browser to find and possibly start an active
-  // worker to which to dispatch a FetchEvent for a main frame resource request.
-  // For context, a FetchEvent can only be dispatched to an ACTIVATED worker
-  // that is running (it has been successfully started). The measurements starts
-  // when the browser process receives the request. The browser then finds the
-  // worker appropriate for this request (if there is none, this metric is not
-  // recorded). If that worker is already started, the browser process can send
-  // the request to it, so the measurement ends quickly. Otherwise the browser
-  // process has to start the worker and the measurement ends when the worker is
-  // successfully started.
-  // The metric is not recorded in the following situations:
-  // 1) The worker was in state INSTALLED or ACTIVATING, and the browser had to
-  //    wait for it to become ACTIVATED. This is to avoid including the time to
-  //    execute the activate event handlers in the worker's script.
-  // 2) The worker was started for the fetch AND DevTools was attached during
-  //    startup. This is intended to avoid including the time for debugging.
-  // 3) The request is for New Tab Page. This is because it tends to dominate
-  //    the stats and makes the results largely skewed.
-  if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME)
-    return;
-  if (!worker_already_activated_)
-    return;
-  if (version->skip_recording_startup_time() &&
-      initial_worker_status_ != EmbeddedWorkerStatus::RUNNING) {
-    return;
-  }
-  if (ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(
-          version->site_for_uma())) {
-    return;
-  }
   worker_start_situation_ = version->embedded_worker()->start_situation();
-  ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
-      worker_ready_time_ - request()->creation_time(), initial_worker_status_,
-      worker_start_situation_, did_navigation_preload_);
-  MaybeReportNavigationPreloadMetrics();
+
+  if (!ShouldRecordNavigationMetrics(version.get())) {
+    nav_preload_metrics_->Abort();
+    return;
+  }
+  if (resource_type_ == RESOURCE_TYPE_MAIN_FRAME) {
+    // Record the time taken for the browser to find and possibly start an
+    // active worker to which to dispatch a FetchEvent for a main frame resource
+    // request. For context, a FetchEvent can only be dispatched to an ACTIVATED
+    // worker that is running (it has been successfully started). The
+    // measurements starts when the browser process receives the request. The
+    // browser then finds the worker appropriate for this request (if there is
+    // none, this metric is not recorded). If that worker is already started,
+    // the browser process can send the request to it, so the measurement ends
+    // quickly. Otherwise the browser process has to start the worker and the
+    // measurement ends when the worker is successfully started.
+    ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
+        worker_ready_time_ - request()->creation_time(), initial_worker_status_,
+        worker_start_situation_, did_navigation_preload_);
+  }
+  nav_preload_metrics_->ReportWorkerPreparationFinished();
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
@@ -889,31 +986,20 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
       base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
   worker_start_time_ = base::TimeTicks::Now();
-  did_navigation_preload_ = fetch_dispatcher_->MaybeStartNavigationPreload(
-      request(),
-      base::BindOnce(&ServiceWorkerURLRequestJob::OnNavigationPreloadResponse,
-                     weak_factory_.GetWeakPtr()));
+  nav_preload_metrics_ = base::MakeUnique<NavigationPreloadMetrics>(this);
+  if (simulate_navigation_preload_for_test_) {
+    did_navigation_preload_ = true;
+  } else {
+    did_navigation_preload_ = fetch_dispatcher_->MaybeStartNavigationPreload(
+        request(),
+        base::BindOnce(&ServiceWorkerURLRequestJob::OnNavigationPreloadResponse,
+                       weak_factory_.GetWeakPtr()));
+  }
   fetch_dispatcher_->Run();
 }
 
 void ServiceWorkerURLRequestJob::OnNavigationPreloadResponse() {
-  DCHECK(navigation_preload_response_time_.is_null());
-  navigation_preload_response_time_ = base::TimeTicks::Now();
-  MaybeReportNavigationPreloadMetrics();
-}
-
-void ServiceWorkerURLRequestJob::MaybeReportNavigationPreloadMetrics() {
-  if (worker_start_time_.is_null() || worker_ready_time_.is_null() ||
-      navigation_preload_response_time_.is_null()) {
-    return;
-  }
-  DCHECK(!reported_navigation_preload_metrics_);
-  reported_navigation_preload_metrics_ = true;
-
-  ServiceWorkerMetrics::RecordNavigationPreloadResponse(
-      worker_ready_time_ - worker_start_time_,
-      navigation_preload_response_time_ - worker_start_time_,
-      initial_worker_status_, worker_start_situation_);
+  nav_preload_metrics_->ReportNavigationPreloadFinished();
 }
 
 }  // namespace content
