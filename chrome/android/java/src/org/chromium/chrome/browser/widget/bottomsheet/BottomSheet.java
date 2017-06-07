@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
@@ -226,9 +225,6 @@ public class BottomSheet
 
     /** Whether the sheet is currently open. */
     private boolean mIsSheetOpen;
-
-    /** Whether the root view has been laid out at least once. **/
-    private boolean mHasRootLayoutOccurred;
 
     /** The activity displaying the bottom sheet. */
     private ChromeActivity mActivity;
@@ -557,19 +553,6 @@ public class BottomSheet
      */
     public void setTabModelSelector(TabModelSelector tabModelSelector) {
         mTabModelSelector = tabModelSelector;
-
-        if (mHasRootLayoutOccurred && mTabModelSelector.isTabStateInitialized()) {
-            showHelpBubbleIfNecessary();
-        } else if (!mTabModelSelector.isTabStateInitialized()) {
-            mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
-                @Override
-                public void onTabStateInitialized() {
-                    if (mHasRootLayoutOccurred) showHelpBubbleIfNecessary();
-                    mTabModelSelector.removeObserver(this);
-                }
-            });
-        }
-
         mNtpController.setTabModelSelector(tabModelSelector);
     }
 
@@ -664,13 +647,6 @@ public class BottomSheet
                     cancelAnimation();
                     setSheetState(mCurrentState, false);
                 }
-
-                if (!mHasRootLayoutOccurred && mTabModelSelector != null
-                        && mTabModelSelector.isTabStateInitialized()) {
-                    showHelpBubbleIfNecessary();
-                }
-
-                mHasRootLayoutOccurred = true;
             }
         });
 
@@ -1344,13 +1320,11 @@ public class BottomSheet
                 && !blockPeekingSwipes;
     }
 
-    private void showHelpBubbleIfNecessary() {
-        // The help bubble should only be shown after layout has occurred so that the anchor view is
-        // in the correct position on the screen. It also must be shown after the tab state has been
-        // initialized so that any tab that auto-opens the BottomSheet has had a chance to do so.
-        assert mHasRootLayoutOccurred && mTabModelSelector != null
-                && mTabModelSelector.isTabStateInitialized();
-
+    /**
+     * Show the in-product help bubble for the {@link BottomSheet} if it has not already been shown.
+     * This method must be called after the toolbar has had at least one layout pass.
+     */
+    public void showHelpBubbleIfNecessary() {
         // If FRE is not complete, the FRE screen is likely covering ChromeTabbedActivity so the
         // help bubble should not be shown. Also skip showing if the bottom sheet is already open.
         if (!FirstRunStatus.getFirstRunFlowComplete() || mCurrentState != SHEET_STATE_PEEK) return;
