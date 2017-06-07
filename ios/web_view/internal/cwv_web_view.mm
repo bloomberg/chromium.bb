@@ -77,6 +77,7 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 @property(nonatomic, readwrite) double estimatedProgress;
 @property(nonatomic, readwrite) BOOL canGoBack;
 @property(nonatomic, readwrite) BOOL canGoForward;
+@property(nonatomic, readwrite) BOOL loading;
 @property(nonatomic, readwrite, copy) NSString* title;
 
 // Updates the availability of the back/forward navigation properties exposed
@@ -93,6 +94,7 @@ static NSString* gUserAgentProduct = nil;
 @synthesize canGoForward = _canGoForward;
 @synthesize configuration = _configuration;
 @synthesize estimatedProgress = _estimatedProgress;
+@synthesize loading = _loading;
 @synthesize navigationDelegate = _navigationDelegate;
 @synthesize title = _title;
 @synthesize translationController = _translationController;
@@ -131,10 +133,6 @@ static NSString* gUserAgentProduct = nil;
     [self resetWebStateWithSessionStorage:nil];
   }
   return self;
-}
-
-- (BOOL)isLoading {
-  return _webState->IsLoading();
 }
 
 - (NSURL*)visibleURL {
@@ -225,6 +223,14 @@ static NSString* gUserAgentProduct = nil;
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress {
   self.estimatedProgress = progress;
+}
+
+- (void)webStateDidStopLoading:(web::WebState*)webState {
+  self.loading = _webState->IsLoading();
+}
+
+- (void)webStateDidStartLoading:(web::WebState*)webState {
+  self.loading = _webState->IsLoading();
 }
 
 - (void)webStateDidChangeTitle:(web::WebState*)webState {
