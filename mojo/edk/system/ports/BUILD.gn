@@ -18,6 +18,8 @@ source_set("ports") {
     "node_delegate.h",
     "port.cc",
     "port.h",
+    "port_locker.cc",
+    "port_locker.h",
     "port_ref.cc",
     "port_ref.h",
     "user_data.h",

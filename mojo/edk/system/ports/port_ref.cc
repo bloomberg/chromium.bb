@@ -19,17 +19,13 @@ PortRef::PortRef() {
 PortRef::PortRef(const PortName& name, scoped_refptr<Port> port)
     : name_(name), port_(std::move(port)) {}
 
-PortRef::PortRef(const PortRef& other)
-    : name_(other.name_), port_(other.port_) {
-}
+PortRef::PortRef(const PortRef& other) = default;
 
-PortRef& PortRef::operator=(const PortRef& other) {
-  if (&other != this) {
-    name_ = other.name_;
-    port_ = other.port_;
-  }
-  return *this;
-}
+PortRef::PortRef(PortRef&& other) = default;
+
+PortRef& PortRef::operator=(const PortRef& other) = default;
+
+PortRef& PortRef::operator=(PortRef&& other) = default;
 
 }  // namespace ports
 }  // namespace edk

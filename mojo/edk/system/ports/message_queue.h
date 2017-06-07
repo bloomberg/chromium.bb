@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -58,7 +57,7 @@ class MessageQueue {
                      bool* has_next_message);
 
   // Returns all of the ports referenced by messages in this message queue.
-  void GetReferencedPorts(std::deque<PortName>* ports);
+  void GetReferencedPorts(std::vector<PortName>* ports);
 
  private:
   std::vector<std::unique_ptr<UserMessageEvent>> heap_;
