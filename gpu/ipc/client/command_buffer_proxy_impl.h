@@ -250,17 +250,18 @@ class GPU_EXPORT CommandBufferProxyImpl
   // There should be a lock_ if this is going to be used across multiple
   // threads, or we guarantee it is used by a single thread by using a thread
   // checker if no lock_ is set.
-  base::Lock* lock_;
+  base::Lock* lock_ = nullptr;
   base::ThreadChecker lockless_thread_checker_;
 
   // Client that wants to listen for important events on the GpuControl.
-  gpu::GpuControlClient* gpu_control_client_;
+  gpu::GpuControlClient* gpu_control_client_ = nullptr;
 
   // Unowned list of DeletionObservers.
   base::ObserverList<DeletionObserver> deletion_observers_;
 
   scoped_refptr<GpuChannelHost> channel_;
   const gpu::CommandBufferId command_buffer_id_;
+  const int channel_id_;
   const int32_t route_id_;
   const int32_t stream_id_;
   uint32_t flush_count_ = 0;

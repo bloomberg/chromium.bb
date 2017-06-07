@@ -53,9 +53,8 @@ int GetChannelID(gpu::CommandBufferId command_buffer_id) {
 CommandBufferProxyImpl::CommandBufferProxyImpl(int channel_id,
                                                int32_t route_id,
                                                int32_t stream_id)
-    : lock_(nullptr),
-      gpu_control_client_(nullptr),
-      command_buffer_id_(CommandBufferProxyID(channel_id, route_id)),
+    : command_buffer_id_(CommandBufferProxyID(channel_id, route_id)),
+      channel_id_(channel_id),
       route_id_(route_id),
       stream_id_(stream_id),
       weak_this_(AsWeakPtr()) {
@@ -671,15 +670,14 @@ bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
     const gpu::SyncToken& sync_token) {
   // Can only wait on an unverified sync token if it is from the same channel.
   int sync_token_channel_id = GetChannelID(sync_token.command_buffer_id());
-  int channel_id = GetChannelID(command_buffer_id_);
   if (sync_token.namespace_id() != gpu::CommandBufferNamespace::GPU_IO ||
-      sync_token_channel_id != channel_id) {
+      sync_token_channel_id != channel_id_) {
     return false;
   }
 
   // If waiting on a different stream, flush pending commands on that stream.
   int32_t release_stream_id = sync_token.extra_data_field();
-  if (release_stream_id != stream_id_)
+  if (channel_ && release_stream_id != stream_id_)
     channel_->FlushPendingStream(release_stream_id);
 
   return true;
