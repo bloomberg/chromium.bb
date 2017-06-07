@@ -1716,6 +1716,15 @@ if (is_android) {
       "//content/public/common:service_names",
       "//services/service_manager/embedder",
     ]
+
+    # Explicit dependency required for JNI registration to be able to
+    # find the native side functions.
+    if (is_android && is_component_build) {
+      deps += [
+        "//device/generic_sensor",
+        "//device/sensors",
+      ]
+    }
   }
 }
 
