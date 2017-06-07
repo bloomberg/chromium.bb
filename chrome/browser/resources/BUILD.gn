@@ -116,16 +116,6 @@ if (!is_android) {
     output_dir = "$root_gen_dir/chrome"
   }
 
-  grit("options_test_resources") {
-    source = "options_test_resources.grd"
-    defines = chrome_grit_defines
-    outputs = [
-      "grit/options_test_resources.h",
-      "options_test_resources.pak",
-    ]
-    output_dir = "$root_gen_dir/chrome"
-  }
-
   grit("settings_resources") {
     if (use_vulcanize) {
       source = "settings/settings_resources_vulcanized.grd"
