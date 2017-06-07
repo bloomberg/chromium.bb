@@ -80,7 +80,7 @@ ManagePasswordsState::ManagePasswordsState()
 ManagePasswordsState::~ManagePasswordsState() {}
 
 void ManagePasswordsState::OnPendingPassword(
-    scoped_refptr<password_manager::PasswordFormManager> form_manager) {
+    std::unique_ptr<password_manager::PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
   local_credentials_forms_ =
@@ -92,7 +92,7 @@ void ManagePasswordsState::OnPendingPassword(
 }
 
 void ManagePasswordsState::OnUpdatePassword(
-    scoped_refptr<password_manager::PasswordFormManager> form_manager) {
+    std::unique_ptr<password_manager::PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
   local_credentials_forms_ =
@@ -123,7 +123,7 @@ void ManagePasswordsState::OnAutoSignin(
 }
 
 void ManagePasswordsState::OnAutomaticPasswordSave(
-    scoped_refptr<PasswordFormManager> form_manager) {
+    std::unique_ptr<PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
   local_credentials_forms_.reserve(form_manager_->best_matches().size());
@@ -222,7 +222,7 @@ void ManagePasswordsState::ChooseCredential(
 }
 
 void ManagePasswordsState::ClearData() {
-  form_manager_ = nullptr;
+  form_manager_.reset();
   local_credentials_forms_.clear();
   credentials_callback_.Reset();
 }

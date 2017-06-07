@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -68,7 +67,7 @@ void ManagePasswordsTest::SetupManagingPasswords() {
 }
 
 void ManagePasswordsTest::SetupPendingPassword() {
-  scoped_refptr<password_manager::PasswordFormManager> test_form_manager(
+  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           nullptr, &client_, driver_.AsWeakPtr(), *test_form(),
           base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
@@ -77,7 +76,7 @@ void ManagePasswordsTest::SetupPendingPassword() {
 }
 
 void ManagePasswordsTest::SetupAutomaticPassword() {
-  scoped_refptr<password_manager::PasswordFormManager> test_form_manager(
+  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           nullptr, &client_, driver_.AsWeakPtr(), *test_form(),
           base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));

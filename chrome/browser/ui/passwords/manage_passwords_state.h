@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -45,11 +44,11 @@ class ManagePasswordsState {
 
   // Move to PENDING_PASSWORD_STATE.
   void OnPendingPassword(
-      scoped_refptr<password_manager::PasswordFormManager> form_manager);
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager);
 
   // Move to PENDING_PASSWORD_UPDATE_STATE.
   void OnUpdatePassword(
-      scoped_refptr<password_manager::PasswordFormManager> form_manager);
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager);
 
   // Move to CREDENTIAL_REQUEST_STATE.
   void OnRequestCredentials(
@@ -63,7 +62,7 @@ class ManagePasswordsState {
 
   // Move to CONFIRMATION_STATE.
   void OnAutomaticPasswordSave(
-      scoped_refptr<password_manager::PasswordFormManager> form_manager);
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager);
 
   // Move to MANAGE_STATE or INACTIVE_STATE for PSL matched passwords.
   // |password_form_map| contains best matches from the password store for the
@@ -128,7 +127,7 @@ class ManagePasswordsState {
   GURL origin_;
 
   // Contains the password that was submitted.
-  scoped_refptr<password_manager::PasswordFormManager> form_manager_;
+  std::unique_ptr<password_manager::PasswordFormManager> form_manager_;
 
   // Contains all the current forms.
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials_forms_;

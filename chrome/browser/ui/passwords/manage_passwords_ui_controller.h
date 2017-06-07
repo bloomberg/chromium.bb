@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
@@ -45,10 +44,11 @@ class ManagePasswordsUIController
   ~ManagePasswordsUIController() override;
 
   // PasswordsClientUIDelegate:
-  void OnPasswordSubmitted(scoped_refptr<password_manager::PasswordFormManager>
-                               form_manager) override;
+  void OnPasswordSubmitted(
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager)
+      override;
   void OnUpdatePasswordSubmitted(
-      scoped_refptr<password_manager::PasswordFormManager> form_manager)
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager)
       override;
   bool OnChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
@@ -59,7 +59,7 @@ class ManagePasswordsUIController
       const GURL& origin) override;
   void OnPromptEnableAutoSignin() override;
   void OnAutomaticPasswordSave(
-      scoped_refptr<password_manager::PasswordFormManager> form_manager)
+      std::unique_ptr<password_manager::PasswordFormManager> form_manager)
       override;
   void OnPasswordAutofilled(
       const std::map<base::string16, const autofill::PasswordForm*>&

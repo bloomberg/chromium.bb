@@ -69,7 +69,7 @@ bool IOSChromePasswordManagerClient::PromptUserToChooseCredentials(
 }
 
 bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
-    scoped_refptr<PasswordFormManager> form_to_save,
+    std::unique_ptr<PasswordFormManager> form_to_save,
     bool update_password) {
   if (form_to_save->IsBlacklisted())
     return false;
@@ -84,7 +84,7 @@ bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 }
 
 void IOSChromePasswordManagerClient::AutomaticPasswordSave(
-    scoped_refptr<PasswordFormManager> saved_form_manager) {
+    std::unique_ptr<PasswordFormManager> saved_form_manager) {
   NOTIMPLEMENTED();
 }
 

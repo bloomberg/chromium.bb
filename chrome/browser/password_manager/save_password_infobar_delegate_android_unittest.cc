@@ -45,9 +45,9 @@ class MockPasswordFormManager : public password_manager::PasswordFormManager {
             base::WrapUnique(new password_manager::StubFormSaver),
             form_fetcher) {}
 
- private:
   ~MockPasswordFormManager() override {}
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordFormManager);
 };
 
@@ -55,7 +55,7 @@ class TestSavePasswordInfobarDelegate : public SavePasswordInfoBarDelegate {
  public:
   TestSavePasswordInfobarDelegate(
       content::WebContents* web_contents,
-      scoped_refptr<password_manager::PasswordFormManager> form_to_save)
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_save)
       : SavePasswordInfoBarDelegate(web_contents,
                                     std::move(form_to_save),
                                     true /* is_smartlock_branding_enabled */) {}
@@ -75,12 +75,12 @@ class SavePasswordInfoBarDelegateTest : public ChromeRenderViewHostTestHarness {
 
   PrefService* prefs();
   const autofill::PasswordForm& test_form() { return test_form_; }
-  scoped_refptr<MockPasswordFormManager> CreateMockFormManager();
+  std::unique_ptr<MockPasswordFormManager> CreateMockFormManager();
 
  protected:
   std::unique_ptr<ConfirmInfoBarDelegate> CreateDelegate(
-      scoped_refptr<password_manager::PasswordFormManager>
-          password_form_manager);
+      std::unique_ptr<password_manager::PasswordFormManager>
+      password_form_manager);
 
   password_manager::StubPasswordManagerClient client_;
   password_manager::StubPasswordManagerDriver driver_;
@@ -108,16 +108,16 @@ PrefService* SavePasswordInfoBarDelegateTest::prefs() {
   return profile->GetPrefs();
 }
 
-scoped_refptr<MockPasswordFormManager>
+std::unique_ptr<MockPasswordFormManager>
 SavePasswordInfoBarDelegateTest::CreateMockFormManager() {
-  return scoped_refptr<MockPasswordFormManager>(
+  return std::unique_ptr<MockPasswordFormManager>(
       new MockPasswordFormManager(&password_manager_, &client_,
                                   driver_.AsWeakPtr(), test_form(), &fetcher_));
 }
 
 std::unique_ptr<ConfirmInfoBarDelegate>
 SavePasswordInfoBarDelegateTest::CreateDelegate(
-    scoped_refptr<password_manager::PasswordFormManager>
+    std::unique_ptr<password_manager::PasswordFormManager>
         password_form_manager) {
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new TestSavePasswordInfobarDelegate(web_contents(),
@@ -134,7 +134,7 @@ void SavePasswordInfoBarDelegateTest::TearDown() {
 }
 
 TEST_F(SavePasswordInfoBarDelegateTest, CancelTestCredentialSourceAPI) {
-  scoped_refptr<MockPasswordFormManager> password_form_manager(
+  std::unique_ptr<MockPasswordFormManager> password_form_manager(
       CreateMockFormManager());
   EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(
@@ -144,7 +144,7 @@ TEST_F(SavePasswordInfoBarDelegateTest, CancelTestCredentialSourceAPI) {
 
 TEST_F(SavePasswordInfoBarDelegateTest,
        CancelTestCredentialSourcePasswordManager) {
-  scoped_refptr<MockPasswordFormManager> password_form_manager(
+  std::unique_ptr<MockPasswordFormManager> password_form_manager(
       CreateMockFormManager());
   EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist());
   std::unique_ptr<ConfirmInfoBarDelegate> infobar(

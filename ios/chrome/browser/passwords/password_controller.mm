@@ -18,7 +18,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -119,7 +118,7 @@ enum class PasswordInfoBarType { SAVE, UPDATE };
 // Displays infobar for |form| with |type|. If |type| is UPDATE, the user
 // is prompted to update the password. If |type| is SAVE, the user is prompted
 // to save the password.
-- (void)showInfoBarForForm:(scoped_refptr<PasswordFormManager>)form
+- (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManager>)form
                infoBarType:(PasswordInfoBarType)type;
 
 @end
@@ -643,13 +642,14 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 #pragma mark - PasswordManagerClientDelegate
 
-- (void)showSavePasswordInfoBar:(scoped_refptr<PasswordFormManager>)formToSave {
+- (void)showSavePasswordInfoBar:
+    (std::unique_ptr<PasswordFormManager>)formToSave {
   [self showInfoBarForForm:std::move(formToSave)
                infoBarType:PasswordInfoBarType::SAVE];
 }
 
 - (void)showUpdatePasswordInfoBar:
-    (scoped_refptr<PasswordFormManager>)formToUpdate {
+    (std::unique_ptr<PasswordFormManager>)formToUpdate {
   [self showInfoBarForForm:std::move(formToUpdate)
                infoBarType:PasswordInfoBarType::UPDATE];
 }
@@ -852,7 +852,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 #pragma mark - Private methods
 
-- (void)showInfoBarForForm:(scoped_refptr<PasswordFormManager>)form
+- (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManager>)form
                infoBarType:(PasswordInfoBarType)type {
   if (!webStateObserverBridge_ || !webStateObserverBridge_->web_state())
     return;
