@@ -14,6 +14,10 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace base {
+class SharedMemoryHandle;
+}
+
 namespace cc {
 typedef gpu::Mailbox SharedBitmapId;
 
@@ -29,6 +33,10 @@ class CC_EXPORT SharedBitmap {
   uint8_t* pixels() { return pixels_; }
 
   const SharedBitmapId& id() { return id_; }
+
+  // Returns the shared memory's handle when the back end is base::SharedMemory.
+  // Otherwise, this returns an invalid handle.
+  virtual base::SharedMemoryHandle GetSharedMemoryHandle() const = 0;
 
   // Returns true if the size is valid and false otherwise.
   static bool SizeInBytes(const gfx::Size& size, size_t* size_in_bytes);

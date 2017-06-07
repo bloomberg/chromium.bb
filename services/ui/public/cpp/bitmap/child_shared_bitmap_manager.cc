@@ -46,6 +46,13 @@ class ChildSharedBitmap : public cc::SharedBitmap {
     (*shared_bitmap_manager_ptr_)->DidDeleteSharedBitmap(id());
   }
 
+  // cc::SharedBitmap:
+  base::SharedMemoryHandle GetSharedMemoryHandle() const override {
+    if (!shared_memory_holder_)
+      return base::SharedMemoryHandle();
+    return shared_memory_holder_->handle();
+  }
+
  private:
   scoped_refptr<cc::mojom::ThreadSafeSharedBitmapManagerAssociatedPtr>
       shared_bitmap_manager_ptr_;

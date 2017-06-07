@@ -133,5 +133,27 @@ TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
   client.DidDeleteSharedBitmap(id);
 }
 
+TEST_F(HostSharedBitmapManagerTest, SharedMemoryHandle) {
+  gfx::Size bitmap_size(1, 1);
+  size_t size_in_bytes;
+  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
+  std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
+  auto shared_memory_guid = bitmap->handle().GetGUID();
+  bitmap->CreateAndMapAnonymous(size_in_bytes);
+  memset(bitmap->memory(), 0xff, size_in_bytes);
+  cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
+
+  HostSharedBitmapManagerClient client(manager_.get());
+  base::SharedMemoryHandle handle = bitmap->handle().Duplicate();
+  client.ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
+
+  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
+  shared_bitmap = manager_->GetSharedBitmapFromId(gfx::Size(1, 1), id);
+  EXPECT_EQ(shared_bitmap->GetSharedMemoryHandle().GetGUID(),
+            shared_memory_guid);
+
+  client.DidDeleteSharedBitmap(id);
+}
+
 }  // namespace
 }  // namespace viz

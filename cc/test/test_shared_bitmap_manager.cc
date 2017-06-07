@@ -12,6 +12,7 @@
 namespace cc {
 
 namespace {
+
 class OwnedSharedBitmap : public SharedBitmap {
  public:
   OwnedSharedBitmap(std::unique_ptr<base::SharedMemory> shared_memory,
@@ -21,8 +22,24 @@ class OwnedSharedBitmap : public SharedBitmap {
 
   ~OwnedSharedBitmap() override {}
 
+  // SharedBitmap:
+  base::SharedMemoryHandle GetSharedMemoryHandle() const override {
+    return shared_memory_->handle();
+  }
+
  private:
   std::unique_ptr<base::SharedMemory> shared_memory_;
+};
+
+class UnownedSharedBitmap : public SharedBitmap {
+ public:
+  UnownedSharedBitmap(uint8_t* pixels, const SharedBitmapId& id)
+      : SharedBitmap(pixels, id) {}
+
+  // SharedBitmap:
+  base::SharedMemoryHandle GetSharedMemoryHandle() const override {
+    return base::SharedMemoryHandle();
+  }
 };
 
 }  // namespace
@@ -48,7 +65,7 @@ std::unique_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
   if (bitmap_map_.find(id) == bitmap_map_.end())
     return nullptr;
   uint8_t* pixels = static_cast<uint8_t*>(bitmap_map_[id]->memory());
-  return base::MakeUnique<SharedBitmap>(pixels, id);
+  return base::MakeUnique<UnownedSharedBitmap>(pixels, id);
 }
 
 }  // namespace cc

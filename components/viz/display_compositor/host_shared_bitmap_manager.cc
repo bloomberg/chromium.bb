@@ -51,6 +51,13 @@ class HostSharedBitmap : public cc::SharedBitmap {
       manager_->FreeSharedMemoryFromMap(id());
   }
 
+  // cc::SharedBitmap:
+  base::SharedMemoryHandle GetSharedMemoryHandle() const override {
+    if (!bitmap_data_->memory)
+      return base::SharedMemoryHandle();
+    return bitmap_data_->memory->handle();
+  }
+
  private:
   scoped_refptr<BitmapData> bitmap_data_;
   HostSharedBitmapManager* manager_;
