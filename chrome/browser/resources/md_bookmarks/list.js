@@ -130,6 +130,7 @@ Polymer({
     var focusMoved = false;
     var focusedIndex =
         this.getIndexForItemElement_(/** @type {HTMLElement} */ (e.target));
+    var oldFocusedIndex = focusedIndex;
     if (e.key == 'ArrowUp') {
       focusedIndex--;
       focusMoved = true;
@@ -166,6 +167,12 @@ Polymer({
         this.dispatch(
             bookmarks.actions.updateAnchor(this.displayedIds_[focusedIndex]));
       } else {
+        // If shift-selecting with no anchor, use the old focus index.
+        if (e.shiftKey && this.getState().selection.anchor == null) {
+          this.dispatch(bookmarks.actions.updateAnchor(
+              this.displayedIds_[oldFocusedIndex]));
+        }
+
         // If the focus moved from something other than a Ctrl + move event,
         // update the selection.
         var config = {
