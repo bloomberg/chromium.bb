@@ -297,6 +297,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Notifies the RenderWidget that it lost the mouse lock.
   void SendMouseLockLost();
 
+  bool is_last_unlocked_by_target() const {
+    return is_last_unlocked_by_target_;
+  }
+
   // Noifies the RenderWidget of the current mouse cursor visibility state.
   void SendCursorVisibilityState(bool is_visible);
 
@@ -666,7 +670,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const std::vector<gfx::Rect>& character_bounds);
   void OnImeCancelComposition();
   void OnLockMouse(bool user_gesture,
-                   bool last_unlocked_by_target,
                    bool privileged);
   void OnUnlockMouse();
   void OnShowDisambiguationPopup(const gfx::Rect& rect_pixels,
@@ -884,6 +887,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool pending_mouse_lock_request_;
   bool allow_privileged_mouse_lock_;
+
+  // Used when locking to indicate when a target application has voluntarily
+  // unlocked and desires to relock the mouse. If the mouse is unlocked due
+  // to ESC being pressed by the user, this will be false.
+  bool is_last_unlocked_by_target_;
 
   // Keeps track of whether the webpage has any touch event handler. If it does,
   // then touch events are sent to the renderer. Otherwise, the touch events are

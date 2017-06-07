@@ -938,7 +938,6 @@ void BrowserPluginGuest::OnExtendSelectionAndDelete(
 }
 
 void BrowserPluginGuest::OnLockMouse(bool user_gesture,
-                                     bool last_unlocked_by_target,
                                      bool privileged) {
   if (pending_lock_request_) {
     // Immediately reject the lock because only one pointerLock may be active
@@ -949,9 +948,12 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
 
   pending_lock_request_ = true;
 
+  RenderWidgetHostImpl* owner = GetOwnerRenderWidgetHost();
+  bool is_last_unlocked_by_target =
+      owner ? owner->is_last_unlocked_by_target() : false;
+
   delegate_->RequestPointerLockPermission(
-      user_gesture,
-      last_unlocked_by_target,
+      user_gesture, is_last_unlocked_by_target,
       base::Bind(&BrowserPluginGuest::PointerLockPermissionResponse,
                  weak_ptr_factory_.GetWeakPtr()));
 }

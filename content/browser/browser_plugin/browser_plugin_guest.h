@@ -299,7 +299,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                             const std::string& command);
 
   void OnLockMouse(bool user_gesture,
-                   bool last_unlocked_by_target,
                    bool privileged);
   void OnLockMouseAck(int instance_id, bool succeeded);
   // Resizes the guest's web contents.
