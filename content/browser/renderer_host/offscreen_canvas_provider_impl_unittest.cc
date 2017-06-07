@@ -43,7 +43,9 @@ class StubOffscreenCanvasSurfaceClient
   ~StubOffscreenCanvasSurfaceClient() override {}
 
   blink::mojom::OffscreenCanvasSurfaceClientPtr GetInterfacePtr() {
-    return binding_.CreateInterfacePtrAndBind();
+    blink::mojom::OffscreenCanvasSurfaceClientPtr client;
+    binding_.Bind(mojo::MakeRequest(&client));
+    return client;
   }
 
   const cc::SurfaceInfo& GetLastSurfaceInfo() const {
@@ -70,7 +72,9 @@ class StubCompositorFrameSinkClient
   ~StubCompositorFrameSinkClient() override {}
 
   cc::mojom::MojoCompositorFrameSinkClientPtr GetInterfacePtr() {
-    return binding_.CreateInterfacePtrAndBind();
+    cc::mojom::MojoCompositorFrameSinkClientPtr client;
+    binding_.Bind(mojo::MakeRequest(&client));
+    return client;
   }
 
  private:

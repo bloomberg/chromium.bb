@@ -63,8 +63,9 @@ void StateController::Initialize() {
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     connector->BindInterface(ash::mojom::kServiceName, &tray_action_ptr_);
   }
-  tray_action_ptr_->SetClient(binding_.CreateInterfacePtrAndBind(),
-                              lock_screen_note_state_);
+  ash::mojom::TrayActionClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
+  tray_action_ptr_->SetClient(std::move(client), lock_screen_note_state_);
 }
 
 void StateController::AddObserver(StateObserver* observer) {

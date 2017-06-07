@@ -26,7 +26,9 @@ class FakeUserActivityMonitor : public ui::mojom::UserActivityMonitor {
   ~FakeUserActivityMonitor() override {}
 
   ui::mojom::UserActivityMonitorPtr GetPtr() {
-    return binding_.CreateInterfacePtrAndBind();
+    ui::mojom::UserActivityMonitorPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
   // Notifies all observers about user activity.

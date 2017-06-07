@@ -174,7 +174,9 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
       ARC_GET_INSTANCE_FOR_METHOD(
           arc_bridge_service()->voice_interaction_framework(), Init);
   DCHECK(framework_instance);
-  framework_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::VoiceInteractionFrameworkHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  framework_instance->Init(std::move(host_proxy));
 
   // Temporary shortcut added to enable the metalayer experiment.
   ash::Shell::Get()->accelerator_controller()->Register(

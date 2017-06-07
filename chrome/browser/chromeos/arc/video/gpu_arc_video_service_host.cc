@@ -64,7 +64,9 @@ void GpuArcVideoServiceHost::OnInstanceReady() {
   auto* video_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->video(), Init);
   DCHECK(video_instance);
-  video_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::VideoHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  video_instance->Init(std::move(host_proxy));
 }
 
 void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(

@@ -20,7 +20,9 @@ class RangeStructTraitsTest : public testing::Test,
 
  protected:
   mojom::RangeTraitsTestServicePtr GetTraitsTestProxy() {
-    return traits_test_bindings_.CreateInterfacePtrAndBind(this);
+    mojom::RangeTraitsTestServicePtr proxy;
+    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
+    return proxy;
   }
 
  private:

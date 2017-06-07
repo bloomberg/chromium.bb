@@ -293,7 +293,9 @@ void ArcBluetoothBridge::OnInstanceReady() {
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->bluetooth(), Init);
   DCHECK(bluetooth_instance);
 
-  bluetooth_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::BluetoothHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  bluetooth_instance->Init(std::move(host_proxy));
 
   // The Bluetooth adapter was ready before the ARC instance, hence we didn't
   // register ourselves as an observer with it then. Since our instance is

@@ -218,7 +218,9 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
   ~WebUIURLLoaderFactory() override {}
 
   mojom::URLLoaderFactoryPtr CreateBinding() {
-    return loader_factory_bindings_.CreateInterfacePtrAndBind(this);
+    mojom::URLLoaderFactoryPtr factory;
+    loader_factory_bindings_.AddBinding(this, mojo::MakeRequest(&factory));
+    return factory;
   }
 
   // mojom::URLLoaderFactory implementation:

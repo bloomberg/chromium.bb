@@ -42,7 +42,9 @@ class MockMediaSessionClient : public blink::mojom::MediaSessionClient {
   MockMediaSessionClient() : binding_(this) {}
 
   blink::mojom::MediaSessionClientPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    blink::mojom::MediaSessionClientPtr client;
+    binding_.Bind(mojo::MakeRequest(&client));
+    return client;
   }
 
   MOCK_METHOD1(DidReceiveAction, void(blink::mojom::MediaSessionAction action));

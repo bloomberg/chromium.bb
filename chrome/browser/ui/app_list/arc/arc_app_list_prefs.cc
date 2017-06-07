@@ -790,7 +790,9 @@ void ArcAppListPrefs::OnInstanceReady() {
 
   is_initialized_ = false;
 
-  app_instance->Init(binding_.CreateInterfacePtrAndBind());
+  arc::mojom::AppHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  app_instance->Init(std::move(host_proxy));
   app_instance->RefreshAppList();
 }
 

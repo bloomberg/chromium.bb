@@ -271,8 +271,11 @@ void ArcFileSystemOperationRunner::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* file_system_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->file_system(), Init);
-  if (file_system_instance)
-    file_system_instance->Init(binding_.CreateInterfacePtrAndBind());
+  if (file_system_instance) {
+    mojom::FileSystemHostPtr host_proxy;
+    binding_.Bind(mojo::MakeRequest(&host_proxy));
+    file_system_instance->Init(std::move(host_proxy));
+  }
   OnStateChanged();
 }
 

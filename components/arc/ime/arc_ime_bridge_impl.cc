@@ -85,7 +85,9 @@ ArcImeBridgeImpl::~ArcImeBridgeImpl() {
 void ArcImeBridgeImpl::OnInstanceReady() {
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(), Init);
   DCHECK(instance);
-  instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::ImeHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  instance->Init(std::move(host_proxy));
 }
 
 void ArcImeBridgeImpl::SendSetCompositionText(

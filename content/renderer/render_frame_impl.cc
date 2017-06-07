@@ -2756,9 +2756,11 @@ void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
 void RenderFrameImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest request) {
   service_manager::Connector* connector = ChildThread::Get()->GetConnector();
-  connector->FilterInterfaces(
-      mojom::kNavigation_FrameSpec, browser_info_.identity, std::move(request),
-      interface_provider_bindings_.CreateInterfacePtrAndBind(this));
+  service_manager::mojom::InterfaceProviderPtr provider;
+  interface_provider_bindings_.AddBinding(this, mojo::MakeRequest(&provider));
+  connector->FilterInterfaces(mojom::kNavigation_FrameSpec,
+                              browser_info_.identity, std::move(request),
+                              std::move(provider));
 }
 
 void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {

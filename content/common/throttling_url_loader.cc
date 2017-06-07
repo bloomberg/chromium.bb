@@ -123,10 +123,11 @@ void ThrottlingURLLoader::Start(
     }
   }
 
-  factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader_), routing_id, request_id, options,
-      *url_request,
-      client_binding_.CreateInterfacePtrAndBind(std::move(task_runner)));
+  mojom::URLLoaderClientPtr client;
+  client_binding_.Bind(mojo::MakeRequest(&client, std::move(task_runner)));
+  factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader_), routing_id,
+                                request_id, options, *url_request,
+                                std::move(client));
 }
 
 void ThrottlingURLLoader::OnReceiveResponse(
@@ -254,12 +255,13 @@ void ThrottlingURLLoader::Resume() {
 
   switch (deferred_stage_) {
     case DEFERRED_START: {
+      mojom::URLLoaderClientPtr client;
+      client_binding_.Bind(
+          mojo::MakeRequest(&client, std::move(start_info_->task_runner)));
       start_info_->url_loader_factory->CreateLoaderAndStart(
           mojo::MakeRequest(&url_loader_), start_info_->routing_id,
           start_info_->request_id, start_info_->options,
-          *start_info_->url_request,
-          client_binding_.CreateInterfacePtrAndBind(
-              std::move(start_info_->task_runner)));
+          *start_info_->url_request, std::move(client));
 
       if (priority_info_) {
         auto priority_info = std::move(priority_info_);

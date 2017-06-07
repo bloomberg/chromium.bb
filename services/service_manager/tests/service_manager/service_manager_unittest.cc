@@ -110,7 +110,9 @@ class ServiceManagerTest : public test::ServiceTest,
     connector()->BindInterface(service_manager::mojom::kServiceName,
                                &service_manager);
 
-    service_manager->AddListener(binding_.CreateInterfacePtrAndBind());
+    mojom::ServiceManagerListenerPtr listener;
+    binding_.Bind(mojo::MakeRequest(&listener));
+    service_manager->AddListener(std::move(listener));
 
     wait_for_instances_loop_ = base::MakeUnique<base::RunLoop>();
     wait_for_instances_loop_->Run();

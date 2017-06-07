@@ -3245,9 +3245,11 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;
   BindInterface(GetProcess(), &frame_factory);
-  frame_factory->CreateFrame(
-      routing_id_, MakeRequest(&frame_),
-      frame_host_interface_broker_binding_.CreateInterfacePtrAndBind());
+
+  mojom::FrameHostInterfaceBrokerPtr broker_proxy;
+  frame_host_interface_broker_binding_.Bind(mojo::MakeRequest(&broker_proxy));
+  frame_factory->CreateFrame(routing_id_, MakeRequest(&frame_),
+                             std::move(broker_proxy));
 
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   frame_->GetInterfaceProvider(mojo::MakeRequest(&remote_interfaces));
@@ -3565,9 +3567,10 @@ void RenderFrameHostImpl::GetInterfaceProvider(
   service_manager::Identity child_identity = GetProcess()->GetChildIdentity();
   service_manager::Connector* connector =
       BrowserContext::GetConnectorFor(GetProcess()->GetBrowserContext());
-  connector->FilterInterfaces(
-      mojom::kNavigation_FrameSpec, child_identity, std::move(interfaces),
-      interface_provider_bindings_.CreateInterfacePtrAndBind(this));
+  service_manager::mojom::InterfaceProviderPtr provider;
+  interface_provider_bindings_.AddBinding(this, mojo::MakeRequest(&provider));
+  connector->FilterInterfaces(mojom::kNavigation_FrameSpec, child_identity,
+                              std::move(interfaces), std::move(provider));
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

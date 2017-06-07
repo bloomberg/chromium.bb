@@ -29,7 +29,9 @@ class ResourceCoordinatorTest : public service_manager::test::ServiceTest,
   }
 
   mojom::CoordinationPolicyCallbackPtr GetPolicyCallback() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::CoordinationPolicyCallbackPtr callback_proxy;
+    binding_.Bind(mojo::MakeRequest(&callback_proxy));
+    return callback_proxy;
   }
 
   void QuitOnPolicyCallback(base::RunLoop* loop) { loop_ = loop; }

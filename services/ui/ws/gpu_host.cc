@@ -45,9 +45,11 @@ GpuHost::GpuHost(GpuHostDelegate* delegate)
   // TODO(sad): Correctly initialize gpu::GpuPreferences (like it is initialized
   // in GpuProcessHost::Init()).
   gpu::GpuPreferences preferences;
+  mojom::GpuHostPtr gpu_host_proxy;
+  gpu_host_binding_.Bind(mojo::MakeRequest(&gpu_host_proxy));
   gpu_main_->CreateGpuService(MakeRequest(&gpu_service_),
-                              gpu_host_binding_.CreateInterfacePtrAndBind(),
-                              preferences, mojo::ScopedSharedBufferHandle());
+                              std::move(gpu_host_proxy), preferences,
+                              mojo::ScopedSharedBufferHandle());
   gpu_memory_buffer_manager_ = base::MakeUnique<ServerGpuMemoryBufferManager>(
       gpu_service_.get(), next_client_id_++);
 }

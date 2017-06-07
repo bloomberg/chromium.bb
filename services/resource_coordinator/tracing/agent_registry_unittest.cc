@@ -21,7 +21,9 @@ class MockAgent : public mojom::Agent {
   MockAgent() : binding_(this) {}
 
   mojom::AgentPtr CreateAgentPtr() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::AgentPtr agent;
+    binding_.Bind(mojo::MakeRequest(&agent));
+    return agent;
   }
 
  private:

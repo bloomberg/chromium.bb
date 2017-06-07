@@ -24,7 +24,9 @@ class DeviceStructTraitsTest : public testing::Test,
 
  protected:
   mojom::DeviceStructTraitsTestPtr GetTraitsTestProxy() {
-    return traits_test_bindings_.CreateInterfacePtrAndBind(this);
+    mojom::DeviceStructTraitsTestPtr proxy;
+    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
+    return proxy;
   }
 
  private:

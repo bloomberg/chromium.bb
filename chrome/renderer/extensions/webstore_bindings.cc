@@ -144,8 +144,9 @@ void WebstoreBindings::Install(
 
   int install_id = g_next_install_id++;
 
-  mojom::InlineInstallProgressListenerPtr install_progress_listener =
-      install_progress_listener_bindings_.CreateInterfacePtrAndBind(this);
+  mojom::InlineInstallProgressListenerPtr install_progress_listener;
+  install_progress_listener_bindings_.AddBinding(
+      this, mojo::MakeRequest(&install_progress_listener));
 
   inline_installer_->DoInlineInstall(
       webstore_item_id, listener_mask, std::move(install_progress_listener),

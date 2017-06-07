@@ -74,8 +74,10 @@ CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
   // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
   // frame-less HTML canvas's document is reparenting under another frame.
   // See crbug.com/683172.
+  blink::mojom::blink::OffscreenCanvasSurfaceClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
   provider->CreateOffscreenCanvasSurface(parent_frame_sink_id_, frame_sink_id_,
-                                         binding_.CreateInterfacePtrAndBind(),
+                                         std::move(client),
                                          mojo::MakeRequest(&service_));
 }
 

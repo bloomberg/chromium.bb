@@ -28,7 +28,9 @@ void ArcClipboardBridge::OnInstanceReady() {
   mojom::ClipboardInstance* clipboard_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->clipboard(), Init);
   DCHECK(clipboard_instance);
-  clipboard_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::ClipboardHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  clipboard_instance->Init(std::move(host_proxy));
 }
 
 void ArcClipboardBridge::SetTextContent(const std::string& text) {

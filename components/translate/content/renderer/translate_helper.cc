@@ -129,9 +129,10 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
   // For the same render frame with the same url, each time when its texts are
   // captured, it should be treated as a new page to do translation.
   ResetPage();
+  mojom::PagePtr page;
+  binding_.Bind(mojo::MakeRequest(&page));
   GetTranslateDriver()->RegisterPage(
-      binding_.CreateInterfacePtrAndBind(), details,
-      !details.has_notranslate && !language.empty());
+      std::move(page), details, !details.has_notranslate && !language.empty());
 }
 
 void TranslateHelper::CancelPendingTranslation() {

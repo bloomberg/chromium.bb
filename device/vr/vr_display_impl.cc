@@ -20,9 +20,10 @@ VRDisplayImpl::VRDisplayImpl(device::VRDevice* device,
       service_(service),
       weak_ptr_factory_(this) {
   device_->AddDisplay(this);
-  service_client->OnDisplayConnected(binding_.CreateInterfacePtrAndBind(),
-                                     mojo::MakeRequest(&client_),
-                                     std::move(display_info));
+  mojom::VRDisplayPtr display;
+  binding_.Bind(mojo::MakeRequest(&display));
+  service_client->OnDisplayConnected(
+      std::move(display), mojo::MakeRequest(&client_), std::move(display_info));
 }
 
 VRDisplayImpl::~VRDisplayImpl() {

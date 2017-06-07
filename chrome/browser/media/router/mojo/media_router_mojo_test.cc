@@ -35,7 +35,9 @@ void MockMediaController::Bind(mojom::MediaControllerRequest request) {
 }
 
 mojom::MediaControllerPtr MockMediaController::BindInterfacePtr() {
-  return binding_.CreateInterfacePtrAndBind();
+  mojom::MediaControllerPtr controller;
+  binding_.Bind(mojo::MakeRequest(&controller));
+  return controller;
 }
 
 void MockMediaController::CloseBinding() {

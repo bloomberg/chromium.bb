@@ -1023,9 +1023,12 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
   payment_provider_.set_connection_error_handler(ConvertToBaseCallback(
       WTF::Bind(&PaymentRequest::OnError, WrapWeakPersistent(this),
                 PaymentErrorReason::UNKNOWN)));
+
+  payments::mojom::blink::PaymentRequestClientPtr client;
+  client_binding_.Bind(mojo::MakeRequest(&client));
   payment_provider_->Init(
-      client_binding_.CreateInterfacePtrAndBind(),
-      std::move(validated_method_data), std::move(validated_details),
+      std::move(client), std::move(validated_method_data),
+      std::move(validated_details),
       payments::mojom::blink::PaymentOptions::From(options_));
 }
 

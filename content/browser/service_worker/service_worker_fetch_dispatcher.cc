@@ -57,12 +57,13 @@ class DelegatingURLLoader final : public mojom::URLLoader {
   }
 
   mojom::URLLoaderPtr CreateInterfacePtrAndBind() {
-    auto p = binding_.CreateInterfacePtrAndBind();
+    mojom::URLLoaderPtr loader;
+    binding_.Bind(mojo::MakeRequest(&loader));
     // This unretained pointer is safe, because |binding_| is owned by |this|
     // and the callback will never be called after |this| is destroyed.
     binding_.set_connection_error_handler(
         base::Bind(&DelegatingURLLoader::Cancel, base::Unretained(this)));
-    return p;
+    return loader;
   }
 
  private:
@@ -331,7 +332,9 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
   }
 
   mojom::ServiceWorkerFetchResponseCallbackPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::ServiceWorkerFetchResponseCallbackPtr callback_proxy;
+    binding_.Bind(mojo::MakeRequest(&callback_proxy));
+    return callback_proxy;
   }
 
  private:

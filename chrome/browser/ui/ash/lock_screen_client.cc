@@ -21,7 +21,9 @@ LockScreenClient::LockScreenClient() : binding_(this) {
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &lock_screen_);
   // Register this object as the client interface implementation.
-  lock_screen_->SetClient(binding_.CreateInterfacePtrAndBind());
+  ash::mojom::LockScreenClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
+  lock_screen_->SetClient(std::move(client));
 
   DCHECK(!g_instance);
   g_instance = this;

@@ -293,7 +293,9 @@ class TestShelfController : public ash::mojom::ShelfController {
   size_t removed_count() const { return removed_count_; }
 
   ash::mojom::ShelfControllerPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    ash::mojom::ShelfControllerPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
   // ash::mojom::ShelfController:

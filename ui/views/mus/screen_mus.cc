@@ -54,8 +54,9 @@ ScreenMus::~ScreenMus() {
 void ScreenMus::Init(service_manager::Connector* connector) {
   connector->BindInterface(ui::mojom::kServiceName, &display_manager_);
 
-  display_manager_->AddObserver(
-      display_manager_observer_binding_.CreateInterfacePtrAndBind());
+  ui::mojom::DisplayManagerObserverPtr observer;
+  display_manager_observer_binding_.Bind(mojo::MakeRequest(&observer));
+  display_manager_->AddObserver(std::move(observer));
 
   // We need the set of displays before we can continue. Wait for it.
   //

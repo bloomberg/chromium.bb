@@ -180,7 +180,9 @@ void ArcWallpaperService::OnInstanceReady() {
   mojom::WallpaperInstance* wallpaper_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->wallpaper(), Init);
   DCHECK(wallpaper_instance);
-  wallpaper_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::WallpaperHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  wallpaper_instance->Init(std::move(host_proxy));
   ash::WallpaperController* wc = GetWallpaperController();
   DCHECK(wc);
   wc->AddObserver(this);

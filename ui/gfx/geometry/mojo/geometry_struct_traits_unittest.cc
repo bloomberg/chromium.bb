@@ -21,7 +21,9 @@ class GeometryStructTraitsTest : public testing::Test,
 
  protected:
   mojom::GeometryTraitsTestServicePtr GetTraitsTestProxy() {
-    return traits_test_bindings_.CreateInterfacePtrAndBind(this);
+    mojom::GeometryTraitsTestServicePtr proxy;
+    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
+    return proxy;
   }
 
  private:

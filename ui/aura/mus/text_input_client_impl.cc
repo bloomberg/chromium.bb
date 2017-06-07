@@ -16,7 +16,9 @@ TextInputClientImpl::TextInputClientImpl(ui::TextInputClient* text_input_client)
 TextInputClientImpl::~TextInputClientImpl() {}
 
 ui::mojom::TextInputClientPtr TextInputClientImpl::CreateInterfacePtrAndBind() {
-  return binding_.CreateInterfacePtrAndBind();
+  ui::mojom::TextInputClientPtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
 void TextInputClientImpl::SetCompositionText(

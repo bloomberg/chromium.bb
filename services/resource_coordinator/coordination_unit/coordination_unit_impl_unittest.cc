@@ -62,7 +62,9 @@ class TestCoordinationUnit : public mojom::CoordinationPolicyCallback {
   }
 
   mojom::CoordinationPolicyCallbackPtr GetPolicyCallback() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::CoordinationPolicyCallbackPtr callback_proxy;
+    binding_.Bind(mojo::MakeRequest(&callback_proxy));
+    return callback_proxy;
   }
 
   // The CU will always send policy updates on events (including parent events)

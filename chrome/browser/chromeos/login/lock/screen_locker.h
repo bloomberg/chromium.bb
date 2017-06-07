@@ -279,7 +279,8 @@ class ScreenLocker : public AuthStatusConsumer,
   scoped_refptr<input_method::InputMethodManager::State> saved_ime_state_;
 
   device::mojom::FingerprintPtr fp_service_;
-  mojo::Binding<device::mojom::FingerprintObserver> binding_;
+  mojo::Binding<device::mojom::FingerprintObserver>
+      fingerprint_observer_binding_;
 
   // ViewsScreenLocker instance in use.
   std::unique_ptr<ViewsScreenLocker> views_screen_locker_;

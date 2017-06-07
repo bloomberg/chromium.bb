@@ -58,7 +58,9 @@ class MockMediaDevicesDispatcherHost
   }
 
   ::mojom::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    ::mojom::MediaDevicesDispatcherHostPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
  private:

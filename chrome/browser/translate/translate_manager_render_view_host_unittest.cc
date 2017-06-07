@@ -130,7 +130,9 @@ class FakePageImpl : public translate::mojom::Page {
   translate::mojom::PagePtr BindToNewPagePtr() {
     binding_.Close();
     translate_callback_pending_.Reset();
-    return binding_.CreateInterfacePtrAndBind();
+    translate::mojom::PagePtr page;
+    binding_.Bind(mojo::MakeRequest(&page));
+    return page;
   }
 
   // translate::mojom::Page implementation.

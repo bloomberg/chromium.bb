@@ -636,7 +636,7 @@ size_t GetNFCMessageSize(const device::mojom::blink::NFCMessagePtr& message) {
 NFC::NFC(LocalFrame* frame)
     : PageVisibilityObserver(frame->GetPage()),
       ContextLifecycleObserver(frame->GetDocument()),
-      client_(this) {
+      client_binding_(this) {
   String error_message;
 
   // Only connect to NFC if we are in a context that supports it.
@@ -646,7 +646,9 @@ NFC::NFC(LocalFrame* frame)
   frame->GetInterfaceProvider()->GetInterface(mojo::MakeRequest(&nfc_));
   nfc_.set_connection_error_handler(ConvertToBaseCallback(
       WTF::Bind(&NFC::OnConnectionError, WrapWeakPersistent(this))));
-  nfc_->SetClient(client_.CreateInterfacePtrAndBind());
+  device::mojom::blink::NFCClientPtr client;
+  client_binding_.Bind(mojo::MakeRequest(&client));
+  nfc_->SetClient(std::move(client));
 }
 
 NFC* NFC::Create(LocalFrame* frame) {
@@ -661,7 +663,7 @@ NFC::~NFC() {
 }
 
 void NFC::Dispose() {
-  client_.Close();
+  client_binding_.Close();
 }
 
 void NFC::ContextDestroyed(ExecutionContext*) {

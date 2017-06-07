@@ -184,7 +184,7 @@ ScreenLocker::Delegate::~Delegate() = default;
 // ScreenLocker, public:
 
 ScreenLocker::ScreenLocker(const user_manager::UserList& users)
-    : users_(users), binding_(this), weak_factory_(this) {
+    : users_(users), fingerprint_observer_binding_(this), weak_factory_(this) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 
@@ -197,7 +197,10 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->BindInterface(device::mojom::kServiceName, &fp_service_);
-  fp_service_->AddFingerprintObserver(binding_.CreateInterfacePtrAndBind());
+
+  device::mojom::FingerprintObserverPtr observer;
+  fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));
+  fp_service_->AddFingerprintObserver(std::move(observer));
 }
 
 void ScreenLocker::Init() {

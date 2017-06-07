@@ -26,7 +26,9 @@ class ResponseCallback : public payments::mojom::PaymentAppResponseCallback {
       const PaymentAppProvider::InvokePaymentAppCallback callback) {
     ResponseCallback* response_callback = new ResponseCallback(
         payment_request_id, std::move(service_worker_version), callback);
-    return response_callback->binding_.CreateInterfacePtrAndBind();
+    payments::mojom::PaymentAppResponseCallbackPtr callback_proxy;
+    response_callback->binding_.Bind(mojo::MakeRequest(&callback_proxy));
+    return callback_proxy;
   }
   ~ResponseCallback() override {}
 

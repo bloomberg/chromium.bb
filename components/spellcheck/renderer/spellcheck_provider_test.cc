@@ -49,8 +49,11 @@ void TestingSpellCheckProvider::RequestTextChecking(
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (!loop_ && !base::MessageLoop::current())
     loop_ = base::MakeUnique<base::MessageLoop>();
-  if (!binding_.is_bound())
-    SetSpellCheckHostForTesting(binding_.CreateInterfacePtrAndBind());
+  if (!binding_.is_bound()) {
+    spellcheck::mojom::SpellCheckHostPtr host_proxy;
+    binding_.Bind(mojo::MakeRequest(&host_proxy));
+    SetSpellCheckHostForTesting(std::move(host_proxy));
+  }
   SpellCheckProvider::RequestTextChecking(text, completion);
   base::RunLoop().RunUntilIdle();
 #else

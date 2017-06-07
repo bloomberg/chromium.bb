@@ -332,7 +332,9 @@ void ArcPolicyBridge::OnInstanceReady() {
   mojom::PolicyInstance* const policy_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->policy(), Init);
   DCHECK(policy_instance);
-  policy_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::PolicyHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  policy_instance->Init(std::move(host_proxy));
 }
 
 void ArcPolicyBridge::OnInstanceClosed() {

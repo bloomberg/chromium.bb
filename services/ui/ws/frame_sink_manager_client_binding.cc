@@ -13,9 +13,10 @@ FrameSinkManagerClientBinding::FrameSinkManagerClientBinding(
     cc::mojom::FrameSinkManagerClient* frame_sink_manager_client,
     GpuHost* gpu_host)
     : frame_sink_manager_client_binding_(frame_sink_manager_client) {
-  gpu_host->CreateFrameSinkManager(
-      mojo::MakeRequest(&frame_sink_manager_),
-      frame_sink_manager_client_binding_.CreateInterfacePtrAndBind());
+  cc::mojom::FrameSinkManagerClientPtr client_proxy;
+  frame_sink_manager_client_binding_.Bind(mojo::MakeRequest(&client_proxy));
+  gpu_host->CreateFrameSinkManager(mojo::MakeRequest(&frame_sink_manager_),
+                                   std::move(client_proxy));
 }
 
 FrameSinkManagerClientBinding::~FrameSinkManagerClientBinding() = default;

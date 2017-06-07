@@ -24,7 +24,9 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(RenderThread* thread)
   if (thread) {
     thread->GetConnector()->BindInterface(mojom::kBrowserServiceName,
                                           mojo::MakeRequest(&gamepad_monitor_));
-    gamepad_monitor_->SetObserver(binding_.CreateInterfacePtrAndBind());
+    device::mojom::GamepadObserverPtr observer;
+    binding_.Bind(mojo::MakeRequest(&observer));
+    gamepad_monitor_->SetObserver(std::move(observer));
   }
 }
 

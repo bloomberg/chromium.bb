@@ -23,7 +23,9 @@ void ArcKioskBridge::OnInstanceReady() {
   mojom::KioskInstance* kiosk_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->kiosk(), Init);
   DCHECK(kiosk_instance);
-  kiosk_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::KioskHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  kiosk_instance->Init(std::move(host_proxy));
 }
 
 void ArcKioskBridge::OnMaintenanceSessionCreated(int32_t session_id) {

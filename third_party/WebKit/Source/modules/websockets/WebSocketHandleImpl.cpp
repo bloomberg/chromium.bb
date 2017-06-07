@@ -62,15 +62,17 @@ void WebSocketHandleImpl::Connect(const KURL& url,
   DCHECK(client);
   client_ = client;
 
+  mojom::blink::WebSocketClientPtr client_proxy;
+  client_binding_.Bind(
+      mojo::MakeRequest(&client_proxy, Platform::Current()
+                                           ->CurrentThread()
+                                           ->Scheduler()
+                                           ->LoadingTaskRunner()
+                                           ->ToSingleThreadTaskRunner()));
   websocket_->AddChannelRequest(
       url, protocols, origin, first_party_for_cookies,
       user_agent_override.IsNull() ? g_empty_string : user_agent_override,
-      client_binding_.CreateInterfacePtrAndBind(
-          Platform::Current()
-              ->CurrentThread()
-              ->Scheduler()
-              ->LoadingTaskRunner()
-              ->ToSingleThreadTaskRunner()));
+      std::move(client_proxy));
 }
 
 void WebSocketHandleImpl::Send(bool fin,

@@ -42,7 +42,9 @@ void ArcBootPhaseMonitorBridge::OnInstanceReady() {
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service()->boot_phase_monitor(), Init);
   DCHECK(instance);
-  instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::BootPhaseMonitorHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  instance->Init(std::move(host_proxy));
 }
 
 void ArcBootPhaseMonitorBridge::OnInstanceClosed() {

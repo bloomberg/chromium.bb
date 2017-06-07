@@ -26,7 +26,9 @@ void ForwardingDisplayDelegate::Initialize() {
   // NativeDisplayDelegate being synchronous during it's initialization. Calls
   // to GetDisplays() and Configure() will return early starting now using
   // whatever is in |snapshots_|.
-  delegate_->Initialize(binding_.CreateInterfacePtrAndBind(), &snapshots_);
+  mojom::NativeDisplayObserverPtr observer;
+  binding_.Bind(mojo::MakeRequest(&observer));
+  delegate_->Initialize(std::move(observer), &snapshots_);
 }
 
 void ForwardingDisplayDelegate::GrabServer() {}

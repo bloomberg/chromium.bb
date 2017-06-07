@@ -35,7 +35,9 @@ void ArcPowerBridge::OnInstanceReady() {
   mojom::PowerInstance* power_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->power(), Init);
   DCHECK(power_instance);
-  power_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::PowerHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  power_instance->Init(std::move(host_proxy));
   ash::Shell::Get()->display_configurator()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       AddObserver(this);

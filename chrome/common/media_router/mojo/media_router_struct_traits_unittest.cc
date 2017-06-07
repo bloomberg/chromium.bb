@@ -23,7 +23,9 @@ class MediaRouterStructTraitsTest
 
  protected:
   mojom::MediaRouterTraitsTestServicePtr GetTraitsTestProxy() {
-    return traits_test_bindings_.CreateInterfacePtrAndBind(this);
+    mojom::MediaRouterTraitsTestServicePtr proxy;
+    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
+    return proxy;
   }
 
  private:

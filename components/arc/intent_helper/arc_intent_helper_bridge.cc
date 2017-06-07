@@ -49,7 +49,9 @@ void ArcIntentHelperBridge::OnInstanceReady() {
   auto* instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->intent_helper(), Init);
   DCHECK(instance);
-  instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::IntentHelperHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  instance->Init(std::move(host_proxy));
 }
 
 void ArcIntentHelperBridge::OnInstanceClosed() {

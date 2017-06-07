@@ -92,16 +92,6 @@ class Binding {
   // implementation unbound.
   ~Binding() {}
 
-  // Returns an InterfacePtr bound to one end of a pipe whose other end is
-  // bound to |this|.
-  InterfacePtr<Interface> CreateInterfacePtrAndBind(
-      scoped_refptr<base::SingleThreadTaskRunner> runner =
-          base::ThreadTaskRunnerHandle::Get()) {
-    InterfacePtr<Interface> interface_ptr;
-    Bind(MakeRequest(&interface_ptr), std::move(runner));
-    return interface_ptr;
-  }
-
   // Completes a binding that was constructed with only an interface
   // implementation by removing the message pipe endpoint from |request| and
   // binding it to the previously specified implementation.

@@ -42,7 +42,9 @@ void TimeZoneMonitorClient::Init() {
   device::mojom::blink::TimeZoneMonitorPtr monitor;
   Platform::Current()->GetConnector()->BindInterface(
       device::mojom::blink::kServiceName, mojo::MakeRequest(&monitor));
-  monitor->AddClient(instance.binding_.CreateInterfacePtrAndBind());
+  device::mojom::blink::TimeZoneMonitorClientPtr client;
+  instance.binding_.Bind(mojo::MakeRequest(&client));
+  monitor->AddClient(std::move(client));
 }
 
 TimeZoneMonitorClient::TimeZoneMonitorClient() : binding_(this) {

@@ -206,7 +206,9 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
   AutofillTypeTraitsTestImpl() {}
 
   mojom::TypeTraitsTestPtr GetTypeTraitsTestProxy() {
-    return bindings_.CreateInterfacePtrAndBind(this);
+    mojom::TypeTraitsTestPtr proxy;
+    bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
+    return proxy;
   }
 
   // mojom::TypeTraitsTest:

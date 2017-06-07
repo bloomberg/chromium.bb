@@ -88,7 +88,9 @@ void ArcVoiceInteractionArcHomeService::OnInstanceReady() {
       ARC_GET_INSTANCE_FOR_METHOD(
           arc_bridge_service()->voice_interaction_arc_home(), Init);
   DCHECK(home_instance);
-  home_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::VoiceInteractionArcHomeHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  home_instance->Init(std::move(host_proxy));
 }
 
 void ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructure(

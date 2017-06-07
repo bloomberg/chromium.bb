@@ -182,7 +182,9 @@ class GamepadStructTraitsTest : public testing::Test,
   }
 
   mojom::GamepadStructTraitsTestPtr GetGamepadStructTraitsTestProxy() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::GamepadStructTraitsTestPtr proxy;
+    binding_.Bind(mojo::MakeRequest(&proxy));
+    return proxy;
   }
 
  private:

@@ -171,7 +171,9 @@ SessionControllerClient::~SessionControllerClient() {
 
 void SessionControllerClient::Init() {
   ConnectToSessionController();
-  session_controller_->SetClient(binding_.CreateInterfacePtrAndBind());
+  ash::mojom::SessionControllerClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
+  session_controller_->SetClient(std::move(client));
   SendSessionInfoIfChanged();
   SendSessionLengthLimit();
   // User sessions and their order will be sent via UserSessionStateObserver

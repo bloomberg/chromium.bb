@@ -98,7 +98,9 @@ class TestSessionController : public ash::mojom::SessionController {
   ~TestSessionController() override {}
 
   ash::mojom::SessionControllerPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    ash::mojom::SessionControllerPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
   ash::mojom::SessionInfo* last_session_info() {

@@ -23,7 +23,9 @@ void ArcTtsService::OnInstanceReady() {
   mojom::TtsInstance* tts_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->tts(), Init);
   DCHECK(tts_instance);
-  tts_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::TtsHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  tts_instance->Init(std::move(host_proxy));
 }
 
 void ArcTtsService::OnTtsEvent(uint32_t id,

@@ -31,7 +31,9 @@ void ArcAudioBridge::OnInstanceReady() {
   mojom::AudioInstance* audio_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->audio(), Init);
   DCHECK(audio_instance);  // the instance on ARC side is too old.
-  audio_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::AudioHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  audio_instance->Init(std::move(host_proxy));
 }
 
 void ArcAudioBridge::ShowVolumeControls() {

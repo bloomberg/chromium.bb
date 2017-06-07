@@ -345,8 +345,9 @@ SigninScreenHandler::SigninScreenHandler(
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &touch_view_manager_ptr_);
-  touch_view_manager_ptr_->AddObserver(
-      touch_view_binding_.CreateInterfacePtrAndBind());
+  ash::mojom::TouchViewObserverPtr observer;
+  touch_view_binding_.Bind(mojo::MakeRequest(&observer));
+  touch_view_manager_ptr_->AddObserver(std::move(observer));
   if (ScreenLocker::default_screen_locker() &&
       lock_screen_apps::StateController::IsEnabled()) {
     lock_screen_apps_observer_.Add(lock_screen_apps::StateController::Get());

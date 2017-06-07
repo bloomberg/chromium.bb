@@ -74,7 +74,9 @@ class MockDeviceManagerClient : public mojom::UsbDeviceManagerClient {
   ~MockDeviceManagerClient() {}
 
   UsbDeviceManagerClientPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    UsbDeviceManagerClientPtr client;
+    binding_.Bind(mojo::MakeRequest(&client));
+    return client;
   }
 
   MOCK_METHOD1(DoOnDeviceAdded, void(mojom::UsbDeviceInfo*));
