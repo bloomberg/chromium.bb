@@ -6142,7 +6142,8 @@
         "android_rev": "latest_release",
         "boards": [
             "cyan"
-        ]
+        ],
+        "sync_chrome": true
     },
     "cyan-chrome-pfq": {
         "_template": "chrome_pfq",
@@ -18938,7 +18939,8 @@
         "android_rev": "latest_release",
         "boards": [
             "reef"
-        ]
+        ],
+        "sync_chrome": true
     },
     "reef-chrome-pfq": {
         "_template": "chrome_pfq",
