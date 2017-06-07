@@ -33,5 +33,4 @@
     if (e.stack != undefined) window.console.error(e.stack);
   }
   return undefined;
-})(options = $$OPTIONS,
-   stringify_output = $$STRINGIFY)
+})($$OPTIONS, $$STRINGIFY)
