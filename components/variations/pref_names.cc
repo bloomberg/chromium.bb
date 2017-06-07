@@ -10,13 +10,13 @@ namespace prefs {
 // Base64-encoded compressed serialized form of the variations seed protobuf.
 const char kVariationsCompressedSeed[] = "variations_compressed_seed";
 
-// 64-bit integer serialization of the base::Time from the last successful seed
-// fetch (i.e. when the Variations server responds with 200 or 304).
-const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
-
 // The latest country code received by the VariationsService for evaluating
 // studies.
 const char kVariationsCountry[] = "variations_country";
+
+// 64-bit integer serialization of the base::Time from the last successful seed
+// fetch (i.e. when the Variations server responds with 200 or 304).
+const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
 
 // Pair of <Chrome version string, country code string> representing the country
 // used for filtering permanent consistency studies until the next time Chrome
