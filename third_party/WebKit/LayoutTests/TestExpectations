@@ -2855,4 +2855,4 @@ crbug.com/729075 [ Mac10.11 Retina ] css3/blending/background-blend-mode-gif-col
 
 crbug.com/729836 [ Win ] fast/workers/worker-document-leak.html [ Pass Failure ]
 
-crbug.com/733071 [ Mac ] css3/blending/svg-blend-multiply-alpha.html [ Failure ]
+crbug.com/733071 css3/blending/svg-blend-multiply-alpha.html [ NeedsRebaseline ]
