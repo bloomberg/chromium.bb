@@ -13,6 +13,10 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Returns CRWWebController for the given |web_state|.
 CRWWebController* GetWebController(web::WebState* web_state) {
@@ -127,18 +131,18 @@ void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
 }
 
 id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
-  __block base::scoped_nsprotocol<id> executionResult;
+  __block id executionResult;
   __block bool executionCompleted = false;
   [GetWebController(web_state())
       executeJavaScript:script
       completionHandler:^(id result, NSError* error) {
-        executionResult.reset([result copy]);
+        executionResult = [result copy];
         executionCompleted = true;
       }];
   base::test::ios::WaitUntilCondition(^{
     return executionCompleted;
   });
-  return [[executionResult retain] autorelease];
+  return executionResult;
 }
 
 void WebTestWithWebState::DestroyWebState() {
