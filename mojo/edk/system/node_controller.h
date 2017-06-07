@@ -177,8 +177,6 @@ class NodeController : public ports::NodeDelegate,
                bool start_channel);
   void DropPeer(const ports::NodeName& name, NodeChannel* channel);
   void SendPeerEvent(const ports::NodeName& name, ports::ScopedEvent event);
-  void AcceptIncomingMessages();
-  void ProcessIncomingMessages();
   void DropAllPeers();
 
   // ports::NodeDelegate:
@@ -306,15 +304,6 @@ class NodeController : public ports::NodeDelegate,
   // Messages waiting to be relayed by the broker once it's known.
   std::unordered_map<ports::NodeName, OutgoingMessageQueue>
       pending_relay_messages_;
-
-  // Guards |incoming_events_| and |incoming_events_task_posted_|.
-  base::Lock events_lock_;
-  std::vector<ports::ScopedEvent> incoming_events_;
-  // Ensures that there is only one incoming messages task posted to the IO
-  // thread.
-  bool incoming_events_task_posted_ = false;
-  // Flag to fast-path checking |incoming_events_|.
-  AtomicFlag incoming_events_flag_;
 
   // Guards |shutdown_callback_|.
   base::Lock shutdown_lock_;

@@ -286,16 +286,12 @@ void NodeController::ClosePort(const ports::PortRef& port) {
   SetPortObserver(port, nullptr);
   int rv = node_->ClosePort(port);
   DCHECK_EQ(rv, ports::OK) << " Failed to close port: " << port.name();
-
-  AcceptIncomingMessages();
 }
 
 int NodeController::SendUserMessage(
     const ports::PortRef& port,
     std::unique_ptr<ports::UserMessageEvent> message) {
-  int rv = node_->SendUserMessage(port, std::move(message));
-  AcceptIncomingMessages();
-  return rv;
+  return node_->SendUserMessage(port, std::move(message));
 }
 
 void NodeController::MergePortIntoParent(const std::string& name,
@@ -320,7 +316,6 @@ void NodeController::MergePortIntoParent(const std::string& name,
     node_->ClosePort(port);
     DVLOG(2) << "Rejecting port merge for name " << name
              << " due to closed parent channel.";
-    AcceptIncomingMessages();
     return;
   }
 
@@ -329,9 +324,7 @@ void NodeController::MergePortIntoParent(const std::string& name,
 
 int NodeController::MergeLocalPorts(const ports::PortRef& port0,
                                     const ports::PortRef& port1) {
-  int rv = node_->MergeLocalPorts(port0, port1);
-  AcceptIncomingMessages();
-  return rv;
+  return node_->MergeLocalPorts(port0, port1);
 }
 
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
@@ -603,8 +596,7 @@ void NodeController::DropPeer(const ports::NodeName& name,
     node_->ClosePort(port);
 
   node_->LostConnectionToNode(name);
-
-  AcceptIncomingMessages();
+  AttemptShutdownIfRequested();
 }
 
 void NodeController::SendPeerEvent(const ports::NodeName& name,
@@ -678,66 +670,6 @@ void NodeController::SendPeerEvent(const ports::NodeName& name,
     broker->RequestIntroduction(name);
 }
 
-void NodeController::AcceptIncomingMessages() {
-  // This is an impactically large value which should never be reached in
-  // practice. See the CHECK below for usage.
-  constexpr size_t kMaxAcceptedEvents = 1000000;
-
-  size_t num_events_accepted = 0;
-  while (incoming_events_flag_) {
-    // TODO: We may need to be more careful to avoid starving the rest of the
-    // thread here. Revisit this if it turns out to be a problem. One
-    // alternative would be to schedule a task to continue pumping messages
-    // after flushing once.
-
-    events_lock_.Acquire();
-    if (incoming_events_.empty()) {
-      events_lock_.Release();
-      break;
-    }
-
-    std::vector<ports::ScopedEvent> events;
-    std::swap(events, incoming_events_);
-    incoming_events_flag_.Set(false);
-    events_lock_.Release();
-
-    num_events_accepted += events.size();
-    for (auto& event : events)
-      node_->AcceptEvent(std::move(event));
-
-    // This is effectively a safeguard against potential bugs which might lead
-    // to runaway message cycles. If any such cycles arise, we'll start seeing
-    // crash reports from this location.
-    CHECK_LE(num_events_accepted, kMaxAcceptedEvents);
-  }
-
-  if (num_events_accepted >= 4) {
-    // Note: We avoid logging this histogram for the vast majority of cases.
-    // See https://crbug.com/685763 for more context.
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.MessagesAcceptedPerEvent",
-                                static_cast<int32_t>(num_events_accepted),
-                                1 /* min */, 500 /* max */,
-                                50 /* bucket count */);
-  }
-
-  AttemptShutdownIfRequested();
-}
-
-void NodeController::ProcessIncomingMessages() {
-  RequestContext request_context(RequestContext::Source::SYSTEM);
-
-  {
-    base::AutoLock lock(events_lock_);
-    // Allow a new incoming event processing task to be posted. This can't be
-    // done after AcceptIncomingMessages() otherwise an event might be missed.
-    // Doing it here may result in at most two tasks existing at the same time;
-    // this running one, and one pending in the task runner.
-    incoming_events_task_posted_ = false;
-  }
-
-  AcceptIncomingMessages();
-}
-
 void NodeController::DropAllPeers() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
@@ -777,41 +709,12 @@ void NodeController::DropAllPeers() {
 void NodeController::ForwardEvent(const ports::NodeName& node,
                                   ports::ScopedEvent event) {
   DCHECK(event);
-  bool schedule_pump_task = false;
-  if (node == name_) {
-    // NOTE: We need to avoid re-entering the Node instance within
-    // ForwardEvent. Because ForwardEvent is only ever called
-    // (synchronously) in response to Node's ClosePort, SendUserMessage, or
-    // AcceptEvent, we flush the queue after calling any of those methods.
-    base::AutoLock lock(events_lock_);
-    // |io_task_runner_| may be null in tests or processes that don't require
-    // multi-process Mojo.
-    schedule_pump_task = incoming_events_.empty() && io_task_runner_ &&
-                         !incoming_events_task_posted_;
-    incoming_events_task_posted_ |= schedule_pump_task;
-    incoming_events_.emplace_back(std::move(event));
-    incoming_events_flag_.Set(true);
-  } else {
+  if (node == name_)
+    node_->AcceptEvent(std::move(event));
+  else
     SendPeerEvent(node, std::move(event));
-  }
 
-  if (schedule_pump_task) {
-    // Normally, the queue is processed after the action that added the local
-    // event is done (i.e. SendUserMessage, ClosePort, etc). However, it's also
-    // possible for a local event to be added as a result of a remote event, and
-    // OnChannelMessage() doesn't process this queue (although OnEventMessage()
-    // does.) There may also be other code paths, now or added in the future,
-    // which cause local messages to be added but don't process this message
-    // queue.
-    //
-    // Instead of adding a call to AcceptIncomingMessages() on every possible
-    // code path, post a task to the IO thread to process the queue. If the
-    // current call stack processes the queue, this may end up doing nothing.
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&NodeController::ProcessIncomingMessages,
-                   base::Unretained(this)));
-  }
+  AttemptShutdownIfRequested();
 }
 
 void NodeController::BroadcastEvent(ports::ScopedEvent event) {
@@ -1087,7 +990,6 @@ void NodeController::OnEventMessage(const ports::NodeName& from_node,
   }
 
   node_->AcceptEvent(std::move(event));
-  AcceptIncomingMessages();
 }
 
 void NodeController::OnRequestPortMerge(
@@ -1125,8 +1027,6 @@ void NodeController::OnRequestPortMerge(
   int rv = node_->MergePorts(local_port, from_node, connector_port_name);
   if (rv != ports::OK)
     DLOG(ERROR) << "MergePorts failed: " << rv;
-
-  AcceptIncomingMessages();
 }
 
 void NodeController::OnRequestIntroduction(const ports::NodeName& from_node,
@@ -1326,9 +1226,6 @@ void NodeController::OnChannelError(const ports::NodeName& from_node,
                                     NodeChannel* channel) {
   if (io_task_runner_->RunsTasksInCurrentSequence()) {
     DropPeer(from_node, channel);
-    // DropPeer may have caused local port closures, so be sure to process any
-    // pending local messages.
-    AcceptIncomingMessages();
   } else {
     io_task_runner_->PostTask(
         FROM_HERE,
