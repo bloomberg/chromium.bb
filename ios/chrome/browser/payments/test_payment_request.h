@@ -15,6 +15,7 @@ class RegionDataLoader;
 
 namespace web {
 class PaymentRequest;
+class PaymentShippingOption;
 }  // namespace web
 
 // PaymentRequest for use in tests.
@@ -29,6 +30,24 @@ class TestPaymentRequest : public PaymentRequest {
 
   void SetRegionDataLoader(autofill::RegionDataLoader* region_data_loader) {
     region_data_loader_ = region_data_loader;
+  }
+
+  // Returns the web::PaymentRequest instance that was used to build this
+  // object.
+  web::PaymentRequest& web_payment_request() { return web_payment_request_; }
+
+  // Removes all the shipping profiles.
+  void ClearShippingProfiles();
+
+  // Removes all the contact profiles.
+  void ClearContactProfiles();
+
+  // Removes all the credit cards.
+  void ClearCreditCards();
+
+  // Sets the currently selected shipping option for this PaymentRequest flow.
+  void set_selected_shipping_option(web::PaymentShippingOption* option) {
+    selected_shipping_option_ = option;
   }
 
   // PaymentRequest

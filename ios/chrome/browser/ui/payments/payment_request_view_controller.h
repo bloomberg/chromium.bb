@@ -7,24 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/payments/payment_request.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
+#import "ios/chrome/browser/ui/payments/payment_request_view_controller_data_source.h"
 
 extern NSString* const kPaymentRequestCollectionViewID;
 
-class PaymentRequest;
-
 @class PaymentRequestViewController;
-
-// Data source protocol for PaymentRequestViewController.
-@protocol PaymentRequestViewControllerDataSource<NSObject>
-
-// Returns the authenticated account name, if a user is authenticated.
-// Otherwise, returns nil.
-- (NSString*)authenticatedAccountName;
-
-@end
 
 // Delegate protocol for PaymentRequestViewController.
 @protocol PaymentRequestViewControllerDelegate<NSObject>
@@ -66,8 +54,7 @@ class PaymentRequest;
 
 // View controller responsible for presenting the details of a PaymentRequest to
 // the user and communicating their choices to the supplied delegate.
-@interface PaymentRequestViewController
-    : CollectionViewController<CollectionViewFooterLinkDelegate>
+@interface PaymentRequestViewController : CollectionViewController
 
 // The favicon of the page invoking the Payment Request API.
 @property(nonatomic, strong) UIImage* pageFavicon;
@@ -87,37 +74,23 @@ class PaymentRequest;
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestViewControllerDelegate> delegate;
 
-// Whether the data source should be shown (usually until the first payment
-// has been completed) or not.
-@property(nonatomic, assign) BOOL showPaymentDataSource;
-
+// The data source for this view controller.
 @property(nonatomic, weak) id<PaymentRequestViewControllerDataSource>
     dataSource;
 
-// Updates the payment summary section UI. If |totalValueChanged| is YES,
-// adds a label to the total amount item indicating that the total amount was
-// updated.
-- (void)updatePaymentSummaryWithTotalValueChanged:(BOOL)totalValueChanged;
+// Updates the payment summary item in the summary section.
+- (void)updatePaymentSummaryItem;
 
-// Updates the selected shipping address.
-- (void)updateSelectedShippingAddressUI;
+// Updates the shipping section.
+- (void)updateShippingSection;
 
-// Updates the selected shipping option.
-- (void)updateSelectedShippingOptionUI;
+// Updates the payment method section.
+- (void)updatePaymentMethodSection;
 
-// Updates the selected payment method.
-- (void)updateSelectedPaymentMethodUI;
+// Updates the contact info section.
+- (void)updateContactInfoSection;
 
-// Updates the selected contact info.
-- (void)updateSelectedContactInfoUI;
-
-// Initializes this object with an instance of PaymentRequest which has a copy
-// of web::PaymentRequest as provided by the page invoking the Payment Request
-// API. This object will not take ownership of |paymentRequest|.
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
