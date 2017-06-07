@@ -43,12 +43,16 @@ std::unique_ptr<MediaCodecBridge> CreateMediaCodecInternal(
   jobject media_crypto =
       codec_config->media_crypto ? codec_config->media_crypto->obj() : nullptr;
 
-  // |needs_protected_surface| implies that it's an encrypted stream.
-  DCHECK(!codec_config->needs_protected_surface || media_crypto);
+  // |requires_secure_codec| implies that it's an encrypted stream.
+  DCHECK(!codec_config->requires_secure_codec || media_crypto);
 
+  // TODO(xhwang): Rename |is_secure| to |requires_secure_codec| in
+  // MediaCodec classes. Also, |requires_secure_codec| and
+  // |require_software_codec| contradicts each other. We should clarify and fix
+  // this.
   std::unique_ptr<MediaCodecBridge> codec(
       MediaCodecBridgeImpl::CreateVideoDecoder(
-          codec_config->codec, codec_config->needs_protected_surface,
+          codec_config->codec, codec_config->requires_secure_codec,
           codec_config->initial_expected_coded_size,
           codec_config->surface_bundle->GetJavaSurface().obj(), media_crypto,
           codec_config->csd0, codec_config->csd1, true,

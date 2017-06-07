@@ -1442,7 +1442,7 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
 
 void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
     MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
-    bool needs_protected_surface) {
+    bool requires_secure_video_codec) {
   DVLOG(1) << __func__;
 
   if (!media_crypto) {
@@ -1461,7 +1461,7 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
   DCHECK(deferred_initialization_pending_);
 
   codec_config_->media_crypto = std::move(media_crypto);
-  codec_config_->needs_protected_surface = needs_protected_surface;
+  codec_config_->requires_secure_codec = requires_secure_video_codec;
 
   // After receiving |media_crypto_| we can start with surface creation.
   StartSurfaceChooser();

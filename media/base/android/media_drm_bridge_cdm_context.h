@@ -39,9 +39,10 @@ class MEDIA_EXPORT MediaDrmBridgeCdmContext : public CdmContext,
   // Notification called when MediaCrypto object is ready.
   // Parameters:
   // |media_crypto| - reference to MediaCrypto object
-  // |needs_protected_surface| - true if protected surface is required
-  using MediaCryptoReadyCB = base::Callback<void(JavaObjectPtr media_crypto,
-                                                 bool needs_protected_surface)>;
+  // |requires_secure_video_codec| - true if secure video decoder is required
+  using MediaCryptoReadyCB =
+      base::Callback<void(JavaObjectPtr media_crypto,
+                          bool requires_secure_video_codec)>;
 
   // The |media_drm_bridge| owns |this| and is guaranteed to outlive |this|.
   explicit MediaDrmBridgeCdmContext(MediaDrmBridge* media_drm_bridge);

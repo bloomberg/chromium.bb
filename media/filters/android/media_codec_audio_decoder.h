@@ -130,7 +130,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
   void OnMediaCryptoReady(
       const InitCB& init_cb,
       media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
-      bool needs_protected_surface);
+      bool requires_secure_video_codec);
 
   // Callback called when a new key is available.
   void OnKeyAdded();

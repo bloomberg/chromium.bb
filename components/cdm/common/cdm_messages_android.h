@@ -19,11 +19,9 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(SupportedKeySystemResponse)
   IPC_STRUCT_MEMBER(std::string, key_system)
-  IPC_STRUCT_MEMBER(media::SupportedCodecs,
-                    compositing_codecs,
+  IPC_STRUCT_MEMBER(media::SupportedCodecs, non_secure_codecs,
                     media::EME_CODEC_NONE)
-  IPC_STRUCT_MEMBER(media::SupportedCodecs,
-                    non_compositing_codecs,
+  IPC_STRUCT_MEMBER(media::SupportedCodecs, secure_codecs,
                     media::EME_CODEC_NONE)
   IPC_STRUCT_MEMBER(bool, is_persistent_license_supported)
 IPC_STRUCT_END()

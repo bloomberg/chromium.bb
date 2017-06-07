@@ -257,7 +257,9 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
                  base::Unretained(this), host->GetID()));
 
 #if defined(OS_ANDROID)
-  host->AddFilter(new cdm::CdmMessageFilterAndroid());
+  // Cast on Android build always uses kForceVideoOverlays command line switch
+  // such that secure decoders can be used.
+  host->AddFilter(new cdm::CdmMessageFilterAndroid(true));
 #endif  // defined(OS_ANDROID)
 }
 

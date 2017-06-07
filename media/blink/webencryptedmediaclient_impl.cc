@@ -86,12 +86,10 @@ class WebEncryptedMediaClientImpl::Reporter {
 };
 
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
-    base::Callback<bool(void)> are_secure_codecs_supported_cb,
     CdmFactory* cdm_factory,
     MediaPermission* media_permission,
     MediaLog* media_log)
-    : are_secure_codecs_supported_cb_(are_secure_codecs_supported_cb),
-      cdm_factory_(cdm_factory),
+    : cdm_factory_(cdm_factory),
       key_system_config_selector_(KeySystems::GetInstance(), media_permission),
       media_log_(media_log),
       weak_factory_(this) {
@@ -112,7 +110,7 @@ void WebEncryptedMediaClientImpl::RequestMediaKeySystemAccess(
 
   key_system_config_selector_.SelectConfig(
       request.KeySystem(), request.SupportedConfigurations(),
-      request.GetSecurityOrigin(), are_secure_codecs_supported_cb_.Run(),
+      request.GetSecurityOrigin(),
       base::Bind(&WebEncryptedMediaClientImpl::OnRequestSucceeded,
                  weak_factory_.GetWeakPtr(), request),
       base::Bind(&WebEncryptedMediaClientImpl::OnRequestNotSupported,

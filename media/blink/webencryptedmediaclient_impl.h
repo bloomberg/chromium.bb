@@ -35,7 +35,6 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
     : public blink::WebEncryptedMediaClient {
  public:
   WebEncryptedMediaClientImpl(
-      base::Callback<bool(void)> are_secure_codecs_supported_cb,
       CdmFactory* cdm_factory,
       MediaPermission* media_permission,
       MediaLog* media_log);
@@ -78,7 +77,6 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
   // Reporter singletons.
   std::unordered_map<std::string, std::unique_ptr<Reporter>> reporters_;
 
-  base::Callback<bool(void)> are_secure_codecs_supported_cb_;
   CdmFactory* cdm_factory_;
   KeySystemConfigSelector key_system_config_selector_;
   MediaLog* media_log_;
