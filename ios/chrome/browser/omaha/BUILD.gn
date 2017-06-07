@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("omaha") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "omaha_service.h",
     "omaha_service.mm",
