@@ -245,7 +245,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   const int kEmbeddedWorkerId = 100;
   const GURL kSiteUrl = GURL("http://example.com");
 
-  // Create a process that is hosting a frame with URL |patter_|.
+  // Create a process that is hosting a frame with URL |pattern_|.
   std::unique_ptr<MockRenderProcessHost> host(CreateRenderProcessHost());
   RenderProcessHostImpl::AddFrameWithSite(browser_context_.get(), host.get(),
                                           kSiteUrl);
@@ -291,7 +291,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   const int kEmbeddedWorkerId = 100;
   const GURL kSiteUrl = GURL("http://example.com");
 
-  // Create a process that is hosting a frame with URL |patter_|.
+  // Create a process that is hosting a frame with URL |pattern_|.
   std::unique_ptr<MockRenderProcessHost> host(CreateRenderProcessHost());
   RenderProcessHostImpl::AddFrameWithSite(browser_context_.get(), host.get(),
                                           kSiteUrl);
@@ -300,7 +300,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
       process_manager_->instance_info_;
   EXPECT_TRUE(instance_info.empty());
 
-  // Allocate a process to a worker, when process reuse is authorized.
+  // Allocate a process to a worker, when process reuse is disallowed.
   base::RunLoop run_loop;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   int process_id = -10;
@@ -312,7 +312,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
                  &process_id, &is_new_process));
   run_loop.Run();
 
-  // An new process should be allocated to the worker.
+  // A new process should be allocated to the worker.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_NE(host->GetID(), process_id);
   EXPECT_TRUE(is_new_process);
