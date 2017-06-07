@@ -25,8 +25,9 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ARGB1555, DRM_FORMA
 						  DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB1555,
 						  DRM_FORMAT_XRGB8888 };
 
-static const uint32_t tileable_texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8,
-							    DRM_FORMAT_UYVY, DRM_FORMAT_YUYV };
+static const uint32_t tileable_texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_NV12,
+							    DRM_FORMAT_R8, DRM_FORMAT_UYVY,
+							    DRM_FORMAT_YUYV };
 
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
 
