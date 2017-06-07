@@ -10,14 +10,14 @@
 
 #include <memory>
 
-#import <GLKit/GLKit.h>
-
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "remoting/ios/client_gestures.h"
 #import "remoting/ios/client_keyboard.h"
+#import "remoting/ios/display/eagl_view.h"
 #import "remoting/ios/session/remoting_client.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/gesture_interpreter.h"
 #include "remoting/client/input/keyboard_interpreter.h"
 
@@ -48,7 +48,10 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 #pragma mark - UIViewController
 
 - (void)loadView {
-  self.view = [[GLKView alloc] initWithFrame:CGRectZero];
+  EAGLView* glView = [[EAGLView alloc] initWithFrame:CGRectZero];
+  glView.displayTaskRunner =
+      remoting::ChromotingClientRuntime::GetInstance()->display_task_runner();
+  self.view = glView;
 }
 
 - (void)viewDidLoad {
@@ -77,9 +80,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-  GLKView* glView = (GLKView*)self.view;
-  glView.context = [_client.displayHandler GetEAGLContext];
-  [_client.displayHandler onSurfaceCreated:glView];
+  [_client.displayHandler onSurfaceCreated:(EAGLView*)self.view];
 
   // viewDidLayoutSubviews may be called before viewDidAppear, in which case
   // the surface is not ready to handle the transformation matrix.
@@ -93,7 +94,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)viewDidDisappear:(BOOL)animated {
   [super viewDidDisappear:animated];
-  [(GLKView*)self.view deleteDrawable];
+  [(EAGLView*)self.view stop];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -126,7 +127,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
 
-  if (((GLKView*)self.view).context != nil) {
+  if (self.view.window != nil) {
     // If the context is not set yet, the view size will be set in
     // viewDidAppear.
     [_client surfaceChanged:self.view.bounds];
@@ -264,8 +265,9 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                                             style:UIAlertActionStyleDefault
                                           handler:disconnectHandler]];
 
+  __weak UIAlertController* weakAlert = alert;
   void (^cancelHandler)(UIAlertAction*) = ^(UIAlertAction*) {
-    [alert dismissViewControllerAnimated:YES completion:nil];
+    [weakAlert dismissViewControllerAnimated:YES completion:nil];
   };
   [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
                                             style:UIAlertActionStyleCancel

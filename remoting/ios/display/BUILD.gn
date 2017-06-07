@@ -18,6 +18,8 @@ group("all_test") {
 
 source_set("display") {
   sources = [
+    "eagl_view.h",
+    "eagl_view.mm",
     "gl_demo_screen.h",
     "gl_demo_screen.mm",
     "gl_display_handler.h",
