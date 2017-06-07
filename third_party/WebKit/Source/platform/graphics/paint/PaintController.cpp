@@ -327,8 +327,10 @@ DisplayItem& PaintController::MoveItemFromCurrentListToNewList(size_t index) {
 
 void PaintController::UpdateCurrentPaintChunkProperties(
     const PaintChunk::Id* id,
-    const PaintChunkProperties& new_properties) {
-  new_paint_chunks_.UpdateCurrentPaintChunkProperties(id, new_properties);
+    const PaintChunkProperties& new_properties,
+    NewChunkForceState force_new_chunk) {
+  new_paint_chunks_.UpdateCurrentPaintChunkProperties(id, new_properties,
+                                                      force_new_chunk);
 }
 
 const PaintChunkProperties& PaintController::CurrentPaintChunkProperties()
@@ -493,9 +495,10 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     cached_chunk =
         current_paint_artifact_.FindChunkByDisplayItemIndex(begin_index);
     DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
+
     UpdateCurrentPaintChunkProperties(
         cached_chunk->id ? &*cached_chunk->id : nullptr,
-        cached_chunk->properties);
+        cached_chunk->properties, ForceNewChunk);
   } else {
     // Avoid uninitialized variable error on Windows.
     cached_chunk = current_paint_artifact_.PaintChunks().begin();
@@ -519,7 +522,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
         DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
         UpdateCurrentPaintChunkProperties(
             cached_chunk->id ? &*cached_chunk->id : nullptr,
-            cached_chunk->properties);
+            cached_chunk->properties, ForceNewChunk);
       }
 
 #if DCHECK_IS_ON()

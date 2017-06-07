@@ -328,10 +328,12 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   ShouldRespectOverflowClipType respect_overflow_clip =
       ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
 
+  bool should_create_subsequence = ShouldCreateSubsequence(
+      paint_layer_, context, painting_info_arg, paint_flags);
+
   Optional<SubsequenceRecorder> subsequence_recorder;
   bool should_clear_empty_paint_phase_flags = false;
-  if (ShouldCreateSubsequence(paint_layer_, context, painting_info_arg,
-                              paint_flags)) {
+  if (should_create_subsequence) {
     if (!ShouldRepaintSubsequence(paint_layer_, painting_info_arg,
                                   respect_overflow_clip, subpixel_accumulation,
                                   should_clear_empty_paint_phase_flags) &&
@@ -519,8 +521,11 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     properties.property_tree_state = *local_border_box_properties;
     properties.backface_hidden =
         paint_layer_.GetLayoutObject().HasHiddenBackface();
-    content_scoped_paint_chunk_properties.emplace(context.GetPaintController(),
-                                                  paint_layer_, properties);
+    content_scoped_paint_chunk_properties.emplace(
+        context.GetPaintController(), paint_layer_, properties,
+        // Force a new paint chunk, since it is required for subsequence
+        // caching.
+        should_create_subsequence ? ForceNewChunk : DontForceNewChunk);
   }
 
   bool selection_only =
