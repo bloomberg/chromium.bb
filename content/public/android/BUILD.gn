@@ -349,6 +349,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/SpeechRecognition.java",
     "java/src/org/chromium/content/browser/TracingControllerAndroid.java",
     "java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java",
+    "java/src/org/chromium/content/browser/androidoverlay/AndroidOverlayProviderImpl.java",
     "java/src/org/chromium/content/browser/androidoverlay/DialogOverlayImpl.java",
     "java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java",
     "java/src/org/chromium/content/browser/framehost/RenderFrameHostImpl.java",
