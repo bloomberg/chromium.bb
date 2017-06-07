@@ -22,6 +22,10 @@ Please do not add tests unrelated to DOM standard.
 
     See [legacy_dom_conformance/README.md](legacy_dom_conformance/README.md)
 
+*   node/
+
+    For [Node interface](https://dom.spec.whatwg.org/#interface-node)
+
 *   parent_node/
 
     For [ParentNode mixin](https://dom.spec.whatwg.org/#interface-parentnode)
