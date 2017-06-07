@@ -601,7 +601,7 @@ Instruction text in italic green. Places to replace are in <replace>bold red</re
   <li>Follow instructions in italic green</li>
   <li>Delete any green text</li>
   <li>Insure that all <replace>REPLACE</replace> text is replaced</li>
-  <li>Email to <a href="mailto:chromeos-infra-discuss@google.com">chromeos-infra-discuss@google.com</a>
+  <li>Email to <a href="mailto:chromeos-infra-discuss@google.com">chromeos-infra-discuss@google.com</a> and <a href="mailto:infra-product-taskforce@google.com">infra-product-taskforce@google.com</a>.
 </ol>
 </p>
 
