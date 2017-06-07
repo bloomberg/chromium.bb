@@ -199,6 +199,25 @@ class Binding {
   // transferred to the caller.
   MessagePipeHandle handle() const { return internal_state_.handle(); }
 
+  // Reports the currently dispatching Message as bad and closes this binding.
+  // Note that this is only legal to call from directly within the stack frame
+  // of a message dispatch. If you need to do asynchronous work before you can
+  // determine the legitimacy of a message, use GetBadMessageCallback() and
+  // retain its result until you're ready to invoke or discard it.
+  void ReportBadMessage(const std::string& error) {
+    GetBadMessageCallback().Run(error);
+  }
+
+  // Acquires a callback which may be run to report the currently dispatching
+  // Message as bad and close this binding. Note that this is only legal to call
+  // from directly within the stack frame of a message dispatch, but the
+  // returned callback may be called exactly once any time thereafter to report
+  // the message as bad. This may only be called once per message. The returned
+  // callback must be called on the Binding's own thread.
+  ReportBadMessageCallback GetBadMessageCallback() {
+    return internal_state_.GetBadMessageCallback();
+  }
+
   // Sends a no-op message on the underlying message pipe and runs the current
   // message loop until its response is received. This can be used in tests to
   // verify that no message was sent on a message pipe in response to some

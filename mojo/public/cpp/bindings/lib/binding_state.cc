@@ -7,7 +7,7 @@
 namespace mojo {
 namespace internal {
 
-BindingStateBase::BindingStateBase() = default;
+BindingStateBase::BindingStateBase() : weak_ptr_factory_(this) {}
 
 BindingStateBase::~BindingStateBase() = default;
 
@@ -24,6 +24,7 @@ void BindingStateBase::PauseIncomingMethodCallProcessing() {
   DCHECK(router_);
   router_->PauseIncomingMethodCallProcessing();
 }
+
 void BindingStateBase::ResumeIncomingMethodCallProcessing() {
   DCHECK(router_);
   router_->ResumeIncomingMethodCallProcessing();
@@ -49,6 +50,17 @@ void BindingStateBase::CloseWithReason(uint32_t custom_reason,
     endpoint_client_->CloseWithReason(custom_reason, description);
 
   Close();
+}
+
+ReportBadMessageCallback BindingStateBase::GetBadMessageCallback() {
+  return base::Bind(
+      [](const ReportBadMessageCallback& inner_callback,
+         base::WeakPtr<BindingStateBase> binding, const std::string& error) {
+        inner_callback.Run(error);
+        if (binding)
+          binding->Close();
+      },
+      mojo::GetBadMessageCallback(), weak_ptr_factory_.GetWeakPtr());
 }
 
 void BindingStateBase::FlushForTesting() {
