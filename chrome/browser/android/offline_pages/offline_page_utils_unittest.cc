@@ -127,11 +127,6 @@ OfflinePageUtilsTest::OfflinePageUtilsTest() = default;
 OfflinePageUtilsTest::~OfflinePageUtilsTest() {}
 
 void OfflinePageUtilsTest::SetUp() {
-  // Enables offline pages feature.
-  // TODO(jianli): Remove this once the feature is completely enabled.
-  scoped_feature_list_.InitAndEnableFeature(
-      offline_pages::kOfflineBookmarksFeature);
-
   // Create a test web contents.
   web_contents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(profile())));

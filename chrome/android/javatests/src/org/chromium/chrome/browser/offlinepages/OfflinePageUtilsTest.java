@@ -41,9 +41,9 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-/** Unit tests for {@link OfflinePageUtils}. */
+/** Instrumentation tests for {@link OfflinePageUtils}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"enable-features=OfflineBookmarks", "enable-features=OfflinePagesSharing",
+@CommandLineFlags.Add({"enable-features=OfflinePagesSharing",
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 public class OfflinePageUtilsTest {

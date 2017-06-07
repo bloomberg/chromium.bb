@@ -156,7 +156,6 @@ class RecentTabHelperTest
   size_t model_removed_count_;
   std::vector<OfflinePageItem> all_pages_;
   bool all_pages_needs_updating_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   // Mocks the RenderViewHostTestHarness' main thread runner. Needs to be delay
   // initialized in SetUp() -- can't be a simple member -- since
@@ -209,7 +208,6 @@ void RecentTabHelperTest::SetUp() {
   mocked_main_runner_ =
       base::MakeUnique<base::ScopedMockTimeMessageLoopTaskRunner>();
 
-  scoped_feature_list_.InitAndEnableFeature(kOffliningRecentPagesFeature);
   // Sets up the factories for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
       browser_context(), BuildTestOfflinePageModel);
@@ -655,7 +653,7 @@ TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
 // Download requests should still work.
 TEST_F(RecentTabHelperTest, LastNFeatureNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.Init();
+  scoped_feature_list.InitAndDisableFeature(kOffliningRecentPagesFeature);
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();

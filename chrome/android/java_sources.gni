@@ -1760,7 +1760,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflineBackgroundTaskTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridgeUnitTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageTabObserverTest.java",
-  "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtilsTest.java",
+  "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtilsUnitTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/ShadowDeviceConditions.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/TaskExtrasPackerTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/downloads/OfflinePageDownloadBridgeTest.java",

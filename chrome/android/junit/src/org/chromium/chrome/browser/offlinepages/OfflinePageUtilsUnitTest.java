@@ -42,8 +42,8 @@ import java.io.File;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
-        shadows = {OfflinePageUtilsTest.WrappedEnvironment.class, ShadowMultiDex.class})
-public class OfflinePageUtilsTest {
+        shadows = {OfflinePageUtilsUnitTest.WrappedEnvironment.class, ShadowMultiDex.class})
+public class OfflinePageUtilsUnitTest {
     @Mock
     private File mMockDataDirectory;
     @Mock
@@ -78,6 +78,8 @@ public class OfflinePageUtilsTest {
                 .getOfflinePageBridge((Profile) isNull());
         OfflinePageUtils.setInstanceForTesting(mOfflinePageUtils);
 
+        // Setting the default value is required because unit tests don't load native code needed
+        // to normally call the respective getter.
         OfflinePageBridge.setOfflineBookmarksEnabledForTesting(true);
     }
 

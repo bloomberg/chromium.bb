@@ -1795,22 +1795,6 @@
             ]
         }
     ],
-    "OfflinePageCache": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OfflineBookmarks",
-                        "OfflineRecentPages"
-                    ]
-                }
-            ]
-        }
-    ],
     "OfflinePages": [
         {
             "platforms": [

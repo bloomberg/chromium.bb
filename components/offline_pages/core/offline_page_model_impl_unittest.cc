@@ -1297,50 +1297,32 @@ TEST_F(OfflinePageModelImplTest, GetPagesMatchingQuery) {
 }
 
 TEST(CommandLineFlagsTest, OfflineBookmarks) {
-  // Disabled by default.
-  EXPECT_FALSE(offline_pages::IsOfflineBookmarksEnabled());
-
-  // Check if feature is correctly enabled by command-line flag.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kOfflineBookmarksFeature);
+  // Enabled by default.
   EXPECT_TRUE(offline_pages::IsOfflineBookmarksEnabled());
+
+  // Check if feature is correctly disabled by command-line flag.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kOfflineBookmarksFeature);
+  EXPECT_FALSE(offline_pages::IsOfflineBookmarksEnabled());
 }
 
 TEST(CommandLineFlagsTest, OffliningRecentPages) {
-  // Enable offline bookmarks feature first.
-  // TODO(dimich): once offline pages are enabled by default, remove this.
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list(
-      new base::test::ScopedFeatureList);
-  scoped_feature_list->InitAndEnableFeature(kOfflineBookmarksFeature);
-
-  // This feature is still disabled by default.
-  EXPECT_FALSE(offline_pages::IsOffliningRecentPagesEnabled());
-
-  // Check if feature is correctly enabled by command-line flag.
-  scoped_feature_list.reset(new base::test::ScopedFeatureList);
-  scoped_feature_list->InitFromCommandLine(
-      std::string(kOfflineBookmarksFeature.name) + "," +
-          kOffliningRecentPagesFeature.name,
-      "");
+  // Enabled by default.
   EXPECT_TRUE(offline_pages::IsOffliningRecentPagesEnabled());
+
+  // Check if feature is correctly disabled by command-line flag.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kOffliningRecentPagesFeature);
+  EXPECT_FALSE(offline_pages::IsOffliningRecentPagesEnabled());
 }
 
 TEST(CommandLineFlagsTest, OfflinePagesSharing) {
-  // Enable offline bookmarks feature first.
-  // TODO(dimich): once offline pages are enabled by default, remove this.
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list(
-      new base::test::ScopedFeatureList);
-  scoped_feature_list->InitAndEnableFeature(kOfflineBookmarksFeature);
-
-  // This feature is still disabled by default.
+  // This feature is disabled by default.
   EXPECT_FALSE(offline_pages::IsOfflinePagesSharingEnabled());
 
-  // Check if feature is correctly enabled by command-line flag.
-  scoped_feature_list.reset(new base::test::ScopedFeatureList);
-  scoped_feature_list->InitFromCommandLine(
-      std::string(kOfflineBookmarksFeature.name) + "," +
-          kOfflinePagesSharingFeature.name,
-      "");
+  // Check if feature is correctly disabled by command-line flag.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kOfflinePagesSharingFeature);
   EXPECT_TRUE(offline_pages::IsOfflinePagesSharingEnabled());
 }
 
