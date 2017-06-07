@@ -68,6 +68,8 @@ class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
     return router_->handle();
   }
 
+  ReportBadMessageCallback GetBadMessageCallback();
+
   void FlushForTesting();
 
   void EnableTestingMode();
@@ -84,6 +86,8 @@ class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
 
   scoped_refptr<internal::MultiplexRouter> router_;
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
+
+  base::WeakPtrFactory<BindingStateBase> weak_ptr_factory_;
 };
 
 template <typename Interface, typename ImplRefTraits>

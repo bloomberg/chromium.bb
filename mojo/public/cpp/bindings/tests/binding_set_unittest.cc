@@ -7,6 +7,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
@@ -43,6 +44,45 @@ base::Closure ExpectContext(BindingSetType* binding_set,
   return base::Bind(
       &ExpectContextHelper<BindingSetType, ContextType>, binding_set,
       expected_context);
+}
+
+template <typename BindingSetType>
+void ExpectBindingIdHelper(BindingSetType* binding_set,
+                           BindingId expected_binding_id) {
+  EXPECT_EQ(expected_binding_id, binding_set->dispatch_binding());
+}
+
+template <typename BindingSetType>
+base::Closure ExpectBindingId(BindingSetType* binding_set,
+                              BindingId expected_binding_id) {
+  return base::Bind(&ExpectBindingIdHelper<BindingSetType>, binding_set,
+                    expected_binding_id);
+}
+
+template <typename BindingSetType>
+void ReportBadMessageHelper(BindingSetType* binding_set,
+                            const std::string& error) {
+  binding_set->ReportBadMessage(error);
+}
+
+template <typename BindingSetType>
+base::Closure ReportBadMessage(BindingSetType* binding_set,
+                               const std::string& error) {
+  return base::Bind(&ReportBadMessageHelper<BindingSetType>, binding_set,
+                    error);
+}
+
+template <typename BindingSetType>
+void SaveBadMessageCallbackHelper(BindingSetType* binding_set,
+                                  ReportBadMessageCallback* callback) {
+  *callback = binding_set->GetBadMessageCallback();
+}
+
+template <typename BindingSetType>
+base::Closure SaveBadMessageCallback(BindingSetType* binding_set,
+                                     ReportBadMessageCallback* callback) {
+  return base::Bind(&SaveBadMessageCallbackHelper<BindingSetType>, binding_set,
+                    callback);
 }
 
 base::Closure Sequence(const base::Closure& first,
@@ -115,6 +155,47 @@ TEST_F(BindingSetTest, BindingSetContext) {
   EXPECT_TRUE(bindings.empty());
 }
 
+TEST_F(BindingSetTest, BindingSetDispatchBinding) {
+  PingImpl impl;
+
+  BindingSet<PingService, int> bindings;
+  PingServicePtr ping_a, ping_b;
+  BindingId id_a = bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
+  BindingId id_b = bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
+
+  {
+    impl.set_ping_handler(ExpectBindingId(&bindings, id_a));
+    base::RunLoop loop;
+    ping_a->Ping(loop.QuitClosure());
+    loop.Run();
+  }
+
+  {
+    impl.set_ping_handler(ExpectBindingId(&bindings, id_b));
+    base::RunLoop loop;
+    ping_b->Ping(loop.QuitClosure());
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    bindings.set_connection_error_handler(
+        Sequence(ExpectBindingId(&bindings, id_a), loop.QuitClosure()));
+    ping_a.reset();
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    bindings.set_connection_error_handler(
+        Sequence(ExpectBindingId(&bindings, id_b), loop.QuitClosure()));
+    ping_b.reset();
+    loop.Run();
+  }
+
+  EXPECT_TRUE(bindings.empty());
+}
+
 TEST_F(BindingSetTest, BindingSetConnectionErrorWithReason) {
   PingImpl impl;
   PingServicePtr ptr;
@@ -132,6 +213,121 @@ TEST_F(BindingSetTest, BindingSetConnectionErrorWithReason) {
       run_loop.QuitClosure()));
 
   ptr.ResetWithReason(1024u, "bye");
+}
+
+TEST_F(BindingSetTest, BindingSetReportBadMessage) {
+  PingImpl impl;
+
+  std::string last_received_error;
+  edk::SetDefaultProcessErrorCallback(
+      base::Bind([](std::string* out_error,
+                    const std::string& error) { *out_error = error; },
+                 &last_received_error));
+
+  BindingSet<PingService, int> bindings;
+  PingServicePtr ping_a, ping_b;
+  bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
+  bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
+
+  {
+    impl.set_ping_handler(ReportBadMessage(&bindings, "message 1"));
+    base::RunLoop loop;
+    ping_a.set_connection_error_handler(loop.QuitClosure());
+    ping_a->Ping(base::Bind([] {}));
+    loop.Run();
+    EXPECT_EQ("message 1", last_received_error);
+  }
+
+  {
+    impl.set_ping_handler(ReportBadMessage(&bindings, "message 2"));
+    base::RunLoop loop;
+    ping_b.set_connection_error_handler(loop.QuitClosure());
+    ping_b->Ping(base::Bind([] {}));
+    loop.Run();
+    EXPECT_EQ("message 2", last_received_error);
+  }
+
+  EXPECT_TRUE(bindings.empty());
+
+  edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
+}
+
+TEST_F(BindingSetTest, BindingSetGetBadMessageCallback) {
+  PingImpl impl;
+
+  std::string last_received_error;
+  edk::SetDefaultProcessErrorCallback(
+      base::Bind([](std::string* out_error,
+                    const std::string& error) { *out_error = error; },
+                 &last_received_error));
+
+  BindingSet<PingService, int> bindings;
+  PingServicePtr ping_a, ping_b;
+  bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
+  bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
+
+  ReportBadMessageCallback bad_message_callback_a;
+  ReportBadMessageCallback bad_message_callback_b;
+
+  {
+    impl.set_ping_handler(
+        SaveBadMessageCallback(&bindings, &bad_message_callback_a));
+    base::RunLoop loop;
+    ping_a->Ping(loop.QuitClosure());
+    loop.Run();
+    ping_a.reset();
+  }
+
+  {
+    impl.set_ping_handler(
+        SaveBadMessageCallback(&bindings, &bad_message_callback_b));
+    base::RunLoop loop;
+    ping_b->Ping(loop.QuitClosure());
+    loop.Run();
+  }
+
+  bad_message_callback_a.Run("message 1");
+  EXPECT_EQ("message 1", last_received_error);
+
+  {
+    base::RunLoop loop;
+    ping_b.set_connection_error_handler(loop.QuitClosure());
+    bad_message_callback_b.Run("message 2");
+    EXPECT_EQ("message 2", last_received_error);
+    loop.Run();
+  }
+
+  EXPECT_TRUE(bindings.empty());
+
+  edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
+}
+
+TEST_F(BindingSetTest, BindingSetGetBadMessageCallbackOutlivesBindingSet) {
+  PingImpl impl;
+
+  std::string last_received_error;
+  edk::SetDefaultProcessErrorCallback(
+      base::Bind([](std::string* out_error,
+                    const std::string& error) { *out_error = error; },
+                 &last_received_error));
+
+  ReportBadMessageCallback bad_message_callback;
+  {
+    BindingSet<PingService, int> bindings;
+    PingServicePtr ping_a;
+    bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
+
+    impl.set_ping_handler(
+        SaveBadMessageCallback(&bindings, &bad_message_callback));
+    base::RunLoop loop;
+    ping_a->Ping(loop.QuitClosure());
+    loop.Run();
+  }
+
+  bad_message_callback.Run("message 1");
+  EXPECT_EQ("message 1", last_received_error);
+
+  edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
 }
 
 class PingProviderImpl : public AssociatedPingProvider, public PingService {
@@ -268,6 +464,51 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
     base::RunLoop loop;
     bindings.set_connection_error_handler(
         Sequence(ExpectContext(&bindings, 2), loop.QuitClosure()));
+    provider_b.reset();
+    loop.Run();
+  }
+
+  EXPECT_TRUE(bindings.empty());
+}
+
+TEST_F(BindingSetTest, MasterInterfaceBindingSetDispatchBinding) {
+  AssociatedPingProviderPtr provider_a, provider_b;
+  PingProviderImpl impl;
+  BindingSet<AssociatedPingProvider, int> bindings;
+
+  BindingId id_a = bindings.AddBinding(&impl, MakeRequest(&provider_a), 1);
+  BindingId id_b = bindings.AddBinding(&impl, MakeRequest(&provider_b), 2);
+
+  {
+    PingServiceAssociatedPtr ping;
+    base::RunLoop loop;
+    impl.set_new_ping_handler(
+        Sequence(ExpectBindingId(&bindings, id_a), loop.QuitClosure()));
+    provider_a->GetPing(MakeRequest(&ping));
+    loop.Run();
+  }
+
+  {
+    PingServiceAssociatedPtr ping;
+    base::RunLoop loop;
+    impl.set_new_ping_handler(
+        Sequence(ExpectBindingId(&bindings, id_b), loop.QuitClosure()));
+    provider_b->GetPing(MakeRequest(&ping));
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    bindings.set_connection_error_handler(
+        Sequence(ExpectBindingId(&bindings, id_a), loop.QuitClosure()));
+    provider_a.reset();
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    bindings.set_connection_error_handler(
+        Sequence(ExpectBindingId(&bindings, id_b), loop.QuitClosure()));
     provider_b.reset();
     loop.Run();
   }

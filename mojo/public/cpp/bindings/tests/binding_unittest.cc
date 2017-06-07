@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
@@ -476,6 +477,69 @@ TEST_F(BindingTest, CustomImplPointerType) {
     weak_factory.InvalidateWeakPtrs();
     run_loop.Run();
   }
+}
+
+TEST_F(BindingTest, ReportBadMessage) {
+  bool called = false;
+  test::PingServicePtr ptr;
+  auto request = MakeRequest(&ptr);
+  base::RunLoop run_loop;
+  ptr.set_connection_error_handler(
+      SetFlagAndRunClosure(&called, run_loop.QuitClosure()));
+  PingServiceImpl impl;
+  Binding<test::PingService> binding(&impl, std::move(request));
+  impl.set_ping_handler(base::Bind(
+      [](Binding<test::PingService>* binding) {
+        binding->ReportBadMessage("received bad message");
+      },
+      &binding));
+
+  std::string received_error;
+  edk::SetDefaultProcessErrorCallback(
+      base::Bind([](std::string* out_error,
+                    const std::string& error) { *out_error = error; },
+                 &received_error));
+
+  ptr->Ping(base::Bind([] {}));
+  EXPECT_FALSE(called);
+  run_loop.Run();
+  EXPECT_TRUE(called);
+  EXPECT_EQ("received bad message", received_error);
+
+  edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
+}
+
+TEST_F(BindingTest, GetBadMessageCallback) {
+  test::PingServicePtr ptr;
+  auto request = MakeRequest(&ptr);
+  base::RunLoop run_loop;
+  PingServiceImpl impl;
+  ReportBadMessageCallback bad_message_callback;
+
+  std::string received_error;
+  edk::SetDefaultProcessErrorCallback(
+      base::Bind([](std::string* out_error,
+                    const std::string& error) { *out_error = error; },
+                 &received_error));
+
+  {
+    Binding<test::PingService> binding(&impl, std::move(request));
+    impl.set_ping_handler(base::Bind(
+        [](Binding<test::PingService>* binding,
+           ReportBadMessageCallback* out_callback) {
+          *out_callback = binding->GetBadMessageCallback();
+        },
+        &binding, &bad_message_callback));
+    ptr->Ping(run_loop.QuitClosure());
+    run_loop.Run();
+    EXPECT_TRUE(received_error.empty());
+    EXPECT_TRUE(bad_message_callback);
+  }
+
+  bad_message_callback.Run("delayed bad message");
+  EXPECT_EQ("delayed bad message", received_error);
+
+  edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
 }
 
 // StrongBindingTest -----------------------------------------------------------
