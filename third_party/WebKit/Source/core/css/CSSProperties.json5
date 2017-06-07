@@ -604,9 +604,9 @@
       svg: true,
     },
     {
+      name: "align-self",
       api_class: "CSSPropertyAPIAlignOrJustifySelf",
       api_methods: ["parseSingleValue"],
-      name: "align-self",
       converter: "ConvertSelfOrDefaultAlignmentData",
       initial: "InitialSelfAlignment",
     },
@@ -617,7 +617,9 @@
       interpolable: true,
       runtime_flag: "CSSBackdropFilter",
     },
-    "backface-visibility",
+    {
+      name: "backface-visibility",
+    },
     {
       name: "background-attachment",
       custom_all: true,
@@ -1159,7 +1161,9 @@
       converter: "ConvertLengthOrAuto",
       interpolable: true,
     },
-    "flex-direction",
+    {
+      name: "flex-direction",
+    },
     {
       name: "flex-grow",
       api_class: "CSSPropertyAPIFlexGrowOrShrink",
@@ -1172,7 +1176,9 @@
       interpolable: true,
       type_name: "float",
     },
-    "flex-wrap",
+    {
+      name: "flex-wrap",
+    },
     {
       name: "float",
       default_value: "none",
@@ -1310,7 +1316,9 @@
       name_for_methods: "RespectImageOrientation",
       runtime_flag: "ImageOrientation",
     },
-    "isolation",
+    {
+      name: "isolation",
+    },
     {
       name: "justify-content",
       api_class: "CSSPropertyAPIAlignOrJustifyContent",
@@ -2048,7 +2056,6 @@
       field_size: 1,
       field_group: "rare-inherited",
     },
-    // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
     {
       name: "text-decoration",
       api_class: true,
@@ -2367,8 +2374,12 @@
       api_methods: ["parseSingleValue"],
       type_name: "unsigned int",
     },
-    "-webkit-box-orient",
-    "-webkit-box-pack",
+    {
+      name: "-webkit-box-orient",
+    },
+    {
+      name: "-webkit-box-pack",
+    },
     {
       name: "-webkit-box-reflect",
       converter: "ConvertBoxReflect",
@@ -2698,7 +2709,9 @@
       converter: "ConvertComputedLength<float>",
       interpolable: true,
     },
-    "-webkit-user-drag",
+    {
+      name: "-webkit-user-drag",
+    },
     {
       name: "-webkit-user-modify",
       inherited: true,

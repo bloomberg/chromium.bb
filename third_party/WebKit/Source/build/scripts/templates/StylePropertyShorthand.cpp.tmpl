@@ -42,6 +42,7 @@ const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand() {
 // Returns an empty list if the property is not a shorthand
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
   DEFINE_STATIC_LOCAL(StylePropertyShorthand, emptyShorthand, ());
+  // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
   if (propertyID == CSSPropertyTextDecoration &&
       !RuntimeEnabledFeatures::CSS3TextDecorationsEnabled())
     return emptyShorthand;
