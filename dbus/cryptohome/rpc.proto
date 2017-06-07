@@ -95,6 +95,9 @@ message MountRequest {
   // If set to true, mounts the existing ecryptfs vault to a temporary location
   // while setting up a new dircrypto directory.
   optional bool to_migrate_from_ecryptfs = 4;
+  // Performs a public mount, which is used for a Kiosk session. Credentials are
+  // not needed in the request; they are synthesized by cryptohomed from id.
+  optional bool public_mount = 5;
 }
 
 // A BaseReply type is used for all cryptohomed responses. A shared base class
