@@ -30,6 +30,7 @@
 #include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
+#include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/policy_watcher.h"
 #include "remoting/signaling/delegating_signal_strategy.h"
 
@@ -49,10 +50,10 @@ const NameMapElement<It2MeHostState> kIt2MeHostStates[] = {
     {kStarting, "STARTING"},
     {kRequestedAccessCode, "REQUESTED_ACCESS_CODE"},
     {kReceivedAccessCode, "RECEIVED_ACCESS_CODE"},
+    {kConnecting, "CONNECTING"},
     {kConnected, "CONNECTED"},
     {kError, "ERROR"},
     {kInvalidDomainError, "INVALID_DOMAIN_ERROR"},
-    {kConnecting, "CONNECTING"},
 };
 
 #if defined(OS_WIN)
@@ -328,11 +329,11 @@ void It2MeNativeMessagingHost::ProcessConnect(
   }
 
   // Create the It2Me host and start connecting.
-  it2me_host_ = factory_->CreateIt2MeHost(host_context_->Copy(), weak_ptr_,
-                                          std::move(signal_strategy), username,
-                                          directory_bot_jid);
-  it2me_host_->OnPolicyUpdate(std::move(policies));
-  it2me_host_->Connect();
+  it2me_host_ = factory_->CreateIt2MeHost();
+  it2me_host_->Connect(host_context_->Copy(), std::move(policies),
+                       base::MakeUnique<It2MeConfirmationDialogFactory>(),
+                       weak_ptr_, std::move(signal_strategy), username,
+                       directory_bot_jid);
 
   SendMessageToClient(std::move(response));
 }
@@ -520,7 +521,7 @@ void It2MeNativeMessagingHost::OnPolicyUpdate(
     }
   }
 
-  if (it2me_host_.get()) {
+  if (it2me_host_) {
     it2me_host_->OnPolicyUpdate(std::move(policies));
   }
 }

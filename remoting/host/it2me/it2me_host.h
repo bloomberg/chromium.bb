@@ -61,24 +61,22 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
                                 const std::string& error_message) = 0;
   };
 
-  It2MeHost(std::unique_ptr<ChromotingHostContext> context,
-            std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory_,
-            base::WeakPtr<It2MeHost::Observer> observer,
-            std::unique_ptr<SignalStrategy> signal_strategy,
-            const std::string& username,
-            const std::string& directory_bot_jid);
+  It2MeHost();
 
   // Methods called by the script object, from the plugin thread.
 
   // Creates It2Me host structures and starts the host.
-  virtual void Connect();
+  virtual void Connect(
+      std::unique_ptr<ChromotingHostContext> context,
+      std::unique_ptr<base::DictionaryValue> policies,
+      std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
+      base::WeakPtr<It2MeHost::Observer> observer,
+      std::unique_ptr<SignalStrategy> signal_strategy,
+      const std::string& username,
+      const std::string& directory_bot_jid);
 
   // Disconnects and shuts down the host.
   virtual void Disconnect();
-
-  // TODO (weitaosu): Remove RequestNatPolicy from It2MeHost.
-  // Request a NAT policy notification.
-  virtual void RequestNatPolicy();
 
   // remoting::HostStatusObserver implementation.
   void OnAccessDenied(const std::string& jid) override;
@@ -107,6 +105,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   base::WeakPtr<It2MeHost::Observer> observer() { return observer_; }
 
  private:
+  friend class MockIt2MeHost;
   FRIEND_TEST_ALL_PREFIXES(It2MeHostTest, HostUdpPortRangePolicy_ValidRange);
   FRIEND_TEST_ALL_PREFIXES(It2MeHostTest, HostUdpPortRangePolicy_NoRange);
 
@@ -121,11 +120,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       const protocol::ValidatingAuthenticator::ResultCallback& result_callback,
       It2MeConfirmationDialog::Result result);
 
-  // Called by Connect() to check for policies and start connection process.
-  void ReadPolicyAndConnect();
-
-  // Called by ReadPolicyAndConnect once policies have been read.
-  void FinishConnect();
+  // Task posted to the network thread from Connect().
+  void ConnectOnNetworkThread(const std::string& username,
+                              const std::string& directory_bot_jid);
 
   // Called when the support host registration completes.
   void OnReceivedSupportID(const std::string& support_id,
@@ -151,8 +148,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   std::unique_ptr<ChromotingHostContext> host_context_;
   base::WeakPtr<It2MeHost::Observer> observer_;
   std::unique_ptr<SignalStrategy> signal_strategy_;
-  std::string username_;
-  std::string directory_bot_jid_;
 
   It2MeHostState state_ = kDisconnected;
 
@@ -181,17 +176,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Tracks the JID of the remote user when in a connecting state.
   std::string connecting_jid_;
 
-  // Indicates whether or not a policy has ever been read. This is to ensure
-  // that on startup, we do not accidentally start a connection before we have
-  // queried our policy restrictions.
-  bool policy_received_ = false;
-
-  // On startup, it is possible to have Connect() called before the policy read
-  // is completed.  Rather than just failing, we thunk the connection call so
-  // it can be executed after at least one successful policy read. This
-  // variable contains the thunk if it is necessary.
-  base::Closure pending_connect_;
-
   DISALLOW_COPY_AND_ASSIGN(It2MeHost);
 };
 
@@ -202,12 +186,7 @@ class It2MeHostFactory {
   It2MeHostFactory();
   virtual ~It2MeHostFactory();
 
-  virtual scoped_refptr<It2MeHost> CreateIt2MeHost(
-      std::unique_ptr<ChromotingHostContext> context,
-      base::WeakPtr<It2MeHost::Observer> observer,
-      std::unique_ptr<SignalStrategy> signal_strategy,
-      const std::string& username,
-      const std::string& directory_bot_jid);
+  virtual scoped_refptr<It2MeHost> CreateIt2MeHost();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(It2MeHostFactory);
