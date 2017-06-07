@@ -5,6 +5,8 @@
 #ifndef MEDIA_TEST_MOCK_MEDIA_SOURCE_H_
 #define MEDIA_TEST_MOCK_MEDIA_SOURCE_H_
 
+#include <limits>
+
 #include "base/time/time.h"
 #include "media/base/demuxer.h"
 #include "media/base/pipeline_status.h"
@@ -14,7 +16,7 @@
 namespace media {
 
 // Indicates that the whole file should be appended.
-extern const size_t kAppendWholeFile;
+constexpr size_t kAppendWholeFile = std::numeric_limits<size_t>::max();
 
 // Helper class that emulates calls made on the ChunkDemuxer by the
 // Media Source API.
