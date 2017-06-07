@@ -741,6 +741,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SUBRESOURCE_FILTER_PERMISSION_TITLE" desc="Title for the subresource filter permission [CHAR-LIMIT=32]" translateable="false">
          Subresource Filter
       </message>
+      <message name="IDS_SUBRESOURCE_FILTER_PERMISSION_BLOCK" desc="The Blocked string for the subresource filter permission" translateable="false">
+         Block (subresource filter)
+      </message>
       <message name="IDS_PUSH_NOTIFICATIONS_PERMISSION_TITLE" desc="Title for the permission for showing push notifications [CHAR-LIMIT=32]">
         Notifications
       </message>

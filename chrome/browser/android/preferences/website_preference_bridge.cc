@@ -823,6 +823,16 @@ static void SetDSEGeolocationSetting(JNIEnv* env,
   return search_helper->SetDSEGeolocationSetting(setting);
 }
 
+static jboolean GetSubresourceFilterActivated(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jorigin) {
+  GURL url(ConvertJavaStringToUTF8(env, jorigin));
+  return !!GetHostContentSettingsMap(false)->GetWebsiteSetting(
+      url, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA, std::string(),
+      nullptr);
+}
+
 // Register native methods
 bool RegisterWebsitePreferenceBridge(JNIEnv* env) {
   return RegisterNativesImpl(env);

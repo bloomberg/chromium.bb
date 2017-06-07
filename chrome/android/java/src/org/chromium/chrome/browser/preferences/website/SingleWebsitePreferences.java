@@ -313,7 +313,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
             } else if (PREF_SUBRESOURCE_FILTER_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getSubresourceFilterPermission());
+                setUpSubresourceFilterPreference(preference);
             }
 
             if (permissionPreferenceKeys.contains(preference.getKey())) {
@@ -494,6 +494,37 @@ public class SingleWebsitePreferences extends PreferenceFragment
         } else {
             setUpListPreference(preference, permission);
         }
+    }
+
+    /**
+     * Updates the subresource filter list preference based on subresource filter activation. This
+     * has some custom behavior.
+     * 1. If the site is filtering, the permission should show up even if it is set as the default
+     *    (e.g. |preference| is null).
+     * 2. The BLOCK string is custom.
+     */
+    private void setUpSubresourceFilterPreference(Preference preference) {
+        // If the subresource filter is activated, then this site will have resources filtered
+        // unless there is an explicit permission disallowing the filtering.
+        boolean subresourceFilterActivated = WebsitePreferenceBridge.getSubresourceFilterActivated(
+                mSite.getAddress().getOrigin());
+        ContentSetting permission = mSite.getSubresourceFilterPermission();
+
+        // If |permission| is null, there is no explicit (non-default) permission set for this site.
+        // However, if the filtering is activated, we still want to show the permission as BLOCK.
+        if (permission == null && !subresourceFilterActivated) {
+            setUpListPreference(preference, null);
+            return;
+        }
+        setUpListPreference(preference, permission == null ? ContentSetting.BLOCK : permission);
+
+        // The subresource filter permission has a custom BLOCK string.
+        ListPreference listPreference = (ListPreference) preference;
+        Resources res = getResources();
+        listPreference.setEntries(
+                new String[] {res.getString(R.string.website_settings_permissions_allow),
+                        res.getString(R.string.subresource_filter_permission_block)});
+        listPreference.setValueIndex(permission == ContentSetting.ALLOW ? 0 : 1);
     }
 
     /**
