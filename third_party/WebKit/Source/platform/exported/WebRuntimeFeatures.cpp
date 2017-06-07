@@ -240,6 +240,10 @@ void WebRuntimeFeatures::EnableScriptedSpeech(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSkipCompositingSmallScrollers(bool enable) {
+  RuntimeEnabledFeatures::SetSkipCompositingSmallScrollersEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableSlimmingPaintV2(bool enable) {
   RuntimeEnabledFeatures::SetSlimmingPaintV2Enabled(enable);
 }
