@@ -218,19 +218,11 @@ PASS input.type: 52 tests
 FAIL input.type: setAttribute() to "datetime" assert_equals: IDL get expected "datetime" but got "text"
 PASS input.type: 3 tests
 FAIL input.type: setAttribute() to "DATETIME" assert_equals: IDL get expected "datetime" but got "text"
-PASS input.type: 15 tests
-FAIL input.type: setAttribute() to "weeK" assert_equals: IDL get expected "text" but got "week"
-PASS input.type: 30 tests
-FAIL input.type: setAttribute() to "checKbox" assert_equals: IDL get expected "text" but got "checkbox"
-PASS input.type: 80 tests
+PASS input.type: 127 tests
 FAIL input.type: IDL set to "datetime" assert_equals: IDL get expected "datetime" but got "text"
 PASS input.type: 3 tests
 FAIL input.type: IDL set to "DATETIME" assert_equals: IDL get expected "datetime" but got "text"
-PASS input.type: 15 tests
-FAIL input.type: IDL set to "weeK" assert_equals: IDL get expected "text" but got "week"
-PASS input.type: 30 tests
-FAIL input.type: IDL set to "checKbox" assert_equals: IDL get expected "text" but got "checkbox"
-PASS input.type: 30 tests
+PASS input.type: 77 tests
 PASS input.defaultValue (<input value>): 32 tests
 PASS input.align: 32 tests
 PASS input.useMap: 32 tests
