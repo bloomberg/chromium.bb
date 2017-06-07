@@ -4343,7 +4343,7 @@ if (is_android) {
     ]
 
     # Used for testing only, should not be shipped to end users.
-    if (!is_official_build) {
+    if (enable_offline_pages_harness) {
       sources += [ "../android/java/src/org/chromium/chrome/browser/offlinepages/evaluation/OfflinePageEvaluationBridge.java" ]
     }
     jni_package = "chrome"
