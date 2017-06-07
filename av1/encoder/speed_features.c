@@ -35,7 +35,7 @@ static unsigned char good_quality_max_mesh_pct[MAX_MESH_SPEED + 1] = {
 // TODO(aconverse@google.com): These settings are pretty relaxed, tune them for
 // each speed setting
 static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
-  { { 64, 1 }, { 64, 1 }, { 0, 0 }, { 0, 0 } },
+  { { 256, 1 }, { 256, 1 }, { 0, 0 }, { 0, 0 } },
   { { 64, 1 }, { 64, 1 }, { 0, 0 }, { 0, 0 } },
   { { 64, 1 }, { 64, 1 }, { 0, 0 }, { 0, 0 } },
   { { 64, 4 }, { 16, 1 }, { 0, 0 }, { 0, 0 } },
