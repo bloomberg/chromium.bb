@@ -194,11 +194,6 @@ class MockClientCertJobProtocolHandler
 
 // Set up dummy values to use in test HTTPS requests.
 
-scoped_refptr<net::X509Certificate> GetTestCert() {
-  return net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                                 "test_mail_google_com.pem");
-}
-
 const net::CertStatus kTestCertError = net::CERT_STATUS_DATE_INVALID;
 const int kTestSecurityBits = 256;
 // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
@@ -222,7 +217,8 @@ class MockHTTPSURLRequestJob : public net::URLRequestTestJob {
   void GetResponseInfo(net::HttpResponseInfo* info) override {
     // Get the original response info, but override the SSL info.
     net::URLRequestJob::GetResponseInfo(info);
-    info->ssl_info.cert = GetTestCert();
+    info->ssl_info.cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     info->ssl_info.cert_status = kTestCertError;
     info->ssl_info.security_bits = kTestSecurityBits;
     info->ssl_info.connection_status = kTestConnectionStatus;
@@ -599,7 +595,8 @@ TEST_F(ClientCertResourceLoaderTest, WithStoreLookup) {
   // Set up the test client cert store.
   int store_request_count;
   std::vector<std::string> store_requested_authorities;
-  net::CertificateList dummy_certs(1, GetTestCert());
+  net::CertificateList dummy_certs(
+      1, net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem"));
   std::unique_ptr<ClientCertStoreStub> test_store(new ClientCertStoreStub(
       dummy_certs, &store_request_count, &store_requested_authorities));
   SetClientCertStore(std::move(test_store));
