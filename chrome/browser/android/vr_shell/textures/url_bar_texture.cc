@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/textures/url_bar_texture.h"
 
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/android/vr_shell/color_scheme.h"
@@ -269,6 +270,9 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
   const base::string16 text = url_formatter::FormatUrl(
       gurl_, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
       &parsed, nullptr, nullptr);
+
+  if (base::i18n::StringContainsStrongRTLChars(text))
+    failure_callback_.Run(UiUnsupportedMode::kURLWithStrongRTLChars);
 
   int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
 

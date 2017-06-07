@@ -179,6 +179,13 @@ TEST(UrlBarTextureTest, WillFailOnUnhandledCodePoint) {
   EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
 }
 
+TEST(UrlBarTextureTest, WillFailOnStrongRTLChar) {
+  TestUrlBarTexture texture;
+  texture.DrawURL(GURL("https://ש.com"));
+  EXPECT_EQ(UiUnsupportedMode::kURLWithStrongRTLChars,
+            texture.unsupported_mode());
+}
+
 TEST(UrlBarTexture, ElisionIsAnUnsupportedMode) {
   TestUrlBarTexture texture;
   texture.DrawURL(GURL(
