@@ -163,7 +163,7 @@ class PaymentRequest : payments::PaymentOptionsProvider {
   // Returns whether the current PaymentRequest can be used to make a payment.
   bool CanMakePayment() const;
 
- private:
+ protected:
   // Fetches the autofill profiles for this user from the PersonalDataManager,
   // and stores copies of them, owned by this PaymentRequest, in profile_cache_.
   void PopulateProfileCache();

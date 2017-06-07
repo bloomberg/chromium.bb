@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,16 +14,18 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
+#include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/ui/payments/cells/page_info_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
+#import "ios/chrome/browser/ui/payments/payment_request_view_controller_data_source.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,6 +35,107 @@
 #error "This file requires ARC support."
 #endif
 
+@interface TestPaymentRequestMediator
+    : NSObject<PaymentRequestViewControllerDataSource>
+
+@end
+
+@implementation TestPaymentRequestMediator
+
+- (BOOL)canPay {
+  return YES;
+}
+
+- (BOOL)canShip {
+  return YES;
+}
+
+- (BOOL)hasPaymentItems {
+  return YES;
+}
+
+- (BOOL)requestShipping {
+  return YES;
+}
+
+- (BOOL)requestContactInfo {
+  return YES;
+}
+
+- (CollectionViewItem*)paymentSummaryItem {
+  return [[PriceItem alloc] init];
+}
+
+- (CollectionViewItem*)shippingSectionHeaderItem {
+  return [[PaymentsTextItem alloc] init];
+}
+
+- (CollectionViewItem*)shippingAddressItem {
+  return [[AutofillProfileItem alloc] init];
+}
+
+- (CollectionViewItem*)shippingOptionItem {
+  return [[PaymentsTextItem alloc] init];
+}
+
+- (CollectionViewItem*)paymentMethodSectionHeaderItem {
+  return [[PaymentsTextItem alloc] init];
+}
+
+- (CollectionViewItem*)paymentMethodItem {
+  return [[PaymentMethodItem alloc] init];
+}
+
+- (CollectionViewItem*)contactInfoSectionHeaderItem {
+  return [[PaymentsTextItem alloc] init];
+}
+
+- (CollectionViewItem*)contactInfoItem {
+  return [[AutofillProfileItem alloc] init];
+}
+
+- (CollectionViewFooterItem*)footerItem {
+  return [[CollectionViewFooterItem alloc] init];
+}
+
+@end
+
+@interface TestPaymentRequestMediatorNoShipping : TestPaymentRequestMediator
+
+@end
+
+@implementation TestPaymentRequestMediatorNoShipping
+
+- (BOOL)requestShipping {
+  return NO;
+}
+
+@end
+
+@interface TestPaymentRequestMediatorNoContactInfo : TestPaymentRequestMediator
+
+@end
+
+@implementation TestPaymentRequestMediatorNoContactInfo
+
+- (BOOL)requestContactInfo {
+  return NO;
+}
+
+@end
+
+@interface TestPaymentRequestMediatorCantShip : TestPaymentRequestMediator
+
+@end
+
+@implementation TestPaymentRequestMediatorCantShip
+
+- (BOOL)canShip {
+  return NO;
+}
+
+@end
+
 class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
  protected:
   PaymentRequestViewControllerTest()
@@ -39,15 +144,19 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
     // Add testing profile and credit card to autofill::TestPersonalDataManager.
     personal_data_manager_.AddTestingProfile(&autofill_profile_);
     personal_data_manager_.AddTestingCreditCard(&credit_card_);
-  }
 
-  CollectionViewController* InstantiateController() override {
-    payment_request_ = base::MakeUnique<PaymentRequest>(
+    payment_request_ = base::MakeUnique<TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
 
-    return [[PaymentRequestViewController alloc]
-        initWithPaymentRequest:payment_request_.get()];
+    mediator_ = [[TestPaymentRequestMediator alloc] init];
+  }
+
+  CollectionViewController* InstantiateController() override {
+    PaymentRequestViewController* viewController =
+        [[PaymentRequestViewController alloc] init];
+    [viewController setDataSource:mediator_];
+    return viewController;
   }
 
   PaymentRequestViewController* GetPaymentRequestViewController() {
@@ -58,7 +167,8 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card_;
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<PaymentRequest> payment_request_;
+  std::unique_ptr<TestPaymentRequest> payment_request_;
+  TestPaymentRequestMediator* mediator_;
 };
 
 // Tests that the correct items are displayed after loading the model.
@@ -69,17 +179,14 @@ TEST_F(PaymentRequestViewControllerTest, TestModel) {
 
   [GetPaymentRequestViewController() loadModel];
 
-  // There should be five sections in total. Summary, Shipping, Payment,
-  // Contact info and a footer.
+  // There should be five sections in total. Summary, Shipping, Payment Method,
+  // Contact Info and the Footer.
   ASSERT_EQ(5, NumberOfSections());
 
   // The only item in the Summary section should be of type PriceItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
   id item = GetCollectionViewItem(0, 0);
   EXPECT_TRUE([item isMemberOfClass:[PriceItem class]]);
-  PriceItem* price_item = item;
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
-            price_item.accessoryType);
 
   // There should be two items in the Shipping section.
   ASSERT_EQ(2U, static_cast<unsigned int>(NumberOfItemsInSection(1)));
@@ -87,103 +194,129 @@ TEST_F(PaymentRequestViewControllerTest, TestModel) {
   // The first one should be of type AutofillProfileItem.
   item = GetCollectionViewItem(1, 0);
   EXPECT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
-  AutofillProfileItem* shipping_address_item = item;
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
-            shipping_address_item.accessoryType);
 
   // The next item should be of type PaymentsTextItem.
   item = GetCollectionViewItem(1, 1);
   EXPECT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
-  PaymentsTextItem* shipping_option_item = item;
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
-            shipping_option_item.accessoryType);
 
-  // The only item in the Payment section should be of type PaymentMethodItem.
+  // The only item in the Payment Method section should be of type
+  // PaymentMethodItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(2)));
   item = GetCollectionViewItem(2, 0);
   EXPECT_TRUE([item isMemberOfClass:[PaymentMethodItem class]]);
 
-  // The only item in the Contact info section should be of type
+  // The only item in the Contact Info section should be of type
   // AutofillProfileItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(3)));
   item = GetCollectionViewItem(3, 0);
   EXPECT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
+
+  // The only item in the Footer section should be of type
+  // CollectionViewFooterItem.
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(4)));
+  item = GetCollectionViewItem(4, 0);
+  EXPECT_TRUE([item isMemberOfClass:[CollectionViewFooterItem class]]);
 }
 
-// Tests that the correct items are displayed after loading the model, when
-// there are no display items.
-TEST_F(PaymentRequestViewControllerTest, TestModelNoDisplayItem) {
+// Tests that the correct items are displayed after loading the model, when no
+// shipping information is requested.
+TEST_F(PaymentRequestViewControllerTest, TestModelNoShipping) {
+  mediator_ = [[TestPaymentRequestMediatorNoShipping alloc] init];
+
   CreateController();
   CheckController();
 
-  payment_request_->UpdatePaymentDetails(web::PaymentDetails());
-  [GetPaymentRequestViewController() loadModel];
+  // There should be four sections in total now.
+  ASSERT_EQ(4, NumberOfSections());
 
-  // The only item in the Summary section should stil be of type PriceItem, but
-  // without an accessory view.
-  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
-  id item = GetCollectionViewItem(0, 0);
-  EXPECT_TRUE([item isMemberOfClass:[PriceItem class]]);
-  PriceItem* price_item = item;
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, price_item.accessoryType);
+  // The second section is the Payment Method section isntead of the Shipping
+  // section.
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(1)));
+  CollectionViewItem* item = GetCollectionViewItem(1, 0);
+  EXPECT_TRUE([item isMemberOfClass:[PaymentMethodItem class]]);
 }
 
-// Tests that the correct items are displayed after loading the model, when
-// there is no selected shipping addresse.
-TEST_F(PaymentRequestViewControllerTest, TestModelNoSelectedShippingAddress) {
+// Tests that the correct items are displayed after loading the model, when no
+// contact information is requested.
+TEST_F(PaymentRequestViewControllerTest, TestModelNoContactInfo) {
+  mediator_ = [[TestPaymentRequestMediatorNoContactInfo alloc] init];
+
   CreateController();
   CheckController();
 
-  payment_request_->set_selected_shipping_profile(nullptr);
-  [GetPaymentRequestViewController() loadModel];
+  // There should be four sections in total now.
+  ASSERT_EQ(4, NumberOfSections());
 
-  // There should still be two items in the Shipping section.
-  ASSERT_EQ(2U, static_cast<unsigned int>(NumberOfItemsInSection(1)));
+  // The fourth section is the Footer section instead of the Contact Info
+  // section.
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(3)));
+  CollectionViewItem* item = GetCollectionViewItem(3, 0);
+  EXPECT_TRUE([item isMemberOfClass:[CollectionViewFooterItem class]]);
+}
 
-  // The first one should be of type CollectionViewDetailItem.
+// Tests that the correct items are displayed after loading the model, when
+// shipping can't be made.
+TEST_F(PaymentRequestViewControllerTest, TestModelCantShip) {
+  mediator_ = [[TestPaymentRequestMediatorCantShip alloc] init];
+
+  CreateController();
+  CheckController();
+
+  // There should only be one item in the Shipping section and it should be of
+  // type AutofillProfileItem.
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(1)));
   id item = GetCollectionViewItem(1, 0);
-  EXPECT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
-  CollectionViewDetailItem* detail_item = item;
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, detail_item.accessoryType);
+  EXPECT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
 }
 
-// Tests that the correct items are displayed after loading the model, when
-// there is no selected shipping option.
-TEST_F(PaymentRequestViewControllerTest, TestModelNoSelectedShippingOption) {
+// Tests that the correct items are displayed after updating the Shipping
+// section.
+TEST_F(PaymentRequestViewControllerTest, TestUpdateShippingSection) {
   CreateController();
   CheckController();
 
-  // Resetting the payment details should reset the selected shipping option.
-  payment_request_->UpdatePaymentDetails(web::PaymentDetails());
-  [GetPaymentRequestViewController() loadModel];
+  [GetPaymentRequestViewController() updateShippingSection];
 
-  // There should still be two items in the Shipping section.
+  // There should be two items in the Shipping section.
   ASSERT_EQ(2U, static_cast<unsigned int>(NumberOfItemsInSection(1)));
 
-  // The second one should be of type CollectionViewDetailItem.
-  id item = GetCollectionViewItem(1, 1);
-  EXPECT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
-  CollectionViewDetailItem* detail_item = item;
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
-            detail_item.accessoryType);
+  // The first one should be of type AutofillProfileItem.
+  id item = GetCollectionViewItem(1, 0);
+  EXPECT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
+
+  // The next item should be of type PaymentsTextItem.
+  item = GetCollectionViewItem(1, 1);
+  EXPECT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
 }
 
-// Tests that the correct items are displayed after loading the model, when
-// there is no selected payment method.
-TEST_F(PaymentRequestViewControllerTest, TestModelNoSelectedPaymentMethod) {
+// Tests that the correct items are displayed after updating the Payment Method
+// section.
+TEST_F(PaymentRequestViewControllerTest, TestUpdatePaymentMethodSection) {
   CreateController();
   CheckController();
 
-  payment_request_->set_selected_credit_card(nullptr);
-  [GetPaymentRequestViewController() loadModel];
+  [GetPaymentRequestViewController() updatePaymentMethodSection];
 
-  // The only item in the Payment section should be of type
-  // CollectionViewDetailItem.
+  // The only item in the Payment Method section should be of type
+  // PaymentMethodItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(2)));
   id item = GetCollectionViewItem(2, 0);
-  EXPECT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
-  CollectionViewDetailItem* detail_item = item;
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, detail_item.accessoryType);
+  EXPECT_TRUE([item isMemberOfClass:[PaymentMethodItem class]]);
+}
+
+// Tests that the correct items are displayed after updating the Contact Info
+// section.
+TEST_F(PaymentRequestViewControllerTest, TestUpdateContactInfoSection) {
+  CreateController();
+  CheckController();
+
+  [GetPaymentRequestViewController() updatePaymentMethodSection];
+
+  // The only item in the Contact Info section should be of type
+  // AutofillProfileItem.
+  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(3)));
+  id item = GetCollectionViewItem(3, 0);
+  EXPECT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
 }
 
 // Tests that the correct items are displayed after loading the model, when
@@ -202,14 +335,4 @@ TEST_F(PaymentRequestViewControllerTest, TestModelPendingState) {
   // The item should be of type StatusItem.
   id item = GetCollectionViewItem(0, 0);
   EXPECT_TRUE([item isMemberOfClass:[StatusItem class]]);
-}
-
-TEST_F(PaymentRequestViewControllerTest, TestSignedInStringFormatting) {
-  const std::string unformattedString = l10n_util::GetStringUTF8(
-      IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN);
-  const std::string formattedString = l10n_util::GetStringFUTF8(
-      IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN,
-      base::ASCIIToUTF16("example@gmail.com"));
-
-  EXPECT_NE(unformattedString, formattedString);
 }
