@@ -3256,8 +3256,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMojoInputMessages)) {
+  if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
     GetRemoteInterfaces()->GetInterface(&frame_input_handler_);
   } else {
     legacy_frame_input_handler_.reset(
