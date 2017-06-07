@@ -2,115 +2,116 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/android/rules.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/features/features.gni")
 import("//testing/test.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 assert(enable_vr)
 
-if (current_cpu == "arm" || current_cpu == "arm64") {
-  # This library is platform-independent UI and related modules, which should
-  # compile on any platform.
-  static_library("vr_common_ui") {
-    sources = [
-      "animation.cc",
-      "animation.h",
-      "color_scheme.cc",
-      "color_scheme.h",
-      "easing.cc",
-      "easing.h",
-      "font_fallback.cc",
-      "font_fallback.h",
-      "fps_meter.cc",
-      "fps_meter.h",
-      "gl_browser_interface.h",
-      "gltf_asset.cc",
-      "gltf_asset.h",
-      "gltf_parser.cc",
-      "gltf_parser.h",
-      "textures/button_texture.cc",
-      "textures/button_texture.h",
-      "textures/close_button_texture.cc",
-      "textures/close_button_texture.h",
-      "textures/exit_prompt_texture.cc",
-      "textures/exit_prompt_texture.h",
-      "textures/exit_warning_texture.cc",
-      "textures/exit_warning_texture.h",
-      "textures/insecure_content_permanent_texture.cc",
-      "textures/insecure_content_permanent_texture.h",
-      "textures/insecure_content_transient_texture.cc",
-      "textures/insecure_content_transient_texture.h",
-      "textures/loading_indicator_texture.cc",
-      "textures/loading_indicator_texture.h",
-      "textures/render_text_wrapper.cc",
-      "textures/render_text_wrapper.h",
-      "textures/system_indicator_texture.cc",
-      "textures/system_indicator_texture.h",
-      "textures/ui_texture.cc",
-      "textures/ui_texture.h",
-      "textures/url_bar_texture.cc",
-      "textures/url_bar_texture.h",
-      "ui_browser_interface.h",
-      "ui_elements/audio_capture_indicator.cc",
-      "ui_elements/audio_capture_indicator.h",
-      "ui_elements/button.cc",
-      "ui_elements/button.h",
-      "ui_elements/exit_prompt.cc",
-      "ui_elements/exit_prompt.h",
-      "ui_elements/exit_warning.cc",
-      "ui_elements/exit_warning.h",
-      "ui_elements/loading_indicator.cc",
-      "ui_elements/loading_indicator.h",
-      "ui_elements/permanent_security_warning.cc",
-      "ui_elements/permanent_security_warning.h",
-      "ui_elements/screen_capture_indicator.cc",
-      "ui_elements/screen_capture_indicator.h",
-      "ui_elements/screen_dimmer.cc",
-      "ui_elements/screen_dimmer.h",
-      "ui_elements/textured_element.cc",
-      "ui_elements/textured_element.h",
-      "ui_elements/transient_security_warning.cc",
-      "ui_elements/transient_security_warning.h",
-      "ui_elements/ui_element.cc",
-      "ui_elements/ui_element.h",
-      "ui_elements/ui_element_debug_id.h",
-      "ui_elements/url_bar.cc",
-      "ui_elements/url_bar.h",
-      "ui_elements/video_capture_indicator.cc",
-      "ui_elements/video_capture_indicator.h",
-      "ui_interface.h",
-      "ui_scene.cc",
-      "ui_scene.h",
-      "ui_scene_manager.cc",
-      "ui_scene_manager.h",
-      "ui_unsupported_mode.h",
-    ]
+# This library is platform-independent UI and related modules, which should
+# compile on any platform.
+static_library("vr_common") {
+  sources = [
+    "animation.cc",
+    "animation.h",
+    "color_scheme.cc",
+    "color_scheme.h",
+    "easing.cc",
+    "easing.h",
+    "font_fallback.cc",
+    "font_fallback.h",
+    "fps_meter.cc",
+    "fps_meter.h",
+    "gl_browser_interface.h",
+    "gltf_asset.cc",
+    "gltf_asset.h",
+    "gltf_parser.cc",
+    "gltf_parser.h",
+    "textures/button_texture.cc",
+    "textures/button_texture.h",
+    "textures/close_button_texture.cc",
+    "textures/close_button_texture.h",
+    "textures/exit_prompt_texture.cc",
+    "textures/exit_prompt_texture.h",
+    "textures/exit_warning_texture.cc",
+    "textures/exit_warning_texture.h",
+    "textures/insecure_content_permanent_texture.cc",
+    "textures/insecure_content_permanent_texture.h",
+    "textures/insecure_content_transient_texture.cc",
+    "textures/insecure_content_transient_texture.h",
+    "textures/loading_indicator_texture.cc",
+    "textures/loading_indicator_texture.h",
+    "textures/render_text_wrapper.cc",
+    "textures/render_text_wrapper.h",
+    "textures/system_indicator_texture.cc",
+    "textures/system_indicator_texture.h",
+    "textures/ui_texture.cc",
+    "textures/ui_texture.h",
+    "textures/url_bar_texture.cc",
+    "textures/url_bar_texture.h",
+    "ui_browser_interface.h",
+    "ui_elements/audio_capture_indicator.cc",
+    "ui_elements/audio_capture_indicator.h",
+    "ui_elements/button.cc",
+    "ui_elements/button.h",
+    "ui_elements/exit_prompt.cc",
+    "ui_elements/exit_prompt.h",
+    "ui_elements/exit_warning.cc",
+    "ui_elements/exit_warning.h",
+    "ui_elements/loading_indicator.cc",
+    "ui_elements/loading_indicator.h",
+    "ui_elements/permanent_security_warning.cc",
+    "ui_elements/permanent_security_warning.h",
+    "ui_elements/screen_capture_indicator.cc",
+    "ui_elements/screen_capture_indicator.h",
+    "ui_elements/screen_dimmer.cc",
+    "ui_elements/screen_dimmer.h",
+    "ui_elements/textured_element.cc",
+    "ui_elements/textured_element.h",
+    "ui_elements/transient_security_warning.cc",
+    "ui_elements/transient_security_warning.h",
+    "ui_elements/ui_element.cc",
+    "ui_elements/ui_element.h",
+    "ui_elements/ui_element_debug_id.h",
+    "ui_elements/url_bar.cc",
+    "ui_elements/url_bar.h",
+    "ui_elements/video_capture_indicator.cc",
+    "ui_elements/video_capture_indicator.h",
+    "ui_interface.h",
+    "ui_scene.cc",
+    "ui_scene.h",
+    "ui_scene_manager.cc",
+    "ui_scene_manager.h",
+    "ui_unsupported_mode.h",
+  ]
 
-    deps = [
-      "//base",
-      "//cc/paint",
-      "//chrome/app:generated_resources",
-      "//components/security_state/core",
-      "//components/strings",
-      "//components/toolbar:vector_icons",
-      "//components/url_formatter",
-      "//components/vector_icons",
-      "//content/public/browser",
-      "//content/public/common",
-      "//device/vr",
-      "//skia",
-      "//ui/base",
-      "//ui/display",
-      "//ui/gl",
-      "//ui/gl/init",
-      "//ui/vector_icons",
-    ]
-  }
+  deps = [
+    "//base",
+    "//cc/paint",
+    "//chrome/app:generated_resources",
+    "//components/security_state/core",
+    "//components/strings",
+    "//components/toolbar:vector_icons",
+    "//components/url_formatter",
+    "//components/vector_icons",
+    "//device/vr",
+    "//skia",
+    "//ui/base",
+    "//ui/display",
+    "//ui/gl",
+    "//ui/gl/init",
+    "//ui/vector_icons",
+  ]
+}
 
+if (is_android) {
   # This library contains the VR code specific to Android.
   # TODO(cjgrant): It should be renamed to reflect this.
-  static_library("vr_common") {
+  static_library("vr_android") {
     defines = []
 
     sources = [
@@ -153,7 +154,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
     ]
 
     deps = [
-      ":vr_common_ui",
+      ":vr_common",
       ":vr_shell_jni_headers",
       "//base",
       "//cc",
@@ -194,7 +195,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
   }
 }
 
-test("vr_shell_unittests") {
+test("vr_common_unittests") {
   sources = [
     "fps_meter_unittest.cc",
     "gltf_parser_unittest.cc",
@@ -209,7 +210,7 @@ test("vr_shell_unittests") {
   ]
 
   deps = [
-    ":vr_common_ui",
+    ":vr_common",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/security_state/core",

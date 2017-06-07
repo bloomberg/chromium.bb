@@ -3734,7 +3734,7 @@ split_static_library("browser") {
         "android/vr_shell/vr_tab_helper.cc",
         "android/vr_shell/vr_tab_helper.h",
       ]
-      deps += [ "android/vr_shell:vr_common" ]
+      deps += [ "android/vr_shell:vr_android" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
   }

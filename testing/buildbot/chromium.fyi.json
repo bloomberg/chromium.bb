@@ -293,7 +293,7 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "vr_shell_unittests"
+        "test": "vr_common_unittests"
       }
     ],
     "instrumentation_tests": [
