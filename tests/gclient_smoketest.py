@@ -570,6 +570,8 @@ class GClientSmokeGIT(GClientSmokeBase):
       deps_contents = f.read()
 
     self.assertEqual([
+        'gclient_gn_args_file = "src/gclient.args"',
+        'gclient_gn_args = [\'DummyVariable\']',
         'deps = {',
         '  # src -> src/repo2 -> foo/bar',
         '  "foo/bar": {',

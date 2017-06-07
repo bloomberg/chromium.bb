@@ -1698,6 +1698,9 @@ def CMDflatten(parser, args):
     return 1
 
   flattened_deps = '\n'.join(
+    _GNSettingsToLines(
+        client.dependencies[0]._gn_args_file,
+        client.dependencies[0]._gn_args) +
     _DepsToLines(deps) +
     _HooksToLines('hooks', hooks) +
     _HooksToLines('pre_deps_hooks', pre_deps_hooks) +
@@ -1800,6 +1803,16 @@ def _AddDep(dep, deps, unpinned_deps):
   _, revision = gclient_utils.SplitUrlRevision(dep.url)
   if not revision or not gclient_utils.IsGitSha(revision):
     unpinned_deps[dep.name] = dep
+
+
+def _GNSettingsToLines(gn_args_file, gn_args):
+  s = []
+  if gn_args_file:
+    s.extend([
+        'gclient_gn_args_file = "%s"' % gn_args_file,
+        'gclient_gn_args = %r' % gn_args,
+    ])
+  return s
 
 
 def _DepsToLines(deps):

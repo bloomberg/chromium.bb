@@ -456,6 +456,11 @@ pre_deps_hooks = [
 
     self._commit_git('repo_6', {
       'DEPS': """
+vars = {
+  'DummyVariable': 'repo',
+}
+gclient_gn_args_file = 'src/gclient.args'
+gclient_gn_args = ['DummyVariable']
 deps = {
   'src/repo2': {
     'url': '%(git_base)srepo_2@%(hash)s',
