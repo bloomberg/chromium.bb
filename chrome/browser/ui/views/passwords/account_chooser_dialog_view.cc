@@ -43,8 +43,9 @@ void BuildColumnSet(ColumnSetType type, views::GridLayout* layout) {
   views::ColumnSet* column_set = layout->AddColumnSet(type);
   const int horizontal_padding =
       type == SINGLE_VIEW_COLUMN_SET
-          ? ChromeLayoutProvider::Get()->GetDistanceMetric(
-                views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN)
+          ? ChromeLayoutProvider::Get()
+                ->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)
+                .left()
           : 0;
   column_set->AddPaddingColumn(0, horizontal_padding);
   column_set->AddColumn(views::GridLayout::FILL,
