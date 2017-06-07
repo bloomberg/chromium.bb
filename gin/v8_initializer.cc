@@ -23,7 +23,6 @@
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "gin/public/gin_features.h"
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_ANDROID)
@@ -364,22 +363,6 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     static const char flag[] = "--experimental_extras";
     v8::V8::SetFlagsFromString(flag, sizeof(flag) - 1);
   }
-
-  const char* ignition_enabled_crash_key = "N";
-  if (base::FeatureList::IsEnabled(features::kV8NoTurbo)) {
-    ignition_enabled_crash_key = "N";
-    std::string flag("--no-turbo");
-    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
-  } else if (base::FeatureList::IsEnabled(features::kV8IgnitionLowEnd) &&
-             base::SysInfo::IsLowEndDevice()) {
-    ignition_enabled_crash_key = "Y";
-    std::string flag("--ignition");
-    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
-  }
-  static const char kIgnitionEnabledKey[] = "v8-ignition";
-  base::debug::SetCrashKeyValue(kIgnitionEnabledKey,
-                                ignition_enabled_crash_key);
-
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   v8::StartupData natives;

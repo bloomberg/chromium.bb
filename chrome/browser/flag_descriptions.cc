@@ -755,13 +755,6 @@ const char kJavascriptHarmonyName[] = "Experimental JavaScript";
 const char kJavascriptHarmonyDescription[] =
     "Enable web pages to use experimental JavaScript features.";
 
-const char kV8DisableIgnitionTurboName[] =
-    "Classic JavaScript Compilation Pipeline";
-
-const char kV8DisableIgnitionTurboDescription[] =
-    "Enables V8's classic compilation pipeline for JavaScript execution "
-    "(disabling V8's new Ignition interpreter and TurboFan compiler)";
-
 const char kEnableAsmWasmName[] =
     "Experimental Validate Asm.js and convert to WebAssembly when valid.";
 

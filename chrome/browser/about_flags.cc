@@ -82,7 +82,6 @@
 #include "device/base/features.h"
 #include "device/vr/features/features.h"
 #include "extensions/features/features.h"
-#include "gin/public/gin_features.h"
 #include "google_apis/drive/drive_switches.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_features.h"
@@ -1275,10 +1274,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"shared-array-buffer", flag_descriptions::kEnableSharedArrayBufferName,
      flag_descriptions::kEnableSharedArrayBufferDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSharedArrayBuffer)},
-    {"disable-v8-ignition-turbo",
-     flag_descriptions::kV8DisableIgnitionTurboName,
-     flag_descriptions::kV8DisableIgnitionTurboDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kV8NoTurbo)},
     {"disable-software-rasterizer", flag_descriptions::kSoftwareRasterizerName,
      flag_descriptions::kSoftwareRasterizerDescription,
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
