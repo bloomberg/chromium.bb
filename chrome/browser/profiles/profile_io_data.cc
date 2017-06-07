@@ -1030,7 +1030,7 @@ void ProfileIOData::Init(
                                std::move(chrome_network_delegate));
 
   main_request_context_->set_host_resolver(
-      io_thread_globals->host_resolver.get());
+      io_thread_globals->system_request_context->host_resolver());
 
   // NOTE: Proxy service uses the default io thread network delegate, not the
   // delegate just created.
@@ -1097,7 +1097,8 @@ void ProfileIOData::Init(
   extension_info_map_ = profile_params_->extension_info_map;
 #endif
 
-  resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();
+  resource_context_->host_resolver_ =
+      io_thread_globals->system_request_context->host_resolver();
   resource_context_->request_context_ = main_request_context_.get();
 
   if (profile_params_->loading_predictor_observer_) {
@@ -1134,7 +1135,7 @@ void ProfileIOData::Init(
     main_request_context_->set_cert_verifier(cert_verifier_.get());
 #else
     main_request_context_->set_cert_verifier(
-        io_thread_globals->cert_verifier.get());
+        io_thread_globals->system_request_context->cert_verifier());
 #endif
   }
 
