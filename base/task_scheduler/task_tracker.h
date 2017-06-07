@@ -88,6 +88,10 @@ class BASE_EXPORT TaskTracker {
   virtual bool IsPostingBlockShutdownTaskAfterShutdownAllowed();
 #endif
 
+  // Called at the very end of RunNextTask() after the completion of all task
+  // metrics accounting.
+  virtual void OnRunNextTaskCompleted() {}
+
   // Returns the number of undelayed tasks that haven't completed their
   // execution.
   int GetNumPendingUndelayedTasksForTesting() const;
