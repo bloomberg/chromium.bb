@@ -11,7 +11,13 @@ to check if other elements have become unused.
 import os
 import re
 import subprocess
+import sys
 
+_HERE_PATH = os.path.dirname(__file__)
+_SRC_PATH = os.path.normpath(os.path.join(_HERE_PATH, '..', '..', '..'))
+sys.path.append(os.path.join(_SRC_PATH, 'third_party', 'node'))
+import node
+import node_modules
 
 class UnusedElementsDetector(object):
   """Finds unused Polymer elements."""
@@ -58,8 +64,7 @@ class UnusedElementsDetector(object):
     text = re.sub('<if .*?>', '', text, flags=re.IGNORECASE)
     text = re.sub('</if>', '', text, flags=re.IGNORECASE)
 
-    proc = subprocess.Popen(['uglifyjs', filename], stdout=subprocess.PIPE)
-    return proc.stdout.read()
+    return node.RunNode([node_modules.PathToUglify(), filename])
 
   @staticmethod
   def __StripComments(filename):
@@ -131,11 +136,6 @@ class UnusedElementsDetector(object):
 
         for filename in filenames:
           if not filename.endswith('.html') and not filename.endswith('.js'):
-            continue
-
-          # Skip generated files that may include the element source.
-          if filename in ('crisper.js', 'vulcanized.html',
-                          'app.crisper.js', 'app.vulcanized.html'):
             continue
 
           with open(os.path.join(dirpath, filename)) as f:
