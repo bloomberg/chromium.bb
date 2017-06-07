@@ -637,7 +637,7 @@ html[dir=rtl] .user-type-icon-area {
   display: flex;
   flex-direction: column;
   font-size: 13px;
-  margin: 3px 0 0 12px;
+  margin: 10px 0 0 12px;
   width: 220px;
 }
 
