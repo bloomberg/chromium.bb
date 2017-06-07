@@ -164,7 +164,11 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   const int shift = av1_get_tx_scale(tx_size);
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
-  const qm_val_t *iqmatrix = pd->seg_iqmatrix[seg_id][!ref][tx_size];
+  // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
+  const qm_val_t *iqmatrix =
+      IS_2D_TRANSFORM(tx_type)
+          ? pd->seg_iqmatrix[seg_id][!ref][tx_size]
+          : cm->giqmatrix[NUM_QM_LEVELS - 1][0][0][tx_size];
 #endif
 #if CONFIG_NEW_QUANT
   int dq = get_dq_profile_from_ctx(mb->qindex, ctx, ref, plane_type);
@@ -452,7 +456,6 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   mb->plane[plane].eobs[block] = final_eob;
   return final_eob;
 }
-
 #endif  // !CONFIG_LV_MAP
 
 int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
@@ -556,8 +559,14 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   const int diff_stride = block_size_wide[plane_bsize];
 #if CONFIG_AOM_QM
   int seg_id = mbmi->segment_id;
-  const qm_val_t *qmatrix = pd->seg_qmatrix[seg_id][!is_inter][tx_size];
-  const qm_val_t *iqmatrix = pd->seg_iqmatrix[seg_id][!is_inter][tx_size];
+  // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
+  const qm_val_t *qmatrix =
+      IS_2D_TRANSFORM(tx_type) ? pd->seg_qmatrix[seg_id][!is_inter][tx_size]
+                               : cm->gqmatrix[NUM_QM_LEVELS - 1][0][0][tx_size];
+  const qm_val_t *iqmatrix =
+      IS_2D_TRANSFORM(tx_type)
+          ? pd->seg_iqmatrix[seg_id][!is_inter][tx_size]
+          : cm->giqmatrix[NUM_QM_LEVELS - 1][0][0][tx_size];
 #endif
 
   FWD_TXFM_PARAM fwd_txfm_param;

@@ -120,6 +120,8 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
 #if CONFIG_AOM_QM
   const qm_val_t *iqmatrix = iqm[!ref][tx_size];
+#else
+  (void)tx_type;
 #endif  // CONFIG_AOM_QM
   int band, c = 0;
   const int tx_size_ctx = txsize_sqr_map[tx_size];
@@ -142,7 +144,6 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #if CONFIG_NEW_QUANT
   const tran_low_t *dqv_val = &dq_val[0][0];
 #endif  // CONFIG_NEW_QUANT
-  (void)tx_type;
 
   if (counts) {
 #if !CONFIG_EC_ADAPT
@@ -226,8 +227,10 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     v = dq_shift ? ROUND_POWER_OF_TWO(v, dq_shift) : v;
 #else
 #if CONFIG_AOM_QM
-    dqv = ((iqmatrix[scan[c]] * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >>
-          AOM_QM_BITS;
+    // Apply quant matrix only for 2D transforms
+    if (IS_2D_TRANSFORM(tx_type))
+      dqv = ((iqmatrix[scan[c]] * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >>
+            AOM_QM_BITS;
 #endif
     v = (val * dqv) >> dq_shift;
 #endif
