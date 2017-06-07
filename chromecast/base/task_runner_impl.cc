@@ -23,7 +23,7 @@ bool TaskRunnerImpl::PostTask(Task* task, uint64_t delay_milliseconds) {
   // TODO(halliwell): FROM_HERE is misleading, we should consider a macro for
   // vendor backends to send the callsite info.
   return runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&Task::Run, base::Owned(task)),
+      FROM_HERE, base::BindOnce(&Task::Run, base::Owned(task)),
       base::TimeDelta::FromMilliseconds(delay_milliseconds));
 }
 

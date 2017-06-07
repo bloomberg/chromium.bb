@@ -25,11 +25,9 @@ class ChromecastConfigAndroid {
 
   // Registers a handler to be notified when SendUsageStats is changed.
   void SetSendUsageStatsChangedCallback(
-      const base::Callback<void(bool)>& callback);
+      base::RepeatingCallback<void(bool)> callback);
 
-  const base::Callback<void(bool)>& send_usage_stats_changed_callback() const {
-    return send_usage_stats_changed_callback_;
-  }
+  void RunSendUsageStatsChangedCallback(bool enabled);
 
  private:
   friend struct base::LazyInstanceTraitsBase<ChromecastConfigAndroid>;
@@ -37,7 +35,7 @@ class ChromecastConfigAndroid {
   ChromecastConfigAndroid();
   ~ChromecastConfigAndroid();
 
-  base::Callback<void(bool)> send_usage_stats_changed_callback_;
+  base::RepeatingCallback<void(bool)> send_usage_stats_changed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromecastConfigAndroid);
 };

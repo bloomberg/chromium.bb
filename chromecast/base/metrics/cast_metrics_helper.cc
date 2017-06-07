@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -26,12 +27,12 @@ namespace chromecast {
 namespace metrics {
 
 // A useful macro to make sure current member function runs on the valid thread.
-#define MAKE_SURE_THREAD(callback, ...)                                        \
-  if (!task_runner_->BelongsToCurrentThread()) {                               \
-    task_runner_->PostTask(FROM_HERE,                                          \
-                           base::Bind(&CastMetricsHelper::callback,            \
-                                      base::Unretained(this), ##__VA_ARGS__)); \
-    return;                                                                    \
+#define MAKE_SURE_THREAD(callback, ...)                                    \
+  if (!task_runner_->BelongsToCurrentThread()) {                           \
+    task_runner_->PostTask(                                                \
+        FROM_HERE, base::BindOnce(&CastMetricsHelper::callback,            \
+                                  base::Unretained(this), ##__VA_ARGS__)); \
+    return;                                                                \
   }
 
 namespace {
@@ -118,7 +119,8 @@ CastMetricsHelper::CastMetricsHelper(
     : task_runner_(task_runner),
       metrics_sink_(NULL),
       logged_first_audio_(false),
-      record_action_callback_(base::Bind(&base::RecordComputedAction)) {
+      record_action_callback_(
+          base::BindRepeating(&base::RecordComputedAction)) {
   DCHECK(task_runner_.get());
   DCHECK(!g_instance);
   g_instance = this;
@@ -252,10 +254,9 @@ void CastMetricsHelper::SetMetricsSink(MetricsSink* delegate) {
   metrics_sink_ = delegate;
 }
 
-void CastMetricsHelper::SetRecordActionCallback(
-      const RecordActionCallback& callback) {
+void CastMetricsHelper::SetRecordActionCallback(RecordActionCallback callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  record_action_callback_ = callback;
+  record_action_callback_ = std::move(callback);
 }
 
 void CastMetricsHelper::SetDummySessionIdForTesting() {

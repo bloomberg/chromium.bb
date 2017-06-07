@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_BASE_METRICS_MOCK_CAST_METRICS_HELPER_H_
 #define CHROMECAST_BASE_METRICS_MOCK_CAST_METRICS_HELPER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,8 +38,7 @@ class MockCastMetricsHelper : public CastMetricsHelper {
                      std::string(const std::string& prefix,
                                  const std::string& suffix));
   MOCK_METHOD1(SetMetricsSink, void(MetricsSink* delegate));
-  MOCK_METHOD1(SetRecordActionCallback,
-               void(const RecordActionCallback& callback));
+  MOCK_METHOD1(SetRecordActionCallback, void(RecordActionCallback callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCastMetricsHelper);

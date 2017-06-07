@@ -8,6 +8,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -271,9 +273,9 @@ void DeviceCapabilitiesImpl::SetCapability(
       // post a task to the Validator's thread with weak_ptr. This way, if the
       // Validator gets unregistered, the call to Validate will get skipped.
       validator_it->second->task_runner()->PostTask(
-          FROM_HERE, base::Bind(&ValidatorInfo::Validate,
-                                validator_it->second->AsWeakPtr(), path,
-                                base::Passed(&proposed_value)));
+          FROM_HERE, base::BindOnce(&ValidatorInfo::Validate,
+                                    validator_it->second->AsWeakPtr(), path,
+                                    std::move(proposed_value)));
       return;
     }
   }
@@ -309,8 +311,8 @@ void DeviceCapabilitiesImpl::SetPublicValidatedValue(
   if (!task_runner_for_writes_->BelongsToCurrentThread()) {
     task_runner_for_writes_->PostTask(
         FROM_HERE,
-        base::Bind(&DeviceCapabilitiesImpl::SetPublicValidatedValue,
-                   base::Unretained(this), path, base::Passed(&new_value)));
+        base::BindOnce(&DeviceCapabilitiesImpl::SetPublicValidatedValue,
+                       base::Unretained(this), path, std::move(new_value)));
     return;
   }
 
@@ -372,8 +374,8 @@ void DeviceCapabilitiesImpl::SetPrivateValidatedValue(
   if (!task_runner_for_writes_->BelongsToCurrentThread()) {
     task_runner_for_writes_->PostTask(
         FROM_HERE,
-        base::Bind(&DeviceCapabilitiesImpl::SetPrivateValidatedValue,
-                   base::Unretained(this), path, base::Passed(&new_value)));
+        base::BindOnce(&DeviceCapabilitiesImpl::SetPrivateValidatedValue,
+                       base::Unretained(this), path, std::move(new_value)));
     return;
   }
 

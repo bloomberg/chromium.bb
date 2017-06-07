@@ -81,8 +81,8 @@
 //     // ... Enable setup manager ...
 //     // OnEnableComplete() may be called asynchronously.
 //     base::ThreadTaskRunnerHandle::Get()->PostTask(
-//         FROM_HERE, base::Bind(&SetupManagerImpl::CompleteEnable,
-//                               base::Unretained(this)));
+//         FROM_HERE, base::BindOnce(&SetupManagerImpl::CompleteEnable,
+//                                   base::Unretained(this)));
 //   }
 //
 //   void CompleteEnable() {
