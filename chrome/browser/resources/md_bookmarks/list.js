@@ -32,7 +32,16 @@ Polymer({
     },
 
     /** @private */
-    searchTerm_: String,
+    searchTerm_: {
+      type: String,
+      observer: 'onDisplayedListSourceChange_',
+    },
+
+    /** @private */
+    selectedFolder_: {
+      type: String,
+      observer: 'onDisplayedListSourceChange_',
+    },
   },
 
   listeners: {
@@ -48,6 +57,9 @@ Polymer({
     });
     this.watch('searchTerm_', function(state) {
       return state.search.term;
+    });
+    this.watch('selectedFolder_', function(state) {
+      return state.selectedFolder;
     });
     this.updateFromStore();
 
@@ -88,6 +100,11 @@ Polymer({
         ].concat(additions));
       }.bind(this));
     }
+  },
+
+  /** @private */
+  onDisplayedListSourceChange_: function() {
+    this.scrollTop = 0;
   },
 
   /** @private */
