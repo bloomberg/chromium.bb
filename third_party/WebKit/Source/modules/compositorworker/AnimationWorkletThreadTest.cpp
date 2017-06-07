@@ -9,6 +9,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/ParentFrameTaskRunners.h"
@@ -46,6 +47,18 @@ class AnimationWorkletTestPlatform : public TestingPlatformSupport {
   TestingCompositorSupport compositor_support_;
 };
 
+class TestAnimationWorkletProxyClient
+    : public GarbageCollected<TestAnimationWorkletProxyClient>,
+      public AnimationWorkletProxyClient {
+  USING_GARBAGE_COLLECTED_MIXIN(TestAnimationWorkletProxyClient);
+
+ public:
+  TestAnimationWorkletProxyClient() {}
+  void SetGlobalScope(WorkletGlobalScope*) override {}
+  void Dispose() override {}
+  CompositorProxyClient* GetCompositorProxyClient() override { return nullptr; }
+};
+
 }  // namespace
 
 class AnimationWorkletThreadTest : public ::testing::Test {
@@ -62,13 +75,18 @@ class AnimationWorkletThreadTest : public ::testing::Test {
   }
 
   std::unique_ptr<AnimationWorkletThread> CreateAnimationWorkletThread() {
+    WorkerClients* clients = WorkerClients::Create();
+    ProvideAnimationWorkletProxyClientTo(clients,
+                                         new TestAnimationWorkletProxyClient());
+
     std::unique_ptr<AnimationWorkletThread> thread =
         AnimationWorkletThread::Create(nullptr, *reporting_proxy_);
+
     thread->Start(
         WorkerThreadStartupData::Create(
             KURL(kParsedURLString, "http://fake.url/"), "fake user agent", "",
             nullptr, kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
-            security_origin_.Get(), nullptr, kWebAddressSpaceLocal, nullptr,
+            security_origin_.Get(), clients, kWebAddressSpaceLocal, nullptr,
             nullptr, WorkerV8Settings::Default()),
         ParentFrameTaskRunners::Create(nullptr));
     return thread;

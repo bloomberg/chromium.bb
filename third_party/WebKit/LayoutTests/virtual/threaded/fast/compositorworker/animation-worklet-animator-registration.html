@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 
+<!--
+TODO(majidvp): The try/catch in above test cases should not be needed but at the moment
+threaded worklet does not correctly pass error to its parent context. It crashes in
+https://codesearch.chromium.org/chromium/src/third_party/WebKit/Source/bindings/core/v8/WorkerOrWorkletScriptController.cpp?sq=package:chromium&dr&l=320
+-->
 <script id="duplicate" type="text/worklet">
 try {
   registerAnimator("duplicate", class { animate() {} });
@@ -24,49 +29,8 @@ registerAnimator("test", class {
   constructor() {
     console.log("test animator constructor called.");
   }
-  animate() {
-    console.log("test animator animate called.");
-  }
+  animate() {}
 });
 </script>
 
-<script>
-// TODO(majidvp): The try/catch in above test cases should not be needed but at the moment
-// threaded worklet does not correctly pass error to its parent context. It crashes in
-// https://codesearch.chromium.org/chromium/src/third_party/WebKit/Source/bindings/core/v8/WorkerOrWorkletScriptController.cpp?sq=package:chromium&dr&l=320
-
-function runInAnimationWorklet(code) {
-  return window.animationWorklet.addModule(
-    URL.createObjectURL(new Blob([code], {type: 'text/javascript'}))
-  );
-}
-
-// Load test cases in worklet context in sequence and wait until they are resolved.
-function runTests(testcases) {
-  if (window.testRunner) {
-    testRunner.waitUntilDone();
-    testRunner.dumpAsText();
-  }
-
-  const runInSequence = testcases.reduce((chain, testcase) => {
-    return chain.then( _ => {
-        return runInAnimationWorklet(testcase);
-    });
-  }, Promise.resolve());
-
-  // TODO(majidvp): Figure out how to wait on AnimationWorklet, which runs on a separate thread,
-  // to complete its tasks instead of a timeout.
-  runInSequence.then(_ => {
-     setTimeout(_ => {
-      if (window.testRunner)
-        testRunner.notifyDone();
-     }, 100);
-  });
-}
-
-const testcases = Array.prototype.map.call(document.querySelectorAll('script[type$=worklet]'), ($el) => {
-  return $el.textContent;
-});
-
-runTests(testcases);
-</script>
+<script src="resources/animation-worklet-tests.js"></script>

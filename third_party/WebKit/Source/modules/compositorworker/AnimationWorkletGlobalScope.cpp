@@ -8,7 +8,9 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/workers/WorkerClients.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 
@@ -40,7 +42,11 @@ AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
                                  std::move(security_origin),
                                  isolate,
                                  thread,
-                                 worker_clients) {}
+                                 worker_clients) {
+  if (AnimationWorkletProxyClient* proxy_client =
+          AnimationWorkletProxyClient::From(Clients()))
+    proxy_client->SetGlobalScope(this);
+}
 
 AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() {}
 
@@ -58,6 +64,25 @@ DEFINE_TRACE_WRAPPERS(AnimationWorkletGlobalScope) {
     visitor->TraceWrappers(definition.value);
 
   ThreadedWorkletGlobalScope::TraceWrappers(visitor);
+}
+
+void AnimationWorkletGlobalScope::Dispose() {
+  DCHECK(IsContextThread());
+  if (AnimationWorkletProxyClient* proxy_client =
+          AnimationWorkletProxyClient::From(Clients()))
+    proxy_client->Dispose();
+  ThreadedWorkletGlobalScope::Dispose();
+}
+
+void AnimationWorkletGlobalScope::Mutate() {
+  DCHECK(IsContextThread());
+
+  ScriptState* script_state = ScriptController()->GetScriptState();
+  ScriptState::Scope scope(script_state);
+
+  for (Animator* animator : animators_) {
+    animator->Animate(script_state);
+  }
 }
 
 void AnimationWorkletGlobalScope::registerAnimator(
@@ -124,13 +149,14 @@ void AnimationWorkletGlobalScope::registerAnimator(
 
   AnimatorDefinition* definition =
       new AnimatorDefinition(isolate, constructor, animate);
+
   animator_definitions_.Set(
       name, TraceWrapperMember<AnimatorDefinition>(this, definition));
 
   // Immediately instantiate an animator for the registered definition.
   // TODO(majidvp): Remove this once you add alternative way to instantiate
-  Animator* animator = CreateInstance(name);
-  animators_.push_back(TraceWrapperMember<Animator>(this, animator));
+  if (Animator* animator = CreateInstance(name))
+    animators_.push_back(TraceWrapperMember<Animator>(this, animator));
 }
 
 Animator* AnimationWorkletGlobalScope::CreateInstance(const String& name) {
@@ -149,6 +175,11 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(const String& name) {
     return nullptr;
 
   return new Animator(isolate, definition, instance);
+}
+
+AnimatorDefinition* AnimationWorkletGlobalScope::FindDefinitionForTest(
+    const String& name) {
+  return animator_definitions_.at(name);
 }
 
 }  // namespace blink

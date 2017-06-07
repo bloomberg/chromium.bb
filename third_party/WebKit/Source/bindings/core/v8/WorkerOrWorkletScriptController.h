@@ -96,6 +96,8 @@ class CORE_EXPORT WorkerOrWorkletScriptController
     return script_state_ && !!script_state_->PerContextData();
   }
 
+  ScriptValue EvaluateAndReturnValueForTest(const ScriptSourceCode&);
+
  private:
   WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
   class ExecutionState;

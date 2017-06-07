@@ -338,6 +338,13 @@ bool WorkerOrWorkletScriptController::Evaluate(
   return true;
 }
 
+ScriptValue WorkerOrWorkletScriptController::EvaluateAndReturnValueForTest(
+    const ScriptSourceCode& source_code) {
+  ExecutionState state(this);
+  return Evaluate(source_code.Source(), source_code.Url().GetString(),
+                  source_code.StartPosition(), nullptr, kV8CacheOptionsDefault);
+}
+
 void WorkerOrWorkletScriptController::ForbidExecution() {
   DCHECK(global_scope_->IsContextThread());
   execution_forbidden_ = true;

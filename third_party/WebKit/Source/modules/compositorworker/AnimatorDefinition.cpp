@@ -30,4 +30,8 @@ v8::Local<v8::Function> AnimatorDefinition::ConstructorLocal(
   return constructor_.NewLocal(isolate);
 }
 
+v8::Local<v8::Function> AnimatorDefinition::AnimateLocal(v8::Isolate* isolate) {
+  return animate_.NewLocal(isolate);
+}
+
 }  // namespace blink

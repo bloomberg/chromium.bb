@@ -16,6 +16,7 @@ namespace blink {
 
 class ScriptSourceCode;
 class ThreadedWorkletObjectProxy;
+class WorkerClients;
 
 class CORE_EXPORT ThreadedWorkletMessagingProxy
     : public ThreadedMessagingProxyBase,

@@ -40,7 +40,6 @@ WorkerOrWorkletGlobalScope* AnimationWorkletThread::CreateWorkerGlobalScope(
     security_origin->TransferPrivilegesFrom(
         std::move(startup_data->starter_origin_privilege_data_));
 
-  // TODO(ikilpatrick): Provide CompositorWorkerProxyClient to WorkerClients.
   return AnimationWorkletGlobalScope::Create(
       startup_data->script_url_, startup_data->user_agent_,
       std::move(security_origin), this->GetIsolate(), this,

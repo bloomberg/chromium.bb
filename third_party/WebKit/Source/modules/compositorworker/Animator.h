@@ -14,6 +14,7 @@
 namespace blink {
 
 class AnimatorDefinition;
+class ScriptState;
 
 class Animator final : public GarbageCollectedFinalized<Animator>,
                        public TraceWrapperBase {
@@ -22,6 +23,8 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   ~Animator();
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
+
+  void Animate(ScriptState*) const;
 
  private:
   // This object keeps the definition object, and animator instance alive.
