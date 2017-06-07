@@ -132,8 +132,10 @@ class WebDevToolsAgentImpl final
   void WillProcessTask() override;
   void DidProcessTask() override;
 
-  void InitializeSession(int session_id, const String& host_id, String* state);
-  void DestroySession();
+  InspectorSession* InitializeSession(int session_id,
+                                      const String& host_id,
+                                      String* state);
+  void DestroySession(int session_id);
   void DispatchMessageFromFrontend(int session_id,
                                    const String& method,
                                    const String& message);
@@ -143,7 +145,7 @@ class WebDevToolsAgentImpl final
       int session_id,
       std::unique_ptr<WebDevToolsAgent::MessageDescriptor>);
 
-  bool Attached() const { return session_.Get(); }
+  bool Attached() const { return !!sessions_.size(); }
 
   WebDevToolsAgentClient* client_;
   Member<WebLocalFrameBase> web_local_frame_impl_;
@@ -152,15 +154,15 @@ class WebDevToolsAgentImpl final
   Member<InspectorResourceContentLoader> resource_content_loader_;
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorResourceContainer> resource_container_;
+  Member<InspectorTraceEvents> trace_events_;
 
-  Member<InspectorPageAgent> page_agent_;
-  Member<InspectorNetworkAgent> network_agent_;
-  Member<InspectorLayerTreeAgent> layer_tree_agent_;
-  Member<InspectorTracingAgent> tracing_agent_;
-  Member<InspectorTraceEvents> trace_events_agent_;
-  Member<InspectorOverlayAgent> overlay_agent_;
+  HeapHashMap<int, Member<InspectorPageAgent>> page_agents_;
+  HeapHashMap<int, Member<InspectorNetworkAgent>> network_agents_;
+  HeapHashMap<int, Member<InspectorLayerTreeAgent>> layer_tree_agents_;
+  HeapHashMap<int, Member<InspectorTracingAgent>> tracing_agents_;
+  HeapHashMap<int, Member<InspectorOverlayAgent>> overlay_agents_;
 
-  Member<InspectorSession> session_;
+  HeapHashMap<int, Member<InspectorSession>> sessions_;
   bool include_view_agents_;
   int layer_tree_id_;
 };

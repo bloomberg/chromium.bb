@@ -259,17 +259,12 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       inspected_frames_(
           InspectedFrames::Create(web_local_frame_impl_->GetFrame())),
       resource_container_(new InspectorResourceContainer(inspected_frames_)),
-      page_agent_(nullptr),
-      network_agent_(nullptr),
-      layer_tree_agent_(nullptr),
-      tracing_agent_(nullptr),
-      trace_events_agent_(new InspectorTraceEvents()),
-      overlay_agent_(nullptr),
+      trace_events_(new InspectorTraceEvents()),
       include_view_agents_(include_view_agents),
       layer_tree_id_(0) {
   DCHECK(IsMainThread());
   DCHECK(web_local_frame_impl_->GetFrame());
-  probe_sink_->addInspectorTraceEvents(trace_events_agent_);
+  probe_sink_->addInspectorTraceEvents(trace_events_);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
@@ -282,138 +277,149 @@ DEFINE_TRACE(WebDevToolsAgentImpl) {
   visitor->Trace(resource_content_loader_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(resource_container_);
-  visitor->Trace(page_agent_);
-  visitor->Trace(network_agent_);
-  visitor->Trace(layer_tree_agent_);
-  visitor->Trace(tracing_agent_);
-  visitor->Trace(trace_events_agent_);
-  visitor->Trace(overlay_agent_);
-  visitor->Trace(session_);
+  visitor->Trace(trace_events_);
+  visitor->Trace(page_agents_);
+  visitor->Trace(network_agents_);
+  visitor->Trace(layer_tree_agents_);
+  visitor->Trace(tracing_agents_);
+  visitor->Trace(overlay_agents_);
+  visitor->Trace(sessions_);
 }
 
 void WebDevToolsAgentImpl::WillBeDestroyed() {
   DCHECK(web_local_frame_impl_->GetFrame());
   DCHECK(inspected_frames_->Root()->View());
-  probe_sink_->removeInspectorTraceEvents(trace_events_agent_);
-  trace_events_agent_ = nullptr;
-  if (session_)
-    Detach(session_->SessionId());
+  probe_sink_->removeInspectorTraceEvents(trace_events_);
+  trace_events_ = nullptr;
+
+  Vector<int> session_ids;
+  for (int session_id : sessions_.Keys())
+    session_ids.push_back(session_id);
+  for (int session_id : session_ids)
+    Detach(session_id);
+
   resource_content_loader_->Dispose();
   client_ = nullptr;
 }
 
-void WebDevToolsAgentImpl::InitializeSession(int session_id,
-                                             const String& host_id,
-                                             String* state) {
+InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
+                                                          const String& host_id,
+                                                          String* state) {
   DCHECK(client_);
   ClientMessageLoopAdapter::EnsureMainThreadDebuggerCreated(client_);
   MainThreadDebugger* main_thread_debugger = MainThreadDebugger::Instance();
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
 
-  session_ = new InspectorSession(
+  InspectorSession* session = new InspectorSession(
       this, probe_sink_.Get(), session_id,
       main_thread_debugger->GetV8Inspector(),
       main_thread_debugger->ContextGroupId(inspected_frames_->Root()), state);
 
   InspectorDOMAgent* dom_agent = new InspectorDOMAgent(
-      isolate, inspected_frames_.Get(), session_->V8Session());
-  session_->Append(dom_agent);
+      isolate, inspected_frames_.Get(), session->V8Session());
+  session->Append(dom_agent);
 
   InspectorLayerTreeAgent* layer_tree_agent =
       InspectorLayerTreeAgent::Create(inspected_frames_.Get());
-  layer_tree_agent_ = layer_tree_agent;
-  session_->Append(layer_tree_agent);
+  layer_tree_agents_.Set(session_id, layer_tree_agent);
+  session->Append(layer_tree_agent);
 
   InspectorNetworkAgent* network_agent =
       InspectorNetworkAgent::Create(inspected_frames_.Get());
-  network_agent_ = network_agent;
-  session_->Append(network_agent);
+  network_agents_.Set(session_id, network_agent);
+  session->Append(network_agent);
 
   InspectorCSSAgent* css_agent = InspectorCSSAgent::Create(
-      dom_agent, inspected_frames_.Get(), network_agent_,
+      dom_agent, inspected_frames_.Get(), network_agent,
       resource_content_loader_.Get(), resource_container_.Get());
-  session_->Append(css_agent);
+  session->Append(css_agent);
 
-  session_->Append(new InspectorAnimationAgent(
-      inspected_frames_.Get(), css_agent, session_->V8Session()));
+  session->Append(new InspectorAnimationAgent(inspected_frames_.Get(),
+                                              css_agent, session->V8Session()));
 
-  session_->Append(InspectorMemoryAgent::Create());
+  session->Append(InspectorMemoryAgent::Create());
 
-  session_->Append(
+  session->Append(
       InspectorApplicationCacheAgent::Create(inspected_frames_.Get()));
 
-  session_->Append(new InspectorIndexedDBAgent(inspected_frames_.Get(),
-                                               session_->V8Session()));
+  session->Append(new InspectorIndexedDBAgent(inspected_frames_.Get(),
+                                              session->V8Session()));
 
   InspectorWorkerAgent* worker_agent =
       new InspectorWorkerAgent(inspected_frames_.Get());
-  session_->Append(worker_agent);
+  session->Append(worker_agent);
 
   InspectorTracingAgent* tracing_agent = InspectorTracingAgent::Create(
       this, worker_agent, inspected_frames_.Get());
-  tracing_agent_ = tracing_agent;
-  session_->Append(tracing_agent);
+  tracing_agents_.Set(session_id, tracing_agent);
+  session->Append(tracing_agent);
 
-  session_->Append(
-      new InspectorDOMDebuggerAgent(isolate, dom_agent, session_->V8Session()));
+  session->Append(
+      new InspectorDOMDebuggerAgent(isolate, dom_agent, session->V8Session()));
 
-  session_->Append(InspectorInputAgent::Create(inspected_frames_.Get()));
+  session->Append(InspectorInputAgent::Create(inspected_frames_.Get()));
 
   InspectorPageAgent* page_agent = InspectorPageAgent::Create(
       inspected_frames_.Get(), this, resource_content_loader_.Get(),
-      session_->V8Session());
-  page_agent_ = page_agent;
-  session_->Append(page_agent);
+      session->V8Session());
+  page_agents_.Set(session_id, page_agent);
+  session->Append(page_agent);
 
-  session_->Append(new InspectorLogAgent(
+  session->Append(new InspectorLogAgent(
       &inspected_frames_->Root()->GetPage()->GetConsoleMessageStorage(),
       inspected_frames_->Root()->GetPerformanceMonitor()));
 
-  session_->Append(
-      new DeviceOrientationInspectorAgent(inspected_frames_.Get()));
+  session->Append(new DeviceOrientationInspectorAgent(inspected_frames_.Get()));
 
   InspectorOverlayAgent* overlay_agent =
       new InspectorOverlayAgent(web_local_frame_impl_, inspected_frames_.Get(),
-                                session_->V8Session(), dom_agent);
-  overlay_agent_ = overlay_agent;
-  session_->Append(overlay_agent);
+                                session->V8Session(), dom_agent);
+  overlay_agents_.Set(session_id, overlay_agent);
+  session->Append(overlay_agent);
 
-  tracing_agent_->SetLayerTreeId(layer_tree_id_);
-  network_agent_->SetHostId(host_id);
+  tracing_agent->SetLayerTreeId(layer_tree_id_);
+  network_agent->SetHostId(host_id);
 
   if (include_view_agents_) {
     // TODO(dgozman): we should actually pass the view instead of frame, but
     // during remote->local transition we cannot access mainFrameImpl() yet, so
     // we have to store the frame which will become the main frame later.
-    session_->Append(
+    session->Append(
         InspectorEmulationAgent::Create(web_local_frame_impl_, this));
     // TODO(dgozman): migrate each of the following agents to frame once module
     // is ready.
     Page* page = web_local_frame_impl_->ViewImpl()->GetPage();
-    session_->Append(InspectorDatabaseAgent::Create(page));
-    session_->Append(new InspectorAccessibilityAgent(page, dom_agent));
-    session_->Append(InspectorDOMStorageAgent::Create(page));
-    session_->Append(InspectorCacheStorageAgent::Create());
+    session->Append(InspectorDatabaseAgent::Create(page));
+    session->Append(new InspectorAccessibilityAgent(page, dom_agent));
+    session->Append(InspectorDOMStorageAgent::Create(page));
+    session->Append(InspectorCacheStorageAgent::Create());
   }
 
-  Platform::Current()->CurrentThread()->AddTaskObserver(this);
+  if (!sessions_.size())
+    Platform::Current()->CurrentThread()->AddTaskObserver(this);
+
+  sessions_.Set(session_id, session);
+  return session;
 }
 
-void WebDevToolsAgentImpl::DestroySession() {
-  overlay_agent_.Clear();
-  tracing_agent_.Clear();
-  layer_tree_agent_.Clear();
-  network_agent_.Clear();
-  page_agent_.Clear();
+void WebDevToolsAgentImpl::DestroySession(int session_id) {
+  overlay_agents_.erase(session_id);
+  tracing_agents_.erase(session_id);
+  layer_tree_agents_.erase(session_id);
+  network_agents_.erase(session_id);
+  page_agents_.erase(session_id);
 
-  session_->Dispose();
-  session_.Clear();
+  auto session_it = sessions_.find(session_id);
+  DCHECK(session_it != sessions_.end());
+  session_it->value->Dispose();
+  sessions_.erase(session_it);
 
-  Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+  if (!sessions_.size())
+    Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
 }
 
 void WebDevToolsAgentImpl::Attach(const WebString& host_id, int session_id) {
-  if (Attached())
+  if (!session_id || sessions_.find(session_id) != sessions_.end())
     return;
   InitializeSession(session_id, host_id, nullptr);
 }
@@ -421,17 +427,17 @@ void WebDevToolsAgentImpl::Attach(const WebString& host_id, int session_id) {
 void WebDevToolsAgentImpl::Reattach(const WebString& host_id,
                                     int session_id,
                                     const WebString& saved_state) {
-  if (Attached())
+  if (!session_id || sessions_.find(session_id) != sessions_.end())
     return;
   String state = saved_state;
-  InitializeSession(session_id, host_id, &state);
-  session_->Restore();
+  InspectorSession* session = InitializeSession(session_id, host_id, &state);
+  session->Restore();
 }
 
 void WebDevToolsAgentImpl::Detach(int session_id) {
-  if (!Attached() || session_id != session_->SessionId())
+  if (!session_id || sessions_.find(session_id) == sessions_.end())
     return;
-  DestroySession();
+  DestroySession(session_id);
 }
 
 void WebDevToolsAgentImpl::ContinueProgram() {
@@ -441,39 +447,45 @@ void WebDevToolsAgentImpl::ContinueProgram() {
 void WebDevToolsAgentImpl::DidCommitLoadForLocalFrame(LocalFrame* frame) {
   resource_container_->DidCommitLoadForLocalFrame(frame);
   resource_content_loader_->DidCommitLoadForLocalFrame(frame);
-  if (session_)
-    session_->DidCommitLoadForLocalFrame(frame);
+  for (auto& it : sessions_)
+    it.value->DidCommitLoadForLocalFrame(frame);
 }
 
 void WebDevToolsAgentImpl::DidStartProvisionalLoad(LocalFrame* frame) {
-  if (session_ && inspected_frames_->Root() == frame)
-    session_->V8Session()->resume();
+  if (inspected_frames_->Root() == frame) {
+    for (auto& it : sessions_)
+      it.value->V8Session()->resume();
+  }
 }
 
 bool WebDevToolsAgentImpl::ScreencastEnabled() {
-  return page_agent_ && page_agent_->ScreencastEnabled();
+  for (auto& it : page_agents_) {
+    if (it.value->ScreencastEnabled())
+      return true;
+  }
+  return false;
 }
 
 void WebDevToolsAgentImpl::WillAddPageOverlay(const GraphicsLayer* layer) {
-  if (layer_tree_agent_)
-    layer_tree_agent_->WillAddPageOverlay(layer);
+  for (auto& it : layer_tree_agents_)
+    it.value->WillAddPageOverlay(layer);
 }
 
 void WebDevToolsAgentImpl::DidRemovePageOverlay(const GraphicsLayer* layer) {
-  if (layer_tree_agent_)
-    layer_tree_agent_->DidRemovePageOverlay(layer);
+  for (auto& it : layer_tree_agents_)
+    it.value->DidRemovePageOverlay(layer);
 }
 
 void WebDevToolsAgentImpl::RootLayerCleared() {
-  if (tracing_agent_)
-    tracing_agent_->RootLayerCleared();
+  for (auto& it : tracing_agents_)
+    it.value->RootLayerCleared();
 }
 
 void WebDevToolsAgentImpl::LayerTreeViewChanged(
     WebLayerTreeView* layer_tree_view) {
   layer_tree_id_ = layer_tree_view ? layer_tree_view->LayerTreeId() : 0;
-  if (tracing_agent_)
-    tracing_agent_->SetLayerTreeId(layer_tree_id_);
+  for (auto& it : tracing_agents_)
+    it.value->SetLayerTreeId(layer_tree_id_);
 }
 
 void WebDevToolsAgentImpl::EnableTracing(const String& category_filter) {
@@ -487,13 +499,13 @@ void WebDevToolsAgentImpl::DisableTracing() {
 }
 
 void WebDevToolsAgentImpl::ShowReloadingBlanket() {
-  if (overlay_agent_)
-    overlay_agent_->ShowReloadingBlanket();
+  for (auto& it : overlay_agents_)
+    it.value->ShowReloadingBlanket();
 }
 
 void WebDevToolsAgentImpl::HideReloadingBlanket() {
-  if (overlay_agent_)
-    overlay_agent_->HideReloadingBlanket();
+  for (auto& it : overlay_agents_)
+    it.value->HideReloadingBlanket();
 }
 
 void WebDevToolsAgentImpl::SetCPUThrottlingRate(double rate) {
@@ -517,17 +529,23 @@ void WebDevToolsAgentImpl::DispatchOnInspectorBackend(
 void WebDevToolsAgentImpl::DispatchMessageFromFrontend(int session_id,
                                                        const String& method,
                                                        const String& message) {
-  if (!Attached() || session_id != session_->SessionId())
+  if (!session_id)
+    return;
+  auto session_it = sessions_.find(session_id);
+  if (session_it == sessions_.end())
     return;
   InspectorTaskRunner::IgnoreInterruptsScope scope(
       MainThreadDebugger::Instance()->TaskRunner());
-  session_->DispatchProtocolMessage(method, message);
+  session_it->value->DispatchProtocolMessage(method, message);
 }
 
 void WebDevToolsAgentImpl::InspectElementAt(
     int session_id,
     const WebPoint& point_in_root_frame) {
-  if (!overlay_agent_ || !session_ || session_->SessionId() != session_id)
+  if (!session_id)
+    return;
+  auto agent_it = overlay_agents_.find(session_id);
+  if (agent_it == overlay_agents_.end())
     return;
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kMove | HitTestRequest::kReadOnly |
@@ -547,7 +565,7 @@ void WebDevToolsAgentImpl::InspectElementAt(
   Node* node = result.InnerNode();
   if (!node && web_local_frame_impl_->GetFrame()->GetDocument())
     node = web_local_frame_impl_->GetFrame()->GetDocument()->documentElement();
-  overlay_agent_->Inspect(node);
+  agent_it->value->Inspect(node);
 }
 
 void WebDevToolsAgentImpl::FailedToRequestDevTools() {
@@ -564,8 +582,8 @@ void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
 }
 
 void WebDevToolsAgentImpl::PageLayoutInvalidated(bool resized) {
-  if (overlay_agent_)
-    overlay_agent_->PageLayoutInvalidated(resized);
+  for (auto& it : overlay_agents_)
+    it.value->PageLayoutInvalidated(resized);
 }
 
 void WebDevToolsAgentImpl::WaitForCreateWindow(LocalFrame* frame) {
@@ -578,37 +596,41 @@ void WebDevToolsAgentImpl::WaitForCreateWindow(LocalFrame* frame) {
 
 WebString WebDevToolsAgentImpl::EvaluateInWebInspectorOverlay(
     const WebString& script) {
-  if (!overlay_agent_)
-    return WebString();
-
-  return overlay_agent_->EvaluateInOverlayForTest(script);
+  WebString result;
+  for (auto& it : overlay_agents_)
+    result = it.value->EvaluateInOverlayForTest(script);
+  return result;
 }
 
 void WebDevToolsAgentImpl::PaintOverlay() {
-  if (overlay_agent_)
-    overlay_agent_->PaintOverlay();
+  for (auto& it : overlay_agents_)
+    it.value->PaintOverlay();
 }
 
 void WebDevToolsAgentImpl::LayoutOverlay() {
-  if (overlay_agent_)
-    overlay_agent_->LayoutOverlay();
+  for (auto& it : overlay_agents_)
+    it.value->LayoutOverlay();
 }
 
 bool WebDevToolsAgentImpl::HandleInputEvent(const WebInputEvent& event) {
-  if (overlay_agent_)
-    return overlay_agent_->HandleInputEvent(event);
+  for (auto& it : overlay_agents_) {
+    if (it.value->HandleInputEvent(event))
+      return true;
+  }
   return false;
 }
 
 bool WebDevToolsAgentImpl::CacheDisabled() {
-  if (!network_agent_)
-    return false;
-  return network_agent_->CacheDisabled();
+  for (auto& it : network_agents_) {
+    if (it.value->CacheDisabled())
+      return true;
+  }
+  return false;
 }
 
 void WebDevToolsAgentImpl::FlushProtocolNotifications() {
-  if (session_)
-    session_->flushProtocolNotifications();
+  for (auto& it : sessions_)
+    it.value->flushProtocolNotifications();
 }
 
 void WebDevToolsAgentImpl::WillProcessTask() {
