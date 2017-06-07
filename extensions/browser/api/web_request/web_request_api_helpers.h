@@ -203,9 +203,8 @@ bool InDecreasingExtensionInstallationTimeOrder(
     const linked_ptr<EventResponseDelta>& a,
     const linked_ptr<EventResponseDelta>& b);
 
-// Converts a string to a list of integers, each in 0..255. Ownership
-// of the created list is passed to the caller.
-base::ListValue* StringToCharList(const std::string& s);
+// Converts a string to a list of integers, each in 0..255.
+std::unique_ptr<base::ListValue> StringToCharList(const std::string& s);
 
 // Converts a list of integer values between 0 and 255 into a string |*out|.
 // Returns true if the conversion was successful.

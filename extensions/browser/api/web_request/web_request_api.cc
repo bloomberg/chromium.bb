@@ -1619,13 +1619,14 @@ helpers::EventResponseDelta* CalculateDelta(
   }
 }
 
-base::Value* SerializeResponseHeaders(const helpers::ResponseHeaders& headers) {
-  std::unique_ptr<base::ListValue> serialized_headers(new base::ListValue());
+std::unique_ptr<base::Value> SerializeResponseHeaders(
+    const helpers::ResponseHeaders& headers) {
+  auto serialized_headers = base::MakeUnique<base::ListValue>();
   for (const auto& it : headers) {
     serialized_headers->Append(
         helpers::CreateHeaderDictionary(it.first, it.second));
   }
-  return serialized_headers.release();
+  return std::move(serialized_headers);
 }
 
 // Convert a RequestCookieModifications/ResponseCookieModifications object to a
@@ -1633,11 +1634,11 @@ base::Value* SerializeResponseHeaders(const helpers::ResponseHeaders& headers) {
 // the two types (request/response) are different but contain essentially the
 // same fields.
 template <typename CookieType>
-base::ListValue* SummarizeCookieModifications(
+std::unique_ptr<base::ListValue> SummarizeCookieModifications(
     const std::vector<linked_ptr<CookieType>>& modifications) {
-  std::unique_ptr<base::ListValue> cookie_modifications(new base::ListValue());
+  auto cookie_modifications = base::MakeUnique<base::ListValue>();
   for (const auto& it : modifications) {
-    std::unique_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
+    auto summary = base::MakeUnique<base::DictionaryValue>();
     const CookieType& mod = *(it.get());
     switch (mod.type) {
       case helpers::ADD:
@@ -1675,7 +1676,7 @@ base::ListValue* SummarizeCookieModifications(
     }
     cookie_modifications->Append(std::move(summary));
   }
-  return cookie_modifications.release();
+  return cookie_modifications;
 }
 
 // Converts an EventResponseDelta object to a dictionary value suitable for the
@@ -1697,14 +1698,14 @@ std::unique_ptr<base::DictionaryValue> SummarizeResponseDelta(
   }
   if (!modified_headers->empty()) {
     details->Set(activity_log::kModifiedRequestHeadersKey,
-                 modified_headers.release());
+                 std::move(modified_headers));
   }
 
   std::unique_ptr<base::ListValue> deleted_headers(new base::ListValue());
   deleted_headers->AppendStrings(delta.deleted_request_headers);
   if (!deleted_headers->empty()) {
     details->Set(activity_log::kDeletedRequestHeadersKey,
-                 deleted_headers.release());
+                 std::move(deleted_headers));
   }
 
   if (!delta.added_response_headers.empty()) {

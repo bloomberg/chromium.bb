@@ -32,22 +32,21 @@ class EventFilterUnittest : public testing::Test {
 
  protected:
   std::unique_ptr<base::Value> HostSuffixDict(const std::string& host_suffix) {
-    std::unique_ptr<base::DictionaryValue> dict(new DictionaryValue());
-    dict->Set("hostSuffix", new base::Value(host_suffix));
-    return std::unique_ptr<base::Value>(dict.release());
+    auto dict = base::MakeUnique<DictionaryValue>();
+    dict->SetString("hostSuffix", host_suffix);
+    return std::move(dict);
   }
 
   std::unique_ptr<base::ListValue> ValueAsList(
       std::unique_ptr<base::Value> value) {
-    std::unique_ptr<base::ListValue> result(new base::ListValue());
+    auto result = base::MakeUnique<base::ListValue>();
     result->Append(std::move(value));
     return result;
   }
 
   std::unique_ptr<EventMatcher> AllURLs() {
-    return std::unique_ptr<EventMatcher>(
-        new EventMatcher(std::unique_ptr<DictionaryValue>(new DictionaryValue),
-                         MSG_ROUTING_NONE));
+    return base::MakeUnique<EventMatcher>(
+        base::MakeUnique<base::DictionaryValue>(), MSG_ROUTING_NONE);
   }
 
   std::unique_ptr<EventMatcher> HostSuffixMatcher(
@@ -57,8 +56,8 @@ class EventFilterUnittest : public testing::Test {
 
   std::unique_ptr<EventMatcher> MatcherFromURLFilterList(
       std::unique_ptr<ListValue> url_filter_list) {
-    std::unique_ptr<DictionaryValue> filter_dict(new DictionaryValue);
-    filter_dict->Set("url", url_filter_list.release());
+    auto filter_dict = base::MakeUnique<DictionaryValue>();
+    filter_dict->Set("url", std::move(url_filter_list));
     return std::unique_ptr<EventMatcher>(
         new EventMatcher(std::move(filter_dict), MSG_ROUTING_NONE));
   }

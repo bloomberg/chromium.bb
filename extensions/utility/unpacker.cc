@@ -318,7 +318,7 @@ bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
     NOTREACHED();
     return false;
   }
-  parsed_catalogs_->Set(dir_name, root.release());
+  parsed_catalogs_->Set(dir_name, std::move(root));
 
   return true;
 }

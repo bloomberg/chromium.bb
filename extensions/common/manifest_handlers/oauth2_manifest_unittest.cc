@@ -4,7 +4,9 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/test/values_test_util.h"
+#include "base/values.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "extensions/common/manifest_test.h"
@@ -93,10 +95,10 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
   base_manifest.SetString(keys::kVersion, "0.1");
   base_manifest.SetInteger(keys::kManifestVersion, 2);
   base_manifest.SetString(keys::kOAuth2ClientId, "client1");
-  base::ListValue* scopes = new base::ListValue();
+  auto scopes = base::MakeUnique<base::ListValue>();
   scopes->AppendString("scope1");
   scopes->AppendString("scope2");
-  base_manifest.Set(keys::kOAuth2Scopes, scopes);
+  base_manifest.Set(keys::kOAuth2Scopes, std::move(scopes));
 
   // OAuth2 section should be parsed for an extension.
   {

@@ -522,7 +522,8 @@ void SocketReadFunction::OnCompleted(int bytes_read,
     result->Set(kDataKey, base::Value::CreateWithCopiedBuffer(io_buffer->data(),
                                                               bytes_read));
   } else {
-    result->Set(kDataKey, new base::Value(base::Value::Type::BINARY));
+    result->Set(kDataKey,
+                base::MakeUnique<base::Value>(base::Value::Type::BINARY));
   }
   SetResult(std::move(result));
 

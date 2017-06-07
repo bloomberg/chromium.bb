@@ -221,7 +221,8 @@ void WebViewFindHelper::FindResults::PrepareResults(
   rect.SetInteger(webview::kFindRectTop, selection_rect_.y());
   rect.SetInteger(webview::kFindRectWidth, selection_rect_.width());
   rect.SetInteger(webview::kFindRectHeight, selection_rect_.height());
-  results->Set(webview::kFindSelectionRect, rect.DeepCopy());
+  results->Set(webview::kFindSelectionRect,
+               base::MakeUnique<base::Value>(std::move(rect)));
 }
 
 WebViewFindHelper::FindUpdateEvent::FindUpdateEvent(

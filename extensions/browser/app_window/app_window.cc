@@ -102,7 +102,7 @@ void SetBoundsProperties(const gfx::Rect& bounds,
   SetConstraintProperty(
       "maxHeight", max_size.height(), bounds_properties.get());
 
-  window_properties->Set(bounds_name, bounds_properties.release());
+  window_properties->Set(bounds_name, std::move(bounds_properties));
 }
 
 // Combines the constraints of the content and window, and returns constraints

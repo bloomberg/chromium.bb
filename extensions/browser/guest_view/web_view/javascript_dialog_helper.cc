@@ -49,13 +49,13 @@ void JavaScriptDialogHelper::RunJavaScriptDialog(
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
   base::DictionaryValue request_info;
-  request_info.Set(webview::kDefaultPromptText,
-                   new base::Value(base::UTF16ToUTF8(default_prompt_text)));
-  request_info.Set(webview::kMessageText,
-                   new base::Value(base::UTF16ToUTF8(message_text)));
-  request_info.Set(webview::kMessageType,
-                   new base::Value(JavaScriptDialogTypeToString(dialog_type)));
-  request_info.Set(guest_view::kUrl, new base::Value(origin_url.spec()));
+  request_info.SetString(webview::kDefaultPromptText,
+                         base::UTF16ToUTF8(default_prompt_text));
+  request_info.SetString(webview::kMessageText,
+                         base::UTF16ToUTF8(message_text));
+  request_info.SetString(webview::kMessageType,
+                         JavaScriptDialogTypeToString(dialog_type));
+  request_info.SetString(guest_view::kUrl, origin_url.spec());
   WebViewPermissionHelper* web_view_permission_helper =
       WebViewPermissionHelper::FromWebContents(web_contents);
   web_view_permission_helper->RequestPermission(

@@ -130,7 +130,7 @@ void ConvertBinaryDictionaryValuesToBase64(base::DictionaryValue* dict) {
     if (iter.value().IsType(base::Value::Type::BINARY)) {
       base::Value* binary = NULL;
       if (dict->GetBinary(iter.key(), &binary))
-        dict->Set(iter.key(), ConvertBinaryToBase64(binary).release());
+        dict->Set(iter.key(), ConvertBinaryToBase64(binary));
     } else if (iter.value().IsType(base::Value::Type::LIST)) {
       const base::ListValue* list;
       iter.value().GetAsList(&list);

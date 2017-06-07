@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -223,26 +224,26 @@ net::NetLogParametersCallback CreateNetLogExtensionIdCallback(
 std::unique_ptr<base::Value> NetLogModificationCallback(
     const EventResponseDelta* delta,
     net::NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetString("extension_id", delta->extension_id);
 
-  base::ListValue* modified_headers = new base::ListValue();
+  auto modified_headers = base::MakeUnique<base::ListValue>();
   net::HttpRequestHeaders::Iterator modification(
       delta->modified_request_headers);
   while (modification.GetNext()) {
     std::string line = modification.name() + ": " + modification.value();
     modified_headers->AppendString(line);
   }
-  dict->Set("modified_headers", modified_headers);
+  dict->Set("modified_headers", std::move(modified_headers));
 
-  base::ListValue* deleted_headers = new base::ListValue();
+  auto deleted_headers = base::MakeUnique<base::ListValue>();
   for (std::vector<std::string>::const_iterator key =
            delta->deleted_request_headers.begin();
        key != delta->deleted_request_headers.end();
        ++key) {
     deleted_headers->AppendString(*key);
   }
-  dict->Set("deleted_headers", deleted_headers);
+  dict->Set("deleted_headers", std::move(deleted_headers));
   return std::move(dict);
 }
 
@@ -252,8 +253,8 @@ bool InDecreasingExtensionInstallationTimeOrder(
   return a->extension_install_time > b->extension_install_time;
 }
 
-base::ListValue* StringToCharList(const std::string& s) {
-  base::ListValue* result = new base::ListValue;
+std::unique_ptr<base::ListValue> StringToCharList(const std::string& s) {
+  auto result = base::MakeUnique<base::ListValue>();
   for (size_t i = 0, n = s.size(); i < n; ++i) {
     result->AppendInteger(*reinterpret_cast<const unsigned char*>(&s[i]));
   }
@@ -1210,7 +1211,7 @@ void ClearCacheOnNavigation() {
 std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
     const std::string& name,
     const std::string& value) {
-  std::unique_ptr<base::DictionaryValue> header(new base::DictionaryValue());
+  auto header = base::MakeUnique<base::DictionaryValue>();
   header->SetString(keys::kHeaderNameKey, name);
   if (base::IsStringUTF8(value)) {
     header->SetString(keys::kHeaderValueKey, value);
