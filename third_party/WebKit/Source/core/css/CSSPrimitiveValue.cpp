@@ -508,15 +508,14 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::LengthUnitTypeToUnitType(
   return CSSPrimitiveValue::UnitType::kUnknown;
 }
 
-static String FormatNumber(double number, const StringView& suffix) {
+static String FormatNumber(double number, const char* suffix) {
 #if OS(WIN) && _MSC_VER < 1900
   unsigned oldFormat = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
-  String result = String::Format("%.6g", number);
+  String result = String::Format("%.6g%s", number, suffix);
 #if OS(WIN) && _MSC_VER < 1900
   _set_output_format(oldFormat);
 #endif
-  result.append(suffix);
   return result;
 }
 
