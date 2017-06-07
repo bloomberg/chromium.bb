@@ -450,11 +450,9 @@ css_properties("make_core_generated_css_property_apis") {
     "../build/scripts/templates/CSSPropertyDescriptor.cpp.tmpl",
     "../build/scripts/templates/CSSPropertyDescriptor.h.tmpl",
     "../build/scripts/templates/CSSPropertyAPIFiles.h.tmpl",
-    "../build/scripts/templates/CSSPropertyAPI.h.tmpl",
   ]
   in_files = [ "css/properties/CSSPropertyAPIMethods.json5" ]
   outputs = [
-    "$blink_core_output_dir/css/properties/CSSPropertyAPI.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignItems.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignOrJustifyContent.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignOrJustifySelf.h",

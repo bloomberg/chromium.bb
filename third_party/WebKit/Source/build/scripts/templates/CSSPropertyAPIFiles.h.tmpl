@@ -6,13 +6,13 @@
 #define {{api_classname}}_h
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/properties/CSSPropertyAPI.h"
 
 namespace blink {
 
 class CSSParserTokenRange;
 class CSSParserContext;
 class CSSParserLocalContext;
+class CSSValue;
 
 // {{api_classname}} is the API that contains logic
 // for handling the {{property_name}} property.
@@ -23,7 +23,7 @@ class CSSParserLocalContext;
 // {{property_name}} property will be contained within
 // {{api_classname}}. Currently, the code base is in a transitional
 // state and property specific logic is still scattered around the code base.
-class {{api_classname}} : public CSSPropertyAPI {
+class {{api_classname}} {
  public:
   {% for api_method in all_api_methods if api_method in methods_for_class %}
   static {{all_api_methods[api_method].return_type}} {{api_method}}{{all_api_methods[api_method].parameters}};
