@@ -54,8 +54,6 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/log/net_log_event_type.h"
-#include "net/nqe/external_estimate_provider.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
@@ -84,11 +82,6 @@ namespace io_thread {
 namespace {
 
 const char kSupportedAuthSchemes[] = "basic,digest,ntlm";
-
-// Field trial for network quality estimator. Seeds RTT and downstream
-// throughput observations with values that correspond to the connection type
-// determined by the operating system.
-const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
 
 }  // namespace
 
@@ -314,16 +307,6 @@ void IOSIOThread::Init() {
   globals_->system_network_delegate = CreateSystemNetworkDelegate();
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
-  std::map<std::string, std::string> network_quality_estimator_params;
-  variations::GetVariationParams(kNetworkQualityEstimatorFieldTrialName,
-                                 &network_quality_estimator_params);
-
-  std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider;
-  // Pass ownership.
-  globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
-      std::move(external_estimate_provider), network_quality_estimator_params,
-      net_log_));
-
   globals_->cert_verifier = net::CertVerifier::CreateDefault();
 
   globals_->transport_security_state.reset(new net::TransportSecurityState());
@@ -508,8 +491,6 @@ net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(
   context->set_network_delegate(globals->system_network_delegate.get());
   context->set_http_user_agent_settings(
       globals->http_user_agent_settings.get());
-  context->set_network_quality_estimator(
-      globals->network_quality_estimator.get());
 
   context->set_http_server_properties(globals->http_server_properties.get());
 

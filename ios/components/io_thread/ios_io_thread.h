@@ -41,7 +41,6 @@ class HttpServerProperties;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetworkDelegate;
-class NetworkQualityEstimator;
 class ProxyConfigService;
 class ProxyService;
 class SSLConfigService;
@@ -124,7 +123,6 @@ class IOSIOThread : public web::WebThreadDelegate {
     SystemRequestContextLeakChecker system_request_context_leak_checker;
     std::unique_ptr<net::CookieStore> system_cookie_store;
     std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
-    std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator;
     std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer;
   };
 
