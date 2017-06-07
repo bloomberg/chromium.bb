@@ -3901,12 +3901,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_js_integration_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "mojo_js_unittests"
       },
       {
@@ -4577,12 +4571,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_common_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_js_integration_tests"
       },
       {
         "swarming": {
