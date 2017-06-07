@@ -310,16 +310,12 @@ SOM_SEVERITY_CHROMIUM_INFORMATIONAL_FAILURE = 1005
 
 # List of master builds to generate Sheriff-o-Matics alerts for.
 # Waterfall, build config, SOM alert severity.
-SOM_IMPORTANT_BUILDS = [
-    (WATERFALL_INTERNAL, 'master-paladin', SOM_SEVERITY_CQ_FAILURE),
-    (WATERFALL_INTERNAL, 'master-chromium-pfq', SOM_SEVERITY_PFQ_FAILURE),
-    (WATERFALL_INTERNAL, 'master-android-pfq', SOM_SEVERITY_PFQ_FAILURE),
-    (WATERFALL_INTERNAL, 'master-release', SOM_SEVERITY_CANARY_FAILURE),
-]
 SOM_BUILDS = {
     SOM_TREE: [
         (WATERFALL_INTERNAL, 'master-paladin', SOM_SEVERITY_CQ_FAILURE),
         (WATERFALL_INTERNAL, 'master-android-pfq', SOM_SEVERITY_PFQ_FAILURE),
+        (WATERFALL_INTERNAL, 'master-nyc-android-pfq',
+         SOM_SEVERITY_PFQ_FAILURE),
         (WATERFALL_INTERNAL, 'master-release', SOM_SEVERITY_CANARY_FAILURE),
     ],
 

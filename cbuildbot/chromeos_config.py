@@ -2046,6 +2046,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       push_overlays=constants.BOTH_OVERLAYS,
   )
 
+  # Android PFQ masters.
+  # Any additions of Android PFQ masters should be reflected by a
+  # change in lib/constants.py SOM_BUILDS to add Sheriff-o-Matic coverage.
+
   # Android MNC master.
   mnc_master_config = site_config.Add(
       constants.MNC_ANDROID_PFQ_MASTER,
