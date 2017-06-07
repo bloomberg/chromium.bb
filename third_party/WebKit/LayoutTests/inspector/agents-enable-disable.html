@@ -22,35 +22,35 @@ function test()
     }
 
     var targets = SDK.targetManager.targets();
-    targets.forEach(function(target) {
+    for (var target of targets) {
         var agentNames = Object.keys(target._agents).filter(function(agentName) {
             var agent = target._agents[agentName];
             return agent["enable"] && agent["disable"] && agentName !== "ServiceWorker" && agentName !== "Security" && agentName !== "Inspector" && agentName !== "Target";  // async wrt others.
         }).sort();
 
-        function disableAgent(agentName)
+        async function disableAgent(agentName)
         {
             ++requestsSent;
             var agent = target._agents[agentName];
-            agent.disable(finishWhenDone.bind(null, agentName, "disable"))
-                .catch(finishWhenDone.bind(null, agentName, "disable"));
+            var response = await agent.invoke_disable({});
+            finishWhenDone(agentName, "disable", response[Protocol.Error]);
         }
 
-        function enableAgent(agentName)
+        async function enableAgent(agentName)
         {
             ++requestsSent;
             var agent = target._agents[agentName];
-            agent.enable(finishWhenDone.bind(null, agentName, "enable"))
-                .catch(finishWhenDone.bind(null, agentName, "enable"));
+            var response = await agent.invoke_enable({});
+            finishWhenDone(agentName, "enable", response[Protocol.Error]);
         }
 
         agentNames.forEach(disableAgent);
 
-        agentNames.forEach(function(agentName) {
+        agentNames.forEach(agentName => {
             enableAgent(agentName);
             disableAgent(agentName);
         });
-    });
+    }
 }
 
 </script>

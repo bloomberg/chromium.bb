@@ -23,44 +23,28 @@ function reopenWebInspector(objectId)
     }, 0);
 }
 
-function test()
+async function test()
 {
-    InspectorTest.RuntimeAgent.evaluate("window.objectId", dispatch);
+    var result = await InspectorTest.RuntimeAgent.evaluate("window.objectId");
 
-    function dispatch(error, result, exceptionDetails)
-    {
-        if (result.type !== "string") {
-            InspectorTest.evaluateInPage("console.log('Opening front-end for the first time')");
-            installHandleInInjectedScript();
-        } else {
-            InspectorTest.evaluateInPage("console.log('Opening front-end second time')");
-            checkHandleInInjectedScript(result.value, InspectorTest.completeTest);
-        }
+    if (result.type !== "string") {
+        InspectorTest.evaluateInPage("console.log('Opening front-end for the first time')");
+        result = await InspectorTest.RuntimeAgent.evaluate(`({ handle : "handle" })`);
+        checkHandleInInjectedScript(result.objectId, reopenInspector);
+    } else {
+        InspectorTest.evaluateInPage("console.log('Opening front-end second time')");
+        checkHandleInInjectedScript(result.value, InspectorTest.completeTest);
     }
 
-    function installHandleInInjectedScript()
+    function reopenInspector()
     {
-        InspectorTest.RuntimeAgent.evaluate("({ handle : \"handle\" })", storeIdInTargetWindow);
-
-        function storeIdInTargetWindow(error, result, exceptionDetails)
-        {
-            checkHandleInInjectedScript(result.objectId, reopenInspector);
-
-            function reopenInspector()
-            {
-                InspectorTest.evaluateInPage("reopenWebInspector('" + escape(result.objectId) + "')");
-            }
-        }
+        InspectorTest.evaluateInPage("reopenWebInspector('" + escape(result.objectId) + "')");
     }
 
-    function checkHandleInInjectedScript(objectId, callback)
+    async function checkHandleInInjectedScript(objectId, callback)
     {
-        InspectorTest.RuntimeAgent.getProperties(objectId, false, propertiesAvailable);
-
-        function propertiesAvailable(error, properties)
-        {
-            InspectorTest.evaluateInPage(error ? "console.log('Error resolving object')" : "console.log('Resolved object successfully')", callback);
-        }
+        var properties = await InspectorTest.RuntimeAgent.getProperties(objectId, false);
+        InspectorTest.evaluateInPage(!properties ? "console.log('Error resolving object')" : "console.log('Resolved object successfully')", callback);
     }
 }
 

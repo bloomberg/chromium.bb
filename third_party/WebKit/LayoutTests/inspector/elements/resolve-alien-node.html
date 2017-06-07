@@ -3,27 +3,18 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-function test()
+async function test()
 {
-    InspectorTest.RuntimeAgent.evaluate("var doc = document.implementation.createHTMLDocument(''); doc.lastChild.innerHTML = '<span></span>'; doc.lastChild", step1);
+    var result = await InspectorTest.RuntimeAgent.evaluate("var doc = document.implementation.createHTMLDocument(''); doc.lastChild.innerHTML = '<span></span>'; doc.lastChild");
 
-    function step1(error, result, exceptionDetails)
-    {
-        var spanWrapper = InspectorTest.runtimeModel.createRemoteObject(result);
-        InspectorTest.domModel.pushObjectAsNodeToFrontend(spanWrapper).then(step2);
-    }
+    var spanWrapper = InspectorTest.runtimeModel.createRemoteObject(result);
+    var node = await InspectorTest.domModel.pushObjectAsNodeToFrontend(spanWrapper);
 
-    function step2(node)
-    {
-        InspectorTest.assertTrue(node, "Node object should be resovled");
-        node.resolveToObject(undefined, step3);
-    }
+    InspectorTest.assertTrue(node, "Node object should be resovled");
+    var remoteObject = await node.resolveToObjectPromise();
 
-    function step3(remoteObject)
-    {
-        InspectorTest.addResult("Alien node should resolve to null: " + remoteObject);
-        InspectorTest.completeTest();
-    }
+    InspectorTest.addResult("Alien node should resolve to null: " + remoteObject);
+    InspectorTest.completeTest();
 }
 
 </script>

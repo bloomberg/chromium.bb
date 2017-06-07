@@ -39,7 +39,7 @@ function test()
 
         function clearOverride(next)
         {
-            InspectorTest.DeviceOrientationAgent.clearDeviceOrientationOverride(next);
+            InspectorTest.DeviceOrientationAgent.clearDeviceOrientationOverride().then(next);
         }
     ]);
 }

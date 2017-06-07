@@ -70,22 +70,13 @@ function test()
             InspectorTest.evaluateInConsole("foo", dumpAndClearConsoleMessages.bind(null, next));
         },
 
-        function testConsoleEvalObject(next)
+        async function testConsoleEvalObject(next)
         {
-            InspectorTest.RuntimeAgent.evaluate("testObj", step1);
-
-            function step1(error, result)
-            {
-                InspectorTest.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ true, step2);
-            }
-
-            function step2(error, properties)
-            {
-                for (var i = 0; i < properties.length; i++)
-                    InspectorTest.dump(properties[i], { objectId: "formatAsTypeName", description: "formatAsDescription" });
-
-                next();
-            }
+            var result = await InspectorTest.RuntimeAgent.evaluate("testObj");
+            var properties = await InspectorTest.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ true);
+            for (var p of properties)
+                InspectorTest.dump(p, { objectId: "formatAsTypeName", description: "formatAsDescription" });
+            next();
         },
 
         function testGetEventListenersDoesNotThrow(next)

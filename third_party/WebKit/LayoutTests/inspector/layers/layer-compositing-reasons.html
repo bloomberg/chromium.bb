@@ -22,16 +22,12 @@ if (window.internals) {
 
 function test()
 {
-    function dumpCompositingReasons(layer, callback)
+    async function dumpCompositingReasons(layer)
     {
-        layer.requestCompositingReasons(function(reasons)
-        {
-            var node = layer.nodeForSelfOrAncestor();
-            var label = Components.DOMPresentationUtils.fullQualifiedSelector(node, false);
-            InspectorTest.addResult("Compositing reasons for " + label + ": " + reasons.sort().join(","));
-            if (callback)
-                callback();
-        });
+        var reasons = await layer.requestCompositingReasons();
+        var node = layer.nodeForSelfOrAncestor();
+        var label = Components.DOMPresentationUtils.fullQualifiedSelector(node, false);
+        InspectorTest.addResult(`Compositing reasons for ${label}: ` + reasons.sort().join(","));
     }
 
     var idsToTest = [
@@ -46,12 +42,13 @@ function test()
         "preserve3d"
     ];
 
-    function onGotLayers()
+    async function onGotLayers()
     {
         dumpCompositingReasons(InspectorTest.layerTreeModel().layerTree().contentRoot());
         for (var i = 0; i < idsToTest.length - 1; ++i)
             dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[i]));
-        dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[idsToTest.length - 1]), InspectorTest.completeTest.bind(InspectorTest));
+        await dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[idsToTest.length - 1]));
+        InspectorTest.completeTest();
     }
     InspectorTest.requestLayers(onGotLayers);
 }

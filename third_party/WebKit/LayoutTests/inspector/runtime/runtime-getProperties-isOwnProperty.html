@@ -14,36 +14,22 @@ function B() {
 B.prototype = new A();
 b = new B();
 
-function test()
+async function test()
 {
-    function fail(message)
-    {
-        InspectorTest.addResult(message);
+    var result = await InspectorTest.RuntimeAgent.evaluate("window.b");
+    var properties = await InspectorTest.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ false);
+
+    if (!properties) {
+        InspectorTest.addResult("Properties do not exist");
         InspectorTest.completeTest();
+        return;
     }
-
-    InspectorTest.RuntimeAgent.evaluate("window.b", step1);
-
-    function step1(error, result)
-    {
-        InspectorTest.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ false, step2);
+ 
+    for (var property of properties) {
+        if (property.name.match(/^test/)) 
+            InspectorTest.addResult("property.name==\"" + property.name + "\" isOwn==\"" + property.isOwn + "\"");
     }
-
-    function step2(error, properties) 
-    {
-        if (error) 
-            return fail("Error took place during InspectorTest.RuntimeAgent.getProperties call");
-        
-        if (!properties) 
-            return fail("Properties do not exist");
-        
-        for (var i = 0; i < properties.length; i++) {
-            var property = properties[i];
-            if (property.name.match(/^test/)) 
-                InspectorTest.addResult("property.name==\"" + property.name + "\" isOwn==\"" + property.isOwn + "\"");
-        }
-        InspectorTest.completeTest();
-    }
+    InspectorTest.completeTest();
 
 }
 </script>

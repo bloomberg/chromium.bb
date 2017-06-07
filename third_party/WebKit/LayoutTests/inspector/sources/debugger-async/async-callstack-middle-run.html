@@ -34,13 +34,9 @@ var test = function()
     InspectorTest.setQuiet(true);
     InspectorTest.startDebuggerTest(step1);
 
-    function step1()
+    async function step1()
     {
-        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(0, step2);
-    }
-
-    function step2()
-    {
+        await InspectorTest.DebuggerAgent.setAsyncCallStackDepth(0);
         InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
@@ -55,7 +51,7 @@ var test = function()
     {
         ++step;
         if (step === 1) {
-            InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, resumeExecution);
+            InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth).then(resumeExecution);
             return;
         }
 

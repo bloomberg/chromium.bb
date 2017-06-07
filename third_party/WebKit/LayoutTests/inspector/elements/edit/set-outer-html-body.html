@@ -26,35 +26,33 @@ function test()
 
         function testSetBody(next)
         {
-            InspectorTest.DOMAgent.setOuterHTML(bodyNode.id, "<body>New body content</body>", dumpHTML(next));
+            InspectorTest.DOMAgent.setOuterHTML(bodyNode.id, "<body>New body content</body>").then(dumpHTML(next));
         },
 
         function testInsertComments(next)
         {
-            InspectorTest.DOMAgent.setOuterHTML(bodyNode.id, "<!-- new comment between head and body --><body>New body content</body>", dumpHTML(next));
+            InspectorTest.DOMAgent.setOuterHTML(bodyNode.id, "<!-- new comment between head and body --><body>New body content</body>").then(dumpHTML(next));
         },
 
         function testSetHead(next)
         {
-            InspectorTest.DOMAgent.setOuterHTML(headNode.id, "<head><!-- new head content --></head>", dumpHTML(next));
+            InspectorTest.DOMAgent.setOuterHTML(headNode.id, "<head><!-- new head content --></head>").then(dumpHTML(next));
         },
 
-         function testSetHTML(next)
+        function testSetHTML(next)
         {
-            InspectorTest.DOMAgent.setOuterHTML(htmlNode.id, "<html><head><!-- new head content --></head><body>Setting body as a part of HTML.</body></html>", dumpHTML(next));
+            InspectorTest.DOMAgent.setOuterHTML(
+                htmlNode.id, "<html><head><!-- new head content --></head><body>Setting body as a part of HTML.</body></html>").then(dumpHTML(next));
         }
     ]);
 
     function dumpHTML(next)
     {
-        function dump()
+        async function dump()
         {
-            InspectorTest.DOMAgent.getOuterHTML(htmlNode.id, callback);
-            function callback(error, text)
-            {
-                InspectorTest.addResult(error ? error : text);
-                next();
-            }
+            var text = await InspectorTest.DOMAgent.getOuterHTML(htmlNode.id);
+            InspectorTest.addResult(text);
+            next();
         }
         return dump;
     }

@@ -17,35 +17,34 @@ function test()
         InspectorTest.runTestSuite([
             function testDocumentQuerySelector(next)
             {
-                InspectorTest.DOMAgent.querySelector(documentId, "div.foo", dumpNodes.bind(null, next));
+                InspectorTest.DOMAgent.querySelector(documentId, "div.foo").then(dumpNodes.bind(null, next));
             },
 
             function testDocumentQuerySelectorAll(next)
             {
-                InspectorTest.DOMAgent.querySelectorAll(documentId, "div.foo", dumpNodes.bind(null, next));
+                InspectorTest.DOMAgent.querySelectorAll(documentId, "div.foo").then(dumpNodes.bind(null, next));
             },
 
             function testQuerySelector(next)
             {
-                InspectorTest.DOMAgent.querySelector(containerId, "div.foo", dumpNodes.bind(null, next));
+                InspectorTest.DOMAgent.querySelector(containerId, "div.foo").then(dumpNodes.bind(null, next));
             },
 
             function testQuerySelectorAll(next)
             {
-                InspectorTest.DOMAgent.querySelectorAll(containerId, "div.foo", dumpNodes.bind(null, next));
+                InspectorTest.DOMAgent.querySelectorAll(containerId, "div.foo").then(dumpNodes.bind(null, next));
             }
         ]);
     }
 
-    function dumpNodes(next, error, nodeIds)
+    function dumpNodes(next, nodeIds)
     {
-        if (error) {
-            InspectorTest.addResult(error);
+        if (!nodeIds) {
             next();
             return;
         }
 
-        if (!(nodeIds && nodeIds.constructor && nodeIds.constructor.name === "Array"))
+        if (!(nodeIds.constructor && nodeIds.constructor.name === "Array"))
             nodeIds = [nodeIds];
 
         for (var i = 0; i < nodeIds.length; ++i) {

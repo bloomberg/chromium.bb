@@ -3,7 +3,7 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-function test()
+async function test()
 {
     var messages = [
         'some wrong string',
@@ -40,12 +40,9 @@ function test()
             InspectorTest.completeTest();
     }
 
-    function fire() {
-        for (var i = 0; i < messages.length; ++i)
-            InspectorFrontendHost.sendMessageToBackend(messages[i]);
-    }
-
-    InspectorTest.DebuggerAgent.disable(fire);
+    await InspectorTest.DebuggerAgent.disable();
+    for (var message of messages)
+        InspectorFrontendHost.sendMessageToBackend(message);
 }
 
 </script>

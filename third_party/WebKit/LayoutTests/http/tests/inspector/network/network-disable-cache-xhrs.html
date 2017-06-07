@@ -13,12 +13,12 @@ function test()
         InspectorTest.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, step2);
     }
 
-    function step2(msg)
+    function step2()
     {
-        InspectorTest.NetworkAgent.setCacheDisabled(true, step3);
+        InspectorTest.NetworkAgent.setCacheDisabled(true).then(step3);
     }
 
-    function step3(msg)
+    function step3()
     {
         InspectorTest.makeSimpleXHR("GET", "resources/resource.php?random=1&cached=1", true, step4);
     }
@@ -52,10 +52,10 @@ function test()
         InspectorTest.addResult(request3.url());
         InspectorTest.assertTrue(request1.content === request2.content, "First and second resources are equal");
         InspectorTest.assertTrue(request2.content !== request3.content, "Second and third resources differ");
-        InspectorTest.NetworkAgent.setCacheDisabled(false, step5);
+        InspectorTest.NetworkAgent.setCacheDisabled(false).then(step5);
     }
 
-    function step5(msg)
+    function step5()
     {
         InspectorTest.completeTest();
     }

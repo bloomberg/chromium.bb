@@ -23,27 +23,15 @@ function test()
         InspectorTest.runAfterResourcesAreFinished(["dynamic-script.js"], step3)
     }
 
-    function step3()
+    async function step3()
     {
         InspectorTest.addResult("Clearing memory cache: ");
-        InspectorTest.NetworkAgent.setCacheDisabled(true, step4);
-    }
-
-    function step4()
-    {
-        InspectorTest.NetworkAgent.setCacheDisabled(false, step5);
-    }
-
-    var resource;
-    function step5()
-    {
+        await InspectorTest.NetworkAgent.setCacheDisabled(true);
+        await InspectorTest.NetworkAgent.setCacheDisabled(false);
+        var resource;
         InspectorTest.addResult("Requesting content: ");
         resource = InspectorTest.resourceMatchingURL("dynamic-script.js");
-        resource.requestContent().then(step6);
-    }
-
-    function step6(content)
-    {
+        var content = await resource.requestContent();
         InspectorTest.assertTrue(!!content, "No content available.");
         InspectorTest.addResult("Resource url: " + resource.url);
         InspectorTest.addResult("Resource content: " + content);

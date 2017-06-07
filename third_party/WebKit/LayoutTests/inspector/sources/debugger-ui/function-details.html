@@ -90,56 +90,42 @@ function test()
         InspectorTest.addResult("scopeChain #" + pos + ": " + type + "; " + variables);
     }
 
-    function loadAndDumpScopeObjects(scopeChain, end)
+    async function loadAndDumpScopeObjects(scopeChain, end)
     {
-        var scopes = [];
-        function loadScopeObject(pos, next)
-        {
-            if (pos >= scopes.length) {
-                next();
-                return;
-            }
-            InspectorTest.RuntimeAgent.getProperties(scopes[pos].objectId, true, didGetProperties);
-
-            function didGetProperties(error, propertyDescriptors)
-            {
-                dumpFunctionScope(pos, scopes[pos].description, propertyDescriptors);
-                loadScopeObject(pos + 1, next);
-            }
-        }
-
-        if (scopeChain) {
-            InspectorTest.RuntimeAgent.getProperties(scopeChain.value.objectId, true, didGetScopes);
-        } else {
+        if (!scopeChain) {
             dumpFunctionNoScopes();
             end();
+            return;
         }
 
-        function didGetScopes(error, properties)
-        {
-            for (var prop of properties) {
-                if (String(prop.name >>> 0) === prop.name)
-                    scopes.push(prop.value);
-            }
-            loadScopeObject(0, end);
+        var properties = await InspectorTest.RuntimeAgent.getProperties(scopeChain.value.objectId, true);
+        var scopes = [];
+        for (var prop of properties) {
+            if (String(prop.name >>> 0) === prop.name)
+                scopes.push(prop.value);
         }
+
+        for (var pos = 0; pos < scopes.length; ++pos) {
+            var propertyDescriptors = await InspectorTest.RuntimeAgent.getProperties(scopes[pos].objectId, true);
+            dumpFunctionScope(pos, scopes[pos].description, propertyDescriptors);
+        }
+
+        end();
     }
 
     function performStandardTestCase(pageExpression, next)
     {
         InspectorTest.evaluateInPage(pageExpression, didEvaluate);
 
-        function didEvaluate(remote)
+        async function didEvaluate(remote)
         {
             InspectorTest.addResult(pageExpression + " type = " + remote.type);
-            InspectorTest.RuntimeAgent.getProperties(remote.objectId, /* isOwnProperty */ false, didGetDetails);
-        }
-        function didGetDetails(error, properties, internalProperties)
-        {
+            var response = await InspectorTest.RuntimeAgent.invoke_getProperties({objectId: remote.objectId, isOwnProperty: false});
+
             var propertiesMap = new Map();
-            for (var prop of internalProperties)
+            for (var prop of response.internalProperties)
                 propertiesMap.set(prop.name, prop);
-            for (var prop of properties) {
+            for (var prop of response.result) {
                 if (prop.name === "name" && prop.value && prop.value.type === "string")
                     propertiesMap.set("name", prop);
                 if (prop.name === "displayName" && prop.value && prop.value.type === "string") {

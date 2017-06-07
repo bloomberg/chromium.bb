@@ -42,7 +42,7 @@ function test()
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth).then(step2);
     }
 
     function step2()

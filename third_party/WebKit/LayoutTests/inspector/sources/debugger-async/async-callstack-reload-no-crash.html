@@ -20,13 +20,9 @@ function test()
     var maxAsyncCallStackDepth = 8;
     InspectorTest.startDebuggerTest(step1, true);
 
-    function step1()
+    async function step1()
     {
-        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
-    }
-
-    function step2()
-    {
+        await InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth);
         InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 

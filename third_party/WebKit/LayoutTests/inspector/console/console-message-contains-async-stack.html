@@ -3,15 +3,12 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
-function test()
+async function test()
 {
-    InspectorTest.DebuggerAgent.setAsyncCallStackDepth(200, step1);
+    await InspectorTest.DebuggerAgent.setAsyncCallStackDepth(200);
 
-    function step1()
-    {
-        InspectorTest.waitUntilNthMessageReceived(1, step2);
-        InspectorTest.evaluateInPage("setTimeout(\"~\", 0)");
-    }
+    InspectorTest.waitUntilNthMessageReceived(1, step2);
+    InspectorTest.evaluateInPage("setTimeout(\"~\", 0)");
 
     function step2()
     {

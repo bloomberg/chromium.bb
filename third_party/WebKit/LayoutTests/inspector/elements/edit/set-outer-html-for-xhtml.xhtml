@@ -46,16 +46,12 @@ function test()
             InspectorTest.patchOuterHTML("<h2>Getting involved</h2>", "<h3>Getting involved</h3>", next);
         },
 
-        function testInvalidDocumentDoesNotCrash(next)
+        async function testInvalidDocumentDoesNotCrash(next)
         {
             var htmlId = InspectorTest.expandedNodeWithId("html").id;
-            InspectorTest.DOMAgent.setOuterHTML(htmlId, "foo", callback);
-
-            function callback()
-            {
-                InspectorTest.addResult("PASS: No crash");
-                next();
-            }
+            await InspectorTest.DOMAgent.setOuterHTML(htmlId, "foo");
+            InspectorTest.addResult("PASS: No crash");
+            next();
         }
     ]);
 }

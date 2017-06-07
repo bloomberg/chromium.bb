@@ -50,13 +50,10 @@ function initialize_testReloadInjectsCodeWithMessage()
             callback(null);
         callback(message.stackTrace.callFrames[0].scriptId);
     }
-    InspectorTest.getScriptSource = function(scriptId, callback)
+    InspectorTest.getScriptSource = async function(scriptId, callback)
     {
-        InspectorTest.DebuggerAgent.getScriptSource(scriptId, didGetScriptSource);
-        function didGetScriptSource(error, source)
-        {
-            callback(error ? "" : source);
-        }
+        var source = await InspectorTest.DebuggerAgent.getScriptSource(scriptId);
+        callback(source);
     }
 }
 

@@ -37,25 +37,17 @@ function test()
     InspectorTest.makeFetch("http://localhost:8080/inspector/network/resources/cors-redirect.cgi", {headers: {"x-test": "redirect"}}, function () {});
     InspectorTest.makeFetch("http://localhost:8080/inspector/network/resources/cors-redirect.cgi", {}, disableCache);
 
-    function disableCache()
+    async function disableCache()
     {
-        InspectorTest.NetworkAgent.setCacheDisabled(true, step0);
-    }
-
-    function step0()
-    {
+        await InspectorTest.NetworkAgent.setCacheDisabled(true);
         InspectorTest.recordNetwork();
         InspectorTest.addConsoleSniffer(step4);
         InspectorTest.evaluateInPage("step1();");
     }
 
-    function step4()
+    async function step4()
     {
-        InspectorTest.NetworkAgent.setCacheDisabled(false, step5);
-    }
-
-    function step5()
-    {
+        await InspectorTest.NetworkAgent.setCacheDisabled(false);
         var requests = InspectorTest.networkRequests();
         for (var i = 0; i < requests.length; ++i) {
             var request = requests[i];

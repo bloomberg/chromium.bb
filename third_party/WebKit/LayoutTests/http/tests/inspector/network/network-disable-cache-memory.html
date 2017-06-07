@@ -55,15 +55,15 @@ function test()
     function step3(content)
     {
         content2 = content;
-        InspectorTest.NetworkAgent.setCacheDisabled(true, step4);
+        InspectorTest.NetworkAgent.setCacheDisabled(true).then(step4);
     }
 
-    function step4(msg)
+    function step4()
     {
         InspectorTest.reloadPage(step5);
     }
 
-    function step5(msg)
+    function step5()
     {
         loadScriptAndGetContent(step6);
     }
@@ -74,10 +74,10 @@ function test()
 
         InspectorTest.assertTrue(content1 === content2, "First and second scripts should be equal.");
         InspectorTest.assertTrue(content2 !== content3, "Second and third scripts should differ.");
-        InspectorTest.NetworkAgent.setCacheDisabled(false, step7);
+        InspectorTest.NetworkAgent.setCacheDisabled(false).then(step7);
     }
 
-    function step7(msg)
+    function step7()
     {
         InspectorTest.completeTest();
     }
