@@ -93534,7 +93534,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="ResourceScheduler.ClientLoadedTime.Other.SwitchedToActive"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ResourceSchedulerPeakDelayableRequestsInFlight">
+<histogram_suffixes name="ResourceSchedulerPeakDelayableRequestsInFlight"
+    separator=".">
   <suffix name="LayoutBlocking"
       label="Records the highest number of delayable requests that were
              in-flight at the same time when a layout blocking request was
@@ -93547,7 +93548,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="ResourceScheduler.PeakDelayableRequestsInFlight"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ResourceSchedulerRequestsCount">
+<histogram_suffixes name="ResourceSchedulerRequestsCount" separator=".">
   <suffix name="All" label="All requests in-flight were counted."/>
   <suffix name="Delayable" label="Delayable requests in-flight were counted."/>
   <suffix name="NonDelayable"
