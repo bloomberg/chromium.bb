@@ -334,8 +334,6 @@ class HttpStreamFactoryImpl::Job {
   // Set the motivation for this request onto the underlying socket.
   void SetSocketMotivation();
 
-  bool IsHttpsProxyAndHttpUrl() const;
-
   // Is this a SPDY or QUIC alternative Job?
   bool IsSpdyAlternative() const;
   bool IsQuicAlternative() const;
@@ -349,6 +347,7 @@ class HttpStreamFactoryImpl::Job {
   // After calling, the caller can use ssl_info_.
   void GetSSLInfo();
 
+  // Called in Job constructor. Use |spdy_session_key_| after construction.
   SpdySessionKey GetSpdySessionKey() const;
 
   // Returns true if the current request can use an existing spdy session.
@@ -473,8 +472,10 @@ class HttpStreamFactoryImpl::Job {
   // Initialized when we have an existing SpdySession.
   base::WeakPtr<SpdySession> existing_spdy_session_;
 
-  // Only used if |new_spdy_session_| is non-NULL.
-  bool spdy_session_direct_;
+  // True if not connecting to an Https proxy for an Http url.
+  const bool spdy_session_direct_;
+
+  const SpdySessionKey spdy_session_key_;
 
   base::TimeTicks job_stream_ready_start_time_;
 
