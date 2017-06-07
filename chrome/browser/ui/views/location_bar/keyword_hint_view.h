@@ -42,7 +42,6 @@ class KeywordHintView : public views::CustomButton {
   ~KeywordHintView() override;
 
   void SetKeyword(const base::string16& keyword);
-  base::string16 keyword() const { return keyword_; }
 
  private:
   // views::View:

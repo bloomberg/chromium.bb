@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
@@ -47,6 +48,7 @@
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
@@ -86,11 +88,17 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"
+#endif
+
+#if defined(USE_AURA)
+#include "ui/keyboard/keyboard_util.h"
 #endif
 
 using content::WebContents;
@@ -110,21 +118,8 @@ LocationBarView::LocationBarView(Browser* browser,
     : LocationBar(profile),
       ChromeOmniboxEditController(command_updater),
       browser_(browser),
-      omnibox_view_(nullptr),
       delegate_(delegate),
-      location_icon_view_(nullptr),
-      ime_inline_autocomplete_view_(nullptr),
-      selected_keyword_view_(nullptr),
-      keyword_hint_view_(nullptr),
-      zoom_view_(nullptr),
-      manage_passwords_icon_view_(nullptr),
-      save_credit_card_icon_view_(nullptr),
-      translate_icon_view_(nullptr),
-      star_view_(nullptr),
-      size_animation_(this),
-      is_popup_mode_(is_popup_mode),
-      show_focus_rect_(false),
-      template_url_service_(NULL) {
+      is_popup_mode_(is_popup_mode) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -247,6 +242,12 @@ void LocationBarView::Init() {
   star_view_->Init();
   star_view_->SetVisible(false);
   AddChildView(star_view_);
+
+  clear_all_button_ = views::CreateVectorImageButton(this);
+  clear_all_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_OMNIBOX_CLEAR_ALL));
+  RefreshClearAllButtonIcon();
+  AddChildView(clear_all_button_);
 
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
@@ -539,8 +540,12 @@ void LocationBarView::Layout() {
     trailing_decorations.AddDecoration(vertical_padding, location_height, true,
                                        0, item_padding, item_padding,
                                        keyword_hint_view_);
-    if (keyword_hint_view_->keyword() != keyword)
-      keyword_hint_view_->SetKeyword(keyword);
+    keyword_hint_view_->SetKeyword(keyword);
+  }
+
+  if (clear_all_button_->visible()) {
+    trailing_decorations.AddDecoration(vertical_padding, location_height,
+                                       clear_all_button_);
   }
 
   const int edge_thickness = GetHorizontalEdgeThickness();
@@ -586,6 +591,7 @@ void LocationBarView::Layout() {
 
 void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   RefreshLocationIcon();
+  RefreshClearAllButtonIcon();
   if (is_popup_mode_) {
     SetBackground(views::CreateSolidBackground(GetColor(BACKGROUND)));
   } else {
@@ -708,11 +714,23 @@ void LocationBarView::OnDefaultZoomLevelChanged() {
 
 void LocationBarView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  DCHECK_EQ(keyword_hint_view_, sender);
   DCHECK(event.IsMouseEvent() || event.IsGestureEvent());
-  omnibox_view_->model()->AcceptKeyword(
-      event.IsMouseEvent() ? KeywordModeEntryMethod::CLICK_ON_VIEW
-                           : KeywordModeEntryMethod::TAP_ON_VIEW);
+  if (keyword_hint_view_ == sender) {
+    omnibox_view_->model()->AcceptKeyword(
+        event.IsMouseEvent() ? KeywordModeEntryMethod::CLICK_ON_VIEW
+                             : KeywordModeEntryMethod::TAP_ON_VIEW);
+  } else {
+    DCHECK_EQ(clear_all_button_, sender);
+    omnibox_view_->SetUserText(base::string16());
+  }
+}
+
+bool LocationBarView::IsVirtualKeyboardVisible() {
+#if defined(USE_AURA)
+  return keyboard::IsKeyboardVisible();
+#else
+  return false;
+#endif
 }
 
 bool LocationBarView::RefreshSaveCreditCardIconView() {
@@ -754,6 +772,15 @@ bool LocationBarView::RefreshManagePasswordsIconView() {
   ManagePasswordsUIController::FromWebContents(
       web_contents)->UpdateIconAndBubbleState(manage_passwords_icon_view_);
   return was_visible != manage_passwords_icon_view_->visible();
+}
+
+void LocationBarView::RefreshClearAllButtonIcon() {
+  if (!clear_all_button_)
+    return;
+
+  SetImageFromVectorIcon(clear_all_button_, kTabCloseNormalIcon,
+                         GetNativeTheme()->GetSystemColor(
+                             ui::NativeTheme::kColorId_TextfieldDefaultColor));
 }
 
 void LocationBarView::ShowFirstRunBubbleInternal() {
@@ -1024,6 +1051,8 @@ void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
 void LocationBarView::OnChanged() {
   RefreshLocationIcon();
   location_icon_view_->set_show_tooltip(!GetOmniboxView()->IsEditingOrEmpty());
+  clear_all_button_->SetVisible(GetToolbarModel()->input_in_progress() &&
+                                LocationBarView::IsVirtualKeyboardVisible());
   Layout();
   SchedulePaint();
 }
