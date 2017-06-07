@@ -936,7 +936,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     ApiCompatibilityUtils.setTextAppearance(labelView, isEnabled
                             ? R.style.PaymentsUiSectionDefaultText
                             : R.style.PaymentsUiSectionDisabledText);
-                    labelView.setText(convertOptionToString(mOption,
+                    labelView.setText(convertOptionToString(mOption, false, /* excludeMainLabel */
                             mDelegate.isBoldLabelNeeded(OptionSection.this),
                             false /* singleLine */));
                     labelView.setEnabled(isEnabled);
@@ -1063,6 +1063,12 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
          */
         private boolean mSetDisplaySummaryInSingleLineInNormalMode = true;
 
+        /**
+         * Indicates whether the summary should be split to display in left and right summary
+         * text views in {@link DISPLAY_MODE_NORMAL}.
+         */
+        private boolean mSplitSummaryInDisplayModeNormal;
+
         /** Indicates whether the summary is set to R.style.PaymentsUiSectionDescriptiveText. */
         private boolean mSummaryInDescriptiveText;
 
@@ -1173,6 +1179,18 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
          */
         public void setDisplaySummaryInSingleLineInNormalMode(boolean singleLine) {
             mSetDisplaySummaryInSingleLineInNormalMode = singleLine;
+        }
+
+        /**
+         * Specify whether the summary should be split to display under DISPLAY_MODE_NORMAL.
+         *
+         * @param splitSummary If true split the display of summary in the left and right
+         *                     text views in {@link DISPLAY_MODE_NORMAL}, the summary is
+         *                     split into 'label' and the rest('sublabel', 'Tertiary label').
+         *                     Otherwise the entire summary is displayed in the left text view.
+         */
+        public void setSplitSummaryInDisplayModeNormal(boolean splitSummary) {
+            mSplitSummaryInDisplayModeNormal = splitSummary;
         }
 
         /** Updates the View to account for the new {@link SectionInformation} being passed in. */
@@ -1292,9 +1310,20 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                             getSummaryLeftTextView(), R.style.PaymentsUiSectionDefaultText);
                     mSummaryInDescriptiveText = false;
                 }
-                setSummaryText(convertOptionToString(selectedItem, false /* useBoldLabel */,
-                                       mSummaryInSingleLine),
-                        null);
+                // Split summary in DISPLAY_MODE_NORMAL if caller specified. The first part is
+                // displayed on the left summary text view aligned to the left. The second part is
+                // displayed on the right summary text view aligned to the right.
+                boolean splitSummary =
+                        mSplitSummaryInDisplayModeNormal && (mDisplayMode == DISPLAY_MODE_NORMAL);
+                if (splitSummary) {
+                    setSummaryText(selectedItem.getLabel(),
+                            convertOptionToString(selectedItem, true /* excludeMainLabel */,
+                                    false /* useBoldLabel */, mSummaryInSingleLine));
+                } else {
+                    setSummaryText(convertOptionToString(selectedItem, false /* excludeMainLabel */,
+                                           false /* useBoldLabel */, mSummaryInSingleLine),
+                            null);
+                }
             }
 
             updateControlLayout();
@@ -1349,17 +1378,20 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             }
         }
 
-        private CharSequence convertOptionToString(
-                PaymentOption item, boolean useBoldLabel, boolean singleLine) {
-            SpannableStringBuilder builder = new SpannableStringBuilder(item.getLabel());
+        private CharSequence convertOptionToString(PaymentOption item, boolean excludeMainLabel,
+                boolean useBoldLabel, boolean singleLine) {
+            SpannableStringBuilder builder = new SpannableStringBuilder();
+            if (!excludeMainLabel) {
+                builder.append(item.getLabel());
+                if (useBoldLabel) {
+                    builder.setSpan(
+                            new StyleSpan(android.graphics.Typeface.BOLD), 0, builder.length(), 0);
+                }
+            }
+
             String labelSeparator = singleLine
                     ? getContext().getString(R.string.autofill_address_summary_separator)
                     : "\n";
-            if (useBoldLabel) {
-                builder.setSpan(
-                        new StyleSpan(android.graphics.Typeface.BOLD), 0, builder.length(), 0);
-            }
-
             if (!TextUtils.isEmpty(item.getSublabel())) {
                 if (builder.length() > 0) builder.append(labelSeparator);
                 builder.append(item.getSublabel());
@@ -1398,8 +1430,16 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
          * Returns the label of the section summary.
          */
         @VisibleForTesting
-        public TextView getSummaryLabelForTest() {
+        public TextView getLeftSummaryLabelForTest() {
             return getSummaryLeftTextView();
+        }
+
+        /**
+         * Returns the right summary text view.
+         */
+        @VisibleForTesting
+        public TextView getRightSummaryLabelForTest() {
+            return getSummaryRightTextView();
         }
 
         /** Returns the number of option labels. */

@@ -543,6 +543,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // Display the summary of the selected address in multiple lines on bottom sheet.
         mShippingAddressSection.setDisplaySummaryInSingleLineInNormalMode(false);
 
+        // Display selected shipping option name in the left summary text view and
+        // the cost in the right summary text view on bottom sheet.
+        mShippingOptionSection.setSplitSummaryInDisplayModeNormal(true);
+
         // Some sections conditionally allow adding new options.
         mShippingOptionSection.setCanAddItems(false);
         mPaymentMethodSection.setCanAddItems(canAddCards);

@@ -274,6 +274,13 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         return mTestCommon.getShippingOptionSummary();
     }
 
+    /**
+     *  Returns the cost text of the shipping option section on the bottom sheet.
+     */
+    protected String getShippingOptionCostSummaryLabelOnBottomSheet() throws ExecutionException {
+        return mTestCommon.getShippingOptionCostSummaryOnBottomSheet();
+    }
+
     /** Returns the focused view in the card editor view. */
     protected View getCardEditorFocusedView() {
         return mTestCommon.getCardEditorFocusedView();

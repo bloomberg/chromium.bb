@@ -74,8 +74,12 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
 
         // Make sure shipping option summary on bottom sheet is displayed in a single line
         // as expected.
-        Assert.assertEquals("Free global shipping, $0.00",
-                mPaymentRequestTestRule.getShippingOptionSummaryLabel());
+        Assert.assertEquals(
+                "Free global shipping", mPaymentRequestTestRule.getShippingOptionSummaryLabel());
+
+        // Make sure shipping cost is displayed in the right summary text view.
+        Assert.assertEquals(
+                "$0.00", mPaymentRequestTestRule.getShippingOptionCostSummaryLabelOnBottomSheet());
     }
 
     /** Verifies that the shipping address format in fullsheet mode is as expected. */
