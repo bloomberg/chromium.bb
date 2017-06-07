@@ -37,7 +37,7 @@ struct DeviceStatus {
   BatteryStatus battery_status;
   NetworkStatus network_status;
 
-  bool operator==(const DeviceStatus& rhs);
+  bool operator==(const DeviceStatus& rhs) const;
 
   // Returns if the current device status meets all the conditions defined in
   // the scheduling parameters.

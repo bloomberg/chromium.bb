@@ -18,16 +18,21 @@
 
 namespace download {
 
-ControllerImpl::ControllerImpl(std::unique_ptr<ClientSet> clients,
-                               std::unique_ptr<Configuration> config,
-                               std::unique_ptr<DownloadDriver> driver,
-                               std::unique_ptr<Model> model)
+ControllerImpl::ControllerImpl(
+    std::unique_ptr<ClientSet> clients,
+    std::unique_ptr<Configuration> config,
+    std::unique_ptr<DownloadDriver> driver,
+    std::unique_ptr<Model> model,
+    std::unique_ptr<DeviceStatusListener> device_status_listener)
     : clients_(std::move(clients)),
       config_(std::move(config)),
       driver_(std::move(driver)),
-      model_(std::move(model)) {}
+      model_(std::move(model)),
+      device_status_listener_(std::move(device_status_listener)) {}
 
-ControllerImpl::~ControllerImpl() = default;
+ControllerImpl::~ControllerImpl() {
+  device_status_listener_->Stop();
+}
 
 void ControllerImpl::Initialize() {
   DCHECK(!startup_status_.Complete());
@@ -188,6 +193,10 @@ void ControllerImpl::OnItemRemoved(bool success,
   // TODO(dtrainor): Fail and clean up the download if necessary.
 }
 
+void ControllerImpl::OnDeviceStatusChanged(const DeviceStatus& device_status) {
+  NOTIMPLEMENTED();
+}
+
 void ControllerImpl::AttemptToFinalizeSetup() {
   if (!startup_status_.Complete())
     return;
@@ -199,6 +208,7 @@ void ControllerImpl::AttemptToFinalizeSetup() {
     return;
   }
 
+  device_status_listener_->Start(this);
   CancelOrphanedRequests();
   ResolveInitialRequestStates();
   PullCurrentRequestStatus();
