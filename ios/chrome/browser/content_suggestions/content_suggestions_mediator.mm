@@ -53,10 +53,13 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
 }
 
-// Most visited items from the MostVisitedSites service (copied upon receiving
-// the callback).
+// Most visited items from the MostVisitedSites service currently displayed.
 @property(nonatomic, strong)
     NSMutableArray<ContentSuggestionsMostVisitedItem*>* mostVisitedItems;
+// Most visited items from the MostVisitedSites service (copied upon receiving
+// the callback). Those items are up to date with the model.
+@property(nonatomic, strong)
+    NSMutableArray<ContentSuggestionsMostVisitedItem*>* freshMostVisitedItems;
 // Section Info for the Most Visited section.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* mostVisitedSectionInfo;
@@ -79,6 +82,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 @implementation ContentSuggestionsMediator
 
 @synthesize mostVisitedItems = _mostVisitedItems;
+@synthesize freshMostVisitedItems = _freshMostVisitedItems;
 @synthesize mostVisitedSectionInfo = _mostVisitedSectionInfo;
 @synthesize recordedPageImpression = _recordedPageImpression;
 @synthesize contentService = _contentService;
@@ -127,10 +131,12 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
 - (void)blacklistMostVisitedURL:(GURL)URL {
   _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, true);
+  [self useFreshMostVisited];
 }
 
 - (void)whitelistMostVisitedURL:(GURL)URL {
   _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, false);
+  [self useFreshMostVisited];
 }
 
 #pragma mark - ContentSuggestionsDataSource
@@ -369,13 +375,19 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
 - (void)onMostVisitedURLsAvailable:
     (const ntp_tiles::NTPTilesVector&)mostVisited {
-  self.mostVisitedItems = [NSMutableArray array];
+  self.freshMostVisitedItems = [NSMutableArray array];
   for (const ntp_tiles::NTPTile& tile : mostVisited) {
-    [self.mostVisitedItems
+    [self.freshMostVisitedItems
         addObject:ConvertNTPTile(tile, self.mostVisitedSectionInfo)];
   }
 
-  [self.dataSink reloadSection:self.mostVisitedSectionInfo];
+  if ([self.mostVisitedItems count] > 0) {
+    // If some content is already displayed to the user, do not update without a
+    // user action.
+    return;
+  }
+
+  [self useFreshMostVisited];
 
   if (mostVisited.size() && !self.recordedPageImpression) {
     self.recordedPageImpression = YES;
@@ -462,6 +474,12 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 - (BOOL)isRelatedToContentSuggestionsService:
     (ContentSuggestionsSectionInformation*)sectionInfo {
   return sectionInfo != self.mostVisitedSectionInfo;
+}
+
+// Replaces the Most Visited items currently displayed by the most recent ones.
+- (void)useFreshMostVisited {
+  self.mostVisitedItems = self.freshMostVisitedItems;
+  [self.dataSink reloadSection:self.mostVisitedSectionInfo];
 }
 
 @end

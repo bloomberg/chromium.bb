@@ -221,7 +221,33 @@ const CGFloat kNumberOfMostVisitedLines = 2;
 }
 
 - (void)reloadSection:(ContentSuggestionsSectionInformation*)sectionInfo {
-  // TODO(crbug.com/707754): implement this method.
+  CSCollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+  SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+
+  if (![model hasSectionForSectionIdentifier:sectionIdentifier]) {
+    [self.collectionViewController
+        addSuggestions:[self.dataSource itemsForSectionInfo:sectionInfo]
+         toSectionInfo:sectionInfo];
+    return;
+  }
+
+  NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
+
+  NSMutableArray* oldItems = [NSMutableArray array];
+  NSInteger numberOfItems = [model numberOfItemsInSection:section];
+  for (NSInteger i = 0; i < numberOfItems; i++) {
+    [oldItems addObject:[NSIndexPath indexPathForItem:i inSection:section]];
+  }
+  [self.collectionViewController
+                   collectionView:self.collectionViewController.collectionView
+      willDeleteItemsAtIndexPaths:oldItems];
+
+  [self addSuggestionsToModel:[self.dataSource itemsForSectionInfo:sectionInfo]
+              withSectionInfo:sectionInfo];
+
+  [self.collectionViewController.collectionView
+      reloadSections:[NSIndexSet indexSetWithIndex:section]];
 }
 
 - (void)faviconAvailableForItem:(CollectionViewItem<SuggestedContent>*)item {
