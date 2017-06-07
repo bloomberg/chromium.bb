@@ -641,9 +641,8 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
         break;
       case DocumentMarker::kTextMatch:
       case DocumentMarker::kComposition:
+      case DocumentMarker::kActiveSuggestion:
         break;
-      default:
-        continue;
     }
 
     if (marker.EndOffset() <= inline_text_box_.Start()) {
@@ -676,13 +675,13 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
               paint_info, box_origin, ToTextMatchMarker(marker), style, font);
         }
         break;
-      case DocumentMarker::kComposition: {
-        const CompositionMarker& composition_marker =
-            ToCompositionMarker(marker);
+      case DocumentMarker::kComposition:
+      case DocumentMarker::kActiveSuggestion: {
+        const StyleableMarker& styleable_marker = ToStyleableMarker(marker);
         CompositionUnderline underline(
-            composition_marker.StartOffset(), composition_marker.EndOffset(),
-            composition_marker.UnderlineColor(), composition_marker.IsThick(),
-            composition_marker.BackgroundColor());
+            styleable_marker.StartOffset(), styleable_marker.EndOffset(),
+            styleable_marker.UnderlineColor(), styleable_marker.IsThick(),
+            styleable_marker.BackgroundColor());
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
           PaintSingleCompositionBackgroundRun(
               paint_info.context, box_origin, style, font,
