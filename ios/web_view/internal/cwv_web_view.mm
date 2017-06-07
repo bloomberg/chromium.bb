@@ -77,12 +77,16 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 @property(nonatomic, readwrite) double estimatedProgress;
 @property(nonatomic, readwrite) BOOL canGoBack;
 @property(nonatomic, readwrite) BOOL canGoForward;
+@property(nonatomic, readwrite) NSURL* lastCommittedURL;
 @property(nonatomic, readwrite) BOOL loading;
 @property(nonatomic, readwrite, copy) NSString* title;
+@property(nonatomic, readwrite) NSURL* visibleURL;
 
 // Updates the availability of the back/forward navigation properties exposed
 // through |canGoBack| and |canGoForward|.
 - (void)updateNavigationAvailability;
+// Updates the URLs exposed through |lastCommittedURL| and |visibleURL|.
+- (void)updateCurrentURLs;
 
 @end
 
@@ -94,12 +98,14 @@ static NSString* gUserAgentProduct = nil;
 @synthesize canGoForward = _canGoForward;
 @synthesize configuration = _configuration;
 @synthesize estimatedProgress = _estimatedProgress;
+@synthesize lastCommittedURL = _lastCommittedURL;
 @synthesize loading = _loading;
 @synthesize navigationDelegate = _navigationDelegate;
 @synthesize title = _title;
 @synthesize translationController = _translationController;
 @synthesize UIDelegate = _UIDelegate;
 @synthesize scrollView = _scrollView;
+@synthesize visibleURL = _visibleURL;
 
 + (NSString*)userAgentProduct {
   return gUserAgentProduct;
@@ -135,14 +141,6 @@ static NSString* gUserAgentProduct = nil;
   return self;
 }
 
-- (NSURL*)visibleURL {
-  return net::NSURLWithGURL(_webState->GetVisibleURL());
-}
-
-- (NSURL*)lastCommittedURL {
-  return net::NSURLWithGURL(_webState->GetLastCommittedURL());
-}
-
 - (void)goBack {
   if (_webState->GetNavigationManager())
     _webState->GetNavigationManager()->GoBack();
@@ -173,6 +171,7 @@ static NSString* gUserAgentProduct = nil;
   params.extra_headers.reset([request.allHTTPHeaderFields copy]);
   params.post_data.reset([request.HTTPBody copy]);
   _webState->GetNavigationManager()->LoadURLWithParams(params);
+  [self updateCurrentURLs];
 }
 
 - (void)evaluateJavaScript:(NSString*)javaScriptString
@@ -189,6 +188,11 @@ static NSString* gUserAgentProduct = nil;
 
 // -----------------------------------------------------------------------
 // WebStateObserver implementation.
+
+- (void)webState:(web::WebState*)webState
+    navigationItemsPruned:(size_t)pruned_item_count {
+  [self updateCurrentURLs];
+}
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
@@ -210,6 +214,7 @@ static NSString* gUserAgentProduct = nil;
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
   [self updateNavigationAvailability];
+  [self updateCurrentURLs];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -386,6 +391,11 @@ static NSString* gUserAgentProduct = nil;
   self.canGoBack = _webState && _webState->GetNavigationManager()->CanGoBack();
   self.canGoForward =
       _webState && _webState->GetNavigationManager()->CanGoForward();
+}
+
+- (void)updateCurrentURLs {
+  self.lastCommittedURL = net::NSURLWithGURL(_webState->GetLastCommittedURL());
+  self.visibleURL = net::NSURLWithGURL(_webState->GetVisibleURL());
 }
 
 @end

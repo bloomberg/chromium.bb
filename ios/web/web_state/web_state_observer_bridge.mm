@@ -14,6 +14,14 @@ WebStateObserverBridge::WebStateObserverBridge(web::WebState* webState,
 WebStateObserverBridge::~WebStateObserverBridge() {
 }
 
+void WebStateObserverBridge::NavigationItemsPruned(size_t pruned_item_count) {
+  SEL selector = @selector(webState:navigationItemsPrunedCount:);
+  if ([observer_ respondsToSelector:selector]) {
+    [observer_ webState:web_state()
+        navigationItemsPrunedCount:pruned_item_count];
+  }
+}
+
 void WebStateObserverBridge::NavigationItemCommitted(
     const web::LoadCommittedDetails& load_detatils) {
   SEL selector = @selector(webState:didCommitNavigationWithDetails:);

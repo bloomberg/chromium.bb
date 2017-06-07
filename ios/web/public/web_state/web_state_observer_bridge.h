@@ -18,6 +18,10 @@
 @protocol CRWWebStateObserver<NSObject>
 @optional
 
+// Invoked by WebStateObserverBridge::NavigationItemsPruned.
+- (void)webState:(web::WebState*)webState
+    navigationItemsPrunedCount:(size_t)pruned_item_count;
+
 // Invoked by WebStateObserverBridge::NavigationItemCommitted.
 - (void)webState:(web::WebState*)webState
     didCommitNavigationWithDetails:
@@ -99,6 +103,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
   ~WebStateObserverBridge() override;
 
   // web::WebStateObserver methods.
+  void NavigationItemsPruned(size_t pruned_item_count) override;
   void NavigationItemCommitted(
       const LoadCommittedDetails& load_details) override;
   void DidStartNavigation(NavigationContext* navigation_context) override;
