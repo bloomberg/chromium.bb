@@ -261,6 +261,8 @@ source_set("browser") {
     "accessibility/browser_accessibility_win.h",
     "accessibility/one_shot_accessibility_tree_search.cc",
     "accessibility/one_shot_accessibility_tree_search.h",
+    "android/android_overlay_provider_impl.cc",
+    "android/android_overlay_provider_impl.h",
     "android/app_web_message_port.cc",
     "android/app_web_message_port.h",
     "android/background_sync_network_observer_android.cc",
