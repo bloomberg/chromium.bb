@@ -17,6 +17,8 @@ PASS input.type for " button " is correctly "text".
 PASS input.getAttribute("type") for " button " is correctly " button ".
 PASS input.type for "checkbox" is correctly "checkbox".
 PASS input.getAttribute("type") for "checkbox" is correctly "checkbox".
+PASS input.type for "checKbox" is correctly "text".
+PASS input.getAttribute("type") for "checKbox" is correctly "checKbox".
 PASS input.type for "email" is correctly "email".
 PASS input.getAttribute("type") for "email" is correctly "email".
 PASS input.type for "file" is correctly "file".
