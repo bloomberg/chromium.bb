@@ -1,6 +1,6 @@
 {% from 'macros.tmpl' import license, print_if %}
 {% from 'fields/field.tmpl' import encode, getter_expression, setter_expression, declare_storage, fieldwise_compare, fieldwise_copy, fieldwise_diff, fieldwise_pointer_compare_inherited %}
-{% from 'fields/group.tmpl' import define_field_group_class %}
+{% from 'fields/group.tmpl' import declare_field_group_class %}
 {{license()}}
 
 #ifndef ComputedStyleBase_h
@@ -36,15 +36,8 @@
 
 namespace blink {
 
-struct SameSizeAsComputedStyleBase {
-  {% if computed_style.subgroups is defined %}
-  void* dataRefs[{{computed_style.subgroups|length}}];
-  {% endif %}
-  {% for field in computed_style.fields|rejectattr("is_bit_field") %}
-  {{field.type_name}} {{field.name}};
-  {% endfor %}
-  unsigned m_bit_fields[{{computed_style.num_32_bit_words_for_bit_fields}}];
-};
+// Forward declaration for diff functions.
+class ComputedStyle;
 
 // The generated portion of ComputedStyle. For more info, see the header comment
 // in ComputedStyle.h.
@@ -82,12 +75,6 @@ struct SameSizeAsComputedStyleBase {
 // example, a field with the 'keyword' template has only one setter, whereas an
 // 'external' field has an extra setter that takes an rvalue reference. A list
 // of the available templates can be found in CSSProperties.json5.
-//
-// ComputedStyleBase is a template class to allow it to use functions on
-// ComputedStyle. This allows ComputedStyleBase to use hand written functions it
-// would otherwise not know about.  It should only be templated with the
-// ComputedStyle class and no other class is allowed.
-template <class ComputedStyleFinal>
 class CORE_EXPORT ComputedStyleBase {
  public:
   inline bool IndependentInheritedEqual(const ComputedStyleBase& o) const {
@@ -142,39 +129,18 @@ class CORE_EXPORT ComputedStyleBase {
   };
 
   void InheritFrom(const ComputedStyleBase& other,
-                                      IsAtShadowBoundary isAtShadowBoundary) {
-    {{fieldwise_copy(computed_style, computed_style.all_fields
-        |selectattr("is_property")
-        |selectattr("is_inherited")
-        |list
-      )|indent(4)}}
-  }
+                                      IsAtShadowBoundary isAtShadowBoundary);
 
   void CopyNonInheritedFromCached(
-      const ComputedStyleBase& other) {
-    {{fieldwise_copy(computed_style, computed_style.all_fields
-        |rejectattr("has_custom_compare_and_copy")
-        |rejectattr("is_inherited")
-        |list
-      )|indent(4)}}
-  }
+      const ComputedStyleBase& other);
 
   // Copies the values of any independent inherited properties from the parent
   // style that are marked as inherited by this style.
   void PropagateIndependentInheritedProperties(
-      const ComputedStyleBase& parentStyle) {
-    {% for field in computed_style.all_fields if field.is_property and field.is_independent %}
-    if ({{field.is_inherited_method_name}}())
-      {{setter_expression(field)}} = parentStyle.{{getter_expression(field)}};
-    {% endfor %}
-  }
+      const ComputedStyleBase& parentStyle);
 
   {% for name, groups_to_diff in diff_functions_map.items() %}
-  bool {{name}}(const ComputedStyleFinal& other) const {
-    const ComputedStyleFinal& self = static_cast<const ComputedStyleFinal&>(*this);
-    {{fieldwise_diff(groups_to_diff)|indent(4)}}
-    return false;
-  }
+  static bool {{name}}(const ComputedStyle& a, const ComputedStyle& b);
   {% endfor %}
 
   // Fields.
@@ -188,23 +154,14 @@ class CORE_EXPORT ComputedStyleBase {
   {% endfor %}
  private:
   {% for subgroup in computed_style.subgroups %}
-  {{define_field_group_class(subgroup)|indent(2)}}
+  {{declare_field_group_class(subgroup)|indent(2)}}
 
   {% endfor %}
 
  protected:
   // Constructor and destructor are protected so that only the parent class ComputedStyle
   // can instantiate this class.
-  ALWAYS_INLINE ComputedStyleBase() :
-  {% for field in computed_style.fields %}
-      {{field.name}}({{encode(field, field.default_value)}}){{print_if(not loop.last, ',')}}
-  {% endfor %}
-  {
-    static_assert(std::is_same<ComputedStyle, ComputedStyleFinal>::value, "ComputedStyleBase can only be templated with ComputedStyle");
-    {% for subgroup in computed_style.subgroups %}
-    {{subgroup.member_name}}.Init();
-    {% endfor %}
-  }
+  ComputedStyleBase();
 
   {% for field in computed_style.all_fields|sort(attribute='name') %}
   {% if field.field_template in ('storage_only', 'monotonic_flag', 'external') %}

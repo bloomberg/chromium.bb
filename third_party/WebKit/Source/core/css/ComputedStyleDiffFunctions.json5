@@ -138,11 +138,11 @@
         ],
         predicates_to_test: [
           {
-            predicate: "TextShadowDataEquivalent(other)",
+            predicate: "a.TextShadowDataEquivalent(b)",
             field_dependencies: ["text-shadow"]
           },
           {
-            predicate: "QuotesDataEquivalent(other)",
+            predicate: "a.QuotesDataEquivalent(b)",
             field_dependencies: ["quotes"]
           },
         ]
