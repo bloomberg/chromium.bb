@@ -111,6 +111,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_client_arrays = false;
     bool angle_request_extension = false;
     bool ext_debug_marker = false;
+    bool arb_robustness = false;
+    bool khr_robustness = false;
+    bool ext_robustness = false;
   };
 
   FeatureInfo();

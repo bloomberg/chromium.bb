@@ -293,5 +293,24 @@ void InitializeGLDebugLogging() {
   glDebugMessageCallback(&LogGLDebugMessage, nullptr);
 }
 
+error::ContextLostReason GetContextLostReasonFromResetStatus(
+    GLenum reset_status) {
+  switch (reset_status) {
+    case GL_NO_ERROR:
+      // TODO(kbr): improve the precision of the error code in this case.
+      // Consider delegating to context for error code if MakeCurrent fails.
+      return error::kUnknown;
+    case GL_GUILTY_CONTEXT_RESET_ARB:
+      return error::kGuilty;
+    case GL_INNOCENT_CONTEXT_RESET_ARB:
+      return error::kInnocent;
+    case GL_UNKNOWN_CONTEXT_RESET_ARB:
+      return error::kUnknown;
+  }
+
+  NOTREACHED();
+  return error::kUnknown;
+}
+
 }  // namespace gles2
 }  // namespace gpu

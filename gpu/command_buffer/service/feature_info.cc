@@ -1374,6 +1374,9 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.angle_request_extension =
       extensions.Contains("GL_ANGLE_request_extension");
   feature_flags_.ext_debug_marker = extensions.Contains("GL_EXT_debug_marker");
+  feature_flags_.arb_robustness = extensions.Contains("GL_ARB_robustness");
+  feature_flags_.khr_robustness = extensions.Contains("GL_KHR_robustness");
+  feature_flags_.ext_robustness = extensions.Contains("GL_EXT_robustness");
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
