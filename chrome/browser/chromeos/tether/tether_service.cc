@@ -14,6 +14,7 @@
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/tether/initializer.h"
@@ -42,8 +43,7 @@ void TetherService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 // static
 bool TetherService::IsFeatureFlagEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableTether);
+  return base::FeatureList::IsEnabled(features::kInstantTethering);
 }
 
 TetherService::TetherService(
