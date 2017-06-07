@@ -287,8 +287,6 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   main_job_factory_ = SetUpJobFactoryDefaults(std::move(main_job_factory),
                                               main_context->network_delegate());
   main_context->set_job_factory(main_job_factory_.get());
-  main_context->set_network_quality_estimator(
-      io_thread_globals->network_quality_estimator.get());
 
   lazy_params_.reset();
 }

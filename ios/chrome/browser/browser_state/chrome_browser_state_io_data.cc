@@ -487,11 +487,6 @@ ChromeBrowserStateIOData::CreateHttpNetworkSession(
   net::HttpNetworkSession::Context session_context;
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       context, &session_context);
-  if (!IsOffTheRecord() && io_thread->globals()->network_quality_estimator) {
-    session_context.socket_performance_watcher_factory =
-        io_thread->globals()
-            ->network_quality_estimator->GetSocketPerformanceWatcherFactory();
-  }
 
   return std::unique_ptr<net::HttpNetworkSession>(new net::HttpNetworkSession(
       io_thread->NetworkSessionParams(), session_context));
