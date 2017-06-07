@@ -32254,6 +32254,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Mojo.System.MessagesAcceptedPerEvent">
+  <obsolete>
+    Deprecated as of 6/2017.
+  </obsolete>
   <owner>rockot@chromium.org</owner>
   <summary>
     Number of internal Mojo system messages processed synchronously during a
