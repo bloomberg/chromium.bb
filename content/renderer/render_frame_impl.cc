@@ -4317,7 +4317,18 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
     }
   }
 
-  extra_data->set_url_loader_factory_override(url_loader_factory_.get());
+  // TODO: generalize how non-network schemes are sent to the renderer and used.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService)) {
+    if (request.Url().ProtocolIs(url::kBlobScheme)) {
+      extra_data->set_url_loader_factory_override(
+          RenderThreadImpl::current()->GetBlobURLLoaderFactory());
+    }
+  }
+
+  if (!extra_data->url_loader_factory_override())
+    extra_data->set_url_loader_factory_override(url_loader_factory_.get());
+
   // TODO(kinuko, yzshen): We need to set up throttles for some worker cases
   // that don't go through here.
   extra_data->set_url_loader_throttles(std::move(throttles));

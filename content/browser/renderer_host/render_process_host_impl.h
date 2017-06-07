@@ -33,6 +33,7 @@
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/renderer_host.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/public/browser/render_process_host.h"
@@ -110,7 +111,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       public ChildProcessLauncher::Client,
       public ui::GpuSwitchingObserver,
       public NON_EXPORTED_BASE(mojom::RouteProvider),
-      public NON_EXPORTED_BASE(mojom::AssociatedInterfaceProvider) {
+      public NON_EXPORTED_BASE(mojom::AssociatedInterfaceProvider),
+      public NON_EXPORTED_BASE(mojom::RendererHost) {
  public:
   RenderProcessHostImpl(BrowserContext* browser_context,
                         StoragePartitionImpl* storage_partition_impl,
@@ -383,6 +385,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const std::string& name,
       mojom::AssociatedInterfaceAssociatedRequest request) override;
 
+  // mojom::RendererHost
+  void GetBlobURLLoaderFactory(mojom::URLLoaderFactoryRequest request) override;
+
   void BindRouteProvider(mojom::RouteProviderAssociatedRequest request);
 
   void CreateMusGpuRequest(const service_manager::BindSourceInfo& source_info,
@@ -395,6 +400,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateStoragePartitionService(
       const service_manager::BindSourceInfo& source_info,
       mojom::StoragePartitionServiceRequest request);
+  void CreateRendererHost(const service_manager::BindSourceInfo& source_info,
+                          mojom::RendererHostRequest request);
   void CreateURLLoaderFactory(
       const service_manager::BindSourceInfo& source_info,
       mojom::URLLoaderFactoryRequest request);
@@ -682,6 +689,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;
+  mojo::Binding<mojom::RendererHost> renderer_host_binding_;
 
   // Tracks active audio streams within the render process; used to determine if
   // if a process should be backgrounded.

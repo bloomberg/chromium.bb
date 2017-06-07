@@ -359,15 +359,12 @@ BlobURLLoaderFactory::BlobURLLoaderFactory(
                      std::move(blob_storage_context_getter)));
 }
 
-mojom::URLLoaderFactoryPtr BlobURLLoaderFactory::CreateFactory() {
+void BlobURLLoaderFactory::HandleRequest(
+    mojom::URLLoaderFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  mojom::URLLoaderFactoryPtr factory;
-  mojom::URLLoaderFactoryRequest request = mojo::MakeRequest(&factory);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(&BlobURLLoaderFactory::BindOnIO, this,
                                          std::move(request)));
-
-  return factory;
 }
 
 BlobURLLoaderFactory::~BlobURLLoaderFactory() {}
