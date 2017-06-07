@@ -1646,7 +1646,6 @@ split_static_library("browser") {
     "//device/usb/public/interfaces",
     "//device/vr/features",
     "//extensions/features",
-    "//gin:gin_features",
     "//google_apis",
     "//gpu/config",
     "//media",

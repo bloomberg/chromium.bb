@@ -5,24 +5,6 @@
 import("//testing/test.gni")
 import("//v8/gni/v8.gni")
 
-# This is depended upon from the browser DLL on Windows, where V8 is not used,
-# but features are enabled. This cannot depend on V8.
-component("gin_features") {
-  sources = [
-    "gin_features.cc",
-    "gin_features_export.h",
-    "public/gin_features.h",
-  ]
-
-  defines = [ "GIN_FEATURES_IMPLEMENTATION" ]
-
-  deps = [
-    "//base",
-  ]
-
-  assert_no_deps = [ "//v8" ]
-}
-
 component("gin") {
   sources = [
     "arguments.cc",
@@ -101,7 +83,6 @@ component("gin") {
     "//v8",
   ]
   deps = [
-    ":gin_features",
     "//base/third_party/dynamic_annotations",
   ]
 
