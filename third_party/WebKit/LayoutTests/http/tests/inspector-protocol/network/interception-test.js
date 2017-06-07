@@ -142,7 +142,8 @@ InspectorTest.startInterceptionTest = function(requestInterceptedDict,
         } else {
             interceptionRequestParams[id] = event.params.request;
             log(id, "Network.requestIntercepted " + id + " " +
-                    event.params.request.method + " " + filename);
+                    event.params.request.method + " " + filename + " type: " +
+                    event.params.resourceType);
         }
         requestInterceptedDict[filename](event);
     }

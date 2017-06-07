@@ -6,7 +6,7 @@ Network agent enabled
 Request interception enabled
 Page agent enabled
 Runtime agent enabled
-Network.requestIntercepted ID 1 GET redirect-iframe.html
+Network.requestIntercepted ID 1 GET redirect-iframe.html type: Document
 mockResponse ID 1
 Network.responseReceived redirect-iframe.html 200 text/html
 Page.frameStoppedLoading

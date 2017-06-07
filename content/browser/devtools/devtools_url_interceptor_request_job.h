@@ -10,6 +10,7 @@
 #include "content/browser/devtools/devtools_url_request_interceptor.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/resource_type.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
@@ -33,7 +34,8 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
       net::NetworkDelegate* original_network_delegate,
       WebContents* web_contents,
       base::WeakPtr<protocol::NetworkHandler> network_handler,
-      bool is_redirect);
+      bool is_redirect,
+      ResourceType resource_type);
 
   ~DevToolsURLInterceptorRequestJob() override;
 
@@ -179,6 +181,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
   WebContents* const web_contents_;
   const base::WeakPtr<protocol::NetworkHandler> network_handler_;
   const bool is_redirect_;
+  const ResourceType resource_type_;
   base::WeakPtrFactory<DevToolsURLInterceptorRequestJob> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsURLInterceptorRequestJob);
