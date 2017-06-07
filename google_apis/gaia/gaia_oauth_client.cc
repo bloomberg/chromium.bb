@@ -238,7 +238,7 @@ void GaiaOAuthClient::Core::GetUserInfoImpl(
   delegate_ = delegate;
   num_retries_ = 0;
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("gaia_core_get_user_info", R"(
+      net::DefineNetworkTrafficAnnotation("gaia_oauth_client_get_user_info", R"(
         semantics {
           sender: "OAuth 2.0 calls"
           description:
@@ -292,7 +292,8 @@ void GaiaOAuthClient::Core::GetTokenInfo(const std::string& qualifier,
   std::string post_body =
       qualifier + "=" + net::EscapeUrlEncodedData(query, true);
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("...", R"(
+      net::DefineNetworkTrafficAnnotation("gaia_oauth_client_get_token_info",
+                                          R"(
         semantics {
           sender: "OAuth 2.0 calls"
           description:
