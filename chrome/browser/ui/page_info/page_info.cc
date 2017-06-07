@@ -676,12 +676,6 @@ void PageInfo::Init(const GURL& url,
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS, ASCIIToUTF16(cipher),
           ASCIIToUTF16(mac), ASCIIToUTF16(key_exchange));
     }
-
-    if (ssl_version == net::SSL_CONNECTION_VERSION_SSL3 &&
-        site_connection_status_ <
-            SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE) {
-      site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
-    }
   }
 
   // Check if a user decision has been made to allow or deny certificates with
