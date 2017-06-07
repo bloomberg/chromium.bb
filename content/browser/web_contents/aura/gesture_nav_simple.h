@@ -12,6 +12,7 @@
 
 namespace content {
 
+class Affordance;
 class WebContentsImpl;
 
 // A simple delegate for the overscroll controller that paints an arrow on top
@@ -21,9 +22,11 @@ class GestureNavSimple : public OverscrollControllerDelegate {
   explicit GestureNavSimple(WebContentsImpl* web_contents);
   ~GestureNavSimple() override;
 
- private:
-  class Affordance;
+  // Called by the affordance when its complete/abort animation is finished so
+  // that the affordance instance can be destroyed.
+  void OnAffordanceAnimationEnded();
 
+ private:
   void AbortGestureAnimation();
   void CompleteGestureAnimation();
 
