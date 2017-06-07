@@ -384,6 +384,8 @@
       'V8 Android GN (dbg)': 'android_debug_bot',
       'V8 Linux GN': 'release_bot',
       'V8-Blink Linux 64': 'release_bot',
+      'V8-Blink Linux 64 - future': 'release_bot',
+      # TODO(machenbach): Remove this bot after infra-side landed.
       'V8-Blink Linux 64 - ignition': 'release_bot',
       'V8-Blink Linux 64 (dbg)': 'debug_bot',
       'V8-Blink Mac': 'release_bot',
@@ -1901,10 +1903,7 @@
     },
 
     'v8_future': {
-      # TODO(machenbach): Switch back to v8_enable_future=true when
-      # turbofan+ignition are stable.
-      # http://crbug.com/682617
-      'gn_args': 'v8_disable_turbo=true',
+      'gn_args': 'v8_enable_future=true',
     },
 
     'v8_heap': {
