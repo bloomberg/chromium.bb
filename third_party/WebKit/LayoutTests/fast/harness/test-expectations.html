@@ -1,0 +1,666 @@
+<!doctype html>
+<meta charset="UTF-8">
+<title>Layout Tests</title>
+<style>
+body {
+  font-family: monospace;
+}
+button {
+  margin-top: 4px;
+}
+#help {
+  box-sizing: border-box;
+  position: fixed;
+  width: 96vw;
+  height: 96vh;
+  top: 2vh;
+  left: 2vw;
+  border: 5px solid black;
+  background-color: white;
+  padding: 16px;
+  box-shadow: 0 0 20px;
+}
+.hidden {
+  display: none;
+}
+.warn {
+  color: red;
+}
+.fix-width {
+  display: inline-block;
+  width: 9em;
+  text-align: right;
+}
+.h-expect {
+  margin-left: 1.25em;
+}
+.expect {
+  line-height: 180%;
+  cursor: zoom-in;
+}
+.expect:hover {
+  /*background-color: #F4F4F4;*/
+}
+.expect:focus > .details {
+  visibility: visible;
+}
+.details {
+  box-sizing: border-box;
+  visibility: hidden;
+  display: inline-block;
+  position: relative;
+  top: 0.2em;
+  width: 1em;
+  height: 1em;
+  border-top: 0.5em solid transparent;
+  border-bottom: 0.5em solid transparent;
+  border-right: none;
+  border-left: 0.5em solid gray;
+  margin-right: .25em;
+  cursor: pointer;
+}
+.details.open {
+  visibility: visible !important;
+  top: 0.5em;
+  border-left: 0.5em solid transparent;
+  border-right: 0.5em solid transparent;
+  border-top: 0.5em solid gray;
+  border-bottom: none;
+}
+
+.result-frame {
+  border: 1px solid gray;
+  border-top: 1px solid transparent;
+  margin-left: 2.25em;
+  margin-right: 2.25em;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+.result-menu {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.result-menu li {
+  display: inline-block;
+  min-width: 100px;
+  font-size: larger;
+  border: 1px dotted gray;
+  border-bottom: 1px solid transparent;
+  margin-right: 8px;
+}
+.result-output iframe {
+  width: 100%;
+  height: 50vh;
+  max-height: 800px;
+  border: 0px solid gray;
+  resize: both;
+  overflow: auto;
+}
+</style>
+<body>
+<h3>layout test results viewer</h3>
+<div style="position:absolute; top:8px;right:0;font-size:smaller">go back to <a href="results.html">legacy results.html</a></div>
+<div id="help" class="hidden">
+  <button onclick="toggleVisibility('help')">Close</button>
+  <pre>
+This page lets you query and display test results.
+
+<span style="font-size:larger">### Results</span>
+
+The results are shown in either plain text, or <a href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md">TestExpectations</a> format.
+
+TestExpectations result lines usually looks like this:
+
+<a href="#">crbug.com/bug</a> layout/test/path/<a href="#">test.html</a> [ Status ]
+
+The interesting part here is [ Status ]. Inside TestExpectations file, [ Status ]
+can have multiple values, representing all expected results. For example:
+
+[ Failure Slow Timeout Crash Pass ]
+
+Result lines include existing expected values, and make a guess about what the new
+test expectation line should look like by merging together expected and actual
+results. The actual result will be shown in bold. For example:
+
+TestResult(PASS) + TestExpectation(Failure) => [ Pass ]
+TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]
+
+If you are doing a lot of TestExpectation edits, the hope is that this will make
+your job as easy as copy and paste.
+
+<span style="font-size:larger">### Keyboard navigation</span>
+
+<b>Tab</b> to select tests.
+<b>Enter</b> to see test details. This will automatically close other details.
+
+Modifiers:
+
+<b>Shift</b> hold shift key to keep other details open.
+<b>Alt|Option</b> hold alt key to open details on all results (limit: 100)
+
+If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/harness/test-expectations.html">here</a>.
+  </pre>
+</div>
+<pre id="summary">
+Test run summary <a id="help_button" href="javascript:toggleVisibility('help')">?</a>:
+Passed     : <span id="summary_passed"></span>
+Regressions: <span id="summary_regressions"></span>
+Total      : <span id="summary_total"></span>
+</pre>
+<div>Display filtered results by picking a filter:</div>
+<div id="filters">
+  <div>
+    <span class="fix-width">Unexpected:</span>
+    <button id="button_unexpected_fail" onclick="javascript:generateReport('Unexpected failures', Filters.unexpectedFailure)">
+      Unexpected Failure
+      <span id="count_unexpected_fail"></span>
+    </button>
+    <button onclick="javascript:generateReport('Unexpected passes', Filters.unexpectedPass)">
+      Unexpected Pass
+      <span id="count_unexpected_pass"></span>
+    </button>
+  </div>
+  <div>
+    <span class="fix-width">All failures:</span>
+    <button onclick="javascript:generateReport('Crash', Filters.actual('CRASH'))">
+      Crash
+      <span id="count_CRASH"></span>
+    </button>
+    <button onclick="javascript:generateReport('Timeout', Filters.actual('TIMEOUT'))">
+      Timeout
+      <span id="count_TIMEOUT"></span>
+    </button>
+    <button onclick="javascript:generateReport('Text failure', Filters.actual('TEXT'))">
+      Text failure
+      <span id="count_TEXT"></span>
+    </button>
+    <button onclick="javascript:generateReport('Image failure', Filters.actual('IMAGE'))">
+      Image failure
+      <span id="count_IMAGE"></span>
+    </button>
+    <button onclick="javascript:generateReport('Image+text failure', Filters.actual('IMAGE+TEXT'))">
+      Image+text failure
+      <span id="count_IMAGE_TEXT"></span>
+    </button>
+  </div>
+  <div>
+    <span class="fix-width">Misc:</span>
+
+    <button onclick="javascript:generateReport('Skipped', Filters.actual('SKIP'))">
+      Skipped
+      <span id="count_SKIP"></span>
+    </button>
+    <button onclick="javascript:generateReport('Pass', Filters.actual('PASS'))">
+      Pass
+      <span id="count_PASS"></span>
+    </button>
+    <button onclick="javascript:generateReport('Wontfix -- defined in NeverFixTests', Filters.wontfix)">
+      WontFix
+      <span id="count_WONTFIX"></span>
+    </button>
+    <button onclick="javascript:generateReport('Missing', Filters.actual('MISSING'))">
+      Missing
+      <span id="count_MISSING"></span>
+    </button>
+    <button onclick="javascript:generateReport('TestExpectations', Filters.notpass)">
+      TestExpectations
+      <span id="count_testexpectations"></span>
+    </button>
+  </div>
+</div>
+
+<div id="report_header" style="margin-top:8px">
+  Tests shown: <span id="report_title" style="font-weight:bold"></span>
+  in format:
+    <select id="report_format" onchange="generateReport()">
+      <option value="plain" selected>Plain text</option>
+      <option value="expectation">TestExpectations</option>
+    </select>
+</div>
+<div id="report" style="margin-top:8px">
+</div>
+
+<template id="genericResult">
+<div class="result-frame">
+  <ul class="result-menu">
+  </ul>
+  <div class="result-output">
+  </div>
+</div>
+</template>
+<script>
+
+var fullResults = {};
+
+function printSummary(r) {
+  document.querySelector('#summary_total').innerText = r.num_passes + r.num_regressions;
+  document.querySelector('#summary_passed').innerText = r.num_passes;
+  document.querySelector('#summary_regressions').innerText = r.num_regressions;
+  let failures = r["num_failures_by_type"];
+  var totalFailures = 0;
+  for (p in failures) {
+    if (failures[p]) {
+      try {
+        document.querySelector("#count_" + p.replace("+", "_")).innerText = failures[p];
+      } catch(e) {
+        console.error("Missing failure type", p);
+      }
+    }
+  }
+
+  var t = new Traversal(fullResults.tests);
+  t.traverse(Filters.unexpectedPass);
+  document.querySelector("#count_unexpected_pass").innerText = t.filteredCount;
+  t.reset().traverse(Filters.unexpectedFailure);
+  document.querySelector("#count_unexpected_fail").innerText = t.filteredCount;
+  t.reset().traverse(Filters.notpass);
+  document.querySelector("#count_testexpectations").innerText = t.filteredCount;
+  // Hide filters with zero count
+  for (let el of Array.from(
+        document.querySelector("#filters").querySelectorAll("*"))) {
+    if (el.id && el.id.startsWith("count")
+      && el.innerText == ""
+      && el.parentNode.nodeName == "BUTTON") {
+        el.parentNode.remove();
+    }
+  }
+}
+
+let Traversal = function(testRoot) {
+  this.root = testRoot;
+  this.reset();
+}
+
+Traversal.prototype = {
+  traverse: function(filter, action) {
+    action = action || function() {};
+    this._helper(this.root, "", filter, action);
+  },
+  reset: function() {
+    this.testCount = 0;
+    this.filteredCount = 0;
+    this.lastDir = "";
+    this.html = [];
+    return this;
+  },
+
+  _helper: function(node, path, filter, action) {
+    if ("actual" in node) {
+      this.testCount++;
+      if (filter(node, path)) {
+        this.filteredCount++;
+        action(node, path, this);
+      }
+    }
+    else {
+      // TODO(atotic) we need name + type sort, tests go before dirs.
+      var keys = Object.keys(node).sort();
+      for (p of keys)
+        this._helper(node[p], path + "/" + p, filter, action);
+    }
+  }
+}
+
+let PathParser = function(path) {
+  this.path = path;
+  [href, dir, file] = path.match("/(.*)/(.*)");
+  this.dir = dir;
+  this.file = file;
+  [tmp, this.basename, this.extension] = file.match(/(.*)\.(\w+)/);
+  this.testHref = "../../../third_party/WebKit/LayoutTests" + href.replace(/\/virtual\/[^\/]*/, "");
+}
+
+PathParser.prototype = {
+  resultLink: function(resultName) {
+    return this.dir + "/" + this.basename + resultName;
+  }
+}
+
+let Printers = {
+
+  getDefaultPrinter: () => {
+    switch(document.querySelector("#report_format").value) {
+      case "expectation":
+        return Printers.printExpectation;
+      case "plain":
+        return Printers.printPlainTest;
+      default:
+        console.error("Unknown printer type");
+    }
+  },
+
+  printPlainTest: (test, path, traversal) => {
+    let pathParser = new PathParser(path);
+    html = " " + pathParser.dir + "/"
+      + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
+      + pathParser.file + "</a>";
+    html = "<div class='expect' tabindex='0' data-id='"+ test.expect_id +"'><div class='details'></div>" + html + "</div>";
+    traversal.html.push(html);
+  },
+
+  printExpectation: (test, path, traversal) => {
+    // TestExpectations file format is documented at:
+    // https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md
+
+    let pathParser = new PathParser(path);
+    // Print directory header if this test's directory is different from the last.
+    if (pathParser.dir != traversal.lastDir) {
+      traversal.html.push("<br>");
+      traversal.html.push("<div class='h-expect'>### " + pathParser.dir + "</div>");
+      traversal.lastDir = pathParser.dir;
+    }
+
+    let status = "";
+    let actual = test.actual;
+    let expected = test.expected;
+    if (actual == "TEXT" || actual == "IMAGE" || actual == "IMAGE+TEXT")
+      actual = "FAIL";
+    if (actual == "SKIP" && expected.indexOf("WONTFIX") != -1)
+      actual = "WONTFIX";
+    if (expected.indexOf(actual) == -1)
+      expected = actual;
+    if (expected.indexOf(" ") != -1) {  // make actual result bold
+      var regex = new RegExp("(" + actual + ")")
+      var substitute = "<b>$&</b>";
+      expected = expected.replace(regex, substitute);
+    }
+    expected = expected
+      .replace("CRASH", "Crash")
+      .replace("MISSING", "Skip")
+      .replace("PASS", "Pass")
+      .replace("FAIL", "Failure")
+      .replace("SKIP", "Skip")
+      .replace("TIMEOUT", "Timeout")
+      .replace("SLOW", "Slow")
+      .replace("WONTFIX", "Wontfix")
+      .replace("NEEDSMANUALREBASELINE", "NeedsManualRebaseline");
+    status = expected;
+    let bug = test.actual == "PASS" ? "" : "<span class='warn'>NEEDBUG</span>";
+    if ("bugs" in test && test.bugs.length > 0) {
+      bug = test.bugs.join(" ");
+      bug = "<a target='crbug' tabindex='-1' href='https://" + test.bugs[0] + "'>" + bug + "</a>";
+    }
+    html = "";
+    html += bug;
+    html += " " + pathParser.dir + "/"
+      + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
+      + pathParser.file + "</a>";
+    html += " [ " + status + " ]";
+    html = "<div class='expect' tabindex='0' data-id='"+ test.expect_id +"'><div class='details'></div>" + html + "</div>";
+    traversal.html.push(html);
+  }
+}
+
+var lastReport;
+function generateReport(name, filter, report) {
+  report = report || Printers.getDefaultPrinter();
+  filter = filter || lastReport.filter;
+  name = name || lastReport.name;
+  lastReport = { name: name, filter: filter };
+  document.querySelector("#report").innerHTML = "";
+  document.querySelector("#report_title").innerHTML = name;
+
+  setTimeout( _ => {
+    var t = new Traversal(fullResults.tests);
+    t.traverse(filter, report);
+    document.querySelector("#report").innerHTML = t.html.join("\n");
+  }, 0);
+}
+
+function containsPass(str) {
+  return ["PASS", "SLOW"].some( v => str.indexOf(v) != -1);
+}
+
+function containsNoPass(str) {
+  return ["NEEDSMANUALREBASELINE", "WONTFIX", "FAIL", "SKIP", "CRASH"].some(
+    v => str.indexOf(v) != -1);
+}
+
+let Filters = {
+  unexpectedPass: test => {
+    return !containsPass(test.expected) && containsPass(test.actual);
+  },
+  unexpectedFailure: test => {
+    if (containsPass(test.actual))
+      return false;
+    if (test.expected.match(/NEEDSMANUALREBASELINE|WONTFIX/))
+      return false;
+    switch (test.actual) {
+      case "SKIP":
+      case "CRASH":
+      case "TIMEOUT":
+        if (test.expected.indexOf(test.actual) != -1)
+          return false;
+        break;
+      case "TEXT":
+      case "IMAGE":
+      case "IMAGE+TEXT":
+        if (containsNoPass(test.expected))
+          return false;
+        break;
+      case "MISSING":
+        return false;
+      default:
+        console.error("Unexpected test result", test.actual);
+      }
+    return true;
+  },
+  notpass: test => test.actual != "PASS",
+  actual: tag => {
+    return function(test) {
+      return test.actual == tag;
+    }
+  },
+  wontfix: test => test.expected == 'WONTFIX',
+  all: _ => true
+}
+
+function getResultLinks(test) {
+  let links = [];
+  let pathParser = new PathParser(test.expect_path);
+  links.push({text: test.actual});
+  switch(test.actual) {
+    case "PASS":
+    case "SLOW":
+      if (!test.has_stderr)
+        links.push({text: "Test passed without errors"});
+      break;
+    case "SKIP":
+      links.push({text: "Test did not run."});
+      break;
+    case "CRASH":
+      links.push({text: "crash log", link: pathParser.resultLink("-crash-log.txt")});
+      break;
+    case "TIMEOUT":
+      links.push({text: "Test timed out. "
+        + ("time" in test ? `(${test.time}s)` : "")});
+      break;
+    case "TEXT":
+      links.push({text: "actual text", link: pathParser.resultLink('-actual.txt')});
+      if (!test.is_testharness_test) {
+        links.push({text: "expected text", link: pathParser.resultLink('-expected.txt')});
+        links.push({text: "diff", link: pathParser.resultLink('-diff.txt')});
+      }
+      break;
+    case "IMAGE":
+      links.push({text: "actual image", link: pathParser.resultLink("-actual.png")});
+      links.push({text: "expected image ", link: pathParser.resultLink("-expected.png")});
+      links.push({text: "diff", link: pathParser.resultLink("-diff.png")});
+      break;
+    case "IMAGE+TEXT":
+      links.push({text: "actual image", link: pathParser.resultLink("-actual.png")});
+      links.push({text: "expected image ", link: pathParser.resultLink("-expected.png")});
+      links.push({text: "diff", link: pathParser.resultLink("-diff.png")});
+      links.push({text: "actual text", link: pathParser.resultLink('-actual.txt')});
+      if (!test.is_testharness_test) {
+        links.push({text: "expected text", link: pathParser.resultLink('-expected.txt')});
+        links.push({text: "diff", link: pathParser.resultLink('-diff.txt')});
+      }
+      break;
+    case "MISSING":
+      links.push({text: "Test is missing."});
+      break;
+    default:
+      console.error("unexpected actual", test.actual);
+  }
+  if (test.has_stderr) {
+    links.push({text: "stderr", link: pathParser.resultLink("-stderr.txt")});
+  }
+  return links;
+}
+
+function getResultsDiv(test) {
+  let clone = document.importNode(
+    document.querySelector("#genericResult").content, true);
+  let div = clone.children[0];
+  // Initialize the results
+  let menu = div.querySelector(".result-menu");
+  menu.innerHTML = "";
+  for (link of getResultLinks(test)) {
+    let li = document.createElement("li");
+    if (link.link) {
+      let anchor = document.createElement("a");
+      anchor.setAttribute("onclick", "return loadResult(this)");
+      anchor.setAttribute("href", link.link || "");
+      anchor.setAttribute("onfocus", "return loadResult(this)");
+      anchor.innerText = link.text;
+      li.appendChild(anchor);
+    }
+    else {
+      li.innerText = link.text;
+    }
+    menu.appendChild(li);
+  }
+  return div;
+}
+
+function closest(el, className) {
+  while (el) {
+    if (el.classList.contains(className))
+      return el;
+    else
+      el = el.parentNode;
+  }
+}
+
+function loadResult(anchor) {
+  if (!anchor.getAttribute("href"))
+    return false;
+  let frame = closest(anchor, "result-frame");
+  let output = frame.querySelector(".result-output");
+  let iframe = output.querySelector("iframe");
+  if (!iframe) {
+    iframe = document.createElement("iframe");
+    output.appendChild(iframe);
+  }
+  iframe.src = anchor.href;
+  iframe.setAttribute("tabindex", -1);
+  return false;
+}
+
+function showResults(expectation, doNotScroll) {
+  let details = expectation.querySelector(".details");
+  if (details.classList.contains("open"))
+    return;
+  details.classList.add("open");
+  let testId = parseInt(expectation.getAttribute("data-id"));
+  let test;
+  (new Traversal(fullResults.tests)).traverse(function(thisTest) {
+    if (thisTest.expect_id == testId)
+      test = thisTest;
+      return false;
+  });
+  if (!test)
+    console.error("could not find test by id");
+  let results = getResultsDiv(test);
+  results.classList.add("results");
+  expectation.parentNode.insertBefore(results, expectation.nextSibling);
+  let firstLink = results.querySelector(".result-menu a");
+  if (firstLink) {
+    firstLink.click();
+  }
+  if (doNotScroll) {
+    return;
+  }
+  // Scroll into view
+  let bottomDelta = results.offsetTop + results.offsetHeight - document.documentElement.clientHeight - window.scrollY + 48;
+  if (bottomDelta > 0)
+    window.scrollBy(0, bottomDelta);
+  let topDelta = results.offsetTop - document.documentElement.clientHeight - window.scrollY - 24;
+  if (topDelta > 0)
+    window.scrollBy(0, topDelta);
+}
+
+function hideResults(expectation) {
+  let details = expectation.querySelector(".details");
+  if (!details.classList.contains("open"))
+    return;
+  expectation.querySelector(".details").classList.remove("open");
+  expectation.nextSibling.remove();
+}
+
+function toggleResults(expectation, event) {
+  let applyToAll = event && event.altKey;
+  let closeOthers = !applyToAll && event && !event.shiftKey;
+  let details = expectation.querySelector(".details");
+  let isOpen = details.classList.contains("open");
+  if (applyToAll) {
+    let allExpectations = Array.from(document.querySelectorAll(".expect"));
+    if (allExpectations.length > 100) {
+      console.error("Too many details to be shown at once");
+    } else {
+      for (e of allExpectations)
+        if (e != expectation)
+          isOpen ? hideResults(e) : showResults(e, true);
+    }
+  }
+  if (closeOthers) {
+    for (el of Array.from(document.querySelectorAll(".details.open")))
+      hideResults(el.parentNode);
+  }
+  if (isOpen) {
+    hideResults(expectation);
+  }
+  else {
+    showResults(expectation);
+  }
+}
+
+function toggleVisibility(id) {
+  document.querySelector("#" + id).classList.toggle("hidden");
+}
+
+function initPage() {
+  let t = new Traversal(fullResults.tests);
+  // Add ids and paths to all the tests
+  let nextId = 1;
+  t.traverse(
+    test => true,
+    (test, path) => {
+      test.expect_id = nextId++;
+      test.expect_path = path;
+    }
+  );
+  printSummary(fullResults);
+  document.addEventListener("click", function(ev) {
+    if (ev.target.classList.contains("expect")) {
+      toggleResults(ev.target, ev);
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+  });
+  document.addEventListener('keydown', ev => {
+    if (ev.key == "Enter" && ev.target.classList.contains("expect"))
+      toggleResults(ev.target, ev);
+  });
+  // Show unexpected failures on startup.
+  document.querySelector("#button_unexpected_fail").click();
+}
+
+function ADD_FULL_RESULTS(results) {
+  fullResults = results;
+  initPage();
+}
+</script>
+<script src="full_results_jsonp.js"></script>

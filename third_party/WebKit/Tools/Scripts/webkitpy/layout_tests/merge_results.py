@@ -621,3 +621,6 @@ class LayoutTestDirMerger(DirMerger):
         self.add_helper(
             FilenameRegexMatch(r'output\.json$'),
             results_json_file_merger)
+        self.add_helper(
+            FilenameRegexMatch(r'full_results_jsonp\.js$'),
+            results_json_file_merger)

@@ -221,6 +221,8 @@ class Manager(object):
 
             results_path = self._filesystem.join(self._results_directory, 'results.html')
             self._copy_results_html_file(results_path)
+            expectations_path = self._filesystem.join(self._results_directory, 'test-expectations.html')
+            self._copy_testexpectations_html_file(expectations_path)
             if initial_results.keyboard_interrupted:
                 exit_code = exit_codes.INTERRUPTED_EXIT_STATUS
             else:
@@ -491,6 +493,11 @@ class Manager(object):
         full_results_path = self._filesystem.join(self._results_directory, 'full_results.json')
         json_results_generator.write_json(self._filesystem, summarized_full_results, full_results_path)
 
+        full_results_jsonp_path = self._filesystem.join(self._results_directory, 'full_results_jsonp.js')
+        json_results_generator.write_json(self._filesystem,
+                                          summarized_full_results,
+                                          full_results_jsonp_path,
+                                          callback='ADD_FULL_RESULTS')
         full_results_path = self._filesystem.join(self._results_directory, 'failing_results.json')
         # We write failing_results.json out as jsonp because we need to load it
         # from a file url for results.html and Chromium doesn't allow that.
@@ -547,6 +554,12 @@ class Manager(object):
         # so make sure it exists before we try to copy it.
         if self._filesystem.exists(results_file):
             self._filesystem.copyfile(results_file, destination_path)
+
+    def _copy_testexpectations_html_file(self, destination_path):
+        base_dir = self._path_finder.path_from_layout_tests('fast', 'harness')
+        expectations_file = self._filesystem.join(base_dir, 'test-expectations.html')
+        if self._filesystem.exists(expectations_file):
+            self._filesystem.copyfile(expectations_file, destination_path)
 
     def _stats_trie(self, initial_results):
         def _worker_number(worker_name):
