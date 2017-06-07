@@ -93,7 +93,7 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
       base::android::ConvertUTF8ToJavaString(env,
                                              info.best_primary_icon_url.spec());
   ScopedJavaLocalRef<jobject> java_bitmap;
-  if (icon_bitmap.getSize())
+  if (!icon_bitmap.drawsNothing())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
   // The callback will need to be run after shortcut creation completes in order
@@ -122,7 +122,7 @@ void AddShortcutWithSkBitmap(const ShortcutInfo& info,
   ScopedJavaLocalRef<jstring> java_user_title =
       base::android::ConvertUTF16ToJavaString(env, info.user_title);
   ScopedJavaLocalRef<jobject> java_bitmap;
-  if (icon_bitmap.getSize())
+  if (!icon_bitmap.drawsNothing())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
   Java_ShortcutHelper_addShortcut(env, java_id, java_url, java_user_title,
