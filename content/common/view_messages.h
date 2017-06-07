@@ -26,7 +26,6 @@
 #include "content/common/text_input_state.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/favicon_url.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
@@ -94,7 +93,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTextDirection,
                           blink::WebTextDirection::kWebTextDirectionLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDisplayMode,
                           blink::WebDisplayMode::kWebDisplayModeLast)
-IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::MenuItem::Type)
 IPC_ENUM_TRAITS_MAX_VALUE(content::NavigationGesture,
                           content::NavigationGestureLast)
@@ -206,12 +204,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::DateTimeSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(value)
   IPC_STRUCT_TRAITS_MEMBER(localized_value)
   IPC_STRUCT_TRAITS_MEMBER(label)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::FaviconURL)
-  IPC_STRUCT_TRAITS_MEMBER(icon_url)
-  IPC_STRUCT_TRAITS_MEMBER(icon_type)
-  IPC_STRUCT_TRAITS_MEMBER(icon_sizes)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
@@ -835,10 +827,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,
                     gfx::Rect, /* Border of touched targets */
                     gfx::Size, /* Size of zoomed image */
                     cc::SharedBitmapId /* id */)
-
-// Notification that the urls for the favicon of a site has been determined.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateFaviconURL,
-                    std::vector<content::FaviconURL> /* candidates */)
 
 // Message sent from renderer to the browser when the element that is focused
 // has been touched. A bool is passed in this message which indicates if the

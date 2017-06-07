@@ -6,9 +6,7 @@
 
 namespace content {
 
-FaviconURL::FaviconURL()
-  : icon_type(INVALID_ICON) {
-}
+FaviconURL::FaviconURL() : icon_type(IconType::kInvalid) {}
 
 FaviconURL::FaviconURL(const GURL& url,
                        IconType type,

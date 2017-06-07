@@ -116,6 +116,14 @@ class WebLocalFrame : public WebFrame {
   virtual void SetSharedWorkerRepositoryClient(
       WebSharedWorkerRepositoryClient*) = 0;
 
+  // Basic properties ---------------------------------------------------
+
+  // The urls of the given combination types of favicon (if any) specified by
+  // the document loaded in this frame. The iconTypesMask is a bit-mask of
+  // WebIconURL::Type values, used to select from the available set of icon
+  // URLs
+  virtual WebVector<WebIconURL> IconURLs(int icon_types_mask) const = 0;
+
   // Hierarchy ----------------------------------------------------------
 
   // Get the highest-level LocalFrame in this frame's in-process subtree.

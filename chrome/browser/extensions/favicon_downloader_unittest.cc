@@ -103,8 +103,9 @@ TEST_F(FaviconDownloaderTest, SimpleDownload) {
   TestFaviconDownloader downloader(web_contents(), std::vector<GURL>());
 
   std::vector<content::FaviconURL> favicon_urls;
-  favicon_urls.push_back(content::FaviconURL(
-      favicon_url, content::FaviconURL::FAVICON, std::vector<gfx::Size>()));
+  favicon_urls.push_back(
+      content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
+                          std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   EXPECT_EQ(0u, downloader.pending_requests());
 
@@ -124,8 +125,9 @@ TEST_F(FaviconDownloaderTest, DownloadWithUrlsFromWebContentsNotification) {
   TestFaviconDownloader downloader(web_contents(), std::vector<GURL>());
 
   std::vector<content::FaviconURL> favicon_urls;
-  favicon_urls.push_back(content::FaviconURL(
-      favicon_url, content::FaviconURL::FAVICON, std::vector<gfx::Size>()));
+  favicon_urls.push_back(
+      content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
+                          std::vector<gfx::Size>()));
   EXPECT_EQ(0u, downloader.pending_requests());
 
   // Start downloader before favicon URLs are loaded.
@@ -157,15 +159,16 @@ TEST_F(FaviconDownloaderTest, DownloadMultipleUrls) {
   TestFaviconDownloader downloader(web_contents(), extra_urls);
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(content::FaviconURL(
-      favicon_url_1, content::FaviconURL::FAVICON, std::vector<gfx::Size>()));
+      favicon_url_1, content::FaviconURL::IconType::kFavicon,
+      std::vector<gfx::Size>()));
   // This is duplicated in the favicon urls and should only be downloaded once.
   favicon_urls.push_back(content::FaviconURL(
-      empty_favicon, content::FaviconURL::FAVICON, std::vector<gfx::Size>()));
+      empty_favicon, content::FaviconURL::IconType::kFavicon,
+      std::vector<gfx::Size>()));
   // Invalid icons shouldn't get put into the download queue.
-  favicon_urls.push_back(
-      content::FaviconURL(GURL("http://www.google.com/invalid.ico"),
-                          content::FaviconURL::INVALID_ICON,
-                          std::vector<gfx::Size>()));
+  favicon_urls.push_back(content::FaviconURL(
+      GURL("http://www.google.com/invalid.ico"),
+      content::FaviconURL::IconType::kInvalid, std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   downloader.Start();
   EXPECT_EQ(3u, downloader.pending_requests());
@@ -201,7 +204,8 @@ TEST_F(FaviconDownloaderTest, SkipPageFavicons) {
   // This favicon URL should be ignored.
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(content::FaviconURL(
-      favicon_url_2, content::FaviconURL::FAVICON, std::vector<gfx::Size>()));
+      favicon_url_2, content::FaviconURL::IconType::kFavicon,
+      std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   downloader.SkipPageFavicons();
   downloader.Start();

@@ -60,7 +60,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/favicon_url.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
@@ -220,7 +219,6 @@ using blink::WebGestureEvent;
 using blink::WebHistoryItem;
 using blink::WebHTTPBody;
 using blink::WebHitTestResult;
-using blink::WebIconURL;
 using blink::WebImage;
 using blink::WebInputElement;
 using blink::WebInputEvent;
@@ -345,29 +343,6 @@ static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
   if (!compositor_deps->IsLcdTextEnabled())
     return true;
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
-}
-
-static FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
-  switch (type) {
-    case blink::WebIconURL::kTypeFavicon:
-      return FaviconURL::FAVICON;
-    case blink::WebIconURL::kTypeTouch:
-      return FaviconURL::TOUCH_ICON;
-    case blink::WebIconURL::kTypeTouchPrecomposed:
-      return FaviconURL::TOUCH_PRECOMPOSED_ICON;
-    case blink::WebIconURL::kTypeInvalid:
-      return FaviconURL::INVALID_ICON;
-  }
-  return FaviconURL::INVALID_ICON;
-}
-
-static void ConvertToFaviconSizes(
-    const blink::WebVector<blink::WebSize>& web_sizes,
-    std::vector<gfx::Size>* sizes) {
-  DCHECK(sizes->empty());
-  sizes->reserve(web_sizes.size());
-  for (size_t i = 0; i < web_sizes.size(); ++i)
-    sizes->push_back(gfx::Size(web_sizes[i]));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1549,7 +1524,6 @@ void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
     return;
   frames_in_progress_--;
   if (frames_in_progress_ == 0) {
-    DidStopLoadingIcons();
     for (auto& observer : observers_)
       observer.DidStopLoading();
   }
@@ -1906,22 +1880,6 @@ gfx::RectF RenderViewImpl::ElementBoundsInWindow(
 
 bool RenderViewImpl::HasAddedInputHandler() const {
   return has_added_input_handler_;
-}
-
-void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
-                                   WebIconURL::Type icon_type) {
-  if (frame->Parent())
-    return;
-
-  WebVector<WebIconURL> icon_urls = frame->IconURLs(icon_type);
-  std::vector<FaviconURL> urls;
-  for (size_t i = 0; i < icon_urls.size(); i++) {
-    std::vector<gfx::Size> sizes;
-    ConvertToFaviconSizes(icon_urls[i].Sizes(), &sizes);
-    urls.push_back(FaviconURL(icon_urls[i].GetIconURL(),
-                              ToFaviconType(icon_urls[i].IconType()), sizes));
-  }
-  SendUpdateFaviconURL(urls);
 }
 
 void RenderViewImpl::CheckPreferredSize() {
@@ -2589,35 +2547,6 @@ void RenderViewImpl::DidCommitCompositorFrame() {
   RenderWidget::DidCommitCompositorFrame();
   for (auto& observer : observers_)
     observer.DidCommitCompositorFrame();
-}
-
-void RenderViewImpl::SendUpdateFaviconURL(const std::vector<FaviconURL>& urls) {
-  if (!urls.empty())
-    Send(new ViewHostMsg_UpdateFaviconURL(GetRoutingID(), urls));
-}
-
-void RenderViewImpl::DidStopLoadingIcons() {
-  int icon_types = WebIconURL::kTypeFavicon |
-                   WebIconURL::kTypeTouchPrecomposed | WebIconURL::kTypeTouch;
-
-  // Favicons matter only for the top-level frame. If it is a WebRemoteFrame,
-  // just return early.
-  if (webview()->MainFrame()->IsWebRemoteFrame())
-    return;
-
-  WebVector<WebIconURL> icon_urls =
-      webview()->MainFrame()->IconURLs(icon_types);
-
-  std::vector<FaviconURL> urls;
-  for (size_t i = 0; i < icon_urls.size(); i++) {
-    WebURL url = icon_urls[i].GetIconURL();
-    std::vector<gfx::Size> sizes;
-    ConvertToFaviconSizes(icon_urls[i].Sizes(), &sizes);
-    if (!url.IsEmpty())
-      urls.push_back(
-          FaviconURL(url, ToFaviconType(icon_urls[i].IconType()), sizes));
-  }
-  SendUpdateFaviconURL(urls);
 }
 
 void RenderViewImpl::UpdateWebViewWithDeviceScaleFactor() {

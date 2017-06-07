@@ -126,12 +126,6 @@ class WebFrame {
   // frame name unique within the hierarchy.
   virtual void SetName(const WebString&) = 0;
 
-  // The urls of the given combination types of favicon (if any) specified by
-  // the document loaded in this frame. The iconTypesMask is a bit-mask of
-  // WebIconURL::Type values, used to select from the available set of icon
-  // URLs
-  virtual WebVector<WebIconURL> IconURLs(int icon_types_mask) const = 0;
-
   // The security origin of this frame.
   BLINK_EXPORT WebSecurityOrigin GetSecurityOrigin() const;
 
