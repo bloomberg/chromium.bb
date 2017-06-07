@@ -9,9 +9,6 @@
 
 namespace blink {
 using cc::PaintShader;
-using cc::MakePaintShaderImage;
-using cc::MakePaintShaderRecord;
-using cc::WrapSkShader;
 }
 
 #endif  // PaintShader_h

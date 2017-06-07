@@ -355,13 +355,13 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
                                  phase.Y() + spaced_tile.Y());
 
   PaintFlags flags;
-  flags.setShader(
-      MakePaintShaderRecord(record, spaced_tile, SkShader::kRepeat_TileMode,
-                            SkShader::kRepeat_TileMode, &pattern_transform));
+  flags.setShader(PaintShader::MakePaintRecord(
+      record, spaced_tile, SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode, &pattern_transform));
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
-  if (!flags.getShader())
+  if (!flags.HasShader())
     flags.setColor(SK_ColorTRANSPARENT);
 
   flags.setBlendMode(composite_op);
@@ -403,7 +403,7 @@ bool SVGImage::ApplyShaderInternal(PaintFlags& flags,
 
   IntRect bounds(IntPoint(), size);
 
-  flags.setShader(MakePaintShaderRecord(
+  flags.setShader(PaintShader::MakePaintRecord(
       PaintRecordForCurrentFrame(bounds, url), bounds,
       SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &local_matrix));
 
