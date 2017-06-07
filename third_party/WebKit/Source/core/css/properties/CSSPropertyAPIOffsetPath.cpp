@@ -13,7 +13,7 @@ const CSSValue* CSSPropertyAPIOffsetPath::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  return CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range, &context);
+  return CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range, context);
 }
 
 }  // namespace blink
