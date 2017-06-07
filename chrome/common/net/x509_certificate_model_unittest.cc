@@ -76,8 +76,8 @@ TEST(X509CertificateModelTest, GetExtensions) {
 
     EXPECT_EQ("Certificate Subject Key ID", extensions[1].name);
     EXPECT_EQ(
-        "notcrit\nKey ID: BC F7 30 D1 3C C0 F2 79 FA EF 9F C9 6C 5C 93 F3\n8A "
-        "68 AB 83",
+        "notcrit\nKey ID: 9B 26 0B 8A 98 A9 BB 1D B9 1F 1C E3 1A 40 33 ED\n8E "
+        "17 88 AB",
         extensions[1].value);
 
     EXPECT_EQ("Certificate Key Usage", extensions[2].name);
@@ -330,10 +330,10 @@ TEST(X509CertificateModelTest, ProcessSecAlgorithms) {
         net::GetTestCertsDirectory(), "root_ca_cert.pem"));
     ASSERT_TRUE(cert.get());
 
-    EXPECT_EQ("PKCS #1 SHA-1 With RSA Encryption",
+    EXPECT_EQ("PKCS #1 SHA-256 With RSA Encryption",
               x509_certificate_model::ProcessSecAlgorithmSignature(
                   cert->os_cert_handle()));
-    EXPECT_EQ("PKCS #1 SHA-1 With RSA Encryption",
+    EXPECT_EQ("PKCS #1 SHA-256 With RSA Encryption",
               x509_certificate_model::ProcessSecAlgorithmSignatureWrap(
                   cert->os_cert_handle()));
     EXPECT_EQ("PKCS #1 RSA Encryption",
@@ -365,22 +365,22 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
 
     EXPECT_EQ(
         "Modulus (2048 bits):\n"
-        "  B6 49 41 E3 42 01 51 A8 7F 3C 7A 71 D3 FB CD 91\n"
-        "35 17 84 1A 8E F6 36 C7 D1 70 1D FA 86 F3 6E BB\n"
-        "76 6F E8 32 2E 37 FD 38 92 3D 68 E4 8A 7D 42 33\n"
-        "14 46 1B DC 04 F6 91 6E 54 40 C4 0A 09 FD EC 2D\n"
-        "62 E2 5E E1 BA 2C 9C C1 B1 60 4C DA C7 F8 22 5C\n"
-        "82 20 65 42 1E 56 77 75 4F EB 90 2C 4A EA 57 0E\n"
-        "22 8D 6C 95 AC 11 EA CC D7 EE F6 70 0D 09 DD A6\n"
-        "35 61 5D C9 76 6D B0 F2 1E BF 30 86 D8 77 52 36\n"
-        "95 97 0E D1 46 C5 ED 81 3D 1B B0 F2 61 95 3C C1\n"
-        "40 38 EF 5F 5D BA 61 9F EF 2B 9C 9F 85 89 74 70\n"
-        "63 D5 76 E8 35 7E CE 01 E1 F3 11 11 90 1C 0D F5\n"
-        "FD 8D CE 10 6C AD 7C 55 1A 21 6F D7 2D F4 78 15\n"
-        "EA 2F 38 BD 91 9E 3C 1D 07 46 F5 43 C1 82 8B AF\n"
-        "12 53 65 19 8A 69 69 66 06 B2 DA 0B FA 2A 00 A1\n"
-        "2A 15 84 49 F1 01 BF 9B 30 06 D0 15 A0 1F 9D 51\n"
-        "91 47 E1 53 5F EF 5E EC C2 61 79 C2 14 9F C4 E3\n"
+        "  C6 81 1F 92 73 B6 58 85 D9 8D AC B7 20 FD C7 BF\n"
+        "40 B2 EA FA E5 0B 52 01 8F 9A C1 EB 7A 80 C1 F3\n"
+        "89 A4 3E D5 1B 61 CC B5 CF 80 B1 1A DB BB 25 E0\n"
+        "18 BF 92 69 26 50 CD E7 3F FF 0D 3C B4 1F 14 12\n"
+        "AB 67 37 DE 07 03 6C 12 74 82 36 AC C3 D4 D3 64\n"
+        "9F 91 ED 5B F6 A9 7A A4 9C 98 E8 65 6C 94 E1 CB\n"
+        "55 73 AE F8 1D 50 B0 78 E5 74 FF B1 37 2C CB 19\n"
+        "3D A4 8C E7 76 4E 86 5C 3F DF B3 ED 45 23 4F 54\n"
+        "9B 33 C6 89 5E 13 1D DD 7D 59 A5 07 34 28 86 27\n"
+        "1F FA 9E 53 4F 2A B6 42 AD 37 12 62 F5 72 36 B6\n"
+        "02 12 40 44 FE C7 9E 95 89 43 51 5E B4 6E C7 67\n"
+        "80 58 43 BE CC 07 28 BD 59 FF 1C 4C 8D 90 42 F4\n"
+        "CF FD 54 00 4F 48 72 2B E1 67 3C 84 17 68 95 BF\n"
+        "CA 07 7B DF 86 9D 56 E3 32 E3 70 87 B7 F8 3A F7\n"
+        "E3 6E 65 14 7C BB 76 B7 17 F1 42 8C 6F 2A 34 64\n"
+        "10 35 14 8C 85 F6 57 BF F3 5C 55 9D AD 03 10 F3\n"
         "\n"
         "  Public Exponent (24 bits):\n"
         "  01 00 01",
@@ -409,22 +409,22 @@ TEST(X509CertificateModelTest, ProcessRawBitsSignatureWrap) {
   ASSERT_TRUE(cert.get());
 
   EXPECT_EQ(
-      "57 07 29 FB 7F E8 FF B0 E6 D8 58 6A C3 90 A1 38\n"
-      "1C B4 F3 68 B1 EC E8 89 23 24 D7 A8 F2 21 C3 60\n"
-      "E4 A4 49 5C 00 BF DF C7 82 78 80 2B 18 F7 AD DD\n"
-      "D0 62 5E A7 B0 CC F0 AA B4 CE 70 12 59 65 67 76\n"
-      "05 00 18 9A FF C4 2A 17 E3 F1 55 D8 BE 5C 5E EB\n"
-      "CA CB 53 87 10 D5 09 32 36 A7 5E 41 F4 53 DA 7E\n"
-      "56 60 D2 7E 4E 9A A5 08 5F 5D 75 E9 E7 30 CB 22\n"
-      "E9 EF 19 49 83 A5 23 A1 F8 60 4C E5 36 D5 39 78\n"
-      "18 F1 5E BF CE AA 0B 53 81 2C 78 A9 0A 6B DB 13\n"
-      "10 21 14 7F 1B 70 3D 89 1A 40 8A 06 2C 5D 50 19\n"
-      "62 F9 C7 45 89 F2 3D 66 05 3D 7D 75 5B 55 1E 80\n"
-      "42 72 A1 9A 7C 6D 0A 74 F6 EE A6 21 6C 3A 98 FB\n"
-      "77 82 5F F2 6B 56 E6 DD 9B 8E 50 F0 C6 AE FD EA\n"
-      "A6 05 07 A9 26 06 56 B3 B2 D9 B2 37 A0 21 3E 79\n"
-      "06 1F B9 51 BE F4 B1 49 4D 90 B5 33 E5 0E C7 5E\n"
-      "5B 40 C5 6A 04 D1 43 7A 94 6A A4 4F 61 FC 82 E0",
+      "5B 53 FF 6D D5 0A 43 A5 0F D4 7D C6 5D 88 E3 98\n"
+      "9D 67 EB 32 82 B3 0F F5 C1 78 F8 05 4A BF BC 21\n"
+      "05 EE 21 08 2C B2 15 A1 B8 B2 F6 A3 15 61 E4 C1\n"
+      "AD 84 A4 A7 40 0C 87 09 5F 2B 1B F9 4D 6C 92 7D\n"
+      "CB 7E 2B B0 01 0A ED 40 E5 4E AF 1A F1 0D EC 1D\n"
+      "9E 96 C7 D4 61 64 39 23 FA 5F 29 C4 2A 3A B8 ED\n"
+      "8A 72 50 6A AC 45 04 76 09 A8 3D 57 D7 F0 4B AE\n"
+      "46 B4 83 C1 14 50 2A 19 59 53 B2 4D AE FC 2F 40\n"
+      "49 C8 AD 4D 9D C8 22 8D 8C 01 DB 31 33 5A F4 BC\n"
+      "4C 9B ED D7 E3 43 D9 E8 1D 53 8B 30 D8 81 9E 72\n"
+      "AB 9E CE B8 F5 83 93 F2 72 DB DE CD B0 52 9A 45\n"
+      "4D CF E7 21 D8 CE 16 64 8F 42 AF C1 87 A8 F9 D5\n"
+      "E2 03 DD BA 6B 1B 7C 7D A0 38 33 61 39 B4 DD 5C\n"
+      "69 17 79 02 3A EC 1D 6F 5E BB 13 FB A6 82 5D 07\n"
+      "20 FC 86 FE 6E 8B AC E1 C2 18 A2 FE 3F 95 66 D3\n"
+      "69 8A 00 06 2C 56 37 34 B9 B6 31 DE 0F F6 44 39",
       x509_certificate_model::ProcessRawBitsSignatureWrap(
           cert->os_cert_handle()));
 }

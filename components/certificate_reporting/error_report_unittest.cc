@@ -41,7 +41,7 @@ namespace {
 
 const char kDummyHostname[] = "dummy.hostname.com";
 const char kDummyFailureLog[] = "dummy failure log";
-const char kTestCertFilename[] = "test_mail_google_com.pem";
+const char kTestCertFilename[] = "x509_verify_results.chain.pem";
 
 const net::CertStatus kCertStatus =
     net::CERT_STATUS_COMMON_NAME_INVALID | net::CERT_STATUS_REVOKED;
@@ -76,10 +76,17 @@ void GetTestSSLInfo(UnverifiedCertChainStatus unverified_cert_chain_status,
 }
 
 std::string GetPEMEncodedChain() {
-  base::FilePath cert_path =
-      net::GetTestCertsDirectory().AppendASCII(kTestCertFilename);
   std::string cert_data;
-  EXPECT_TRUE(base::ReadFileToString(cert_path, &cert_data));
+  std::vector<std::string> pem_certs;
+  scoped_refptr<net::X509Certificate> cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), kTestCertFilename);
+  if (!cert || !cert->GetPEMEncodedChain(&pem_certs)) {
+    ADD_FAILURE();
+    return cert_data;
+  }
+  for (const auto& cert : pem_certs) {
+    cert_data += cert;
+  }
   return cert_data;
 }
 
