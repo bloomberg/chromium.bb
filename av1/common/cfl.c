@@ -155,24 +155,16 @@ void cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
               int col, int width, int height) {
   const int sub_x = cfl->subsampling_x;
   const int sub_y = cfl->subsampling_y;
-  const int tx_off_log2 = tx_size_wide_log2[0];
+  const int off_log2 = tx_size_wide_log2[0];
 
   const uint8_t *y_pix;
 
-  int diff_width = 0;
-  int diff_height = 0;
-
   int pred_row_offset = 0;
   int output_row_offset = 0;
-  int top_left, bot_left;
 
   // TODO(ltrudeau) add support for 4:2:2
   if (sub_y == 0 && sub_x == 0) {
-    y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << tx_off_log2];
-    int uv_width = (col << tx_off_log2) + width;
-    diff_width = uv_width - cfl->y_width;
-    int uv_height = (row << tx_off_log2) + height;
-    diff_height = uv_height - cfl->y_height;
+    y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << off_log2];
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
         // In 4:4:4, pixels match 1 to 1
@@ -182,15 +174,11 @@ void cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
       output_row_offset += output_stride;
     }
   } else if (sub_y == 1 && sub_x == 1) {
-    y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << (tx_off_log2 + sub_y)];
-    int uv_width = ((col << tx_off_log2) + width) << sub_x;
-    diff_width = (uv_width - cfl->y_width) >> sub_x;
-    int uv_height = ((row << tx_off_log2) + height) << sub_y;
-    diff_height = (uv_height - cfl->y_height) >> sub_y;
+    y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << (off_log2 + sub_y)];
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
-        top_left = (pred_row_offset + i) << sub_y;
-        bot_left = top_left + MAX_SB_SIZE;
+        int top_left = (pred_row_offset + i) << sub_y;
+        int bot_left = top_left + MAX_SB_SIZE;
         // In 4:2:0, average pixels in 2x2 grid
         output[output_row_offset + i] = OD_SHR_ROUND(
             y_pix[top_left] + y_pix[top_left + 1]        // Top row
@@ -212,6 +200,12 @@ void cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
   // overrun,
   // we apply rows first. This way, when the rows overrun the bottom of the
   // frame, the columns will be copied over them.
+  const int uv_width = (col << off_log2) + width;
+  const int uv_height = (row << off_log2) + height;
+
+  const int diff_width = uv_width - (cfl->y_width >> sub_x);
+  const int diff_height = uv_height - (cfl->y_height >> sub_y);
+
   if (diff_width > 0) {
     int last_pixel;
     output_row_offset = width - diff_width;
@@ -226,7 +220,7 @@ void cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
   }
 
   if (diff_height > 0) {
-    output_row_offset = diff_height * output_stride;
+    output_row_offset = (height - diff_height) * output_stride;
     const int last_row_offset = output_row_offset - output_stride;
     for (int j = 0; j < diff_height; j++) {
       for (int i = 0; i < width; i++) {
