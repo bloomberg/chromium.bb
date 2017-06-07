@@ -695,8 +695,6 @@ static_library("extensions") {
     "ntp_overridden_bubble_delegate.h",
     "pack_extension_job.cc",
     "pack_extension_job.h",
-    "path_util.cc",
-    "path_util.h",
     "pending_extension_info.cc",
     "pending_extension_info.h",
     "pending_extension_manager.cc",
