@@ -178,7 +178,7 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
   DevToolsURLInterceptorRequestJob* job = new DevToolsURLInterceptorRequestJob(
       this, interception_id, request, network_delegate,
       intercepted_page->web_contents, intercepted_page->network_handler,
-      is_redirect);
+      is_redirect, resource_request_info->GetResourceType());
   interception_id_to_job_map_[interception_id] = job;
   return job;
 }
