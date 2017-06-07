@@ -38,4 +38,26 @@ TEST_F(LockScreenControllerTest, RequestAuthentication) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(LockScreenControllerTest, RequestEasyUnlock) {
+  LockScreenController* controller = Shell::Get()->lock_screen_controller();
+  std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
+
+  AccountId id = AccountId::FromUserEmail("user1@test.com");
+
+  // Verify AttemptUnlock mojo call is run with the same account id.
+  EXPECT_CALL(*client, AttemptUnlock(id));
+  controller->AttemptUnlock(id);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify HardlockPod mojo call is run with the same account id.
+  EXPECT_CALL(*client, HardlockPod(id));
+  controller->HardlockPod(id);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify RecordClickOnLockIcon mojo call is run with the same account id.
+  EXPECT_CALL(*client, RecordClickOnLockIcon(id));
+  controller->RecordClickOnLockIcon(id);
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace ash

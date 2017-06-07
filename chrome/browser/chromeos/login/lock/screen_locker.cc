@@ -29,6 +29,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/login/lock/views_screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
@@ -165,37 +166,6 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
 
-// Mojo delegate that calls into the views-based lock screen via mojo.
-class MojoDelegate : public ScreenLocker::Delegate {
- public:
-  MojoDelegate() = default;
-  ~MojoDelegate() override = default;
-
-  // ScreenLocker::Delegate:
-  void SetPasswordInputEnabled(bool enabled) override { NOTIMPLEMENTED(); }
-  void ShowErrorMessage(int error_msg_id,
-                        HelpAppLauncher::HelpTopic help_topic_id) override {
-    // TODO(xiaoyinh): Complete the implementation here.
-    LockScreenClient::Get()->ShowErrorMessage(0 /* login_attempts */,
-                                              std::string(), std::string(),
-                                              static_cast<int>(help_topic_id));
-  }
-  void ClearErrors() override { LockScreenClient::Get()->ClearErrors(); }
-  void AnimateAuthenticationSuccess() override { NOTIMPLEMENTED(); }
-  void OnLockWebUIReady() override { NOTIMPLEMENTED(); }
-  void OnLockBackgroundDisplayed() override { NOTIMPLEMENTED(); }
-  void OnHeaderBarVisible() override { NOTIMPLEMENTED(); }
-  void OnAshLockAnimationFinished() override { NOTIMPLEMENTED(); }
-  void SetFingerprintState(const AccountId& account_id,
-                           ScreenLocker::FingerprintState state) override {
-    NOTIMPLEMENTED();
-  }
-  content::WebContents* GetWebContents() override { return nullptr; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MojoDelegate);
-};
-
 ScreenLockObserver* g_screen_lock_observer = nullptr;
 
 }  // namespace
@@ -240,21 +210,19 @@ void ScreenLocker::Init() {
   extended_authenticator_ = ExtendedAuthenticator::Create(this);
   if (IsUsingMdLogin()) {
     // Create delegate that calls into the views-based lock screen via mojo.
-    delegate_ = new MojoDelegate();
-    owns_delegate_ = true;
+    views_screen_locker_ = base::MakeUnique<ViewsScreenLocker>(this);
+    delegate_ = views_screen_locker_.get();
+    views_screen_locker_->Init();
 
     // Create and display lock screen.
     // TODO(jdufault): Calling ash::ShowLockScreenInWidget should be a mojo
     // call. We should only set the session state to locked after the mojo call
     // has completed.
-    if (ash::ShowLockScreen()) {
-      session_manager::SessionManager::Get()->SetSessionState(
-          session_manager::SessionState::LOCKED);
-    }
+    if (ash::ShowLockScreen())
+      views_screen_locker_->OnLockScreenReady();
   } else {
     web_ui_.reset(new WebUIScreenLocker(this));
     delegate_ = web_ui_.get();
-    owns_delegate_ = false;
     web_ui_->LockScreen();
 
     // Ownership of |icon_image_source| is passed.
@@ -618,12 +586,6 @@ ScreenLocker::~ScreenLocker() {
 
   if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
-  }
-
-  if (owns_delegate_) {
-    owns_delegate_ = false;
-    delete delegate_;
-    delegate_ = nullptr;
   }
 }
 

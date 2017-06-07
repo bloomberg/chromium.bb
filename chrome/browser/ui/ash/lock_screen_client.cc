@@ -13,6 +13,9 @@ namespace {
 LockScreenClient* g_instance = nullptr;
 }  // namespace
 
+LockScreenClient::Delegate::Delegate() = default;
+LockScreenClient::Delegate::~Delegate() = default;
+
 LockScreenClient::LockScreenClient() : binding_(this) {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
@@ -47,6 +50,24 @@ void LockScreenClient::AuthenticateUser(const AccountId& account_id,
   chromeos::ScreenLocker::default_screen_locker()->Authenticate(user_context);
 }
 
+void LockScreenClient::AttemptUnlock(const AccountId& account_id) {
+  if (!delegate_)
+    return;
+  delegate_->HandleAttemptUnlock(account_id);
+}
+
+void LockScreenClient::HardlockPod(const AccountId& account_id) {
+  if (!delegate_)
+    return;
+  delegate_->HandleHardlockPod(account_id);
+}
+
+void LockScreenClient::RecordClickOnLockIcon(const AccountId& account_id) {
+  if (!delegate_)
+    return;
+  delegate_->HandleRecordClickOnLockIcon(account_id);
+}
+
 void LockScreenClient::ShowErrorMessage(int32_t login_attempts,
                                         const std::string& error_text,
                                         const std::string& help_link_text,
@@ -57,4 +78,29 @@ void LockScreenClient::ShowErrorMessage(int32_t login_attempts,
 
 void LockScreenClient::ClearErrors() {
   lock_screen_->ClearErrors();
+}
+
+void LockScreenClient::ShowUserPodCustomIcon(
+    const AccountId& account_id,
+    ash::mojom::UserPodCustomIconOptionsPtr icon) {
+  lock_screen_->ShowUserPodCustomIcon(account_id, std::move(icon));
+}
+
+void LockScreenClient::HideUserPodCustomIcon(const AccountId& account_id) {
+  lock_screen_->HideUserPodCustomIcon(account_id);
+}
+
+void LockScreenClient::SetAuthType(const AccountId& account_id,
+                                   ash::mojom::AuthType auth_type,
+                                   const base::string16& initial_value) {
+  lock_screen_->SetAuthType(account_id, auth_type, initial_value);
+}
+
+void LockScreenClient::LoadUsers(std::unique_ptr<base::ListValue> users_list,
+                                 bool show_guest) {
+  lock_screen_->LoadUsers(std::move(users_list), show_guest);
+}
+
+void LockScreenClient::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
 }

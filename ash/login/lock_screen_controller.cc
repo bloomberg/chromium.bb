@@ -17,17 +17,6 @@ void LockScreenController::BindRequest(mojom::LockScreenRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void LockScreenController::AuthenticateUser(const AccountId& account_id,
-                                            const std::string& password,
-                                            bool authenticated_by_pin) {
-  if (!lock_screen_client_)
-    return;
-
-  chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
-      &LockScreenController::DoAuthenticateUser, base::Unretained(this),
-      account_id, password, authenticated_by_pin));
-}
-
 void LockScreenController::SetClient(mojom::LockScreenClientPtr client) {
   lock_screen_client_ = std::move(client);
 }
@@ -41,6 +30,56 @@ void LockScreenController::ShowErrorMessage(int32_t login_attempts,
 
 void LockScreenController::ClearErrors() {
   NOTIMPLEMENTED();
+}
+
+void LockScreenController::ShowUserPodCustomIcon(
+    const AccountId& account_id,
+    mojom::UserPodCustomIconOptionsPtr icon) {
+  NOTIMPLEMENTED();
+}
+
+void LockScreenController::HideUserPodCustomIcon(const AccountId& account_id) {
+  NOTIMPLEMENTED();
+}
+
+void LockScreenController::SetAuthType(const AccountId& account_id,
+                                       mojom::AuthType auth_type,
+                                       const base::string16& initial_value) {
+  NOTIMPLEMENTED();
+}
+
+void LockScreenController::LoadUsers(std::unique_ptr<base::ListValue> users,
+                                     bool show_guest) {
+  NOTIMPLEMENTED();
+}
+
+void LockScreenController::AuthenticateUser(const AccountId& account_id,
+                                            const std::string& password,
+                                            bool authenticated_by_pin) {
+  if (!lock_screen_client_)
+    return;
+
+  chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
+      &LockScreenController::DoAuthenticateUser, base::Unretained(this),
+      account_id, password, authenticated_by_pin));
+}
+
+void LockScreenController::AttemptUnlock(const AccountId& account_id) {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->AttemptUnlock(account_id);
+}
+
+void LockScreenController::HardlockPod(const AccountId& account_id) {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->HardlockPod(account_id);
+}
+
+void LockScreenController::RecordClickOnLockIcon(const AccountId& account_id) {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->RecordClickOnLockIcon(account_id);
 }
 
 void LockScreenController::DoAuthenticateUser(const AccountId& account_id,

@@ -46,8 +46,10 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
                                const std::string& default_locale,
                                bool multiple_recommended_locales) override;
   void ShowBannerMessage(const base::string16& message) override;
-  void ShowUserPodCustomIcon(const AccountId& account_id,
-                             const base::DictionaryValue& icon) override;
+  void ShowUserPodCustomIcon(
+      const AccountId& account_id,
+      const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
+          icon_options) override;
   void HideUserPodCustomIcon(const AccountId& account_id) override;
   void SetAuthType(
       const AccountId& account_id,

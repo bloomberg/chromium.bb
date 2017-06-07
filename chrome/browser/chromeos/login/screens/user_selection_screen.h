@@ -115,6 +115,8 @@ class UserSelectionScreen
   // Determines if user auth status requires online sign in.
   static bool ShouldForceOnlineSignIn(const user_manager::User* user);
 
+  std::unique_ptr<base::ListValue> PrepareUserList();
+
  protected:
   UserBoardView* view_ = nullptr;
 
@@ -153,6 +155,8 @@ class UserSelectionScreen
 
   // Helper to check whether a user needs dircrypto migration.
   std::unique_ptr<DircryptoMigrationChecker> dircrypto_migration_checker_;
+
+  user_manager::UserList users_to_send_;
 
   base::WeakPtrFactory<UserSelectionScreen> weak_factory_;
 

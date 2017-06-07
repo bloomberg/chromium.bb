@@ -33,8 +33,16 @@ class ASH_EXPORT LockScreenController
                         const std::string& help_link_text,
                         int32_t help_topic_id) override;
   void ClearErrors() override;
+  void ShowUserPodCustomIcon(const AccountId& account_id,
+                             mojom::UserPodCustomIconOptionsPtr icon) override;
+  void HideUserPodCustomIcon(const AccountId& account_id) override;
+  void SetAuthType(const AccountId& account_id,
+                   mojom::AuthType auth_type,
+                   const base::string16& initial_value) override;
+  void LoadUsers(std::unique_ptr<base::ListValue> users,
+                 bool show_guest) override;
 
-  // Wrappers around the mojom::SystemTrayClient interface.
+  // Wrappers around the mojom::LockScreenClient interface.
   // Hash the password and send AuthenticateUser request to LockScreenClient.
   // LockScreenClient(chrome) will do the authentication and request to show
   // error messages in the lock screen if auth fails, or request to clear
@@ -42,6 +50,9 @@ class ASH_EXPORT LockScreenController
   void AuthenticateUser(const AccountId& account_id,
                         const std::string& password,
                         bool authenticated_by_pin);
+  void AttemptUnlock(const AccountId& account_id);
+  void HardlockPod(const AccountId& account_id);
+  void RecordClickOnLockIcon(const AccountId& account_id);
 
  private:
   void DoAuthenticateUser(const AccountId& account_id,
