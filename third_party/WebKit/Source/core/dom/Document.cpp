@@ -3868,27 +3868,68 @@ bool Document::ChildTypeAllowed(NodeType type) const {
   return false;
 }
 
+// This is an implementation of step 6 of
+// https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
+// and https://dom.spec.whatwg.org/#concept-node-replace .
+//
+// 6. If parent is a document, and any of the statements below, switched on
+// node, are true, throw a HierarchyRequestError.
+//  -> DocumentFragment node
+//     If node has more than one element child or has a Text node child.
+//     Otherwise, if node has one element child and either parent has an element
+//     child, child is a doctype, or child is not null and a doctype is
+//     following child.
+//  -> element
+//     parent has an element child, child is a doctype, or child is not null and
+//     a doctype is following child.
+//  -> doctype
+//     parent has a doctype child, child is non-null and an element is preceding
+//     child, or child is null and parent has an element child.
+//
+// 6. If parent is a document, and any of the statements below, switched on
+// node, are true, throw a HierarchyRequestError.
+//  -> DocumentFragment node
+//     If node has more than one element child or has a Text node child.
+//     Otherwise, if node has one element child and either parent has an element
+//     child that is not child or a doctype is following child.
+//  -> element
+//     parent has an element child that is not child or a doctype is following
+//     child.
+//  -> doctype
+//     parent has a doctype child that is not child, or an element is preceding
+//     child.
 bool Document::CanAcceptChild(const Node& new_child,
+                              const Node* next,
                               const Node* old_child,
                               ExceptionState& exception_state) const {
+  DCHECK(!(next && old_child));
   if (old_child && old_child->getNodeType() == new_child.getNodeType())
     return true;
 
   int num_doctypes = 0;
   int num_elements = 0;
+  bool has_doctype_after_reference_node = false;
+  bool has_element_after_reference_node = false;
 
   // First, check how many doctypes and elements we have, not counting
   // the child we're about to remove.
+  bool saw_reference_node = false;
   for (Node& child : NodeTraversal::ChildrenOf(*this)) {
-    if (old_child && *old_child == child)
+    if (old_child && *old_child == child) {
+      saw_reference_node = true;
       continue;
+    }
+    if (&child == next)
+      saw_reference_node = true;
 
     switch (child.getNodeType()) {
       case kDocumentTypeNode:
         num_doctypes++;
+        has_doctype_after_reference_node = saw_reference_node;
         break;
       case kElementNode:
         num_elements++;
+        has_element_after_reference_node = saw_reference_node;
         break;
       default:
         break;
@@ -3918,6 +3959,12 @@ bool Document::CanAcceptChild(const Node& new_child,
           break;
         case kElementNode:
           num_elements++;
+          if (has_doctype_after_reference_node) {
+            exception_state.ThrowDOMException(
+                kHierarchyRequestError,
+                "Can't insert an element before a doctype.");
+            return false;
+          }
           break;
       }
     }
@@ -3938,9 +3985,21 @@ bool Document::CanAcceptChild(const Node& new_child,
         return true;
       case kDocumentTypeNode:
         num_doctypes++;
+        if (num_elements > 0 && !has_element_after_reference_node) {
+          exception_state.ThrowDOMException(
+              kHierarchyRequestError,
+              "Can't insert a doctype before the root element.");
+          return false;
+        }
         break;
       case kElementNode:
         num_elements++;
+        if (has_doctype_after_reference_node) {
+          exception_state.ThrowDOMException(
+              kHierarchyRequestError,
+              "Can't insert an element before a doctype.");
+          return false;
+        }
         break;
     }
   }

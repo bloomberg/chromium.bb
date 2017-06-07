@@ -766,6 +766,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // nodeWillBeRemoved is only safe when removing one node at a time.
   void NodeWillBeRemoved(Node&);
   bool CanAcceptChild(const Node& new_child,
+                      const Node* next,
                       const Node* old_child,
                       ExceptionState&) const;
 
