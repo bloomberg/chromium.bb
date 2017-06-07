@@ -1792,7 +1792,7 @@ void Element::AttachLayoutTree(const AttachContext& context) {
 }
 
 void Element::DetachLayoutTree(const AttachContext& context) {
-  HTMLFrameOwnerElement::UpdateSuspendScope suspend_widget_hierarchy_updates;
+  HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   CancelFocusAppearanceUpdate();
   RemoveCallbackSelectors();
   if (HasRareData()) {

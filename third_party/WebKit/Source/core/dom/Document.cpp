@@ -2128,8 +2128,7 @@ void Document::UpdateStyle() {
 
   unsigned initial_element_count = GetStyleEngine().StyleForElementCount();
 
-  HTMLFrameOwnerElement::UpdateSuspendScope
-      suspend_frame_view_base_hierarchy_updates;
+  HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   StyleRecalcChange change = kNoChange;
@@ -2548,11 +2547,10 @@ void Document::Shutdown() {
   // to trigger navigation here.  However, plugins (see below) can cause lots of
   // crazy things to happen, since plugin detach involves nested run loops.
   FrameNavigationDisabler navigation_disabler(*frame_);
-  // Defer FrameViewBase updates to avoid plugins trying to run script inside
+  // Defer plugin dispose to avoid plugins trying to run script inside
   // ScriptForbiddenScope, which will crash the renderer after
   // https://crrev.com/200984
-  HTMLFrameOwnerElement::UpdateSuspendScope
-      suspend_frame_view_base_hierarchy_updates;
+  HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   // Don't allow script to run in the middle of detachLayoutTree() because a
   // detaching Document is not in a consistent state.
   ScriptForbiddenScope forbid_script;

@@ -38,6 +38,7 @@ class ExceptionState;
 class Frame;
 class FrameOrPlugin;
 class LayoutPart;
+class PluginView;
 
 class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                                           public FrameOwner {
@@ -69,15 +70,15 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   FrameOrPlugin* ReleaseWidget();
   FrameOrPlugin* OwnedWidget() const { return widget_; }
 
-  class UpdateSuspendScope {
+  class PluginDisposeSuspendScope {
     STACK_ALLOCATED();
 
    public:
-    UpdateSuspendScope();
-    ~UpdateSuspendScope();
+    PluginDisposeSuspendScope();
+    ~PluginDisposeSuspendScope();
 
    private:
-    void PerformDeferredWidgetTreeOperations();
+    void PerformDeferredPluginDispose();
   };
 
   // FrameOwner overrides:
@@ -115,7 +116,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                               bool replace_current_item);
   bool IsKeyboardFocusable() const override;
 
-  void DisposeFrameOrPluginSoon(FrameOrPlugin*);
+  void DisposePluginSoon(PluginView*);
   void FrameOwnerPropertiesChanged();
 
   // Return the origin which is to be used for feature policy container
