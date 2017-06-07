@@ -14,6 +14,7 @@
 #include "./aom_config.h"
 #include "./av1_rtcd.h"
 #include "aom/aom_codec.h"
+#include "aom_ports/aom_timer.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/av1_quantize.h"
 #include "test/acm_random.h"
@@ -51,10 +52,10 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
   virtual ~QuantizeTest() {}
 
   virtual void SetUp() {
-    qtab_ = reinterpret_cast<QuanTable *>(aom_memalign(16, sizeof(*qtab_)));
+    qtab_ = reinterpret_cast<QuanTable *>(aom_memalign(32, sizeof(*qtab_)));
     const int n_coeffs = coeff_num();
     coeff_ = reinterpret_cast<tran_low_t *>(
-        aom_memalign(16, 6 * n_coeffs * sizeof(tran_low_t)));
+        aom_memalign(32, 6 * n_coeffs * sizeof(tran_low_t)));
     InitQuantizer();
   }
 
@@ -91,7 +92,6 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
     const int16_t *quant_fp = qtab_->quant.y_quant_fp[q];
     const int16_t *quant_shift = qtab_->quant.y_quant_shift[q];
     const int16_t *dequant = qtab_->dequant.y_dequant[q];
-    const size_t bufferSize = n_coeffs;
 
     for (int i = 0; i < test_num; ++i) {
       if (is_loop) FillCoeffRandom();
@@ -106,11 +106,20 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
           coeff_ptr, n_coeffs, skip_block, zbin, round_fp, quant_fp,
           quant_shift, qcoeff, dqcoeff, dequant, &eob[1], sc->scan, sc->iscan));
 
-      ASSERT_NO_FATAL_FAILURE(
-          CompareResults(qcoeff_ref, qcoeff, bufferSize, "Qcoeff", q, i));
-      ASSERT_NO_FATAL_FAILURE(
-          CompareResults(dqcoeff_ref, dqcoeff, bufferSize, "Dqcoeff", q, i));
-      ASSERT_EQ(eob[0], eob[1]) << "eobs mismatch on test: " << i;
+      for (int j = 0; j < n_coeffs; ++j) {
+        ASSERT_EQ(qcoeff_ref[j], qcoeff[j])
+            << "Q mismatch on test: " << i << " at position: " << j
+            << " Q: " << q << " coeff: " << coeff_ptr[j];
+      }
+
+      for (int j = 0; j < n_coeffs; ++j) {
+        ASSERT_EQ(dqcoeff_ref[j], dqcoeff[j])
+            << "Dq mismatch on test: " << i << " at position: " << j
+            << " Q: " << q << " coeff: " << coeff_ptr[j];
+      }
+
+      ASSERT_EQ(eob[0], eob[1]) << "eobs mismatch on test: " << i
+                                << " Q: " << q;
     }
   }
 
@@ -181,12 +190,12 @@ TEST_P(QuantizeTest, ZeroInput) {
 
 TEST_P(QuantizeTest, LargeNegativeInput) {
   FillDcLargeNegative();
-  QuantizeRun(false);
+  QuantizeRun(false, 0, 1);
 }
 
 TEST_P(QuantizeTest, DcOnlyInput) {
   FillDcOnly();
-  QuantizeRun(false);
+  QuantizeRun(false, 0, 1);
 }
 
 TEST_P(QuantizeTest, RandomInput) { QuantizeRun(true, 0, kTestNum); }
@@ -197,7 +206,56 @@ TEST_P(QuantizeTest, MultipleQ) {
   }
 }
 
+TEST_P(QuantizeTest, DISABLED_Speed) {
+  tran_low_t *coeff_ptr = coeff_;
+  const intptr_t n_coeffs = coeff_num();
+  const int skip_block = 0;
+
+  tran_low_t *qcoeff_ref = coeff_ptr + n_coeffs;
+  tran_low_t *dqcoeff_ref = qcoeff_ref + n_coeffs;
+
+  tran_low_t *qcoeff = dqcoeff_ref + n_coeffs;
+  tran_low_t *dqcoeff = qcoeff + n_coeffs;
+  uint16_t *eob = (uint16_t *)(dqcoeff + n_coeffs);
+
+  // Testing uses 2-D DCT scan order table
+  const SCAN_ORDER *const sc = get_default_scan(tx_size_, DCT_DCT, 0);
+
+  // Testing uses luminance quantization table
+  const int q = 22;
+  const int16_t *zbin = qtab_->quant.y_zbin[q];
+  const int16_t *round_fp = qtab_->quant.y_round_fp[q];
+  const int16_t *quant_fp = qtab_->quant.y_quant_fp[q];
+  const int16_t *quant_shift = qtab_->quant.y_quant_shift[q];
+  const int16_t *dequant = qtab_->dequant.y_dequant[q];
+  const int kNumTests = 5000000;
+  aom_usec_timer timer;
+
+  FillCoeffRandom();
+
+  aom_usec_timer_start(&timer);
+  for (int n = 0; n < kNumTests; ++n) {
+    quant_(coeff_ptr, n_coeffs, skip_block, zbin, round_fp, quant_fp,
+           quant_shift, qcoeff, dqcoeff, dequant, eob, sc->scan, sc->iscan);
+  }
+  aom_usec_timer_mark(&timer);
+
+  const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
+  printf("Elapsed time: %d us\n", elapsed_time);
+}
+
 using std::tr1::make_tuple;
+
+#if HAVE_AVX2
+const QuantizeParam kQParamArrayAvx2[] = {
+  make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_avx2, TX_16X16, AOM_BITS_8),
+  // make_tuple(&av1_quantize_fp_32x32_c, &av1_quantize_fp_32x32_avx2, TX_32X32,
+  //            AOM_BITS_8)
+};
+
+INSTANTIATE_TEST_CASE_P(AVX2, QuantizeTest,
+                        ::testing::ValuesIn(kQParamArrayAvx2));
+#endif
 
 #if HAVE_SSE2
 const QuantizeParam kQParamArraySSE2[] = { make_tuple(
@@ -217,7 +275,8 @@ INSTANTIATE_TEST_CASE_P(SSSE3, QuantizeTest,
 // TODO(any):
 //  The following test does not pass yet
 const QuantizeParam kQ32x32ParamArraySSSE3[] = { make_tuple(
-    av1_quantize_fp_c, av1_quantize_fp_32x32_ssse3, TX_32X32, AOM_BITS_8) };
+    av1_quantize_fp_32x32_c, av1_quantize_fp_32x32_ssse3, TX_32X32,
+    AOM_BITS_8) };
 INSTANTIATE_TEST_CASE_P(DISABLED_SSSE3, QuantizeTest,
                         ::testing::ValuesIn(kQ32x32ParamArraySSSE3));
 #endif
