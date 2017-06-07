@@ -17,6 +17,7 @@ blink_core_sources("dom") {
     "AccessibleNode.cpp",
     "AccessibleNode.h",
     "AncestorList.h",
+    "AnimationWorkletProxyClient.cpp",
     "AnimationWorkletProxyClient.h",
     "Attr.cpp",
     "Attr.h",

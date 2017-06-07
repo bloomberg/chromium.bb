@@ -5,6 +5,7 @@
 #ifndef AnimatorDefinition_h
 #define AnimatorDefinition_h
 
+#include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
@@ -17,7 +18,7 @@ namespace blink {
 // proper type.
 // It can be used to instantiate new animators and also to call the Javascript
 // 'animate' callback on a given instance.
-class AnimatorDefinition final
+class MODULES_EXPORT AnimatorDefinition final
     : public GarbageCollectedFinalized<AnimatorDefinition>,
       public TraceWrapperBase {
  public:
@@ -29,6 +30,7 @@ class AnimatorDefinition final
   DECLARE_TRACE_WRAPPERS();
 
   v8::Local<v8::Function> ConstructorLocal(v8::Isolate*);
+  v8::Local<v8::Function> AnimateLocal(v8::Isolate*);
 
  private:
   // This object keeps the constructor function, and animate function alive.

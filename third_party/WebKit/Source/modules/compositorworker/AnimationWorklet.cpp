@@ -39,8 +39,10 @@ void AnimationWorklet::Initialize() {
           document->GetFrame());
 
   WorkerClients* worker_clients = WorkerClients::Create();
-  worklet_messaging_proxy_ = new AnimationWorkletMessagingProxy(
-      GetExecutionContext(), worker_clients, proxy_client);
+  ProvideAnimationWorkletProxyClientTo(worker_clients, proxy_client);
+
+  worklet_messaging_proxy_ =
+      new AnimationWorkletMessagingProxy(GetExecutionContext(), worker_clients);
   worklet_messaging_proxy_->Initialize();
 }
 
