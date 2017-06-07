@@ -25,6 +25,7 @@ import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Range;
 import android.util.Size;
@@ -33,7 +34,6 @@ import android.view.Surface;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.nio.ByteBuffer;
@@ -214,6 +214,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     private Handler mMainHandler;
     private Handler mBackgroundHandler;
+    private final Looper mLooper;
 
     private ImageReader mPreviewReader;
     private ImageReader mPhotoReader;
@@ -616,6 +617,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     VideoCaptureCamera2(int id, long nativeVideoCaptureDeviceAndroid) {
         super(id, nativeVideoCaptureDeviceAndroid);
+        mLooper = Looper.myLooper();
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         if (cameraCharacteristics != null) {
             mMaxZoom = cameraCharacteristics.get(
@@ -626,7 +628,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     @Override
     public boolean allocate(int width, int height, int frameRate) {
         Log.d(TAG, "allocate: requested (%d x %d) @%dfps", width, height, frameRate);
-        ThreadUtils.assertOnUiThread();
+        assert mLooper == Looper.myLooper() : "called on wrong thread";
         synchronized (mCameraStateLock) {
             if (mCameraState == CameraState.OPENING || mCameraState == CameraState.CONFIGURING) {
                 Log.e(TAG, "allocate() invoked while Camera is busy opening/configuring.");
@@ -682,7 +684,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public boolean startCapture() {
-        ThreadUtils.assertOnUiThread();
+        assert mLooper == Looper.myLooper() : "called on wrong thread";
         changeCameraStateAndNotify(CameraState.OPENING);
         final CameraManager manager =
                 (CameraManager) ContextUtils.getApplicationContext().getSystemService(
@@ -715,7 +717,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public boolean stopCapture() {
-        ThreadUtils.assertOnUiThread();
+        assert mLooper == Looper.myLooper() : "called on wrong thread";
 
         // With Camera2 API, the capture is started asynchronously, which will cause problem if
         // stopCapture comes too quickly. Without stopping the previous capture properly, the next
@@ -749,7 +751,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public PhotoCapabilities getPhotoCapabilities() {
-        ThreadUtils.assertOnUiThread();
+        assert mLooper == Looper.myLooper() : "called on wrong thread";
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
         PhotoCapabilities.Builder builder = new PhotoCapabilities.Builder();
 
@@ -946,7 +948,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
             boolean hasTorch, boolean torch, double colorTemperature) {
         Log.d(TAG, "setPhotoOptions()");
-        ThreadUtils.assertOnUiThread();
+        assert mLooper == Looper.myLooper() : "called on wrong thread";
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mId);
         final Rect canvas =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
@@ -1027,7 +1029,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     @Override
     public boolean takePhoto(final long callbackId) {
         Log.d(TAG, "takePhoto()");
-        ThreadUtils.assertOnUiThread();
+        assert mLooper == Looper.myLooper() : "called on wrong thread";
 
         final CrPhotoReaderListener photoReaderListener = new CrPhotoReaderListener(callbackId);
         mPhotoReader.setOnImageAvailableListener(photoReaderListener, mBackgroundHandler);
