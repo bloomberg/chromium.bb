@@ -30,14 +30,14 @@ namespace blink {
 class StylePropertyShorthand {
     USING_FAST_MALLOC(StylePropertyShorthand);
  public:
-  StylePropertyShorthand()
+  constexpr StylePropertyShorthand()
       : m_properties(0),
         m_length(0),
         m_shorthandID(CSSPropertyInvalid) {}
 
-  StylePropertyShorthand(CSSPropertyID id,
-                         const CSSPropertyID* properties,
-                         unsigned numProperties)
+  constexpr StylePropertyShorthand(CSSPropertyID id,
+                                   const CSSPropertyID* properties,
+                                   unsigned numProperties)
       : m_properties(properties),
         m_length(numProperties),
         m_shorthandID(id) {}

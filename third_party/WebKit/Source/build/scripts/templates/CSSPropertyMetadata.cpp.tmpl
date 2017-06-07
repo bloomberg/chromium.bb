@@ -47,18 +47,18 @@ bool CSSPropertyMetadata::PropertyIsRepeated(CSSPropertyID unresolvedProperty) {
 
 bool CSSPropertyMetadata::IsEnabledProperty(CSSPropertyID unresolvedProperty) {
   CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
-  static std::bitset<numCSSProperties>* enabledProperties = nullptr;
-  if (!enabledProperties) {
-    enabledProperties = new std::bitset<numCSSProperties>();
-    enabledProperties->set(); // All bits sets to 1.
+  static std::bitset<numCSSProperties>* enabledProperties = []() {
+    std::bitset<numCSSProperties>* props = new std::bitset<numCSSProperties>();
+    props->set(); // All bits sets to 1.
     {% for property in properties_including_aliases if property.runtime_flag %}
     if (!RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled())
-      enabledProperties->reset({{property.property_id}} - {{first_enum_value}});
+      props->reset({{property.property_id}} - {{first_enum_value}});
     {% endfor %}
     {% for property in properties_including_aliases if property.is_internal %}
-    enabledProperties->reset({{property.property_id}} - {{first_enum_value}});
+    props->reset({{property.property_id}} - {{first_enum_value}});
     {% endfor %}
-  }
+    return props;
+  }();
 
   if (unresolvedProperty >= {{first_enum_value}})
     return enabledProperties->test(property - {{first_enum_value}});

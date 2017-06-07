@@ -33,27 +33,27 @@ const StylePropertyShorthand& animationShorthandForParsing() {
   // bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=14790
   // And in the spec (editor's draft) at:
   // http://dev.w3.org/csswg/css3-animations/#animation-shorthand-property
-  static const CSSPropertyID kAnimationPropertiesForParsing[] = {
+  static constexpr CSSPropertyID kAnimationPropertiesForParsing[] = {
       CSSPropertyAnimationDuration,  CSSPropertyAnimationTimingFunction,
       CSSPropertyAnimationDelay,     CSSPropertyAnimationIterationCount,
       CSSPropertyAnimationDirection, CSSPropertyAnimationFillMode,
       CSSPropertyAnimationPlayState, CSSPropertyAnimationName};
-  DEFINE_STATIC_LOCAL(StylePropertyShorthand,
-                      webkit_animation_longhands_for_parsing,
-                      (CSSPropertyAnimation, kAnimationPropertiesForParsing,
-                       WTF_ARRAY_LENGTH(kAnimationPropertiesForParsing)));
+  static constexpr StylePropertyShorthand
+      webkit_animation_longhands_for_parsing(
+          CSSPropertyAnimation, kAnimationPropertiesForParsing,
+          WTF_ARRAY_LENGTH(kAnimationPropertiesForParsing));
   return webkit_animation_longhands_for_parsing;
 }
 
 // Similar to animations, we have property after timing-function and delay after
 // duration
 const StylePropertyShorthand& transitionShorthandForParsing() {
-  static const CSSPropertyID kTransitionProperties[] = {
+  static constexpr CSSPropertyID kTransitionProperties[] = {
       CSSPropertyTransitionDuration, CSSPropertyTransitionTimingFunction,
       CSSPropertyTransitionDelay, CSSPropertyTransitionProperty};
-  DEFINE_STATIC_LOCAL(StylePropertyShorthand, transition_longhands,
-                      (CSSPropertyTransition, kTransitionProperties,
-                       WTF_ARRAY_LENGTH(kTransitionProperties)));
+  static constexpr StylePropertyShorthand transition_longhands(
+      CSSPropertyTransition, kTransitionProperties,
+      WTF_ARRAY_LENGTH(kTransitionProperties));
   return transition_longhands;
 }
 
