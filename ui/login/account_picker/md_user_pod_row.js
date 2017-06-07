@@ -3866,9 +3866,8 @@ cr.define('login', function() {
         // elements outside the pod.
         var actionBoxMenu = pod.querySelector('.action-box-menu');
         var actionBoxButton = pod.querySelector('.action-box-button');
-        var MENU_TOP_PADDING = 7;
         actionBoxMenu.style.top =
-            cr.ui.toCssPx(actionBoxButton.offsetHeight + MENU_TOP_PADDING);
+            cr.ui.toCssPx(actionBoxButton.offsetHeight);
         if (this.isPortraitMode_() && pods.length > 1) {
           // Confine the menu inside the pod when it may overlap with outside
           // elements.
@@ -3986,6 +3985,7 @@ cr.define('login', function() {
       var banner = $('signin-banner');
       banner.textContent = message;
       banner.classList.toggle('message-set', !!message);
+      $('signin-banner-container1').hidden = banner.textContent.length == 0;
     },
 
     /**
