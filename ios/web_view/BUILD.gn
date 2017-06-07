@@ -168,9 +168,9 @@ ios_framework_bundle("crnet_web_view_combined") {
   ]
 }
 
-# Same framework as ChromeWebView above, but also exposes CroNet.
+# Same framework as ChromeWebView above, but also exposes Cronet.
 ios_framework_bundle("cronet_web_view_combined") {
-  output_name = "CroNetChromeWebView"
+  output_name = "CronetChromeWebView"
   info_plist = "Info.plist"
 
   public_headers = ios_web_view_public_headers
