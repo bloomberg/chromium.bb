@@ -34,7 +34,14 @@ namespace translate {
 class LanguageDetectionController : public web::WebStateObserver {
  public:
   // Language detection details, passed to language detection callbacks.
+  // TODO(crbug.com/715447): Investigate if we can use the existing
+  // detection_details under
+  // components/translate/core/common/language_detection_details.h.
   struct DetectionDetails {
+    DetectionDetails();
+    DetectionDetails(const DetectionDetails& other);
+    ~DetectionDetails();
+
     // The language detected by the content (Content-Language).
     std::string content_language;
 
@@ -43,6 +50,12 @@ class LanguageDetectionController : public web::WebStateObserver {
 
     // The adopted language.
     std::string adopted_language;
+
+    // The language detected by CLD.
+    std::string cld_language;
+
+    // Whether the CLD detection is reliable or not.
+    bool is_cld_reliable;
   };
 
   LanguageDetectionController(web::WebState* web_state,

@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/translate/core/browser/language_model.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_constants.h"
@@ -49,9 +50,11 @@ const char kAutoDetectionLanguage[] = "auto";
 IOSTranslateDriver::IOSTranslateDriver(
     web::WebState* web_state,
     web::NavigationManager* navigation_manager,
-    TranslateManager* translate_manager)
+    TranslateManager* translate_manager,
+    LanguageModel* language_model)
     : web::WebStateObserver(web_state),
       navigation_manager_(navigation_manager),
+      language_model_(language_model),
       translate_manager_(translate_manager->GetWeakPtr()),
       page_seq_no_(0),
       pending_page_seq_no_(0),
@@ -91,6 +94,11 @@ void IOSTranslateDriver::OnLanguageDetermined(
     return;
   translate_manager_->GetLanguageState().LanguageDetermined(
       details.adopted_language, true);
+
+  // Update language model.
+  if (language_model_ && details.is_cld_reliable) {
+    language_model_->OnPageVisited(details.cld_language);
+  }
 
   if (web_state())
     translate_manager_->InitiateTranslation(details.adopted_language);

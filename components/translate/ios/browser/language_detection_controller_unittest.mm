@@ -59,6 +59,7 @@ class LanguageDetectionControllerTest : public PlatformTest {
 TEST_F(LanguageDetectionControllerTest, OnTextCaptured) {
   const std::string kRootLanguage("en");
   const std::string kContentLanguage("fr");
+  const std::string kUndefined("und");
 
   __block bool block_was_called = false;
   auto subscription =
@@ -67,6 +68,8 @@ TEST_F(LanguageDetectionControllerTest, OnTextCaptured) {
             block_was_called = true;
             EXPECT_EQ(kRootLanguage, details.html_root_language);
             EXPECT_EQ(kContentLanguage, details.content_language);
+            EXPECT_FALSE(details.is_cld_reliable);
+            EXPECT_EQ(kUndefined, details.cld_language);
           }));
 
   base::DictionaryValue command;
