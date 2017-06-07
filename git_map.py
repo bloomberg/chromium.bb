@@ -66,7 +66,7 @@ def main(argv):
     return 0
 
   map_extra = get_config_list('depot_tools.map_extra')
-  fmt = '%C(red bold)%h%x09%Creset%C(green)%d%Creset %C(yellow)%ad%Creset ~ %s'
+  fmt = '%C(red bold)%h%x09%Creset%C(green)%d%Creset %C(yellow)%cd%Creset ~ %s'
   log_proc = subprocess2.Popen(
     [GIT_EXE, 'log', '--graph', '--branches', '--tags', root(),
      '--color=always', '--date=short', ('--pretty=format:' + fmt)
