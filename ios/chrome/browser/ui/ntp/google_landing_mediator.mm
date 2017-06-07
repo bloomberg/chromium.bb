@@ -383,11 +383,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 #pragma mark - Private
 
 - (void)useFreshData {
-  if (self.freshMostVisitedData.size() == 0) {
-    return;
-  }
   _mostVisitedData = self.freshMostVisitedData;
-  self.freshMostVisitedData.clear();
   [self.consumer mostVisitedDataUpdated];
 }
 
