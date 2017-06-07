@@ -19,6 +19,12 @@
 #include "mojo/edk/system/ports/node_delegate.h"
 #include "mojo/edk/system/ports/port_locker.h"
 
+#if !defined(OS_NACL)
+#include "crypto/random.h"
+#else
+#include "base/rand_util.h"
+#endif
+
 namespace mojo {
 namespace edk {
 namespace ports {
@@ -45,12 +51,18 @@ bool CanAcceptMoreMessages(const Port* port) {
   return true;
 }
 
+void GenerateRandomPortName(PortName* name) {
+#if defined(OS_NACL)
+  base::RandBytes(name, sizeof(PortName));
+#else
+  crypto::RandBytes(name, sizeof(PortName));
+#endif
+}
+
 }  // namespace
 
 Node::Node(const NodeName& name, NodeDelegate* delegate)
-    : name_(name),
-      delegate_(delegate) {
-}
+    : name_(name), delegate_(this, delegate) {}
 
 Node::~Node() {
   if (!ports_.empty())
@@ -116,7 +128,7 @@ int Node::GetPort(const PortName& port_name, PortRef* port_ref) {
 
 int Node::CreateUninitializedPort(PortRef* port_ref) {
   PortName port_name;
-  delegate_->GenerateRandomPortName(&port_name);
+  GenerateRandomPortName(&port_name);
 
   scoped_refptr<Port> port(new Port(kInitialSequenceNum, kInitialSequenceNum));
   int rv = AddPortWithName(port_name, port);
@@ -515,6 +527,8 @@ int Node::OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event) {
            << event->proxy_target_port_name() << "@"
            << event->proxy_target_node_name();
 
+  ScopedEvent event_to_forward;
+  NodeName event_target_node;
   {
     SinglePortLocker locker(&port_ref);
     auto* port = locker.port();
@@ -524,10 +538,9 @@ int Node::OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event) {
       if (port->state == Port::kReceiving) {
         port->peer_node_name = event->proxy_target_node_name();
         port->peer_port_name = event->proxy_target_port_name();
-        delegate_->ForwardEvent(
-            event->proxy_node_name(),
-            base::MakeUnique<ObserveProxyAckEvent>(
-                event->proxy_port_name(), port->next_sequence_num_to_send - 1));
+        event_target_node = event->proxy_node_name();
+        event_to_forward = base::MakeUnique<ObserveProxyAckEvent>(
+            event->proxy_port_name(), port->next_sequence_num_to_send - 1);
       } else {
         // As a proxy ourselves, we don't know how to honor the ObserveProxy
         // event or to populate the last_sequence_num field of ObserveProxyAck.
@@ -550,10 +563,15 @@ int Node::OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event) {
     } else {
       // Forward this event along to our peer. Eventually, it should find the
       // port referring to the proxy.
+      event_target_node = port->peer_node_name;
       event->set_port_name(port->peer_port_name);
-      delegate_->ForwardEvent(port->peer_node_name, std::move(event));
+      event_to_forward = std::move(event);
     }
   }
+
+  if (event_to_forward)
+    delegate_->ForwardEvent(event_target_node, std::move(event_to_forward));
+
   return OK;
 }
 
@@ -867,7 +885,7 @@ void Node::ConvertToProxy(Port* port,
   PortName local_port_name = *port_name;
 
   PortName new_port_name;
-  delegate_->GenerateRandomPortName(&new_port_name);
+  GenerateRandomPortName(&new_port_name);
 
   // Make sure we don't send messages to the new peer until after we know it
   // exists. In the meantime, just buffer messages locally.
@@ -1215,6 +1233,20 @@ void Node::DestroyAllPortsWithPeer(const NodeName& node_name,
       ClosePort(ref);
   }
 }
+
+Node::DelegateHolder::DelegateHolder(Node* node, NodeDelegate* delegate)
+    : node_(node), delegate_(delegate) {
+  DCHECK(node_);
+}
+
+Node::DelegateHolder::~DelegateHolder() {}
+
+#if DCHECK_IS_ON()
+void Node::DelegateHolder::EnsureSafeDelegateAccess() const {
+  PortLocker::AssertNoPortsLockedOnCurrentThread();
+  base::AutoLock lock(node_->ports_lock_);
+}
+#endif
 
 }  // namespace ports
 }  // namespace edk

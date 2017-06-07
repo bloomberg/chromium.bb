@@ -29,6 +29,12 @@ source_set("ports") {
   public_deps = [
     "//base",
   ]
+
+  if (!is_nacl) {
+    deps = [
+      "//crypto",
+    ]
+  }
 }
 
 source_set("tests") {

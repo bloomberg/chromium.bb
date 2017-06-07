@@ -149,6 +149,31 @@ class Node {
   int LostConnectionToNode(const NodeName& node_name);
 
  private:
+  // Helper to ensure that a Node always calls into its delegate safely, i.e.
+  // without holding any internal locks.
+  class DelegateHolder {
+   public:
+    DelegateHolder(Node* node, NodeDelegate* delegate);
+    ~DelegateHolder();
+
+    NodeDelegate* operator->() const {
+      EnsureSafeDelegateAccess();
+      return delegate_;
+    }
+
+   private:
+#if DCHECK_IS_ON()
+    void EnsureSafeDelegateAccess() const;
+#else
+    void EnsureSafeDelegateAccess() const {}
+#endif
+
+    Node* const node_;
+    NodeDelegate* const delegate_;
+
+    DISALLOW_COPY_AND_ASSIGN(DelegateHolder);
+  };
+
   int OnUserMessage(std::unique_ptr<UserMessageEvent> message);
   int OnPortAccepted(std::unique_ptr<PortAcceptedEvent> event);
   int OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event);
@@ -184,7 +209,7 @@ class Node {
                                const PortName& port_name);
 
   const NodeName name_;
-  NodeDelegate* const delegate_;
+  const DelegateHolder delegate_;
 
   // Guards |ports_|. This must never be acquired while an individual port's
   // lock is held on the same thread. Conversely, individual port locks may be

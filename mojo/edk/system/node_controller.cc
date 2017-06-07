@@ -774,10 +774,6 @@ void NodeController::DropAllPeers() {
     delete this;
 }
 
-void NodeController::GenerateRandomPortName(ports::PortName* port_name) {
-  GenerateRandomName(port_name);
-}
-
 void NodeController::ForwardEvent(const ports::NodeName& node,
                                   ports::ScopedEvent event) {
   DCHECK(event);

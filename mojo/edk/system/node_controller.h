@@ -182,7 +182,6 @@ class NodeController : public ports::NodeDelegate,
   void DropAllPeers();
 
   // ports::NodeDelegate:
-  void GenerateRandomPortName(ports::PortName* port_name) override;
   void ForwardEvent(const ports::NodeName& node,
                     ports::ScopedEvent event) override;
   void BroadcastEvent(ports::ScopedEvent event) override;
