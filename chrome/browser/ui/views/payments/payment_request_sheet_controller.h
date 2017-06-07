@@ -83,6 +83,9 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // "Cancel".
   virtual base::string16 GetSecondaryButtonLabel();
 
+  // Returns true if the secondary button should be shown, false otherwise.
+  virtual bool ShouldShowSecondaryButton();
+
   // Returns whether this sheet should display a back arrow in the header next
   // to the title.
   virtual bool ShouldShowHeaderBackArrow();

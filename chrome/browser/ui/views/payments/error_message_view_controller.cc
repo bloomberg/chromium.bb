@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -25,11 +26,21 @@ ErrorMessageViewController::ErrorMessageViewController(
 
 ErrorMessageViewController::~ErrorMessageViewController() {}
 
-base::string16 ErrorMessageViewController::GetSecondaryButtonLabel() {
-  return l10n_util::GetStringUTF16(IDS_CLOSE);
+std::unique_ptr<views::Button>
+ErrorMessageViewController::CreatePrimaryButton() {
+  std::unique_ptr<views::Button> button(
+      views::MdTextButton::CreateSecondaryUiBlueButton(
+          this, l10n_util::GetStringUTF16(IDS_CLOSE)));
+  button->set_tag(static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG));
+  button->set_id(static_cast<int>(DialogViewID::CANCEL_BUTTON));
+  return button;
 }
 
 bool ErrorMessageViewController::ShouldShowHeaderBackArrow() {
+  return false;
+}
+
+bool ErrorMessageViewController::ShouldShowSecondaryButton() {
   return false;
 }
 
