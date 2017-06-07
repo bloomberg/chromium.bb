@@ -1,8 +1,11 @@
 <!DOCTYPE html>
+<html>
+<head>
 <style>
 html {
     height: 100%;
 }
+
 body {
     margin: 0;
     font-family: Helvetica, sans-serif;
@@ -200,9 +203,11 @@ tbody.flagged .flag {
 <style id="unexpected-style"></style>
 
 <script>
+'use strict';
+
 var g_state;
-function globalState()
-{
+
+function globalState() {
     if (!g_state) {
         g_state = {
             crashTests: [],
@@ -218,13 +223,15 @@ function globalState()
             testsWithStderr: [],
             timeoutTests: [],
             unexpectedPassTests: []
-        }
+        };
     }
     return g_state;
 }
 
-function ADD_RESULTS(input)
-{
+// This function is used in the JSONP wrapper for failing_results.json;
+// when failing_results.json is loaded, the global state will be populated
+// with test results.
+function ADD_RESULTS(input) {
     globalState().results = input;
 }
 </script>
@@ -232,42 +239,42 @@ function ADD_RESULTS(input)
 <script src="failing_results.json"></script>
 
 <script>
-function stripExtension(test)
-{
+'use strict';
+
+function stripExtension(test) {
     var index = test.lastIndexOf('.');
     return test.substring(0, index);
 }
 
-function matchesSelector(node, selector)
-{
-    if (node.webkitMatchesSelector)
+function matchesSelector(node, selector) {
+    if (node.webkitMatchesSelector) {
         return node.webkitMatchesSelector(selector);
+    }
 
-    if (node.mozMatchesSelector)
+    if (node.mozMatchesSelector) {
         return node.mozMatchesSelector(selector);
+    }
 }
 
-function parentOfType(node, selector)
-{
+function parentOfType(node, selector) {
     while (node = node.parentNode) {
-        if (matchesSelector(node, selector))
+        if (matchesSelector(node, selector)) {
             return node;
+        }
     }
     return null;
 }
 
-function remove(node)
-{
+function remove(node) {
     node.parentNode.removeChild(node);
 }
 
-function forEach(nodeList, handler)
-{
+function forEach(nodeList, handler) {
     Array.prototype.forEach.call(nodeList, handler);
 }
 
-function resultIframe(src)
-{
+// Returns HTML for an img or iframe element showing expected or actual results.
+function resultIframe(src) {
     // FIXME: use audio tags for AUDIO tests?
     var layoutTestsIndex = src.indexOf('LayoutTests');
     var name;
@@ -277,60 +284,61 @@ function resultIframe(src)
         name = prefix + src.substring(layoutTestsIndex + 'LayoutTests/'.length);
     } else {
         var lastDashIndex = src.lastIndexOf('-pretty');
-        if (lastDashIndex == -1)
+        if (lastDashIndex == -1) {
             lastDashIndex = src.lastIndexOf('-');
+        }
         name = src.substring(lastDashIndex + 1);
     }
 
     var tagName = (src.lastIndexOf('.png') == -1) ? 'iframe' : 'img';
 
-    if (tagName != 'img')
+    if (tagName != 'img') {
         src += '?format=txt';
-    return '<div class=result-container><div class=label>' + name + '</div><' + tagName + ' src="' + src + '"></' + tagName + '></div>';
+    }
+    return '<div class=result-container><div class=label>' +
+        name + '</div><' + tagName + ' src="' + src + '"></' + tagName + '></div>';
 }
 
-function togglingImage(prefix)
-{
-    return '<div class=result-container><div class="label imageText"></div><img class=animatedImage data-prefix="' +
-        prefix + '"></img></div>';
+function togglingImage(prefix) {
+    return '<div class=result-container><div class="label imageText"></div>' +
+        '<img class=animatedImage data-prefix="' + prefix + '"></img></div>';
 }
 
-function toggleExpectations(element)
-{
+function toggleExpectations(element) {
     var expandLink = element;
-    if (expandLink.className != 'expand-button-text')
+    if (expandLink.className != 'expand-button-text') {
         expandLink = expandLink.querySelector('.expand-button-text');
+    }
 
-    if (expandLink.textContent == '+')
+    if (expandLink.textContent == '+') {
         expandExpectations(expandLink, true);
-    else
+    } else {
         collapseExpectations(expandLink);
+    }
 }
 
-function collapseExpectations(expandLink)
-{
+function collapseExpectations(expandLink) {
     expandLink.textContent = '+';
     var existingResultsRow = parentOfType(expandLink, 'tbody').querySelector('.results-row');
-    if (existingResultsRow)
+    if (existingResultsRow) {
         updateExpandedState(existingResultsRow, false);
+    }
 }
 
-function updateExpandedState(row, isExpanded)
-{
+function updateExpandedState(row, isExpanded) {
     row.setAttribute('data-expanded', isExpanded);
     updateImageTogglingTimer();
 }
 
-function appendHTML(node, html)
-{
-    if (node.insertAdjacentHTML)
+function appendHTML(node, html) {
+    if (node.insertAdjacentHTML) {
         node.insertAdjacentHTML('beforeEnd', html);
-    else
+    } else {
         node.innerHTML += html;
+    }
 }
 
-function expandExpectations(expandLink, selectRow)
-{
+function expandExpectations(expandLink, selectRow) {
     var row = parentOfType(expandLink, 'tr');
     var parentTbody = row.parentNode;
     var existingResultsRow = parentTbody.querySelector('.results-row');
@@ -339,8 +347,9 @@ function expandExpectations(expandLink, selectRow)
     expandLink.textContent = enDash;
     if (existingResultsRow) {
         updateExpandedState(existingResultsRow, true);
-        if (selectRow)
+        if (selectRow) {
             TestNavigator._setCurrentTest(parentTbody);
+        }
         return;
     }
 
@@ -350,15 +359,14 @@ function expandExpectations(expandLink, selectRow)
     newCell.colSpan = row.querySelectorAll('td').length;
 
     var resultLinks = row.querySelectorAll('.result-link');
-    var hasTogglingImages = false;
     for (var i = 0; i < resultLinks.length; i++) {
         var link = resultLinks[i];
         var result;
         if (link.textContent == 'images') {
-            hasTogglingImages = true;
             result = togglingImage(link.getAttribute('data-prefix'));
-        } else
+        } else {
             result = resultIframe(link.href);
+        }
 
         appendHTML(newCell, result);
     }
@@ -367,14 +375,15 @@ function expandExpectations(expandLink, selectRow)
     parentTbody.appendChild(newRow);
 
     updateExpandedState(newRow, true);
-    if (selectRow)
+    if (selectRow) {
         TestNavigator._setCurrentTest(parentTbody);
+    }
     updateImageTogglingTimer();
 }
 
-function updateImageTogglingTimer()
-{
-    var hasVisibleAnimatedImage = document.querySelector('.results-row[data-expanded="true"] .animatedImage');
+function updateImageTogglingTimer() {
+    var hasVisibleAnimatedImage = document.querySelector(
+        '.results-row[data-expanded="true"] .animatedImage');
     if (!hasVisibleAnimatedImage) {
         clearInterval(globalState().togglingImageInterval);
         globalState().togglingImageInterval = null;
@@ -387,92 +396,92 @@ function updateImageTogglingTimer()
     }
 }
 
-function async(func, args)
-{
+function async(func, args) {
     setTimeout(function() { func.apply(null, args); }, 100);
 }
 
-function visibleTests(opt_container)
-{
+function visibleTests(opt_container) {
     var container = opt_container || document;
-    if (onlyShowUnexpectedFailures())
+    if (onlyShowUnexpectedFailures()) {
         return container.querySelectorAll('tbody:not(.expected)');
-    else
+    } else {
         return container.querySelectorAll('tbody');
+    }
 }
 
-function visibleExpandLinks()
-{
-    if (onlyShowUnexpectedFailures())
+function visibleExpandLinks() {
+    if (onlyShowUnexpectedFailures()) {
         return document.querySelectorAll('tbody:not(.expected) .expand-button-text');
-    else
+    } else {
         return document.querySelectorAll('.expand-button-text');
+    }
 }
 
-function expandAllExpectations()
-{
+function expandAllExpectations() {
     var expandLinks = visibleExpandLinks();
-    for (var i = 0, len = expandLinks.length; i < len; i++)
+    for (var i = 0, len = expandLinks.length; i < len; i++) {
         async(expandExpectations, [expandLinks[i]]);
+    }
 }
 
-function collapseAllExpectations()
-{
+function collapseAllExpectations() {
     var expandLinks = visibleExpandLinks();
-    for (var i = 0, len = expandLinks.length; i < len; i++)
+    for (var i = 0, len = expandLinks.length; i < len; i++) {
         async(collapseExpectations, [expandLinks[i]]);
+    }
 }
 
-function shouldUseTracLinks()
-{
+function shouldUseTracLinks() {
     return !globalState().results.layout_tests_dir || !location.toString().indexOf('file://') == 0;
 }
 
-function testLinkTarget(test)
-{
+function testLinkTarget(test) {
     var virtualMatch = /virtual\/[^\/]+\/(.*)/.exec(test);
     var devirtualTest = virtualMatch ? virtualMatch[1] : test;
     var target;
     if (shouldUseTracLinks()) {
         var revision = globalState().results.chromium_revision;
-        if (revision)
+        if (revision) {
             target = 'https://crrev.com/' + revision;
-        else
+        } else {
             target = 'https://chromium.googlesource.com/chromium/src/+/master';
+        }
         target += '/third_party/WebKit/LayoutTests/' + devirtualTest;
-    } else
+    } else {
         target = globalState().results.layout_tests_dir + '/' + devirtualTest;
+    }
     return target;
 }
 
-function testLink(test)
-{
+function testLink(test) {
     var target = testLinkTarget(test);
-    return '<a class=test-link href="' + target + '">' + test + '</a><span class=flag onclick="unflag(this)"> \u2691</span>';
+    var flagChar = '\u2691';
+    return '<a class=test-link href="' + target + '">' + test +
+        '</a><span class=flag onclick="unflag(this)"> ' + flagChar + '</span>';
 }
 
-function unflag(flag)
-{
+function unflag(flag) {
     var shouldFlag = false;
     TestNavigator.flagTest(parentOfType(flag, 'tbody'), shouldFlag);
     TestNavigator.updateFlaggedTestTextBox();
 }
 
-function testLinkWithExpandButton(test)
-{
-    return '<span class=expand-button onclick="toggleExpectations(this)"><span class=expand-button-text>+</span></span>' + testLink(test);
+function testLinkWithExpandButton(test) {
+    return '<span class=expand-button onclick="toggleExpectations(this)">' +
+        '<span class=expand-button-text>+</span></span>' +
+        testLink(test);
 }
 
-function resultLink(testPrefix, suffix, contents)
-{
-    return '<a class=result-link href="' + testPrefix + suffix + '" data-prefix="' + testPrefix + '">' + contents + '</a> ';
+function resultLink(testPrefix, suffix, contents) {
+    return '<a class=result-link href="' + testPrefix + suffix +
+        '" data-prefix="' + testPrefix + '">' + contents + '</a> ';
 }
 
-function processGlobalStateFor(testObject)
-{
+function processGlobalStateFor(testObject) {
     var test = testObject.name;
-    if (testObject.has_stderr)
+    if (testObject.has_stderr) {
         globalState().testsWithStderr.push(testObject);
+    }
 
     globalState().hasHttpTests = globalState().hasHttpTests || test.indexOf('http/') == 0;
 
@@ -488,7 +497,8 @@ function processGlobalStateFor(testObject)
 
     var actualTokens = actual.split(' ');
     var passedWithImageOnlyFailureInRetry = actualTokens[0] == 'TEXT' && actualTokens[1] == 'IMAGE';
-    if (actualTokens[1] && actual.indexOf('PASS') != -1 || (!globalState().results.pixel_tests_enabled && passedWithImageOnlyFailureInRetry)) {
+    if (actualTokens[1] && actual.indexOf('PASS') != -1 ||
+            (!globalState().results.pixel_tests_enabled && passedWithImageOnlyFailureInRetry)) {
         globalState().flakyPassTests.push(testObject);
         return;
     }
@@ -516,10 +526,11 @@ function processGlobalStateFor(testObject)
     }
 
     globalState().failingTests.push(testObject);
+
+    // FIXME: Handle tests with actual == PASS and expected == PASS.
 }
 
-function toggleImages()
-{
+function toggleImages() {
     var images = document.querySelectorAll('.animatedImage');
     var imageTexts = document.querySelectorAll('.imageText');
     for (var i = 0, len = images.length; i < len; i++) {
@@ -535,8 +546,7 @@ function toggleImages()
     }
 }
 
-function textResultLinks(test, prefix)
-{
+function textResultLinks(test, prefix) {
     var html = resultLink(prefix, '-expected.txt', 'expected') +
         resultLink(prefix, '-actual.txt', 'actual') +
         resultLink(prefix, '-diff.txt', 'diff') +
@@ -569,18 +579,19 @@ function imageResultsCell(testObject, testPrefix, actual) {
         }
     }
 
-    if (actual.indexOf('MISSING') != -1 && testObject.is_missing_image)
+    if (actual.indexOf('MISSING') != -1 && testObject.is_missing_image) {
         row += resultLink(testPrefix, '-actual.png', 'png result');
+    }
 
     return row;
 }
 
-function tableRow(testObject)
-{
+function tableRow(testObject) {
     var row = '<tbody class="' + (testObject.is_unexpected ? '' : 'expected') + '"';
     row += ' data-testname="' + testObject.name + '"';
-    if (testObject.reftest_type && testObject.reftest_type.indexOf('!=') != -1)
+    if (testObject.reftest_type && testObject.reftest_type.indexOf('!=') != -1) {
         row += ' mismatchreftest=true';
+    }
     row += '><tr>';
 
     row += '<td>' + testLinkWithExpandButton(testObject.name) + '</td>';
@@ -604,26 +615,31 @@ function tableRow(testObject)
     }
 
     if (actual.indexOf('MISSING') != -1) {
-        if (testObject.is_missing_audio)
+        if (testObject.is_missing_audio) {
             row += resultLink(testPrefix, '-actual.wav', 'audio result');
-        if (testObject.is_missing_text)
+        }
+        if (testObject.is_missing_text) {
             row += resultLink(testPrefix, '-actual.txt', 'result');
+        }
     }
 
     if (actual.indexOf('CRASH') != -1) {
         row += resultLink(testPrefix, '-crash-log.txt', 'crash log');
         row += resultLink(testPrefix, '-sample.txt', 'sample');
-        if (testObject.has_stderr)
+        if (testObject.has_stderr) {
             row += resultLink(testPrefix, '-stderr.txt', 'stderr');
+        }
     }
 
-    if (testObject.has_repaint_overlay)
+    if (testObject.has_repaint_overlay) {
         row += resultLink(testPrefix, '-overlay.html?' + encodeURIComponent(testLinkTarget(testObject.name)), 'overlay');
+    }
 
     var actualTokens = actual.split(/\s+/);
     var cell = imageResultsCell(testObject, testPrefix, actualTokens[0]);
-    if (!cell && actualTokens.length > 1)
+    if (!cell && actualTokens.length > 1) {
         cell = imageResultsCell(testObject, 'retries/' + testPrefix, actualTokens[1]);
+    }
 
     row += '</td><td>' + cell + '</td>' +
         '<td>' + actual + '</td>' +
@@ -632,8 +648,7 @@ function tableRow(testObject)
     return row;
 }
 
-function forEachTest(handler, opt_tree, opt_prefix)
-{
+function forEachTest(handler, opt_tree, opt_prefix) {
     var tree = opt_tree || globalState().results.tests;
     var prefix = opt_prefix || '';
 
@@ -643,32 +658,31 @@ function forEachTest(handler, opt_tree, opt_prefix)
             var testObject = tree[key];
             testObject.name = newPrefix;
             handler(testObject);
-        } else
+        } else {
             forEachTest(handler, tree[key], newPrefix);
+        }
     }
 }
 
-function hasUnexpected(tests)
-{
+function hasUnexpected(tests) {
     return tests.some(function (test) { return test.is_unexpected; });
 }
 
-function updateTestlistCounts()
-{
+function updateTestListCounts() {
     forEach(document.querySelectorAll('.test-list-count'), function(count) {
         var container = parentOfType(count, 'div');
         var testContainers;
-        if (onlyShowUnexpectedFailures())
+        if (onlyShowUnexpectedFailures()) {
             testContainers = container.querySelectorAll('tbody:not(.expected)');
-        else
+        } else {
             testContainers = container.querySelectorAll('tbody');
+        }
 
         count.textContent = testContainers.length;
-    })
+    });
 }
 
-function flagAll(headerLink)
-{
+function flagAll(headerLink) {
     var tests = visibleTests(parentOfType(headerLink, 'div'));
     forEach(tests, function(test) {
         TestNavigator.flagTest(test, true);
@@ -676,8 +690,7 @@ function flagAll(headerLink)
     TestNavigator.updateFlaggedTestTextBox();
 }
 
-function unflagAll(headerLink)
-{
+function unflagAll(headerLink) {
     var tests = visibleTests(parentOfType(headerLink, 'div'));
     forEach(tests, function(test) {
         TestNavigator.flagTest(test, false);
@@ -685,47 +698,57 @@ function unflagAll(headerLink)
     TestNavigator.updateFlaggedTestTextBox();
 }
 
-function testListHeaderHtml(header)
-{
-    return '<h1>' + header + ' (<span class=test-list-count></span>): [<a href="#" class=flag-all onclick="flagAll(this)">flag all</a>] [<a href="#" class=flag-all onclick="unflagAll(this)">unflag all</a>]</h1>';
+function testListHeaderHtml(header) {
+    return '<h1>' + header +
+        ' (<span class=test-list-count></span>): [<a href="#" class=flag-all ' +
+        'onclick="flagAll(this)">flag all</a>] [<a href="#" class=flag-all ' +
+        'onclick="unflagAll(this)">unflag all</a>]</h1>';
 }
 
-function testList(tests, header, tableId)
-{
+function testList(tests, header, tableId) {
     tests.sort();
 
-    var html = '<div' + ((!hasUnexpected(tests) && tableId != 'stderr-table') ? ' class=expected' : '') + ' id=' + tableId + '>' +
-        testListHeaderHtml(header) + '<table>';
+    var html = '<div' +
+        ((!hasUnexpected(tests) && tableId != 'stderr-table') ? ' class=expected' : '') +
+        ' id=' + tableId + '>' + testListHeaderHtml(header) + '<table>';
 
     // FIXME: Include this for all testLists.
-    if (tableId == 'passes-table')
+    if (tableId == 'passes-table') {
         html += '<thead><th>test</th><th>expected</th></thead>';
+    }
 
     for (var i = 0; i < tests.length; i++) {
         var testObject = tests[i];
         var test = testObject.name;
-        html += '<tbody class="' + ((testObject.is_unexpected || tableId == 'stderr-table') ? '' : 'expected') + '" data-testname="' + test + '"><tr><td>' +
+        html += '<tbody class="' +
+            ((testObject.is_unexpected || tableId == 'stderr-table') ? '' : 'expected') +
+            '" data-testname="' + test + '"><tr><td>' +
             ((tableId == 'passes-table') ? testLink(test) : testLinkWithExpandButton(test)) +
-        '</td><td>';
+            '</td><td>';
 
-        if (tableId == 'stderr-table')
+        if (tableId == 'stderr-table') {
             html += resultLink(stripExtension(test), '-stderr.txt', 'stderr');
-        else if (tableId == 'passes-table')
+        }
+        else if (tableId == 'passes-table') {
             html += testObject.expected;
+        }
         else if (tableId == 'crash-tests-table') {
             html += resultLink(stripExtension(test), '-crash-log.txt', 'crash log');
             html += resultLink(stripExtension(test), '-sample.txt', 'sample');
-            if (testObject.has_stderr)
+            if (testObject.has_stderr) {
                 html += resultLink(stripExtension(test), '-stderr.txt', 'stderr');
-        } else if (tableId == 'leak-tests-table')
+            }
+        } else if (tableId == 'leak-tests-table') {
             html += resultLink(stripExtension(test), '-leak-log.txt', 'leak log');
+        }
         else if (tableId == 'timeout-tests-table') {
             // FIXME: only include timeout actual/diff results here if we actually spit out results for timeout tests.
             html += textResultLinks(test, stripExtension(test));
         }
 
-        if (testObject.has_repaint_overlay)
+        if (testObject.has_repaint_overlay) {
             html += resultLink(stripExtension(test), '-overlay.html?' + encodeURIComponent(testLinkTarget(test)), 'overlay');
+        }
 
         html += '</td></tr></tbody>';
     }
@@ -733,13 +756,11 @@ function testList(tests, header, tableId)
     return html;
 }
 
-function toArray(nodeList)
-{
+function toArray(nodeList) {
     return Array.prototype.slice.call(nodeList);
 }
 
-function trim(string)
-{
+function trim(string) {
     return string.replace(/^[\s\xa0]+|[\s\xa0]+$/g, '');
 }
 
@@ -750,21 +771,20 @@ TableSorter._forwardArrow = '<svg style="width:10px;height:10px"><polygon points
 
 TableSorter._backwardArrow = '<svg style="width:10px;height:10px"><polygon points="0,10 10,10 5,0" style="fill:#ccc"></svg>';
 
-TableSorter._sortedContents = function(header, arrow)
-{
+TableSorter._sortedContents = function(header, arrow) {
     return arrow + ' ' + trim(header.textContent) + ' ' + arrow;
-}
+};
 
-TableSorter._updateHeaderClassNames = function(newHeader)
-{
+TableSorter._updateHeaderClassNames = function(newHeader) {
     var sortHeader = document.querySelector('.sortHeader');
     if (sortHeader) {
         if (sortHeader == newHeader) {
             var isAlreadyReversed = sortHeader.classList.contains('reversed');
-            if (isAlreadyReversed)
+            if (isAlreadyReversed) {
                 sortHeader.classList.remove('reversed');
-            else
+            } else {
                 sortHeader.classList.add('reversed');
+            }
         } else {
             sortHeader.textContent = sortHeader.textContent;
             sortHeader.classList.remove('sortHeader');
@@ -773,15 +793,13 @@ TableSorter._updateHeaderClassNames = function(newHeader)
     }
 
     newHeader.classList.add('sortHeader');
-}
+};
 
-TableSorter._textContent = function(tbodyRow, column)
-{
+TableSorter._textContent = function(tbodyRow, column) {
     return tbodyRow.querySelectorAll('td')[column].textContent;
-}
+};
 
-TableSorter._sortRows = function(newHeader, reversed)
-{
+TableSorter._sortRows = function(newHeader, reversed) {
     var testsTable = document.getElementById('results-table');
     var headers = toArray(testsTable.querySelectorAll('th'));
     var sortColumn = headers.indexOf(newHeader);
@@ -797,37 +815,38 @@ TableSorter._sortRows = function(newHeader, reversed)
         if (sortColumn && aText == bText) {
             var aTestName = TableSorter._textContent(a, 0);
             var bTestName = TableSorter._textContent(b, 0);
-            if (aTestName == bTestName)
+            if (aTestName == bTestName) {
                 return 0;
+            }
             return aTestName < bTestName ? -1 : 1;
         }
 
-        if (reversed)
+        if (reversed) {
             return aText < bText ? 1 : -1;
-        else
+        } else {
             return aText < bText ? -1 : 1;
+        }
     });
 
-    for (var i = 0; i < rows.length; i++)
+    for (var i = 0; i < rows.length; i++) {
         testsTable.appendChild(rows[i]);
-}
+    }
+};
 
-TableSorter.sortColumn = function(columnNumber)
-{
+TableSorter.sortColumn = function(columnNumber) {
     var newHeader = document.getElementById('results-table').querySelectorAll('th')[columnNumber];
     TableSorter._sort(newHeader);
-}
+};
 
-TableSorter.handleClick = function(e)
-{
+TableSorter.handleClick = function(e) {
     var newHeader = e.target;
-    if (newHeader.localName != 'th')
+    if (newHeader.localName != 'th') {
         return;
+    }
     TableSorter._sort(newHeader);
-}
+};
 
-TableSorter._sort = function(newHeader)
-{
+TableSorter._sort = function(newHeader) {
     TableSorter._updateHeaderClassNames(newHeader);
 
     var reversed = newHeader.classList.contains('reversed');
@@ -835,7 +854,7 @@ TableSorter._sort = function(newHeader)
     newHeader.innerHTML = TableSorter._sortedContents(newHeader, sortArrow);
 
     TableSorter._sortRows(newHeader, reversed);
-}
+};
 
 var PixelZoomer = {};
 
@@ -848,8 +867,7 @@ var kResultHeight = 600;
 var kZoomedResultWidth = kResultWidth * PixelZoomer._zoomFactor;
 var kZoomedResultHeight = kResultHeight * PixelZoomer._zoomFactor;
 
-PixelZoomer._zoomImageContainer = function(url)
-{
+PixelZoomer._zoomImageContainer = function(url) {
     var container = document.createElement('div');
     container.className = 'zoom-image-container';
 
@@ -874,18 +892,15 @@ PixelZoomer._zoomImageContainer = function(url)
     container.appendChild(imageContainer);
 
     return container;
-}
+};
 
-PixelZoomer._createContainer = function(e)
-{
+PixelZoomer._createContainer = function(e) {
     var tbody = parentOfType(e.target, 'tbody');
     var row = tbody.querySelector('tr');
     var imageDiffLinks = row.querySelectorAll('a[href$=".png"]');
 
     var container = document.createElement('div');
     container.className = 'pixel-zoom-container';
-
-    var html = '';
 
     var togglingImageLink = row.querySelector('a[href$="-diffs.html"]');
     if (togglingImageLink) {
@@ -894,15 +909,15 @@ PixelZoomer._createContainer = function(e)
         container.appendChild(PixelZoomer._zoomImageContainer(prefix + '-actual.png'));
     }
 
-    for (var i = 0; i < imageDiffLinks.length; i++)
+    for (var i = 0; i < imageDiffLinks.length; i++) {
         container.appendChild(PixelZoomer._zoomImageContainer(imageDiffLinks[i].href));
+    }
 
     document.body.appendChild(container);
     PixelZoomer._drawAll();
-}
+};
 
-PixelZoomer._draw = function(imageContainer)
-{
+PixelZoomer._draw = function(imageContainer) {
     var image = imageContainer.querySelector('img');
     var canvas = imageContainer.querySelector('canvas');
 
@@ -924,38 +939,41 @@ PixelZoomer._draw = function(imageContainer)
     ctx.strokeRect(-1.5, -1.5, kZoomedResultWidth + 2, kZoomedResultHeight + 2);
     ctx.scale(PixelZoomer._zoomFactor, PixelZoomer._zoomFactor);
     ctx.drawImage(image, 0, 0);
-}
+};
 
-PixelZoomer._drawAll = function()
-{
+PixelZoomer._drawAll = function() {
     forEach(document.querySelectorAll('.pixel-zoom-container .scaled-image-container'), PixelZoomer._draw);
-}
+};
 
-PixelZoomer.handleMouseOut = function(e)
-{
-    if (e.relatedTarget && e.relatedTarget.tagName != 'IFRAME')
+PixelZoomer.handleMouseOut = function(e) {
+    if (e.relatedTarget && e.relatedTarget.tagName != 'IFRAME') {
         return;
+    }
 
     // If e.relatedTarget is null, we've moused out of the document.
     var container = document.querySelector('.pixel-zoom-container');
-    if (container)
+    if (container) {
         remove(container);
-}
+    }
+};
 
 PixelZoomer.handleMouseMove = function(e) {
-    if (PixelZoomer._mouseMoveTimeout)
+    if (PixelZoomer._mouseMoveTimeout) {
         clearTimeout(PixelZoomer._mouseMoveTimeout);
+    }
 
-    if (parentOfType(e.target, '.pixel-zoom-container'))
+    if (parentOfType(e.target, '.pixel-zoom-container')) {
         return;
+    }
 
     var container = document.querySelector('.pixel-zoom-container');
 
     var resultContainer = (e.target.className == 'result-container') ?
         e.target : parentOfType(e.target, '.result-container');
     if (!resultContainer || !resultContainer.querySelector('img')) {
-        if (container)
+        if (container) {
             remove(container);
+        }
         return;
     }
 
@@ -976,7 +994,7 @@ PixelZoomer.handleMouseMove = function(e) {
     }
 
     PixelZoomer._drawAll();
-}
+};
 
 document.addEventListener('mousemove', PixelZoomer.handleMouseMove, false);
 document.addEventListener('mouseout', PixelZoomer.handleMouseOut, false);
@@ -987,125 +1005,126 @@ TestNavigator.reset = function() {
     TestNavigator.currentTest = null;
     TestNavigator.flaggedTests = {};
     TestNavigator._createFlaggedTestContainer();
-}
+};
 
-TestNavigator.handleKeyEvent = function(event)
-{
-    if (event.metaKey || event.shiftKey || event.ctrlKey)
+TestNavigator.handleKeyEvent = function(event) {
+    if (event.metaKey || event.shiftKey || event.ctrlKey) {
         return;
+    }
 
     switch (String.fromCharCode(event.charCode)) {
-        case 'i':
-            TestNavigator._scrollToFirstTest();
-            break;
-        case 'j':
-            TestNavigator._scrollToNextTest();
-            break;
-        case 'k':
-            TestNavigator._scrollToPreviousTest();
-            break;
-        case 'l':
-            TestNavigator._scrollToLastTest();
-            break;
-        case 'e':
-            TestNavigator._expandCurrentTest();
-            break;
-        case 'c':
-            TestNavigator._collapseCurrentTest();
-            break;
-        case 't':
-            TestNavigator._toggleCurrentTest();
-            break;
-        case 'f':
-            TestNavigator._toggleCurrentTestFlagged();
-            break;
+    case 'i':
+        TestNavigator._scrollToFirstTest();
+        break;
+    case 'j':
+        TestNavigator._scrollToNextTest();
+        break;
+    case 'k':
+        TestNavigator._scrollToPreviousTest();
+        break;
+    case 'l':
+        TestNavigator._scrollToLastTest();
+        break;
+    case 'e':
+        TestNavigator._expandCurrentTest();
+        break;
+    case 'c':
+        TestNavigator._collapseCurrentTest();
+        break;
+    case 't':
+        TestNavigator._toggleCurrentTest();
+        break;
+    case 'f':
+        TestNavigator._toggleCurrentTestFlagged();
+        break;
     }
-}
+};
 
-TestNavigator._scrollToFirstTest = function()
-{
+TestNavigator._scrollToFirstTest = function() {
     var links = visibleTests();
-    if (links.length == 0)
+    if (links.length == 0) {
         return;
-    if (TestNavigator._setCurrentTest(links[0]))
+    }
+    if (TestNavigator._setCurrentTest(links[0])) {
         TestNavigator._scrollToCurrentTest();
-}
+    }
+};
 
-TestNavigator._scrollToLastTest = function()
-{
+TestNavigator._scrollToLastTest = function() {
     var links = visibleTests();
-    if (links.length == 0)
+    if (links.length == 0) {
         return;
-    if (TestNavigator._setCurrentTest(links[links.length - 1]))
+    }
+    if (TestNavigator._setCurrentTest(links[links.length - 1])) {
         TestNavigator._scrollToCurrentTest();
-}
+    }
+};
 
-TestNavigator._scrollToNextTest = function()
-{
+TestNavigator._scrollToNextTest = function() {
     if (!TestNavigator.currentTest) {
         TestNavigator._scrollToFirstTest();
         return;
     }
     var onlyUnexpected = onlyShowUnexpectedFailures();
     for (var tbody = TestNavigator.currentTest.nextElementSibling; tbody; tbody = tbody.nextElementSibling) {
-        if (tbody.tagName.toLowerCase() != 'tbody')
+        if (tbody.tagName.toLowerCase() != 'tbody') {
             continue;
-        if (onlyUnexpected && tbody.classList.contains('expected'))
+        }
+        if (onlyUnexpected && tbody.classList.contains('expected')) {
             continue;
-        if (TestNavigator._setCurrentTest(tbody))
+        }
+        if (TestNavigator._setCurrentTest(tbody)) {
             TestNavigator._scrollToCurrentTest();
+        }
         break;
     }
-}
+};
 
-TestNavigator._scrollToPreviousTest = function()
-{
+TestNavigator._scrollToPreviousTest = function() {
     if (!TestNavigator.currentTest) {
         TestNavigator._scrollToLastTest();
         return;
     }
     var onlyUnexpected = onlyShowUnexpectedFailures();
     for (var tbody = TestNavigator.currentTest.previousElementSibling; tbody; tbody = tbody.previousElementSibling) {
-        if (tbody.tagName.toLowerCase() != 'tbody')
+        if (tbody.tagName.toLowerCase() != 'tbody') {
             continue;
-        if (onlyUnexpected && tbody.classList.contains('expected'))
+        }
+        if (onlyUnexpected && tbody.classList.contains('expected')) {
             continue;
-        if (TestNavigator._setCurrentTest(tbody))
+        }
+        if (TestNavigator._setCurrentTest(tbody)) {
             TestNavigator._scrollToCurrentTest();
+        }
         break;
     }
-}
+};
 
-TestNavigator._currentTestExpandLink = function()
-{
+TestNavigator._currentTestExpandLink = function() {
     return TestNavigator.currentTest.querySelector('.expand-button-text');
-}
+};
 
-TestNavigator._expandCurrentTest = function()
-{
+TestNavigator._expandCurrentTest = function() {
     expandExpectations(TestNavigator._currentTestExpandLink());
-}
+};
 
-TestNavigator._collapseCurrentTest = function()
-{
+TestNavigator._collapseCurrentTest = function() {
     collapseExpectations(TestNavigator._currentTestExpandLink());
-}
+};
 
-TestNavigator._toggleCurrentTest = function()
-{
+TestNavigator._toggleCurrentTest = function() {
     toggleExpectations(TestNavigator._currentTestExpandLink());
-}
+};
 
-TestNavigator._toggleCurrentTestFlagged = function()
-{
+TestNavigator._toggleCurrentTestFlagged = function() {
     var testLink = TestNavigator.currentTest;
     TestNavigator.flagTest(testLink, !testLink.classList.contains('flagged'));
     TestNavigator.updateFlaggedTestTextBox();
-}
+};
 
-// FIXME: Test navigator shouldn't know anything about flagging. It should probably call out to TestFlagger or something.
-TestNavigator.flagTest = function(testTbody, shouldFlag)
-{
+// FIXME: Test navigator shouldn't know anything about flagging.
+// Flagging-related functionality could be extracted to a separate object.
+TestNavigator.flagTest = function(testTbody, shouldFlag) {
     var testName = testTbody.getAttribute('data-testname');
 
     if (shouldFlag) {
@@ -1115,10 +1134,9 @@ TestNavigator.flagTest = function(testTbody, shouldFlag)
         testTbody.classList.remove('flagged');
         delete TestNavigator.flaggedTests[testName];
     }
-}
+};
 
-TestNavigator._createFlaggedTestContainer = function()
-{
+TestNavigator._createFlaggedTestContainer = function() {
     var flaggedTestContainer = document.createElement('div');
     flaggedTestContainer.id = 'flagged-test-container';
     flaggedTestContainer.innerHTML = '<h2>Flagged Tests</h2>' +
@@ -1127,93 +1145,91 @@ TestNavigator._createFlaggedTestContainer = function()
         '</label>' +
         '<pre id="flagged-tests" contentEditable></pre>';
     document.body.appendChild(flaggedTestContainer);
-}
+};
 
-TestNavigator.updateFlaggedTestTextBox = function()
-{
+TestNavigator.updateFlaggedTestTextBox = function() {
     var flaggedTestTextbox = document.getElementById('flagged-tests');
     var flaggedTests = Object.keys(this.flaggedTests);
     flaggedTests.sort();
     var separator = document.getElementById('use-newlines').checked ? '\n' : ' ';
     flaggedTestTextbox.innerHTML = flaggedTests.join(separator);
     document.getElementById('flagged-test-container').style.display = flaggedTests.length ? '' : 'none';
-}
+};
 
-TestNavigator._setCurrentTest = function(tbody)
-{
-    if (TestNavigator.currentTest)
+TestNavigator._setCurrentTest = function(tbody) {
+    if (TestNavigator.currentTest) {
         TestNavigator.currentTest.classList.remove('current');
+    }
 
     TestNavigator.currentTest = tbody;
     tbody.classList.add('current');
 
     return true;
-}
+};
 
-TestNavigator._scrollToCurrentTest = function()
-{
+TestNavigator._scrollToCurrentTest = function() {
     var targetLink = TestNavigator.currentTest;
-    if (!targetLink)
+    if (!targetLink) {
         return;
+    }
 
     var rowRect = targetLink.getBoundingClientRect();
     var container = document.querySelector('.content-container');
-    // rowRect is in client coords (i.e. relative to viewport), so we just want to add its top to the current scroll position.
+    // rowRect is in client coordinates (i.e. relative to viewport), so we just
+    // want to add its top to the current scroll position.
     container.scrollTop += rowRect.top - 20;
-}
+};
 
-TestNavigator.onlyShowUnexpectedFailuresChanged = function()
-{
+TestNavigator.onlyShowUnexpectedFailuresChanged = function() {
     var currentTest = document.querySelector('.current');
-    if (!currentTest)
+    if (!currentTest) {
         return;
+    }
 
     // If our currentTest became hidden, reset the currentTestIndex.
-    if (onlyShowUnexpectedFailures() && currentTest.classList.contains('expected'))
+    if (onlyShowUnexpectedFailures() && currentTest.classList.contains('expected')) {
         TestNavigator._scrollToFirstTest();
-}
+    }
+};
 
 document.addEventListener('keypress', TestNavigator.handleKeyEvent, false);
 
 
-function onlyShowUnexpectedFailures()
-{
+function onlyShowUnexpectedFailures() {
     return !document.getElementById('show-expected-failures').checked;
 }
 
-function handleStderrChange()
-{
+function handleStderrChange() {
     OptionWriter.save();
-    document.getElementById('stderr-style').textContent = document.getElementById('show-stderr').checked ?
+    document.getElementById('stderr-style').textContent =
+        document.getElementById('show-stderr').checked ?
         '' : '#stderr-table { display: none; }';
 }
 
-function handleUnexpectedPassesChange()
-{
+function handleUnexpectedPassesChange() {
     OptionWriter.save();
-    document.getElementById('unexpected-pass-style').textContent = document.getElementById('show-unexpected-passes').checked ?
+    document.getElementById('unexpected-pass-style').textContent =
+        document.getElementById('show-unexpected-passes').checked ?
         '' : '#passes-table { display: none; }';
 }
 
-function handleFlakyFailuresChange()
-{
+function handleFlakyFailuresChange() {
     OptionWriter.save();
-    document.getElementById('flaky-failures-style').textContent = document.getElementById('show-flaky-failures').checked ?
+    document.getElementById('flaky-failures-style').textContent =
+        document.getElementById('show-flaky-failures').checked ?
         '' : '.flaky { display: none; }';
 }
 
-function handleUnexpectedResultsChange()
-{
+function handleUnexpectedResultsChange() {
     OptionWriter.save();
     updateExpectedFailures();
 }
 
-function updateExpectedFailures()
-{
+function updateExpectedFailures() {
     document.getElementById('unexpected-style').textContent = onlyShowUnexpectedFailures() ?
         '.expected { display: none; }' : '';
 
-    updateTestlistCounts();
+    updateTestListCounts();
     TestNavigator.onlyShowUnexpectedFailuresChanged();
 }
 
@@ -1221,8 +1237,7 @@ var OptionWriter = {};
 
 OptionWriter._key = 'run-webkit-tests-options';
 
-OptionWriter.save = function()
-{
+OptionWriter.save = function() {
     var options = document.querySelectorAll('label input');
     var data = {};
     for (var i = 0, len = options.length; i < len; i++) {
@@ -1230,10 +1245,9 @@ OptionWriter.save = function()
         data[option.id] = option.checked;
     }
     localStorage.setItem(OptionWriter._key, JSON.stringify(data));
-}
+};
 
-OptionWriter.apply = function()
-{
+OptionWriter.apply = function() {
     var json = localStorage.getItem(OptionWriter._key);
     if (!json) {
         updateAllOptions();
@@ -1243,39 +1257,40 @@ OptionWriter.apply = function()
     var data = JSON.parse(json);
     for (var id in data) {
         var input = document.getElementById(id);
-        if (input)
+        if (input) {
             input.checked = data[id];
+        }
     }
     updateAllOptions();
+};
+
+function updateAllOptions() {
+    forEach(document.querySelectorAll('input'), function(input) {
+        input.onchange();
+    });
 }
 
-function updateAllOptions()
-{
-    forEach(document.querySelectorAll('input'), function(input) { input.onchange(); });
-}
-
-function handleToggleUseNewlines()
-{
+function handleToggleUseNewlines() {
     OptionWriter.save();
     TestNavigator.updateFlaggedTestTextBox();
 }
 
-function handleToggleImagesChange()
-{
+function handleToggleImagesChange() {
     OptionWriter.save();
     updateTogglingImages();
 }
 
-function updateTogglingImages()
-{
+function updateTogglingImages() {
     var shouldToggle = document.getElementById('toggle-images').checked;
     globalState().shouldToggleImages = shouldToggle;
 
     if (shouldToggle) {
-        forEach(document.querySelectorAll('table:not(#missing-table) tbody:not([mismatchreftest]) a[href$=".png"]'), convertToTogglingHandler(function(prefix) {
-            return resultLink(prefix, '-diffs.html', 'images');
-        }));
-        forEach(document.querySelectorAll('table:not(#missing-table) tbody:not([mismatchreftest]) img[src$=".png"]'), convertToTogglingHandler(togglingImage));
+        forEach(document.querySelectorAll('table:not(#missing-table) tbody:not([mismatchreftest]) a[href$=".png"]'),
+                convertToTogglingHandler(function(prefix) {
+                    return resultLink(prefix, '-diffs.html', 'images');
+                }));
+        forEach(document.querySelectorAll('table:not(#missing-table) tbody:not([mismatchreftest]) img[src$=".png"]'),
+                convertToTogglingHandler(togglingImage));
     } else {
         forEach(document.querySelectorAll('a[href$="-diffs.html"]'), convertToNonTogglingHandler(resultLink));
         forEach(document.querySelectorAll('.animatedImage'), convertToNonTogglingHandler(function (absolutePrefix, suffix) {
@@ -1286,54 +1301,56 @@ function updateTogglingImages()
     updateImageTogglingTimer();
 }
 
-function getResultContainer(node)
-{
+function getResultContainer(node) {
     return (node.tagName == 'IMG') ? parentOfType(node, '.result-container') : node;
 }
 
-function convertToTogglingHandler(togglingImageFunction)
-{
+function convertToTogglingHandler(togglingImageFunction) {
     return function(node) {
         var url = (node.tagName == 'IMG') ? node.src : node.href;
-        if (url.match('-expected.png$'))
+        if (url.match('-expected.png$')) {
             remove(getResultContainer(node));
-        else if (url.match('-actual.png$')) {
+        } else if (url.match('-actual.png$')) {
             var name = parentOfType(node, 'tbody').querySelector('.test-link').textContent;
             getResultContainer(node).outerHTML = togglingImageFunction(stripExtension(name));
         }
-    }
+    };
 }
 
-function convertToNonTogglingHandler(resultFunction)
-{
+function convertToNonTogglingHandler(resultFunction) {
     return function(node) {
         var prefix = node.getAttribute('data-prefix');
         getResultContainer(node).outerHTML = resultFunction(prefix, '-expected.png', 'expected') + resultFunction(prefix, '-actual.png', 'actual');
-    }
+    };
 }
 
-function failingTestsTable(tests, title, id)
-{
-    if (!tests.length)
+// Returns HTML for a table listing failing tests from the test run.
+function failingTestsTable(tests, title, id) {
+    if (!tests.length) {
         return '';
+    }
 
-    var numberofUnexpectedFailures = 0;
+    var numberOfUnexpectedFailures = 0;
     var tableRowHtml = '';
-    for (var i = 0; i < tests.length; i++){
+    for (var i = 0; i < tests.length; i++) {
         tableRowHtml += tableRow(tests[i]);
-        if (tests[i].is_unexpected)
-            numberofUnexpectedFailures++;
+        if (tests[i].is_unexpected) {
+            numberOfUnexpectedFailures++;
+        }
     }
 
     var className = '';
-    if (id)
+    if (id) {
         className += id.split('-')[0];
-    if (!hasUnexpected(tests))
+    }
+    if (!hasUnexpected(tests)) {
         className += ' expected';
+    }
 
     var header = '<div';
-    if (className)
+    if (className) {
         header += ' class="' + className + '"';
+    }
 
     header += '>' + testListHeaderHtml(title) +
         '<table id="' + id + '"><thead><tr>' +
@@ -1343,17 +1360,20 @@ function failingTestsTable(tests, title, id)
         '<th>actual</th>' +
         '<th>expected</th>';
 
-    if (id == 'flaky-tests-table')
+    if (id == 'flaky-tests-table') {
         header += '<th>failures</th>';
+    }
 
     header += '</tr></thead>';
-
 
     return header + tableRowHtml + '</table></div>';
 }
 
-function generatePage()
-{
+// Initializes the results page.
+// This includes adding HTML for the toolbar and the tables with test results,
+// and setting the state of TestNavigator and OptionWriter.
+// This function requires that globalState().results is already populated.
+function generatePage() {
     forEachTest(processGlobalStateFor);
 
     var html = '<div class=content-container><div id=toolbar>' +
@@ -1370,14 +1390,17 @@ function generatePage()
         '<label><input id="show-stderr" type=checkbox onchange="handleStderrChange()">stderr</label>' +
         '</div></div>';
 
-    if (globalState().results.interrupted)
-        html += "<p class='stopped-running-early-message'>Testing exited early.</p>"
+    if (globalState().results.interrupted) {
+        html += "<p class='stopped-running-early-message'>Testing exited early.</p>";
+    }
 
-    if (globalState().crashTests.length)
+    if (globalState().crashTests.length) {
         html += testList(globalState().crashTests, 'Tests that crashed', 'crash-tests-table');
+    }
 
-    if (globalState().leakTests.length)
+    if (globalState().leakTests.length) {
         html += testList(globalState().leakTests, 'Tests that leaked', 'leak-tests-table');
+    }
 
     html += failingTestsTable(globalState().failingTests,
         'Tests that failed text/pixel/audio diff', 'results-table');
@@ -1385,17 +1408,20 @@ function generatePage()
     html += failingTestsTable(globalState().missingResults,
         'Tests that had no expected results (probably new)', 'missing-table');
 
-    if (globalState().timeoutTests.length)
+    if (globalState().timeoutTests.length) {
         html += testList(globalState().timeoutTests, 'Tests that timed out', 'timeout-tests-table');
+    }
 
-    if (globalState().testsWithStderr.length)
+    if (globalState().testsWithStderr.length) {
         html += testList(globalState().testsWithStderr, 'Tests that had stderr output', 'stderr-table');
+    }
 
     html += failingTestsTable(globalState().flakyPassTests,
         'Flaky tests (failed the first run and passed on retry)', 'flaky-tests-table');
 
-    if (globalState().unexpectedPassTests.length)
+    if (globalState().unexpectedPassTests.length) {
         html += testList(globalState().unexpectedPassTests, 'Tests expected to fail but passed', 'passes-table');
+    }
 
     if (globalState().hasHttpTests) {
         html += '<p>httpd access log: <a href="access_log.txt">access_log.txt</a></p>' +
@@ -1409,15 +1435,16 @@ function generatePage()
     if (document.getElementById('results-table')) {
         document.getElementById('results-table').addEventListener('click', TableSorter.handleClick, false);
         TableSorter.sortColumn(0);
-        if (!globalState().hasTextFailures)
+        if (!globalState().hasTextFailures) {
             document.getElementById('text-results-header').textContent = '';
+        }
         if (!globalState().hasImageFailures) {
             document.getElementById('image-results-header').textContent = '';
             parentOfType(document.getElementById('toggle-images'), 'label').style.display = 'none';
         }
     }
 
-    updateTestlistCounts();
+    updateTestListCounts();
 
     TestNavigator.reset();
     OptionWriter.apply();
@@ -1426,4 +1453,6 @@ function generatePage()
 <!-- HACK: when json_results_test.js is included, loading this page runs the tests.
 It is not copied to the layout-test-results output directory. -->
 <script src="resources/results-test.js"></script>
+</head>
 <body onload="generatePage()"></body>
+</html>
