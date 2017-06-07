@@ -1414,13 +1414,12 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
       case DocumentMarker::kSpelling:
       case DocumentMarker::kGrammar:
       case DocumentMarker::kTextMatch:
+      case DocumentMarker::kActiveSuggestion:
         marker_types.push_back(marker->GetType());
         marker_ranges.push_back(
             AXRange(marker->StartOffset(), marker->EndOffset()));
         break;
       case DocumentMarker::kComposition:
-      // TODO(rlanday): add accessibility support for kActiveSuggestion
-      case DocumentMarker::kActiveSuggestion:
         // No need for accessibility to know about these marker types.
         break;
     }

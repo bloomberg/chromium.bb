@@ -533,6 +533,8 @@
     word_ends
   };
 
+  // TODO(dmazzoni, nektar): make this list not grow exponentially as new
+  // MarkerTypes are added
   enum AXMarkerType {
     // Assignments are ignored by the parser, but are kept here for clarity.
     spelling = 1,
@@ -541,7 +543,17 @@
     text_match = 4,
     spelling_text_match = 5,
     grammar_text_match = 6,
-    spelling_grammar_text_match = 7
+    spelling_grammar_text_match = 7,
+    // DocumentMarker::MarkerType::Composition = 8 is ignored for accessibility
+    // purposes
+    active_suggestion = 16,
+    spelling_active_suggestion = 17,
+    grammar_active_suggestion = 18,
+    spelling_grammar_active_suggestion = 19,
+    text_match_active_suggestion = 20,
+    spelling_text_match_active_suggestion = 21,
+    grammar_text_match_active_suggestion = 22,
+    spelling_grammar_text_match_active_suggestion = 23
   };
 
   enum AXTextDirection {
