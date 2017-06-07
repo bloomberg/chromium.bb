@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.vr_shell;
+package org.chromium.chrome.browser.vr_shell.mock;
 
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
+
+import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
 
 /**
  * Mock implementation of VR Shell's VrDaydreamApi

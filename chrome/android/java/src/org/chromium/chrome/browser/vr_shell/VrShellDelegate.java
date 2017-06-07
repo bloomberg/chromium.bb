@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.support.annotation.VisibleForTesting;
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
 import android.view.Display;
@@ -37,7 +38,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -975,8 +975,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     /**
      * Exits VR Shell, performing all necessary cleanup.
      */
-    /* package */ void shutdownVr(
-            boolean disableVrMode, boolean canReenter, boolean stayingInChrome) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    public void shutdownVr(boolean disableVrMode, boolean canReenter, boolean stayingInChrome) {
         cancelPendingVrEntry();
         if (!mInVr) return;
         if (mShowingDaydreamDoff) {

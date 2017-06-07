@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.vr_shell;
+package org.chromium.chrome.browser.vr_shell.mock;
+
+import org.chromium.chrome.browser.vr_shell.VrCoreCompatibility;
+import org.chromium.chrome.browser.vr_shell.VrCoreInfo;
+import org.chromium.chrome.browser.vr_shell.VrCoreVersionCheckerImpl;
 
 /**
  * Mock version of VrCoreVersionCheckerImpl that allows setting of the return

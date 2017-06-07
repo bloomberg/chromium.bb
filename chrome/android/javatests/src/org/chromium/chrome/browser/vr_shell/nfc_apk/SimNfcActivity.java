@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.vr_shell.nfc_apk;
 import android.app.Activity;
 import android.os.Bundle;
 
-import org.chromium.chrome.browser.vr_shell.NfcSimUtils;
+import org.chromium.chrome.browser.vr_shell.util.NfcSimUtils;
 
 /**
  * Activity to simulate an NFC scan of a Daydream View VR headset. This is so

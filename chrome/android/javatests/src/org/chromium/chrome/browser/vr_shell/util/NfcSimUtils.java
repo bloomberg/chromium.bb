@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.vr_shell;
+package org.chromium.chrome.browser.vr_shell.util;
 
 import android.content.ComponentName;
 import android.content.Intent;
