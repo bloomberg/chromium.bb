@@ -519,6 +519,7 @@ def get_waterfall_config():
          # ('cc_perftests', 2),
          # crbug.com/709274
          # ('load_library_perf_tests', 2),
+         ('net_perftests', 'build150-m1'),
          ('tracing_perftests', 'build150-m1'),
          ('media_perftests', 'build151-m1')]
       }
@@ -822,6 +823,7 @@ BenchmarkMetadata = collections.namedtuple(
     'BenchmarkMetadata', 'emails component not_scheduled')
 NON_TELEMETRY_BENCHMARKS = {
     'angle_perftests': BenchmarkMetadata('jmadill@chromium.org', None, False),
+    'net_perftests': BenchmarkMetadata('xunjieli@chromium.org', None, False),
     'cc_perftests': BenchmarkMetadata('enne@chromium.org', None, False),
     'gpu_perftests': BenchmarkMetadata('reveman@chromium.org', None, False),
     'tracing_perftests': BenchmarkMetadata(
