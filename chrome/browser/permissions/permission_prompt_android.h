@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;
@@ -41,6 +42,9 @@ class PermissionPromptAndroid : public PermissionPrompt {
   int GetIconIdForPermission(size_t position) const;
   base::string16 GetMessageText(size_t position) const;
   base::string16 GetMessageTextFragment(size_t position) const;
+
+  base::string16 GetLinkText() const;
+  GURL GetLinkURL() const;
 
  private:
   // PermissionPromptAndroid is owned by PermissionRequestManager, so it should

@@ -148,7 +148,7 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       message_id = IDS_MIDI_SYSEX_PERMISSION_FRAGMENT;
       break;
-#if defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT;
       break;

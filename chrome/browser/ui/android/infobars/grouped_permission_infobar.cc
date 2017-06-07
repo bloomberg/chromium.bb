@@ -38,6 +38,8 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   base::android::ScopedJavaLocalRef<jstring> message_text =
       base::android::ConvertUTF16ToJavaString(
           env, delegate->GetMessageText());
+  base::android::ScopedJavaLocalRef<jstring> link_text =
+      base::android::ConvertUTF16ToJavaString(env, delegate->GetLinkText());
   base::android::ScopedJavaLocalRef<jstring> ok_button_text =
       base::android::ConvertUTF16ToJavaString(
           env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK));
@@ -59,7 +61,7 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   return Java_GroupedPermissionInfoBar_create(
       env, GetTab()->GetJavaObject(),
       base::android::ToJavaIntArray(env, content_settings_types), message_text,
-      ok_button_text, cancel_button_text,
+      link_text, ok_button_text, cancel_button_text,
       delegate->ShouldShowPersistenceToggle(),
       base::android::ToJavaArrayOfStrings(env, permission_strings),
       base::android::ToJavaIntArray(env, permission_icons));

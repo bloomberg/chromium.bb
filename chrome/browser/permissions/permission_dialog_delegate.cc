@@ -160,9 +160,9 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
       ResourceMapper::MapFromChromiumId(
           permission_prompt_->GetIconIdForPermission(0)),
       ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText(0)),
-      // TODO(timloh): Pass the actual link text for EME.
-      ConvertUTF16ToJavaString(env, base::string16()), primaryButtonText,
-      secondaryButtonText, permission_prompt_->ShouldShowPersistenceToggle()));
+      ConvertUTF16ToJavaString(env, permission_prompt_->GetLinkText()),
+      primaryButtonText, secondaryButtonText,
+      permission_prompt_->ShouldShowPersistenceToggle()));
 }
 
 void PermissionDialogDelegate::Accept(JNIEnv* env,
@@ -211,14 +211,11 @@ void PermissionDialogDelegate::LinkClicked(JNIEnv* env,
   // InfoBarService as an owner() to open the link. That will fail since the
   // wrapped delegate has no owner (it hasn't been added as an infobar).
   if (tab_->web_contents()) {
-    if (infobar_delegate_) {
-      tab_->web_contents()->OpenURL(content::OpenURLParams(
-          infobar_delegate_->GetLinkURL(), content::Referrer(),
-          WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-          false));
-    }
-    // TODO(timloh): Show a 'learn more' link in the PermissionRequestManager
-    // codepath for EME.
+    GURL linkURL = infobar_delegate_ ? infobar_delegate_->GetLinkURL()
+                                     : permission_prompt_->GetLinkURL();
+    tab_->web_contents()->OpenURL(content::OpenURLParams(
+        linkURL, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui::PAGE_TRANSITION_LINK, false));
   }
 }
 

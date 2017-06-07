@@ -16,10 +16,10 @@ public class GroupedPermissionInfoBar extends PermissionInfoBar {
     private final String[] mPermissionText;
     private final int[] mPermissionIcons;
 
-    GroupedPermissionInfoBar(Tab tab, int[] contentSettingsTypes, String message, String buttonOk,
-            String buttonCancel, boolean showPersistenceToggle, String[] permissionText,
-            int[] permissionIcons) {
-        super(tab, contentSettingsTypes, 0, null, message, null, buttonOk, buttonCancel,
+    GroupedPermissionInfoBar(Tab tab, int[] contentSettingsTypes, String message, String linkText,
+            String buttonOk, String buttonCancel, boolean showPersistenceToggle,
+            String[] permissionText, int[] permissionIcons) {
+        super(tab, contentSettingsTypes, 0, null, message, linkText, buttonOk, buttonCancel,
                 showPersistenceToggle);
         mPermissionText = permissionText;
         mPermissionIcons = permissionIcons;
@@ -62,10 +62,10 @@ public class GroupedPermissionInfoBar extends PermissionInfoBar {
      */
     @CalledByNative
     private static InfoBar create(Tab tab, int[] contentSettingsTypes, String message,
-            String buttonOk, String buttonCancel, boolean showPersistenceToggle,
+            String linkText, String buttonOk, String buttonCancel, boolean showPersistenceToggle,
             String[] permissionText, int[] permissionIcons) {
         GroupedPermissionInfoBar infobar =
-                new GroupedPermissionInfoBar(tab, contentSettingsTypes, message, buttonOk,
+                new GroupedPermissionInfoBar(tab, contentSettingsTypes, message, linkText, buttonOk,
                         buttonCancel, showPersistenceToggle, permissionText, permissionIcons);
         return infobar;
     }

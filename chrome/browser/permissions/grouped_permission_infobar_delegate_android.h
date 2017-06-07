@@ -49,6 +49,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
   void InfoBarDismissed() override;
+  base::string16 GetLinkText() const override;
 
  protected:
   bool GetAcceptState(size_t position);
@@ -62,6 +63,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   Type GetInfoBarType() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
+  GURL GetLinkURL() const override;
 
   // InfoBarDelegate:
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;

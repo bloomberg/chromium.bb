@@ -8,6 +8,11 @@
 #include "base/run_loop.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_ANDROID)
+#include "ui/gfx/vector_icon_types.h"
+#endif
 
 MockPermissionPrompt::~MockPermissionPrompt() {
   Hide();
@@ -20,6 +25,14 @@ void MockPermissionPrompt::Show() {
   for (const PermissionRequest* request : manager_->requests_) {
     factory_->request_types_seen_.push_back(
         request->GetPermissionRequestType());
+    // The actual prompt will call these, so test they're sane.
+    EXPECT_FALSE(request->GetMessageTextFragment().empty());
+#if defined(OS_ANDROID)
+    EXPECT_FALSE(request->GetMessageText().empty());
+    EXPECT_NE(0, request->GetIconId());
+#else
+    EXPECT_FALSE(request->GetIconId().is_empty());
+#endif
   }
   factory_->UpdateResponseType();
   is_visible_ = true;
