@@ -395,6 +395,8 @@ STATIC_ASSERT_ENUM(kWebAXInvalidStateOther, kInvalidStateOther);
 STATIC_ASSERT_ENUM(kWebAXMarkerTypeSpelling, DocumentMarker::kSpelling);
 STATIC_ASSERT_ENUM(kWebAXMarkerTypeGrammar, DocumentMarker::kGrammar);
 STATIC_ASSERT_ENUM(kWebAXMarkerTypeTextMatch, DocumentMarker::kTextMatch);
+STATIC_ASSERT_ENUM(kWebAXMarkerTypeActiveSuggestion,
+                   DocumentMarker::kActiveSuggestion);
 
 STATIC_ASSERT_ENUM(kWebAXTextStyleNone, kTextStyleNone);
 STATIC_ASSERT_ENUM(kWebAXTextStyleBold, kTextStyleBold);

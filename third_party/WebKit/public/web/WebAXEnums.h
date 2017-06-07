@@ -304,7 +304,9 @@ enum WebAXInvalidState {
 enum WebAXMarkerType {
   kWebAXMarkerTypeSpelling = 1 << 0,
   kWebAXMarkerTypeGrammar = 1 << 1,
-  kWebAXMarkerTypeTextMatch = 1 << 2
+  kWebAXMarkerTypeTextMatch = 1 << 2,
+  // Skip DocumentMarker::MarkerType::Composition
+  kWebAXMarkerTypeActiveSuggestion = 1 << 4,
 };
 
 // Used for exposing text attributes.
