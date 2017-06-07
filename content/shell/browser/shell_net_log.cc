@@ -5,11 +5,13 @@
 #include "content/shell/browser/shell_net_log.h"
 
 #include <stdio.h>
+
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -20,21 +22,22 @@ namespace content {
 
 namespace {
 
-base::DictionaryValue* GetShellConstants(const std::string& app_name) {
+std::unique_ptr<base::DictionaryValue> GetShellConstants(
+    const std::string& app_name) {
   std::unique_ptr<base::DictionaryValue> constants_dict =
       net::GetNetConstants();
 
   // Add a dictionary with client information
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  auto dict = base::MakeUnique<base::DictionaryValue>();
 
   dict->SetString("name", app_name);
   dict->SetString(
       "command_line",
       base::CommandLine::ForCurrentProcess()->GetCommandLineString());
 
-  constants_dict->Set("clientInfo", dict);
+  constants_dict->Set("clientInfo", std::move(dict));
 
-  return constants_dict.release();
+  return constants_dict;
 }
 
 }  // namespace

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -1017,8 +1018,9 @@ void GpuDataManagerImplPrivate::ProcessCrashed(
   }
 }
 
-base::ListValue* GpuDataManagerImplPrivate::GetLogMessages() const {
-  base::ListValue* value = new base::ListValue;
+std::unique_ptr<base::ListValue> GpuDataManagerImplPrivate::GetLogMessages()
+    const {
+  auto value = base::MakeUnique<base::ListValue>();
   for (size_t ii = 0; ii < log_messages_.size(); ++ii) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetInteger("level", log_messages_[ii].level);

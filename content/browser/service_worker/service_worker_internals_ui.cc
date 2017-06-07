@@ -194,16 +194,16 @@ std::unique_ptr<ListValue> GetRegistrationListValue(
 
     if (registration.active_version.version_id !=
         kInvalidServiceWorkerVersionId) {
-      DictionaryValue* active_info = new DictionaryValue();
-      UpdateVersionInfo(registration.active_version, active_info);
-      registration_info->Set("active", active_info);
+      auto active_info = base::MakeUnique<DictionaryValue>();
+      UpdateVersionInfo(registration.active_version, active_info.get());
+      registration_info->Set("active", std::move(active_info));
     }
 
     if (registration.waiting_version.version_id !=
         kInvalidServiceWorkerVersionId) {
-      DictionaryValue* waiting_info = new DictionaryValue();
-      UpdateVersionInfo(registration.waiting_version, waiting_info);
-      registration_info->Set("waiting", waiting_info);
+      auto waiting_info = base::MakeUnique<DictionaryValue>();
+      UpdateVersionInfo(registration.waiting_version, waiting_info.get());
+      registration_info->Set("waiting", std::move(waiting_info));
     }
 
     result->Append(std::move(registration_info));

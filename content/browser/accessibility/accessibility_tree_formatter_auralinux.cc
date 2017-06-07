@@ -6,11 +6,15 @@
 
 #include <atk/atk.h>
 
+#include <utility>
+
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 
 namespace content {
@@ -60,13 +64,13 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
     dict->SetString("description", std::string(description));
 
   AtkStateSet* state_set = atk_object_ref_state_set(atk_object);
-  base::ListValue* states = new base::ListValue;
+  auto states = base::MakeUnique<base::ListValue>();
   for (int i = ATK_STATE_INVALID; i < ATK_STATE_LAST_DEFINED; i++) {
     AtkStateType state_type = static_cast<AtkStateType>(i);
     if (atk_state_set_contains_state(state_set, state_type))
       states->AppendString(atk_state_type_get_name(state_type));
   }
-  dict->Set("states", states);
+  dict->Set("states", std::move(states));
 }
 
 base::string16 AccessibilityTreeFormatterAuraLinux::ToString(

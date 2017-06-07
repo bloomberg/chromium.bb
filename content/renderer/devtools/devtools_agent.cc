@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -341,8 +342,8 @@ void DevToolsAgent::GotManifest(int session_id,
   result->SetString("url", url.Utf16());
   if (!failed)
     result->SetString("data", debug_info.raw_data);
-  result->Set("errors", errors.release());
-  response->Set("result", result.release());
+  result->Set("errors", std::move(errors));
+  response->Set("result", std::move(result));
 
   std::string json_message;
   base::JSONWriter::Write(*response, &json_message);

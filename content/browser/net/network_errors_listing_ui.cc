@@ -64,7 +64,7 @@ bool HandleRequestCallback(BrowserContext* current_context,
     return false;
 
   base::DictionaryValue data;
-  data.Set(kErrorCodesDataName, GetNetworkErrorData().release());
+  data.Set(kErrorCodesDataName, GetNetworkErrorData());
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
   callback.Run(base::RefCountedString::TakeString(&json_string));
