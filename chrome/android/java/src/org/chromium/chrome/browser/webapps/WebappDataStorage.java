@@ -104,6 +104,7 @@ public class WebappDataStorage {
 
     /**
      * Called after data has been retrieved from storage.
+     * @param <T> The type of the data being retrieved.
      */
     public interface FetchCallback<T> {
         public void onDataRetrieved(T readObject);
@@ -484,8 +485,7 @@ public class WebappDataStorage {
      */
     boolean didPreviousUpdateSucceed() {
         long lastUpdateCompletionTime = getLastWebApkUpdateRequestCompletionTime();
-        if (lastUpdateCompletionTime == WebappDataStorage.LAST_USED_INVALID
-                || lastUpdateCompletionTime == WebappDataStorage.LAST_USED_UNSET) {
+        if (lastUpdateCompletionTime == WebappDataStorage.LAST_USED_INVALID) {
             return true;
         }
         return getDidLastWebApkUpdateRequestSucceed();
