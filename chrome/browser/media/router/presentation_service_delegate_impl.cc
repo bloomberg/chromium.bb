@@ -132,7 +132,7 @@ class PresentationFrame {
   // Mirror corresponding APIs in PresentationServiceDelegateImpl.
   bool SetScreenAvailabilityListener(
       content::PresentationScreenAvailabilityListener* listener);
-  bool RemoveScreenAvailabilityListener(
+  void RemoveScreenAvailabilityListener(
       content::PresentationScreenAvailabilityListener* listener);
   bool HasScreenAvailabilityListenerForTest(
       const MediaSource::Id& source_id) const;
@@ -217,6 +217,11 @@ const MediaRoute::Id PresentationFrame::GetRouteId(
 bool PresentationFrame::SetScreenAvailabilityListener(
     content::PresentationScreenAvailabilityListener* listener) {
   MediaSource source(GetMediaSourceFromListener(listener));
+  if (!IsValidPresentationUrl(source.url())) {
+    listener->OnScreenAvailabilityChanged(false);
+    return false;
+  }
+
   auto& sinks_observer = url_to_sinks_observer_[source.id()];
   if (sinks_observer && sinks_observer->listener() == listener)
     return false;
@@ -234,16 +239,14 @@ bool PresentationFrame::SetScreenAvailabilityListener(
   return true;
 }
 
-bool PresentationFrame::RemoveScreenAvailabilityListener(
+void PresentationFrame::RemoveScreenAvailabilityListener(
     content::PresentationScreenAvailabilityListener* listener) {
   MediaSource source(GetMediaSourceFromListener(listener));
   auto sinks_observer_it = url_to_sinks_observer_.find(source.id());
   if (sinks_observer_it != url_to_sinks_observer_.end() &&
       sinks_observer_it->second->listener() == listener) {
     url_to_sinks_observer_.erase(sinks_observer_it);
-    return true;
   }
-  return false;
 }
 
 bool PresentationFrame::HasScreenAvailabilityListenerForTest(
@@ -394,7 +397,7 @@ class PresentationFrameManager {
   bool SetScreenAvailabilityListener(
       const RenderFrameHostId& render_frame_host_id,
       content::PresentationScreenAvailabilityListener* listener);
-  bool RemoveScreenAvailabilityListener(
+  void RemoveScreenAvailabilityListener(
       const RenderFrameHostId& render_frame_host_id,
       content::PresentationScreenAvailabilityListener* listener);
   void ListenForConnectionStateChange(
@@ -553,13 +556,13 @@ bool PresentationFrameManager::SetScreenAvailabilityListener(
   return presentation_frame->SetScreenAvailabilityListener(listener);
 }
 
-bool PresentationFrameManager::RemoveScreenAvailabilityListener(
+void PresentationFrameManager::RemoveScreenAvailabilityListener(
     const RenderFrameHostId& render_frame_host_id,
     content::PresentationScreenAvailabilityListener* listener) {
   DCHECK(listener);
   const auto it = presentation_frames_.find(render_frame_host_id);
-  return it != presentation_frames_.end() &&
-         it->second->RemoveScreenAvailabilityListener(listener);
+  if (it != presentation_frames_.end())
+    it->second->RemoveScreenAvailabilityListener(listener);
 }
 
 bool PresentationFrameManager::HasScreenAvailabilityListenerForTest(

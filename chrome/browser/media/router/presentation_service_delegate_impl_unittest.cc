@@ -320,6 +320,14 @@ TEST_F(PresentationServiceDelegateImplTest, AddSameListenerTwice) {
       main_frame_process_id_, main_frame_routing_id_, source1_.id()));
 }
 
+TEST_F(PresentationServiceDelegateImplTest, AddListenerForInvalidUrl) {
+  MockScreenAvailabilityListener listener(GURL("unsupported-url://foo"));
+  EXPECT_CALL(listener, OnScreenAvailabilityChanged(false));
+  EXPECT_FALSE(delegate_impl_->AddScreenAvailabilityListener(
+      main_frame_process_id_, main_frame_routing_id_, &listener));
+  EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).Times(0);
+}
+
 // TODO(imcheng): Add a test to set default presentation URL in a different
 // RenderFrameHost and verify that it is ignored.
 TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {

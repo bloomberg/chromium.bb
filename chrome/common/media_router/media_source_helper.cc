@@ -6,6 +6,9 @@
 
 #include <stdio.h>
 
+#include <algorithm>
+#include <array>
+
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/media_router/media_source.h"
@@ -27,6 +30,17 @@ constexpr char kCastPresentationUrlPath[] = "/cast";
 // This value must be the same as |chrome.cast.AUTO_JOIN_PRESENTATION_ID| in the
 // component extension.
 constexpr char kAutoJoinPresentationId[] = "auto-join";
+
+// List of non-http(s) schemes that are allowed in a Presentation URL.
+constexpr std::array<const char* const, 4> kAllowedSchemes{
+    {"cast", "dial", "remote-playback", "test"}};
+
+bool IsSchemeAllowed(const GURL& url) {
+  return url.SchemeIsHTTPOrHTTPS() ||
+         std::any_of(
+             kAllowedSchemes.begin(), kAllowedSchemes.end(),
+             [&url](const char* const scheme) { return url.SchemeIs(scheme); });
+}
 
 }  // namespace
 
@@ -87,7 +101,7 @@ bool IsValidMediaSource(const MediaSource& source) {
 }
 
 bool IsValidPresentationUrl(const GURL& url) {
-  return url.is_valid() && url.SchemeIsHTTPOrHTTPS();
+  return url.is_valid() && IsSchemeAllowed(url);
 }
 
 bool IsAutoJoinPresentationId(const std::string& presentation_id) {

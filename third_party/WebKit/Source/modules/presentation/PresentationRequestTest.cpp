@@ -43,19 +43,6 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructor) {
   EXPECT_EQ("cast://deadbeef?param=foo", request_urls[1].GetString());
 }
 
-TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidURLFamily) {
-  V8TestingScope scope;
-  WTF::Vector<String> urls;
-  urls.push_back("https://example.com");
-  urls.push_back("about://deadbeef?param=foo");
-
-  PresentationRequest::Create(scope.GetExecutionContext(), urls,
-                              scope.GetExceptionState());
-  ASSERT_TRUE(scope.GetExceptionState().HadException());
-
-  EXPECT_EQ(kSyntaxError, scope.GetExceptionState().Code());
-}
-
 TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidUrl) {
   V8TestingScope scope;
   WTF::Vector<String> urls;
@@ -66,6 +53,21 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidUrl) {
                               scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(kSyntaxError, scope.GetExceptionState().Code());
+}
+
+TEST(PresentationRequestTest, TestMixedContentNotCheckedForNonHttpFamily) {
+  V8TestingScope scope;
+  scope.GetExecutionContext()->GetSecurityContext().SetSecurityOrigin(
+      SecurityOrigin::CreateFromString("https://example.test"));
+
+  PresentationRequest* request = PresentationRequest::Create(
+      scope.GetExecutionContext(), "foo://bar", scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
+
+  WTF::Vector<KURL> request_urls = request->Urls();
+  EXPECT_EQ(static_cast<size_t>(1), request_urls.size());
+  EXPECT_TRUE(request_urls[0].IsValid());
+  EXPECT_EQ("foo://bar", request_urls[0].GetString());
 }
 
 TEST(PresentationRequestTest, TestSingleUrlConstructorMixedContent) {

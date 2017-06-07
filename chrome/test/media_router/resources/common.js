@@ -18,12 +18,11 @@ if (params.get('__is_android__') == 'true') {
   // TODO(zqzhang): this requirement may be removed in the future.
   presentationUrl = "https://google.com/cast#__castAppId__=CCCCCCCC/";
 } else if (params.get('__oneUA__') == 'true') {
-  presentationUrl =
-      "presentation_receiver.html#__testprovider__=true&__oneUA__=true";
+  presentationUrl = "presentation_receiver.html";
 } else if (params.get('__oneUANoReceiver__') == 'true') {
-  presentationUrl = "https://www.google.com#__testprovider__=true&__oneUA__=true";
+  presentationUrl = "https://www.google.com";
 } else {
-  presentationUrl = "http://www.google.com/#__testprovider__=true";
+  presentationUrl = "test://test";
 }
 
 var startSessionRequest = new PresentationRequest([presentationUrl]);
