@@ -16,6 +16,24 @@ const char kNightLightEnabled[] = "ash.night_light.enabled";
 // (most warm).
 const char kNightLightTemperature[] = "ash.night_light.color_temperature";
 
+// An integer pref storing the type of automatic scheduling of turning on and
+// off the NightLight feature. Valid values are:
+// 0 -> NightLight is never turned on or off automatically.
+// 1 -> NightLight is turned on and off at the sunset and sunrise times
+// respectively.
+// 2 -> NightLight schedule times are explicitly set by the user.
+//
+// See ash::NightLightController::ScheduleType.
+const char kNightLightScheduleType[] = "ash.night_light.schedule_type";
+
+// Integer prefs storing the start and end times of the automatic schedule at
+// which NightLight turns on and off respectively when the schedule type is set
+// to a custom schedule. The times are represented as the number of minutes from
+// 00:00 (12:00 AM) regardless of the date or the timezone.
+// See ash::TimeOfDayTime.
+const char kNightLightCustomStartTime[] = "ash.night_light.custom_start_time";
+const char kNightLightCustomEndTime[] = "ash.night_light.custom_end_time";
+
 }  // namespace prefs
 
 }  // namespace ash

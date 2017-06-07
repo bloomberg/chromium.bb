@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/icu/source/i18n/astro.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
@@ -19,14 +20,65 @@ namespace ash {
 
 namespace {
 
+// Default start time at 6:00 PM as an offset from 00:00.
+const int kDefaultStartTimeOffsetMinutes = 18 * 60;
+
+// Default end time at 6:00 AM as an offset from 00:00.
+const int kDefaultEndTimeOffsetMinutes = 6 * 60;
+
 constexpr float kDefaultColorTemperature = 0.5f;
 
-// The duration of the temperature change animation when the change is a result
-// of a manual user setting.
-// TODO(afakhry): Add automatic schedule animation duration when you implement
-// that part. It should be large enough (20 seconds as agreed) to give the user
-// a nice smooth transition.
-constexpr int kManualToggleAnimationDurationSec = 2;
+// The duration of the temperature change animation for
+// AnimationDurationType::kShort.
+constexpr int kManualAnimationDurationSec = 2;
+
+// The duration of the temperature change animation for
+// AnimationDurationType::kLong.
+constexpr int kAutomaticAnimationDurationSec = 20;
+
+class NightLightControllerDelegateImpl : public NightLightController::Delegate {
+ public:
+  NightLightControllerDelegateImpl() {
+    // TODO(afakhry): Implement geolocation position retrieval.
+  }
+  ~NightLightControllerDelegateImpl() override = default;
+
+  // ash::NightLightController::Delegate:
+  base::Time GetNow() const override { return base::Time::Now(); }
+  base::Time GetSunsetTime() const override { return GetSunRiseSet(false); }
+  base::Time GetSunriseTime() const override { return GetSunRiseSet(true); }
+
+ private:
+  base::Time GetSunRiseSet(bool sunrise) const {
+    if (!ValidatePosition()) {
+      return sunrise ? TimeOfDay(kDefaultEndTimeOffsetMinutes).ToTimeToday()
+                     : TimeOfDay(kDefaultStartTimeOffsetMinutes).ToTimeToday();
+    }
+
+    icu::CalendarAstronomer astro(longitude_, latitude_);
+    // For sunset and sunrise times calculations to be correct, the time of the
+    // icu::CalendarAstronomer object should be set to a time near local noon.
+    // This avoids having the computation flopping over into an adjacent day.
+    // See the documentation of icu::CalendarAstronomer::getSunRiseSet().
+    // Note that the icu calendar works with milliseconds since epoch, and
+    // base::Time::FromDoubleT() / ToDoubleT() work with seconds since epoch.
+    const double noon_today_sec = TimeOfDay(12 * 60).ToTimeToday().ToDoubleT();
+    astro.setTime(noon_today_sec * 1000.0);
+    const double sun_rise_set_ms = astro.getSunRiseSet(sunrise);
+    return base::Time::FromDoubleT(sun_rise_set_ms / 1000.0);
+  }
+
+  bool ValidatePosition() const {
+    // TODO(afakhry): Replace with geoposition APIs.
+    return false;
+  }
+
+  // Stub values to be replaced by actual geoposition APIs.
+  double latitude_ = 0.0;
+  double longitude_ = 0.0;
+
+  DISALLOW_COPY_AND_ASSIGN(NightLightControllerDelegateImpl);
+};
 
 // Applies the given |layer_temperature| to all the layers of the root windows
 // with the given |animation_duration|.
@@ -69,6 +121,12 @@ void NightLightController::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kNightLightEnabled, false);
   registry->RegisterDoublePref(prefs::kNightLightTemperature,
                                kDefaultColorTemperature);
+  registry->RegisterIntegerPref(prefs::kNightLightScheduleType,
+                                static_cast<int>(ScheduleType::kNone));
+  registry->RegisterIntegerPref(prefs::kNightLightCustomStartTime,
+                                kDefaultStartTimeOffsetMinutes);
+  registry->RegisterIntegerPref(prefs::kNightLightCustomEndTime,
+                                kDefaultEndTimeOffsetMinutes);
 }
 
 void NightLightController::AddObserver(Observer* observer) {
@@ -91,9 +149,40 @@ float NightLightController::GetColorTemperature() const {
   return kDefaultColorTemperature;
 }
 
-void NightLightController::SetEnabled(bool enabled) {
-  if (active_user_pref_service_)
+NightLightController::ScheduleType NightLightController::GetScheduleType()
+    const {
+  if (active_user_pref_service_) {
+    return static_cast<ScheduleType>(
+        active_user_pref_service_->GetInteger(prefs::kNightLightScheduleType));
+  }
+
+  return ScheduleType::kNone;
+}
+
+TimeOfDay NightLightController::GetCustomStartTime() const {
+  if (active_user_pref_service_) {
+    return TimeOfDay(active_user_pref_service_->GetInteger(
+        prefs::kNightLightCustomStartTime));
+  }
+
+  return TimeOfDay(kDefaultStartTimeOffsetMinutes);
+}
+
+TimeOfDay NightLightController::GetCustomEndTime() const {
+  if (active_user_pref_service_) {
+    return TimeOfDay(
+        active_user_pref_service_->GetInteger(prefs::kNightLightCustomEndTime));
+  }
+
+  return TimeOfDay(kDefaultEndTimeOffsetMinutes);
+}
+
+void NightLightController::SetEnabled(bool enabled,
+                                      AnimationDuration animation_type) {
+  if (active_user_pref_service_) {
+    animation_duration_ = animation_type;
     active_user_pref_service_->SetBoolean(prefs::kNightLightEnabled, enabled);
+  }
 }
 
 void NightLightController::SetColorTemperature(float temperature) {
@@ -105,8 +194,31 @@ void NightLightController::SetColorTemperature(float temperature) {
   }
 }
 
+void NightLightController::SetScheduleType(ScheduleType type) {
+  if (active_user_pref_service_) {
+    active_user_pref_service_->SetInteger(prefs::kNightLightScheduleType,
+                                          static_cast<int>(type));
+  }
+}
+
+void NightLightController::SetCustomStartTime(TimeOfDay start_time) {
+  if (active_user_pref_service_) {
+    active_user_pref_service_->SetInteger(
+        prefs::kNightLightCustomStartTime,
+        start_time.offset_minutes_from_zero_hour());
+  }
+}
+
+void NightLightController::SetCustomEndTime(TimeOfDay end_time) {
+  if (active_user_pref_service_) {
+    active_user_pref_service_->SetInteger(
+        prefs::kNightLightCustomEndTime,
+        end_time.offset_minutes_from_zero_hour());
+  }
+}
+
 void NightLightController::Toggle() {
-  SetEnabled(!GetEnabled());
+  SetEnabled(!GetEnabled(), AnimationDuration::kShort);
 }
 
 void NightLightController::OnActiveUserSessionChanged(
@@ -114,15 +226,27 @@ void NightLightController::OnActiveUserSessionChanged(
   // Initial login and user switching in multi profiles.
   pref_change_registrar_.reset();
   active_user_pref_service_ = Shell::Get()->GetActiveUserPrefService();
+  delegate_ = base::MakeUnique<NightLightControllerDelegateImpl>();
   InitFromUserPrefs();
 }
 
-void NightLightController::Refresh() {
-  // TODO(afakhry): Add here refreshing of start and end times, when you
-  // implement the automatic schedule settings.
+void NightLightController::SetDelegateForTesting(
+    std::unique_ptr<Delegate> delegate) {
+  delegate_ = std::move(delegate);
+}
+
+void NightLightController::RefreshLayersTemperature() {
   ApplyColorTemperatureToLayers(
       GetEnabled() ? GetColorTemperature() : 0.0f,
-      base::TimeDelta::FromSeconds(kManualToggleAnimationDurationSec));
+      base::TimeDelta::FromSeconds(animation_duration_ ==
+                                           AnimationDuration::kShort
+                                       ? kManualAnimationDurationSec
+                                       : kAutomaticAnimationDurationSec));
+
+  // Reset the animation type back to manual to consume any automatically set
+  // animations.
+  last_animation_duration_ = animation_duration_;
+  animation_duration_ = AnimationDuration::kShort;
   Shell::Get()->SetCursorCompositingEnabled(GetEnabled());
 }
 
@@ -139,6 +263,18 @@ void NightLightController::StartWatchingPrefsChanges() {
       prefs::kNightLightTemperature,
       base::Bind(&NightLightController::OnColorTemperaturePrefChanged,
                  base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kNightLightScheduleType,
+      base::Bind(&NightLightController::OnScheduleParamsPrefsChanged,
+                 base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kNightLightCustomStartTime,
+      base::Bind(&NightLightController::OnScheduleParamsPrefsChanged,
+                 base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kNightLightCustomEndTime,
+      base::Bind(&NightLightController::OnScheduleParamsPrefsChanged,
+                 base::Unretained(this)));
 }
 
 void NightLightController::InitFromUserPrefs() {
@@ -148,7 +284,7 @@ void NightLightController::InitFromUserPrefs() {
   }
 
   StartWatchingPrefsChanges();
-  Refresh();
+  Refresh(true /* did_schedule_change */);
   NotifyStatusChanged();
 }
 
@@ -159,13 +295,141 @@ void NightLightController::NotifyStatusChanged() {
 
 void NightLightController::OnEnabledPrefChanged() {
   DCHECK(active_user_pref_service_);
-  Refresh();
+  Refresh(false /* did_schedule_change */);
   NotifyStatusChanged();
 }
 
 void NightLightController::OnColorTemperaturePrefChanged() {
   DCHECK(active_user_pref_service_);
-  Refresh();
+  RefreshLayersTemperature();
+}
+
+void NightLightController::OnScheduleParamsPrefsChanged() {
+  DCHECK(active_user_pref_service_);
+  Refresh(true /* did_schedule_change */);
+}
+
+void NightLightController::Refresh(bool did_schedule_change) {
+  RefreshLayersTemperature();
+
+  const ScheduleType type = GetScheduleType();
+  switch (type) {
+    case ScheduleType::kNone:
+      timer_.Stop();
+      return;
+
+    case ScheduleType::kSunsetToSunrise:
+      RefreshScheduleTimer(delegate_->GetSunsetTime(),
+                           delegate_->GetSunriseTime(), did_schedule_change);
+      return;
+
+    case ScheduleType::kCustom:
+      RefreshScheduleTimer(GetCustomStartTime().ToTimeToday(),
+                           GetCustomEndTime().ToTimeToday(),
+                           did_schedule_change);
+      return;
+  }
+}
+
+void NightLightController::RefreshScheduleTimer(base::Time start_time,
+                                                base::Time end_time,
+                                                bool did_schedule_change) {
+  if (GetScheduleType() == ScheduleType::kNone) {
+    NOTREACHED();
+    timer_.Stop();
+    return;
+  }
+
+  // NOTE: Users can set any weird combinations.
+  if (end_time <= start_time) {
+    // Example:
+    // Start: 9:00 PM, End: 6:00 AM.
+    //
+    //       6:00                21:00
+    // <----- + ------------------ + ----->
+    //        |                    |
+    //       end                 start
+    //
+    // From our perspective, the end time is always a day later.
+    end_time += base::TimeDelta::FromDays(1);
+  }
+
+  DCHECK_GE(end_time, start_time);
+
+  // The target status that we need to set NightLight to now if a change of
+  // status is needed immediately.
+  bool enable_now = false;
+
+  // Where are we now with respect to the start and end times?
+  const base::Time now = delegate_->GetNow();
+  if (now < start_time) {
+    // Example:
+    // Start: 6:00 PM today, End: 6:00 AM tomorrow, Now: 4:00 PM.
+    //
+    // <----- + ----------- + ----------- + ----->
+    //        |             |             |
+    //       now          start          end
+    //
+    // In this case, we need to disable NightLight immediately if it's enabled.
+    enable_now = false;
+  } else if (now >= start_time && now < end_time) {
+    // Example:
+    // Start: 6:00 PM today, End: 6:00 AM tomorrow, Now: 11:00 PM.
+    //
+    // <----- + ----------- + ----------- + ----->
+    //        |             |             |
+    //      start          now           end
+    //
+    // Start NightLight right away. Our future start time is a day later than
+    // its current value.
+    enable_now = true;
+    start_time += base::TimeDelta::FromDays(1);
+  } else {  // now >= end_time.
+    // Example:
+    // Start: 6:00 PM today, End: 10:00 PM today, Now: 11:00 PM.
+    //
+    // <----- + ----------- + ----------- + ----->
+    //        |             |             |
+    //      start          end           now
+    //
+    // In this case, our future start and end times are a day later from their
+    // current values. NightLight needs to be ended immediately if it's already
+    // enabled.
+    enable_now = false;
+    start_time += base::TimeDelta::FromDays(1);
+    end_time += base::TimeDelta::FromDays(1);
+  }
+
+  // After the above processing, the start and end time are all in the future.
+  DCHECK_GE(start_time, now);
+  DCHECK_GE(end_time, now);
+
+  if (did_schedule_change && enable_now != GetEnabled()) {
+    // If the change in the schedule introduces a change in the status, then
+    // calling SetEnabled() is all we need, since it will trigger a change in
+    // the user prefs to which we will respond by calling Refresh(). This will
+    // end up in this function again, adjusting all the needed schedules.
+    SetEnabled(enable_now, AnimationDuration::kShort);
+    return;
+  }
+
+  // We reach here in one of the following conditions:
+  // 1) If schedule changes don't result in changes in the status, we need to
+  // explicitly update the timer to re-schedule the next toggle to account for
+  // any changes.
+  // 2) The user has just manually toggled the status of NightLight either from
+  // the System Menu or System Settings. In this case, we respect the user
+  // wish and maintain the current status that he desires, but we schedule the
+  // status to be toggled according to the time that corresponds with the
+  // opposite status of the current one.
+  ScheduleNextToggle(GetEnabled() ? end_time - now : start_time - now);
+}
+
+void NightLightController::ScheduleNextToggle(base::TimeDelta delay) {
+  timer_.Start(
+      FROM_HERE, delay,
+      base::Bind(&NightLightController::SetEnabled, base::Unretained(this),
+                 !GetEnabled(), AnimationDuration::kLong));
 }
 
 }  // namespace ash
