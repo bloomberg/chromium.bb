@@ -1271,12 +1271,15 @@ TEST_F(WidgetTestInteractive, RestoreAfterMinimize) {
   widget->CloseNow();
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_WIN)
-// TODO(warx): Investigate the flakiness on OS_WIN (crbug.com/729331).
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Tests that when a desktop native widget has modal transient child, it should
 // avoid restore focused view itself as the modal transient child window will do
 // that, thus avoids having multiple focused view visually (crbug.com/727641).
 TEST_F(WidgetTestInteractive, DesktopNativeWidgetWithModalTransientChild) {
+  // Create a desktop native Widget for Widget::Deactivate().
+  Widget* deactivate_widget = CreateWidget();
+  ShowSync(deactivate_widget);
+
   // Create a top level desktop native widget.
   Widget* top_level = CreateWidget();
 
@@ -1315,8 +1318,9 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetWithModalTransientChild) {
   EXPECT_FALSE(textfield->HasFocus());
 
   top_level->CloseNow();
+  deactivate_widget->CloseNow();
 }
-#endif  // defined(USE_AURA) && !defined(OS_CHROMEOS) && !defined(OS_WIN)
+#endif  // defined(USE_AURA) && !defined(OS_CHROMEOS)
 
 namespace {
 
