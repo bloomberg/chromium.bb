@@ -114,6 +114,7 @@
             { index: "Test", path: "test-slow-render.html?heavyGpu=1&workTime=48", title: "Slow GPU and Javascript" },
             { index: "Test", path: "03-vr-presentation.html?webgl2=1", title: "WebGL 2" },
             { index: "Test", path: "test-vr-links.html", title: "VR Links" },
+            { index: "Test", path: "insecure/test-insecure.html", title: "Insecure WebVR", insecure: true },
           ];
 
           // Append an element for every item in the pages list.
@@ -130,14 +131,16 @@
             var li = document.createElement("li");
             li.setAttribute("data-index", page.index ? page.index : "XX");
 
+            var linkPath = page.insecure ? page.path : "http://webvr.info/samples/" + page.path;
+
             var sampleLink = document.createElement("a");
-            sampleLink.href = page.path;
+            sampleLink.href = linkPath;
             sampleLink.innerHTML = page.title;
             li.appendChild(sampleLink);
 
             if (!testPage) {
               var polyfillLink = document.createElement("a");
-              polyfillLink.href = page.path + "?polyfill=1";
+              polyfillLink.href = linkPath + "?polyfill=1";
               polyfillLink.innerHTML = "(Polyfill)";
               li.appendChild(polyfillLink);
             }
