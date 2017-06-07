@@ -235,6 +235,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #if defined(OS_ANDROID)
     {switches::kDisableGLDrawingForTests, ""},
     {switches::kSkipGpuDataLoading, ""},
+    {switches::kDisableGpuCompositing, ""},
 #endif  // defined(OS_ANDROID)
 #endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 #if defined(OS_LINUX)
