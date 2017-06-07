@@ -45,9 +45,9 @@ void HitTestCache::AddCachedResult(const HitTestResult& result,
   if (!result.IsCacheable())
     return;
 
-  // If the result was a hit test on an LayoutPart and the request allowed
-  // querying of the layout part; then the part hasn't been loaded yet.
-  if (result.IsOverFrameViewBase() &&
+  // If the result was a hit test on an LayoutEmbeddedContent and the request
+  // allowed querying of the layout part; then the part hasn't been loaded yet.
+  if (result.IsOverEmbeddedContentView() &&
       result.GetHitTestRequest().AllowsChildFrameContent())
     return;
 

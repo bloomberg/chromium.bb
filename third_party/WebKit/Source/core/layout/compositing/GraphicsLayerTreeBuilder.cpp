@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
@@ -94,9 +94,10 @@ void GraphicsLayerTreeBuilder::Rebuild(PaintLayer& layer,
 
   if (has_composited_layer_mapping) {
     bool parented = false;
-    if (layer.GetLayoutObject().IsLayoutPart())
+    if (layer.GetLayoutObject().IsLayoutEmbeddedContent()) {
       parented = PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
-          ToLayoutPart(layer.GetLayoutObject()));
+          ToLayoutEmbeddedContent(layer.GetLayoutObject()));
+    }
 
     if (!parented)
       current_composited_layer_mapping->SetSublayers(this_layer_children);

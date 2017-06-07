@@ -9,7 +9,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
@@ -182,7 +182,7 @@ void RootScrollerController::ApplyRootScrollerProperties(Node& node) const {
 
 void RootScrollerController::UpdateIFrameGeometryAndLayoutSize(
     HTMLFrameOwnerElement& frame_owner) const {
-  LayoutPart* part = frame_owner.GetLayoutPart();
+  LayoutEmbeddedContent* part = frame_owner.GetLayoutEmbeddedContent();
   if (!part)
     return;
 

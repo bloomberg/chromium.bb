@@ -949,8 +949,8 @@ TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
   PaintLayer* target = GetPaintLayerByElementId("target");
 
   // A non-positioned iframe still gets a PaintLayer because PaintLayers are
-  // forced for all LayoutPart objects. However, such PaintLayers are not
-  // stacked.
+  // forced for all LayoutEmbeddedContent objects. However, such PaintLayers are
+  // not stacked.
   PaintLayer* containing_block = GetPaintLayerByElementId("containingBlock");
   EXPECT_EQ(containing_block, target->CompositingContainer());
   PaintLayer* composited_container =

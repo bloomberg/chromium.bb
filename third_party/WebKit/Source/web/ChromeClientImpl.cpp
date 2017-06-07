@@ -55,7 +55,7 @@
 #include "core/html/forms/DateTimeChooserImpl.h"
 #include "core/inspector/DevToolsEmulator.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/compositing/CompositedSelection.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -511,8 +511,8 @@ void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
                (isHTMLObjectElement(*result.InnerNode()) ||
                 isHTMLEmbedElement(*result.InnerNode()))) {
       LayoutObject* object = result.InnerNode()->GetLayoutObject();
-      if (object && object->IsLayoutPart()) {
-        PluginView* plugin_view = ToLayoutPart(object)->Plugin();
+      if (object && object->IsLayoutEmbeddedContent()) {
+        PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();
         if (plugin_view && plugin_view->IsPluginContainer()) {
           WebPluginContainerBase* plugin =
               ToWebPluginContainerBase(plugin_view);

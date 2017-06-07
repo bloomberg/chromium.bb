@@ -75,7 +75,7 @@
 #include "core/input/EventHandler.h"
 #include "core/input/TouchActionUtil.h"
 #include "core/inspector/DevToolsEmulator.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -1176,7 +1176,7 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
           // If the plugin supports keyboard focus then we should not send a tab
           // keypress event.
           PluginView* plugin_view =
-              ToLayoutPart(element->GetLayoutObject())->Plugin();
+              ToLayoutEmbeddedContent(element->GetLayoutObject())->Plugin();
           if (plugin_view && plugin_view->IsPluginContainer()) {
             WebPluginContainerBase* plugin =
                 ToWebPluginContainerBase(plugin_view);
@@ -3354,8 +3354,8 @@ void WebViewImpl::PerformPluginAction(const WebPluginAction& action,
     return;
 
   LayoutObject* object = node->GetLayoutObject();
-  if (object && object->IsLayoutPart()) {
-    PluginView* plugin_view = ToLayoutPart(object)->Plugin();
+  if (object && object->IsLayoutEmbeddedContent()) {
+    PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();
     if (plugin_view && plugin_view->IsPluginContainer()) {
       WebPluginContainerBase* plugin = ToWebPluginContainerBase(plugin_view);
       switch (action.type) {

@@ -150,8 +150,8 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
   ScrollbarTheme& GetTheme() const { return theme_; }
 
-  IntRect ConvertToContainingFrameViewBase(const IntRect&) const;
-  IntPoint ConvertFromContainingFrameViewBase(const IntPoint&) const;
+  IntRect ConvertToContainingEmbeddedContentView(const IntRect&) const;
+  IntPoint ConvertFromContainingEmbeddedContentView(const IntPoint&) const;
 
   void MoveThumb(int pos, bool dragging_document = false);
 

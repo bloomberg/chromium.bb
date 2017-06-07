@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PartPainter_h
-#define PartPainter_h
+#ifndef EmbeddedContentPainter_h
+#define EmbeddedContentPainter_h
 
 #include "platform/wtf/Allocator.h"
 
@@ -11,13 +11,14 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
-class LayoutPart;
+class LayoutEmbeddedContent;
 
-class PartPainter {
+class EmbeddedContentPainter {
   STACK_ALLOCATED();
 
  public:
-  PartPainter(const LayoutPart& layout_part) : layout_part_(layout_part) {}
+  EmbeddedContentPainter(const LayoutEmbeddedContent& layout_embedded_content)
+      : layout_embedded_content_(layout_embedded_content) {}
 
   void Paint(const PaintInfo&, const LayoutPoint&);
   void PaintContents(const PaintInfo&, const LayoutPoint&);
@@ -25,9 +26,9 @@ class PartPainter {
  private:
   bool IsSelected() const;
 
-  const LayoutPart& layout_part_;
+  const LayoutEmbeddedContent& layout_embedded_content_;
 };
 
 }  // namespace blink
 
-#endif  // PartPainter_h
+#endif  // EmbeddedContentPainter_h

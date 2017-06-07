@@ -64,7 +64,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
@@ -239,9 +239,9 @@ void WebPluginContainerImpl::HandleEvent(Event* event) {
   else if (event->IsDragEvent() && web_plugin_->CanProcessDrag())
     HandleDragEvent(ToDragEvent(event));
 
-  // FIXME: it would be cleaner if FrameViewBase::handleEvent returned
-  // true/false and HTMLPluginElement called setDefaultHandled or
-  // defaultEventHandler.
+  // FIXME: it would be cleaner if EmbeddedContentView::HandleEvent returned
+  // true/false and HTMLPluginElement called SetDefaultHandled or
+  // DefaultEventHandler.
   if (!event->DefaultHandled())
     element_->Node::DefaultEventHandler(event);
 }
@@ -991,7 +991,7 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
 
   // Note: FrameRect() for this plugin is equal to contentBoxRect, mapped to the
   // containing view space, and rounded off.
-  // See LayoutPart.cpp::updateGeometryInternal. To remove the lossy
+  // See LayoutEmbeddedContent.cpp::updateGeometryInternal. To remove the lossy
   // effect of rounding off, use contentBoxRect directly.
   LayoutRect unclipped_absolute_rect(box->ContentBoxRect());
   box->MapToVisualRectInAncestorSpace(root_view, unclipped_absolute_rect);

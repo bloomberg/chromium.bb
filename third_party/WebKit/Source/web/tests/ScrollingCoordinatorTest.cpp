@@ -31,7 +31,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -666,12 +666,13 @@ TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
 
   LayoutObject* layout_object = scrollable_frame->GetLayoutObject();
   ASSERT_TRUE(layout_object);
-  ASSERT_TRUE(layout_object->IsLayoutPart());
+  ASSERT_TRUE(layout_object->IsLayoutEmbeddedContent());
 
-  LayoutPart* layout_part = ToLayoutPart(layout_object);
-  ASSERT_TRUE(layout_part);
+  LayoutEmbeddedContent* layout_embedded_content =
+      ToLayoutEmbeddedContent(layout_object);
+  ASSERT_TRUE(layout_embedded_content);
 
-  LocalFrameView* inner_frame_view = layout_part->ChildFrameView();
+  LocalFrameView* inner_frame_view = layout_embedded_content->ChildFrameView();
   ASSERT_TRUE(inner_frame_view);
 
   LayoutViewItem inner_layout_view_item = inner_frame_view->GetLayoutViewItem();
@@ -718,12 +719,13 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
 
   LayoutObject* layout_object = scrollable_frame->GetLayoutObject();
   ASSERT_TRUE(layout_object);
-  ASSERT_TRUE(layout_object->IsLayoutPart());
+  ASSERT_TRUE(layout_object->IsLayoutEmbeddedContent());
 
-  LayoutPart* layout_part = ToLayoutPart(layout_object);
-  ASSERT_TRUE(layout_part);
+  LayoutEmbeddedContent* layout_embedded_content =
+      ToLayoutEmbeddedContent(layout_object);
+  ASSERT_TRUE(layout_embedded_content);
 
-  LocalFrameView* inner_frame_view = layout_part->ChildFrameView();
+  LocalFrameView* inner_frame_view = layout_embedded_content->ChildFrameView();
   ASSERT_TRUE(inner_frame_view);
 
   LayoutViewItem inner_layout_view_item = inner_frame_view->GetLayoutViewItem();
@@ -896,12 +898,13 @@ TEST_P(ScrollingCoordinatorTest,
 
   LayoutObject* layout_object = iframe->GetLayoutObject();
   ASSERT_TRUE(layout_object);
-  ASSERT_TRUE(layout_object->IsLayoutPart());
+  ASSERT_TRUE(layout_object->IsLayoutEmbeddedContent());
 
-  LayoutPart* layout_part = ToLayoutPart(layout_object);
-  ASSERT_TRUE(layout_part);
+  LayoutEmbeddedContent* layout_embedded_content =
+      ToLayoutEmbeddedContent(layout_object);
+  ASSERT_TRUE(layout_embedded_content);
 
-  LocalFrameView* inner_frame_view = layout_part->ChildFrameView();
+  LocalFrameView* inner_frame_view = layout_embedded_content->ChildFrameView();
   ASSERT_TRUE(inner_frame_view);
 
   LayoutViewItem inner_layout_view_item = inner_frame_view->GetLayoutViewItem();

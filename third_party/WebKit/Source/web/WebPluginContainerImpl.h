@@ -93,7 +93,7 @@ class WEB_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   bool IsErrorplaceholder() override;
   void EventListenersRemoved() override;
 
-  // FrameOrPlugin methods
+  // EmbeddedContentView methods
   void SetFrameRect(const IntRect& frame_rect) override {
     frame_rect_ = frame_rect;
   }
@@ -242,8 +242,8 @@ DEFINE_TYPE_CASTS(WebPluginContainerImpl,
                   plugin,
                   plugin->IsPluginContainer(),
                   plugin.IsPluginContainer());
-// Unlike FrameViewBase, we need not worry about object type for container.
-// WebPluginContainerImpl is the only subclass of WebPluginContainer.
+// Unlike EmbeddedContentView, we need not worry about object type for
+// container. WebPluginContainerImpl is the only subclass of WebPluginContainer.
 DEFINE_TYPE_CASTS(WebPluginContainerImpl,
                   WebPluginContainer,
                   container,

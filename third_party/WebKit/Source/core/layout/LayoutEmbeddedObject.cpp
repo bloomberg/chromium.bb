@@ -43,21 +43,21 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutEmbeddedObject::LayoutEmbeddedObject(Element* element)
-    : LayoutPart(element) {
+    : LayoutEmbeddedContent(element) {
   View()->GetFrameView()->SetIsVisuallyNonEmpty();
 }
 
 LayoutEmbeddedObject::~LayoutEmbeddedObject() {}
 
 PaintLayerType LayoutEmbeddedObject::LayerTypeRequired() const {
-  // This can't just use LayoutPart::layerTypeRequired, because
+  // This can't just use LayoutEmbeddedContent::layerTypeRequired, because
   // PaintLayerCompositor doesn't loop through LayoutEmbeddedObjects the way it
   // does frames in order to update the self painting bit on their Layer.
   // Also, unlike iframes, embeds don't used the usesCompositing bit on
   // LayoutView in requiresAcceleratedCompositing.
   if (RequiresAcceleratedCompositing())
     return kNormalPaintLayer;
-  return LayoutPart::LayerTypeRequired();
+  return LayoutEmbeddedContent::LayerTypeRequired();
 }
 
 static String LocalizedUnavailablePluginReplacementText(
@@ -85,7 +85,7 @@ void LayoutEmbeddedObject::SetPluginAvailability(
   unavailable_plugin_replacement_text_ =
       LocalizedUnavailablePluginReplacementText(GetNode(), availability);
 
-  // node() is nullptr when LayoutPart is being destroyed.
+  // node() is nullptr when LayoutEmbeddedContent is being destroyed.
   if (GetNode())
     SetShouldDoFullPaintInvalidation();
 }
@@ -101,7 +101,7 @@ void LayoutEmbeddedObject::PaintContents(
   if (!IsHTMLPlugInElement(element))
     return;
 
-  LayoutPart::PaintContents(paint_info, paint_offset);
+  LayoutEmbeddedContent::PaintContents(paint_info, paint_offset);
 }
 
 void LayoutEmbeddedObject::Paint(const PaintInfo& paint_info,
@@ -111,7 +111,7 @@ void LayoutEmbeddedObject::Paint(const PaintInfo& paint_info,
     return;
   }
 
-  LayoutPart::Paint(paint_info, paint_offset);
+  LayoutEmbeddedContent::Paint(paint_info, paint_offset);
 }
 
 void LayoutEmbeddedObject::PaintReplaced(
@@ -137,7 +137,7 @@ void LayoutEmbeddedObject::UpdateLayout() {
 
   UpdateAfterLayout();
 
-  if (!GetFrameOrPlugin() && GetFrameView())
+  if (!GetEmbeddedContentView() && GetFrameView())
     GetFrameView()->AddPartToUpdate(*this);
 
   ClearNeedsLayout();

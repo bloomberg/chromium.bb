@@ -46,7 +46,7 @@ class CORE_EXPORT PaintInvalidationState {
   // For root LayoutView, or when sub-frame LayoutView's
   // invalidateTreeIfNeeded() is called directly from
   // FrameView::invalidateTreeIfNeededRecursive() instead of the owner
-  // LayoutPart.
+  // LayoutEmbeddedContent.
   // TODO(wangxianzhu): Eliminate the latter case.
   PaintInvalidationState(
       const LayoutView&,

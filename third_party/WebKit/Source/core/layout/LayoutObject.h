@@ -574,7 +574,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual bool IsLayoutBlockFlow() const { return false; }
   virtual bool IsLayoutFlowThread() const { return false; }
   virtual bool IsLayoutInline() const { return false; }
-  virtual bool IsLayoutPart() const { return false; }
+  virtual bool IsLayoutEmbeddedContent() const { return false; }
 
   bool IsDocumentElement() const {
     return GetDocument().documentElement() == node_;
@@ -1520,8 +1520,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // While the destroy() method is virtual, this should only be overriden in
   // very rare circumstances.
   // You want to override willBeDestroyed() instead unless you explicitly need
-  // to stop this object from being destroyed (for example, LayoutPart
-  // overrides destroy() for this purpose).
+  // to stop this object from being destroyed (for example,
+  // LayoutEmbeddedContent overrides destroy() for this purpose).
   virtual void Destroy();
 
   // Virtual function helpers for the deprecated Flexible Box Layout (display:
@@ -1972,7 +1972,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectLayoutInline,
     kLayoutObjectLayoutMultiColumnSet,
     kLayoutObjectLayoutMultiColumnSpannerPlaceholder,
-    kLayoutObjectLayoutPart,
+    kLayoutObjectLayoutEmbeddedContent,
     kLayoutObjectLayoutReplaced,
     kLayoutObjectLayoutScrollbarPart,
     kLayoutObjectLayoutView,

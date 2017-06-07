@@ -260,13 +260,13 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool IsActive() const override;
   bool IsScrollCornerVisible() const override;
   IntRect ScrollCornerRect() const override;
-  IntRect ConvertFromScrollbarToContainingFrameViewBase(
+  IntRect ConvertFromScrollbarToContainingEmbeddedContentView(
       const Scrollbar&,
       const IntRect&) const override;
-  IntPoint ConvertFromScrollbarToContainingFrameViewBase(
+  IntPoint ConvertFromScrollbarToContainingEmbeddedContentView(
       const Scrollbar&,
       const IntPoint&) const override;
-  IntPoint ConvertFromContainingFrameViewBaseToScrollbar(
+  IntPoint ConvertFromContainingEmbeddedContentViewToScrollbar(
       const Scrollbar&,
       const IntPoint&) const override;
   IntPoint ConvertFromRootFrame(const IntPoint&) const override;

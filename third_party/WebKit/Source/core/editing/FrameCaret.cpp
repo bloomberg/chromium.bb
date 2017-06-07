@@ -36,7 +36,7 @@
 #include "core/html/TextControlElement.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/page/Page.h"
 #include "public/platform/WebTraceLocation.h"
 

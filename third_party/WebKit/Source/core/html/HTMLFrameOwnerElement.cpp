@@ -29,8 +29,8 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrameView.h"
-#include "core/layout/LayoutPart.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/LayoutEmbeddedContent.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
@@ -78,15 +78,15 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tag_name,
                                              Document& document)
     : HTMLElement(tag_name, document),
       content_frame_(nullptr),
-      widget_(nullptr),
+      embedded_content_view_(nullptr),
       sandbox_flags_(kSandboxNone) {}
 
-LayoutPart* HTMLFrameOwnerElement::GetLayoutPart() const {
+LayoutEmbeddedContent* HTMLFrameOwnerElement::GetLayoutEmbeddedContent() const {
   // HTMLObjectElement and HTMLEmbedElement may return arbitrary layoutObjects
   // when using fallback content.
-  if (!GetLayoutObject() || !GetLayoutObject()->IsLayoutPart())
+  if (!GetLayoutObject() || !GetLayoutObject()->IsLayoutEmbeddedContent())
     return nullptr;
-  return ToLayoutPart(GetLayoutObject());
+  return ToLayoutEmbeddedContent(GetLayoutObject());
 }
 
 void HTMLFrameOwnerElement::SetContentFrame(Frame& frame) {
@@ -208,60 +208,65 @@ Document* HTMLFrameOwnerElement::getSVGDocument(
   return nullptr;
 }
 
-void HTMLFrameOwnerElement::SetWidget(FrameOrPlugin* frame_or_plugin) {
-  if (frame_or_plugin == widget_)
+void HTMLFrameOwnerElement::SetEmbeddedContentView(
+    EmbeddedContentView* embedded_content_view) {
+  if (embedded_content_view == embedded_content_view_)
     return;
 
   Document* doc = contentDocument();
   if (doc && doc->GetFrame()) {
-    bool will_be_display_none = !frame_or_plugin;
+    bool will_be_display_none = !embedded_content_view;
     if (IsDisplayNone() != will_be_display_none) {
       doc->WillChangeFrameOwnerProperties(
           MarginWidth(), MarginHeight(), ScrollingMode(), will_be_display_none);
     }
   }
 
-  if (widget_) {
-    if (widget_->IsAttached()) {
-      widget_->Detach();
-      if (widget_->IsPluginView())
-        DisposePluginSoon(ToPluginView(widget_));
+  if (embedded_content_view_) {
+    if (embedded_content_view_->IsAttached()) {
+      embedded_content_view_->Detach();
+      if (embedded_content_view_->IsPluginView())
+        DisposePluginSoon(ToPluginView(embedded_content_view_));
       else
-        widget_->Dispose();
+        embedded_content_view_->Dispose();
     }
   }
 
-  widget_ = frame_or_plugin;
+  embedded_content_view_ = embedded_content_view;
   FrameOwnerPropertiesChanged();
 
-  LayoutPart* layout_part = ToLayoutPart(GetLayoutObject());
-  LayoutPartItem layout_part_item = LayoutPartItem(layout_part);
-  if (layout_part_item.IsNull())
+  LayoutEmbeddedContent* layout_embedded_content =
+      ToLayoutEmbeddedContent(GetLayoutObject());
+  LayoutEmbeddedContentItem layout_embedded_content_item =
+      LayoutEmbeddedContentItem(layout_embedded_content);
+  if (layout_embedded_content_item.IsNull())
     return;
 
-  if (widget_) {
-    layout_part_item.UpdateOnWidgetChange();
+  if (embedded_content_view_) {
+    layout_embedded_content_item.UpdateOnEmbeddedContentViewChange();
 
-    DCHECK_EQ(GetDocument().View(), layout_part_item.GetFrameView());
-    DCHECK(layout_part_item.GetFrameView());
-    widget_->Attach();
+    DCHECK_EQ(GetDocument().View(),
+              layout_embedded_content_item.GetFrameView());
+    DCHECK(layout_embedded_content_item.GetFrameView());
+    embedded_content_view_->Attach();
   }
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->ChildrenChanged(layout_part);
+    cache->ChildrenChanged(layout_embedded_content);
 }
 
-FrameOrPlugin* HTMLFrameOwnerElement::ReleaseWidget() {
-  if (!widget_)
+EmbeddedContentView* HTMLFrameOwnerElement::ReleaseEmbeddedContentView() {
+  if (!embedded_content_view_)
     return nullptr;
-  if (widget_->IsAttached())
-    widget_->Detach();
-  LayoutPart* layout_part = ToLayoutPart(GetLayoutObject());
-  if (layout_part) {
+  if (embedded_content_view_->IsAttached())
+    embedded_content_view_->Detach();
+  LayoutEmbeddedContent* layout_embedded_content =
+      ToLayoutEmbeddedContent(GetLayoutObject());
+  if (layout_embedded_content) {
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-      cache->ChildrenChanged(layout_part);
+      cache->ChildrenChanged(layout_embedded_content);
   }
-  return widget_.Release();
+  return embedded_content_view_.Release();
 }
 
 bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
@@ -299,7 +304,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
 DEFINE_TRACE(HTMLFrameOwnerElement) {
   visitor->Trace(content_frame_);
-  visitor->Trace(widget_);
+  visitor->Trace(embedded_content_view_);
   HTMLElement::Trace(visitor);
   FrameOwner::Trace(visitor);
 }

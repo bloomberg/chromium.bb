@@ -29,7 +29,7 @@
 #define PluginView_h
 
 #include "core/CoreExport.h"
-#include "core/frame/FrameOrPlugin.h"
+#include "core/frame/EmbeddedContentView.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/wtf/text/WTFString.h"
@@ -46,7 +46,7 @@ class WebPluginContainerBase;
 // TODO(joelhockey): Remove this class.
 // The only implementation of this class is web/WebPluginContainerImpl.
 // It can be used directly.
-class CORE_EXPORT PluginView : public FrameOrPlugin {
+class CORE_EXPORT PluginView : public EmbeddedContentView {
  public:
   virtual ~PluginView() {}
 
@@ -79,10 +79,10 @@ class CORE_EXPORT PluginView : public FrameOrPlugin {
 };
 
 DEFINE_TYPE_CASTS(PluginView,
-                  FrameOrPlugin,
-                  frame_or_plugin,
-                  frame_or_plugin->IsPluginView(),
-                  frame_or_plugin.IsPluginView());
+                  EmbeddedContentView,
+                  embedded_content_view,
+                  embedded_content_view->IsPluginView(),
+                  embedded_content_view.IsPluginView());
 
 }  // namespace blink
 

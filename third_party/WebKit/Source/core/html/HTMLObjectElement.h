@@ -100,7 +100,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   const QualifiedName& SubResourceAttributeName() const override;
   const AtomicString ImageSourceURL() const override;
 
-  LayoutPart* ExistingLayoutPart() const override;
+  LayoutEmbeddedContent* ExistingLayoutEmbeddedContent() const override;
 
   void UpdatePluginInternal() override;
   void UpdateDocNamedItem();

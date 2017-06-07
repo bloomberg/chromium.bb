@@ -36,11 +36,11 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutDetailsMarker.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
-#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -508,8 +508,8 @@ void Write(TextStream& ts,
     Write(ts, *child, indent + 1, behavior);
   }
 
-  if (o.IsLayoutPart()) {
-    LocalFrameView* frame_view = ToLayoutPart(o).ChildFrameView();
+  if (o.IsLayoutEmbeddedContent()) {
+    LocalFrameView* frame_view = ToLayoutEmbeddedContent(o).ChildFrameView();
     if (frame_view) {
       LayoutViewItem root_item = frame_view->GetLayoutViewItem();
       if (!root_item.IsNull()) {
@@ -673,8 +673,8 @@ void LayoutTreeAsText::WriteLayers(TextStream& ts,
           : layer->IntersectsDamageRect(layer_bounds, damage_rect.Rect(),
                                         offset_from_root);
 
-  if (layer->GetLayoutObject().IsLayoutPart() &&
-      ToLayoutPart(layer->GetLayoutObject()).IsThrottledFrameView())
+  if (layer->GetLayoutObject().IsLayoutEmbeddedContent() &&
+      ToLayoutEmbeddedContent(layer->GetLayoutObject()).IsThrottledFrameView())
     should_paint = false;
 
   Vector<PaintLayerStackingNode*>* neg_list =

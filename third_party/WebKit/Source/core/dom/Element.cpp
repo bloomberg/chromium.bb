@@ -2771,7 +2771,8 @@ void Element::UpdateFocusAppearance(
         FrameSelection::kCloseTyping | FrameSelection::kClearTypingStyle |
             FrameSelection::kDoNotSetFocus);
     frame->Selection().RevealSelection();
-  } else if (GetLayoutObject() && !GetLayoutObject()->IsLayoutPart()) {
+  } else if (GetLayoutObject() &&
+             !GetLayoutObject()->IsLayoutEmbeddedContent()) {
     GetLayoutObject()->ScrollRectToVisible(BoundingBox());
   }
 }

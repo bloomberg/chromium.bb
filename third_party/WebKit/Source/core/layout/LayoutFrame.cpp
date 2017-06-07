@@ -31,7 +31,8 @@
 
 namespace blink {
 
-LayoutFrame::LayoutFrame(HTMLFrameElement* frame) : LayoutPart(frame) {
+LayoutFrame::LayoutFrame(HTMLFrameElement* frame)
+    : LayoutEmbeddedContent(frame) {
   SetInline(false);
 }
 

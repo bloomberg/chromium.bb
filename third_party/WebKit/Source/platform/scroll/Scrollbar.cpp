@@ -578,28 +578,31 @@ IntPoint Scrollbar::ConvertFromRootFrame(
   if (scrollable_area_) {
     IntPoint parent_point =
         scrollable_area_->ConvertFromRootFrame(point_in_root_frame);
-    return scrollable_area_->ConvertFromContainingFrameViewBaseToScrollbar(
-        *this, parent_point);
+    return scrollable_area_
+        ->ConvertFromContainingEmbeddedContentViewToScrollbar(*this,
+                                                              parent_point);
   }
 
   return point_in_root_frame;
 }
 
-IntRect Scrollbar::ConvertToContainingFrameViewBase(
+IntRect Scrollbar::ConvertToContainingEmbeddedContentView(
     const IntRect& local_rect) const {
   if (scrollable_area_) {
-    return scrollable_area_->ConvertFromScrollbarToContainingFrameViewBase(
-        *this, local_rect);
+    return scrollable_area_
+        ->ConvertFromScrollbarToContainingEmbeddedContentView(*this,
+                                                              local_rect);
   }
 
   return local_rect;
 }
 
-IntPoint Scrollbar::ConvertFromContainingFrameViewBase(
+IntPoint Scrollbar::ConvertFromContainingEmbeddedContentView(
     const IntPoint& parent_point) const {
   if (scrollable_area_) {
-    return scrollable_area_->ConvertFromContainingFrameViewBaseToScrollbar(
-        *this, parent_point);
+    return scrollable_area_
+        ->ConvertFromContainingEmbeddedContentViewToScrollbar(*this,
+                                                              parent_point);
   }
 
   return parent_point;

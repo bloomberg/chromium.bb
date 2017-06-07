@@ -7980,9 +7980,9 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
                                 1.0f, -30.0f / browser_controls_height);
   EXPECT_SIZE_EQ(ScrollOffset(0, 1910), frame_view->MaximumScrollOffset());
 
-  // Simulate a LayoutPart::resize. The frame is resized to accomodate
-  // the browser controls and Blink's view of the browser controls matches that
-  // of the CC
+  // Simulate a LayoutEmbeddedContent::resize. The frame is resized to
+  // accomodate the browser controls and Blink's view of the browser controls
+  // matches that of the CC
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 30.0f / browser_controls_height);
   web_view->ResizeWithBrowserControls(WebSize(100, 60), 40.0f, true);

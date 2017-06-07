@@ -38,7 +38,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -598,9 +598,9 @@ bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
   }
 
   if (composited_layer_mapping_changed &&
-      layer->GetLayoutObject().IsLayoutPart()) {
-    PaintLayerCompositor* inner_compositor =
-        FrameContentsCompositor(ToLayoutPart(layer->GetLayoutObject()));
+      layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
+    PaintLayerCompositor* inner_compositor = FrameContentsCompositor(
+        ToLayoutEmbeddedContent(layer->GetLayoutObject()));
     if (inner_compositor && inner_compositor->StaleInCompositingMode())
       inner_compositor->EnsureRootLayer();
   }
@@ -774,7 +774,7 @@ std::unique_ptr<JSONObject> PaintLayerCompositor::LayerTreeAsJSON(
 }
 
 PaintLayerCompositor* PaintLayerCompositor::FrameContentsCompositor(
-    LayoutPart& layout_object) {
+    LayoutEmbeddedContent& layout_object) {
   if (!layout_object.GetNode()->IsFrameOwnerElement())
     return nullptr;
 
@@ -788,7 +788,7 @@ PaintLayerCompositor* PaintLayerCompositor::FrameContentsCompositor(
 }
 
 bool PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
-    LayoutPart& layout_object) {
+    LayoutEmbeddedContent& layout_object) {
   PaintLayerCompositor* inner_compositor =
       FrameContentsCompositor(layout_object);
   if (!inner_compositor || !inner_compositor->StaleInCompositingMode() ||

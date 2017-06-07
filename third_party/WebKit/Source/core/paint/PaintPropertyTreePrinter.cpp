@@ -6,7 +6,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
@@ -495,8 +495,9 @@ class PaintPropertyTreeGraphBuilder {
     for (const LayoutObject* child = object.SlowFirstChild(); child;
          child = child->NextSibling())
       WriteLayoutObjectNode(*child);
-    if (object.IsLayoutPart()) {
-      LocalFrameView* frame_view = ToLayoutPart(object).ChildFrameView();
+    if (object.IsLayoutEmbeddedContent()) {
+      LocalFrameView* frame_view =
+          ToLayoutEmbeddedContent(object).ChildFrameView();
       if (frame_view)
         WriteFrameViewNode(*frame_view, &object);
     }

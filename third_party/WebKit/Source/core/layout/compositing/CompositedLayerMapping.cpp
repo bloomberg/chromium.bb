@@ -38,15 +38,15 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/page/ChromeClient.h"
@@ -527,10 +527,10 @@ void CompositedLayerMapping::UpdateCompositedBounds() {
 }
 
 void CompositedLayerMapping::UpdateAfterPartResize() {
-  if (GetLayoutObject().IsLayoutPart()) {
+  if (GetLayoutObject().IsLayoutEmbeddedContent()) {
     if (PaintLayerCompositor* inner_compositor =
             PaintLayerCompositor::FrameContentsCompositor(
-                ToLayoutPart(GetLayoutObject()))) {
+                ToLayoutEmbeddedContent(GetLayoutObject()))) {
       inner_compositor->FrameViewDidChangeSize();
       // We can floor this point because our frameviews are always aligned to
       // pixel boundaries.
@@ -826,9 +826,9 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
       graphics_layer_->SetContentsToPlatformLayer(context->PlatformLayer());
     layer_config_changed = true;
   }
-  if (layout_object.IsLayoutPart()) {
+  if (layout_object.IsLayoutEmbeddedContent()) {
     if (PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
-            ToLayoutPart(layout_object)))
+            ToLayoutEmbeddedContent(layout_object)))
       layer_config_changed = true;
   }
 

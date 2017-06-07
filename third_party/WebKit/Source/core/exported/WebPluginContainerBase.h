@@ -61,8 +61,8 @@ DEFINE_TYPE_CASTS(WebPluginContainerBase,
                   plugin,
                   plugin->IsPluginContainer(),
                   plugin.IsPluginContainer());
-// Unlike FrameViewBase, we need not worry about object type for container.
-// WebPluginContainerBase is the only subclass of WebPluginContainer.
+// Unlike EmbeddedContentView, we need not worry about object type for
+// container. WebPluginContainerBase is the only subclass of WebPluginContainer.
 DEFINE_TYPE_CASTS(WebPluginContainerBase,
                   WebPluginContainer,
                   container,
