@@ -228,7 +228,7 @@ public class LocaleManager {
         Callable<PromoDialog> dialogCreator;
         switch (shouldShow) {
             case SEARCH_ENGINE_PROMO_DONT_SHOW:
-                return true;
+                return false;
             case SEARCH_ENGINE_PROMO_SHOW_SOGOU:
                 dialogCreator = new Callable<PromoDialog>() {
                     @Override
