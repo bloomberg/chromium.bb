@@ -60,6 +60,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
         bug=1966) # angle bug ID
+    self.Fail('conformance2/glsl3/uninitialized-local-global-variables.html',
+        bug=1966) # angle bug ID
 
     # Windows only.
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
