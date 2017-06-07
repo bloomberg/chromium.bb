@@ -48,11 +48,6 @@ initWithContentService:
 @property(nonatomic, weak, nullable) id<ContentSuggestionsCommands>
     commandHandler;
 
-// Dismisses the suggestion from the content suggestions service. It doesn't
-// change the UI.
-- (void)dismissSuggestion:
-    (nonnull ContentSuggestionIdentifier*)suggestionIdentifier;
-
 // Blacklists the URL from the Most Visited sites.
 - (void)blacklistMostVisitedURL:(GURL)URL;
 

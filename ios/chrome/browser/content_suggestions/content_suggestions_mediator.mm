@@ -119,16 +119,6 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   return self;
 }
 
-- (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
-  ContentSuggestionsCategoryWrapper* categoryWrapper =
-      [self categoryWrapperForSectionInfo:suggestionIdentifier.sectionInfo];
-  ntp_snippets::ContentSuggestion::ID suggestion_id =
-      ntp_snippets::ContentSuggestion::ID([categoryWrapper category],
-                                          suggestionIdentifier.IDInSection);
-
-  self.contentService->DismissSuggestion(suggestion_id);
-}
-
 - (void)blacklistMostVisitedURL:(GURL)URL {
   _mostVisitedSites->AddOrRemoveBlacklistedUrl(URL, true);
   [self useFreshMostVisited];
@@ -296,6 +286,16 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   self.contentService->FetchSuggestionFavicon(
       identifier, /* minimum_size_in_pixel = */ 1, kDefaultFaviconSize,
       base::BindBlockArc(imageCallback));
+}
+
+- (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
+  ContentSuggestionsCategoryWrapper* categoryWrapper =
+      [self categoryWrapperForSectionInfo:suggestionIdentifier.sectionInfo];
+  ntp_snippets::ContentSuggestion::ID suggestion_id =
+      ntp_snippets::ContentSuggestion::ID([categoryWrapper category],
+                                          suggestionIdentifier.IDInSection);
+
+  self.contentService->DismissSuggestion(suggestion_id);
 }
 
 #pragma mark - ContentSuggestionsServiceObserver

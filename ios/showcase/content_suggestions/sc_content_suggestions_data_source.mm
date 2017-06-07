@@ -114,6 +114,9 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
                       completion:(void (^)(UIImage*))completion {
 }
 
+- (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
+}
+
 #pragma mark - ContentSuggestionsImageFetcher
 
 - (void)fetchImageForSuggestion:

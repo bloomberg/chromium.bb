@@ -245,6 +245,29 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
                          forItem:item];
 }
 
+#pragma mark - MDCCollectionViewEditingDelegate
+
+- (BOOL)collectionViewAllowsSwipeToDismissItem:
+    (UICollectionView*)collectionView {
+  return YES;
+}
+
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    canSwipeToDismissItemAtIndexPath:(NSIndexPath*)indexPath {
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+  return ![self.collectionUpdater isMostVisitedSection:indexPath.section] &&
+         [self.collectionUpdater contentSuggestionTypeForItem:item] !=
+             ContentSuggestionTypeEmpty;
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+    didEndSwipeToDismissItemAtIndexPath:(NSIndexPath*)indexPath {
+  [self.collectionUpdater
+      dismissItem:[self.collectionViewModel itemAtIndexPath:indexPath]];
+  [self dismissEntryAtIndexPath:indexPath];
+}
+
 #pragma mark - Private
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {

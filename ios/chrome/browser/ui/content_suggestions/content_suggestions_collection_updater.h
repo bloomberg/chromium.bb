@@ -73,6 +73,9 @@ addSuggestionsToModel:
 // Updates the number of Most Visited tiles shown for the |size|.
 - (void)updateMostVisitedForSize:(CGSize)size;
 
+// Dismisses the |item| from the model. Does not change the UI.
+- (void)dismissItem:(CollectionViewItem<SuggestedContent>*)item;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COLLECTION_UPDATER_H_
