@@ -456,6 +456,7 @@ void SliderContainerElement::UpdateTouchEventHandlerRegistry() {
         GetDocument().GetPage()->GetEventHandlerRegistry();
     registry.DidAddEventHandler(
         *this, EventHandlerRegistry::kTouchStartOrMoveEventPassive);
+    registry.DidAddEventHandler(*this, EventHandlerRegistry::kPointerEvent);
     has_touch_event_handler_ = true;
   }
 }

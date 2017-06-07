@@ -56,10 +56,9 @@ bool EventHandlerRegistry::EventTypeToClass(
     *result = options.passive() ? kTouchStartOrMoveEventPassive
                                 : kTouchStartOrMoveEventBlocking;
   } else if (EventUtil::IsPointerEventType(event_type)) {
-    // The EventHandlerClass is TouchStartOrMoveEventPassive since
-    // the pointer events never block scrolling and the compositor
+    // The pointer events never block scrolling and the compositor
     // only needs to know about the touch listeners.
-    *result = kTouchStartOrMoveEventPassive;
+    *result = kPointerEvent;
 #if DCHECK_IS_ON()
   } else if (event_type == EventTypeNames::load ||
              event_type == EventTypeNames::mousemove ||
@@ -112,7 +111,7 @@ bool EventHandlerRegistry::UpdateEventHandlerTargets(
   return true;
 }
 
-void EventHandlerRegistry::UpdateEventHandlerInternal(
+bool EventHandlerRegistry::UpdateEventHandlerInternal(
     ChangeOperation op,
     EventHandlerClass handler_class,
     EventTarget* target) {
@@ -121,21 +120,16 @@ void EventHandlerRegistry::UpdateEventHandlerInternal(
       UpdateEventHandlerTargets(op, handler_class, target);
   bool has_handlers = targets_[handler_class].size();
 
-  if (had_handlers != has_handlers) {
-    LocalFrame* frame = nullptr;
-    if (Node* node = target->ToNode()) {
-      frame = node->GetDocument().GetFrame();
-    } else if (LocalDOMWindow* dom_window = target->ToLocalDOMWindow()) {
-      frame = dom_window->GetFrame();
-    } else {
-      NOTREACHED() << "Unexpected target type for event handler.";
-    }
+  bool handlers_changed = had_handlers != has_handlers;
 
-    NotifyHasHandlersChanged(frame, handler_class, has_handlers);
+  if (op != kRemoveAll) {
+    if (handlers_changed)
+      NotifyHasHandlersChanged(target, handler_class, has_handlers);
+
+    if (target_set_changed)
+      NotifyDidAddOrRemoveEventHandlerTarget(handler_class);
   }
-
-  if (target_set_changed)
-    NotifyDidAddOrRemoveEventHandlerTarget(handler_class);
+  return handlers_changed;
 }
 
 void EventHandlerRegistry::UpdateEventHandlerOfType(
@@ -200,16 +194,43 @@ void EventHandlerRegistry::DidMoveOutOfPage(EventTarget& target) {
 }
 
 void EventHandlerRegistry::DidRemoveAllEventHandlers(EventTarget& target) {
+  bool handlers_changed[kEventHandlerClassCount];
+  bool target_set_changed[kEventHandlerClassCount];
+
   for (size_t i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
-    UpdateEventHandlerInternal(kRemoveAll, handler_class, &target);
+
+    EventTargetSet* targets = &targets_[handler_class];
+    target_set_changed[i] = targets->Contains(&target);
+
+    handlers_changed[i] =
+        UpdateEventHandlerInternal(kRemoveAll, handler_class, &target);
+  }
+
+  for (size_t i = 0; i < kEventHandlerClassCount; ++i) {
+    EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
+    if (handlers_changed[i]) {
+      bool has_handlers = targets_[handler_class].size();
+      NotifyHasHandlersChanged(&target, handler_class, has_handlers);
+    }
+    if (target_set_changed[i])
+      NotifyDidAddOrRemoveEventHandlerTarget(handler_class);
   }
 }
 
 void EventHandlerRegistry::NotifyHasHandlersChanged(
-    LocalFrame* frame,
+    EventTarget* target,
     EventHandlerClass handler_class,
     bool has_active_handlers) {
+  LocalFrame* frame = nullptr;
+  if (Node* node = target->ToNode()) {
+    frame = node->GetDocument().GetFrame();
+  } else if (LocalDOMWindow* dom_window = target->ToLocalDOMWindow()) {
+    frame = dom_window->GetFrame();
+  } else {
+    NOTREACHED() << "Unexpected target type for event handler.";
+  }
+
   switch (handler_class) {
     case kScrollEvent:
       page_->GetChromeClient().SetHasScrollEventHandlers(frame,
@@ -224,11 +245,13 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
       break;
     case kTouchStartOrMoveEventBlocking:
     case kTouchStartOrMoveEventPassive:
+    case kPointerEvent:
       page_->GetChromeClient().SetEventListenerProperties(
           frame, WebEventListenerClass::kTouchStartOrMove,
           GetWebEventListenerProperties(
               HasEventHandlers(kTouchStartOrMoveEventBlocking),
-              HasEventHandlers(kTouchStartOrMoveEventPassive)));
+              HasEventHandlers(kTouchStartOrMoveEventPassive) ||
+                  HasEventHandlers(kPointerEvent)));
       break;
     case kTouchEndOrCancelEventBlocking:
     case kTouchEndOrCancelEventPassive:

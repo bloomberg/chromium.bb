@@ -266,10 +266,12 @@ class Internals final : public GarbageCollected<Internals>,
   unsigned mediaKeysCount();
   unsigned mediaKeySessionCount();
   unsigned suspendableObjectCount(Document*);
-  unsigned wheelEventHandlerCount(Document*);
-  unsigned scrollEventHandlerCount(Document*);
-  unsigned touchStartOrMoveEventHandlerCount(Document*);
-  unsigned touchEndOrCancelEventHandlerCount(Document*);
+  unsigned wheelEventHandlerCount(Document*) const;
+  unsigned scrollEventHandlerCount(Document*) const;
+  unsigned touchStartOrMoveEventHandlerCount(Document*) const;
+  unsigned touchEndOrCancelEventHandlerCount(Document*) const;
+  unsigned pointerEventHandlerCount(Document*) const;
+
   LayerRectList* touchEventTargetLayerRects(Document*, ExceptionState&);
 
   bool executeCommand(Document*,
