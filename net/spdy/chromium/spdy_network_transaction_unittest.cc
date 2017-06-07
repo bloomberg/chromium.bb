@@ -5624,6 +5624,10 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
   const int32_t stream_window_update_delta =
       stream_max_recv_window_size / 2 + kChunkSize;
 
+  SpdySerializedFrame preface(const_cast<char*>(kHttp2ConnectionHeaderPrefix),
+                              kHttp2ConnectionHeaderPrefixSize,
+                              /* owns_buffer = */ false);
+
   SettingsMap initial_settings;
   initial_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   initial_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
@@ -5631,22 +5635,23 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
   initial_settings[SETTINGS_INITIAL_WINDOW_SIZE] = stream_max_recv_window_size;
   SpdySerializedFrame initial_settings_frame(
       spdy_util_.ConstructSpdySettings(initial_settings));
+
   SpdySerializedFrame initial_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(
           kSessionFlowControlStreamId,
           session_max_recv_window_size - kDefaultInitialWindowSize));
-  SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  SpdySerializedFrame session_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(0, session_window_update_delta));
-  SpdySerializedFrame stream_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(1, stream_window_update_delta));
+
+  const SpdySerializedFrame* frames[3] = {&preface, &initial_settings_frame,
+                                          &initial_window_update};
+  char combined_frames[100];
+  int combined_frames_len = CombineFrames(
+      frames, arraysize(frames), combined_frames, arraysize(combined_frames));
 
   std::vector<MockWrite> writes;
-  writes.push_back(MockWrite(ASYNC, kHttp2ConnectionHeaderPrefix,
-                             kHttp2ConnectionHeaderPrefixSize, 0));
-  writes.push_back(CreateMockWrite(initial_settings_frame, writes.size()));
-  writes.push_back(CreateMockWrite(initial_window_update, writes.size()));
+  writes.push_back(MockWrite(ASYNC, combined_frames, combined_frames_len));
+
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   writes.push_back(CreateMockWrite(req, writes.size()));
 
   std::vector<MockRead> reads;
@@ -5667,8 +5672,12 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
   reads.push_back(
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, writes.size() + reads.size()));
 
+  SpdySerializedFrame session_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(0, session_window_update_delta));
   writes.push_back(
       CreateMockWrite(session_window_update, writes.size() + reads.size()));
+  SpdySerializedFrame stream_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(1, stream_window_update_delta));
   writes.push_back(
       CreateMockWrite(stream_window_update, writes.size() + reads.size()));
 
