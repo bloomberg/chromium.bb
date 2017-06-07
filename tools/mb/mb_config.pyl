@@ -385,8 +385,6 @@
       'V8 Linux GN': 'release_bot',
       'V8-Blink Linux 64': 'release_bot',
       'V8-Blink Linux 64 - future': 'release_bot',
-      # TODO(machenbach): Remove this bot after infra-side landed.
-      'V8-Blink Linux 64 - ignition': 'release_bot',
       'V8-Blink Linux 64 (dbg)': 'debug_bot',
       'V8-Blink Mac': 'release_bot',
       'V8-Blink Win': 'release_bot_x86_minimal_symbols',
