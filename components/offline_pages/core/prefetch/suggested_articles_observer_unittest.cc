@@ -55,7 +55,8 @@ class TestingPrefetchDispatcher : public PrefetchDispatcher {
 
   void BeginBackgroundTask(
       std::unique_ptr<ScopedBackgroundTask> task) override {}
-  void StopBackgroundTask(ScopedBackgroundTask* task) override {}
+  void StopBackgroundTask() override {}
+  void RequestFinishBackgroundTaskForTest() override {}
 
   std::vector<PrefetchURL> latest_prefetch_urls;
   ClientId last_removed_client_id;

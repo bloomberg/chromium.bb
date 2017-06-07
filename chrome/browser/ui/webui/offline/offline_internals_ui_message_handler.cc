@@ -236,7 +236,7 @@ void OfflineInternalsUIMessageHandler::HandleScheduleNwake(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  offline_pages::PrefetchBackgroundTask::Schedule();
+  offline_pages::PrefetchBackgroundTask::Schedule(0);
 
   ResolveJavascriptCallback(*callback_id, base::Value("Scheduled."));
 }

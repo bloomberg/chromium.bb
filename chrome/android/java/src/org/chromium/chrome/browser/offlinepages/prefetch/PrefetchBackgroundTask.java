@@ -35,7 +35,11 @@ import java.util.concurrent.TimeUnit;
  */
 @JNINamespace("offline_pages::prefetch")
 public class PrefetchBackgroundTask implements BackgroundTask {
+    public static final long DEFAULT_START_DELAY_SECONDS = 15 * 60;
+
     private static final String TAG = "OPPrefetchBGTask";
+
+    private static BackgroundTaskScheduler sSchedulerInstance;
 
     private long mNativeTask = 0;
     private TaskFinishedCallback mTaskFinishedCallback = null;
@@ -50,6 +54,13 @@ public class PrefetchBackgroundTask implements BackgroundTask {
         mProfile = profile;
     }
 
+    static BackgroundTaskScheduler getScheduler() {
+        if (sSchedulerInstance != null) {
+            return sSchedulerInstance;
+        }
+        return BackgroundTaskSchedulerFactory.getScheduler();
+    }
+
     /**
      * Schedules the default 'NWake' task for the prefetching service.
      *
@@ -57,13 +68,13 @@ public class PrefetchBackgroundTask implements BackgroundTask {
      * TODO(dewittj): Handle skipping work if the battery percentage is too low.
      */
     @CalledByNative
-    public static void scheduleTask() {
-        BackgroundTaskScheduler scheduler = BackgroundTaskSchedulerFactory.getScheduler();
+    public static void scheduleTask(int additionalDelaySeconds) {
         TaskInfo taskInfo =
                 TaskInfo.createOneOffTask(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID,
                                 PrefetchBackgroundTask.class,
                                 // Minimum time to wait
-                                TimeUnit.MINUTES.toMillis(15),
+                                TimeUnit.SECONDS.toMillis(
+                                        DEFAULT_START_DELAY_SECONDS + additionalDelaySeconds),
                                 // Maximum time to wait.  After this interval the event will fire
                                 // regardless of whether the conditions are right.
                                 TimeUnit.DAYS.toMillis(7))
@@ -71,7 +82,7 @@ public class PrefetchBackgroundTask implements BackgroundTask {
                         .setIsPersisted(true)
                         .setUpdateCurrent(true)
                         .build();
-        scheduler.schedule(ContextUtils.getApplicationContext(), taskInfo);
+        getScheduler().schedule(ContextUtils.getApplicationContext(), taskInfo);
     }
 
     /**
@@ -79,8 +90,7 @@ public class PrefetchBackgroundTask implements BackgroundTask {
      */
     @CalledByNative
     public static void cancelTask() {
-        BackgroundTaskScheduler scheduler = BackgroundTaskSchedulerFactory.getScheduler();
-        scheduler.cancel(
+        getScheduler().cancel(
                 ContextUtils.getApplicationContext(), TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
     }
 
@@ -161,7 +171,27 @@ public class PrefetchBackgroundTask implements BackgroundTask {
     }
 
     @VisibleForTesting
+    static void setSchedulerForTesting(BackgroundTaskScheduler scheduler) {
+        sSchedulerInstance = scheduler;
+    }
+
+    @VisibleForTesting
+    void setTaskReschedulingForTesting(boolean reschedule, boolean backoff) {
+        if (mNativeTask == 0) return;
+        nativeSetTaskReschedulingForTesting(mNativeTask, reschedule, backoff);
+    }
+
+    @VisibleForTesting
+    void signalTaskFinishedForTesting() {
+        if (mNativeTask == 0) return;
+        nativeSignalTaskFinishedForTesting(mNativeTask);
+    }
+
+    @VisibleForTesting
     native boolean nativeStartPrefetchTask(Profile profile);
     @VisibleForTesting
     native boolean nativeOnStopTask(long nativePrefetchBackgroundTask);
+    native void nativeSetTaskReschedulingForTesting(
+            long nativePrefetchBackgroundTask, boolean reschedule, boolean backoff);
+    native void nativeSignalTaskFinishedForTesting(long nativePrefetchBackgroundTask);
 }

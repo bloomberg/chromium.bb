@@ -29,9 +29,9 @@ class PrefetchDispatcher {
     ScopedBackgroundTask() = default;
     virtual ~ScopedBackgroundTask() = default;
 
-    // Used on destruction to inform the system about whether rescheduling is
-    // required.
-    virtual void SetNeedsReschedule(bool reschedule) = 0;
+    // Used on destruction to inform the system about whether rescheduling with
+    // or without backoff is required.
+    virtual void SetNeedsReschedule(bool reschedule, bool backoff) = 0;
   };
 
   virtual ~PrefetchDispatcher() = default;
@@ -65,7 +65,10 @@ class PrefetchDispatcher {
   // Called when a task must stop immediately due to system constraints. After
   // this call completes, the system will reschedule the task based on whether
   // SetNeedsReschedule has been called.
-  virtual void StopBackgroundTask(ScopedBackgroundTask* task) = 0;
+  virtual void StopBackgroundTask() = 0;
+
+  // Used by the test to signal the completion of the background task.
+  virtual void RequestFinishBackgroundTaskForTest() = 0;
 };
 
 }  // namespace offline_pages

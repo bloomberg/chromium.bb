@@ -4,12 +4,22 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/prefetch/add_unique_urls_task.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
+
+namespace {
+void DeleteBackgroundTaskHelper(
+    std::unique_ptr<PrefetchDispatcher::ScopedBackgroundTask> task) {
+  task.reset();
+}
+}  // namespace
 
 PrefetchDispatcherImpl::PrefetchDispatcherImpl() = default;
 
@@ -39,11 +49,23 @@ void PrefetchDispatcherImpl::RemovePrefetchURLsByClientId(
 
 void PrefetchDispatcherImpl::BeginBackgroundTask(
     std::unique_ptr<ScopedBackgroundTask> task) {
-  NOTIMPLEMENTED();
+  task_ = std::move(task);
 }
 
-void PrefetchDispatcherImpl::StopBackgroundTask(ScopedBackgroundTask* task) {
-  NOTIMPLEMENTED();
+void PrefetchDispatcherImpl::StopBackgroundTask() {
+  DisposeTask();
+}
+
+void PrefetchDispatcherImpl::RequestFinishBackgroundTaskForTest() {
+  DisposeTask();
+}
+
+void PrefetchDispatcherImpl::DisposeTask() {
+  DCHECK(task_);
+  // Delay the deletion till the caller finishes.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&DeleteBackgroundTaskHelper, base::Passed(std::move(task_))));
 }
 
 }  // namespace offline_pages

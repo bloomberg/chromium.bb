@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 import java.lang.reflect.Constructor;
 import java.util.Set;
@@ -60,7 +61,9 @@ public class BackgroundTaskScheduler {
 
     private final BackgroundTaskSchedulerDelegate mSchedulerDelegate;
 
-    BackgroundTaskScheduler(BackgroundTaskSchedulerDelegate schedulerDelegate) {
+    /** Public constructor that allows null delegate, for testing only */
+    @VisibleForTesting
+    public BackgroundTaskScheduler(BackgroundTaskSchedulerDelegate schedulerDelegate) {
         assert schedulerDelegate != null;
         mSchedulerDelegate = schedulerDelegate;
     }

@@ -2556,4 +2556,8 @@ const char kSettingsResetPromptLastTriggeredForHomepage[] =
 const char kClipboardLastModifiedTime[] = "ui.clipboard.last_modified_time";
 #endif
 
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+const char kOfflinePrefetchBackoff[] = "offline_prefetch.backoff";
+#endif
+
 }  // namespace prefs

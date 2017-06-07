@@ -611,6 +611,7 @@ static_library("constants") {
     "//base/third_party/dynamic_annotations",
     "//components/bookmarks/common",
     "//components/nacl/common:switches",
+    "//components/offline_pages/features",
     "//media:cdm_paths",  # Needed by chrome_paths.cc.
     "//media:media_features",
     "//ppapi/features",
