@@ -55,7 +55,6 @@ public class OfflinePageBridge {
 
     /** Whether an offline sub-feature is enabled or not. */
     private static Boolean sOfflineBookmarksEnabled;
-    private static Boolean sBackgroundLoadingEnabled;
     private static Boolean sIsPageSharingEnabled;
 
     /**
@@ -528,6 +527,11 @@ public class OfflinePageBridge {
         return nativeGetOfflinePage(mNativeOfflinePageBridge, webContents);
     }
 
+    /**
+     * Allows setting the offline bookmarks feature as enabled or disabled for testing. This is
+     * required for tests that don't load the native binary otherwise UnsatisfiedLinkError sadness
+     * will occur.
+     */
     @VisibleForTesting
     static void setOfflineBookmarksEnabledForTesting(boolean enabled) {
         sOfflineBookmarksEnabled = enabled;

@@ -42,8 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /** Unit tests for {@link OfflinePageBridge}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({"enable-features=OfflineBookmarks",
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 public class OfflinePageBridgeTest {
     @Rule

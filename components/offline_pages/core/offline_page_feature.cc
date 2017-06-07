@@ -22,10 +22,10 @@ const char kOfflinePagesUseTestingSnapshotDelay[] =
 namespace offline_pages {
 
 const base::Feature kOfflineBookmarksFeature{"OfflineBookmarks",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOffliningRecentPagesFeature{
-    "OfflineRecentPages", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OfflineRecentPages", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesCTFeature{"OfflinePagesCT",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
