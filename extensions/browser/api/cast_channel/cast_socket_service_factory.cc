@@ -20,13 +20,13 @@ base::LazyInstance<CastSocketServiceFactory>::DestructorAtExit service_factory =
 }  // namespace
 
 // static
-CastSocketService* CastSocketServiceFactory::GetForBrowserContext(
+scoped_refptr<CastSocketService> CastSocketServiceFactory::GetForBrowserContext(
     BrowserContext* context) {
   DCHECK(context);
   // GetServiceForBrowserContext returns a KeyedService hence the static_cast<>
-  // to return a pointer to CastSocketService.
+  // to construct a temporary scoped_refptr on the stack for the return value.
   return static_cast<CastSocketService*>(
-      service_factory.Get().GetServiceForBrowserContext(context, true));
+      service_factory.Get().GetServiceForBrowserContext(context, true).get());
 }
 
 // static
@@ -35,7 +35,7 @@ CastSocketServiceFactory* CastSocketServiceFactory::GetInstance() {
 }
 
 CastSocketServiceFactory::CastSocketServiceFactory()
-    : BrowserContextKeyedServiceFactory(
+    : RefcountedBrowserContextKeyedServiceFactory(
           "CastSocketService",
           BrowserContextDependencyManager::GetInstance()) {}
 
@@ -46,9 +46,10 @@ content::BrowserContext* CastSocketServiceFactory::GetBrowserContextToUse(
   return context;
 }
 
-KeyedService* CastSocketServiceFactory::BuildServiceInstanceFor(
+scoped_refptr<RefcountedKeyedService>
+CastSocketServiceFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
-  return new CastSocketService();
+  return make_scoped_refptr(new CastSocketService());
 }
 
 }  // namespace cast_channel

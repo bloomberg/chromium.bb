@@ -7,7 +7,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 
 namespace extensions {
 namespace api {
@@ -17,11 +17,12 @@ class CastSocketService;
 
 // TODO(crbug.com/725717): CastSocket created by one profile (browser context)
 // could be shared with other profiles.
-class CastSocketServiceFactory : public BrowserContextKeyedServiceFactory {
+class CastSocketServiceFactory
+    : public RefcountedBrowserContextKeyedServiceFactory {
  public:
   // Caller needs to make sure that it passes in the same |context| instance to
   // this function for both normal profile and incognito profile.
-  static CastSocketService* GetForBrowserContext(
+  static scoped_refptr<CastSocketService> GetForBrowserContext(
       content::BrowserContext* context);
 
   static CastSocketServiceFactory* GetInstance();
@@ -36,7 +37,7 @@ class CastSocketServiceFactory : public BrowserContextKeyedServiceFactory {
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
-  KeyedService* BuildServiceInstanceFor(
+  scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(CastSocketServiceFactory);

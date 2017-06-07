@@ -5,20 +5,27 @@
 #include "extensions/browser/api/cast_channel/cast_socket_service.h"
 
 #include "base/memory/ptr_util.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace extensions {
 namespace api {
 namespace cast_channel {
 
-int CastSocketRegistry::last_channel_id_ = 0;
+int CastSocketService::last_channel_id_ = 0;
 
-CastSocketRegistry::CastSocketRegistry() = default;
+CastSocketService::CastSocketService()
+    : RefcountedKeyedService(
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)) {
+  DETACH_FROM_THREAD(thread_checker_);
+}
 
-CastSocketRegistry::~CastSocketRegistry() {
+CastSocketService::~CastSocketService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-int CastSocketRegistry::AddSocket(std::unique_ptr<CastSocket> socket) {
+int CastSocketService::AddSocket(std::unique_ptr<CastSocket> socket) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(socket);
   int id = ++last_channel_id_;
@@ -27,7 +34,7 @@ int CastSocketRegistry::AddSocket(std::unique_ptr<CastSocket> socket) {
   return id;
 }
 
-std::unique_ptr<CastSocket> CastSocketRegistry::RemoveSocket(int channel_id) {
+std::unique_ptr<CastSocket> CastSocketService::RemoveSocket(int channel_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(channel_id > 0);
   auto socket_it = sockets_.find(channel_id);
@@ -40,22 +47,14 @@ std::unique_ptr<CastSocket> CastSocketRegistry::RemoveSocket(int channel_id) {
   return socket;
 }
 
-CastSocket* CastSocketRegistry::GetSocket(int channel_id) const {
+CastSocket* CastSocketService::GetSocket(int channel_id) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(channel_id > 0);
   const auto& socket_it = sockets_.find(channel_id);
   return socket_it == sockets_.end() ? nullptr : socket_it->second.get();
 }
 
-CastSocketService::CastSocketService() = default;
-CastSocketService::~CastSocketService() = default;
-
-CastSocketRegistry* CastSocketService::GetOrCreateSocketRegistry() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (!sockets_)
-    sockets_.reset(new CastSocketRegistry());
-  return sockets_.get();
-}
+void CastSocketService::ShutdownOnUIThread() {}
 
 }  // namespace cast_channel
 }  // namespace api
