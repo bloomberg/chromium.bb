@@ -90,7 +90,7 @@
 #include "core/html/HTMLSlotElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
@@ -2604,8 +2604,8 @@ WebPluginContainerBase* Node::GetWebPluginContainerBase() const {
   }
 
   LayoutObject* object = GetLayoutObject();
-  if (object && object->IsLayoutPart()) {
-    PluginView* plugin = ToLayoutPart(object)->Plugin();
+  if (object && object->IsLayoutEmbeddedContent()) {
+    PluginView* plugin = ToLayoutEmbeddedContent(object)->Plugin();
     if (plugin) {
       return plugin->GetWebPluginContainerBase();
     }

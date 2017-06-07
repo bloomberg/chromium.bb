@@ -42,8 +42,8 @@ const SquashingDisallowedReasonStringMap kSquashingDisallowedReasonStringMap[] =
          "squashedLayerClipsCompositingDescendants",
          "Squashing a layer that clips composited descendants is not "
          "supported."},
-        {kSquashingDisallowedReasonSquashingLayoutPartIsDisallowed,
-         "squashingLayoutPartIsDisallowed",
+        {kSquashingDisallowedReasonSquashingLayoutEmbeddedContentIsDisallowed,
+         "squashingLayoutEmbeddedContentIsDisallowed",
          "Squashing a frame, iframe or plugin is not supported."},
         {kSquashingDisallowedReasonSquashingBlendingIsDisallowed,
          "squashingBlendingDisallowed",

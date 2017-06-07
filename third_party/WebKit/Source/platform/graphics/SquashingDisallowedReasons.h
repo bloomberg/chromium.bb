@@ -22,7 +22,7 @@ enum SquashingDisallowedReason {
   kSquashingDisallowedReasonWouldBreakPaintOrder = 1 << 6,
   kSquashingDisallowedReasonSquashingVideoIsDisallowed = 1 << 7,
   kSquashingDisallowedReasonSquashedLayerClipsCompositingDescendants = 1 << 8,
-  kSquashingDisallowedReasonSquashingLayoutPartIsDisallowed = 1 << 9,
+  kSquashingDisallowedReasonSquashingLayoutEmbeddedContentIsDisallowed = 1 << 9,
   kSquashingDisallowedReasonSquashingBlendingIsDisallowed = 1 << 10,
   kSquashingDisallowedReasonNearestFixedPositionMismatch = 1 << 11,
   kSquashingDisallowedReasonScrollChildWithCompositedDescendants = 1 << 12,

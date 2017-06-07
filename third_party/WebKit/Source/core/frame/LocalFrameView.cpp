@@ -66,8 +66,8 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutEmbeddedObject.h"
-#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutView.h"
@@ -75,8 +75,8 @@
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/TracedLayoutObject.h"
 #include "core/layout/api/LayoutBoxModel.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutItem.h"
-#include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositedSelection.h"
@@ -406,13 +406,13 @@ void LocalFrameView::Dispose() {
   // FIXME: Do we need to do something here for OOPI?
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
   // TODO(dcheng): It seems buggy that we can have an owner element that points
-  // to another FrameOrPlugin. This can happen when a plugin element loads a
-  // frame (FrameOrPlugin A of type LocalFrameView) and then loads a plugin
-  // (FrameOrPlugin B of type WebPluginContainerImpl). In this case, the frame's
-  // view is A and the frame element's OwnedWidget is B. See
-  // https://crbug.com/673170 for an example.
-  if (owner_element && owner_element->OwnedWidget() == this)
-    owner_element->SetWidget(nullptr);
+  // to another EmbeddedContentView. This can happen when a plugin element loads
+  // a frame (EmbeddedContentView A of type LocalFrameView) and then loads a
+  // plugin (EmbeddedContentView B of type WebPluginContainerImpl). In this
+  // case, the frame's view is A and the frame element's
+  // OwnedEmbeddedContentView is B. See https://crbug.com/673170 for an example.
+  if (owner_element && owner_element->OwnedEmbeddedContentView() == this)
+    owner_element->SetEmbeddedContentView(nullptr);
 
   ClearPrintContext();
 
@@ -543,7 +543,7 @@ bool LocalFrameView::DidFirstLayout() const {
 }
 
 void LocalFrameView::InvalidateRect(const IntRect& rect) {
-  LayoutPartItem layout_item = frame_->OwnerLayoutItem();
+  LayoutEmbeddedContentItem layout_item = frame_->OwnerLayoutItem();
   if (layout_item.IsNull())
     return;
 
@@ -893,7 +893,7 @@ void LocalFrameView::CountObjectsNeedingLayout(unsigned& needs_layout_objects,
 }
 
 inline void LocalFrameView::ForceLayoutParentViewIfNeeded() {
-  LayoutPartItem owner_layout_item = frame_->OwnerLayoutItem();
+  LayoutEmbeddedContentItem owner_layout_item = frame_->OwnerLayoutItem();
   if (owner_layout_item.IsNull() || !owner_layout_item.GetFrame())
     return;
 
@@ -1454,16 +1454,16 @@ LayoutReplaced* LocalFrameView::EmbeddedReplacedContent() const {
   return nullptr;
 }
 
-void LocalFrameView::AddPart(LayoutPart* object) {
+void LocalFrameView::AddPart(LayoutEmbeddedContent* object) {
   parts_.insert(object);
 }
 
-void LocalFrameView::RemovePart(LayoutPart* object) {
+void LocalFrameView::RemovePart(LayoutEmbeddedContent* object) {
   parts_.erase(object);
 }
 
 void LocalFrameView::UpdateGeometries() {
-  Vector<RefPtr<LayoutPart>> parts;
+  Vector<RefPtr<LayoutEmbeddedContent>> parts;
   CopyToVector(parts_, parts);
 
   for (auto part : parts) {
@@ -1472,7 +1472,7 @@ void LocalFrameView::UpdateGeometries() {
     if (GetLayoutViewItem().IsNull())
       break;
 
-    if (part->GetFrameOrPlugin()) {
+    if (part->GetEmbeddedContentView()) {
       if (LocalFrameView* frame_view = part->ChildFrameView()) {
         bool did_need_layout = frame_view->NeedsLayout();
         part->UpdateGeometry();
@@ -1832,7 +1832,7 @@ void LocalFrameView::ScrollContentsSlowPath() {
     DisablePaintInvalidationStateAsserts disabler;
     GetLayoutViewItem().InvalidatePaintRectangle(LayoutRect(update_rect));
   }
-  LayoutPartItem frame_layout_item = frame_->OwnerLayoutItem();
+  LayoutEmbeddedContentItem frame_layout_item = frame_->OwnerLayoutItem();
   if (!frame_layout_item.IsNull()) {
     if (IsEnclosedInCompositingLayer()) {
       LayoutRect rect(
@@ -2703,7 +2703,7 @@ void LocalFrameView::ScrollbarFrameRectChanged() {
 }
 
 IntRect LocalFrameView::ScrollableAreaBoundingBox() const {
-  LayoutPartItem owner_layout_item = GetFrame().OwnerLayoutItem();
+  LayoutEmbeddedContentItem owner_layout_item = GetFrame().OwnerLayoutItem();
   if (owner_layout_item.IsNull())
     return FrameRect();
 
@@ -2875,7 +2875,7 @@ void LocalFrameView::UpdateScrollCorner() {
     if (!corner_style) {
       // If we have an owning ipage/LocalFrame element, then it can set the
       // custom scrollbar also.
-      LayoutPartItem layout_item = frame_->OwnerLayoutItem();
+      LayoutEmbeddedContentItem layout_item = frame_->OwnerLayoutItem();
       if (!layout_item.IsNull()) {
         corner_style = layout_item.GetUncachedPseudoStyle(
             PseudoStyleRequest(kPseudoIdScrollbarCorner), layout_item.Style());
@@ -3659,7 +3659,7 @@ IntPoint LocalFrameView::ConvertToLayoutItem(
   return RoundedIntPoint(layout_item.AbsoluteToLocal(point, kUseTransforms));
 }
 
-IntPoint LocalFrameView::ConvertSelfToChild(const FrameOrPlugin& child,
+IntPoint LocalFrameView::ConvertSelfToChild(const EmbeddedContentView& child,
                                             const IntPoint& point) const {
   IntPoint new_point = point;
   new_point = FrameToContents(point);
@@ -3667,11 +3667,11 @@ IntPoint LocalFrameView::ConvertSelfToChild(const FrameOrPlugin& child,
   return new_point;
 }
 
-IntRect LocalFrameView::ConvertToContainingFrameViewBase(
+IntRect LocalFrameView::ConvertToContainingEmbeddedContentView(
     const IntRect& local_rect) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
-    LayoutPartItem layout_item = frame_->OwnerLayoutItem();
+    LayoutEmbeddedContentItem layout_item = frame_->OwnerLayoutItem();
     if (layout_item.IsNull())
       return local_rect;
 
@@ -3685,7 +3685,7 @@ IntRect LocalFrameView::ConvertToContainingFrameViewBase(
   return local_rect;
 }
 
-IntRect LocalFrameView::ConvertFromContainingFrameViewBase(
+IntRect LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const IntRect& parent_rect) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     IntRect local_rect = parent_rect;
@@ -3697,11 +3697,11 @@ IntRect LocalFrameView::ConvertFromContainingFrameViewBase(
   return parent_rect;
 }
 
-IntPoint LocalFrameView::ConvertToContainingFrameViewBase(
+IntPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
     const IntPoint& local_point) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
-    LayoutPartItem layout_item = frame_->OwnerLayoutItem();
+    LayoutEmbeddedContentItem layout_item = frame_->OwnerLayoutItem();
     if (layout_item.IsNull())
       return local_point;
 
@@ -3716,11 +3716,11 @@ IntPoint LocalFrameView::ConvertToContainingFrameViewBase(
   return local_point;
 }
 
-IntPoint LocalFrameView::ConvertFromContainingFrameViewBase(
+IntPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const IntPoint& parent_point) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     // Get our layoutObject in the parent view
-    LayoutPartItem layout_item = frame_->OwnerLayoutItem();
+    LayoutEmbeddedContentItem layout_item = frame_->OwnerLayoutItem();
     if (layout_item.IsNull())
       return parent_point;
 
@@ -3930,8 +3930,8 @@ void LocalFrameView::FrameRectsChanged() {
   if (LayoutSizeFixedToFrameSize())
     SetLayoutSizeInternal(FrameRect().Size());
 
-  ForAllChildViewsAndPlugins([](FrameOrPlugin& frame_or_plugin) {
-    frame_or_plugin.FrameRectsChanged();
+  ForAllChildViewsAndPlugins([](EmbeddedContentView& embedded_content_view) {
+    embedded_content_view.FrameRectsChanged();
   });
 }
 
@@ -4742,7 +4742,7 @@ bool LocalFrameView::ScrollbarCornerPresent() const {
 
 IntRect LocalFrameView::ConvertToRootFrame(const IntRect& local_rect) const {
   if (LocalFrameView* parent = ParentFrameView()) {
-    IntRect parent_rect = ConvertToContainingFrameViewBase(local_rect);
+    IntRect parent_rect = ConvertToContainingEmbeddedContentView(local_rect);
     return parent->ConvertToRootFrame(parent_rect);
   }
   return local_rect;
@@ -4750,7 +4750,7 @@ IntRect LocalFrameView::ConvertToRootFrame(const IntRect& local_rect) const {
 
 IntPoint LocalFrameView::ConvertToRootFrame(const IntPoint& local_point) const {
   if (LocalFrameView* parent = ParentFrameView()) {
-    IntPoint parent_point = ConvertToContainingFrameViewBase(local_point);
+    IntPoint parent_point = ConvertToContainingEmbeddedContentView(local_point);
     return parent->ConvertToRootFrame(parent_point);
   }
   return local_point;
@@ -4760,7 +4760,7 @@ IntRect LocalFrameView::ConvertFromRootFrame(
     const IntRect& rect_in_root_frame) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     IntRect parent_rect = parent->ConvertFromRootFrame(rect_in_root_frame);
-    return ConvertFromContainingFrameViewBase(parent_rect);
+    return ConvertFromContainingEmbeddedContentView(parent_rect);
   }
   return rect_in_root_frame;
 }
@@ -4769,7 +4769,7 @@ IntPoint LocalFrameView::ConvertFromRootFrame(
     const IntPoint& point_in_root_frame) const {
   if (LocalFrameView* parent = ParentFrameView()) {
     IntPoint parent_point = parent->ConvertFromRootFrame(point_in_root_frame);
-    return ConvertFromContainingFrameViewBase(parent_point);
+    return ConvertFromContainingEmbeddedContentView(parent_point);
   }
   return point_in_root_frame;
 }
@@ -4796,7 +4796,7 @@ FloatPoint LocalFrameView::ConvertFromRootFrame(
   return parent_point;
 }
 
-IntPoint LocalFrameView::ConvertFromContainingFrameViewBaseToScrollbar(
+IntPoint LocalFrameView::ConvertFromContainingEmbeddedContentViewToScrollbar(
     const Scrollbar& scrollbar,
     const IntPoint& parent_point) const {
   IntPoint new_point = parent_point;
@@ -4818,9 +4818,10 @@ void LocalFrameView::SetParentVisible(bool visible) {
   if (!IsSelfVisible())
     return;
 
-  ForAllChildViewsAndPlugins([visible](FrameOrPlugin& frame_or_plugin) {
-    frame_or_plugin.SetParentVisible(visible);
-  });
+  ForAllChildViewsAndPlugins(
+      [visible](EmbeddedContentView& embedded_content_view) {
+        embedded_content_view.SetParentVisible(visible);
+      });
 }
 
 void LocalFrameView::Show() {
@@ -4838,9 +4839,10 @@ void LocalFrameView::Show() {
       SetNeedsPaintPropertyUpdate();
     }
     if (IsParentVisible()) {
-      ForAllChildViewsAndPlugins([](FrameOrPlugin& frame_or_plugin) {
-        frame_or_plugin.SetParentVisible(true);
-      });
+      ForAllChildViewsAndPlugins(
+          [](EmbeddedContentView& embedded_content_view) {
+            embedded_content_view.SetParentVisible(true);
+          });
     }
   }
 }
@@ -4848,9 +4850,10 @@ void LocalFrameView::Show() {
 void LocalFrameView::Hide() {
   if (IsSelfVisible()) {
     if (IsParentVisible()) {
-      ForAllChildViewsAndPlugins([](FrameOrPlugin& frame_or_plugin) {
-        frame_or_plugin.SetParentVisible(false);
-      });
+      ForAllChildViewsAndPlugins(
+          [](EmbeddedContentView& embedded_content_view) {
+            embedded_content_view.SetParentVisible(false);
+          });
     }
     SetSelfVisible(false);
     if (ScrollingCoordinator* scrolling_coordinator =

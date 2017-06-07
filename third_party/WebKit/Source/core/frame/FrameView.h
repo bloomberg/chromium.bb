@@ -6,11 +6,11 @@
 #define FrameView_h
 
 #include "core/dom/DocumentLifecycle.h"
-#include "core/frame/FrameOrPlugin.h"
+#include "core/frame/EmbeddedContentView.h"
 
 namespace blink {
 
-class CORE_EXPORT FrameView : public FrameOrPlugin {
+class CORE_EXPORT FrameView : public EmbeddedContentView {
  public:
   virtual ~FrameView() {}
   virtual void UpdateViewportIntersectionsForSubtree(

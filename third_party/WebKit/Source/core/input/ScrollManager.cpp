@@ -13,7 +13,7 @@
 #include "core/input/EventHandler.h"
 #include "core/input/EventHandlingUtil.h"
 #include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/AutoscrollController.h"
@@ -34,7 +34,7 @@ ScrollManager::ScrollManager(LocalFrame& frame) : frame_(frame) {
 }
 
 void ScrollManager::Clear() {
-  last_gesture_scroll_over_frame_view_base_ = false;
+  last_gesture_scroll_over_embedded_content_view_ = false;
   scrollbar_handling_scroll_gesture_ = nullptr;
   resize_scrollable_area_ = nullptr;
   offset_from_resize_corner_ = LayoutSize();
@@ -451,11 +451,12 @@ WebInputEventResult ScrollManager::PassScrollGestureEvent(
     LayoutObject* layout_object) {
   DCHECK(gesture_event.IsScrollEvent());
 
-  if (!last_gesture_scroll_over_frame_view_base_ || !layout_object ||
-      !layout_object->IsLayoutPart())
+  if (!last_gesture_scroll_over_embedded_content_view_ || !layout_object ||
+      !layout_object->IsLayoutEmbeddedContent())
     return WebInputEventResult::kNotHandled;
 
-  LocalFrameView* frame_view = ToLayoutPart(layout_object)->ChildFrameView();
+  LocalFrameView* frame_view =
+      ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
 
   if (!frame_view)
     return WebInputEventResult::kNotHandled;
@@ -503,7 +504,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
 
     event_target = result.InnerNode();
 
-    last_gesture_scroll_over_frame_view_base_ = result.IsOverFrameViewBase();
+    last_gesture_scroll_over_embedded_content_view_ =
+        result.IsOverEmbeddedContentView();
     scroll_gesture_handling_node_ = event_target;
     previous_gesture_scrolled_element_ = nullptr;
     delta_consumed_for_scroll_sequence_ = false;

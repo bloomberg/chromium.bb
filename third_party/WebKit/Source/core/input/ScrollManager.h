@@ -127,7 +127,7 @@ class CORE_EXPORT ScrollManager
 
   Member<Node> scroll_gesture_handling_node_;
 
-  bool last_gesture_scroll_over_frame_view_base_;
+  bool last_gesture_scroll_over_embedded_content_view_;
 
   // The most recent element to scroll natively during this scroll
   // sequence. Null if no native element has scrolled this scroll

@@ -557,9 +557,9 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return true;
   }
 
-  // A LayoutPart is an iframe element or embedded object element or something
-  // like that. We don't want to ignore those.
-  if (layout_object_->IsLayoutPart())
+  // A LayoutEmbeddedContent is an iframe element or embedded object element or
+  // something like that. We don't want to ignore those.
+  if (layout_object_->IsLayoutEmbeddedContent())
     return false;
 
   // Make sure renderers with layers stay in the tree.

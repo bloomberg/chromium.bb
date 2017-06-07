@@ -11,7 +11,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutTreeAsText.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/web/WebDocument.h"
@@ -64,7 +64,8 @@ static void FrameContentAsPlainText(size_t max_chars,
     LocalFrame* cur_local_child = ToLocalFrame(cur_child);
     // Ignore the text of non-visible frames.
     LayoutViewItem content_layout_item = cur_local_child->ContentLayoutItem();
-    LayoutPartItem owner_layout_item = cur_local_child->OwnerLayoutItem();
+    LayoutEmbeddedContentItem owner_layout_item =
+        cur_local_child->OwnerLayoutItem();
     if (content_layout_item.IsNull() || !content_layout_item.Size().Width() ||
         !content_layout_item.Size().Height() ||
         (content_layout_item.Location().X() +

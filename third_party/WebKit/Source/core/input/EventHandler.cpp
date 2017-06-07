@@ -69,7 +69,7 @@
 #include "core/input/TouchActionUtil.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
@@ -107,9 +107,10 @@ namespace {
 
 // Refetch the event target node if it is removed or currently is the shadow
 // node inside an <input> element.  If a mouse event handler changes the input
-// element type to one that has a FrameViewBase associated, we'd like to
-// EventHandler::handleMousePressEvent to pass the event to the FrameViewBase
-// and thus the event target node can't still be the shadow node.
+// element type to one that has a EmbeddedContentView associated, we'd like to
+// EventHandler::handleMousePressEvent to pass the event to the
+// EmbeddedContentView and thus the event target node can't still be the shadow
+// node.
 bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
   Node* target_node = mev.InnerNode();
   if (!target_node || !target_node->parentNode())
@@ -338,10 +339,11 @@ static LocalFrame* SubframeForTargetNode(Node* node) {
     return nullptr;
 
   LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object || !layout_object->IsLayoutPart())
+  if (!layout_object || !layout_object->IsLayoutEmbeddedContent())
     return nullptr;
 
-  LocalFrameView* frame_view = ToLayoutPart(layout_object)->ChildFrameView();
+  LocalFrameView* frame_view =
+      ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
   if (!frame_view)
     return nullptr;
 
@@ -350,7 +352,7 @@ static LocalFrame* SubframeForTargetNode(Node* node) {
 
 static LocalFrame* SubframeForHitTestResult(
     const MouseEventWithHitTestResults& hit_test_result) {
-  if (!hit_test_result.IsOverFrameViewBase())
+  if (!hit_test_result.IsOverEmbeddedContentView())
     return nullptr;
   return SubframeForTargetNode(hit_test_result.InnerNode());
 }
@@ -621,8 +623,9 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     WebInputEventResult result = PassMousePressEventToSubframe(mev, subframe);
     // Start capturing future events for this frame.  We only do this if we
     // didn't clear the m_mousePressed flag, which may happen if an AppKit
-    // FrameViewBase entered a modal event loop.  The capturing should be done
-    // only when the result indicates it has been handled. See crbug.com/269917
+    // EmbeddedContentView entered a modal event loop.  The capturing should be
+    // done only when the result indicates it has been handled. See
+    // crbug.com/269917
     mouse_event_manager_->SetCapturesDragging(
         subframe->GetEventHandler().mouse_event_manager_->CapturesDragging());
     if (mouse_event_manager_->MousePressed() &&
@@ -706,7 +709,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
 
   // If the hit testing originally determined the event was in a scrollbar,
   // refetch the MouseEventWithHitTestResults in case the scrollbar
-  // FrameViewBase was destroyed when the mouse event was handled.
+  // EmbeddedContentView was destroyed when the mouse event was handled.
   if (mev.GetScrollbar()) {
     const bool was_last_scroll_bar =
         mev.GetScrollbar() == last_scrollbar_under_mouse_.Get();

@@ -39,7 +39,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -266,7 +266,7 @@ void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
   if (!root->GetLayoutObject().IsLayoutIFrame())
     return;
   LocalFrameView* child_frame_view =
-      ToLayoutPart(root->GetLayoutObject()).ChildFrameView();
+      ToLayoutEmbeddedContent(root->GetLayoutObject()).ChildFrameView();
   LayoutViewItem child_layout_view_item = child_frame_view->GetLayoutViewItem();
   if (!child_layout_view_item.IsNull()) {
     if (PaintLayerCompositor* child_compositor =

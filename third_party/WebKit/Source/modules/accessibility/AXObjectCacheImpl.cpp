@@ -1248,7 +1248,8 @@ void AXObjectCacheImpl::OnTouchAccessibilityHover(const IntPoint& location) {
     // Ignore events on a frame or plug-in, because the touch events
     // will be re-targeted there and we don't want to fire duplicate
     // accessibility events.
-    if (hit->GetLayoutObject() && hit->GetLayoutObject()->IsLayoutPart())
+    if (hit->GetLayoutObject() &&
+        hit->GetLayoutObject()->IsLayoutEmbeddedContent())
       return;
 
     PostPlatformNotification(hit, kAXHover);

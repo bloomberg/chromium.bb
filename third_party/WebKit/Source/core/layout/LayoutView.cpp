@@ -30,11 +30,11 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutGeometryMap.h"
-#include "core/layout/LayoutPart.h"
 #include "core/layout/ViewFragmentationContext.h"
 #include "core/layout/api/LayoutAPIShim.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
@@ -182,7 +182,7 @@ bool LayoutView::HitTestNoLifecycleUpdate(HitTestResult& result) {
 
 void LayoutView::ClearHitTestCache() {
   hit_test_cache_->Clear();
-  LayoutPartItem frame_layout_item = GetFrame()->OwnerLayoutItem();
+  LayoutEmbeddedContentItem frame_layout_item = GetFrame()->OwnerLayoutItem();
   if (!frame_layout_item.IsNull())
     frame_layout_item.View().ClearHitTestCache();
 }
@@ -360,7 +360,8 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     return;
 
   if (mode & kTraverseDocumentBoundaries) {
-    LayoutPartItem parent_doc_layout_item = GetFrame()->OwnerLayoutItem();
+    LayoutEmbeddedContentItem parent_doc_layout_item =
+        GetFrame()->OwnerLayoutItem();
     if (!parent_doc_layout_item.IsNull()) {
       if (!(mode & kInputIsInFrameCoordinates)) {
         transform_state.Move(
@@ -387,8 +388,9 @@ const LayoutObject* LayoutView::PushMappingToContainer(
   LayoutObject* container = nullptr;
 
   if (geometry_map.GetMapCoordinatesFlags() & kTraverseDocumentBoundaries) {
-    if (LayoutPart* parent_doc_layout_object = ToLayoutPart(
-            LayoutAPIShim::LayoutObjectFrom(GetFrame()->OwnerLayoutItem()))) {
+    if (LayoutEmbeddedContent* parent_doc_layout_object =
+            ToLayoutEmbeddedContent(LayoutAPIShim::LayoutObjectFrom(
+                GetFrame()->OwnerLayoutItem()))) {
       offset = -LayoutSize(frame_view_->GetScrollOffset());
       offset += parent_doc_layout_object->ContentBoxOffset();
       container = parent_doc_layout_object;
@@ -416,8 +418,9 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                     TransformState& transform_state,
                                     MapCoordinatesFlags mode) const {
   if (this != ancestor && (mode & kTraverseDocumentBoundaries)) {
-    if (LayoutPart* parent_doc_layout_object = ToLayoutPart(
-            LayoutAPIShim::LayoutObjectFrom(GetFrame()->OwnerLayoutItem()))) {
+    if (LayoutEmbeddedContent* parent_doc_layout_object =
+            ToLayoutEmbeddedContent(LayoutAPIShim::LayoutObjectFrom(
+                GetFrame()->OwnerLayoutItem()))) {
       // A LayoutView is a containing block for fixed-position elements, so
       // don't carry this state across frames.
       parent_doc_layout_object->MapAncestorToLocal(ancestor, transform_state,

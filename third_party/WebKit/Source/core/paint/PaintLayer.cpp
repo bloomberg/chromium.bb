@@ -56,12 +56,12 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/HitTestingTransformState.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -2899,8 +2899,9 @@ bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
 }
 
 bool PaintLayer::ShouldBeSelfPaintingLayer() const {
-  if (GetLayoutObject().IsLayoutPart() &&
-      ToLayoutPart(GetLayoutObject()).RequiresAcceleratedCompositing())
+  if (GetLayoutObject().IsLayoutEmbeddedContent() &&
+      ToLayoutEmbeddedContent(GetLayoutObject())
+          .RequiresAcceleratedCompositing())
     return true;
 
   return GetLayoutObject().LayerTypeRequired() == kNormalPaintLayer ||

@@ -105,8 +105,10 @@ bool WebFrame::Swap(WebFrame* frame) {
     DCHECK_EQ(owner, local_frame.Owner());
     if (owner) {
       owner->SetContentFrame(local_frame);
-      if (owner->IsLocal())
-        ToHTMLFrameOwnerElement(owner)->SetWidget(local_frame.View());
+      if (owner->IsLocal()) {
+        ToHTMLFrameOwnerElement(owner)->SetEmbeddedContentView(
+            local_frame.View());
+      }
     } else {
       local_frame.GetPage()->SetMainFrame(&local_frame);
       // This trace event is needed to detect the main frame of the

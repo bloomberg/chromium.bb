@@ -98,7 +98,9 @@ class CORE_EXPORT HitTestResult {
 
   Element* URLElement() const { return inner_url_element_.Get(); }
   Scrollbar* GetScrollbar() const { return scrollbar_.Get(); }
-  bool IsOverFrameViewBase() const { return is_over_frame_view_base_; }
+  bool IsOverEmbeddedContentView() const {
+    return is_over_embedded_content_view_;
+  }
 
   // Forwarded from HitTestLocation
   bool IsRectBasedTest() const { return hit_test_location_.IsRectBasedTest(); }
@@ -142,7 +144,9 @@ class CORE_EXPORT HitTestResult {
   HTMLAreaElement* ImageAreaForImage() const;
   void SetURLElement(Element*);
   void SetScrollbar(Scrollbar*);
-  void SetIsOverFrameViewBase(bool b) { is_over_frame_view_base_ = b; }
+  void SetIsOverEmbeddedContentView(bool b) {
+    is_over_embedded_content_view_ = b;
+  }
 
   bool IsSelected() const;
   String Title(TextDirection&) const;
@@ -210,9 +214,9 @@ class CORE_EXPORT HitTestResult {
   // For non-URL, this is the enclosing that triggers navigation.
   Member<Element> inner_url_element_;
   Member<Scrollbar> scrollbar_;
-  // Returns true if we are over a FrameViewBase (and not in the border/padding
-  // area of a LayoutPart for example).
-  bool is_over_frame_view_base_;
+  // Returns true if we are over a EmbeddedContentView (and not in the
+  // border/padding area of a LayoutEmbeddedContent for example).
+  bool is_over_embedded_content_view_;
 
   mutable Member<NodeSet> list_based_test_result_;
   String canvas_region_id_;

@@ -60,7 +60,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
@@ -340,9 +340,10 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
     DCHECK(owner);
     // FIXME: OOPI might lead to us temporarily lying to a frame and telling it
     // that it's owned by a FrameOwner that knows nothing about it. If we're
-    // lying to this frame, don't let it clobber the existing widget.
+    // lying to this frame, don't let it clobber the existing
+    // EmbeddedContentView.
     if (owner->ContentFrame() == this)
-      owner->SetWidget(frame_view);
+      owner->SetEmbeddedContentView(frame_view);
   }
 
   if (Owner())
@@ -438,8 +439,8 @@ void LocalFrame::Detach(FrameDetachType type) {
   loader_.Detach();
   GetDocument()->Shutdown();
   // This is the earliest that scripting can be disabled:
-  // - FrameLoader::detach() can fire XHR abort events
-  // - Document::shutdown()'s deferred widget updates can run script.
+  // - FrameLoader::Detach() can fire XHR abort events
+  // - Document::Shutdown() can dispose plugins which can run script.
   ScriptForbiddenScope forbid_script;
   if (!Client())
     return;

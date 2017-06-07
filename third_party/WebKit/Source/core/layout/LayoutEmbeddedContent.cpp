@@ -22,10 +22,10 @@
  *
  */
 
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 
 #include "core/dom/AXObjectCache.h"
-#include "core/frame/FrameOrPlugin.h"
+#include "core/frame/EmbeddedContentView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrameView.h"
@@ -37,28 +37,28 @@
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/scrolling/RootScrollerUtil.h"
-#include "core/paint/PartPainter.h"
+#include "core/paint/EmbeddedContentPainter.h"
 #include "core/plugins/PluginView.h"
 
 namespace blink {
 
-LayoutPart::LayoutPart(Element* element)
+LayoutEmbeddedContent::LayoutEmbeddedContent(Element* element)
     : LayoutReplaced(element),
       // Reference counting is used to prevent the part from being destroyed
-      // while inside the FrameViewBase code, which might not be able to handle
-      // that.
+      // while inside the EmbeddedContentView code, which might not be able to
+      // handle that.
       ref_count_(1) {
   DCHECK(element);
   GetFrameView()->AddPart(this);
   SetInline(false);
 }
 
-void LayoutPart::Deref() {
+void LayoutEmbeddedContent::Deref() {
   if (--ref_count_ <= 0)
     delete this;
 }
 
-void LayoutPart::WillBeDestroyed() {
+void LayoutEmbeddedContent::WillBeDestroyed() {
   GetFrameView()->RemovePart(this);
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
@@ -68,16 +68,16 @@ void LayoutPart::WillBeDestroyed() {
 
   Node* node = GetNode();
   if (node && node->IsFrameOwnerElement())
-    ToHTMLFrameOwnerElement(node)->SetWidget(nullptr);
+    ToHTMLFrameOwnerElement(node)->SetEmbeddedContentView(nullptr);
 
   LayoutReplaced::WillBeDestroyed();
 }
 
-void LayoutPart::Destroy() {
+void LayoutEmbeddedContent::Destroy() {
   WillBeDestroyed();
-  // We call clearNode here because LayoutPart is ref counted. This call to
-  // destroy may not actually destroy the layout object. We can keep it around
-  // because of references from the LocalFrameView class. (The actual
+  // We call clearNode here because LayoutEmbeddedContent is ref counted. This
+  // call to destroy may not actually destroy the layout object. We can keep it
+  // around because of references from the LocalFrameView class. (The actual
   // destruction of the class happens in PostDestroy() which is called from
   // Deref()).
   //
@@ -89,39 +89,39 @@ void LayoutPart::Destroy() {
   Deref();
 }
 
-LayoutPart::~LayoutPart() {
+LayoutEmbeddedContent::~LayoutEmbeddedContent() {
   DCHECK_LE(ref_count_, 0);
 }
 
-LocalFrameView* LayoutPart::ChildFrameView() const {
-  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
-  if (frame_or_plugin && frame_or_plugin->IsLocalFrameView())
-    return ToLocalFrameView(frame_or_plugin);
+LocalFrameView* LayoutEmbeddedContent::ChildFrameView() const {
+  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
+  if (embedded_content_view && embedded_content_view->IsLocalFrameView())
+    return ToLocalFrameView(embedded_content_view);
   return nullptr;
 }
 
-PluginView* LayoutPart::Plugin() const {
-  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
-  if (frame_or_plugin && frame_or_plugin->IsPluginView())
-    return ToPluginView(frame_or_plugin);
+PluginView* LayoutEmbeddedContent::Plugin() const {
+  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
+  if (embedded_content_view && embedded_content_view->IsPluginView())
+    return ToPluginView(embedded_content_view);
   return nullptr;
 }
 
-FrameOrPlugin* LayoutPart::GetFrameOrPlugin() const {
+EmbeddedContentView* LayoutEmbeddedContent::GetEmbeddedContentView() const {
   Node* node = GetNode();
   if (node && node->IsFrameOwnerElement())
-    return ToHTMLFrameOwnerElement(node)->OwnedWidget();
+    return ToHTMLFrameOwnerElement(node)->OwnedEmbeddedContentView();
   return nullptr;
 }
 
-PaintLayerType LayoutPart::LayerTypeRequired() const {
+PaintLayerType LayoutEmbeddedContent::LayerTypeRequired() const {
   PaintLayerType type = LayoutReplaced::LayerTypeRequired();
   if (type != kNoPaintLayer)
     return type;
   return kForcedPaintLayer;
 }
 
-bool LayoutPart::RequiresAcceleratedCompositing() const {
+bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   // There are two general cases in which we can return true. First, if this is
   // a plugin LayoutObject and the plugin has a layer, then we need a layer.
   // Second, if this is a LayoutObject with a contentDocument and that document
@@ -146,13 +146,13 @@ bool LayoutPart::RequiresAcceleratedCompositing() const {
   return false;
 }
 
-bool LayoutPart::NeedsPreferredWidthsRecalculation() const {
+bool LayoutEmbeddedContent::NeedsPreferredWidthsRecalculation() const {
   if (LayoutReplaced::NeedsPreferredWidthsRecalculation())
     return true;
   return EmbeddedReplacedContent();
 }
 
-bool LayoutPart::NodeAtPointOverFrameViewBase(
+bool LayoutEmbeddedContent::NodeAtPointOverEmbeddedContentView(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
@@ -161,31 +161,32 @@ bool LayoutPart::NodeAtPointOverFrameViewBase(
   bool inside = LayoutReplaced::NodeAtPoint(result, location_in_container,
                                             accumulated_offset, action);
 
-  // Check to see if we are really over the FrameViewBase itself (and not just
-  // in the border/padding area).
+  // Check to see if we are really over the EmbeddedContentView itself (and not
+  // just in the border/padding area).
   if ((inside || result.IsRectBasedTest()) && !had_result &&
       result.InnerNode() == GetNode()) {
-    result.SetIsOverFrameViewBase(
+    result.SetIsOverEmbeddedContentView(
         ContentBoxRect().Contains(result.LocalPoint()));
   }
   return inside;
 }
 
-bool LayoutPart::NodeAtPoint(HitTestResult& result,
-                             const HitTestLocation& location_in_container,
-                             const LayoutPoint& accumulated_offset,
-                             HitTestAction action) {
+bool LayoutEmbeddedContent::NodeAtPoint(
+    HitTestResult& result,
+    const HitTestLocation& location_in_container,
+    const LayoutPoint& accumulated_offset,
+    HitTestAction action) {
   LocalFrameView* frame_view = ChildFrameView();
   if (!frame_view || !result.GetHitTestRequest().AllowsChildFrameContent()) {
-    return NodeAtPointOverFrameViewBase(result, location_in_container,
-                                        accumulated_offset, action);
+    return NodeAtPointOverEmbeddedContentView(result, location_in_container,
+                                              accumulated_offset, action);
   }
 
   // A hit test can never hit an off-screen element; only off-screen iframes are
   // throttled; therefore, hit tests can skip descending into throttled iframes.
   if (frame_view->ShouldThrottleRendering()) {
-    return NodeAtPointOverFrameViewBase(result, location_in_container,
-                                        accumulated_offset, action);
+    return NodeAtPointOverEmbeddedContentView(result, location_in_container,
+                                              accumulated_offset, action);
   }
 
   DCHECK_GE(GetDocument().Lifecycle().GetState(),
@@ -223,40 +224,41 @@ bool LayoutPart::NodeAtPoint(HitTestResult& result,
 
       // Don't trust |isInsideChildFrame|. For rect-based hit-test, returns
       // true only when the hit test rect is totally within the iframe,
-      // i.e. nodeAtPointOverFrameViewBase() also returns true.
+      // i.e. nodeAtPointOverEmbeddedContentView() also returns true.
       // Use a temporary HitTestResult because we don't want to collect the
       // iframe element itself if the hit-test rect is totally within the
       // iframe.
       if (is_inside_child_frame) {
         if (!location_in_container.IsRectBasedTest())
           return true;
-        HitTestResult point_over_frame_view_base_result = result;
-        bool point_over_frame_view_base = NodeAtPointOverFrameViewBase(
-            point_over_frame_view_base_result, location_in_container,
-            accumulated_offset, action);
-        if (point_over_frame_view_base)
+        HitTestResult point_over_embedded_content_view_result = result;
+        bool point_over_embedded_content_view =
+            NodeAtPointOverEmbeddedContentView(
+                point_over_embedded_content_view_result, location_in_container,
+                accumulated_offset, action);
+        if (point_over_embedded_content_view)
           return true;
-        result = point_over_frame_view_base_result;
+        result = point_over_embedded_content_view_result;
         return false;
       }
     }
   }
 
-  return NodeAtPointOverFrameViewBase(result, location_in_container,
-                                      accumulated_offset, action);
+  return NodeAtPointOverEmbeddedContentView(result, location_in_container,
+                                            accumulated_offset, action);
 }
 
-CompositingReasons LayoutPart::AdditionalCompositingReasons() const {
+CompositingReasons LayoutEmbeddedContent::AdditionalCompositingReasons() const {
   if (RequiresAcceleratedCompositing())
     return kCompositingReasonIFrame;
   return kCompositingReasonNone;
 }
 
-void LayoutPart::StyleDidChange(StyleDifference diff,
-                                const ComputedStyle* old_style) {
+void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
+                                           const ComputedStyle* old_style) {
   LayoutReplaced::StyleDidChange(diff, old_style);
-  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
-  if (!frame_or_plugin)
+  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
+  if (!embedded_content_view)
     return;
 
   // If the iframe has custom scrollbars, recalculate their style.
@@ -264,31 +266,32 @@ void LayoutPart::StyleDidChange(StyleDifference diff,
     frame_view->RecalculateCustomScrollbarStyle();
 
   if (Style()->Visibility() != EVisibility::kVisible) {
-    frame_or_plugin->Hide();
+    embedded_content_view->Hide();
   } else {
-    frame_or_plugin->Show();
+    embedded_content_view->Show();
   }
 }
 
-void LayoutPart::UpdateLayout() {
+void LayoutEmbeddedContent::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
   UpdateAfterLayout();
   ClearNeedsLayout();
 }
 
-void LayoutPart::Paint(const PaintInfo& paint_info,
-                       const LayoutPoint& paint_offset) const {
-  PartPainter(*this).Paint(paint_info, paint_offset);
+void LayoutEmbeddedContent::Paint(const PaintInfo& paint_info,
+                                  const LayoutPoint& paint_offset) const {
+  EmbeddedContentPainter(*this).Paint(paint_info, paint_offset);
 }
 
-void LayoutPart::PaintContents(const PaintInfo& paint_info,
-                               const LayoutPoint& paint_offset) const {
-  PartPainter(*this).PaintContents(paint_info, paint_offset);
+void LayoutEmbeddedContent::PaintContents(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) const {
+  EmbeddedContentPainter(*this).PaintContents(paint_info, paint_offset);
 }
 
-CursorDirective LayoutPart::GetCursor(const LayoutPoint& point,
-                                      Cursor& cursor) const {
+CursorDirective LayoutEmbeddedContent::GetCursor(const LayoutPoint& point,
+                                                 Cursor& cursor) const {
   if (Plugin()) {
     // A plugin is responsible for setting the cursor when the pointer is over
     // it.
@@ -297,7 +300,7 @@ CursorDirective LayoutPart::GetCursor(const LayoutPoint& point,
   return LayoutReplaced::GetCursor(point, cursor);
 }
 
-LayoutRect LayoutPart::ReplacedContentRect() const {
+LayoutRect LayoutEmbeddedContent::ReplacedContentRect() const {
   // We don't propagate sub-pixel into sub-frame layout, in other words, the
   // rect is snapped at the document boundary, and sub-pixel movement could
   // cause the sub-frame to layout due to the 1px snap difference. In order to
@@ -313,36 +316,36 @@ LayoutRect LayoutPart::ReplacedContentRect() const {
   return size_rounded_rect;
 }
 
-void LayoutPart::UpdateOnWidgetChange() {
-  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
-  if (!frame_or_plugin)
+void LayoutEmbeddedContent::UpdateOnEmbeddedContentViewChange() {
+  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
+  if (!embedded_content_view)
     return;
 
   if (!Style())
     return;
 
   if (!NeedsLayout())
-    UpdateGeometryInternal(*frame_or_plugin);
+    UpdateGeometryInternal(*embedded_content_view);
 
   if (Style()->Visibility() != EVisibility::kVisible) {
-    frame_or_plugin->Hide();
+    embedded_content_view->Hide();
   } else {
-    frame_or_plugin->Show();
+    embedded_content_view->Show();
     // FIXME: Why do we issue a full paint invalidation in this case, but not
     // the other?
     SetShouldDoFullPaintInvalidation();
   }
 }
 
-void LayoutPart::UpdateGeometry() {
-  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
-  if (!frame_or_plugin)
+void LayoutEmbeddedContent::UpdateGeometry() {
+  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
+  if (!embedded_content_view)
     return;
 
   LayoutRect new_frame = ReplacedContentRect();
   DCHECK(new_frame.Size() == RoundedIntSize(new_frame.Size()));
   bool bounds_will_change =
-      LayoutSize(frame_or_plugin->FrameRect().Size()) != new_frame.Size();
+      LayoutSize(embedded_content_view->FrameRect().Size()) != new_frame.Size();
 
   // If frame bounds are changing mark the view for layout. Also check the
   // frame's page to make sure that the frame isn't in the process of being
@@ -353,7 +356,7 @@ void LayoutPart::UpdateGeometry() {
       (bounds_will_change || frame_view->NeedsScrollbarReconstruction()))
     frame_view->SetNeedsLayout();
 
-  UpdateGeometryInternal(*frame_or_plugin);
+  UpdateGeometryInternal(*embedded_content_view);
 
   // If view needs layout, either because bounds have changed or possibly
   // indicating content size is wrong, we have to do a layout to set the right
@@ -366,7 +369,8 @@ void LayoutPart::UpdateGeometry() {
     plugin->GeometryMayHaveChanged();
 }
 
-void LayoutPart::UpdateGeometryInternal(FrameOrPlugin& frame_or_plugin) {
+void LayoutEmbeddedContent::UpdateGeometryInternal(
+    EmbeddedContentView& embedded_content_view) {
   // Ignore transform here, as we only care about the sub-pixel accumulation.
   // TODO(trchen): What about multicol? Need a LayoutBox function to query
   // sub-pixel accumulation.
@@ -390,11 +394,11 @@ void LayoutPart::UpdateGeometryInternal(FrameOrPlugin& frame_or_plugin) {
   frame_rect.SetLocation(RoundedIntPoint(absolute_bounding_box.Location()));
 
   // Why is the protector needed?
-  RefPtr<LayoutPart> protector(this);
-  frame_or_plugin.SetFrameRect(frame_rect);
+  RefPtr<LayoutEmbeddedContent> protector(this);
+  embedded_content_view.SetFrameRect(frame_rect);
 }
 
-void LayoutPart::DeprecatedInvalidatePaintOfSubtrees(
+void LayoutEmbeddedContent::DeprecatedInvalidatePaintOfSubtrees(
     const PaintInvalidationState& paint_invalidation_state) {
   LocalFrameView* frame_view = ChildFrameView();
   if (frame_view && !IsThrottledFrameView()) {
@@ -412,7 +416,7 @@ void LayoutPart::DeprecatedInvalidatePaintOfSubtrees(
   LayoutReplaced::DeprecatedInvalidatePaintOfSubtrees(paint_invalidation_state);
 }
 
-bool LayoutPart::IsThrottledFrameView() const {
+bool LayoutEmbeddedContent::IsThrottledFrameView() const {
   if (LocalFrameView* frame_view = ChildFrameView())
     return frame_view->ShouldThrottleRendering();
   return false;

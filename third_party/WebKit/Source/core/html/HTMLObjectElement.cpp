@@ -70,9 +70,10 @@ DEFINE_TRACE(HTMLObjectElement) {
   HTMLPlugInElement::Trace(visitor);
 }
 
-LayoutPart* HTMLObjectElement::ExistingLayoutPart() const {
-  // This will return 0 if the layoutObject is not a LayoutPart.
-  return GetLayoutPart();
+LayoutEmbeddedContent* HTMLObjectElement::ExistingLayoutEmbeddedContent()
+    const {
+  // This will return 0 if the layoutObject is not a LayoutEmbeddedContent.
+  return GetLayoutEmbeddedContent();
 }
 
 bool HTMLObjectElement::IsPresentationAttribute(

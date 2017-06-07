@@ -48,7 +48,7 @@ using namespace HTMLNames;
 HitTestResult::HitTestResult()
     : hit_test_request_(HitTestRequest::kReadOnly | HitTestRequest::kActive),
       cacheable_(true),
-      is_over_frame_view_base_(false) {}
+      is_over_embedded_content_view_(false) {}
 
 HitTestResult::HitTestResult(const HitTestRequest& request,
                              const LayoutPoint& point)
@@ -56,7 +56,7 @@ HitTestResult::HitTestResult(const HitTestRequest& request,
       hit_test_request_(request),
       cacheable_(true),
       point_in_inner_node_frame_(point),
-      is_over_frame_view_base_(false) {}
+      is_over_embedded_content_view_(false) {}
 
 HitTestResult::HitTestResult(const HitTestRequest& request,
                              const LayoutPoint& center_point,
@@ -72,7 +72,7 @@ HitTestResult::HitTestResult(const HitTestRequest& request,
       hit_test_request_(request),
       cacheable_(true),
       point_in_inner_node_frame_(center_point),
-      is_over_frame_view_base_(false) {}
+      is_over_embedded_content_view_(false) {}
 
 HitTestResult::HitTestResult(const HitTestRequest& other_request,
                              const HitTestLocation& other)
@@ -80,7 +80,7 @@ HitTestResult::HitTestResult(const HitTestRequest& other_request,
       hit_test_request_(other_request),
       cacheable_(true),
       point_in_inner_node_frame_(hit_test_location_.Point()),
-      is_over_frame_view_base_(false) {}
+      is_over_embedded_content_view_(false) {}
 
 HitTestResult::HitTestResult(const HitTestResult& other)
     : hit_test_location_(other.hit_test_location_),
@@ -92,7 +92,7 @@ HitTestResult::HitTestResult(const HitTestResult& other)
       local_point_(other.LocalPoint()),
       inner_url_element_(other.URLElement()),
       scrollbar_(other.GetScrollbar()),
-      is_over_frame_view_base_(other.IsOverFrameViewBase()),
+      is_over_embedded_content_view_(other.IsOverEmbeddedContentView()),
       canvas_region_id_(other.CanvasRegionId()) {
   // Only copy the NodeSet in case of list hit test.
   list_based_test_result_ = other.list_based_test_result_
@@ -118,7 +118,7 @@ bool HitTestResult::EqualForCacheability(const HitTestResult& other) const {
          local_point_ == other.LocalPoint() &&
          inner_url_element_ == other.URLElement() &&
          scrollbar_ == other.GetScrollbar() &&
-         is_over_frame_view_base_ == other.IsOverFrameViewBase();
+         is_over_embedded_content_view_ == other.IsOverEmbeddedContentView();
 }
 
 void HitTestResult::CacheValues(const HitTestResult& other) {
@@ -134,7 +134,7 @@ void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
   local_point_ = other.LocalPoint();
   inner_url_element_ = other.URLElement();
   scrollbar_ = other.GetScrollbar();
-  is_over_frame_view_base_ = other.IsOverFrameViewBase();
+  is_over_embedded_content_view_ = other.IsOverEmbeddedContentView();
   cacheable_ = other.cacheable_;
   canvas_region_id_ = other.CanvasRegionId();
 
@@ -461,7 +461,7 @@ void HitTestResult::Append(const HitTestResult& other) {
     local_point_ = other.LocalPoint();
     point_in_inner_node_frame_ = other.point_in_inner_node_frame_;
     inner_url_element_ = other.URLElement();
-    is_over_frame_view_base_ = other.IsOverFrameViewBase();
+    is_over_embedded_content_view_ = other.IsOverEmbeddedContentView();
     canvas_region_id_ = other.CanvasRegionId();
   }
 

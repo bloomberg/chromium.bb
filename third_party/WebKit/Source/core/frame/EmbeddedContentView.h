@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrameOrPlugin_h
-#define FrameOrPlugin_h
+#ifndef EmbeddedContentView_h
+#define EmbeddedContentView_h
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -14,11 +14,11 @@ class CullRect;
 class GraphicsContext;
 class IntRect;
 
-// FrameOrPlugin is a pure virtual class which is implemented by LocalFrameView,
-// RemoteFrameView, and PluginView.
-class CORE_EXPORT FrameOrPlugin : public GarbageCollectedMixin {
+// EmbeddedContentView is a pure virtual class which is implemented by
+// LocalFrameView, RemoteFrameView, and PluginView.
+class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
  public:
-  virtual ~FrameOrPlugin() {}
+  virtual ~EmbeddedContentView() {}
 
   virtual bool IsLocalFrameView() const { return false; }
   virtual bool IsPluginView() const { return false; }
@@ -37,4 +37,4 @@ class CORE_EXPORT FrameOrPlugin : public GarbageCollectedMixin {
 };
 
 }  // namespace blink
-#endif  // FrameOrPlugin_h
+#endif  // EmbeddedContentView_h

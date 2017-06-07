@@ -103,7 +103,7 @@ class CORE_EXPORT ImageQualityController final {
   double frame_time_when_timer_started_;
 
   // For calling set().
-  FRIEND_TEST_ALL_PREFIXES(LayoutPartTest,
+  FRIEND_TEST_ALL_PREFIXES(LayoutEmbeddedContentTest,
                            DestroyUpdatesImageQualityController);
 
   // For calling setTimer(),

@@ -57,7 +57,9 @@ class LayoutItem {
 
   bool IsTextControl() const { return layout_object_->IsTextControl(); }
 
-  bool IsLayoutPart() const { return layout_object_->IsLayoutPart(); }
+  bool IsLayoutEmbeddedContent() const {
+    return layout_object_->IsLayoutEmbeddedContent();
+  }
 
   bool IsEmbeddedObject() const { return layout_object_->IsEmbeddedObject(); }
 

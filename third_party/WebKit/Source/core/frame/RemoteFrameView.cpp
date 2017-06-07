@@ -11,7 +11,7 @@
 #include "core/frame/RemoteFrameClient.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 
 namespace blink {
 
@@ -96,12 +96,12 @@ void RemoteFrameView::Dispose() {
   HTMLFrameOwnerElement* owner_element = remote_frame_->DeprecatedLocalOwner();
   // ownerElement can be null during frame swaps, because the
   // RemoteFrameView is disconnected before detachment.
-  if (owner_element && owner_element->OwnedWidget() == this)
-    owner_element->SetWidget(nullptr);
+  if (owner_element && owner_element->OwnedEmbeddedContentView() == this)
+    owner_element->SetEmbeddedContentView(nullptr);
 }
 
 void RemoteFrameView::InvalidateRect(const IntRect& rect) {
-  LayoutPartItem layout_item = remote_frame_->OwnerLayoutItem();
+  LayoutEmbeddedContentItem layout_item = remote_frame_->OwnerLayoutItem();
   if (layout_item.IsNull())
     return;
 

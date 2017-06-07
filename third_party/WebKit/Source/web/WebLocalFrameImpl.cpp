@@ -149,7 +149,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/api/LayoutPartItem.h"
+#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -595,7 +595,7 @@ WebSize WebLocalFrameImpl::ContentsSize() const {
 }
 
 bool WebLocalFrameImpl::HasVisibleContent() const {
-  LayoutPartItem layout_item = GetFrame()->OwnerLayoutItem();
+  LayoutEmbeddedContentItem layout_item = GetFrame()->OwnerLayoutItem();
   if (!layout_item.IsNull() &&
       layout_item.Style()->Visibility() != EVisibility::kVisible) {
     return false;

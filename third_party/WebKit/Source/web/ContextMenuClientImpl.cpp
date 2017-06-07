@@ -58,7 +58,7 @@
 #include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
@@ -348,8 +348,8 @@ bool ContextMenuClientImpl::ShowContextMenu(const ContextMenu* default_menu,
   } else if (isHTMLObjectElement(*r.InnerNode()) ||
              isHTMLEmbedElement(*r.InnerNode())) {
     LayoutObject* object = r.InnerNode()->GetLayoutObject();
-    if (object && object->IsLayoutPart()) {
-      PluginView* plugin_view = ToLayoutPart(object)->Plugin();
+    if (object && object->IsLayoutEmbeddedContent()) {
+      PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();
       if (plugin_view && plugin_view->IsPluginContainer()) {
         data.media_type = WebContextMenuData::kMediaTypePlugin;
         WebPluginContainerBase* plugin = ToWebPluginContainerBase(plugin_view);
