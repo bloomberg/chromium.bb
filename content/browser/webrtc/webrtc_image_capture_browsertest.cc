@@ -40,7 +40,7 @@ static const char kImageCaptureHtmlFile[] = "/media/image_capture_test.html";
 static struct TargetCamera {
   bool use_fake;
 } const kTestParameters[] = {{true},
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID)
                              {false}
 #endif
 };

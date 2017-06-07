@@ -60,7 +60,9 @@ function testCreateAndGrabFrame() {
         return capturer.grabFrame();
       })
       .then(imageBitmap => {
-        assertEquals(WIDTH, imageBitmap.width);
+        // On Android, depending on the device orientation, |imageBitmap| might
+        // appear rotated.
+        assertTrue(WIDTH == imageBitmap.width || WIDTH == imageBitmap.height);
 
         reportTestSuccess();
       })
