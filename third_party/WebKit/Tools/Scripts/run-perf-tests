@@ -37,4 +37,10 @@ from webkitpy.performance_tests.perftestsrunner import PerfTestsRunner
 if '__main__' == __name__:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
+    raw_input(
+        '\nWARNING: this script will be removed on 6/20/2017. '
+        'Please run "src/tools/perf/run_benchmark blink_perf" instead.\n'
+        'For more details, see the announcement in '
+        'https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/mpZmEfeQPps\n'
+        'Press enter to keep running this anyway.')
     sys.exit(PerfTestsRunner().run())
