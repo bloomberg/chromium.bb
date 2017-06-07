@@ -22,6 +22,8 @@
 // discriminate between failed image download and nonexitent image. The
 // suggestion tries to download the image only once.
 @property(nonatomic, assign) BOOL imageFetched;
+// YES if the item has never configured a cell with an image.
+@property(nonatomic, assign) BOOL firstTimeWithImage;
 
 @end
 
@@ -41,6 +43,7 @@
 @synthesize attributes = _attributes;
 @synthesize hasImage = _hasImage;
 @synthesize availableOffline = _availableOffline;
+@synthesize firstTimeWithImage = _firstTimeWithImage;
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
@@ -67,12 +70,19 @@
   cell.titleLabel.text = self.title;
   [cell setSubtitleText:self.subtitle];
   cell.displayImage = self.hasImage;
-  [cell setContentImage:self.image];
+  [cell setContentImage:self.image animated:self.firstTimeWithImage];
+  self.firstTimeWithImage = NO;
   NSDate* date =
       [NSDate dateWithTimeIntervalSince1970:self.publishDate.ToDoubleT()];
   [cell setAdditionalInformationWithPublisherName:self.publisher
                                              date:date
                               offlineAvailability:self.availableOffline];
+}
+
+- (void)setImage:(UIImage*)image {
+  _image = image;
+  if (image)
+    self.firstTimeWithImage = YES;
 }
 
 @end

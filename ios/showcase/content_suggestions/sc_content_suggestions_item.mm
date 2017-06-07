@@ -38,7 +38,7 @@
   cell.titleLabel.text = self.title;
   [cell setSubtitleText:self.subtitle];
   cell.displayImage = self.hasImage;
-  [cell setContentImage:self.image];
+  [cell setContentImage:self.image animated:NO];
   [cell setAdditionalInformationWithPublisherName:self.publisher
                                              date:self.publishDate
                               offlineAvailability:self.availableOffline];
