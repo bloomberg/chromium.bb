@@ -54,8 +54,10 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     if (search_result_)
       search_result_->RemoveObserver(this);
     search_result_ = search_result ? search_result->Duplicate() : nullptr;
-    if (search_result_)
+    if (search_result_) {
       search_result_->AddObserver(this);
+      SetAccessibleName(search_result_->title());
+    }
 
     SetVisible(new_result_view != nullptr);
   }
@@ -159,6 +161,11 @@ bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   return SearchResultContainerView::OnKeyPressed(event);
+}
+
+void SearchResultAnswerCardView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  search_answer_container_view_->GetAccessibleNodeData(node_data);
 }
 
 }  // namespace app_list

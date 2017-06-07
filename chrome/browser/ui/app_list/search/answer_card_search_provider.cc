@@ -81,6 +81,7 @@ class SearchAnswerResult : public SearchResult,
  public:
   SearchAnswerResult(Profile* profile,
                      const std::string& result_url,
+                     const base::string16& result_title,
                      views::View* web_view,
                      content::WebContents* web_contents)
       : WebContentsObserver(web_contents),
@@ -91,6 +92,7 @@ class SearchAnswerResult : public SearchResult,
     set_id(result_url);
     set_relevance(1);
     set_view(web_view);
+    set_title(result_title);
     // web_contents may be null if the result is being duplicated after the
     // search provider's WebContents was destroyed.
     if (web_contents) {
@@ -114,7 +116,7 @@ class SearchAnswerResult : public SearchResult,
 
   // SearchResult overrides:
   std::unique_ptr<SearchResult> Duplicate() const override {
-    return base::MakeUnique<SearchAnswerResult>(profile_, id(), view(),
+    return base::MakeUnique<SearchAnswerResult>(profile_, id(), title(), view(),
                                                 web_contents());
   }
 
@@ -194,6 +196,8 @@ void AnswerCardSearchProvider::Start(bool is_voice_query,
   received_answer_ = false;
   OnResultAvailable(false);
   current_request_url_ = GURL();
+  result_url_.empty();
+  result_title_.empty();
   server_request_start_time_ = answer_loaded_time_ = base::TimeTicks();
 
   if (is_voice_query) {
@@ -353,7 +357,8 @@ void AnswerCardSearchProvider::OnResultAvailable(bool is_available) {
   if (is_available) {
     results.reserve(1);
     results.emplace_back(base::MakeUnique<SearchAnswerResult>(
-        profile_, result_url_, web_view_.get(), web_contents_.get()));
+        profile_, result_url_, base::UTF8ToUTF16(result_title_),
+        web_view_.get(), web_contents_.get()));
   }
   SwapResults(&results);
 }
@@ -365,6 +370,8 @@ bool AnswerCardSearchProvider::ParseResponseHeaders(
   if (!headers->HasHeaderValue("SearchAnswer-HasResult", "true"))
     return false;
   if (!headers->GetNormalizedHeader("SearchAnswer-OpenResultUrl", &result_url_))
+    return false;
+  if (!headers->GetNormalizedHeader("SearchAnswer-Title", &result_title_))
     return false;
   return true;
 }
