@@ -357,9 +357,8 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
 
   // Log the "freshness" of the seed that was just used. The freshness is the
   // time between the last successful seed download and now.
-  if (last_fetch_time_internal) {
-    const base::TimeDelta delta =
-        now - base::Time::FromInternalValue(last_fetch_time_internal);
+  if (!last_fetch_time.is_null()) {
+    const base::TimeDelta delta = now - last_fetch_time;
     // Log the value in number of minutes.
     UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", delta.InMinutes(),
         1, base::TimeDelta::FromDays(30).InMinutes(), 50);
@@ -386,12 +385,12 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
   DCHECK(create_trials_from_seed_called_);
 
   DCHECK(!request_scheduler_.get());
-  // Note that the act of instantiating the scheduler will start the fetch, if
-  // the scheduler deems appropriate.
   request_scheduler_.reset(VariationsRequestScheduler::Create(
       base::Bind(&VariationsService::FetchVariationsSeed,
                  weak_ptr_factory_.GetWeakPtr()),
       local_state_));
+  // Note that the act of starting the scheduler will start the fetch, if the
+  // scheduler deems appropriate.
   request_scheduler_->Start();
 }
 
