@@ -2162,7 +2162,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cave',
       'chell',
       'coral',
-      'cyan',
       'daisy',
       'daisy_skate',
       'daisy_spring',
@@ -2207,6 +2206,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_experimental_boards = frozenset([
       'cobblepot',
+      'cyan',
       'gale',
       'gonzo',
       'lasilla-ground',
