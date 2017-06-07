@@ -465,9 +465,10 @@ void LocalStorageContextMojo::OnDatabaseOpened(
         kStorageOpenHistogramName,
         static_cast<int>(LocalStorageOpenHistogram::DATABASE_OPEN_FAILED),
         static_cast<int>(LocalStorageOpenHistogram::MAX));
-    // If we failed to open the database, reset the service object so we pass
-    // null pointers to our wrappers.
-    database_.reset();
+    // If we failed to open the database, try to delete and recreate the
+    // database, or ultimately fallback to an in-memory database.
+    DeleteAndRecreateDatabase();
+    return;
   }
 
   // Verify DB schema version.
