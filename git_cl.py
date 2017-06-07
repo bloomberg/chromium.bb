@@ -3001,10 +3001,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
     refspec_opts = []
-    if change_desc.get_reviewers(tbr_only=True):
-      print('Adding self-LGTM (Code-Review +1) because of TBRs.')
-      refspec_opts.append('l=Code-Review+1')
-
 
     # TODO(tandrii): options.message should be posted as a comment
     # if --send-email is set on non-initial upload as Rietveld used to do it.
@@ -3083,6 +3079,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     gerrit_util.AddReviewers(
         self._GetGerritHost(), self.GetIssue(), reviewers, cc,
         notify=bool(options.send_mail))
+
+    if change_desc.get_reviewers(tbr_only=True):
+      print('Adding self-LGTM (Code-Review +1) because of TBRs.')
+      gerrit_util.SetReview(
+          self._GetGerritHost(), self.GetIssue(),
+          labels={'Code-Review': 1}, notify=bool(options.send_mail))
 
     return 0
 

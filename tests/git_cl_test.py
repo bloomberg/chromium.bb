@@ -599,6 +599,9 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gerrit_util, 'AddReviewers',
               lambda h, i, reviewers, ccs, notify: self._mocked_call(
                   'AddReviewers', h, i, reviewers, ccs, notify))
+    self.mock(git_cl.gerrit_util, 'SetReview',
+              lambda h, i, labels, notify: self._mocked_call(
+                  'SetReview', h, i, labels, notify))
     self.mock(git_cl.gerrit_util.GceAuthenticator, 'is_gce',
               classmethod(lambda _: False))
     self.mock(git_cl, 'DieWithError',
@@ -1414,10 +1417,9 @@ class TestGitCl(TestCase):
   def _gerrit_upload_calls(cls, description, reviewers, squash,
                            squash_mode='default',
                            expected_upstream_ref='origin/refs/heads/master',
-                           ref_suffix='', title=None, notify=False,
+                           title=None, notify=False,
                            post_amend_description=None, issue=None, cc=None,
-                           git_mirror=None,
-                           custom_cl_base=None):
+                           git_mirror=None, custom_cl_base=None, tbr=None):
     if post_amend_description is None:
       post_amend_description = description
     cc = cc or []
@@ -1517,11 +1519,9 @@ class TestGitCl(TestCase):
       '1hashPerLine\n'),
     ]
 
+    ref_suffix = ''
     if title:
-      if ref_suffix:
-        ref_suffix += ',m=' + title
-      else:
-        ref_suffix = '%m=' + title
+      ref_suffix += '%m=' + title
 
     notify_suffix = 'notify=NONE'
     if ref_suffix:
@@ -1578,6 +1578,11 @@ class TestGitCl(TestCase):
            123456 if squash else None, sorted(reviewers),
           ['joe@example.com'] + cc, notify), ''),
     ]
+    if tbr:
+      calls += [
+        (('SetReview', 'chromium-review.googlesource.com',
+          123456 if squash else None, {'Code-Review': 1}, notify), ''),
+      ]
     calls += cls._git_post_upload_calls()
     return calls
 
@@ -1589,7 +1594,6 @@ class TestGitCl(TestCase):
       squash=True,
       squash_mode=None,
       expected_upstream_ref='origin/refs/heads/master',
-      ref_suffix='',
       title=None,
       notify=False,
       post_amend_description=None,
@@ -1598,7 +1602,8 @@ class TestGitCl(TestCase):
       git_mirror=None,
       fetched_status=None,
       other_cl_owner=None,
-      custom_cl_base=None):
+      custom_cl_base=None,
+      tbr=None):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1639,10 +1644,10 @@ class TestGitCl(TestCase):
           description, reviewers, squash,
           squash_mode=squash_mode,
           expected_upstream_ref=expected_upstream_ref,
-          ref_suffix=ref_suffix, title=title, notify=notify,
+          title=title, notify=notify,
           post_amend_description=post_amend_description,
           issue=issue, cc=cc, git_mirror=git_mirror,
-          custom_cl_base=custom_cl_base)
+          custom_cl_base=custom_cl_base, tbr=tbr)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
@@ -1704,8 +1709,8 @@ class TestGitCl(TestCase):
         ['reviewer@example.com', 'another@example.com'],
         squash=False,
         squash_mode='override_nosquash',
-        ref_suffix='%l=Code-Review+1',
-        cc=['more@example.com', 'people@example.com'])
+        cc=['more@example.com', 'people@example.com'],
+        tbr='reviewer@example.com')
 
   def test_gerrit_upload_squash_first_is_default(self):
     self._run_gerrit_upload_test(
