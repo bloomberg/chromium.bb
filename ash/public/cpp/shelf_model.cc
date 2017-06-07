@@ -216,13 +216,17 @@ int ShelfModel::FirstPanelIndex() const {
 void ShelfModel::SetShelfItemDelegate(
     const ShelfID& shelf_id,
     std::unique_ptr<ShelfItemDelegate> item_delegate) {
+  // Create a copy of the id that can be safely accessed if |shelf_id| is backed
+  // by a controller that will be deleted in the assignment below.
+  const ShelfID safe_shelf_id = shelf_id;
   if (item_delegate)
-    item_delegate->set_shelf_id(shelf_id);
-  // This assignment replaces any ShelfItemDelegate already registered for |id|.
-  id_to_item_delegate_map_[shelf_id] = std::move(item_delegate);
+    item_delegate->set_shelf_id(safe_shelf_id);
+  // This assignment replaces any ShelfItemDelegate already registered for
+  // |shelf_id|.
+  id_to_item_delegate_map_[safe_shelf_id] = std::move(item_delegate);
   for (auto& observer : observers_) {
-    observer.ShelfItemDelegateChanged(shelf_id,
-                                      id_to_item_delegate_map_[shelf_id].get());
+    observer.ShelfItemDelegateChanged(
+        safe_shelf_id, id_to_item_delegate_map_[safe_shelf_id].get());
   }
 }
 
