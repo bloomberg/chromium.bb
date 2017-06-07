@@ -188,7 +188,7 @@ CrSettingsAboutPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'test_util.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_lifetime_browser_proxy.js',
     'about_page_tests.js',
   ]),
@@ -344,7 +344,7 @@ CrSettingsFingerprintListTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'fingerprint_browsertest_chromeos.js',
   ]),
 };
@@ -370,7 +370,7 @@ CrSettingsPeoplePageChangePictureTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'people_page_change_picture_test.js',
   ]),
 };
@@ -397,7 +397,7 @@ CrSettingsPeoplePageManageProfileTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'people_page_manage_profile_test.js',
   ]),
 };
@@ -424,7 +424,7 @@ CrSettingsPeoplePageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'people_page_test.js',
   ]),
 };
@@ -450,7 +450,7 @@ CrSettingsPeoplePageSyncPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'people_page_sync_page_test.js',
   ]),
 };
@@ -499,7 +499,7 @@ CrSettingsResetPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_lifetime_browser_proxy.js',
     'test_reset_browser_proxy.js',
     'reset_page_test.js',
@@ -526,7 +526,7 @@ CrSettingsResetProfileBannerTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_reset_browser_proxy.js',
     'reset_profile_banner_test.js',
   ]),
@@ -551,7 +551,7 @@ CrSettingsAppearancePageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'appearance_page_test.js',
   ]),
 };
@@ -576,7 +576,7 @@ CrSettingsAppearanceFontsPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'appearance_fonts_page_test.js',
   ]),
 };
@@ -601,7 +601,7 @@ CrSettingsChromeCleanupPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'chrome_cleanup_page_test.js',
   ]),
 };
@@ -626,7 +626,7 @@ CrSettingsDownloadsPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'downloads_page_test.js',
   ]),
 };
@@ -652,7 +652,7 @@ CrSettingsDefaultBrowserTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'default_browser_browsertest.js',
   ]),
 };
@@ -678,7 +678,7 @@ CrSettingsImportDataDialogTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'import_data_dialog_test.js',
   ]),
 };
@@ -703,7 +703,7 @@ CrSettingsSearchPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_search_engines_browser_proxy.js',
     'search_page_test.js',
   ]),
@@ -730,7 +730,7 @@ CrSettingsSearchEnginesTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_extension_control_browser_proxy.js',
     'test_search_engines_browser_proxy.js',
     'search_engines_page_test.js',
@@ -760,7 +760,7 @@ CrSettingsCertificateManagerTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'test_util.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'certificate_manager_page_test.js',
   ]),
 };
@@ -788,7 +788,7 @@ CrSettingsPrivacyPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_util.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
     'privacy_page_test.js',
   ]),
@@ -818,7 +818,7 @@ CrSettingsSiteDataDetailsTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_data_details_subpage_tests.js',
   ]),
@@ -842,7 +842,7 @@ CrSettingsCategoryDefaultSettingTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'category_default_setting_tests.js',
   ]),
@@ -866,7 +866,7 @@ CrSettingsCategorySettingExceptionsTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'category_setting_exceptions_tests.js',
   ]),
@@ -895,7 +895,7 @@ CrSettingsAllSitesTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'all_sites_tests.js',
   ]),
@@ -919,7 +919,7 @@ CrSettingsSiteDetailsTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_details_tests.js',
   ]),
@@ -943,7 +943,7 @@ CrSettingsSiteDetailsPermissionTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_details_permission_tests.js',
   ]),
@@ -972,7 +972,7 @@ CrSettingsSiteListTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_list_tests.js',
   ]),
@@ -1004,7 +1004,7 @@ CrSettingsZoomLevelsTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'zoom_levels_tests.js',
   ]),
@@ -1028,7 +1028,7 @@ CrSettingsUsbDevicesTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'usb_devices_tests.js',
   ]),
@@ -1052,7 +1052,7 @@ CrSettingsProtocolHandlersTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'protocol_handlers_tests.js',
   ]),
@@ -1074,7 +1074,7 @@ CrSettingsSiteDataTest.prototype = {
   browsePreload: 'chrome://md-settings/site_settings/site_data.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_data_test.js',
   ]),
@@ -1249,7 +1249,7 @@ CrSettingsSystemPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_lifetime_browser_proxy.js',
     'system_page_tests.js',
   ]),
@@ -1272,7 +1272,7 @@ CrSettingsStartupUrlsPageTest.prototype = {
   browsePreload: 'chrome://md-settings/on_startup_page/startup_urls_page.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'startup_urls_page_test.js',
   ]),
 };
@@ -1299,7 +1299,7 @@ CrSettingsEditDictionaryPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../fake_chrome_event.js',
     'fake_settings_private.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'fake_language_settings_private.js',
     'edit_dictionary_page_test.js',
   ]),
@@ -1327,7 +1327,7 @@ CrSettingsLanguagesTest.prototype = {
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     '../fake_chrome_event.js',
     'test_util.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'fake_language_settings_private.js',
     'fake_settings_private.js',
     'fake_input_method_private.js',
@@ -1357,7 +1357,7 @@ CrSettingsLanguagesPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../fake_chrome_event.js',
     'test_util.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'fake_settings_private.js',
     'fake_language_settings_private.js',
     'fake_input_method_private.js',
@@ -1503,7 +1503,7 @@ CrSettingsMainPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_util.js',
     'settings_main_test.js',
   ]),
@@ -1590,7 +1590,7 @@ CrSettingsMetricsReportingTest.prototype = {
   browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
     'metrics_reporting_tests.js',
   ]),
@@ -1626,7 +1626,7 @@ CrSettingsPrintingPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/assert.js',
     'test_util.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'cups_printer_page_tests.js',
   ]),
 };
@@ -1655,7 +1655,7 @@ CrSettingsAndroidAppsPageTest.prototype = {
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'android_apps_page_test.js',
   ]),
 };
@@ -1703,7 +1703,7 @@ CrSettingsExtensionControlledIndicatorTest.prototype = {
       'chrome://md-settings/controls/extension_controlled_indicator.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'test_extension_control_browser_proxy.js',
     'extension_controlled_indicator_tests.js',
   ]),

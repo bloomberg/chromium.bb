@@ -5,10 +5,10 @@
 /**
  * @constructor
  * @implements {settings.AppearanceBrowserProxy}
- * @extends {settings.TestBrowserProxy}
+ * @extends {TestBrowserProxy}
  */
 var TestAppearanceBrowserProxy = function() {
-  settings.TestBrowserProxy.call(this, [
+  TestBrowserProxy.call(this, [
     'getDefaultZoom',
     'getThemeInfo',
     'isSupervised',
@@ -29,7 +29,7 @@ var TestAppearanceBrowserProxy = function() {
 };
 
 TestAppearanceBrowserProxy.prototype = {
-  __proto__: settings.TestBrowserProxy.prototype,
+  __proto__: TestBrowserProxy.prototype,
 
   /** @override */
   getDefaultZoom: function() {

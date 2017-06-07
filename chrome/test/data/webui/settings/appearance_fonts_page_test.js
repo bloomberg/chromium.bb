@@ -5,10 +5,10 @@
 /**
  * @constructor
  * @implements {settings.FontsBrowserProxy}
- * @extends {settings.TestBrowserProxy}
+ * @extends {TestBrowserProxy}
  */
 var TestFontsBrowserProxy = function() {
-  settings.TestBrowserProxy.call(this, [
+  TestBrowserProxy.call(this, [
     'fetchFontsData',
     'observeAdvancedFontExtensionAvailable',
     'openAdvancedFontSettings',
@@ -22,7 +22,7 @@ var TestFontsBrowserProxy = function() {
 };
 
 TestFontsBrowserProxy.prototype = {
-  __proto__: settings.TestBrowserProxy.prototype,
+  __proto__: TestBrowserProxy.prototype,
 
   /** @override */
   fetchFontsData: function() {

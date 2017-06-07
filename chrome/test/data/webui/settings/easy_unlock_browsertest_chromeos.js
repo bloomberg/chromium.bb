@@ -18,7 +18,7 @@ SettingsEasyUnlockBrowserTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    'test_browser_proxy.js',
+    '../test_browser_proxy.js',
   ]),
 };
 
@@ -36,10 +36,10 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
    *
    * @constructor
    * @implements {settings.EasyUnlockBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   var TestEasyUnlockBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
+    TestBrowserProxy.call(this, [
       'getEnabledStatus',
       'startTurnOnFlow',
       'getTurnOffFlowStatus',
@@ -52,7 +52,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
   };
 
   TestEasyUnlockBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /**
      * @param {boolean} easyUnlockEnabled

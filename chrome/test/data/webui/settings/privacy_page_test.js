@@ -9,7 +9,7 @@ cr.define('settings_privacy_page', function() {
    * @implements {settings.ClearBrowsingDataBrowserProxy}
    */
   function TestClearBrowsingDataBrowserProxy() {
-    settings.TestBrowserProxy.call(
+    TestBrowserProxy.call(
         this, ['initialize', 'clearBrowsingData', 'getImportantSites']);
 
     /**
@@ -28,7 +28,7 @@ cr.define('settings_privacy_page', function() {
   }
 
   TestClearBrowsingDataBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @param {!Promise} promise */
     setClearBrowsingDataPromise: function(promise) {

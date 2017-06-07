@@ -5,10 +5,10 @@
 /**
  * @constructor
  * @implements {settings.FingerprintBrowserProxy}
- * @extends {settings.TestBrowserProxy}
+ * @extends {TestBrowserProxy}
  */
 var TestFingerprintBrowserProxy = function() {
-  settings.TestBrowserProxy.call(this, [
+  TestBrowserProxy.call(this, [
     'getFingerprintsList',
     'getNumFingerprints',
     'startEnroll',
@@ -25,7 +25,7 @@ var TestFingerprintBrowserProxy = function() {
 };
 
 TestFingerprintBrowserProxy.prototype = {
-  __proto__: settings.TestBrowserProxy.prototype,
+  __proto__: TestBrowserProxy.prototype,
 
   /** @ param {!Array<string>} fingerprints */
   setFingerprints: function(fingerprints) {

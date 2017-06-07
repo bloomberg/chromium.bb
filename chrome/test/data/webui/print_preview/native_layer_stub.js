@@ -6,10 +6,10 @@ cr.define('print_preview', function() {
   /**
   * Test version of the native layer.
   * @constructor
-  * @extends {settings.TestBrowserProxy}
+  * @extends {TestBrowserProxy}
   */
   function NativeLayerStub() {
-    settings.TestBrowserProxy.call(this, [
+    TestBrowserProxy.call(this, [
         'getInitialSettings', 'getPrinters', 'setupPrinter' ]);
 
     /**
@@ -65,7 +65,7 @@ cr.define('print_preview', function() {
   }
 
   NativeLayerStub.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @override */
     getInitialSettings: function() {

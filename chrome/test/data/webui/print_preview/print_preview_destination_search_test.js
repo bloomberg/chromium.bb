@@ -25,7 +25,7 @@ PrintPreviewDestinationSearchTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-      ROOT_PATH + 'chrome/test/data/webui/settings/test_browser_proxy.js',
+      ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
       'native_layer_stub.js',
     ]),
 
