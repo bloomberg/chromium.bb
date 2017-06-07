@@ -42,14 +42,10 @@ function scriptLoaded() {
     console.log("done");
 }
 
-function test()
+async function test()
 {
-    InspectorTest.NetworkAgent.setCacheDisabled(true, step1);
-
-    function step1()
-    {
-        InspectorTest.reloadPage(step2);
-    }
+    await InspectorTest.NetworkAgent.setCacheDisabled(true);
+    InspectorTest.reloadPage(step2);
 
     function step2(msg)
     {

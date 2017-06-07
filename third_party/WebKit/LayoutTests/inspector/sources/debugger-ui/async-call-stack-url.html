@@ -10,21 +10,13 @@ function testFunction()
     setTimeout(f2, 0);
 }
 
-var test = function()
+async function test()
 {
-    var scriptFormatter;
-    InspectorTest.DebuggerAgent.setAsyncCallStackDepth(200, step1);
+    await InspectorTest.DebuggerAgent.setAsyncCallStackDepth(200);
 
-    function step1()
-    {
-        InspectorTest.scriptFormatter().then(step2);
-    }
+    var scriptFormatter = await InspectorTest.scriptFormatter();
 
-    function step2(sf)
-    {
-        scriptFormatter = sf;
-        InspectorTest.startDebuggerTest(step3);
-    }
+    InspectorTest.startDebuggerTest(step3);
 
     function step3()
     {

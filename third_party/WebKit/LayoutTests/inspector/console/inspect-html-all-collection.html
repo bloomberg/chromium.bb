@@ -3,19 +3,16 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-function test()
+async function test()
 {
-    InspectorTest.RuntimeAgent.evaluate("document.all", "console", false, didGetHTMLAllCollection.bind(this));
-    function didGetHTMLAllCollection(error, result, exceptionDetails)
-    {
-        if (error || exceptionDetails) {
-            InspectorTest.addResult("FAILED: " + error);
-            InspectorTest.completeTest();
-            return;
-        }
-        var htmlAllCollection = InspectorTest.runtimeModel.createRemoteObject(result);
-        htmlAllCollection.callFunctionJSON("function(collection) { return this.length + collection.length; }", [{objectId: htmlAllCollection.objectId}], didGetLength.bind(this));
+    var result = await InspectorTest.RuntimeAgent.evaluate("document.all", "console", false);
+    if (!result) {
+        InspectorTest.addResult("FAILED: " + error);
+        InspectorTest.completeTest();
+        return;
     }
+    var htmlAllCollection = InspectorTest.runtimeModel.createRemoteObject(result);
+    htmlAllCollection.callFunctionJSON("function(collection) { return this.length + collection.length; }", [{objectId: htmlAllCollection.objectId}], didGetLength.bind(this));
 
     function didGetLength(len)
     {

@@ -5,20 +5,15 @@
 
 localStorage.testProperty = "testPropertyValue";
 
-function test()
+async function test()
 {
-    InspectorTest.RuntimeAgent.evaluate("localStorage", step1);
-
-    function step1(error, result, exceptionDetails)
-    {
-        var localStorageHandle = InspectorTest.runtimeModel.createRemoteObject(result);
-        localStorageHandle.getOwnProperties(false, step2);
-    }
+    var result = await InspectorTest.RuntimeAgent.evaluate("localStorage");
+    var localStorageHandle = InspectorTest.runtimeModel.createRemoteObject(result);
+    localStorageHandle.getOwnProperties(false, step2);
 
     function step2(properties)
     {
-        for (var i = 0; i < properties.length; ++i) {
-            var property = properties[i];
+        for (var property of properties) {
             if (property.name !== "testProperty")
                 continue;
             property.value = { type: property.value.type, description: property.value.description };

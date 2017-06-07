@@ -14,14 +14,10 @@ function doXHR()
     xhr.send("<xml></xml>");
 }
 
-var test = function()
+async function test()
 {
-    InspectorTest.NetworkAgent.setCacheDisabled(true, reloadPage);
-
-    function reloadPage()
-    {
-        InspectorTest.reloadPage(step1);
-    }
+    await InspectorTest.NetworkAgent.setCacheDisabled(true);
+    InspectorTest.reloadPage(step1);
 
     function step1()
     {

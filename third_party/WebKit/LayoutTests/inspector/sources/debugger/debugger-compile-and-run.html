@@ -29,68 +29,51 @@ var test = function()
 
     var contextId = UI.context.flavor(SDK.ExecutionContext).id;
     InspectorTest.runDebuggerTestSuite([
-        function testSuccessfulCompileAndRun(next)
+        async function testSuccessfulCompileAndRun(next)
         {
             var expression = "var a = 1; var b = 2; a + b; ";
             InspectorTest.addResult("Compiling script");
-            InspectorTest.RuntimeAgent.compileScript(expression, "test.js", true, contextId, compileCallback.bind(this));
+            var response = await InspectorTest.RuntimeAgent.invoke_compileScript({expression, sourceURL: "test.js", persistScript: true, executionContextId: contextId});
 
-            function compileCallback(error, scriptId, exceptionDetails)
-            {
-                InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(!exceptionDetails);
-                InspectorTest.assertTrue(!!scriptId);
-                InspectorTest.addResult("Running script");
-                InspectorTest.RuntimeAgent.runScript(scriptId, contextId, "console", false, runCallback.bind(this));
-            }
+            InspectorTest.assertTrue(!response[Protocol.Error]);
+            InspectorTest.assertTrue(!response.exceptionDetails);
+            InspectorTest.assertTrue(!!response.scriptId);
 
-            function runCallback(error, result, exceptionDetails)
-            {
-                InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(!exceptionDetails);
-                InspectorTest.addResult("Script result: " + result.value);
-                next();
-            }
+            InspectorTest.addResult("Running script");
+            response = await InspectorTest.RuntimeAgent.invoke_runScript({scriptId: response.scriptId, executionContextId: contextId, objectGroup: "console", silent: false});
+            InspectorTest.assertTrue(!response[Protocol.Error]);
+            InspectorTest.assertTrue(!response.exceptionDetails);
+            InspectorTest.addResult("Script result: " + response.result.value);
+            next();
         },
 
-        function testRunError(next)
+        async function testRunError(next)
         {
             var expression = "var a = 1; a + c; ";
             InspectorTest.addResult("Compiling script");
-            InspectorTest.RuntimeAgent.compileScript(expression, "test.js", true, contextId, compileCallback.bind(this));
+            var response = await InspectorTest.RuntimeAgent.invoke_compileScript({expression, sourceURL: "test.js", persistScript: true, executionContextId: contextId});
+            InspectorTest.assertTrue(!response[Protocol.Error]);
+            InspectorTest.assertTrue(!response.exceptionDetails);
+            InspectorTest.assertTrue(!!response.scriptId);
 
-            function compileCallback(error, scriptId, exceptionDetails)
-            {
-                InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(!exceptionDetails);
-                InspectorTest.assertTrue(!!scriptId);
-                InspectorTest.addResult("Running script");
-                InspectorTest.RuntimeAgent.runScript(scriptId, contextId, "console", false, runCallback.bind(this));
-            }
-
-            function runCallback(error, result, exceptionDetails)
-            {
-                InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(!!exceptionDetails);
-                printExceptionDetails(exceptionDetails);
-                next();
-            }
+            InspectorTest.addResult("Running script");
+            response = await InspectorTest.RuntimeAgent.invoke_runScript({scriptId: response.scriptId, executionContextId: contextId, objectGroup: "console", silent: false});
+            InspectorTest.assertTrue(!response[Protocol.Error]);
+            InspectorTest.assertTrue(!!response.exceptionDetails);
+            printExceptionDetails(response.exceptionDetails);
+            next();
         },
 
-        function testCompileError(next)
+        async function testCompileError(next)
         {
             var expression = "}";
             InspectorTest.addResult("Compiling script");
-            InspectorTest.RuntimeAgent.compileScript(expression, "test.js", true, contextId, compileCallback.bind(this));
-
-            function compileCallback(error, scriptId, exceptionDetails)
-            {
-                InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(!!exceptionDetails);
-                InspectorTest.assertTrue(!scriptId);
-                printExceptionDetails(exceptionDetails);
-                next();
-            }
+            var response = await InspectorTest.RuntimeAgent.invoke_compileScript({expression, sourceURL: "test.js", persistScript: true, executionContextId: contextId});
+            InspectorTest.assertTrue(!response[Protocol.Error]);
+            InspectorTest.assertTrue(!!response.exceptionDetails);
+            InspectorTest.assertTrue(!response.scriptId);
+            printExceptionDetails(response.exceptionDetails);
+            next();
         }
     ]);
 }

@@ -27,7 +27,7 @@ function handleLoad()
 }
 
 
-function test()
+async function test()
 {
     var workerCount = 0;
     var observer = {
@@ -46,15 +46,12 @@ function test()
         }
     };
 
-    InspectorTest.TargetAgent.setAutoAttach(false, false, didDisableWorkerInspection);
+    await InspectorTest.TargetAgent.setAutoAttach(false, false);
     // Debugger should not crash when autoconnecting is immediately followed by termination.
 
-    function didDisableWorkerInspection()
-    {
-        SDK.targetManager.observeTargets(observer);
-        InspectorTest.TargetAgent.setAutoAttach(true, true);
-        InspectorTest.addResult("Worker inspection enabled");
-    }
+    SDK.targetManager.observeTargets(observer);
+    InspectorTest.TargetAgent.setAutoAttach(true, true);
+    InspectorTest.addResult("Worker inspection enabled");
 };
 
 </script>

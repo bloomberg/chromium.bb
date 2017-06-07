@@ -154,24 +154,18 @@ function test()
             iterate();
         },
 
-        function testRuntimeAgentCallFunctionOn(next)
+        async function testRuntimeAgentCallFunctionOn(next)
         {
-            InspectorTest.RuntimeAgent.evaluate("({ a : 1, b : 2 })", step1);
+            var result = await InspectorTest.RuntimeAgent.evaluate("({ a : 1, b : 2 })");
 
-            function step1(error, result)
+            function sum()
             {
-                function sum()
-                {
-                    return this.a + this.b;
-                }
-                InspectorTest.RuntimeAgent.callFunctionOn(result.objectId, sum.toString(), step2);
+                return this.a + this.b;
             }
+            result = await InspectorTest.RuntimeAgent.callFunctionOn(result.objectId, sum.toString());
 
-            function step2(error, result)
-            {
-                InspectorTest.assertEquals(3, result.value);
-                next();
-            }
+            InspectorTest.assertEquals(3, result.value);
+            next();
         },
 
         function dumpConsoleMessages(next)

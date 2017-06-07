@@ -23,17 +23,13 @@ function test()
             next();
         },
 
-        function testSetBothURLAndRegex(next)
+        async function testSetBothURLAndRegex(next)
         {
             var url = "debugger-set-breakpoint.js";
             var urlRegex = "debugger-set-breakpoint.*";
-            InspectorTest.DebuggerAgent.setBreakpointByUrl(1, url, urlRegex, step2);
-
-            function step2(error)
-            {
-                InspectorTest.addResult(error);
-                next();
-            }
+            var response = await InspectorTest.DebuggerAgent.invoke_setBreakpointByUrl({lineNumber: 1, url, urlRegex});
+            InspectorTest.addResult(response[Protocol.Error]);
+            next();
         },
 
         async function testSetByRegex(next)

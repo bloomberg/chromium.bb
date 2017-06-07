@@ -40,47 +40,29 @@ function test()
         snapshotProxy.callMethod(didGetBodyWrapperIds, "idsOfObjectsWithName", "HTMLBodyElement");
     }
 
-    function didGetBodyWrapperIds(bodyWrapperIds)
+    async function didGetBodyWrapperIds(bodyWrapperIds)
     {
         if (bodyWrapperIds.length < 3)
             return clear("FAILED: less than 3 HTMLBodyElement objects were detected");
 
         InspectorTest.addResult("PASS: more than 2 HTMLBodyElements were found");
 
-        for (var i = 0; i < bodyWrapperIds.length; i++)
-            InspectorTest.HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i], undefined, didGetObjectByHeapObjectId);
-
-        var resolvedObjectsCount = 0;
         var remoteObjects = [];
-        function didGetObjectByHeapObjectId(error, object)
-        {
-            if (!error)
+        for (var i = 0; i < bodyWrapperIds.length; i++) {
+            var object = await InspectorTest.HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i]);
+            if (object)
                 remoteObjects.push(InspectorTest.runtimeModel.createRemoteObject(object));
-
-            if (++resolvedObjectsCount  === bodyWrapperIds.length)
-                requestPropertiesOfResolvedObjects();
         }
 
-        function requestPropertiesOfResolvedObjects()
-        {
-            if (!remoteObjects.length)
-                return clear("FAILED: no resolved objects were detected");
+        if (!remoteObjects.length)
+            return clear("FAILED: no resolved objects were detected");
 
-            InspectorTest.addResult("PASS: got at least one HTMLBodyElement wrapper");
+        InspectorTest.addResult("PASS: got at least one HTMLBodyElement wrapper");
 
-            for (var i = 0; i < remoteObjects.length; i++)
-                remoteObjects[i].getOwnProperties(false, didGetOwnProperties);
-        }
+        for (var remoteObject of remoteObjects)
+            await remoteObject.getOwnProperties(false);
 
-        var didGetOwnPropertiesCount = 0;
-        function didGetOwnProperties()
-        {
-            if (++didGetOwnPropertiesCount !== remoteObjects.length)
-                return;
-
-            clear();
-        }
-
+        clear();
     }
 
     function clear(errorMessage)

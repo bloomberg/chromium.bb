@@ -7,15 +7,11 @@
 function test()
 {
     InspectorTest.evaluateInPage("document", didReceiveDocumentObject);
-    function didReceiveDocumentObject(remoteObject)
+    async function didReceiveDocumentObject(remoteObject)
     {
         InspectorTest.addResult("didReceiveDocumentObject");
-        InspectorTest.DOMAgent.requestNode(remoteObject.objectId, didRequestNode);
-    }
-
-    function didRequestNode(error, nodeId)
-    {
-        InspectorTest.addResult("didRequestNode error = " + error);
+        var nodeId = await InspectorTest.DOMAgent.requestNode(remoteObject.objectId);
+        InspectorTest.addResult("didRequestNode error = " + (nodeId ? "null" : "error"));
         InspectorTest.completeTest();
     }
 }

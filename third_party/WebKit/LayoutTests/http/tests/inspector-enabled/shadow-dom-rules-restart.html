@@ -27,19 +27,16 @@ function createShadowRoot()
     runTest();
 }
 
-function test()
+async function test()
 {
-    InspectorTest.RuntimeAgent.evaluate("window.didReopen", dispatch);
+    var result = await InspectorTest.RuntimeAgent.evaluate("window.didReopen");
 
-    function dispatch(error, result, exceptionDetails)
-    {
-        if (result.type !== "number") {
-            InspectorTest.evaluateInPage("console.log('Opening front-end for the first time')");
-            runTests(reopenInspector);
-        } else {
-            InspectorTest.evaluateInPage("console.log('Opening front-end second time')");
-            runTests(InspectorTest.completeTest);
-        }
+    if (result.type !== "number") {
+        InspectorTest.evaluateInPage("console.log('Opening front-end for the first time')");
+        runTests(reopenInspector);
+    } else {
+        InspectorTest.evaluateInPage("console.log('Opening front-end second time')");
+        runTests(InspectorTest.completeTest);
     }
 
     function reopenInspector()

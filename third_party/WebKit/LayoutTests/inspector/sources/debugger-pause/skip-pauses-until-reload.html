@@ -97,7 +97,7 @@ function test()
     {
         testRunner.logToStderr("didPause");
         InspectorTest.captureStackTrace(callFrames);
-        InspectorTest.DebuggerAgent.setSkipAllPauses(true, didSetSkipAllPauses);
+        InspectorTest.DebuggerAgent.setSkipAllPauses(true).then(didSetSkipAllPauses);
     }
 
     function didSetSkipAllPauses()

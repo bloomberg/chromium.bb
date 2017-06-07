@@ -110,7 +110,7 @@ function test()
 
         function clearOverride(next)
         {
-            InspectorTest.EmulationAgent.clearDeviceMetricsOverride(checkInitial);
+            InspectorTest.EmulationAgent.clearDeviceMetricsOverride().then(checkInitial);
 
             function checkInitial()
             {

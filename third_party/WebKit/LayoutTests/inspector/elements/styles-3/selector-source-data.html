@@ -19,18 +19,14 @@ function test()
 {
     InspectorTest.nodeWithId("inspected", nodeFound);
 
-    function nodeFound(node)
+    async function nodeFound(node)
     {
-        InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, stylesLoaded);
-    }
-
-    function stylesLoaded(error, inlineStyle, attributeStyle, rules)
-    {
-        if (error) {
-            InspectorTest.addResult("Failed to get styles: " + error);
+        var response = await InspectorTest.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
+        if (response[Protocol.Error]) {
+            InspectorTest.addResult("Failed to get styles: " + response[Protocol.Error]);
             return;
         }
-        InspectorTest.dumpRuleMatchesArray(rules);
+        InspectorTest.dumpRuleMatchesArray(response.matchedCSSRules);
         InspectorTest.completeTest();
     }
 }

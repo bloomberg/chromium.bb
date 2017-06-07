@@ -17,27 +17,20 @@ function test()
 {
     InspectorTest.runAfterResourcesAreFinished(["main-resource-content-frame-utf8.php", "main-resource-content-frame.html"], step2)
 
-    var resource;
-    function step2()
+    async function step2()
     {
         InspectorTest.addResult("Requesting content: ");
-        resource = InspectorTest.resourceMatchingURL("main-resource-content-frame.html");
-        InspectorTest.PageAgent.getResourceContent(resource.frameId, resource.url, step3);
-    }
+        var resource = InspectorTest.resourceMatchingURL("main-resource-content-frame.html");
+        var content = await InspectorTest.PageAgent.getResourceContent(resource.frameId, resource.url);
 
-    function step3(error, content)
-    {
         InspectorTest.assertTrue(!!content, "No content available.");
         InspectorTest.addResult("Resource url: " + resource.url);
         InspectorTest.addResult("Resource content: " + content);
 
         InspectorTest.addResult("Requesting utf8 content: ");
         resource = InspectorTest.resourceMatchingURL("main-resource-content-frame-utf8.php");
-        InspectorTest.PageAgent.getResourceContent(resource.frameId, resource.url, step4);
-    }
+        content = await InspectorTest.PageAgent.getResourceContent(resource.frameId, resource.url);
 
-    function step4(error, content)
-    {
         InspectorTest.assertTrue(!!content, "No content available.");
         InspectorTest.addResult("Resource url: " + resource.url);
         InspectorTest.addResult("Resource content: " + content);

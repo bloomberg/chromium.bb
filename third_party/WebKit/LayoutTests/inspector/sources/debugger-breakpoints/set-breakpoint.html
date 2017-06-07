@@ -100,23 +100,15 @@ var test = function()
             }
         },
 
-        function testSetBreakpointOnTheSameLine(next)
+        async function testSetBreakpointOnTheSameLine(next)
         {
-            InspectorTest.DebuggerAgent.setBreakpointByUrl(1, "foo.js", undefined, 2, "", didSetBreakpoint);
+            var breakpointId = await InspectorTest.DebuggerAgent.setBreakpointByUrl(1, "foo.js", undefined, 2, "");
+            InspectorTest.assertTrue(!!breakpointId);
 
-            function didSetBreakpoint(error, breakpointId)
-            {
-                InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(!!breakpointId);
-                InspectorTest.DebuggerAgent.setBreakpointByUrl(1, "foo.js", undefined, 2, "", didSetBreakpointAgain);
-            }
+            breakpointId = await InspectorTest.DebuggerAgent.setBreakpointByUrl(1, "foo.js", undefined, 2, "");
+            InspectorTest.assertTrue(!breakpointId);
 
-            function didSetBreakpointAgain(error, breakpointId)
-            {
-                InspectorTest.assertTrue(!!error);
-                InspectorTest.assertTrue(!breakpointId);
-                next();
-            }
+            next();
         }
     ]);
 }

@@ -68,18 +68,15 @@ function test()
         InspectorTest.addNewRule("div.foo", selectNode);
     }
 
-    function printStyleSheetAndCall(next)
+    async function printStyleSheetAndCall(next)
     {
         var section = InspectorTest.firstMatchedStyleSection();
         var id = section.style().styleSheetId;
-        InspectorTest.CSSAgent.getStyleSheetText(id, callback);
-        function callback(error, styleSheetText)
-        {
-            InspectorTest.addResult("===== Style sheet text: =====");
-            InspectorTest.addResult(styleSheetText);
-            InspectorTest.addResult("=============================");
-            next();
-        }
+        var styleSheetText = await InspectorTest.CSSAgent.getStyleSheetText(id);
+        InspectorTest.addResult("===== Style sheet text: =====");
+        InspectorTest.addResult(styleSheetText);
+        InspectorTest.addResult("=============================");
+        next();
     }
 }
 
