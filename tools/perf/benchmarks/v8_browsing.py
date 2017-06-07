@@ -4,7 +4,6 @@
 
 import re
 
-from benchmarks import v8_helper
 from core import perf_benchmark
 from telemetry import benchmark
 from telemetry.timeline import chrome_trace_config
@@ -167,69 +166,6 @@ class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
 
 
 @benchmark.Disabled('android')
-@benchmark.Disabled('all')
-@benchmark.Owner(emails=['mvstaton@chromium.org'])
-class V8DesktopTurboBrowsingBenchmark(_V8BrowsingBenchmark):
-  PLATFORM = 'desktop'
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8DesktopTurboBrowsingBenchmark, self).SetExtraBrowserOptions(
-        options)
-    v8_helper.EnableTurbo(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.browsing_desktop_turbo'
-
-
-
-@benchmark.Enabled('android')
-@benchmark.Disabled('all')
-@benchmark.Owner(emails=['mvstaton@chromium.org'])
-class V8MobileTurboBrowsingBenchmark(_V8BrowsingBenchmark):
-  PLATFORM = 'mobile'
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8MobileTurboBrowsingBenchmark, self).SetExtraBrowserOptions(
-        options)
-    v8_helper.EnableTurbo(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.browsing_mobile_turbo'
-
-
-@benchmark.Disabled('android')
-@benchmark.Owner(emails=['hablich@chromium.org'])
-class V8DesktopClassicBrowsingBenchmark(_V8BrowsingBenchmark):
-  PLATFORM = 'desktop'
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8DesktopClassicBrowsingBenchmark, self).SetExtraBrowserOptions(
-        options)
-    v8_helper.EnableClassic(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.browsing_desktop_classic'
-
-
-@benchmark.Enabled('android')
-@benchmark.Owner(emails=['hablich@chromium.org'])
-class V8MobileClassicBrowsingBenchmark(_V8BrowsingBenchmark):
-  PLATFORM = 'mobile'
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8MobileClassicBrowsingBenchmark, self).SetExtraBrowserOptions(
-        options)
-    v8_helper.EnableClassic(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.browsing_mobile_classic'
-
-
-@benchmark.Disabled('android')
 @benchmark.Owner(emails=['mythria@chromium.org'])
 class V8RuntimeStatsDesktopBrowsingBenchmark(
     _V8RuntimeStatsBrowsingBenchmark):
@@ -238,39 +174,6 @@ class V8RuntimeStatsDesktopBrowsingBenchmark(
   @classmethod
   def Name(cls):
     return 'v8.runtimestats.browsing_desktop'
-
-
-@benchmark.Disabled('android')
-@benchmark.Disabled('all')
-@benchmark.Owner(emails=['mythria@chromium.org'])
-class V8RuntimeStatsDesktopTurboBrowsingBenchmark(
-    _V8RuntimeStatsBrowsingBenchmark):
-  PLATFORM = 'desktop'
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8RuntimeStatsDesktopTurboBrowsingBenchmark,
-        self).SetExtraBrowserOptions(options)
-    v8_helper.EnableTurbo(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.runtimestats.browsing_desktop_turbo'
-
-
-@benchmark.Disabled('android')
-@benchmark.Owner(emails=['hablich@chromium.org'])
-class V8RuntimeStatsDesktopClassicBrowsingBenchmark(
-    _V8RuntimeStatsBrowsingBenchmark):
-  PLATFORM = 'desktop'
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8RuntimeStatsDesktopClassicBrowsingBenchmark,
-        self).SetExtraBrowserOptions(options)
-    v8_helper.EnableClassic(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.runtimestats.browsing_desktop_classic'
 
 
 @benchmark.Enabled('android')
@@ -282,36 +185,3 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
   @classmethod
   def Name(cls):
     return 'v8.runtimestats.browsing_mobile'
-
-
-@benchmark.Enabled('android')
-@benchmark.Disabled('all')
-@benchmark.Owner(emails=['mythria@chromium.org'])
-class V8RuntimeStatsMobileTurboBrowsingBenchmark(
-    _V8RuntimeStatsBrowsingBenchmark):
-  PLATFORM = 'mobile'
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8RuntimeStatsMobileTurboBrowsingBenchmark,
-        self).SetExtraBrowserOptions(options)
-    v8_helper.EnableTurbo(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.runtimestats.browsing_mobile_turbo'
-
-
-@benchmark.Enabled('android')
-@benchmark.Owner(emails=['hablich@chromium.org'])
-class V8RuntimeStatsMobileClassicBrowsingBenchmark(
-    _V8RuntimeStatsBrowsingBenchmark):
-  PLATFORM = 'mobile'
-
-  def SetExtraBrowserOptions(self, options):
-    super(V8RuntimeStatsMobileClassicBrowsingBenchmark,
-        self).SetExtraBrowserOptions(options)
-    v8_helper.EnableClassic(options)
-
-  @classmethod
-  def Name(cls):
-    return 'v8.runtimestats.browsing_mobile_classic'
