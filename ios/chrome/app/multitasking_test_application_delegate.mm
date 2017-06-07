@@ -36,9 +36,9 @@ const CGFloat kWidthLandscapeSplitViewOnLargeIPad = 678.0;
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   // Configure application window size for multitasking tests.
   CGSize newWindowSize = [self windowSize];
-  self.window = [[[ChromeOverlayWindow alloc]
-      initWithFrame:CGRectMake(0, 0, newWindowSize.width, newWindowSize.height)]
-      autorelease];
+  self.window = [[ChromeOverlayWindow alloc]
+      initWithFrame:CGRectMake(0, 0, newWindowSize.width,
+                               newWindowSize.height)];
 
   BOOL inBackground =
       [application applicationState] == UIApplicationStateBackground;
