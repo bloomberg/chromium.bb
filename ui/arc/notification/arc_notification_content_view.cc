@@ -361,8 +361,6 @@ void ArcNotificationContentView::SetSurface(exo::NotificationSurface* surface) {
     surface_->window()->AddObserver(this);
     surface_->window()->AddPreTargetHandler(event_forwarder_.get());
 
-    MaybeCreateFloatingControlButtons();
-
     if (GetWidget())
       AttachSurface();
   }
@@ -389,21 +387,8 @@ void ArcNotificationContentView::UpdatePreferredSize() {
 }
 
 void ArcNotificationContentView::UpdateControlButtonsVisibility() {
-  if (!surface_)
+  if (!floating_control_buttons_widget_)
     return;
-
-  // TODO(edcourtney, yhanada): Creating the floating control widget here is not
-  // correct. This function may be called during the destruction of
-  // |floating_control_buttons_widget_|. This can lead to memory corruption.
-  // Rather than creating it here, we should fix the behaviour of OnMouseExited
-  // and OnMouseEntered for ARC notifications in MessageCenterView. See
-  // crbug.com/714587 and crbug.com/709862.
-  if (!floating_control_buttons_widget_) {
-    // This may update |floating_control_buttons_widget_|.
-    MaybeCreateFloatingControlButtons();
-    if (!floating_control_buttons_widget_)
-      return;
-  }
 
   const bool target_visiblity =
       IsMouseHovered() || (close_button_ && close_button_->HasFocus()) ||
@@ -419,6 +404,10 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
 
 void ArcNotificationContentView::UpdatePinnedState() {
   if (!item_)
+    return;
+
+  // Surface is not attached yet.
+  if (!control_buttons_view_)
     return;
 
   if (item_->GetPinned() && close_button_) {
@@ -458,10 +447,8 @@ void ArcNotificationContentView::AttachSurface() {
   // Invokes Update() in case surface is attached during a slide.
   slide_helper_->Update();
 
-  // Updates pinned state to create or destroy the floating close button
-  // after |surface_| is attached to a widget.
-  if (item_)
-    UpdatePinnedState();
+  // (Re-)create the floating buttons after |surface_| is attached to a widget.
+  MaybeCreateFloatingControlButtons();
 }
 
 void ArcNotificationContentView::StartControlButtonsColorAnimation() {
