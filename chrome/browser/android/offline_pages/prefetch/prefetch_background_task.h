@@ -7,6 +7,11 @@
 
 #include "base/android/jni_android.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
+#include "net/base/backoff_entry.h"
+
+class PrefRegistrySimple;
+class Profile;
 
 namespace offline_pages {
 class PrefetchService;
@@ -19,12 +24,13 @@ class PrefetchBackgroundTask : public PrefetchDispatcher::ScopedBackgroundTask {
   PrefetchBackgroundTask(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& j_prefetch_background_task,
-      PrefetchService* service);
+      PrefetchService* service,
+      Profile* profile);
   ~PrefetchBackgroundTask() override;
 
   // API for interacting with BackgroundTaskScheduler from native.
   // Schedules the default 'NWake' prefetching task.
-  static void Schedule();
+  static void Schedule(int additional_delay_seconds);
 
   // Cancels the default 'NWake' prefetching task.
   static void Cancel();
@@ -32,23 +38,41 @@ class PrefetchBackgroundTask : public PrefetchDispatcher::ScopedBackgroundTask {
   // Java hooks.
   bool OnStopTask(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& jcaller);
+  void SetTaskReschedulingForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jboolean reschedule,
+      jboolean backoff);
+  void SignalTaskFinishedForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
 
   // When this task completes, we tell the system whether the task should be
-  // rescheduled with the same parameters as last time.
-  void SetNeedsReschedule(bool reschedule) override;
+  // rescheduled with or without backoff.
+  void SetNeedsReschedule(bool reschedule, bool backoff) override;
   bool needs_reschedule() { return needs_reschedule_; }
 
  private:
-  bool needs_reschedule_ = true;
+  void SetupBackOff();
+  int GetAdditionalBackoffSeconds() const;
+
+  bool task_killed_by_system_ = false;
+  bool needs_reschedule_ = false;
 
   // A pointer to the controlling |PrefetchBackgroundTask|.
   base::android::ScopedJavaGlobalRef<jobject> java_prefetch_background_task_;
 
   // The PrefetchService owns |this|, so a raw pointer is OK.
   PrefetchService* service_;
+
+  Profile* profile_;
+
+  std::unique_ptr<net::BackoffEntry> backoff_;
 };
 
 bool RegisterPrefetchBackgroundTask(JNIEnv* env);
+
+void RegisterPrefetchBackgroundTaskPrefs(PrefRegistrySimple* registry);
 
 }  // namespace offline_pages
 

@@ -40,13 +40,14 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link PrefetchBackgroundTask}. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
-        shadows = {PrefetchBackgroundTaskTest.ShadowBackgroundTaskScheduler.class,
+        shadows = {PrefetchBackgroundTaskUnitTest.ShadowBackgroundTaskScheduler.class,
                 ShadowMultiDex.class})
-public class PrefetchBackgroundTaskTest {
+public class PrefetchBackgroundTaskUnitTest {
     /**
      * Shadow of BackgroundTaskScheduler system service.
      */
@@ -103,10 +104,14 @@ public class PrefetchBackgroundTaskTest {
 
     @Test
     public void scheduleTask() {
-        PrefetchBackgroundTask.scheduleTask();
+        final int additionalDelaySeconds = 15;
+        PrefetchBackgroundTask.scheduleTask(additionalDelaySeconds);
         TaskInfo scheduledTask =
                 mShadowTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNotNull(scheduledTask);
+        assertEquals(TimeUnit.SECONDS.toMillis(PrefetchBackgroundTask.DEFAULT_START_DELAY_SECONDS
+                             + additionalDelaySeconds),
+                scheduledTask.getOneOffInfo().getWindowStartTimeMs());
         assertEquals(true, scheduledTask.isPersisted());
         assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, scheduledTask.getRequiredNetworkType());
     }
@@ -117,9 +122,11 @@ public class PrefetchBackgroundTaskTest {
                 mShadowTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNull(scheduledTask);
 
-        PrefetchBackgroundTask.scheduleTask();
+        PrefetchBackgroundTask.scheduleTask(0);
         scheduledTask = mShadowTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNotNull(scheduledTask);
+        assertEquals(TimeUnit.SECONDS.toMillis(PrefetchBackgroundTask.DEFAULT_START_DELAY_SECONDS),
+                scheduledTask.getOneOffInfo().getWindowStartTimeMs());
 
         PrefetchBackgroundTask.cancelTask();
         scheduledTask = mShadowTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);

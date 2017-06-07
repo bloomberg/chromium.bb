@@ -26,13 +26,17 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher {
   void RemoveAllUnprocessedPrefetchURLs(const std::string& name_space) override;
   void RemovePrefetchURLsByClientId(const ClientId& client_id) override;
   void BeginBackgroundTask(std::unique_ptr<ScopedBackgroundTask> task) override;
-  void StopBackgroundTask(ScopedBackgroundTask* task) override;
+  void StopBackgroundTask() override;
+  void RequestFinishBackgroundTaskForTest() override;
 
  private:
   friend class PrefetchDispatcherTest;
 
+  void DisposeTask();
+
   PrefetchService* service_;
   TaskQueue task_queue_;
+  std::unique_ptr<ScopedBackgroundTask> task_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchDispatcherImpl);
 };
