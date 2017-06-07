@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/variations/client_filterable_state.h"
 #include "components/variations/service/ui_string_overrider.h"
 #include "components/variations/service/variations_service_client.h"
 #include "components/variations/variations_request_scheduler.h"
@@ -235,6 +236,11 @@ class VariationsService
   // |seed| will contain the loaded data and true is returned. Set as virtual
   // so that it can be overridden by tests.
   virtual bool LoadSeed(VariationsSeed* seed);
+
+  // Returns all of the client state used for filtering studies.
+  // As a side-effect, may update the stored permanent consistency country.
+  std::unique_ptr<ClientFilterableState> GetClientFilterableStateForVersion(
+      const base::Version& version);
 
   // Sets the stored permanent country pref for this client.
   void StorePermanentCountry(const base::Version& version,

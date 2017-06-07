@@ -333,22 +333,18 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
   if (!current_version.IsValid())
     return false;
 
-  variations::Study_Channel channel =
-      GetChannelForVariations(client_->GetChannel());
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.UserChannel", channel);
+  std::unique_ptr<ClientFilterableState> client_state =
+      GetClientFilterableStateForVersion(current_version);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.UserChannel", client_state->channel);
 
-  const std::string latest_country = GetLatestCountry();
   std::unique_ptr<const base::FieldTrial::EntropyProvider> low_entropy_provider(
       CreateLowEntropyProvider());
   // Note that passing |&ui_string_overrider_| via base::Unretained below is
   // safe because the callback is executed synchronously. It is not possible
-  // to pass UIStringOverrider itself to VariationSeedProcesor as variations
+  // to pass UIStringOverrider itself to VariationSeedProcessor as variations
   // components should not depends on //ui/base.
   variations::VariationsSeedProcessor().CreateTrialsFromSeed(
-      seed, client_->GetApplicationLocale(),
-      GetReferenceDateForExpiryChecks(local_state_), current_version, channel,
-      GetCurrentFormFactor(), GetHardwareClass(), latest_country,
-      LoadPermanentConsistencyCountry(current_version, latest_country),
+      seed, *client_state,
       base::Bind(&UIStringOverrider::OverrideUIString,
                  base::Unretained(&ui_string_overrider_)),
       low_entropy_provider.get(), feature_list);
@@ -626,6 +622,24 @@ bool VariationsService::LoadSeed(VariationsSeed* seed) {
   return seed_store_.LoadSeed(seed);
 }
 
+std::unique_ptr<ClientFilterableState>
+VariationsService::GetClientFilterableStateForVersion(
+    const base::Version& version) {
+  std::unique_ptr<ClientFilterableState> state =
+      base::MakeUnique<ClientFilterableState>();
+  state->locale = client_->GetApplicationLocale();
+  state->reference_date = GetReferenceDateForExpiryChecks(local_state_);
+  state->version = version;
+  state->channel = GetChannelForVariations(client_->GetChannel());
+  state->form_factor = GetCurrentFormFactor();
+  state->platform = ClientFilterableState::GetCurrentPlatform();
+  state->hardware_class = GetHardwareClass();
+  state->session_consistency_country = GetLatestCountry();
+  state->permanent_consistency_country = LoadPermanentConsistencyCountry(
+      version, state->session_consistency_country);
+  return state;
+}
+
 void VariationsService::FetchVariationsSeed() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -770,14 +784,10 @@ void VariationsService::PerformSimulationWithVersion(
   variations::VariationsSeedSimulator seed_simulator(*default_provider,
                                                      *low_provider);
 
-  const std::string latest_country = GetLatestCountry();
-  const variations::VariationsSeedSimulator::Result result =
-      seed_simulator.SimulateSeedStudies(
-          *seed, client_->GetApplicationLocale(),
-          GetReferenceDateForExpiryChecks(local_state_), version,
-          GetChannelForVariations(client_->GetChannel()),
-          GetCurrentFormFactor(), GetHardwareClass(), latest_country,
-          LoadPermanentConsistencyCountry(version, latest_country));
+  std::unique_ptr<ClientFilterableState> client_state =
+      GetClientFilterableStateForVersion(version);
+  const VariationsSeedSimulator::Result result =
+      seed_simulator.SimulateSeedStudies(*seed, *client_state);
 
   UMA_HISTOGRAM_COUNTS_100("Variations.SimulateSeed.NormalChanges",
                            result.normal_group_change_count);

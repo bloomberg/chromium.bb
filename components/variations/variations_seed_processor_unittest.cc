@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/variations/client_filterable_state.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
@@ -262,7 +263,13 @@ TEST_F(VariationsSeedProcessorTest,
   const base::Time year_ago =
       base::Time::Now() - base::TimeDelta::FromDays(365);
 
-  const base::Version version("20.0.0.0");
+  ClientFilterableState client_state;
+  client_state.locale = "en-CA";
+  client_state.reference_date = base::Time::Now();
+  client_state.version = base::Version("20.0.0.0");
+  client_state.channel = Study::STABLE;
+  client_state.form_factor = Study::DESKTOP;
+  client_state.platform = Study::PLATFORM_ANDROID;
 
   // Check that adding [expired, non-expired] activates the non-expired one.
   ASSERT_EQ(std::string(), base::FieldTrialList::FindFullName(kTrialName));
@@ -270,10 +277,9 @@ TEST_F(VariationsSeedProcessorTest,
     base::FeatureList feature_list;
     base::FieldTrialList field_trial_list(nullptr);
     study1->set_expiry_date(TimeToProtoTime(year_ago));
-    seed_processor.CreateTrialsFromSeed(
-        seed, "en-CA", base::Time::Now(), version, Study_Channel_STABLE,
-        Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback(),
-        nullptr, &feature_list);
+    seed_processor.CreateTrialsFromSeed(seed, client_state,
+                                        override_callback_.callback(), nullptr,
+                                        &feature_list);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 
@@ -284,10 +290,9 @@ TEST_F(VariationsSeedProcessorTest,
     base::FieldTrialList field_trial_list(nullptr);
     study1->clear_expiry_date();
     study2->set_expiry_date(TimeToProtoTime(year_ago));
-    seed_processor.CreateTrialsFromSeed(
-        seed, "en-CA", base::Time::Now(), version, Study_Channel_STABLE,
-        Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback(),
-        nullptr, &feature_list);
+    seed_processor.CreateTrialsFromSeed(seed, client_state,
+                                        override_callback_.callback(), nullptr,
+                                        &feature_list);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 }
@@ -532,11 +537,18 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
   AddExperiment("Default", 0, study3);
   study3->set_activation_type(Study_ActivationType_ACTIVATION_EXPLICIT);
 
+  ClientFilterableState client_state;
+  client_state.locale = "en-CA";
+  client_state.reference_date = base::Time::Now();
+  client_state.version = base::Version("20.0.0.0");
+  client_state.channel = Study::STABLE;
+  client_state.form_factor = Study::DESKTOP;
+  client_state.platform = Study::PLATFORM_ANDROID;
+
   VariationsSeedProcessor seed_processor;
-  seed_processor.CreateTrialsFromSeed(
-      seed, "en-CA", base::Time::Now(), base::Version("20.0.0.0"),
-      Study_Channel_STABLE, Study_FormFactor_DESKTOP, "", "", "",
-      override_callback_.callback(), nullptr, &feature_list_);
+  seed_processor.CreateTrialsFromSeed(seed, client_state,
+                                      override_callback_.callback(), nullptr,
+                                      &feature_list_);
 
   // Non-specified and ACTIVATION_EXPLICIT should not start active, but
   // ACTIVATION_AUTO should.
