@@ -35,6 +35,14 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
       provider_->SetBinderForName(name, binder);
     }
 
+    bool HasBinderForName(const std::string& name) {
+      return provider_->HasBinderForName(name);
+    }
+
+    void ClearBinderForName(const std::string& name) {
+      provider_->ClearBinderForName(name);
+    }
+
     void ClearBinders() {
       provider_->ClearBinders();
     }
@@ -44,8 +52,20 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
+  // Constructs an InterfaceProvider which is usable immediately despite not
+  // being bound to any actual remote implementation. Must call Bind()
+  // eventually in order for the provider to function properly.
   InterfaceProvider();
+
+  // Constructs an InterfaceProvider which uses |interface_provider| to issue
+  // remote interface requests.
+  explicit InterfaceProvider(mojom::InterfaceProviderPtr interface_provider);
+
   ~InterfaceProvider();
+
+  // Closes the currently bound InterfaceProviderPtr for this object, allowing
+  // it to be rebound to a new InterfaceProviderPtr.
+  void Close();
 
   // Binds this InterfaceProvider to an actual mojom::InterfaceProvider pipe.
   // It is an error to call this on a forwarding InterfaceProvider, i.e. this
@@ -106,6 +126,8 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
       const base::Callback<void(mojo::ScopedMessagePipeHandle)>& binder) {
     binders_[name] = binder;
   }
+  bool HasBinderForName(const std::string& name) const;
+  void ClearBinderForName(const std::string& name);
   void ClearBinders();
 
   using BinderMap = std::map<

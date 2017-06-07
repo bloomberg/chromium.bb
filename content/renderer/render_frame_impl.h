@@ -499,6 +499,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::BlameContext* GetFrameBlameContext() override;
   std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
+  service_manager::InterfaceProvider* GetInterfaceProvider() override;
   void DidAccessInitialDocument() override;
   blink::WebLocalFrame* CreateChildFrame(
       blink::WebLocalFrame* parent,

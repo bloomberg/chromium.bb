@@ -478,6 +478,13 @@ mojom("web_ui_test_mojo_bindings") {
   use_new_js_bindings = false
 }
 
+mojom("mojo_layouttest_bindings") {
+  testonly = true
+  sources = [
+    "data/mojo_layouttest_test.mojom",
+  ]
+}
+
 static_library("layouttest_support") {
   testonly = true
 

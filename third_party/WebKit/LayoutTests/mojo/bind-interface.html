@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/content/test/data/mojo_layouttest_test.mojom.js"></script>
+<script>
+
+promise_test(() => {
+  let helper = new content.mojom.MojoLayoutTestHelperPtr;
+  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+                     mojo.makeRequest(helper).handle);
+
+  const kTestMessage = "hello world.";
+  const kExpectedReply = ".dlrow olleh";
+  return helper.reverse(kTestMessage).then(reply => {
+    assert_equals(reply.reversed, kExpectedReply);
+  });
+}, "can bind interfaces");
+
+promise_test(() => {
+  let helper = new content.mojom.MojoLayoutTestHelperPtr;
+  Mojo.bindInterface("totally not a valid interface name",
+                     mojo.makeRequest(helper).handle);
+  return helper.reverse("doesn't matter").then(
+      reply => assert_unreached("request should not succeed"),
+      e => {});
+}, "bindInterface failure closes the request pipe");
+
+promise_test(() => {
+  const kTestReply = "hehe got ya";
+
+  // An impl of the test interface which replies to reverse() with a fixed
+  // message rather than the normally expected value.
+  class TestHelperImpl {
+    constructor() {
+      this.binding_ =
+          new mojo.Binding(content.mojom.MojoLayoutTestHelper, this);
+    }
+    bindRequest(request) { this.binding_.bind(request); }
+    reverse(message) {
+      return Promise.resolve({ reversed: kTestReply });
+    }
+  }
+
+  let helperImpl = new TestHelperImpl;
+  let interceptor =
+      new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
+  interceptor.oninterfacerequest = e => {
+    helperImpl.bindRequest(e.handle);
+  };
+  interceptor.start();
+
+  let helper = new content.mojom.MojoLayoutTestHelperPtr;
+  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+                     mojo.makeRequest(helper).handle);
+  interceptor.stop();
+
+  return helper.reverse("doesn't matter").then(reply => {
+    assert_equals(reply.reversed, kTestReply);
+  });
+}, "can intercept calls to bindInterface");
+
+promise_test(() => {
+  const kTestInterfaceName = "foo::mojom::Ba1r";
+  let a = new MojoInterfaceInterceptor(kTestInterfaceName);
+  let b = new MojoInterfaceInterceptor(kTestInterfaceName);
+  a.oninterfacerequest = () => {};
+  b.oninterfacerequest = () => {};
+  a.start();
+  try {
+    b.start();
+  } catch (e) {
+    return Promise.resolve();
+  } finally {
+    a.stop();
+  }
+  return Promise.reject();
+}, "interface interceptors are mutually exclusive");
+
+test(() => {
+  const kTestInterfaceName = "foo::mojom::Bar";
+  let interceptedHandle = null;
+
+  let interceptor = new MojoInterfaceInterceptor(kTestInterfaceName);
+  interceptor.oninterfacerequest = e => { interceptedHandle = e.handle; };
+  interceptor.start();
+
+  let {handle0, handle1} = Mojo.createMessagePipe();
+  Mojo.bindInterface(kTestInterfaceName, handle0);
+  interceptor.stop();
+
+  assert_true(interceptedHandle instanceof MojoHandle);
+  interceptedHandle.close();
+  interceptedHandle = null;
+
+  Mojo.bindInterface(kTestInterfaceName, handle1);
+  assert_equals(interceptedHandle, null);
+  handle1.close();
+
+  interceptor = new MojoInterfaceInterceptor(kTestInterfaceName);
+  interceptor.oninterfacerequest = e => {};
+  interceptor.start();
+  interceptor.stop();
+}, "interceptors cancel properly");
+
+</script>

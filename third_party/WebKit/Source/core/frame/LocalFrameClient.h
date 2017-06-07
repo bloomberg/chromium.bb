@@ -57,6 +57,10 @@
 #include "public/platform/WebURLRequest.h"
 #include "v8/include/v8.h"
 
+namespace service_manager {
+class InterfaceProvider;
+}
+
 namespace blink {
 
 class Document;
@@ -329,6 +333,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual KURL OverrideFlashEmbedWithHTML(const KURL&) { return KURL(); }
 
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }
+
+  virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
+    return nullptr;
+  }
 
   virtual void SetHasReceivedUserGesture(bool received_previously) {}
 

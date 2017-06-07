@@ -8,6 +8,13 @@
           "bluetooth::mojom::FakeBluetooth"
         ]
       }
+    },
+    "navigation:frame": {
+      "provides": {
+        "renderer": [
+          "content::mojom::MojoLayoutTestHelper"
+        ]
+      }
     }
   }
 }

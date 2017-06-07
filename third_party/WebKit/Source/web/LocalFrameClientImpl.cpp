@@ -1052,4 +1052,9 @@ std::unique_ptr<blink::WebURLLoader> LocalFrameClientImpl::CreateURLLoader() {
   return web_frame_->CreateURLLoader();
 }
 
+service_manager::InterfaceProvider*
+LocalFrameClientImpl::GetInterfaceProvider() {
+  return web_frame_->Client()->GetInterfaceProvider();
+}
+
 }  // namespace blink

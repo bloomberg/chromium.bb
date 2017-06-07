@@ -159,6 +159,8 @@ generated_core_dictionary_files = [
   "$blink_core_output_dir/mojo/MojoWriteDataOptions.h",
   "$blink_core_output_dir/mojo/MojoWriteDataResult.cpp",
   "$blink_core_output_dir/mojo/MojoWriteDataResult.h",
+  "$blink_core_output_dir/mojo/testing/MojoInterfaceRequestEventInit.cpp",
+  "$blink_core_output_dir/mojo/testing/MojoInterfaceRequestEventInit.h",
   "$blink_core_output_dir/offscreencanvas/ImageEncodeOptions.cpp",
   "$blink_core_output_dir/offscreencanvas/ImageEncodeOptions.h",
   "$blink_core_output_dir/page/scrolling/ScrollStateInit.cpp",

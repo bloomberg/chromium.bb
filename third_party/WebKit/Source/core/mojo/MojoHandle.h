@@ -34,6 +34,8 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
  public:
   CORE_EXPORT static MojoHandle* Create(mojo::ScopedHandle);
 
+  mojo::ScopedHandle TakeHandle();
+
   void close();
   MojoWatcher* watch(ScriptState*,
                      const MojoHandleSignals&,

@@ -11,6 +11,7 @@ include_rules = [
     "+platform",
     "+public/platform",
     "+public/web",
+    "+services/service_manager/public/cpp",
     "+third_party/skia/include",
     "-web",
 ]

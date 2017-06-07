@@ -73,6 +73,10 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "v8/include/v8.h"
 
+namespace service_manager {
+class InterfaceProvider;
+}
+
 namespace blink {
 
 enum class WebTreeScopeType;
@@ -176,6 +180,12 @@ class BLINK_EXPORT WebFrameClient {
 
   // Returns a blame context for attributing work belonging to this frame.
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }
+
+  // Returns an InterfaceProvider the frame can use to request interfaces from
+  // the browser.
+  virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
+    return nullptr;
+  }
 
   // General notifications -----------------------------------------------
 

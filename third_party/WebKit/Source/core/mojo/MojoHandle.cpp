@@ -32,6 +32,10 @@ MojoHandle* MojoHandle::Create(mojo::ScopedHandle handle) {
   return new MojoHandle(std::move(handle));
 }
 
+mojo::ScopedHandle MojoHandle::TakeHandle() {
+  return std::move(handle_);
+}
+
 MojoHandle::MojoHandle(mojo::ScopedHandle handle)
     : handle_(std::move(handle)) {}
 

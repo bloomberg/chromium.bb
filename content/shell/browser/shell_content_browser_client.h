@@ -36,6 +36,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
   bool IsHandledURL(const GURL& url) override;
+  void ExposeInterfacesToFrame(service_manager::BinderRegistry* registry,
+                               RenderFrameHost* frame_host) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(

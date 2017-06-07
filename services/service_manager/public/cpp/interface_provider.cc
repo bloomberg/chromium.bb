@@ -13,13 +13,27 @@ InterfaceProvider::InterfaceProvider() : weak_factory_(this) {
   pending_request_ = MakeRequest(&interface_provider_);
 }
 
+InterfaceProvider::InterfaceProvider(
+    mojom::InterfaceProviderPtr interface_provider)
+    : interface_provider_(std::move(interface_provider)), weak_factory_(this) {}
+
 InterfaceProvider::~InterfaceProvider() {}
 
+void InterfaceProvider::Close() {
+  if (pending_request_.is_pending())
+    pending_request_.PassMessagePipe().reset();
+  interface_provider_.reset();
+}
+
 void InterfaceProvider::Bind(mojom::InterfaceProviderPtr interface_provider) {
-  DCHECK(pending_request_.is_pending());
+  DCHECK(pending_request_.is_pending() || !interface_provider_);
   DCHECK(forward_callback_.is_null());
-  mojo::FuseInterface(std::move(pending_request_),
-                      interface_provider.PassInterface());
+  if (pending_request_.is_pending()) {
+    mojo::FuseInterface(std::move(pending_request_),
+                        interface_provider.PassInterface());
+  } else {
+    interface_provider_ = std::move(interface_provider);
+  }
 }
 
 void InterfaceProvider::Forward(const ForwardCallback& callback) {
@@ -56,6 +70,14 @@ void InterfaceProvider::GetInterface(
     DCHECK(interface_provider_.is_bound());
     interface_provider_->GetInterface(name, std::move(request_handle));
   }
+}
+
+bool InterfaceProvider::HasBinderForName(const std::string& name) const {
+  return binders_.find(name) != binders_.end();
+}
+
+void InterfaceProvider::ClearBinderForName(const std::string& name) {
+  binders_.erase(name);
 }
 
 void InterfaceProvider::ClearBinders() {

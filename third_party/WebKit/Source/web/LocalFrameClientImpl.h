@@ -229,6 +229,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   std::unique_ptr<WebURLLoader> CreateURLLoader() override;
 
+  service_manager::InterfaceProvider* GetInterfaceProvider() override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameBase*);
 

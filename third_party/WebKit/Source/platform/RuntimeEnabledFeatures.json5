@@ -670,6 +670,12 @@
       name: "MojoJS",
       status: "test",
     },
+    // MojoJSTest is used exclusively in testing environments, whereas MojoJS
+    // may also be used elsewhere.
+    {
+      name: "MojoJSTest",
+      status: "test",
+    },
     {
       name: "MultipleColorStopPositions",
       status: "experimental",
