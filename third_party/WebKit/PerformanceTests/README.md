@@ -101,7 +101,7 @@ function runTest() {
         PerfTestRunner.measureValueAsync(PerfTestRunner.now() - startTime);
         PerfTestRunner.addRunTestEndMarker(); // For tracing metrics
     }
-    if (!done) {
+    if (!isDone) {
         PerfTestRunner.addRunTestStartMarker();
         startTime = PerfTestRunner.now();  // For tracing metrics
         // runTest will be invoked after the async operation finish
