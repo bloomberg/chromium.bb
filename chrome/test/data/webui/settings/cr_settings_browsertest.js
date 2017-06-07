@@ -1181,7 +1181,13 @@ CrSettingsInternetPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsInternetPageTest', 'All', function() {
+// TODO(crbug.com/729607): deflake. Failing on Linux ChromiumOS Test (dbg)(1).
+GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
+GEN('#define MAYBE_InternetPage DISABLED_InternetPage');
+GEN('#else');
+GEN('#define MAYBE_InternetPage InternetPage');
+GEN('#endif');
+TEST_F('CrSettingsInternetPageTest', 'MAYBE_InternetPage', function() {
   mocha.run();
 });
 
@@ -1421,11 +1427,11 @@ CrSettingsNonExistentRouteTest.prototype = {
 
 // Failing on ChromiumOS dbg. https://crbug.com/709442
 GEN('#if (defined(OS_WIN) || defined(OS_CHROMEOS)) && !defined(NDEBUG)');
-GEN('#define MAYBE_All DISABLED_All');
+GEN('#define MAYBE_NonExistentRoute DISABLED_NonExistentRoute');
 GEN('#else');
-GEN('#define MAYBE_All All');
+GEN('#define MAYBE_NonExistentRoute NonExistentRoute');
 GEN('#endif');
-TEST_F('CrSettingsNonExistentRouteTest', 'MAYBE_All', function() {
+TEST_F('CrSettingsNonExistentRouteTest', 'MAYBE_NonExistentRoute', function() {
   suite('NonExistentRoutes', function() {
     test('redirect to basic', function() {
       assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
@@ -1480,14 +1486,6 @@ TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
   mocha.run();
 });
 
-// Times out on Windows Tests (dbg). See https://crbug.com/651296.
-// Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
-GEN('#if !defined(NDEBUG)')
-GEN('#define MAYBE_MainPage_All DISABLED_MainPage_All');
-GEN('#else');
-GEN('#define MAYBE_MainPage_All MainPage_All');
-GEN('#endif');
-
 /**
  * Test fixture for chrome/browser/resources/settings/settings_main/.
  * @constructor
@@ -1509,7 +1507,14 @@ CrSettingsMainPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsMainPageTest', 'MAYBE_MainPage_All', function() {
+// Times out on Windows Tests (dbg). See https://crbug.com/651296.
+// Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
+GEN('#if !defined(NDEBUG)')
+GEN('#define MAYBE_MainPage DISABLED_MainPage');
+GEN('#else');
+GEN('#define MAYBE_MainPage MainPage');
+GEN('#endif');
+TEST_F('CrSettingsMainPageTest', 'MAYBE_MainPage', function() {
   settings_main_page.registerTests();
   mocha.run();
 });
