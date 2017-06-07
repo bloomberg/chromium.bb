@@ -250,7 +250,8 @@ class TestExpectationLine(object):
             self.name, self.matching_configurations, self.original_string)
 
     def __eq__(self, other):
-        return (self.original_string == other.original_string
+        return (isinstance(other, self.__class__)
+                and self.original_string == other.original_string
                 and self.filename == other.filename
                 and self.line_numbers == other.line_numbers
                 and self.name == other.name
@@ -695,7 +696,7 @@ class TestExpectationsModel(object):
         raise ValueError(expectation)
 
     def remove_expectation_line(self, test):
-        if not self.has_test(test):
+        if not self.has_test(test.name):
             return
         self._clear_expectations_for_test(test)
         del self._test_to_expectation_line[test]
@@ -1180,10 +1181,17 @@ class TestExpectations(object):
             model.add_expectation_line(expectation_line)
         self._model.merge_model(model)
 
-    def remove_tests(self, tests_to_remove):
+    def remove_tests_from_expectations(self, tests_to_remove):
         for test in self._expectations:
-            if test.name and test.name in tests_to_remove:
-                self.remove_expectation_line(test)
+            if not test.name:
+                continue
+            if test.name not in tests_to_remove:
+                continue
+            self._expectations.remove(test)
+            if not self._model.has_test(test.name):
+                continue
+            line = self._model.get_expectation_line(test.name)
+            self._model.remove_expectation_line(line)
 
     def add_expectations_from_bot(self):
         # FIXME: With mode 'very-flaky' and 'maybe-flaky', this will show the expectations entry in the flakiness
@@ -1200,12 +1208,6 @@ class TestExpectations(object):
     def add_expectation_line(self, expectation_line):
         self._model.add_expectation_line(expectation_line)
         self._expectations += [expectation_line]
-
-    def remove_expectation_line(self, test):
-        if not self._model.has_test(test):
-            return
-        self._expectations.remove(self._model.get_expectation_line(test))
-        self._model.remove_expectation_line(test)
 
     @staticmethod
     def list_to_string(expectation_lines, test_configuration_converter=None, reconstitute_only_these=None):
