@@ -157,14 +157,19 @@ int StartHostMain(int argc, char** argv) {
   }
 #endif  // defined(OS_WIN)
 
-  if (host_name.empty()) {
+  if (command_line->HasSwitch("help") || command_line->HasSwitch("h") ||
+      command_line->HasSwitch("?") || !command_line->GetArgs().empty()) {
     fprintf(stderr,
-            "Usage: %s --name=<hostname> [--code=<auth-code>] [--pin=<PIN>] "
+            "Usage: %s [--name=<hostname>] [--code=<auth-code>] [--pin=<PIN>] "
             "[--redirect-url=<redirectURL>]\n",
             argv[0]);
-    fprintf(stderr, "\nAuthorization URL for Production services:\n");
-    fprintf(stderr, "%s\n", GetAuthorizationCodeUri().c_str());
     return 1;
+  }
+
+  if (host_name.empty()) {
+    fprintf(stdout, "Enter a name for this computer: ");
+    fflush(stdout);
+    host_name = ReadString(false);
   }
 
   if (host_pin.empty()) {
@@ -197,6 +202,8 @@ int StartHostMain(int argc, char** argv) {
   }
 
   if (auth_code.empty()) {
+    fprintf(stdout, "\nAuthorization URL for Production services:\n");
+    fprintf(stdout, "%s\n\n", GetAuthorizationCodeUri().c_str());
     fprintf(stdout, "Enter an authorization code: ");
     fflush(stdout);
     auth_code = ReadString(true);
