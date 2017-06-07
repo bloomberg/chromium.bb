@@ -96,9 +96,7 @@ CursorImpl::IDBThreadHelper::IDBThreadHelper(
     std::unique_ptr<IndexedDBCursor> cursor)
     : cursor_(std::move(cursor)) {}
 
-CursorImpl::IDBThreadHelper::~IDBThreadHelper() {
-  cursor_->RemoveCursorFromTransaction();
-}
+CursorImpl::IDBThreadHelper::~IDBThreadHelper() {}
 
 void CursorImpl::IDBThreadHelper::Advance(
     uint32_t count,
