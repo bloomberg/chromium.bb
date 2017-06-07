@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.accessibility;
 
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,5 +42,16 @@ public class KitKatBrowserAccessibilityManager extends BrowserAccessibilityManag
             node.setEditable(true);
             node.setTextSelection(selectionStartIndex, selectionEndIndex);
         }
+    }
+
+    @Override
+    protected int getAccessibilityServiceCapabilitiesMask() {
+        int capabilitiesMask = 0;
+        for (AccessibilityServiceInfo service :
+                mAccessibilityManager.getEnabledAccessibilityServiceList(
+                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
+            capabilitiesMask |= service.getCapabilities();
+        }
+        return capabilitiesMask;
     }
 }

@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.accessibility;
 
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -58,7 +59,7 @@ public class BrowserAccessibilityManager {
 
     private final AccessibilityNodeProvider mAccessibilityNodeProvider;
     protected ContentViewCore mContentViewCore;
-    private final AccessibilityManager mAccessibilityManager;
+    protected final AccessibilityManager mAccessibilityManager;
     private final RenderCoordinates mRenderCoordinates;
     private long mNativeObj;
     private Rect mAccessibilityFocusRect;
@@ -1211,6 +1212,65 @@ public class BrowserAccessibilityManager {
         return (Settings.Secure.getInt(
                         contentResolver, Settings.Secure.ACCESSIBILITY_SPEAK_PASSWORD, 0)
                 == 1);
+    }
+
+    /**
+     * Iterate over all enabled accessibility services and return a bitmask containing the union
+     * of all event types that they listen to.
+     * @return
+     */
+    @CalledByNative
+    private int getAccessibilityServiceEventTypeMask() {
+        int eventTypeMask = 0;
+        for (AccessibilityServiceInfo service :
+                mAccessibilityManager.getEnabledAccessibilityServiceList(
+                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
+            eventTypeMask |= service.eventTypes;
+        }
+        return eventTypeMask;
+    }
+
+    /**
+     * Iterate over all enabled accessibility services and return a bitmask containing the union
+     * of all feedback types that they provide.
+     * @return
+     */
+    @CalledByNative
+    private int getAccessibilityServiceFeedbackTypeMask() {
+        int feedbackTypeMask = 0;
+        for (AccessibilityServiceInfo service :
+                mAccessibilityManager.getEnabledAccessibilityServiceList(
+                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
+            feedbackTypeMask |= service.feedbackType;
+        }
+        return feedbackTypeMask;
+    }
+
+    /**
+     * Iterate over all enabled accessibility services and return a bitmask containing the union
+     * of all accessibility service flags from any of them.
+     * @return
+     */
+    @CalledByNative
+    private int getAccessibilityServiceFlagsMask() {
+        int flagsMask = 0;
+        for (AccessibilityServiceInfo service :
+                mAccessibilityManager.getEnabledAccessibilityServiceList(
+                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
+            flagsMask |= service.flags;
+        }
+        return flagsMask;
+    }
+
+    /**
+     * Iterate over all enabled accessibility services and return a bitmask containing the union
+     * of all service capabilities.
+     * @return
+     */
+    @CalledByNative
+    protected int getAccessibilityServiceCapabilitiesMask() {
+        // Implemented in KitKatBrowserAccessibilityManager.
+        return 0;
     }
 
     private native void nativeOnAutofillPopupDisplayed(

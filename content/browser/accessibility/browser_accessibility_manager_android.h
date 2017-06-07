@@ -260,7 +260,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
  private:
   BrowserAccessibilityAndroid* GetFromUniqueID(int32_t unique_id);
 
-   base::android::ScopedJavaLocalRef<jobject> GetJavaRefFromRootManager();
+  base::android::ScopedJavaLocalRef<jobject> GetJavaRefFromRootManager();
+
+  void CollectStats();
 
   // This gives BrowserAccessibilityManager::Create access to the class
   // constructor.

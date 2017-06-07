@@ -78,6 +78,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histograms>
 
+<histogram name="Accessibility.AndroidServiceInfo"
+    enum="AccessibilityAndroidServiceInfoEnum">
+  <owner>dmazzoni@chromium.org</owner>
+  <owner>paulmiller@chromium.org</owner>
+  <summary>
+    Tracks flags and capabilities of enabled accessibility services. Recorded
+    every time an Android web content view first creates a virtual view
+    hierarchy, indicating that some accessibility service is running. The number
+    of emits of this histogram won't be as useful as the unique user counts. The
+    primary purpose of this is to guide optimization by determining what
+    capabilities of accessibility services are widespread and which ones are
+    relatively rare.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.CrosAlwaysShowA11yMenu" enum="BooleanEnabled">
   <owner>dmazzoni@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
