@@ -1,7 +1,8 @@
 // To run these tests, load results.html in a browser.
 // You should see a series of PASS lines.
-if (window.testRunner)
+if (window.testRunner) {
     testRunner.dumpAsText();
+}
 
 var testStyles = document.createElement('style');
 testStyles.innerText = ".test-pass { color: green; } .test-fail { color: red; }";
@@ -11,13 +12,11 @@ var g_testIndex = 0;
 var g_log = ["You should see a series of PASS lines."];
 
 // Make async actually be sync for the sake of simpler testing.
-function async(func, args)
-{
+function async(func, args) {
     func.apply(null, args);
 }
 
-function mockResults()
-{
+function mockResults() {
     return {
         tests: {},
         "skipped": 0,
@@ -32,8 +31,7 @@ function mockResults()
     };
 }
 
-function isFailureExpected(expected, actual)
-{
+function isFailureExpected(expected, actual) {
     var isExpected = true;
     if (actual != 'SKIP') {
         var expectedArray = expected.split(' ');
@@ -49,8 +47,7 @@ function isFailureExpected(expected, actual)
     return isExpected;
 }
 
-function mockExpectation(expected, actual)
-{
+function mockExpectation(expected, actual) {
     return {
         expected: expected,
         time_ms: 1,
@@ -62,31 +59,29 @@ function mockExpectation(expected, actual)
 
 function currentTestName() {
     var testName = 'TEST ' + g_testIndex;
-    if (g_testName)
+    if (g_testName) {
         testName += ' (' + g_testName + ')';
+    }
     return testName;
 }
 
-function logPass(msg)
-{
-    g_log.push('<span class="test-pass">' + msg + '</span>: ' + currentTestName())
+function logPass(msg) {
+    g_log.push('<span class="test-pass">' + msg + '</span>: ' + currentTestName());
 }
 
-function logFail(msg)
-{
-    g_log.push('<span class="test-fail">' + msg + '</span>: ' + currentTestName())
+function logFail(msg) {
+    g_log.push('<span class="test-fail">' + msg + '</span>: ' + currentTestName());
 }
 
-function assertTrue(bool)
-{
-    if (bool)
+function assertTrue(bool) {
+    if (bool) {
         logPass('PASS');
-    else
+    } else {
         logFail('FAIL');
+    }
 }
 
-function runTest(results, assertions, opt_testName, opt_localStorageValue)
-{
+function runTest(results, assertions, opt_testName, opt_localStorageValue) {
     document.body.innerHTML = '';
     g_testIndex++;
     g_state = undefined;
@@ -107,24 +102,23 @@ function runTest(results, assertions, opt_testName, opt_localStorageValue)
     }
 }
 
-function runDefaultSingleRowTest(test, expected, actual, isExpected, textResults, imageResults, opt_testName)
-{
-    results = mockResults();
+function runDefaultSingleRowTest(test, expected, actual, isExpected, textResults, imageResults, opt_testName) {
+    var results = mockResults();
     results.tests[test] = mockExpectation(expected, actual);
     runSingleRowTest(results, isExpected, textResults, imageResults, opt_testName);
 }
 
-function runSingleRowTest(results, isExpected, textResults, imageResults, opt_testName)
-{
+function runSingleRowTest(results, isExpected, textResults, imageResults, opt_testName) {
     for (var key in results.tests)
         var test = key;
     var expected = results.tests[test].expected;
     var actual = results.tests[test].actual;
     runTest(results, function() {
-        if (isExpected)
+        if (isExpected) {
             assertTrue(document.querySelector('tbody').className == 'expected');
-        else
+        } else {
             assertTrue(document.querySelector('tbody').className.indexOf('expected') == -1);
+        }
 
         assertTrue(document.querySelector('tbody td:nth-child(1)').textContent == '+' + test + ' \u2691');
         assertTrue(document.querySelector('tbody td:nth-child(2)').textContent == textResults);
@@ -135,10 +129,9 @@ function runSingleRowTest(results, isExpected, textResults, imageResults, opt_te
 
 }
 
-function runTests()
-{
+function runTests() {
     var results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    var subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('PASS', 'TEXT');
     runTest(results, function() {
         assertTrue(document.getElementById('image-results-header').textContent == '');
@@ -146,7 +139,7 @@ function runTests()
     }, 'text results header');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'MISSING');
     subtree['bar.html'].is_missing_text = true;
     subtree['bar.html'].is_missing_audio = true;
@@ -160,7 +153,7 @@ function runTests()
     }, 'actual result links');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('PASS', 'TEXT');
     subtree['bar.html'].has_stderr = true;
     runTest(results, function() {
@@ -169,7 +162,7 @@ function runTests()
     }, 'stderr link');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'PASS');
     subtree['bar1.html'] = mockExpectation('CRASH', 'PASS');
     subtree['bar2.html'] = mockExpectation('IMAGE', 'PASS');
@@ -208,7 +201,7 @@ function runTests()
     }
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'PASS');
     subtree['bar-missing.html'] = mockExpectation('TEXT', 'MISSING');
     subtree['bar-missing.html'].is_missing_text = true;
@@ -220,15 +213,17 @@ function runTests()
         expandAllExpectations();
         assertTrue(document.querySelectorAll('tbody tr').length == 8);
         var expandLinks = document.querySelectorAll('.expand-button-text');
-        for (var i = 0; i < expandLinks.length; i++)
+        for (var i = 0; i < expandLinks.length; i++) {
             assertTrue(isExpanded(expandLinks[i]));
+        }
 
         collapseAllExpectations();
         // Collapsed expectations stay in the dom, but are display:none.
         assertTrue(document.querySelectorAll('tbody tr').length == 8);
-        var expandLinks = document.querySelectorAll('.expand-button-text');
-        for (var i = 0; i < expandLinks.length; i++)
+        expandLinks = document.querySelectorAll('.expand-button-text');
+        for (var i = 0; i < expandLinks.length; i++) {
             assertTrue(isCollapsed(expandLinks[i]));
+        }
 
         expandExpectations(expandLinks[1]);
         assertTrue(isCollapsed(expandLinks[0]));
@@ -239,7 +234,7 @@ function runTests()
     }, 'collapsing expectation rows');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('PASS', 'TEXT');
     subtree['bar-expected-fail.html'] = mockExpectation('TEXT', 'TEXT');
     runTest(results, function() {
@@ -311,7 +306,7 @@ function runTests()
     }, 'mismatch reftest');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar-flaky-pass.html'] = mockExpectation('PASS TEXT', 'PASS');
     runTest(results, function() {
         assertTrue(!document.getElementById('results-table'));
@@ -320,7 +315,7 @@ function runTests()
     }, 'expected flaky and passed');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar-flaky-fail.html'] = mockExpectation('PASS TEXT', 'IMAGE PASS');
     runTest(results, function() {
         assertTrue(!document.getElementById('results-table'));
@@ -329,7 +324,7 @@ function runTests()
     }, 'expected flaky and image mismatch');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar-flaky-expected.html'] = mockExpectation('PASS FAIL', 'PASS TEXT');
     runTest(results, function() {
         assertTrue(!document.getElementById('results-table'));
@@ -339,7 +334,7 @@ function runTests()
     }, 'expected flaky and text mismatch');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar-really-long-path-that-should-probably-wrap-because-otherwise-the-table-will-be-too-wide.html'] = mockExpectation('PASS', 'TEXT');
     runTest(results, function() {
         document.body.style.width = '800px';
@@ -350,14 +345,14 @@ function runTests()
     }, 'long test name');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'TEXT');
     runTest(results, function() {
         assertTrue(document.querySelector('tbody td:nth-child(2)').textContent.indexOf('pretty diff') != -1);
     }, 'pretty diff link');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'PASS');
     subtree['bar-1.html'] = mockExpectation('TEXT', 'CRASH');
     subtree['bar-5.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
@@ -382,7 +377,7 @@ function runTests()
     }, 'TableSorter.sortColumn does not raise a JS error');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar-5.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
     runTest(results, function() {
         expandAllExpectations();
@@ -393,7 +388,7 @@ function runTests()
             target: png,
             clientX: x,
             clientY: y
-        }
+        };
         PixelZoomer.showOnDelay = false;
         PixelZoomer.handleMouseMove(mockEvent);
         assertTrue(!!document.querySelector('.pixel-zoom-container'));
@@ -401,7 +396,7 @@ function runTests()
     }, 'zoom image on hover');
 
     results = mockResults();
-    var subtree = results.tests['fullscreen'] = {}
+    subtree = results.tests['fullscreen'] = {};
     subtree['full-screen-api.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
     runTest(results, function() {
         // Use a regexp to match windows and unix-style paths.
@@ -413,7 +408,7 @@ function runTests()
     shouldUseTracLinks = function() { return true; };
 
     results = mockResults();
-    var subtree = results.tests['fullscreen'] = {}
+    subtree = results.tests['fullscreen'] = {};
     subtree['full-screen-api.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
     runTest(results, function() {
         var expectedHref = 'https://crrev.com/' + results.chromium_revision + '/third_party/WebKit/LayoutTests/fullscreen/full-screen-api.html';
@@ -421,7 +416,7 @@ function runTests()
     }, 'chromium revision link');
 
     results = mockResults();
-    var subtree = results.tests['fullscreen'] = {}
+    subtree = results.tests['fullscreen'] = {};
     subtree['full-screen-api.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
     results.chromium_revision = '';
     runTest(results, function() {
@@ -455,15 +450,17 @@ function runTests()
     }, 'reading options from localstorage', '{"toggle-images":false,"show-expected-failures":true}');
 
     function enclosingNodeWithTagNameHasClassName(node, tagName, className) {
-        while (node && (!node.tagName || node.localName != tagName))
+        while (node && (!node.tagName || node.localName != tagName)) {
             node = node.parentNode;
-        if (!node)
+        }
+        if (!node) {
             return false;
+        }
         return node.className == className;
     }
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['expected-to-pass-but-crashed.html'] = mockExpectation('PASS', 'CRASH');
     subtree['expected-to-pass-or-crash-and-crashed.html'] = mockExpectation('PASS CRASH', 'CRASH');
     subtree['expected-to-pass-but-timeouted.html'] = mockExpectation('PASS', 'CRASH');
@@ -494,7 +491,7 @@ function runTests()
     }, 'class names 1');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['expected-to-pass-or-crash-and-crashed.html'] = mockExpectation('PASS CRASH', 'CRASH');
     subtree['expected-to-pass-or-timeout-and-timeouted.html'] = mockExpectation('PASS TIMEOUT', 'TIMEOUT');
     subtree['expected-pass-or-fail-and-passed.html'] = mockExpectation('PASS FAIL', 'PASS');
@@ -516,7 +513,7 @@ function runTests()
     }, 'class names 2');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'PASS');
     subtree['crash.html'] = mockExpectation('IMAGE', 'CRASH');
     subtree['flaky-fail.html'] = mockExpectation('PASS TEXT', 'IMAGE PASS');
@@ -530,7 +527,7 @@ function runTests()
     }, 'crash and flaky fail test order');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['expected-missing.html'] = mockExpectation('MISSING', 'MISSING');
     subtree['expected-missing.html'].is_missing_text = true;
     subtree['expected-missing.html'].is_missing_image = true;
@@ -552,7 +549,7 @@ function runTests()
     }, 'missing results table');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {}
     subtree['bar.html'] = mockExpectation('TEXT', 'FAIL');
     subtree['bar1.html'] = mockExpectation('TEXT', 'FAIL');
     subtree['bar2.html'] = mockExpectation('TEXT', 'FAIL');
@@ -578,7 +575,7 @@ function runTests()
     }, 'keyboard shortcuts: next');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'FAIL');
     subtree['bar1.html'] = mockExpectation('TEXT', 'FAIL');
     subtree['bar2.html'] = mockExpectation('TEXT', 'FAIL');
@@ -690,7 +687,7 @@ function runTests()
     }, 'keyboard shortcuts');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'PASS');
     subtree['bar-1.html'] = mockExpectation('TEXT', 'CRASH');
     subtree['bar-2.html'] = mockExpectation('PASS', 'IMAGE');
@@ -724,7 +721,7 @@ function runTests()
     }, 'table titles 1');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('', 'PASS TEXT');
     subtree['bar-1.html'] = mockExpectation('', 'TEXT IMAGE');
     subtree['bar-2.html'] = mockExpectation('IMAGE TEXT', 'TEXT IMAGE');
@@ -739,7 +736,7 @@ function runTests()
     }, 'table titles 2');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'IMAGE');
     subtree['bar1.html'] = mockExpectation('TEXT', 'TEXT');
     subtree['bar2.html'] = mockExpectation('TEXT', 'TEXT');
@@ -759,7 +756,7 @@ function runTests()
     }, 'flagging tests');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'IMAGE');
     subtree['bar1.html'] = mockExpectation('TEXT', 'IMAGE');
     runTest(results, function() {
@@ -769,7 +766,7 @@ function runTests()
     }, 'flagged tests with newlines', '{"use-newlines":true}');
 
     results = mockResults();
-    var subtree = results.tests['foo'] = {}
+    subtree = results.tests['foo'] = {};
     subtree['bar.html'] = mockExpectation('TEXT', 'IMAGE');
     subtree['bar1.html'] = mockExpectation('TEXT', 'IMAGE');
     runTest(results, function() {
@@ -798,7 +795,7 @@ function runTests()
     results.tests['foo'].has_repaint_overlay = true;
     runTest(results, function() {
         assertTrue(document.querySelector('tbody td:nth-child(2)').textContent.indexOf('overlay') != -1);
-    }, 'repaint overlay')
+    }, 'repaint overlay');
 
     document.body.innerHTML = '<pre>' + g_log.join('\n') + '</pre>';
 }
