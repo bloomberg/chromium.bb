@@ -67125,16 +67125,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>horo@chromium.org</owner>
   <summary>
     The time taken for the browser to find and possibly start an active worker
-    to dispatch a FetchEvent for a main frame resource request. For context, a
-    FetchEvent can only be dispatched to an ACTIVATED worker that is running (it
-    has been successfully started). The measurements starts when the browser
-    process receives the request. The browser then finds the worker appropriate
-    for this request (if there is none, this metric is not recorded). If that
-    worker is already started, the browser process can send the request to it,
-    so the measurement ends quickly. Otherwise the browser process has to start
-    the worker and the measurement ends when the worker is successfully started
-    (we do not include in the time it takes for the worker to become ACTIVATED).
-    The metric is not recorded in the following situations: 1) The worker was in
+    to dispatch a FetchEvent for a main frame resource request. BEWARE: This
+    metric includes the time taken for redirects. It starts when the URLRequest
+    is created, and ends when the worker is ready. For context, a FetchEvent can
+    only be dispatched to an ACTIVATED worker that is running (it has been
+    successfully started). The measurements starts when the browser process
+    receives the request. The browser then finds the worker appropriate for this
+    request (if there is none, this metric is not recorded). If that worker is
+    already started, the browser process can send the request to it, so the
+    measurement ends quickly. Otherwise the browser process has to start the
+    worker and the measurement ends when the worker is successfully started (we
+    do not include in the time it takes for the worker to become ACTIVATED). The
+    metric is not recorded in the following situations: 1) The worker was in
     state INSTALLED or ACTIVATING, and the browser had to wait for it to become
     ACTIVATED. This is to avoid including the time to execute the activate event
     handlers in the worker's script. 2) The worker was started for the fetch AND
@@ -67576,6 +67578,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ServiceWorker.NavigationPreload.ConcurrentTime" units="ms">
+  <obsolete>
+    Deprecated June 2017 in favor of ServiceWorker.NavPreload.ConcurrentTime,
+    see https://crbug.com/728035.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <summary>
     The duration of time when both (1) a service worker is being found and
@@ -67593,6 +67599,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ServiceWorker.NavigationPreload.FinishedBeforeStartWorker"
     enum="BooleanNavPreloadFinishedFirst">
+  <obsolete>
+    Deprecated June 2017 in favor of ServiceWorker.NavPreload.FinishedFirst, see
+    https://crbug.com/728035.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <summary>
     Whether the navigation preload response arrived before the activated and
@@ -67615,6 +67625,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ServiceWorker.NavigationPreload.NavPreloadAfterSWStart"
     units="ms">
+  <obsolete>
+    Deprecated June 2017. No replacement exists. See https://crbug.com/728035.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <summary>
     This is recorded in the case where the activated and running service worker
@@ -67631,6 +67644,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ServiceWorker.NavigationPreload.ResponseTime" units="ms">
+  <obsolete>
+    Deprecated June 2017 in favor of ServiceWorker.NavPreload.ResponseTime. See
+    https://crbug.com/728035.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <summary>
     The time taken for the navigation preload response to start, i.e., when
@@ -67644,6 +67661,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ServiceWorker.NavigationPreload.SWStartAfterNavPreload"
     units="ms">
+  <obsolete>
+    Deprecated June 2017 in favor of ServiceWorker.NavPreload.WorkerWaitTime.
+    See https://crbug.com/728035.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <summary>
     This is recorded in the case where the navigation preload response arrived
@@ -67655,6 +67676,62 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     above), with the same restrictions as for
     ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time. The sample is
     additionally recorded to the appropriate suffixed histograms.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.NavPreload.ConcurrentTime" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The duration of time when both (1) a service worker is being found and
+    possibly started up, (2) the navigation preload request is in-flight. The
+    measurement ends once either the worker is prepared, or the navigation
+    preload response is received (OnReceiveResponse() is called). This is a
+    rough estimate of the performance win of using navigation preload, ignoring
+    concurrency overhead. This histogram is recorded when a navigation preload
+    response is succesfully forwarded to the service worker's fetch event, with
+    the same restrictions enumerated 1) through 3) for
+    ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time. The sample is
+    only recorded to the appropriate suffixed histograms.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.NavPreload.FinishedFirst"
+    enum="BooleanNavPreloadFinishedFirst">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Whether the navigation preload response arrived before the activated and
+    running service worker was prepared. This histogram is recorded when a
+    navigation preload response is succesfully forwarded to the service worker's
+    fetch event, with the same restrictions numbered 1) through 3) for
+    ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time. The sample is
+    only recorded to the appropriate suffixed histograms.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.NavPreload.ResponseTime" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time taken for the navigation preload response to start, i.e., when
+    OnReceiveResponse() is called. This histogram is recorded when a navigation
+    preload response is successfully forwarded to the service worker's fetch
+    event, with the same restrictions numbered 1) through 3) for
+    ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time. The sample is
+    only recorded to the appropriate suffixed histograms.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.NavPreload.WorkerWaitTime" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    This is recorded in the case where the navigation preload response arrived
+    before the activated and running service worker was prepared. It is the
+    remaining time it took to prepare the worker after the response arrived.
+
+    This histogram is recorded when a navigation preload response is succesfully
+    forwarded to the service worker's fetch event (for the case mentioned
+    above), with the same restrictions numbered 1) through 3) as for
+    ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time. The sample is
+    only recorded to the appropriate suffixed histograms.
   </summary>
 </histogram>
 
@@ -89343,6 +89420,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Media.Audio.InputStartupSuccessMac"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="MainFrameNavigation" separator="_">
+  <suffix name="MainFrame" label="Main frame navigation."/>
+  <affected-histogram name="ServiceWorker.NavPreload.ConcurrentTime"/>
+  <affected-histogram name="ServiceWorker.NavPreload.FinishedFirst"/>
+  <affected-histogram name="ServiceWorker.NavPreload.ResponseTime"/>
+  <affected-histogram name="ServiceWorker.NavPreload.WorkerWaitTime"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="ManifestProperties" separator=".">
   <suffix name="name"/>
   <suffix name="short_name"/>
@@ -89741,6 +89826,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="NavigationPreloadOrWorkerFirst" separator="_">
+  <obsolete>
+    Deprecated as of June 2017.
+  </obsolete>
   <suffix name="SWStartFirst"
       label="The service worker finished preparing before the navigation
              preload response arrived."/>
@@ -94784,6 +94872,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="StartWorkerExistingProcess" separator="_">
+  <obsolete>
+    Deprecated as of June 2017.
+  </obsolete>
   <suffix name="StartWorkerExistingProcess"
       label="The worker started up in an existing process"/>
   <affected-histogram name="ServiceWorker.NavigationPreload.ConcurrentTime"/>
@@ -94797,6 +94888,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="ServiceWorker.NavigationPreload.NavPreloadAfterSWStart"/>
   <affected-histogram
       name="ServiceWorker.NavigationPreload.SWStartAfterNavPreload"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="StartWorkerExistingProcess2" separator="_">
+  <suffix name="StartWorkerExistingProcess"
+      label="The worker started up in an existing process"/>
+  <affected-histogram name="ServiceWorker.NavPreload.ConcurrentTime_MainFrame"/>
+  <affected-histogram name="ServiceWorker.NavPreload.FinishedFirst_MainFrame"/>
+  <affected-histogram name="ServiceWorker.NavPreload.ResponseTime_MainFrame"/>
+  <affected-histogram name="ServiceWorker.NavPreload.WorkerWaitTime_MainFrame"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Storage.BlobAppendableItems" separator=".">
