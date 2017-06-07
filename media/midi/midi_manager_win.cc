@@ -660,9 +660,7 @@ MidiManagerWin::PortManager::HandleMidiInCallback(HMIDIIN hmi,
           &MidiManagerWin::ReceiveMidiData, base::Unretained(manager), index,
           data, manager->port_manager()->CalculateInEventTime(index, param2)));
     }
-    manager->PostTask(base::Bind(&MidiManagerWin::PortManager::RestoreInBuffer,
-                                 base::Unretained(manager->port_manager()),
-                                 index));
+    manager->port_manager()->RestoreInBuffer(index);
   }
 }
 
