@@ -1070,11 +1070,17 @@ static WTF::Optional<StyleableMarker::Thickness> ThicknessFrom(
   return WTF::nullopt;
 }
 
-void Internals::addCompositionMarker(const Range* range,
-                                     const String& underline_color_value,
-                                     const String& thickness_value,
-                                     const String& background_color_value,
-                                     ExceptionState& exception_state) {
+namespace {
+
+void addStyleableMarkerHelper(
+    const Range* range,
+    const String& underline_color_value,
+    const String& thickness_value,
+    const String& background_color_value,
+    ExceptionState& exception_state,
+    std::function<
+        void(const EphemeralRange&, Color, StyleableMarker::Thickness, Color)>
+        create_marker) {
   DCHECK(range);
   range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -1093,10 +1099,47 @@ void Internals::addCompositionMarker(const Range* range,
                  "Invalid underline color.") &&
       ParseColor(background_color_value, background_color, exception_state,
                  "Invalid background color.")) {
-    range->OwnerDocument().Markers().AddCompositionMarker(
-        EphemeralRange(range), underline_color, thickness.value(),
-        background_color);
+    create_marker(EphemeralRange(range), underline_color, thickness.value(),
+                  background_color);
   }
+}
+
+}  // namespace
+
+void Internals::addCompositionMarker(const Range* range,
+                                     const String& underline_color_value,
+                                     const String& thickness_value,
+                                     const String& background_color_value,
+                                     ExceptionState& exception_state) {
+  DocumentMarkerController& document_marker_controller =
+      range->OwnerDocument().Markers();
+  addStyleableMarkerHelper(
+      range, underline_color_value, thickness_value, background_color_value,
+      exception_state,
+      [&document_marker_controller](
+          const EphemeralRange& range, Color underline_color,
+          StyleableMarker::Thickness thickness, Color background_color) {
+        document_marker_controller.AddCompositionMarker(
+            range, underline_color, thickness, background_color);
+      });
+}
+
+void Internals::addActiveSuggestionMarker(const Range* range,
+                                          const String& underline_color_value,
+                                          const String& thickness_value,
+                                          const String& background_color_value,
+                                          ExceptionState& exception_state) {
+  DocumentMarkerController& document_marker_controller =
+      range->OwnerDocument().Markers();
+  addStyleableMarkerHelper(
+      range, underline_color_value, thickness_value, background_color_value,
+      exception_state,
+      [&document_marker_controller](
+          const EphemeralRange& range, Color underline_color,
+          StyleableMarker::Thickness thickness, Color background_color) {
+        document_marker_controller.AddActiveSuggestionMarker(
+            range, underline_color, thickness, background_color);
+      });
 }
 
 void Internals::setTextMatchMarkersActive(Node* node,

@@ -193,6 +193,11 @@ class Internals final : public GarbageCollected<Internals>,
                             const String& thickness_value,
                             const String& background_color_value,
                             ExceptionState&);
+  void addActiveSuggestionMarker(const Range*,
+                                 const String& underline_color_value,
+                                 const String& thickness_value,
+                                 const String& background_color_value,
+                                 ExceptionState&);
   void setTextMatchMarkersActive(Node*,
                                  unsigned start_offset,
                                  unsigned end_offset,
