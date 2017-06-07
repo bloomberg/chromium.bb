@@ -38,6 +38,9 @@ class ASH_EXPORT SessionObserver {
   // Called when chrome is terminating.
   virtual void OnChromeTerminating() {}
 
+  // Called when the limit becomes available and when it changes.
+  virtual void OnSessionLengthLimitChanged() {}
+
  protected:
   virtual ~SessionObserver() {}
 };

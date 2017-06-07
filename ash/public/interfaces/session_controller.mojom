@@ -6,6 +6,7 @@ module ash.mojom;
 
 import "ash/public/interfaces/user_info.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
+import "mojo/common/time.mojom";
 
 // Matches session_manager::SessionState.
 enum SessionState {
@@ -141,6 +142,15 @@ interface SessionController {
 
   // Notifies that chrome is terminating.
   NotifyChromeTerminating();
+
+  // Adds a countdown timer to the system tray menu and creates or updates a
+  // notification saying the session length is limited (e.g. a public session in
+  // a library). Setting |length_limit| to zero removes the notification.
+  // NOTE: Chrome enforces the limit, not ash. Ash could enforce it if local
+  // state prefs and user activity monitoring were available under mustash.
+  // http://crbug.com/729808
+  SetSessionLengthLimit(mojo.common.mojom.TimeDelta length_limit,
+                        mojo.common.mojom.TimeTicks start_time);
 };
 
 // Interface for ash to request session service from its client (e.g. Chrome).

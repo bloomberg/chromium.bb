@@ -11,8 +11,10 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -45,6 +47,12 @@ using user_manager::User;
 using user_manager::UserList;
 
 namespace {
+
+// The minimum session length limit that can be set.
+const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
+
+// The maximum session length limit that can be set.
+const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
 SessionControllerClient* g_instance = nullptr;
 
@@ -132,6 +140,17 @@ SessionControllerClient::SessionControllerClient()
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                  content::NotificationService::AllSources());
 
+  local_state_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  local_state_registrar_->Init(g_browser_process->local_state());
+  local_state_registrar_->Add(
+      prefs::kSessionStartTime,
+      base::Bind(&SessionControllerClient::SendSessionLengthLimit,
+                 base::Unretained(this)));
+  local_state_registrar_->Add(
+      prefs::kSessionLengthLimit,
+      base::Bind(&SessionControllerClient::SendSessionLengthLimit,
+                 base::Unretained(this)));
+
   DCHECK(!g_instance);
   g_instance = this;
 }
@@ -154,6 +173,7 @@ void SessionControllerClient::Init() {
   ConnectToSessionController();
   session_controller_->SetClient(binding_.CreateInterfacePtrAndBind());
   SendSessionInfoIfChanged();
+  SendSessionLengthLimit();
   // User sessions and their order will be sent via UserSessionStateObserver
   // even for crash-n-restart.
 }
@@ -459,4 +479,25 @@ void SessionControllerClient::SendUserSessionOrder() {
   }
 
   session_controller_->SetUserSessionOrder(user_session_ids);
+}
+
+void SessionControllerClient::SendSessionLengthLimit() {
+  const PrefService* local_state = local_state_registrar_->prefs();
+  base::TimeDelta session_length_limit;
+  if (local_state->HasPrefPath(prefs::kSessionLengthLimit)) {
+    session_length_limit = base::TimeDelta::FromMilliseconds(
+        std::min(std::max(local_state->GetInteger(prefs::kSessionLengthLimit),
+                          kSessionLengthLimitMinMs),
+                 kSessionLengthLimitMaxMs));
+  }
+  base::TimeTicks session_start_time;
+  if (local_state->HasPrefPath(prefs::kSessionStartTime)) {
+    session_start_time = base::TimeTicks::FromInternalValue(
+        local_state->GetInt64(prefs::kSessionStartTime));
+  }
+
+  // Send even if both values are zero because enterprise policy could turn
+  // the feature off in the middle of the session.
+  session_controller_->SetSessionLengthLimit(session_length_limit,
+                                             session_start_time);
 }

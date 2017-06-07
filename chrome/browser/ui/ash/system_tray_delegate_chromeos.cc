@@ -28,8 +28,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
@@ -70,12 +68,6 @@
 namespace chromeos {
 
 namespace {
-
-// The minimum session length limit that can be set.
-const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
-
-// The maximum session length limit that can be set.
-const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
@@ -127,26 +119,9 @@ void SystemTrayDelegateChromeOS::Initialize() {
   ui::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
 
   BrowserList::AddObserver(this);
-
-  local_state_registrar_.reset(new PrefChangeRegistrar);
-  local_state_registrar_->Init(g_browser_process->local_state());
-
-  UpdateSessionStartTime();
-  UpdateSessionLengthLimit();
-
-  local_state_registrar_->Add(
-      prefs::kSessionStartTime,
-      base::Bind(&SystemTrayDelegateChromeOS::UpdateSessionStartTime,
-                 base::Unretained(this)));
-  local_state_registrar_->Add(
-      prefs::kSessionLengthLimit,
-      base::Bind(&SystemTrayDelegateChromeOS::UpdateSessionLengthLimit,
-                 base::Unretained(this)));
 }
 
 SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
-  // Unregister PrefChangeRegistrars.
-  local_state_registrar_.reset();
   user_pref_registrar_.reset();
 
   // Unregister content notifications before destroying any components.
@@ -259,18 +234,6 @@ SystemTrayDelegateChromeOS::GetNetworkingConfigDelegate() const {
   return networking_config_delegate_.get();
 }
 
-bool SystemTrayDelegateChromeOS::GetSessionStartTime(
-    base::TimeTicks* session_start_time) {
-  *session_start_time = session_start_time_;
-  return have_session_start_time_;
-}
-
-bool SystemTrayDelegateChromeOS::GetSessionLengthLimit(
-    base::TimeDelta* session_length_limit) {
-  *session_length_limit = session_length_limit_;
-  return have_session_length_limit_;
-}
-
 void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
   SetProfile(ProfileManager::GetActiveUserProfile());
 }
@@ -352,34 +315,6 @@ void SystemTrayDelegateChromeOS::UpdateLogoutDialogDuration() {
       base::TimeDelta::FromMilliseconds(duration_ms));
 }
 
-void SystemTrayDelegateChromeOS::UpdateSessionStartTime() {
-  const PrefService* local_state = local_state_registrar_->prefs();
-  if (local_state->HasPrefPath(prefs::kSessionStartTime)) {
-    have_session_start_time_ = true;
-    session_start_time_ = base::TimeTicks::FromInternalValue(
-        local_state->GetInt64(prefs::kSessionStartTime));
-  } else {
-    have_session_start_time_ = false;
-    session_start_time_ = base::TimeTicks();
-  }
-  GetSystemTrayNotifier()->NotifySessionStartTimeChanged();
-}
-
-void SystemTrayDelegateChromeOS::UpdateSessionLengthLimit() {
-  const PrefService* local_state = local_state_registrar_->prefs();
-  if (local_state->HasPrefPath(prefs::kSessionLengthLimit)) {
-    have_session_length_limit_ = true;
-    session_length_limit_ = base::TimeDelta::FromMilliseconds(
-        std::min(std::max(local_state->GetInteger(prefs::kSessionLengthLimit),
-                          kSessionLengthLimitMinMs),
-                 kSessionLengthLimitMaxMs));
-  } else {
-    have_session_length_limit_ = false;
-    session_length_limit_ = base::TimeDelta();
-  }
-  GetSystemTrayNotifier()->NotifySessionLengthLimitChanged();
-}
-
 void SystemTrayDelegateChromeOS::StopObservingAppWindowRegistry() {
   if (!user_profile_)
     return;
@@ -436,7 +371,6 @@ void SystemTrayDelegateChromeOS::Observe(
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED: {
-      session_started_ = true;
       SetProfile(ProfileManager::GetActiveUserProfile());
       break;
     }
