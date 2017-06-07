@@ -60,6 +60,8 @@ blink_core_sources("exported") {
     "WebSerializedScriptValue.cpp",
     "WebSettingsImpl.cpp",
     "WebSettingsImpl.h",
+    "WebSharedWorkerImpl.cpp",
+    "WebSharedWorkerImpl.h",
     "WebTextCheckingCompletionImpl.cpp",
     "WebTextCheckingCompletionImpl.h",
     "WebTextCheckingResult.cpp",

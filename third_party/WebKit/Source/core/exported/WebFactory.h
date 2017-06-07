@@ -12,7 +12,13 @@ namespace blink {
 
 class ChromeClient;
 class WebViewBase;
+class WebLocalFrameBase;
 class WebViewClient;
+class WebFrameClient;
+class InterfaceProvider;
+class InterfaceRegistry;
+class WebFrame;
+enum class WebTreeScopeType;
 
 // WebFactory is a temporary class implemented in web/ that allows classes to
 // construct interfaces that are being moved out of web/.
@@ -24,6 +30,12 @@ class CORE_EXPORT WebFactory {
   virtual ChromeClient* CreateChromeClient(WebViewBase*) const = 0;
   virtual WebViewBase* CreateWebViewBase(WebViewClient*,
                                          WebPageVisibilityState) const = 0;
+  virtual WebLocalFrameBase* CreateWebLocalFrameBase(
+      WebTreeScopeType,
+      WebFrameClient*,
+      blink::InterfaceProvider*,
+      blink::InterfaceRegistry*,
+      WebFrame* opener = nullptr) const = 0;
 
  protected:
   // Takes ownership of |factory|.

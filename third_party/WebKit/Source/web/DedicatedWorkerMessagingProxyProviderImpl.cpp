@@ -38,14 +38,14 @@
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerContentSettingsClient.h"
+#include "modules/filesystem/LocalFileSystemClient.h"
+#include "modules/indexeddb/IndexedDBClientImpl.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
-#include "web/IndexedDBClientImpl.h"
-#include "web/LocalFileSystemClient.h"
 
 namespace blink {
 

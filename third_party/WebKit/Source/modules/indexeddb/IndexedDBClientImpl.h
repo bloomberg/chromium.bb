@@ -29,6 +29,7 @@
 #ifndef IndexedDBClientImpl_h
 #define IndexedDBClientImpl_h
 
+#include "modules/ModulesExport.h"
 #include "modules/indexeddb/IndexedDBClient.h"
 
 namespace blink {
@@ -42,8 +43,8 @@ class ExecutionContext;
 // for the main thread.
 class IndexedDBClientImpl final : public IndexedDBClient {
  public:
-  static IndexedDBClient* Create(LocalFrame&);
-  static IndexedDBClient* Create(WorkerClients&);
+  MODULES_EXPORT static IndexedDBClient* Create(LocalFrame&);
+  MODULES_EXPORT static IndexedDBClient* Create(WorkerClients&);
 
   bool AllowIndexedDB(ExecutionContext*, const String& name) override;
 

@@ -4,6 +4,7 @@
 
 #include "web/WebFactoryImpl.h"
 #include "web/ChromeClientImpl.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 
 namespace blink {
@@ -20,5 +21,14 @@ WebViewBase* WebFactoryImpl::CreateWebViewBase(
     WebViewClient* client,
     WebPageVisibilityState state) const {
   return WebViewImpl::Create(client, state);
+}
+
+WebLocalFrameBase* WebFactoryImpl::CreateWebLocalFrameBase(
+    WebTreeScopeType type,
+    WebFrameClient* client,
+    blink::InterfaceProvider* provider,
+    blink::InterfaceRegistry* registry,
+    WebFrame* opener) const {
+  return WebLocalFrameImpl::Create(type, client, provider, registry, opener);
 }
 }

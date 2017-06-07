@@ -28,57 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/LocalFileSystemClient.h"
+#ifndef LocalFileSystemClient_h
+#define LocalFileSystemClient_h
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/LocalFrame.h"
-#include "core/workers/WorkerContentSettingsClient.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/ContentSettingCallbacks.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/text/WTFString.h"
+#include "modules/ModulesExport.h"
+#include "modules/filesystem/FileSystemClient.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
-std::unique_ptr<FileSystemClient> LocalFileSystemClient::Create() {
-  return WTF::WrapUnique(
-      static_cast<FileSystemClient*>(new LocalFileSystemClient()));
-}
+class LocalFileSystemClient final : public FileSystemClient {
+ public:
+  MODULES_EXPORT static std::unique_ptr<FileSystemClient> Create();
 
-LocalFileSystemClient::~LocalFileSystemClient() {}
+  ~LocalFileSystemClient() override;
 
-bool LocalFileSystemClient::RequestFileSystemAccessSync(
-    ExecutionContext* context) {
-  DCHECK(context);
-  if (context->IsDocument()) {
-    NOTREACHED();
-    return false;
-  }
+  bool RequestFileSystemAccessSync(ExecutionContext*) override;
+  void RequestFileSystemAccessAsync(
+      ExecutionContext*,
+      std::unique_ptr<ContentSettingCallbacks>) override;
 
-  DCHECK(context->IsWorkerGlobalScope());
-  return WorkerContentSettingsClient::From(*ToWorkerGlobalScope(context))
-      ->RequestFileSystemAccessSync();
-}
-
-void LocalFileSystemClient::RequestFileSystemAccessAsync(
-    ExecutionContext* context,
-    std::unique_ptr<ContentSettingCallbacks> callbacks) {
-  DCHECK(context);
-  if (!context->IsDocument()) {
-    NOTREACHED();
-    return;
-  }
-
-  Document* document = ToDocument(context);
-  DCHECK(document->GetFrame());
-  document->GetFrame()
-      ->GetContentSettingsClient()
-      ->RequestFileSystemAccessAsync(std::move(callbacks));
-}
-
-LocalFileSystemClient::LocalFileSystemClient() {}
+ private:
+  LocalFileSystemClient();
+};
 
 }  // namespace blink
+
+#endif  // LocalFileSystemClient_h

@@ -8,10 +8,12 @@
 #include "core/EventTypeNames.h"
 #include "core/css/CSSPaintImageGenerator.h"
 #include "core/dom/Document.h"
+#include "core/exported/WebSharedWorkerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
+#include "core/workers/WorkerContentSettingsClient.h"
 #include "modules/EventModulesFactory.h"
 #include "modules/EventModulesNames.h"
 #include "modules/EventTargetModulesNames.h"
@@ -23,7 +25,9 @@
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
 #include "modules/document_metadata/CopylessPasteServer.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
+#include "modules/filesystem/LocalFileSystemClient.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
+#include "modules/indexeddb/IndexedDBClientImpl.h"
 #include "modules/installation/InstallationServiceImpl.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
@@ -34,6 +38,8 @@
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/InterfaceRegistry.h"
+#include "public/platform/WebSecurityOrigin.h"
+#include "public/web/WebWorkerContentSettingsClientProxy.h"
 
 namespace blink {
 
@@ -96,6 +102,17 @@ void ModulesInitializer::Initialize() {
     frame->GetInterfaceRegistry()->AddInterface(WTF::Bind(
         &AppBannerController::BindMojoRequest, WrapWeakPersistent(frame)));
   });
+
+  // WebSharedWorkerImpl callbacks for modules initialization.
+  // TODO(nhiroki): Implement a common mechanism to set up WorkerClients
+  // (https://crbug.com/729500).
+  WebSharedWorkerImpl::RegisterWorkerClientsCreatedCallback(
+      [](WorkerClients* worker_clients) {
+        ProvideLocalFileSystemToWorker(worker_clients,
+                                       LocalFileSystemClient::Create());
+        ProvideIndexedDBClientToWorker(
+            worker_clients, IndexedDBClientImpl::Create(*worker_clients));
+      });
 
   HTMLMediaElement::RegisterMediaControlsFactory(
       WTF::MakeUnique<MediaControlsImpl::Factory>());

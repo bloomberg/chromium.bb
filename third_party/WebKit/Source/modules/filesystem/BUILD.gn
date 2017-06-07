@@ -60,6 +60,8 @@ blink_modules_sources("filesystem") {
     "HTMLInputElementFileSystem.h",
     "LocalFileSystem.cpp",
     "LocalFileSystem.h",
+    "LocalFileSystemClient.cpp",
+    "LocalFileSystemClient.h",
     "Metadata.h",
     "MetadataCallback.h",
     "SyncCallbackHelper.h",
