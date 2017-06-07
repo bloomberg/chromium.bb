@@ -63,6 +63,7 @@
 }
 
 - (void)prepareForReuse {
+  [super prepareForReuse];
   _closeButtonAction = nil;
   _signinPromoView.delegate = nil;
 }

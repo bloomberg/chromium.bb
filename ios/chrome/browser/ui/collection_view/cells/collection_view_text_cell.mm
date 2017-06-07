@@ -91,6 +91,7 @@ const CGFloat kMinimalHeight = 48;
 }
 
 - (void)prepareForReuse {
+  [super prepareForReuse];
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
 }

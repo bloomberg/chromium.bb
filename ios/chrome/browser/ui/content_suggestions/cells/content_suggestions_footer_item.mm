@@ -80,6 +80,7 @@ const CGFloat kMinimalCellHeight = 44;
 }
 
 - (void)prepareForReuse {
+  [super prepareForReuse];
   [self.button removeTarget:nil
                      action:NULL
            forControlEvents:UIControlEventAllEvents];
