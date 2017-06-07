@@ -266,7 +266,6 @@ TEST(MimeUtilTest, ParseVideoCodecString) {
   }
 
   // Valid VP9 string.
-  EnableNewVp9CodecStringSupport();
   EXPECT_TRUE(ParseVideoCodecString("video/webm", "vp09.00.10.08",
                                     &out_is_ambiguous, &out_codec, &out_profile,
                                     &out_level, &out_colorspace));
@@ -285,9 +284,6 @@ TEST(MimeUtilTest, ParseVideoCodecString) {
   EXPECT_EQ(VP9PROFILE_PROFILE2, out_profile);
   EXPECT_EQ(10, out_level);
   EXPECT_EQ(VideoColorSpace::REC601(), out_colorspace);
-
-  // Restore to avoid polluting other tests.
-  DisableNewVp9CodecStringSupport_ForTesting();
 
   // Ambiguous AVC string (when proprietary codecs are supported).
   EXPECT_EQ(
@@ -362,19 +358,6 @@ TEST(MimeUtilTest, ParseAudioCodecString) {
   // Made up codec is also not valid.
   EXPECT_FALSE(ParseAudioCodecString("audio/webm", "bogus", &out_is_ambiguous,
                                      &out_codec));
-}
-
-// See deeper string parsing testing in video_codecs_unittests.cc.
-TEST(MimeUtilTest, ExperimentalMultiPartVp9) {
-
-  // Multi-part VP9 string not enabled by default.
-  EXPECT_FALSE(IsSupportedMediaFormat("video/webm", {"vp09.00.10.08"}));
-
-  // Should work if enabled.
-  EnableNewVp9CodecStringSupport();
-  EXPECT_TRUE(IsSupportedMediaFormat("video/webm", {"vp09.00.10.08"}));
-  // Restore to avoid polluting other tests.
-  DisableNewVp9CodecStringSupport_ForTesting();
 }
 
 TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecsFailWithoutPlatformSupport) {

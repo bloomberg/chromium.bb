@@ -41,7 +41,6 @@ class MediaCapabilitiesTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "MediaCapabilities");
-    command_line->AppendSwitch(switches::kEnableNewVp9CodecString);
   }
 
   std::string CanDecodeAudio(const std::string& content_type) {

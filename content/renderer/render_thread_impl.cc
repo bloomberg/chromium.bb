@@ -860,12 +860,6 @@ void RenderThreadImpl::Init(
   }
 #endif
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNewVp9CodecString)) {
-    media::EnableNewVp9CodecStringSupport();
-  }
-
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this)),
       base::Bind(&RenderThreadImpl::OnSyncMemoryPressure,

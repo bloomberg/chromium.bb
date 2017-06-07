@@ -397,7 +397,6 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"vp9.0, 1\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"vp08\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"vp09\"'"));
-    EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"vp09.00.10.08\"'"));
 
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"theora\"'"));
     EXPECT_EQ(kNot, CanPlay("'" + mime + "; codecs=\"theora, vorbis\"'"));
@@ -1488,69 +1487,43 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mpeg2TsAudio) {
   EXPECT_EQ(kNot, CanPlay("'audio/mp2t; codecs=\"mp4a.40.2\"'"));
 }
 
-// New VP9 string is behind a variety of flags depending on container and
-// whether HDR is enabled.
-struct CanPlayTypeNewVp9Params {
-  const std::string command_line_flag;
-  const std::string container;
-  const char* prop_probably;
-  const char* prop_maybe;
-};
-
-class MediaCanPlayNewVp9TypeTest
-    : public MediaCanPlayTypeTest,
-      public ::testing::WithParamInterface<CanPlayTypeNewVp9Params> {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    const CanPlayTypeNewVp9Params& params = GetParam();
-    if (!params.command_line_flag.empty())
-      command_line->AppendSwitch(params.command_line_flag);
-  }
-};
-
 // See more complete codec string testing in media/base/video_codecs_unittest.cc
-IN_PROC_BROWSER_TEST_P(MediaCanPlayNewVp9TypeTest,
-                       CodecSupportTest_NewVp9Variants) {
-  const CanPlayTypeNewVp9Params& params = GetParam();
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_NewVp9Variants) {
+  const std::string kSupportedMimeTypes[] = {"video/webm", "video/mp4"};
+  for (const auto& mime_type : kSupportedMimeTypes) {
+    // MP4 support is conditional on supporting proprietary codecs.
+    const char* kTestProbably = kProbably;
+    if (base::EndsWith(mime_type, "mp4", base::CompareCase::SENSITIVE))
+      kTestProbably = kPropProbably;
 
-  // E.g. "'video/webm; "
-  std::string mime_prefix = "'" + params.container + "; ";
+// Profile 2 and 3 support is currently disabled on ARM and MIPS.
+#if defined(ARCH_CPU_ARM_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
+    const char* kVP9Profile2And3Probably = kNot;
+#else
+    const char* kVP9Profile2And3Probably = kTestProbably;
+#endif
 
-  // Malformed codecs string never allowed.
-  EXPECT_EQ(kNot, CanPlay(mime_prefix + "codecs=\"vp09.00.-1.08\"'"));
+    // E.g. "'video/webm; "
+    std::string prefix = "'" + mime_type + "; ";
 
-  const char* new_vp9_probably = params.prop_probably;
-  const char* new_vp9_maybe = params.prop_maybe;
+    // Malformed codecs string never allowed.
+    EXPECT_EQ(kNot, CanPlay(prefix + "codecs=\"vp09.00.-1.08\"'"));
 
-  // Test a few valid strings.
-  EXPECT_EQ(new_vp9_probably,
-            CanPlay(mime_prefix + "codecs=\"vp09.00.10.08\"'"));
-  EXPECT_EQ(new_vp9_probably,
-            CanPlay(mime_prefix + "codecs=\"vp09.00.10.08.00.01.01.01.00\"'"));
-  EXPECT_EQ(new_vp9_probably,
-            CanPlay(mime_prefix + "codecs=\"vp09.00.10.08.01.02.02.02.00\"'"));
+    // Test a few valid strings.
+    EXPECT_EQ(kTestProbably, CanPlay(prefix + "codecs=\"vp09.00.10.08\"'"));
+    EXPECT_EQ(kTestProbably,
+              CanPlay(prefix + "codecs=\"vp09.00.10.08.00.01.01.01.00\"'"));
+    EXPECT_EQ(kTestProbably,
+              CanPlay(prefix + "codecs=\"vp09.00.10.08.01.02.02.02.00\"'"));
 
-  // Platform support is sadly ambiguous for profiles > 0.
-  // TODO(chcunningham): Plumb proper querying of platform support - give a firm
-  // answer. See https://crbug.com/604566.
-  EXPECT_EQ(new_vp9_maybe, CanPlay(mime_prefix + "codecs=\"vp09.01.10.08\"'"));
-  EXPECT_EQ(new_vp9_maybe, CanPlay(mime_prefix + "codecs=\"vp09.02.10.08\"'"));
-  EXPECT_EQ(new_vp9_maybe, CanPlay(mime_prefix + "codecs=\"vp09.03.10.08\"'"));
+    // Profiles 0 and 1 are always supported supported. Profiles 2 and 3 are
+    // only supported on certain architectures.
+    EXPECT_EQ(kTestProbably, CanPlay(prefix + "codecs=\"vp09.01.10.08\"'"));
+    EXPECT_EQ(kVP9Profile2And3Probably,
+              CanPlay(prefix + "codecs=\"vp09.02.10.08\"'"));
+    EXPECT_EQ(kVP9Profile2And3Probably,
+              CanPlay(prefix + "codecs=\"vp09.03.10.08\"'"));
+  }
 }
-
-const CanPlayTypeNewVp9Params kNewVp9ParamVariants[] = {
-    // Expect CanPlay(...) = kProbably/kMaybe for MP4 as MP4 supports new style
-    // codec string unconditionally.
-    {"", "video/mp4", kPropProbably, kPropMaybe},
-    // Expect CanPlay(...) = kProbably/kMaybe for WebM, only if the relevant
-    // flags are enabled..
-    {"", "video/webm", kNot, kNot},
-    {switches::kEnableHDR, "video/webm", kProbably, kMaybe},
-    {switches::kEnableNewVp9CodecString, "video/webm", kProbably, kMaybe},
-};
-
-INSTANTIATE_TEST_CASE_P(CodecSupportTest_NewVp9String,
-                        MediaCanPlayNewVp9TypeTest,
-                        ::testing::ValuesIn(kNewVp9ParamVariants));
 
 }  // namespace content
