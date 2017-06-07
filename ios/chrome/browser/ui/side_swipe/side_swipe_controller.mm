@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/infobars/infobar_container_view.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_side_swipe_provider.h"
@@ -88,6 +89,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   ReadingListSideSwipeProvider* readingListSideSwipeProvider_;
 
   __weak id<SideSwipeContentProvider> currentContentProvider_;
+
+  // Browser state passed to the initialiser.
+  ios::ChromeBrowserState* browserState_;
 }
 
 // Load grey snapshots for the next |kIpadGreySwipeTabCount| tabs in
@@ -127,6 +131,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     readingListSideSwipeProvider_ = [[ReadingListSideSwipeProvider alloc]
         initWithReadingList:ReadingListModelFactory::GetForBrowserState(
                                 browserState)];
+
+    browserState_ = browserState;
   }
   return self;
 }
@@ -252,14 +258,15 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     }
     index = index + dx;
   }
-  [[SnapshotCache sharedInstance] createGreyCache:sessionIDs];
+  [SnapshotCacheFactory::GetForBrowserState(browserState_)
+      createGreyCache:sessionIDs];
   for (Tab* tab in model_) {
     tab.useGreyImageCache = YES;
   }
 }
 
 - (void)deleteGreyCache {
-  [[SnapshotCache sharedInstance] removeGreyCache];
+  [SnapshotCacheFactory::GetForBrowserState(browserState_) removeGreyCache];
   for (Tab* tab in model_) {
     tab.useGreyImageCache = NO;
   }
