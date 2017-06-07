@@ -14,6 +14,7 @@ import socket
 import urllib
 import urllib2
 
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import alerts
 from chromite.lib import cros_logging as logging
@@ -49,6 +50,10 @@ DEFAULT_WAIT_FOR_TREE_STATUS_SLEEP = 30
 
 # Default timeout (seconds) for waiting for tree status
 DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT = 60 * 3
+
+# Match IGNORED-BUILDERS= case-insensitive as well as variants that would use
+# underscore instead of hyphen or omit the plural.
+IGNORED_BUILDERS_RE = re.compile(r'IGNORED?[-_]BUILDERS?=(\S+)', re.IGNORECASE)
 
 
 class PasswordFileDoesNotExist(Exception):
@@ -181,6 +186,50 @@ def IsTreeOpen(status_url=None, period=1, timeout=1, throttled_ok=False):
     return False
   return True
 
+def GetIgnoredBuilders(status_url=None, timeout=1):
+  """Polls |status_url| and returns the list of ignored builders.
+
+  This function gets a JSON response from |status_url|, and returns the
+  list of builders marked as ignored in the tree status' message.
+
+  Args:
+    status_url: The status url to check i.e.
+      'https://status.appspot.com/current?format=json'
+    timeout: How long to wait for the tree status (in seconds).
+
+  Returns:
+    A list of strings, where each string is a builder. Returns an empty list if
+    there are no ignored builders listed in the tree status, or the query
+    operation times out.
+  """
+  if not status_url:
+    status_url = CROS_TREE_STATUS_JSON_URL
+
+  site_config = config_lib.GetConfig()
+
+  @timeout_util.TimeoutDecorator(timeout)
+  def _get_status_dict():
+    ignored = []
+    status_dict = _GetStatusDict(status_url)
+    if status_dict:
+      for match in IGNORED_BUILDERS_RE.findall(
+          status_dict.get(TREE_STATUS_MESSAGE)):
+        # The value for IGNORED-BUILDERS= could be a comma-separated list of
+        # builders.
+        for builder in match.split(','):
+          if builder in site_config:
+            ignored.append(builder)
+          else:
+            logging.warning(
+                'Got unknown build config "%s" in list of IGNORED-BUILDERS.',
+                builder)
+    return ignored
+
+  try:
+    return _get_status_dict()
+  except timeout_util.TimeoutError:
+    logging.error('Timeout getting ignored builders from the tree status.')
+    return []
 
 def _GetPassword():
   """Returns the password for updating tree status."""

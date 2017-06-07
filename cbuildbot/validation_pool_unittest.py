@@ -143,6 +143,8 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.PatchObject(tree_status, 'WaitForTreeStatus',
                      return_value=constants.TREE_OPEN)
+    self.PatchObject(tree_status, 'GetIgnoredBuilders',
+                     return_value=constants.TREE_OPEN)
     self.fake_db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
     # Suppress all gerrit access; having this occur is generally a sign
@@ -755,6 +757,7 @@ class TestCoreLogic(MoxBase):
     """Various tests for the AcquirePool method."""
     directory = '/tmp/dontmattah'
     repo = repository.RepoRepository(directory, directory, 'master', depth=1)
+    builder_run = FakeBuilderRun(self.fake_db)
     self.mox.StubOutWithMock(repo, 'Sync')
     self.mox.StubOutWithMock(validation_pool.ValidationPool, 'AcquireChanges')
     self.mox.StubOutWithMock(time, 'sleep')
@@ -775,7 +778,7 @@ class TestCoreLogic(MoxBase):
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
         constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
-        check_tree_open=True)
+        check_tree_open=True, builder_run=builder_run)
 
     self.assertTrue(pool.tree_was_open)
     self.mox.VerifyAll()
@@ -802,7 +805,7 @@ class TestCoreLogic(MoxBase):
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
         constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
-        check_tree_open=True)
+        check_tree_open=True, builder_run=builder_run)
 
     self.assertTrue(pool.tree_was_open)
     self.mox.VerifyAll()
@@ -822,7 +825,7 @@ class TestCoreLogic(MoxBase):
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
         constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
-        check_tree_open=True)
+        check_tree_open=True, builder_run=builder_run)
 
     self.assertFalse(pool.tree_was_open)
 

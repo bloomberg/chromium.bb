@@ -451,8 +451,15 @@ class BuilderStage(object):
     Raises:
       See config_lib.Config.GetSlavesForMaster for details.
     """
-    return self._run.site_config.GetSlavesForMaster(
+    ignored_builders = self._run.attrs.metadata.GetValueWithDefault(
+        constants.METADATA_IGNORED_BUILDERS, [])
+    slave_configs = self._run.site_config.GetSlavesForMaster(
         self._run.config, self._run.options)
+    slave_configs = [
+        config for config in slave_configs
+        if config['name'] not in ignored_builders
+    ]
+    return slave_configs
 
   def _GetSlaveConfigMap(self, important_only=True):
     """Get slave config map for the current build config.
@@ -468,9 +475,18 @@ class BuilderStage(object):
     Raises:
       See config_lib.Config.GetSlaveConfigMapForMaster for details.
     """
-    return self._run.site_config.GetSlaveConfigMapForMaster(
+
+    slave_config_map = self._run.site_config.GetSlaveConfigMapForMaster(
         self._run.config, self._run.options,
         important_only=important_only)
+    if important_only:
+      ignored_builders = self._run.attrs.metadata.GetValueWithDefault(
+          constants.METADATA_IGNORED_BUILDERS, [])
+      slave_config_map = {
+          k: v for k, v in slave_config_map.iteritems()
+          if k not in ignored_builders
+      }
+    return slave_config_map
 
   def _BeginStepForBuildbot(self, tag=None):
     """Called before a stage is performed.

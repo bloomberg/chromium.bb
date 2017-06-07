@@ -672,6 +672,37 @@ class MasterConfigBuilderStageTest(AbstractStageTestCase):
     stage._run.config.master = False
     self.assertIsNone(stage.GetScheduledSlaveBuildbucketIds())
 
+  def testGetSlaveConfigs(self):
+    """Verify that _GetSlaveConfigs filters out ignored builders."""
+    stage = self.ConstructStage()
+
+    slave_configs = stage._GetSlaveConfigs()
+    slave_config_names = [config['name'] for config in slave_configs]
+    self.assertIn('arm-generic-paladin', slave_config_names)
+
+    self._run.attrs.metadata.UpdateWithDict(
+        {constants.METADATA_IGNORED_BUILDERS: ['arm-generic-paladin']}
+    )
+    slave_configs = stage._GetSlaveConfigs()
+    slave_config_names = [config['name'] for config in slave_configs]
+    self.assertNotIn('arm-generic-paladin', slave_config_names)
+
+  def testGetSlaveConfigMap(self):
+    """Verify that _GetSlaveConfigMap filters out ignored builders."""
+    stage = self.ConstructStage()
+
+    slave_config_map = stage._GetSlaveConfigMap()
+    self.assertIn('arm-generic-paladin', slave_config_map)
+
+    self._run.attrs.metadata.UpdateWithDict({
+        constants.METADATA_IGNORED_BUILDERS: ['arm-generic-paladin']
+    })
+    slave_config_map = stage._GetSlaveConfigMap(important_only=True)
+    self.assertNotIn('arm-generic-paladin', slave_config_map)
+    slave_config_map = stage._GetSlaveConfigMap(important_only=False)
+    self.assertIn('arm-generic-paladin', slave_config_map)
+
+
 class BoardSpecificBuilderStageTest(AbstractStageTestCase):
   """Tests option/config settings on board-specific stages."""
 

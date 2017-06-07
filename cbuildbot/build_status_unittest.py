@@ -20,6 +20,7 @@ from chromite.lib import config_lib
 from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
+from chromite.lib import tree_status
 
 
 # pylint: disable=protected-access
@@ -202,6 +203,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.metadata = metadata_lib.CBuildbotMetadata()
     self.db = fake_cidb.FakeCIDBConnection()
     self.buildbucket_client = mock.Mock()
+    self.PatchObject(tree_status, 'GetIgnoredBuilders', return_value=[])
 
   def _GetSlaveStatus(self, start_time=None, builders_array=None,
                       master_build_id=None, db=None, config=None,
@@ -305,6 +307,17 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     }
 
     self.assertDictEqual(expected_map, slave_status.dependency_map)
+
+  def testGetExpectedBuilders(self):
+    """Tests _GetExpectedBuilders does not return ignored builders."""
+    slave_status = self._GetSlaveStatus(builders_array=['build1', 'build2'])
+    self.assertItemsEqual(slave_status._GetExpectedBuilders(),
+                          ['build1', 'build2'])
+
+    self.metadata.UpdateWithDict({
+        constants.METADATA_IGNORED_BUILDERS: ['build1']
+    })
+    self.assertItemsEqual(slave_status._GetExpectedBuilders(), ['build2'])
 
   def testGetMissingBuilds(self):
     """Tests GetMissingBuilds returns the missing builders."""
@@ -982,6 +995,42 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
         builders_array=['build1', 'build2'])
 
     self.assertTrue(slave_status.ShouldWait())
+
+  def testShouldWaitIgnoredBuildersStillBuilding(self):
+    """Tests that ShouldWait says not to wait on ignored builders."""
+    cidb_status = {
+        'build1': CIDBStatusInfos.GetInflightBuild(),
+        'build2': CIDBStatusInfos.GetFailedBuild()
+    }
+    self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
+
+    slave_status = self._GetSlaveStatus(
+        builders_array=['build1', 'build2'])
+
+    self.assertTrue(slave_status.ShouldWait())
+
+    self.metadata.UpdateWithDict({
+        constants.METADATA_IGNORED_BUILDERS: ['build1']
+    })
+    self.assertFalse(slave_status.ShouldWait())
+
+  def testUpdateSlaveStatusUpdatesIgnoredBuilders(self):
+    """Tests that UpdateSlaveStatus updates the list of ignored builders."""
+    cidb_status = {
+        'build1': CIDBStatusInfos.GetInflightBuild(),
+        'build2': CIDBStatusInfos.GetFailedBuild()
+    }
+    self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
+
+    slave_status = self._GetSlaveStatus(
+        builders_array=['build1', 'build2'])
+
+    with mock.patch.object(tree_status, 'GetIgnoredBuilders') as m:
+      m.return_value = ['build1']
+      slave_status.UpdateSlaveStatus()
+      self.assertItemsEqual(slave_status.metadata.GetValueWithDefault(
+          constants.METADATA_IGNORED_BUILDERS, []), ['build1'])
+
 
   def testShouldWaitBuildersStillBuildingWithBuildbucket(self):
     """ShouldWait says yes because builders still in started status."""

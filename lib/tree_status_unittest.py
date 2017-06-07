@@ -7,8 +7,10 @@
 from __future__ import print_function
 
 import mock
+import time
 import urllib
 
+from chromite.lib import config_lib_unittest
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import timeout_util
@@ -22,6 +24,13 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
   """Tests TreeStatus method in cros_build_lib."""
 
   status_url = 'https://chromiumos-status.appspot.com/current?format=json'
+
+  def setUp(self):
+    mock_site_config = config_lib_unittest.MockSiteConfig()
+    # Add a couple other builders so we have more than one.
+    mock_site_config.Add('amd64-generic-paladin')
+    mock_site_config.Add('arm-generic-paladin')
+    self.site_config = mock_site_config
 
   def _TreeStatusFile(self, message, general_state):
     """Returns a file-like object with the status message writtin in it."""
@@ -150,6 +159,70 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     data = tree_status._GetStatusDict(self.status_url, raw_message=True)
     self.assertEqual(data[tree_status.TREE_STATUS_MESSAGE],
                      'Tree is open (taco).')
+
+  def testGetIgnoredBuilders(self):
+    """Tests that GetIgnoredBuilders parses out IGNORED-BUILDERS=."""
+    self._SetupMockTreeStatusResponses(
+        final_tree_status=(
+            'Tree is open (IGNORED-BUILDERS=x86-generic-paladin).'),
+        final_general_state=constants.TREE_OPEN)
+    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    self.assertItemsEqual(builders, ['x86-generic-paladin'])
+
+    self._SetupMockTreeStatusResponses(
+        final_tree_status=('Tree is open (IGNORED-BUILDERS=x86-generic-paladin,'
+                           'amd64-generic-paladin IGNORED-BUILDERS='
+                           'arm-generic-paladin).'),
+        final_general_state=constants.TREE_OPEN)
+    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    self.assertItemsEqual(
+        builders,
+        ['x86-generic-paladin', 'amd64-generic-paladin', 'arm-generic-paladin'])
+
+    # Builders not in the site config are filtered out.
+    self._SetupMockTreeStatusResponses(
+        final_tree_status=(
+            'Tree is open (IGNORED-BUILDERS=foo-generic-paladin).'),
+        final_general_state=constants.TREE_OPEN)
+    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    self.assertEqual(builders, [])
+
+    # Underscore instead of hyphen.
+    self._SetupMockTreeStatusResponses(
+        final_tree_status=(
+            'Tree is open (IGNORED_BUILDERS=x86-generic-paladin).'),
+        final_general_state=constants.TREE_OPEN)
+    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    self.assertItemsEqual(builders, ['x86-generic-paladin'])
+
+    # No plural.
+    self._SetupMockTreeStatusResponses(
+        final_tree_status='Tree is open (IGNORED-BUILDER=x86-generic-paladin).',
+        final_general_state=constants.TREE_OPEN)
+    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    self.assertItemsEqual(builders, ['x86-generic-paladin'])
+
+    # IGNORE instead of IGNORED.
+    self._SetupMockTreeStatusResponses(
+        final_tree_status='Tree is open (IGNORE-BUILDERS=x86-generic-paladin).',
+        final_general_state=constants.TREE_OPEN)
+    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    self.assertItemsEqual(builders, ['x86-generic-paladin'])
+
+    # Case insensitive.
+    self._SetupMockTreeStatusResponses(
+        final_tree_status=(
+            'Tree is open (ignored-builders=x86-generic-paladin).'),
+        final_general_state=constants.TREE_OPEN)
+    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    self.assertItemsEqual(builders, ['x86-generic-paladin'])
+
+  def testGetIgnoredBuildersTimeout(self):
+    """Tests timeout behavior of GetIgnoredBuilders."""
+    with mock.patch.object(tree_status, '_GetStatusDict') as m:
+      m.side_effect = lambda _: time.sleep(10)
+      builders = tree_status.GetIgnoredBuilders(self.status_url, timeout=1)
+      self.assertEqual(builders, [])
 
   def testUpdateTreeStatusWithEpilogue(self):
     """Tests that epilogue is appended to the message."""

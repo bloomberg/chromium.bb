@@ -634,6 +634,13 @@ class BuildSpecsManager(object):
       logging.error('Not all builds finished before timeout (%d minutes)'
                     ' reached.', int((timeout / 60) + 0.5))
 
+    if self.metadata:
+      ignored_builders = self.metadata.GetValueWithDefault(
+          constants.METADATA_IGNORED_BUILDERS)
+      builders_array = [
+          builder for builder in builders_array
+          if builder not in ignored_builders
+      ]
     return self._GetSlaveBuilderStatus(master_build_id, db, builders_array)
 
   def _GetSlaveBuilderStatus(self, master_build_id, db, builders_array):

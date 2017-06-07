@@ -25,6 +25,7 @@ from chromite.lib import git
 from chromite.lib import failure_message_lib_unittest
 from chromite.lib import metadata_lib
 from chromite.lib import osutils
+from chromite.lib import tree_status
 
 
 FAKE_VERSION = """
@@ -180,6 +181,8 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
 
     self.db_mock = mock.Mock()
     self.buildbucket_client_mock = mock.Mock()
+
+    self.PatchObject(tree_status, 'GetIgnoredBuilders', return_value=[])
 
   def BuildManager(self, config=None, metadata=None, db=None,
                    buildbucket_client=None):
@@ -386,26 +389,33 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                           'platform_version':'1.2.5'}
     self.assertFalse(self.manager.DidLastBuildFail())
 
-  def _GetBuildersStatus(self, builders, status_runs):
+  def _GetBuildersStatus(self, builders, status_runs, ignored_builders=None):
     """Test a call to BuildSpecsManager.GetBuildersStatus.
 
     Args:
       builders: List of builders to get status for.
       status_runs: List of dictionaries of expected build and status.
+      ignored_builders: List of lists of ignored builders. The length of this
+          list should be one less than len(status_runs).
     """
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      'GetAllSlaveCIDBStatusInfo',
                      side_effect=status_runs)
 
+    self.PatchObject(tree_status,
+                     'GetIgnoredBuilders',
+                     side_effect=ignored_builders)
+
     final_status_dict = status_runs[-1]
     message_mock = mock.Mock()
     message_mock.BuildFailureMessageToStr.return_value = 'failure_message_str'
-    build_statuses = [
-        builder_status_lib.BuilderStatus(
-            final_status_dict.get(x).status, message_mock) for x in builders]
+    build_statuses = {
+        x: builder_status_lib.BuilderStatus(
+            final_status_dict.get(x).status, message_mock) for x in builders
+    }
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      'GetBuilderStatusForBuild',
-                     side_effect=build_statuses)
+                     side_effect=lambda config: build_statuses[config])
 
     return self.manager.GetBuildersStatus(
         'builderid', mock.Mock(), builders)
@@ -427,6 +437,37 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
 
     self.assertTrue(statuses['build1'].Failed())
+    self.assertTrue(statuses['build2'].Passed())
+
+  def testGetBuildersStatusIgnoredBuilder(self):
+    """Tests that we don't wait for an inflight build that's ignored."""
+    metadata = metadata_lib.CBuildbotMetadata()
+    self.manager = self.BuildManager(metadata=metadata)
+    status_runs = [{
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=2)
+    }, {
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
+            build_id=2)
+    }, {
+        'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
+            build_id=1),
+        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
+            build_id=2)
+    }]
+
+    ignored_builders_runs = [
+        [],
+        ['build1'],
+    ]
+    statuses = self._GetBuildersStatus(
+        ['build1', 'build2'], status_runs, ignored_builders_runs)
+
+    self.assertNotIn('build1', statuses)
     self.assertTrue(statuses['build2'].Passed())
 
   def testGetBuildersStatusLoop(self):

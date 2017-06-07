@@ -208,9 +208,23 @@ class BinhostConfWriterTest(
 
     # Provide a sample of private/public slave boards that are expected.
     public_slave_boards = ('amd64-generic', 'daisy')
-    # TODO: 20170606 temporarily removed cyan due to crbug.com/730272
-    #private_slave_boards = ('cyan', 'samus', 'lumpy', 'daisy_spring')
-    private_slave_boards = ('samus', 'lumpy', 'daisy_spring')
+    private_slave_boards = ('cyan', 'samus', 'lumpy', 'daisy_spring')
+
+    self._VerifyResults(public_slave_boards=public_slave_boards,
+                        private_slave_boards=private_slave_boards)
+
+  def testMasterPaladinIgnoredBuilders(self):
+    """Tests that commands are not run for ignored builders."""
+    self._Prepare('master-paladin')
+    confwriter = prebuilts.BinhostConfWriter(self._run)
+    self._run.attrs.metadata.UpdateWithDict({
+        constants.METADATA_IGNORED_BUILDERS: ['samus', 'daisy']
+    })
+    confwriter.Perform()
+
+    # Provide a sample of private/public slave boards that are expected.
+    public_slave_boards = ('amd64-generic',)
+    private_slave_boards = ('cyan', 'lumpy', 'daisy_spring')
 
     self._VerifyResults(public_slave_boards=public_slave_boards,
                         private_slave_boards=private_slave_boards)

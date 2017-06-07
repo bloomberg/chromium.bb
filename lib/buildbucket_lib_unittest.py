@@ -419,7 +419,8 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
     """Test GetBuildInfoDict with metadata and config."""
     metadata = metadata_lib.CBuildbotMetadata()
     slaves = [('config_1', 'bb_id_1', 0),
-              ('config_1', 'bb_id_2', 1)]
+              ('config_1', 'bb_id_2', 1),
+              ('config_2', 'bb_id_3', 2)]
     metadata.ExtendKeyListWithList(
         constants.METADATA_SCHEDULED_SLAVES, slaves)
 
@@ -427,6 +428,11 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
     self.assertEqual(buildbucket_info_dict['config_1'].retry, 1)
     self.assertEqual(buildbucket_info_dict['config_1'].buildbucket_id,
                      'bb_id_2')
+
+    metadata.UpdateWithDict({constants.METADATA_IGNORED_BUILDERS: ['config_2']})
+    buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(metadata)
+    self.assertIn('config_1', buildbucket_info_dict)
+    self.assertNotIn('config_2', buildbucket_info_dict)
 
   def testGetBuildbucketIds(self):
     """Test GetBuildbucketIds with metadata and config."""

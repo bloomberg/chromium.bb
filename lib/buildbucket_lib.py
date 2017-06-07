@@ -127,13 +127,20 @@ def GetBuildInfoDict(metadata):
 
   Returns:
     buildbucket_info_dict: A dict mapping build config name to its buildbucket
-        information in the format of BuildbucketInfo.
+        information in the format of BuildbucketInfo. Build configs that are
+        ignored through the tree status will not be in the dict.
         (See GetScheduledBuildDict for details.)
   """
   assert metadata is not None
 
   scheduled_slaves_list = metadata.GetValueWithDefault(
       constants.METADATA_SCHEDULED_SLAVES, [])
+  ignored_builders = metadata.GetValueWithDefault(
+      constants.METADATA_IGNORED_BUILDERS, [])
+  scheduled_slaves_list = [
+      (config, bb_id, ts) for config, bb_id, ts in scheduled_slaves_list
+      if config not in ignored_builders
+  ]
   return GetScheduledBuildDict(scheduled_slaves_list)
 
 def GetBuildbucketIds(metadata):

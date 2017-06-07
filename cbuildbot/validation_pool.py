@@ -459,14 +459,13 @@ class ValidationPool(object):
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
     timeout = cls.DEFAULT_TIMEOUT
-    if builder_run is not None:
-      build_id, db = builder_run.GetCIDBHandle()
-      if db:
-        time_to_deadline = db.GetTimeToDeadline(build_id)
-        if time_to_deadline is not None:
-          # We must leave enough time before the deadline to allow us to extend
-          # the deadline in case we hit this timeout.
-          timeout = time_to_deadline - cls.EXTENSION_TIMEOUT_BUFFER
+    build_id, db = builder_run.GetCIDBHandle()
+    if db:
+      time_to_deadline = db.GetTimeToDeadline(build_id)
+      if time_to_deadline is not None:
+        # We must leave enough time before the deadline to allow us to extend
+        # the deadline in case we hit this timeout.
+        timeout = time_to_deadline - cls.EXTENSION_TIMEOUT_BUFFER
 
     end_time = time.time() + timeout
     status = constants.TREE_OPEN
@@ -489,6 +488,11 @@ class ValidationPool(object):
 
       gerrit_query, ready_fn = query
       tree_was_open = (status == constants.TREE_OPEN)
+
+      ignored_builders = tree_status.GetIgnoredBuilders()
+      builder_run.attrs.metadata.UpdateWithDict({
+          constants.METADATA_IGNORED_BUILDERS: ignored_builders
+      })
 
       pool = ValidationPool(overlays, repo.directory, build_number,
                             builder_name, True, dryrun, builder_run=builder_run,

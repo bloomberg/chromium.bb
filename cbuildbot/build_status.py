@@ -16,6 +16,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
+from chromite.lib import tree_status
 
 
 class SlaveStatus(object):
@@ -52,7 +53,7 @@ class SlaveStatus(object):
       dry_run: Boolean indicating whether it's a dry run. Default to True.
     """
     self.start_time = start_time
-    self.builders_array = builders_array
+    self.all_builders = builders_array
     self.master_build_id = master_build_id
     self.db = db
     self.config = config
@@ -144,7 +145,7 @@ class SlaveStatus(object):
         config_lib.UseBuildbucketScheduler(self.config)):
       scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
           self.metadata)
-      self.builders_array = scheduled_buildbucket_info_dict.keys()
+      self.all_builders = scheduled_buildbucket_info_dict.keys()
       self.all_buildbucket_info_dict = (
           builder_status_lib.SlaveBuilderStatus.GetAllSlaveBuildbucketInfo(
               self.buildbucket_client, scheduled_buildbucket_info_dict,
@@ -164,6 +165,12 @@ class SlaveStatus(object):
     self.builds_to_retry = self._GetBuildsToRetry()
     self.completed_builds = self._GetCompletedBuilds()
 
+    if self.metadata is not None:
+      ignored_builders = tree_status.GetIgnoredBuilders()
+      self.metadata.UpdateWithDict({
+          constants.METADATA_IGNORED_BUILDERS: ignored_builders
+      })
+
   def GetBuildbucketBuilds(self, build_status):
     """Get the buildbucket builds which are in the build_status status.
 
@@ -181,6 +188,24 @@ class SlaveStatus(object):
 
     return self.status_buildset_dict.get(build_status, set())
 
+  def _GetExpectedBuilders(self):
+    """Returns the list of expected slave build configs.
+
+    This list includes all important slave build configs that are not currently
+    ignored through the tree status.
+
+    Returns:
+      A list of build slave config names.
+    """
+    ignored_builders = []
+    if self.metadata:
+      ignored_builders = self.metadata.GetValueWithDefault(
+          constants.METADATA_IGNORED_BUILDERS, [])
+    return [
+        builder for builder in self.all_builders
+        if builder not in ignored_builders
+    ]
+
   def _GetMissingBuilds(self):
     """Returns the missing builds.
 
@@ -197,7 +222,8 @@ class SlaveStatus(object):
                  self.new_buildbucket_info_dict.iteritems()
                  if info.status is None)
     else:
-      return (set(self.builders_array) - set(self.new_cidb_status_dict.keys()) -
+      return (set(self._GetExpectedBuilders()) -
+              set(self.new_cidb_status_dict.keys()) -
               self.completed_builds)
 
   def _GetScheduledBuilds(self):
@@ -284,7 +310,7 @@ class SlaveStatus(object):
     current_completed = set(
         b for b, s in self.new_cidb_status_dict.iteritems()
         if s.status in constants.BUILDER_COMPLETED_STATUSES and
-        b in self.builders_array)
+        b in self._GetExpectedBuilders())
 
     if self.new_buildbucket_info_dict is not None:
       assert self.builds_to_retry is not None
@@ -316,7 +342,7 @@ class SlaveStatus(object):
     Returns:
       A bool of True if all builds successfully completed, False otherwise.
     """
-    return len(self.completed_builds) == len(self.builders_array)
+    return len(self.completed_builds) == len(self._GetExpectedBuilders())
 
 
   def _GetUncompletedBuilds(self, completed_builds):
@@ -328,7 +354,7 @@ class SlaveStatus(object):
     Returns:
       A set of config names (strings) of uncompleted builds.
     """
-    return set(self.builders_array) - completed_builds
+    return set(self._GetExpectedBuilders()) - completed_builds
 
   def _ShouldFailForBuilderStartTimeout(self, current_time):
     """Decides if we should fail if a build hasn't started within 5 mins.
@@ -356,7 +382,7 @@ class SlaveStatus(object):
       # either in completed status or still in scheduled status.
       other_builders_completed = (
           len(self.scheduled_builds) + len(self.completed_builds) ==
-          len(self.builders_array))
+          len(self._GetExpectedBuilders()))
 
       for builder in self.scheduled_builds:
         logging.error('Builder not started %s.', builder)
@@ -367,7 +393,7 @@ class SlaveStatus(object):
       # Check that aside from the missing builders the rest have completed.
       other_builders_completed = (
           len(self.missing_builds) + len(self.completed_builds) ==
-          len(self.builders_array))
+          len(self._GetExpectedBuilders()))
 
       return (past_deadline and other_builders_completed and
               self.missing_builds)
@@ -485,11 +511,11 @@ class SlaveStatus(object):
 
     if self.pool is not None:
       triage_relevant_changes = relevant_changes.TriageRelevantChanges(
-          self.master_build_id, self.db, self.builders_array, self.config,
-          self.metadata, self.version, self.pool.build_root, self.pool.applied,
-          self.all_buildbucket_info_dict, self.all_cidb_status_dict,
-          self.completed_builds, self.dependency_map, self.buildbucket_client,
-          dry_run=self.dry_run)
+          self.master_build_id, self.db, self._GetExpectedBuilders(),
+          self.config, self.metadata, self.version, self.pool.build_root,
+          self.pool.applied, self.all_buildbucket_info_dict,
+          self.all_cidb_status_dict, self.completed_builds, self.dependency_map,
+          self.buildbucket_client, dry_run=self.dry_run)
 
       should_self_destruct, should_self_destruct_with_success = (
           triage_relevant_changes.ShouldSelfDestruct())
@@ -526,7 +552,8 @@ class SlaveStatus(object):
 
     # We got here which means no problems, we should still wait.
     logging.info('Still waiting for the following builds to complete: %r',
-                 sorted(set(self.builders_array) - self.completed_builds))
+                 sorted(set(self._GetExpectedBuilders()) -
+                        self.completed_builds))
 
     if self.builds_to_retry:
       retried_builds = self._RetryBuilds(self.builds_to_retry)
