@@ -12648,14 +12648,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.AttemptCancelled">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The attempt which completed after the job was already cancelled.
   </summary>
 </histogram>
 
 <histogram name="DNS.AttemptDiscarded">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The attempt which completed after the job was already cancelled OR the
     attempt that has finished after host resolution was already completed by an
@@ -12664,7 +12664,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.AttemptFailDuration" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Duration of time taken in OS resolutions for actual navigations. These
     attempts which completed after the job was already canceled OR after the job
@@ -12674,12 +12674,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.AttemptFailure">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>The attempt that has not resolved the host successfully.</summary>
 </histogram>
 
 <histogram name="DNS.AttemptFirstFailure">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The attempt that resolved the host first and the resolution was not
     successful.
@@ -12687,19 +12687,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.AttemptFirstSuccess">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The attempt that resolved the host first and the resolution was successful.
   </summary>
 </histogram>
 
 <histogram name="DNS.AttemptSuccess">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>The attempt that has resolved the host successfully.</summary>
 </histogram>
 
 <histogram name="DNS.AttemptSuccessDuration" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Duration of time taken in OS resolutions that succeeded and were requested
     for actual navigations. These attempts which completed after the job was
@@ -12710,7 +12710,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.AttemptTimeSavedByRetry" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     This histogram shows the time saved by having spawned an extra attempt, when
     the first attempt didn't finish before retry attempt.
@@ -12718,7 +12718,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.CacheEvicted" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The time left to expiration of an entry when it is removed while compacting
     the HostCache.
@@ -12726,7 +12726,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.CacheExpired" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The time since expiration of an entry when it is removed while compacting
     the HostCache.
@@ -12734,7 +12734,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.CacheExpiredOnGet" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The time since expiration of an entry when it is removed on lookup.
   </summary>
@@ -12742,19 +12742,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DNS.EmptyAddressListAndNoError"
     enum="DNSEmptyAddressListAndNoError">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Error status when an empty address list was found in OnLookupComplete().
   </summary>
 </histogram>
 
 <histogram name="DNS.HostCache.Erase" enum="DNS.HostCache.EraseReason">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>The reason for erasing a DNS entry from the host cache.</summary>
 </histogram>
 
 <histogram name="DNS.HostCache.EraseStale.ExpiredBy" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When erasing a stale (expired or old-network) DNS entry from the host cache,
     how long past the expiration time it is.
@@ -12762,7 +12762,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.HostCache.EraseStale.NetworkChanges" units="changes">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When erasing a stale (expired or old-network) DNS entry from the host cache
     how many network changes happened between setting and erasing it.
@@ -12770,7 +12770,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.HostCache.EraseStale.StaleHits" units="hits">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When erasing a stale (expired or old-network) DNS entry from the host cache
     how many hits it received while stale.
@@ -12778,7 +12778,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.HostCache.EraseValid.ValidFor" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When erasing a valid DNS entry from the host cache, for how much longer it
     would have remained valid.
@@ -12786,12 +12786,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.HostCache.Lookup" enum="DNS.HostCache.LookupOutcome">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>The outcome of looking up a DNS entry in the host cache.</summary>
 </histogram>
 
 <histogram name="DNS.HostCache.LookupStale.ExpiredBy" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When looking up a stale DNS entry in the host cache, how long past the
     expiration time it is.
@@ -12799,7 +12799,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.HostCache.LookupStale.NetworkChanges" units="changes">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When looking up a stale DNS entry in the host cache, how many network
     changes happened between setting it and looking it up.
@@ -12807,13 +12807,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.HostCache.Set" enum="DNS.HostCache.SetOutcome">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>The outcome of setting a DNS entry in the host cache.</summary>
 </histogram>
 
 <histogram name="DNS.HostCache.UpdateStale.AddressListDelta"
     enum="DNS.AddressListDeltaType">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When updating a stale (expired or old-network) DNS entry in the host cache,
     and both results are successful, how the address list differs between the
@@ -12822,7 +12822,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.HostCache.UpdateStale.ExpiredBy" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When updating a stale (expired or old-network) DNS entry in the host cache,
     how long past the expiration time the old entry was.
@@ -12830,7 +12830,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.HostCache.UpdateStale.NetworkChanges" units="changes">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When updating a stale (expired or old-nework) DNS entry in the host cache,
     how many network changes happened between setting the old entry and setting
@@ -12839,7 +12839,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.HostCache.UpdateStale.StaleHits" units="hits">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The number of hits received to an updated stale DNS entry in the host cache
     while it was stale.
@@ -12847,7 +12847,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.IndependentFailedNavigation" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When either a pre-resolution was not done recently enough to provide
     benefit, or the corresponding pre-resolution is still pending, this
@@ -12860,7 +12860,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.IndependentNavigation" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When either a pre-resolution was not done recently enough to provide
     benefit, or the corresponding pre-resolution is still pending, this
@@ -12873,7 +12873,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTime" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -12882,7 +12882,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_HIGHEST" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -12891,7 +12891,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_IDLE" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -12900,7 +12900,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_LOW" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -12909,7 +12909,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_LOWEST" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -12918,7 +12918,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_MEDIUM" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -12927,7 +12927,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -12936,7 +12936,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_HIGHEST" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -12946,7 +12946,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_IDLE" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -12956,7 +12956,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_LOW" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -12966,7 +12966,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_LOWEST" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -12976,7 +12976,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_MEDIUM" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -12986,7 +12986,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.PrefetchCacheEviction" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The duration of time used (most recently) to pre-resolve a hostname, when
     the prefetched resolution was apparently evicted from the cache.  The
@@ -12996,7 +12996,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.PrefetchCacheEvictionL" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The duration of time used (most recently) to pre-resolve a hostname, when
     the prefetched resolution was apparently evicted from the cache.  The
@@ -13006,7 +13006,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.PrefetchFoundName">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Replaced by DNS.PrefetchFoundNameL.</summary>
 </histogram>
 
@@ -13014,7 +13014,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 2/2010, and replaced by DNS.PrefetchResolution
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The duration of time used by the DNS pre-resolving threads to resolve a host
     name via the network.  Any resolutions that are faster than 15ms are
@@ -13028,12 +13028,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.PrefetchNegativeHit">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Replaced by DNS.PrefetchNegativeHitL.</summary>
 </histogram>
 
 <histogram name="DNS.PrefetchNegativeHitL" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The duration of time saved due to DNS pre-resolving in the &quot;name not
     found&quot; case.  Time &quot;savings&quot; shown in the histogram are
@@ -13051,12 +13051,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.PrefetchPositiveHit">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Replaced by DNS.PrefetchPositiveHitL.</summary>
 </histogram>
 
 <histogram name="DNS.PrefetchPositiveHitL" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The duration of time saved due to DNS pre-resolving in the &quot;name was
     found&quot; case, and induced by either a page scan for a link or an omnibox
@@ -13072,7 +13072,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.PrefetchQueue" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The duration of time spent by a proposed resolution waiting in the queue to
     be resolved.  This number is in addition to any DNS resolution time that may
@@ -13081,7 +13081,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.PrefetchReferredPositiveHit" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The duration of time saved due to DNS pre-resolving in the &quot;name was
     found&quot; case, and induced by predicting (using referrer lists) that a
@@ -13097,7 +13097,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.PrefetchResolution" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The duration of time used by the DNS pre-resolving threads to resolve a host
     name via the network.  Any resolutions that are faster than 15ms are
@@ -13111,7 +13111,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.QueueRecycledDeltaOver2">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When, due to congestion avoidance, a queued pre-resolution is abandoned
     (recycled) without actually being resolved, this histograms records the age
@@ -13121,7 +13121,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.QueueRecycledUnder2">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When, due to congestion avoidance, a queued pre-resolution is abandoned
     (recycled) without actually being resolved, this histograms records the age
@@ -13131,14 +13131,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.ResolveCategory" enum="ResolutionCategory">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Counts of successes and failures of OS resolutions in various categories.
   </summary>
 </histogram>
 
 <histogram name="DNS.ResolveFail" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Duration of time taken in OS resolutions for actual navigations.  Note that
     cached OS resolutions may provide low (0ms?) resolution times.
@@ -13146,22 +13146,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.ResolveFail_FAMILY_IPV4" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Same as DNS.ResolveFail, but limited to pure IPv4 lookups.</summary>
 </histogram>
 
 <histogram name="DNS.ResolveFail_FAMILY_IPV6" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Same as DNS.ResolveFail, but limited to pure IPv6 lookups.</summary>
 </histogram>
 
 <histogram name="DNS.ResolveFail_FAMILY_UNSPEC" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Same as DNS.ResolveFail, but limited to IPv4/IPv6 lookups.</summary>
 </histogram>
 
 <histogram name="DNS.ResolveSpeculativeFail" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Duration of time taken in speculative OS resolutions.  Note that cached OS
     resolutions may provide low (0ms?) resolution times.
@@ -13169,7 +13169,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.ResolveSpeculativeSuccess" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Duration of time taken in speculative OS resolution that succeeded.  Note
     that cached resolutions may provide low (0ms?) resolution times.
@@ -13177,7 +13177,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.ResolveSuccess" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Duration of time taken in OS resolutions that succeeded and were requested
     for actual navigations.  Note that cached resolutions may provide low (0ms?)
@@ -13186,21 +13186,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.ResolveSuccess_FAMILY_IPV4" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Same as DNS.ResolveSuccess, but limited to pure IPv4 lookups.
   </summary>
 </histogram>
 
 <histogram name="DNS.ResolveSuccess_FAMILY_IPV6" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Same as DNS.ResolveSuccess, but limited to pure IPv6 lookups.
   </summary>
 </histogram>
 
 <histogram name="DNS.ResolveSuccess_FAMILY_UNSPEC" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Same as DNS.ResolveSuccess, but limited to IPv4/IPv6 lookups.
   </summary>
@@ -13210,7 +13210,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Counts of hits and misses in the DNS cache and DNS jobs pool of wasted
     HostResolverImpl::Jobs that could be avoided by always resolving using
@@ -13219,7 +13219,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.StaleHostResolver.NetworkEarly" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When a DNS request made through StaleHostResolver returns, a stale cached
     result was available, and the network responded before or exactly at the
@@ -13228,7 +13228,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.StaleHostResolver.NetworkLate" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When a DNS request made through StaleHostResolver returns, a stale cached
     result was available, and the network responded after the stale delay, how
@@ -13238,7 +13238,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DNS.StaleHostResolver.RequestOutcome"
     enum="DNS.StaleHostResolverRequestOutcome">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When a DNS request made through StaleHostResolver returns or is canceled,
     the outcome of the request.
@@ -13247,7 +13247,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DNS.StaleHostResolver.StaleAddressListDelta"
     enum="DNS.AddressListDeltaType">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     When a DNS request made through StaleHostResolver had a stale cached result
     and both the stale and network results were successful, the difference
@@ -13256,7 +13256,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.TotalTime" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Duration of time since a HostResolverImpl::Resolve request to the time a
     result is posted. Excludes canceled, evicted, and aborted requests. Includes
@@ -13265,7 +13265,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.TotalTime_speculative" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Duration of time since a HostResolverImpl::Resolve request to the time a
     result is posted. Excludes canceled, evicted, and aborted requests. Includes
@@ -13274,7 +13274,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.UnexpectedResolution">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     In some cases, such as when content arrives with embedded references to
     other servers, the prefetch system can't (or doesn't) attempt to pre-resolve
@@ -13292,7 +13292,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DNS.UnexpectedResolutionL">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     In some cases, such as when content arrives with embedded references to
     other servers, or when a page (such as one in SSL) preclude scanning and
@@ -13311,7 +13311,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DnsProbe.ErrorPageUpdateStatus" enum="DnsProbe.ProbeStatus">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Status of DNS probe updates sent to a DNS error page.</summary>
 </histogram>
 
@@ -13319,7 +13319,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Renamed 7/2013 to DnsProbe.ProbeDuration.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Time between starting and finishing DNS probe.</summary>
 </histogram>
 
@@ -13327,7 +13327,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time between starting and finishing DNS probe when NCN says we're offline.
   </summary>
@@ -13338,7 +13338,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Result of DNS probes sent by the probe service when NCN says we're offline.
   </summary>
@@ -13348,7 +13348,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Time between starting and finishing DNS probe when NCN says we're online.
   </summary>
@@ -13359,7 +13359,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Result of DNS probes sent by the probe service when NCN says we're online.
   </summary>
@@ -13370,7 +13370,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Renamed 7/2013 to DnsProbe.ProbeResult.  (Also switched to the full
     DnsProbe.ProbeStatus enum.)
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Result of DNS probes sent by the probe service.</summary>
 </histogram>
 
@@ -13378,7 +13378,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Elapsed time of DNS probes that return PROBE_BAD_CONFIG.</summary>
 </histogram>
 
@@ -13387,7 +13387,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Whether the only nameserver in the system DNS config was 127.0.0.1 when the
     probe result was BAD_CONFIG.
@@ -13399,7 +13399,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The result of the system probe job when the overall probe result was
     BAD_CONFIG.
@@ -13410,7 +13410,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     The number of nameservers in the system DNS config when the probe result was
     BAD_CONFIG.
@@ -13421,7 +13421,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Elapsed time of DNS probes that return PROBE_NO_INTERNET.</summary>
 </histogram>
 
@@ -13429,7 +13429,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Elapsed time of DNS probes that return PROBE_NXDOMAIN.</summary>
 </histogram>
 
@@ -13437,17 +13437,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Elapsed time of DNS probes that return PROBE_UNKNOWN.</summary>
 </histogram>
 
 <histogram name="DnsProbe.ProbeDuration" units="ms">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Time between starting and finishing DNS probe.</summary>
 </histogram>
 
 <histogram name="DnsProbe.ProbeResult" enum="DnsProbe.ProbeStatus">
-  <owner>juliatuttle@chromium.org</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Result of DNS probes sent by the probe service.</summary>
 </histogram>
 
