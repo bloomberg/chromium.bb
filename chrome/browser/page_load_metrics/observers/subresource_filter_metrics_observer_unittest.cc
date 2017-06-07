@@ -4,24 +4,46 @@
 
 #include "chrome/browser/page_load_metrics/observers/subresource_filter_metrics_observer.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
+#include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
+#include "components/subresource_filter/core/common/activation_decision.h"
+#include "components/subresource_filter/core/common/activation_level.h"
+#include "components/subresource_filter/core/common/activation_state.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/test/navigation_simulator.h"
+#include "url/gurl.h"
 
 namespace {
 const char kDefaultTestUrl[] = "https://example.com/";
+const char kDefaultTestUrlWithActivation[] = "https://example-activation.com/";
 }  // namespace
 
 class SubresourceFilterMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  public:
+  SubresourceFilterMetricsObserverTest() {}
+  ~SubresourceFilterMetricsObserverTest() override {}
+
+  void SetUp() override {
+    page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
+    subresource_filter::SubresourceFilterObserverManager::CreateForWebContents(
+        web_contents());
+    observer_manager_ =
+        subresource_filter::SubresourceFilterObserverManager::FromWebContents(
+            web_contents());
+  }
+
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(base::MakeUnique<SubresourceFilterMetricsObserver>());
   }
 
-  bool AnyMetricsRecorded() {
-    return !histogram_tester()
-                .GetTotalCountsForPrefix("PageLoad.Clients.SubresourceFilter.")
-                .empty();
+  size_t TotalMetricsRecorded() {
+    return histogram_tester()
+        .GetTotalCountsForPrefix("PageLoad.Clients.SubresourceFilter.")
+        .size();
   }
 
   void InitializePageLoadTiming(
@@ -44,11 +66,39 @@ class SubresourceFilterMetricsObserverTest
         base::TimeDelta::FromMilliseconds(1500);
     PopulateRequiredTimingFields(timing);
   }
+
+  void SimulateNavigateAndCommit(const GURL& url) {
+    std::unique_ptr<content::NavigationSimulator> simulator =
+        content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+    simulator->Start();
+    // Simulate an activation notification.
+    content::NavigationHandle* handle = simulator->GetNavigationHandle();
+    if (handle->GetURL() == kDefaultTestUrlWithActivation) {
+      observer_manager_->NotifyPageActivationComputed(
+          handle, subresource_filter::ActivationDecision::ACTIVATED,
+          subresource_filter::ActivationState(
+              subresource_filter::ActivationLevel::ENABLED));
+    } else {
+      observer_manager_->NotifyPageActivationComputed(
+          handle,
+          subresource_filter::ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
+          subresource_filter::ActivationState(
+              subresource_filter::ActivationLevel::DISABLED));
+    }
+    simulator->Commit();
+  }
+
+ private:
+  // Owned by the WebContents.
+  subresource_filter::SubresourceFilterObserverManager* observer_manager_ =
+      nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterMetricsObserverTest);
 };
 
 TEST_F(SubresourceFilterMetricsObserverTest,
        NoMetricsForNonSubresourceFilteredNavigation) {
-  NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateNavigateAndCommit(GURL(kDefaultTestUrl));
 
   page_load_metrics::mojom::PageLoadTiming timing;
   InitializePageLoadTiming(&timing);
@@ -58,11 +108,16 @@ TEST_F(SubresourceFilterMetricsObserverTest,
   // metrics.
   NavigateToUntrackedUrl();
 
-  ASSERT_FALSE(AnyMetricsRecorded());
+  EXPECT_EQ(1u, TotalMetricsRecorded());
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterActivationDecision,
+      static_cast<int>(subresource_filter::ActivationDecision::
+                           ACTIVATION_CONDITIONS_NOT_MET),
+      1);
 }
 
 TEST_F(SubresourceFilterMetricsObserverTest, Basic) {
-  NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateNavigateAndCommit(GURL(kDefaultTestUrlWithActivation));
 
   page_load_metrics::mojom::PageLoadTiming timing;
   InitializePageLoadTiming(&timing);
@@ -74,7 +129,7 @@ TEST_F(SubresourceFilterMetricsObserverTest, Basic) {
   // Navigate away from the current page to force logging of metrics.
   NavigateToUntrackedUrl();
 
-  ASSERT_TRUE(AnyMetricsRecorded());
+  EXPECT_GT(TotalMetricsRecorded(), 0u);
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramSubresourceFilterCount, 1);
@@ -153,7 +208,7 @@ TEST_F(SubresourceFilterMetricsObserverTest, Basic) {
 }
 
 TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
-  NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateNavigateAndCommit(GURL(kDefaultTestUrlWithActivation));
 
   SimulateLoadedResource(
       {GURL(), -1 /* frame_tree_node_id */, false /* was_cached */,
@@ -251,7 +306,7 @@ TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
 }
 
 TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
-  NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateNavigateAndCommit(GURL(kDefaultTestUrlWithActivation));
 
   SimulateMediaPlayed();
 

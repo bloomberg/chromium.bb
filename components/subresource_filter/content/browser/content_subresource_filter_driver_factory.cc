@@ -73,12 +73,10 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
   activation_decision_ = activation_decision;
   activation_options_ = matched_options;
   DCHECK_NE(activation_decision_, ActivationDecision::UNKNOWN);
-  if (activation_decision_ != ActivationDecision::ACTIVATED) {
-    DCHECK_EQ(activation_options_.activation_level, ActivationLevel::DISABLED);
-    return;
-  }
 
-  DCHECK_NE(activation_options_.activation_level, ActivationLevel::DISABLED);
+  // ACTIVATION_DISABLED implies DISABLED activation level.
+  DCHECK(activation_decision_ != ActivationDecision::ACTIVATION_DISABLED ||
+         activation_options_.activation_level == ActivationLevel::DISABLED);
   ActivationState state = ActivationState(activation_options_.activation_level);
   state.measure_performance = ShouldMeasurePerformanceForPageLoad(
       activation_options_.performance_measurement_rate);
