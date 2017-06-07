@@ -2,16 +2,21 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['health_thermometer']}]}))
-    .then(device => {
-      device.gatt.connect();
+  return getDiscoveredHealthThermometerDevice()
+    .then(([device, fake_peripheral]) => {
+      return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
+        .then(() => {
+          // Don't return the promise and let |device| go out of scope
+          // so that it gets garbage collected.
+          device.gatt.connect();
+        });
     })
-    .then(runGarbageCollection);
+    .then(runGarbageCollection)
 }, 'Garbage Collection ran during a connect call that succeeds. ' +
    'Should not crash.');
 </script>
