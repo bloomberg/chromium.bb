@@ -176,10 +176,9 @@ class MockAudioInputController : public AudioInputController {
                              type) {
     GetTaskRunnerForTesting()->PostTask(
         FROM_HERE,
-        base::Bind(&AudioInputController::EventHandler::OnCreated,
-                   base::Unretained(event_handler), base::Unretained(this)));
-    ON_CALL(*this, Close(_))
-        .WillByDefault(Invoke(this, &MockAudioInputController::ExecuteClose));
+        base::BindOnce(&AudioInputController::EventHandler::OnCreated,
+                       base::Unretained(event_handler),
+                       base::Unretained(this)));
     ON_CALL(*this, EnableDebugRecording(_))
         .WillByDefault(SaveArg<0>(&file_name));
   }
@@ -189,11 +188,20 @@ class MockAudioInputController : public AudioInputController {
   // File name that we pretend to do a debug recording to, if any.
   base::FilePath debug_file_name() { return file_name; }
 
+  void Close(base::OnceClosure cl) override {
+    DidClose();
+    // Hop to audio manager thread before calling task, since this is the real
+    // behavior.
+    GetTaskRunnerForTesting()->PostTaskAndReply(
+        FROM_HERE, base::BindOnce([]() {}), std::move(cl));
+  }
+
   MOCK_METHOD0(Record, void());
-  MOCK_METHOD1(Close, void(const base::Closure&));
   MOCK_METHOD1(SetVolume, void(double));
   MOCK_METHOD1(EnableDebugRecording, void(const base::FilePath&));
   MOCK_METHOD0(DisableDebugRecording, void());
+
+  MOCK_METHOD0(DidClose, void());
 
   // AudioInputCallback impl, irrelevant to us.
   MOCK_METHOD4(
@@ -205,13 +213,6 @@ class MockAudioInputController : public AudioInputController {
   ~MockAudioInputController() override = default;
 
  private:
-  void ExecuteClose(const base::Closure& task) {
-    // Hop to audio manager thread before calling task, since this is the real
-    // behavior.
-    GetTaskRunnerForTesting()->PostTaskAndReply(FROM_HERE, base::Bind([]() {}),
-                                                task);
-  }
-
   base::FilePath file_name;
 };
 
@@ -340,7 +341,7 @@ TEST_F(AudioInputRendererHostTest, CreateWithDefaultDevice) {
       kStreamId, kRenderFrameId, session_id, DefaultConfig()));
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
 }
 
 // If authorization hasn't been granted, only reply with and error and do
@@ -366,7 +367,7 @@ TEST_F(AudioInputRendererHostTest, CreateWithNonDefaultDevice) {
       kStreamId, kRenderFrameId, session_id, DefaultConfig()));
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
 }
 
 // Checks that stream is started when calling record.
@@ -383,7 +384,7 @@ TEST_F(AudioInputRendererHostTest, CreateRecordClose) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*controller_factory_.controller(0), Record());
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
 
   airh_->OnMessageReceived(AudioInputHostMsg_RecordStream(kStreamId));
   base::RunLoop().RunUntilIdle();
@@ -407,7 +408,7 @@ TEST_F(AudioInputRendererHostTest, CreateSetVolumeRecordClose) {
 
   EXPECT_CALL(*controller_factory_.controller(0), SetVolume(0.5));
   EXPECT_CALL(*controller_factory_.controller(0), Record());
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
 
   airh_->OnMessageReceived(AudioInputHostMsg_SetVolume(kStreamId, 0.5));
   airh_->OnMessageReceived(AudioInputHostMsg_RecordStream(kStreamId));
@@ -430,7 +431,7 @@ TEST_F(AudioInputRendererHostTest, SetVolumeTooLarge_BadMessage) {
       kStreamId, kRenderFrameId, session_id, DefaultConfig()));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
   EXPECT_CALL(renderer_, WasShutDown());
 
   airh_->OnMessageReceived(AudioInputHostMsg_SetVolume(kStreamId, 5));
@@ -451,7 +452,7 @@ TEST_F(AudioInputRendererHostTest, SetVolumeNegative_BadMessage) {
       kStreamId, kRenderFrameId, session_id, DefaultConfig()));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
   EXPECT_CALL(renderer_, WasShutDown());
 
   airh_->OnMessageReceived(AudioInputHostMsg_SetVolume(kStreamId, -0.5));
@@ -475,7 +476,7 @@ TEST_F(AudioInputRendererHostTest, CreateTwice_Error) {
       kStreamId, kRenderFrameId, session_id, DefaultConfig()));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
 }
 
 // Checks that when two streams are created, messages are routed to the correct
@@ -512,8 +513,8 @@ TEST_F(AudioInputRendererHostTest, TwoStreams) {
   airh_->DisableDebugRecording();
 #endif  // ENABLE_WEBRTC
 
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
-  EXPECT_CALL(*controller_factory_.controller(1), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
+  EXPECT_CALL(*controller_factory_.controller(1), DidClose());
 }
 
 // Checks that the stream is properly cleaned up and a notification is sent to
@@ -530,7 +531,7 @@ TEST_F(AudioInputRendererHostTest, Error_ClosesController) {
       kStreamId, kRenderFrameId, session_id, DefaultConfig()));
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
   EXPECT_CALL(renderer_, NotifyStreamError(kStreamId));
 
   controller_factory_.controller(0)->handler()->OnError(
@@ -562,7 +563,7 @@ TEST_F(AudioInputRendererHostTest, TabCaptureStream) {
       kStreamId, kRenderFrameId, session_id, DefaultConfig()));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(*controller_factory_.controller(0), Close(_));
+  EXPECT_CALL(*controller_factory_.controller(0), DidClose());
 }
 
 }  // namespace content

@@ -139,23 +139,24 @@ void AudioInputRendererHost::OnCreated(
     media::AudioInputController* controller) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioInputRendererHost::DoCompleteCreation, this,
-                 base::RetainedRef(controller)));
+      base::BindOnce(&AudioInputRendererHost::DoCompleteCreation, this,
+                     base::RetainedRef(controller)));
 }
 
 void AudioInputRendererHost::OnError(media::AudioInputController* controller,
     media::AudioInputController::ErrorCode error_code) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioInputRendererHost::DoHandleError, this,
-                 base::RetainedRef(controller), error_code));
+      base::BindOnce(&AudioInputRendererHost::DoHandleError, this,
+                     base::RetainedRef(controller), error_code));
 }
 
 void AudioInputRendererHost::OnLog(media::AudioInputController* controller,
                                    const std::string& message) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&AudioInputRendererHost::DoLog, this,
-                                     base::RetainedRef(controller), message));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AudioInputRendererHost::DoLog, this,
+                     base::RetainedRef(controller), message));
 }
 
 void AudioInputRendererHost::set_renderer_pid(int32_t renderer_pid) {
@@ -259,8 +260,8 @@ void AudioInputRendererHost::OnCreateStream(
       media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
     media_stream_manager_->audio_input_device_manager()
         ->RegisterKeyboardMicStream(
-            base::Bind(&AudioInputRendererHost::DoCreateStream, this, stream_id,
-                       render_frame_id, session_id, config));
+            base::BindOnce(&AudioInputRendererHost::DoCreateStream, this,
+                           stream_id, render_frame_id, session_id, config));
   } else {
     DoCreateStream(stream_id, render_frame_id, session_id, config);
   }
@@ -384,12 +385,9 @@ void AudioInputRendererHost::DoCreateStream(
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &AudioInputRendererHost::MaybeEnableDebugRecordingForId,
-          this,
-          stream_id));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&AudioInputRendererHost::MaybeEnableDebugRecordingForId,
+                     this, stream_id));
 #endif
 }
 
@@ -459,8 +457,8 @@ void AudioInputRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
 
   if (!entry->pending_close) {
     LogMessage(entry->stream_id, "CloseAndDeleteStream", true);
-    entry->controller->Close(base::Bind(&AudioInputRendererHost::DeleteEntry,
-                                        this, entry));
+    entry->controller->Close(
+        base::BindOnce(&AudioInputRendererHost::DeleteEntry, this, entry));
     entry->pending_close = true;
     audio_log_->OnClosed(entry->stream_id);
   }
@@ -535,7 +533,7 @@ void AudioInputRendererHost::MaybeEnableDebugRecordingForId(int stream_id) {
   if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &AudioInputRendererHost::
                 AddExtensionsToPathAndEnableDebugRecordingForId,
             this,

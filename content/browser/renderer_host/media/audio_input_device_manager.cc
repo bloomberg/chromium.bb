@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -115,29 +116,27 @@ void AudioInputDeviceManager::Close(int session_id) {
 
   // Post a callback through the listener on IO thread since
   // MediaStreamManager is expecting the callback asynchronously.
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&AudioInputDeviceManager::ClosedOnIOThread,
-                                     this, stream_type, session_id));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AudioInputDeviceManager::ClosedOnIOThread, this,
+                     stream_type, session_id));
 }
 
 #if defined(OS_CHROMEOS)
 void AudioInputDeviceManager::RegisterKeyboardMicStream(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ++keyboard_mic_streams_count_;
   if (keyboard_mic_streams_count_ == 1) {
     BrowserThread::PostTaskAndReply(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
             &AudioInputDeviceManager::SetKeyboardMicStreamActiveOnUIThread,
-            this,
-            true),
-        callback);
+            this, true),
+        std::move(callback));
   } else {
-    callback.Run();
+    std::move(callback).Run();
   }
 }
 
@@ -148,12 +147,10 @@ void AudioInputDeviceManager::UnregisterKeyboardMicStream() {
   DCHECK_GE(keyboard_mic_streams_count_, 0);
   if (keyboard_mic_streams_count_ == 0) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
             &AudioInputDeviceManager::SetKeyboardMicStreamActiveOnUIThread,
-            this,
-            false));
+            this, false));
   }
 }
 #endif

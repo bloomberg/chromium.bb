@@ -59,7 +59,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // inactivates the keyboard mic accordingly. The (in)activation is done on the
   // UI thread and for the register case a callback must therefor be provided
   // which is called when activated.
-  void RegisterKeyboardMicStream(const base::Closure& callback);
+  void RegisterKeyboardMicStream(base::OnceClosure callback);
   void UnregisterKeyboardMicStream();
 #endif
 

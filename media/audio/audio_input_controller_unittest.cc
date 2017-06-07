@@ -96,8 +96,8 @@ class AudioInputControllerTest : public testing::Test {
 
   void SuspendAudioThread() {
     audio_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&AudioInputControllerTest::WaitForResume,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&AudioInputControllerTest::WaitForResume,
+                                  base::Unretained(this)));
   }
 
   void ResumeAudioThread() { suspend_event_.Signal(); }

@@ -133,7 +133,7 @@ class AudioInputController::AudioCallback
     error_during_callback_ = true;
     controller_->task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&AudioInputController::DoReportError, weak_controller_));
+        base::BindOnce(&AudioInputController::DoReportError, weak_controller_));
   }
 
   void DeliverDataToSyncWriter(const AudioBus* source,
@@ -155,9 +155,9 @@ class AudioInputController::AudioCallback
       // Use event handler on the audio thread to relay a message to the ARIH
       // in content which does the actual logging on the IO thread.
       controller_->task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&AudioInputController::DoLogAudioLevels, weak_controller_,
-                     average_power_dbfs, mic_volume_percent));
+          FROM_HERE, base::BindOnce(&AudioInputController::DoLogAudioLevels,
+                                    weak_controller_, average_power_dbfs,
+                                    mic_volume_percent));
     }
   }
 
@@ -232,9 +232,9 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
   // Create and open a new audio input stream from the existing
   // audio-device thread. Use the provided audio-input device.
   if (!controller->task_runner_->PostTask(
-          FROM_HERE, base::Bind(&AudioInputController::DoCreate, controller,
-                                base::Unretained(audio_manager), params,
-                                device_id, enable_agc))) {
+          FROM_HERE, base::BindOnce(&AudioInputController::DoCreate, controller,
+                                    base::Unretained(audio_manager), params,
+                                    device_id, enable_agc))) {
     controller = nullptr;
   }
 
@@ -267,8 +267,9 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
                                user_input_monitor, params, VIRTUAL));
 
   if (!controller->task_runner_->PostTask(
-          FROM_HERE, base::Bind(&AudioInputController::DoCreateForStream,
-                                controller, stream, /*enable_agc*/ false))) {
+          FROM_HERE,
+          base::BindOnce(&AudioInputController::DoCreateForStream, controller,
+                         stream, /*enable_agc*/ false))) {
     controller = nullptr;
   }
 
@@ -277,22 +278,24 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
 
 void AudioInputController::Record() {
   DCHECK(creator_task_runner_->BelongsToCurrentThread());
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &AudioInputController::DoRecord, this));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&AudioInputController::DoRecord, this));
 }
 
-void AudioInputController::Close(const base::Closure& closed_task) {
+void AudioInputController::Close(base::OnceClosure closed_task) {
   DCHECK(!closed_task.is_null());
   DCHECK(creator_task_runner_->BelongsToCurrentThread());
 
   task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&AudioInputController::DoClose, this), closed_task);
+      FROM_HERE, base::BindOnce(&AudioInputController::DoClose, this),
+      std::move(closed_task));
 }
 
 void AudioInputController::SetVolume(double volume) {
   DCHECK(creator_task_runner_->BelongsToCurrentThread());
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &AudioInputController::DoSetVolume, this, volume));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AudioInputController::DoSetVolume, this, volume));
 }
 
 void AudioInputController::DoCreate(AudioManager* audio_manager,
@@ -315,7 +318,8 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
   // MakeAudioInputStream might fail and return nullptr. If so,
   // DoCreateForStream will handle and report it.
   auto* stream = audio_manager->MakeAudioInputStream(
-      params, device_id, base::Bind(&AudioInputController::LogMessage, this));
+      params, device_id,
+      base::BindRepeating(&AudioInputController::LogMessage, this));
   DoCreateForStream(stream, enable_agc);
 }
 
@@ -509,8 +513,8 @@ void AudioInputController::EnableDebugRecording(
 #if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(creator_task_runner_->BelongsToCurrentThread());
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AudioInputController::DoEnableDebugRecording, this,
-                            file_name));
+      FROM_HERE, base::BindOnce(&AudioInputController::DoEnableDebugRecording,
+                                this, file_name));
 #endif
 }
 
@@ -519,7 +523,7 @@ void AudioInputController::DisableDebugRecording() {
   DCHECK(creator_task_runner_->BelongsToCurrentThread());
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AudioInputController::DoDisableDebugRecording, this));
+      base::BindOnce(&AudioInputController::DoDisableDebugRecording, this));
 #endif
 }
 
