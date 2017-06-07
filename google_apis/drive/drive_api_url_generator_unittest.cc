@@ -237,6 +237,18 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
                            FilesListCorpora::TEAM_DRIVE, "TheTeamDriveId",
                            "query")
           .spec());
+
+  // includeTeamDriveItems should be true for default corpora, so that a file
+  // that is shared individually is listed for users who are not member of the
+  // Team Drive which owns the file.
+  EXPECT_EQ(
+      "https://www.example.com/drive/v2/files?supportsTeamDrives=true&"
+      "includeTeamDriveItems=true&corpora=default",
+      team_drives_url_generator_
+          .GetFilesListUrl(100, std::string() /* page_token */,
+                           FilesListCorpora::DEFAULT, std::string(),
+                           std::string())
+          .spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFilesDeleteUrl) {
