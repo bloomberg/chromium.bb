@@ -24,15 +24,6 @@ const char kEnableMaterialDesignPolicyPageDescription[] =
     "If enabled, the chrome://md-policy URL loads the Material Design "
     "policy page.";
 
-//  Material Design version of chrome://settings
-
-const char kEnableMaterialDesignSettingsName[] =
-    "Enable Material Design settings";
-
-const char kEnableMaterialDesignSettingsDescription[] =
-    "If enabled, the chrome://settings/ URL loads the Material Design "
-    "settings page.";
-
 //  Material Design version of chrome://extensions
 
 const char kEnableMaterialDesignExtensionsName[] =

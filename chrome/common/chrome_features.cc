@@ -203,11 +203,6 @@ const base::Feature kMaterialDesignIncognitoNTP{
 #endif
 };
 
-// Enables or disables the Material Design version of chrome://settings.
-// Also affects chrome://help.
-const base::Feature kMaterialDesignSettings{"MaterialDesignSettings",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Enables media content bitstream remoting, an optimization that can activate
 // during Cast Tab Mirroring.

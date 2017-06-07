@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -48,7 +47,6 @@
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -307,9 +305,8 @@ UserManagerScreenHandler::UserManagerScreenHandler() : weak_ptr_factory_(this) {
   const PrefService::Preference* add_person_enabled_pref =
       service->FindPreference(prefs::kBrowserAddPersonEnabled);
 
-  if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings) &&
-      (guest_mode_enabled_pref->HasUserSetting() ||
-       add_person_enabled_pref->HasUserSetting())) {
+  if (guest_mode_enabled_pref->HasUserSetting() ||
+      add_person_enabled_pref->HasUserSetting()) {
     service->ClearPref(guest_mode_enabled_pref->name());
     service->ClearPref(add_person_enabled_pref->name());
     base::RecordAction(

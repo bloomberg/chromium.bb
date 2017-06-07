@@ -5,7 +5,6 @@
 /** @fileoverview Material Help page tests. */
 
 GEN_INCLUDE(['settings_page_browsertest.js']);
-GEN('#include "base/command_line.h"');
 
 /**
  * @constructor
@@ -18,9 +17,6 @@ SettingsHelpPageBrowserTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://help/',
-
-  commandLineSwitches: [{switchName: 'enable-features',
-                         switchValue: 'MaterialDesignSettings'}],
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH),

@@ -422,8 +422,13 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<IdentityInternalsUI>;
   if (url.host_piece() == chrome::kChromeUINewTabHost)
     return &NewWebUI<NewTabUI>;
-  if (url.host_piece() == chrome::kChromeUIMdSettingsHost)
+  // Settings are implemented with native UI elements on Android.
+  if (url.host_piece() == chrome::kChromeUISettingsHost ||
+      url.host_piece() == chrome::kChromeUIMdSettingsHost) {
     return &NewWebUI<settings::MdSettingsUI>;
+  }
+  if (url.host_piece() == chrome::kChromeUISettingsFrameHost)
+    return &NewWebUI<options::OptionsUI>;
   // If the material design extensions page is enabled, it gets its own host.
   // Otherwise, it's handled by the uber settings page.
   if (url.host_piece() == chrome::kChromeUIExtensionsHost &&
@@ -432,18 +437,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chrome::kChromeUIHistoryHost)
     return &NewWebUI<MdHistoryUI>;
-  // Material Design Settings gets its own host, if enabled.
-  if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings) &&
-      url.host_piece() == chrome::kChromeUISettingsHost) {
-    return &NewWebUI<settings::MdSettingsUI>;
-  }
-  // Settings are implemented with native UI elements on Android.
-  // Handle chrome://settings if settings in a window is enabled.
-  if (url.host_piece() == chrome::kChromeUISettingsFrameHost ||
-      (url.host_piece() == chrome::kChromeUISettingsHost &&
-       ::switches::SettingsWindowEnabled())) {
-    return &NewWebUI<options::OptionsUI>;
-  }
   if (url.host_piece() == chrome::kChromeUISyncFileSystemInternalsHost)
     return &NewWebUI<SyncFileSystemInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISystemInfoHost)
