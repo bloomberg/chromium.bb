@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/hash_tables.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/memory/ref_counted.h"
@@ -36,6 +35,10 @@
 #include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Empty callback used by DeleteAllCreatedBetweenAsync below.
@@ -111,7 +114,7 @@ void DoNothing(int n) {}
   // operations.
   std::unique_ptr<BrowsingDataRemoverHelper> _browsingDataRemoverHelper;
   // The delegate.
-  base::WeakNSProtocol<id<BrowsingDataRemovalControllerDelegate>> _delegate;
+  __weak id<BrowsingDataRemovalControllerDelegate> _delegate;
   // A map that tracks the number of pending removals for a given
   // ChromeBrowserState.
   base::hash_map<ios::ChromeBrowserState*, int> _pendingRemovalCount;
@@ -122,7 +125,7 @@ void DoNothing(int n) {}
   if ((self = [super init])) {
     DCHECK(delegate);
     _browsingDataRemoverHelper.reset(new BrowsingDataRemoverHelper());
-    _delegate.reset(delegate);
+    _delegate = delegate;
   }
   return self;
 }
@@ -158,7 +161,7 @@ void DoNothing(int n) {}
   };
 
   scoped_refptr<CallbackCounter> callbackCounter =
-      new CallbackCounter(base::BindBlock(browsingDataCleared));
+      new CallbackCounter(base::BindBlockArc(browsingDataCleared));
   ProceduralBlock decrementCallbackCounterCount = ^{
     callbackCounter->DecrementCount();
   };
@@ -184,7 +187,7 @@ void DoNothing(int n) {}
   if (!browserState->IsOffTheRecord()) {
     callbackCounter->IncrementCount();
     _browsingDataRemoverHelper->Remove(browserState, mask, timePeriod,
-                                       base::BindBlock(^{
+                                       base::BindBlockArc(^{
                                          callbackCounter->DecrementCount();
                                        }));
   }
@@ -276,10 +279,10 @@ void DoNothing(int n) {}
     }
     return;
   }
-  scoped_refptr<CallbackCounter> callbackCounter =
-      new CallbackCounter(base::BindBlock(completionHandler ? completionHandler
-                                                            : ^{
-                                                              }));
+  scoped_refptr<CallbackCounter> callbackCounter = new CallbackCounter(
+      base::BindBlockArc(completionHandler ? completionHandler
+                                           : ^{
+                                             }));
 
   // Note: Before adding any method below, make sure that it can finish clearing
   // browsing data even when |browserState| is destroyed after this method call.
@@ -300,10 +303,10 @@ removeWKWebViewCreatedBrowsingDataFromBrowserState:
                                        deleteBegin:(base::Time)deleteBegin
                                  completionHandler:
                                      (ProceduralBlock)completionHandler {
-  scoped_refptr<CallbackCounter> callbackCounter =
-      new CallbackCounter(base::BindBlock(completionHandler ? completionHandler
-                                                            : ^{
-                                                              }));
+  scoped_refptr<CallbackCounter> callbackCounter = new CallbackCounter(
+      base::BindBlockArc(completionHandler ? completionHandler
+                                           : ^{
+                                             }));
   ProceduralBlock decrementCallbackCounterCount = ^{
     callbackCounter->DecrementCount();
   };
@@ -311,8 +314,7 @@ removeWKWebViewCreatedBrowsingDataFromBrowserState:
   // Converts browsing data types from
   // IOSChromeBrowsingDataRemover::RemoveDataMask to
   // WKWebsiteDataStore strings.
-  base::scoped_nsobject<NSMutableSet> dataTypesToRemove(
-      [[NSMutableSet alloc] init]);
+  NSMutableSet* dataTypesToRemove = [[NSMutableSet alloc] init];
   if (mask & IOSChromeBrowsingDataRemover::REMOVE_CACHE_STORAGE) {
     [dataTypesToRemove addObject:WKWebsiteDataTypeDiskCache];
     [dataTypesToRemove addObject:WKWebsiteDataTypeMemoryCache];
@@ -409,10 +411,10 @@ removeWKWebViewCreatedBrowsingDataFromBrowserState:
   if (mask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES) {
     scoped_refptr<net::URLRequestContextGetter> contextGetter =
         browserState->GetRequestContext();
-    base::Closure callback = base::BindBlock(^{
+    base::Closure callback = base::BindBlockArc(^{
     });
     web::WebThread::PostTask(
-        web::WebThread::IO, FROM_HERE, base::BindBlock(^{
+        web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
           net::URLRequestContext* requestContext =
               contextGetter->GetURLRequestContext();
           net::ChannelIDService* channelIdService =
