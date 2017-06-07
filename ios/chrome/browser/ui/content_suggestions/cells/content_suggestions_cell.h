@@ -19,7 +19,7 @@
 @property(nonatomic, assign) BOOL displayImage;
 
 // Sets an |image| to illustrate the article, replacing the "no image" icon.
-- (void)setContentImage:(UIImage*)image;
+- (void)setContentImage:(UIImage*)image animated:(BOOL)animated;
 
 // Sets the publisher |name| and |date| and add an icon to signal the offline
 // availability if |availableOffline| is YES.

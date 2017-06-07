@@ -44,7 +44,7 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
   ASSERT_EQ(url, item.URL);
   ASSERT_EQ(nil, item.image);
   id cellMock = OCMPartialMock(cell);
-  OCMExpect([cellMock setContentImage:item.image]);
+  OCMExpect([cellMock setContentImage:item.image animated:NO]);
   OCMExpect([cellMock setSubtitleText:subtitle]);
   OCMExpect([cellMock setAdditionalInformationWithPublisherName:publisher
                                                            date:date
@@ -86,7 +86,7 @@ TEST(ContentSuggestionsItemTest, DontFetchImageIsImageIsBeingFetched) {
       OCMStrictProtocolMock(@protocol(SuggestedContentDelegate));
   item.delegate = strictDelegateMock;
   id cellMock = OCMPartialMock(cell);
-  OCMExpect([cellMock setContentImage:item.image]);
+  OCMExpect([cellMock setContentImage:item.image animated:NO]);
 
   // Action.
   [item configureCell:cell];
@@ -118,4 +118,32 @@ TEST(ContentSuggestionsItemTest, NoDelegateCallWhenHasNotImage) {
   [item configureCell:cell];
 }
 
+// Tests that the display of the image is animated only for the first time.
+TEST(ContentSuggestionsItemTest, ImageAnimatedOnlyTheFirstTime) {
+  // Setup.
+  NSString* title = @"testTitle";
+  NSString* subtitle = @"testSubtitle";
+  GURL url = GURL("http://chromium.org");
+  ContentSuggestionsItem* item =
+      [[ContentSuggestionsItem alloc] initWithType:0
+                                             title:title
+                                          subtitle:subtitle
+                                               url:url];
+  item.hasImage = YES;
+  item.image = [[UIImage alloc] init];
+
+  id cell1 = OCMClassMock([ContentSuggestionsCell class]);
+  OCMExpect([cell1 setContentImage:item.image animated:YES]);
+  id cell2 = OCMClassMock([ContentSuggestionsCell class]);
+  OCMExpect([cell2 setContentImage:item.image animated:NO]);
+  ASSERT_NE(nil, item.image);
+
+  // Action.
+  [item configureCell:cell1];
+  [item configureCell:cell2];
+
+  // Tests.
+  EXPECT_OCMOCK_VERIFY(cell1);
+  EXPECT_OCMOCK_VERIFY(cell2);
+}
 }  // namespace
