@@ -23,22 +23,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 
-#if defined(USE_AURA)
-#include "ui/keyboard/keyboard_util.h"
-#endif
-
-namespace {
-
-bool IsVirtualKeyboardVisible() {
-#if defined(USE_AURA)
-  return keyboard::IsKeyboardVisible();
-#else
-  return false;
-#endif
-}
-
-}  // namespace
-
 KeywordHintView::KeywordHintView(views::ButtonListener* listener,
                                  Profile* profile,
                                  const gfx::FontList& font_list,
@@ -80,6 +64,13 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
 KeywordHintView::~KeywordHintView() {}
 
 void KeywordHintView::SetKeyword(const base::string16& keyword) {
+  // When the virtual keyboard is visible, we show a modified touch UI
+  // containing only the chip and no surrounding labels.
+  const bool was_touch_ui = leading_label_->text().empty();
+  const bool is_touch_ui = LocationBarView::IsVirtualKeyboardVisible();
+  if (is_touch_ui == was_touch_ui && keyword_ == keyword)
+    return;
+
   keyword_ = keyword;
   if (keyword_.empty())
     return;
@@ -93,7 +84,7 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
   base::string16 short_name(
       url_service->GetKeywordShortName(keyword, &is_extension_keyword));
 
-  if (IsVirtualKeyboardVisible()) {
+  if (is_touch_ui) {
     int message_id = is_extension_keyword
                          ? IDS_OMNIBOX_EXTENSION_KEYWORD_HINT_TOUCH
                          : IDS_OMNIBOX_KEYWORD_HINT_TOUCH;
