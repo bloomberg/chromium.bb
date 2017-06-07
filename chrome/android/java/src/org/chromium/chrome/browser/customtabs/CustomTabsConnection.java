@@ -267,7 +267,6 @@ public class CustomTabsConnection {
         if (!isCallerForegroundOrSelf()) return false;
         mClientManager.recordUidHasCalledWarmup(Binder.getCallingUid());
         final boolean initialized = !mWarmupHasBeenCalled.compareAndSet(false, true);
-        final int uid = Binder.getCallingUid();
         // The call is non-blocking and this must execute on the UI thread, post a task.
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
@@ -299,7 +298,7 @@ public class CustomTabsConnection {
                         // The throttling database uses shared preferences, that can cause a
                         // StrictMode violation on the first access. Make sure that this access is
                         // not in mayLauchUrl.
-                        RequestThrottler.getForUid(mApplication, uid);
+                        RequestThrottler.loadInBackground(mApplication);
                     }
                 } finally {
                     TraceEvent.end("CustomTabsConnection.warmupInternal");
