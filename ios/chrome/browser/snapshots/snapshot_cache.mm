@@ -26,6 +26,10 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/web/public/web_thread.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface SnapshotCache ()
 // Remove all UIImages from |lruCache_|.
 - (void)handleEnterBackground;
@@ -214,7 +218,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   // Session ID of most recent pending grey snapshot request.
   NSString* mostRecentGreySessionId_;
   // Block used by pending request for a grey snapshot.
-  GreyBlock mostRecentGreyBlock_;
+  void (^mostRecentGreyBlock_)(UIImage*);
 
   // Session ID and corresponding UIImage for the snapshot that will likely
   // be requested to be saved to disk when the application is backgrounded.
@@ -308,6 +312,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   const base::FilePath cacheDirectory = cacheDirectory_;
   const ImageScale snapshotsScale = snapshotsScale_;
 
+  __weak SnapshotCache* weakSelf = self;
   base::PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
           .get(),
@@ -317,8 +322,9 @@ void ConvertAndSaveGreyImage(NSString* session_id,
             sessionID, IMAGE_TYPE_COLOR, snapshotsScale, cacheDirectory));
       }),
       base::BindBlockArc(^(base::scoped_nsobject<UIImage> image) {
-        if (image)
-          [lruCache_ setObject:image forKey:sessionID];
+        __strong SnapshotCache* strongSelf = weakSelf;
+        if (image && strongSelf)
+          [strongSelf->lruCache_ setObject:image forKey:sessionID];
         if (callback)
           callback(image);
       }));
@@ -464,6 +470,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   const base::FilePath cacheDirectory = cacheDirectory_;
   const ImageScale snapshotsScale = snapshotsScale_;
 
+  __weak SnapshotCache* weakSelf = self;
   base::PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
           .get(),
@@ -479,7 +486,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
         return result;
       }),
       base::BindBlockArc(^(base::scoped_nsobject<UIImage> greyImage) {
-        [self saveGreyImage:greyImage forKey:sessionID];
+        [weakSelf saveGreyImage:greyImage forKey:sessionID];
       }));
 }
 
@@ -532,6 +539,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
   const base::FilePath cacheDirectory = cacheDirectory_;
   const ImageScale snapshotsScale = snapshotsScale_;
 
+  __weak SnapshotCache* weakSelf = self;
   base::PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
           .get(),
@@ -546,11 +554,11 @@ void ConvertAndSaveGreyImage(NSString* session_id,
             callback(image);
           return;
         }
-        [self retrieveImageForSessionID:sessionID
-                               callback:^(UIImage* local_image) {
-                                 if (callback && local_image)
-                                   callback(GreyImage(local_image));
-                               }];
+        [weakSelf retrieveImageForSessionID:sessionID
+                                   callback:^(UIImage* local_image) {
+                                     if (callback && local_image)
+                                       callback(GreyImage(local_image));
+                                   }];
       }));
 }
 

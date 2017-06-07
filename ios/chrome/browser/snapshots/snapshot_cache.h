@@ -9,8 +9,6 @@
 
 #include "base/time/time.h"
 
-typedef void (^GreyBlock)(UIImage*);
-
 // A singleton providing an in-memory and on-disk cache of tab snapshots.
 // A snapshot is a full-screen image of the contents of the page at the current
 // scroll offset and zoom level, used to stand in for the WKWebView if it has
