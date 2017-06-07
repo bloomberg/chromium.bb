@@ -1429,9 +1429,9 @@ const FeatureEntry kFeatureEntries[] = {
         flag_descriptions::kDisplayColorCalibrationDescription, kOsCrOS,
         SINGLE_DISABLE_VALUE_TYPE(::switches::kDisableDisplayColorCalibration),
     },
-    {"enable-tether", flag_descriptions::kTetherName,
+    {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableTether)},
+     FEATURE_VALUE_TYPE(features::kInstantTethering)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",

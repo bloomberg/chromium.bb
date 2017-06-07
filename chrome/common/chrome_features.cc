@@ -365,6 +365,10 @@ const base::Feature kCrosCompUpdates{"CrosCompUpdates",
 // Enables or disables Chrome OS Component updates on Chrome OS.
 const base::Feature kCrOSComponent{"CrOSComponent",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables Instant Tethering on Chrome OS.
+const base::Feature kInstantTethering{"InstantTethering",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 // Enables or disables Page Load Metrics using mojo IPC.

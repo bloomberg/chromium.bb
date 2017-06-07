@@ -278,9 +278,6 @@ const char kEnableLockScreenApps[] = "enable-lock-screen-apps";
 // rather than the kiosk app mode.
 const char kEnableKioskMode[] = "enable-kiosk-mode";
 
-// Enables tethering to nearby LTE devices.
-const char kEnableTether[] = "enable-tether";
-
 // Overrides Tether with stub service. Provide integer arguments for the number
 // of fake networks desired, e.g. 'tether-stub=2'.
 const char kTetherStub[] = "tether-stub";
