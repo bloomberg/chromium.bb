@@ -47,10 +47,6 @@ function test()
         InspectorTest.addResult("Disposed linkifier");
         dumpLiveLocationsCount();
 
-        // Ensures urls with lots of slashes does not bog down the regex.
-        Components.linkifyStringAsFragment("/".repeat(1000));
-        Components.linkifyStringAsFragment("/a/".repeat(1000));
-
         InspectorTest.completeTest();
     }
 

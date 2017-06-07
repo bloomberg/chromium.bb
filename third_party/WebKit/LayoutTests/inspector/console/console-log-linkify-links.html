@@ -27,6 +27,18 @@ function test()
         }
     }
 
+    var linkifyMe = "at triggerError (http://localhost/show/:22:11)";
+    var fragment = Console.ConsoleViewMessage._linkifyStringAsFragment(linkifyMe);
+    var anchor = fragment.querySelector('.devtools-link');
+    var info = Components.Linkifier._linkInfo(anchor);
+    InspectorTest.addResult("The string \"" + linkifyMe + " \" linkifies to url: " + (info && info.url));
+    InspectorTest.addResult("The lineNumber is " + (info && info.lineNumber));
+    InspectorTest.addResult("The columnNumber is " + (info && info.columnNumber));
+
+    // Ensures urls with lots of slashes does not bog down the regex.
+    Console.ConsoleViewMessage._linkifyStringAsFragment("/".repeat(1000));
+    Console.ConsoleViewMessage._linkifyStringAsFragment("/a/".repeat(1000));
+
     InspectorTest.completeTest();
 }
 </script>

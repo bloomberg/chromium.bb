@@ -21,4 +21,7 @@ linked url:null
 linked url:http://www.chromium.org/
 linked url:null
 linked url:http://www.chromium.org/some?v=114
+The string "at triggerError (http://localhost/show/:22:11) " linkifies to url: http://localhost/show/
+The lineNumber is 21
+The columnNumber is 10
 
