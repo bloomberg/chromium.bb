@@ -72,9 +72,12 @@ InspectorTest.formatters.formatAsInvalidationCause = function(cause)
 InspectorTest.preloadPanel("timeline");
 Bindings.TempFile = InspectorTest.TempFileMock;
 
-InspectorTest.createTracingModel = function()
+InspectorTest.createTracingModel = function(events)
 {
-    return new SDK.TracingModel(new Bindings.TempFileBackingStorage("tracing"));
+    var model = new SDK.TracingModel(new Bindings.TempFileBackingStorage("tracing"));
+    model.addEvents(events);
+    model.tracingComplete();
+    return model;
 }
 
 InspectorTest.tracingModel = function()

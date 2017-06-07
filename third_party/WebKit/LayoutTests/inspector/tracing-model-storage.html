@@ -20,9 +20,7 @@ function test()
         return thread.events().filter(function(event) { return event.name === name; })[0];
     }
 
-    var model = InspectorTest.createTracingModel();
-    model.addEvents(testData);
-    model.tracingComplete();
+    var model = InspectorTest.createTracingModel(testData);
     var process = model.sortedProcesses()[0];
     var thread = process.sortedThreads()[0];
     InspectorTest.assertEquals("лет ми спик фром май харт", getEventByName("NonAscii").args["nonascii"]);
