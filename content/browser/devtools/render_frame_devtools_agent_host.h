@@ -150,6 +150,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   bool CheckConsistency();
 
+  void UpdateTypeAndTitle(RenderFrameHost* host);
+
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
 #endif
@@ -171,6 +173,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 #endif
   RenderFrameHostImpl* handlers_frame_host_;
   bool current_frame_crashed_;
+  std::string type_;
+  std::string title_;
 
   // PlzNavigate
 

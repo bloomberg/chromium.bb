@@ -469,6 +469,8 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       current_frame_crashed_ = true;
   }
 
+  UpdateTypeAndTitle(host);
+
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderFrameHostDestroyed.
 
@@ -825,6 +827,16 @@ bool RenderFrameDevToolsAgentHost::CheckConsistency() {
       handlers_frame_host_ == manager->pending_frame_host();
 }
 
+void RenderFrameDevToolsAgentHost::UpdateTypeAndTitle(RenderFrameHost* host) {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (!manager->delegate())
+    return;
+  if (type_.empty() || type_ == DevToolsAgentHost::kTypeOther)
+    type_ = manager->delegate()->GetTargetType(host);
+  if (title_.empty())
+    title_ = manager->delegate()->GetTargetTitle(host);
+}
+
 #if defined(OS_ANDROID)
 device::mojom::WakeLock* RenderFrameDevToolsAgentHost::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
@@ -1022,26 +1034,20 @@ std::string RenderFrameDevToolsAgentHost::GetParentId() {
 }
 
 std::string RenderFrameDevToolsAgentHost::GetType() {
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->delegate() && current_) {
-    std::string type = manager->delegate()->GetTargetType(current_->host());
-    if (!type.empty())
-      return type;
-  }
-
+  if (current_)
+    UpdateTypeAndTitle(current_->host());
+  if (!type_.empty())
+    return type_;
   if (IsChildFrame())
     return kTypeFrame;
   return kTypePage;
 }
 
 std::string RenderFrameDevToolsAgentHost::GetTitle() {
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->delegate() && current_) {
-    std::string title = manager->delegate()->GetTargetTitle(current_->host());
-    if (!title.empty())
-      return title;
-  }
-
+  if (current_)
+    UpdateTypeAndTitle(current_->host());
+  if (!title_.empty())
+    return title_;
   if (current_ && current_->host()->GetParent())
     return current_->host()->GetLastCommittedURL().spec();
   content::WebContents* web_contents = GetWebContents();
