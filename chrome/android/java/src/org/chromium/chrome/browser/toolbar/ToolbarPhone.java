@@ -1150,7 +1150,7 @@ public class ToolbarPhone extends ToolbarLayout
      *
      * @throws IllegalArgumentException if {@code from} is not an ancestor of {@code to}.
      */
-    private static void translateCanvasToView(View from, View to, Canvas canvas)
+    protected static void translateCanvasToView(View from, View to, Canvas canvas)
             throws IllegalArgumentException {
         assert from != null;
         assert to != null;

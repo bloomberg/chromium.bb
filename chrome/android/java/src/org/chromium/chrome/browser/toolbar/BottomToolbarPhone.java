@@ -219,6 +219,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
     }
 
     @Override
+    protected void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
+            boolean delayAnimation, boolean animate) {
+        super.setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation, animate);
+        if (!mUseToolbarHandle) mExpandButton.setClickable(!inTabSwitcherMode);
+    }
+
+    @Override
     protected int getProgressBarColor() {
         int color = super.getProgressBarColor();
         if (getToolbarDataProvider().getTab() != null) {
@@ -371,8 +378,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void updateButtonVisibility() {
         super.updateButtonVisibility();
         if (!mUseToolbarHandle) {
-            mExpandButton.setVisibility(
-                    urlHasFocus() || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
+            mExpandButton.setVisibility(urlHasFocus() ? INVISIBLE : VISIBLE);
         }
     }
 
@@ -462,12 +468,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mExpandButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mBottomSheet != null) mBottomSheet.onExpandButtonPressed();
+                if (mBottomSheet != null && mTabSwitcherState == STATIC_TAB) {
+                    mBottomSheet.onExpandButtonPressed();
+                }
             }
         });
 
         mExpandButton.setVisibility(View.VISIBLE);
-        mBrowsingModeViews.add(mExpandButton);
 
         updateToolbarTopMargin();
     }
@@ -488,7 +495,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (mUseToolbarHandle) {
             mToolbarHandleView.setImageDrawable(isLightTheme() ? mHandleDark : mHandleLight);
         } else {
-            ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
+            ColorStateList tint = isIncognito() ? mLightModeTint : mDarkModeTint;
             mExpandButton.setTint(tint);
         }
     }
@@ -521,7 +528,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
                         ? View.INVISIBLE
                         : View.VISIBLE);
 
-        if (mUseToolbarHandle) mToolbarHandleView.setAlpha(1f - progress);
+        if (mUseToolbarHandle) {
+            mToolbarHandleView.setAlpha(1f - progress);
+        } else {
+            mExpandButton.setAlpha(1f - progress);
+        }
 
         int tabSwitcherThemeColor = getToolbarColorForVisualState(VisualState.TAB_SWITCHER_NORMAL);
 
@@ -549,7 +560,10 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (mTextureCaptureMode) {
             super.drawTabSwitcherAnimationOverlay(canvas, 0f);
             if (!mUseToolbarHandle && mExpandButton.getVisibility() != View.GONE) {
+                canvas.save();
+                translateCanvasToView(this, mToolbarButtonsContainer, canvas);
                 drawChild(canvas, mExpandButton, SystemClock.uptimeMillis());
+                canvas.restore();
             }
         }
     }
