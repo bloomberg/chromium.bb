@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,19 +16,44 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
   LockScreenClient();
   ~LockScreenClient() override;
 
+  // Handles method calls coming from ash into chrome.
+  class Delegate {
+   public:
+    Delegate();
+    virtual ~Delegate();
+    virtual void HandleAttemptUnlock(const AccountId& account_id) = 0;
+    virtual void HandleHardlockPod(const AccountId& account_id) = 0;
+    virtual void HandleRecordClickOnLockIcon(const AccountId& account_id) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
   static LockScreenClient* Get();
 
   // ash::mojom::LockScreenClient:
   void AuthenticateUser(const AccountId& account_id,
                         const std::string& hashed_password,
                         bool authenticated_by_pin) override;
+  void AttemptUnlock(const AccountId& account_id) override;
+  void HardlockPod(const AccountId& account_id) override;
+  void RecordClickOnLockIcon(const AccountId& account_id) override;
 
-  // Wrappers around the mojom::SystemTray interface.
+  // Wrappers around the mojom::LockScreen interface.
   void ShowErrorMessage(int32_t login_attempts,
                         const std::string& error_text,
                         const std::string& help_link_text,
                         int32_t help_topic_id);
   void ClearErrors();
+  void ShowUserPodCustomIcon(const AccountId& account_id,
+                             ash::mojom::UserPodCustomIconOptionsPtr icon);
+  void HideUserPodCustomIcon(const AccountId& account_id);
+  void SetAuthType(const AccountId& account_id,
+                   ash::mojom::AuthType auth_type,
+                   const base::string16& initial_value);
+  void LoadUsers(std::unique_ptr<base::ListValue> users_list, bool show_guest);
+
+  void SetDelegate(Delegate* delegate);
 
  private:
   // Lock screen mojo service in ash.
@@ -36,6 +61,7 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
 
   // Binds this object to the client interface.
   mojo::Binding<ash::mojom::LockScreenClient> binding_;
+  Delegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenClient);
 };

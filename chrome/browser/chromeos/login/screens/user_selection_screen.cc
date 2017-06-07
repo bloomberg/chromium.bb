@@ -482,63 +482,8 @@ const user_manager::UserList UserSelectionScreen::PrepareUserListForSending(
 }
 
 void UserSelectionScreen::SendUserList() {
-  base::ListValue users_list;
-
-  // TODO(nkostylev): Move to a separate method in UserManager.
-  // http://crbug.com/230852
-  bool single_user = users_.size() == 1;
-  bool is_signin_to_add = LoginDisplayHost::default_host() &&
-                          user_manager::UserManager::Get()->IsUserLoggedIn();
-  std::string owner_email;
-  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
-                                           &owner_email);
-  const AccountId owner = user_manager::known_user::GetAccountId(
-      owner_email, std::string() /* id */, AccountType::UNKNOWN);
-
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  bool is_enterprise_managed = connector->IsEnterpriseManaged();
-
-  const user_manager::UserList users_to_send =
-      PrepareUserListForSending(users_, owner, is_signin_to_add);
-
-  user_auth_type_map_.clear();
-
-  const std::vector<std::string> kEmptyRecommendedLocales;
-  for (user_manager::UserList::const_iterator it = users_to_send.begin();
-       it != users_to_send.end();
-       ++it) {
-    const AccountId& account_id = (*it)->GetAccountId();
-    bool is_owner = (account_id == owner);
-    const bool is_public_account =
-        ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-    const AuthType initial_auth_type =
-        is_public_account ? EXPAND_THEN_USER_CLICK
-                          : (ShouldForceOnlineSignIn(*it) ? ONLINE_SIGN_IN
-                                                          : OFFLINE_PASSWORD);
-    user_auth_type_map_[account_id] = initial_auth_type;
-
-    auto user_dict = base::MakeUnique<base::DictionaryValue>();
-    const std::vector<std::string>* public_session_recommended_locales =
-        public_session_recommended_locales_.find(account_id) ==
-                public_session_recommended_locales_.end()
-            ? &kEmptyRecommendedLocales
-            : &public_session_recommended_locales_[account_id];
-    FillUserDictionary(*it, is_owner, is_signin_to_add, initial_auth_type,
-                       public_session_recommended_locales, user_dict.get());
-    bool signed_in = (*it)->is_logged_in();
-
-    // Single user check here is necessary because owner info might not be
-    // available when running into login screen on first boot.
-    // See http://crosbug.com/12723
-    bool can_remove_user =
-        ((!single_user || is_enterprise_managed) && account_id.is_valid() &&
-         !is_owner && !is_public_account && !signed_in && !is_signin_to_add);
-    user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
-    users_list.Append(std::move(user_dict));
-  }
-
-  handler_->LoadUsers(users_to_send, users_list);
+  std::unique_ptr<base::ListValue> users_list = PrepareUserList();
+  handler_->LoadUsers(users_to_send_, *users_list);
 }
 
 void UserSelectionScreen::HandleGetUsers() {
@@ -620,11 +565,7 @@ void UserSelectionScreen::ShowUserPodCustomIcon(
     const AccountId& account_id,
     const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
         icon_options) {
-  std::unique_ptr<base::DictionaryValue> icon =
-      icon_options.ToDictionaryValue();
-  if (!icon || icon->empty())
-    return;
-  view_->ShowUserPodCustomIcon(account_id, *icon);
+  view_->ShowUserPodCustomIcon(account_id, icon_options);
 }
 
 void UserSelectionScreen::HideUserPodCustomIcon(const AccountId& account_id) {
@@ -654,7 +595,9 @@ void UserSelectionScreen::AttemptEasySignin(const AccountId& account_id,
   user_context.SetKey(Key(secret));
   user_context.GetKey()->SetLabel(key_label);
 
-  login_display_delegate_->Login(user_context, SigninSpecifics());
+  // login display delegate not exist in views-based lock screen.
+  if (login_display_delegate_)
+    login_display_delegate_->Login(user_context, SigninSpecifics());
 }
 
 void UserSelectionScreen::Show() {}
@@ -681,6 +624,65 @@ void UserSelectionScreen::RecordClickOnLockIcon(const AccountId& account_id) {
   if (!service)
     return;
   service->RecordClickOnLockIcon();
+}
+
+std::unique_ptr<base::ListValue> UserSelectionScreen::PrepareUserList() {
+  std::unique_ptr<base::ListValue> users_list =
+      base::MakeUnique<base::ListValue>();
+
+  // TODO(nkostylev): Move to a separate method in UserManager.
+  // http://crbug.com/230852
+  bool single_user = users_.size() == 1;
+  bool is_signin_to_add = LoginDisplayHost::default_host() &&
+                          user_manager::UserManager::Get()->IsUserLoggedIn();
+  std::string owner_email;
+  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
+                                           &owner_email);
+  const AccountId owner = user_manager::known_user::GetAccountId(
+      owner_email, std::string() /* id */, AccountType::UNKNOWN);
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  bool is_enterprise_managed = connector->IsEnterpriseManaged();
+
+  users_to_send_ = PrepareUserListForSending(users_, owner, is_signin_to_add);
+
+  user_auth_type_map_.clear();
+
+  const std::vector<std::string> kEmptyRecommendedLocales;
+  for (user_manager::UserList::const_iterator it = users_to_send_.begin();
+       it != users_to_send_.end(); ++it) {
+    const AccountId& account_id = (*it)->GetAccountId();
+    bool is_owner = (account_id == owner);
+    const bool is_public_account =
+        ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+    const AuthType initial_auth_type =
+        is_public_account ? EXPAND_THEN_USER_CLICK
+                          : (ShouldForceOnlineSignIn(*it) ? ONLINE_SIGN_IN
+                                                          : OFFLINE_PASSWORD);
+    user_auth_type_map_[account_id] = initial_auth_type;
+
+    auto user_dict = base::MakeUnique<base::DictionaryValue>();
+    const std::vector<std::string>* public_session_recommended_locales =
+        public_session_recommended_locales_.find(account_id) ==
+                public_session_recommended_locales_.end()
+            ? &kEmptyRecommendedLocales
+            : &public_session_recommended_locales_[account_id];
+    FillUserDictionary(*it, is_owner, is_signin_to_add, initial_auth_type,
+                       public_session_recommended_locales, user_dict.get());
+    bool signed_in = (*it)->is_logged_in();
+
+    // Single user check here is necessary because owner info might not be
+    // available when running into login screen on first boot.
+    // See http://crosbug.com/12723
+    bool can_remove_user =
+        ((!single_user || is_enterprise_managed) && account_id.is_valid() &&
+         !is_owner && !is_public_account && !signed_in && !is_signin_to_add);
+    user_dict->SetBoolean(kKeyCanRemove, can_remove_user);
+    users_list->Append(std::move(user_dict));
+  }
+
+  return users_list;
 }
 
 EasyUnlockService* UserSelectionScreen::GetEasyUnlockServiceForUser(

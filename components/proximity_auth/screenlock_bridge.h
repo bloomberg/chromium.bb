@@ -70,6 +70,18 @@ class ScreenlockBridge {
     // Unlock, the icon will record metrics upon click.
     void SetTrialRun();
 
+    std::string GetIDString() const;
+
+    const base::string16 tooltip() const { return tooltip_; }
+
+    bool autoshow_tooltip() const { return autoshow_tooltip_; }
+
+    const base::string16 aria_label() const { return aria_label_; }
+
+    bool hardlock_on_click() const { return hardlock_on_click_; }
+
+    bool is_trial_run() const { return is_trial_run_; }
+
    private:
     UserPodCustomIcon icon_;
 

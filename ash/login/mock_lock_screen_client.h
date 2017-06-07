@@ -23,6 +23,9 @@ class MockLockScreenClient : public mojom::LockScreenClient {
                void(const AccountId& account_id,
                     const std::string& password,
                     bool authenticated_by_pin));
+  MOCK_METHOD1(AttemptUnlock, void(const AccountId& account_id));
+  MOCK_METHOD1(HardlockPod, void(const AccountId& account_id));
+  MOCK_METHOD1(RecordClickOnLockIcon, void(const AccountId& account_id));
 
  private:
   mojo::Binding<ash::mojom::LockScreenClient> binding_;

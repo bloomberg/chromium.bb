@@ -67,8 +67,7 @@ ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {
 std::unique_ptr<base::DictionaryValue>
 ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
   auto result = base::MakeUnique<base::DictionaryValue>();
-  std::string icon_id = GetIdForIcon(icon_);
-  result->SetString("id", icon_id);
+  result->SetString("id", GetIDString());
 
   if (!tooltip_.empty()) {
     auto tooltip_options = base::MakeUnique<base::DictionaryValue>();
@@ -112,6 +111,10 @@ void ScreenlockBridge::UserPodCustomIconOptions::SetHardlockOnClick() {
 
 void ScreenlockBridge::UserPodCustomIconOptions::SetTrialRun() {
   is_trial_run_ = true;
+}
+
+std::string ScreenlockBridge::UserPodCustomIconOptions::GetIDString() const {
+  return GetIdForIcon(icon_);
 }
 
 // static

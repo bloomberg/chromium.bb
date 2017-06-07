@@ -43,8 +43,10 @@ class UserBoardView {
                                        const std::string& default_locale,
                                        bool multiple_recommended_locales) = 0;
   virtual void ShowBannerMessage(const base::string16& message) = 0;
-  virtual void ShowUserPodCustomIcon(const AccountId& account_id,
-                                     const base::DictionaryValue& icon) = 0;
+  virtual void ShowUserPodCustomIcon(
+      const AccountId& account_id,
+      const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
+          icon) = 0;
   virtual void HideUserPodCustomIcon(const AccountId& account_id) = 0;
   virtual void SetAuthType(
       const AccountId& account_id,

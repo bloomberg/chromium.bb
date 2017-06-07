@@ -35,6 +35,7 @@ class ExtendedAuthenticator;
 class AuthFailure;
 class ScreenlockIconProvider;
 class WebUIScreenLocker;
+class ViewsScreenLocker;
 
 namespace test {
 class ScreenLockerTester;
@@ -183,6 +184,7 @@ class ScreenLocker : public AuthStatusConsumer,
   friend class test::ScreenLockerViewsTester;
   friend class test::WebUIScreenLockerTester;
   friend class WebUIScreenLocker;
+  friend class ViewsScreenLocker;
 
   // Track whether the user used pin or password to unlock the lock screen.
   // Values corrospond to UMA histograms, do not modify, or add or delete other
@@ -233,7 +235,6 @@ class ScreenLocker : public AuthStatusConsumer,
 
   // Delegate used to talk to the view.
   Delegate* delegate_ = nullptr;
-  bool owns_delegate_ = false;
 
   // Users that can unlock the device.
   user_manager::UserList users_;
@@ -279,6 +280,9 @@ class ScreenLocker : public AuthStatusConsumer,
 
   device::mojom::FingerprintPtr fp_service_;
   mojo::Binding<device::mojom::FingerprintObserver> binding_;
+
+  // ViewsScreenLocker instance in use.
+  std::unique_ptr<ViewsScreenLocker> views_screen_locker_;
 
   base::WeakPtrFactory<ScreenLocker> weak_factory_;
 
