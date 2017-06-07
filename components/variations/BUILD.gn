@@ -38,6 +38,8 @@ static_library("variations") {
     "study_filtering.h",
     "synthetic_trials.cc",
     "synthetic_trials.h",
+    "synthetic_trials_active_group_id_provider.cc",
+    "synthetic_trials_active_group_id_provider.h",
     "variations_associated_data.cc",
     "variations_associated_data.h",
     "variations_experiment_util.cc",

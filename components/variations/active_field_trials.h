@@ -50,6 +50,13 @@ void GetFieldTrialActiveGroupIds(std::vector<ActiveGroupId>* name_group_ids);
 // chosen yet are NOT returned in this list.
 void GetFieldTrialActiveGroupIdsAsStrings(std::vector<std::string>* output);
 
+// Fills the supplied vector |output| (which must be empty when called) with
+// unique string representations of ActiveGroupIds for each Syntehtic Trial
+// group. The strings are formatted as "<TrialName>-<GroupName>",
+// with the names as hex strings. Synthetic Field Trials for which a group
+// which hasn't been chosen yet are NOT returned in this list.
+void GetSyntheticTrialGroupIdsAsString(std::vector<std::string>* output);
+
 // Expose some functions for testing. These functions just wrap functionality
 // that is implemented above.
 namespace testing {

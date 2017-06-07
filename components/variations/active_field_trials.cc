@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/variations/metrics_util.h"
+#include "components/variations/synthetic_trials_active_group_id_provider.h"
 
 namespace variations {
 
@@ -25,6 +26,15 @@ void GetFieldTrialActiveGroupIdsForActiveGroups(
        active_groups.begin(); it != active_groups.end(); ++it) {
     name_group_ids->push_back(MakeActiveGroupId(it->trial_name,
                                                 it->group_name));
+  }
+}
+
+void AppendActiveGroupIdsAsStrings(
+    const std::vector<ActiveGroupId> name_group_ids,
+    std::vector<std::string>* output) {
+  for (const auto& active_group_id : name_group_ids) {
+    output->push_back(base::StringPrintf("%x-%x", active_group_id.name,
+                                         active_group_id.group));
   }
 }
 
@@ -54,10 +64,14 @@ void GetFieldTrialActiveGroupIdsAsStrings(std::vector<std::string>* output) {
   DCHECK(output->empty());
   std::vector<ActiveGroupId> name_group_ids;
   GetFieldTrialActiveGroupIds(&name_group_ids);
-  for (size_t i = 0; i < name_group_ids.size(); ++i) {
-    output->push_back(base::StringPrintf(
-        "%x-%x", name_group_ids[i].name, name_group_ids[i].group));
-  }
+  AppendActiveGroupIdsAsStrings(name_group_ids, output);
+}
+
+void GetSyntheticTrialGroupIdsAsString(std::vector<std::string>* output) {
+  std::vector<ActiveGroupId> name_group_ids;
+  SyntheticTrialsActiveGroupIdProvider::GetInstance()->GetActiveGroupIds(
+      &name_group_ids);
+  AppendActiveGroupIdsAsStrings(name_group_ids, output);
 }
 
 namespace testing {
