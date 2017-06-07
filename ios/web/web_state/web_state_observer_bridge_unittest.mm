@@ -38,6 +38,17 @@ class WebStateObserverBridgeTest : public PlatformTest {
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 };
 
+// Tests |webState:navigationItemsPrunedCount:| forwarding.
+TEST_F(WebStateObserverBridgeTest, NavigationItemsPruned) {
+  ASSERT_FALSE([observer_ navigationItemsPrunedInfo]);
+
+  bridge_->NavigationItemsPruned(1);
+
+  ASSERT_TRUE([observer_ navigationItemsPrunedInfo]);
+  EXPECT_EQ(&test_web_state_, [observer_ navigationItemsPrunedInfo]->web_state);
+  EXPECT_EQ(1, [observer_ navigationItemsPrunedInfo]->count);
+}
+
 // Tests |webState:didStartNavigation:| forwarding.
 TEST_F(WebStateObserverBridgeTest, DidStartNavigation) {
   ASSERT_FALSE([observer_ didStartNavigationInfo]);
