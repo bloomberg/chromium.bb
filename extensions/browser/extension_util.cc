@@ -78,6 +78,12 @@ bool IsIncognitoEnabled(const std::string& extension_id,
   return ExtensionPrefs::Get(context)->IsIncognitoEnabled(extension_id);
 }
 
+GURL GetSiteForExtensionId(const std::string& extension_id,
+                           content::BrowserContext* context) {
+  return content::SiteInstance::GetSiteForURL(
+      context, Extension::GetBaseURLFromExtensionId(extension_id));
+}
+
 content::StoragePartition* GetStoragePartitionForExtensionId(
     const std::string& extension_id,
     content::BrowserContext* browser_context) {
