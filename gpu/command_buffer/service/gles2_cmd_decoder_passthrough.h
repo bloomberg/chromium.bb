@@ -69,7 +69,8 @@ struct PassthroughResources {
 
 class GLES2DecoderPassthroughImpl : public GLES2Decoder {
  public:
-  GLES2DecoderPassthroughImpl(CommandBufferServiceBase* command_buffer_service,
+  GLES2DecoderPassthroughImpl(GLES2DecoderClient* client,
+                              CommandBufferServiceBase* command_buffer_service,
                               ContextGroup* group);
   ~GLES2DecoderPassthroughImpl() override;
 
@@ -146,16 +147,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   size_t GetSavedBackTextureCountForTest() override;
   size_t GetCreatedBackTextureCountForTest() override;
 
-  // Sets the callback for fence sync release and wait calls. The wait call
-  // returns true if the channel is still scheduled.
-  void SetFenceSyncReleaseCallback(
-      const FenceSyncReleaseCallback& callback) override;
-  void SetWaitSyncTokenCallback(const WaitSyncTokenCallback& callback) override;
-  void SetDescheduleUntilFinishedCallback(
-      const NoParamCallback& callback) override;
-  void SetRescheduleAfterFinishedCallback(
-      const NoParamCallback& callback) override;
-
   // Gets the QueryManager for this context.
   QueryManager* GetQueryManager() override;
 
@@ -228,8 +219,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   ErrorState* GetErrorState() override;
 
-  void SetShaderCacheCallback(const ShaderCacheCallback& callback) override;
-
   void WaitForReadPixels(base::Closure callback) override;
 
   // Returns true if the context was lost either by GL_ARB_robustness, forced
@@ -301,6 +290,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
                                           GLenum internalformat,
                                           GLint image_id);
 
+  GLES2DecoderClient* client_;
+
   int commands_to_process_;
 
   DebugMarkerManager debug_marker_manager_;
@@ -335,10 +326,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<ContextGroup> group_;
   scoped_refptr<FeatureInfo> feature_info_;
-
-  // Callbacks
-  FenceSyncReleaseCallback fence_sync_release_callback_;
-  WaitSyncTokenCallback wait_sync_token_callback_;
 
   // Some objects may generate resources when they are bound even if they were
   // not generated yet: texture, buffer, renderbuffer, framebuffer, transform

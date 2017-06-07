@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/gpu_export.h"
 
@@ -29,6 +28,7 @@ struct GpuPreferences;
 namespace gles2 {
 
 class FeatureInfo;
+class GLES2DecoderClient;
 class ProgramCache;
 class ProgramManager;
 class ProgressReporter;
@@ -323,7 +323,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Performs glLinkProgram and related activities.
   bool Link(ShaderManager* manager,
             VaryingsPackingOption varyings_packing_option,
-            const ShaderCacheCallback& shader_callback);
+            GLES2DecoderClient* client);
 
   // Performs glValidateProgram and related activities.
   void Validate();

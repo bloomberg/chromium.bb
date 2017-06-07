@@ -1271,7 +1271,7 @@ void Program::ExecuteProgramOutputBindCalls() {
 
 bool Program::Link(ShaderManager* manager,
                    Program::VaryingsPackingOption varyings_packing_option,
-                   const ShaderCacheCallback& shader_callback) {
+                   GLES2DecoderClient* client) {
   ClearLinkStatus();
 
   if (!AttachedShadersExist()) {
@@ -1296,14 +1296,10 @@ bool Program::Link(ShaderManager* manager,
     UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.CacheHit", cache_hit);
 
     if (cache_hit) {
-      ProgramCache::ProgramLoadResult success =
-          cache->LoadLinkedProgram(service_id(),
-                                   attached_shaders_[0].get(),
-                                   attached_shaders_[1].get(),
-                                   &bind_attrib_location_map_,
-                                   transform_feedback_varyings_,
-                                   transform_feedback_buffer_mode_,
-                                   shader_callback);
+      ProgramCache::ProgramLoadResult success = cache->LoadLinkedProgram(
+          service_id(), attached_shaders_[0].get(), attached_shaders_[1].get(),
+          &bind_attrib_location_map_, transform_feedback_varyings_,
+          transform_feedback_buffer_mode_, client);
       link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
       UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.LoadBinarySuccess", !link);
     }
@@ -1401,13 +1397,11 @@ bool Program::Link(ShaderManager* manager,
         shader->RefreshTranslatedShaderSource();
       }
       if (cache) {
-        cache->SaveLinkedProgram(service_id(),
-                                 attached_shaders_[0].get(),
-                                 attached_shaders_[1].get(),
-                                 &bind_attrib_location_map_,
-                                 effective_transform_feedback_varyings_,
-                                 effective_transform_feedback_buffer_mode_,
-                                 shader_callback);
+        cache->SaveLinkedProgram(
+            service_id(), attached_shaders_[0].get(),
+            attached_shaders_[1].get(), &bind_attrib_location_map_,
+            effective_transform_feedback_varyings_,
+            effective_transform_feedback_buffer_mode_, client);
       }
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheMissTime",

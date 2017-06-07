@@ -3639,8 +3639,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDescheduleUntilFinishedCHROMIUM() {
 
 error::Error GLES2DecoderPassthroughImpl::DoInsertFenceSyncCHROMIUM(
     GLuint64 release_count) {
-  if (!fence_sync_release_callback_.is_null())
-    fence_sync_release_callback_.Run(release_count);
+  client_->OnFenceSyncRelease(release_count);
   return error::kNoError;
 }
 
@@ -3648,13 +3647,9 @@ error::Error GLES2DecoderPassthroughImpl::DoWaitSyncTokenCHROMIUM(
     CommandBufferNamespace namespace_id,
     CommandBufferId command_buffer_id,
     GLuint64 release_count) {
-  if (wait_sync_token_callback_.is_null()) {
-    return error::kNoError;
-  }
   SyncToken sync_token(namespace_id, 0, command_buffer_id, release_count);
-  return wait_sync_token_callback_.Run(sync_token)
-             ? error::kDeferCommandUntilLater
-             : error::kNoError;
+  return client_->OnWaitSyncToken(sync_token) ? error::kDeferCommandUntilLater
+                                              : error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDrawBuffersEXT(

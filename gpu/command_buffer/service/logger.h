@@ -18,15 +18,15 @@
 namespace gpu {
 namespace gles2 {
 
-typedef base::Callback<void(int32_t id, const std::string& msg)> MsgCallback;
-
 class DebugMarkerManager;
+class GLES2DecoderClient;
 
 class GPU_EXPORT Logger {
  public:
   static const int kMaxLogMessages = 256;
 
-  explicit Logger(const DebugMarkerManager* debug_marker_manager);
+  Logger(const DebugMarkerManager* debug_marker_manager,
+         GLES2DecoderClient* client);
   ~Logger();
 
   void LogMessage(const char* filename, int line, const std::string& msg);
@@ -40,17 +40,15 @@ class GPU_EXPORT Logger {
     log_synthesized_gl_errors_ = enabled;
   }
 
-  void SetMsgCallback(const MsgCallback& callback);
-
  private:
   // Uses the current marker to add information to logs.
   const DebugMarkerManager* debug_marker_manager_;
+  GLES2DecoderClient* client_;
   std::string this_in_hex_;
 
   int log_message_count_;
   bool log_synthesized_gl_errors_;
 
-  MsgCallback msg_callback_;
   DISALLOW_COPY_AND_ASSIGN(Logger);
 };
 

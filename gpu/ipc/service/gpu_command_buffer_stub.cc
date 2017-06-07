@@ -635,8 +635,8 @@ bool GpuCommandBufferStub::Initialize(
 
   command_buffer_.reset(new CommandBufferService(
       this, context_group_->transfer_buffer_manager()));
-  decoder_.reset(
-      gles2::GLES2Decoder::Create(command_buffer_.get(), context_group_.get()));
+  decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
+                                             context_group_.get()));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(
@@ -774,21 +774,6 @@ bool GpuCommandBufferStub::Initialize(
   if (manager->gpu_preferences().enable_gpu_service_logging) {
     decoder_->set_log_commands(true);
   }
-
-  decoder_->GetLogger()->SetMsgCallback(base::Bind(
-      &GpuCommandBufferStub::SendConsoleMessage, base::Unretained(this)));
-  decoder_->SetShaderCacheCallback(base::Bind(
-      &GpuCommandBufferStub::SendCachedShader, base::Unretained(this)));
-  decoder_->SetFenceSyncReleaseCallback(base::Bind(
-      &GpuCommandBufferStub::OnFenceSyncRelease, base::Unretained(this)));
-  decoder_->SetWaitSyncTokenCallback(base::Bind(
-      &GpuCommandBufferStub::OnWaitSyncToken, base::Unretained(this)));
-  decoder_->SetDescheduleUntilFinishedCallback(
-      base::Bind(&GpuCommandBufferStub::OnDescheduleUntilFinished,
-                 base::Unretained(this)));
-  decoder_->SetRescheduleAfterFinishedCallback(
-      base::Bind(&GpuCommandBufferStub::OnRescheduleAfterFinished,
-                 base::Unretained(this)));
 
   const size_t kSharedStateSize = sizeof(CommandBufferSharedState);
   if (!shared_state_shm->Map(kSharedStateSize)) {
@@ -1160,8 +1145,8 @@ void GpuCommandBufferStub::OnDestroyImage(int32_t id) {
   image_manager->RemoveImage(id);
 }
 
-void GpuCommandBufferStub::SendConsoleMessage(int32_t id,
-                                              const std::string& message) {
+void GpuCommandBufferStub::OnConsoleMessage(int32_t id,
+                                            const std::string& message) {
   GPUCommandBufferConsoleMessage console_message;
   console_message.id = id;
   console_message.message = message;
@@ -1171,8 +1156,8 @@ void GpuCommandBufferStub::SendConsoleMessage(int32_t id,
   Send(msg);
 }
 
-void GpuCommandBufferStub::SendCachedShader(const std::string& key,
-                                            const std::string& shader) {
+void GpuCommandBufferStub::CacheShader(const std::string& key,
+                                       const std::string& shader) {
   channel_->CacheShader(key, shader);
 }
 

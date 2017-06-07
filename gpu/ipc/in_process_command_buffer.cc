@@ -316,8 +316,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 
   command_buffer_ = base::MakeUnique<CommandBufferService>(
       this, transfer_buffer_manager_.get());
-  decoder_.reset(
-      gles2::GLES2Decoder::Create(command_buffer_.get(), context_group_.get()));
+  decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
+                                             context_group_.get()));
 
   if (!surface_.get()) {
     if (params.is_offscreen) {
@@ -408,19 +408,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     return false;
   }
   *params.capabilities = decoder_->GetCapabilities();
-
-  decoder_->SetFenceSyncReleaseCallback(
-      base::Bind(&InProcessCommandBuffer::FenceSyncReleaseOnGpuThread,
-                 base::Unretained(this)));
-  decoder_->SetWaitSyncTokenCallback(
-      base::Bind(&InProcessCommandBuffer::WaitSyncTokenOnGpuThread,
-                 base::Unretained(this)));
-  decoder_->SetDescheduleUntilFinishedCallback(
-      base::Bind(&InProcessCommandBuffer::DescheduleUntilFinishedOnGpuThread,
-                 base::Unretained(this)));
-  decoder_->SetRescheduleAfterFinishedCallback(
-      base::Bind(&InProcessCommandBuffer::RescheduleAfterFinishedOnGpuThread,
-                 base::Unretained(this)));
 
   image_factory_ = params.image_factory;
 
@@ -847,7 +834,17 @@ void InProcessCommandBuffer::DestroyImageOnGpuThread(int32_t id) {
   image_manager->RemoveImage(id);
 }
 
-void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
+void InProcessCommandBuffer::OnConsoleMessage(int32_t id,
+                                              const std::string& message) {
+  // TODO(piman): implement this.
+}
+
+void InProcessCommandBuffer::CacheShader(const std::string& key,
+                                         const std::string& shader) {
+  // TODO(piman): implement this.
+}
+
+void InProcessCommandBuffer::OnFenceSyncRelease(uint64_t release) {
   SyncToken sync_token(GetNamespaceID(), GetStreamId(), GetCommandBufferID(),
                        release);
 
@@ -858,8 +855,7 @@ void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
   sync_point_client_state_->ReleaseFenceSync(release);
 }
 
-bool InProcessCommandBuffer::WaitSyncTokenOnGpuThread(
-    const SyncToken& sync_token) {
+bool InProcessCommandBuffer::OnWaitSyncToken(const SyncToken& sync_token) {
   DCHECK(!waiting_for_sync_point_);
   gpu::SyncPointManager* sync_point_manager = service_->sync_point_manager();
   DCHECK(sync_point_manager);
@@ -906,7 +902,7 @@ void InProcessCommandBuffer::OnWaitSyncTokenCompleted(
       &InProcessCommandBuffer::ProcessTasksOnGpuThread, gpu_thread_weak_ptr_));
 }
 
-void InProcessCommandBuffer::DescheduleUntilFinishedOnGpuThread() {
+void InProcessCommandBuffer::OnDescheduleUntilFinished() {
   if (!service_->BlockThreadOnWaitSyncToken()) {
     DCHECK(command_buffer_->scheduled());
     DCHECK(decoder_->HasPollingWork());
@@ -915,7 +911,7 @@ void InProcessCommandBuffer::DescheduleUntilFinishedOnGpuThread() {
   }
 }
 
-void InProcessCommandBuffer::RescheduleAfterFinishedOnGpuThread() {
+void InProcessCommandBuffer::OnRescheduleAfterFinished() {
   if (!service_->BlockThreadOnWaitSyncToken()) {
     DCHECK(!command_buffer_->scheduled());
 

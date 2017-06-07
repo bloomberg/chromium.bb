@@ -1593,15 +1593,6 @@ class GLES2DecoderDescheduleUntilFinishedTest : public GLES2DecoderTest {
     init.extensions += " GL_ARB_compatibility GL_ARB_sync";
     InitDecoder(init);
 
-    GetDecoder()->SetDescheduleUntilFinishedCallback(
-        base::Bind(&GLES2DecoderDescheduleUntilFinishedTest::
-                       DescheduleUntilFinishedCallback,
-                   base::Unretained(this)));
-    GetDecoder()->SetRescheduleAfterFinishedCallback(
-        base::Bind(&GLES2DecoderDescheduleUntilFinishedTest::
-                       RescheduleAfterFinishedCallback,
-                   base::Unretained(this)));
-
     EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
         .Times(2)
         .WillOnce(Return(sync_service_id_))
@@ -1617,10 +1608,10 @@ class GLES2DecoderDescheduleUntilFinishedTest : public GLES2DecoderTest {
         .RetiresOnSaturation();
   }
 
-  void DescheduleUntilFinishedCallback() {
+  void OnDescheduleUntilFinished() override {
     deschedule_until_finished_callback_count_++;
   }
-  void RescheduleAfterFinishedCallback() {
+  void OnRescheduleAfterFinished() override {
     reschedule_after_finished_callback_count_++;
   }
 
