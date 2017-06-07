@@ -22,8 +22,12 @@ class SubresourceFilterObserver {
  public:
   virtual ~SubresourceFilterObserver() = default;
 
+  // Called before the observer manager is destroyed. Observers must unregister
+  // themselves by this point.
   virtual void OnSubresourceFilterGoingAway() {}
 
+  // Called at most once per navigation when page activation is computed. This
+  // will be called before ReadyToCommitNavigation.
   virtual void OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
       ActivationDecision activation_decision,

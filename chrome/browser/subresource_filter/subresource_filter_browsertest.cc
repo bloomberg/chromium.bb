@@ -1446,7 +1446,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       WhiteliseSiteOnReload_ActivationDisabledOnReload) {
+                       WhitelistSiteOnReload_ActivationDisabledOnReload) {
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
@@ -1482,7 +1482,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(
     SubresourceFilterBrowserTest,
-    WhiteliseSiteOnReload_ActivationDisabledOnReloadFromScript) {
+    WhitelistSiteOnReload_ActivationDisabledOnReloadFromScript) {
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
@@ -1520,7 +1520,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     SubresourceFilterBrowserTest,
-    WhiteliseSiteOnReload_ActivationDisabledOnNavigationToSameURL) {
+    WhitelistSiteOnReload_ActivationDisabledOnNavigationToSameURL) {
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(

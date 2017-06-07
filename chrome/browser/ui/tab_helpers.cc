@@ -66,6 +66,7 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -184,7 +185,10 @@ void TabHelpers::AttachTabHelpers(
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));
-  ChromeSubresourceFilterClient::CreateForWebContents(web_contents);
+  if (base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilter)) {
+    ChromeSubresourceFilterClient::CreateForWebContents(web_contents);
+  }
   ChromeTranslateClient::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
   data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(

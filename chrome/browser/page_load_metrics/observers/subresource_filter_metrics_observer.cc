@@ -135,6 +135,28 @@ void LogActivationDecisionMetrics(content::NavigationHandle* navigation_handle,
 
 }  // namespace
 
+SubresourceFilterMetricsObserver::SubresourceFilterMetricsObserver()
+    : scoped_observer_(this) {}
+SubresourceFilterMetricsObserver::~SubresourceFilterMetricsObserver() = default;
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+SubresourceFilterMetricsObserver::OnStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url,
+    bool started_in_foreground) {
+  navigation_handle_ = navigation_handle;
+  auto* observer_manager =
+      subresource_filter::SubresourceFilterObserverManager::FromWebContents(
+          navigation_handle->GetWebContents());
+  // |observer_manager| isn't constructed if the feature for subresource
+  // filtering isn't enabled.
+  if (observer_manager) {
+    scoped_observer_.Add(observer_manager);
+    return CONTINUE_OBSERVING;
+  }
+  return STOP_OBSERVING;
+}
+
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 SubresourceFilterMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
@@ -152,13 +174,17 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 SubresourceFilterMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
-  const auto* subres_filter =
-      ContentSubresourceFilterDriverFactory::FromWebContents(
-          navigation_handle->GetWebContents());
-  if (subres_filter)
-    LogActivationDecisionMetrics(
-        navigation_handle,
-        subres_filter->GetActivationDecisionForLastCommittedPageLoad());
+  // Just in case OnSubresourceFilterGoingAway is called before this point.
+  if (!activation_decision_) {
+    DCHECK(!scoped_observer_.IsObservingSources());
+    return STOP_OBSERVING;
+  }
+
+  did_commit_ = true;
+  navigation_handle_ = nullptr;
+  DCHECK(scoped_observer_.IsObservingSources());
+  LogActivationDecisionMetrics(navigation_handle, *activation_decision_);
+  scoped_observer_.RemoveAll();
   return CONTINUE_OBSERVING;
 }
 
@@ -296,6 +322,23 @@ void SubresourceFilterMetricsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     bool is_in_main_frame) {
   played_media_ = true;
+}
+
+void SubresourceFilterMetricsObserver::OnSubresourceFilterGoingAway() {
+  scoped_observer_.RemoveAll();
+}
+
+void SubresourceFilterMetricsObserver::OnPageActivationComputed(
+    content::NavigationHandle* navigation_handle,
+    subresource_filter::ActivationDecision activation_decision,
+    const subresource_filter::ActivationState& activation_state) {
+  // Make sure we don't get notifications from subsequent navigations.
+  if (navigation_handle != navigation_handle_)
+    return;
+  // Ensure this will always be called at most once before commit.
+  DCHECK(!did_commit_);
+  DCHECK(!activation_decision_);
+  activation_decision_ = activation_decision;
 }
 
 void SubresourceFilterMetricsObserver::OnGoingAway(

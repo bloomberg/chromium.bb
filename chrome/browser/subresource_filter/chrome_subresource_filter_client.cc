@@ -52,12 +52,6 @@ ChromeSubresourceFilterClient::~ChromeSubresourceFilterClient() {}
 void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
     content::NavigationHandle* navigation_handle,
     std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
-  // Don't add any throttles if the feature isn't enabled at all.
-  if (!base::FeatureList::IsEnabled(
-          subresource_filter::kSafeBrowsingSubresourceFilter)) {
-    return;
-  }
-
   if (navigation_handle->IsInMainFrame()) {
     safe_browsing::SafeBrowsingService* safe_browsing_service =
         g_browser_process->safe_browsing_service();
