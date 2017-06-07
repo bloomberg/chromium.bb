@@ -383,9 +383,9 @@ public class AccountManagementFragment extends PreferenceFragment
         boolean isChildAccount = mProfile.isChild();
         Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
         for (final Account account : accounts) {
-            ChromeBasePreference pref = new ChromeBasePreference(getActivity());
+            Preference pref = new Preference(getActivity());
+            pref.setLayoutResource(R.layout.account_management_account_row);
             pref.setTitle(account.name);
-
             pref.setIcon(isChildAccount ? getBadgedUserPicture(getActivity(), account.name)
                                         : getUserPicture(getActivity(), account.name));
 
@@ -408,6 +408,7 @@ public class AccountManagementFragment extends PreferenceFragment
 
     private ChromeBasePreference createAddAccountPreference() {
         ChromeBasePreference addAccountPreference = new ChromeBasePreference(getActivity());
+        addAccountPreference.setLayoutResource(R.layout.account_management_account_row);
         addAccountPreference.setIcon(R.drawable.add_circle_blue);
         addAccountPreference.setTitle(R.string.account_management_add_account_title);
         addAccountPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
