@@ -23,11 +23,8 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.Log;
-import org.chromium.base.PerfTraceEvent;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.PerfTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -60,11 +57,9 @@ import org.chromium.content.browser.test.util.RenderProcessLimit;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 
-import java.io.File;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Calendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -666,122 +661,6 @@ final class ChromeActivityTestCommon<T extends ChromeActivity> {
     void assertWaitForPageScaleFactorMatch(final float expectedScale) {
         ApplicationTestUtils.assertWaitForPageScaleFactorMatch(
                 mCallback.getActivity(), expectedScale);
-    }
-
-    /**
-     * This method creates a special string that tells the python test harness what
-     * trace calls to track for this particular test run.  It can support multiple trace calls for
-     * each test and will make a new graph entry for all of them.  It should be noted that this
-     * method eats all exceptions.  This is so that it can never be the cause of a test failure.
-     * We still need to call this method even if we know the test will not run (ie: willTestRun is
-     * false).  This is because this method lets the python test harness know not to expect any
-     * perf output in this case.  In the case that the autoTrace parameter is set for the current
-     * test method, this will also start the PerfTrace facility automatically.
-     *
-     * @return A specially formatted string that contains which JSON perf markers to look at. This
-     *         will be analyzed by the perf test harness.
-     */
-    @SuppressFBWarnings({
-            "REC_CATCH_EXCEPTION", "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", })
-    String setupPotentialPerfTest() {
-        File perfFile = mCallback.getInstrumentation().getTargetContext().getFileStreamPath(
-                PERF_OUTPUT_FILE);
-        perfFile.delete();
-        PerfTraceEvent.setOutputFile(perfFile);
-
-        String perfAnnotationString = "";
-
-        try {
-            Method method = getClass().getMethod(mCallback.getTestName(), (Class[]) null);
-            PerfTest annotation = method.getAnnotation(PerfTest.class);
-            if (annotation != null) {
-                StringBuilder annotationData = new StringBuilder();
-                annotationData.append(String.format(PERF_ANNOTATION_FORMAT, method.getName()));
-
-                // Grab the minimum number of trace calls we will track (if names(),
-                // graphNames(), and graphValues() do not have the same number of elements, we
-                // will track as many as we can given the data available.
-                final int maxIndex = Math.min(annotation.traceNames().length,
-                        Math.min(annotation.graphNames().length, annotation.seriesNames().length));
-
-                List<String> allNames = new LinkedList<>();
-                for (int i = 0; i < maxIndex; ++i) {
-                    // Prune out all of ',' and ';' from the strings.  Replace them with '-'.
-                    String name = annotation.traceNames()[i].replaceAll("[,;]", "-");
-                    allNames.add(name);
-                    String graphName = annotation.graphNames()[i].replaceAll("[,;]", "-");
-                    String seriesName = annotation.seriesNames()[i].replaceAll("[,;]", "-");
-                    if (annotation.traceTiming()) {
-                        annotationData.append(name)
-                                .append(",")
-                                .append(graphName)
-                                .append(",")
-                                .append(seriesName)
-                                .append(';');
-                    }
-
-                    // If memory tracing is enabled, add an additional graph for each one
-                    // defined to track timing perf that will track the corresponding memory
-                    // usage.
-                    // Keep the series name the same, but just append a memory identifying
-                    // prefix to the graph.
-                    if (annotation.traceMemory()) {
-                        String memName = PerfTraceEvent.makeMemoryTraceNameFromTimingName(name);
-                        String memGraphName = PerfTraceEvent.makeSafeTraceName(
-                                graphName, MEMORY_TRACE_GRAPH_SUFFIX);
-                        annotationData.append(memName)
-                                .append(",")
-                                .append(memGraphName)
-                                .append(",")
-                                .append(seriesName)
-                                .append(';');
-                        allNames.add(memName);
-                    }
-                }
-                // We only record perf trace events for the names explicitly listed.
-                PerfTraceEvent.setFilter(allNames);
-
-                // Figure out if we should automatically start or stop the trace.
-                if (annotation.autoTrace()) {
-                    PerfTraceEvent.setEnabled(true);
-                }
-                PerfTraceEvent.setTimingTrackingEnabled(annotation.traceTiming());
-                PerfTraceEvent.setMemoryTrackingEnabled(annotation.traceMemory());
-
-                perfAnnotationString = annotationData.toString();
-            }
-        } catch (Exception ex) {
-            // Eat exception here.
-        }
-
-        return perfAnnotationString;
-    }
-
-    /**
-     * This handles cleaning up the performance component of this test if it was a UI Perf test.
-     * This includes potentially shutting down PerfTraceEvent.  This method eats all exceptions so
-     * that it can never be the cause of a test failure.  The test harness will wait for
-     * {@code perfTagAnalysisString} to show up in the logcat before processing the JSON perf file,
-     * giving this method the chance to flush and dump the performance data before the harness reads
-     * it.
-     *
-     * @param perfTagAnalysisString A specially formatted string that tells the perf test harness
-     *                              which perf tags to analyze.
-     */
-    void endPerfTest(String perfTagAnalysisString) {
-        try {
-            Method method = getClass().getMethod(mCallback.getTestName(), (Class[]) null);
-            PerfTest annotation = method.getAnnotation(PerfTest.class);
-            if (annotation != null) {
-                if (PerfTraceEvent.enabled()) {
-                    PerfTraceEvent.setEnabled(false);
-                }
-
-                System.out.println(perfTagAnalysisString);
-            }
-        } catch (NoSuchMethodException ex) {
-            // Eat exception here.
-        }
     }
 
     public interface ChromeTestCommonCallback<T extends ChromeActivity> {
