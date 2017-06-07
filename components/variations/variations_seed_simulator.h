@@ -18,6 +18,7 @@
 namespace variations {
 
 class ProcessedStudy;
+struct ClientFilterableState;
 class VariationsSeed;
 
 // VariationsSeedSimulator simulates the result of creating a set of studies
@@ -59,14 +60,7 @@ class VariationsSeedSimulator {
   // results of the simulation as a set of expected group change counts of each
   // type.
   Result SimulateSeedStudies(const VariationsSeed& seed,
-                             const std::string& locale,
-                             const base::Time& reference_date,
-                             const base::Version& version,
-                             Study_Channel channel,
-                             Study_FormFactor form_factor,
-                             const std::string& hardware_class,
-                             const std::string& session_consistency_country,
-                             const std::string& permanent_consistency_country);
+                             const ClientFilterableState& client_state);
 
  private:
   friend class VariationsSeedSimulatorTest;

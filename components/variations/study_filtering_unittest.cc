@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_split.h"
+#include "components/variations/client_filterable_state.h"
 #include "components/variations/processed_study.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,9 +26,10 @@ int64_t TimeToProtoTime(const base::Time& time) {
 }
 
 // Adds an experiment to |study| with the specified |name| and |probability|.
-Study_Experiment* AddExperiment(const std::string& name, int probability,
-                                Study* study) {
-  Study_Experiment* experiment = study->add_experiment();
+Study::Experiment* AddExperiment(const std::string& name,
+                                 int probability,
+                                 Study* study) {
+  Study::Experiment* experiment = study->add_experiment();
   experiment->set_name(name);
   experiment->set_probability_weight(probability);
   return experiment;
@@ -36,15 +38,12 @@ Study_Experiment* AddExperiment(const std::string& name, int probability,
 }  // namespace
 
 TEST(VariationsStudyFilteringTest, CheckStudyChannel) {
-  const Study_Channel channels[] = {
-    Study_Channel_CANARY,
-    Study_Channel_DEV,
-    Study_Channel_BETA,
-    Study_Channel_STABLE,
+  const Study::Channel channels[] = {
+      Study::CANARY, Study::DEV, Study::BETA, Study::STABLE,
   };
   bool channel_added[arraysize(channels)] = { 0 };
 
-  Study_Filter filter;
+  Study::Filter filter;
 
   // Check in the forwarded order. The loop cond is <= arraysize(channels)
   // instead of < so that the result of adding the last channel gets checked.
@@ -80,18 +79,15 @@ TEST(VariationsStudyFilteringTest, CheckStudyChannel) {
 }
 
 TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
-  const Study_FormFactor form_factors[] = {
-    Study_FormFactor_DESKTOP,
-    Study_FormFactor_PHONE,
-    Study_FormFactor_TABLET,
-    Study_FormFactor_KIOSK,
+  const Study::FormFactor form_factors[] = {
+      Study::DESKTOP, Study::PHONE, Study::TABLET, Study::KIOSK,
   };
 
-  ASSERT_EQ(Study_FormFactor_FormFactor_ARRAYSIZE,
+  ASSERT_EQ(Study::FormFactor_ARRAYSIZE,
             static_cast<int>(arraysize(form_factors)));
 
   bool form_factor_added[arraysize(form_factors)] = { 0 };
-  Study_Filter filter;
+  Study::Filter filter;
 
   for (size_t i = 0; i <= arraysize(form_factors); ++i) {
     for (size_t j = 0; j < arraysize(form_factors); ++j) {
@@ -196,7 +192,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyLocale) {
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    Study_Filter filter;
+    Study::Filter filter;
     for (const std::string& locale : base::SplitString(
              test_cases[i].filter_locales, ",",
              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
@@ -215,19 +211,14 @@ TEST(VariationsStudyFilteringTest, CheckStudyLocale) {
 }
 
 TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
-  const Study_Platform platforms[] = {
-    Study_Platform_PLATFORM_WINDOWS,
-    Study_Platform_PLATFORM_MAC,
-    Study_Platform_PLATFORM_LINUX,
-    Study_Platform_PLATFORM_CHROMEOS,
-    Study_Platform_PLATFORM_ANDROID,
-    Study_Platform_PLATFORM_IOS,
+  const Study::Platform platforms[] = {
+      Study::PLATFORM_WINDOWS,  Study::PLATFORM_MAC,     Study::PLATFORM_LINUX,
+      Study::PLATFORM_CHROMEOS, Study::PLATFORM_ANDROID, Study::PLATFORM_IOS,
   };
-  ASSERT_EQ(Study_Platform_Platform_ARRAYSIZE,
-            static_cast<int>(arraysize(platforms)));
+  ASSERT_EQ(Study::Platform_ARRAYSIZE, static_cast<int>(arraysize(platforms)));
   bool platform_added[arraysize(platforms)] = { 0 };
 
-  Study_Filter filter;
+  Study::Filter filter;
 
   // Check in the forwarded order. The loop cond is <= arraysize(platforms)
   // instead of < so that the result of adding the last channel gets checked.
@@ -276,7 +267,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {
       {now + delta, false},
   };
 
-  Study_Filter filter;
+  Study::Filter filter;
 
   // Start date not set should result in true.
   EXPECT_TRUE(internal::CheckStudyStartDate(filter, now));
@@ -299,7 +290,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyEndDate) {
       {now - delta, false}, {now + delta, true},
   };
 
-  Study_Filter filter;
+  Study::Filter filter;
 
   // End date not set should result in true.
   EXPECT_TRUE(internal::CheckStudyEndDate(filter, now));
@@ -354,7 +345,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
     { "1.*", "2.3.4", false },
   };
 
-  Study_Filter filter;
+  Study::Filter filter;
 
   // Min/max version not set should result in true.
   EXPECT_TRUE(internal::CheckStudyVersion(filter, base::Version("1.2.3")));
@@ -438,7 +429,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyHardwareClass) {
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    Study_Filter filter;
+    Study::Filter filter;
     for (const std::string& cur : base::SplitString(
              test_cases[i].hardware_class, ",",
              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
@@ -488,7 +479,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyCountry) {
   };
 
   for (const auto& test : test_cases) {
-    Study_Filter filter;
+    Study::Filter filter;
     for (const std::string& country : base::SplitString(
              test.country, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
       filter.add_country(country);
@@ -526,11 +517,16 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudies) {
   AddExperiment("A", 10, study3);
   AddExperiment("Default", 25, study3);
 
+  ClientFilterableState client_state;
+  client_state.locale = "en-CA";
+  client_state.reference_date = base::Time::Now();
+  client_state.version = base::Version("20.0.0.0");
+  client_state.channel = Study::STABLE;
+  client_state.form_factor = Study::DESKTOP;
+  client_state.platform = Study::PLATFORM_ANDROID;
+
   std::vector<ProcessedStudy> processed_studies;
-  FilterAndValidateStudies(seed, "en-CA", base::Time::Now(),
-                           base::Version("20.0.0.0"), Study_Channel_STABLE,
-                           Study_FormFactor_DESKTOP, "", "", "",
-                           &processed_studies);
+  FilterAndValidateStudies(seed, client_state, &processed_studies);
 
   // Check that only the first kTrial1Name study was kept.
   ASSERT_EQ(2U, processed_studies.size());
@@ -544,27 +540,27 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
   const char kPermanentCountry[] = "us";
 
   struct {
-    Study_Consistency consistency;
+    Study::Consistency consistency;
     const char* filter_country;
     const char* filter_exclude_country;
     bool expect_study_kept;
   } test_cases[] = {
       // Country-agnostic studies should be kept regardless of country.
-      {Study_Consistency_SESSION, nullptr, nullptr, true},
-      {Study_Consistency_PERMANENT, nullptr, nullptr, true},
+      {Study::SESSION, nullptr, nullptr, true},
+      {Study::PERMANENT, nullptr, nullptr, true},
 
       // Session-consistency studies should obey the country code in the seed.
-      {Study_Consistency_SESSION, kSessionCountry, nullptr, true},
-      {Study_Consistency_SESSION, nullptr, kSessionCountry, false},
-      {Study_Consistency_SESSION, kPermanentCountry, nullptr, false},
-      {Study_Consistency_SESSION, nullptr, kPermanentCountry, true},
+      {Study::SESSION, kSessionCountry, nullptr, true},
+      {Study::SESSION, nullptr, kSessionCountry, false},
+      {Study::SESSION, kPermanentCountry, nullptr, false},
+      {Study::SESSION, nullptr, kPermanentCountry, true},
 
       // Permanent-consistency studies should obey the permanent-consistency
       // country code.
-      {Study_Consistency_PERMANENT, kPermanentCountry, nullptr, true},
-      {Study_Consistency_PERMANENT, nullptr, kPermanentCountry, false},
-      {Study_Consistency_PERMANENT, kSessionCountry, nullptr, false},
-      {Study_Consistency_PERMANENT, nullptr, kSessionCountry, true},
+      {Study::PERMANENT, kPermanentCountry, nullptr, true},
+      {Study::PERMANENT, nullptr, kPermanentCountry, false},
+      {Study::PERMANENT, kSessionCountry, nullptr, false},
+      {Study::PERMANENT, nullptr, kSessionCountry, true},
   };
 
   for (const auto& test : test_cases) {
@@ -579,14 +575,43 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
     if (test.filter_exclude_country)
       study->mutable_filter()->add_exclude_country(test.filter_exclude_country);
 
+    ClientFilterableState client_state;
+    client_state.locale = "en-CA";
+    client_state.reference_date = base::Time::Now();
+    client_state.version = base::Version("20.0.0.0");
+    client_state.channel = Study::STABLE;
+    client_state.form_factor = Study::DESKTOP;
+    client_state.platform = Study::PLATFORM_ANDROID;
+    client_state.session_consistency_country = kSessionCountry;
+    client_state.permanent_consistency_country = kPermanentCountry;
+
     std::vector<ProcessedStudy> processed_studies;
-    FilterAndValidateStudies(seed, "en-CA", base::Time::Now(),
-                             base::Version("20.0.0.0"), Study_Channel_STABLE,
-                             Study_FormFactor_DESKTOP, "", kSessionCountry,
-                             kPermanentCountry, &processed_studies);
+    FilterAndValidateStudies(seed, client_state, &processed_studies);
 
     EXPECT_EQ(test.expect_study_kept, !processed_studies.empty());
   }
+}
+
+TEST(VariationsStudyFilteringTest, GetClientCountryForStudy_Session) {
+  ClientFilterableState client_state;
+  client_state.session_consistency_country = "session_country";
+  client_state.permanent_consistency_country = "permanent_country";
+
+  Study study;
+  study.set_consistency(Study::SESSION);
+  EXPECT_EQ("session_country",
+            internal::GetClientCountryForStudy(study, client_state));
+}
+
+TEST(VariationsStudyFilteringTest, GetClientCountryForStudy_Permanent) {
+  ClientFilterableState client_state;
+  client_state.session_consistency_country = "session_country";
+  client_state.permanent_consistency_country = "permanent_country";
+
+  Study study;
+  study.set_consistency(Study::PERMANENT);
+  EXPECT_EQ("permanent_country",
+            internal::GetClientCountryForStudy(study, client_state));
 }
 
 TEST(VariationsStudyFilteringTest, IsStudyExpired) {
@@ -618,7 +643,7 @@ TEST(VariationsStudyFilteringTest, ValidateStudy) {
   Study study;
   study.set_default_experiment_name("def");
   AddExperiment("abc", 100, &study);
-  Study_Experiment* default_group = AddExperiment("def", 200, &study);
+  Study::Experiment* default_group = AddExperiment("def", 200, &study);
 
   ProcessedStudy processed_study;
   EXPECT_TRUE(processed_study.Init(&study, false));
@@ -653,7 +678,7 @@ TEST(VariationsStudyFilteringTest, ValidateStudy) {
 
   default_group->set_name("def");
   EXPECT_TRUE(processed_study.Init(&study, false));
-  Study_Experiment* repeated_group = study.add_experiment();
+  Study::Experiment* repeated_group = study.add_experiment();
   repeated_group->set_name("abc");
   repeated_group->set_probability_weight(1);
   EXPECT_FALSE(processed_study.Init(&study, false));

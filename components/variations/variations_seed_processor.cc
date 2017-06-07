@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/variations/client_filterable_state.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
@@ -175,26 +176,17 @@ VariationsSeedProcessor::~VariationsSeedProcessor() {
 
 void VariationsSeedProcessor::CreateTrialsFromSeed(
     const VariationsSeed& seed,
-    const std::string& locale,
-    const base::Time& reference_date,
-    const base::Version& version,
-    Study_Channel channel,
-    Study_FormFactor form_factor,
-    const std::string& hardware_class,
-    const std::string& session_consistency_country,
-    const std::string& permanent_consistency_country,
+    const ClientFilterableState& client_state,
     const UIStringOverrideCallback& override_callback,
     const base::FieldTrial::EntropyProvider* low_entropy_provider,
     base::FeatureList* feature_list) {
   std::vector<ProcessedStudy> filtered_studies;
-  FilterAndValidateStudies(seed, locale, reference_date, version, channel,
-                           form_factor, hardware_class,
-                           session_consistency_country,
-                           permanent_consistency_country, &filtered_studies);
+  FilterAndValidateStudies(seed, client_state, &filtered_studies);
 
-  for (size_t i = 0; i < filtered_studies.size(); ++i)
-    CreateTrialFromStudy(filtered_studies[i], override_callback,
-                         low_entropy_provider, feature_list);
+  for (const ProcessedStudy& study : filtered_studies) {
+    CreateTrialFromStudy(study, override_callback, low_entropy_provider,
+                         feature_list);
+  }
 }
 
 // static

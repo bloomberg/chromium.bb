@@ -28,6 +28,7 @@ class FeatureList;
 namespace variations {
 
 class ProcessedStudy;
+struct ClientFilterableState;
 
 // Helper class to instantiate field trials from a variations seed.
 class VariationsSeedProcessor {
@@ -38,20 +39,13 @@ class VariationsSeedProcessor {
   VariationsSeedProcessor();
   virtual ~VariationsSeedProcessor();
 
-  // Creates field trials from the specified variations |seed|, based on the
-  // specified configuration, as specified in the parameters. Any study that
-  // should use low entropy will use |low_entropy_provider| for group
-  // selection. These studies are defined by ShouldStudyUseLowEntropy;
+  // Creates field trials from the specified variations |seed|, filtered
+  // according to the client's |client_state|. Any study that should use low
+  // entropy will use |low_entropy_provider| for group selection. These studies
+  // are defined by ShouldStudyUseLowEntropy;
   void CreateTrialsFromSeed(
       const VariationsSeed& seed,
-      const std::string& locale,
-      const base::Time& reference_date,
-      const base::Version& version,
-      Study_Channel channel,
-      Study_FormFactor form_factor,
-      const std::string& hardware_class,
-      const std::string& session_consistency_country,
-      const std::string& permanent_consistency_country,
+      const ClientFilterableState& client_state,
       const UIStringOverrideCallback& override_callback,
       const base::FieldTrial::EntropyProvider* low_entropy_provider,
       base::FeatureList* feature_list);
