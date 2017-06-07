@@ -548,6 +548,7 @@ html element iframe
     property allowPaymentRequest
     property contentDocument
     property contentWindow
+    property csp
     property frameBorder
     property getSVGDocument
     property height

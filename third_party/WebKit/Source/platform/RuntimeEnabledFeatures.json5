@@ -387,7 +387,7 @@
     },
     {
       name: "EmbedderCSPEnforcement",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ExecCommandInJavaScript",
