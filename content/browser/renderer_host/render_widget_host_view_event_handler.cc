@@ -138,7 +138,8 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
       popup_child_host_view_(nullptr),
       popup_child_event_handler_(nullptr),
       delegate_(delegate),
-      window_(nullptr) {}
+      window_(nullptr),
+      mouse_wheel_phase_handler_(host, host_view) {}
 
 RenderWidgetHostViewEventHandler::~RenderWidgetHostViewEventHandler() {}
 
@@ -341,7 +342,8 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     if (mouse_wheel_event.delta_x != 0 || mouse_wheel_event.delta_y != 0) {
       bool should_route_event = ShouldRouteEvent(event);
       if (host_view_->wheel_scroll_latching_enabled())
-        AddPhaseAndScheduleEndEvent(mouse_wheel_event, should_route_event);
+        mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
+            mouse_wheel_event, should_route_event);
       if (should_route_event) {
         host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
             host_view_, &mouse_wheel_event, *event->latency());
@@ -410,7 +412,8 @@ void RenderWidgetHostViewEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
     blink::WebMouseWheelEvent mouse_wheel_event = ui::MakeWebMouseWheelEvent(
         *event, base::Bind(&GetScreenLocationFromEvent));
     if (host_view_->wheel_scroll_latching_enabled())
-      AddPhaseAndScheduleEndEvent(mouse_wheel_event, should_route_event);
+      mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
+          mouse_wheel_event, should_route_event);
     if (should_route_event) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
           host_view_, &gesture_event,
@@ -435,9 +438,9 @@ void RenderWidgetHostViewEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
     }
     if (event->type() == ui::ET_SCROLL_FLING_START) {
       RecordAction(base::UserMetricsAction("TrackpadScrollFling"));
-      // Stop the timer to avoid sending a synthetic wheel event with
-      // kPhaseEnded.
-      mouse_wheel_end_dispatch_timer_.Stop();
+      // Ignore the pending wheel end event to avoid sending a wheel event with
+      // kPhaseEnded before a GFS.
+      mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
     }
   }
 
@@ -532,20 +535,15 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   if (gesture.GetType() != blink::WebInputEvent::kUndefined) {
     if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       RecordAction(base::UserMetricsAction("TouchscreenScroll"));
-
-      if (mouse_wheel_end_dispatch_timer_.IsRunning()) {
-        // If there is a current scroll going on and a new scroll that isn't
-        // wheel based send a synthetic wheel event with kPhaseEnded to cancel
-        // the current scroll.
-        base::Closure task = mouse_wheel_end_dispatch_timer_.user_task();
-        mouse_wheel_end_dispatch_timer_.Stop();
-        task.Run();
-      }
+      // If there is a current scroll going on and a new scroll that isn't
+      // wheel based send a synthetic wheel event with kPhaseEnded to cancel
+      // the current scroll.
+      mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
     } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
       // Make sure that the next wheel event will have phase = |kPhaseBegan|.
       // This is for maintaining the correct phase info when some of the wheel
       // events get ignored while a touchscreen scroll is going on.
-      mouse_wheel_end_dispatch_timer_.Stop();
+      mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
     } else if (event->type() == ui::ET_SCROLL_FLING_START) {
       RecordAction(base::UserMetricsAction("TouchscreenScrollFling"));
     }
@@ -909,53 +907,6 @@ void RenderWidgetHostViewEventHandler::ProcessTouchEvent(
     const blink::WebTouchEvent& event,
     const ui::LatencyInfo& latency) {
   host_->ForwardTouchEventWithLatencyInfo(event, latency);
-}
-
-void RenderWidgetHostViewEventHandler::SendSyntheticWheelEventWithPhaseEnded(
-    blink::WebMouseWheelEvent last_mouse_wheel_event,
-    bool should_route_event) {
-  DCHECK(host_view_->wheel_scroll_latching_enabled());
-  blink::WebMouseWheelEvent mouse_wheel_event = last_mouse_wheel_event;
-  mouse_wheel_event.delta_x = 0;
-  mouse_wheel_event.delta_y = 0;
-  mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
-  mouse_wheel_event.dispatch_type =
-      blink::WebInputEvent::DispatchType::kEventNonBlocking;
-  if (should_route_event) {
-    host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
-        host_view_, &mouse_wheel_event,
-        ui::LatencyInfo(ui::SourceEventType::WHEEL));
-  } else {
-    ProcessMouseWheelEvent(mouse_wheel_event,
-                           ui::LatencyInfo(ui::SourceEventType::WHEEL));
-  }
-}
-
-void RenderWidgetHostViewEventHandler::AddPhaseAndScheduleEndEvent(
-    blink::WebMouseWheelEvent& mouse_wheel_event,
-    bool should_route_event) {
-  DCHECK_EQ(blink::WebMouseWheelEvent::kPhaseNone, mouse_wheel_event.phase);
-  DCHECK_EQ(blink::WebMouseWheelEvent::kPhaseNone,
-            mouse_wheel_event.momentum_phase);
-
-  if (!mouse_wheel_end_dispatch_timer_.IsRunning()) {
-    mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-    mouse_wheel_end_dispatch_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(
-            kDefaultMouseWheelLatchingTransactionMs),
-        base::Bind(&RenderWidgetHostViewEventHandler::
-                       SendSyntheticWheelEventWithPhaseEnded,
-                   base::Unretained(this), mouse_wheel_event,
-                   should_route_event));
-  } else {
-    bool non_zero_delta =
-        mouse_wheel_event.delta_x || mouse_wheel_event.delta_y;
-    mouse_wheel_event.phase = non_zero_delta
-                                  ? blink::WebMouseWheelEvent::kPhaseChanged
-                                  : blink::WebMouseWheelEvent::kPhaseStationary;
-    mouse_wheel_end_dispatch_timer_.Reset();
-  }
 }
 
 }  // namespace content

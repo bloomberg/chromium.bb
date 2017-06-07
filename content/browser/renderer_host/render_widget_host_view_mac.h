@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "cc/surfaces/surface_id.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
+#include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -411,6 +412,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // opaqueness changes.
   void UpdateBackgroundColorFromRenderer(SkColor color);
 
+  bool HasPendingWheelEndEventForTesting() {
+    return mouse_wheel_phase_handler_.HasPendingWheelEndEvent();
+  }
+
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
 
@@ -427,6 +432,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Set when the currently-displayed frame is the minimum scale. Used to
   // determine if pinch gestures need to be thresholded.
   bool page_at_minimum_scale_;
+
+  MouseWheelPhaseHandler mouse_wheel_phase_handler_;
 
   NSWindow* pepper_fullscreen_window() const {
     return pepper_fullscreen_window_;
@@ -486,12 +493,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Get the focused view that should be used for retrieving the text selection.
   RenderWidgetHostViewBase* GetFocusedViewForTextSelection();
-
-  void ScheduleMouseWheelEndDispatching(blink::WebMouseWheelEvent wheel_event,
-                                        bool should_route_event);
-  void DispatchPendingWheelEndEvent();
-  void IgnorePendingWheelEndEvent();
-  bool HasPendingWheelEndEvent();
 
   // Returns the RenderWidgetHostDelegate corresponding to the currently focused
   // RenderWidgetHost. It is different from |render_widget_host_->delegate()|
@@ -574,8 +575,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // web content is not able to draw in time.
   SkColor background_color_ = SK_ColorTRANSPARENT;
   SkColor last_frame_root_background_color_ = SK_ColorTRANSPARENT;
-
-  base::OneShotTimer mouse_wheel_end_dispatch_timer_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

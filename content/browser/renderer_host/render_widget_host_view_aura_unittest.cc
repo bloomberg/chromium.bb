@@ -1804,7 +1804,7 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   sink_->ClearMessages();
 
-  // Let the RenderWidgetHostViewEventHandler::mouse_wheel_phase_timer_ fire. A
+  // Let the MouseWheelPhaseHandler::mouse_wheel_end_dispatch_timer_ fire. A
   // synthetic wheel event with zero deltas and kPhaseEnded will be sent.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
@@ -1866,7 +1866,7 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   sink_->ClearMessages();
 
-  // Let the RenderWidgetHostViewEventHandler::mouse_wheel_phase_timer_ fire. No
+  // Let the MouseWheelPhaseHandler::mouse_wheel_end_dispatch_timer_ fire. No
   // synthetic wheel event will be sent since the timer has stopped.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),

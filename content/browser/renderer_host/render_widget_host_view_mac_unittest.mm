@@ -1387,7 +1387,7 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
       MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
   [view->cocoa_view() scrollWheel:wheelEvent2];
   ASSERT_EQ(0U, process_host->sink().message_count());
-  DCHECK(view->HasPendingWheelEndEvent());
+  DCHECK(view->HasPendingWheelEndEventForTesting());
   process_host->sink().ClearMessages();
 
   host->ShutdownAndDestroyWidget(true);
@@ -1433,7 +1433,7 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
       MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
   [view->cocoa_view() scrollWheel:wheelEvent2];
   ASSERT_EQ(0U, process_host->sink().message_count());
-  DCHECK(view->HasPendingWheelEndEvent());
+  DCHECK(view->HasPendingWheelEndEventForTesting());
   process_host->sink().ClearMessages();
 
   // Send a wheel event with momentum phase started, this should stop the wheel
@@ -1443,7 +1443,7 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
   ASSERT_TRUE(wheelEvent3);
   [view->cocoa_view() scrollWheel:wheelEvent3];
   ASSERT_EQ(1U, process_host->sink().message_count());
-  DCHECK(!view->HasPendingWheelEndEvent());
+  DCHECK(!view->HasPendingWheelEndEventForTesting());
   process_host->sink().ClearMessages();
 
   host->ShutdownAndDestroyWidget(true);
@@ -1489,7 +1489,7 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
       MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
   [view->cocoa_view() scrollWheel:wheelEvent2];
   ASSERT_EQ(0U, process_host->sink().message_count());
-  DCHECK(view->HasPendingWheelEndEvent());
+  DCHECK(view->HasPendingWheelEndEventForTesting());
   process_host->sink().ClearMessages();
 
   // Send a wheel event with phase started, this should stop the wheel end
@@ -1500,7 +1500,7 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
   ASSERT_TRUE(wheelEvent3);
   [view->cocoa_view() scrollWheel:wheelEvent3];
   ASSERT_EQ(2U, process_host->sink().message_count());
-  DCHECK(!view->HasPendingWheelEndEvent());
+  DCHECK(!view->HasPendingWheelEndEventForTesting());
   process_host->sink().ClearMessages();
 
   host->ShutdownAndDestroyWidget(true);

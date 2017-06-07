@@ -69,10 +69,6 @@ struct DidOverscrollParams;
 
 namespace content {
 
-// The duration after which a synthetic wheel with zero deltas and
-// phase = |kPhaseEnded| will be sent after the last wheel event.
-const int64_t kDefaultMouseWheelLatchingTransactionMs = 100;
-
 class BrowserAccessibilityDelegate;
 class BrowserAccessibilityManager;
 class RenderWidgetHostImpl;

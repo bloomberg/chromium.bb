@@ -24,6 +24,7 @@
 #include "components/viz/frame_sinks/frame_evictor.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/android/content_view_core_impl_observer.h"
+#include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -429,6 +430,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       nullptr;
 
   base::ObserverList<DestructionObserver> destruction_observers_;
+
+  MouseWheelPhaseHandler mouse_wheel_phase_handler_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 
