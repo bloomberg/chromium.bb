@@ -16,6 +16,10 @@
 // KVO value change or null if a change has not been observed.
 @property(nonatomic, nullable, readonly) id lastValue;
 
+// The previous value of |lastValue| or null if at least two changes have not
+// been observed.
+@property(nonatomic, nullable, readonly) id previousValue;
+
 // The |keyPath| of |object| being observed.
 @property(nonatomic, nullable, readonly) NSString* keyPath;
 
