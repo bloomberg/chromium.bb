@@ -7550,6 +7550,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="25" label="Command menu command executed"/>
   <int value="26" label="Change inspected node in elements panel"/>
   <int value="27" label="Style rule copied"/>
+  <int value="28" label="Coverage started"/>
 </enum>
 
 <enum name="DevToolsPanel">
