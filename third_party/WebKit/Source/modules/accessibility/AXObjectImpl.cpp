@@ -293,6 +293,10 @@ static ARIARoleMap* CreateARIARoleMap() {
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(kRoles); ++i)
     role_map->Set(String(kRoles[i].aria_role), kRoles[i].webcore_role);
+
+  // Grids "ignore" their non-row children during computation of children.
+  role_map->Set("rowgroup", kIgnoredRole);
+
   return role_map;
 }
 

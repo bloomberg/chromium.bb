@@ -1255,8 +1255,8 @@ bool AXNodeObject::CanSetFocusAttribute() const {
     return true;
 
   // Children of elements with an aria-activedescendant attribute should be
-  // focusable if they have a (non-presentational) ARIA role.
-  if (!IsPresentational() && AriaRoleAttribute() != kUnknownRole &&
+  // focusable if they have a (non-presentational) role.
+  if (!IsPresentational() && RoleValue() != kUnknownRole &&
       AncestorExposesActiveDescendant())
     return true;
 
@@ -1294,10 +1294,12 @@ bool AXNodeObject::CanSetValueAttribute() const {
 }
 
 bool AXNodeObject::CanSetSelectedAttribute() const {
-  const AccessibilityRole role = AriaRoleAttribute();
-  // These elements can be selected if not disabled (native or ARIA)
+  const AccessibilityRole role = RoleValue();
+  // These elements can be selected if not disabled (native or ARIA).
   if ((role == kListBoxOptionRole || role == kMenuListOptionRole ||
-       role == kTreeItemRole || role == kCellRole || role == kTabRole) &&
+       role == kTreeItemRole || role == kCellRole || role == kTabRole ||
+       role == kRowRole || role == kColumnRole || role == kRowHeaderRole ||
+       role == kColumnHeaderRole) &&
       IsEnabled() && CanSetFocusAttribute()) {
     return true;
   }
