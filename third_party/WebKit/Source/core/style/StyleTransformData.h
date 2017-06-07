@@ -47,7 +47,6 @@ class StyleTransformData : public RefCounted<StyleTransformData> {
 
   bool operator==(const StyleTransformData&) const;
   bool operator!=(const StyleTransformData& o) const { return !(*this == o); }
-  bool Has3DTransform() const;
 
   TransformOperations operations_;
   TransformOrigin origin_;

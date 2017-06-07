@@ -3019,7 +3019,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Filter/transform utility functions.
   bool Has3DTransform() const {
-    return rare_non_inherited_data_->transform_data_->Has3DTransform();
+    return rare_non_inherited_data_->transform_data_->operations_
+               .Has3DOperation() ||
+           (Translate() && Translate()->Z() != 0) ||
+           (Rotate() && (Rotate()->X() != 0 || Rotate()->Y() != 0)) ||
+           (Scale() && Scale()->Z() != 1);
   }
   bool HasTransform() const {
     return HasTransformOperations() || HasOffset() ||
