@@ -331,8 +331,9 @@ public class InfoBarContainer extends SwipableOverlayView {
     }
 
     public void destroy() {
-        if (mBottomSheetObserver != null) {
-            mTab.getActivity().getBottomSheet().removeObserver(mBottomSheetObserver);
+        ChromeActivity activity = mTab.getActivity();
+        if (activity != null && mBottomSheetObserver != null && activity.getBottomSheet() != null) {
+            activity.getBottomSheet().removeObserver(mBottomSheetObserver);
         }
         mLayout.removeAnimationListener(mIPHSupport);
         removeObserver(mIPHSupport);
