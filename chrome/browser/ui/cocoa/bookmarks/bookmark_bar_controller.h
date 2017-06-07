@@ -12,7 +12,6 @@
 #include <memory>
 #include <unordered_map>
 
-#import "base/mac/cocoa_protocols.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
