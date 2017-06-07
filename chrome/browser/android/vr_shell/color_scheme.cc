@@ -74,6 +74,14 @@ void InitializeColorSchemes() {
   fullscreen_scheme.element_background = 0xCC2B3E48;
   fullscreen_scheme.element_background_hover = 0xCC536B77;
   fullscreen_scheme.element_background_down = 0xCC96AFBB;
+  fullscreen_scheme.close_button_foreground =
+      fullscreen_scheme.element_foreground;
+  fullscreen_scheme.close_button_background =
+      fullscreen_scheme.element_background;
+  fullscreen_scheme.close_button_background_hover =
+      fullscreen_scheme.element_background_hover;
+  fullscreen_scheme.close_button_background_down =
+      fullscreen_scheme.element_background_down;
 
   ColorScheme& incognito_scheme = kColorSchemes[ColorScheme::kModeIncognito];
   incognito_scheme.world_background = 0xFF2E2E2E;
@@ -84,6 +92,14 @@ void InitializeColorSchemes() {
   incognito_scheme.element_background = 0xCC454545;
   incognito_scheme.element_background_hover = 0xCC505050;
   incognito_scheme.element_background_down = 0xCC888888;
+  incognito_scheme.close_button_foreground =
+      fullscreen_scheme.element_foreground;
+  incognito_scheme.close_button_background =
+      fullscreen_scheme.element_background;
+  incognito_scheme.close_button_background_hover =
+      fullscreen_scheme.element_background_hover;
+  incognito_scheme.close_button_background_down =
+      fullscreen_scheme.element_background_down;
   incognito_scheme.loading_indicator_foreground = 0xFF8A8A8A;
   incognito_scheme.loading_indicator_background = 0xFF454545;
   incognito_scheme.separator = 0xFF474747;

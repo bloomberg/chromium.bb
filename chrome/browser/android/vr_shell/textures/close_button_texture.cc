@@ -38,9 +38,9 @@ void CloseButtonTexture::Draw(SkCanvas* sk_canvas,
   size_.set_width(texture_size.width());
 
   cc::PaintFlags flags;
-  SkColor color = hovered() ? color_scheme().element_background_hover
-                            : color_scheme().element_background;
-  color = pressed() ? color_scheme().element_background_down : color;
+  SkColor color = hovered() ? color_scheme().close_button_background_hover
+                            : color_scheme().close_button_background;
+  color = pressed() ? color_scheme().close_button_background_down : color;
   flags.setColor(color);
   canvas->DrawCircle(gfx::PointF(size_.width() / 2, size_.height() / 2),
                      size_.width() / 2, flags);
@@ -49,7 +49,7 @@ void CloseButtonTexture::Draw(SkCanvas* sk_canvas,
   canvas->Translate(gfx::Vector2d(size_.height() * (1 - kIconScaleFactor) / 2,
                                   size_.height() * (1 - kIconScaleFactor) / 2));
   PaintVectorIcon(canvas, ui::kCloseIcon, size_.height() * kIconScaleFactor,
-                  color_scheme().element_foreground);
+                  color_scheme().close_button_foreground);
   canvas->Restore();
 }
 
