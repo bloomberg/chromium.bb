@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -72,7 +71,6 @@ class MessageRouter {
  public:
   virtual ~MessageRouter() {}
 
-  virtual void GeneratePortName(PortName* name) = 0;
   virtual void ForwardEvent(TestNode* from_node,
                             const NodeName& node_name,
                             ScopedEvent event) = 0;
@@ -188,11 +186,6 @@ class TestNode : public NodeDelegate {
     base::AutoLock lock(lock_);
     incoming_events_.emplace(std::move(event));
     events_available_event_.Signal();
-  }
-
-  void GenerateRandomPortName(PortName* port_name) override {
-    DCHECK(router_);
-    router_->GeneratePortName(port_name);
   }
 
   void ForwardEvent(const NodeName& node_name, ScopedEvent event) override {
@@ -367,12 +360,6 @@ class PortsTest : public testing::Test, public MessageRouter {
 
  private:
   // MessageRouter:
-  void GeneratePortName(PortName* name) override {
-    base::AutoLock lock(lock_);
-    name->v1 = next_port_id_++;
-    name->v2 = 0;
-  }
-
   void ForwardEvent(TestNode* from_node,
                     const NodeName& node_name,
                     ScopedEvent event) override {
@@ -417,7 +404,6 @@ class PortsTest : public testing::Test, public MessageRouter {
   base::Lock global_lock_;
 
   base::Lock lock_;
-  uint64_t next_port_id_ = 1;
   std::map<NodeName, TestNode*> nodes_;
 };
 

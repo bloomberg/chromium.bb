@@ -19,11 +19,7 @@ class NodeDelegate {
  public:
   virtual ~NodeDelegate() {}
 
-  // Port names should be difficult to guess.
-  virtual void GenerateRandomPortName(PortName* port_name) = 0;
-
-  // Forward an event asynchronously to the specified node. This method MUST NOT
-  // synchronously call any methods on Node.
+  // Forward an event (possibly asynchronously) to the specified node.
   virtual void ForwardEvent(const NodeName& node, ScopedEvent event) = 0;
 
   // Broadcast an event to all nodes.
