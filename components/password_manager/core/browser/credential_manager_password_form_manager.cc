@@ -45,6 +45,9 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
   GrabFetcher(std::move(form_fetcher));
 }
 
+CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {
+}
+
 void CredentialManagerPasswordFormManager::ProcessMatches(
     const std::vector<const PasswordForm*>& non_federated,
     size_t filtered_count) {
@@ -64,8 +67,6 @@ void CredentialManagerPasswordFormManager::ProcessMatches(
       base::Bind(&CredentialManagerPasswordFormManager::NotifyDelegate,
                  weak_factory_.GetWeakPtr()));
 }
-
-CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {}
 
 void CredentialManagerPasswordFormManager::NotifyDelegate() {
   delegate_->OnProvisionalSaveComplete();

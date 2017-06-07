@@ -96,13 +96,12 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   CredentialsFilterTest()
       : password_manager_(&client_),
         pending_(SimpleGaiaForm("user@gmail.com")),
-        form_manager_(base::MakeRefCounted<PasswordFormManager>(
-            &password_manager_,
-            &client_,
-            driver_.AsWeakPtr(),
-            pending_,
-            base::MakeUnique<StubFormSaver>(),
-            &fetcher_)),
+        form_manager_(&password_manager_,
+                      &client_,
+                      driver_.AsWeakPtr(),
+                      pending_,
+                      base::MakeUnique<StubFormSaver>(),
+                      &fetcher_),
         filter_(&client_,
                 base::Bind(&SyncUsernameTestBase::sync_service,
                            base::Unretained(this)),
@@ -139,7 +138,7 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
     }
     fetcher_.SetNonFederated(matches, 0u);
 
-    form_manager_->ProvisionallySave(
+    form_manager_.ProvisionallySave(
         pending_, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   }
 
@@ -149,7 +148,7 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   StubPasswordManagerDriver driver_;
   PasswordForm pending_;
   FakeFormFetcher fetcher_;
-  scoped_refptr<PasswordFormManager> form_manager_;
+  PasswordFormManager form_manager_;
 
   SyncCredentialsFilter filter_;
 };
@@ -287,7 +286,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_ExistingSyncCredentials) {
 
   base::UserActionTester tester;
   SavePending(LoginState::EXISTING);
-  filter_.ReportFormLoginSuccess(*form_manager_);
+  filter_.ReportFormLoginSuccess(form_manager_);
   EXPECT_EQ(1, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
@@ -297,7 +296,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NewSyncCredentials) {
 
   base::UserActionTester tester;
   SavePending(LoginState::NEW);
-  filter_.ReportFormLoginSuccess(*form_manager_);
+  filter_.ReportFormLoginSuccess(form_manager_);
   EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
@@ -309,7 +308,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_GAIANotSyncCredentials) {
 
   base::UserActionTester tester;
   SavePending(LoginState::EXISTING);
-  filter_.ReportFormLoginSuccess(*form_manager_);
+  filter_.ReportFormLoginSuccess(form_manager_);
   EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
@@ -320,7 +319,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NotGAIACredentials) {
 
   base::UserActionTester tester;
   SavePending(LoginState::EXISTING);
-  filter_.ReportFormLoginSuccess(*form_manager_);
+  filter_.ReportFormLoginSuccess(form_manager_);
   EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
@@ -330,7 +329,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NotSyncing) {
 
   base::UserActionTester tester;
   SavePending(LoginState::EXISTING);
-  filter_.ReportFormLoginSuccess(*form_manager_);
+  filter_.ReportFormLoginSuccess(form_manager_);
   EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 

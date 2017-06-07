@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/content/browser/credential_manager_impl.h"
@@ -54,7 +53,7 @@ class ChromePasswordManagerClient
                             const HSTSCallback& callback) const override;
   bool OnCredentialManagerUsed() override;
   bool PromptUserToSaveOrUpdatePassword(
-      scoped_refptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
       bool update_password) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
@@ -71,7 +70,7 @@ class ChromePasswordManagerClient
       const autofill::PasswordForm& form) override;
   void NotifyStorePasswordCalled() override;
   void AutomaticPasswordSave(
-      scoped_refptr<password_manager::PasswordFormManager> saved_form_manager)
+      std::unique_ptr<password_manager::PasswordFormManager> saved_form_manager)
       override;
   void PasswordWasAutofilled(
       const std::map<base::string16, const autofill::PasswordForm*>&

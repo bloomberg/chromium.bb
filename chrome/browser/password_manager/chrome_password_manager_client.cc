@@ -254,7 +254,7 @@ bool ChromePasswordManagerClient::OnCredentialManagerUsed() {
 }
 
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
-    scoped_refptr<password_manager::PasswordFormManager> form_to_save,
+    std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
     bool update_password) {
   // Save password infobar and the password bubble prompts in case of
   // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
@@ -374,7 +374,7 @@ void ChromePasswordManagerClient::NotifyStorePasswordCalled() {
 }
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(
-    scoped_refptr<password_manager::PasswordFormManager> saved_form) {
+    std::unique_ptr<password_manager::PasswordFormManager> saved_form) {
 #if defined(OS_ANDROID)
   GeneratedPasswordSavedInfoBarDelegateAndroid::Create(web_contents());
 #else

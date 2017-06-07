@@ -27,7 +27,7 @@ class IOSChromeUpdatePasswordInfoBarDelegate
   static void Create(
       bool is_smart_lock_branding_enabled,
       infobars::InfoBarManager* infobar_manager,
-      scoped_refptr<password_manager::PasswordFormManager> form_to_save);
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_save);
 
   ~IOSChromeUpdatePasswordInfoBarDelegate() override;
 
@@ -49,7 +49,7 @@ class IOSChromeUpdatePasswordInfoBarDelegate
  private:
   IOSChromeUpdatePasswordInfoBarDelegate(
       bool is_smart_lock_branding_enabled,
-      scoped_refptr<password_manager::PasswordFormManager> form_to_save);
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_save);
 
   // Returns the string with the branded title of the password manager (e.g.
   // "Google Smart Lock for Passwords").

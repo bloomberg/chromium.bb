@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/password_manager/password_manager_infobar_delegate_android.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -27,7 +26,7 @@ class UpdatePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
  public:
   static void Create(
       content::WebContents* web_contents,
-      scoped_refptr<password_manager::PasswordFormManager> form_to_update);
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_update);
 
   ~UpdatePasswordInfoBarDelegate() override;
 
@@ -55,7 +54,7 @@ class UpdatePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
  private:
   UpdatePasswordInfoBarDelegate(
       content::WebContents* web_contents,
-      scoped_refptr<password_manager::PasswordFormManager> form_to_update,
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_update,
       bool is_smartlock_branding_enabled);
 
   // ConfirmInfoBarDelegate:

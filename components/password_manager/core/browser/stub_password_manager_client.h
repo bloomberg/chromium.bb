@@ -22,7 +22,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
 
   // PasswordManagerClient:
   bool PromptUserToSaveOrUpdatePassword(
-      scoped_refptr<PasswordFormManager> form_to_save,
+      std::unique_ptr<PasswordFormManager> form_to_save,
       bool update_password) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
@@ -37,7 +37,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       const autofill::PasswordForm& form) override;
   void NotifyStorePasswordCalled() override;
   void AutomaticPasswordSave(
-      scoped_refptr<PasswordFormManager> saved_manager) override;
+      std::unique_ptr<PasswordFormManager> saved_manager) override;
   PrefService* GetPrefs() override;
   PasswordStore* GetPasswordStore() const override;
   const GURL& GetLastCommittedEntryURL() const override;

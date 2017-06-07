@@ -24,7 +24,7 @@
 // static
 void SavePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    scoped_refptr<password_manager::PasswordFormManager> form_to_save) {
+    std::unique_ptr<password_manager::PasswordFormManager> form_to_save) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   syncer::SyncService* sync_service =
@@ -45,7 +45,7 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     content::WebContents* web_contents,
-    scoped_refptr<password_manager::PasswordFormManager> form_to_save,
+    std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
     bool is_smartlock_branding_enabled)
     : PasswordManagerInfoBarDelegate(),
       form_to_save_(std::move(form_to_save)),

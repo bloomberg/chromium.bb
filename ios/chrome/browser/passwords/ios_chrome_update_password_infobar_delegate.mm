@@ -27,7 +27,7 @@ using password_manager::PasswordFormManager;
 void IOSChromeUpdatePasswordInfoBarDelegate::Create(
     bool is_smart_lock_branding_enabled,
     infobars::InfoBarManager* infobar_manager,
-    scoped_refptr<PasswordFormManager> form_manager) {
+    std::unique_ptr<PasswordFormManager> form_manager) {
   DCHECK(infobar_manager);
   auto delegate = base::WrapUnique(new IOSChromeUpdatePasswordInfoBarDelegate(
       is_smart_lock_branding_enabled, std::move(form_manager)));
@@ -43,7 +43,7 @@ IOSChromeUpdatePasswordInfoBarDelegate::
 
 IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
     bool is_smart_lock_branding_enabled,
-    scoped_refptr<PasswordFormManager> form_manager)
+    std::unique_ptr<PasswordFormManager> form_manager)
     : IOSChromePasswordManagerInfoBarDelegate(is_smart_lock_branding_enabled,
                                               std::move(form_manager)) {
   selected_account_ = form_to_save()->preferred_match()->username_value;

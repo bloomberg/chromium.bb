@@ -238,7 +238,7 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
-  auto manager = base::MakeRefCounted<PasswordFormManager>(
+  auto manager = base::MakeUnique<PasswordFormManager>(
       this, client_, driver->AsWeakPtr(), form,
       base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())),
       nullptr);
@@ -349,9 +349,11 @@ void PasswordManager::ProvisionallySavePassword(
     return;
   }
 
-  // Copy ownership of the manager from |pending_login_managers_| to
+  std::unique_ptr<PasswordFormManager> manager;
+  // Transfer ownership of the manager from |pending_login_managers_| to
   // |manager|.
-  scoped_refptr<PasswordFormManager> manager(*matched_manager_it);
+  manager.swap(*matched_manager_it);
+  pending_login_managers_.erase(matched_manager_it);
 
   PasswordForm submitted_form(form);
   submitted_form.preferred = true;
@@ -408,7 +410,7 @@ void PasswordManager::UpdateFormManagers() {
 
 void PasswordManager::DropFormManagers() {
   pending_login_managers_.clear();
-  provisional_save_manager_ = nullptr;
+  provisional_save_manager_.reset();
   all_visible_forms_.clear();
 }
 
@@ -565,7 +567,7 @@ void PasswordManager::CreatePendingLoginManagers(
 
     if (logger)
       logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, *iter);
-    auto manager = base::MakeRefCounted<PasswordFormManager>(
+    auto manager = base::MakeUnique<PasswordFormManager>(
         this, client_,
         (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
         *iter, base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())),
@@ -601,7 +603,7 @@ bool PasswordManager::CanProvisionalManagerSave() {
     RecordFailure(MATCHING_NOT_COMPLETE,
                   provisional_save_manager_->observed_form().origin,
                   logger.get());
-    provisional_save_manager_ = nullptr;
+    provisional_save_manager_.reset();
     return false;
   }
   return true;
@@ -648,7 +650,7 @@ void PasswordManager::OnPasswordFormsRendered(
     if (logger)
       logger->LogMessage(Logger::STRING_DECISION_DROP);
     provisional_save_manager_->LogSubmitFailed();
-    provisional_save_manager_ = nullptr;
+    provisional_save_manager_.reset();
     return;
   }
 
@@ -685,7 +687,7 @@ void PasswordManager::OnPasswordFormsRendered(
                                     all_visible_forms_[i]);
             logger->LogMessage(Logger::STRING_DECISION_DROP);
           }
-          provisional_save_manager_ = nullptr;
+          provisional_save_manager_.reset();
           // Clear all_visible_forms_ once we found the match.
           all_visible_forms_.clear();
           return;
@@ -752,7 +754,7 @@ void PasswordManager::OnLoginSuccessful() {
       RecordFailure(SYNC_CREDENTIAL,
                     provisional_save_manager_->observed_form().origin,
                     logger.get());
-      provisional_save_manager_ = nullptr;
+      provisional_save_manager_.reset();
       return;
     }
   }
@@ -792,7 +794,7 @@ void PasswordManager::OnLoginSuccessful() {
     if (provisional_save_manager_->has_generated_password()) {
       client_->AutomaticPasswordSave(std::move(provisional_save_manager_));
     } else {
-      provisional_save_manager_ = nullptr;
+      provisional_save_manager_.reset();
     }
   }
 }

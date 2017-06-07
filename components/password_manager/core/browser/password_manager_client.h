@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -92,7 +91,7 @@ class PasswordManagerClient {
   // and form_to_save.pending_credentials() should correspond to the credential
   // that was overidden.
   virtual bool PromptUserToSaveOrUpdatePassword(
-      scoped_refptr<PasswordFormManager> form_to_save,
+      std::unique_ptr<PasswordFormManager> form_to_save,
       bool update_password) = 0;
 
   // Informs the embedder of a password forms that the user should choose from.
@@ -137,7 +136,7 @@ class PasswordManagerClient {
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occured.
   virtual void AutomaticPasswordSave(
-      scoped_refptr<PasswordFormManager> saved_form_manager) = 0;
+      std::unique_ptr<PasswordFormManager> saved_form_manager) = 0;
 
   // Called when a password is autofilled. |best_matches| contains the
   // PasswordForm into which a password was filled: the client may choose to

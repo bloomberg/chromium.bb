@@ -27,7 +27,7 @@ IOSChromePasswordManagerInfoBarDelegate::
 IOSChromePasswordManagerInfoBarDelegate::
     IOSChromePasswordManagerInfoBarDelegate(
         bool is_smart_lock_branding_enabled,
-        scoped_refptr<password_manager::PasswordFormManager> form_to_save)
+        std::unique_ptr<password_manager::PasswordFormManager> form_to_save)
     : form_to_save_(std::move(form_to_save)),
       infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       is_smart_lock_branding_enabled_(is_smart_lock_branding_enabled) {}

@@ -81,7 +81,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   ~MockPasswordManagerClient() override {}
 
   bool PromptUserToSaveOrUpdatePassword(
-      scoped_refptr<PasswordFormManager> manager,
+      std::unique_ptr<PasswordFormManager> manager,
       bool update_password) override {
     manager_.swap(manager);
     PromptUserToSavePasswordPtr(manager_.get());
@@ -136,7 +136,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
  private:
   TestingPrefServiceSimple prefs_;
   PasswordStore* store_;
-  scoped_refptr<PasswordFormManager> manager_;
+  std::unique_ptr<PasswordFormManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerClient);
 };
