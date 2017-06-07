@@ -50,7 +50,7 @@ class UrlDownloader::RequestHandle : public DownloadRequestHandleInterface {
     downloader_task_runner_->PostTask(
         FROM_HERE, base::Bind(&UrlDownloader::ResumeRequest, downloader_));
   }
-  void CancelRequest() const override {
+  void CancelRequest(bool user_cancel) const override {
     downloader_task_runner_->PostTask(
         FROM_HERE, base::Bind(&UrlDownloader::CancelRequest, downloader_));
   }

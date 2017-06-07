@@ -54,7 +54,7 @@ void DownloadRequestHandle::ResumeRequest() const {
       base::Bind(&DownloadResourceHandler::ResumeRequest, handler_));
 }
 
-void DownloadRequestHandle::CancelRequest() const {
+void DownloadRequestHandle::CancelRequest(bool user_cancel) const {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&DownloadResourceHandler::CancelRequest, handler_));

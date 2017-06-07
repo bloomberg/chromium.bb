@@ -34,7 +34,7 @@ class CONTENT_EXPORT DownloadRequestHandleInterface {
   virtual void ResumeRequest() const = 0;
 
   // Cancels the request.
-  virtual void CancelRequest() const = 0;
+  virtual void CancelRequest(bool user_cancel) const = 0;
 };
 
 
@@ -62,7 +62,7 @@ class CONTENT_EXPORT DownloadRequestHandle
   DownloadManager* GetDownloadManager() const override;
   void PauseRequest() const override;
   void ResumeRequest() const override;
-  void CancelRequest() const override;
+  void CancelRequest(bool user_cancel) const override;
 
  private:
   base::WeakPtr<DownloadResourceHandler> handler_;

@@ -117,7 +117,7 @@ bool CanSaveAsComplete(const std::string& contents_mime_type) {
 }
 
 // Request handle for SavePackage downloads. Currently doesn't support
-// pause/resume/cancel, but returns a WebContents.
+// pause/resume, but returns a WebContents.
 class SavePackageRequestHandle : public DownloadRequestHandleInterface {
  public:
   explicit SavePackageRequestHandle(base::WeakPtr<SavePackage> save_package)
@@ -130,7 +130,10 @@ class SavePackageRequestHandle : public DownloadRequestHandleInterface {
   DownloadManager* GetDownloadManager() const override { return nullptr; }
   void PauseRequest() const override {}
   void ResumeRequest() const override {}
-  void CancelRequest() const override {}
+  void CancelRequest(bool user_cancel) const override {
+    if (save_package_.get() && !save_package_->canceled())
+      save_package_->Cancel(user_cancel, false);
+  }
 
  private:
   base::WeakPtr<SavePackage> save_package_;
@@ -222,14 +225,14 @@ GURL SavePackage::GetUrlToBeSaved(WebContents* web_contents) {
   return visible_entry ? visible_entry->GetURL() : GURL::EmptyGURL();
 }
 
-void SavePackage::Cancel(bool user_action) {
+void SavePackage::Cancel(bool user_action, bool cancel_download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!canceled()) {
     if (user_action)
       user_canceled_ = true;
     else
       disk_error_occurred_ = true;
-    Stop();
+    Stop(cancel_download_item);
   }
   RecordSavePackageEvent(SAVE_PACKAGE_CANCELLED);
 }
@@ -286,7 +289,6 @@ void SavePackage::InitWithDownloadItem(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(item);
   download_ = item;
-  download_->AddObserver(this);
   // Confirm above didn't delete the tab out from under us.
   if (!download_created_callback.is_null())
     download_created_callback.Run(download_);
@@ -324,15 +326,7 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
   }
   wrote_to_completed_file_ = true;
 
-  // Hack to avoid touching download_ after user cancel.
-  // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-  // with SavePackage flow.
-  if (download_->GetState() == DownloadItem::IN_PROGRESS) {
-    // Must call OnAllDataSaved here in order for
-    // GDataDownloadObserver::ShouldUpload() to return true.
-    // ShouldCompleteDownload() may depend on the gdata uploader to finish.
-    download_->OnAllDataSaved(size, std::unique_ptr<crypto::SecureHash>());
-  }
+  download_->OnAllDataSaved(size, std::unique_ptr<crypto::SecureHash>());
 
   if (!download_manager_->GetDelegate()) {
     Finish();
@@ -604,7 +598,7 @@ bool SavePackage::UpdateSaveProgress(SaveItemId save_item_id,
 
 // Stop all page saving jobs that are in progress and instruct the FILE thread
 // to delete all saved  files.
-void SavePackage::Stop() {
+void SavePackage::Stop(bool cancel_download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If we haven't moved out of the initial state, there's nothing to cancel and
   // there won't be valid pointers for |file_manager_| or |download_|.
@@ -644,7 +638,8 @@ void SavePackage::Stop() {
 
   // Inform the DownloadItem we have canceled whole save page job.
   if (download_) {
-    download_->Cancel(false);
+    if (cancel_download_item)
+      download_->Cancel(false);
     FinalizeDownloadEntry();
   }
 }
@@ -708,19 +703,14 @@ void SavePackage::Finish() {
                  list_of_failed_save_item_ids));
 
   if (download_) {
-    // Hack to avoid touching |download_| after user cancel.
-    // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-    // with SavePackage flow.
-    if (download_->GetState() == DownloadItem::IN_PROGRESS) {
-      if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
-        download_->DestinationUpdate(
-            all_save_items_count_, CurrentSpeed(),
-            std::vector<DownloadItem::ReceivedSlice>());
-        download_->OnAllDataSaved(all_save_items_count_,
-                                  std::unique_ptr<crypto::SecureHash>());
-      }
-      download_->MarkAsComplete();
+    if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
+      download_->DestinationUpdate(
+          all_save_items_count_, CurrentSpeed(),
+          std::vector<DownloadItem::ReceivedSlice>());
+      download_->OnAllDataSaved(all_save_items_count_,
+                                std::unique_ptr<crypto::SecureHash>());
     }
+    download_->MarkAsComplete();
     FinalizeDownloadEntry();
   }
 }
@@ -744,10 +734,7 @@ void SavePackage::SaveFinished(SaveItemId save_item_id,
 
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
-  // Hack to avoid touching download_ after user cancel.
-  // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-  // with SavePackage flow.
-  if (download_ && (download_->GetState() == DownloadItem::IN_PROGRESS)) {
+  if (download_) {
     download_->DestinationUpdate(
         completed_count(), CurrentSpeed(),
         std::vector<DownloadItem::ReceivedSlice>());
@@ -1231,10 +1218,7 @@ void SavePackage::CompleteSavableResourceLinksResponse() {
   all_save_items_count_ = static_cast<int>(waiting_item_queue_.size());
 
   // We use total bytes as the total number of files we want to save.
-  // Hack to avoid touching download_ after user cancel.
-  // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-  // with SavePackage flow.
-  if (download_ && (download_->GetState() == DownloadItem::IN_PROGRESS))
+  if (download_)
     download_->SetTotalBytes(all_save_items_count_);
 
   if (all_save_items_count_) {
@@ -1474,30 +1458,13 @@ void SavePackage::OnPathPicked(
   Init(download_created_callback);
 }
 
-void SavePackage::RemoveObservers() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+void SavePackage::FinalizeDownloadEntry() {
   DCHECK(download_);
   DCHECK(download_manager_);
 
-  download_->RemoveObserver(this);
+  download_manager_->OnSavePackageSuccessfullyFinished(download_);
   download_ = nullptr;
   download_manager_ = nullptr;
-}
-
-void SavePackage::OnDownloadDestroyed(DownloadItem* download) {
-  if (!canceled()) {
-    Cancel(false);
-    // Cancel() also calls RemoveObservers().
-  } else {
-    RemoveObservers();
-  }
-}
-
-void SavePackage::FinalizeDownloadEntry() {
-  DCHECK(download_);
-
-  download_manager_->OnSavePackageSuccessfullyFinished(download_);
-  RemoveObservers();
 }
 
 }  // namespace content

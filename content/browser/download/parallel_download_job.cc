@@ -52,7 +52,7 @@ void ParallelDownloadJob::Cancel(bool user_cancel) {
   }
 
   for (auto& worker : workers_)
-    worker.second->Cancel();
+    worker.second->Cancel(user_cancel);
 }
 
 void ParallelDownloadJob::Pause() {
@@ -103,7 +103,7 @@ void ParallelDownloadJob::CancelRequestWithOffset(int64_t offset) {
 
   auto it = workers_.find(offset);
   DCHECK(it != workers_.end());
-  it->second->Cancel();
+  it->second->Cancel(false);
 }
 
 void ParallelDownloadJob::BuildParallelRequestAfterDelay() {
@@ -126,7 +126,7 @@ void ParallelDownloadJob::OnByteStreamReady(
   if (!success) {
     VLOG(kVerboseLevel)
         << "Byte stream arrived after download file is released.";
-    worker->Cancel();
+    worker->Cancel(false);
   }
 }
 

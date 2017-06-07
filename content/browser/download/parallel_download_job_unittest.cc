@@ -32,7 +32,7 @@ class MockDownloadRequestHandle : public DownloadRequestHandleInterface {
   MOCK_CONST_METHOD0(GetDownloadManager, DownloadManager*());
   MOCK_CONST_METHOD0(PauseRequest, void());
   MOCK_CONST_METHOD0(ResumeRequest, void());
-  MOCK_CONST_METHOD0(CancelRequest, void());
+  MOCK_CONST_METHOD1(CancelRequest, void(bool));
   MOCK_CONST_METHOD0(DebugString, std::string());
 };
 
@@ -284,7 +284,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
 // built.
 TEST_F(ParallelDownloadJobTest, EarlyCancelBeforeBuildRequests) {
   CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 1, 10);
-  EXPECT_CALL(*mock_request_handle_, CancelRequest());
+  EXPECT_CALL(*mock_request_handle_, CancelRequest(_));
 
   // Job is canceled before building parallel requests.
   job_->Cancel(true);
@@ -300,7 +300,7 @@ TEST_F(ParallelDownloadJobTest, EarlyCancelBeforeBuildRequests) {
 // canceled.
 TEST_F(ParallelDownloadJobTest, EarlyCancelBeforeByteStreamReady) {
   CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 1, 10);
-  EXPECT_CALL(*mock_request_handle_, CancelRequest());
+  EXPECT_CALL(*mock_request_handle_, CancelRequest(_));
 
   BuildParallelRequests();
   VerifyWorker(50, 0);
@@ -313,7 +313,7 @@ TEST_F(ParallelDownloadJobTest, EarlyCancelBeforeByteStreamReady) {
   for (auto& worker : job_->workers()) {
     std::unique_ptr<MockDownloadRequestHandle> mock_handle =
         base::MakeUnique<MockDownloadRequestHandle>();
-    EXPECT_CALL(*mock_handle.get(), CancelRequest());
+    EXPECT_CALL(*mock_handle.get(), CancelRequest(_));
     MakeWorkerReady(worker.second.get(), std::move(mock_handle));
   }
 
