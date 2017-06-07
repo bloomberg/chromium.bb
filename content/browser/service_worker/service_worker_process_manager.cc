@@ -216,14 +216,18 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     }
   }
 
-  // No existing processes available; start a new one.
+  // ServiceWorkerProcessManager does not know of any renderer processes that
+  // are available for |pattern|. Create a SiteInstance and ask for a renderer
+  // process. Attempt to reuse an existing process if possible.
   // TODO(clamy): Update the process reuse mechanism above following the
   // implementation of
   // SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE.
   scoped_refptr<SiteInstanceImpl> site_instance =
       SiteInstanceImpl::CreateForURL(browser_context_, script_url);
-  site_instance->set_process_reuse_policy(
-      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  if (can_use_existing_process) {
+    site_instance->set_process_reuse_policy(
+        SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  }
   RenderProcessHost* rph = site_instance->GetProcess();
 
   // This Init() call posts a task to the IO thread that adds the RPH's
