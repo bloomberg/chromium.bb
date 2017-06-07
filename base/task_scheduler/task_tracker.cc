@@ -254,6 +254,8 @@ bool TaskTracker::RunNextTask(Sequence* sequence) {
   if (!is_delayed)
     DecrementNumPendingUndelayedTasks();
 
+  OnRunNextTaskCompleted();
+
   return sequence->Pop();
 }
 
