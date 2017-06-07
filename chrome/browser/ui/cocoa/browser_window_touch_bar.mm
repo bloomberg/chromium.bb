@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
@@ -34,6 +33,7 @@
 #include "components/toolbar/vector_icons.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/color_palette.h"
@@ -108,12 +108,6 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
   button.tag = command;
   [button setAccessibilityLabel:l10n_util::GetNSString(tooltip_id)];
   return button;
-}
-
-NSString* GetTouchBarId(NSString* touch_bar_id) {
-  NSString* chrome_bundle_id =
-      base::SysUTF8ToNSString(base::mac::BaseBundleID());
-  return [NSString stringWithFormat:@"%@.%@", chrome_bundle_id, touch_bar_id];
 }
 
 TouchBarAction TouchBarActionFromCommand(int command) {
@@ -197,12 +191,6 @@ class HomePrefNotificationBridge {
 @synthesize isPageLoading = isPageLoading_;
 @synthesize isStarred = isStarred_;
 
-+ (NSString*)identifierForTouchBarId:(NSString*)touchBarId
-                              itemId:(NSString*)itemId {
-  return
-      [NSString stringWithFormat:@"%@-%@", GetTouchBarId(touchBarId), itemId];
-}
-
 - (instancetype)initWithBrowser:(Browser*)browser
         browserWindowController:(BrowserWindowController*)bwc {
   if ((self = [self init])) {
@@ -232,9 +220,9 @@ class HomePrefNotificationBridge {
   if ([bwc_ isFullscreenForTabContentOrExtension])
     return [self createTabFullscreenTouchBar];
 
-  base::scoped_nsobject<NSTouchBar> touchBar(
-      [[NSClassFromString(@"NSTouchBar") alloc] init]);
-  [touchBar setCustomizationIdentifier:GetTouchBarId(kBrowserWindowTouchBarId)];
+  base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
+  [touchBar
+      setCustomizationIdentifier:ui::GetTouchBarId(kBrowserWindowTouchBarId)];
   [touchBar setDelegate:self];
 
   NSMutableArray* customIdentifiers = [NSMutableArray arrayWithCapacity:7];
@@ -247,8 +235,7 @@ class HomePrefNotificationBridge {
 
   for (NSString* item in touchBarItems) {
     NSString* itemIdentifier =
-        [BrowserWindowTouchBar identifierForTouchBarId:kBrowserWindowTouchBarId
-                                                itemId:item];
+        ui::GetTouchBarItemId(kBrowserWindowTouchBarId, item);
     [customIdentifiers addObject:itemIdentifier];
 
     // Don't add the home button if it's not shown in the toolbar.
@@ -269,8 +256,8 @@ class HomePrefNotificationBridge {
   if (!touchBar)
     return nil;
 
-  base::scoped_nsobject<NSCustomTouchBarItem> touchBarItem([[NSClassFromString(
-      @"NSCustomTouchBarItem") alloc] initWithIdentifier:identifier]);
+  base::scoped_nsobject<NSCustomTouchBarItem> touchBarItem(
+      [[ui::NSCustomTouchBarItem() alloc] initWithIdentifier:identifier]);
   if ([identifier hasSuffix:kBackForwardTouchId]) {
     [touchBarItem setView:[self backOrForwardTouchBarView]];
     [touchBarItem setCustomizationLabel:
@@ -351,25 +338,20 @@ class HomePrefNotificationBridge {
 }
 
 - (NSTouchBar*)createTabFullscreenTouchBar {
-  base::scoped_nsobject<NSTouchBar> touchBar(
-      [[NSClassFromString(@"NSTouchBar") alloc] init]);
+  base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
   [touchBar setDelegate:self];
 
   if ([touchBar respondsToSelector:
       @selector(setEscapeKeyReplacementItemIdentifier:)]) {
     NSString* exitIdentifier =
-        [BrowserWindowTouchBar identifierForTouchBarId:kTabFullscreenTouchBarId
-                                                itemId:kExitFullscreenTouchId];
+        ui::GetTouchBarItemId(kTabFullscreenTouchBarId, kExitFullscreenTouchId);
     [touchBar setEscapeKeyReplacementItemIdentifier:exitIdentifier];
-    [touchBar setDefaultItemIdentifiers:@[
-      [BrowserWindowTouchBar
-          identifierForTouchBarId:kTabFullscreenTouchBarId
-                           itemId:kFullscreenOriginLabelTouchId]
-    ]];
+    [touchBar setDefaultItemIdentifiers:@[ ui::GetTouchBarItemId(
+                                            kTabFullscreenTouchBarId,
+                                            kFullscreenOriginLabelTouchId) ]];
 
     base::scoped_nsobject<NSCustomTouchBarItem> touchBarItem(
-        [[NSClassFromString(@"NSCustomTouchBarItem") alloc]
-            initWithIdentifier:exitIdentifier]);
+        [[ui::NSCustomTouchBarItem() alloc] initWithIdentifier:exitIdentifier]);
 
     [touchBarItem
         setView:[NSButton buttonWithTitle:l10n_util::GetNSString(

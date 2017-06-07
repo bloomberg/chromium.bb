@@ -4,10 +4,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -16,8 +18,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_touch_bar.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
@@ -26,6 +30,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 using base::ASCIIToUTF16;
@@ -38,6 +44,14 @@ namespace {
 
 // URL of the test bookmark.
 const char kTestBookmarkURL[] = "http://www.google.com";
+
+// Touch bar identifier.
+NSString* const kBookmarkBubbleTouchBarId = @"bookmark-bubble";
+
+// Touch bar item identifiers.
+NSString* const kRemoveTouchBarId = @"REMOVE";
+NSString* const kEditTouchBarId = @"EDIT";
+NSString* const kDoneTouchBarId = @"DONE";
 
 class TestBookmarkBubbleObserver : public BookmarkBubbleObserver {
  public:
@@ -469,6 +483,28 @@ TEST_F(BookmarkBubbleControllerTest, SyncPromoSignedIn) {
   BookmarkBubbleController* controller = ControllerForNode(node);
 
   EXPECT_EQ(0u, [[controller.syncPromoPlaceholder subviews] count]);
+}
+
+// Verifies the bubble's touch bar.
+TEST_F(BookmarkBubbleControllerTest, TouchBar) {
+  if (!base::mac::IsAtLeastOS10_12())
+    return;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
+
+  const BookmarkNode* node = CreateTestBookmark();
+  NSTouchBar* touch_bar = [ControllerForNode(node) makeTouchBar];
+  NSArray* touch_bar_items = [touch_bar itemIdentifiers];
+  EXPECT_TRUE([touch_bar_items
+      containsObject:ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId,
+                                           kRemoveTouchBarId)]);
+  EXPECT_TRUE([touch_bar_items
+      containsObject:ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId,
+                                           kEditTouchBarId)]);
+  EXPECT_TRUE([touch_bar_items
+      containsObject:ui::GetTouchBarItemId(kBookmarkBubbleTouchBarId,
+                                           kDoneTouchBarId)]);
 }
 
 }  // namespace

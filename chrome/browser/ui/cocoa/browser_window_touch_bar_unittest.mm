@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 
 namespace {
 
@@ -58,15 +59,11 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
   id bwc() const { return bwc_; }
 
   NSString* GetFullscreenTouchBarItemId(NSString* id) {
-    return
-        [BrowserWindowTouchBar identifierForTouchBarId:kTabFullscreenTouchBarId
-                                                itemId:id];
+    return ui::GetTouchBarItemId(kTabFullscreenTouchBarId, id);
   }
 
   NSString* GetBrowserTouchBarItemId(NSString* id) {
-    return
-        [BrowserWindowTouchBar identifierForTouchBarId:kBrowserWindowTouchBarId
-                                                itemId:id];
+    return ui::GetTouchBarItemId(kBrowserWindowTouchBarId, id);
   }
 
   void TearDown() override { CocoaProfileTest::TearDown(); }

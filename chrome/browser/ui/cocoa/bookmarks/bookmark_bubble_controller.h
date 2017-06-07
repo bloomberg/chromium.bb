@@ -13,9 +13,11 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
 @class BookmarkBubbleController;
 @class BubbleSyncPromoController;
+@class DialogTextFieldEditor;
 
 namespace bookmarks {
 class BookmarkBubbleObserver;
@@ -29,7 +31,8 @@ class ManagedBookmarkService;
 // add or remove it as a bookmark.  This bubble allows for editing of
 // the bookmark in various ways (name, folder, etc.)
 @interface BookmarkBubbleController
-    : OmniboxDecorationBubbleController<HasWeakBrowserPointer> {
+    : OmniboxDecorationBubbleController<NSTouchBarDelegate,
+                                        HasWeakBrowserPointer> {
  @private
   // |managed_|, |model_| and |node_| are weak and owned by the current
   // browser's profile.
@@ -47,6 +50,9 @@ class ManagedBookmarkService;
 
   // Sync promo controller, if the sync promo is displayed.
   base::scoped_nsobject<BubbleSyncPromoController> syncPromoController_;
+
+  // Field editor for |nameTextField_|.
+  base::scoped_nsobject<DialogTextFieldEditor> textFieldEditor_;
 
   IBOutlet NSTextField* bigTitle_;   // "Bookmark" or "Bookmark Added!"
   IBOutlet NSTextField* nameTextField_;
@@ -79,6 +85,9 @@ class ManagedBookmarkService;
 // These actions send a -editBookmarkNode: action up the responder chain.
 - (IBAction)edit:(id)sender;
 - (IBAction)folderChanged:(id)sender;
+
+// Overridden to customize the touch bar.
+- (NSTouchBar*)makeTouchBar;
 
 @end
 
