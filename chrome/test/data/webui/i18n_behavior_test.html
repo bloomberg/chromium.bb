@@ -3,20 +3,28 @@
 <body>
 <script>
 
+/* Execute these tests with the browser_tests executable. */
+
+var allowedByDefault = '<a href="https://google.com">Google!</a>';
+var text = 'I\'m just text, nobody should have a problem with me!';
+var nonBreakingSpace = 'A\u00a0B';  // 0xa0 is a unicode nbsp.
+
 function setUpPage() {
   loadTimeData.data = {
-    'allowedByDefault': '<a href="https://google.com">Google!</a>',
+    'allowedByDefault': allowedByDefault,
     'customAttr': '<a is="action-link">Take action!</a>',
     'customTag': "<x-foo>I'm an X, foo!</x-foo>",
     'javascriptHref': '<a href="javascript:alert(1)">teh hax</a>',
     'script': '<script>alert(/xss/)</scr' + 'ipt>',
-    'text': "I'm just text, nobody should have a problem with me!",
+    'text': text,
+    'nonBreakingSpace': nonBreakingSpace,
   };
 }
 
 function testI18n() {
-  I18nBehavior.i18n('allowedByDefault');
-  I18nBehavior.i18n('text');
+  assertEquals(allowedByDefault, I18nBehavior.i18n('allowedByDefault'));
+  assertEquals(text, I18nBehavior.i18n('text'));
+  assertEquals(nonBreakingSpace, I18nBehavior.i18n('nonBreakingSpace'));
 
   assertThrows(function() { I18nBehavior.i18n('customAttr'); });
   assertThrows(function() { I18nBehavior.i18n('customTag'); });
@@ -37,8 +45,7 @@ function testI18nAdvanced() {
 
 function testI18nDynamic() {
   var locale = 'en';
-  assertEquals("I'm just text, nobody should have a problem with me!",
-      I18nBehavior.i18nDynamic(locale, 'text'));
+  assertEquals(text, I18nBehavior.i18nDynamic(locale, 'text'));
 }
 
 function testI18nExists() {

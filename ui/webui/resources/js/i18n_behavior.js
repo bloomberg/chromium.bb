@@ -46,7 +46,10 @@ var I18nBehavior = {
    */
   i18n: function(id, var_args) {
     var rawString = this.i18nRaw_.apply(this, arguments);
-    return parseHtmlSubset('<b>' + rawString + '</b>').firstChild.innerHTML;
+    var htmlStr =
+        parseHtmlSubset('<b>' + rawString + '</b>').firstChild.innerHTML;
+    // TODO(dschuyler): use textContent rather than innerHTML; remove replace().
+    return htmlStr.replace('&nbsp;', '\u00a0');
   },
 
   /**
