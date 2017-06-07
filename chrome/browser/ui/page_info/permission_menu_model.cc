@@ -118,24 +118,6 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
   AddCheckItem(CONTENT_SETTING_BLOCK, label);
 }
 
-PermissionMenuModel::PermissionMenuModel(Profile* profile,
-                                         const GURL& url,
-                                         ContentSetting setting,
-                                         const ChangeCallback& callback)
-    : ui::SimpleMenuModel(this),
-      host_content_settings_map_(
-          HostContentSettingsMapFactory::GetForProfile(profile)),
-      callback_(callback) {
-  DCHECK(setting == CONTENT_SETTING_ALLOW || setting == CONTENT_SETTING_BLOCK);
-  permission_.type = CONTENT_SETTINGS_TYPE_DEFAULT;
-  permission_.setting = setting;
-  permission_.default_setting = CONTENT_SETTING_NUM_SETTINGS;
-  AddCheckItem(CONTENT_SETTING_ALLOW,
-               l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
-  AddCheckItem(CONTENT_SETTING_BLOCK,
-               l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
-}
-
 PermissionMenuModel::~PermissionMenuModel() {}
 
 bool PermissionMenuModel::IsCommandIdChecked(int command_id) const {

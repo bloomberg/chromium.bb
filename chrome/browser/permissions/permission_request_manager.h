@@ -137,8 +137,6 @@ class PermissionRequestManager
 
   // PermissionPrompt::Delegate:
   const std::vector<PermissionRequest*>& Requests() override;
-  const std::vector<bool>& AcceptStates() override;
-  void ToggleAccept(int request_index, bool new_value) override;
   void TogglePersist(bool new_value) override;
   void Accept() override;
   void Deny() override;

@@ -334,16 +334,6 @@ const std::vector<PermissionRequest*>& PermissionRequestManager::Requests() {
   return requests_;
 }
 
-const std::vector<bool>& PermissionRequestManager::AcceptStates() {
-  // TODO(crbug.com/728483): Remove this function.
-  CR_DEFINE_STATIC_LOCAL(std::vector<bool>, accept_states, ());
-  return accept_states;
-}
-
-void PermissionRequestManager::ToggleAccept(int request_index, bool new_value) {
-  // TODO(crbug.com/728483): Remove this function.
-}
-
 void PermissionRequestManager::TogglePersist(bool new_value) {
   persist_ = new_value;
 }

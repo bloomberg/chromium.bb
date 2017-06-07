@@ -26,14 +26,6 @@ class PermissionMenuModel : public ui::SimpleMenuModel,
                       const GURL& url,
                       const PageInfoUI::PermissionInfo& info,
                       const ChangeCallback& callback);
-  // Creates a special-case menu model that only has the allow and block
-  // options.  It does not track a permission type.  |setting| is the
-  // initial selected option.  It must be either CONTENT_SETTING_ALLOW or
-  // CONTENT_SETTING_BLOCK.
-  PermissionMenuModel(Profile* profile,
-                      const GURL& url,
-                      ContentSetting setting,
-                      const ChangeCallback& callback);
   ~PermissionMenuModel() override;
 
   // Overridden from ui::SimpleMenuModel::Delegate:

@@ -69,7 +69,6 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
                                        public PermissionPrompt::Delegate {
  public:
 
-  MOCK_METHOD2(ToggleAccept, void(int, bool));
   MOCK_METHOD1(TogglePersist, void(bool));
   MOCK_METHOD0(SetCustomizationMode, void());
   MOCK_METHOD0(Accept, void());
@@ -95,12 +94,6 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
 
   const std::vector<PermissionRequest*>& Requests() override {
     return requests_;
-  }
-
-  const std::vector<bool>& AcceptStates() override {
-    // TODO(crbug.com/728483): Remove this function.
-    CR_DEFINE_STATIC_LOCAL(std::vector<bool>, accept_states, ());
-    return accept_states;
   }
 
   void AddRequest(const std::string& title) {
@@ -158,7 +151,6 @@ class PermissionBubbleControllerTest : public CocoaProfileTest,
   std::unique_ptr<PermissionBubbleCocoa> bridge_;
   std::vector<PermissionRequest*> requests_;
   std::vector<std::unique_ptr<PermissionRequest>> owned_requests_;
-  std::vector<bool> accept_states_;
 };
 
 TEST_F(PermissionBubbleControllerTest, ShowAndClose) {

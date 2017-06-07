@@ -41,9 +41,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Message text to display for an individual permission at |position|.
   base::string16 GetMessageTextFragment(size_t position) const;
 
-  // Toggle accept value for an individual permission at |position|.
-  void ToggleAccept(size_t position, bool new_value);
-
   // ConfirmInfoBarDelegate:
   base::string16 GetMessageText() const override;
   bool Accept() override;
