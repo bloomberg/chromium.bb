@@ -33,10 +33,6 @@
 -ServiceWorkerVersionBrowserTest.ServiceWorkerScriptHeader
 -ServiceWorkerVersionBrowserTest.StartNotFound
 
-# http://crbug.com/715677
-# Needs blob fetching for subresources
--BlobStorageBrowserTest.BlobCombinations
-
 # http://crbug.com/715630
 -DownloadContentTest.*
 
@@ -61,7 +57,6 @@
 -DataUrlNavigationBrowserTest.UnknownMimeType_WindowOpen_Download
 -DevToolsProtocolTest.CertificateError
 -DevToolsProtocolTest.SubresourceWithCertificateError
--FrameTreeBrowserTest.NavigateGrandchildToBlob
 -GenericSensorBrowserTest.AmbientLightSensorTest
 -HostZoomMapImplBrowserTest.GetZoomForView_Host
 -HostZoomMapImplBrowserTest.GetZoomForView_HostAndScheme

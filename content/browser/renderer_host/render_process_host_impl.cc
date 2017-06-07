@@ -61,6 +61,7 @@
 #include "content/browser/background_sync/background_sync_service_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
+#include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/browser_child_process_host_impl.h"
@@ -948,6 +949,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       never_signaled_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
 #endif
+      renderer_host_binding_(this),
       instance_weak_factory_(
           new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
       frame_sink_provider_(id_),
@@ -1563,6 +1565,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       ->AddInterface(base::Bind(&RenderProcessHostImpl::BindRouteProvider,
                                 base::Unretained(this)));
 
+  AddUIThreadInterface(registry.get(),
+                       base::Bind(&RenderProcessHostImpl::CreateRendererHost,
+                                  base::Unretained(this)));
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNetworkService)) {
     AddUIThreadInterface(
@@ -1606,6 +1612,17 @@ void RenderProcessHostImpl::GetAssociatedInterface(
     listener->OnAssociatedInterfaceRequest(name, request.PassHandle());
 }
 
+void RenderProcessHostImpl::GetBlobURLLoaderFactory(
+    mojom::URLLoaderFactoryRequest request) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService)) {
+    NOTREACHED();
+    return;
+  }
+  storage_partition_impl_->GetBlobURLLoaderFactory()->HandleRequest(
+      std::move(request));
+}
+
 void RenderProcessHostImpl::CreateMusGpuRequest(
     const service_manager::BindSourceInfo& source_info,
     ui::mojom::GpuRequest request) {
@@ -1641,6 +1658,12 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
           switches::kDisableMojoLocalStorage)) {
     storage_partition_impl_->Bind(std::move(request));
   }
+}
+
+void RenderProcessHostImpl::CreateRendererHost(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::RendererHostRequest request) {
+  renderer_host_binding_.Bind(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(

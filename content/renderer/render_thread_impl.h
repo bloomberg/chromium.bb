@@ -40,7 +40,9 @@
 #include "content/common/render_frame_message_filter.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/renderer_host.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "content/renderer/layout_test_dependencies.h"
@@ -489,6 +491,8 @@ class CONTENT_EXPORT RenderThreadImpl
       mojom::FrameHostInterfaceBrokerPtr host);
 
   mojom::StoragePartitionService* GetStoragePartitionService();
+  mojom::RendererHost* GetRendererHost();
+  mojom::URLLoaderFactory* GetBlobURLLoaderFactory();
 
   // ChildMemoryCoordinatorDelegate implementation.
   void OnTrimMemoryImmediately() override;
@@ -783,6 +787,8 @@ class CONTENT_EXPORT RenderThreadImpl
   PendingFrameCreateMap pending_frame_creates_;
 
   mojom::StoragePartitionServicePtr storage_partition_service_;
+  mojom::RendererHostPtr renderer_host_;
+  mojom::URLLoaderFactoryPtr blob_url_loader_factory_;
 
   AssociatedInterfaceRegistryImpl associated_interfaces_;
 

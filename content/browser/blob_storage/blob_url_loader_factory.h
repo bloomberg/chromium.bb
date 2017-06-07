@@ -35,7 +35,7 @@ class BlobURLLoaderFactory
 
   // Creates a URLLoaderFactory interface pointer for serving blob requests.
   // Called on the UI thread.
-  mojom::URLLoaderFactoryPtr CreateFactory();
+  void HandleRequest(mojom::URLLoaderFactoryRequest request);
 
   // mojom::URLLoaderFactory implementation:
   void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest loader,
