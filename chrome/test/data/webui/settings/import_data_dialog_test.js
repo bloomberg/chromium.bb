@@ -5,10 +5,10 @@
 /**
  * @constructor
  * @implements {settings.ImportDataBrowserProxy}
- * @extends {settings.TestBrowserProxy}
+ * @extends {TestBrowserProxy}
  */
 var TestImportDataBrowserProxy = function() {
-  settings.TestBrowserProxy.call(this, [
+  TestBrowserProxy.call(this, [
     'initializeImportDialog',
     'importFromBookmarksFile',
     'importData',
@@ -19,7 +19,7 @@ var TestImportDataBrowserProxy = function() {
 };
 
 TestImportDataBrowserProxy.prototype = {
-  __proto__: settings.TestBrowserProxy.prototype,
+  __proto__: TestBrowserProxy.prototype,
 
   /** @param {!Array<!settings.BrowserProfile} browserProfiles */
   setBrowserProfiles: function(browserProfiles) {

@@ -6,10 +6,10 @@ cr.define('settings_people_page', function() {
   /**
    * @constructor
    * @implements {settings.ProfileInfoBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   var TestProfileInfoBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
+    TestBrowserProxy.call(this, [
       'getProfileInfo',
       'getProfileStatsCount',
       'getProfileManagesSupervisedUsers',
@@ -22,7 +22,7 @@ cr.define('settings_people_page', function() {
   };
 
   TestProfileInfoBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @override */
     getProfileInfo: function() {
@@ -45,17 +45,17 @@ cr.define('settings_people_page', function() {
   /**
    * @constructor
    * @implements {settings.SyncBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   var TestSyncBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
+    TestBrowserProxy.call(this, [
       'getSyncStatus',
       'signOut',
     ]);
   };
 
   TestSyncBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @override */
     getSyncStatus: function() {

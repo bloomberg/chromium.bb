@@ -10,10 +10,10 @@ cr.define('settings_default_browser', function() {
    *
    * @constructor
    * @implements {settings.DefaultBrowserBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   var TestDefaultBrowserBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
+    TestBrowserProxy.call(this, [
       'requestDefaultBrowserState',
       'setAsDefaultBrowser',
     ]);
@@ -28,7 +28,7 @@ cr.define('settings_default_browser', function() {
   };
 
   TestDefaultBrowserBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @override */
     requestDefaultBrowserState: function() {

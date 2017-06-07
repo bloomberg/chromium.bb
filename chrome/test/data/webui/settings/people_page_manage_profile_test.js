@@ -6,10 +6,10 @@ cr.define('settings_people_page_manage_profile', function() {
   /**
    * @constructor
    * @implements {settings.ManageProfileBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   var TestManageProfileBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
+    TestBrowserProxy.call(this, [
       'getAvailableIcons',
       'setProfileIconToGaiaAvatar',
       'setProfileIconToDefaultAvatar',
@@ -24,7 +24,7 @@ cr.define('settings_people_page_manage_profile', function() {
   };
 
   TestManageProfileBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @param {!ProfileShortcutStatus} status */
     setProfileShortcutStatus: function(status) {

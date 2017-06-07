@@ -6,14 +6,14 @@ cr.define('settings', function() {
   /**
    * @constructor
    * @implements {settings.LanguagesBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   var TestLanguagesBrowserProxy = function() {
     var methodNames = [];
     if (cr.isChromeOS || cr.isWindows)
       methodNames.push('getProspectiveUILanguage');
 
-    settings.TestBrowserProxy.call(this, methodNames);
+    TestBrowserProxy.call(this, methodNames);
 
     /** @private {!LanguageSettingsPrivate} */
     this.languageSettingsPrivate_ = new settings.FakeLanguageSettingsPrivate();
@@ -23,7 +23,7 @@ cr.define('settings', function() {
   };
 
   TestLanguagesBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @override */
     getLanguageSettingsPrivate: function() {

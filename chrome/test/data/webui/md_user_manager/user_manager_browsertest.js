@@ -25,7 +25,7 @@ UserManagerBrowserTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    '../settings/test_browser_proxy.js',
+    '../test_browser_proxy.js',
     'control_bar_tests.js',
     'create_profile_tests.js',
     'import_supervised_user_tests.js',

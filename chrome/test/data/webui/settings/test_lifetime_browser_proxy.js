@@ -8,18 +8,18 @@ cr.define('settings', function() {
    *
    * @constructor
    * @implements {settings.LifetimeBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   var TestLifetimeBrowserProxy = function() {
     var methodNames = ['restart', 'relaunch'];
     if (cr.isChromeOS)
       methodNames.push('signOutAndRestart', 'factoryReset');
 
-    settings.TestBrowserProxy.call(this, methodNames);
+    TestBrowserProxy.call(this, methodNames);
   };
 
   TestLifetimeBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @override */
     restart: function() {

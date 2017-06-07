@@ -6,10 +6,10 @@ cr.define('settings_people_page_change_picture', function() {
   /**
    * @constructor
    * @implements {settings.ChangePictureBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   var TestChangePictureBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
+    TestBrowserProxy.call(this, [
       'initialize',
       'selectDefaultImage',
       'selectOldImage',
@@ -20,7 +20,7 @@ cr.define('settings_people_page_change_picture', function() {
   };
 
   TestChangePictureBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @override */
     initialize: function() {

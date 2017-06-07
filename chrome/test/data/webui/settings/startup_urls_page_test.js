@@ -6,10 +6,10 @@ cr.define('settings_startup_urls_page', function() {
   /**
    * @constructor
    * @implements {settings.StartupUrlsPageBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   function TestStartupUrlsPageBrowserProxy() {
-    settings.TestBrowserProxy.call(this, [
+    TestBrowserProxy.call(this, [
       'addStartupPage',
       'editStartupPage',
       'loadStartupPages',
@@ -23,7 +23,7 @@ cr.define('settings_startup_urls_page', function() {
   }
 
   TestStartupUrlsPageBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /** @param {boolean} isValid */
     setUrlValidity: function(isValid) {

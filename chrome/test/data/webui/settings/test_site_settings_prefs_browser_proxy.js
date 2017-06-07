@@ -76,10 +76,10 @@ var prefsEmpty = {
  *
  * @constructor
  * @implements {settings.SiteSettingsPrefsBrowserProxy}
- * @extends {settings.TestBrowserProxy}
+ * @extends {TestBrowserProxy}
  */
 var TestSiteSettingsPrefsBrowserProxy = function() {
-  settings.TestBrowserProxy.call(this, [
+  TestBrowserProxy.call(this, [
     'fetchUsbDevices',
     'fetchZoomLevels',
     'getCookieDetails',
@@ -123,7 +123,7 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
 };
 
 TestSiteSettingsPrefsBrowserProxy.prototype = {
-  __proto__: settings.TestBrowserProxy.prototype,
+  __proto__: TestBrowserProxy.prototype,
 
   /**
    * Pretends an incognito session started or ended.

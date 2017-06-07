@@ -55,7 +55,7 @@ PrintPreviewUIBrowserTest.prototype = {
     ROOT_PATH + 'third_party/mocha/mocha.js',
     ROOT_PATH + 'chrome/test/data/webui/mocha_adapter.js',
     ROOT_PATH + 'ui/webui/resources/js/util.js',
-    ROOT_PATH + 'chrome/test/data/webui/settings/test_browser_proxy.js',
+    ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
     'print_preview_tests.js',
     'native_layer_stub.js',
   ],

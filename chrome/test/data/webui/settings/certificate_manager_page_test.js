@@ -10,10 +10,10 @@ cr.define('certificate_manager_page', function() {
    *
    * @constructor
    * @implements {settings.CertificatesBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
+   * @extends {TestBrowserProxy}
    */
   var TestCertificatesBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
+    TestBrowserProxy.call(this, [
       'deleteCertificate',
       'editCaCertificateTrust',
       'exportCertificate',
@@ -37,7 +37,7 @@ cr.define('certificate_manager_page', function() {
   };
 
   TestCertificatesBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
+    __proto__: TestBrowserProxy.prototype,
 
     /**
      * @param {!CaTrustInfo} caTrustInfo
