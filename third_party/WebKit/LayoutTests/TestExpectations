@@ -1494,8 +1494,19 @@ crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-video-vert-001.xhtml [ Failure ]
 
 # Skia change to spriteblitters
-crbug.com/728566 css3/blending/background-blend-mode-crossfade-image-gradient.html [ NeedsManualRebaseline ]
-crbug.com/728566 images/cross-fade-background-size.html [ NeedsManualRebaseline ]
+crbug.com/728566 css3/blending/background-blend-mode-crossfade-image-gradient.html [ NeedsRebaseline ]
+crbug.com/728566 images/cross-fade-background-size.html [ NeedsRebaseline ]
+
+# More Skia change to spriteblitters (using faster 16bit math instead of floats)
+crbug.com/730071 fast/borders/border-radius-mask-canvas-with-shadow.html [ NeedsRebaseline ]
+crbug.com/730071 fast/borders/border-radius-mask-video-shadow.html [ NeedsRebaseline ]
+crbug.com/730071 fast/borders/border-radius-with-box-shadow.html [ NeedsRebaseline ]
+crbug.com/730071 fast/box-shadow/basic-shadows.html [ NeedsRebaseline ]
+crbug.com/730071 fast/box-shadow/inset-box-shadows.html [ NeedsRebaseline ]
+crbug.com/730071 fast/css/box-shadow-and-border-radius.html [ NeedsRebaseline ]
+crbug.com/730071 fast/forms/range/input-appearance-range.html [ NeedsRebaseline ]
+crbug.com/730071 paint/roundedrects/circle-with-shadow.html [ NeedsRebaseline ]
+crbug.com/730071 virtual/disable-spinvalidation/paint/roundedrects/circle-with-shadow.html [ NeedsRebaseline ]
 
 # We don't support requesting flex line breaks and it is not clear that we should.
 # See https://lists.w3.org/Archives/Public/www-style/2015May/0065.html
