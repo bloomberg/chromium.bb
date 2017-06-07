@@ -79,6 +79,31 @@ public class CustomTabsConnection {
     @VisibleForTesting
     static final String PAGE_LOAD_METRICS_CALLBACK = "NavigationMetrics";
 
+    // For CustomTabs.SpeculationStatusOnStart, see tools/metrics/enums.xml. Append only.
+    private static final int SPECULATION_STATUS_ON_START_ALLOWED = 0;
+    // What kind of speculation was started, counted in addition to
+    // SPECULATION_STATUS_ALLOWED.
+    private static final int SPECULATION_STATUS_ON_START_PREFETCH = 1;
+    private static final int SPECULATION_STATUS_ON_START_PRERENDER = 2;
+    private static final int SPECULATION_STATUS_ON_START_BACKGROUND_TAB = 3;
+    private static final int SPECULATION_STATUS_ON_START_PRERENDER_NOT_STARTED = 4;
+    // The following describe reasons why a speculation was not allowed, and are
+    // counted instead of SPECULATION_STATUS_ALLOWED.
+    private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_DEVICE_CLASS = 5;
+    private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_BLOCK_3RD_PARTY_COOKIES = 6;
+    private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_PREDICTION_DISABLED =
+            7;
+    private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_DATA_REDUCTION_ENABLED = 8;
+    private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_METERED = 9;
+    private static final int SPECULATION_STATUS_ON_START_MAX = 10;
+
+    // For CustomTabs.SpeculationStatusOnSwap, see tools/metrics/enums.xml. Append only.
+    private static final int SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_TAKEN = 0;
+    private static final int SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_NOT_MATCHED = 1;
+    private static final int SPECULATION_STATUS_ON_SWAP_PRERENDER_TAKEN = 2;
+    private static final int SPECULATION_STATUS_ON_SWAP_PRERENDER_NOT_MATCHED = 3;
+    private static final int SPECULATION_STATUS_ON_SWAP_MAX = 4;
+
     // For testing only, DO NOT USE.
     @VisibleForTesting
     static final String DEBUG_OVERRIDE_KEY =
@@ -613,9 +638,11 @@ public class CustomTabsConnection {
                         && UrlUtilities.urlsMatchIgnoringFragments(prerenderedUrl, url));
         WebContents result = null;
         if (urlsMatch && TextUtils.equals(prerenderReferrer, referrer)) {
+            recordSpeculationStatusOnSwap(SPECULATION_STATUS_ON_SWAP_PRERENDER_TAKEN);
             result = webContents;
             mSpeculation = null;
         } else {
+            recordSpeculationStatusOnSwap(SPECULATION_STATUS_ON_SWAP_PRERENDER_NOT_MATCHED);
             cancelSpeculation(session);
         }
         if (!mClientManager.usesDefaultSessionParameters(session) && webContents != null) {
@@ -671,8 +698,11 @@ public class CustomTabsConnection {
                                    && UrlUtilities.urlsMatchIgnoringFragments(speculatedUrl, url));
                 if (referrer == null) referrer = "";
                 if (urlsMatch && TextUtils.equals(speculationReferrer, referrer)) {
+                    recordSpeculationStatusOnSwap(SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_TAKEN);
                     return tab;
                 } else {
+                    recordSpeculationStatusOnSwap(
+                            SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_NOT_MATCHED);
                     tab.destroy();
                 }
             }
@@ -953,19 +983,36 @@ public class CustomTabsConnection {
     }
 
     @VisibleForTesting
-    boolean maySpeculate(CustomTabsSessionToken session) {
-        if (!DeviceClassManager.enablePrerendering()) return false;
+    int maySpeculateWithResult(CustomTabsSessionToken session) {
+        if (!DeviceClassManager.enablePrerendering()) {
+            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_DEVICE_CLASS;
+        }
         PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-        if (prefs.isBlockThirdPartyCookiesEnabled()) return false;
-        // TODO(yusufo): The check for prerender in PrivacyManager now checks for the network
-        // connection type as well, we should either change that or add another check for custom
-        // tabs. Then PrivacyManager should be used to make the below check.
-        if (!prefs.getNetworkPredictionEnabled()) return false;
-        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) return false;
+        if (prefs.isBlockThirdPartyCookiesEnabled()) {
+            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_BLOCK_3RD_PARTY_COOKIES;
+        }
+        // TODO(yusufo): The check for prerender in PrivacyPreferencesManager now checks for the
+        // network connection type as well, we should either change that or add another check for
+        // custom tabs. Then PrivacyManager should be used to make the below check.
+        if (!prefs.getNetworkPredictionEnabled()) {
+            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_PREDICTION_DISABLED;
+        }
+        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
+            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_DATA_REDUCTION_ENABLED;
+        }
         ConnectivityManager cm =
                 (ConnectivityManager) mApplication.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
-        return !cm.isActiveNetworkMetered() || shouldPrerenderOnCellularForSession(session);
+        if (cm.isActiveNetworkMetered() && !shouldPrerenderOnCellularForSession(session)) {
+            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_METERED;
+        }
+        return SPECULATION_STATUS_ON_START_ALLOWED;
+    }
+
+    boolean maySpeculate(CustomTabsSessionToken session) {
+        int speculationResult = maySpeculateWithResult(session);
+        recordSpeculationStatusOnStart(speculationResult);
+        return speculationResult == SPECULATION_STATUS_ON_START_ALLOWED;
     }
 
     /** Cancels the speculation for a given session, or any session if null. */
@@ -1006,14 +1053,19 @@ public class CustomTabsConnection {
         switch (speculationMode) {
             case SpeculationParams.PREFETCH:
                 boolean didPrefetch = new LoadingPredictor(profile).prepareForPageLoad(url);
+                recordSpeculationStatusOnStart(SPECULATION_STATUS_ON_START_PREFETCH);
                 if (didPrefetch) mSpeculation = SpeculationParams.forPrefetch(session, url);
                 preconnect = !didPrefetch;
                 break;
             case SpeculationParams.PRERENDER:
                 boolean didPrerender = prerenderUrl(session, url, extras, uid);
+                recordSpeculationStatusOnStart(didPrerender
+                                ? SPECULATION_STATUS_ON_START_PRERENDER
+                                : SPECULATION_STATUS_ON_START_PRERENDER_NOT_STARTED);
                 createSpareWebContents = !didPrerender;
                 break;
             case SpeculationParams.HIDDEN_TAB:
+                recordSpeculationStatusOnStart(SPECULATION_STATUS_ON_START_BACKGROUND_TAB);
                 launchUrlInHiddenTab(session, url, extras);
                 break;
             default:
@@ -1144,5 +1196,15 @@ public class CustomTabsConnection {
         }
         if (referrer == null) referrer = "";
         return referrer;
+    }
+
+    private static void recordSpeculationStatusOnStart(int status) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "CustomTabs.SpeculationStatusOnStart", status, SPECULATION_STATUS_ON_START_MAX);
+    }
+
+    private static void recordSpeculationStatusOnSwap(int status) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "CustomTabs.SpeculationStatusOnSwap", status, SPECULATION_STATUS_ON_SWAP_MAX);
     }
 }

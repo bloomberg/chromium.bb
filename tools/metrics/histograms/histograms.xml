@@ -10181,6 +10181,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.SpeculationStatusOnStart"
+    enum="CustomTabsSpeculationStatusOnStart">
+  <owner>mattcary@chromium.org</owner>
+  <summary>
+    Recorded only for Android. How a speculation was started or why it was
+    disallowed. This is recorded when a speculation of any kind is requested,
+    with either a &quot;Speculation allowed&quot; value, or a reason why it was
+    not allowed. If the speculation is allowed and is attempted to be started,
+    the status on start will be counted in addition: one of
+    &quot;Prefetch&quot;, &quot;Prerender&quot;, &quot;Background Tab&quot; or
+    &quot;Prerender not started&quot;. The last case is when a prerender is
+    abandoned during start.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.SpeculationStatusOnSwap"
+    enum="CustomTabsSpeculationStatusOnSwap">
+  <owner>mattcary@chromium.org</owner>
+  <summary>
+    Recorded only for Android. Recorded when a speculation is requesting to swap
+    into a visible tab.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.Visible" enum="VisibleTab">
   <owner>yusufo@chromium.org</owner>
   <summary>
