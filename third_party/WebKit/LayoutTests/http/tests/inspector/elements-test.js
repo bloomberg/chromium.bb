@@ -281,7 +281,7 @@ InspectorTest.filterMatchedStyles = function(text)
 {
     var regex = text ? new RegExp(text, "i") : null;
     InspectorTest.addResult("Filtering styles by: " + text);
-    UI.panels.elements._stylesWidget.onFilterChanged(regex);
+    UI.panels.elements._stylesWidget._onFilterChanged(regex);
 }
 
 InspectorTest.dumpRenderedMatchedStyles = function()
