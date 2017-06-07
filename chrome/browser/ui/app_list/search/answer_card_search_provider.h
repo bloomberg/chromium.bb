@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_ANSWER_WEB_CONTENTS_DELEGATE_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_ANSWER_WEB_CONTENTS_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_ANSWER_CARD_SEARCH_PROVIDER_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_ANSWER_CARD_SEARCH_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -106,9 +106,12 @@ class AnswerCardSearchProvider : public SearchProvider,
   // Url to open when the user clicks at the result.
   std::string result_url_;
 
+  // Title of the result.
+  std::string result_title_;
+
   DISALLOW_COPY_AND_ASSIGN(AnswerCardSearchProvider);
 };
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_ANSWER_WEB_CONTENTS_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_ANSWER_CARD_SEARCH_PROVIDER_H_
