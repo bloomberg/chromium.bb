@@ -70,6 +70,8 @@ IndexedDBCursor::IndexedDBCursor(
 }
 
 IndexedDBCursor::~IndexedDBCursor() {
+  if (transaction_)
+    transaction_->UnregisterOpenCursor(this);
   // Call to make sure we complete our lifetime trace.
   Close();
 }
@@ -104,11 +106,6 @@ void IndexedDBCursor::Advance(uint32_t count,
       task_type_,
       BindWeakOperation(&IndexedDBCursor::CursorAdvanceOperation,
                         ptr_factory_.GetWeakPtr(), count, callbacks));
-}
-
-void IndexedDBCursor::RemoveCursorFromTransaction() {
-  if (transaction_)
-    transaction_->UnregisterOpenCursor(this);
 }
 
 leveldb::Status IndexedDBCursor::CursorAdvanceOperation(

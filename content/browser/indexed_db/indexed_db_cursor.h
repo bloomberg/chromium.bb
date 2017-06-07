@@ -44,7 +44,6 @@ class CONTENT_EXPORT IndexedDBCursor {
                                                          : cursor_->value();
   }
 
-  void RemoveCursorFromTransaction();
   void Close();
 
   leveldb::Status CursorIterationOperation(
