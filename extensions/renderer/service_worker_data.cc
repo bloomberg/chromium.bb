@@ -11,8 +11,10 @@ namespace extensions {
 
 ServiceWorkerData::ServiceWorkerData(
     int64_t service_worker_version_id,
+    ScriptContext* context,
     std::unique_ptr<ExtensionBindingsSystem> bindings_system)
     : service_worker_version_id_(service_worker_version_id),
+      context_(context),
       v8_schema_registry_(new V8SchemaRegistry),
       bindings_system_(std::move(bindings_system)) {}
 

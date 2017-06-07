@@ -54,14 +54,18 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   // Message handlers on the UI thread.
   void OnExtensionAddListener(const std::string& extension_id,
                               const GURL& listener_url,
-                              const std::string& event_name);
+                              const std::string& event_name,
+                              int worker_thread_id);
   void OnExtensionRemoveListener(const std::string& extension_id,
                                  const GURL& listener_url,
-                                 const std::string& event_name);
+                                 const std::string& event_name,
+                                 int worker_thread_id);
   void OnExtensionAddLazyListener(const std::string& extension_id,
-                                  const std::string& event_name);
+                                  const std::string& event_name,
+                                  int worker_thread_id);
   void OnExtensionRemoveLazyListener(const std::string& extension_id,
-                                     const std::string& event_name);
+                                     const std::string& event_name,
+                                     int worker_thread_id);
   void OnExtensionAddFilteredListener(const std::string& extension_id,
                                       const std::string& event_name,
                                       const base::DictionaryValue& filter,

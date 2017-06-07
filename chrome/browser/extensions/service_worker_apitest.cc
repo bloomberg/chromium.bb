@@ -666,6 +666,22 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, TabsCreate) {
   EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, Events) {
+  // Extensions APIs from SW are only enabled on trunk.
+  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("service_worker/events"), kFlagNone);
+  ASSERT_TRUE(extension);
+  ui_test_utils::NavigateToURL(browser(),
+                               extension->GetResourceURL("page.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "window.runEventTest()", &result));
+  ASSERT_EQ("chrome.tabs.onUpdated callback", result);
+}
+
 // Tests that worker ref count increments while extension API function is
 // active.
 

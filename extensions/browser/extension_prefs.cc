@@ -1926,7 +1926,8 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
   extension_dict->Remove(kDelayedInstallInfo, NULL);
 
   // Clear state that may be registered from a previous install.
-  extension_dict->Remove(EventRouter::kRegisteredEvents, NULL);
+  extension_dict->Remove(EventRouter::kRegisteredLazyEvents, nullptr);
+  extension_dict->Remove(EventRouter::kRegisteredServiceWorkerEvents, nullptr);
 
   // FYI, all code below here races on sudden shutdown because |extension_dict|,
   // |app_sorting|, |extension_pref_value_map_|, and (potentially) observers

@@ -20,6 +20,7 @@ class ExtensionBindingsSystem;
 class ServiceWorkerData {
  public:
   ServiceWorkerData(int64_t service_worker_version_id,
+                    ScriptContext* context,
                     std::unique_ptr<ExtensionBindingsSystem> bindings_system);
   ~ServiceWorkerData();
 
@@ -28,9 +29,11 @@ class ServiceWorkerData {
   int64_t service_worker_version_id() const {
     return service_worker_version_id_;
   }
+  ScriptContext* context() const { return context_; }
 
  private:
   const int64_t service_worker_version_id_;
+  ScriptContext* const context_;
 
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
   std::unique_ptr<ExtensionBindingsSystem> bindings_system_;

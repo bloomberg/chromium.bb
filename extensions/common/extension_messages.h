@@ -120,6 +120,10 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ExtensionMsg_DispatchEvent_Params)
+  // If this event is for a service worker, then this is the worker thread
+  // id. Otherwise, this is 0.
+  IPC_STRUCT_MEMBER(int, worker_thread_id)
+
   // The id of the extension to dispatch the event to.
   IPC_STRUCT_MEMBER(std::string, extension_id)
 
@@ -679,29 +683,33 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RequestForIOThread,
                      ExtensionHostMsg_Request_Params)
 
 // Notify the browser that the given extension added a listener to an event.
-IPC_MESSAGE_CONTROL3(ExtensionHostMsg_AddListener,
+IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AddListener,
                      std::string /* extension_id */,
                      GURL /* listener_url */,
-                     std::string /* name */)
+                     std::string /* name */,
+                     int /* worker_thread_id */)
 
 // Notify the browser that the given extension removed a listener from an
 // event.
-IPC_MESSAGE_CONTROL3(ExtensionHostMsg_RemoveListener,
+IPC_MESSAGE_CONTROL4(ExtensionHostMsg_RemoveListener,
                      std::string /* extension_id */,
                      GURL /* listener_url */,
-                     std::string /* name */)
+                     std::string /* name */,
+                     int /* worker_thread_id */)
 
 // Notify the browser that the given extension added a listener to an event from
 // a lazy background page.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddLazyListener,
+IPC_MESSAGE_CONTROL3(ExtensionHostMsg_AddLazyListener,
                      std::string /* extension_id */,
-                     std::string /* name */)
+                     std::string /* name */,
+                     int /* worker_thread_id */)
 
 // Notify the browser that the given extension is no longer interested in
 // receiving the given event from a lazy background page.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RemoveLazyListener,
+IPC_MESSAGE_CONTROL3(ExtensionHostMsg_RemoveLazyListener,
                      std::string /* extension_id */,
-                     std::string /* name */)
+                     std::string /* name */,
+                     int /* worker_thread_id */)
 
 // Notify the browser that the given extension added a listener to instances of
 // the named event that satisfy the filter.

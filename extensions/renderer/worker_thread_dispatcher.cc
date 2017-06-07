@@ -10,8 +10,10 @@
 #include "base/values.h"
 #include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_thread.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/js_extension_bindings_system.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
@@ -86,7 +88,8 @@ V8SchemaRegistry* WorkerThreadDispatcher::GetV8SchemaRegistry() {
 // static
 bool WorkerThreadDispatcher::HandlesMessageOnWorkerThread(
     const IPC::Message& message) {
-  return message.type() == ExtensionMsg_ResponseWorker::ID;
+  return message.type() == ExtensionMsg_ResponseWorker::ID ||
+         message.type() == ExtensionMsg_DispatchEvent::ID;
 }
 
 // static
@@ -100,8 +103,12 @@ bool WorkerThreadDispatcher::OnControlMessageReceived(
     const IPC::Message& message) {
   if (HandlesMessageOnWorkerThread(message)) {
     int worker_thread_id = base::kInvalidThreadId;
+    // TODO(lazyboy): Route |message| directly to the child thread using routed
+    // IPC. Probably using mojo?
     bool found = base::PickleIterator(message).ReadInt(&worker_thread_id);
-    CHECK(found && worker_thread_id > 0);
+    CHECK(found);
+    if (worker_thread_id == kNonWorkerThreadId)
+      return false;
     base::TaskRunner* runner = GetTaskRunnerFor(worker_thread_id);
     bool task_posted = runner->PostTask(
         FROM_HERE, base::Bind(&WorkerThreadDispatcher::ForwardIPC,
@@ -119,6 +126,7 @@ void WorkerThreadDispatcher::OnMessageReceivedOnWorkerThread(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WorkerThreadDispatcher, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ResponseWorker, OnResponseWorker)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchEvent, OnDispatchEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   CHECK(handled);
@@ -149,8 +157,18 @@ void WorkerThreadDispatcher::OnResponseWorker(int worker_thread_id,
       error);
 }
 
+void WorkerThreadDispatcher::OnDispatchEvent(
+    const ExtensionMsg_DispatchEvent_Params& params,
+    const base::ListValue& event_args) {
+  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
+  DCHECK(data);
+  data->bindings_system()->DispatchEventInContext(
+      params.event_name, &event_args, &params.filtering_info, data->context());
+}
+
 void WorkerThreadDispatcher::AddWorkerData(
     int64_t service_worker_version_id,
+    ScriptContext* context,
     ResourceBundleSourceMap* source_map) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
@@ -164,7 +182,7 @@ void WorkerThreadDispatcher::AddWorkerData(
                           this, service_worker_version_id));
     }
     ServiceWorkerData* new_data = new ServiceWorkerData(
-        service_worker_version_id, std::move(bindings_system));
+        service_worker_version_id, context, std::move(bindings_system));
     g_data_tls.Pointer()->Set(new_data);
   }
 
