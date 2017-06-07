@@ -42,29 +42,6 @@ js2gtest("browser_tests_js_webui") {
     "../../../browser/ui/webui/extensions/extension_settings_browsertest.js",
     "../../../browser/ui/webui/help/help_browsertest.js",
     "../../../browser/ui/webui/identity_internals_ui_browsertest.js",
-    "../../../browser/ui/webui/options/autofill_options_browsertest.js",
-    "../../../browser/ui/webui/options/browser_options_browsertest.js",
-    "../../../browser/ui/webui/options/certificate_manager_browsertest.js",
-    "../../../browser/ui/webui/options/chromeos/accounts_options_browsertest.js",
-    "../../../browser/ui/webui/options/chromeos/bluetooth_options_browsertest.js",
-    "../../../browser/ui/webui/options/chromeos/date_time_options_browsertest.js",
-    "../../../browser/ui/webui/options/chromeos/power_overlay_browsertest.js",
-    "../../../browser/ui/webui/options/content_options_browsertest.js",
-    "../../../browser/ui/webui/options/content_settings_exception_area_browsertest.js",
-    "../../../browser/ui/webui/options/cookies_view_browsertest.js",
-    "../../../browser/ui/webui/options/edit_dictionary_browsertest.js",
-    "../../../browser/ui/webui/options/font_settings_browsertest.js",
-    "../../../browser/ui/webui/options/language_options_browsertest.js",
-    "../../../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
-    "../../../browser/ui/webui/options/manage_profile_browsertest.js",
-    "../../../browser/ui/webui/options/multilanguage_options_webui_browsertest.js",
-    "../../../browser/ui/webui/options/options_browsertest.js",
-    "../../../browser/ui/webui/options/options_browsertest_base.js",
-    "../../../browser/ui/webui/options/password_manager_browsertest.js",
-    "../../../browser/ui/webui/options/profile_settings_reset_browsertest.js",
-    "../../../browser/ui/webui/options/search_engine_manager_browsertest.js",
-    "../../../browser/ui/webui/options/settings_format_browsertest.js",
-    "../../../browser/ui/webui/options/startup_page_list_browsertest.js",
     "../../../browser/ui/webui/sync_internals_browsertest.js",
     "../../../browser/ui/webui/sync_setup_browsertest.js",
     "../chromeos/oobe_webui_browsertest.js",
@@ -129,18 +106,6 @@ js2gtest("browser_tests_js_webui") {
     sources -= [ "certificate_viewer_dialog_test.js" ]
   } else {
     sources -= [ "md_user_manager/user_manager_browsertest.js" ]
-  }
-  if (is_mac) {
-    sources -= [
-      # TODO(rouslan): This test depends on the custom dictionary UI,
-      # which is disabled on Mac.
-      "../../../browser/ui/webui/options/edit_dictionary_browsertest.js",
-
-      # TODO(rouslan): This test depends on hunspell and we cannot run it
-      # on Mac, which does not use hunspell by default.
-      "../../../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
-      "../../../browser/ui/webui/options/multilanguage_options_webui_browsertest.js",
-    ]
   }
   if (!enable_app_list) {
     sources -=

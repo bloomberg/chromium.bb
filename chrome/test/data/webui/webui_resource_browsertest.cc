@@ -7,7 +7,6 @@
 #include "base/path_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/grit/options_test_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/data/grit/webui_test_resources.h"
@@ -147,22 +146,6 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListSingleSelectionModelTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SINGLE_SELECTION_MODEL);
   LoadFile(base::FilePath(FILE_PATH_LITERAL(
       "list_single_selection_model_test.html")));
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, InlineEditableListTest) {
-  AddLibrary(IDR_WEBUI_JS_CR);
-  AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
-  AddLibrary(IDR_WEBUI_JS_CR_UI);
-  AddLibrary(IDR_WEBUI_JS_CR_UI_ARRAY_DATA_MODEL);
-  AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_ITEM);
-  AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SELECTION_CONTROLLER);
-  AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SELECTION_MODEL);
-  AddLibrary(IDR_WEBUI_JS_CR_UI_LIST);
-  AddLibrary(IDR_WEBUI_JS_LOAD_TIME_DATA);
-  AddLibrary(IDR_OPTIONS_DELETABLE_ITEM_LIST);
-  AddLibrary(IDR_OPTIONS_INLINE_EDITABLE_LIST);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL(
-      "inline_editable_list_test.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuTest) {
