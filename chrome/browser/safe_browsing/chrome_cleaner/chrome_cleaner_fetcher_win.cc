@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -60,8 +61,8 @@ ChromeCleanerFetcher::ChromeCleanerFetcher(
   url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   url_fetcher_->SetMaxRetriesOn5xx(3);
   url_fetcher_->SaveResponseToTemporaryFile(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::FILE));
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND}));
   url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
   url_fetcher_->Start();
 }
