@@ -4,6 +4,7 @@
 
 #include "chromecast/base/system_time_change_notifier.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 
@@ -80,8 +81,8 @@ void SystemTimeChangeNotifierPeriodicMonitor::ScheduleNextMonitor(
   expected_system_time_ = now + next_checking_interval;
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SystemTimeChangeNotifierPeriodicMonitor::CheckSystemTime,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&SystemTimeChangeNotifierPeriodicMonitor::CheckSystemTime,
+                     weak_factory_.GetWeakPtr()),
       next_checking_interval);
 }
 

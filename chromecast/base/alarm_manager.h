@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_BASE_ALARM_MANAGER_H_
 #define CHROMECAST_BASE_ALARM_MANAGER_H_
 
+#include <functional>
+#include <memory>
 #include <queue>
 #include <vector>
 
@@ -12,11 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 
 namespace base {
 class Clock;
 class SingleThreadTaskRunner;
-class Timer;
 }
 
 namespace chromecast {
@@ -55,26 +57,24 @@ class AlarmManager {
   // if it is past the requested time if the software is suspended. However,
   // once woken up, the event will fire within 5 seconds if the target time has
   // passed.
-  std::unique_ptr<AlarmHandle> PostAlarmTask(const base::Closure& task,
+  std::unique_ptr<AlarmHandle> PostAlarmTask(base::OnceClosure task,
                                              base::Time time)
       WARN_UNUSED_RESULT;
 
  private:
   class AlarmInfo {
    public:
-    AlarmInfo(const base::Closure& task,
+    AlarmInfo(base::OnceClosure task,
               base::Time time,
               scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     ~AlarmInfo();
 
-    const base::Closure task() const { return task_; }
+    void PostTask();
+
     base::Time time() const { return time_; }
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
-      return task_runner_;
-    }
 
    private:
-    const base::Closure task_;
+    base::OnceClosure task_;
     const base::Time time_;
     const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
     DISALLOW_COPY_AND_ASSIGN(AlarmInfo);
@@ -83,7 +83,7 @@ class AlarmManager {
   // Check if an alarm should fire.
   void CheckAlarm();
   // Add the alarm to the queue.
-  void AddAlarm(const base::Closure& task,
+  void AddAlarm(base::OnceClosure task,
                 base::Time time,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -106,7 +106,7 @@ class AlarmManager {
 
   // Poller for wall clock time.
   std::unique_ptr<base::Clock> clock_;
-  std::unique_ptr<base::Timer> clock_tick_timer_;
+  base::RepeatingTimer clock_tick_timer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<AlarmManager> weak_factory_;

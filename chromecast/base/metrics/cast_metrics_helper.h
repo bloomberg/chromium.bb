@@ -30,7 +30,8 @@ class CastMetricsHelper {
     kAbortedBuffering,
   };
 
-  typedef base::Callback<void(const std::string&)> RecordActionCallback;
+  using RecordActionCallback =
+      base::RepeatingCallback<void(const std::string&)>;
 
   class MetricsSink {
    public:
@@ -113,7 +114,7 @@ class CastMetricsHelper {
   // Sets a default callback to record user action when MetricsSink is not set.
   // This function could be called multiple times (in unittests), and
   // CastMetricsHelper only honors the last one.
-  virtual void SetRecordActionCallback(const RecordActionCallback& callback);
+  virtual void SetRecordActionCallback(RecordActionCallback callback);
 
   // Sets an all-0's session ID for running browser tests.
   void SetDummySessionIdForTesting();

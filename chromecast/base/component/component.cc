@@ -5,6 +5,7 @@
 #include "chromecast/base/component/component.h"
 
 #include <set>
+#include <utility>
 
 #include "base/atomicops.h"
 #include "base/bind.h"
@@ -142,7 +143,7 @@ class DependencyCount : public base::RefCountedThreadSafe<DependencyCount> {
   void DisableComplete() {
     if (!task_runner_->BelongsToCurrentThread()) {
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&DependencyCount::DisableComplete, this));
+          FROM_HERE, base::BindOnce(&DependencyCount::DisableComplete, this));
       return;
     }
     // Need to make sure that Enable() was not called in the meantime.
@@ -302,9 +303,9 @@ void ComponentBase::TryOnEnable() {
 
 void ComponentBase::OnEnableComplete(bool success) {
   // Always post a task, to prevent the stack from getting too deep.
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&ComponentBase::OnEnableCompleteInternal,
-                                    base::Unretained(this), success));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ComponentBase::OnEnableCompleteInternal,
+                                base::Unretained(this), success));
 }
 
 void ComponentBase::OnEnableCompleteInternal(bool success) {
@@ -377,9 +378,9 @@ void ComponentBase::TryOnDisable() {
 
 void ComponentBase::OnDisableComplete() {
   // Always post a task, to prevent calls to Disable() from within Enable().
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&ComponentBase::OnDisableCompleteInternal,
-                                    base::Unretained(this)));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ComponentBase::OnDisableCompleteInternal,
+                                base::Unretained(this)));
 }
 
 void ComponentBase::OnDisableCompleteInternal() {

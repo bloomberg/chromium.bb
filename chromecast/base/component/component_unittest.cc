@@ -45,8 +45,8 @@ class ComponentA : public Component<ComponentA> {
       Test();
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ComponentA::OnEnableComplete,
-                              base::Unretained(this), !fail_enable_));
+        FROM_HERE, base::BindOnce(&ComponentA::OnEnableComplete,
+                                  base::Unretained(this), !fail_enable_));
   }
 
   void OnDisable() override {
@@ -55,7 +55,7 @@ class ComponentA : public Component<ComponentA> {
     enabled_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ComponentA::OnDisableComplete, base::Unretained(this)));
+        base::BindOnce(&ComponentA::OnDisableComplete, base::Unretained(this)));
   }
 
   void Test() {
@@ -85,8 +85,8 @@ class ComponentB : public Component<ComponentB> {
       Test();
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ComponentB::OnEnableComplete,
-                              base::Unretained(this), !fail_enable_));
+        FROM_HERE, base::BindOnce(&ComponentB::OnEnableComplete,
+                                  base::Unretained(this), !fail_enable_));
   }
 
   void OnDisable() override {
@@ -95,7 +95,7 @@ class ComponentB : public Component<ComponentB> {
     enabled_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ComponentB::OnDisableComplete, base::Unretained(this)));
+        base::BindOnce(&ComponentB::OnDisableComplete, base::Unretained(this)));
   }
 
   void Test() {
@@ -124,8 +124,8 @@ class ComponentC : public Component<ComponentC> {
       Test();
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ComponentC::OnEnableComplete,
-                              base::Unretained(this), !fail_enable_));
+        FROM_HERE, base::BindOnce(&ComponentC::OnEnableComplete,
+                                  base::Unretained(this), !fail_enable_));
   }
 
   void OnDisable() override {
@@ -134,7 +134,7 @@ class ComponentC : public Component<ComponentC> {
     enabled_ = false;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ComponentC::OnDisableComplete, base::Unretained(this)));
+        base::BindOnce(&ComponentC::OnDisableComplete, base::Unretained(this)));
   }
 
   void Test() {
