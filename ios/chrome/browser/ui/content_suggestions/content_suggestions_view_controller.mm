@@ -98,6 +98,12 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
                                 completion:nil];
 
   [self.collectionView performBatchUpdates:^{
+    NSIndexPath* removedItem = [self.collectionUpdater
+        removeEmptySuggestionsForSectionInfo:sectionInfo];
+    if (removedItem) {
+      [self.collectionView deleteItemsAtIndexPaths:@[ removedItem ]];
+    }
+
     NSArray<NSIndexPath*>* addedItems =
         [self.collectionUpdater addSuggestionsToModel:suggestions
                                       withSectionInfo:sectionInfo];
