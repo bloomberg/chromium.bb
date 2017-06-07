@@ -206,14 +206,14 @@ void OffTheRecordProfileIOData::InitializeInternal(
 
   main_context->set_transport_security_state(transport_security_state());
   main_context->set_cert_transparency_verifier(
-      io_thread_globals->cert_transparency_verifier.get());
+      io_thread_globals->system_request_context->cert_transparency_verifier());
   main_context->set_ct_policy_enforcer(
       io_thread_globals->system_request_context->ct_policy_enforcer());
 
   main_context->set_net_log(io_thread->net_log());
 
   main_context->set_http_auth_handler_factory(
-      io_thread_globals->http_auth_handler_factory.get());
+      io_thread_globals->system_request_context->http_auth_handler_factory());
   main_context->set_proxy_service(proxy_service());
 
   // For incognito, we use the default non-persistent HttpServerPropertiesImpl.

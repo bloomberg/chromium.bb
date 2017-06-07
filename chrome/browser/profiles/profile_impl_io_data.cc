@@ -484,7 +484,7 @@ void ProfileImplIOData::InitializeInternal(
   main_context->set_net_log(io_thread->net_log());
 
   main_context->set_http_auth_handler_factory(
-      io_thread_globals->http_auth_handler_factory.get());
+      io_thread_globals->system_request_context->http_auth_handler_factory());
 
   main_context->set_proxy_service(proxy_service());
 
@@ -552,7 +552,7 @@ void ProfileImplIOData::InitializeInternal(
       std::move(main_job_factory), std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor),
       main_context->network_delegate(),
-      io_thread_globals->host_resolver.get()));
+      io_thread_globals->system_request_context->host_resolver()));
   main_context->set_network_quality_estimator(
       io_thread_globals->network_quality_estimator.get());
 

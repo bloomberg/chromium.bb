@@ -75,10 +75,10 @@ class EventRouterForwarder;
 }
 
 namespace net {
-class CertVerifier;
 class CTLogVerifier;
 class HostMappingRules;
 class HostResolver;
+class HttpAuthHandlerFactory;
 class HttpAuthPreferences;
 class LoggingNetworkChangeObserver;
 class NetworkQualityEstimator;
@@ -139,11 +139,7 @@ class IOThread : public content::BrowserThreadDelegate {
     std::unique_ptr<chrome::android::ExternalDataUseObserver>
         external_data_use_observer;
 #endif  // defined(OS_ANDROID)
-    std::unique_ptr<net::HostResolver> host_resolver;
-    std::unique_ptr<net::CertVerifier> cert_verifier;
     std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
-    std::unique_ptr<net::CTVerifier> cert_transparency_verifier;
-    std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
     std::unique_ptr<net::URLRequestContextStorage>
         system_request_context_storage;
@@ -240,7 +236,8 @@ class IOThread : public content::BrowserThreadDelegate {
   void Init() override;
   void CleanUp() override;
 
-  void CreateDefaultAuthHandlerFactory();
+  std::unique_ptr<net::HttpAuthHandlerFactory> CreateDefaultAuthHandlerFactory(
+      net::HostResolver* host_resolver);
 
   // Returns an SSLConfigService instance.
   net::SSLConfigService* GetSSLConfigService();

@@ -547,8 +547,6 @@ void IOThread::Init() {
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 #endif  // defined(OS_ANDROID)
 
-  globals_->host_resolver = CreateGlobalHostResolver(net_log_);
-
   std::map<std::string, std::string> network_quality_estimator_params;
   variations::GetVariationParams(kNetworkQualityEstimatorFieldTrialName,
                                  &network_quality_estimator_params);
@@ -578,38 +576,16 @@ void IOThread::Init() {
   globals_->network_quality_observer = content::CreateNetworkQualityObserver(
       globals_->network_quality_estimator.get());
 
-  UpdateDnsClientEnabled();
-#if defined(OS_CHROMEOS)
-  // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
-  globals_->cert_verifier = base::MakeUnique<net::CachingCertVerifier>(
-      base::MakeUnique<net::MultiThreadedCertVerifier>(
-          new chromeos::CertVerifyProcChromeOS()));
-#else
-  globals_->cert_verifier = IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
-      command_line, net::CertVerifier::CreateDefault());
-  UMA_HISTOGRAM_BOOLEAN(
-      "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
-      command_line.HasSwitch(switches::kIgnoreCertificateErrorsSPKIList));
-#endif
-
   std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs(
       net::ct::CreateLogVerifiersForKnownLogs());
 
   globals_->ct_logs.assign(ct_logs.begin(), ct_logs.end());
 
-  net::MultiLogCTVerifier* ct_verifier = new net::MultiLogCTVerifier();
-  globals_->cert_transparency_verifier.reset(ct_verifier);
-  // Add built-in logs
-  ct_verifier->AddLogs(globals_->ct_logs);
-
   ct_tree_tracker_.reset(new certificate_transparency::TreeStateTracker(
       globals_->ct_logs, net_log_));
   // Register the ct_tree_tracker_ as observer for new STHs.
   RegisterSTHObserver(ct_tree_tracker_.get());
-  // Register the ct_tree_tracker_ as observer for verified SCTs.
-  globals_->cert_transparency_verifier->SetObserver(ct_tree_tracker_.get());
 
-  CreateDefaultAuthHandlerFactory();
   globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
   globals_->host_mapping_rules.reset(new net::HostMappingRules());
   if (command_line.HasSwitch(switches::kHostRules)) {
@@ -654,6 +630,8 @@ void IOThread::Init() {
 #endif
 
   ConstructSystemRequestContext();
+
+  UpdateDnsClientEnabled();
 }
 
 void IOThread::CleanUp() {
@@ -670,8 +648,11 @@ void IOThread::CleanUp() {
   // on anything observed during CleanUp process.
   //
   // Null checks are just for tests that use TestingIOThreadState.
-  if (globals()->cert_transparency_verifier)
-    globals()->cert_transparency_verifier->SetObserver(nullptr);
+  if (globals()->system_request_context) {
+    globals()
+        ->system_request_context->cert_transparency_verifier()
+        ->SetObserver(nullptr);
+  }
   if (ct_tree_tracker_.get()) {
     UnregisterSTHObserver(ct_tree_tracker_.get());
     ct_tree_tracker_.reset();
@@ -742,7 +723,8 @@ void IOThread::UpdateNegotiateEnablePort() {
       negotiate_enable_port_.GetValue());
 }
 
-void IOThread::CreateDefaultAuthHandlerFactory() {
+std::unique_ptr<net::HttpAuthHandlerFactory>
+IOThread::CreateDefaultAuthHandlerFactory(net::HostResolver* host_resolver) {
   std::vector<std::string> supported_schemes = base::SplitString(
       auth_schemes_, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   globals_->http_auth_preferences.reset(new net::HttpAuthPreferences(
@@ -763,16 +745,20 @@ void IOThread::CreateDefaultAuthHandlerFactory() {
 #if defined(OS_ANDROID)
   UpdateAndroidAuthNegotiateAccountType();
 #endif
-  globals_->http_auth_handler_factory =
-      net::HttpAuthHandlerRegistryFactory::Create(
-          globals_->http_auth_preferences.get(), globals_->host_resolver.get());
+
+  return net::HttpAuthHandlerRegistryFactory::Create(
+      globals_->http_auth_preferences.get(), host_resolver);
 }
 
 void IOThread::ClearHostCache(
     const base::Callback<bool(const std::string&)>& host_filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  net::HostCache* host_cache = globals_->host_resolver->GetHostCache();
+  if (!globals_->system_request_context)
+    return;
+
+  net::HostCache* host_cache =
+      globals_->system_request_context->host_resolver()->GetHostCache();
   if (host_cache)
     host_cache->ClearForHosts(host_filter);
 }
@@ -806,7 +792,8 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 }
 
 void IOThread::UpdateDnsClientEnabled() {
-  globals()->host_resolver->SetDnsClientEnabled(*dns_client_enabled_);
+  globals()->system_request_context->host_resolver()->SetDnsClientEnabled(
+      *dns_client_enabled_);
 }
 
 void IOThread::RegisterSTHObserver(net::ct::STHObserver* observer) {
@@ -826,6 +813,9 @@ bool IOThread::PacHttpsUrlStrippingEnabled() const {
 }
 
 void IOThread::ConstructSystemRequestContext() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
   globals_->system_request_context =
       base::MakeUnique<SystemURLRequestContext>();
   net::URLRequestContext* context = globals_->system_request_context.get();
@@ -853,11 +843,11 @@ void IOThread::ConstructSystemRequestContext() {
       globals_->data_use_ascriber->CreateNetworkDelegate(
           std::move(chrome_network_delegate), GetMetricsDataUseForwarder()));
   context->set_net_log(net_log_);
-  context->set_host_resolver(globals_->host_resolver.get());
+  context_storage->set_host_resolver(CreateGlobalHostResolver(net_log_));
 
   context_storage->set_ssl_config_service(GetSSLConfigService());
-  context->set_http_auth_handler_factory(
-      globals_->http_auth_handler_factory.get());
+  context_storage->set_http_auth_handler_factory(
+      CreateDefaultAuthHandlerFactory(context->host_resolver()));
 
   // In-memory cookie store.
   context_storage->set_cookie_store(
@@ -875,15 +865,33 @@ void IOThread::ConstructSystemRequestContext() {
   context_storage->set_http_server_properties(
       base::MakeUnique<net::HttpServerPropertiesImpl>());
 
-  context->set_cert_verifier(globals_->cert_verifier.get());
-  context->set_cert_transparency_verifier(
-      globals_->cert_transparency_verifier.get());
+#if defined(OS_CHROMEOS)
+  // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
+  context_storage->set_cert_verifier(base::MakeUnique<net::CachingCertVerifier>(
+      base::MakeUnique<net::MultiThreadedCertVerifier>(
+          new chromeos::CertVerifyProcChromeOS())));
+#else
+  context_storage->set_cert_verifier(
+      IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+          command_line, net::CertVerifier::CreateDefault()));
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
+      command_line.HasSwitch(switches::kIgnoreCertificateErrorsSPKIList));
+#endif
+
+  std::unique_ptr<net::MultiLogCTVerifier> ct_verifier =
+      base::MakeUnique<net::MultiLogCTVerifier>();
+  // Add built-in logs
+  ct_verifier->AddLogs(globals_->ct_logs);
+
+  // Register the ct_tree_tracker_ as observer for verified SCTs.
+  ct_verifier->SetObserver(ct_tree_tracker_.get());
+
+  context_storage->set_cert_transparency_verifier(std::move(ct_verifier));
 
   context_storage->set_ct_policy_enforcer(
       base::MakeUnique<net::CTPolicyEnforcer>());
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
   context_storage->set_proxy_service(ProxyServiceFactory::CreateProxyService(
       net_log_, context, context->network_delegate(),
       std::move(system_proxy_config_service_), command_line,
@@ -914,7 +922,7 @@ void IOThread::ConstructSystemRequestContext() {
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   job_factory->SetProtocolHandler(
       url::kFtpScheme,
-      net::FtpProtocolHandler::Create(globals_->host_resolver.get()));
+      net::FtpProtocolHandler::Create(context->host_resolver()));
 #endif
 
   context_storage->set_job_factory(std::move(job_factory));
