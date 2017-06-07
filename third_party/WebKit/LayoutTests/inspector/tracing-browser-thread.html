@@ -34,8 +34,7 @@ function test()
         ]
     };
     for (var testCase of Object.keys(testCases)) {
-        var model = InspectorTest.createTracingModel();
-        model.setEventsForTest(testCases[testCase]);
+        var model = InspectorTest.createTracingModel(testCases[testCase]);
         var browserMain = SDK.TracingModel.browserMainThread(model);
         if (!browserMain) {
             InspectorTest.addResult(`${testCase} failed, no browser main thread found`);

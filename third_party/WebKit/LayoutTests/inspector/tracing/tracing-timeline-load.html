@@ -27,10 +27,9 @@ function test()
             InspectorTest.addResult("TimelineLoaderClient.processingStarted()");
         },
 
-        loadingComplete: function(model, storage)
+        loadingComplete: function(model)
         {
             this.model = model;
-            this.storage = storage;
             InspectorTest.addResult(`TimelineLoaderClient.loadingComplete(${!!model})`);
             this._callback();
         },
@@ -57,7 +56,7 @@ function test()
         {
             var saver = new Timeline.TracingTimelineSaver();
             var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));
-            var storage = delegate.storage;
+            var storage = delegate.model.backingStorage();
             stream.open("", storage.writeToStream.bind(storage, stream, saver));
         };
     }

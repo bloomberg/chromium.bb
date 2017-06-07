@@ -18,7 +18,7 @@ function initialize_TracingManagerClient()
 InspectorTest.TracingManagerClient = function(callback)
 {
     this._completionCallback = callback;
-    this._tracingModel = InspectorTest.createTracingModel();
+    this._tracingModel = new SDK.TracingModel(new Bindings.TempFileBackingStorage("tracing"));
 }
 
 InspectorTest.TracingManagerClient.prototype = {
@@ -30,6 +30,7 @@ InspectorTest.TracingManagerClient.prototype = {
     tracingComplete: function()
     {
         InspectorTest.addResult("Tracing complete");
+        this._tracingModel.tracingComplete();
         this._completionCallback(this._tracingModel);
     },
 
@@ -51,7 +52,6 @@ function test()
     var tracingManager = InspectorTest.tracingManager;
     tracingManager.start(tracingClient, "", "").then(() => {
         InspectorTest.addResult("Tracing started");
-        tracingClient._tracingModel.reset();
         InspectorTest.evaluateInPage("doWork()", tracingManager.stop.bind(tracingManager));
     });
 

@@ -66,8 +66,7 @@ function test()
 
     ];
 
-    var model = InspectorTest.createTracingModel();
-    model.setEventsForTest(testData);
+    var model = InspectorTest.createTracingModel(testData);
     var events = model.sortedProcesses()[0].threadById(mainThread).asyncEvents();
     for (var i = 0; i < events.length; ++i) {
         var stepString = events[i].name + " " + events[i].startTime + "-" + events[i].endTime + ": ";
