@@ -131,8 +131,6 @@ class MediaFactory {
   media::mojom::RemoterFactory* GetRemoterFactory();
 #endif
 
-  bool AreSecureCodecsSupported();
-
   media::CdmFactory* GetCdmFactory();
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)

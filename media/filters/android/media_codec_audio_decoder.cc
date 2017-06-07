@@ -245,7 +245,7 @@ void MediaCodecAudioDecoder::OnKeyAdded() {
 void MediaCodecAudioDecoder::OnMediaCryptoReady(
     const InitCB& init_cb,
     MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
-    bool /*needs_protected_surface*/) {
+    bool /*requires_secure_video_codec*/) {
   DVLOG(1) << __func__;
 
   DCHECK(state_ == STATE_WAITING_FOR_MEDIA_CRYPTO);

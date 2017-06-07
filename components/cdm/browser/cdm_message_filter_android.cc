@@ -64,14 +64,11 @@ const CodecInfo<media::AudioCodec> kAudioCodecsToQuery[] = {
 
 static SupportedCodecs GetSupportedCodecs(
     const SupportedKeySystemRequest& request,
-    bool video_must_be_compositable) {
+    bool is_secure) {
   const std::string& key_system = request.key_system;
   SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
 
   for (const auto& info : kVideoCodecsToQuery) {
-    // TODO(qinmin): Remove the composition logic when secure contents can be
-    // composited.
-    bool is_secure = !video_must_be_compositable;
     if ((request.codecs & info.eme_codec) &&
         MediaDrmBridge::IsKeySystemSupportedWithType(
             key_system, info.container_mime_type) &&
@@ -92,8 +89,9 @@ static SupportedCodecs GetSupportedCodecs(
   return supported_codecs;
 }
 
-CdmMessageFilterAndroid::CdmMessageFilterAndroid()
-    : BrowserMessageFilter(EncryptedMediaMsgStart) {}
+CdmMessageFilterAndroid::CdmMessageFilterAndroid(bool can_use_secure_codecs)
+    : BrowserMessageFilter(EncryptedMediaMsgStart),
+      can_use_secure_codecs_(can_use_secure_codecs) {}
 
 CdmMessageFilterAndroid::~CdmMessageFilterAndroid() {}
 
@@ -134,9 +132,9 @@ void CdmMessageFilterAndroid::OnQueryKeySystemSupport(
 
   DCHECK(request.codecs & media::EME_CODEC_ALL) << "unrecognized codec";
   response->key_system = request.key_system;
-  // TODO(qinmin): check composition is supported or not.
-  response->compositing_codecs = GetSupportedCodecs(request, true);
-  response->non_compositing_codecs = GetSupportedCodecs(request, false);
+  response->non_secure_codecs = GetSupportedCodecs(request, false);
+  if (can_use_secure_codecs_)
+    response->secure_codecs = GetSupportedCodecs(request, true);
 
   response->is_persistent_license_supported =
       MediaDrmBridge::IsPersistentLicenseTypeSupported(request.key_system);

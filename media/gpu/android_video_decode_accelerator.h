@@ -203,7 +203,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // Called after the CDM obtains a MediaCrypto object.
   void OnMediaCryptoReady(MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
-                          bool needs_protected_surface);
+                          bool requires_secure_video_codec);
 
   // Called when a new key is added to the CDM.
   void OnKeyAdded();

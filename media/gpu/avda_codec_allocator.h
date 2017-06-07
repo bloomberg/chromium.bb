@@ -58,8 +58,8 @@ class CodecConfig : public base::RefCountedThreadSafe<CodecConfig> {
   // The MediaCrypto that MediaCodec is configured with for an encrypted stream.
   MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto;
 
-  // Whether the encryption scheme requires us to use a protected surface.
-  bool needs_protected_surface = false;
+  // Whether MediaCrypto requires a secure codec.
+  bool requires_secure_codec = false;
 
   // The initial coded size. The actual size might change at any time, so this
   // is only a hint.

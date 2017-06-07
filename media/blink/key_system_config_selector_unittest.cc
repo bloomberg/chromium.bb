@@ -224,7 +224,7 @@ class KeySystemConfigSelectorTest : public testing::Test {
     succeeded_count_ = 0;
     not_supported_count_ = 0;
     KeySystemConfigSelector(key_systems_.get(), media_permission_.get())
-        .SelectConfig(key_system_, configs_, security_origin_, false,
+        .SelectConfig(key_system_, configs_, security_origin_,
                       base::Bind(&KeySystemConfigSelectorTest::OnSucceeded,
                                  base::Unretained(this)),
                       base::Bind(&KeySystemConfigSelectorTest::OnNotSupported,

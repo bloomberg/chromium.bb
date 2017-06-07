@@ -159,7 +159,6 @@ struct KeySystemConfigSelector::SelectionRequest {
   base::Callback<void(const blink::WebString&)> not_supported_cb;
   bool was_permission_requested = false;
   bool is_permission_granted = false;
-  bool are_secure_codecs_supported = false;
 };
 
 // Accumulates configuration rules to determine if a feature (additional
@@ -850,7 +849,6 @@ void KeySystemConfigSelector::SelectConfig(
     const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
         candidate_configurations,
     const blink::WebSecurityOrigin& security_origin,
-    bool are_secure_codecs_supported,
     base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
                         const CdmConfig&)> succeeded_cb,
     base::Callback<void(const blink::WebString&)> not_supported_cb) {
@@ -877,7 +875,6 @@ void KeySystemConfigSelector::SelectConfig(
   request->key_system = key_system_ascii;
   request->candidate_configurations = candidate_configurations;
   request->security_origin = security_origin;
-  request->are_secure_codecs_supported = are_secure_codecs_supported;
   request->succeeded_cb = succeeded_cb;
   request->not_supported_cb = not_supported_cb;
   SelectConfigInternal(std::move(request));
@@ -902,10 +899,6 @@ void KeySystemConfigSelector::SelectConfigInternal(
     //        and return a new MediaKeySystemAccess object.]
     ConfigState config_state(request->was_permission_requested,
                              request->is_permission_granted);
-    DCHECK(config_state.IsRuleSupported(
-        EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED));
-    if (!request->are_secure_codecs_supported)
-      config_state.AddRule(EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED);
     blink::WebMediaKeySystemConfiguration accumulated_configuration;
     CdmConfig cdm_config;
     ConfigurationSupport support = GetSupportedConfiguration(

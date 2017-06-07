@@ -258,11 +258,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 blink::WebEncryptedMediaClient* MediaFactory::EncryptedMediaClient() {
   if (!web_encrypted_media_client_) {
     web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
-        // base::Unretained(this) is safe because WebEncryptedMediaClientImpl
-        // is destructed before |this|, and does not give away ownership of the
-        // callback.
-        base::Bind(&MediaFactory::AreSecureCodecsSupported,
-                   base::Unretained(this)),
         GetCdmFactory(), render_frame_->GetMediaPermission(),
         new RenderMediaLog(
             url::Origin(render_frame_->GetWebFrame()->GetSecurityOrigin())
@@ -449,16 +444,6 @@ media::mojom::RemoterFactory* MediaFactory::GetRemoterFactory() {
   return remoter_factory_.get();
 }
 #endif
-
-bool MediaFactory::AreSecureCodecsSupported() {
-#if defined(OS_ANDROID)
-  // Hardware-secure codecs are only supported if secure surfaces are enabled.
-  return render_frame_->GetRendererPreferences()
-      .use_video_overlay_for_embedded_encrypted_video;
-#else
-  return false;
-#endif  // defined(OS_ANDROID)
-}
 
 media::CdmFactory* MediaFactory::GetCdmFactory() {
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();

@@ -554,10 +554,15 @@ void MediaDrmBridge::UnregisterPlayer(int registration_id) {
   player_tracker_.UnregisterPlayer(registration_id);
 }
 
-bool MediaDrmBridge::IsProtectedSurfaceRequired() {
+bool MediaDrmBridge::IsSecureCodecRequired() {
+  DCHECK(IsAvailable());
+
   // For Widevine, this depends on the security level.
+  // TODO(xhwang): This is specific to Widevine. See http://crbug.com/459400.
+  // To fix it, we could call MediaCrypto.requiresSecureDecoderComponent().
+  // See http://crbug.com/727918.
   if (std::equal(scheme_uuid_.begin(), scheme_uuid_.end(), kWidevineUuid))
-    return IsSecureDecoderRequired(GetSecurityLevel());
+    return SECURITY_LEVEL_1 == GetSecurityLevel();
 
   // For other key systems, assume true.
   return true;
@@ -616,7 +621,7 @@ void MediaDrmBridge::SetMediaCryptoReadyCB(
 
   base::ResetAndReturn(&media_crypto_ready_cb_)
       .Run(CreateJavaObjectPtr(j_media_crypto_->obj()),
-           IsProtectedSurfaceRequired());
+           IsSecureCodecRequired());
 }
 
 //------------------------------------------------------------------------------
@@ -866,18 +871,11 @@ MediaDrmBridge::~MediaDrmBridge() {
 
   if (!media_crypto_ready_cb_.is_null()) {
     base::ResetAndReturn(&media_crypto_ready_cb_)
-        .Run(CreateJavaObjectPtr(nullptr), IsProtectedSurfaceRequired());
+        .Run(CreateJavaObjectPtr(nullptr), IsSecureCodecRequired());
   }
 
   // Rejects all pending promises.
   cdm_promise_adapter_.Clear();
-}
-
-// TODO(ddorwin): This is specific to Widevine. http://crbug.com/459400
-// static
-bool MediaDrmBridge::IsSecureDecoderRequired(SecurityLevel security_level) {
-  DCHECK(IsAvailable());
-  return SECURITY_LEVEL_1 == security_level;
 }
 
 MediaDrmBridge::SecurityLevel MediaDrmBridge::GetSecurityLevel() {
@@ -904,7 +902,7 @@ void MediaDrmBridge::NotifyMediaCryptoReady(JavaObjectPtr j_media_crypto) {
   // the callback.
   base::ResetAndReturn(&media_crypto_ready_cb_)
       .Run(CreateJavaObjectPtr(j_media_crypto_->obj()),
-           IsProtectedSurfaceRequired());
+           IsSecureCodecRequired());
 }
 
 void MediaDrmBridge::SendProvisioningRequest(const std::string& default_url,

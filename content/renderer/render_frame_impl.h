@@ -1078,8 +1078,6 @@ class CONTENT_EXPORT RenderFrameImpl
                              bool was_within_same_page,
                              bool content_initiated);
 
-  bool AreSecureCodecsSupported();
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   void HandlePepperImeCommit(const base::string16& text);
 #endif  // ENABLE_PLUGINS

@@ -134,7 +134,11 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   decoder_config_ = config;
   codec_config_ = new CodecConfig();
   codec_config_->codec = config.codec();
-  codec_config_->needs_protected_surface = config.is_encrypted();
+
+  // TODO(watk): Set |requires_secure_codec| correctly using
+  // MediaDrmBridgeCdmContext::MediaCryptoReadyCB.
+  codec_config_->requires_secure_codec = config.is_encrypted();
+
   codec_config_->initial_expected_coded_size = config.coded_size();
   // TODO(watk): Parse config.extra_data().
 

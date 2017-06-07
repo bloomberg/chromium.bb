@@ -14,7 +14,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_message.h"
 #include "net/base/net_errors.h"
 #include "ui/display/display.h"
@@ -49,12 +48,6 @@ std::unique_ptr<content::WebContents> CreateWebContents(
   create_params.site_instance = site_instance;
   content::WebContents* web_contents =
       content::WebContents::Create(create_params);
-
-#if defined(OS_ANDROID)
-  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
-  prefs->use_video_overlay_for_embedded_encrypted_video = true;
-  web_contents->GetRenderViewHost()->SyncRendererPrefs();
-#endif
 
   return base::WrapUnique(web_contents);
 }

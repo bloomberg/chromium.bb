@@ -124,10 +124,6 @@ struct CONTENT_EXPORT RendererPreferences {
   // Determines whether plugins are allowed to enter fullscreen mode.
   bool plugin_fullscreen_allowed;
 
-  // Whether video-overlay (hole-punching) should be used for the embedded
-  // encrypted video.  Currently only used by Android.
-  bool use_video_overlay_for_embedded_encrypted_video;
-
   // Country iso of the mobile network for content detection purpose.
   std::string network_contry_iso;
 
