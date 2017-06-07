@@ -8,15 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
-#include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
-
-namespace ntp_snippets {
-class ContentSuggestionsService;
-}
 
 namespace offline_pages {
+class OfflineMetricsCollector;
+class PrefetchDispatcher;
+class PrefetchGCMHandler;
+class SuggestedArticlesObserver;
 
 class PrefetchServiceImpl : public PrefetchService {
  public:
@@ -24,7 +22,8 @@ class PrefetchServiceImpl : public PrefetchService {
       std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector,
       std::unique_ptr<PrefetchDispatcher> dispatcher,
       std::unique_ptr<PrefetchGCMHandler> gcm_handler,
-      std::unique_ptr<PrefetchStore> store);
+      std::unique_ptr<PrefetchStore> store,
+      std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer);
   ~PrefetchServiceImpl() override;
 
   // PrefetchService implementation:
@@ -32,8 +31,7 @@ class PrefetchServiceImpl : public PrefetchService {
   PrefetchDispatcher* GetPrefetchDispatcher() override;
   PrefetchGCMHandler* GetPrefetchGCMHandler() override;
   PrefetchStore* GetPrefetchStore() override;
-  void ObserveContentSuggestionsService(
-      ntp_snippets::ContentSuggestionsService* service) override;
+  SuggestedArticlesObserver* GetSuggestedArticlesObserver() override;
 
   // KeyedService implementation:
   void Shutdown() override;

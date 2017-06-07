@@ -7,15 +7,12 @@
 
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace ntp_snippets {
-class ContentSuggestionsService;
-}
-
 namespace offline_pages {
 class OfflineMetricsCollector;
 class PrefetchDispatcher;
 class PrefetchGCMHandler;
 class PrefetchStore;
+class SuggestedArticlesObserver;
 
 // Main class and entry point for the Offline Pages Prefetching feature, that
 // controls the lifetime of all major subcomponents of the prefetching system.
@@ -32,11 +29,7 @@ class PrefetchService : public KeyedService {
   virtual PrefetchDispatcher* GetPrefetchDispatcher() = 0;
   virtual PrefetchGCMHandler* GetPrefetchGCMHandler() = 0;
   virtual PrefetchStore* GetPrefetchStore() = 0;
-
-  // Called at construction of the ContentSuggestionsService to begin observing
-  // events related to incoming articles.
-  virtual void ObserveContentSuggestionsService(
-      ntp_snippets::ContentSuggestionsService* service) = 0;
+  virtual SuggestedArticlesObserver* GetSuggestedArticlesObserver() = 0;
 };
 
 }  // namespace offline_pages

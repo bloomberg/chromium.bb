@@ -28,8 +28,7 @@ class PrefetchDispatcherTest : public testing::Test, public PrefetchService {
   PrefetchDispatcher* GetPrefetchDispatcher() override;
   PrefetchGCMHandler* GetPrefetchGCMHandler() override;
   PrefetchStore* GetPrefetchStore() override;
-  void ObserveContentSuggestionsService(
-      ntp_snippets::ContentSuggestionsService* service) override;
+  SuggestedArticlesObserver* GetSuggestedArticlesObserver() override;
 
   // KeyedService implementation.
   void Shutdown() override {}
@@ -80,9 +79,10 @@ PrefetchStore* PrefetchDispatcherTest::GetPrefetchStore() {
   return in_memory_store_.get();
 }
 
-void PrefetchDispatcherTest::ObserveContentSuggestionsService(
-    ntp_snippets::ContentSuggestionsService* service) {
+SuggestedArticlesObserver*
+PrefetchDispatcherTest::GetSuggestedArticlesObserver() {
   NOTREACHED();
+  return nullptr;
 }
 
 void PrefetchDispatcherTest::PumpLoop() {
