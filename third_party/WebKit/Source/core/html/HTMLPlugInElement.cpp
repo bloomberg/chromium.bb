@@ -105,7 +105,7 @@ void HTMLPlugInElement::SetPersistedPlugin(PluginView* plugin) {
     return;
   if (persisted_plugin_) {
     persisted_plugin_->Hide();
-    DisposeFrameOrPluginSoon(persisted_plugin_.Release());
+    DisposePluginSoon(persisted_plugin_.Release());
   }
   persisted_plugin_ = plugin;
 }
@@ -181,8 +181,7 @@ void HTMLPlugInElement::AttachLayoutTree(const AttachContext& context) {
     // If we don't have a layoutObject we have to dispose of any plugins
     // which we persisted over a reattach.
     if (persisted_plugin_) {
-      HTMLFrameOwnerElement::UpdateSuspendScope
-          suspend_widget_hierarchy_updates;
+      HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
       SetPersistedPlugin(nullptr);
     }
     return;
@@ -214,9 +213,9 @@ void HTMLPlugInElement::RemovedFrom(ContainerNode* insertion_point) {
   // If we've persisted the plugin and we're removed from the tree then
   // make sure we cleanup the persistance pointer.
   if (persisted_plugin_) {
-    // TODO(dcheng): This UpdateSuspendScope doesn't seem to provide much;
-    // investigate removing it.
-    HTMLFrameOwnerElement::UpdateSuspendScope suspend_widget_hierarchy_updates;
+    // TODO(dcheng): This PluginDisposeSuspendScope doesn't seem to provide
+    // much; investigate removing it.
+    HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
     SetPersistedPlugin(nullptr);
   }
   HTMLFrameOwnerElement::RemovedFrom(insertion_point);

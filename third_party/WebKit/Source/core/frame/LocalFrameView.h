@@ -35,6 +35,7 @@
 #include "core/frame/RootFrameViewport.h"
 #include "core/layout/MapCoordinatesFlags.h"
 #include "core/layout/ScrollAnchor.h"
+#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
@@ -982,6 +983,7 @@ class CORE_EXPORT LocalFrameView final
 
   static bool ComputeCompositedSelection(LocalFrame&, CompositedSelection&);
   void UpdateCompositedSelectionIfNeeded();
+  void SetNeedsCompositingUpdate(CompositingUpdateType);
 
   // Returns true if the LocalFrameView's own scrollbars overlay its content
   // when visible.
