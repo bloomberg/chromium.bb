@@ -18,6 +18,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
+using testing::Return;
+using testing::StrictMock;
+
 namespace predictors {
 
 namespace {
@@ -52,10 +56,17 @@ void LoadingPredictorTest::SetUp() {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   predictor_ = base::MakeUnique<LoadingPredictor>(config, profile_.get());
-  auto mock =
-      base::MakeUnique<MockResourcePrefetchPredictor>(config, profile_.get());
-  mock->AddPrefetchableUrl(GURL(kUrl));
-  mock->AddPrefetchableUrl(GURL(kUrl2));
+
+  auto mock = base::MakeUnique<StrictMock<MockResourcePrefetchPredictor>>(
+      config, profile_.get());
+  EXPECT_CALL(*mock, StartInitialization());
+  EXPECT_CALL(*mock, GetPrefetchData(GURL(kUrl), _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock, GetPrefetchData(GURL(kUrl2), _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock, GetPrefetchData(GURL(kUrl3), _))
+      .WillRepeatedly(Return(false));
+
   predictor_->set_mock_resource_prefetch_predictor(std::move(mock));
   predictor_->StartInitialization();
   base::RunLoop().RunUntilIdle();
@@ -68,10 +79,10 @@ void LoadingPredictorTest::TearDown() {
 
 TEST_F(LoadingPredictorTest, TestPrefetchingDurationHistogram) {
   base::HistogramTester histogram_tester;
-
   const GURL url = GURL(kUrl);
   const GURL url2 = GURL(kUrl2);
   const GURL url3 = GURL(kUrl3);
+
   predictor_->PrepareForPageLoad(url, HintOrigin::EXTERNAL);
   predictor_->CancelPageLoadHint(url);
   histogram_tester.ExpectTotalCount(

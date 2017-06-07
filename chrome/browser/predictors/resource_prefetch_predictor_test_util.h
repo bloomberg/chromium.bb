@@ -4,7 +4,6 @@
 #ifndef CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TEST_UTIL_H_
 #define CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TEST_UTIL_H_
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -22,21 +21,13 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
                                 Profile* profile);
   ~MockResourcePrefetchPredictor();
 
-  bool IsUrlPrefetchable(const GURL& main_frame_url) const override {
-    return prefetchable_urls_.find(main_frame_url) != prefetchable_urls_.end();
-  }
-
-  void AddPrefetchableUrl(const GURL& url) { prefetchable_urls_.insert(url); }
-
   MOCK_CONST_METHOD2(GetPrefetchData,
-                     bool(const GURL& main_frame_url, Prediction* prediction));
+                     bool(const GURL&, ResourcePrefetchPredictor::Prediction*));
   MOCK_METHOD0(StartInitialization, void());
   MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD1(StartPrefetching, void(const GURL&));
+  MOCK_METHOD2(StartPrefetching,
+               void(const GURL&, const ResourcePrefetchPredictor::Prediction&));
   MOCK_METHOD1(StopPrefeching, void(const GURL&));
-
- private:
-  std::set<GURL> prefetchable_urls_;
 };
 
 void InitializeResourceData(ResourceData* resource,

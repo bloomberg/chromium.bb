@@ -265,9 +265,9 @@ class ResourcePrefetchPredictor
                                Prediction* prediction) const;
 
  private:
-  // Starts prefetching if it is enabled and prefetching data exists for the
-  // |main_frame_url| either at the URL or at the host level.
-  void StartPrefetching(const GURL& main_frame_url);
+  // Starts prefetching for |main_frame_url| from a |prediction|.
+  void StartPrefetching(const GURL& main_frame_url,
+                        const Prediction& prediction);
 
   // Stops prefetching that may be in progress corresponding to
   // |main_frame_url|.
