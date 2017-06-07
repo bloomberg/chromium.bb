@@ -115,8 +115,10 @@ bool ContainerNode::ContainsConsideringHostElements(
 
 DISABLE_CFI_PERF
 bool ContainerNode::CheckAcceptChild(const Node* new_child,
+                                     const Node* next,
                                      const Node* old_child,
                                      ExceptionState& exception_state) const {
+  DCHECK(!(next && old_child));
   // Not mentioned in spec: throw NotFoundError if newChild is null
   if (!new_child) {
     exception_state.ThrowDOMException(kNotFoundError,
@@ -145,16 +147,17 @@ bool ContainerNode::CheckAcceptChild(const Node* new_child,
     return false;
   }
 
-  return CheckAcceptChildGuaranteedNodeTypes(*new_child, old_child,
+  return CheckAcceptChildGuaranteedNodeTypes(*new_child, next, old_child,
                                              exception_state);
 }
 
 bool ContainerNode::CheckAcceptChildGuaranteedNodeTypes(
     const Node& new_child,
+    const Node* next,
     const Node* old_child,
     ExceptionState& exception_state) const {
   if (IsDocumentNode())
-    return ToDocument(this)->CanAcceptChild(new_child, old_child,
+    return ToDocument(this)->CanAcceptChild(new_child, next, old_child,
                                             exception_state);
   // Skip containsIncludingHostElements() if !newChild.parentNode() &&
   // isConnected(). |newChild| typically has no parentNode(), and it means
@@ -212,7 +215,7 @@ bool ContainerNode::CollectChildrenAndRemoveFromOldParentWithOptionalRecheck(
       // node.  Firefox and Edge don't throw in this case.
       return false;
     }
-    if (!CheckAcceptChildGuaranteedNodeTypes(*child, old_child,
+    if (!CheckAcceptChildGuaranteedNodeTypes(*child, next, old_child,
                                              exception_state))
       return false;
   }
@@ -320,7 +323,7 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   }
 
   // Make sure adding the new child is OK.
-  if (!CheckAcceptChild(new_child, 0, exception_state))
+  if (!CheckAcceptChild(new_child, ref_child, nullptr, exception_state))
     return new_child;
   DCHECK(new_child);
 
@@ -388,7 +391,7 @@ bool ContainerNode::CheckParserAcceptChild(const Node& new_child) const {
     return true;
   // TODO(esprehn): Are there other conditions where the parser can create
   // invalid trees?
-  return ToDocument(*this).CanAcceptChild(new_child, nullptr,
+  return ToDocument(*this).CanAcceptChild(new_child, nullptr, nullptr,
                                           IGNORE_EXCEPTION_FOR_TESTING);
 }
 
@@ -450,7 +453,7 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
   // doctype and parent is not a document, throw a HierarchyRequestError.
   // 6. If parent is a document, and any of the statements below, switched on
   // node, are true, throw a HierarchyRequestError.
-  if (!CheckAcceptChild(new_child, old_child, exception_state))
+  if (!CheckAcceptChild(new_child, nullptr, old_child, exception_state))
     return old_child;
 
   // 3. If child’s parent is not parent, then throw a NotFoundError.
@@ -501,7 +504,7 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
 
     // Check DOM structure one more time because removeChild() above fires
     // synchronous events.
-    if (!CheckAcceptChild(new_child, old_child, exception_state))
+    if (!CheckAcceptChild(new_child, nullptr, old_child, exception_state))
       return old_child;
     if (next && next->parentNode() != this) {
       exception_state.ThrowDOMException(
@@ -743,7 +746,7 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
 Node* ContainerNode::AppendChild(Node* new_child,
                                  ExceptionState& exception_state) {
   // Make sure adding the new child is ok
-  if (!CheckAcceptChild(new_child, 0, exception_state))
+  if (!CheckAcceptChild(new_child, nullptr, nullptr, exception_state))
     return new_child;
   DCHECK(new_child);
 
