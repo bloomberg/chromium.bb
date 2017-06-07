@@ -63,7 +63,7 @@ extern "C" {
 
 #if CONFIG_AOM_QM
 typedef uint16_t qm_val_t;
-#define AOM_QM_BITS 6
+#define AOM_QM_BITS 5
 #endif
 #if CONFIG_HIGHBITDEPTH
 // Note:
