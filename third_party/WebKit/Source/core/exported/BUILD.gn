@@ -47,6 +47,8 @@ blink_core_sources("exported") {
     "WebPerformance.cpp",
     "WebPluginContainerBase.cpp",
     "WebPluginContainerBase.h",
+    "WebPluginContainerImpl.cpp",
+    "WebPluginContainerImpl.h",
     "WebPluginScriptForbiddenScope.cpp",
     "WebRange.cpp",
     "WebRenderTheme.cpp",
