@@ -344,8 +344,7 @@ class HttpStreamFactoryImpl::Job {
 
   // Retrieve SSLInfo from our SSL Socket.
   // This must only be called when we are using an SSLSocket.
-  // After calling, the caller can use ssl_info_.
-  void GetSSLInfo();
+  void GetSSLInfo(SSLInfo* ssl_info);
 
   // Called in Job constructor. Use |spdy_session_key_| after construction.
   SpdySessionKey GetSpdySessionKey() const;
@@ -397,7 +396,7 @@ class HttpStreamFactoryImpl::Job {
   SSLConfig proxy_ssl_config_;
   const NetLogWithSource net_log_;
 
-  CompletionCallback io_callback_;
+  const CompletionCallback io_callback_;
   std::unique_ptr<ClientSocketHandle> connection_;
   HttpNetworkSession* const session_;
 
@@ -405,7 +404,6 @@ class HttpStreamFactoryImpl::Job {
   State state_;
 
   State next_state_;
-  SSLInfo ssl_info_;
 
   // The server we are trying to reach, could be that of the origin or of the
   // alternative service (after applying host mapping rules).
@@ -427,7 +425,7 @@ class HttpStreamFactoryImpl::Job {
   const bool enable_ip_based_pooling_;
 
   // Unowned. |this| job is owned by |delegate_|.
-  Delegate* delegate_;
+  Delegate* const delegate_;
 
   const JobType job_type_;
 
