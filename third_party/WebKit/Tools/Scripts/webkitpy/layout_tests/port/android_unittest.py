@@ -68,7 +68,6 @@ def mock_devices():
         devices.append(mock_device)
     return devices
 
-
 class AndroidPortTest(port_testcase.PortTestCase):
     port_name = 'android'
     port_maker = android.AndroidPort
@@ -85,10 +84,15 @@ class AndroidPortTest(port_testcase.PortTestCase):
             return_value={'level': 100})
         self._mock_battery.start()
 
+        self._mock_perf_control = mock.patch(
+            'devil.android.perf.perf_control.PerfControl')
+        self._mock_perf_control.start()
+
     def tearDown(self):
         super(AndroidPortTest, self).tearDown()
         self._mock_devices.stop()
         self._mock_battery.stop()
+        self._mock_perf_control.stop()
 
     def test_check_build(self):
         host = MockSystemHost()
@@ -143,6 +147,10 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
             return_value={'level': 100})
         self._mock_battery.start()
 
+        self._mock_perf_control = mock.patch(
+            'devil.android.perf.perf_control.PerfControl')
+        self._mock_perf_control.start()
+
         self._port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android')
         self._driver = android.ChromiumAndroidDriver(
             self._port,
@@ -154,9 +162,9 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
     def tearDown(self):
         # Make ChromiumAndroidDriver.__del__ run before we stop the mocks.
         del self._driver
-
         self._mock_battery.stop()
         self._mock_devices.stop()
+        self._mock_perf_control.stop()
 
     # The cmd_line() method in the Android port is used for starting a shell, not the test runner.
     def test_cmd_line(self):
@@ -178,14 +186,20 @@ class ChromiumAndroidDriverTwoDriversTest(unittest.TestCase):
             'devil.android.device_utils.DeviceUtils.HealthyDevices',
             return_value=mock_devices())
         self._mock_devices.start()
+
         self._mock_battery = mock.patch(
             'devil.android.battery_utils.BatteryUtils.GetBatteryInfo',
             return_value={'level': 100})
         self._mock_battery.start()
 
+        self._mock_perf_control = mock.patch(
+            'devil.android.perf.perf_control.PerfControl')
+        self._mock_perf_control.start()
+
     def tearDown(self):
         self._mock_battery.stop()
         self._mock_devices.stop()
+        self._mock_perf_control.stop()
 
     def test_two_drivers(self):
         port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android')
@@ -206,14 +220,20 @@ class ChromiumAndroidTwoPortsTest(unittest.TestCase):
             'devil.android.device_utils.DeviceUtils.HealthyDevices',
             return_value=mock_devices())
         self._mock_devices.start()
+
         self._mock_battery = mock.patch(
             'devil.android.battery_utils.BatteryUtils.GetBatteryInfo',
             return_value={'level': 100})
         self._mock_battery.start()
 
+        self._mock_perf_control = mock.patch(
+            'devil.android.perf.perf_control.PerfControl')
+        self._mock_perf_control.start()
+
     def tearDown(self):
         self._mock_battery.stop()
         self._mock_devices.stop()
+        self._mock_perf_control.stop()
 
     def test_options_with_two_ports(self):
         port0 = android.AndroidPort(
