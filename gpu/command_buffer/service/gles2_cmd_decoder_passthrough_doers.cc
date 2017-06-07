@@ -2779,8 +2779,13 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers() {
   gfx::SwapResult result = surface_->SwapBuffers();
   if (result == gfx::SwapResult::SWAP_FAILED) {
     LOG(ERROR) << "Context lost because SwapBuffers failed.";
+    if (!CheckResetStatus()) {
+      MarkContextLost(error::kUnknown);
+      group_->LoseContexts(error::kUnknown);
+      return error::kLostContext;
+    }
   }
-  // TODO(geofflang): force the context loss?
+
   return error::kNoError;
 }
 
@@ -3332,8 +3337,12 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
   gfx::SwapResult result = surface_->PostSubBuffer(x, y, width, height);
   if (result == gfx::SwapResult::SWAP_FAILED) {
     LOG(ERROR) << "Context lost because PostSubBuffer failed.";
+    if (!CheckResetStatus()) {
+      MarkContextLost(error::kUnknown);
+      group_->LoseContexts(error::kUnknown);
+      return error::kLostContext;
+    }
   }
-  // TODO(geofflang): force the context loss?
   return error::kNoError;
 }
 
@@ -3635,7 +3644,9 @@ error::Error GLES2DecoderPassthroughImpl::DoDiscardFramebufferEXT(
 
 error::Error GLES2DecoderPassthroughImpl::DoLoseContextCHROMIUM(GLenum current,
                                                                 GLenum other) {
-  NOTIMPLEMENTED();
+  MarkContextLost(GetContextLostReasonFromResetStatus(current));
+  group_->LoseContexts(GetContextLostReasonFromResetStatus(other));
+  reset_by_robustness_extension_ = true;
   return error::kNoError;
 }
 

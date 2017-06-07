@@ -292,6 +292,9 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   GLenum PopError();
   bool FlushErrors();
 
+  bool CheckResetStatus();
+  bool IsRobustnessSupported();
+
   bool IsEmulatedQueryTarget(GLenum target) const;
   error::Error ProcessQueries(bool did_finish);
   void RemovePendingQuery(GLuint service_id);
@@ -396,6 +399,11 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   int gpu_trace_level_;
   bool gpu_trace_commands_;
   bool gpu_debug_commands_;
+
+  // Context lost state
+  bool has_robustness_extension_;
+  bool context_lost_;
+  bool reset_by_robustness_extension_;
 
   // Cache of scratch memory
   std::vector<uint8_t> scratch_memory_;

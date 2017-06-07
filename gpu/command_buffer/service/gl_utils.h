@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "ui/gl/gl_bindings.h"
 
 // Define this for extra GL error debugging (slower).
@@ -67,6 +68,9 @@ void APIENTRY LogGLDebugMessage(GLenum source,
                                 GLvoid* user_param);
 
 void InitializeGLDebugLogging();
+
+error::ContextLostReason GetContextLostReasonFromResetStatus(
+    GLenum reset_status);
 
 } // gles2
 } // gpu

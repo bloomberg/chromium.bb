@@ -705,9 +705,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void OnUseFramebuffer() const;
   void UpdateFramebufferSRGB(Framebuffer* framebuffer);
 
-  error::ContextLostReason GetContextLostReasonFromResetStatus(
-      GLenum reset_status) const;
-
   // TODO(gman): Cache these pointers?
   BufferManager* buffer_manager() {
     return group_->buffer_manager();
@@ -3501,10 +3498,9 @@ bool GLES2DecoderImpl::Initialize(
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
   }
 
-  has_robustness_extension_ =
-      context->HasExtension("GL_ARB_robustness") ||
-      context->HasExtension("GL_KHR_robustness") ||
-      context->HasExtension("GL_EXT_robustness");
+  has_robustness_extension_ = features().arb_robustness ||
+                              features().khr_robustness ||
+                              features().ext_robustness;
 
   if (!InitializeShaderTranslator()) {
     return false;
@@ -15909,25 +15905,6 @@ error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVaryingsCHROMIUM(
   }
   program->GetTransformFeedbackVaryings(bucket);
   return error::kNoError;
-}
-
-error::ContextLostReason GLES2DecoderImpl::GetContextLostReasonFromResetStatus(
-    GLenum reset_status) const {
-  switch (reset_status) {
-    case GL_NO_ERROR:
-      // TODO(kbr): improve the precision of the error code in this case.
-      // Consider delegating to context for error code if MakeCurrent fails.
-      return error::kUnknown;
-    case GL_GUILTY_CONTEXT_RESET_ARB:
-      return error::kGuilty;
-    case GL_INNOCENT_CONTEXT_RESET_ARB:
-      return error::kInnocent;
-    case GL_UNKNOWN_CONTEXT_RESET_ARB:
-      return error::kUnknown;
-  }
-
-  NOTREACHED();
-  return error::kUnknown;
 }
 
 bool GLES2DecoderImpl::WasContextLost() const {
