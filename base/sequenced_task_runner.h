@@ -154,6 +154,12 @@ class BASE_EXPORT SequencedTaskRunner : public TaskRunner {
                                    const void* object);
 };
 
+// Sample usage with std::unique_ptr :
+// std::unique_ptr<Foo, base::OnTaskRunnerDeleter> ptr(
+//     new Foo, base::OnTaskRunnerDeleter(my_task_runner));
+//
+// TODO: RefCounted isn't yet supported per RefCountedTraits using a static
+// deleter and thus not be bindable to a specific TaskRunner.
 struct BASE_EXPORT OnTaskRunnerDeleter {
   explicit OnTaskRunnerDeleter(scoped_refptr<SequencedTaskRunner> task_runner);
   ~OnTaskRunnerDeleter();
@@ -161,6 +167,7 @@ struct BASE_EXPORT OnTaskRunnerDeleter {
   OnTaskRunnerDeleter(OnTaskRunnerDeleter&&);
   OnTaskRunnerDeleter& operator=(OnTaskRunnerDeleter&&);
 
+  // For compatibility with std:: deleters.
   template <typename T>
   void operator()(const T* ptr) {
     if (ptr)

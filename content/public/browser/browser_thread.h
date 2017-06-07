@@ -314,6 +314,9 @@ class CONTENT_EXPORT BrowserThread {
   //
   // Sample usage with scoped_ptr:
   // std::unique_ptr<Foo, BrowserThread::DeleteOnIOThread> ptr;
+  //
+  // Note: when migrating BrowserThreads to TaskScheduler based
+  // SequencedTaskRunners these map to base::OnTaskRunnerDeleter.
   struct DeleteOnUIThread : public DeleteOnThread<UI> { };
   struct DeleteOnIOThread : public DeleteOnThread<IO> { };
   struct DeleteOnFileThread : public DeleteOnThread<FILE> { };
