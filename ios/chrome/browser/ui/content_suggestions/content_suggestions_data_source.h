@@ -62,6 +62,11 @@ fetchFaviconImageForItem:(nonnull CollectionViewItem<SuggestedContent>*)item
                             sectionInfo
                            callback:(nonnull MoreSuggestionsFetched)callback;
 
+// Dismisses the suggestion from the content suggestions service. It doesn't
+// change the UI.
+- (void)dismissSuggestion:
+    (nonnull ContentSuggestionIdentifier*)suggestionIdentifier;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_DATA_SOURCE_H_
