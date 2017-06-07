@@ -578,14 +578,17 @@ public class CompositorViewHolder extends FrameLayout
     public void didSwapFrame(int pendingFrameCount) {
         TraceEvent.instant("didSwapFrame");
 
-        // Wait until the second frame to turn off the placeholder background on
-        // tablets so the tab strip has time to start drawing.
+        // Wait until the second frame to turn off the placeholder background for the CompositorView
+        // and the tab strip, to ensure the compositor frame has been drawn.
         final ViewGroup controlContainer = (ViewGroup) mControlContainer;
-        if (controlContainer != null && controlContainer.getBackground() != null && mHasDrawnOnce) {
+        if (mHasDrawnOnce) {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    controlContainer.setBackgroundResource(0);
+                    mCompositorView.setBackgroundResource(0);
+                    if (controlContainer != null) {
+                        controlContainer.setBackgroundResource(0);
+                    }
                 }
             });
         }

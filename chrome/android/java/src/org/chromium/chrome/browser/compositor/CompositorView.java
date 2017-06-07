@@ -10,14 +10,11 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.TraceEvent;
@@ -65,9 +62,6 @@ public class CompositorView
     private long mNativeCompositorView;
     private final LayoutRenderHost mRenderHost;
     private int mPreviousWindowTop = -1;
-
-    // A conservative estimate of when a frame is guaranteed to be presented after being submitted.
-    private long mFramePresentationDelay;
 
     // Resource Management
     private ResourceManager mResourceManager;
@@ -201,18 +195,6 @@ public class CompositorView
 
         setVisibility(View.VISIBLE);
 
-        mFramePresentationDelay = 0;
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            Display display =
-                    ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE))
-                    .getDefaultDisplay();
-            long presentationDeadline = display.getPresentationDeadlineNanos()
-                    / NANOSECONDS_PER_MILLISECOND;
-            long vsyncPeriod = mWindowAndroid.getVsyncPeriodInMillis();
-            mFramePresentationDelay = Math.min(3 * vsyncPeriod,
-                    ((presentationDeadline + vsyncPeriod - 1) / vsyncPeriod) * vsyncPeriod);
-        }
-
         // Grab the Resource Manager
         mResourceManager = nativeGetResourceManager(mNativeCompositorView);
 
@@ -324,16 +306,6 @@ public class CompositorView
 
     @CalledByNative
     private void didSwapFrame(int pendingFrameCount) {
-        // Clear the color used to cover the uninitialized surface.
-        if (getBackground() != null) {
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    setBackgroundResource(0);
-                }
-            }, mFramePresentationDelay);
-        }
-
         mRenderHost.didSwapFrame(pendingFrameCount);
     }
 
