@@ -52,6 +52,14 @@ LanguageDetectionController::LanguageDetectionController(
 LanguageDetectionController::~LanguageDetectionController() {
 }
 
+LanguageDetectionController::DetectionDetails::DetectionDetails()
+    : is_cld_reliable(false) {}
+
+LanguageDetectionController::DetectionDetails::DetectionDetails(
+    const DetectionDetails& other) = default;
+
+LanguageDetectionController::DetectionDetails::~DetectionDetails() = default;
+
 std::unique_ptr<LanguageDetectionController::CallbackList::Subscription>
 LanguageDetectionController::RegisterLanguageDetectionCallback(
     const Callback& callback) {
@@ -115,11 +123,13 @@ void LanguageDetectionController::OnTextRetrieved(
     const std::string& http_content_language,
     const std::string& html_lang,
     const base::string16& text_content) {
+  std::string cld_language;
+  bool is_cld_reliable;
   std::string language = translate::DeterminePageLanguage(
       http_content_language, html_lang,
       GetStringByClippingLastWord(text_content,
                                   language_detection::kMaxIndexChars),
-      nullptr /* cld_language */, nullptr /* is_cld_reliable */);
+      &cld_language, &is_cld_reliable);
   if (language.empty())
     return;  // No language detected.
 
@@ -127,6 +137,8 @@ void LanguageDetectionController::OnTextRetrieved(
   details.content_language = http_content_language;
   details.html_root_language = html_lang;
   details.adopted_language = language;
+  details.cld_language = cld_language;
+  details.is_cld_reliable = is_cld_reliable;
   language_detection_callbacks_.Notify(details);
 }
 

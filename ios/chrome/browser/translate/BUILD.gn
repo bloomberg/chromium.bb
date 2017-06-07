@@ -10,6 +10,8 @@ source_set("translate") {
     "before_translate_infobar_controller.mm",
     "chrome_ios_translate_client.h",
     "chrome_ios_translate_client.mm",
+    "language_model_factory.cc",
+    "language_model_factory.h",
     "never_translate_infobar_controller.h",
     "never_translate_infobar_controller.mm",
     "translate_accept_languages_factory.cc",
@@ -48,6 +50,7 @@ source_set("translate") {
     "//ui/gfx",
     "//url",
   ]
+
   allow_circular_includes_from = [ "//ios/chrome/browser/infobars" ]
 }
 
@@ -56,6 +59,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "js_language_detection_manager_unittest.mm",
+    "language_model_factory_unittest.cc",
     "translate_service_ios_unittest.cc",
   ]
   deps = [
@@ -64,11 +68,13 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/translate/ios/browser",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/web",
     "//ios/web/public/test",
+    "//testing/gmock:gmock",
     "//testing/gtest",
     "//url",
   ]
