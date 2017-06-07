@@ -9,6 +9,16 @@
 #include "media/base/media_switches.h"
 #include "ui/display/display_switches.h"
 
+#if !defined(MEDIA_DISABLE_LIBVPX)
+// VPX_CODEC_DISABLE_COMPAT excludes parts of the libvpx API that provide
+// backwards compatibility for legacy applications using the library.
+#define VPX_CODEC_DISABLE_COMPAT 1
+extern "C" {
+#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
+#include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"
+}
+#endif
+
 namespace media {
 
 bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
@@ -102,6 +112,28 @@ bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
   return true;
 }
 
+bool IsVp9ProfileSupported(VideoCodecProfile profile) {
+#if !defined(MEDIA_DISABLE_LIBVPX)
+  // High bit depth capabilities may be toggled via LibVPX config flags.
+  static bool vpx_supports_high_bit_depth =
+      (vpx_codec_get_caps(vpx_codec_vp9_dx()) & VPX_CODEC_CAP_HIGHBITDEPTH) !=
+      0;
+
+  switch (profile) {
+    // LibVPX always supports Profiles 0 and 1.
+    case VP9PROFILE_PROFILE0:
+    case VP9PROFILE_PROFILE1:
+      return true;
+    case VP9PROFILE_PROFILE2:
+    case VP9PROFILE_PROFILE3:
+      return vpx_supports_high_bit_depth;
+    default:
+      NOTREACHED();
+  }
+#endif
+  return false;
+}
+
 bool IsSupportedAudioConfig(const AudioConfig& config) {
   switch (config.codec) {
     case media::kCodecAAC:
@@ -142,8 +174,8 @@ bool IsSupportedVideoConfig(const VideoConfig& config) {
   switch (config.codec) {
     case media::kCodecVP9:
       // Color management required for HDR to not look terrible.
-      return IsColorSpaceSupported(config.color_space);
-
+      return IsColorSpaceSupported(config.color_space) &&
+             IsVp9ProfileSupported(config.profile);
     case media::kCodecH264:
     case media::kCodecVP8:
     case media::kCodecTheora:

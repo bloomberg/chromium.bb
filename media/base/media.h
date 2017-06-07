@@ -29,13 +29,6 @@ MEDIA_EXPORT bool HasPlatformDecoderSupport();
 MEDIA_EXPORT bool PlatformHasOpusSupport();
 #endif
 
-// Tells the media library to support parsing of the new multipart vp9 codec
-// string.
-// TODO(chcunningham): Remove these (always support) when string standardized.
-MEDIA_EXPORT void EnableNewVp9CodecStringSupport();
-MEDIA_EXPORT bool HasNewVp9CodecStringSupport();
-MEDIA_EXPORT void DisableNewVp9CodecStringSupport_ForTesting();
-
 }  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_H_
