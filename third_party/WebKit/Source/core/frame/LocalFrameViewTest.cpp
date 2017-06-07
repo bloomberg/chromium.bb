@@ -50,19 +50,19 @@ class MockChromeClient : public EmptyChromeClient {
 };
 
 typedef bool TestParamRootLayerScrolling;
-class FrameViewTest
+class LocalFrameViewTest
     : public testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public testing::Test {
  protected:
-  FrameViewTest()
+  LocalFrameViewTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
         chrome_client_(new MockChromeClient) {
     EXPECT_CALL(ChromeClient(), AttachRootGraphicsLayer(_, _))
         .Times(AnyNumber());
   }
 
-  ~FrameViewTest() {
+  ~LocalFrameViewTest() {
     testing::Mock::VerifyAndClearExpectations(&ChromeClient());
   }
 
@@ -83,9 +83,9 @@ class FrameViewTest
   std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, FrameViewTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, LocalFrameViewTest, ::testing::Bool());
 
-TEST_P(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
+TEST_P(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   GetDocument().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   GetDocument().getElementById("a")->setAttribute(HTMLNames::styleAttr,
@@ -95,7 +95,7 @@ TEST_P(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   EXPECT_FALSE(ChromeClient().has_scheduled_animation_);
 }
 
-TEST_P(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
+TEST_P(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
   GetDocument().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   ChromeClient().has_scheduled_animation_ = false;
@@ -117,7 +117,7 @@ TEST_P(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
 
 // If we don't hide the tooltip on scroll, it can negatively impact scrolling
 // performance. See crbug.com/586852 for details.
-TEST_P(FrameViewTest, HideTooltipWhenScrollPositionChanges) {
+TEST_P(LocalFrameViewTest, HideTooltipWhenScrollPositionChanges) {
   GetDocument().body()->setInnerHTML(
       "<div style='width:1000px;height:1000px'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -139,7 +139,7 @@ TEST_P(FrameViewTest, HideTooltipWhenScrollPositionChanges) {
 // NoOverflowInIncrementVisuallyNonEmptyPixelCount tests fail if the number of
 // pixels is calculated in 32-bit integer, because 65536 * 65536 would become 0
 // if it was calculated in 32-bit and thus it would be considered as empty.
-TEST_P(FrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
+TEST_P(LocalFrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
   EXPECT_FALSE(GetDocument().View()->IsVisuallyNonEmpty());
   GetDocument().View()->IncrementVisuallyNonEmptyPixelCount(
       IntSize(65536, 65536));
@@ -150,7 +150,8 @@ TEST_P(FrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
 // LocalFrameView::UpdateLayersAndCompositingAfterScrollIfNeeded during layout
 // caused a crash as the code was incorrectly assuming that the ancestor
 // overflow layer would always be valid.
-TEST_P(FrameViewTest, ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
+TEST_P(LocalFrameViewTest,
+       ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
   GetDocument().body()->setInnerHTML(
       "<style>.container { height: 200%; }"
       "#sticky { position: sticky; top: 0; height: 50px; }</style>"
@@ -170,7 +171,7 @@ TEST_P(FrameViewTest, ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
       ScrollOffset(0, 100), kProgrammaticScroll);
 }
 
-TEST_P(FrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
+TEST_P(LocalFrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
   // When using root layer scrolling there is no concept of viewport constrained
   // objects, so skip this test.
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
