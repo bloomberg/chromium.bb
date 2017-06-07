@@ -164,6 +164,12 @@ bool LayoutView::HitTestNoLifecycleUpdate(HitTestResult& result) {
       if (scrollable_area && scrollable_area->GetLayoutBox() &&
           scrollable_area->GetLayoutBox()->GetNode()) {
         Node* node = scrollable_area->GetLayoutBox()->GetNode();
+
+        // If scrollbar belongs to Document, we should set innerNode to the
+        // <html> element to match other browser.
+        if (node->IsDocumentNode())
+          node = node->GetDocument().documentElement();
+
         result.SetInnerNode(node);
         result.SetURLElement(node->EnclosingLinkEventParentOrSelf());
       }
