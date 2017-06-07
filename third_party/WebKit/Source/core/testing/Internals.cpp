@@ -1641,18 +1641,19 @@ static unsigned EventHandlerCount(
   return count;
 }
 
-unsigned Internals::wheelEventHandlerCount(Document* document) {
+unsigned Internals::wheelEventHandlerCount(Document* document) const {
   DCHECK(document);
   return EventHandlerCount(*document,
                            EventHandlerRegistry::kWheelEventBlocking);
 }
 
-unsigned Internals::scrollEventHandlerCount(Document* document) {
+unsigned Internals::scrollEventHandlerCount(Document* document) const {
   DCHECK(document);
   return EventHandlerCount(*document, EventHandlerRegistry::kScrollEvent);
 }
 
-unsigned Internals::touchStartOrMoveEventHandlerCount(Document* document) {
+unsigned Internals::touchStartOrMoveEventHandlerCount(
+    Document* document) const {
   DCHECK(document);
   return EventHandlerCount(
              *document, EventHandlerRegistry::kTouchStartOrMoveEventBlocking) +
@@ -1660,12 +1661,18 @@ unsigned Internals::touchStartOrMoveEventHandlerCount(Document* document) {
                            EventHandlerRegistry::kTouchStartOrMoveEventPassive);
 }
 
-unsigned Internals::touchEndOrCancelEventHandlerCount(Document* document) {
+unsigned Internals::touchEndOrCancelEventHandlerCount(
+    Document* document) const {
   DCHECK(document);
   return EventHandlerCount(
              *document, EventHandlerRegistry::kTouchEndOrCancelEventBlocking) +
          EventHandlerCount(*document,
                            EventHandlerRegistry::kTouchEndOrCancelEventPassive);
+}
+
+unsigned Internals::pointerEventHandlerCount(Document* document) const {
+  DCHECK(document);
+  return EventHandlerCount(*document, EventHandlerRegistry::kPointerEvent);
 }
 
 static PaintLayer* FindLayerForGraphicsLayer(PaintLayer* search_root,

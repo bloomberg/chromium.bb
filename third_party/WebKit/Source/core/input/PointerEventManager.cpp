@@ -8,6 +8,7 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/MouseEvent.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -27,6 +28,9 @@ namespace {
 
 size_t ToPointerTypeIndex(WebPointerProperties::PointerType t) {
   return static_cast<size_t>(t);
+}
+bool HasPointerEventListener(const EventHandlerRegistry& registry) {
+  return registry.HasEventHandlers(EventHandlerRegistry::kPointerEvent);
 }
 
 Vector<std::pair<WebTouchPoint, TimeTicks>> GetCoalescedPoints(
@@ -159,8 +163,11 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
     }
   }
 
-  if (!RuntimeEnabledFeatures::PointerEventEnabled())
+  if (!frame_ || !frame_->GetPage() ||
+      !HasPointerEventListener(frame_->GetPage()->GetEventHandlerRegistry()) ||
+      !RuntimeEnabledFeatures::PointerEventEnabled())
     return WebInputEventResult::kNotHandled;
+
   if (!check_for_listener || target->HasEventListeners(event_type)) {
     UseCounter::Count(frame_, UseCounter::kPointerEventDispatch);
     if (event_type == EventTypeNames::pointerdown)
