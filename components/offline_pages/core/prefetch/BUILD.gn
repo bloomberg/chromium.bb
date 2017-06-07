@@ -58,6 +58,26 @@ static_library("prefetch") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "prefetch_service_test_taco.cc",
+    "prefetch_service_test_taco.h",
+    "test_offline_metrics_collector.h",
+    "test_prefetch_dispatcher.cc",
+    "test_prefetch_dispatcher.h",
+    "test_prefetch_gcm_handler.cc",
+    "test_prefetch_gcm_handler.h",
+  ]
+
+  deps = [
+    ":prefetch",
+    "//base",
+    "//components/keyed_service/core",
+    "//components/offline_pages/core",
+  ]
+}
+
 proto_library("proto") {
   sources = [
     "proto/any.proto",
@@ -84,6 +104,7 @@ source_set("unit_tests") {
 
   deps = [
     ":prefetch",
+    ":test_support",
     "//components/offline_pages/core",
     "//components/offline_pages/core:test_support",
     "//net:test_support",

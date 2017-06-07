@@ -24,11 +24,14 @@ class PrefetchService : public KeyedService {
   // lightweight, all heavy work must be done on-demand only.
   // The service manages lifetime, hookup and initialization of Prefetch
   // system that consists of multiple specialized objects, all vended by this
-  // service. All pointers are raw and are always valid.
+  // service.
   virtual OfflineMetricsCollector* GetOfflineMetricsCollector() = 0;
   virtual PrefetchDispatcher* GetPrefetchDispatcher() = 0;
   virtual PrefetchGCMHandler* GetPrefetchGCMHandler() = 0;
   virtual PrefetchStore* GetPrefetchStore() = 0;
+
+  // May be |nullptr| in tests.  The PrefetchService does not depend on the
+  // SuggestedArticlesObserver, it merely owns it for lifetime purposes.
   virtual SuggestedArticlesObserver* GetSuggestedArticlesObserver() = 0;
 };
 
