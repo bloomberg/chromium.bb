@@ -17,8 +17,7 @@ URLLoaderClientImpl::URLLoaderClientImpl(
     int request_id,
     ResourceDispatcher* resource_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : binding_(this),
-      request_id_(request_id),
+    : request_id_(request_id),
       resource_dispatcher_(resource_dispatcher),
       task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
@@ -26,10 +25,6 @@ URLLoaderClientImpl::URLLoaderClientImpl(
 URLLoaderClientImpl::~URLLoaderClientImpl() {
   if (body_consumer_)
     body_consumer_->Cancel();
-}
-
-void URLLoaderClientImpl::Bind(mojom::URLLoaderClientPtr* client_ptr) {
-  binding_.Bind(mojo::MakeRequest(client_ptr), task_runner_);
 }
 
 void URLLoaderClientImpl::SetDefersLoading() {

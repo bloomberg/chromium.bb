@@ -13,7 +13,6 @@
 #include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace base {
@@ -36,8 +35,6 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
                       ResourceDispatcher* resource_dispatcher,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~URLLoaderClientImpl() override;
-
-  void Bind(mojom::URLLoaderClientPtr* client_ptr);
 
   // Sets |is_deferred_|. From now, the received messages are not dispatched
   // to clients until UnsetDefersLoading is called.
@@ -69,7 +66,6 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   bool NeedsStoringMessage() const;
   void StoreAndDispatch(const IPC::Message& message);
 
-  mojo::Binding<mojom::URLLoaderClient> binding_;
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
   mojom::DownloadedTempFilePtr downloaded_file_;
   std::vector<IPC::Message> deferred_messages_;
