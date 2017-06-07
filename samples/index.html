@@ -131,7 +131,7 @@
             var li = document.createElement("li");
             li.setAttribute("data-index", page.index ? page.index : "XX");
 
-            var linkPath = page.insecure ? page.path : "http://webvr.info/samples/" + page.path;
+            var linkPath = page.insecure ? "http://webvr.info/samples/" + page.path : page.path;
 
             var sampleLink = document.createElement("a");
             sampleLink.href = linkPath;
