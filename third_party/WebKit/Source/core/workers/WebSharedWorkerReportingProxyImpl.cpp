@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/WebSharedWorkerReportingProxyImpl.h"
+#include "core/workers/WebSharedWorkerReportingProxyImpl.h"
 
 #include "bindings/core/v8/SourceLocation.h"
+#include "core/exported/WebSharedWorkerImpl.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/wtf/WTF.h"
 #include "public/platform/WebTraceLocation.h"
-#include "web/WebSharedWorkerImpl.h"
 
 namespace blink {
 

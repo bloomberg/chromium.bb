@@ -45,6 +45,8 @@ blink_core_sources("workers") {
     "ThreadedWorkletMessagingProxy.h",
     "ThreadedWorkletObjectProxy.cpp",
     "ThreadedWorkletObjectProxy.h",
+    "WebSharedWorkerReportingProxyImpl.cpp",
+    "WebSharedWorkerReportingProxyImpl.h",
     "Worker.cpp",
     "Worker.h",
     "WorkerBackingThread.cpp",

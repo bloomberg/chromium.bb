@@ -20,6 +20,12 @@ class WebFactoryImpl : public WebFactory {
   ChromeClient* CreateChromeClient(WebViewBase*) const override;
   WebViewBase* CreateWebViewBase(WebViewClient*,
                                  WebPageVisibilityState) const override;
+  WebLocalFrameBase* CreateWebLocalFrameBase(
+      WebTreeScopeType,
+      WebFrameClient*,
+      blink::InterfaceProvider*,
+      blink::InterfaceRegistry*,
+      WebFrame* opener = nullptr) const override;
 };
 
 }  // namespace blink
