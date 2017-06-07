@@ -440,8 +440,12 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
       map, content_type, extension_registry, web_ui(), /*incognito=*/false,
       /*filter=*/nullptr, exceptions.get());
 
-  if (profile_->HasOffTheRecordProfile()) {
-    Profile* incognito = profile_->GetOffTheRecordProfile();
+  Profile* incognito = profile_->HasOffTheRecordProfile()
+                           ? profile_->GetOffTheRecordProfile()
+                           : nullptr;
+  // On Chrome OS in Guest mode the incognito profile is the primary profile,
+  // so do not fetch an extra copy of the same exceptions.
+  if (incognito && incognito != profile_) {
     map = HostContentSettingsMapFactory::GetForProfile(incognito);
     extension_registry = extensions::ExtensionRegistry::Get(incognito);
     site_settings::GetExceptionsFromHostContentSettingsMap(
