@@ -77,8 +77,39 @@ struct DisallowedFeatures {
   bool oes_texture_half_float_linear = false;
 };
 
-typedef base::Callback<void(const std::string& key,
-                            const std::string& shader)> ShaderCacheCallback;
+class GPU_EXPORT GLES2DecoderClient {
+ public:
+  virtual ~GLES2DecoderClient() {}
+
+  // Prints a message (error/warning) to the console.
+  virtual void OnConsoleMessage(int32_t id, const std::string& message) = 0;
+
+  // Cache a newly linked shader.
+  virtual void CacheShader(const std::string& key,
+                           const std::string& shader) = 0;
+
+  // Called when the decoder releases a fence sync. Allows the client to
+  // reschedule waiting decoders.
+  virtual void OnFenceSyncRelease(uint64_t release) = 0;
+
+  // Called when the decoder needs to wait on a sync token. If the wait is valid
+  // (fence sync is not released yet), the client must unschedule the command
+  // buffer and return true. The client is responsible for rescheduling the
+  // command buffer when the fence is released.  If the wait is a noop (fence is
+  // already released) or invalid, the client must leave the command buffer
+  // scheduled, and return false.
+  virtual bool OnWaitSyncToken(const gpu::SyncToken&) = 0;
+
+  // Called when the decoder needs to be descheduled while waiting for a fence
+  // completion. The client is responsible for descheduling the command buffer
+  // before returning, and then calling PerformPollingWork periodically to test
+  // for the fence completion and possibly reschedule.
+  virtual void OnDescheduleUntilFinished() = 0;
+
+  // Called from PerformPollingWork when the decoder needs to be rescheduled
+  // because the fence completed.
+  virtual void OnRescheduleAfterFinished() = 0;
+};
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
@@ -86,9 +117,6 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder,
                                 NON_EXPORTED_BASE(public AsyncAPIInterface) {
  public:
   typedef error::Error Error;
-  typedef base::Callback<void(uint64_t release)> FenceSyncReleaseCallback;
-  typedef base::Callback<bool(const gpu::SyncToken&)> WaitSyncTokenCallback;
-  typedef base::Callback<void(void)> NoParamCallback;
 
   // The default stencil mask, which has all bits set.  This really should be a
   // GLuint, but we can't #include gl_bindings.h in this file without causing
@@ -96,7 +124,8 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder,
   static const unsigned int kDefaultStencilMask;
 
   // Creates a decoder.
-  static GLES2Decoder* Create(CommandBufferServiceBase* command_buffer_service,
+  static GLES2Decoder* Create(GLES2DecoderClient* client,
+                              CommandBufferServiceBase* command_buffer_service,
                               ContextGroup* group);
 
   ~GLES2Decoder() override;
@@ -280,24 +309,6 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder,
                             int depth) = 0;
 
   virtual ErrorState* GetErrorState() = 0;
-
-  // A callback for messages from the decoder.
-  virtual void SetShaderCacheCallback(const ShaderCacheCallback& callback) = 0;
-
-  // Sets the callback for fence sync release and wait calls. The wait call
-  // returns false if the wait was a nop or invalid and the command buffer is
-  // still scheduled.
-  virtual void SetFenceSyncReleaseCallback(
-      const FenceSyncReleaseCallback& callback) = 0;
-  virtual void SetWaitSyncTokenCallback(
-      const WaitSyncTokenCallback& callback) = 0;
-
-  // Sets the callback for the DescheduleUntilFinished and
-  // RescheduleAfterFinished calls.
-  virtual void SetDescheduleUntilFinishedCallback(
-      const NoParamCallback& callback) = 0;
-  virtual void SetRescheduleAfterFinishedCallback(
-      const NoParamCallback& callback) = 0;
 
   virtual void WaitForReadPixels(base::Closure callback) = 0;
 

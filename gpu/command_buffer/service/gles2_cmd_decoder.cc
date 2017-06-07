@@ -500,7 +500,8 @@ base::StringPiece GLES2Decoder::GetLogPrefix() {
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
  public:
-  GLES2DecoderImpl(CommandBufferServiceBase* command_buffer_service,
+  GLES2DecoderImpl(GLES2DecoderClient* client,
+                   CommandBufferServiceBase* command_buffer_service,
                    ContextGroup* group);
   ~GLES2DecoderImpl() override;
 
@@ -600,16 +601,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   ErrorState* GetErrorState() override;
   const ContextState* GetContextState() override { return &state_; }
   scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
-
-  void SetShaderCacheCallback(const ShaderCacheCallback& callback) override;
-  void SetFenceSyncReleaseCallback(
-      const FenceSyncReleaseCallback& callback) override;
-  void SetWaitSyncTokenCallback(const WaitSyncTokenCallback& callback) override;
-
-  void SetDescheduleUntilFinishedCallback(
-      const NoParamCallback& callback) override;
-  void SetRescheduleAfterFinishedCallback(
-      const NoParamCallback& callback) override;
 
   void SetIgnoreCachedStateForTest(bool ignore) override;
   void SetForceShaderNameHashingForTest(bool force) override;
@@ -2237,6 +2228,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   #undef GLES2_CMD_OP
 
+  GLES2DecoderClient* client_;
+
   // The GL context this decoder renders to on behalf of the client.
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
@@ -2342,13 +2335,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   std::unique_ptr<QueryManager> query_manager_;
 
   std::unique_ptr<VertexArrayManager> vertex_array_manager_;
-
-  FenceSyncReleaseCallback fence_sync_release_callback_;
-  WaitSyncTokenCallback wait_sync_token_callback_;
-  NoParamCallback deschedule_until_finished_callback_;
-  NoParamCallback reschedule_after_finished_callback_;
-
-  ShaderCacheCallback shader_cache_callback_;
 
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
@@ -3062,20 +3048,24 @@ GLenum BackFramebuffer::CheckStatus() {
 }
 
 GLES2Decoder* GLES2Decoder::Create(
+    GLES2DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     ContextGroup* group) {
   if (group->gpu_preferences().use_passthrough_cmd_decoder) {
-    return new GLES2DecoderPassthroughImpl(command_buffer_service, group);
+    return new GLES2DecoderPassthroughImpl(client, command_buffer_service,
+                                           group);
   }
-  return new GLES2DecoderImpl(command_buffer_service, group);
+  return new GLES2DecoderImpl(client, command_buffer_service, group);
 }
 
 GLES2DecoderImpl::GLES2DecoderImpl(
+    GLES2DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     ContextGroup* group)
     : GLES2Decoder(command_buffer_service),
+      client_(client),
       group_(group),
-      logger_(&debug_marker_manager_),
+      logger_(&debug_marker_manager_, client_),
       state_(group_->feature_info(), this, &logger_),
       attrib_0_buffer_id_(0),
       attrib_0_buffer_matches_value_(true),
@@ -3131,6 +3121,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       texture_manager_service_id_generation_(0),
       force_shader_name_hashing_for_test(false),
       weak_ptr_factory_(this) {
+  DCHECK(client);
   DCHECK(group);
 }
 
@@ -4699,31 +4690,6 @@ void GLES2DecoderImpl::EndDecoding() {
 
 ErrorState* GLES2DecoderImpl::GetErrorState() {
   return state_.GetErrorState();
-}
-
-void GLES2DecoderImpl::SetShaderCacheCallback(
-    const ShaderCacheCallback& callback) {
-  shader_cache_callback_ = callback;
-}
-
-void GLES2DecoderImpl::SetFenceSyncReleaseCallback(
-    const FenceSyncReleaseCallback& callback) {
-  fence_sync_release_callback_ = callback;
-}
-
-void GLES2DecoderImpl::SetWaitSyncTokenCallback(
-    const WaitSyncTokenCallback& callback) {
-  wait_sync_token_callback_ = callback;
-}
-
-void GLES2DecoderImpl::SetDescheduleUntilFinishedCallback(
-    const NoParamCallback& callback) {
-  deschedule_until_finished_callback_ = callback;
-}
-
-void GLES2DecoderImpl::SetRescheduleAfterFinishedCallback(
-    const NoParamCallback& callback) {
-  reschedule_after_finished_callback_ = callback;
 }
 
 bool GLES2DecoderImpl::GetServiceTextureId(uint32_t client_texture_id,
@@ -8737,9 +8703,10 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
 
   LogClientServiceForInfo(program, program_id, "glLinkProgram");
   if (program->Link(shader_manager(),
-                    workarounds().count_all_in_varyings_packing ?
-                        Program::kCountAll : Program::kCountOnlyStaticallyUsed,
-                    shader_cache_callback_)) {
+                    workarounds().count_all_in_varyings_packing
+                        ? Program::kCountAll
+                        : Program::kCountOnlyStaticallyUsed,
+                    client_)) {
     if (program == state_.current_program.get()) {
       if (workarounds().clear_uniforms_before_first_program_use)
         program_manager()->ClearUniforms(program);
@@ -16028,14 +15995,6 @@ bool GLES2DecoderImpl::CheckResetStatus() {
 error::Error GLES2DecoderImpl::HandleDescheduleUntilFinishedCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  if (deschedule_until_finished_callback_.is_null() ||
-      reschedule_after_finished_callback_.is_null()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glDescheduleUntilFinishedCHROMIUM",
-                       "Not fully implemented.");
-    return error::kNoError;
-  }
-
   std::unique_ptr<gl::GLFence> fence(gl::GLFence::Create());
   deschedule_until_finished_fences_.push_back(std::move(fence));
 
@@ -16051,7 +16010,7 @@ error::Error GLES2DecoderImpl::HandleDescheduleUntilFinishedCHROMIUM(
 
   TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::DescheduleUntilFinished",
                            this);
-  deschedule_until_finished_callback_.Run();
+  client_->OnDescheduleUntilFinished();
   return error::kDeferLaterCommands;
 }
 
@@ -16063,8 +16022,7 @@ error::Error GLES2DecoderImpl::HandleInsertFenceSyncCHROMIUM(
           cmd_data);
 
   const uint64_t release_count = c.release_count();
-  if (!fence_sync_release_callback_.is_null())
-    fence_sync_release_callback_.Run(release_count);
+  client_->OnFenceSyncRelease(release_count);
   // Exit inner command processing loop so that we check the scheduling state
   // and yield if necessary as we may have unblocked a higher priority context.
   ExitCommandProcessingEarly();
@@ -16092,14 +16050,11 @@ error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
   const CommandBufferId command_buffer_id =
       CommandBufferId::FromUnsafeValue(c.command_buffer_id());
   const uint64_t release = c.release_count();
-  if (wait_sync_token_callback_.is_null())
-    return error::kNoError;
 
   gpu::SyncToken sync_token;
   sync_token.Set(namespace_id, 0, command_buffer_id, release);
-  return wait_sync_token_callback_.Run(sync_token)
-             ? error::kDeferCommandUntilLater
-             : error::kNoError;
+  return client_->OnWaitSyncToken(sync_token) ? error::kDeferCommandUntilLater
+                                              : error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleDiscardBackbufferCHROMIUM(
@@ -16184,7 +16139,7 @@ void GLES2DecoderImpl::ProcessDescheduleUntilFinished() {
                          this);
   deschedule_until_finished_fences_.erase(
       deschedule_until_finished_fences_.begin());
-  reschedule_after_finished_callback_.Run();
+  client_->OnRescheduleAfterFinished();
 }
 
 bool GLES2DecoderImpl::HasMoreIdleWork() const {

@@ -120,23 +120,24 @@ class MockProgramCache : public ProgramCache {
   MockProgramCache();
   virtual ~MockProgramCache();
 
-  MOCK_METHOD7(LoadLinkedProgram, ProgramLoadResult(
-      GLuint program,
-      Shader* shader_a,
-      Shader* shader_b,
-      const LocationMap* bind_attrib_location_map,
-      const std::vector<std::string>& transform_feedback_varyings,
-      GLenum transform_feedback_buffer_mode,
-      const ShaderCacheCallback& callback));
+  MOCK_METHOD7(LoadLinkedProgram,
+               ProgramLoadResult(
+                   GLuint program,
+                   Shader* shader_a,
+                   Shader* shader_b,
+                   const LocationMap* bind_attrib_location_map,
+                   const std::vector<std::string>& transform_feedback_varyings,
+                   GLenum transform_feedback_buffer_mode,
+                   GLES2DecoderClient* client));
 
-  MOCK_METHOD7(SaveLinkedProgram, void(
-      GLuint program,
-      const Shader* shader_a,
-      const Shader* shader_b,
-      const LocationMap* bind_attrib_location_map,
-      const std::vector<std::string>& transform_feedback_varyings,
-      GLenum transform_feedback_buffer_mode,
-      const ShaderCacheCallback& callback));
+  MOCK_METHOD7(SaveLinkedProgram,
+               void(GLuint program,
+                    const Shader* shader_a,
+                    const Shader* shader_b,
+                    const LocationMap* bind_attrib_location_map,
+                    const std::vector<std::string>& transform_feedback_varyings,
+                    GLenum transform_feedback_buffer_mode,
+                    GLES2DecoderClient* client));
   MOCK_METHOD1(LoadProgram, void(const std::string&));
 
  private:

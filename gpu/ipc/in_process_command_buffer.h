@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/gpu_export.h"
@@ -61,7 +62,6 @@ struct GpuProcessHostedCALayerTreeParamsMac;
 namespace gles2 {
 struct ContextCreationAttribHelper;
 class FramebufferCompletenessCache;
-class GLES2Decoder;
 class MailboxManager;
 class ProgramCache;
 class ShaderTranslatorCache;
@@ -78,6 +78,7 @@ class TransferBufferManager;
 class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                                           public GpuControl,
                                           public CommandBufferServiceClient,
+                                          public gles2::GLES2DecoderClient,
                                           public ImageTransportSurfaceDelegate {
  public:
   class Service;
@@ -143,6 +144,14 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // CommandBufferServiceClient implementation:
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
   void OnParseError() override;
+
+  // GLES2DecoderClient implementation:
+  void OnConsoleMessage(int32_t id, const std::string& message) override;
+  void CacheShader(const std::string& key, const std::string& shader) override;
+  void OnFenceSyncRelease(uint64_t release) override;
+  bool OnWaitSyncToken(const SyncToken& sync_token) override;
+  void OnDescheduleUntilFinished() override;
+  void OnRescheduleAfterFinished() override;
 
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
@@ -257,11 +266,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void QueueTask(bool out_of_order, const base::Closure& task);
   void ProcessTasksOnGpuThread();
   void CheckSequencedThread();
-  void FenceSyncReleaseOnGpuThread(uint64_t release);
-  bool WaitSyncTokenOnGpuThread(const SyncToken& sync_token);
   void OnWaitSyncTokenCompleted(const SyncToken& sync_token);
-  void DescheduleUntilFinishedOnGpuThread();
-  void RescheduleAfterFinishedOnGpuThread();
   void SignalSyncTokenOnGpuThread(const SyncToken& sync_token,
                                   const base::Closure& callback);
   void SignalQueryOnGpuThread(unsigned query_id, const base::Closure& callback);

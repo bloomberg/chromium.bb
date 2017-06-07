@@ -71,18 +71,21 @@ void PassthroughResources::Destroy(bool have_context) {
 }
 
 GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
+    GLES2DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     ContextGroup* group)
     : GLES2Decoder(command_buffer_service),
+      client_(client),
       commands_to_process_(0),
       debug_marker_manager_(),
-      logger_(&debug_marker_manager_),
+      logger_(&debug_marker_manager_, client_),
       surface_(),
       context_(),
       offscreen_(false),
       group_(group),
       feature_info_(new FeatureInfo),
       weak_ptr_factory_(this) {
+  DCHECK(client);
   DCHECK(group);
 }
 
@@ -437,22 +440,6 @@ size_t GLES2DecoderPassthroughImpl::GetCreatedBackTextureCountForTest() {
   return 0;
 }
 
-void GLES2DecoderPassthroughImpl::SetFenceSyncReleaseCallback(
-    const FenceSyncReleaseCallback& callback) {
-  fence_sync_release_callback_ = callback;
-}
-
-void GLES2DecoderPassthroughImpl::SetWaitSyncTokenCallback(
-    const WaitSyncTokenCallback& callback) {
-  wait_sync_token_callback_ = callback;
-}
-
-void GLES2DecoderPassthroughImpl::SetDescheduleUntilFinishedCallback(
-    const NoParamCallback& callback) {}
-
-void GLES2DecoderPassthroughImpl::SetRescheduleAfterFinishedCallback(
-    const NoParamCallback& callback) {}
-
 gpu::gles2::QueryManager* GLES2DecoderPassthroughImpl::GetQueryManager() {
   return nullptr;
 }
@@ -544,9 +531,6 @@ bool GLES2DecoderPassthroughImpl::ClearLevel3D(Texture* texture,
 gpu::gles2::ErrorState* GLES2DecoderPassthroughImpl::GetErrorState() {
   return nullptr;
 }
-
-void GLES2DecoderPassthroughImpl::SetShaderCacheCallback(
-    const ShaderCacheCallback& callback) {}
 
 void GLES2DecoderPassthroughImpl::WaitForReadPixels(base::Closure callback) {}
 

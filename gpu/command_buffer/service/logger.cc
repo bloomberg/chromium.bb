@@ -8,13 +8,16 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 
 namespace gpu {
 namespace gles2 {
 
-Logger::Logger(const DebugMarkerManager* debug_marker_manager)
+Logger::Logger(const DebugMarkerManager* debug_marker_manager,
+               GLES2DecoderClient* client)
     : debug_marker_manager_(debug_marker_manager),
+      client_(client),
       log_message_count_(0),
       log_synthesized_gl_errors_(true) {
   Logger* this_temp = this;
@@ -37,9 +40,7 @@ void Logger::LogMessage(
       ::logging::LogMessage(
           filename, line, ::logging::LOG_ERROR).stream() << prefixed_msg;
     }
-    if (!msg_callback_.is_null()) {
-      msg_callback_.Run(0, prefixed_msg);
-    }
+    client_->OnConsoleMessage(0, prefixed_msg);
   } else {
     if (log_message_count_ == kMaxLogMessages) {
       ++log_message_count_;
@@ -53,10 +54,6 @@ void Logger::LogMessage(
 const std::string& Logger::GetLogPrefix() const {
   const std::string& prefix(debug_marker_manager_->GetMarker());
   return prefix.empty() ? this_in_hex_ : prefix;
-}
-
-void Logger::SetMsgCallback(const MsgCallback& callback) {
-  msg_callback_ = callback;
 }
 
 }  // namespace gles2

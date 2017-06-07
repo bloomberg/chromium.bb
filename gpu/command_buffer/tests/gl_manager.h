@@ -42,7 +42,6 @@ class TransferBuffer;
 namespace gles2 {
 
 class MailboxManager;
-class GLES2Decoder;
 class GLES2CmdHelper;
 class GLES2Implementation;
 

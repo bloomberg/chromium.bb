@@ -31,11 +31,6 @@ using ::testing::StrEq;
 namespace gpu {
 namespace gles2 {
 
-namespace {
-void ShaderCacheCb(const std::string& key, const std::string& shader) {
-}
-}  // namespace
-
 class GLES2DecoderTest2 : public GLES2DecoderTestBase {
  public:
   GLES2DecoderTest2() { }
@@ -639,8 +634,7 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramInfoLog, 0>(
   attach_cmd.Init(client_program_id_, kClientFragmentShaderId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
 
-  program->Link(NULL, Program::kCountOnlyStaticallyUsed,
-                base::Bind(&ShaderCacheCb));
+  program->Link(NULL, Program::kCountOnlyStaticallyUsed, this);
 };
 
 template <>

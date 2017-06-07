@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/sha1.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 
 namespace gpu {
@@ -58,7 +58,7 @@ class GPU_EXPORT ProgramCache {
       const LocationMap* bind_attrib_location_map,
       const std::vector<std::string>& transform_feedback_varyings,
       GLenum transform_feedback_buffer_mode,
-      const ShaderCacheCallback& shader_callback) = 0;
+      GLES2DecoderClient* client) = 0;
 
   // Saves the program into the cache.  If successful, the implementation should
   // call LinkedProgramCacheSuccess.
@@ -69,7 +69,7 @@ class GPU_EXPORT ProgramCache {
       const LocationMap* bind_attrib_location_map,
       const std::vector<std::string>& transform_feedback_varyings,
       GLenum transform_feedback_buffer_mode,
-      const ShaderCacheCallback& shader_callback) = 0;
+      GLES2DecoderClient* client) = 0;
 
   virtual void LoadProgram(const std::string& program) = 0;
 

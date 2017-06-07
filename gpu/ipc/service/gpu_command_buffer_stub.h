@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -55,6 +56,7 @@ class GPU_EXPORT GpuCommandBufferStub
     : public IPC::Listener,
       public IPC::Sender,
       public CommandBufferServiceClient,
+      public gles2::GLES2DecoderClient,
       public ImageTransportSurfaceDelegate,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
@@ -95,6 +97,14 @@ class GPU_EXPORT GpuCommandBufferStub
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
   void OnParseError() override;
 
+  // GLES2DecoderClient implementation:
+  void OnConsoleMessage(int32_t id, const std::string& message) override;
+  void CacheShader(const std::string& key, const std::string& shader) override;
+  void OnFenceSyncRelease(uint64_t release) override;
+  bool OnWaitSyncToken(const SyncToken& sync_token) override;
+  void OnDescheduleUntilFinished() override;
+  void OnRescheduleAfterFinished() override;
+
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
   void DidCreateAcceleratedSurfaceChildWindow(
@@ -127,11 +137,6 @@ class GPU_EXPORT GpuCommandBufferStub
   SequenceId sequence_id() const { return sequence_id_; }
 
   int32_t stream_id() const { return stream_id_; }
-
-  // Sends a message to the console.
-  void SendConsoleMessage(int32_t id, const std::string& message);
-
-  void SendCachedShader(const std::string& key, const std::string& shader);
 
   gl::GLSurface* surface() const { return surface_.get(); }
 
@@ -179,7 +184,6 @@ class GPU_EXPORT GpuCommandBufferStub
                                 uint32_t size);
   void OnDestroyTransferBuffer(int32_t id);
   void OnGetTransferBuffer(int32_t id, IPC::Message* reply_message);
-  bool OnWaitSyncToken(const SyncToken& sync_token);
 
   void OnEnsureBackbuffer();
 
@@ -187,11 +191,7 @@ class GPU_EXPORT GpuCommandBufferStub
   void OnSignalAck(uint32_t id);
   void OnSignalQuery(uint32_t query, uint32_t id);
 
-  void OnFenceSyncRelease(uint64_t release);
   void OnWaitSyncTokenCompleted(const SyncToken& sync_token);
-
-  void OnDescheduleUntilFinished();
-  void OnRescheduleAfterFinished();
 
   void OnCreateImage(const GpuCommandBufferMsg_CreateImage_Params& params);
   void OnDestroyImage(int32_t id);

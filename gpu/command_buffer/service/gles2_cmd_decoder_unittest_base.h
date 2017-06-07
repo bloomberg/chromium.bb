@@ -46,10 +46,18 @@ namespace gles2 {
 
 class MemoryTracker;
 
-class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
+class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
+                             public GLES2DecoderClient {
  public:
   GLES2DecoderTestBase();
-  virtual ~GLES2DecoderTestBase();
+  ~GLES2DecoderTestBase() override;
+
+  void OnConsoleMessage(int32_t id, const std::string& message) override;
+  void CacheShader(const std::string& key, const std::string& shader) override;
+  void OnFenceSyncRelease(uint64_t release) override;
+  bool OnWaitSyncToken(const gpu::SyncToken&) override;
+  void OnDescheduleUntilFinished() override;
+  void OnRescheduleAfterFinished() override;
 
   // Template to call glGenXXX functions.
   template <typename T>

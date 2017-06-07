@@ -139,16 +139,6 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(GetErrorState, ErrorState *());
 
   MOCK_METHOD0(GetLogger, Logger*());
-  MOCK_METHOD1(SetShaderCacheCallback,
-               void(const ShaderCacheCallback& callback));
-  MOCK_METHOD1(SetFenceSyncReleaseCallback,
-               void(const FenceSyncReleaseCallback& callback));
-  MOCK_METHOD1(SetWaitSyncTokenCallback,
-               void(const WaitSyncTokenCallback& callback));
-  MOCK_METHOD1(SetDescheduleUntilFinishedCallback,
-               void(const NoParamCallback& callback));
-  MOCK_METHOD1(SetRescheduleAfterFinishedCallback,
-               void(const NoParamCallback& callback));
   MOCK_METHOD1(WaitForReadPixels,
                void(base::Closure callback));
   MOCK_CONST_METHOD0(WasContextLost, bool());

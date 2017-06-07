@@ -322,8 +322,8 @@ void GLManager::InitializeWithCommandLine(
       context_group->transfer_buffer_manager(), options.sync_point_manager,
       options.context_lost_allowed));
 
-  decoder_.reset(::gpu::gles2::GLES2Decoder::Create(command_buffer_->service(),
-                                                    context_group));
+  decoder_.reset(::gpu::gles2::GLES2Decoder::Create(
+      command_buffer_.get(), command_buffer_->service(), context_group));
   if (options.force_shader_name_hashing) {
     decoder_->SetForceShaderNameHashingForTest(true);
   }
@@ -359,15 +359,6 @@ void GLManager::InitializeWithCommandLine(
   if (!decoder_->Initialize(surface_.get(), context_.get(), true,
                             ::gpu::gles2::DisallowedFeatures(), attribs)) {
     return;
-  }
-
-  if (options.sync_point_manager) {
-    decoder_->SetFenceSyncReleaseCallback(
-        base::Bind(&CommandBufferDirect::OnFenceSyncRelease,
-                   base::Unretained(command_buffer_.get())));
-    decoder_->SetWaitSyncTokenCallback(
-        base::Bind(&CommandBufferDirect::OnWaitSyncToken,
-                   base::Unretained(command_buffer_.get())));
   }
 
   // Create the GLES2 helper, which writes the command buffer protocol.

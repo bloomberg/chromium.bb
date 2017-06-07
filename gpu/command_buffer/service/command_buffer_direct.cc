@@ -127,6 +127,34 @@ CommandBufferDirect::OnCommandBatchProcessed() {
 
 void CommandBufferDirect::OnParseError() {}
 
+void CommandBufferDirect::OnConsoleMessage(int32_t id,
+                                           const std::string& message) {}
+
+void CommandBufferDirect::CacheShader(const std::string& key,
+                                      const std::string& shader) {}
+
+void CommandBufferDirect::OnFenceSyncRelease(uint64_t release) {
+  DCHECK(sync_point_client_state_);
+  service_.SetReleaseCount(release);
+  sync_point_client_state_->ReleaseFenceSync(release);
+}
+
+bool CommandBufferDirect::OnWaitSyncToken(const gpu::SyncToken& sync_token) {
+  DCHECK(sync_point_manager_);
+  if (sync_point_manager_->IsSyncTokenReleased(sync_token))
+    return false;
+  service_.SetScheduled(false);
+  return true;
+}
+
+void CommandBufferDirect::OnDescheduleUntilFinished() {
+  service_.SetScheduled(false);
+}
+
+void CommandBufferDirect::OnRescheduleAfterFinished() {
+  service_.SetScheduled(true);
+}
+
 gpu::CommandBufferNamespace CommandBufferDirect::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::IN_PROCESS;
 }
@@ -137,20 +165,6 @@ CommandBufferId CommandBufferDirect::GetCommandBufferID() const {
 
 void CommandBufferDirect::SetCommandsPaused(bool paused) {
   pause_commands_ = paused;
-}
-
-void CommandBufferDirect::OnFenceSyncRelease(uint64_t release) {
-  DCHECK(sync_point_client_state_);
-  service_.SetReleaseCount(release);
-  sync_point_client_state_->ReleaseFenceSync(release);
-}
-
-bool CommandBufferDirect::OnWaitSyncToken(const SyncToken& sync_token) {
-  DCHECK(sync_point_manager_);
-  if (sync_point_manager_->IsSyncTokenReleased(sync_token))
-    return false;
-  service_.SetScheduled(false);
-  return true;
 }
 
 void CommandBufferDirect::SignalSyncToken(const gpu::SyncToken& sync_token,
