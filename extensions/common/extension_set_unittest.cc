@@ -5,9 +5,11 @@
 #include "extensions/common/extension_set.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -36,9 +38,9 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
     manifest.SetString("app.launch.web_url", launch_url);
 
   if (!extent.empty()) {
-    base::ListValue* urls = new base::ListValue();
-    manifest.Set("app.urls", urls);
+    auto urls = base::MakeUnique<base::ListValue>();
     urls->AppendString(extent);
+    manifest.Set("app.urls", std::move(urls));
   }
 
   std::string error;

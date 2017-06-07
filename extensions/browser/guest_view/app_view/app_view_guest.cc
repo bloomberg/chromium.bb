@@ -268,7 +268,7 @@ void AppViewGuest::LaunchAppAndFireEvent(
       new base::DictionaryValue());
   embed_request->SetInteger(appview::kGuestInstanceID, guest_instance_id());
   embed_request->SetString(appview::kEmbedderID, owner_host());
-  embed_request->Set(appview::kData, data.release());
+  embed_request->Set(appview::kData, std::move(data));
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser_context(), std::move(embed_request), extension_host->extension());
 }

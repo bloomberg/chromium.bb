@@ -191,7 +191,7 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(
     launch_item->SetBoolean("isDirectory", entries[i].is_directory);
     items->Append(std::move(launch_item));
   }
-  launch_data->Set("items", items.release());
+  launch_data->Set("items", std::move(items));
   DispatchOnLaunchedEventImpl(extension->id(), source_enum,
                               std::move(launch_data), context);
 }

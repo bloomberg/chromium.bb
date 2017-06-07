@@ -12,9 +12,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -290,9 +292,9 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   value->SetString("version", "1");
   value->SetInteger("manifest_version", 1);
 
-  base::ListValue* scripts = new base::ListValue();
+  base::ListValue* scripts =
+      value->SetList("background.scripts", base::MakeUnique<base::ListValue>());
   scripts->AppendString("foo.js");
-  value->Set("background.scripts", scripts);
 
   std::string error;
   std::vector<extensions::InstallWarning> warnings;

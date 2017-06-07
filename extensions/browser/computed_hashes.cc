@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "crypto/secure_hash.h"
@@ -136,28 +137,27 @@ ComputedHashes::Writer::~Writer() {
 void ComputedHashes::Writer::AddHashes(const base::FilePath& relative_path,
                                        int block_size,
                                        const std::vector<std::string>& hashes) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  base::ListValue* block_hashes = new base::ListValue();
+  auto block_hashes = base::MakeUnique<base::ListValue>();
+  block_hashes->GetList().reserve(hashes.size());
+  for (const auto& hash : hashes) {
+    std::string encoded;
+    base::Base64Encode(hash, &encoded);
+    block_hashes->GetList().emplace_back(std::move(encoded));
+  }
+
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetString(kPathKey,
                   relative_path.NormalizePathSeparatorsTo('/').AsUTF8Unsafe());
   dict->SetInteger(kBlockSizeKey, block_size);
-  dict->Set(kBlockHashesKey, block_hashes);
+  dict->Set(kBlockHashesKey, std::move(block_hashes));
   file_list_->Append(std::move(dict));
-
-  for (std::vector<std::string>::const_iterator i = hashes.begin();
-       i != hashes.end();
-       ++i) {
-    std::string encoded;
-    base::Base64Encode(*i, &encoded);
-    block_hashes->AppendString(encoded);
-  }
 }
 
 bool ComputedHashes::Writer::WriteToFile(const base::FilePath& path) {
   std::string json;
   base::DictionaryValue top_dictionary;
   top_dictionary.SetInteger(kVersionKey, kVersion);
-  top_dictionary.Set(kFileHashesKey, file_list_.release());
+  top_dictionary.Set(kFileHashesKey, std::move(file_list_));
 
   if (!base::JSONWriter::Write(top_dictionary, &json))
     return false;

@@ -8,10 +8,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -37,44 +39,35 @@ class MessageBundleTest : public testing::Test {
     MESSAGE_PLACEHOLDER_DOESNT_MATCH,
   };
 
-  // Helper method for dictionary building.
-  void SetDictionary(const std::string& name,
-                     base::DictionaryValue* subtree,
-                     base::DictionaryValue* target) {
-    target->Set(name, static_cast<base::Value*>(subtree));
-  }
-
   void CreateContentTree(const std::string& name,
                          const std::string& content,
                          base::DictionaryValue* dict) {
-    base::DictionaryValue* content_tree = new base::DictionaryValue;
+    auto content_tree = base::MakeUnique<base::DictionaryValue>();
     content_tree->SetString(MessageBundle::kContentKey, content);
-    SetDictionary(name, content_tree, dict);
+    dict->Set(name, std::move(content_tree));
   }
 
   void CreatePlaceholdersTree(base::DictionaryValue* dict) {
-    base::DictionaryValue* placeholders_tree = new base::DictionaryValue;
-    CreateContentTree("a", "A", placeholders_tree);
-    CreateContentTree("b", "B", placeholders_tree);
-    CreateContentTree("c", "C", placeholders_tree);
-    SetDictionary(MessageBundle::kPlaceholdersKey,
-                  placeholders_tree,
-                  dict);
+    auto placeholders_tree = base::MakeUnique<base::DictionaryValue>();
+    CreateContentTree("a", "A", placeholders_tree.get());
+    CreateContentTree("b", "B", placeholders_tree.get());
+    CreateContentTree("c", "C", placeholders_tree.get());
+    dict->Set(MessageBundle::kPlaceholdersKey, std::move(placeholders_tree));
   }
 
   void CreateMessageTree(const std::string& name,
                          const std::string& message,
                          bool create_placeholder_subtree,
                          base::DictionaryValue* dict) {
-    base::DictionaryValue* message_tree = new base::DictionaryValue;
+    auto message_tree = base::MakeUnique<base::DictionaryValue>();
     if (create_placeholder_subtree)
-      CreatePlaceholdersTree(message_tree);
+      CreatePlaceholdersTree(message_tree.get());
     message_tree->SetString(MessageBundle::kMessageKey, message);
-    SetDictionary(name, message_tree, dict);
+    dict->Set(name, std::move(message_tree));
   }
 
   std::unique_ptr<base::DictionaryValue> CreateGoodDictionary() {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     CreateMessageTree("n1", "message1 $a$ $b$", true, dict.get());
     CreateMessageTree("n2", "message2 $c$", true, dict.get());
     CreateMessageTree("n3", "message3", false, dict.get());
@@ -92,10 +85,8 @@ class MessageBundleTest : public testing::Test {
       case NAME_NOT_A_TREE:
         dict->SetString("n4", "whatever");
         break;
-      case EMPTY_NAME_TREE: {
-          base::DictionaryValue* empty_tree = new base::DictionaryValue;
-          SetDictionary("n4", empty_tree, dict.get());
-        }
+      case EMPTY_NAME_TREE:
+        dict->Set("n4", base::MakeUnique<base::DictionaryValue>());
         break;
       case MISSING_MESSAGE:
         dict->Remove("n1.message", NULL);
@@ -103,10 +94,8 @@ class MessageBundleTest : public testing::Test {
       case PLACEHOLDER_NOT_A_TREE:
         dict->SetString("n1.placeholders", "whatever");
         break;
-      case EMPTY_PLACEHOLDER_TREE: {
-          base::DictionaryValue* empty_tree = new base::DictionaryValue;
-          SetDictionary("n1.placeholders", empty_tree, dict.get());
-        }
+      case EMPTY_PLACEHOLDER_TREE:
+        dict->Set("n1.placeholders", base::MakeUnique<base::DictionaryValue>());
         break;
       case CONTENT_MISSING:
          dict->Remove("n1.placeholders.a.content", NULL);
