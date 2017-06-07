@@ -212,6 +212,7 @@ const CGFloat kAnimationDuration = 0.3;
 #pragma mark - UICollectionViewCell
 
 - (void)prepareForReuse {
+  [super prepareForReuse];
   self.titleLabel.text = nil;
   [self setSubtitleText:nil];
   self.displayImage = NO;
