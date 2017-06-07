@@ -25,7 +25,6 @@ class TabModelAndroidProfileMock : public TestingProfile {
   MOCK_METHOD0(GetOffTheRecordProfile, Profile*());
   MOCK_METHOD0(HasOffTheRecordProfile, bool());
 };
-}  // namespace
 
 class TestTabModel : public TabModel {
  public:
@@ -47,6 +46,7 @@ class TestTabModel : public TabModel {
   void SetActiveIndex(int index) override {}
   void CloseTabAt(int index) override {}
 };
+}  // namespace
 
 TEST_F(TabModelTest, TestProfileHandling) {
   // Construct TabModel with standard Profile.

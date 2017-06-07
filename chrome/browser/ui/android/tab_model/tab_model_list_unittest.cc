@@ -11,7 +11,6 @@
 
 namespace {
 class TabModelListTest : public ChromeRenderViewHostTestHarness {};
-}  // namespace
 
 class TestTabModel : public TabModel {
  public:
@@ -37,6 +36,7 @@ class TestTabModel : public TabModel {
   // A fake value for the current number of tabs.
   int tab_count_;
 };
+}  // namespace
 
 // Regression test for http://crbug.com/432685.
 TEST_F(TabModelListTest, TestGetTabModelForWebContents) {
