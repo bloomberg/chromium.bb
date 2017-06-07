@@ -13,7 +13,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/ios/device_util.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
@@ -43,6 +42,10 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Number of hours to wait between successful requests.
@@ -127,7 +130,7 @@ class XmlWrapper : public OmahaXmlWriter {
   BOOL manifestIsParsed_;
   BOOL pingIsParsed_;
   BOOL eventIsParsed_;
-  base::scoped_nsobject<NSString> appId_;
+  NSString* appId_;
   std::unique_ptr<UpgradeRecommendedDetails> updateInformation_;
 }
 
@@ -148,7 +151,7 @@ class XmlWrapper : public OmahaXmlWriter {
 
 - (instancetype)initWithAppId:(NSString*)appId {
   if (self = [super init]) {
-    appId_.reset([appId retain]);
+    appId_ = appId;
   }
   return self;
 }
@@ -596,14 +599,13 @@ void OmahaService::OnURLFetchComplete(const net::URLFetcher* fetcher) {
   bool result = fetcher->GetResponseAsString(&response);
   DCHECK(result);
   NSData* xml = [NSData dataWithBytes:response.data() length:response.length()];
-  base::scoped_nsobject<NSXMLParser> parser(
-      [[NSXMLParser alloc] initWithData:xml]);
+  NSXMLParser* parser = [[NSXMLParser alloc] initWithData:xml];
   const std::string application_id = ios::GetChromeBrowserProvider()
                                          ->GetOmahaServiceProvider()
                                          ->GetApplicationID();
-  base::scoped_nsobject<ResponseParser> delegate([[ResponseParser alloc]
-      initWithAppId:base::SysUTF8ToNSString(application_id)]);
-  parser.get().delegate = delegate.get();
+  ResponseParser* delegate = [[ResponseParser alloc]
+      initWithAppId:base::SysUTF8ToNSString(application_id)];
+  parser.delegate = delegate;
 
   if (![parser parse] || ![delegate isCorrect]) {
     DLOG(ERROR) << "Unable to parse XML response from Omaha server.";
@@ -627,8 +629,7 @@ void OmahaService::OnURLFetchComplete(const net::URLFetcher* fetcher) {
   SendOrScheduleNextPing();
 
   // Send notification for updates if needed.
-  UpgradeRecommendedDetails* details =
-      [delegate.get() upgradeRecommendedDetails];
+  UpgradeRecommendedDetails* details = [delegate upgradeRecommendedDetails];
   if (details) {
     web::WebThread::PostTask(
         web::WebThread::UI, FROM_HERE,
