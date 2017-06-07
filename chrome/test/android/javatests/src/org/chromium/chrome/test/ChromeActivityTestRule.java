@@ -59,14 +59,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity>
                 base.evaluate();
             }
         }, description);
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                String perfTagAnalysisString = mTestCommon.setupPotentialPerfTest();
-                superBase.evaluate();
-                mTestCommon.endPerfTest(perfTagAnalysisString);
-            }
-        };
+        return superBase;
     }
 
     /**

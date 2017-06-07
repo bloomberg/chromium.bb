@@ -377,13 +377,6 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     }
 
     @Override
-    protected void runTest() throws Throwable {
-        String perfTagAnalysisString = mTestCommon.setupPotentialPerfTest();
-        super.runTest();
-        mTestCommon.endPerfTest(perfTagAnalysisString);
-    }
-
-    @Override
     protected Map<String, BaseParameter> createAvailableParameters() {
         Map<String, BaseParameter> availableParameters = super.createAvailableParameters();
         availableParameters.put(AddFakeAccountToAppParameter.PARAMETER_TAG,
