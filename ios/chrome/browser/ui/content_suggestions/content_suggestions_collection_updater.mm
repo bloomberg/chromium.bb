@@ -271,6 +271,23 @@ const CGFloat kNumberOfMostVisitedLines = 2;
   return ContentSuggestionTypeForItemType(item.type);
 }
 
+- (NSIndexPath*)removeEmptySuggestionsForSectionInfo:
+    (ContentSuggestionsSectionInformation*)sectionInfo {
+  CSCollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+  NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+
+  NSArray<CSCollectionViewItem*>* existingItems =
+      [model itemsInSectionWithIdentifier:sectionIdentifier];
+  if (existingItems.count == 1 && existingItems[0].type == ItemTypeEmpty) {
+    [model removeItemWithType:ItemTypeEmpty
+        fromSectionWithIdentifier:sectionIdentifier];
+    NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
+    return [NSIndexPath indexPathForItem:0 inSection:section];
+  }
+  return nil;
+}
+
 - (NSArray<NSIndexPath*>*)
 addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
       withSectionInfo:(ContentSuggestionsSectionInformation*)sectionInfo {
@@ -293,15 +310,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     return indexPaths;
   }
 
-  BOOL emptyItemRemoved = NO;
-  NSArray<CSCollectionViewItem*>* existingItems =
-      [model itemsInSectionWithIdentifier:sectionIdentifier];
-  if (existingItems.count > 0 && existingItems[0].type == ItemTypeEmpty) {
-    [model removeItemWithType:ItemTypeEmpty
-        fromSectionWithIdentifier:sectionIdentifier];
-    emptyItemRemoved = YES;
-  }
-
   [suggestions enumerateObjectsUsingBlock:^(CSCollectionViewItem* item,
                                             NSUInteger index, BOOL* stop) {
     NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
@@ -317,11 +325,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     [self fetchFaviconForItem:item];
     item.delegate = self;
 
-    if (!emptyItemRemoved || index > 0) {
-      [indexPaths addObject:addedIndexPath];
-    } else {
-      [self.collectionViewController.collectionViewLayout invalidateLayout];
-    }
+    [indexPaths addObject:addedIndexPath];
   }];
 
   return indexPaths;
