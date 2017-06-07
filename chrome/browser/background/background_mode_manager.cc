@@ -287,6 +287,7 @@ BackgroundModeManager::BackgroundModeManager(
       in_background_mode_(false),
       keep_alive_for_test_(false),
       background_mode_suspended_(false),
+      task_runner_(CreateTaskRunner()),
       weak_factory_(this) {
   // We should never start up if there is no browser process or if we are
   // currently quitting.
