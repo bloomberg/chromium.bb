@@ -280,14 +280,16 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
     });
 
     test('shift selection', function() {
-      // TODO(calamity): Make the first item the anchor index when a new folder
-      // is selected.
       var focusedItem = items[0];
       focusedItem.focus();
 
-      keydown(focusedItem, 'ArrowDown');
+      keydown(focusedItem, 'ArrowDown', 'shift');
       focusedItem = items[1];
-      assertDeepEquals(['3'], normalizeSet(store.data.selection.items));
+      assertDeepEquals(['2', '3'], normalizeSet(store.data.selection.items));
+
+      keydown(focusedItem, 'Escape');
+      focusedItem = items[1];
+      assertDeepEquals([], normalizeSet(store.data.selection.items));
 
       keydown(focusedItem, 'ArrowUp', 'shift');
       focusedItem = items[0];
