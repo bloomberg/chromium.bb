@@ -5,6 +5,7 @@
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -884,6 +885,54 @@ TEST_F(LocalStorageContextMojoTestWithService, InvalidVersionOnDisk) {
     ASSERT_TRUE(leveldb::DB::Open(options, db_path.AsUTF8Unsafe(), &db).ok());
     std::unique_ptr<leveldb::DB> db_owner(db);
     ASSERT_TRUE(db->Put(leveldb::WriteOptions(), "VERSION", "argh").ok());
+  }
+
+  // Make sure data is gone.
+  context = new LocalStorageContextMojo(connector(), nullptr, base::FilePath(),
+                                        test_path, nullptr);
+  EXPECT_FALSE(DoTestGet(context, key, &result));
+
+  // Write data again.
+  DoTestPut(context, key, value);
+
+  context->ShutdownAndDelete();
+  context = nullptr;
+  base::RunLoop().RunUntilIdle();
+
+  // Data should have been preserved now.
+  context = new LocalStorageContextMojo(connector(), nullptr, base::FilePath(),
+                                        test_path, nullptr);
+  EXPECT_TRUE(DoTestGet(context, key, &result));
+  EXPECT_EQ(value, result);
+  context->ShutdownAndDelete();
+}
+
+TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
+  base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
+
+  // Create context and add some data to it.
+  auto* context = new LocalStorageContextMojo(
+      connector(), nullptr, base::FilePath(), test_path, nullptr);
+  auto key = StdStringToUint8Vector("key");
+  auto value = StdStringToUint8Vector("value");
+
+  DoTestPut(context, key, value);
+  std::vector<uint8_t> result;
+  EXPECT_TRUE(DoTestGet(context, key, &result));
+  EXPECT_EQ(value, result);
+
+  context->ShutdownAndDelete();
+  context = nullptr;
+  base::RunLoop().RunUntilIdle();
+
+  // Delete manifest files to mess up opening DB.
+  base::FilePath db_path =
+      temp_path().Append(test_path).Append(FILE_PATH_LITERAL("leveldb"));
+  base::FileEnumerator file_enum(db_path, true, base::FileEnumerator::FILES,
+                                 FILE_PATH_LITERAL("MANIFEST*"));
+  for (base::FilePath name = file_enum.Next(); !name.empty();
+       name = file_enum.Next()) {
+    base::DeleteFile(name, false);
   }
 
   // Make sure data is gone.
