@@ -169,6 +169,8 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   // Used to set ConfirmationDialog behavior.
   FakeIt2MeDialogFactory* dialog_factory_ = nullptr;
 
+  std::unique_ptr<base::DictionaryValue> policies_;
+
   scoped_refptr<It2MeHost> it2me_host_;
 
  private:
@@ -177,6 +179,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
+  std::unique_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
 
@@ -186,7 +189,6 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
 };
 
 It2MeHostTest::It2MeHostTest() : weak_factory_(this) {}
-
 It2MeHostTest::~It2MeHostTest() {}
 
 void It2MeHostTest::SetUp() {
@@ -198,23 +200,10 @@ void It2MeHostTest::SetUp() {
   message_loop_.reset(new base::MessageLoop());
   run_loop_.reset(new base::RunLoop());
 
-  std::unique_ptr<ChromotingHostContext> host_context(
-      ChromotingHostContext::Create(new AutoThreadTaskRunner(
-          base::ThreadTaskRunnerHandle::Get(), run_loop_->QuitClosure())));
-  network_task_runner_ = host_context->network_task_runner();
-  ui_task_runner_ = host_context->ui_task_runner();
-
-  std::unique_ptr<FakeIt2MeDialogFactory> dialog_factory(
-      new FakeIt2MeDialogFactory());
-  dialog_factory_ = dialog_factory.get();
-  it2me_host_ = new It2MeHost(
-      std::move(host_context),
-      std::move(dialog_factory), weak_factory_.GetWeakPtr(),
-      base::WrapUnique(
-          new FakeSignalStrategy(SignalingAddress("fake_local_jid"))),
-      kTestUserName, "fake_bot_jid");
-
-  it2me_host_->OnPolicyUpdate(PolicyWatcher::GetDefaultPolicies());
+  host_context_ = ChromotingHostContext::Create(new AutoThreadTaskRunner(
+      base::ThreadTaskRunnerHandle::Get(), run_loop_->QuitClosure()));
+  network_task_runner_ = host_context_->network_task_runner();
+  ui_task_runner_ = host_context_->ui_task_runner();
 }
 
 void It2MeHostTest::TearDown() {
@@ -223,6 +212,7 @@ void It2MeHostTest::TearDown() {
   it2me_host_->Disconnect();
   network_task_runner_ = nullptr;
   ui_task_runner_ = nullptr;
+  host_context_.reset();
   it2me_host_ = nullptr;
   run_loop_->Run();
 }
@@ -237,11 +227,13 @@ void It2MeHostTest::OnValidationComplete(const base::Closure& resume_callback,
 void It2MeHostTest::SetPolicies(
     std::initializer_list<std::pair<base::StringPiece, const base::Value&>>
         policies) {
-  auto dictionary = base::MakeUnique<base::DictionaryValue>();
+  policies_ = base::MakeUnique<base::DictionaryValue>();
   for (const auto& policy : policies) {
-    dictionary->Set(policy.first, policy.second.CreateDeepCopy());
+    policies_->Set(policy.first, policy.second.CreateDeepCopy());
   }
-  it2me_host_->OnPolicyUpdate(std::move(dictionary));
+  if (it2me_host_) {
+    it2me_host_->OnPolicyUpdate(std::move(policies_));
+  }
 }
 
 void It2MeHostTest::StartupHostStateHelper(const base::Closure& quit_closure) {
@@ -259,7 +251,21 @@ void It2MeHostTest::StartupHostStateHelper(const base::Closure& quit_closure) {
 }
 
 void It2MeHostTest::StartHost() {
-  it2me_host_->Connect();
+  if (!policies_) {
+    policies_ = PolicyWatcher::GetDefaultPolicies();
+  }
+
+  std::unique_ptr<FakeIt2MeDialogFactory> dialog_factory(
+      new FakeIt2MeDialogFactory());
+  dialog_factory_ = dialog_factory.get();
+
+  it2me_host_ = new It2MeHost();
+  it2me_host_->Connect(host_context_->Copy(),
+                       base::MakeUnique<base::DictionaryValue>(*policies_),
+                       std::move(dialog_factory), weak_factory_.GetWeakPtr(),
+                       base::WrapUnique(new FakeSignalStrategy(
+                           SignalingAddress("fake_local_jid"))),
+                       kTestUserName, "fake_bot_jid");
 
   base::RunLoop run_loop;
   state_change_callback_ =
@@ -541,8 +547,8 @@ TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_Accept) {
 }
 
 TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_Reject) {
-  dialog_factory_->set_dialog_result(DialogResult::CANCEL);
   StartHost();
+  dialog_factory_->set_dialog_result(DialogResult::CANCEL);
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::ERROR_REJECTED_BY_USER, validation_result_);
   RunUntilStateChanged(It2MeHostState::kDisconnected);

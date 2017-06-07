@@ -55,33 +55,29 @@ typedef ValidatingAuthenticator::ResultCallback ValidationResultCallback;
 
 }  // namespace
 
-It2MeHost::It2MeHost(
-    std::unique_ptr<ChromotingHostContext> host_context,
-    std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-    base::WeakPtr<It2MeHost::Observer> observer,
-    std::unique_ptr<SignalStrategy> signal_strategy,
-    const std::string& username,
-    const std::string& directory_bot_jid)
-    : host_context_(std::move(host_context)),
-      observer_(observer),
-      signal_strategy_(std::move(signal_strategy)),
-      username_(username),
-      directory_bot_jid_(directory_bot_jid),
-      confirmation_dialog_factory_(std::move(dialog_factory)) {
-  DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
-}
+It2MeHost::It2MeHost() {}
 
 It2MeHost::~It2MeHost() {
   // Check that resources that need to be torn down on the UI thread are gone.
   DCHECK(!desktop_environment_factory_.get());
 }
 
-void It2MeHost::Connect() {
-  if (!host_context_->ui_task_runner()->BelongsToCurrentThread()) {
-    host_context_->ui_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&It2MeHost::Connect, this));
-    return;
-  }
+void It2MeHost::Connect(
+    std::unique_ptr<ChromotingHostContext> host_context,
+    std::unique_ptr<base::DictionaryValue> policies,
+    std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
+    base::WeakPtr<It2MeHost::Observer> observer,
+    std::unique_ptr<SignalStrategy> signal_strategy,
+    const std::string& username,
+    const std::string& directory_bot_jid) {
+  DCHECK(host_context->ui_task_runner()->BelongsToCurrentThread());
+
+  host_context_ = std::move(host_context);
+  observer_ = std::move(observer);
+  confirmation_dialog_factory_ = std::move(dialog_factory);
+  signal_strategy_ = std::move(signal_strategy);
+
+  OnPolicyUpdate(std::move(policies));
 
   desktop_environment_factory_.reset(new It2MeDesktopEnvironmentFactory(
       host_context_->network_task_runner(),
@@ -90,7 +86,8 @@ void It2MeHost::Connect() {
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::ReadPolicyAndConnect, this));
+      FROM_HERE, base::Bind(&It2MeHost::ConnectOnNetworkThread, this, username,
+                            directory_bot_jid));
 }
 
 void It2MeHost::Disconnect() {
@@ -99,81 +96,25 @@ void It2MeHost::Disconnect() {
       FROM_HERE, base::Bind(&It2MeHost::DisconnectOnNetworkThread, this));
 }
 
-void It2MeHost::DisconnectOnNetworkThread() {
-  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
-
-  // Disconnect() may be called even when after the host been already stopped.
-  // Ignore repeated calls.
-  if (state_ == kDisconnected) {
-    return;
-  }
-
-  confirmation_dialog_proxy_.reset();
-
-  host_event_logger_.reset();
-  if (host_) {
-    host_->RemoveStatusObserver(this);
-    host_.reset();
-  }
-
-  register_request_.reset();
-  host_status_logger_.reset();
-  signal_strategy_.reset();
-
-  // Post tasks to delete UI objects on the UI thread.
-  host_context_->ui_task_runner()->DeleteSoon(
-      FROM_HERE, desktop_environment_factory_.release());
-
-  SetState(kDisconnected, "");
-}
-
-void It2MeHost::RequestNatPolicy() {
-  if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
-    DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
-    host_context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&It2MeHost::RequestNatPolicy, this));
-    return;
-  }
-
-  if (policy_received_)
-    UpdateNatPolicy(nat_traversal_enabled_);
-}
-
-void It2MeHost::ReadPolicyAndConnect() {
+void It2MeHost::ConnectOnNetworkThread(const std::string& username,
+                                       const std::string& directory_bot_jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(kDisconnected, state_);
 
-  SetState(kStarting, "");
-
-  // Only proceed to FinishConnect() if at least one policy update has been
-  // received.  Otherwise, create the policy watcher and thunk the connect.
-  if (policy_received_) {
-    FinishConnect();
-  } else {
-    pending_connect_ = base::Bind(&It2MeHost::FinishConnect, this);
-  }
-}
-
-void It2MeHost::FinishConnect() {
-  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
-
-  if (state_ != kStarting) {
-    // Host has been stopped while we were fetching policy.
-    return;
-  }
+  SetState(kStarting, std::string());
 
   // Check the host domain policy.
   if (!required_host_domain_list_.empty()) {
     bool matched = false;
     for (const auto& domain : required_host_domain_list_) {
-      if (base::EndsWith(username_, std::string("@") + domain,
+      if (base::EndsWith(username, std::string("@") + domain,
                          base::CompareCase::INSENSITIVE_ASCII)) {
         matched = true;
         break;
       }
     }
     if (!matched) {
-      SetState(kInvalidDomainError, "");
+      SetState(kInvalidDomainError, std::string());
       return;
     }
   }
@@ -185,7 +126,7 @@ void It2MeHost::FinishConnect() {
   // Request registration of the host for support.
   std::unique_ptr<RegisterSupportHostRequest> register_request(
       new RegisterSupportHostRequest(
-          signal_strategy_.get(), host_key_pair_, directory_bot_jid_,
+          signal_strategy_.get(), host_key_pair_, directory_bot_jid,
           base::Bind(&It2MeHost::OnReceivedSupportID, base::Unretained(this))));
 
   // Beyond this point nothing can fail, so save the config and request.
@@ -240,7 +181,7 @@ void It2MeHost::FinishConnect() {
   host_->AddStatusObserver(this);
   host_status_logger_.reset(
       new HostStatusLogger(host_->AsWeakPtr(), ServerLogEntry::IT2ME,
-                           signal_strategy_.get(), directory_bot_jid_));
+                           signal_strategy_.get(), directory_bot_jid));
 
   // Create event logger.
   host_event_logger_ =
@@ -248,9 +189,9 @@ void It2MeHost::FinishConnect() {
 
   // Connect signaling and start the host.
   signal_strategy_->Connect();
-  host_->Start(username_);
+  host_->Start(username);
 
-  SetState(kRequestedAccessCode, "");
+  SetState(kRequestedAccessCode, std::string());
   return;
 }
 
@@ -288,7 +229,7 @@ void It2MeHost::OnClientConnected(const std::string& jid) {
       FROM_HERE, base::Bind(&It2MeHost::Observer::OnClientAuthenticated,
                             observer_, client_username));
 
-  SetState(kConnected, "");
+  SetState(kConnected, std::string());
 }
 
 void It2MeHost::OnClientDisconnected(const std::string& jid) {
@@ -340,12 +281,6 @@ void It2MeHost::OnPolicyUpdate(
   if (policies->GetString(policy::key::kRemoteAccessHostUdpPortRange,
                           &port_range_string)) {
     UpdateHostUdpPortRangePolicy(port_range_string);
-  }
-
-  policy_received_ = true;
-
-  if (!pending_connect_.is_null()) {
-    base::ResetAndReturn(&pending_connect_).Run();
   }
 }
 
@@ -507,7 +442,35 @@ void It2MeHost::OnReceivedSupportID(
       FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode, observer_,
                             access_code, lifetime));
 
-  SetState(kReceivedAccessCode, "");
+  SetState(kReceivedAccessCode, std::string());
+}
+
+void It2MeHost::DisconnectOnNetworkThread() {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+
+  // Disconnect() may be called even when after the host been already stopped.
+  // Ignore repeated calls.
+  if (state_ == kDisconnected) {
+    return;
+  }
+
+  confirmation_dialog_proxy_.reset();
+
+  host_event_logger_.reset();
+  if (host_) {
+    host_->RemoveStatusObserver(this);
+    host_.reset();
+  }
+
+  register_request_.reset();
+  host_status_logger_.reset();
+  signal_strategy_.reset();
+
+  // Post tasks to delete UI objects on the UI thread.
+  host_context_->ui_task_runner()->DeleteSoon(
+      FROM_HERE, desktop_environment_factory_.release());
+
+  SetState(kDisconnected, std::string());
 }
 
 void It2MeHost::ValidateConnectionDetails(
@@ -595,19 +558,10 @@ void It2MeHost::OnConfirmationResult(
 }
 
 It2MeHostFactory::It2MeHostFactory() {}
-
 It2MeHostFactory::~It2MeHostFactory() {}
 
-scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
-    std::unique_ptr<ChromotingHostContext> context,
-    base::WeakPtr<It2MeHost::Observer> observer,
-    std::unique_ptr<SignalStrategy> signal_strategy,
-    const std::string& username,
-    const std::string& directory_bot_jid) {
-  DCHECK(context->ui_task_runner()->BelongsToCurrentThread());
-  return new It2MeHost(
-      std::move(context), base::MakeUnique<It2MeConfirmationDialogFactory>(),
-      observer, std::move(signal_strategy), username, directory_bot_jid);
+scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost() {
+  return new It2MeHost();
 }
 
 }  // namespace remoting

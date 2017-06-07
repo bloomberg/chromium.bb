@@ -40,7 +40,8 @@ namespace remoting {
 namespace {
 
 const char kTestAccessCode[] = "888888";
-const int kTestAccessCodeLifetimeInSeconds = 666;
+constexpr base::TimeDelta kTestAccessCodeLifetime =
+    base::TimeDelta::FromSeconds(666);
 const char kTestClientUsername[] = "some_user@gmail.com";
 
 void VerifyId(std::unique_ptr<base::DictionaryValue> response,
@@ -77,24 +78,21 @@ void VerifyCommonProperties(std::unique_ptr<base::DictionaryValue> response,
   EXPECT_EQ(id, int_value);
 }
 
+}  // namespace
+
 class MockIt2MeHost : public It2MeHost {
  public:
-  MockIt2MeHost(std::unique_ptr<ChromotingHostContext> context,
-                base::WeakPtr<It2MeHost::Observer> observer,
-                std::unique_ptr<SignalStrategy> signal_strategy,
-                const std::string& username,
-                const std::string& directory_bot_jid)
-      : It2MeHost(std::move(context),
-                  /*confirmation_dialog_factory=*/nullptr,
-                  observer,
-                  std::move(signal_strategy),
-                  username,
-                  directory_bot_jid) {}
+  MockIt2MeHost() {}
 
   // It2MeHost overrides
-  void Connect() override;
+  void Connect(std::unique_ptr<ChromotingHostContext> context,
+               std::unique_ptr<base::DictionaryValue> policies,
+               std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
+               base::WeakPtr<It2MeHost::Observer> observer,
+               std::unique_ptr<SignalStrategy> signal_strategy,
+               const std::string& username,
+               const std::string& directory_bot_jid) override;
   void Disconnect() override;
-  void RequestNatPolicy() override;
 
  private:
   ~MockIt2MeHost() override {}
@@ -104,30 +102,35 @@ class MockIt2MeHost : public It2MeHost {
   DISALLOW_COPY_AND_ASSIGN(MockIt2MeHost);
 };
 
-void MockIt2MeHost::Connect() {
-  if (!host_context()->ui_task_runner()->BelongsToCurrentThread()) {
-    host_context()->ui_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&MockIt2MeHost::Connect, this));
-    return;
-  }
+void MockIt2MeHost::Connect(
+    std::unique_ptr<ChromotingHostContext> context,
+    std::unique_ptr<base::DictionaryValue> policies,
+    std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
+    base::WeakPtr<It2MeHost::Observer> observer,
+    std::unique_ptr<SignalStrategy> signal_strategy,
+    const std::string& username,
+    const std::string& directory_bot_jid) {
+  DCHECK(context->ui_task_runner()->BelongsToCurrentThread());
+
+  host_context_ = std::move(context);
+  observer_ = std::move(observer);
+  signal_strategy_ = std::move(signal_strategy);
+
+  OnPolicyUpdate(std::move(policies));
 
   RunSetState(kStarting);
   RunSetState(kRequestedAccessCode);
 
-  std::string access_code(kTestAccessCode);
-  base::TimeDelta lifetime =
-      base::TimeDelta::FromSeconds(kTestAccessCodeLifetimeInSeconds);
   host_context()->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode, observer(),
-                            access_code, lifetime));
+      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode, observer_,
+                            kTestAccessCode, kTestAccessCodeLifetime));
 
   RunSetState(kReceivedAccessCode);
   RunSetState(kConnecting);
 
-  std::string client_username(kTestClientUsername);
   host_context()->ui_task_runner()->PostTask(
       FROM_HERE, base::Bind(&It2MeHost::Observer::OnClientAuthenticated,
-                            observer(), client_username));
+                            observer_, kTestClientUsername));
 
   RunSetState(kConnected);
 }
@@ -143,8 +146,6 @@ void MockIt2MeHost::Disconnect() {
   RunSetState(kDisconnected);
 }
 
-void MockIt2MeHost::RequestNatPolicy() {}
-
 void MockIt2MeHost::RunSetState(It2MeHostState state) {
   if (!host_context()->network_task_runner()->BelongsToCurrentThread()) {
     host_context()->network_task_runner()->PostTask(
@@ -156,36 +157,16 @@ void MockIt2MeHost::RunSetState(It2MeHostState state) {
 
 class MockIt2MeHostFactory : public It2MeHostFactory {
  public:
-  MockIt2MeHostFactory();
-  ~MockIt2MeHostFactory() override;
+  MockIt2MeHostFactory() {}
+  ~MockIt2MeHostFactory() override {}
 
-  scoped_refptr<It2MeHost> CreateIt2MeHost(
-      std::unique_ptr<ChromotingHostContext> context,
-      base::WeakPtr<It2MeHost::Observer> observer,
-      std::unique_ptr<SignalStrategy> signal_strategy,
-      const std::string& username,
-      const std::string& directory_bot_jid) override;
+  scoped_refptr<It2MeHost> CreateIt2MeHost() override {
+    return new MockIt2MeHost();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIt2MeHostFactory);
 };
-
-MockIt2MeHostFactory::MockIt2MeHostFactory() : It2MeHostFactory() {}
-
-MockIt2MeHostFactory::~MockIt2MeHostFactory() {}
-
-scoped_refptr<It2MeHost> MockIt2MeHostFactory::CreateIt2MeHost(
-    std::unique_ptr<ChromotingHostContext> context,
-    base::WeakPtr<It2MeHost::Observer> observer,
-    std::unique_ptr<SignalStrategy> signal_strategy,
-    const std::string& username,
-    const std::string& directory_bot_jid) {
-  return new MockIt2MeHost(std::move(context), observer,
-                           std::move(signal_strategy), username,
-                           directory_bot_jid);
-}
-
-}  // namespace
 
 class It2MeNativeMessagingHostTest : public testing::Test {
  public:
@@ -418,10 +399,10 @@ void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
         EXPECT_TRUE(response->GetString("accessCode", &value));
         EXPECT_EQ(kTestAccessCode, value);
 
-        int accessCodeLifetime;
+        int access_code_lifetime;
         EXPECT_TRUE(
-            response->GetInteger("accessCodeLifetime", &accessCodeLifetime));
-        EXPECT_EQ(kTestAccessCodeLifetimeInSeconds, accessCodeLifetime);
+            response->GetInteger("accessCodeLifetime", &access_code_lifetime));
+        EXPECT_EQ(kTestAccessCodeLifetime.InSeconds(), access_code_lifetime);
       } else if (state ==
                  It2MeNativeMessagingHost::HostStateToString(kConnecting)) {
         EXPECT_FALSE(connecting_received);
