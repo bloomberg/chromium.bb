@@ -2543,6 +2543,10 @@ void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {
   UseCounter::Count(GetFrame(), feature);
 }
 
+WebFrameScheduler* WebLocalFrameImpl::Scheduler() const {
+  return GetFrame()->FrameScheduler();
+}
+
 base::SingleThreadTaskRunner* WebLocalFrameImpl::TimerTaskRunner() {
   return GetFrame()
       ->FrameScheduler()

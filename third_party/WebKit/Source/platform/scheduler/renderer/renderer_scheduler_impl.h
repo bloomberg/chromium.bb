@@ -108,8 +108,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void ResumeRenderer() override;
   void AddPendingNavigation(NavigatingFrameType type) override;
   void RemovePendingNavigation(NavigatingFrameType type) override;
-  void OnNavigationStarted() override;
-  void OnCommitProvisionalLoad() override;
+  void OnNavigate() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
@@ -194,6 +193,13 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // Called when one of associated WebView schedulers has changed audio
   // state.
   void OnAudioStateChanged();
+
+  // Tells the scheduler that a provisional load has committed. The scheduler
+  // may reset the task cost estimators and the UserModel. Must be called from
+  // the main thread.
+  void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
+                                bool is_reload,
+                                bool is_main_frame);
 
   // Test helpers.
   SchedulerHelper* GetSchedulerHelperForTesting();

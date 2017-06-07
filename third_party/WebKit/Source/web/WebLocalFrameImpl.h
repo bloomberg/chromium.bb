@@ -315,6 +315,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   void SetEngagementLevel(mojom::EngagementLevel) override;
   void ClearActiveFindMatch() override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
+  WebFrameScheduler* Scheduler() const override;
   base::SingleThreadTaskRunner* TimerTaskRunner() override;
   base::SingleThreadTaskRunner* LoadingTaskRunner() override;
   base::SingleThreadTaskRunner* UnthrottledTaskRunner() override;

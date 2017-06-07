@@ -1706,7 +1706,7 @@ void RenderFrameImpl::OnNavigate(
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
   // Can be NULL in tests.
   if (render_thread_impl)
-    render_thread_impl->GetRendererScheduler()->OnNavigationStarted();
+    render_thread_impl->GetRendererScheduler()->OnNavigate();
   DCHECK(!IsBrowserSideNavigationEnabled());
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::OnNavigate", "id",
                routing_id_, "url", common_params.url.possibly_invalid_spec());
@@ -3698,16 +3698,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
       render_thread_impl->histogram_customizer()->
           RenderViewNavigatedToHost(GURL(GetLoadingUrl()).host(),
                                     RenderView::GetRenderViewCount());
-      // The scheduler isn't interested in history inert commits unless they
-      // are reloads.
-      if (commit_type != blink::kWebHistoryInertCommit ||
-          PageTransitionCoreTypeIs(navigation_state->GetTransitionType(),
-                                   ui::PAGE_TRANSITION_RELOAD)) {
-        // TODO(maxlg): remove OnNavigationStarted and migrate this part into
-        // OnCommitProvisionalLoad.
-        render_thread_impl->GetRendererScheduler()->OnNavigationStarted();
-        render_thread_impl->GetRendererScheduler()->OnCommitProvisionalLoad();
-      }
     }
   }
 

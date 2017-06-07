@@ -75,6 +75,7 @@
 #include "modules/vr/NavigatorVR.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/feature_policy/FeaturePolicy.h"
@@ -631,6 +632,7 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
     return false;
   if (offset < -webview->Client()->HistoryBackListCount())
     return false;
+  web_frame_->Scheduler()->WillNavigateBackForwardSoon();
   webview->Client()->NavigateBackForwardSoon(offset);
   return true;
 }

@@ -513,6 +513,7 @@ test("headless_browsertests") {
     "lib/headless_browser_context_browsertest.cc",
     "lib/headless_devtools_client_browsertest.cc",
     "lib/headless_web_contents_browsertest.cc",
+    "lib/virtual_time_browsertest.cc",
     "public/util/dom_tree_extractor_browsertest.cc",
     "public/util/flat_dom_tree_extractor_browsertest.cc",
     "test/headless_browser_test.cc",
