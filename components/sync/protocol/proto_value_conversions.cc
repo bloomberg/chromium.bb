@@ -112,22 +112,26 @@ class ToValueVisitor {
   void Visit(const P& parent_proto,
              const char* field_name,
              const google::protobuf::RepeatedPtrField<F>& repeated_field) {
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
-    for (const auto& field : repeated_field) {
-      list->Append(ToValue(field));
+    if (!repeated_field.empty()) {
+      std::unique_ptr<base::ListValue> list(new base::ListValue());
+      for (const auto& field : repeated_field) {
+        list->Append(ToValue(field));
+      }
+      value_->Set(field_name, std::move(list));
     }
-    value_->Set(field_name, std::move(list));
   }
 
   template <class P, class F>
   void Visit(const P& parent_proto,
              const char* field_name,
              const google::protobuf::RepeatedField<F>& repeated_field) {
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
-    for (const auto& field : repeated_field) {
-      list->Append(ToValue(field));
+    if (!repeated_field.empty()) {
+      std::unique_ptr<base::ListValue> list(new base::ListValue());
+      for (const auto& field : repeated_field) {
+        list->Append(ToValue(field));
+      }
+      value_->Set(field_name, std::move(list));
     }
-    value_->Set(field_name, std::move(list));
   }
 
   template <class P, class F>
