@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "ui/aura/window_observer.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/selection_bound.h"
@@ -29,7 +28,6 @@ class WidgetTestInteractive;
 class VIEWS_EXPORT TouchSelectionControllerImpl
     : public ui::TouchEditingControllerDeprecated,
       public ui::TouchSelectionMenuClient,
-      public aura::WindowObserver,
       public WidgetObserver,
       public ui::EventHandler {
  public:
@@ -76,10 +74,6 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
   void RunContextMenu() override;
-
-  // Overriden from aura::WindowObserver.
-  void OnAncestorWindowTransformed(aura::Window* source,
-                                   aura::Window* window) override;
 
   // Overridden from WidgetObserver. We will observe the widget backing the
   // |client_view_| so that when its moved/resized, we can update the selection
