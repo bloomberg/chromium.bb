@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PROFILE_RESETTER_BRANDCODE_CONFIG_FETCHER_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/callback.h"

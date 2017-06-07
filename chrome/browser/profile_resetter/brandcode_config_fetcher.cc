@@ -5,6 +5,7 @@
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
@@ -22,18 +23,15 @@ namespace {
 
 const int kDownloadTimeoutSec = 10;
 const char kPostXml[] =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-"<request version=\"1.3.17.0\" protocol=\"3.0\" testsource=\"dev\" "
-    "shell_version=\"1.2.3.5\">\n"
-"  <os platform=\"win\" version=\"6.1\" sp=\"\" arch=\"x86\" />\n"
-"  <app\n"
-"    appid=\"{8A69D345-D564-463C-AFF1-A69D9E530F96}\"\n"
-"    version=\"0.0.0.0\"\n"
-"      >\n"
-"    <data name=\"install\" "
-    "index=\"__BRANDCODE_PLACEHOLDER__\" />\n"
-"  </app>\n"
-"</request>";
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+    "<request"
+    "    version=\"chromeprofilereset-1.1\""
+    "    protocol=\"3.0\""
+    "    installsource=\"profilereset\">"
+    "  <app appid=\"{8A69D345-D564-463C-AFF1-A69D9E530F96}\">"
+    "    <data name=\"install\" index=\"__BRANDCODE_PLACEHOLDER__\"/>"
+    "  </app>"
+    "</request>";
 
 // Returns the query to the server which can be used to retrieve the config.
 // |brand| is a brand code, it mustn't be empty.
@@ -139,7 +137,7 @@ bool XmlConfigParser::IsParsingData() const {
          std::equal(elements_.begin(), elements_.end(), data_path);
 }
 
-} // namespace
+}  // namespace
 
 BrandcodeConfigFetcher::BrandcodeConfigFetcher(const FetchCallback& callback,
                                                const GURL& url,
