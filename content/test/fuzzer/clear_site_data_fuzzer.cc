@@ -4,34 +4,24 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <vector>
+#include <string>
 
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
 
 namespace content {
 
-class ClearSiteDataFuzzerTest {
- public:
-  ClearSiteDataFuzzerTest() : throttle_(nullptr) {}
-
-  void TestHeader(const std::string& header) {
-    bool remove_cookies;
-    bool remove_storage;
-    bool remove_cache;
-    std::vector<content::ClearSiteDataThrottle::ConsoleMessage> messages;
-
-    throttle_.ParseHeader(header, &remove_cookies, &remove_storage,
-                          &remove_cache, &messages);
-  }
-
- private:
-  content::ClearSiteDataThrottle throttle_;
-};
-
-ClearSiteDataFuzzerTest* test = new ClearSiteDataFuzzerTest();
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  test->TestHeader(std::string(reinterpret_cast<const char*>(data), size));
+  std::string header(reinterpret_cast<const char*>(data), size);
+
+  bool remove_cookies;
+  bool remove_storage;
+  bool remove_cache;
+  ClearSiteDataThrottle::ConsoleMessagesDelegate delegate_;
+
+  content::ClearSiteDataThrottle::ParseHeaderForTesting(
+      header, &remove_cookies, &remove_storage, &remove_cache, &delegate_,
+      GURL());
+
   return 0;
 }
 

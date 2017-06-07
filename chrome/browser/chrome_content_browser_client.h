@@ -216,12 +216,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* prefs) override;
   void BrowserURLHandlerCreated(content::BrowserURLHandler* handler) override;
-  void ClearSiteData(content::BrowserContext* browser_context,
-                     const url::Origin& origin,
-                     bool remove_cookies,
-                     bool remove_storage,
-                     bool remove_cache,
-                     const base::Closure& callback) override;
   base::FilePath GetDefaultDownloadDirectory() override;
   std::string GetDefaultDownloadName() override;
   base::FilePath GetShaderDiskCacheDirectory() override;

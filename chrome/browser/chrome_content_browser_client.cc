@@ -166,7 +166,6 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_url_handler.h"
-#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -200,7 +199,6 @@
 #include "media/media_features.h"
 #include "media/mojo/features.h"
 #include "net/base/mime_util.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -939,36 +937,6 @@ bool GetDataSaverEnabledPref(const PrefService* prefs) {
          base::FieldTrialList::FindFullName("SaveDataHeader")
              .compare("Disabled");
 }
-
-// A BrowsingDataRemover::Observer that waits for |count|
-// OnBrowsingDataRemoverDone() callbacks, translates them into
-// one base::Closure, and then destroys itself.
-class ClearSiteDataObserver : public content::BrowsingDataRemover::Observer {
- public:
-  explicit ClearSiteDataObserver(content::BrowsingDataRemover* remover,
-                                 const base::Closure& callback,
-                                 int count)
-      : remover_(remover), callback_(callback), count_(count) {
-    remover_->AddObserver(this);
-  }
-
-  ~ClearSiteDataObserver() override { remover_->RemoveObserver(this); }
-
-  // BrowsingDataRemover::Observer.
-  void OnBrowsingDataRemoverDone() override {
-    DCHECK(count_);
-    if (--count_)
-      return;
-
-    callback_.Run();
-    delete this;
-  }
-
- private:
-  content::BrowsingDataRemover* remover_;
-  base::Closure callback_;
-  int count_;
-};
 
 WebContents* GetWebContents(int render_process_id, int render_frame_id) {
   RenderFrameHost* rfh =
@@ -2744,74 +2712,6 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 
   // chrome: & friends.
   handler->AddHandlerPair(&HandleWebUI, &HandleWebUIReverse);
-}
-
-void ChromeContentBrowserClient::ClearSiteData(
-    content::BrowserContext* browser_context,
-    const url::Origin& origin,
-    bool remove_cookies,
-    bool remove_storage,
-    bool remove_cache,
-    const base::Closure& callback) {
-  content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(browser_context);
-
-  // ClearSiteDataObserver deletes itself when callbacks from both removal
-  // tasks are received.
-  ClearSiteDataObserver* observer =
-      new ClearSiteDataObserver(remover, callback, 2 /* number of tasks */);
-
-  // Cookies and channel IDs are scoped to
-  // a) eTLD+1 of |origin|'s host if |origin|'s host is a registrable domain
-  //    or a subdomain thereof
-  // b) |origin|'s host exactly if it is an IP address or an internal hostname
-  //    (e.g. "localhost" or "fileserver").
-  if (remove_cookies) {
-    std::string domain = GetDomainAndRegistry(
-        origin.host(),
-        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-
-    if (domain.empty())
-      domain = origin.host();  // IP address or internal hostname.
-
-    std::unique_ptr<BrowsingDataFilterBuilder> domain_filter_builder(
-        BrowsingDataFilterBuilder::Create(
-            BrowsingDataFilterBuilder::WHITELIST));
-    domain_filter_builder->AddRegisterableDomain(domain);
-
-    remover->RemoveWithFilterAndReply(
-        base::Time(), base::Time::Max(),
-        content::BrowsingDataRemover::DATA_TYPE_COOKIES |
-            content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
-            ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA,
-        ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES,
-        std::move(domain_filter_builder), observer);
-  } else {
-    // The first removal task is a no-op.
-    observer->OnBrowsingDataRemoverDone();
-  }
-
-  // Delete origin-scoped data.
-  int remove_mask = 0;
-  if (remove_storage)
-    remove_mask |= content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE;
-  if (remove_cache)
-    remove_mask |= content::BrowsingDataRemover::DATA_TYPE_CACHE;
-
-  if (remove_mask) {
-    std::unique_ptr<BrowsingDataFilterBuilder> origin_filter_builder(
-        BrowsingDataFilterBuilder::Create(
-            BrowsingDataFilterBuilder::WHITELIST));
-    origin_filter_builder->AddOrigin(origin);
-
-    remover->RemoveWithFilterAndReply(
-        base::Time(), base::Time::Max(), remove_mask,
-        ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES,
-        std::move(origin_filter_builder), observer);
-  } else {
-    // The second removal task is a no-op.
-    observer->OnBrowsingDataRemoverDone();
-  }
 }
 
 base::FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
