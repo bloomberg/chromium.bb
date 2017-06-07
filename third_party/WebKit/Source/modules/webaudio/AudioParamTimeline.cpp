@@ -61,9 +61,9 @@ static bool IsNonNegativeAudioParamTime(double time,
   if (time >= 0)
     return true;
 
-  exception_state.ThrowDOMException(
-      kInvalidAccessError, message + " must be a finite non-negative number: " +
-                               String::Number(time));
+  exception_state.ThrowRangeError(
+      message +
+      " must be a finite non-negative number: " + String::Number(time));
   return false;
 }
 
@@ -73,8 +73,7 @@ static bool IsPositiveAudioParamTime(double time,
   if (time > 0)
     return true;
 
-  exception_state.ThrowDOMException(
-      kInvalidAccessError,
+  exception_state.ThrowRangeError(
       message + " must be a finite positive number: " + String::Number(time));
   return false;
 }
@@ -444,12 +443,11 @@ void AudioParamTimeline::ExponentialRampToValueAtTime(
     return;
 
   if (!value) {
-    exception_state.ThrowDOMException(
-        kInvalidAccessError,
+    exception_state.ThrowRangeError(
         "The float target value provided (" + String::Number(value) +
-            ") should not be in the range (" +
-            String::Number(-std::numeric_limits<float>::denorm_min()) + ", " +
-            String::Number(std::numeric_limits<float>::denorm_min()) + ").");
+        ") should not be in the range (" +
+        String::Number(-std::numeric_limits<float>::denorm_min()) + ", " +
+        String::Number(std::numeric_limits<float>::denorm_min()) + ").");
     return;
   }
 
