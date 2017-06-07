@@ -308,6 +308,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
                            premultiplied_alpha, uv_top_left, uv_bottom_right,
                            SK_ColorTRANSPARENT, opacity, flipped,
                            nearest_neighbor, false);
+      texture_quad->set_resource_size_in_pixels(coded_size);
       ValidateQuadResources(texture_quad);
       break;
     }
