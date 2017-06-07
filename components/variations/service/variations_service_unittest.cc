@@ -44,7 +44,6 @@ class TestVariationsServiceClient : public VariationsServiceClient {
 
   // variations::VariationsServiceClient:
   std::string GetApplicationLocale() override { return std::string(); }
-  base::SequencedWorkerPool* GetBlockingPool() override { return nullptr; }
   base::Callback<base::Version(void)> GetVersionForSimulationCallback()
       override {
     return base::Callback<base::Version(void)>();
