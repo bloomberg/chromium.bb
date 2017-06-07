@@ -2871,20 +2871,19 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
               '%s' % (self.GetIssue(), self.GetIssueURL()))
         if not title:
           if options.message:
-            # For compatibility with Rietveld, if -m|--message is given on
-            # command line, title should be the first line of that message,
-            # which shouldn't be confused with CL description.
-            default_title = options.message.strip().split()[0]
+            # When uploading a subsequent patchset, -m|--message is taken
+            # as the patchset title if --title was not provided.
+            title = options.message.strip()
           else:
             default_title = RunGit(
                 ['show', '-s', '--format=%s', 'HEAD']).strip()
-          if options.force:
-            title = default_title
-          else:
-            title = ask_for_data(
-                'Title for patchset [%s]: ' % default_title) or default_title
-          if title == default_title:
-            automatic_title = True
+            if options.force:
+              title = default_title
+            else:
+              title = ask_for_data(
+                  'Title for patchset [%s]: ' % default_title) or default_title
+            if title == default_title:
+              automatic_title = True
         change_id = self._GetChangeDetail()['change_id']
         while True:
           footer_change_ids = git_footers.get_footer_change_id(message)
