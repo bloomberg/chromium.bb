@@ -53,8 +53,6 @@ class SystemTrayDelegateChromeOS
   void GetCurrentIMEProperties(ash::IMEPropertyInfoList* list) override;
   base::string16 GetIMEManagedMessage() override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
-  bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
-  bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   void ActiveUserWasChanged() override;
   bool IsSearchKeyMappedToCapsLock() override;
 
@@ -118,15 +116,9 @@ class SystemTrayDelegateChromeOS
       override;
 
   std::unique_ptr<content::NotificationRegistrar> registrar_;
-  std::unique_ptr<PrefChangeRegistrar> local_state_registrar_;
   std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;
   Profile* user_profile_ = nullptr;
   int search_key_mapped_to_ = input_method::kSearchKey;
-  bool have_session_start_time_ = false;
-  base::TimeTicks session_start_time_;
-  bool have_session_length_limit_ = false;
-  base::TimeDelta session_length_limit_;
-  bool session_started_ = false;
 
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;

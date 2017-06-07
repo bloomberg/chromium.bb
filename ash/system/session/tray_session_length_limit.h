@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/system/session/session_length_limit_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -23,7 +23,7 @@ class LabelTrayView;
 
 // Adds a countdown timer to the system tray if the session length is limited.
 class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
-                                          public SessionLengthLimitObserver {
+                                          public SessionObserver {
  public:
   enum LimitState { LIMIT_NONE, LIMIT_SET, LIMIT_EXPIRING_SOON };
 
@@ -34,8 +34,7 @@ class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
   views::View* CreateDefaultView(LoginStatus status) override;
   void OnDefaultViewDestroyed() override;
 
-  // SessionLengthLimitObserver:
-  void OnSessionStartTimeChanged() override;
+  // SessionObserver:
   void OnSessionLengthLimitChanged() override;
 
  private:
@@ -57,8 +56,6 @@ class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
   base::string16 ComposeNotificationMessage() const;
   base::string16 ComposeTrayBubbleMessage() const;
 
-  base::TimeTicks session_start_time_;
-  base::TimeDelta time_limit_;
   base::TimeDelta remaining_session_time_;
 
   LimitState limit_state_;       // Current state.

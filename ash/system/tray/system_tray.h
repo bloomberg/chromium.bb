@@ -31,6 +31,7 @@ class TrayEnterprise;
 class TrayNetwork;
 class TrayNightLight;
 class TrayScale;
+class TraySessionLengthLimit;
 class TraySupervisedUser;
 class TraySystemInfo;
 class TrayTiles;
@@ -146,6 +147,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayCast* GetTrayCastForTesting() const;
   TrayEnterprise* GetTrayEnterpriseForTesting() const;
   TrayNetwork* GetTrayNetworkForTesting() const;
+  TraySessionLengthLimit* GetTraySessionLengthLimitForTesting() const;
   TraySupervisedUser* GetTraySupervisedUserForTesting() const;
   TraySystemInfo* GetTraySystemInfoForTesting() const;
   TrayTiles* GetTrayTilesForTesting() const;
@@ -232,6 +234,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayNetwork* tray_network_ = nullptr;
   TrayTiles* tray_tiles_ = nullptr;
   TrayScale* tray_scale_ = nullptr;
+  TraySessionLengthLimit* tray_session_length_limit_ = nullptr;
   TraySupervisedUser* tray_supervised_user_ = nullptr;
   TraySystemInfo* tray_system_info_ = nullptr;
   TrayUpdate* tray_update_ = nullptr;

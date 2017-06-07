@@ -15,7 +15,6 @@
 #include "ash/system/screen_security/screen_share_observer.h"
 #include "ash/system/session/last_window_closed_observer.h"
 #include "ash/system/session/logout_button_observer.h"
-#include "ash/system/session/session_length_limit_observer.h"
 #include "ash/system/status_area_focus_observer.h"
 #include "ash/system/tray_tracing.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
@@ -227,26 +226,6 @@ void SystemTrayNotifier::NotifyScreenShareStart(
 void SystemTrayNotifier::NotifyScreenShareStop() {
   for (auto& observer : screen_share_observers_)
     observer.OnScreenShareStop();
-}
-
-void SystemTrayNotifier::AddSessionLengthLimitObserver(
-    SessionLengthLimitObserver* observer) {
-  session_length_limit_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveSessionLengthLimitObserver(
-    SessionLengthLimitObserver* observer) {
-  session_length_limit_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifySessionStartTimeChanged() {
-  for (auto& observer : session_length_limit_observers_)
-    observer.OnSessionStartTimeChanged();
-}
-
-void SystemTrayNotifier::NotifySessionLengthLimitChanged() {
-  for (auto& observer : session_length_limit_observers_)
-    observer.OnSessionLengthLimitChanged();
 }
 
 void SystemTrayNotifier::AddStatusAreaFocusObserver(

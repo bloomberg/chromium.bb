@@ -280,6 +280,14 @@ void SessionController::NotifyChromeTerminating() {
     observer.OnChromeTerminating();
 }
 
+void SessionController::SetSessionLengthLimit(base::TimeDelta length_limit,
+                                              base::TimeTicks start_time) {
+  session_length_limit_ = length_limit;
+  session_start_time_ = start_time;
+  for (auto& observer : observers_)
+    observer.OnSessionLengthLimitChanged();
+}
+
 void SessionController::ClearUserSessionsForTest() {
   user_sessions_.clear();
 }

@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 class AccountId;
@@ -33,6 +34,9 @@ class ASH_EXPORT SessionController
  public:
   SessionController();
   ~SessionController() override;
+
+  base::TimeDelta session_length_limit() const { return session_length_limit_; }
+  base::TimeTicks session_start_time() const { return session_start_time_; }
 
   // Binds the mojom::SessionControllerRequest to this object.
   void BindRequest(mojom::SessionControllerRequest request);
@@ -124,6 +128,8 @@ class ASH_EXPORT SessionController
   void NotifyChromeLockAnimationsComplete() override;
   void RunUnlockAnimation(RunUnlockAnimationCallback callback) override;
   void NotifyChromeTerminating() override;
+  void SetSessionLengthLimit(base::TimeDelta length_limit,
+                             base::TimeTicks start_time) override;
 
   // Test helpers.
   void ClearUserSessionsForTest();
@@ -179,6 +185,14 @@ class ASH_EXPORT SessionController
 
   // Pending callback for the StartLock request.
   base::OnceCallback<void(bool)> start_lock_callback_;
+
+  // The session length limit; set to zero if there is no limit.
+  base::TimeDelta session_length_limit_;
+
+  // The session start time, set at login or on the first user activity; set to
+  // null if there is no session length limit. This value is also stored in a
+  // pref in case of a crash during the session.
+  base::TimeTicks session_start_time_;
 
   base::ObserverList<ash::SessionObserver> observers_;
 

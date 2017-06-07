@@ -9,13 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "base/i18n/time_formatting.h"
 #include "base/strings/string16.h"
-
-namespace base {
-class TimeDelta;
-class TimeTicks;
-}
 
 namespace ash {
 struct IMEInfo;
@@ -58,12 +52,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;
-
-  // Retrieves the session start time. Returns |false| if the time is not set.
-  virtual bool GetSessionStartTime(base::TimeTicks* session_start_time);
-
-  // Retrieves the session length limit. Returns |false| if no limit is set.
-  virtual bool GetSessionLengthLimit(base::TimeDelta* session_length_limit);
 
   // The active user has been changed. This will be called when the UI is ready
   // to be switched to the new user.

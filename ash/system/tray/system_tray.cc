@@ -237,7 +237,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   // Otherwise it could be a main axis margin on the tray's box layout.
   AddTrayItem(base::MakeUnique<PaddingTrayItem>());
 
-  AddTrayItem(base::MakeUnique<TraySessionLengthLimit>(this));
+  tray_session_length_limit_ = new TraySessionLengthLimit(this);
+  AddTrayItem(base::WrapUnique(tray_session_length_limit_));
   tray_enterprise_ = new TrayEnterprise(this);
   AddTrayItem(base::WrapUnique(tray_enterprise_));
   tray_supervised_user_ = new TraySupervisedUser(this);
@@ -598,6 +599,11 @@ TrayEnterprise* SystemTray::GetTrayEnterpriseForTesting() const {
 
 TrayNetwork* SystemTray::GetTrayNetworkForTesting() const {
   return tray_network_;
+}
+
+TraySessionLengthLimit* SystemTray::GetTraySessionLengthLimitForTesting()
+    const {
+  return tray_session_length_limit_;
 }
 
 TraySupervisedUser* SystemTray::GetTraySupervisedUserForTesting() const {
