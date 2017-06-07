@@ -63,7 +63,7 @@ class EventDispatcher : public ServerWindowObserver,
   void Reset();
 
   void SetMousePointerDisplayLocation(const gfx::Point& display_location,
-                                      const int64_t display_id);
+                                      int64_t display_id);
   const gfx::Point& mouse_pointer_last_location() const {
     return mouse_pointer_last_location_;
   }
@@ -142,18 +142,24 @@ class EventDispatcher : public ServerWindowObserver,
 
   void RemoveAccelerator(uint32_t id);
 
+  // True if we are actively finding a target for an event, false otherwise.
+  bool IsProcessingEvent() const;
+
   // Processes the supplied event, informing the delegate as approriate. This
   // may result in generating any number of events. If |match_phase| is
   // ANY and there is a matching accelerator with PRE_TARGET found, than only
   // OnAccelerator() is called. The expectation is after the PRE_TARGET has been
   // handled this is again called with an AcceleratorMatchPhase of POST_ONLY.
+  // This may be asynchronous if we need to find the target window for |event|
+  // asynchronously.
   void ProcessEvent(const ui::Event& event,
-                    const int64_t display_id,
+                    int64_t display_id,
                     AcceleratorMatchPhase match_phase);
 
   // EventTargeterDelegate:
   ServerWindow* GetRootWindowContaining(gfx::Point* location_in_display,
                                         int64_t* display_id) override;
+  void ProcessNextAvailableEvent() override;
 
  private:
   friend class test::EventDispatcherTestApi;
@@ -208,7 +214,17 @@ class EventDispatcher : public ServerWindowObserver,
   //   when no buttons on the mouse are down.
   // This also generates exit events as appropriate. For example, if the mouse
   // moves between one window to another an exit is generated on the first.
-  void ProcessPointerEvent(const ui::PointerEvent& event);
+  // |pointer_target| is the PointerTarget for |event| based on the
+  // |deepest_window|, the deepest visible window for the root_location
+  // of the |event|. |location_in_display| and |display_id| are updated values
+  // for root_location and |event_display_id_| (e.g. during drag-n-drop).
+  void ProcessPointerEventOnFoundTarget(const ui::PointerEvent& event,
+                                        const LocationTarget& location_target);
+
+  void UpdateNonClientAreaForCurrentWindowOnFoundWindow(
+      const LocationTarget& location_target);
+  void UpdateCursorProviderByLastKnownLocationOnFoundWindow(
+      const LocationTarget& location_target);
 
   // Adds |pointer_target| to |pointer_targets_|.
   void StartTrackingPointer(int32_t pointer_id,

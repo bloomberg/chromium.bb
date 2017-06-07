@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -47,7 +48,7 @@ class WindowManagerStateTest : public testing::Test {
                            ServerWindow** server_window);
 
   void DispatchInputEventToWindow(ServerWindow* target,
-                                  const int64_t display_id,
+                                  int64_t display_id,
                                   const ui::Event& event,
                                   Accelerator* accelerator);
   void OnEventAckTimeout(ClientSpecificId client_id);
@@ -100,13 +101,15 @@ class WindowManagerStateTest : public testing::Test {
   // testing::Test:
   void SetUp() override;
 
+ protected:
+  // Handles WindowStateManager ack timeouts.
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+
  private:
   WindowEventTargetingHelper window_event_targeting_helper_;
 
   WindowManagerState* window_manager_state_;
 
-  // Handles WindowStateManager ack timeouts.
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   TestWindowManager window_manager_;
   ServerWindow* window_ = nullptr;
   WindowTree* window_tree_ = nullptr;
@@ -139,7 +142,7 @@ void WindowManagerStateTest::CreateSecondaryTree(
 
 void WindowManagerStateTest::DispatchInputEventToWindow(
     ServerWindow* target,
-    const int64_t display_id,
+    int64_t display_id,
     const ui::Event& event,
     Accelerator* accelerator) {
   WindowManagerStateTestApi test_api(window_manager_state_);
@@ -177,6 +180,22 @@ void SetCanFocusUp(ServerWindow* window) {
     window = window->parent();
   }
 }
+
+class WindowManagerStateTestAsync : public WindowManagerStateTest {
+ public:
+  WindowManagerStateTestAsync() {}
+  ~WindowManagerStateTestAsync() override {}
+
+  // WindowManagerStateTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        "enable-async-event-targeting");
+    WindowManagerStateTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowManagerStateTestAsync);
+};
 
 // Tests that when an event is dispatched with no accelerator, that post target
 // accelerator is not triggered.
@@ -694,6 +713,41 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
       ui::PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, 0),
       base::TimeTicks());
   window_manager_state()->ProcessEvent(move, 0);
+  // The event isn't over a valid target, which should trigger resetting the
+  // cursor to POINTER.
+  EXPECT_EQ(ui::CursorType::kPointer, cursor_type());
+}
+
+TEST_F(WindowManagerStateTestAsync, CursorResetOverNoTargetAsync) {
+  ASSERT_EQ(1u, window_server()->display_manager()->displays().size());
+  const ClientWindowId child_window_id(11);
+  window_tree()->NewWindow(child_window_id, ServerWindow::Properties());
+  ServerWindow* child_window =
+      window_tree()->GetWindowByClientId(child_window_id);
+  window_tree()->AddWindow(FirstRootId(window_tree()), child_window_id);
+  // Setup steps already do hit-test for mouse cursor update so this should go
+  // to the queue in EventDispatcher.
+  EXPECT_TRUE(window_manager_state()->event_dispatcher()->IsProcessingEvent());
+  child_window->SetVisible(true);
+  child_window->SetBounds(gfx::Rect(0, 0, 20, 20));
+  child_window->parent()->SetCursor(ui::CursorData(ui::CursorType::kCopy));
+  // Move the mouse outside the bounds of the child, so that the mouse is not
+  // over any valid windows. Cursor should change to POINTER.
+  ui::PointerEvent move(
+      ui::ET_POINTER_MOVED, gfx::Point(25, 25), gfx::Point(25, 25), 0, 0,
+      ui::PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, 0),
+      base::TimeTicks());
+  WindowManagerStateTestApi test_api(window_manager_state());
+  EXPECT_TRUE(test_api.is_event_queue_empty());
+  window_manager_state()->ProcessEvent(move, 0);
+  // There's no event dispatching in flight but there's hit-test in flight in
+  // EventDispatcher so we still put event processing request into the queue
+  // in WindowManagerState.
+  EXPECT_FALSE(test_api.tree_awaiting_input_ack());
+  EXPECT_TRUE(window_manager_state()->event_dispatcher()->IsProcessingEvent());
+  EXPECT_FALSE(test_api.is_event_queue_empty());
+  task_runner_->RunUntilIdle();
+  EXPECT_TRUE(test_api.is_event_queue_empty());
   // The event isn't over a valid target, which should trigger resetting the
   // cursor to POINTER.
   EXPECT_EQ(ui::CursorType::kPointer, cursor_type());
