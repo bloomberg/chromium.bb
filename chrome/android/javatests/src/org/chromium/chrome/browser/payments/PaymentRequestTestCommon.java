@@ -404,7 +404,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
             @Override
             public String call() {
                 return mUI.getShippingAddressSectionForTest()
-                        .getSummaryLabelForTest()
+                        .getLeftSummaryLabelForTest()
                         .getText()
                         .toString();
             }
@@ -416,7 +416,19 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
             @Override
             public String call() {
                 return mUI.getShippingOptionSectionForTest()
-                        .getSummaryLabelForTest()
+                        .getLeftSummaryLabelForTest()
+                        .getText()
+                        .toString();
+            }
+        });
+    }
+
+    protected String getShippingOptionCostSummaryOnBottomSheet() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return mUI.getShippingOptionSectionForTest()
+                        .getRightSummaryLabelForTest()
                         .getText()
                         .toString();
             }
