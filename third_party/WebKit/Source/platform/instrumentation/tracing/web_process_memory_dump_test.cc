@@ -115,10 +115,12 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   auto wmad4 = wpmd1->CreateMemoryAllocatorDump("1/4");
   wpmd1->AddOwnershipEdge(wmad4->Guid(), guid);
   auto allocator_dumps_edges =
-      wpmd1->process_memory_dump()->allocator_dumps_edges();
+      wpmd1->process_memory_dump()->allocator_dumps_edges_for_testing();
   ASSERT_EQ(1u, allocator_dumps_edges.size());
-  ASSERT_EQ(wmad4->Guid(), allocator_dumps_edges[0].source.ToUint64());
-  ASSERT_EQ(guid, allocator_dumps_edges[0].target.ToUint64());
+  auto it = allocator_dumps_edges.begin();
+  ASSERT_NE(allocator_dumps_edges.end(), it);
+  ASSERT_EQ(wmad4->Guid(), it->first.ToUint64());
+  ASSERT_EQ(guid, it->second.target.ToUint64());
 
   // Check that createDumpAdapterForSkia() works.
   auto skia_trace_memory_dump = wpmd1->CreateDumpAdapterForSkia("1/skia");
