@@ -129,9 +129,9 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       ResourceContext* context) = 0;
 
   // URLLoaderRequestHandler overrides.
-  void MaybeCreateLoaderFactory(const ResourceRequest& request,
-                                ResourceContext* resource_context,
-                                LoaderFactoryCallback callback) override;
+  void MaybeCreateLoader(const ResourceRequest& request,
+                         ResourceContext* resource_context,
+                         LoaderCallback callback) override;
 
   // Methods to support cross site navigations.
   void PrepareForCrossSiteTransfer(int old_process_id);

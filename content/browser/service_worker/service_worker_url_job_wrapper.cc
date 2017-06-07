@@ -22,6 +22,19 @@ namespace {
 
 class URLLoaderImpl : public mojom::URLLoader {
  public:
+  static void Start(
+      const ServiceWorkerResponse& response,
+      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+      mojom::URLLoaderAssociatedRequest request,
+      mojom::URLLoaderClientPtr client) {
+    mojo::MakeStrongAssociatedBinding(
+        base::MakeUnique<URLLoaderImpl>(response, std::move(body_as_stream),
+                                        blob_storage_context,
+                                        std::move(client)),
+        std::move(request));
+  }
+
   URLLoaderImpl(const ServiceWorkerResponse& response,
                 blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
                 base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
@@ -102,46 +115,6 @@ class URLLoaderImpl : public mojom::URLLoader {
 
 }  // namespace
 
-class ServiceWorkerURLJobWrapper::Factory : public mojom::URLLoaderFactory {
- public:
-  Factory(const ServiceWorkerResponse& response,
-          blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-          base::WeakPtr<storage::BlobStorageContext> blob_storage_context)
-      : response_(response),
-        body_as_stream_(std::move(body_as_stream)),
-        blob_storage_context_(blob_storage_context) {}
-
-  void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client) override {
-    // Note that url_request is ignored here, as we've already processed the
-    // fetch before even creating the factory.
-    // TODO(scottmg): Use options.
-    mojo::MakeStrongAssociatedBinding(
-        base::MakeUnique<URLLoaderImpl>(response_, std::move(body_as_stream_),
-                                        blob_storage_context_,
-                                        std::move(client)),
-        std::move(request));
-  }
-
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& url_request,
-                SyncLoadCallback callback) override {
-    NOTREACHED();
-  }
-
- private:
-  ServiceWorkerResponse response_;
-  blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream_;
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(Factory);
-};
-
 ServiceWorkerURLJobWrapper::ServiceWorkerURLJobWrapper(
     base::WeakPtr<ServiceWorkerURLRequestJob> url_request_job)
     : job_type_(JobType::kURLRequest),
@@ -149,12 +122,12 @@ ServiceWorkerURLJobWrapper::ServiceWorkerURLJobWrapper(
       weak_factory_(this) {}
 
 ServiceWorkerURLJobWrapper::ServiceWorkerURLJobWrapper(
-    LoaderFactoryCallback callback,
+    LoaderCallback callback,
     Delegate* delegate,
     const ResourceRequest& resource_request,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context)
     : job_type_(JobType::kURLLoader),
-      loader_factory_callback_(std::move(callback)),
+      loader_callback_(std::move(callback)),
       delegate_(delegate),
       resource_request_(resource_request),
       blob_storage_context_(blob_storage_context),
@@ -173,8 +146,8 @@ void ServiceWorkerURLJobWrapper::FallbackToNetwork() {
     // call this synchronously here and don't wait for a separate async
     // StartRequest cue like what URLRequestJob case does.
     // TODO(kinuko): Make sure this is ok or we need to make this async.
-    if (!loader_factory_callback_.is_null()) {
-      std::move(loader_factory_callback_).Run(nullptr);
+    if (!loader_callback_.is_null()) {
+      std::move(loader_callback_).Run(StartLoaderCallback());
     }
   } else {
     url_request_job_->FallbackToNetwork();
@@ -240,7 +213,7 @@ void ServiceWorkerURLJobWrapper::FailDueToLostController() {
 
 bool ServiceWorkerURLJobWrapper::WasCanceled() const {
   if (job_type_ == JobType::kURLLoader) {
-    return loader_factory_callback_.is_null();
+    return loader_callback_.is_null();
   } else {
     return !url_request_job_;
   }
@@ -302,14 +275,14 @@ void ServiceWorkerURLJobWrapper::DidDispatchFetchEvent(
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     const scoped_refptr<ServiceWorkerVersion>& version) {
   if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
-    std::move(loader_factory_callback_).Run(nullptr);
+    std::move(loader_callback_).Run(StartLoaderCallback());
     return;
   }
   DCHECK_EQ(fetch_result, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
-
-  factory_ = base::MakeUnique<Factory>(response, std::move(body_as_stream),
-                                       blob_storage_context_);
-  std::move(loader_factory_callback_).Run(factory_.get());
+  std::move(loader_callback_)
+      .Run(base::Bind(&URLLoaderImpl::Start, response,
+                      base::Passed(std::move(body_as_stream)),
+                      blob_storage_context_));
 }
 
 }  // namespace content

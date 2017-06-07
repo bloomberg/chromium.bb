@@ -237,12 +237,12 @@ ServiceWorkerProviderHost* ServiceWorkerRequestHandler::GetProviderHost(
   return handler ? handler->provider_host_.get() : nullptr;
 }
 
-void ServiceWorkerRequestHandler::MaybeCreateLoaderFactory(
+void ServiceWorkerRequestHandler::MaybeCreateLoader(
     const ResourceRequest& request,
     ResourceContext* resource_context,
-    LoaderFactoryCallback callback) {
+    LoaderCallback callback) {
   NOTREACHED();
-  std::move(callback).Run(nullptr);
+  std::move(callback).Run(StartLoaderCallback());
 }
 
 void ServiceWorkerRequestHandler::PrepareForCrossSiteTransfer(

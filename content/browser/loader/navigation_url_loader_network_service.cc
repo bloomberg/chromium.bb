@@ -59,11 +59,10 @@ WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
 
 // Kept around during the lifetime of the navigation request, and is
 // responsible for dispatching a ResourceRequest to the appropriate
-// URLLoaderFactory.  In order to get the right URLLoaderFactory it
-// builds a vector of URLLoaderRequestHandler's and successively calls
-// MaybeCreateLoaderFactory on each until the request is successfully
-// handled. The same sequence may be performed multiple times when
-// redirects happen.
+// URLLoader.  In order to get the right URLLoader it builds a vector
+// of URLLoaderRequestHandler's and successively calls MaybeCreateLoader
+// on each until the request is successfully handled. The same sequence
+// may be performed multiple times when redirects happen.
 class NavigationURLLoaderNetworkService::URLLoaderRequestController {
  public:
   URLLoaderRequestController(
@@ -143,35 +142,38 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
     url_loader_request_ = std::move(url_loader_request);
     url_loader_client_ptr_ = std::move(url_loader_client_ptr);
     handler_index_ = 0;
-    MaybeStartLoader(nullptr);
+    MaybeStartLoader(StartLoaderCallback());
   }
 
-  void MaybeStartLoader(mojom::URLLoaderFactory* factory) {
+  void MaybeStartLoader(StartLoaderCallback start_loader_callback) {
     DCHECK(url_loader_client_ptr_.is_bound());
 
-    if (factory) {
-      factory->CreateLoaderAndStart(
-          std::move(url_loader_request_), 0 /* routing_id? */,
-          0 /* request_id? */, mojom::kURLLoadOptionSendSSLInfo,
-          *resource_request_, std::move(url_loader_client_ptr_));
+    if (start_loader_callback) {
+      std::move(start_loader_callback)
+          .Run(std::move(url_loader_request_),
+               std::move(url_loader_client_ptr_));
       return;
     }
 
     if (handler_index_ < handlers_.size()) {
-      handlers_[handler_index_++]->MaybeCreateLoaderFactory(
+      handlers_[handler_index_++]->MaybeCreateLoader(
           *resource_request_, resource_context_,
           base::BindOnce(&URLLoaderRequestController::MaybeStartLoader,
                          base::Unretained(this)));
       return;
     }
 
+    mojom::URLLoaderFactory* factory = nullptr;
     DCHECK_EQ(handlers_.size(), handler_index_);
     if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
       factory = url_loader_factory_getter_->GetBlobFactory()->get();
     } else {
       factory = url_loader_factory_getter_->GetNetworkFactory()->get();
     }
-    MaybeStartLoader(factory);
+    factory->CreateLoaderAndStart(
+        std::move(url_loader_request_), 0 /* routing_id? */,
+        0 /* request_id? */, mojom::kURLLoadOptionSendSSLInfo,
+        *resource_request_, std::move(url_loader_client_ptr_));
   }
 
  private:
