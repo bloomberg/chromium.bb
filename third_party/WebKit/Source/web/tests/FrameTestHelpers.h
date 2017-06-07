@@ -274,7 +274,9 @@ class TestWebFrameClient : public WebFrameClient {
   bool IsLoading() { return loads_in_progress_ > 0; }
 
   // Tests can override the virtual method below to mock the interface provider.
-  virtual blink::InterfaceProvider* GetInterfaceProvider() { return nullptr; }
+  virtual blink::InterfaceProvider* GetInterfaceProviderForTesting() {
+    return nullptr;
+  }
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override {
     // TODO(yhirano): Stop using Platform::CreateURLLoader() here.

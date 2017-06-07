@@ -4,11 +4,19 @@
 
 #include "core/mojo/Mojo.h"
 
+#include <string>
+
+#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/mojo/MojoCreateDataPipeOptions.h"
 #include "core/mojo/MojoCreateDataPipeResult.h"
 #include "core/mojo/MojoCreateMessagePipeResult.h"
 #include "core/mojo/MojoCreateSharedBufferResult.h"
 #include "core/mojo/MojoHandle.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+#include "platform/bindings/ScriptState.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -63,6 +71,19 @@ void Mojo::createSharedBuffer(unsigned num_bytes,
   if (result == MOJO_RESULT_OK) {
     result_dict.setHandle(MojoHandle::Create(mojo::MakeScopedHandle(handle)));
   }
+}
+
+// static
+void Mojo::bindInterface(ScriptState* script_state,
+                         const String& interface_name,
+                         MojoHandle* request_handle) {
+  LocalDOMWindow::From(script_state)
+      ->GetFrame()
+      ->Client()
+      ->GetInterfaceProvider()
+      ->GetInterface(
+          std::string(interface_name.Utf8().data()),
+          mojo::ScopedMessagePipeHandle::From(request_handle->TakeHandle()));
 }
 
 }  // namespace blink

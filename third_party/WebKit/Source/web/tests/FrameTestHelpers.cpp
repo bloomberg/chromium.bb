@@ -160,8 +160,10 @@ WebLocalFrameBase* CreateLocalChild(WebRemoteFrame* parent,
 
   WebLocalFrameBase* frame = ToWebLocalFrameBase(parent->CreateLocalChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
-      static_cast<TestWebFrameClient*>(client)->GetInterfaceProvider(), nullptr,
-      previous_sibling, WebParsedFeaturePolicy(), properties, nullptr));
+      static_cast<TestWebFrameClient*>(client)
+          ->GetInterfaceProviderForTesting(),
+      nullptr, previous_sibling, WebParsedFeaturePolicy(), properties,
+      nullptr));
 
   if (!widget_client)
     widget_client = DefaultWebWidgetClient();
@@ -221,7 +223,7 @@ WebViewBase* WebViewHelper::InitializeWithOpener(
   web_view_->SetDefaultPageScaleLimits(1, 4);
   WebLocalFrame* frame = WebLocalFrameBase::Create(
       WebTreeScopeType::kDocument, web_frame_client,
-      web_frame_client->GetInterfaceProvider(), nullptr, opener);
+      web_frame_client->GetInterfaceProviderForTesting(), nullptr, opener);
   web_view_->SetMainFrame(frame);
   web_frame_client->SetFrame(frame);
   // TODO(dcheng): The main frame widget currently has a special case.
@@ -293,8 +295,8 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     WebSandboxFlags sandbox_flags,
     const WebParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties) {
-  WebLocalFrame* frame =
-      parent->CreateLocalChild(scope, this, GetInterfaceProvider(), nullptr);
+  WebLocalFrame* frame = parent->CreateLocalChild(
+      scope, this, GetInterfaceProviderForTesting(), nullptr);
   return frame;
 }
 

@@ -71,7 +71,7 @@ void MockInterfaceProvider::GetInterface(const char* name,
 class TestWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   ~TestWebFrameClient() override = default;
-  InterfaceProvider* GetInterfaceProvider() override {
+  InterfaceProvider* GetInterfaceProviderForTesting() override {
     return &interface_provider_;
   }
 
@@ -121,7 +121,7 @@ class ScreenWakeLockTest : public ::testing::Test {
 
   bool ClientKeepScreenAwake() {
     return static_cast<MockInterfaceProvider*>(
-               test_web_frame_client_.GetInterfaceProvider())
+               test_web_frame_client_.GetInterfaceProviderForTesting())
         ->WakeLockStatus();
   }
 

@@ -4217,6 +4217,7 @@ interface MimeTypeArray
     method item
     method namedItem
 interface Mojo
+    static method bindInterface
     static method createDataPipe
     static method createMessagePipe
     static method createSharedBuffer
@@ -4253,6 +4254,17 @@ interface MojoHandle
     method watch
     method writeData
     method writeMessage
+interface MojoInterfaceInterceptor : EventTarget
+    attribute @@toStringTag
+    getter oninterfacerequest
+    method constructor
+    method start
+    method stop
+    setter oninterfacerequest
+interface MojoInterfaceRequestEvent : Event
+    attribute @@toStringTag
+    getter handle
+    method constructor
 interface MojoWatcher
     attribute @@toStringTag
     method cancel

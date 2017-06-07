@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/system/core.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -14,6 +15,8 @@ class MojoCreateDataPipeOptions;
 class MojoCreateDataPipeResult;
 class MojoCreateMessagePipeResult;
 class MojoCreateSharedBufferResult;
+class MojoHandle;
+class ScriptState;
 
 class Mojo final : public GarbageCollected<Mojo>, public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -48,6 +51,10 @@ class Mojo final : public GarbageCollected<Mojo>, public ScriptWrappable {
                              MojoCreateDataPipeResult&);
   static void createSharedBuffer(unsigned num_bytes,
                                  MojoCreateSharedBufferResult&);
+
+  static void bindInterface(ScriptState*,
+                            const String& interface_name,
+                            MojoHandle*);
 
   DEFINE_INLINE_TRACE() {}
 };

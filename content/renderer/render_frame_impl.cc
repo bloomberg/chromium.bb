@@ -1834,7 +1834,7 @@ void RenderFrameImpl::OnDeleteFrame() {
   // See https://crbug.com/569683 for details.
   in_browser_initiated_detach_ = true;
 
-  // This will result in a call to RendeFrameImpl::frameDetached, which
+  // This will result in a call to RenderFrameImpl::frameDetached, which
   // deletes the object. Do not access |this| after detach.
   frame_->Detach();
 }
@@ -2948,6 +2948,11 @@ RenderFrameImpl::CreateServiceWorkerProvider() {
   }
   return base::MakeUnique<WebServiceWorkerProviderImpl>(
       ChildThreadImpl::current()->thread_safe_sender(), provider->context());
+}
+
+service_manager::InterfaceProvider* RenderFrameImpl::GetInterfaceProvider() {
+  DCHECK(remote_interfaces_);
+  return remote_interfaces_.get();
 }
 
 void RenderFrameImpl::DidAccessInitialDocument() {

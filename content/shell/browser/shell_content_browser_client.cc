@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
@@ -38,8 +39,11 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/grit/shell_resources.h"
+#include "content/test/data/mojo_layouttest_test.mojom.h"
 #include "media/mojo/features.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -123,6 +127,26 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
+class MojoLayoutTestHelper : public mojom::MojoLayoutTestHelper {
+ public:
+  MojoLayoutTestHelper() {}
+  ~MojoLayoutTestHelper() override {}
+
+  // mojom::MojoLayoutTestHelper:
+  void Reverse(const std::string& message, ReverseCallback callback) override {
+    std::move(callback).Run(std::string(message.rbegin(), message.rend()));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MojoLayoutTestHelper);
+};
+
+void BindLayoutTestHelper(const service_manager::BindSourceInfo& source_info,
+                          mojom::MojoLayoutTestHelperRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<MojoLayoutTestHelper>(),
+                          std::move(request));
+}
+
 }  // namespace
 
 ShellContentBrowserClient* ShellContentBrowserClient::Get() {
@@ -190,6 +214,12 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
       return true;
   }
   return false;
+}
+
+void ShellContentBrowserClient::ExposeInterfacesToFrame(
+    service_manager::BinderRegistry* registry,
+    RenderFrameHost* frame_host) {
+  registry->AddInterface(base::Bind(&BindLayoutTestHelper));
 }
 
 void ShellContentBrowserClient::RegisterInProcessServices(
