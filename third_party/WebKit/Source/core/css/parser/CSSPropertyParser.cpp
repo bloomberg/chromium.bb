@@ -3174,19 +3174,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
         AddParsedProperty(CSSPropertyWebkitMarginAfterCollapse,
                           CSSPropertyWebkitMarginCollapse, *before_collapse,
                           important);
-        if (range_.AtEnd()) {
-          AddParsedProperty(CSSPropertyWebkitMarginAfterCollapse,
-                            CSSPropertyWebkitMarginCollapse, *before_collapse,
-                            important);
-          return true;
-        }
-        id = range_.ConsumeIncludingWhitespace().Id();
-        if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-                CSSPropertyWebkitMarginAfterCollapse, id, context_->Mode()))
-          return false;
-        AddParsedProperty(CSSPropertyWebkitMarginAfterCollapse,
-                          CSSPropertyWebkitMarginCollapse, *before_collapse,
-                          important);
         return true;
       }
       id = range_.ConsumeIncludingWhitespace().Id();
