@@ -200,7 +200,8 @@ void Mixer::Publish(const SortedResults& new_results,
   for (const SortData& sort_data : new_results) {
     const SearchResult& new_result = *sort_data.result;
     auto ui_result_it = ui_results_map.find(new_result.id());
-    if (ui_result_it != ui_results_map.end()) {
+    if (ui_result_it != ui_results_map.end() &&
+        new_result.view() == ui_result_it->second->view()) {
       // Update and use the old result if it exists.
       std::unique_ptr<SearchResult> ui_result = std::move(ui_result_it->second);
       UpdateResult(new_result, ui_result.get());

@@ -67,12 +67,13 @@ std::unique_ptr<SearchController> CreateSearchController(
   // omnibox. Each group has a "soft" maximum number of results. However, if
   // a query turns up very few results, the mixer may take more than this
   // maximum from a particular group.
-  size_t apps_group_id = controller->AddGroup(kMaxAppsGroupResults, 1.0);
-  size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0);
-  size_t webstore_group_id = controller->AddGroup(kMaxWebstoreResults, 0.4);
+
   // Multiplier 100 is used because the answer card is designed to be the most
   // relevant result and must be on the top of the result list.
   size_t answer_card_group_id = controller->AddGroup(1, 100.0);
+  size_t apps_group_id = controller->AddGroup(kMaxAppsGroupResults, 1.0);
+  size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0);
+  size_t webstore_group_id = controller->AddGroup(kMaxWebstoreResults, 0.4);
 
   // Add search providers.
   controller->AddProvider(
