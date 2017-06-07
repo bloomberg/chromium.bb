@@ -3381,7 +3381,8 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     cm->nb_cdef_strengths = 1;
   } else {
     // Find cm->dering_level, cm->clpf_strength_u and cm->clpf_strength_v
-    av1_cdef_search(cm->frame_to_show, cpi->source, cm, xd);
+    av1_cdef_search(cm->frame_to_show, cpi->source, cm, xd,
+                    cpi->oxcf.speed > 0);
 
     // Apply the filter
     av1_cdef_frame(cm->frame_to_show, cm, xd);
