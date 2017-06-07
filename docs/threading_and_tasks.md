@@ -48,7 +48,26 @@ A group of tasks can be executed in one of the following ways:
    * [COM Single Threaded](#Posting-Tasks-to-a-COM-Single-Thread-Apartment-STA_Thread-Windows_):
      A variant of single threaded with COM initialized.
 
-The discussion below covers all of these ways to execute tasks.
+### Prefer Sequences to Threads
+
+**Sequenced execution mode is far prefered to Single Threaded** in scenarios
+that require mere thread-safety as it opens up scheduling paradigms that
+wouldn't be possible otherwise (sequences can hop threads instead of being stuck
+behind unrelated work on a dedicated thread). Ability to hop threads also means
+the thread count can dynamically adapt to the machine's true resource
+availability (faster on bigger machines, avoids trashing on slower machines).
+
+Many core APIs were recently made sequence-friendly (classes are rarely
+thread-affine -- i.e. only when using thread-local-storage or third-party APIs
+that do). But the codebase has long evolved assuming single-threaded contexts...
+If your class could run on a sequence but is blocked by an overzealous use of
+ThreadChecker/ThreadTaskRunnerHandle/SingleThreadTaskRunner in a leaf
+dependency, consider fixing that dependency for everyone's benefit (or at the
+very least file a blocking bug against https://crbug.com/675631 and flag your
+use of base::CreateSingleThreadTaskRunnerWithTraits() with a TODO against your
+bug to use base::CreateSequencedTaskRunnerWithTraits() when fixed).
+
+The discussion below covers all of these ways to execute tasks in details.
 
 ## Posting a Parallel Task
 
