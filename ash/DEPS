@@ -18,6 +18,7 @@ include_rules = [
   "+services/ui/public",
   "+skia/ext",
   "+third_party/cros_system_api",
+  "+third_party/icu",
   "+third_party/skia",
   "+net",
   "+ui",

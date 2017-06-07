@@ -13,6 +13,9 @@ namespace prefs {
 
 ASH_PUBLIC_EXPORT extern const char kNightLightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kNightLightTemperature[];
+ASH_PUBLIC_EXPORT extern const char kNightLightScheduleType[];
+ASH_PUBLIC_EXPORT extern const char kNightLightCustomStartTime[];
+ASH_PUBLIC_EXPORT extern const char kNightLightCustomEndTime[];
 
 }  // namespace prefs
 

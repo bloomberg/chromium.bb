@@ -16,6 +16,8 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_controller_client.h"
 #include "ash/test/test_shell_delegate.h"
+#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "components/prefs/testing_pref_service.h"
@@ -64,6 +66,28 @@ class TestObserver : public NightLightController::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
+class TestDelegate : public NightLightController::Delegate {
+ public:
+  TestDelegate() = default;
+  ~TestDelegate() override = default;
+
+  void SetFakeNow(TimeOfDay time) { fake_now_ = time.ToTimeToday(); }
+  void SetFakeSunset(TimeOfDay time) { fake_sunset_ = time.ToTimeToday(); }
+  void SetFakeSunrise(TimeOfDay time) { fake_sunrise_ = time.ToTimeToday(); }
+
+  // ash::NightLightController::Delegate
+  base::Time GetNow() const override { return fake_now_; }
+  base::Time GetSunsetTime() const override { return fake_sunset_; }
+  base::Time GetSunriseTime() const override { return fake_sunrise_; }
+
+ private:
+  base::Time fake_now_;
+  base::Time fake_sunset_;
+  base::Time fake_sunrise_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
+};
+
 class NightLightTest : public test::AshTestBase {
  public:
   NightLightTest() = default;
@@ -75,6 +99,8 @@ class NightLightTest : public test::AshTestBase {
   TestingPrefServiceSimple* user2_pref_service() {
     return &user2_pref_service_;
   }
+
+  TestDelegate* delegate() const { return delegate_; }
 
   // ash::test::AshTestBase:
   void SetUp() override {
@@ -90,6 +116,9 @@ class NightLightTest : public test::AshTestBase {
     // Simulate user 1 login.
     InjectTestPrefService(&user1_pref_service_);
     SwitchActiveUser(kUser1Email);
+
+    delegate_ = new TestDelegate;
+    GetController()->SetDelegateForTesting(base::WrapUnique(delegate_));
   }
 
   void CreateTestUserSessions() {
@@ -108,9 +137,16 @@ class NightLightTest : public test::AshTestBase {
         pref_service);
   }
 
+  void SetNightLightEnabled(bool enabled) {
+    GetController()->SetEnabled(
+        enabled, NightLightController::AnimationDuration::kShort);
+  }
+
  private:
   TestingPrefServiceSimple user1_pref_service_;
   TestingPrefServiceSimple user2_pref_service_;
+
+  TestDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NightLightTest);
 };
@@ -127,7 +163,7 @@ TEST_F(NightLightTest, TestToggle) {
 
   TestObserver observer;
   NightLightController* controller = GetController();
-  controller->SetEnabled(false);
+  SetNightLightEnabled(false);
   ASSERT_FALSE(controller->GetEnabled());
   EXPECT_TRUE(TestLayersTemperature(0.0f));
   controller->Toggle();
@@ -151,7 +187,7 @@ TEST_F(NightLightTest, TestSetTemperature) {
 
   TestObserver observer;
   NightLightController* controller = GetController();
-  controller->SetEnabled(false);
+  SetNightLightEnabled(false);
   ASSERT_FALSE(controller->GetEnabled());
 
   // Setting the temperature while NightLight is disabled only changes the
@@ -164,7 +200,7 @@ TEST_F(NightLightTest, TestSetTemperature) {
 
   // When NightLight is enabled, temperature changes actually affect the root
   // layers temperatures.
-  controller->SetEnabled(true);
+  SetNightLightEnabled(true);
   ASSERT_TRUE(controller->GetEnabled());
   const float temperature2 = 0.7f;
   controller->SetColorTemperature(temperature2);
@@ -175,14 +211,14 @@ TEST_F(NightLightTest, TestSetTemperature) {
   // doesn't change, however the temperatures set on the root layers are all
   // 0.0f. Observers only receive an enabled status change notification; no
   // temperature change notification.
-  controller->SetEnabled(false);
+  SetNightLightEnabled(false);
   ASSERT_FALSE(controller->GetEnabled());
   EXPECT_FALSE(observer.status());
   EXPECT_EQ(temperature2, controller->GetColorTemperature());
   EXPECT_TRUE(TestLayersTemperature(0.0f));
 
   // When re-enabled, the stored temperature is re-applied.
-  controller->SetEnabled(true);
+  SetNightLightEnabled(true);
   EXPECT_TRUE(observer.status());
   ASSERT_TRUE(controller->GetEnabled());
   EXPECT_TRUE(TestLayersTemperature(temperature2));
@@ -198,7 +234,7 @@ TEST_F(NightLightTest, TestUserSwitchAndSettingsPersistence) {
 
   // Test start with user1 logged in.
   NightLightController* controller = GetController();
-  controller->SetEnabled(true);
+  SetNightLightEnabled(true);
   EXPECT_TRUE(controller->GetEnabled());
   const float user1_temperature = 0.8f;
   controller->SetColorTemperature(user1_temperature);
@@ -249,6 +285,248 @@ TEST_F(NightLightTest, TestOutsidePreferencesChangesAreApplied) {
   EXPECT_TRUE(TestLayersTemperature(temperature2));
   user1_pref_service()->SetBoolean(prefs::kNightLightEnabled, false);
   EXPECT_FALSE(controller->GetEnabled());
+}
+
+// Tests transitioning from kNone to kCustom and back to kNone schedule types.
+TEST_F(NightLightTest, TestScheduleNoneToCustomTransition) {
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
+    return;
+  }
+
+  NightLightController* controller = GetController();
+  // Now is 6:00 PM.
+  delegate()->SetFakeNow(TimeOfDay(18 * 60));
+  SetNightLightEnabled(false);
+  controller->SetScheduleType(NightLightController::ScheduleType::kNone);
+  // Start time is at 3:00 PM and end time is at 8:00 PM.
+  controller->SetCustomStartTime(TimeOfDay(15 * 60));
+  controller->SetCustomEndTime(TimeOfDay(20 * 60));
+
+  //      15:00         18:00         20:00
+  // <----- + ----------- + ----------- + ----->
+  //        |             |             |
+  //      start          now           end
+  //
+  // Even though "Now" is inside the NightLight interval, nothing should change,
+  // since the schedule type is "none".
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+
+  // Now change the schedule type to custom, NightLight should turn on
+  // immediately with a short animation duration, and the timer should be
+  // running with a delay of exactly 2 hours scheduling the end.
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(controller->GetColorTemperature()));
+  EXPECT_EQ(NightLightController::AnimationDuration::kShort,
+            controller->last_animation_duration());
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(2),
+            controller->timer().GetCurrentDelay());
+  EXPECT_TRUE(controller->timer().user_task());
+
+  // If the user changes the schedule type to "none", the NightLight status
+  // should not change, but the timer should not be running.
+  controller->SetScheduleType(NightLightController::ScheduleType::kNone);
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(controller->GetColorTemperature()));
+  EXPECT_FALSE(controller->timer().IsRunning());
+}
+
+// Tests what happens when the time now reaches the end of the NightLight
+// interval when NightLight mode is on.
+TEST_F(NightLightTest, TestCustomScheduleReachingEndTime) {
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
+    return;
+  }
+
+  NightLightController* controller = GetController();
+  delegate()->SetFakeNow(TimeOfDay(18 * 60));
+  controller->SetCustomStartTime(TimeOfDay(15 * 60));
+  controller->SetCustomEndTime(TimeOfDay(20 * 60));
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(controller->GetColorTemperature()));
+
+  // Simulate reaching the end time by triggering the timer's user task. Make
+  // sure that NightLight ended with a long animation.
+  //
+  //      15:00                      20:00
+  // <----- + ------------------------ + ----->
+  //        |                          |
+  //      start                    end & now
+  //
+  // Now is 8:00 PM.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));
+  controller->timer().user_task().Run();
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+  EXPECT_EQ(NightLightController::AnimationDuration::kLong,
+            controller->last_animation_duration());
+  // The timer should still be running, but now scheduling the start at 3:00 PM
+  // tomorrow which is 19 hours from "now" (8:00 PM).
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(19),
+            controller->timer().GetCurrentDelay());
+}
+
+// Tests that user toggles from the system menu or system settings override any
+// status set by an automatic schedule.
+TEST_F(NightLightTest, TestExplicitUserTogglesWhileScheduleIsActive) {
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
+    return;
+  }
+
+  // Start with the below custom schedule, where NightLight is off.
+  //
+  //      15:00               20:00          23:00
+  // <----- + ----------------- + ------------ + ---->
+  //        |                   |              |
+  //      start                end            now
+  //
+  NightLightController* controller = GetController();
+  delegate()->SetFakeNow(TimeOfDay(23 * 60));
+  controller->SetCustomStartTime(TimeOfDay(15 * 60));
+  controller->SetCustomEndTime(TimeOfDay(20 * 60));
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+
+  // What happens if the user manually turns NightLight on while the schedule
+  // type says it should be off?
+  // User toggles either from the system menu or the System Settings toggle
+  // button must override any automatic schedule, and should be performed with
+  // the short animation duration.
+  controller->Toggle();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(controller->GetColorTemperature()));
+  EXPECT_EQ(NightLightController::AnimationDuration::kShort,
+            controller->last_animation_duration());
+  // The timer should still be running, but NightLight should automatically
+  // turn off at 8:00 PM tomorrow, which is 21 hours from now (11:00 PM).
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(21),
+            controller->timer().GetCurrentDelay());
+
+  // Manually turning it back off should also be respected, and this time the
+  // start is scheduled at 3:00 PM tomorrow after 19 hours from "now" (8:00 PM).
+  controller->Toggle();
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+  EXPECT_EQ(NightLightController::AnimationDuration::kShort,
+            controller->last_animation_duration());
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(16),
+            controller->timer().GetCurrentDelay());
+}
+
+// Tests that changing the custom start and end times, in such a way that
+// shouldn't change the current status, only updates the timer but doesn't
+// change the status.
+TEST_F(NightLightTest, TestChangingStartTimesThatDontChangeTheStatus) {
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
+    return;
+  }
+
+  //       16:00        18:00         22:00
+  // <----- + ----------- + ----------- + ----->
+  //        |             |             |
+  //       now          start          end
+  //
+  NightLightController* controller = GetController();
+  delegate()->SetFakeNow(TimeOfDay(16 * 60));  // 4:00 PM.
+  SetNightLightEnabled(false);
+  controller->SetScheduleType(NightLightController::ScheduleType::kNone);
+  controller->SetCustomStartTime(TimeOfDay(18 * 60));  // 6:00 PM.
+  controller->SetCustomEndTime(TimeOfDay(22 * 60));    // 10:00 PM.
+
+  // Since now is outside the NightLight interval, changing the schedule type
+  // to kCustom, shouldn't affect the status. Validate the timer is running with
+  // a 2-hour delay.
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(2),
+            controller->timer().GetCurrentDelay());
+
+  // Change the start time in such a way that doesn't change the status, but
+  // despite that, confirm that schedule has been updated.
+  controller->SetCustomStartTime(TimeOfDay(19 * 60));  // 7:00 PM.
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(3),
+            controller->timer().GetCurrentDelay());
+
+  // Changing the end time in a similar fashion to the above and expect no
+  // change.
+  controller->SetCustomEndTime(TimeOfDay(23 * 60));  // 11:00 PM.
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(3),
+            controller->timer().GetCurrentDelay());
+}
+
+// Tests the behavior of the sunset to sunrise automatic schedule type.
+TEST_F(NightLightTest, TestSunsetSunrise) {
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
+    return;
+  }
+
+  //       16:00        18:00     20:00      22:00              5:00
+  // <----- + ----------- + ------- + -------- + --------------- + ------->
+  //        |             |         |          |                 |
+  //       now      custom start  sunset   custom end         sunrise
+  //
+  NightLightController* controller = GetController();
+  delegate()->SetFakeNow(TimeOfDay(16 * 60));     // 4:00 PM.
+  delegate()->SetFakeSunset(TimeOfDay(20 * 60));  // 8:00 PM.
+  delegate()->SetFakeSunrise(TimeOfDay(5 * 60));  // 5:00 AM.
+  SetNightLightEnabled(false);
+  controller->SetScheduleType(NightLightController::ScheduleType::kNone);
+  controller->SetCustomStartTime(TimeOfDay(18 * 60));  // 6:00 PM.
+  controller->SetCustomEndTime(TimeOfDay(22 * 60));    // 10:00 PM.
+
+  // Custom times should have no effect when the schedule type is sunset to
+  // sunrise.
+  controller->SetScheduleType(
+      NightLightController::ScheduleType::kSunsetToSunrise);
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(4),
+            controller->timer().GetCurrentDelay());
+
+  // Simulate reaching sunset.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer().user_task().Run();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(controller->GetColorTemperature()));
+  EXPECT_EQ(NightLightController::AnimationDuration::kLong,
+            controller->last_animation_duration());
+  // Timer is running scheduling the end at sunrise.
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(9),
+            controller->timer().GetCurrentDelay());
+
+  // Simulate reaching sunrise.
+  delegate()->SetFakeNow(TimeOfDay(5 * 60));  // Now is 5:00 AM.
+  controller->timer().user_task().Run();
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+  EXPECT_EQ(NightLightController::AnimationDuration::kLong,
+            controller->last_animation_duration());
+  // Timer is running scheduling the start at the next sunset.
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(15),
+            controller->timer().GetCurrentDelay());
 }
 
 }  // namespace
