@@ -68,10 +68,9 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)
   // URLLoaderRequestHandler overrides:
-  void MaybeCreateLoaderFactory(
-      const ResourceRequest& request,
-      ResourceContext* resource_context,
-      base::OnceCallback<void(mojom::URLLoaderFactory*)> callback) override;
+  void MaybeCreateLoader(const ResourceRequest& request,
+                         ResourceContext* resource_context,
+                         LoaderCallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,

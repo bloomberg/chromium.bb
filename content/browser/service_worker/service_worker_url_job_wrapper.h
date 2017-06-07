@@ -17,9 +17,9 @@ namespace content {
 
 // This class is a helper to support having
 // ServiceWorkerControlleeRequestHandler work with both URLRequestJobs and
-// mojom::URLLoaderFactorys (that is, both with and without
-// --enable-network-service). It wraps either a ServiceWorkerURLRequestJob or a
-// callback for URLLoaderFactory and forwards to the underlying implementation.
+// mojom::URLLoaders (that is, both with and without --enable-network-service).
+// It wraps either a ServiceWorkerURLRequestJob or a callback for
+// URLLoader and forwards to the underlying implementation.
 class ServiceWorkerURLJobWrapper {
  public:
   class Delegate {
@@ -38,7 +38,7 @@ class ServiceWorkerURLJobWrapper {
   // TODO(kinuko): Implement this as a separate job class rather
   // than in a wrapper.
   ServiceWorkerURLJobWrapper(
-      LoaderFactoryCallback loader_factory_callback,
+      LoaderCallback loader_callback,
       Delegate* delegate,
       const ResourceRequest& resource_request,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
@@ -75,7 +75,6 @@ class ServiceWorkerURLJobWrapper {
 
   // Used only for URLLoader case.
   // For FORWARD_TO_SERVICE_WORKER case.
-  class Factory;
   void StartRequest();
 
   void DidPrepareFetchEvent(scoped_refptr<ServiceWorkerVersion> version);
@@ -94,12 +93,11 @@ class ServiceWorkerURLJobWrapper {
   JobType job_type_;
 
   ServiceWorkerResponseType response_type_ = NOT_DETERMINED;
-  LoaderFactoryCallback loader_factory_callback_;
+  LoaderCallback loader_callback_;
 
   base::WeakPtr<ServiceWorkerURLRequestJob> url_request_job_;
 
   Delegate* delegate_;
-  std::unique_ptr<Factory> factory_;
   ResourceRequest resource_request_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
