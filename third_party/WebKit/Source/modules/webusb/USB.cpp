@@ -10,6 +10,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/frame/LocalFrameClient.h"
 #include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webusb/USBConnectionEvent.h"
@@ -20,6 +21,7 @@
 #include "platform/wtf/Functional.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 using device::mojom::blink::UsbDeviceFilterPtr;
 using device::mojom::blink::UsbDeviceInfoPtr;
@@ -123,7 +125,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   }
 
   if (!chooser_service_) {
-    GetFrame()->GetInterfaceProvider()->GetInterface(
+    GetFrame()->Client()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&chooser_service_));
     chooser_service_.set_connection_error_handler(
         ConvertToBaseCallback(WTF::Bind(&USB::OnChooserServiceConnectionError,
@@ -270,7 +272,7 @@ void USB::EnsureDeviceManagerConnection() {
     return;
 
   DCHECK(GetFrame());
-  GetFrame()->GetInterfaceProvider()->GetInterface(
+  GetFrame()->Client()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&device_manager_));
   device_manager_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
       &USB::OnDeviceManagerConnectionError, WrapWeakPersistent(this))));
