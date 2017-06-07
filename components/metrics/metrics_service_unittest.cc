@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -15,6 +16,8 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -29,7 +32,9 @@
 #include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
+#include "components/variations/synthetic_trials_active_group_id_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
 
@@ -525,6 +530,41 @@ TEST_F(MetricsServiceTest, SplitRotation) {
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
   EXPECT_EQ(0U, task_runner_->NumPendingTasks());
+}
+
+TEST_F(MetricsServiceTest, GetSyntheticFieldTrialActiveGroups) {
+  TestMetricsServiceClient client;
+  MetricsService service(GetMetricsStateManager(), &client, GetLocalState());
+
+  // Instantiate and setup the corresponding singleton observer which tracks the
+  // creation of all SyntheticTrialGroups.
+  service.AddSyntheticTrialObserver(
+      variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
+
+  // Add two synthetic trials and confirm that they show up in the list.
+  variations::SyntheticTrialGroup trial1(HashName("TestTrial1"),
+                                         HashName("Group1"));
+  service.RegisterSyntheticFieldTrial(trial1);
+
+  variations::SyntheticTrialGroup trial2(HashName("TestTrial2"),
+                                         HashName("Group2"));
+  service.RegisterSyntheticFieldTrial(trial2);
+
+  // Ensure that time has advanced by at least a tick before proceeding.
+  WaitUntilTimeChanges(base::TimeTicks::Now());
+
+  // Now get the list of currently active groups.
+  std::vector<std::string> output;
+  variations::GetSyntheticTrialGroupIdsAsString(&output);
+  EXPECT_EQ(2U, output.size());
+
+  std::string trial1_hash =
+      base::StringPrintf("%x-%x", trial1.id.name, trial1.id.group);
+  EXPECT_TRUE(base::ContainsValue(output, trial1_hash));
+
+  std::string trial2_hash =
+      base::StringPrintf("%x-%x", trial2.id.name, trial2.id.group);
+  EXPECT_TRUE(base::ContainsValue(output, trial2_hash));
 }
 
 }  // namespace metrics
