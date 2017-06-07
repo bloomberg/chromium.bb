@@ -6,7 +6,7 @@
     "crisper": "2.0.2",
     "eslint": "3.19.0",
     "polymer-css-build": "0.1.2",
-    "uglifyjs": "2.4.10",
+    "uglify-es": "3.0.15",
     "vulcanize": "1.15.4"
   }
 }

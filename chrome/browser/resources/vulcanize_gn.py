@@ -188,7 +188,7 @@ def _vulcanize(in_folder, args):
       f.write(new_data)
       f.truncate()
 
-    node.RunNode([node_modules.PathToUglifyJs(), crisper_output.name,
+    node.RunNode([node_modules.PathToUglify(), crisper_output.name,
                   '--comments', '"/Copyright|license|LICENSE|\<\/?if/"',
                   '--output', js_out_path])
   finally:
