@@ -48,8 +48,7 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD0(ResumeRenderer, void());
   MOCK_METHOD1(AddPendingNavigation, void(NavigatingFrameType));
   MOCK_METHOD1(RemovePendingNavigation, void(NavigatingFrameType));
-  MOCK_METHOD0(OnNavigationStarted, void());
-  MOCK_METHOD0(OnCommitProvisionalLoad, void());
+  MOCK_METHOD0(OnNavigate, void());
   MOCK_METHOD0(IsHighPriorityWorkAnticipated, bool());
   MOCK_CONST_METHOD0(CanExceedIdleDeadlineIfRequired, bool());
   MOCK_METHOD0(ShouldYieldForHighPriorityWork, bool());

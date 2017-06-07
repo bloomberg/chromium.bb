@@ -242,6 +242,26 @@ void WebViewSchedulerImpl::DecrementBackgroundParserCount() {
   ApplyVirtualTimePolicyForLoading();
 }
 
+void WebViewSchedulerImpl::WillNavigateBackForwardSoon(
+    WebFrameSchedulerImpl* frame_scheduler) {
+  expect_backward_forwards_navigation_.insert(frame_scheduler);
+  ApplyVirtualTimePolicyForLoading();
+}
+
+void WebViewSchedulerImpl::DidBeginProvisionalLoad(
+    WebFrameSchedulerImpl* frame_scheduler) {
+  expect_backward_forwards_navigation_.erase(frame_scheduler);
+  provisional_loads_.insert(frame_scheduler);
+  ApplyVirtualTimePolicyForLoading();
+}
+
+void WebViewSchedulerImpl::DidEndProvisionalLoad(
+    WebFrameSchedulerImpl* frame_scheduler) {
+  expect_backward_forwards_navigation_.erase(frame_scheduler);
+  provisional_loads_.erase(frame_scheduler);
+  ApplyVirtualTimePolicyForLoading();
+}
+
 void WebViewSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
   virtual_time_policy_ = policy;
 
@@ -285,9 +305,10 @@ void WebViewSchedulerImpl::ApplyVirtualTimePolicyForLoading() {
   // We pause virtual time until we've seen a loading task posted, because
   // otherwise we could advance virtual time arbitarially far before the
   // first load arrives.
-  SetAllowVirtualTimeToAdvance(pending_loads_.size() == 0 &&
-                               background_parser_count_ == 0 &&
-                               have_seen_loading_task_);
+  SetAllowVirtualTimeToAdvance(
+      pending_loads_.size() == 0 && background_parser_count_ == 0 &&
+      provisional_loads_.empty() && have_seen_loading_task_ &&
+      expect_backward_forwards_navigation_.empty());
 }
 
 bool WebViewSchedulerImpl::IsAudioPlaying() const {

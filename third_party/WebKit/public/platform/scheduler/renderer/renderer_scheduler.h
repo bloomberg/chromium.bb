@@ -151,14 +151,9 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // Tells the scheduler that a navigation has started.  The scheduler will
   // prioritize loading tasks for a short duration afterwards.
   // Must be called from the main thread.
-  // TODO(maxlg): remove OnNavigationStarted and migrate this part into
-  // OnCommitProvisionalLoad.
-  virtual void OnNavigationStarted() = 0;
-
-  // Tells the scheduler that the provisional load has been committed. This
-  // signals the point that activity stops happening in the old page and the
-  // renderer starts parsing and rendering the new page.
-  virtual void OnCommitProvisionalLoad() = 0;
+  // TODO(maxlg): remove OnNavigate and migrate this part into
+  // DidCommitProvisionalLoad::OnCommitProvisionalLoad.
+  virtual void OnNavigate() = 0;
 
   // Returns true if the scheduler has reason to believe that high priority work
   // may soon arrive on the main thread, e.g., if gesture events were observed

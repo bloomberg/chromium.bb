@@ -82,6 +82,7 @@
 #include "platform/InstanceCounters.h"
 #include "platform/PluginScriptForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -1444,6 +1445,8 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
     DCHECK(history_item);
     provisional_document_loader_->SetItemForHistoryNavigation(history_item);
   }
+
+  frame_->FrameScheduler()->DidStartProvisionalLoad();
 
   // TODO(ananta):
   // We should get rid of the dependency on the DocumentLoader in consumers of

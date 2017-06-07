@@ -76,8 +76,6 @@ void FakeRendererScheduler::OnRendererBackgrounded() {}
 
 void FakeRendererScheduler::OnRendererForegrounded() {}
 
-void FakeRendererScheduler::OnCommitProvisionalLoad() {}
-
 void FakeRendererScheduler::SuspendRenderer() {}
 
 void FakeRendererScheduler::ResumeRenderer() {}
@@ -86,7 +84,7 @@ void FakeRendererScheduler::AddPendingNavigation(NavigatingFrameType type) {}
 
 void FakeRendererScheduler::RemovePendingNavigation(NavigatingFrameType type) {}
 
-void FakeRendererScheduler::OnNavigationStarted() {}
+void FakeRendererScheduler::OnNavigate() {}
 
 bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;

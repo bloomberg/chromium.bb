@@ -66,6 +66,7 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/HTTPNames.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -313,8 +314,12 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     history_item_->SetStateObject(std::move(data));
     history_item_->SetScrollRestorationType(scroll_restoration_type);
   }
+  HistoryCommitType commit_type = LoadTypeToCommitType(type);
+  frame_->FrameScheduler()->DidCommitProvisionalLoad(
+      commit_type == kHistoryInertCommit, type == kFrameLoadTypeReload,
+      frame_->IsLocalRoot());
   GetLocalFrameClient().DispatchDidNavigateWithinPage(
-      history_item_.Get(), LoadTypeToCommitType(type), initiating_document);
+      history_item_.Get(), commit_type, initiating_document);
 }
 
 const KURL& DocumentLoader::UrlForHistory() const {
@@ -398,7 +403,6 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
     if (frame_->Owner()->IsLocal())
       frame_->DeprecatedLocalOwner()->RenderFallbackContent();
   }
-
   HistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
   switch (state_) {
     case kNotStarted:
@@ -406,6 +410,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
     // Fall-through
     case kProvisional:
       state_ = kSentDidFinishLoad;
+      frame_->FrameScheduler()->DidFailProvisionalLoad();
       GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
                                                            history_commit_type);
       if (frame_)
@@ -966,8 +971,11 @@ void DocumentLoader::DidCommitNavigation() {
         FrameLoaderStateMachine::kCommittedMultipleRealLoads);
   }
 
-  GetLocalFrameClient().DispatchDidCommitLoad(history_item_.Get(),
-                                              LoadTypeToCommitType(load_type_));
+  HistoryCommitType commit_type = LoadTypeToCommitType(load_type_);
+  frame_->FrameScheduler()->DidCommitProvisionalLoad(
+      commit_type == kHistoryInertCommit, load_type_ == kFrameLoadTypeReload,
+      frame_->IsLocalRoot());
+  GetLocalFrameClient().DispatchDidCommitLoad(history_item_.Get(), commit_type);
 
   // When the embedder gets notified (above) that the new navigation has
   // committed, the embedder will drop the old Content Security Policy and

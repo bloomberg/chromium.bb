@@ -1083,7 +1083,7 @@ TEST_F(RendererSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
   std::vector<std::string> run_order;
 
   SimulateExpensiveTasks(timer_task_runner_);
-  scheduler_->OnNavigationStarted();
+  scheduler_->OnNavigate();
   PostTestTasks(&run_order, "C1 T1");
 
   SimulateMainThreadGestureStart(TouchEventPolicy::DONT_SEND_TOUCH_START,
@@ -1254,7 +1254,7 @@ TEST_F(RendererSchedulerImplTest, DISABLED_LoadingUseCase) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
 
-  scheduler_->OnNavigationStarted();
+  scheduler_->OnNavigate();
   EnableIdleTasks();
   RunUntilIdle();
 
@@ -3028,7 +3028,7 @@ TEST_F(RendererSchedulerImplTest,
 // TODO(alexclarke): Reenable once we've reinstaed the Loading UseCase.
 TEST_F(RendererSchedulerImplTest,
        DISABLED_EstimateLongestJankFreeTaskDuration_UseCase_) {
-  scheduler_->OnNavigationStarted();
+  scheduler_->OnNavigate();
   EXPECT_EQ(UseCase::LOADING, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(rails_response_time(),
             scheduler_->EstimateLongestJankFreeTaskDuration());
@@ -3657,7 +3657,7 @@ TEST_F(RendererSchedulerImplTest, TestLoadRAILMode) {
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION));
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_LOAD));
 
-  scheduler_->OnNavigationStarted();
+  scheduler_->OnNavigate();
   EXPECT_EQ(v8::PERFORMANCE_LOAD, GetRAILMode());
   EXPECT_EQ(UseCase::LOADING, ForceUpdatePolicyAndGetCurrentUseCase());
   scheduler_->OnFirstMeaningfulPaint();
@@ -3672,7 +3672,7 @@ TEST_F(RendererSchedulerImplTest, InputTerminatesLoadRAILMode) {
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION));
   EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_LOAD));
 
-  scheduler_->OnNavigationStarted();
+  scheduler_->OnNavigate();
   EXPECT_EQ(v8::PERFORMANCE_LOAD, GetRAILMode());
   EXPECT_EQ(UseCase::LOADING, ForceUpdatePolicyAndGetCurrentUseCase());
   scheduler_->DidHandleInputEventOnCompositorThread(
@@ -3967,12 +3967,12 @@ TEST_F(RendererSchedulerImplTest,
   // Start with a long task whose queueing time will be ignored.
   AdvanceTimeWithTask(10);
   // Navigation start.
-  scheduler_->OnCommitProvisionalLoad();
+  scheduler_->DidCommitProvisionalLoad(false, false, false);
   // The max queueing time of the following task will be recorded.
   AdvanceTimeWithTask(1);
   // The smaller queuing time will be ignored.
   AdvanceTimeWithTask(0.5);
-  scheduler_->OnCommitProvisionalLoad();
+  scheduler_->DidCommitProvisionalLoad(false, false, false);
   // Add another long task after navigation start but without navigation end.
   // This value won't be recorded as there is not navigation.
   AdvanceTimeWithTask(10);
@@ -3983,14 +3983,14 @@ TEST_F(RendererSchedulerImplTest,
 // Only the max of all the queueing times is recorded.
 TEST_F(RendererSchedulerImplTest, MaxQueueingTimeMetricRecordTheMax) {
   base::HistogramTester tester;
-  scheduler_->OnCommitProvisionalLoad();
+  scheduler_->DidCommitProvisionalLoad(false, false, false);
   // The smaller queuing time will be ignored.
   AdvanceTimeWithTask(0.5);
   // The max queueing time of the following task will be recorded.
   AdvanceTimeWithTask(1);
   // The smaller queuing time will be ignored.
   AdvanceTimeWithTask(0.5);
-  scheduler_->OnCommitProvisionalLoad();
+  scheduler_->DidCommitProvisionalLoad(false, false, false);
   tester.ExpectUniqueSample("RendererScheduler.MaxQueueingTime", 500, 1);
 }
 }  // namespace scheduler

@@ -67,6 +67,9 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void DecrementBackgroundParserCount();
   void Unregister(WebFrameSchedulerImpl* frame_scheduler);
   void OnNavigation();
+  void WillNavigateBackForwardSoon(WebFrameSchedulerImpl* frame_scheduler);
+  void DidBeginProvisionalLoad(WebFrameSchedulerImpl* frame_scheduler);
+  void DidEndProvisionalLoad(WebFrameSchedulerImpl* frame_scheduler);
 
   bool IsAudioPlaying() const;
 
@@ -102,6 +105,8 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
 
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   std::set<unsigned long> pending_loads_;
+  std::set<WebFrameSchedulerImpl*> provisional_loads_;
+  std::set<WebFrameSchedulerImpl*> expect_backward_forwards_navigation_;
   WebScheduler::InterventionReporter* intervention_reporter_;  // Not owned.
   RendererSchedulerImpl* renderer_scheduler_;
   VirtualTimePolicy virtual_time_policy_;

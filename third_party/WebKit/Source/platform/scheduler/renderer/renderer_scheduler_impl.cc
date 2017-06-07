@@ -1653,14 +1653,17 @@ RendererSchedulerImpl::CreateMaxQueueingTimeMetric() {
       "RendererScheduler.MaxQueueingTime", 1, 10000, 50);
 }
 
-void RendererSchedulerImpl::OnNavigationStarted() {
+void RendererSchedulerImpl::OnNavigate() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::OnNavigationStarted");
+               "RendererSchedulerImpl::OnNavigate");
   base::AutoLock lock(any_thread_lock_);
   ResetForNavigationLocked();
 }
 
-void RendererSchedulerImpl::OnCommitProvisionalLoad() {
+void RendererSchedulerImpl::DidCommitProvisionalLoad(
+    bool is_web_history_inert_commit,
+    bool is_reload,
+    bool is_main_frame) {
   // Initialize |max_queueing_time_metric| lazily so that
   // |SingleSampleMetricsFactory::SetFactory()| is called before
   // |SingleSampleMetricsFactory::Get()|
@@ -1671,6 +1674,15 @@ void RendererSchedulerImpl::OnCommitProvisionalLoad() {
   GetMainThreadOnly().max_queueing_time_metric.reset();
   GetMainThreadOnly().max_queueing_time = base::TimeDelta();
   GetMainThreadOnly().has_navigated = true;
+
+  // If this either isn't a history inert commit or it's a reload then we must
+  // reset the task cost estimators.
+  if (is_main_frame && (is_web_history_inert_commit || is_reload)) {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererSchedulerImpl::OnDidCommitProvisionalLoad");
+    base::AutoLock lock(any_thread_lock_);
+    ResetForNavigationLocked();
+  }
 }
 
 void RendererSchedulerImpl::OnFirstMeaningfulPaint() {

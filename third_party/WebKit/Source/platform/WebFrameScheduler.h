@@ -101,6 +101,25 @@ class WebFrameScheduler {
   // policy decisions based on this.
   virtual void DidStopLoading(unsigned long identifier) {}
 
+  // Tells the scheduler that a history navigation is expected soon, virtual
+  // time may be paused. Must be called from the main thread.
+  virtual void WillNavigateBackForwardSoon() {}
+
+  // Tells the scheduler that a provisional load has started, virtual time may
+  // be paused. Must be called from the main thread.
+  virtual void DidStartProvisionalLoad() {}
+
+  // Tells the scheduler that a provisional load has failed, virtual time may be
+  // unpaused. Must be called from the main thread.
+  virtual void DidFailProvisionalLoad() {}
+
+  // Tells the scheduler that a provisional load has committed, virtual time ma
+  // be unpaused. In addition the scheduler may reset the task cost estimators
+  // and the UserModel. Must be called from the main thread.
+  virtual void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
+                                        bool is_reload,
+                                        bool is_main_frame){};
+
   // Tells the scheduler if we are parsing a document on another thread. This
   // tells the scheduler not to advance virtual time if it's using the
   // DETERMINISTIC_LOADING policy.
