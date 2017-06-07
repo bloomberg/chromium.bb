@@ -16,6 +16,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_internal.h"
@@ -61,6 +62,7 @@ class SnapshotCacheTest : public PlatformTest {
 
   void TearDown() override {
     ClearDumpedImages();
+    [snapshotCache_ shutdown];
     snapshotCache_.reset();
     PlatformTest::TearDown();
   }
@@ -83,8 +85,7 @@ class SnapshotCacheTest : public PlatformTest {
 
   // Flushes all the runloops internally used by the snapshot cache.
   void FlushRunLoops() {
-    base::RunLoop().RunUntilIdle();
-    web::WebThread::GetBlockingPool()->FlushForTesting();
+    base::TaskScheduler::GetInstance()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -266,6 +267,8 @@ TEST_F(SnapshotCacheTest, SaveToDisk) {
     UIImage* image =
         [UIImage imageWithContentsOfFile:base::SysUTF8ToNSString(path.value())];
     CGImageRef cgImage = [image CGImage];
+    ASSERT_TRUE(cgImage != nullptr);
+
     base::ScopedCFTypeRef<CFDataRef> pixelData(
         CGDataProviderCopyData(CGImageGetDataProvider(cgImage)));
     const char* pixels =
