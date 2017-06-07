@@ -1055,7 +1055,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @CalledByNative
     private void onSelectionChanged(String text) {
-        mLastSelectedText = text;
         if (mSelectionClient != null) {
             mSelectionClient.onSelectionChanged(text);
         }
