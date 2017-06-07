@@ -34,6 +34,8 @@
 #include "core/dom/Text.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markers/ActiveSuggestionMarker.h"
+#include "core/editing/markers/ActiveSuggestionMarkerListImpl.h"
 #include "core/editing/markers/CompositionMarker.h"
 #include "core/editing/markers/CompositionMarkerListImpl.h"
 #include "core/editing/markers/DocumentMarkerListEditor.h"
@@ -65,6 +67,8 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
       return DocumentMarker::kTextMatchMarkerIndex;
     case DocumentMarker::kComposition:
       return DocumentMarker::kCompositionMarkerIndex;
+    case DocumentMarker::kActiveSuggestion:
+      return DocumentMarker::kActiveSuggestionMarkerIndex;
   }
 
   NOTREACHED();
@@ -73,6 +77,8 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
 
 DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
   switch (type) {
+    case DocumentMarker::kActiveSuggestion:
+      return new ActiveSuggestionMarkerListImpl();
     case DocumentMarker::kComposition:
       return new CompositionMarkerListImpl();
     case DocumentMarker::kSpelling:
@@ -160,6 +166,19 @@ void DocumentMarkerController::AddCompositionMarker(
                                int start_offset, int end_offset) {
     return new CompositionMarker(start_offset, end_offset, underline_color,
                                  thickness, background_color);
+  });
+}
+
+void DocumentMarkerController::AddActiveSuggestionMarker(
+    const EphemeralRange& range,
+    Color underline_color,
+    StyleableMarker::Thickness thickness,
+    Color background_color) {
+  DCHECK(!document_->NeedsLayoutTreeUpdate());
+  AddMarkerInternal(range, [underline_color, thickness, background_color](
+                               int start_offset, int end_offset) {
+    return new ActiveSuggestionMarker(start_offset, end_offset, underline_color,
+                                      thickness, background_color);
   });
 }
 
