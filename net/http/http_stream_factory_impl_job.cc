@@ -387,13 +387,13 @@ void HttpStreamFactoryImpl::Job::LogHistograms() const {
   }
 }
 
-void HttpStreamFactoryImpl::Job::GetSSLInfo() {
+void HttpStreamFactoryImpl::Job::GetSSLInfo(SSLInfo* ssl_info) {
   DCHECK(using_ssl_);
   DCHECK(!establishing_tunnel_);
   DCHECK(connection_.get() && connection_->socket());
   SSLClientSocket* ssl_socket =
       static_cast<SSLClientSocket*>(connection_->socket());
-  ssl_socket->GetSSLInfo(&ssl_info_);
+  ssl_socket->GetSSLInfo(ssl_info);
 }
 
 SpdySessionKey HttpStreamFactoryImpl::Job::GetSpdySessionKey() const {
@@ -565,13 +565,14 @@ void HttpStreamFactoryImpl::Job::RunLoop(int result) {
 
   if (IsCertificateError(result)) {
     // Retrieve SSL information from the socket.
-    GetSSLInfo();
+    SSLInfo ssl_info;
+    GetSSLInfo(&ssl_info);
 
     next_state_ = STATE_WAITING_USER_ACTION;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&HttpStreamFactoryImpl::Job::OnCertificateErrorCallback,
-                   ptr_factory_.GetWeakPtr(), result, ssl_info_));
+                   ptr_factory_.GetWeakPtr(), result, ssl_info));
     return;
   }
 
@@ -1370,11 +1371,10 @@ int HttpStreamFactoryImpl::Job::HandleCertificateError(int error) {
   DCHECK(using_ssl_);
   DCHECK(IsCertificateError(error));
 
-  SSLClientSocket* ssl_socket =
-      static_cast<SSLClientSocket*>(connection_->socket());
-  ssl_socket->GetSSLInfo(&ssl_info_);
+  SSLInfo ssl_info;
+  GetSSLInfo(&ssl_info);
 
-  if (!ssl_info_.cert) {
+  if (!ssl_info.cert) {
     // If the server's certificate could not be parsed, there is no way
     // to gracefully recover this, so just pass the error up.
     return error;
@@ -1384,13 +1384,13 @@ int HttpStreamFactoryImpl::Job::HandleCertificateError(int error) {
   // SSL config object. This data structure will be consulted after calling
   // RestartIgnoringLastError(). And the user will be asked interactively
   // before RestartIgnoringLastError() is ever called.
-  server_ssl_config_.allowed_bad_certs.emplace_back(ssl_info_.cert,
-                                                    ssl_info_.cert_status);
+  server_ssl_config_.allowed_bad_certs.emplace_back(ssl_info.cert,
+                                                    ssl_info.cert_status);
 
   int load_flags = request_info_.load_flags;
   if (session_->params().ignore_certificate_errors)
     load_flags |= LOAD_IGNORE_ALL_CERT_ERRORS;
-  if (ssl_socket->IgnoreCertError(error, load_flags))
+  if (SSLClientSocket::IgnoreCertError(error, load_flags))
     return OK;
   return error;
 }
