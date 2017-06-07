@@ -401,7 +401,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         MenuItem infoMenuItem = mToolbar.getMenu().findItem(R.id.info_menu_id);
         Drawable iconDrawable = TintedDrawable.constructTintedDrawable(mActivity.getResources(),
                 R.drawable.btn_info,
-                show ? R.color.light_active_color : R.color.default_text_color);
+                show ? R.color.light_active_color : R.color.light_normal_color);
         infoMenuItem.setIcon(iconDrawable);
         infoMenuItem.setTitle(show ? R.string.hide_info : R.string.show_info);
     }
