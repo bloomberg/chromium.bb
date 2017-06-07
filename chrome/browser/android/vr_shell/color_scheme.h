@@ -39,23 +39,23 @@ struct ColorScheme {
   SkColor close_button_background;
   SkColor close_button_background_hover;
   SkColor close_button_background_down;
-  SkColor loading_indicator_background;
   SkColor loading_indicator_foreground;
-  SkColor exit_warning_background;
+  SkColor loading_indicator_background;
   SkColor exit_warning_foreground;
-  SkColor transient_warning_background;
+  SkColor exit_warning_background;
   SkColor transient_warning_foreground;
-  SkColor permanent_warning_background;
+  SkColor transient_warning_background;
   SkColor permanent_warning_foreground;
-  SkColor system_indicator_background;
+  SkColor permanent_warning_background;
   SkColor system_indicator_foreground;
+  SkColor system_indicator_background;
 
   // The colors used for text and buttons on prompts.
   SkColor prompt_foreground;
-  SkColor prompt_primary_button_background;
-  SkColor prompt_secondary_button_background;
   SkColor prompt_primary_button_forground;
   SkColor prompt_secondary_button_foreground;
+  SkColor prompt_primary_button_background;
+  SkColor prompt_secondary_button_background;
   SkColor prompt_button_background_hover;
   SkColor prompt_button_background_down;
 
