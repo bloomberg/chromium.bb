@@ -49,7 +49,9 @@ ExampleAppListPresenter::~ExampleAppListPresenter() {}
 
 app_list::mojom::AppListPresenterPtr
 ExampleAppListPresenter::CreateInterfacePtrAndBind() {
-  return binding_.CreateInterfacePtrAndBind();
+  app_list::mojom::AppListPresenterPtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
 void ExampleAppListPresenter::Show(int64_t display_id) {

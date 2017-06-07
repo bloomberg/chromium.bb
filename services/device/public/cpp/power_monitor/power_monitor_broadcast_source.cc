@@ -19,7 +19,9 @@ PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
     device::mojom::PowerMonitorPtr power_monitor;
     connector->BindInterface(device::mojom::kServiceName,
                              mojo::MakeRequest(&power_monitor));
-    power_monitor->AddClient(binding_.CreateInterfacePtrAndBind());
+    device::mojom::PowerMonitorClientPtr client;
+    binding_.Bind(mojo::MakeRequest(&client));
+    power_monitor->AddClient(std::move(client));
   }
 }
 

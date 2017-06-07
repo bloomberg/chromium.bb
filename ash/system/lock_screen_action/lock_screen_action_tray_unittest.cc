@@ -34,7 +34,9 @@ class TestTrayActionClient : public mojom::TrayActionClient {
   ~TestTrayActionClient() override = default;
 
   mojom::TrayActionClientPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::TrayActionClientPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
   void RequestNewLockScreenNote() override { action_requests_count_++; }

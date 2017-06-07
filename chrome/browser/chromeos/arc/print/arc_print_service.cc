@@ -69,7 +69,9 @@ void ArcPrintService::OnInstanceReady() {
   mojom::PrintInstance* print_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->print(), Init);
   DCHECK(print_instance);
-  print_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::PrintHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  print_instance->Init(std::move(host_proxy));
 }
 
 void ArcPrintService::Print(mojo::ScopedHandle pdf_data) {

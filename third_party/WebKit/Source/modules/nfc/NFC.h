@@ -88,7 +88,7 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
  private:
   explicit NFC(LocalFrame*);
   device::mojom::blink::NFCPtr nfc_;
-  mojo::Binding<device::mojom::blink::NFCClient> client_;
+  mojo::Binding<device::mojom::blink::NFCClient> client_binding_;
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
   using WatchCallbacksMap = HeapHashMap<uint32_t, Member<MessageCallback>>;
   WatchCallbacksMap callbacks_;

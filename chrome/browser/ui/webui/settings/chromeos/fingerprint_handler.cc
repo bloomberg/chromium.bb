@@ -58,7 +58,9 @@ FingerprintHandler::FingerprintHandler(Profile* profile)
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->BindInterface(device::mojom::kServiceName, &fp_service_);
-  fp_service_->AddFingerprintObserver(binding_.CreateInterfacePtrAndBind());
+  device::mojom::FingerprintObserverPtr observer;
+  binding_.Bind(mojo::MakeRequest(&observer));
+  fp_service_->AddFingerprintObserver(std::move(observer));
   user_id_ = ProfileHelper::Get()->GetUserIdHashFromProfile(profile);
   // SessionManager may not exist in some tests.
   if (SessionManager::Get())

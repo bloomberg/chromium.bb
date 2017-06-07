@@ -45,7 +45,7 @@ class ImageTraitsTest : public testing::Test,
 
   // testing::Test:
   void SetUp() override {
-    service_ = bindings_.CreateInterfacePtrAndBind(this);
+    bindings_.AddBinding(this, mojo::MakeRequest(&service_));
   }
 
   mojom::ImageTraitsTestServicePtr& service() { return service_; }

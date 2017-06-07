@@ -24,7 +24,9 @@ class FakeContentPasswordManagerDriver : public mojom::PasswordManagerDriver {
   ~FakeContentPasswordManagerDriver() override {}
 
   mojom::PasswordManagerDriverPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::PasswordManagerDriverPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
   bool GetLogMessage(std::string* log) {

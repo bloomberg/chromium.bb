@@ -355,9 +355,10 @@ void AppBannerManager::SendBannerPromptRequest() {
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
       mojo::MakeRequest(&controller_));
 
+  blink::mojom::AppBannerServicePtr banner_proxy;
+  binding_.Bind(mojo::MakeRequest(&banner_proxy));
   controller_->BannerPromptRequest(
-      binding_.CreateInterfacePtrAndBind(), mojo::MakeRequest(&event_),
-      {GetBannerType()},
+      std::move(banner_proxy), mojo::MakeRequest(&event_), {GetBannerType()},
       base::Bind(&AppBannerManager::OnBannerPromptReply, GetWeakPtr()));
 }
 

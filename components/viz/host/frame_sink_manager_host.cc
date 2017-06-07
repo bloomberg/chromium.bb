@@ -24,8 +24,10 @@ cc::SurfaceManager* FrameSinkManagerHost::surface_manager() {
 
 void FrameSinkManagerHost::ConnectToFrameSinkManager() {
   DCHECK(!frame_sink_manager_ptr_.is_bound());
+  cc::mojom::FrameSinkManagerClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
   frame_sink_manager_.Connect(mojo::MakeRequest(&frame_sink_manager_ptr_),
-                              binding_.CreateInterfacePtrAndBind());
+                              std::move(client));
 }
 
 void FrameSinkManagerHost::AddObserver(FrameSinkObserver* observer) {

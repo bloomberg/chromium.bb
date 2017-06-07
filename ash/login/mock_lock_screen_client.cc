@@ -14,7 +14,9 @@ MockLockScreenClient::MockLockScreenClient() : binding_(this) {}
 MockLockScreenClient::~MockLockScreenClient() = default;
 
 mojom::LockScreenClientPtr MockLockScreenClient::CreateInterfacePtrAndBind() {
-  return binding_.CreateInterfacePtrAndBind();
+  mojom::LockScreenClientPtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
 std::unique_ptr<MockLockScreenClient> BindMockLockScreenClient() {

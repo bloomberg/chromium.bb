@@ -45,7 +45,9 @@ DefaultWindowTreeBinding::~DefaultWindowTreeBinding() {}
 
 mojom::WindowTreePtr DefaultWindowTreeBinding::CreateInterfacePtrAndBind() {
   DCHECK(!binding_.is_bound());
-  return binding_.CreateInterfacePtrAndBind();
+  mojom::WindowTreePtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
 mojom::WindowManager* DefaultWindowTreeBinding::GetWindowManager() {

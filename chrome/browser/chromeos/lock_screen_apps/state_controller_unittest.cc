@@ -48,7 +48,9 @@ class TestTrayAction : public ash::mojom::TrayAction {
   ~TestTrayAction() override = default;
 
   ash::mojom::TrayActionPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    ash::mojom::TrayActionPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
   void SetClient(ash::mojom::TrayActionClientPtr client,

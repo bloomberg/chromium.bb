@@ -100,7 +100,9 @@ SystemTrayClient::SystemTrayClient() : binding_(this) {
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &system_tray_);
   // Register this object as the client interface implementation.
-  system_tray_->SetClient(binding_.CreateInterfacePtrAndBind());
+  ash::mojom::SystemTrayClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
+  system_tray_->SetClient(std::move(client));
 
   // If this observes clock setting changes before ash comes up the IPCs will
   // be queued on |system_tray_|.

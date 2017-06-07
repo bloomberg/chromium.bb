@@ -12,7 +12,9 @@ ShelfItemDelegate::ShelfItemDelegate(const ash::ShelfID& shelf_id)
 ShelfItemDelegate::~ShelfItemDelegate() {}
 
 mojom::ShelfItemDelegatePtr ShelfItemDelegate::CreateInterfacePtrAndBind() {
-  return binding_.CreateInterfacePtrAndBind();
+  mojom::ShelfItemDelegatePtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
 MenuItemList ShelfItemDelegate::GetAppMenuItems(int event_flags) {

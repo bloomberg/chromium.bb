@@ -934,8 +934,9 @@ WallpaperManager::WallpaperManager()
     connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
                                               &wallpaper_controller_ptr);
     // Register this object as the wallpaper picker.
-    wallpaper_controller_ptr->SetWallpaperPicker(
-        binding_.CreateInterfacePtrAndBind());
+    ash::mojom::WallpaperPickerPtr picker;
+    binding_.Bind(mojo::MakeRequest(&picker));
+    wallpaper_controller_ptr->SetWallpaperPicker(std::move(picker));
   }
 }
 

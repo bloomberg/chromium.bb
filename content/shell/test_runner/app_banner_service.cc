@@ -27,10 +27,12 @@ void AppBannerService::SendBannerPromptRequest(
   if (!controller_.is_bound())
     return;
 
+  blink::mojom::AppBannerServicePtr proxy;
+  binding_.Bind(mojo::MakeRequest(&proxy));
   controller_->BannerPromptRequest(
-      binding_.CreateInterfacePtrAndBind(), mojo::MakeRequest(&event_),
-      platforms, base::Bind(&AppBannerService::OnBannerPromptReply,
-                            base::Unretained(this), callback));
+      std::move(proxy), mojo::MakeRequest(&event_), platforms,
+      base::Bind(&AppBannerService::OnBannerPromptReply, base::Unretained(this),
+                 callback));
 }
 
 void AppBannerService::DisplayAppBanner(bool user_gesture) { /* do nothing */

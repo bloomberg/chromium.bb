@@ -34,7 +34,9 @@ void ArcObbMounterBridge::OnInstanceReady() {
   mojom::ObbMounterInstance* obb_mounter_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->obb_mounter(), Init);
   DCHECK(obb_mounter_instance);
-  obb_mounter_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::ObbMounterHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  obb_mounter_instance->Init(std::move(host_proxy));
 }
 
 void ArcObbMounterBridge::MountObb(const std::string& obb_file,

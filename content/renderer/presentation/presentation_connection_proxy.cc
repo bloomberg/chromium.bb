@@ -95,7 +95,9 @@ ControllerConnectionProxy::ControllerConnectionProxy(
 ControllerConnectionProxy::~ControllerConnectionProxy() = default;
 
 blink::mojom::PresentationConnectionPtr ControllerConnectionProxy::Bind() {
-  return binding_.CreateInterfacePtrAndBind();
+  blink::mojom::PresentationConnectionPtr connection;
+  binding_.Bind(mojo::MakeRequest(&connection));
+  return connection;
 }
 
 blink::mojom::PresentationConnectionRequest

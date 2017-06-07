@@ -268,14 +268,19 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
   void InitializePrefs() {
     // According to the implementation of ProfilePrefStoreManager, this is
     // actually a SegregatedPrefStore backed by two underlying pref stores.
+    prefs::mojom::ResetOnLoadObserverPtr observer;
+    reset_on_load_observer_bindings_.AddBinding(this,
+                                                mojo::MakeRequest(&observer));
+    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate;
+    mock_validation_delegate_bindings_.AddBinding(
+        mock_validation_delegate_.get(),
+        mojo::MakeRequest(&validation_delegate));
     scoped_refptr<PersistentPrefStore> pref_store =
         manager_->CreateProfilePrefStore(
             prefs::CloneTrackedConfiguration(configuration_), kReportingIdCount,
-            worker_pool_->pool().get(),
-            reset_on_load_observer_bindings_.CreateInterfacePtrAndBind(this),
-            mock_validation_delegate_bindings_.CreateInterfacePtrAndBind(
-                mock_validation_delegate_.get()),
-            connector_.get(), profile_pref_registry_);
+            worker_pool_->pool().get(), std::move(observer),
+            std::move(validation_delegate), connector_.get(),
+            profile_pref_registry_);
     InitializePrefStore(pref_store.get());
     pref_store = nullptr;
     pref_service_context_.reset();
@@ -336,13 +341,18 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool>,
 
   void LoadExistingPrefs() {
     DestroyPrefStore();
+    prefs::mojom::ResetOnLoadObserverPtr observer;
+    reset_on_load_observer_bindings_.AddBinding(this,
+                                                mojo::MakeRequest(&observer));
+    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate;
+    mock_validation_delegate_bindings_.AddBinding(
+        mock_validation_delegate_.get(),
+        mojo::MakeRequest(&validation_delegate));
     pref_store_ = manager_->CreateProfilePrefStore(
         prefs::CloneTrackedConfiguration(configuration_), kReportingIdCount,
-        worker_pool_->pool().get(),
-        reset_on_load_observer_bindings_.CreateInterfacePtrAndBind(this),
-        mock_validation_delegate_bindings_.CreateInterfacePtrAndBind(
-            mock_validation_delegate_.get()),
-        connector_.get(), profile_pref_registry_);
+        worker_pool_->pool().get(), std::move(observer),
+        std::move(validation_delegate), connector_.get(),
+        profile_pref_registry_);
     pref_store_->AddObserver(&registry_verifier_);
     PrefStoreReadObserver read_observer(pref_store_);
     read_observer.Read();

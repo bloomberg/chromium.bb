@@ -1168,7 +1168,8 @@ TEST_F(AssociatedInterfaceTest, CloseWithoutBindingAssociatedRequest) {
   DiscardingAssociatedPingProviderProvider ping_provider_provider;
   mojo::Binding<AssociatedPingProviderProvider> binding(
       &ping_provider_provider);
-  auto provider_provider = binding.CreateInterfacePtrAndBind();
+  AssociatedPingProviderProviderPtr provider_provider;
+  binding.Bind(mojo::MakeRequest(&provider_provider));
   AssociatedPingProviderAssociatedPtr provider;
   provider_provider->GetPingProvider(mojo::MakeRequest(&provider));
   PingServiceAssociatedPtr ping;

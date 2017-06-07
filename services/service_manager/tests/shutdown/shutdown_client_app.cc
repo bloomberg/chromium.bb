@@ -47,8 +47,8 @@ class ShutdownClientApp : public Service,
 
     mojo::Binding<mojom::ShutdownTestClient> client_binding(this);
 
-    mojom::ShutdownTestClientPtr client_ptr =
-        client_binding.CreateInterfacePtrAndBind();
+    mojom::ShutdownTestClientPtr client_ptr;
+    client_binding.Bind(mojo::MakeRequest(&client_ptr));
 
     service->SetClient(std::move(client_ptr));
 

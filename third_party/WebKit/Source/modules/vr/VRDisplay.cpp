@@ -344,10 +344,11 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     }
 
     pending_present_resolvers_.push_back(resolver);
+    device::mojom::blink::VRSubmitFrameClientPtr submit_frame_client;
     submit_frame_client_binding_.Close();
+    submit_frame_client_binding_.Bind(mojo::MakeRequest(&submit_frame_client));
     display_->RequestPresent(
-        secure_context,
-        submit_frame_client_binding_.CreateInterfacePtrAndBind(),
+        secure_context, std::move(submit_frame_client),
         ConvertToBaseCallback(
             WTF::Bind(&VRDisplay::OnPresentComplete, WrapPersistent(this))));
     pending_present_request_ = true;

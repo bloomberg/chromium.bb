@@ -26,7 +26,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
   URLLoaderClientImplTest()
       : dispatcher_(new ResourceDispatcher(this, message_loop_.task_runner())),
         mojo_binding_(this) {
-    url_loader_factory_proxy_ = mojo_binding_.CreateInterfacePtrAndBind();
+    mojo_binding_.Bind(mojo::MakeRequest(&url_loader_factory_proxy_));
 
     request_id_ = dispatcher_->StartAsync(
         base::MakeUnique<ResourceRequest>(), 0, nullptr, url::Origin(),

@@ -123,18 +123,6 @@ class BindingSetBase {
     return true;
   }
 
-  // Returns a proxy bound to one end of a pipe whose other end is bound to
-  // |this|. If |id_storage| is not null, |*id_storage| will be set to the ID
-  // of the added binding.
-  ProxyType CreateInterfacePtrAndBind(ImplPointerType impl,
-                                      BindingId* id_storage = nullptr) {
-    ProxyType proxy;
-    BindingId id = AddBinding(std::move(impl), Traits::MakeRequest(&proxy));
-    if (id_storage)
-      *id_storage = id;
-    return proxy;
-  }
-
   void CloseAllBindings() { bindings_.clear(); }
 
   bool empty() const { return bindings_.empty(); }

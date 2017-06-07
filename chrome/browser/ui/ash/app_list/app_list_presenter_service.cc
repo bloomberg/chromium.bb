@@ -24,7 +24,9 @@ AppListPresenterService::AppListPresenterService() : binding_(this) {
     connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
                                               &app_list_ptr);
     // Register this object as the app list presenter.
-    app_list_ptr->SetAppListPresenter(binding_.CreateInterfacePtrAndBind());
+    app_list::mojom::AppListPresenterPtr presenter;
+    binding_.Bind(mojo::MakeRequest(&presenter));
+    app_list_ptr->SetAppListPresenter(std::move(presenter));
     // Pass the interface pointer to the presenter to report visibility changes.
     GetPresenter()->SetAppList(std::move(app_list_ptr));
   }

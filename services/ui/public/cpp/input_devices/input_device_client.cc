@@ -64,7 +64,9 @@ InputDeviceClient::InputDeviceClient(bool is_input_device_manager)
 }
 
 mojom::InputDeviceObserverMojoPtr InputDeviceClient::GetIntefacePtr() {
-  return binding_.CreateInterfacePtrAndBind();
+  mojom::InputDeviceObserverMojoPtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
 void InputDeviceClient::OnKeyboardDeviceConfigurationChanged(

@@ -650,7 +650,9 @@ TestDisplayManagerObserver::TestDisplayManagerObserver() : binding_(this) {}
 TestDisplayManagerObserver::~TestDisplayManagerObserver() = default;
 
 mojom::DisplayManagerObserverPtr TestDisplayManagerObserver::GetPtr() {
-  return binding_.CreateInterfacePtrAndBind();
+  mojom::DisplayManagerObserverPtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
 std::string TestDisplayManagerObserver::GetAndClearObserverCalls() {

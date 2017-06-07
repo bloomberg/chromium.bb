@@ -211,7 +211,9 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
     // Record the eTLD+1 of the frame using the API.
     Platform::Current()->RecordRapporURL("Media.Session.APIUsage.Origin",
                                          document->Url());
-    service_->SetClient(client_binding_.CreateInterfacePtrAndBind());
+    blink::mojom::blink::MediaSessionClientPtr client;
+    client_binding_.Bind(mojo::MakeRequest(&client));
+    service_->SetClient(std::move(client));
   }
 
   return service_.get();

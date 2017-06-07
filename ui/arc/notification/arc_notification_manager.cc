@@ -45,7 +45,9 @@ void ArcNotificationManager::OnInstanceReady() {
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->notifications(), Init);
   DCHECK(notifications_instance);
 
-  notifications_instance->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::NotificationsHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  notifications_instance->Init(std::move(host_proxy));
   ready_ = true;
 }
 

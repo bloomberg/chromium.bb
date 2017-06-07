@@ -28,7 +28,9 @@ class MockMemoryCoordinatorHandle : public mojom::MemoryCoordinatorHandle {
 
   mojom::MemoryCoordinatorHandlePtr Bind() {
     DCHECK(!binding_.is_bound());
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::MemoryCoordinatorHandlePtr handle;
+    binding_.Bind(mojo::MakeRequest(&handle));
+    return handle;
   }
 
   mojom::ChildMemoryCoordinatorPtr& child() { return child_; }

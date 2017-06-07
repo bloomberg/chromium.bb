@@ -21,7 +21,9 @@ class GeometryStructTraitsTest
 
  protected:
   gfx::mojom::blink::GeometryTraitsTestServicePtr GetTraitsTestProxy() {
-    return traits_test_bindings_.CreateInterfacePtrAndBind(this);
+    gfx::mojom::blink::GeometryTraitsTestServicePtr proxy;
+    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
+    return proxy;
   }
 
  private:

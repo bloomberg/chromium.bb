@@ -46,8 +46,9 @@ VolumeController::VolumeController() : binding_(this) {
                            &accelerator_controller_ptr);
 
   // Register this object as the volume controller.
-  accelerator_controller_ptr->SetVolumeController(
-      binding_.CreateInterfacePtrAndBind());
+  ash::mojom::VolumeControllerPtr controller;
+  binding_.Bind(mojo::MakeRequest(&controller));
+  accelerator_controller_ptr->SetVolumeController(std::move(controller));
 
   if (VolumeAdjustSoundEnabled()) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();

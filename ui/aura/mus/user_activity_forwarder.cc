@@ -21,8 +21,9 @@ UserActivityForwarder::UserActivityForwarder(
   // second (the granularity exposed by UserActivityMonitor).
   const uint32_t kNotifyIntervalSec = static_cast<uint32_t>(
       ceil(ui::UserActivityDetector::kNotifyIntervalMs / 1000.0));
-  monitor_->AddUserActivityObserver(kNotifyIntervalSec,
-                                    binding_.CreateInterfacePtrAndBind());
+  ui::mojom::UserActivityObserverPtr observer;
+  binding_.Bind(mojo::MakeRequest(&observer));
+  monitor_->AddUserActivityObserver(kNotifyIntervalSec, std::move(observer));
 }
 
 UserActivityForwarder::~UserActivityForwarder() {}

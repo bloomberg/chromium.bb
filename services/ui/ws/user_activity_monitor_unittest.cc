@@ -26,7 +26,9 @@ class TestUserActivityObserver : public mojom::UserActivityObserver {
   ~TestUserActivityObserver() override {}
 
   mojom::UserActivityObserverPtr GetPtr() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::UserActivityObserverPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
   bool GetAndResetReceivedUserActivity() {
@@ -51,7 +53,9 @@ class TestUserIdleObserver : public mojom::UserIdleObserver {
   ~TestUserIdleObserver() override {}
 
   mojom::UserIdleObserverPtr GetPtr() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::UserIdleObserverPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
   bool GetAndResetIdleState(UserIdleObserver::IdleState* state) {

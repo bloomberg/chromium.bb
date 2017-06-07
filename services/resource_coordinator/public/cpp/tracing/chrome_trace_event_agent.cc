@@ -35,8 +35,11 @@ ChromeTraceEventAgent::ChromeTraceEventAgent(
   // the constructor is called with a non-null agent_registry.
   if (!agent_registry)
     return;
-  agent_registry->RegisterAgent(binding_.CreateInterfacePtrAndBind(),
-                                "traceEvents", mojom::TraceDataType::ARRAY,
+
+  mojom::AgentPtr agent;
+  binding_.Bind(mojo::MakeRequest(&agent));
+  agent_registry->RegisterAgent(std::move(agent), "traceEvents",
+                                mojom::TraceDataType::ARRAY,
                                 false /* supports_explicit_clock_sync */);
 }
 

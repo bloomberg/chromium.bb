@@ -76,7 +76,9 @@ ArcBridgeHostImpl::ArcBridgeHostImpl(ArcBridgeService* arc_bridge_service,
   DCHECK(instance_.is_bound());
   instance_.set_connection_error_handler(
       base::Bind(&ArcBridgeHostImpl::OnClosed, base::Unretained(this)));
-  instance_->Init(binding_.CreateInterfacePtrAndBind());
+  mojom::ArcBridgeHostPtr host_proxy;
+  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  instance_->Init(std::move(host_proxy));
 }
 
 ArcBridgeHostImpl::~ArcBridgeHostImpl() {

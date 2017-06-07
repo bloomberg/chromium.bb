@@ -339,12 +339,17 @@ class UserMediaClientImplTest : public ::testing::Test {
     user_media_client_impl_.reset(new UserMediaClientImplUnderTest(
         dependency_factory_.get(),
         std::unique_ptr<MediaStreamDispatcher>(ms_dispatcher_)));
+    ::mojom::MediaDevicesDispatcherHostPtr user_media_host_proxy;
+    binding_user_media.Bind(mojo::MakeRequest(&user_media_host_proxy));
     user_media_client_impl_->SetMediaDevicesDispatcherForTesting(
-        binding_user_media.CreateInterfacePtrAndBind());
+        std::move(user_media_host_proxy));
     base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
         MediaDevicesEventDispatcher::GetForRenderFrame(nullptr);
+    ::mojom::MediaDevicesDispatcherHostPtr event_dispatcher_host_proxy;
+    binding_event_dispatcher_.Bind(
+        mojo::MakeRequest(&event_dispatcher_host_proxy));
     event_dispatcher->SetMediaDevicesDispatcherForTesting(
-        binding_event_dispatcher_.CreateInterfacePtrAndBind());
+        std::move(event_dispatcher_host_proxy));
   }
 
   void TearDown() override {

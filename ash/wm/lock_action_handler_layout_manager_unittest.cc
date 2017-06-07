@@ -68,7 +68,9 @@ class TestTrayActionClient : public mojom::TrayActionClient {
   ~TestTrayActionClient() override = default;
 
   mojom::TrayActionClientPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    mojom::TrayActionClientPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
   }
 
   // mojom::TrayActionClient:

@@ -645,7 +645,9 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
     return;
 
   render_frame()->GetRemoteInterfaces()->GetInterface(&presentation_service_);
-  presentation_service_->SetClient(binding_.CreateInterfacePtrAndBind());
+  blink::mojom::PresentationServiceClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
+  presentation_service_->SetClient(std::move(client));
 }
 
 void PresentationDispatcher::StartListeningToURL(const GURL& url) {

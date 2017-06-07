@@ -64,7 +64,9 @@ class MockMediaDevicesListener : public ::mojom::MediaDevicesListener {
                void(MediaDeviceType, uint32_t, const MediaDeviceInfoArray&));
 
   ::mojom::MediaDevicesListenerPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    ::mojom::MediaDevicesListenerPtr listener;
+    binding_.Bind(mojo::MakeRequest(&listener));
+    return listener;
   }
 
  private:

@@ -47,7 +47,9 @@ WiFiDisplaySession::WiFiDisplaySession(
           &WiFiDisplaySession::OnIPCConnectionError,
           weak_factory_.GetWeakPtr()));
 
-  service_->SetClient(binding_.CreateInterfacePtrAndBind());
+  WiFiDisplaySessionServiceClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
+  service_->SetClient(std::move(client));
   binding_.set_connection_error_handler(base::Bind(
           &WiFiDisplaySession::OnIPCConnectionError,
           weak_factory_.GetWeakPtr()));

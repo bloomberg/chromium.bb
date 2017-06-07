@@ -41,7 +41,10 @@ ClientProcessImpl::ClientProcessImpl(const Config& config)
     config.coordinator()->BindCoordinatorRequest(
         service_manager::BindSourceInfo(), mojo::MakeRequest(&coordinator_));
   }
-  coordinator_->RegisterClientProcess(binding_.CreateInterfacePtrAndBind());
+
+  mojom::ClientProcessPtr process;
+  binding_.Bind(mojo::MakeRequest(&process));
+  coordinator_->RegisterClientProcess(std::move(process));
 
   // Only one process should handle periodic dumping.
   bool is_coordinator_process = !!config.coordinator();

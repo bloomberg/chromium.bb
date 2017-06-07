@@ -17,7 +17,9 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  protected:
   mojom::TraitsTestServicePtr GetTraitsTestProxy() {
-    return traits_test_bindings_.CreateInterfacePtrAndBind(this);
+    mojom::TraitsTestServicePtr proxy;
+    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
+    return proxy;
   }
 
  private:

@@ -276,7 +276,10 @@ void USB::EnsureDeviceManagerConnection() {
       &USB::OnDeviceManagerConnectionError, WrapWeakPersistent(this))));
 
   DCHECK(!client_binding_.is_bound());
-  device_manager_->SetClient(client_binding_.CreateInterfacePtrAndBind());
+
+  device::mojom::blink::UsbDeviceManagerClientPtr client;
+  client_binding_.Bind(mojo::MakeRequest(&client));
+  device_manager_->SetClient(std::move(client));
 }
 
 DEFINE_TRACE(USB) {

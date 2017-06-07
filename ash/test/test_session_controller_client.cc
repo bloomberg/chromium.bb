@@ -48,7 +48,9 @@ void TestSessionControllerClient::InitializeAndBind() {
   session_info_->add_user_session_policy = controller_->GetAddUserPolicy();
   session_info_->state = controller_->GetSessionState();
 
-  controller_->SetClient(binding_.CreateInterfacePtrAndBind());
+  ash::mojom::SessionControllerClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
+  controller_->SetClient(std::move(client));
 }
 
 void TestSessionControllerClient::Reset() {

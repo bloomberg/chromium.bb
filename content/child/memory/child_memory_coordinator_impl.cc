@@ -49,7 +49,9 @@ ChildMemoryCoordinatorImpl::ChildMemoryCoordinatorImpl(
   DCHECK(delegate_);
   DCHECK(!g_child_memory_coordinator);
   g_child_memory_coordinator = this;
-  parent_->AddChild(binding_.CreateInterfacePtrAndBind());
+  mojom::ChildMemoryCoordinatorPtr child;
+  binding_.Bind(mojo::MakeRequest(&child));
+  parent_->AddChild(std::move(child));
   base::MemoryCoordinatorProxy::SetMemoryCoordinator(this);
 }
 
