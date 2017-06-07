@@ -1,0 +1,10 @@
+{
+  "tests": [
+    {
+      "app": "ios_chrome_unittests"
+    },
+    {
+      "app": "net_unittests"
+    }
+  ]
+}
