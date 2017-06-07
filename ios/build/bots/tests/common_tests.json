@@ -22,9 +22,6 @@
       "app": "google_apis_unittests"
     },
     {
-      "app": "ios_chrome_unittests"
-    },
-    {
       "app": "ios_net_unittests"
     },
     {
@@ -32,9 +29,6 @@
     },
     {
       "app": "ios_web_unittests"
-    },
-    {
-      "app": "net_unittests"
     },
     {
       "app": "skia_unittests"
