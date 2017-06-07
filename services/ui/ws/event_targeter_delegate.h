@@ -23,6 +23,10 @@ class EventTargeterDelegate {
   virtual ServerWindow* GetRootWindowContaining(gfx::Point* location_in_display,
                                                 int64_t* display_id) = 0;
 
+  // Calls EventDispatcherDelegate::ProcessNextAvailableEvent, see
+  // event_dispatcher_delegate.h for details.
+  virtual void ProcessNextAvailableEvent() = 0;
+
  protected:
   virtual ~EventTargeterDelegate() {}
 };

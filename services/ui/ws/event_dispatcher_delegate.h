@@ -31,13 +31,13 @@ class EventDispatcherDelegate {
   };
 
   virtual void OnAccelerator(uint32_t accelerator,
-                             const int64_t display_id,
+                             int64_t display_id,
                              const ui::Event& event,
                              AcceleratorPhase phase) = 0;
 
   virtual void SetFocusedWindowFromEventDispatcher(ServerWindow* window) = 0;
   virtual ServerWindow* GetFocusedWindowForEventDispatcher(
-      const int64_t display_id) = 0;
+      int64_t display_id) = 0;
 
   // Called when capture should be set on the native display. |window| is the
   // window capture is being set on.
@@ -58,14 +58,17 @@ class EventDispatcherDelegate {
                                 ServerWindow* old_capture) = 0;
 
   virtual void OnMouseCursorLocationChanged(const gfx::Point& point,
-                                            const int64_t display_id) = 0;
+                                            int64_t display_id) = 0;
 
   // Dispatches an event to the specific client.
   virtual void DispatchInputEventToWindow(ServerWindow* target,
                                           ClientSpecificId client_id,
-                                          const int64_t display_id,
+                                          int64_t display_id,
                                           const ui::Event& event,
                                           Accelerator* accelerator) = 0;
+
+  // Starts processing the next event in the event queue.
+  virtual void ProcessNextAvailableEvent() = 0;
 
   // Returns the id of the client to send events to. |in_nonclient_area| is
   // true if the event occurred in the non-client area of the window.
@@ -86,7 +89,7 @@ class EventDispatcherDelegate {
   // Called when event dispatch could not find a target. OnAccelerator may still
   // be called.
   virtual void OnEventTargetNotFound(const ui::Event& event,
-                                     const int64_t display_id) = 0;
+                                     int64_t display_id) = 0;
 
  protected:
   virtual ~EventDispatcherDelegate() {}

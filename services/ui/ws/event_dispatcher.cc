@@ -79,7 +79,7 @@ void EventDispatcher::Reset() {
 
 void EventDispatcher::SetMousePointerDisplayLocation(
     const gfx::Point& display_location,
-    const int64_t display_id) {
+    int64_t display_id) {
   DCHECK(pointer_targets_.empty());
   SetMousePointerLocation(display_location, display_id);
   UpdateCursorProviderByLastKnownLocation();
@@ -221,34 +221,21 @@ const ServerWindow* EventDispatcher::GetWindowForMouseCursor() const {
 
 void EventDispatcher::UpdateNonClientAreaForCurrentWindow() {
   if (mouse_cursor_source_window_) {
-    LocationTarget location_target = event_targeter_->FindTargetForLocation(
-        mouse_pointer_last_location_, mouse_pointer_display_id_);
-    if (location_target.deepest_window.window == mouse_cursor_source_window_) {
-      mouse_cursor_in_non_client_area_ =
-          mouse_cursor_source_window_
-              ? location_target.deepest_window.in_non_client_area
-              : false;
-    }
-    SetMousePointerLocation(location_target.location_in_root,
-                            location_target.display_id);
+    event_targeter_->FindTargetForLocation(
+        mouse_pointer_last_location_, mouse_pointer_display_id_,
+        base::BindOnce(
+            &EventDispatcher::UpdateNonClientAreaForCurrentWindowOnFoundWindow,
+            base::Unretained(this)));
   }
 }
 
 void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
   if (!mouse_button_down_) {
-    LocationTarget location_target = event_targeter_->FindTargetForLocation(
-        mouse_pointer_last_location_, mouse_pointer_display_id_);
-    SetMouseCursorSourceWindow(location_target.deepest_window.window);
-    if (mouse_cursor_source_window_) {
-      mouse_cursor_in_non_client_area_ =
-          location_target.deepest_window.in_non_client_area;
-    } else {
-      SetMouseCursorSourceWindow(delegate_->GetRootWindowContaining(
-          &mouse_pointer_last_location_, &mouse_pointer_display_id_));
-      mouse_cursor_in_non_client_area_ = true;
-    }
-    SetMousePointerLocation(location_target.location_in_root,
-                            location_target.display_id);
+    event_targeter_->FindTargetForLocation(
+        mouse_pointer_last_location_, mouse_pointer_display_id_,
+        base::BindOnce(&EventDispatcher::
+                           UpdateCursorProviderByLastKnownLocationOnFoundWindow,
+                       base::Unretained(this)));
   }
 }
 
@@ -280,8 +267,12 @@ void EventDispatcher::RemoveAccelerator(uint32_t id) {
     accelerators_.erase(it);
 }
 
+bool EventDispatcher::IsProcessingEvent() const {
+  return event_targeter_->IsHitTestInFlight();
+}
+
 void EventDispatcher::ProcessEvent(const ui::Event& event,
-                                   const int64_t display_id,
+                                   int64_t display_id,
                                    AcceleratorMatchPhase match_phase) {
 #if !defined(NDEBUG)
   if (match_phase == AcceleratorMatchPhase::POST_ONLY) {
@@ -314,14 +305,20 @@ void EventDispatcher::ProcessEvent(const ui::Event& event,
   }
 
   DCHECK(event.IsPointerEvent());
-  ProcessPointerEvent(*event.AsPointerEvent());
-  return;
+  event_targeter_->FindTargetForLocation(
+      event.AsPointerEvent()->root_location(), event_display_id_,
+      base::BindOnce(&EventDispatcher::ProcessPointerEventOnFoundTarget,
+                     base::Unretained(this), *event.AsPointerEvent()));
 }
 
 ServerWindow* EventDispatcher::GetRootWindowContaining(
     gfx::Point* location_in_display,
     int64_t* display_id) {
   return delegate_->GetRootWindowContaining(location_in_display, display_id);
+}
+
+void EventDispatcher::ProcessNextAvailableEvent() {
+  delegate_->ProcessNextAvailableEvent();
 }
 
 void EventDispatcher::SetMouseCursorSourceWindow(ServerWindow* window) {
@@ -368,12 +365,10 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event,
                              EventDispatcherDelegate::AcceleratorPhase::POST);
 }
 
-void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
-  DCHECK(event.IsPointerEvent());
-
+void EventDispatcher::ProcessPointerEventOnFoundTarget(
+    const ui::PointerEvent& event,
+    const LocationTarget& location_target) {
   PointerTarget pointer_target;
-  LocationTarget location_target = event_targeter_->FindTargetForLocation(
-      event.root_location(), event_display_id_);
   pointer_target.window = modal_window_controller_.GetTargetForWindow(
       location_target.deepest_window.window);
   pointer_target.is_mouse_event = event.IsMousePointerEvent();
@@ -462,7 +457,7 @@ void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
   // before we perform dispatch because the Delegate is going to read this
   // information from us.
   if (is_pointer_going_up && is_mouse_event)
-    UpdateCursorProviderByLastKnownLocation();
+    UpdateCursorProviderByLastKnownLocationOnFoundWindow(location_target);
 
   DispatchToPointerTarget(pointer_targets_[pointer_id],
                           *cloned_event->AsPointerEvent());
@@ -475,6 +470,41 @@ void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
     if (!AreAnyPointersDown())
       delegate_->ReleaseNativeCapture();
   }
+}
+
+void EventDispatcher::UpdateNonClientAreaForCurrentWindowOnFoundWindow(
+    const LocationTarget& location_target) {
+  if (!mouse_cursor_source_window_)
+    return;
+
+  if (location_target.deepest_window.window == mouse_cursor_source_window_) {
+    mouse_cursor_in_non_client_area_ =
+        mouse_cursor_source_window_
+            ? location_target.deepest_window.in_non_client_area
+            : false;
+  }
+  SetMousePointerLocation(location_target.location_in_root,
+                          location_target.display_id);
+  delegate_->UpdateNativeCursorFromDispatcher();
+}
+
+void EventDispatcher::UpdateCursorProviderByLastKnownLocationOnFoundWindow(
+    const LocationTarget& location_target) {
+  if (mouse_button_down_)
+    return;
+
+  SetMouseCursorSourceWindow(location_target.deepest_window.window);
+  if (mouse_cursor_source_window_) {
+    mouse_cursor_in_non_client_area_ =
+        location_target.deepest_window.in_non_client_area;
+  } else {
+    SetMouseCursorSourceWindow(delegate_->GetRootWindowContaining(
+        &mouse_pointer_last_location_, &mouse_pointer_display_id_));
+    mouse_cursor_in_non_client_area_ = true;
+  }
+  SetMousePointerLocation(location_target.location_in_root,
+                          location_target.display_id);
+  delegate_->UpdateNativeCursorFromDispatcher();
 }
 
 void EventDispatcher::StartTrackingPointer(

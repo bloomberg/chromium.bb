@@ -6,8 +6,11 @@
 #define SERVICES_UI_WS_EVENT_TARGETER_H_
 
 #include <stdint.h>
+#include <queue>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "services/ui/ws/window_finder.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
@@ -24,19 +27,54 @@ struct LocationTarget {
   int64_t display_id = display::kInvalidDisplayId;
 };
 
+using HitTestCallback = base::OnceCallback<void(const LocationTarget&)>;
+
 // Finds the target window for a location.
 class EventTargeter {
  public:
   explicit EventTargeter(EventTargeterDelegate* event_targeter_delegate);
   ~EventTargeter();
 
-  // Returns a LocationTarget for the supplied |location|. If there is no valid
-  // root window, |window| in the returned value is null.
-  LocationTarget FindTargetForLocation(const gfx::Point& location,
-                                       int64_t display_id);
+  // Calls WindowFinder to find the target for |location|.
+  // |callback| is called with the LocationTarget found.
+  void FindTargetForLocation(const gfx::Point& location,
+                             int64_t display_id,
+                             HitTestCallback callback);
+
+  bool IsHitTestInFlight() const;
 
  private:
+  struct HitTestRequest {
+    HitTestRequest(const gfx::Point& location,
+                   int64_t display_id,
+                   HitTestCallback hittest_callback);
+    ~HitTestRequest();
+
+    gfx::Point location;
+    int64_t display_id;
+    HitTestCallback callback;
+  };
+
+  void ProcessFindTarget(const gfx::Point& location,
+                         int64_t display_id,
+                         HitTestCallback callback);
+
+  void FindTargetForLocationNow(const gfx::Point& location,
+                                int64_t display_id,
+                                HitTestCallback callback);
+
+  void ProcessNextHitTestRequestFromQueue();
+
   EventTargeterDelegate* event_targeter_delegate_;
+
+  // True if we are waiting for the result of a hit-test. False otherwise.
+  bool hit_test_in_flight_;
+
+  // Requests for a new location while waiting on an existing request are added
+  // here.
+  std::queue<std::unique_ptr<HitTestRequest>> hit_test_request_queue_;
+
+  base::WeakPtrFactory<EventTargeter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EventTargeter);
 };

@@ -207,7 +207,7 @@ class WindowManagerStateTestApi {
 
   void DispatchInputEventToWindow(ServerWindow* target,
                                   ClientSpecificId client_id,
-                                  const int64_t display_id,
+                                  int64_t display_id,
                                   const ui::Event& event,
                                   Accelerator* accelerator) {
     wms_->DispatchInputEventToWindow(target, client_id, display_id, event,
@@ -233,9 +233,12 @@ class WindowManagerStateTestApi {
   }
 
   WindowTree* tree_awaiting_input_ack() {
-    return wms_->in_flight_event_details_ ? wms_->in_flight_event_details_->tree
-                                          : nullptr;
+    return wms_->in_flight_event_dispatch_details_
+               ? wms_->in_flight_event_dispatch_details_->tree
+               : nullptr;
   }
+
+  bool is_event_queue_empty() const { return wms_->event_queue_.empty(); }
 
   const std::vector<std::unique_ptr<WindowManagerDisplayRoot>>&
   window_manager_display_roots() const {
@@ -243,9 +246,9 @@ class WindowManagerStateTestApi {
   }
 
   bool AckInFlightEvent(mojom::EventResult result) {
-    if (!wms_->in_flight_event_details_)
+    if (!wms_->in_flight_event_dispatch_details_)
       return false;
-    wms_->OnEventAck(wms_->in_flight_event_details_->tree, result);
+    wms_->OnEventAck(wms_->in_flight_event_dispatch_details_->tree, result);
     return true;
   }
 
