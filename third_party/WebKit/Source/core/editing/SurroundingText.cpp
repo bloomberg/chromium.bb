@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/Position.h"
 #include "core/editing/iterators/BackwardsCharacterIterator.h"
 #include "core/editing/iterators/CharacterIterator.h"
@@ -63,12 +64,17 @@ void SurroundingText::Initialize(const Position& start_position,
   DCHECK(!document->NeedsLayoutTreeUpdate());
 
   // The forward range starts at the selection end and ends at the document's
-  // end. It will then be updated to only contain the text in the text in the
-  // right range around the selection.
+  // or the input element's end. It will then be updated to only contain the
+  // text in the right range around the selection.
+  DCHECK_EQ(RootEditableElementOf(start_position),
+            RootEditableElementOf(end_position));
+  Element* const root_editable = RootEditableElementOf(start_position);
+  Element* const root_element =
+      root_editable ? root_editable : document->documentElement();
+
   CharacterIterator forward_iterator(
       end_position,
-      Position::LastPositionInNode(document->documentElement())
-          .ParentAnchoredEquivalent(),
+      Position::LastPositionInNode(root_element).ParentAnchoredEquivalent(),
       TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
   // FIXME: why do we stop going trough the text if we were not able to select
   // something on the right?
@@ -83,11 +89,10 @@ void SurroundingText::Initialize(const Position& start_position,
     return;
 
   // Same as with the forward range but with the backward range. The range
-  // starts at the document's start and ends at the selection start and will
-  // be updated.
+  // starts at the document's or input element's start and ends at the selection
+  // start and will be updated.
   BackwardsCharacterIterator backwards_iterator(
-      Position::FirstPositionInNode(document->documentElement())
-          .ParentAnchoredEquivalent(),
+      Position::FirstPositionInNode(root_element).ParentAnchoredEquivalent(),
       start_position,
       TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
   if (!backwards_iterator.AtEnd())
