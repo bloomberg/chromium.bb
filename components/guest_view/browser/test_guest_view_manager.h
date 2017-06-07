@@ -35,6 +35,8 @@ class TestGuestViewManager : public GuestViewManager {
 
   content::WebContents* GetLastGuestCreated();
 
+  void WaitUntilAttached(content::WebContents* web_contents);
+
   // Returns the number of guests currently still alive at the time of calling
   // this method.
   size_t GetNumGuestsActive() const;
@@ -87,6 +89,10 @@ class TestGuestViewManager : public GuestViewManager {
   void EmbedderProcessDestroyed(int embedder_process_id) override;
   void ViewGarbageCollected(int embedder_process_id,
                             int view_instance_id) override;
+  void AttachGuest(int embedder_process_id,
+                   int element_instance_id,
+                   int guest_instance_id,
+                   const base::DictionaryValue& attach_params) override;
 
   void WaitForViewGarbageCollected();
 
@@ -103,6 +109,8 @@ class TestGuestViewManager : public GuestViewManager {
       guest_web_contents_watchers_;
   scoped_refptr<content::MessageLoopRunner> created_message_loop_runner_;
   scoped_refptr<content::MessageLoopRunner> num_created_message_loop_runner_;
+  GuestViewBase* waiting_for_attach_;
+  scoped_refptr<content::MessageLoopRunner> attached_message_loop_runner_;
   scoped_refptr<content::MessageLoopRunner> gc_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGuestViewManager);

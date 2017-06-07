@@ -971,6 +971,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
           guest_view::TestGuestViewManager::FromBrowserContext(
               browser()->profile()));
   content::WebContents* guest = guest_manager->WaitForSingleGuestCreated();
+  guest_manager->WaitUntilAttached(guest);
 
   // There should be two extension frames in ProcessManager: the app's main
   // page and the background page.
