@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/win/registry.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,11 +28,11 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   // This functionality is only defined for default profile, currently.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
     return;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      should_launch ?
-          base::Bind(auto_launch_util::EnableBackgroundStartAtLogin) :
-          base::Bind(auto_launch_util::DisableBackgroundStartAtLogin));
+  task_runner_->PostTask(
+      FROM_HERE,
+      should_launch
+          ? base::Bind(auto_launch_util::EnableBackgroundStartAtLogin)
+          : base::Bind(auto_launch_util::DisableBackgroundStartAtLogin));
 }
 
 void BackgroundModeManager::DisplayClientInstalledNotification(
@@ -51,4 +52,11 @@ void BackgroundModeManager::DisplayClientInstalledNotification(
 
 base::string16 BackgroundModeManager::GetPreferencesMenuLabel() {
   return l10n_util::GetStringUTF16(IDS_OPTIONS);
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+BackgroundModeManager::CreateTaskRunner() {
+  return base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
