@@ -176,7 +176,7 @@ void CSSFontSelector::UpdateGenericFontFamilySettings(Document& document) {
 
 void CSSFontSelector::ReportNotDefGlyph() const {
   DCHECK(document_);
-  UseCounter::Count(document_, UseCounter::kFontShapingNotDefGlyphObserved);
+  UseCounter::Count(document_, WebFeature::kFontShapingNotDefGlyphObserved);
 }
 
 DEFINE_TRACE(CSSFontSelector) {

@@ -96,7 +96,7 @@ inline HTMLDialogElement::HTMLDialogElement(Document& document)
       centering_mode_(kNotCentered),
       centered_position_(0),
       return_value_("") {
-  UseCounter::Count(document, UseCounter::kDialogElement);
+  UseCounter::Count(document, WebFeature::kDialogElement);
 }
 
 DEFINE_NODE_FACTORY(HTMLDialogElement)
@@ -171,7 +171,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   // See comment in |Fullscreen::RequestFullscreen|.
   if (Fullscreen::IsInFullscreenElementStack(*this)) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kShowModalForElementInFullscreenStack);
+                      WebFeature::kShowModalForElementInFullscreenStack);
   }
 
   GetDocument().AddToTopLayer(this);

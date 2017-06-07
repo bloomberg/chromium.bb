@@ -103,7 +103,7 @@ void PresentationRequest::AddedEventListener(
   if (event_type == EventTypeNames::connectionavailable) {
     UseCounter::Count(
         GetExecutionContext(),
-        UseCounter::kPresentationRequestConnectionAvailableEventListener);
+        WebFeature::kPresentationRequestConnectionAvailableEventListener);
   }
 }
 
@@ -224,10 +224,10 @@ void PresentationRequest::RecordOriginTypeAccess(
   DCHECK(execution_context);
   if (execution_context->IsSecureContext()) {
     UseCounter::Count(execution_context,
-                      UseCounter::kPresentationRequestSecureOrigin);
+                      WebFeature::kPresentationRequestSecureOrigin);
   } else {
     UseCounter::Count(execution_context,
-                      UseCounter::kPresentationRequestInsecureOrigin);
+                      WebFeature::kPresentationRequestInsecureOrigin);
   }
 }
 

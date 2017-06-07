@@ -59,7 +59,7 @@ InputType* TimeInputType::Create(HTMLInputElement& element) {
 }
 
 void TimeInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeTime);
+  CountUsageIfVisible(WebFeature::kInputTypeTime);
 }
 
 const AtomicString& TimeInputType::FormControlType() const {

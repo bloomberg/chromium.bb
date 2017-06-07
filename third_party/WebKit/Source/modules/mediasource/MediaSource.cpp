@@ -545,7 +545,7 @@ void MediaSource::DurationChangeAlgorithm(double new_duration,
 
     Deprecation::CountDeprecation(
         attached_element_->GetDocument(),
-        UseCounter::kMediaSourceDurationTruncatingBuffered);
+        WebFeature::kMediaSourceDurationTruncatingBuffered);
     // See also deprecated remove(new duration, old duration) behavior below.
   }
 

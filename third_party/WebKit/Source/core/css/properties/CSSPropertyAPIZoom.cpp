@@ -33,7 +33,7 @@ const CSSValue* CSSPropertyAPIZoom::parseSingleValue(
            ToCSSPrimitiveValue(zoom)->GetDoubleValue() == 1) ||
           (token.GetType() == kPercentageToken &&
            ToCSSPrimitiveValue(zoom)->GetDoubleValue() == 100)))
-      context.Count(UseCounter::kCSSZoomNotEqualToOne);
+      context.Count(WebFeature::kCSSZoomNotEqualToOne);
   }
   return zoom;
 }

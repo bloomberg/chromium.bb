@@ -138,10 +138,10 @@ bool BindingSecurity::ShouldAllowAccessTo(
 
   if (!can_access) {
     UseCounter::Count(accessing_window->GetFrame(),
-                      UseCounter::kCrossOriginPropertyAccess);
+                      WebFeature::kCrossOriginPropertyAccess);
     if (target->opener() == accessing_window) {
       UseCounter::Count(accessing_window->GetFrame(),
-                        UseCounter::kCrossOriginPropertyAccessFromOpener);
+                        WebFeature::kCrossOriginPropertyAccessFromOpener);
     }
   }
 
@@ -166,10 +166,10 @@ bool BindingSecurity::ShouldAllowAccessTo(
 
   if (!can_access) {
     UseCounter::Count(accessing_window->GetFrame(),
-                      UseCounter::kCrossOriginPropertyAccess);
+                      WebFeature::kCrossOriginPropertyAccess);
     if (target->opener() == accessing_window) {
       UseCounter::Count(accessing_window->GetFrame(),
-                        UseCounter::kCrossOriginPropertyAccessFromOpener);
+                        WebFeature::kCrossOriginPropertyAccessFromOpener);
     }
   }
 
@@ -195,10 +195,10 @@ bool BindingSecurity::ShouldAllowAccessTo(
 
   if (!can_access) {
     UseCounter::Count(accessing_window->GetFrame(),
-                      UseCounter::kCrossOriginPropertyAccess);
+                      WebFeature::kCrossOriginPropertyAccess);
     if (target->DomWindow()->opener() == accessing_window) {
       UseCounter::Count(accessing_window->GetFrame(),
-                        UseCounter::kCrossOriginPropertyAccessFromOpener);
+                        WebFeature::kCrossOriginPropertyAccessFromOpener);
     }
   }
 
@@ -224,10 +224,10 @@ bool BindingSecurity::ShouldAllowAccessTo(
 
   if (!can_access) {
     UseCounter::Count(accessing_window->GetFrame(),
-                      UseCounter::kCrossOriginPropertyAccess);
+                      WebFeature::kCrossOriginPropertyAccess);
     if (target->DomWindow()->opener() == accessing_window) {
       UseCounter::Count(accessing_window->GetFrame(),
-                        UseCounter::kCrossOriginPropertyAccessFromOpener);
+                        WebFeature::kCrossOriginPropertyAccessFromOpener);
     }
   }
 

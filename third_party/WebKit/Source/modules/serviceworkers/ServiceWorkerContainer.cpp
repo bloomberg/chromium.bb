@@ -438,7 +438,7 @@ void ServiceWorkerContainer::SetController(
                                     WTF::WrapUnique(handle.release()));
   if (controller_) {
     UseCounter::Count(GetExecutionContext(),
-                      UseCounter::kServiceWorkerControlledPage);
+                      WebFeature::kServiceWorkerControlledPage);
   }
   if (should_notify_controller_change)
     DispatchEvent(Event::Create(EventTypeNames::controllerchange));
@@ -464,8 +464,7 @@ void ServiceWorkerContainer::DispatchMessageEvent(
 void ServiceWorkerContainer::CountFeature(uint32_t feature) {
   if (!GetExecutionContext())
     return;
-  UseCounter::Feature use_counter_feature =
-      static_cast<UseCounter::Feature>(feature);
+  WebFeature use_counter_feature = static_cast<WebFeature>(feature);
   if (Deprecation::DeprecationMessage(use_counter_feature).IsEmpty())
     UseCounter::Count(GetExecutionContext(), use_counter_feature);
   else

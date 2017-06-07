@@ -780,11 +780,11 @@ bool FrameFetchContext::IsSVGImageChromeClient() const {
   return GetFrame()->GetChromeClient().IsSVGImageChromeClient();
 }
 
-void FrameFetchContext::CountUsage(UseCounter::Feature feature) const {
+void FrameFetchContext::CountUsage(WebFeature feature) const {
   UseCounter::Count(GetFrame(), feature);
 }
 
-void FrameFetchContext::CountDeprecation(UseCounter::Feature feature) const {
+void FrameFetchContext::CountDeprecation(WebFeature feature) const {
   Deprecation::CountDeprecation(GetFrame(), feature);
 }
 

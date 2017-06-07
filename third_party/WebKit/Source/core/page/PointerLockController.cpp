@@ -50,10 +50,10 @@ void PointerLockController::RequestPointerLock(Element* target) {
   }
 
   UseCounter::CountCrossOriginIframe(
-      target->GetDocument(), UseCounter::kElementRequestPointerLockIframe);
+      target->GetDocument(), WebFeature::kElementRequestPointerLockIframe);
   if (target->IsInShadowTree()) {
     UseCounter::Count(target->GetDocument(),
-                      UseCounter::kElementRequestPointerLockInShadow);
+                      WebFeature::kElementRequestPointerLockInShadow);
   }
 
   if (target->GetDocument().IsSandboxed(kSandboxPointerLock)) {

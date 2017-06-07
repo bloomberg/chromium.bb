@@ -235,7 +235,7 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   ChromeClient* GetChromeClient() const;
   Locale& GetLocale() const;
   Decimal ParseToNumberOrNaN(const String&) const;
-  void CountUsageIfVisible(UseCounter::Feature) const;
+  void CountUsageIfVisible(WebFeature) const;
 
   // Derive the step base, following the HTML algorithm steps.
   Decimal FindStepBase(const Decimal&) const;

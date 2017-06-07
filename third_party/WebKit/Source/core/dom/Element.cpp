@@ -2310,15 +2310,15 @@ ShadowRoot* Element::attachShadow(const ScriptState* script_state,
                                                   : ShadowRootType::kClosed;
 
   if (type == ShadowRootType::kClosed)
-    UseCounter::Count(GetDocument(), UseCounter::kElementAttachShadowClosed);
+    UseCounter::Count(GetDocument(), WebFeature::kElementAttachShadowClosed);
   else if (type == ShadowRootType::kOpen)
-    UseCounter::Count(GetDocument(), UseCounter::kElementAttachShadowOpen);
+    UseCounter::Count(GetDocument(), WebFeature::kElementAttachShadowOpen);
 
   ShadowRoot* shadow_root = CreateShadowRootInternal(type, exception_state);
 
   if (shadow_root_init_dict.hasDelegatesFocus()) {
     shadow_root->SetDelegatesFocus(shadow_root_init_dict.delegatesFocus());
-    UseCounter::Count(GetDocument(), UseCounter::kShadowRootDelegatesFocus);
+    UseCounter::Count(GetDocument(), WebFeature::kShadowRootDelegatesFocus);
   }
 
   return shadow_root;
@@ -2473,7 +2473,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
       attr_node->name() != attr_node->name().LowerASCII())
     UseCounter::Count(
         GetDocument(),
-        UseCounter::
+        WebFeature::
             kNonHTMLElementSetAttributeNodeFromHTMLDocumentNameNotLowercase);
 
   SynchronizeAllAttributes();

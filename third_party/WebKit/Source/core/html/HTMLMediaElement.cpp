@@ -518,7 +518,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
   SetHasCustomStyleCallbacks();
   AddElementToDocumentMap(this, &document);
 
-  UseCounter::Count(document, UseCounter::kHTMLMediaElement);
+  UseCounter::Count(document, WebFeature::kHTMLMediaElement);
 }
 
 HTMLMediaElement::~HTMLMediaElement() {
@@ -623,11 +623,11 @@ void HTMLMediaElement::ParseAttribute(
     }
   } else if (name == controlsAttr) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLMediaElementControlsAttribute);
+                      WebFeature::kHTMLMediaElementControlsAttribute);
     UpdateControlsVisibility();
   } else if (name == controlslistAttr) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLMediaElementControlsListAttribute);
+                      WebFeature::kHTMLMediaElementControlsListAttribute);
     if (params.old_value != params.new_value) {
       controls_list_->DidUpdateAttributeValue(params.old_value,
                                               params.new_value);
@@ -640,7 +640,7 @@ void HTMLMediaElement::ParseAttribute(
     // This attribute is an extension described in the Remote Playback API spec.
     // Please see: https://w3c.github.io/remote-playback
     UseCounter::Count(GetDocument(),
-                      UseCounter::kDisableRemotePlaybackAttribute);
+                      WebFeature::kDisableRemotePlaybackAttribute);
     if (params.old_value != params.new_value) {
       if (web_media_player_) {
         web_media_player_->RequestRemotePlaybackDisabled(
@@ -674,7 +674,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::InsertedInto(
 
   HTMLElement::InsertedInto(insertion_point);
   if (insertion_point->isConnected()) {
-    UseCounter::Count(GetDocument(), UseCounter::kHTMLMediaElementInDocument);
+    UseCounter::Count(GetDocument(), WebFeature::kHTMLMediaElementInDocument);
     if ((!getAttribute(srcAttr).IsEmpty() || src_object_) &&
         network_state_ == kNetworkEmpty) {
       ignore_preload_none_ = false;
@@ -920,7 +920,7 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
     // This is where that change would have an effect, and it is measured to
     // verify the assumption that it's a very rare situation.
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLMediaElementLoadNetworkEmptyNotPaused);
+                      WebFeature::kHTMLMediaElementLoadNetworkEmptyNotPaused);
   }
 
   // 7 - Set the playbackRate attribute to the value of the defaultPlaybackRate
@@ -1779,7 +1779,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
 
     if (!jumped && initial_playback_position > 0) {
       UseCounter::Count(GetDocument(),
-                        UseCounter::kHTMLMediaElementSeekToFragmentStart);
+                        WebFeature::kHTMLMediaElementSeekToFragmentStart);
       Seek(initial_playback_position);
       jumped = true;
     }
@@ -2177,7 +2177,7 @@ void HTMLMediaElement::setPreload(const AtomicString& preload) {
 WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
   const AtomicString& preload = FastGetAttribute(preloadAttr);
   if (DeprecatedEqualIgnoringCase(preload, "none")) {
-    UseCounter::Count(GetDocument(), UseCounter::kHTMLMediaElementPreloadNone);
+    UseCounter::Count(GetDocument(), WebFeature::kHTMLMediaElementPreloadNone);
     return WebMediaPlayer::kPreloadNone;
   }
 
@@ -2189,25 +2189,25 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
       (current_src_.Protocol() != "blob" && current_src_.Protocol() != "data" &&
        current_src_.Protocol() != "file")) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLMediaElementPreloadForcedNone);
+                      WebFeature::kHTMLMediaElementPreloadForcedNone);
     return WebMediaPlayer::kPreloadNone;
   }
 
   if (DeprecatedEqualIgnoringCase(preload, "metadata")) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLMediaElementPreloadMetadata);
+                      WebFeature::kHTMLMediaElementPreloadMetadata);
     return WebMediaPlayer::kPreloadMetaData;
   }
 
   // Force preload to 'metadata' on cellular connections.
   if (GetNetworkStateNotifier().IsCellularConnectionType()) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLMediaElementPreloadForcedMetadata);
+                      WebFeature::kHTMLMediaElementPreloadForcedMetadata);
     return WebMediaPlayer::kPreloadMetaData;
   }
 
   if (DeprecatedEqualIgnoringCase(preload, "auto")) {
-    UseCounter::Count(GetDocument(), UseCounter::kHTMLMediaElementPreloadAuto);
+    UseCounter::Count(GetDocument(), WebFeature::kHTMLMediaElementPreloadAuto);
     return WebMediaPlayer::kPreloadAuto;
   }
 
@@ -2220,7 +2220,7 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
 
   // TODO(foolip): Try to make "metadata" the default preload state:
   // https://crbug.com/310450
-  UseCounter::Count(GetDocument(), UseCounter::kHTMLMediaElementPreloadDefault);
+  UseCounter::Count(GetDocument(), WebFeature::kHTMLMediaElementPreloadDefault);
   return WebMediaPlayer::kPreloadAuto;
 }
 
@@ -2520,7 +2520,7 @@ void HTMLMediaElement::PlaybackProgressTimerFired(TimerBase*) {
     fragment_end_time_ = std::numeric_limits<double>::quiet_NaN();
     if (!paused_) {
       UseCounter::Count(GetDocument(),
-                        UseCounter::kHTMLMediaElementPauseAtFragmentEnd);
+                        WebFeature::kHTMLMediaElementPauseAtFragmentEnd);
       // changes paused to true and fires a simple event named pause at the
       // media element.
       PauseInternal();
@@ -3858,7 +3858,7 @@ void HTMLMediaElement::SetNetworkState(NetworkState state) {
 
 void HTMLMediaElement::VideoWillBeDrawnToCanvas() const {
   DCHECK(IsHTMLVideoElement());
-  UseCounter::Count(GetDocument(), UseCounter::kVideoInCanvas);
+  UseCounter::Count(GetDocument(), WebFeature::kVideoInCanvas);
   autoplay_policy_->VideoWillBeDrawnToCanvas();
 }
 

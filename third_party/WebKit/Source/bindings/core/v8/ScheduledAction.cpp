@@ -58,7 +58,7 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
             EnteredDOMWindow(script_state->GetIsolate()),
             ToDocument(target)->GetFrame(),
             BindingSecurity::ErrorReportOption::kDoNotReport)) {
-      UseCounter::Count(target, UseCounter::kScheduledActionIgnored);
+      UseCounter::Count(target, WebFeature::kScheduledActionIgnored);
       return new ScheduledAction(script_state);
     }
   }
@@ -73,7 +73,7 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
             EnteredDOMWindow(script_state->GetIsolate()),
             ToDocument(target)->GetFrame(),
             BindingSecurity::ErrorReportOption::kDoNotReport)) {
-      UseCounter::Count(target, UseCounter::kScheduledActionIgnored);
+      UseCounter::Count(target, WebFeature::kScheduledActionIgnored);
       return new ScheduledAction(script_state);
     }
   }

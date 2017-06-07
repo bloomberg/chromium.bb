@@ -184,7 +184,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
       StringKeyframeEffectModel::Create(keyframes, &keyframes[0]->Easing());
   if (animation_index > 0 && model->HasSyntheticKeyframes()) {
     UseCounter::Count(element_for_scoping->GetDocument(),
-                      UseCounter::kCSSAnimationsStackedNeutralKeyframe);
+                      WebFeature::kCSSAnimationsStackedNeutralKeyframe);
   }
   return model;
 }

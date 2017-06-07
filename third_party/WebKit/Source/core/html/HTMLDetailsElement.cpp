@@ -75,7 +75,7 @@ HTMLDetailsElement* HTMLDetailsElement::Create(Document& document) {
 
 HTMLDetailsElement::HTMLDetailsElement(Document& document)
     : HTMLElement(detailsTag, document), is_open_(false) {
-  UseCounter::Count(document, UseCounter::kDetailsElement);
+  UseCounter::Count(document, WebFeature::kDetailsElement);
 }
 
 HTMLDetailsElement::~HTMLDetailsElement() {}

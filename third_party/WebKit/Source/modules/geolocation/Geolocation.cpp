@@ -148,9 +148,9 @@ void Geolocation::RecordOriginTypeAccess() const {
   // developer console.
   String insecure_origin_msg;
   if (document->IsSecureContext(insecure_origin_msg)) {
-    UseCounter::Count(document, UseCounter::kGeolocationSecureOrigin);
+    UseCounter::Count(document, WebFeature::kGeolocationSecureOrigin);
     UseCounter::CountCrossOriginIframe(
-        *document, UseCounter::kGeolocationSecureOriginIframe);
+        *document, WebFeature::kGeolocationSecureOriginIframe);
   } else if (GetFrame()
                  ->GetSettings()
                  ->GetAllowGeolocationOnInsecureOrigins()) {
@@ -159,17 +159,17 @@ void Geolocation::RecordOriginTypeAccess() const {
     //
     // See https://crbug.com/603574.
     Deprecation::CountDeprecation(
-        document, UseCounter::kGeolocationInsecureOriginDeprecatedNotRemoved);
+        document, WebFeature::kGeolocationInsecureOriginDeprecatedNotRemoved);
     Deprecation::CountDeprecationCrossOriginIframe(
         *document,
-        UseCounter::kGeolocationInsecureOriginIframeDeprecatedNotRemoved);
+        WebFeature::kGeolocationInsecureOriginIframeDeprecatedNotRemoved);
     HostsUsingFeatures::CountAnyWorld(
         *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
   } else {
     Deprecation::CountDeprecation(document,
-                                  UseCounter::kGeolocationInsecureOrigin);
+                                  WebFeature::kGeolocationInsecureOrigin);
     Deprecation::CountDeprecationCrossOriginIframe(
-        *document, UseCounter::kGeolocationInsecureOriginIframe);
+        *document, WebFeature::kGeolocationInsecureOriginIframe);
     HostsUsingFeatures::CountAnyWorld(
         *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
   }

@@ -36,43 +36,43 @@ CSSAtRuleID CssAtRuleID(StringView name) {
 }
 
 void CountAtRule(const CSSParserContext* context, CSSAtRuleID rule_id) {
-  UseCounter::Feature feature;
+  WebFeature feature;
 
   switch (rule_id) {
     case kCSSAtRuleCharset:
-      feature = UseCounter::kCSSAtRuleCharset;
+      feature = WebFeature::kCSSAtRuleCharset;
       break;
     case kCSSAtRuleFontFace:
-      feature = UseCounter::kCSSAtRuleFontFace;
+      feature = WebFeature::kCSSAtRuleFontFace;
       break;
     case kCSSAtRuleImport:
-      feature = UseCounter::kCSSAtRuleImport;
+      feature = WebFeature::kCSSAtRuleImport;
       break;
     case kCSSAtRuleKeyframes:
-      feature = UseCounter::kCSSAtRuleKeyframes;
+      feature = WebFeature::kCSSAtRuleKeyframes;
       break;
     case kCSSAtRuleMedia:
-      feature = UseCounter::kCSSAtRuleMedia;
+      feature = WebFeature::kCSSAtRuleMedia;
       break;
     case kCSSAtRuleNamespace:
-      feature = UseCounter::kCSSAtRuleNamespace;
+      feature = WebFeature::kCSSAtRuleNamespace;
       break;
     case kCSSAtRulePage:
-      feature = UseCounter::kCSSAtRulePage;
+      feature = WebFeature::kCSSAtRulePage;
       break;
     case kCSSAtRuleSupports:
-      feature = UseCounter::kCSSAtRuleSupports;
+      feature = WebFeature::kCSSAtRuleSupports;
       break;
     case kCSSAtRuleViewport:
-      feature = UseCounter::kCSSAtRuleViewport;
+      feature = WebFeature::kCSSAtRuleViewport;
       break;
 
     case kCSSAtRuleWebkitKeyframes:
-      feature = UseCounter::kCSSAtRuleWebkitKeyframes;
+      feature = WebFeature::kCSSAtRuleWebkitKeyframes;
       break;
 
     case kCSSAtRuleApply:
-      feature = UseCounter::kCSSAtRuleApply;
+      feature = WebFeature::kCSSAtRuleApply;
       break;
 
     case kCSSAtRuleInvalid:

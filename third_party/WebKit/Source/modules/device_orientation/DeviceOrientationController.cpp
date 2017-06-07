@@ -55,11 +55,11 @@ void DeviceOrientationController::DidAddEventListener(
   if (GetDocument().GetFrame()) {
     if (GetDocument().IsSecureContext()) {
       UseCounter::Count(GetDocument().GetFrame(),
-                        UseCounter::kDeviceOrientationSecureOrigin);
+                        WebFeature::kDeviceOrientationSecureOrigin);
     } else {
       Deprecation::CountDeprecation(
           GetDocument().GetFrame(),
-          UseCounter::kDeviceOrientationInsecureOrigin);
+          WebFeature::kDeviceOrientationInsecureOrigin);
       HostsUsingFeatures::CountAnyWorld(
           GetDocument(),
           HostsUsingFeatures::Feature::kDeviceOrientationInsecureHost);

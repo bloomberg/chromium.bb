@@ -249,12 +249,12 @@ void SVGTextContentElement::CollectStyleForPresentationAttribute(
     DEFINE_STATIC_LOCAL(const AtomicString, preserve_string, ("preserve"));
 
     if (value == preserve_string) {
-      UseCounter::Count(GetDocument(), UseCounter::kWhiteSpacePreFromXMLSpace);
+      UseCounter::Count(GetDocument(), WebFeature::kWhiteSpacePreFromXMLSpace);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
                                               CSSValuePre);
     } else {
       UseCounter::Count(GetDocument(),
-                        UseCounter::kWhiteSpaceNowrapFromXMLSpace);
+                        WebFeature::kWhiteSpaceNowrapFromXMLSpace);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
                                               CSSValueNowrap);
     }

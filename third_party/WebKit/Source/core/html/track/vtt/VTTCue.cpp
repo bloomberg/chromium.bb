@@ -244,7 +244,7 @@ VTTCue::VTTCue(Document& document,
       cue_background_box_(HTMLDivElement::Create(document)),
       snap_to_lines_(true),
       display_tree_should_change_(true) {
-  UseCounter::Count(document, UseCounter::kVTTCue);
+  UseCounter::Count(document, WebFeature::kVTTCue);
   cue_background_box_->SetShadowPseudoId(CueShadowPseudoId());
 }
 
@@ -636,7 +636,7 @@ VTTDisplayParameters VTTCue::CalculateDisplayParameters() const {
   display_parameters.direction = DetermineTextDirection(vtt_node_tree_.Get());
 
   if (display_parameters.direction == CSSValueRtl)
-    UseCounter::Count(GetDocument(), UseCounter::kVTTCueRenderRtl);
+    UseCounter::Count(GetDocument(), WebFeature::kVTTCueRenderRtl);
 
   // Note: The 'text-align' property is also determined here so that
   // VTTCueBox::applyCSSProperties need not have access to a VTTCue.
@@ -842,25 +842,25 @@ void VTTCue::RemoveDisplayTree(RemovalNotification removal_notification) {
 void VTTCue::UpdateDisplay(HTMLDivElement& container) {
   DCHECK(track() && track()->IsRendered() && IsActive());
 
-  UseCounter::Count(GetDocument(), UseCounter::kVTTCueRender);
+  UseCounter::Count(GetDocument(), WebFeature::kVTTCueRender);
 
   if (writing_direction_ != kHorizontal)
-    UseCounter::Count(GetDocument(), UseCounter::kVTTCueRenderVertical);
+    UseCounter::Count(GetDocument(), WebFeature::kVTTCueRenderVertical);
 
   if (!snap_to_lines_)
-    UseCounter::Count(GetDocument(), UseCounter::kVTTCueRenderSnapToLinesFalse);
+    UseCounter::Count(GetDocument(), WebFeature::kVTTCueRenderSnapToLinesFalse);
 
   if (!LineIsAuto())
-    UseCounter::Count(GetDocument(), UseCounter::kVTTCueRenderLineNotAuto);
+    UseCounter::Count(GetDocument(), WebFeature::kVTTCueRenderLineNotAuto);
 
   if (TextPositionIsAuto())
-    UseCounter::Count(GetDocument(), UseCounter::kVTTCueRenderPositionNot50);
+    UseCounter::Count(GetDocument(), WebFeature::kVTTCueRenderPositionNot50);
 
   if (cue_size_ != 100)
-    UseCounter::Count(GetDocument(), UseCounter::kVTTCueRenderSizeNot100);
+    UseCounter::Count(GetDocument(), WebFeature::kVTTCueRenderSizeNot100);
 
   if (cue_alignment_ != kCenter)
-    UseCounter::Count(GetDocument(), UseCounter::kVTTCueRenderAlignNotCenter);
+    UseCounter::Count(GetDocument(), WebFeature::kVTTCueRenderAlignNotCenter);
 
   VTTCueBox* display_box = GetDisplayTree();
   if (!region()) {

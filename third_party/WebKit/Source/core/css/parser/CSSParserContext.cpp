@@ -165,12 +165,12 @@ KURL CSSParserContext::CompleteURL(const String& url) const {
   return KURL(BaseURL(), url, Charset());
 }
 
-void CSSParserContext::Count(UseCounter::Feature feature) const {
+void CSSParserContext::Count(WebFeature feature) const {
   if (IsUseCounterRecordingEnabled())
     UseCounter::Count(*document_, feature);
 }
 
-void CSSParserContext::CountDeprecation(UseCounter::Feature feature) const {
+void CSSParserContext::CountDeprecation(WebFeature feature) const {
   if (IsUseCounterRecordingEnabled())
     Deprecation::CountDeprecation(*document_, feature);
 }

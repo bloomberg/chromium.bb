@@ -835,44 +835,44 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
        selector = CSSSelectorList::Next(*selector)) {
     for (const CSSSelector* current = selector; current;
          current = current->TagHistory()) {
-      UseCounter::Feature feature = UseCounter::kNumberOfFeatures;
+      WebFeature feature = WebFeature::kNumberOfFeatures;
       switch (current->GetPseudoType()) {
         case CSSSelector::kPseudoAny:
-          feature = UseCounter::kCSSSelectorPseudoAny;
+          feature = WebFeature::kCSSSelectorPseudoAny;
           break;
         case CSSSelector::kPseudoUnresolved:
-          feature = UseCounter::kCSSSelectorPseudoUnresolved;
+          feature = WebFeature::kCSSSelectorPseudoUnresolved;
           break;
         case CSSSelector::kPseudoDefined:
-          feature = UseCounter::kCSSSelectorPseudoDefined;
+          feature = WebFeature::kCSSSelectorPseudoDefined;
           break;
         case CSSSelector::kPseudoSlotted:
-          feature = UseCounter::kCSSSelectorPseudoSlotted;
+          feature = WebFeature::kCSSSelectorPseudoSlotted;
           break;
         case CSSSelector::kPseudoContent:
-          feature = UseCounter::kCSSSelectorPseudoContent;
+          feature = WebFeature::kCSSSelectorPseudoContent;
           break;
         case CSSSelector::kPseudoHost:
-          feature = UseCounter::kCSSSelectorPseudoHost;
+          feature = WebFeature::kCSSSelectorPseudoHost;
           break;
         case CSSSelector::kPseudoHostContext:
-          feature = UseCounter::kCSSSelectorPseudoHostContext;
+          feature = WebFeature::kCSSSelectorPseudoHostContext;
           break;
         case CSSSelector::kPseudoFullScreenAncestor:
-          feature = UseCounter::kCSSSelectorPseudoFullScreenAncestor;
+          feature = WebFeature::kCSSSelectorPseudoFullScreenAncestor;
           break;
         case CSSSelector::kPseudoFullScreen:
-          feature = UseCounter::kCSSSelectorPseudoFullScreen;
+          feature = WebFeature::kCSSSelectorPseudoFullScreen;
           break;
         case CSSSelector::kPseudoListBox:
           if (context_->Mode() != kUASheetMode)
-            feature = UseCounter::kCSSSelectorInternalPseudoListBox;
+            feature = WebFeature::kCSSSelectorInternalPseudoListBox;
           break;
         case CSSSelector::kPseudoWebKitCustomElement:
           if (context_->Mode() != kUASheetMode) {
             if (current->Value() ==
                 "-internal-media-controls-overlay-cast-button") {
-              feature = UseCounter::
+              feature = WebFeature::
                   kCSSSelectorInternalMediaControlsOverlayCastButton;
             }
           }
@@ -880,21 +880,21 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
         case CSSSelector::kPseudoSpatialNavigationFocus:
           if (context_->Mode() != kUASheetMode) {
             feature =
-                UseCounter::kCSSSelectorInternalPseudoSpatialNavigationFocus;
+                WebFeature::kCSSSelectorInternalPseudoSpatialNavigationFocus;
           }
           break;
         case CSSSelector::kPseudoReadOnly:
           if (context_->Mode() != kUASheetMode)
-            feature = UseCounter::kCSSSelectorPseudoReadOnly;
+            feature = WebFeature::kCSSSelectorPseudoReadOnly;
           break;
         case CSSSelector::kPseudoReadWrite:
           if (context_->Mode() != kUASheetMode)
-            feature = UseCounter::kCSSSelectorPseudoReadWrite;
+            feature = WebFeature::kCSSSelectorPseudoReadWrite;
           break;
         default:
           break;
       }
-      if (feature != UseCounter::kNumberOfFeatures) {
+      if (feature != WebFeature::kNumberOfFeatures) {
         if (!Deprecation::DeprecationMessage(feature).IsEmpty() &&
             style_sheet_->AnyOwnerDocument()) {
           Deprecation::CountDeprecation(*style_sheet_->AnyOwnerDocument(),
@@ -904,7 +904,7 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
         }
       }
       if (current->Relation() == CSSSelector::kIndirectAdjacent)
-        context_->Count(UseCounter::kCSSSelectorIndirectAdjacent);
+        context_->Count(WebFeature::kCSSSelectorIndirectAdjacent);
       if (current->SelectorList())
         RecordUsageAndDeprecations(*current->SelectorList());
     }

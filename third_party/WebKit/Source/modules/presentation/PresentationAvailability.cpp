@@ -63,7 +63,7 @@ void PresentationAvailability::AddedEventListener(
                                                 registered_listener);
   if (event_type == EventTypeNames::change) {
     UseCounter::Count(GetExecutionContext(),
-                      UseCounter::kPresentationAvailabilityChangeEventListener);
+                      WebFeature::kPresentationAvailabilityChangeEventListener);
   }
 }
 

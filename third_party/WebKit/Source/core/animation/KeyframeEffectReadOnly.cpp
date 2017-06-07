@@ -45,7 +45,7 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
-        UseCounter::kAnimationConstructorKeyframeListEffectObjectTiming);
+        WebFeature::kAnimationConstructorKeyframeListEffectObjectTiming);
   }
   Timing timing;
   Document* document = element ? &element->GetDocument() : nullptr;
@@ -66,7 +66,7 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
   if (element) {
     UseCounter::Count(
         element->GetDocument(),
-        UseCounter::kAnimationConstructorKeyframeListEffectNoTiming);
+        WebFeature::kAnimationConstructorKeyframeListEffectNoTiming);
   }
   return Create(element,
                 EffectInput::Convert(element, effect_input, execution_context,

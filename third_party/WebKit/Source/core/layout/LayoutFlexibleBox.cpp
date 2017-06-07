@@ -73,7 +73,7 @@ LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
       in_layout_(false) {
   DCHECK(!ChildrenInline());
   if (!IsAnonymous())
-    UseCounter::Count(GetDocument(), UseCounter::kCSSFlexibleBox);
+    UseCounter::Count(GetDocument(), WebFeature::kCSSFlexibleBox);
 }
 
 LayoutFlexibleBox::~LayoutFlexibleBox() {}
@@ -164,7 +164,7 @@ float LayoutFlexibleBox::CountIntrinsicSizeForAlgorithmChange(
   if (previous_max_content_flex_fraction != -1 &&
       max_content_flex_fraction != previous_max_content_flex_fraction) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kFlexboxIntrinsicSizeAlgorithmIsDifferent);
+                      WebFeature::kFlexboxIntrinsicSizeAlgorithmIsDifferent);
   }
   return max_content_flex_fraction;
 }
@@ -926,7 +926,7 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
   child.ClearOverrideSize();
 
   if (child.IsImage() || child.IsVideo() || child.IsCanvas())
-    UseCounter::Count(GetDocument(), UseCounter::kAspectRatioFlexItem);
+    UseCounter::Count(GetDocument(), WebFeature::kAspectRatioFlexItem);
 
   Length flex_basis = FlexBasisForChild(child);
   if (MainAxisLengthIsDefinite(child, flex_basis))

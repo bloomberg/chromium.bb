@@ -305,10 +305,10 @@ Node::InsertionNotificationRequest SVGSMILElement::InsertedInto(
   if (!root_parent->isConnected())
     return kInsertionDone;
 
-  UseCounter::Count(GetDocument(), UseCounter::kSVGSMILElementInDocument);
+  UseCounter::Count(GetDocument(), WebFeature::kSVGSMILElementInDocument);
   if (GetDocument().IsLoadCompleted()) {
     UseCounter::Count(&GetDocument(),
-                      UseCounter::kSVGSMILElementInsertedAfterLoad);
+                      WebFeature::kSVGSMILElementInsertedAfterLoad);
   }
 
   SVGSVGElement* owner = ownerSVGElement();
@@ -458,13 +458,13 @@ bool SVGSMILElement::ParseCondition(const String& value,
     if (base_id.IsEmpty())
       return false;
     UseCounter::Count(&GetDocument(),
-                      UseCounter::kSVGSMILBeginOrEndSyncbaseValue);
+                      WebFeature::kSVGSMILBeginOrEndSyncbaseValue);
     type = Condition::kSyncbase;
   } else if (name_string.StartsWith("accesskey(")) {
     // FIXME: accesskey() support.
     type = Condition::kAccessKey;
   } else {
-    UseCounter::Count(&GetDocument(), UseCounter::kSVGSMILBeginOrEndEventValue);
+    UseCounter::Count(&GetDocument(), WebFeature::kSVGSMILBeginOrEndEventValue);
     type = Condition::kEventBase;
   }
 

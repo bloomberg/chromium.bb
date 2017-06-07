@@ -127,7 +127,7 @@ bool KeyframeEffectModelBase::SnapshotAllCompositorKeyframes(
   }
   if (updated && has_neutral_compositable_keyframe) {
     UseCounter::Count(element.GetDocument(),
-                      UseCounter::kSyntheticKeyframesInCompositedCSSAnimation);
+                      WebFeature::kSyntheticKeyframesInCompositedCSSAnimation);
   }
   return updated;
 }

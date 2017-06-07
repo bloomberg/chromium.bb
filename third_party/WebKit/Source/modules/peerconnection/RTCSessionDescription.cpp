@@ -45,13 +45,13 @@ RTCSessionDescription* RTCSessionDescription::Create(
   if (description_init_dict.hasType())
     type = description_init_dict.type();
   else
-    UseCounter::Count(context, UseCounter::kRTCSessionDescriptionInitNoType);
+    UseCounter::Count(context, WebFeature::kRTCSessionDescriptionInitNoType);
 
   String sdp;
   if (description_init_dict.hasSdp())
     sdp = description_init_dict.sdp();
   else
-    UseCounter::Count(context, UseCounter::kRTCSessionDescriptionInitNoSdp);
+    UseCounter::Count(context, WebFeature::kRTCSessionDescriptionInitNoSdp);
 
   return new RTCSessionDescription(WebRTCSessionDescription(type, sdp));
 }

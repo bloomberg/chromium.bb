@@ -110,7 +110,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image, const IntRect* rect) {
   if (image_resource_->CachedImage() &&
       image_resource_->CachedImage()->HasDevicePixelRatioHeaderValue()) {
     UseCounter::Count(&(View()->GetFrameView()->GetFrame()),
-                      UseCounter::kClientHintsContentDPR);
+                      WebFeature::kClientHintsContentDPR);
     image_device_pixel_ratio_ =
         1 / image_resource_->CachedImage()->DevicePixelRatioHeaderValue();
   }

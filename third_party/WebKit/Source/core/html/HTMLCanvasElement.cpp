@@ -145,7 +145,7 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
       did_fail_to_create_image_buffer_(false),
       image_buffer_is_clear_(false) {
   CanvasMetrics::CountCanvasContextUsage(CanvasMetrics::kCanvasCreated);
-  UseCounter::Count(document, UseCounter::kHTMLCanvasElement);
+  UseCounter::Count(document, WebFeature::kHTMLCanvasElement);
 }
 
 DEFINE_NODE_FACTORY(HTMLCanvasElement)

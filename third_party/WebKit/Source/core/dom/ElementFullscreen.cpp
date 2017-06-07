@@ -16,7 +16,7 @@ void ElementFullscreen::requestFullscreen(Element& element) {
 void ElementFullscreen::webkitRequestFullscreen(Element& element) {
   if (element.IsInShadowTree()) {
     UseCounter::Count(element.GetDocument(),
-                      UseCounter::kPrefixedElementRequestFullscreenInShadow);
+                      WebFeature::kPrefixedElementRequestFullscreenInShadow);
   }
   Fullscreen::RequestFullscreen(element, Fullscreen::RequestType::kPrefixed);
 }

@@ -98,7 +98,7 @@ InputType* NumberInputType::Create(HTMLInputElement& element) {
 }
 
 void NumberInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeNumber);
+  CountUsageIfVisible(WebFeature::kInputTypeNumber);
 }
 
 const AtomicString& NumberInputType::FormControlType() const {

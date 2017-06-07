@@ -41,7 +41,7 @@
 namespace blink {
 
 InputType* SubmitInputType::Create(HTMLInputElement& element) {
-  UseCounter::Count(element.GetDocument(), UseCounter::kInputTypeSubmit);
+  UseCounter::Count(element.GetDocument(), WebFeature::kInputTypeSubmit);
   return new SubmitInputType(element);
 }
 
@@ -81,7 +81,7 @@ bool SubmitInputType::IsTextButton() const {
 
 void SubmitInputType::ValueAttributeChanged() {
   UseCounter::Count(GetElement().GetDocument(),
-                    UseCounter::kInputTypeSubmitWithValue);
+                    WebFeature::kInputTypeSubmitWithValue);
   BaseButtonInputType::ValueAttributeChanged();
 }
 

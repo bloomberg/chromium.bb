@@ -269,7 +269,7 @@ void TouchEvent::preventDefault() {
         if (view() && view()->IsLocalDOMWindow() && view()->GetFrame()) {
           UseCounter::Count(
               ToLocalFrame(view()->GetFrame()),
-              UseCounter::kUncancelableTouchEventPreventDefaulted);
+              WebFeature::kUncancelableTouchEventPreventDefaulted);
         }
 
         if (native_event_ &&
@@ -280,7 +280,7 @@ void TouchEvent::preventDefault() {
           if (view() && view()->IsLocalDOMWindow() && view()->GetFrame()) {
             UseCounter::Count(
                 ToLocalFrame(view()->GetFrame()),
-                UseCounter::
+                WebFeature::
                     kUncancelableTouchEventDueToMainThreadResponsivenessPreventDefaulted);
           }
           message_source = kInterventionMessageSource;
@@ -328,12 +328,12 @@ void TouchEvent::preventDefault() {
     switch (HandlingPassive()) {
       case PassiveMode::kNotPassiveDefault:
         UseCounter::Count(ToLocalFrame(view()->GetFrame()),
-                          UseCounter::kTouchEventPreventedNoTouchAction);
+                          WebFeature::kTouchEventPreventedNoTouchAction);
         break;
       case PassiveMode::kPassiveForcedDocumentLevel:
         UseCounter::Count(
             ToLocalFrame(view()->GetFrame()),
-            UseCounter::kTouchEventPreventedForcedDocumentPassiveNoTouchAction);
+            WebFeature::kTouchEventPreventedForcedDocumentPassiveNoTouchAction);
         break;
       default:
         break;

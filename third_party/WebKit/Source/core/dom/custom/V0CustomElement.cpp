@@ -112,8 +112,8 @@ void V0CustomElement::Define(Element* element,
       UseCounter::Count(
           element->GetDocument(),
           definition->Descriptor().IsTypeExtension()
-              ? UseCounter::kV0CustomElementsCreateTypeExtensionElement
-              : UseCounter::kV0CustomElementsCreateCustomTagElement);
+              ? WebFeature::kV0CustomElementsCreateTypeExtensionElement
+              : WebFeature::kV0CustomElementsCreateCustomTagElement);
       element->V0SetCustomElementDefinition(definition);
       V0CustomElementScheduler::ScheduleCallback(
           definition->Callbacks(), element,

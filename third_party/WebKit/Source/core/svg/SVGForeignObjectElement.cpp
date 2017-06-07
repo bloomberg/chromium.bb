@@ -52,7 +52,7 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
   AddToPropertyMap(width_);
   AddToPropertyMap(height_);
 
-  UseCounter::Count(document, UseCounter::kSVGForeignObjectElement);
+  UseCounter::Count(document, WebFeature::kSVGForeignObjectElement);
 }
 
 DEFINE_TRACE(SVGForeignObjectElement) {

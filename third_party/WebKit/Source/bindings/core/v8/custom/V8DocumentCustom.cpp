@@ -108,19 +108,19 @@ void V8Document::createTouchMethodPrologueCustom(
   v8::Local<v8::Value> v8_window = info[0];
   if (IsUndefinedOrNull(v8_window)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      UseCounter::kDocumentCreateTouchWindowNull);
+                      WebFeature::kDocumentCreateTouchWindowNull);
   } else if (!ToDOMWindow(info.GetIsolate(), v8_window)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      UseCounter::kDocumentCreateTouchWindowWrongType);
+                      WebFeature::kDocumentCreateTouchWindowWrongType);
   }
 
   v8::Local<v8::Value> v8_target = info[1];
   if (IsUndefinedOrNull(v8_target)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      UseCounter::kDocumentCreateTouchTargetNull);
+                      WebFeature::kDocumentCreateTouchTargetNull);
   } else if (!V8EventTarget::hasInstance(v8_target, info.GetIsolate())) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      UseCounter::kDocumentCreateTouchTargetWrongType);
+                      WebFeature::kDocumentCreateTouchTargetWrongType);
   }
 }
 

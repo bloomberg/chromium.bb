@@ -310,7 +310,7 @@ void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
   if (GetDocument().Fetcher()->Archive())
     return;
 
-  UseCounter::Count(GetDocument(), UseCounter::kHTMLAnchorElementPingAttribute);
+  UseCounter::Count(GetDocument(), WebFeature::kHTMLAnchorElementPingAttribute);
 
   SpaceSplitString ping_urls(ping_value);
   for (unsigned i = 0; i < ping_urls.size(); i++)
@@ -328,7 +328,7 @@ void HTMLAnchorElement::HandleClick(Event* event) {
 
   if (!isConnected()) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kAnchorClickDispatchForNonConnectedNode);
+                      WebFeature::kAnchorClickDispatchForNonConnectedNode);
   }
 
   StringBuilder url;
@@ -353,7 +353,7 @@ void HTMLAnchorElement::HandleClick(Event* event) {
           kSupportReferrerPolicyLegacyKeywords, &policy) &&
       !HasRel(kRelationNoReferrer)) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLAnchorElementReferrerPolicyAttribute);
+                      WebFeature::kHTMLAnchorElementReferrerPolicyAttribute);
     request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         policy, completed_url, GetDocument().OutgoingReferrer()));
   }

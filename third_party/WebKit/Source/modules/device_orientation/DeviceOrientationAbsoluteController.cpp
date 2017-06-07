@@ -44,11 +44,11 @@ void DeviceOrientationAbsoluteController::DidAddEventListener(
   if (GetDocument().GetFrame()) {
     if (GetDocument().IsSecureContext()) {
       UseCounter::Count(GetDocument().GetFrame(),
-                        UseCounter::kDeviceOrientationAbsoluteSecureOrigin);
+                        WebFeature::kDeviceOrientationAbsoluteSecureOrigin);
     } else {
       Deprecation::CountDeprecation(
           GetDocument().GetFrame(),
-          UseCounter::kDeviceOrientationAbsoluteInsecureOrigin);
+          WebFeature::kDeviceOrientationAbsoluteInsecureOrigin);
       // TODO: add rappor logging of insecure origins as in
       // DeviceOrientationController.
       if (GetDocument()

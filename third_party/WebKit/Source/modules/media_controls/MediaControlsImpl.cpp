@@ -115,7 +115,7 @@ bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
 
   if (media_element.ControlsListInternal()->ShouldHideFullscreen()) {
     UseCounter::Count(media_element.GetDocument(),
-                      UseCounter::kHTMLMediaElementControlsListNoFullscreen);
+                      WebFeature::kHTMLMediaElementControlsListNoFullscreen);
     return false;
   }
 
@@ -137,7 +137,7 @@ bool ShouldShowCastButton(HTMLMediaElement& media_element) {
   if (media_element.ControlsListInternal()->ShouldHideRemotePlayback()) {
     UseCounter::Count(
         media_element.GetDocument(),
-        UseCounter::kHTMLMediaElementControlsListNoRemotePlayback);
+        WebFeature::kHTMLMediaElementControlsListNoRemotePlayback);
     return false;
   }
 

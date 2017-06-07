@@ -116,7 +116,7 @@ static bool IsInterchangeHTMLBRElement(const Node* node) {
           interchange_newline_class_string)
     return false;
   UseCounter::Count(node->GetDocument(),
-                    UseCounter::kEditingAppleInterchangeNewline);
+                    WebFeature::kEditingAppleInterchangeNewline);
   return true;
 }
 

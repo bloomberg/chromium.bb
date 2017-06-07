@@ -614,7 +614,7 @@ void DocumentLoader::ResponseReceived(
   DCHECK(!frame_->GetPage()->Suspended());
 
   if (response.DidServiceWorkerNavigationPreload())
-    UseCounter::Count(frame_, UseCounter::kServiceWorkerNavigationPreload);
+    UseCounter::Count(frame_, WebFeature::kServiceWorkerNavigationPreload);
   response_ = response;
 
   if (IsArchiveMIMEType(response_.MimeType()) &&
@@ -942,7 +942,7 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
   String referrer_policy_header =
       response_.HttpHeaderField(HTTPNames::Referrer_Policy);
   if (!referrer_policy_header.IsNull()) {
-    UseCounter::Count(*document, UseCounter::kReferrerPolicyHeader);
+    UseCounter::Count(*document, WebFeature::kReferrerPolicyHeader);
     document->ParseAndSetReferrerPolicy(referrer_policy_header);
   }
 

@@ -24,25 +24,25 @@ OriginTrialsTest* WorkerInternals::originTrialsTest() const {
 void WorkerInternals::countFeature(ScriptState* script_state,
                                    uint32_t feature,
                                    ExceptionState& exception_state) {
-  if (UseCounter::kNumberOfFeatures <= feature) {
+  if (static_cast<uint32_t>(WebFeature::kNumberOfFeatures) <= feature) {
     exception_state.ThrowTypeError(
-        "The given feature does not exist in UseCounter::Feature.");
+        "The given feature does not exist in WebFeature.");
     return;
   }
   UseCounter::Count(ExecutionContext::From(script_state),
-                    static_cast<UseCounter::Feature>(feature));
+                    static_cast<WebFeature>(feature));
 }
 
 void WorkerInternals::countDeprecation(ScriptState* script_state,
                                        uint32_t feature,
                                        ExceptionState& exception_state) {
-  if (UseCounter::kNumberOfFeatures <= feature) {
+  if (static_cast<uint32_t>(WebFeature::kNumberOfFeatures) <= feature) {
     exception_state.ThrowTypeError(
-        "The given feature does not exist in UseCounter::Feature.");
+        "The given feature does not exist in WebFeature.");
     return;
   }
   Deprecation::CountDeprecation(ExecutionContext::From(script_state),
-                                static_cast<UseCounter::Feature>(feature));
+                                static_cast<WebFeature>(feature));
 }
 
 void WorkerInternals::collectGarbage(ScriptState* script_state) {

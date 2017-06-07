@@ -262,7 +262,7 @@ void AutoplayUmaHelper::RecordAutoplayUnmuteStatus(
 void AutoplayUmaHelper::VideoWillBeDrawnToCanvas() {
   if (HasSource() && !IsVisible()) {
     UseCounter::Count(element_->GetDocument(),
-                      UseCounter::kHiddenAutoplayedVideoInCanvas);
+                      WebFeature::kHiddenAutoplayedVideoInCanvas);
   }
 }
 

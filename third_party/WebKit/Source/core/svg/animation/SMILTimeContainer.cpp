@@ -499,7 +499,7 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
     return earliest_fire_time;
   }
 
-  UseCounter::Count(&GetDocument(), UseCounter::kSVGSMILAnimationAppliedEffect);
+  UseCounter::Count(&GetDocument(), WebFeature::kSVGSMILAnimationAppliedEffect);
 
   std::sort(animations_to_apply.begin(), animations_to_apply.end(),
             PriorityCompare(elapsed));

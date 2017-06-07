@@ -49,7 +49,7 @@ using namespace HTMLNames;
 
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(slotTag, document) {
-  UseCounter::Count(document, UseCounter::kHTMLSlotElement);
+  UseCounter::Count(document, WebFeature::kHTMLSlotElement);
   SetHasCustomStyleCallbacks();
 }
 

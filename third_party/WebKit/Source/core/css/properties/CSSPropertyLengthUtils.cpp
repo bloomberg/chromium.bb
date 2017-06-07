@@ -19,16 +19,16 @@ bool ValidWidthOrHeightKeyword(CSSValueID id, const CSSParserContext& context) {
       id == CSSValueFitContent) {
     switch (id) {
       case CSSValueWebkitMinContent:
-        context.Count(UseCounter::kCSSValuePrefixedMinContent);
+        context.Count(WebFeature::kCSSValuePrefixedMinContent);
         break;
       case CSSValueWebkitMaxContent:
-        context.Count(UseCounter::kCSSValuePrefixedMaxContent);
+        context.Count(WebFeature::kCSSValuePrefixedMaxContent);
         break;
       case CSSValueWebkitFillAvailable:
-        context.Count(UseCounter::kCSSValuePrefixedFillAvailable);
+        context.Count(WebFeature::kCSSValuePrefixedFillAvailable);
         break;
       case CSSValueWebkitFitContent:
-        context.Count(UseCounter::kCSSValuePrefixedFitContent);
+        context.Count(WebFeature::kCSSValuePrefixedFitContent);
         break;
       default:
         break;

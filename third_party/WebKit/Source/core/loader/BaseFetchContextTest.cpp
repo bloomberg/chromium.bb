@@ -57,8 +57,8 @@ class MockBaseFetchContext final : public BaseFetchContext {
                                ResourceRequestBlockedReason) const override {}
   bool ShouldBypassMainWorldCSP() const override { return false; }
   bool IsSVGImageChromeClient() const override { return false; }
-  void CountUsage(UseCounter::Feature) const override {}
-  void CountDeprecation(UseCounter::Feature) const override {}
+  void CountUsage(WebFeature) const override {}
+  void CountDeprecation(WebFeature) const override {}
   bool ShouldBlockFetchByMixedContentCheck(
       const ResourceRequest&,
       const KURL&,

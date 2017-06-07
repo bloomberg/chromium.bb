@@ -92,7 +92,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
   AddToPropertyMap(width_);
   AddToPropertyMap(height_);
 
-  UseCounter::Count(doc, UseCounter::kSVGSVGElement);
+  UseCounter::Count(doc, WebFeature::kSVGSVGElement);
 }
 
 DEFINE_NODE_FACTORY(SVGSVGElement)
@@ -523,9 +523,9 @@ LayoutObject* SVGSVGElement::CreateLayoutObject(const ComputedStyle&) {
 Node::InsertionNotificationRequest SVGSVGElement::InsertedInto(
     ContainerNode* root_parent) {
   if (root_parent->isConnected()) {
-    UseCounter::Count(GetDocument(), UseCounter::kSVGSVGElementInDocument);
+    UseCounter::Count(GetDocument(), WebFeature::kSVGSVGElementInDocument);
     if (root_parent->GetDocument().IsXMLDocument())
-      UseCounter::Count(GetDocument(), UseCounter::kSVGSVGElementInXMLDocument);
+      UseCounter::Count(GetDocument(), WebFeature::kSVGSVGElementInXMLDocument);
 
     if (RuntimeEnabledFeatures::SMILEnabled()) {
       GetDocument().AccessSVGExtensions().AddTimeContainer(this);
@@ -708,7 +708,7 @@ void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
     SVGViewSpec* view_spec = SVGViewSpec::CreateForElement(*this);
     if (view_spec->ParseViewSpec(fragment_identifier)) {
       UseCounter::Count(GetDocument(),
-                        UseCounter::kSVGSVGElementFragmentSVGView);
+                        WebFeature::kSVGSVGElementFragmentSVGView);
       SetViewSpec(view_spec);
       return;
     }
@@ -738,7 +738,7 @@ void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
   SVGViewSpec* view_spec = SVGViewSpec::CreateForElement(*svg);
   view_spec->InheritViewAttributesFromElement(view_element);
   UseCounter::Count(svg->GetDocument(),
-                    UseCounter::kSVGSVGElementFragmentSVGViewElement);
+                    WebFeature::kSVGSVGElementFragmentSVGViewElement);
   svg->SetViewSpec(view_spec);
 }
 

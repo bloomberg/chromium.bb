@@ -52,7 +52,7 @@ InputType* WeekInputType::Create(HTMLInputElement& element) {
 }
 
 void WeekInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeWeek);
+  CountUsageIfVisible(WebFeature::kInputTypeWeek);
 }
 
 const AtomicString& WeekInputType::FormControlType() const {

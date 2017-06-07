@@ -845,7 +845,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
   if (style.Preserves3D() && style.HasOpacity() &&
       owning_layer_.Has3DTransformedDescendant()) {
     UseCounter::Count(layout_object.GetDocument(),
-                      UseCounter::kOpacityWithPreserve3DQuirk);
+                      WebFeature::kOpacityWithPreserve3DQuirk);
   }
 
   return layer_config_changed;

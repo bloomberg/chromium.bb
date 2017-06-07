@@ -62,7 +62,7 @@ bool Document::execCommand(const String& command_name,
     return false;
   }
   if (FocusedElement() && IsTextControlElement(*FocusedElement()))
-    UseCounter::Count(*this, UseCounter::kExecCommandOnInputOrTextarea);
+    UseCounter::Count(*this, WebFeature::kExecCommandOnInputOrTextarea);
 
   // We don't allow recursive |execCommand()| to protect against attack code.
   // Recursive call of |execCommand()| could be happened by moving iframe

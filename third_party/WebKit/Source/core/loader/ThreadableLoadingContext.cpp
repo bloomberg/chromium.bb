@@ -56,7 +56,7 @@ class DocumentThreadableLoadingContext final : public ThreadableLoadingContext {
     return TaskRunnerHelper::Get(type, document_.Get());
   }
 
-  void RecordUseCount(UseCounter::Feature feature) override {
+  void RecordUseCount(WebFeature feature) override {
     UseCounter::Count(document_.Get(), feature);
   }
 
@@ -117,7 +117,7 @@ class WorkerThreadableLoadingContext : public ThreadableLoadingContext {
     return fetch_context_->GetTaskRunner();
   }
 
-  void RecordUseCount(UseCounter::Feature feature) override {
+  void RecordUseCount(WebFeature feature) override {
     UseCounter::Count(worker_global_scope_, feature);
   }
 

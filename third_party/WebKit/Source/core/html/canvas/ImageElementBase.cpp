@@ -41,7 +41,7 @@ PassRefPtr<Image> ImageElementBase::GetSourceImageForCanvas(
 
   RefPtr<Image> source_image;
   if (CachedImage()->GetImage()->IsSVGImage()) {
-    UseCounter::Count(GetElement().GetDocument(), UseCounter::kSVGInCanvas2D);
+    UseCounter::Count(GetElement().GetDocument(), WebFeature::kSVGInCanvas2D);
     SVGImage* svg_image = ToSVGImage(CachedImage()->GetImage());
     IntSize image_size =
         RoundedIntSize(svg_image->ConcreteObjectSize(default_object_size));

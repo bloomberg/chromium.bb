@@ -48,9 +48,9 @@ SinkDocument::SinkDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
-  UseCounter::Count(*this, UseCounter::kSinkDocument);
+  UseCounter::Count(*this, WebFeature::kSinkDocument);
   if (!IsInMainFrame())
-    UseCounter::Count(*this, UseCounter::kSinkDocumentInFrame);
+    UseCounter::Count(*this, WebFeature::kSinkDocumentInFrame);
 }
 
 DocumentParser* SinkDocument::CreateParser() {

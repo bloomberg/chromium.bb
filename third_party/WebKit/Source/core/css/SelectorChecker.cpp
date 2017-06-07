@@ -419,7 +419,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
       if (!is_ua_rule_ && mode_ != kQueryingRules &&
           context.selector->GetPseudoType() == CSSSelector::kPseudoShadow) {
         Deprecation::CountDeprecation(context.element->GetDocument(),
-                                      UseCounter::kCSSSelectorPseudoShadow);
+                                      WebFeature::kCSSSelectorPseudoShadow);
       }
       // If we're in the same tree-scope as the scoping element, then following
       // a shadow descendant combinator would escape that and thus the scope.
@@ -438,7 +438,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
     case CSSSelector::kShadowDeep: {
       if (!is_ua_rule_ && mode_ != kQueryingRules) {
         Deprecation::CountDeprecation(context.element->GetDocument(),
-                                      UseCounter::kCSSDeepCombinator);
+                                      WebFeature::kCSSDeepCombinator);
       }
       if (ShadowRoot* root = context.element->ContainingShadowRoot()) {
         if (root->GetType() == ShadowRootType::kUserAgent)
@@ -454,7 +454,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
               kSelectorMatches) {
             if (context.element->IsInShadowTree()) {
               UseCounter::Count(context.element->GetDocument(),
-                                UseCounter::kCSSDeepCombinatorAndShadow);
+                                WebFeature::kCSSDeepCombinatorAndShadow);
             }
             return kSelectorMatches;
           }
@@ -469,7 +469,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
         MatchStatus match = MatchSelector(next_context, result);
         if (match == kSelectorMatches && context.element->IsInShadowTree()) {
           UseCounter::Count(context.element->GetDocument(),
-                            UseCounter::kCSSDeepCombinatorAndShadow);
+                            WebFeature::kCSSDeepCombinatorAndShadow);
         }
         if (match == kSelectorMatches || match == kSelectorFailsCompletely)
           return match;
@@ -482,7 +482,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
     case CSSSelector::kShadowPiercingDescendant: {
       DCHECK_EQ(mode_, kQueryingRules);
       UseCounter::Count(context.element->GetDocument(),
-                        UseCounter::kCSSShadowPiercingDescendantCombinator);
+                        WebFeature::kCSSShadowPiercingDescendantCombinator);
       // TODO(kochi): parentOrOpenShadowHostElement() is necessary because
       // SelectorQuery can pass V0 shadow roots. All closed shadow roots are
       // already filtered out, thus once V0 is removed this logic can use
@@ -657,7 +657,7 @@ static bool AnyAttributeMatches(Element& element,
         AttributeValueMatches(attribute_item, match, selector_value,
                               kTextCaseASCIIInsensitive)) {
       UseCounter::Count(element.GetDocument(),
-                        UseCounter::kCaseInsensitiveAttrSelectorMatch);
+                        WebFeature::kCaseInsensitiveAttrSelectorMatch);
       return true;
     }
     if (selector_attr.NamespaceURI() != g_star_atom)

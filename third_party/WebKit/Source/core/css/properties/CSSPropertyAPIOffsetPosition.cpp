@@ -22,11 +22,11 @@ const CSSValue* CSSPropertyAPIOffsetPosition::parseSingleValue(
   if (id == CSSValueAuto)
     return ConsumeIdent(range);
   CSSValue* value = ConsumePosition(range, context, UnitlessQuirk::kForbid,
-                                    Optional<UseCounter::Feature>());
+                                    Optional<WebFeature>());
 
   // Count when we receive a valid position other than 'auto'.
   if (value && value->IsValuePair())
-    context.Count(UseCounter::kCSSOffsetInEffect);
+    context.Count(WebFeature::kCSSOffsetInEffect);
   return value;
 }
 

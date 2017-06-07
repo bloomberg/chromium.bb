@@ -21,7 +21,7 @@ static CSSValueList* ConsumePositionList(CSSParserTokenRange& range,
   CSSValueList* positions = CSSValueList::CreateCommaSeparated();
   do {
     CSSValue* position = ConsumePosition(range, context, UnitlessQuirk::kForbid,
-                                         Optional<UseCounter::Feature>());
+                                         Optional<WebFeature>());
     if (!position)
       return nullptr;
     positions->Append(*position);

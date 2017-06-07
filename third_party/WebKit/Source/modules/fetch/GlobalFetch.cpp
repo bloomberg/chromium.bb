@@ -97,7 +97,7 @@ ScriptPromise GlobalFetch::fetch(ScriptState* script_state,
                                  const RequestInfo& input,
                                  const Dictionary& init,
                                  ExceptionState& exception_state) {
-  UseCounter::Count(window.GetExecutionContext(), UseCounter::kFetch);
+  UseCounter::Count(window.GetExecutionContext(), WebFeature::kFetch);
   if (!window.GetFrame()) {
     exception_state.ThrowTypeError("The global scope is shutting down.");
     return ScriptPromise();
@@ -111,7 +111,7 @@ ScriptPromise GlobalFetch::fetch(ScriptState* script_state,
                                  const RequestInfo& input,
                                  const Dictionary& init,
                                  ExceptionState& exception_state) {
-  UseCounter::Count(worker.GetExecutionContext(), UseCounter::kFetch);
+  UseCounter::Count(worker.GetExecutionContext(), WebFeature::kFetch);
   return ScopedFetcher::From(worker)->Fetch(script_state, input, init,
                                             exception_state);
 }

@@ -55,7 +55,7 @@ InputType* DateInputType::Create(HTMLInputElement& element) {
 }
 
 void DateInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeDate);
+  CountUsageIfVisible(WebFeature::kInputTypeDate);
 }
 
 const AtomicString& DateInputType::FormControlType() const {

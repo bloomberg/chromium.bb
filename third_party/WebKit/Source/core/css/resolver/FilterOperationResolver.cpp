@@ -76,44 +76,44 @@ static void CountFilterUse(FilterOperation::OperationType operation_type,
                            const Document& document) {
   // This variable is always reassigned, but MSVC thinks it might be left
   // uninitialized.
-  UseCounter::Feature feature = UseCounter::kNumberOfFeatures;
+  WebFeature feature = WebFeature::kNumberOfFeatures;
   switch (operation_type) {
     case FilterOperation::NONE:
     case FilterOperation::BOX_REFLECT:
       NOTREACHED();
       return;
     case FilterOperation::REFERENCE:
-      feature = UseCounter::kCSSFilterReference;
+      feature = WebFeature::kCSSFilterReference;
       break;
     case FilterOperation::GRAYSCALE:
-      feature = UseCounter::kCSSFilterGrayscale;
+      feature = WebFeature::kCSSFilterGrayscale;
       break;
     case FilterOperation::SEPIA:
-      feature = UseCounter::kCSSFilterSepia;
+      feature = WebFeature::kCSSFilterSepia;
       break;
     case FilterOperation::SATURATE:
-      feature = UseCounter::kCSSFilterSaturate;
+      feature = WebFeature::kCSSFilterSaturate;
       break;
     case FilterOperation::HUE_ROTATE:
-      feature = UseCounter::kCSSFilterHueRotate;
+      feature = WebFeature::kCSSFilterHueRotate;
       break;
     case FilterOperation::INVERT:
-      feature = UseCounter::kCSSFilterInvert;
+      feature = WebFeature::kCSSFilterInvert;
       break;
     case FilterOperation::OPACITY:
-      feature = UseCounter::kCSSFilterOpacity;
+      feature = WebFeature::kCSSFilterOpacity;
       break;
     case FilterOperation::BRIGHTNESS:
-      feature = UseCounter::kCSSFilterBrightness;
+      feature = WebFeature::kCSSFilterBrightness;
       break;
     case FilterOperation::CONTRAST:
-      feature = UseCounter::kCSSFilterContrast;
+      feature = WebFeature::kCSSFilterContrast;
       break;
     case FilterOperation::BLUR:
-      feature = UseCounter::kCSSFilterBlur;
+      feature = WebFeature::kCSSFilterBlur;
       break;
     case FilterOperation::DROP_SHADOW:
-      feature = UseCounter::kCSSFilterDropShadow;
+      feature = WebFeature::kCSSFilterDropShadow;
       break;
   };
   UseCounter::Count(document, feature);

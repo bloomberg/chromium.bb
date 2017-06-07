@@ -126,8 +126,8 @@ bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
 
   UseCounter::Count(
       element->GetDocument(),
-      nonceable ? UseCounter::kCleanScriptElementWithNonce
-                : UseCounter::kPotentiallyInjectedScriptElementWithNonce);
+      nonceable ? WebFeature::kCleanScriptElementWithNonce
+                : WebFeature::kPotentiallyInjectedScriptElementWithNonce);
 
   // This behavior is locked behind the experimental flag for the moment; if we
   // decide to ship it, drop this check. https://crbug.com/639293
@@ -136,16 +136,15 @@ bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
          nonceable;
 }
 
-static UseCounter::Feature GetUseCounterType(
-    ContentSecurityPolicyHeaderType type) {
+static WebFeature GetUseCounterType(ContentSecurityPolicyHeaderType type) {
   switch (type) {
     case kContentSecurityPolicyHeaderTypeEnforce:
-      return UseCounter::kContentSecurityPolicy;
+      return WebFeature::kContentSecurityPolicy;
     case kContentSecurityPolicyHeaderTypeReport:
-      return UseCounter::kContentSecurityPolicyReportOnly;
+      return WebFeature::kContentSecurityPolicyReportOnly;
   }
   NOTREACHED();
-  return UseCounter::kNumberOfFeatures;
+  return WebFeature::kNumberOfFeatures;
 }
 
 ContentSecurityPolicy::ContentSecurityPolicy()
@@ -181,7 +180,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
   // error messages, then poke at histograms.
   Document* document = this->GetDocument();
   if (sandbox_mask_ != kSandboxNone) {
-    UseCounter::Count(execution_context_, UseCounter::kSandboxViaCSP);
+    UseCounter::Count(execution_context_, WebFeature::kSandboxViaCSP);
     if (document)
       document->EnforceSandboxFlags(sandbox_mask_);
     else
@@ -201,7 +200,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
 
   if (insecure_request_policy_ & kUpgradeInsecureRequests) {
     UseCounter::Count(execution_context_,
-                      UseCounter::kUpgradeInsecureRequestsEnabled);
+                      WebFeature::kUpgradeInsecureRequestsEnabled);
     if (!execution_context_->Url().Host().IsEmpty()) {
       execution_context_->GetSecurityContext().AddInsecureNavigationUpgrade(
           execution_context_->Url().Host().Impl()->GetHash());
@@ -216,7 +215,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
     UseCounter::Count(execution_context_,
                       GetUseCounterType(policy->HeaderType()));
     if (policy->AllowDynamic())
-      UseCounter::Count(execution_context_, UseCounter::kCSPWithStrictDynamic);
+      UseCounter::Count(execution_context_, WebFeature::kCSPWithStrictDynamic);
   }
 
   // We disable 'eval()' even in the case of report-only policies, and rely on
@@ -758,8 +757,8 @@ bool ContentSecurityPolicy::AllowScriptFromSource(
     UseCounter::Count(
         GetDocument(),
         parser_disposition == kParserInserted
-            ? UseCounter::kScriptWithCSPBypassingSchemeParserInserted
-            : UseCounter::kScriptWithCSPBypassingSchemeNotParserInserted);
+            ? WebFeature::kScriptWithCSPBypassingSchemeParserInserted
+            : WebFeature::kScriptWithCSPBypassingSchemeNotParserInserted);
   }
   return IsAllowedByAll<&CSPDirectiveList::AllowScriptFromSource>(
       policies_, url, nonce, hashes, parser_disposition, redirect_status,
@@ -978,7 +977,7 @@ bool ContentSecurityPolicy::AllowWorkerContextFromSource(
   // impact of this backwards-incompatible change.
   // TODO(mkwst): We reverted this.
   if (Document* document = this->GetDocument()) {
-    UseCounter::Count(*document, UseCounter::kWorkerSubjectToCSP);
+    UseCounter::Count(*document, WebFeature::kWorkerSubjectToCSP);
     if (IsAllowedByAll<&CSPDirectiveList::AllowWorkerFromSource>(
             policies_, url, redirect_status,
             SecurityViolationReportingPolicy::kSuppressReporting,
@@ -989,7 +988,7 @@ bool ContentSecurityPolicy::AllowWorkerContextFromSource(
             SecurityViolationReportingPolicy::kSuppressReporting,
             check_header_type)) {
       UseCounter::Count(*document,
-                        UseCounter::kWorkerAllowedByChildBlockedByScript);
+                        WebFeature::kWorkerAllowedByChildBlockedByScript);
     }
   }
 

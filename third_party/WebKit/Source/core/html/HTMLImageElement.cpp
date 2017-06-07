@@ -269,9 +269,9 @@ void HTMLImageElement::SetBestFitURLAndDPRFromImageCandidate(
   bool intrinsic_sizing_viewport_dependant = false;
   if (candidate.GetResourceWidth() > 0) {
     intrinsic_sizing_viewport_dependant = true;
-    UseCounter::Count(GetDocument(), UseCounter::kSrcsetWDescriptor);
+    UseCounter::Count(GetDocument(), WebFeature::kSrcsetWDescriptor);
   } else if (!candidate.SrcOrigin()) {
-    UseCounter::Count(GetDocument(), UseCounter::kSrcsetXDescriptor);
+    UseCounter::Count(GetDocument(), WebFeature::kSrcsetXDescriptor);
   }
   if (GetLayoutObject() && GetLayoutObject()->IsImage()) {
     LayoutImageItem(ToLayoutImage(GetLayoutObject()))
@@ -320,7 +320,7 @@ void HTMLImageElement::ParseAttribute(
           params.new_value, kSupportReferrerPolicyLegacyKeywords,
           &referrer_policy_);
       UseCounter::Count(GetDocument(),
-                        UseCounter::kHTMLImageElementReferrerPolicyAttribute);
+                        WebFeature::kHTMLImageElementReferrerPolicyAttribute);
     }
   } else {
     HTMLElement::ParseAttribute(params);
@@ -364,7 +364,7 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
     HTMLSourceElement* source = toHTMLSourceElement(child);
     if (!source->FastGetAttribute(srcAttr).IsNull()) {
       Deprecation::CountDeprecation(GetDocument(),
-                                    UseCounter::kPictureSourceSrc);
+                                    WebFeature::kPictureSourceSrc);
     }
     String srcset = source->FastGetAttribute(srcsetAttr);
     if (srcset.IsEmpty())
@@ -727,7 +727,7 @@ static bool SourceSizeValue(Element& element,
   String sizes = element.FastGetAttribute(sizesAttr);
   bool exists = !sizes.IsNull();
   if (exists)
-    UseCounter::Count(current_document, UseCounter::kSizes);
+    UseCounter::Count(current_document, WebFeature::kSizes);
   source_size =
       SizesAttributeParser(MediaValuesDynamic::Create(current_document), sizes)
           .length();

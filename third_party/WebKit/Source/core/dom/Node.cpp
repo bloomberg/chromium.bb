@@ -2165,7 +2165,7 @@ void Node::HandleLocalEvents(Event& event) {
   if (IsDisabledFormControl(this) && event.IsMouseEvent() &&
       !RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled()) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kDispatchMouseEventOnDisabledFormControl);
+                      WebFeature::kDispatchMouseEventOnDisabledFormControl);
     return;
   }
 

@@ -132,7 +132,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const Resource& resource) {
   if (!resource.IsEligibleForIntegrityCheck(document.GetSecurityOrigin())) {
     UseCounter::Count(document,
-                      UseCounter::kSRIElementIntegrityAttributeButIneligible);
+                      WebFeature::kSRIElementIntegrityAttributeButIneligible);
     LogErrorToConsole("Subresource Integrity: The resource '" +
                           resource_url.ElidedString() +
                           "' has an integrity attribute, but the resource "
@@ -204,7 +204,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
       if (DigestsEqual(digest, converted_hash_vector)) {
         UseCounter::Count(
             &execution_context,
-            UseCounter::kSRIElementWithMatchingIntegrityAttribute);
+            WebFeature::kSRIElementWithMatchingIntegrityAttribute);
         return true;
       }
     }
@@ -228,7 +228,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
         resource_url.ElidedString() + "'. The resource has been blocked.";
   }
   UseCounter::Count(&execution_context,
-                    UseCounter::kSRIElementWithNonMatchingIntegrityAttribute);
+                    WebFeature::kSRIElementWithNonMatchingIntegrityAttribute);
   return false;
 }
 
@@ -360,7 +360,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
                           *execution_context);
         UseCounter::Count(
             execution_context,
-            UseCounter::kSRIElementWithUnparsableIntegrityAttribute);
+            WebFeature::kSRIElementWithUnparsableIntegrityAttribute);
       }
       continue;
     }
@@ -376,7 +376,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
                           *execution_context);
         UseCounter::Count(
             execution_context,
-            UseCounter::kSRIElementWithUnparsableIntegrityAttribute);
+            WebFeature::kSRIElementWithUnparsableIntegrityAttribute);
       }
       continue;
     }
@@ -393,7 +393,7 @@ SubresourceIntegrity::ParseIntegrityAttribute(
             *execution_context);
         UseCounter::Count(
             execution_context,
-            UseCounter::kSRIElementWithUnparsableIntegrityAttribute);
+            WebFeature::kSRIElementWithUnparsableIntegrityAttribute);
       }
       continue;
     }

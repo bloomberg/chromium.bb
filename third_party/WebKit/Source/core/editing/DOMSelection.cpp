@@ -88,7 +88,7 @@ void DOMSelection::UpdateFrameSelection(const SelectionInDOMTree& selection,
   frame_selection.DidSetSelectionDeprecated();
   if (GetFrame() && GetFrame()->GetDocument() &&
       focused_element != GetFrame()->GetDocument()->FocusedElement())
-    UseCounter::Count(GetFrame(), UseCounter::kSelectionFuncionsChangeFocus);
+    UseCounter::Count(GetFrame(), WebFeature::kSelectionFuncionsChangeFocus);
 }
 
 const VisibleSelection& DOMSelection::GetVisibleSelection() const {
@@ -241,7 +241,7 @@ void DOMSelection::collapse(Node* node,
   // 1. If node is null, this method must behave identically as
   // removeAllRanges() and abort these steps.
   if (!node) {
-    UseCounter::Count(GetFrame(), UseCounter::kSelectionCollapseNull);
+    UseCounter::Count(GetFrame(), WebFeature::kSelectionCollapseNull);
     GetFrame()->Selection().Clear();
     return;
   }
@@ -364,12 +364,12 @@ void DOMSelection::setBaseAndExtent(Node* base_node,
   // TODO(editing-dev): Behavior on where base or extent is null is still
   // under discussion: https://github.com/w3c/selection-api/issues/72
   if (!base_node) {
-    UseCounter::Count(GetFrame(), UseCounter::kSelectionSetBaseAndExtentNull);
+    UseCounter::Count(GetFrame(), WebFeature::kSelectionSetBaseAndExtentNull);
     GetFrame()->Selection().Clear();
     return;
   }
   if (!extent_node) {
-    UseCounter::Count(GetFrame(), UseCounter::kSelectionSetBaseAndExtentNull);
+    UseCounter::Count(GetFrame(), WebFeature::kSelectionSetBaseAndExtentNull);
     extent_offset = 0;
   }
 
@@ -464,7 +464,7 @@ void DOMSelection::modify(const String& alter_string,
   GetFrame()->Selection().Modify(alter, direction, granularity);
   if (GetFrame() && GetFrame()->GetDocument() &&
       focused_element != GetFrame()->GetDocument()->FocusedElement())
-    UseCounter::Count(GetFrame(), UseCounter::kSelectionFuncionsChangeFocus);
+    UseCounter::Count(GetFrame(), WebFeature::kSelectionFuncionsChangeFocus);
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-extend
@@ -667,7 +667,7 @@ void DOMSelection::addRange(Range* new_range) {
   // warning message for a while, and continue to collect the usage data.
   // <https://code.google.com/p/chromium/issues/detail?id=353069>.
   Deprecation::CountDeprecation(GetFrame(),
-                                UseCounter::kSelectionAddRangeIntersect);
+                                WebFeature::kSelectionAddRangeIntersect);
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-deletefromdocument

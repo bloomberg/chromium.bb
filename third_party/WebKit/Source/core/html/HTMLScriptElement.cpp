@@ -101,7 +101,7 @@ Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
       !Loader()->IsScriptTypeSupported(
           ScriptLoader::kDisallowLegacyTypeInTypeAttribute, script_type)) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kScriptElementWithInvalidTypeHasSrc);
+                      WebFeature::kScriptElementWithInvalidTypeHasSrc);
   }
   HTMLElement::InsertedInto(insertion_point);
   LogAddElementIfIsolatedWorldAndInDocument("script", srcAttr);

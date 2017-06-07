@@ -18,7 +18,7 @@ VisualViewportScrollEvent::VisualViewportScrollEvent()
 
 void VisualViewportScrollEvent::DoneDispatchingEventAtCurrentTarget() {
   UseCounter::Count(currentTarget()->GetExecutionContext(),
-                    UseCounter::kVisualViewportScrollFired);
+                    WebFeature::kVisualViewportScrollFired);
 }
 
 }  // namespace blink

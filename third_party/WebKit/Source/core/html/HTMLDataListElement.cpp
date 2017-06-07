@@ -43,7 +43,7 @@ inline HTMLDataListElement::HTMLDataListElement(Document& document)
     : HTMLElement(HTMLNames::datalistTag, document) {}
 
 HTMLDataListElement* HTMLDataListElement::Create(Document& document) {
-  UseCounter::Count(document, UseCounter::kDataListElement);
+  UseCounter::Count(document, WebFeature::kDataListElement);
   return new HTMLDataListElement(document);
 }
 

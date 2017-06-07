@@ -322,7 +322,7 @@ static void ParseImageCandidatesFromSrcsetAttribute(
       // lists for each candidate.
       if (!ParseDescriptors(attribute, descriptor_tokens, result, document)) {
         if (document) {
-          UseCounter::Count(document, UseCounter::kSrcsetDroppedCandidate);
+          UseCounter::Count(document, WebFeature::kSrcsetDroppedCandidate);
           if (document->GetFrame())
             document->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
                 kOtherMessageSource, kErrorMessageLevel,

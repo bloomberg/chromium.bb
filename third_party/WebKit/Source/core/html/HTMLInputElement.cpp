@@ -768,29 +768,29 @@ void HTMLInputElement::ParseAttribute(
         EventTypeNames::search,
         CreateAttributeEventListener(this, name, value, EventParameterName()));
   } else if (name == incrementalAttr) {
-    UseCounter::Count(GetDocument(), UseCounter::kIncrementalAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kIncrementalAttribute);
   } else if (name == minAttr) {
     input_type_view_->MinOrMaxAttributeChanged();
     input_type_->SanitizeValueInResponseToMinOrMaxAttributeChange();
     input_type_->InRangeChanged();
     SetNeedsValidityCheck();
-    UseCounter::Count(GetDocument(), UseCounter::kMinAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kMinAttribute);
   } else if (name == maxAttr) {
     input_type_view_->MinOrMaxAttributeChanged();
     input_type_->SanitizeValueInResponseToMinOrMaxAttributeChange();
     input_type_->InRangeChanged();
     SetNeedsValidityCheck();
-    UseCounter::Count(GetDocument(), UseCounter::kMaxAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kMaxAttribute);
   } else if (name == multipleAttr) {
     input_type_view_->MultipleAttributeChanged();
     SetNeedsValidityCheck();
   } else if (name == stepAttr) {
     input_type_view_->StepAttributeChanged();
     SetNeedsValidityCheck();
-    UseCounter::Count(GetDocument(), UseCounter::kStepAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kStepAttribute);
   } else if (name == patternAttr) {
     SetNeedsValidityCheck();
-    UseCounter::Count(GetDocument(), UseCounter::kPatternAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kPatternAttribute);
   } else if (name == readonlyAttr) {
     TextControlElement::ParseAttribute(params);
     input_type_view_->ReadonlyAttributeChanged();
@@ -800,10 +800,10 @@ void HTMLInputElement::ParseAttribute(
       ResetListAttributeTargetObserver();
       ListAttributeTargetChanged();
     }
-    UseCounter::Count(GetDocument(), UseCounter::kListAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kListAttribute);
   } else if (name == webkitdirectoryAttr) {
     TextControlElement::ParseAttribute(params);
-    UseCounter::Count(GetDocument(), UseCounter::kPrefixedDirectoryAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kPrefixedDirectoryAttribute);
   } else {
     if (name == formactionAttr)
       LogUpdateAttributeIfIsolatedWorldAndInDocument("input", params);

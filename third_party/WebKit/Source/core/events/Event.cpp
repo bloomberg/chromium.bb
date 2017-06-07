@@ -142,10 +142,10 @@ bool Event::legacyReturnValue(ScriptState* script_state) const {
   bool return_value = !defaultPrevented();
   if (return_value) {
     UseCounter::Count(ExecutionContext::From(script_state),
-                      UseCounter::kEventGetReturnValueTrue);
+                      WebFeature::kEventGetReturnValueTrue);
   } else {
     UseCounter::Count(ExecutionContext::From(script_state),
-                      UseCounter::kEventGetReturnValueFalse);
+                      WebFeature::kEventGetReturnValueFalse);
   }
   return return_value;
 }
@@ -153,10 +153,10 @@ bool Event::legacyReturnValue(ScriptState* script_state) const {
 void Event::setLegacyReturnValue(ScriptState* script_state, bool return_value) {
   if (return_value) {
     UseCounter::Count(ExecutionContext::From(script_state),
-                      UseCounter::kEventSetReturnValueTrue);
+                      WebFeature::kEventSetReturnValueTrue);
   } else {
     UseCounter::Count(ExecutionContext::From(script_state),
-                      UseCounter::kEventSetReturnValueFalse);
+                      WebFeature::kEventSetReturnValueFalse);
   }
   SetDefaultPrevented(!return_value);
 }

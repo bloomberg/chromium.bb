@@ -73,10 +73,10 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
     return promise;
   }
 
-  UseCounter::Count(*GetDocument(), UseCounter::kVRGetDisplays);
+  UseCounter::Count(*GetDocument(), WebFeature::kVRGetDisplays);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (!execution_context->IsSecureContext())
-    UseCounter::Count(*GetDocument(), UseCounter::kVRGetDisplaysInsecureOrigin);
+    UseCounter::Count(*GetDocument(), WebFeature::kVRGetDisplaysInsecureOrigin);
 
   Platform::Current()->RecordRapporURL("VR.WebVR.GetDisplays",
                                        GetDocument()->Url());

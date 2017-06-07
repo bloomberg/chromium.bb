@@ -308,7 +308,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
       event_->type() == EventTypeNames::mousedown &&
       isHTMLSelectElement(*node_)) {
     UseCounter::Count(node_->GetDocument(),
-                      UseCounter::kUntrustedMouseDownEventDispatchedToSelect);
+                      WebFeature::kUntrustedMouseDownEventDispatchedToSelect);
   }
 }
 

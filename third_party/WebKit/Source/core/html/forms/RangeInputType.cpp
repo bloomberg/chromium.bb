@@ -92,11 +92,11 @@ InputType::ValueMode RangeInputType::GetValueMode() const {
 }
 
 void RangeInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeRange);
+  CountUsageIfVisible(WebFeature::kInputTypeRange);
   if (const ComputedStyle* style = GetElement().GetComputedStyle()) {
     if (style->Appearance() == kSliderVerticalPart) {
       UseCounter::Count(GetElement().GetDocument(),
-                        UseCounter::kInputTypeRangeVerticalAppearance);
+                        WebFeature::kInputTypeRangeVerticalAppearance);
     }
   }
 }

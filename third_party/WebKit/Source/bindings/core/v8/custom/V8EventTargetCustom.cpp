@@ -41,11 +41,11 @@ void V8EventTarget::addEventListenerMethodPrologueCustom(
     EventTarget*) {
   if (info.Length() >= 3 && info[2]->IsObject()) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      UseCounter::kAddEventListenerThirdArgumentIsObject);
+                      WebFeature::kAddEventListenerThirdArgumentIsObject);
   }
   if (info.Length() >= 4) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      UseCounter::kAddEventListenerFourArguments);
+                      WebFeature::kAddEventListenerFourArguments);
   }
 }
 
@@ -62,11 +62,11 @@ void V8EventTarget::removeEventListenerMethodPrologueCustom(
     EventTarget*) {
   if (info.Length() >= 3 && info[2]->IsObject()) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      UseCounter::kRemoveEventListenerThirdArgumentIsObject);
+                      WebFeature::kRemoveEventListenerThirdArgumentIsObject);
   }
   if (info.Length() >= 4) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      UseCounter::kRemoveEventListenerFourArguments);
+                      WebFeature::kRemoveEventListenerFourArguments);
   }
 }
 

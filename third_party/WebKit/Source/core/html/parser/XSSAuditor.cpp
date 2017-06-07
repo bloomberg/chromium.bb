@@ -386,13 +386,13 @@ void XSSAuditor::Init(Document* document,
         header_value, error_details, error_position, report_url);
 
     if (xss_protection_header == kAllowReflectedXSS)
-      UseCounter::Count(*document, UseCounter::kXSSAuditorDisabled);
+      UseCounter::Count(*document, WebFeature::kXSSAuditorDisabled);
     else if (xss_protection_header == kFilterReflectedXSS)
-      UseCounter::Count(*document, UseCounter::kXSSAuditorEnabledFilter);
+      UseCounter::Count(*document, WebFeature::kXSSAuditorEnabledFilter);
     else if (xss_protection_header == kBlockReflectedXSS)
-      UseCounter::Count(*document, UseCounter::kXSSAuditorEnabledBlock);
+      UseCounter::Count(*document, WebFeature::kXSSAuditorEnabledBlock);
     else if (xss_protection_header == kReflectedXSSInvalid)
-      UseCounter::Count(*document, UseCounter::kXSSAuditorInvalid);
+      UseCounter::Count(*document, WebFeature::kXSSAuditorInvalid);
 
     did_send_valid_xss_protection_header_ =
         xss_protection_header != kReflectedXSSUnset &&

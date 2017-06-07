@@ -82,9 +82,9 @@ EventSource* EventSource::Create(ExecutionContext* context,
                                  const EventSourceInit& event_source_init,
                                  ExceptionState& exception_state) {
   if (context->IsDocument())
-    UseCounter::Count(ToDocument(context), UseCounter::kEventSourceDocument);
+    UseCounter::Count(ToDocument(context), WebFeature::kEventSourceDocument);
   else
-    UseCounter::Count(context, UseCounter::kEventSourceWorker);
+    UseCounter::Count(context, WebFeature::kEventSourceWorker);
 
   if (url.IsEmpty()) {
     exception_state.ThrowDOMException(

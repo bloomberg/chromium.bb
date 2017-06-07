@@ -1102,7 +1102,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
 UseCounter::UseCounter(Context context)
     : mute_count_(0),
       context_(context),
-      features_recorded_(kNumberOfFeatures),
+      features_recorded_(static_cast<int>(WebFeature::kNumberOfFeatures)),
       css_recorded_(numCSSPropertyIDs),
       animated_css_recorded_(numCSSPropertyIDs) {}
 
@@ -1174,7 +1174,7 @@ void UseCounter::DidCommitLoad(KURL url) {
   css_recorded_.ClearAll();
   animated_css_recorded_.ClearAll();
   if (context_ != kDisabledContext && !mute_count_) {
-    FeaturesHistogram().Count(kPageVisits);
+    FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
     if (context_ != kExtensionContext) {
       CssHistogram().Count(totalPagesMeasuredCSSSampleId());
       AnimatedCSSHistogram().Count(totalPagesMeasuredCSSSampleId());
@@ -1331,13 +1331,13 @@ EnumerationHistogram& UseCounter::FeaturesHistogram() const {
   // So instead we just use a dedicated histogram for the SVG case.
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svg_histogram,
                       ("Blink.UseCounter.SVGImage.Features",
-                       blink::UseCounter::kNumberOfFeatures));
+                       static_cast<uint32_t>(WebFeature::kNumberOfFeatures)));
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, extension_histogram,
                       ("Blink.UseCounter.Extensions.Features",
-                       blink::UseCounter::kNumberOfFeatures));
-  DEFINE_STATIC_LOCAL(
-      blink::EnumerationHistogram, histogram,
-      ("Blink.UseCounter.Features", blink::UseCounter::kNumberOfFeatures));
+                       static_cast<uint32_t>(WebFeature::kNumberOfFeatures)));
+  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram,
+                      ("Blink.UseCounter.Features",
+                       static_cast<uint32_t>(WebFeature::kNumberOfFeatures)));
   switch (context_) {
     case kSVGImageContext:
       return svg_histogram;
@@ -1381,19 +1381,21 @@ EnumerationHistogram& UseCounter::AnimatedCSSHistogram() const {
  */
 
 static EnumerationHistogram& FeatureObserverHistogram() {
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, histogram,
-      ("WebCore.FeatureObserver", UseCounter::kNumberOfFeatures));
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
+                      ("WebCore.FeatureObserver",
+                       static_cast<uint32_t>(WebFeature::kNumberOfFeatures)));
   return histogram;
 }
 
 UseCounter::LegacyCounter::LegacyCounter()
-    : feature_bits_(kNumberOfFeatures), css_bits_(numCSSPropertyIDs) {}
+    : feature_bits_(static_cast<int>(WebFeature::kNumberOfFeatures)),
+      css_bits_(numCSSPropertyIDs) {}
 
 UseCounter::LegacyCounter::~LegacyCounter() {
   // PageDestruction was intended to be used as a scale, but it's broken (due to
   // fast shutdown).  See https://crbug.com/597963.
-  FeatureObserverHistogram().Count(kOBSOLETE_PageDestruction);
+  FeatureObserverHistogram().Count(
+      static_cast<int>(WebFeature::kOBSOLETE_PageDestruction));
   UpdateMeasurements();
 }
 
@@ -1407,8 +1409,8 @@ void UseCounter::LegacyCounter::CountCSS(CSSPropertyID property) {
 
 void UseCounter::LegacyCounter::UpdateMeasurements() {
   EnumerationHistogram& feature_histogram = FeatureObserverHistogram();
-  feature_histogram.Count(kPageVisits);
-  for (size_t i = 0; i < kNumberOfFeatures; ++i) {
+  feature_histogram.Count(static_cast<int>(WebFeature::kPageVisits));
+  for (size_t i = 0; i < static_cast<int>(WebFeature::kNumberOfFeatures); ++i) {
     if (feature_bits_.QuickGet(i))
       feature_histogram.Count(i);
   }

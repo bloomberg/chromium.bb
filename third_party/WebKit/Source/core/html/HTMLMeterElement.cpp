@@ -37,7 +37,7 @@ using namespace HTMLNames;
 
 HTMLMeterElement::HTMLMeterElement(Document& document)
     : LabelableElement(meterTag, document) {
-  UseCounter::Count(document, UseCounter::kMeterElement);
+  UseCounter::Count(document, WebFeature::kMeterElement);
 }
 
 HTMLMeterElement::~HTMLMeterElement() {}
@@ -52,11 +52,11 @@ LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style) {
   switch (style.Appearance()) {
     case kMeterPart:
       UseCounter::Count(GetDocument(),
-                        UseCounter::kMeterElementWithMeterAppearance);
+                        WebFeature::kMeterElementWithMeterAppearance);
       break;
     case kNoControlPart:
       UseCounter::Count(GetDocument(),
-                        UseCounter::kMeterElementWithNoneAppearance);
+                        WebFeature::kMeterElementWithNoneAppearance);
       break;
     default:
       break;

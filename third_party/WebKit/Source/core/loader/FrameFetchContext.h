@@ -184,8 +184,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                                ResourceRequestBlockedReason) const override;
   bool ShouldBypassMainWorldCSP() const override;
   bool IsSVGImageChromeClient() const override;
-  void CountUsage(UseCounter::Feature) const override;
-  void CountDeprecation(UseCounter::Feature) const override;
+  void CountUsage(WebFeature) const override;
+  void CountDeprecation(WebFeature) const override;
   bool ShouldBlockFetchByMixedContentCheck(
       const ResourceRequest&,
       const KURL&,

@@ -18,7 +18,7 @@ VisualViewportResizeEvent::VisualViewportResizeEvent()
 
 void VisualViewportResizeEvent::DoneDispatchingEventAtCurrentTarget() {
   UseCounter::Count(currentTarget()->GetExecutionContext(),
-                    UseCounter::kVisualViewportResizeFired);
+                    WebFeature::kVisualViewportResizeFired);
 }
 
 }  // namespace blink

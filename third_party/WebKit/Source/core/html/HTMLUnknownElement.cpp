@@ -12,9 +12,9 @@ HTMLUnknownElement::HTMLUnknownElement(const QualifiedName& tag_name,
                                        Document& document)
     : HTMLElement(tag_name, document) {
   if (tag_name.LocalName() == "data")
-    UseCounter::Count(document, UseCounter::kDataElement);
+    UseCounter::Count(document, WebFeature::kDataElement);
   else if (tag_name.LocalName() == "time")
-    UseCounter::Count(document, UseCounter::kTimeElement);
+    UseCounter::Count(document, WebFeature::kTimeElement);
 }
 
 }  // namespace blink

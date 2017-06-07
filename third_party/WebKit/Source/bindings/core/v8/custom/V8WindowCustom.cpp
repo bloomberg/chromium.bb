@@ -211,7 +211,7 @@ void V8Window::postMessageMethodCustom(
   LocalDOMWindow* source = CurrentDOMWindow(info.GetIsolate());
 
   DCHECK(window);
-  UseCounter::Count(source->GetFrame(), UseCounter::kWindowPostMessage);
+  UseCounter::Count(source->GetFrame(), WebFeature::kWindowPostMessage);
 
   // If called directly by WebCore we don't have a calling context.
   if (!source) {
@@ -313,7 +313,7 @@ void V8Window::namedPropertyGetterCustom(
   Frame* child = frame->Tree().ScopedChild(name);
   if (child) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
-                      UseCounter::kNamedAccessOnWindow_ChildBrowsingContext);
+                      WebFeature::kNamedAccessOnWindow_ChildBrowsingContext);
 
     // step 3. Remove each browsing context from childBrowsingContexts whose
     // active document's origin is not same origin with activeDocument's origin
@@ -327,7 +327,7 @@ void V8Window::namedPropertyGetterCustom(
 
     UseCounter::Count(
         CurrentExecutionContext(info.GetIsolate()),
-        UseCounter::
+        WebFeature::
             kNamedAccessOnWindow_ChildBrowsingContext_CrossOriginNameMismatch);
     // In addition to the above spec'ed case, we return the child window
     // regardless of step 3 due to crbug.com/701489 for the time being.
@@ -361,14 +361,14 @@ void V8Window::namedPropertyGetterCustom(
 
   if (!has_named_item && has_id_item &&
       !doc->ContainsMultipleElementsWithId(name)) {
-    UseCounter::Count(doc, UseCounter::kDOMClobberedVariableAccessed);
+    UseCounter::Count(doc, WebFeature::kDOMClobberedVariableAccessed);
     V8SetReturnValueFast(info, doc->getElementById(name), window);
     return;
   }
 
   HTMLCollection* items = doc->WindowNamedItems(name);
   if (!items->IsEmpty()) {
-    UseCounter::Count(doc, UseCounter::kDOMClobberedVariableAccessed);
+    UseCounter::Count(doc, WebFeature::kDOMClobberedVariableAccessed);
 
     // TODO(esprehn): Firefox doesn't return an HTMLCollection here if there's
     // multiple with the same name, but Chrome and Safari does. What's the

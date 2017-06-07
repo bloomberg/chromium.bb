@@ -260,7 +260,7 @@ MessagePortChannelArray MessagePort::DisentanglePorts(
     visited.insert(port);
   }
 
-  UseCounter::Count(context, UseCounter::kMessagePortsTransferred);
+  UseCounter::Count(context, WebFeature::kMessagePortsTransferred);
 
   // Passed-in ports passed validity checks, so we can disentangle them.
   MessagePortChannelArray port_array(ports.size());

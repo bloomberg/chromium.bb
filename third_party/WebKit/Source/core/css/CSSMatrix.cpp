@@ -44,10 +44,10 @@ namespace blink {
 CSSMatrix* CSSMatrix::Create(ExecutionContext* execution_context,
                              const String& s,
                              ExceptionState& exception_state) {
-  UseCounter::Count(execution_context, UseCounter::kWebKitCSSMatrix);
+  UseCounter::Count(execution_context, WebFeature::kWebKitCSSMatrix);
   if (!s.IsEmpty()) {
     UseCounter::Count(execution_context,
-                      UseCounter::kWebkitCSSMatrixConstructFromString);
+                      WebFeature::kWebkitCSSMatrixConstructFromString);
   }
   return new CSSMatrix(s, exception_state);
 }
