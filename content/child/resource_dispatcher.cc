@@ -666,11 +666,13 @@ int ResourceDispatcher::StartAsync(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         loading_task_runner ? loading_task_runner : thread_task_runner_;
     std::unique_ptr<URLLoaderClientImpl> client(
-        new URLLoaderClientImpl(request_id, this, std::move(task_runner)));
+        new URLLoaderClientImpl(request_id, this, task_runner));
     std::unique_ptr<ThrottlingURLLoader> url_loader =
         ThrottlingURLLoader::CreateLoaderAndStart(
             url_loader_factory, std::move(throttles), routing_id, request_id,
-            mojom::kURLLoadOptionNone, std::move(request), client.get());
+            mojom::kURLLoadOptionNone, std::move(request), client.get(),
+            std::move(task_runner));
+    ;
     pending_requests_[request_id]->url_loader = std::move(url_loader);
     pending_requests_[request_id]->url_loader_client = std::move(client);
   } else {

@@ -7,11 +7,17 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace content {
 
@@ -34,7 +40,9 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
       int32_t request_id,
       uint32_t options,
       std::unique_ptr<ResourceRequest> url_request,
-      mojom::URLLoaderClient* client);
+      mojom::URLLoaderClient* client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+          base::ThreadTaskRunnerHandle::Get());
 
   ~ThrottlingURLLoader() override;
 
@@ -49,7 +57,8 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
              int32_t routing_id,
              int32_t request_id,
              uint32_t options,
-             std::unique_ptr<ResourceRequest> url_request);
+             std::unique_ptr<ResourceRequest> url_request,
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // mojom::URLLoaderClient implementation:
   void OnReceiveResponse(const ResourceResponseHead& response_head,
@@ -87,27 +96,60 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
 
   mojom::URLLoaderAssociatedPtr url_loader_;
 
+  struct StartInfo {
+    StartInfo(mojom::URLLoaderFactory* in_url_loader_factory,
+              int32_t in_routing_id,
+              int32_t in_request_id,
+              uint32_t in_options,
+              std::unique_ptr<ResourceRequest> in_url_request,
+              scoped_refptr<base::SingleThreadTaskRunner> in_task_runner);
+    ~StartInfo();
+
+    mojom::URLLoaderFactory* url_loader_factory;
+    int32_t routing_id;
+    int32_t request_id;
+    uint32_t options;
+    std::unique_ptr<ResourceRequest> url_request;
+    // |task_runner_| is used to set up |client_binding_|.
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+  };
   // Set if start is deferred.
-  mojom::URLLoaderFactory* url_loader_factory_ = nullptr;
-  int32_t routing_id_ = -1;
-  int32_t request_id_ = -1;
-  uint32_t options_ = mojom::kURLLoadOptionNone;
-  std::unique_ptr<ResourceRequest> url_request_;
+  std::unique_ptr<StartInfo> start_info_;
 
-  // Set if either response or redirect is deferred.
-  ResourceResponseHead response_head_;
+  struct ResponseInfo {
+    ResponseInfo(const ResourceResponseHead& in_response_head,
+                 const base::Optional<net::SSLInfo>& in_ssl_info,
+                 mojom::DownloadedTempFilePtr in_downloaded_file);
+    ~ResponseInfo();
 
+    ResourceResponseHead response_head;
+    base::Optional<net::SSLInfo> ssl_info;
+    mojom::DownloadedTempFilePtr downloaded_file;
+  };
   // Set if response is deferred.
-  base::Optional<net::SSLInfo> ssl_info_;
-  mojom::DownloadedTempFilePtr downloaded_file_;
+  std::unique_ptr<ResponseInfo> response_info_;
 
+  struct RedirectInfo {
+    RedirectInfo(const net::RedirectInfo& in_redirect_info,
+                 const ResourceResponseHead& in_response_head);
+    ~RedirectInfo();
+
+    net::RedirectInfo redirect_info;
+    ResourceResponseHead response_head;
+  };
   // Set if redirect is deferred.
-  net::RedirectInfo redirect_info_;
+  std::unique_ptr<RedirectInfo> redirect_info_;
 
+  struct PriorityInfo {
+    PriorityInfo(net::RequestPriority in_priority,
+                 int32_t in_intra_priority_value);
+    ~PriorityInfo();
+
+    net::RequestPriority priority;
+    int32_t intra_priority_value;
+  };
   // Set if request is deferred and SetPriority() is called.
-  bool set_priority_cached_ = false;
-  net::RequestPriority priority_ = net::MINIMUM_PRIORITY;
-  int32_t intra_priority_value_ = 0;
+  std::unique_ptr<PriorityInfo> priority_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoader);
 };
