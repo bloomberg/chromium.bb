@@ -46,6 +46,15 @@ TEST(MediaSourcesTest, IsValidMediaSource) {
       MediaSourceForPresentationUrl(GURL("totally not a url"))));
 }
 
+TEST(MediaSourcesTest, IsValidPresentationUrl) {
+  EXPECT_FALSE(IsValidPresentationUrl(GURL()));
+  EXPECT_FALSE(IsValidPresentationUrl(GURL("unsupported-scheme://foo")));
+
+  EXPECT_TRUE(IsValidPresentationUrl(GURL("https://google.com")));
+  EXPECT_TRUE(IsValidPresentationUrl(GURL("cast://foo")));
+  EXPECT_TRUE(IsValidPresentationUrl(GURL("cast:foo")));
+}
+
 TEST(MediaSourcesTest, CanConnectToMediaSource) {
   EXPECT_TRUE(CanConnectToMediaSource(
       MediaSource(GURL("https://google.com/cast#__castAppId__=233637DE"))));
