@@ -53,7 +53,7 @@ static inline LayoutRubyRun* FindRubyRunParent(LayoutObject* child) {
 
 LayoutRubyAsInline::LayoutRubyAsInline(Element* element)
     : LayoutInline(element) {
-  UseCounter::Count(GetDocument(), UseCounter::kRenderRuby);
+  UseCounter::Count(GetDocument(), WebFeature::kRenderRuby);
 }
 
 LayoutRubyAsInline::~LayoutRubyAsInline() {}
@@ -118,7 +118,7 @@ void LayoutRubyAsInline::RemoveChild(LayoutObject* child) {
 
 LayoutRubyAsBlock::LayoutRubyAsBlock(Element* element)
     : LayoutBlockFlow(element) {
-  UseCounter::Count(GetDocument(), UseCounter::kRenderRuby);
+  UseCounter::Count(GetDocument(), WebFeature::kRenderRuby);
 }
 
 LayoutRubyAsBlock::~LayoutRubyAsBlock() {}

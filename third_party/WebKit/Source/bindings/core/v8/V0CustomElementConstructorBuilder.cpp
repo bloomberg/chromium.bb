@@ -347,7 +347,7 @@ static void ConstructCustomElement(
       StringOrDictionary::fromString(maybe_type->IsNull() ? g_null_atom : type),
       exception_state);
   if (element) {
-    UseCounter::Count(document, UseCounter::kV0CustomElementsConstruct);
+    UseCounter::Count(document, WebFeature::kV0CustomElementsConstruct);
   }
   V8SetReturnValueFast(info, element, document);
 }

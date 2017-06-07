@@ -220,11 +220,11 @@ TextIteratorAlgorithm<Strategy>::~TextIteratorAlgorithm() {
   if (!document)
     return;
   if (behavior_.ForInnerText())
-    UseCounter::Count(document, UseCounter::kInnerTextWithShadowTree);
+    UseCounter::Count(document, WebFeature::kInnerTextWithShadowTree);
   if (behavior_.ForSelectionToString())
-    UseCounter::Count(document, UseCounter::kSelectionToStringWithShadowTree);
+    UseCounter::Count(document, WebFeature::kSelectionToStringWithShadowTree);
   if (behavior_.ForWindowFind())
-    UseCounter::Count(document, UseCounter::kWindowFindWithShadowTree);
+    UseCounter::Count(document, WebFeature::kWindowFindWithShadowTree);
 }
 
 template <typename Strategy>

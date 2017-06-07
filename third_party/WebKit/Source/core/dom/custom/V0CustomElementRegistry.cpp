@@ -112,15 +112,15 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
 
   if (valid_names & V0CustomElement::kEmbedderNames) {
     UseCounter::Count(document,
-                      UseCounter::kV0CustomElementsRegisterEmbedderElement);
+                      WebFeature::kV0CustomElementsRegisterEmbedderElement);
   } else if (tag_name.NamespaceURI() == SVGNames::svgNamespaceURI) {
     UseCounter::Count(document,
-                      UseCounter::kV0CustomElementsRegisterSVGElement);
+                      WebFeature::kV0CustomElementsRegisterSVGElement);
   } else {
     UseCounter::Count(
         document, descriptor.IsTypeExtension()
-                      ? UseCounter::kV0CustomElementsRegisterHTMLTypeExtension
-                      : UseCounter::kV0CustomElementsRegisterHTMLCustomTag);
+                      ? WebFeature::kV0CustomElementsRegisterHTMLTypeExtension
+                      : WebFeature::kV0CustomElementsRegisterHTMLCustomTag);
   }
 
   return definition;

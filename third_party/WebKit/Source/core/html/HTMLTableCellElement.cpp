@@ -50,13 +50,13 @@ unsigned HTMLTableCellElement::colSpan() const {
       !ParseHTMLNonNegativeInteger(col_span_value, value))
     return 1;
   // Counting for https://github.com/whatwg/html/issues/1198
-  UseCounter::Count(GetDocument(), UseCounter::kHTMLTableCellElementColspan);
+  UseCounter::Count(GetDocument(), WebFeature::kHTMLTableCellElementColspan);
   if (value > 8190) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLTableCellElementColspanGreaterThan8190);
+                      WebFeature::kHTMLTableCellElementColspanGreaterThan8190);
   } else if (value > 1000) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLTableCellElementColspanGreaterThan1000);
+                      WebFeature::kHTMLTableCellElementColspanGreaterThan1000);
   }
   return std::max(1u, std::min(value, MaxColSpan()));
 }

@@ -193,7 +193,7 @@ void HTMLBodyElement::ParseAttribute(
                                      EventParameterName()));
   } else if (name == onselectionchangeAttr) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kHTMLBodyElementOnSelectionChangeAttribute);
+                      WebFeature::kHTMLBodyElementOnSelectionChangeAttribute);
     GetDocument().SetAttributeEventListener(
         EventTypeNames::selectionchange,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value,

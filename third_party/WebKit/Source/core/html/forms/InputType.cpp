@@ -872,7 +872,7 @@ void InputType::StepUpFromLayoutObject(int n) {
             IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void InputType::CountUsageIfVisible(UseCounter::Feature feature) const {
+void InputType::CountUsageIfVisible(WebFeature feature) const {
   if (const ComputedStyle* style = GetElement().GetComputedStyle()) {
     if (style->Visibility() != EVisibility::kHidden)
       UseCounter::Count(GetElement().GetDocument(), feature);

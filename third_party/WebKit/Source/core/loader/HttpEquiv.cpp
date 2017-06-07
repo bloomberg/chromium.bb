@@ -91,7 +91,7 @@ void HttpEquiv::ProcessHttpEquivAcceptCH(Document& document,
   if (!document.GetFrame())
     return;
 
-  UseCounter::Count(document, UseCounter::kClientHintsMetaAcceptCH);
+  UseCounter::Count(document, WebFeature::kClientHintsMetaAcceptCH);
   FrameClientHintsPreferencesContext hints_context(document.GetFrame());
   document.GetClientHintsPreferences().UpdateFromAcceptClientHintsHeader(
       content, &hints_context);
@@ -105,12 +105,12 @@ void HttpEquiv::ProcessHttpEquivDefaultStyle(Document& document,
 void HttpEquiv::ProcessHttpEquivRefresh(Document& document,
                                         const AtomicString& content,
                                         Element* element) {
-  UseCounter::Count(document, UseCounter::kMetaRefresh);
+  UseCounter::Count(document, WebFeature::kMetaRefresh);
   if (!document.GetContentSecurityPolicy()->AllowInlineScript(
           element, KURL(), "", OrdinalNumber(), "",
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(document,
-                      UseCounter::kMetaRefreshWhenCSPBlocksInlineScript);
+                      WebFeature::kMetaRefreshWhenCSPBlocksInlineScript);
   }
 
   document.MaybeHandleHttpRefresh(content, Document::kHttpRefreshFromMetaTag);
@@ -124,12 +124,12 @@ void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
   if (!document.IsHTMLDocument())
     return;
 
-  UseCounter::Count(document, UseCounter::kMetaSetCookie);
+  UseCounter::Count(document, WebFeature::kMetaSetCookie);
   if (!document.GetContentSecurityPolicy()->AllowInlineScript(
           element, KURL(), "", OrdinalNumber(), "",
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(document,
-                      UseCounter::kMetaSetCookieWhenCSPBlocksInlineScript);
+                      WebFeature::kMetaSetCookieWhenCSPBlocksInlineScript);
   }
 
   // Exception (for sandboxed documents) ignored.

@@ -748,7 +748,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
             ToCSSIdentifierValue(*value).GetValueID() == CSSValueBlock) {
           UseCounter::Count(
               element->GetDocument(),
-              UseCounter::kSummaryElementWithDisplayBlockAuthorRule);
+              WebFeature::kSummaryElementWithDisplayBlockAuthorRule);
         }
       }
     }

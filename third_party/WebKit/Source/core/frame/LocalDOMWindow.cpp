@@ -696,7 +696,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
           sender, RedirectStatus::kNoRedirect,
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(
-        GetFrame(), UseCounter::kPostMessageIncomingWouldBeBlockedByConnectSrc);
+        GetFrame(), WebFeature::kPostMessageIncomingWouldBeBlockedByConnectSrc);
   }
 
   DispatchEvent(event);
@@ -728,7 +728,7 @@ void LocalDOMWindow::print(ScriptState* script_state) {
 
   if (script_state &&
       v8::MicrotasksScope::IsRunningMicrotasks(script_state->GetIsolate())) {
-    UseCounter::Count(document(), UseCounter::kDuring_Microtask_Print);
+    UseCounter::Count(document(), WebFeature::kDuring_Microtask_Print);
   }
 
   if (GetFrame()->IsLoading()) {
@@ -737,7 +737,7 @@ void LocalDOMWindow::print(ScriptState* script_state) {
   }
 
   UseCounter::CountCrossOriginIframe(*document(),
-                                     UseCounter::kCrossOriginWindowPrint);
+                                     WebFeature::kCrossOriginWindowPrint);
 
   should_print_when_finished_loading_ = false;
   page->GetChromeClient().Print(GetFrame());
@@ -754,7 +754,7 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
     return;
 
   if (document()->IsSandboxed(kSandboxModals)) {
-    UseCounter::Count(document(), UseCounter::kDialogInSandboxedContext);
+    UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
         "Ignored call to 'alert()'. The document is sandboxed, and the "
@@ -764,27 +764,27 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
 
   switch (document()->GetEngagementLevel()) {
     case mojom::blink::EngagementLevel::NONE:
-      UseCounter::Count(document(), UseCounter::kAlertEngagementNone);
+      UseCounter::Count(document(), WebFeature::kAlertEngagementNone);
       break;
     case mojom::blink::EngagementLevel::MINIMAL:
-      UseCounter::Count(document(), UseCounter::kAlertEngagementMinimal);
+      UseCounter::Count(document(), WebFeature::kAlertEngagementMinimal);
       break;
     case mojom::blink::EngagementLevel::LOW:
-      UseCounter::Count(document(), UseCounter::kAlertEngagementLow);
+      UseCounter::Count(document(), WebFeature::kAlertEngagementLow);
       break;
     case mojom::blink::EngagementLevel::MEDIUM:
-      UseCounter::Count(document(), UseCounter::kAlertEngagementMedium);
+      UseCounter::Count(document(), WebFeature::kAlertEngagementMedium);
       break;
     case mojom::blink::EngagementLevel::HIGH:
-      UseCounter::Count(document(), UseCounter::kAlertEngagementHigh);
+      UseCounter::Count(document(), WebFeature::kAlertEngagementHigh);
       break;
     case mojom::blink::EngagementLevel::MAX:
-      UseCounter::Count(document(), UseCounter::kAlertEngagementMax);
+      UseCounter::Count(document(), WebFeature::kAlertEngagementMax);
       break;
   }
 
   if (v8::MicrotasksScope::IsRunningMicrotasks(script_state->GetIsolate())) {
-    UseCounter::Count(document(), UseCounter::kDuring_Microtask_Alert);
+    UseCounter::Count(document(), WebFeature::kDuring_Microtask_Alert);
   }
 
   document()->UpdateStyleAndLayoutTree();
@@ -794,7 +794,7 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
     return;
 
   UseCounter::CountCrossOriginIframe(*document(),
-                                     UseCounter::kCrossOriginWindowAlert);
+                                     WebFeature::kCrossOriginWindowAlert);
 
   page->GetChromeClient().OpenJavaScriptAlert(GetFrame(), message);
 }
@@ -804,7 +804,7 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
     return false;
 
   if (document()->IsSandboxed(kSandboxModals)) {
-    UseCounter::Count(document(), UseCounter::kDialogInSandboxedContext);
+    UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
         "Ignored call to 'confirm()'. The document is sandboxed, and the "
@@ -814,27 +814,27 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
 
   switch (document()->GetEngagementLevel()) {
     case mojom::blink::EngagementLevel::NONE:
-      UseCounter::Count(document(), UseCounter::kConfirmEngagementNone);
+      UseCounter::Count(document(), WebFeature::kConfirmEngagementNone);
       break;
     case mojom::blink::EngagementLevel::MINIMAL:
-      UseCounter::Count(document(), UseCounter::kConfirmEngagementMinimal);
+      UseCounter::Count(document(), WebFeature::kConfirmEngagementMinimal);
       break;
     case mojom::blink::EngagementLevel::LOW:
-      UseCounter::Count(document(), UseCounter::kConfirmEngagementLow);
+      UseCounter::Count(document(), WebFeature::kConfirmEngagementLow);
       break;
     case mojom::blink::EngagementLevel::MEDIUM:
-      UseCounter::Count(document(), UseCounter::kConfirmEngagementMedium);
+      UseCounter::Count(document(), WebFeature::kConfirmEngagementMedium);
       break;
     case mojom::blink::EngagementLevel::HIGH:
-      UseCounter::Count(document(), UseCounter::kConfirmEngagementHigh);
+      UseCounter::Count(document(), WebFeature::kConfirmEngagementHigh);
       break;
     case mojom::blink::EngagementLevel::MAX:
-      UseCounter::Count(document(), UseCounter::kConfirmEngagementMax);
+      UseCounter::Count(document(), WebFeature::kConfirmEngagementMax);
       break;
   }
 
   if (v8::MicrotasksScope::IsRunningMicrotasks(script_state->GetIsolate())) {
-    UseCounter::Count(document(), UseCounter::kDuring_Microtask_Confirm);
+    UseCounter::Count(document(), WebFeature::kDuring_Microtask_Confirm);
   }
 
   document()->UpdateStyleAndLayoutTree();
@@ -844,7 +844,7 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
     return false;
 
   UseCounter::CountCrossOriginIframe(*document(),
-                                     UseCounter::kCrossOriginWindowConfirm);
+                                     WebFeature::kCrossOriginWindowConfirm);
 
   return page->GetChromeClient().OpenJavaScriptConfirm(GetFrame(), message);
 }
@@ -856,7 +856,7 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
     return String();
 
   if (document()->IsSandboxed(kSandboxModals)) {
-    UseCounter::Count(document(), UseCounter::kDialogInSandboxedContext);
+    UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
         "Ignored call to 'prompt()'. The document is sandboxed, and the "
@@ -866,27 +866,27 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
 
   switch (document()->GetEngagementLevel()) {
     case mojom::blink::EngagementLevel::NONE:
-      UseCounter::Count(document(), UseCounter::kPromptEngagementNone);
+      UseCounter::Count(document(), WebFeature::kPromptEngagementNone);
       break;
     case mojom::blink::EngagementLevel::MINIMAL:
-      UseCounter::Count(document(), UseCounter::kPromptEngagementMinimal);
+      UseCounter::Count(document(), WebFeature::kPromptEngagementMinimal);
       break;
     case mojom::blink::EngagementLevel::LOW:
-      UseCounter::Count(document(), UseCounter::kPromptEngagementLow);
+      UseCounter::Count(document(), WebFeature::kPromptEngagementLow);
       break;
     case mojom::blink::EngagementLevel::MEDIUM:
-      UseCounter::Count(document(), UseCounter::kPromptEngagementMedium);
+      UseCounter::Count(document(), WebFeature::kPromptEngagementMedium);
       break;
     case mojom::blink::EngagementLevel::HIGH:
-      UseCounter::Count(document(), UseCounter::kPromptEngagementHigh);
+      UseCounter::Count(document(), WebFeature::kPromptEngagementHigh);
       break;
     case mojom::blink::EngagementLevel::MAX:
-      UseCounter::Count(document(), UseCounter::kPromptEngagementMax);
+      UseCounter::Count(document(), WebFeature::kPromptEngagementMax);
       break;
   }
 
   if (v8::MicrotasksScope::IsRunningMicrotasks(script_state->GetIsolate())) {
-    UseCounter::Count(document(), UseCounter::kDuring_Microtask_Prompt);
+    UseCounter::Count(document(), WebFeature::kDuring_Microtask_Prompt);
   }
 
   document()->UpdateStyleAndLayoutTree();
@@ -901,7 +901,7 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
     return return_value;
 
   UseCounter::CountCrossOriginIframe(*document(),
-                                     UseCounter::kCrossOriginWindowPrompt);
+                                     WebFeature::kCrossOriginWindowPrompt);
 
   return String();
 }
@@ -1436,10 +1436,10 @@ void LocalDOMWindow::AddedEventListener(
   }
 
   if (event_type == EventTypeNames::unload) {
-    UseCounter::Count(document(), UseCounter::kDocumentUnloadRegistered);
+    UseCounter::Count(document(), WebFeature::kDocumentUnloadRegistered);
     AddUnloadEventListener(this);
   } else if (event_type == EventTypeNames::beforeunload) {
-    UseCounter::Count(document(), UseCounter::kDocumentBeforeUnloadRegistered);
+    UseCounter::Count(document(), WebFeature::kDocumentBeforeUnloadRegistered);
     if (AllowsBeforeUnloadListeners(this)) {
       // This is confusingly named. It doesn't actually add the listener. It
       // just increments a count so that we know we have listeners registered
@@ -1449,7 +1449,7 @@ void LocalDOMWindow::AddedEventListener(
     } else {
       // Subframes return false from allowsBeforeUnloadListeners.
       UseCounter::Count(document(),
-                        UseCounter::kSubFrameBeforeUnloadRegistered);
+                        WebFeature::kSubFrameBeforeUnloadRegistered);
     }
   }
 }
@@ -1601,9 +1601,9 @@ DOMWindow* LocalDOMWindow::open(const String& url_string,
   if (!first_frame)
     return nullptr;
 
-  UseCounter::Count(*active_document, UseCounter::kDOMWindowOpen);
+  UseCounter::Count(*active_document, WebFeature::kDOMWindowOpen);
   if (!window_features_string.IsEmpty())
-    UseCounter::Count(*active_document, UseCounter::kDOMWindowOpenFeatures);
+    UseCounter::Count(*active_document, WebFeature::kDOMWindowOpenFeatures);
 
   // Get the target frame for the special cases of _top and _parent.
   // In those cases, we schedule a location change right now and return early.

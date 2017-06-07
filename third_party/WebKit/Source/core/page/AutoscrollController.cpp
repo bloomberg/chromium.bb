@@ -193,7 +193,7 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
     autoscroll_layout_object_ = scrollable;
     drag_and_drop_autoscroll_start_time_ = event_time;
     UseCounter::Count(autoscroll_layout_object_->GetFrame(),
-                      UseCounter::kDragAndDropScrollStart);
+                      WebFeature::kDragAndDropScrollStart);
     StartAutoscroll();
   } else if (autoscroll_layout_object_ != scrollable) {
     drag_and_drop_autoscroll_start_time_ = event_time;
@@ -243,7 +243,7 @@ void AutoscrollController::StartMiddleClickAutoscroll(
   did_latch_for_middle_click_autoscroll_ = false;
 
   UseCounter::Count(autoscroll_layout_object_->GetFrame(),
-                    UseCounter::kMiddleClickAutoscrollStart);
+                    WebFeature::kMiddleClickAutoscrollStart);
   StartAutoscroll();
 }
 

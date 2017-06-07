@@ -64,11 +64,11 @@ static unsigned PrerenderRelTypesFromRelAttribute(
   unsigned result = 0;
   if (rel_attribute.IsLinkPrerender()) {
     result |= kPrerenderRelTypePrerender;
-    UseCounter::Count(document, UseCounter::kLinkRelPrerender);
+    UseCounter::Count(document, WebFeature::kLinkRelPrerender);
   }
   if (rel_attribute.IsLinkNext()) {
     result |= kPrerenderRelTypeNext;
-    UseCounter::Count(document, UseCounter::kLinkRelNext);
+    UseCounter::Count(document, WebFeature::kLinkRelNext);
   }
 
   return result;
@@ -154,9 +154,9 @@ static void DnsPrefetchIfNeeded(
     const NetworkHintsInterface& network_hints_interface,
     LinkCaller caller) {
   if (rel_attribute.IsDNSPrefetch()) {
-    UseCounter::Count(frame, UseCounter::kLinkRelDnsPrefetch);
+    UseCounter::Count(frame, WebFeature::kLinkRelDnsPrefetch);
     if (caller == kLinkCalledFromHeader)
-      UseCounter::Count(frame, UseCounter::kLinkHeaderDnsPrefetch);
+      UseCounter::Count(frame, WebFeature::kLinkHeaderDnsPrefetch);
     Settings* settings = frame ? frame->GetSettings() : nullptr;
     // FIXME: The href attribute of the link element can be in "//hostname"
     // form, and we shouldn't attempt to complete that as URL
@@ -185,9 +185,9 @@ static void PreconnectIfNeeded(
     LinkCaller caller) {
   if (rel_attribute.IsPreconnect() && href.IsValid() &&
       href.ProtocolIsInHTTPFamily()) {
-    UseCounter::Count(frame, UseCounter::kLinkRelPreconnect);
+    UseCounter::Count(frame, WebFeature::kLinkRelPreconnect);
     if (caller == kLinkCalledFromHeader)
-      UseCounter::Count(frame, UseCounter::kLinkHeaderPreconnect);
+      UseCounter::Count(frame, WebFeature::kLinkHeaderPreconnect);
     Settings* settings = frame ? frame->GetSettings() : nullptr;
     if (settings && settings->GetLogDnsPrefetchAndPreconnect()) {
       SendMessageToConsoleForPossiblyNullDocument(
@@ -308,7 +308,7 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
   if (!document.Loader() || !rel_attribute.IsLinkPreload())
     return nullptr;
 
-  UseCounter::Count(document, UseCounter::kLinkRelPreload);
+  UseCounter::Count(document, WebFeature::kLinkRelPreload);
   if (!href.IsValid() || href.IsEmpty()) {
     document.AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kWarningMessageLevel,
@@ -332,7 +332,7 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
       return nullptr;
   }
   if (caller == kLinkCalledFromHeader)
-    UseCounter::Count(document, UseCounter::kLinkHeaderPreload);
+    UseCounter::Count(document, WebFeature::kLinkHeaderPreload);
   Optional<Resource::Type> resource_type =
       LinkLoader::GetResourceTypeFromAsAttribute(as);
   if (resource_type == WTF::nullopt) {
@@ -384,7 +384,7 @@ static Resource* PrefetchIfNeeded(Document& document,
                                   CrossOriginAttributeValue cross_origin,
                                   ReferrerPolicy referrer_policy) {
   if (rel_attribute.IsLinkPrefetch() && href.IsValid() && document.GetFrame()) {
-    UseCounter::Count(document, UseCounter::kLinkRelPrefetch);
+    UseCounter::Count(document, WebFeature::kLinkRelPrefetch);
 
     ResourceRequest resource_request(document.CompleteURL(href));
     if (referrer_policy != kReferrerPolicyDefault) {
@@ -457,7 +457,7 @@ void LinkLoader::LoadLinksFromHeader(
                        kReferrerPolicyDefault);
     }
     if (rel_attribute.IsServiceWorker()) {
-      UseCounter::Count(&frame, UseCounter::kLinkHeaderServiceWorker);
+      UseCounter::Count(&frame, WebFeature::kLinkHeaderServiceWorker);
     }
     // TODO(yoav): Add more supported headers as needed.
   }

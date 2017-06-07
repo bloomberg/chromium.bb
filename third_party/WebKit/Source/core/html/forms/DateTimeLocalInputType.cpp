@@ -53,7 +53,7 @@ InputType* DateTimeLocalInputType::Create(HTMLInputElement& element) {
 }
 
 void DateTimeLocalInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeDateTimeLocal);
+  CountUsageIfVisible(WebFeature::kInputTypeDateTimeLocal);
 }
 
 const AtomicString& DateTimeLocalInputType::FormControlType() const {

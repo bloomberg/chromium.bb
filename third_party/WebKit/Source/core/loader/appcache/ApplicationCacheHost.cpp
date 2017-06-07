@@ -142,14 +142,14 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
   }
   if (document->IsSecureContext()) {
     UseCounter::Count(document,
-                      UseCounter::kApplicationCacheManifestSelectSecureOrigin);
+                      WebFeature::kApplicationCacheManifestSelectSecureOrigin);
     UseCounter::CountCrossOriginIframe(
-        *document, UseCounter::kApplicationCacheManifestSelectSecureOrigin);
+        *document, WebFeature::kApplicationCacheManifestSelectSecureOrigin);
   } else {
     Deprecation::CountDeprecation(
-        document, UseCounter::kApplicationCacheManifestSelectInsecureOrigin);
+        document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
     Deprecation::CountDeprecationCrossOriginIframe(
-        *document, UseCounter::kApplicationCacheManifestSelectInsecureOrigin);
+        *document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
     HostsUsingFeatures::CountAnyWorld(
         *document, HostsUsingFeatures::Feature::
                        kApplicationCacheManifestSelectInsecureHost);

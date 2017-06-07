@@ -821,7 +821,7 @@ void DocumentThreadableLoader::HandleResponse(
 
   if (response.WasFetchedViaServiceWorker()) {
     if (response.WasFetchedViaForeignFetch())
-      loading_context_->RecordUseCount(UseCounter::kForeignFetchInterception);
+      loading_context_->RecordUseCount(WebFeature::kForeignFetchInterception);
     if (response.WasFallbackRequiredByServiceWorker()) {
       // At this point we must have m_fallbackRequestForServiceWorker. (For
       // SharedWorker the request won't be CORS or CORS-with-preflight,

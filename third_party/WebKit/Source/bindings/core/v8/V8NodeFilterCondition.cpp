@@ -74,7 +74,7 @@ unsigned V8NodeFilterCondition::acceptNode(
   v8::Local<v8::Value> receiver;
   if (filter->IsFunction()) {
     UseCounter::Count(CurrentExecutionContext(isolate),
-                      UseCounter::kNodeFilterIsFunction);
+                      WebFeature::kNodeFilterIsFunction);
     callback = v8::Local<v8::Function>::Cast(filter);
     receiver = v8::Undefined(isolate);
   } else {
@@ -89,7 +89,7 @@ unsigned V8NodeFilterCondition::acceptNode(
       return NodeFilter::kFilterReject;
     }
     UseCounter::Count(CurrentExecutionContext(isolate),
-                      UseCounter::kNodeFilterIsObject);
+                      WebFeature::kNodeFilterIsObject);
     callback = v8::Local<v8::Function>::Cast(value);
     receiver = filter;
   }

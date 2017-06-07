@@ -118,7 +118,7 @@ RequestInit::RequestInit(ExecutionContext* context,
   if (is_credential_set) {
     if (V8PasswordCredential::hasInstance(v8_credential, isolate)) {
       Deprecation::CountDeprecation(context,
-                                    UseCounter::kCredentialManagerCustomFetch);
+                                    WebFeature::kCredentialManagerCustomFetch);
       // TODO(mkwst): According to the spec, we'd serialize this once we touch
       // the network. We're serializing it here, ahead of time, because lifetime
       // issues around ResourceRequest make it pretty difficult to pass a

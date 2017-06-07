@@ -39,7 +39,7 @@ InputType* TelephoneInputType::Create(HTMLInputElement& element) {
 }
 
 void TelephoneInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeTel);
+  CountUsageIfVisible(WebFeature::kInputTypeTel);
 }
 
 const AtomicString& TelephoneInputType::FormControlType() const {

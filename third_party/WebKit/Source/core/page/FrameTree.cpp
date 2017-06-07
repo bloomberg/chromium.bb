@@ -57,10 +57,10 @@ const AtomicString& FrameTree::GetName() const {
             : (Top().IsLocalFrame() ? ToLocalFrame(&Top()) : nullptr);
     if (frame) {
       UseCounter::Count(frame,
-                        UseCounter::kCrossOriginMainFrameNulledNameAccessed);
+                        WebFeature::kCrossOriginMainFrameNulledNameAccessed);
       if (!name_.IsEmpty()) {
         UseCounter::Count(
-            frame, UseCounter::kCrossOriginMainFrameNulledNonEmptyNameAccessed);
+            frame, WebFeature::kCrossOriginMainFrameNulledNonEmptyNameAccessed);
       }
     }
   }

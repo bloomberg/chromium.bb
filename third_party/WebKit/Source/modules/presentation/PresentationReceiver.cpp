@@ -116,10 +116,10 @@ void PresentationReceiver::RegisterConnection(
 void PresentationReceiver::RecordOriginTypeAccess(Document* document) const {
   DCHECK(document);
   if (document->IsSecureContext()) {
-    UseCounter::Count(document, UseCounter::kPresentationReceiverSecureOrigin);
+    UseCounter::Count(document, WebFeature::kPresentationReceiverSecureOrigin);
   } else {
     UseCounter::Count(document,
-                      UseCounter::kPresentationReceiverInsecureOrigin);
+                      WebFeature::kPresentationReceiverInsecureOrigin);
   }
 }
 

@@ -107,33 +107,33 @@ INSTANTIATE_TEST_CASE_P(WindowProperties,
 TEST_P(BindingSecurityCounterTest, CrossOriginWindow) {
   LoadWindowAndAccessProperty(OriginDisposition::CrossOrigin, GetParam());
   EXPECT_TRUE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
-      UseCounter::kCrossOriginPropertyAccess));
+      WebFeature::kCrossOriginPropertyAccess));
   EXPECT_TRUE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
-      UseCounter::kCrossOriginPropertyAccessFromOpener));
+      WebFeature::kCrossOriginPropertyAccessFromOpener));
 }
 
 TEST_P(BindingSecurityCounterTest, SameOriginWindow) {
   LoadWindowAndAccessProperty(OriginDisposition::SameOrigin, GetParam());
   EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
-      UseCounter::kCrossOriginPropertyAccess));
+      WebFeature::kCrossOriginPropertyAccess));
   EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
-      UseCounter::kCrossOriginPropertyAccessFromOpener));
+      WebFeature::kCrossOriginPropertyAccessFromOpener));
 }
 
 TEST_P(BindingSecurityCounterTest, CrossOriginFrame) {
   LoadFrameAndAccessProperty(OriginDisposition::CrossOrigin, GetParam());
   EXPECT_TRUE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
-      UseCounter::kCrossOriginPropertyAccess));
+      WebFeature::kCrossOriginPropertyAccess));
   EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
-      UseCounter::kCrossOriginPropertyAccessFromOpener));
+      WebFeature::kCrossOriginPropertyAccessFromOpener));
 }
 
 TEST_P(BindingSecurityCounterTest, SameOriginFrame) {
   LoadFrameAndAccessProperty(OriginDisposition::SameOrigin, GetParam());
   EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
-      UseCounter::kCrossOriginPropertyAccess));
+      WebFeature::kCrossOriginPropertyAccess));
   EXPECT_FALSE(GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
-      UseCounter::kCrossOriginPropertyAccessFromOpener));
+      WebFeature::kCrossOriginPropertyAccessFromOpener));
 }
 
 }  // namespace

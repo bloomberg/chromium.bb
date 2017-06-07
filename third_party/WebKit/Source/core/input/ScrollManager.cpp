@@ -328,9 +328,9 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
   CustomizedScroll(*scroll_gesture_handling_node_.Get(), *scroll_state);
 
   if (gesture_event.source_device == kWebGestureDeviceTouchscreen)
-    UseCounter::Count(frame_->GetDocument(), UseCounter::kScrollByTouch);
+    UseCounter::Count(frame_->GetDocument(), WebFeature::kScrollByTouch);
   else
-    UseCounter::Count(frame_->GetDocument(), UseCounter::kScrollByWheel);
+    UseCounter::Count(frame_->GetDocument(), WebFeature::kScrollByWheel);
 
   return WebInputEventResult::kHandledSystem;
 }

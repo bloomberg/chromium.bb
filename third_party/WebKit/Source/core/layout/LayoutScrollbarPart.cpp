@@ -59,21 +59,21 @@ static void RecordScrollbarPartStats(Document& document, ScrollbarPart part) {
     case kBackButtonEndPart:
     case kForwardButtonEndPart:
       UseCounter::Count(document,
-                        UseCounter::kCSSSelectorPseudoScrollbarButton);
+                        WebFeature::kCSSSelectorPseudoScrollbarButton);
       break;
     case kBackTrackPart:
     case kForwardTrackPart:
       UseCounter::Count(document,
-                        UseCounter::kCSSSelectorPseudoScrollbarTrackPiece);
+                        WebFeature::kCSSSelectorPseudoScrollbarTrackPiece);
       break;
     case kThumbPart:
-      UseCounter::Count(document, UseCounter::kCSSSelectorPseudoScrollbarThumb);
+      UseCounter::Count(document, WebFeature::kCSSSelectorPseudoScrollbarThumb);
       break;
     case kTrackBGPart:
-      UseCounter::Count(document, UseCounter::kCSSSelectorPseudoScrollbarTrack);
+      UseCounter::Count(document, WebFeature::kCSSSelectorPseudoScrollbarTrack);
       break;
     case kScrollbarBGPart:
-      UseCounter::Count(document, UseCounter::kCSSSelectorPseudoScrollbar);
+      UseCounter::Count(document, WebFeature::kCSSSelectorPseudoScrollbar);
       break;
     case kNoPart:
     case kAllParts:

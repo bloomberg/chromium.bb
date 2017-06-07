@@ -18,7 +18,7 @@ CSSValue* CSSPropertyAnimationNameUtils::ConsumeAnimationName(
 
   if (allow_quoted_name && range.Peek().GetType() == kStringToken) {
     // Legacy support for strings in prefixed animations.
-    context->Count(UseCounter::kQuotedAnimationName);
+    context->Count(WebFeature::kQuotedAnimationName);
 
     const CSSParserToken& token = range.ConsumeIncludingWhitespace();
     if (EqualIgnoringASCIICase(token.Value(), "none"))

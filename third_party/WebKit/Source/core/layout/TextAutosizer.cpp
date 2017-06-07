@@ -474,7 +474,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
   }
 
   if (page_info_.has_autosized_)
-    UseCounter::Count(*document_, UseCounter::kTextAutosizing);
+    UseCounter::Count(*document_, WebFeature::kTextAutosizing);
 
   return multiplier;
 }

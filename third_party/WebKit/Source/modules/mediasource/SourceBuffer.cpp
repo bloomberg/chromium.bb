@@ -412,7 +412,7 @@ void SourceBuffer::abort(ExceptionState& exception_state) {
     }
 
     Deprecation::CountDeprecation(source_->MediaElement()->GetDocument(),
-                                  UseCounter::kMediaSourceAbortRemove);
+                                  WebFeature::kMediaSourceAbortRemove);
     CancelRemove();
   }
 

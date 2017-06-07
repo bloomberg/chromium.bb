@@ -228,7 +228,7 @@ class WebLocalFrame : public WebFrame {
   // one of its descendants having processed a user gesture.
   virtual void SetHasReceivedUserGesture() = 0;
 
-  // Reports a list of unique blink::UseCounter::Feature values representing
+  // Reports a list of unique blink::WebFeature values representing
   // Blink features used, performed or encountered by the browser during the
   // current page load happening on the frame.
   virtual void BlinkFeatureUsageReport(const std::set<int>& features) = 0;

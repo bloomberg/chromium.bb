@@ -60,12 +60,12 @@ namespace TestConstantsV8Internal {
 } // namespace TestConstantsV8Internal
 
 void V8TestConstants::DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::kConstant);
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::kConstant);
   V8SetReturnValueInt(info, 1);
 }
 
 void V8TestConstants::MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::kConstant);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::kConstant);
   V8SetReturnValueInt(info, 1);
 }
 

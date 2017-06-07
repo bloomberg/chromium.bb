@@ -134,11 +134,11 @@ bool WorkerFetchContext::IsSVGImageChromeClient() const {
   return false;
 }
 
-void WorkerFetchContext::CountUsage(UseCounter::Feature feature) const {
+void WorkerFetchContext::CountUsage(WebFeature feature) const {
   UseCounter::Count(global_scope_, feature);
 }
 
-void WorkerFetchContext::CountDeprecation(UseCounter::Feature feature) const {
+void WorkerFetchContext::CountDeprecation(WebFeature feature) const {
   Deprecation::CountDeprecation(global_scope_, feature);
 }
 

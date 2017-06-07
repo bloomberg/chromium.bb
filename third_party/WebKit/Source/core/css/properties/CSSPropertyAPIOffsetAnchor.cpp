@@ -22,7 +22,7 @@ const CSSValue* CSSPropertyAPIOffsetAnchor::parseSingleValue(
   if (id == CSSValueAuto)
     return ConsumeIdent(range);
   return ConsumePosition(range, context, UnitlessQuirk::kForbid,
-                         Optional<UseCounter::Feature>());
+                         Optional<WebFeature>());
 }
 
 }  // namespace blink

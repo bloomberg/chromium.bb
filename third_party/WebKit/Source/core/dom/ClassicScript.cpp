@@ -31,15 +31,15 @@ void LogScriptMIMEType(LocalFrame* frame,
       !is_text &&
       mime_type.StartsWith("application/", kTextCaseASCIIInsensitive);
 
-  UseCounter::Feature feature =
+  WebFeature feature =
       is_same_origin
-          ? (is_text ? UseCounter::kSameOriginTextScript
-                     : is_application ? UseCounter::kSameOriginApplicationScript
-                                      : UseCounter::kSameOriginOtherScript)
+          ? (is_text ? WebFeature::kSameOriginTextScript
+                     : is_application ? WebFeature::kSameOriginApplicationScript
+                                      : WebFeature::kSameOriginOtherScript)
           : (is_text
-                 ? UseCounter::kCrossOriginTextScript
-                 : is_application ? UseCounter::kCrossOriginApplicationScript
-                                  : UseCounter::kCrossOriginOtherScript);
+                 ? WebFeature::kCrossOriginTextScript
+                 : is_application ? WebFeature::kCrossOriginApplicationScript
+                                  : WebFeature::kCrossOriginOtherScript);
 
   UseCounter::Count(frame, feature);
 }
@@ -82,13 +82,13 @@ bool ClassicScript::CheckMIMETypeBeforeRunScript(
             "' because its MIME type ('" + mime_type +
             "') is not executable."));
     if (mime_type.StartsWith("image/"))
-      UseCounter::Count(frame, UseCounter::kBlockedSniffingImageToScript);
+      UseCounter::Count(frame, WebFeature::kBlockedSniffingImageToScript);
     else if (mime_type.StartsWith("audio/"))
-      UseCounter::Count(frame, UseCounter::kBlockedSniffingAudioToScript);
+      UseCounter::Count(frame, WebFeature::kBlockedSniffingAudioToScript);
     else if (mime_type.StartsWith("video/"))
-      UseCounter::Count(frame, UseCounter::kBlockedSniffingVideoToScript);
+      UseCounter::Count(frame, WebFeature::kBlockedSniffingVideoToScript);
     else if (mime_type == "text/csv")
-      UseCounter::Count(frame, UseCounter::kBlockedSniffingCSVToScript);
+      UseCounter::Count(frame, WebFeature::kBlockedSniffingCSVToScript);
     return false;
   }
 

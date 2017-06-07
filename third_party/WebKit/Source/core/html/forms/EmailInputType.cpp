@@ -163,14 +163,14 @@ InputType* EmailInputType::Create(HTMLInputElement& element) {
 }
 
 void EmailInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeEmail);
+  CountUsageIfVisible(WebFeature::kInputTypeEmail);
   bool has_max_length = GetElement().FastHasAttribute(HTMLNames::maxlengthAttr);
   if (has_max_length)
-    CountUsageIfVisible(UseCounter::kInputTypeEmailMaxLength);
+    CountUsageIfVisible(WebFeature::kInputTypeEmailMaxLength);
   if (GetElement().Multiple()) {
-    CountUsageIfVisible(UseCounter::kInputTypeEmailMultiple);
+    CountUsageIfVisible(WebFeature::kInputTypeEmailMultiple);
     if (has_max_length)
-      CountUsageIfVisible(UseCounter::kInputTypeEmailMultipleMaxLength);
+      CountUsageIfVisible(WebFeature::kInputTypeEmailMultipleMaxLength);
   }
 }
 

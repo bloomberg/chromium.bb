@@ -288,7 +288,7 @@ DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
 void DOMWebSocket::Connect(const String& url,
                            const Vector<String>& protocols,
                            ExceptionState& exception_state) {
-  UseCounter::Count(GetExecutionContext(), UseCounter::kWebSocket);
+  UseCounter::Count(GetExecutionContext(), WebFeature::kWebSocket);
 
   NETWORK_DVLOG(1) << "WebSocket " << this << " connect() url=" << url;
   url_ = KURL(KURL(), url);
@@ -297,7 +297,7 @@ void DOMWebSocket::Connect(const String& url,
           kUpgradeInsecureRequests &&
       url_.Protocol() == "ws") {
     UseCounter::Count(GetExecutionContext(),
-                      UseCounter::kUpgradeInsecureRequestsUpgradedRequest);
+                      WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
     url_.SetProtocol("wss");
     if (url_.Port() == 80)
       url_.SetPort(443);

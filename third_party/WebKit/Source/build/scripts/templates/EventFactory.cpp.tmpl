@@ -21,7 +21,7 @@ namespace blink {
   if (type == "{{event|script_name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled}}(){% endif %}) {
   {% endif %}
     {% if not event|script_name|create_event_whitelist %}
-    UseCounter::Count(executionContext, UseCounter::k{{event|script_name|measure_name}});
+    UseCounter::Count(executionContext, WebFeature::k{{event|script_name|measure_name}});
     {% endif %}
     return {{event|cpp_name}}::Create();
   }

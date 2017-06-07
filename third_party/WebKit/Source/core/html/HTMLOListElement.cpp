@@ -103,7 +103,7 @@ int HTMLOListElement::start() const {
   if (is_reversed_) {
     UseCounter::Count(
         GetDocument(),
-        UseCounter::kHTMLOListElementStartGetterReversedWithoutStartAttribute);
+        WebFeature::kHTMLOListElementStartGetterReversedWithoutStartAttribute);
     return ItemCount();
   }
 

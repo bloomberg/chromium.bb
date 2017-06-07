@@ -107,7 +107,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
     } else {  // Just shows the deprecation message in M59.
       level = kWarningMessageLevel;
       Deprecation::CountDeprecation(frame,
-                                    UseCounter::kVibrateWithoutUserGesture);
+                                    WebFeature::kVibrateWithoutUserGesture);
     }
 
     if (level == kErrorMessageLevel) {
@@ -125,9 +125,9 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
 void NavigatorVibration::CollectHistogramMetrics(const LocalFrame& frame) {
   NavigatorVibrationType type;
   bool user_gesture = frame.HasReceivedUserGesture();
-  UseCounter::Count(&frame, UseCounter::kNavigatorVibrate);
+  UseCounter::Count(&frame, WebFeature::kNavigatorVibrate);
   if (!frame.IsMainFrame()) {
-    UseCounter::Count(&frame, UseCounter::kNavigatorVibrateSubFrame);
+    UseCounter::Count(&frame, WebFeature::kNavigatorVibrateSubFrame);
     if (frame.IsCrossOriginSubframe()) {
       if (user_gesture)
         type = NavigatorVibrationType::kCrossOriginSubFrameWithUserGesture;
@@ -151,22 +151,22 @@ void NavigatorVibration::CollectHistogramMetrics(const LocalFrame& frame) {
 
   switch (frame.GetDocument()->GetEngagementLevel()) {
     case mojom::blink::EngagementLevel::NONE:
-      UseCounter::Count(&frame, UseCounter::kNavigatorVibrateEngagementNone);
+      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementNone);
       break;
     case mojom::blink::EngagementLevel::MINIMAL:
-      UseCounter::Count(&frame, UseCounter::kNavigatorVibrateEngagementMinimal);
+      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementMinimal);
       break;
     case mojom::blink::EngagementLevel::LOW:
-      UseCounter::Count(&frame, UseCounter::kNavigatorVibrateEngagementLow);
+      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementLow);
       break;
     case mojom::blink::EngagementLevel::MEDIUM:
-      UseCounter::Count(&frame, UseCounter::kNavigatorVibrateEngagementMedium);
+      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementMedium);
       break;
     case mojom::blink::EngagementLevel::HIGH:
-      UseCounter::Count(&frame, UseCounter::kNavigatorVibrateEngagementHigh);
+      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementHigh);
       break;
     case mojom::blink::EngagementLevel::MAX:
-      UseCounter::Count(&frame, UseCounter::kNavigatorVibrateEngagementMax);
+      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementMax);
       break;
   }
 }

@@ -122,7 +122,7 @@ bool NavigatorBeacon::SendBeaconImpl(
     Blob* blob = data.getAsBlob();
     if (!FetchUtils::IsSimpleContentType(AtomicString(blob->type()))) {
       UseCounter::Count(context,
-                        UseCounter::kSendBeaconWithNonSimpleContentType);
+                        WebFeature::kSendBeaconWithNonSimpleContentType);
       if (RuntimeEnabledFeatures::
               SendBeaconThrowForBlobWithNonSimpleTypeEnabled()) {
         exception_state.ThrowSecurityError(
@@ -146,7 +146,7 @@ bool NavigatorBeacon::SendBeaconImpl(
   }
 
   if (!allowed) {
-    UseCounter::Count(context, UseCounter::kSendBeaconQuotaExceeded);
+    UseCounter::Count(context, WebFeature::kSendBeaconQuotaExceeded);
     return false;
   }
 

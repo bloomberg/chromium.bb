@@ -607,7 +607,7 @@ static CSSFunctionValue* ConsumeFilterFunction(
     parsed_value = ParseSingleShadow(args, context->Mode(), false);
   } else {
     if (args.AtEnd()) {
-      context->Count(UseCounter::kCSSFilterFunctionNoArguments);
+      context->Count(WebFeature::kCSSFilterFunctionNoArguments);
       return filter_value;
     }
     if (filter_type == CSSValueBrightness) {
@@ -617,7 +617,7 @@ static CSSFunctionValue* ConsumeFilterFunction(
         parsed_value = ConsumeNumber(args, kValueRangeAll);
     } else if (filter_type == CSSValueHueRotate) {
       parsed_value =
-          ConsumeAngle(args, *context, UseCounter::kUnitlessZeroAngleFilter);
+          ConsumeAngle(args, *context, WebFeature::kUnitlessZeroAngleFilter);
     } else if (filter_type == CSSValueBlur) {
       parsed_value =
           ConsumeLength(args, kHTMLStandardMode, kValueRangeNonNegative);
@@ -687,14 +687,13 @@ static CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
 
 static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
                                      const CSSParserContext& context) {
-  CSSValue* angle =
-      ConsumeAngle(range, context, Optional<UseCounter::Feature>());
+  CSSValue* angle = ConsumeAngle(range, context, Optional<WebFeature>());
   CSSValue* keyword = ConsumeIdent<CSSValueAuto, CSSValueReverse>(range);
   if (!angle && !keyword)
     return nullptr;
 
   if (!angle) {
-    angle = ConsumeAngle(range, context, Optional<UseCounter::Feature>());
+    angle = ConsumeAngle(range, context, Optional<WebFeature>());
   }
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
@@ -744,7 +743,7 @@ static CSSValue* ConsumePerspective(CSSParserTokenRange& range,
     double perspective;
     if (!ConsumeNumberRaw(range, perspective))
       return nullptr;
-    context->Count(UseCounter::kUnitlessPerspectiveInPerspectiveProperty);
+    context->Count(WebFeature::kUnitlessPerspectiveInPerspectiveProperty);
     parsed_value = CSSPrimitiveValue::Create(
         perspective, CSSPrimitiveValue::UnitType::kPixels);
   }
@@ -1525,31 +1524,31 @@ static void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
     return;
   switch (property) {
     case CSSPropertyWebkitAppearance: {
-      UseCounter::Feature feature;
+      WebFeature feature;
       if (value_id == CSSValueNone) {
-        feature = UseCounter::kCSSValueAppearanceNone;
+        feature = WebFeature::kCSSValueAppearanceNone;
       } else {
-        feature = UseCounter::kCSSValueAppearanceNotNone;
+        feature = WebFeature::kCSSValueAppearanceNotNone;
         if (value_id == CSSValueButton)
-          feature = UseCounter::kCSSValueAppearanceButton;
+          feature = WebFeature::kCSSValueAppearanceButton;
         else if (value_id == CSSValueCaret)
-          feature = UseCounter::kCSSValueAppearanceCaret;
+          feature = WebFeature::kCSSValueAppearanceCaret;
         else if (value_id == CSSValueCheckbox)
-          feature = UseCounter::kCSSValueAppearanceCheckbox;
+          feature = WebFeature::kCSSValueAppearanceCheckbox;
         else if (value_id == CSSValueMenulist)
-          feature = UseCounter::kCSSValueAppearanceMenulist;
+          feature = WebFeature::kCSSValueAppearanceMenulist;
         else if (value_id == CSSValueMenulistButton)
-          feature = UseCounter::kCSSValueAppearanceMenulistButton;
+          feature = WebFeature::kCSSValueAppearanceMenulistButton;
         else if (value_id == CSSValueListbox)
-          feature = UseCounter::kCSSValueAppearanceListbox;
+          feature = WebFeature::kCSSValueAppearanceListbox;
         else if (value_id == CSSValueRadio)
-          feature = UseCounter::kCSSValueAppearanceRadio;
+          feature = WebFeature::kCSSValueAppearanceRadio;
         else if (value_id == CSSValueSearchfield)
-          feature = UseCounter::kCSSValueAppearanceSearchField;
+          feature = WebFeature::kCSSValueAppearanceSearchField;
         else if (value_id == CSSValueTextfield)
-          feature = UseCounter::kCSSValueAppearanceTextField;
+          feature = WebFeature::kCSSValueAppearanceTextField;
         else
-          feature = UseCounter::kCSSValueAppearanceOthers;
+          feature = WebFeature::kCSSValueAppearanceOthers;
       }
       context->Count(feature);
       break;
@@ -1558,13 +1557,13 @@ static void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
     case CSSPropertyWebkitUserModify: {
       switch (value_id) {
         case CSSValueReadOnly:
-          context->Count(UseCounter::kCSSValueUserModifyReadOnly);
+          context->Count(WebFeature::kCSSValueUserModifyReadOnly);
           break;
         case CSSValueReadWrite:
-          context->Count(UseCounter::kCSSValueUserModifyReadWrite);
+          context->Count(WebFeature::kCSSValueUserModifyReadWrite);
           break;
         case CSSValueReadWritePlaintextOnly:
-          context->Count(UseCounter::kCSSValueUserModifyReadWritePlaintextOnly);
+          context->Count(WebFeature::kCSSValueUserModifyReadWritePlaintextOnly);
           break;
         default:
           NOTREACHED();
@@ -1628,13 +1627,13 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyScrollSnapDestination:
       // TODO(crbug.com/724912): Retire scroll-snap-destination
       return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
-                             Optional<UseCounter::Feature>());
+                             Optional<WebFeature>());
     case CSSPropertyObjectPosition:
       return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
-                             UseCounter::kThreeValuedPositionObjectPosition);
+                             WebFeature::kThreeValuedPositionObjectPosition);
     case CSSPropertyPerspectiveOrigin:
       return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
-                             UseCounter::kThreeValuedPositionPerspectiveOrigin);
+                             WebFeature::kThreeValuedPositionPerspectiveOrigin);
     case CSSPropertyWebkitHyphenateCharacter:
     case CSSPropertyWebkitLocale:
       return ConsumeLocale(range_);
@@ -2603,7 +2602,7 @@ static bool ConsumeBackgroundPosition(CSSParserTokenRange& range,
     CSSValue* position_x = nullptr;
     CSSValue* position_y = nullptr;
     if (!ConsumePosition(range, *context, unitless,
-                         UseCounter::kThreeValuedPositionBackground, position_x,
+                         WebFeature::kThreeValuedPositionBackground, position_x,
                          position_y))
       return false;
     AddBackgroundValue(result_x, position_x);
@@ -2685,7 +2684,7 @@ bool CSSPropertyParser::ConsumeBackgroundShorthand(
         } else if (property == CSSPropertyBackgroundPositionX ||
                    property == CSSPropertyWebkitMaskPositionX) {
           if (!ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
-                               UseCounter::kThreeValuedPositionBackground,
+                               WebFeature::kThreeValuedPositionBackground,
                                value, value_y))
             continue;
         } else if (property == CSSPropertyBackgroundSize ||

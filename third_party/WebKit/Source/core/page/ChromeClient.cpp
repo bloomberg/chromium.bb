@@ -219,7 +219,7 @@ bool ChromeClient::Print(LocalFrame* frame) {
   }
 
   if (frame->GetDocument()->IsSandboxed(kSandboxModals)) {
-    UseCounter::Count(frame, UseCounter::kDialogInSandboxedContext);
+    UseCounter::Count(frame, WebFeature::kDialogInSandboxedContext);
     frame->Console().AddMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
         "Ignored call to 'print()'. The document is sandboxed, and the "

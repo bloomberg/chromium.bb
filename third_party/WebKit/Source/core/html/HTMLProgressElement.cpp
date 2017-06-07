@@ -39,7 +39,7 @@ const double HTMLProgressElement::kInvalidPosition = -2;
 
 HTMLProgressElement::HTMLProgressElement(Document& document)
     : LabelableElement(progressTag, document), value_(nullptr) {
-  UseCounter::Count(document, UseCounter::kProgressElement);
+  UseCounter::Count(document, WebFeature::kProgressElement);
 }
 
 HTMLProgressElement::~HTMLProgressElement() {}
@@ -54,11 +54,11 @@ LayoutObject* HTMLProgressElement::CreateLayoutObject(
     const ComputedStyle& style) {
   if (!style.HasAppearance()) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kProgressElementWithNoneAppearance);
+                      WebFeature::kProgressElementWithNoneAppearance);
     return LayoutObject::CreateObject(this, style);
   }
   UseCounter::Count(GetDocument(),
-                    UseCounter::kProgressElementWithProgressBarAppearance);
+                    WebFeature::kProgressElementWithProgressBarAppearance);
   return new LayoutProgress(this);
 }
 

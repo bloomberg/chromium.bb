@@ -238,10 +238,10 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
         // for easing. See http://crbug.com/601672
         if (string == "function (a){return a}") {
           UseCounter::Count(*document,
-                            UseCounter::kWebAnimationsEasingAsFunctionLinear);
+                            WebFeature::kWebAnimationsEasingAsFunctionLinear);
         } else {
           UseCounter::Count(*document,
-                            UseCounter::kWebAnimationsEasingAsFunctionOther);
+                            WebFeature::kWebAnimationsEasingAsFunctionOther);
         }
       }
     }

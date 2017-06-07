@@ -705,7 +705,7 @@ StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
   if (name_token.GetType() == kIdentToken) {
     name = name_token.Value().ToString();
   } else if (name_token.GetType() == kStringToken && webkit_prefixed) {
-    context_->Count(UseCounter::kQuotedKeyframesRule);
+    context_->Count(WebFeature::kQuotedKeyframesRule);
     name = name_token.Value().ToString();
   } else {
     return nullptr;  // Parse error; expected ident token in @keyframes header

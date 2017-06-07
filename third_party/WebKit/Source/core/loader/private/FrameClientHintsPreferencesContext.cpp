@@ -13,19 +13,19 @@ FrameClientHintsPreferencesContext::FrameClientHintsPreferencesContext(
     : frame_(frame) {}
 
 void FrameClientHintsPreferencesContext::CountClientHintsDeviceRAM() {
-  UseCounter::Count(frame_, UseCounter::kClientHintsDeviceRAM);
+  UseCounter::Count(frame_, WebFeature::kClientHintsDeviceRAM);
 }
 
 void FrameClientHintsPreferencesContext::CountClientHintsDPR() {
-  UseCounter::Count(frame_, UseCounter::kClientHintsDPR);
+  UseCounter::Count(frame_, WebFeature::kClientHintsDPR);
 }
 
 void FrameClientHintsPreferencesContext::CountClientHintsResourceWidth() {
-  UseCounter::Count(frame_, UseCounter::kClientHintsResourceWidth);
+  UseCounter::Count(frame_, WebFeature::kClientHintsResourceWidth);
 }
 
 void FrameClientHintsPreferencesContext::CountClientHintsViewportWidth() {
-  UseCounter::Count(frame_, UseCounter::kClientHintsViewportWidth);
+  UseCounter::Count(frame_, WebFeature::kClientHintsViewportWidth);
 }
 
 }  // namespace blink

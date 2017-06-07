@@ -80,7 +80,7 @@ void HTMLImportChild::DidFinishLoading() {
   StateWillChange();
   if (GetDocument() && GetDocument()->GetStyleEngine().HasStyleSheets()) {
     UseCounter::Count(Root()->GetDocument(),
-                      UseCounter::kHTMLImportsHasStyleSheets);
+                      WebFeature::kHTMLImportsHasStyleSheets);
   }
   V0CustomElement::DidFinishLoadingImport(*(Root()->GetDocument()));
 }

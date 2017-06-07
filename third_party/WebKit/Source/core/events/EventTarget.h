@@ -215,7 +215,7 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
   // event type matches.
   bool CheckTypeThenUseCount(const Event*,
                              const AtomicString&,
-                             const UseCounter::Feature);
+                             const WebFeature);
 
   bool FireEventListeners(Event*, EventTargetData*, EventListenerVector&);
   void CountLegacyEvents(const AtomicString& legacy_type_name,

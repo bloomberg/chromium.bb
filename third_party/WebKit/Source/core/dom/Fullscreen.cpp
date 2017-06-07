@@ -98,7 +98,7 @@ bool AllowedToRequestFullscreen(Document& document) {
   //  The algorithm is triggered by a user generated orientation change.
   if (ScopedOrientationChangeIndicator::ProcessingOrientationChange()) {
     UseCounter::Count(document,
-                      UseCounter::kFullscreenAllowedByOrientationChange);
+                      WebFeature::kFullscreenAllowedByOrientationChange);
     return true;
   }
 
@@ -278,7 +278,7 @@ Element* Fullscreen::FullscreenElementForBindingFrom(TreeScope& scope) {
     // shadow tree, even though it leaks the Shadow DOM.
     if (element->IsInV0ShadowTree()) {
       UseCounter::Count(scope.GetDocument(),
-                        UseCounter::kDocumentFullscreenElementInV0Shadow);
+                        WebFeature::kDocumentFullscreenElementInV0Shadow);
       return element;
     }
   } else if (!ToShadowRoot(scope.RootNode()).IsV1()) {
@@ -303,7 +303,7 @@ Element* Fullscreen::CurrentFullScreenElementForBindingFrom(
   // tree, even though it leaks the Shadow DOM.
   if (element->IsInV0ShadowTree()) {
     UseCounter::Count(document,
-                      UseCounter::kDocumentFullscreenElementInV0Shadow);
+                      WebFeature::kDocumentFullscreenElementInV0Shadow);
     return element;
   }
   return document.AdjustedElement(*element);
@@ -364,9 +364,9 @@ void Fullscreen::RequestFullscreen(Element& element,
   // fullscreen element.
   if (!for_cross_process_descendant) {
     if (document.IsSecureContext()) {
-      UseCounter::Count(document, UseCounter::kFullscreenSecureOrigin);
+      UseCounter::Count(document, WebFeature::kFullscreenSecureOrigin);
     } else {
-      UseCounter::Count(document, UseCounter::kFullscreenInsecureOrigin);
+      UseCounter::Count(document, WebFeature::kFullscreenInsecureOrigin);
       HostsUsingFeatures::CountAnyWorld(
           document, HostsUsingFeatures::Feature::kFullscreenInsecureHost);
     }
@@ -399,10 +399,10 @@ void Fullscreen::RequestFullscreen(Element& element,
     // are good candidates. See https://github.com/whatwg/fullscreen/pull/91
     if (isHTMLDialogElement(element)) {
       UseCounter::Count(document,
-                        UseCounter::kRequestFullscreenForDialogElement);
+                        WebFeature::kRequestFullscreenForDialogElement);
       if (element.IsInTopLayer()) {
         UseCounter::Count(
-            document, UseCounter::kRequestFullscreenForDialogElementInTopLayer);
+            document, WebFeature::kRequestFullscreenForDialogElementInTopLayer);
       }
     }
 
@@ -484,7 +484,7 @@ void Fullscreen::RequestFullscreen(Element& element,
     // 6. Optionally, perform some animation.
     if (From(document).pending_fullscreen_element_) {
       UseCounter::Count(document,
-                        UseCounter::kFullscreenRequestWithPendingElement);
+                        WebFeature::kFullscreenRequestWithPendingElement);
     }
     From(document).pending_fullscreen_element_ = &element;
     document.GetFrame()->GetChromeClient().EnterFullscreen(

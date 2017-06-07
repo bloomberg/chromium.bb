@@ -38,7 +38,7 @@ AudioContext* AudioContext::Create(Document& document,
   DCHECK(IsMainThread());
 
   UseCounter::CountCrossOriginIframe(
-      document, UseCounter::kAudioContextCrossOriginIframe);
+      document, WebFeature::kAudioContextCrossOriginIframe);
 
   if (g_hardware_context_count >= kMaxHardwareContexts) {
     exception_state.ThrowDOMException(

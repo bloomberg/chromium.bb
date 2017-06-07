@@ -79,10 +79,10 @@ class SharedWorkerConnectListener final
       case kWebWorkerCreationErrorNone:
         return;
       case kWebWorkerCreationErrorSecureContextMismatch:
-        UseCounter::Feature feature =
+        WebFeature feature =
             is_secure_context
-                ? UseCounter::kNonSecureSharedWorkerAccessedFromSecureContext
-                : UseCounter::kSecureSharedWorkerAccessedFromNonSecureContext;
+                ? WebFeature::kNonSecureSharedWorkerAccessedFromSecureContext
+                : WebFeature::kSecureSharedWorkerAccessedFromNonSecureContext;
         UseCounter::Count(document, feature);
         return;
     }
@@ -97,7 +97,7 @@ class SharedWorkerConnectListener final
 
   void CountFeature(uint32_t feature) override {
     UseCounter::Count(worker_->GetExecutionContext(),
-                      static_cast<UseCounter::Feature>(feature));
+                      static_cast<WebFeature>(feature));
   }
 
   Persistent<SharedWorker> worker_;

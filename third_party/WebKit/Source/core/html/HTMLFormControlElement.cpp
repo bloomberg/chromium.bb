@@ -154,7 +154,7 @@ void HTMLFormControlElement::ParseAttribute(
   const QualifiedName& name = params.name;
   if (name == formAttr) {
     FormAttributeChanged();
-    UseCounter::Count(GetDocument(), UseCounter::kFormAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kFormAttribute);
   } else if (name == readonlyAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull()) {
       SetNeedsWillValidateCheck();
@@ -167,10 +167,10 @@ void HTMLFormControlElement::ParseAttribute(
   } else if (name == requiredAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull())
       RequiredAttributeChanged();
-    UseCounter::Count(GetDocument(), UseCounter::kRequiredAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kRequiredAttribute);
   } else if (name == autofocusAttr) {
     HTMLElement::ParseAttribute(params);
-    UseCounter::Count(GetDocument(), UseCounter::kAutoFocusAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kAutoFocusAttribute);
   } else {
     HTMLElement::ParseAttribute(params);
   }

@@ -51,7 +51,7 @@ void HTMLPictureElement::AddListenerToSourceChildren() {
 
 Node::InsertionNotificationRequest HTMLPictureElement::InsertedInto(
     ContainerNode* insertion_point) {
-  UseCounter::Count(GetDocument(), UseCounter::kPicture);
+  UseCounter::Count(GetDocument(), WebFeature::kPicture);
   return HTMLElement::InsertedInto(insertion_point);
 }
 

@@ -59,7 +59,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
     if (!url.IsEmpty()) {
       UseCounter::Count(
           GetDocument(),
-          UseCounter::kHTMLTableElementPresentationAttributeBackground);
+          WebFeature::kHTMLTableElementPresentationAttributeBackground);
       CSSImageValue* image_value =
           CSSImageValue::Create(url, GetDocument().CompleteURL(url),
                                 Referrer(GetDocument().OutgoingReferrer(),

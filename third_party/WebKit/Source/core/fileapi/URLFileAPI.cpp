@@ -31,7 +31,7 @@ String URLFileAPI::createObjectURL(ScriptState* script_state,
     return String();
   }
 
-  UseCounter::Count(execution_context, UseCounter::kCreateObjectURLBlob);
+  UseCounter::Count(execution_context, WebFeature::kCreateObjectURLBlob);
   return DOMURL::CreatePublicURL(execution_context, blob, blob->Uuid());
 }
 

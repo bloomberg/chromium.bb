@@ -108,7 +108,7 @@ void FormData::append(ScriptState* script_state,
                       const String& filename) {
   if (!blob) {
     UseCounter::Count(ExecutionContext::From(script_state),
-                      UseCounter::kFormDataAppendNull);
+                      WebFeature::kFormDataAppendNull);
   }
   append(name, blob, filename);
 }

@@ -199,8 +199,8 @@ void EventTarget::SetDefaultAddEventListenerOptions(
     if (options.hasPassive()) {
       UseCounter::Count(executing_window->document(),
                         options.passive()
-                            ? UseCounter::kAddEventListenerPassiveTrue
-                            : UseCounter::kAddEventListenerPassiveFalse);
+                            ? WebFeature::kAddEventListenerPassiveTrue
+                            : WebFeature::kAddEventListenerPassiveFalse);
     }
   }
 
@@ -240,7 +240,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
         options.setPassive(true);
         if (executing_window) {
           UseCounter::Count(executing_window->document(),
-                            UseCounter::kSmoothScrollJSInterventionActivated);
+                            WebFeature::kSmoothScrollJSInterventionActivated);
         }
         return;
       }
@@ -345,22 +345,22 @@ void EventTarget::AddedEventListener(
   if (event_type == EventTypeNames::auxclick) {
     if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
       UseCounter::Count(executing_window->document(),
-                        UseCounter::kAuxclickAddListenerCount);
+                        WebFeature::kAuxclickAddListenerCount);
     }
   } else if (event_type == EventTypeNames::appinstalled) {
     if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
       UseCounter::Count(executing_window->document(),
-                        UseCounter::kAppInstalledEventAddListener);
+                        WebFeature::kAppInstalledEventAddListener);
     }
   } else if (EventUtil::IsPointerEventType(event_type)) {
     if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
       UseCounter::Count(executing_window->document(),
-                        UseCounter::kPointerEventAddListenerCount);
+                        WebFeature::kPointerEventAddListenerCount);
     }
   } else if (event_type == EventTypeNames::slotchange) {
     if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
       UseCounter::Count(executing_window->document(),
-                        UseCounter::kSlotChangeEventAddListener);
+                        WebFeature::kSlotChangeEventAddListener);
     }
   } else if (EventUtil::IsDOMMutationEventType(event_type)) {
     if (ExecutionContext* context = GetExecutionContext()) {
@@ -543,33 +543,33 @@ void EventTarget::CountLegacyEvents(
     const AtomicString& legacy_type_name,
     EventListenerVector* listeners_vector,
     EventListenerVector* legacy_listeners_vector) {
-  UseCounter::Feature unprefixed_feature;
-  UseCounter::Feature prefixed_feature;
-  UseCounter::Feature prefixed_and_unprefixed_feature;
+  WebFeature unprefixed_feature;
+  WebFeature prefixed_feature;
+  WebFeature prefixed_and_unprefixed_feature;
   if (legacy_type_name == EventTypeNames::webkitTransitionEnd) {
-    prefixed_feature = UseCounter::kPrefixedTransitionEndEvent;
-    unprefixed_feature = UseCounter::kUnprefixedTransitionEndEvent;
+    prefixed_feature = WebFeature::kPrefixedTransitionEndEvent;
+    unprefixed_feature = WebFeature::kUnprefixedTransitionEndEvent;
     prefixed_and_unprefixed_feature =
-        UseCounter::kPrefixedAndUnprefixedTransitionEndEvent;
+        WebFeature::kPrefixedAndUnprefixedTransitionEndEvent;
   } else if (legacy_type_name == EventTypeNames::webkitAnimationEnd) {
-    prefixed_feature = UseCounter::kPrefixedAnimationEndEvent;
-    unprefixed_feature = UseCounter::kUnprefixedAnimationEndEvent;
+    prefixed_feature = WebFeature::kPrefixedAnimationEndEvent;
+    unprefixed_feature = WebFeature::kUnprefixedAnimationEndEvent;
     prefixed_and_unprefixed_feature =
-        UseCounter::kPrefixedAndUnprefixedAnimationEndEvent;
+        WebFeature::kPrefixedAndUnprefixedAnimationEndEvent;
   } else if (legacy_type_name == EventTypeNames::webkitAnimationStart) {
-    prefixed_feature = UseCounter::kPrefixedAnimationStartEvent;
-    unprefixed_feature = UseCounter::kUnprefixedAnimationStartEvent;
+    prefixed_feature = WebFeature::kPrefixedAnimationStartEvent;
+    unprefixed_feature = WebFeature::kUnprefixedAnimationStartEvent;
     prefixed_and_unprefixed_feature =
-        UseCounter::kPrefixedAndUnprefixedAnimationStartEvent;
+        WebFeature::kPrefixedAndUnprefixedAnimationStartEvent;
   } else if (legacy_type_name == EventTypeNames::webkitAnimationIteration) {
-    prefixed_feature = UseCounter::kPrefixedAnimationIterationEvent;
-    unprefixed_feature = UseCounter::kUnprefixedAnimationIterationEvent;
+    prefixed_feature = WebFeature::kPrefixedAnimationIterationEvent;
+    unprefixed_feature = WebFeature::kUnprefixedAnimationIterationEvent;
     prefixed_and_unprefixed_feature =
-        UseCounter::kPrefixedAndUnprefixedAnimationIterationEvent;
+        WebFeature::kPrefixedAndUnprefixedAnimationIterationEvent;
   } else if (legacy_type_name == EventTypeNames::mousewheel) {
-    prefixed_feature = UseCounter::kMouseWheelEvent;
-    unprefixed_feature = UseCounter::kWheelEvent;
-    prefixed_and_unprefixed_feature = UseCounter::kMouseWheelAndWheelEvent;
+    prefixed_feature = WebFeature::kMouseWheelEvent;
+    unprefixed_feature = WebFeature::kWheelEvent;
+    prefixed_and_unprefixed_feature = WebFeature::kMouseWheelAndWheelEvent;
   } else {
     return;
   }
@@ -631,7 +631,7 @@ DispatchEventResult EventTarget::FireEventListeners(Event* event) {
 
 bool EventTarget::CheckTypeThenUseCount(const Event* event,
                                         const AtomicString& event_type_to_count,
-                                        const UseCounter::Feature feature) {
+                                        const WebFeature feature) {
   if (event->type() == event_type_to_count) {
     if (LocalDOMWindow* executing_window = this->ExecutingWindow())
       UseCounter::Count(executing_window->document(), feature);
@@ -650,46 +650,46 @@ bool EventTarget::FireEventListeners(Event* event,
   // excludes new event listeners.
 
   if (CheckTypeThenUseCount(event, EventTypeNames::beforeunload,
-                            UseCounter::kDocumentBeforeUnloadFired)) {
+                            WebFeature::kDocumentBeforeUnloadFired)) {
     if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
       if (executing_window != executing_window->top()) {
         UseCounter::Count(executing_window->document(),
-                          UseCounter::kSubFrameBeforeUnloadFired);
+                          WebFeature::kSubFrameBeforeUnloadFired);
       }
     }
   } else if (CheckTypeThenUseCount(event, EventTypeNames::unload,
-                                   UseCounter::kDocumentUnloadFired)) {
+                                   WebFeature::kDocumentUnloadFired)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusIn,
-                                   UseCounter::kDOMFocusInOutEvent)) {
+                                   WebFeature::kDOMFocusInOutEvent)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusOut,
-                                   UseCounter::kDOMFocusInOutEvent)) {
+                                   WebFeature::kDOMFocusInOutEvent)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::focusin,
-                                   UseCounter::kFocusInOutEvent)) {
+                                   WebFeature::kFocusInOutEvent)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::focusout,
-                                   UseCounter::kFocusInOutEvent)) {
+                                   WebFeature::kFocusInOutEvent)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::textInput,
-                                   UseCounter::kTextInputFired)) {
+                                   WebFeature::kTextInputFired)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::touchstart,
-                                   UseCounter::kTouchStartFired)) {
+                                   WebFeature::kTouchStartFired)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::mousedown,
-                                   UseCounter::kMouseDownFired)) {
+                                   WebFeature::kMouseDownFired)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerdown,
-                                   UseCounter::kPointerDownFired)) {
+                                   WebFeature::kPointerDownFired)) {
     if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
       if (event->IsPointerEvent() &&
           static_cast<PointerEvent*>(event)->pointerType() == "touch") {
         UseCounter::Count(executing_window->document(),
-                          UseCounter::kPointerDownFiredForTouch);
+                          WebFeature::kPointerDownFiredForTouch);
       }
     }
   } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerenter,
-                                   UseCounter::kPointerEnterLeaveFired)) {
+                                   WebFeature::kPointerEnterLeaveFired)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerleave,
-                                   UseCounter::kPointerEnterLeaveFired)) {
+                                   WebFeature::kPointerEnterLeaveFired)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerover,
-                                   UseCounter::kPointerOverOutFired)) {
+                                   WebFeature::kPointerOverOutFired)) {
   } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerout,
-                                   UseCounter::kPointerOverOutFired)) {
+                                   WebFeature::kPointerOverOutFired)) {
   }
 
   ExecutionContext* context = GetExecutionContext();

@@ -42,14 +42,14 @@ InputType* TextInputType::Create(HTMLInputElement& element) {
 }
 
 void TextInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeText);
+  CountUsageIfVisible(WebFeature::kInputTypeText);
   if (GetElement().FastHasAttribute(maxlengthAttr))
-    CountUsageIfVisible(UseCounter::kInputTypeTextMaxLength);
+    CountUsageIfVisible(WebFeature::kInputTypeTextMaxLength);
   const AtomicString& type = GetElement().FastGetAttribute(typeAttr);
   if (DeprecatedEqualIgnoringCase(type, InputTypeNames::datetime))
-    CountUsageIfVisible(UseCounter::kInputTypeDateTimeFallback);
+    CountUsageIfVisible(WebFeature::kInputTypeDateTimeFallback);
   else if (DeprecatedEqualIgnoringCase(type, InputTypeNames::week))
-    CountUsageIfVisible(UseCounter::kInputTypeWeekFallback);
+    CountUsageIfVisible(WebFeature::kInputTypeWeekFallback);
 }
 
 const AtomicString& TextInputType::FormControlType() const {

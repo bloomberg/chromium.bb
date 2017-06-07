@@ -69,7 +69,7 @@ bool MediaControlDownloadButtonElement::ShouldDisplayDownloadButton() {
   // The attribute disables the download button.
   if (MediaElement().ControlsListInternal()->ShouldHideDownload()) {
     UseCounter::Count(MediaElement().GetDocument(),
-                      UseCounter::kHTMLMediaElementControlsListNoDownload);
+                      WebFeature::kHTMLMediaElementControlsListNoDownload);
     return false;
   }
 

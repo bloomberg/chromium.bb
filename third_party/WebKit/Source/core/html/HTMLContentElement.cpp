@@ -52,7 +52,7 @@ inline HTMLContentElement::HTMLContentElement(Document& document,
       should_parse_select_(false),
       is_valid_selector_(true),
       filter_(filter) {
-  UseCounter::Count(document, UseCounter::kHTMLContentElement);
+  UseCounter::Count(document, WebFeature::kHTMLContentElement);
 }
 
 HTMLContentElement::~HTMLContentElement() {}

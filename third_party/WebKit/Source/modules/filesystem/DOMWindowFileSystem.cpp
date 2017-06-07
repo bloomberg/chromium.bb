@@ -56,7 +56,7 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
 
   if (SchemeRegistry::SchemeShouldBypassContentSecurityPolicy(
           document->GetSecurityOrigin()->Protocol()))
-    UseCounter::Count(document, UseCounter::kRequestFileSystemNonWebbyOrigin);
+    UseCounter::Count(document, WebFeature::kRequestFileSystemNonWebbyOrigin);
 
   if (!document->GetSecurityOrigin()->CanAccessFileSystem()) {
     DOMFileSystem::ReportError(document,

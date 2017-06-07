@@ -43,7 +43,7 @@ class CORE_EXPORT ThreadableLoadingContext
   virtual KURL FirstPartyForCookies() const = 0;
   virtual String UserAgent() const = 0;
   virtual RefPtr<WebTaskRunner> GetTaskRunner(TaskType) = 0;
-  virtual void RecordUseCount(UseCounter::Feature) = 0;
+  virtual void RecordUseCount(WebFeature) = 0;
 
   // TODO(kinuko): Try getting rid of dependency to Document.
   virtual Document* GetLoadingDocument() { return nullptr; }

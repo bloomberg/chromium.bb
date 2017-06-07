@@ -48,9 +48,9 @@ const CSSValue* CSSPropertyAPICursor::parseSingleValue(
   CSSValueID id = range.Peek().Id();
   if (!range.AtEnd()) {
     if (id == CSSValueWebkitZoomIn)
-      context.Count(UseCounter::kPrefixedCursorZoomIn);
+      context.Count(WebFeature::kPrefixedCursorZoomIn);
     else if (id == CSSValueWebkitZoomOut)
-      context.Count(UseCounter::kPrefixedCursorZoomOut);
+      context.Count(WebFeature::kPrefixedCursorZoomOut);
   }
   CSSValue* cursor_type = nullptr;
   if (id == CSSValueHand) {

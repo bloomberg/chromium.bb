@@ -111,7 +111,7 @@ class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
     DCHECK(credential->IsPasswordCredential() ||
            credential->IsFederatedCredential());
     UseCounter::Count(ExecutionContext::From(resolver_->GetScriptState()),
-                      UseCounter::kCredentialManagerGetReturnedCredential);
+                      WebFeature::kCredentialManagerGetReturnedCredential);
     if (credential->IsPasswordCredential())
       resolver_->Resolve(PasswordCredential::Create(
           static_cast<WebPasswordCredential*>(credential.get())));
@@ -183,7 +183,7 @@ ScriptPromise CredentialsContainer::get(
     mediation = options.unmediated() ? "silent" : "optional";
     UseCounter::Count(
         context,
-        UseCounter::kCredentialManagerCredentialRequestOptionsOnlyUnmediated);
+        WebFeature::kCredentialManagerCredentialRequestOptionsOnlyUnmediated);
   } else if (options.hasMediation()) {
     mediation = options.mediation();
     if (options.hasUnmediated() &&
@@ -209,16 +209,16 @@ ScriptPromise CredentialsContainer::get(
 
   if (mediation == "silent") {
     UseCounter::Count(context,
-                      UseCounter::kCredentialManagerGetMediationSilent);
+                      WebFeature::kCredentialManagerGetMediationSilent);
     requirement = WebCredentialMediationRequirement::kSilent;
   } else if (mediation == "optional") {
     UseCounter::Count(context,
-                      UseCounter::kCredentialManagerGetMediationOptional);
+                      WebFeature::kCredentialManagerGetMediationOptional);
     requirement = WebCredentialMediationRequirement::kOptional;
   } else {
     DCHECK_EQ("required", mediation);
     UseCounter::Count(context,
-                      UseCounter::kCredentialManagerGetMediationRequired);
+                      WebFeature::kCredentialManagerGetMediationRequired);
     requirement = WebCredentialMediationRequirement::kRequired;
   }
 

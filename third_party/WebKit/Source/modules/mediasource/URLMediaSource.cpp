@@ -47,7 +47,7 @@ String URLMediaSource::createObjectURL(ScriptState* script_state,
   DCHECK(execution_context);
   DCHECK(source);
 
-  UseCounter::Count(execution_context, UseCounter::kCreateObjectURLMediaSource);
+  UseCounter::Count(execution_context, WebFeature::kCreateObjectURLMediaSource);
   return DOMURL::CreatePublicURL(execution_context, source);
 }
 

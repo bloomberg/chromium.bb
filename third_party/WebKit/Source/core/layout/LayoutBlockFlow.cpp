@@ -4392,7 +4392,7 @@ LayoutMultiColumnFlowThread* LayoutBlockFlow::CreateMultiColumnFlowThread(
                                                           StyleRef());
     case kPagedFlowThread:
       // Paged overflow is currently done using the multicol implementation.
-      UseCounter::Count(GetDocument(), UseCounter::kCSSOverflowPaged);
+      UseCounter::Count(GetDocument(), WebFeature::kCSSOverflowPaged);
       return LayoutPagedFlowThread::CreateAnonymous(GetDocument(), StyleRef());
     default:
       NOTREACHED();

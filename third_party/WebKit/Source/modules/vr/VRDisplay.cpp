@@ -226,10 +226,10 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
                                         const HeapVector<VRLayer>& layers) {
   DVLOG(1) << __FUNCTION__;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  UseCounter::Count(execution_context, UseCounter::kVRRequestPresent);
+  UseCounter::Count(execution_context, WebFeature::kVRRequestPresent);
   if (!execution_context->IsSecureContext()) {
     UseCounter::Count(execution_context,
-                      UseCounter::kVRRequestPresentInsecureOrigin);
+                      WebFeature::kVRRequestPresentInsecureOrigin);
   }
 
   ReportPresentationResult(PresentationResult::kRequested);

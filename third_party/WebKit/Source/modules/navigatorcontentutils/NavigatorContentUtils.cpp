@@ -158,8 +158,8 @@ void NavigatorContentUtils::registerProtocolHandler(
   // Count usage; perhaps we can lock this to secure contexts.
   UseCounter::Count(*document,
                     document->IsSecureContext()
-                        ? UseCounter::kRegisterProtocolHandlerSecureOrigin
-                        : UseCounter::kRegisterProtocolHandlerInsecureOrigin);
+                        ? WebFeature::kRegisterProtocolHandlerSecureOrigin
+                        : WebFeature::kRegisterProtocolHandlerInsecureOrigin);
 
   NavigatorContentUtils::From(navigator)->Client()->RegisterProtocolHandler(
       scheme, document->CompleteURL(url), title);

@@ -534,7 +534,7 @@ void StringifyAndParseMethodSpecificData(
     if (supported_methods.Contains(kBasicCardNetworks[i].name)) {
       Deprecation::CountDeprecation(
           &execution_context,
-          UseCounter::kPaymentRequestNetworkNameInSupportedMethods);
+          WebFeature::kPaymentRequestNetworkNameInSupportedMethods);
       break;
     }
   }

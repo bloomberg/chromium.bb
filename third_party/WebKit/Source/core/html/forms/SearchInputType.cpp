@@ -57,7 +57,7 @@ InputType* SearchInputType::Create(HTMLInputElement& element) {
 }
 
 void SearchInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeSearch);
+  CountUsageIfVisible(WebFeature::kInputTypeSearch);
 }
 
 LayoutObject* SearchInputType::CreateLayoutObject(const ComputedStyle&) const {

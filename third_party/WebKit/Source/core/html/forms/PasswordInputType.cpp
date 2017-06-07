@@ -48,9 +48,9 @@ InputType* PasswordInputType::Create(HTMLInputElement& element) {
 }
 
 void PasswordInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypePassword);
+  CountUsageIfVisible(WebFeature::kInputTypePassword);
   if (GetElement().FastHasAttribute(HTMLNames::maxlengthAttr))
-    CountUsageIfVisible(UseCounter::kInputTypePasswordMaxLength);
+    CountUsageIfVisible(WebFeature::kInputTypePasswordMaxLength);
 }
 
 const AtomicString& PasswordInputType::FormControlType() const {

@@ -43,7 +43,7 @@ namespace blink {
 
 HTMLImportsController::HTMLImportsController(Document& master)
     : root_(HTMLImportTreeRoot::Create(&master)) {
-  UseCounter::Count(master, UseCounter::kHTMLImports);
+  UseCounter::Count(master, WebFeature::kHTMLImports);
 }
 
 void HTMLImportsController::Dispose() {
@@ -77,7 +77,7 @@ HTMLImportChild* HTMLImportsController::CreateChild(
                                   : HTMLImport::kAsync;
   if (mode == HTMLImport::kAsync) {
     UseCounter::Count(Root()->GetDocument(),
-                      UseCounter::kHTMLImportsAsyncAttribute);
+                      WebFeature::kHTMLImportsAsyncAttribute);
   }
 
   HTMLImportChild* child = new HTMLImportChild(url, loader, mode);

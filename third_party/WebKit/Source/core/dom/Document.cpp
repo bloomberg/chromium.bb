@@ -418,8 +418,8 @@ static bool IsValidElementName(Document* document, const String& name) {
     // bindings is too slow.
     UseCounter::Count(document,
                       is_valid_dom_name
-                          ? UseCounter::kElementNameDOMValidHTMLParserInvalid
-                          : UseCounter::kElementNameDOMInvalidHTMLParserValid);
+                          ? WebFeature::kElementNameDOMValidHTMLParserInvalid
+                          : WebFeature::kElementNameDOMInvalidHTMLParserValid);
   }
   return is_valid_dom_name;
 }
@@ -784,7 +784,7 @@ String GetTypeExtension(Document* document,
 
   if (string_or_options.isString()) {
     UseCounter::Count(document,
-                      UseCounter::kDocumentCreateElement2ndArgStringHandling);
+                      WebFeature::kDocumentCreateElement2ndArgStringHandling);
     return string_or_options.getAsString();
   }
 
@@ -1104,7 +1104,7 @@ ProcessingInstruction* Document::createProcessingInstruction(
   }
   if (IsHTMLDocument()) {
     UseCounter::Count(*this,
-                      UseCounter::kHTMLDocumentCreateProcessingInstruction);
+                      WebFeature::kHTMLDocumentCreateProcessingInstruction);
   }
   return ProcessingInstruction::Create(*this, target, data);
 }
@@ -1902,7 +1902,7 @@ void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
       // might want to try to eliminate some day (eg. for ScrollTopLeftInterop -
       // see http://crbug.com/157855).
       if (body_style && !body_style->IsOverflowVisible())
-        UseCounter::Count(*this, UseCounter::kBodyScrollsInAdditionToViewport);
+        UseCounter::Count(*this, WebFeature::kBodyScrollsInAdditionToViewport);
     }
   }
 
@@ -3546,7 +3546,7 @@ void Document::SetBaseURLOverride(const KURL& url) {
 }
 
 void Document::ProcessBaseElement() {
-  UseCounter::Count(*this, UseCounter::kBaseElement);
+  UseCounter::Count(*this, WebFeature::kBaseElement);
 
   // Find the first href attribute in a base element and the first target
   // attribute in a base element.
@@ -3567,7 +3567,7 @@ void Document::ProcessBaseElement() {
     }
     if (GetContentSecurityPolicy()->IsActive()) {
       UseCounter::Count(*this,
-                        UseCounter::kContentSecurityPolicyWithBaseElement);
+                        WebFeature::kContentSecurityPolicyWithBaseElement);
     }
   }
 
@@ -3582,13 +3582,13 @@ void Document::ProcessBaseElement() {
 
   if (!base_element_url.IsEmpty()) {
     if (base_element_url.ProtocolIsData()) {
-      UseCounter::Count(*this, UseCounter::kBaseWithDataHref);
+      UseCounter::Count(*this, WebFeature::kBaseWithDataHref);
       AddConsoleMessage(ConsoleMessage::Create(
           kSecurityMessageSource, kErrorMessageLevel,
           "'data:' URLs may not be used as base URLs for a document."));
     }
     if (!this->GetSecurityOrigin()->CanRequest(base_element_url))
-      UseCounter::Count(*this, UseCounter::kBaseWithCrossOriginHref);
+      UseCounter::Count(*this, WebFeature::kBaseWithCrossOriginHref);
   }
 
   if (base_element_url != base_element_url_ &&
@@ -3600,9 +3600,9 @@ void Document::ProcessBaseElement() {
 
   if (target) {
     if (target->Contains('\n') || target->Contains('\r'))
-      UseCounter::Count(*this, UseCounter::kBaseWithNewlinesInTarget);
+      UseCounter::Count(*this, WebFeature::kBaseWithNewlinesInTarget);
     if (target->Contains('<'))
-      UseCounter::Count(*this, UseCounter::kBaseWithOpenBracketInTarget);
+      UseCounter::Count(*this, WebFeature::kBaseWithOpenBracketInTarget);
     base_target_ = *target;
   } else {
     base_target_ = g_null_atom;
@@ -4732,22 +4732,22 @@ void Document::AddMutationEventListenerTypeIfEnabled(
 void Document::AddListenerTypeIfNeeded(const AtomicString& event_type,
                                        EventTarget& event_target) {
   if (event_type == EventTypeNames::DOMSubtreeModified) {
-    UseCounter::Count(*this, UseCounter::kDOMSubtreeModifiedEvent);
+    UseCounter::Count(*this, WebFeature::kDOMSubtreeModifiedEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMSubtreeModifiedListener);
   } else if (event_type == EventTypeNames::DOMNodeInserted) {
-    UseCounter::Count(*this, UseCounter::kDOMNodeInsertedEvent);
+    UseCounter::Count(*this, WebFeature::kDOMNodeInsertedEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMNodeInsertedListener);
   } else if (event_type == EventTypeNames::DOMNodeRemoved) {
-    UseCounter::Count(*this, UseCounter::kDOMNodeRemovedEvent);
+    UseCounter::Count(*this, WebFeature::kDOMNodeRemovedEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMNodeRemovedListener);
   } else if (event_type == EventTypeNames::DOMNodeRemovedFromDocument) {
-    UseCounter::Count(*this, UseCounter::kDOMNodeRemovedFromDocumentEvent);
+    UseCounter::Count(*this, WebFeature::kDOMNodeRemovedFromDocumentEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMNodeRemovedFromDocumentListener);
   } else if (event_type == EventTypeNames::DOMNodeInsertedIntoDocument) {
-    UseCounter::Count(*this, UseCounter::kDOMNodeInsertedIntoDocumentEvent);
+    UseCounter::Count(*this, WebFeature::kDOMNodeInsertedIntoDocumentEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMNodeInsertedIntoDocumentListener);
   } else if (event_type == EventTypeNames::DOMCharacterDataModified) {
-    UseCounter::Count(*this, UseCounter::kDOMCharacterDataModifiedEvent);
+    UseCounter::Count(*this, WebFeature::kDOMCharacterDataModifiedEvent);
     AddMutationEventListenerTypeIfEnabled(kDOMCharacterDataModifiedListener);
   } else if (event_type == EventTypeNames::webkitAnimationStart ||
              event_type == EventTypeNames::animationstart) {
@@ -4899,7 +4899,7 @@ String Document::domain() const {
 
 void Document::setDomain(const String& raw_domain,
                          ExceptionState& exception_state) {
-  UseCounter::Count(*this, UseCounter::kDocumentSetDomain);
+  UseCounter::Count(*this, WebFeature::kDocumentSetDomain);
 
   if (IsSandboxed(kSandboxDocumentDomain)) {
     exception_state.ThrowSecurityError(
@@ -5335,18 +5335,18 @@ KURL Document::OpenSearchDescriptionURL() {
       continue;
 
     // Count usage; perhaps we can lock this to secure contexts.
-    UseCounter::Feature osd_disposition;
+    WebFeature osd_disposition;
     RefPtr<SecurityOrigin> target =
         SecurityOrigin::Create(link_element->Href());
     if (IsSecureContext()) {
       osd_disposition = target->IsPotentiallyTrustworthy()
-                            ? UseCounter::kOpenSearchSecureOriginSecureTarget
-                            : UseCounter::kOpenSearchSecureOriginInsecureTarget;
+                            ? WebFeature::kOpenSearchSecureOriginSecureTarget
+                            : WebFeature::kOpenSearchSecureOriginInsecureTarget;
     } else {
       osd_disposition =
           target->IsPotentiallyTrustworthy()
-              ? UseCounter::kOpenSearchInsecureOriginSecureTarget
-              : UseCounter::kOpenSearchInsecureOriginInsecureTarget;
+              ? WebFeature::kOpenSearchInsecureOriginSecureTarget
+              : WebFeature::kOpenSearchInsecureOriginInsecureTarget;
     }
     UseCounter::Count(*this, osd_disposition);
 
@@ -5386,7 +5386,7 @@ void Document::setDesignMode(const String& value) {
   bool new_value = design_mode_;
   if (DeprecatedEqualIgnoringCase(value, "on")) {
     new_value = true;
-    UseCounter::Count(*this, UseCounter::kDocumentDesignModeEnabeld);
+    UseCounter::Count(*this, WebFeature::kDocumentDesignModeEnabeld);
   } else if (DeprecatedEqualIgnoringCase(value, "off")) {
     new_value = false;
   }
@@ -6302,7 +6302,7 @@ Touch* Document::createTouch(DOMWindow* window,
 
   if (radius_x || radius_y || rotation_angle || force) {
     UseCounter::Count(*this,
-                      UseCounter::kDocumentCreateTouchMoreThanSevenArguments);
+                      WebFeature::kDocumentCreateTouchMoreThanSevenArguments);
   }
 
   // FIXME: It's not clear from the documentation at
@@ -6677,11 +6677,11 @@ bool Document::IsSecureContext() const {
   if (GetSandboxFlags() != kSandboxNone) {
     UseCounter::Count(
         *this, is_secure
-                   ? UseCounter::kSecureContextCheckForSandboxedOriginPassed
-                   : UseCounter::kSecureContextCheckForSandboxedOriginFailed);
+                   ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
+                   : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
   }
-  UseCounter::Count(*this, is_secure ? UseCounter::kSecureContextCheckPassed
-                                     : UseCounter::kSecureContextCheckFailed);
+  UseCounter::Count(*this, is_secure ? WebFeature::kSecureContextCheckPassed
+                                     : WebFeature::kSecureContextCheckFailed);
   return is_secure;
 }
 
@@ -6706,7 +6706,7 @@ void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
   if (order == ShadowCascadeOrder::kShadowCascadeV0) {
     may_contain_v0_shadow_ = true;
     if (shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascadeV1)
-      UseCounter::Count(*this, UseCounter::kMixedShadowRootV0AndV1);
+      UseCounter::Count(*this, WebFeature::kMixedShadowRootV0AndV1);
   }
 
   // For V0 -> V1 upgrade, we need style recalculation for the whole document.
@@ -6715,7 +6715,7 @@ void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
     this->SetNeedsStyleRecalc(
         kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create(StyleChangeReason::kShadow));
-    UseCounter::Count(*this, UseCounter::kMixedShadowRootV0AndV1);
+    UseCounter::Count(*this, WebFeature::kMixedShadowRootV0AndV1);
   }
 
   if (order > shadow_cascade_order_)

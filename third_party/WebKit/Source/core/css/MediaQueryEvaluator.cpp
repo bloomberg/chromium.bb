@@ -370,7 +370,7 @@ static bool DevicePixelRatioMediaFeatureEval(const MediaQueryExpValue& value,
                                              MediaFeaturePrefix op,
                                              const MediaValues& media_values) {
   UseCounter::Count(media_values.GetDocument(),
-                    UseCounter::kPrefixedDevicePixelRatioMediaFeature);
+                    WebFeature::kPrefixedDevicePixelRatioMediaFeature);
 
   return (!value.IsValid() ||
           value.unit == CSSPrimitiveValue::UnitType::kNumber) &&
@@ -534,7 +534,7 @@ static bool MinDevicePixelRatioMediaFeatureEval(
     MediaFeaturePrefix,
     const MediaValues& media_values) {
   UseCounter::Count(media_values.GetDocument(),
-                    UseCounter::kPrefixedMinDevicePixelRatioMediaFeature);
+                    WebFeature::kPrefixedMinDevicePixelRatioMediaFeature);
 
   return DevicePixelRatioMediaFeatureEval(value, kMinPrefix, media_values);
 }
@@ -544,7 +544,7 @@ static bool MaxDevicePixelRatioMediaFeatureEval(
     MediaFeaturePrefix,
     const MediaValues& media_values) {
   UseCounter::Count(media_values.GetDocument(),
-                    UseCounter::kPrefixedMaxDevicePixelRatioMediaFeature);
+                    WebFeature::kPrefixedMaxDevicePixelRatioMediaFeature);
 
   return DevicePixelRatioMediaFeatureEval(value, kMaxPrefix, media_values);
 }
@@ -613,7 +613,7 @@ static bool Transform3dMediaFeatureEval(const MediaQueryExpValue& value,
                                         MediaFeaturePrefix op,
                                         const MediaValues& media_values) {
   UseCounter::Count(media_values.GetDocument(),
-                    UseCounter::kPrefixedTransform3dMediaFeature);
+                    WebFeature::kPrefixedTransform3dMediaFeature);
 
   bool return_value_if_no_parameter;
   int have3d_rendering;

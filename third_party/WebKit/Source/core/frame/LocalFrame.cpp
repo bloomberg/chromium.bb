@@ -944,9 +944,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame) {
 
   // Top navigation in sandbox with or w/o 'allow-top-navigation'.
   if (target_frame != this && sandboxed && target_frame == Tree().Top()) {
-    UseCounter::Count(this, UseCounter::kTopNavInSandbox);
+    UseCounter::Count(this, WebFeature::kTopNavInSandbox);
     if (!has_user_gesture) {
-      UseCounter::Count(this, UseCounter::kTopNavInSandboxWithoutGesture);
+      UseCounter::Count(this, WebFeature::kTopNavInSandboxWithoutGesture);
     }
   }
 
@@ -963,12 +963,12 @@ bool LocalFrame::CanNavigate(const Frame& target_frame) {
     if (has_user_gesture)
       framebust_params |= kUserGestureBit;
 
-    UseCounter::Count(this, UseCounter::kTopNavigationFromSubFrame);
+    UseCounter::Count(this, WebFeature::kTopNavigationFromSubFrame);
     if (sandboxed) {  // Sandboxed with 'allow-top-navigation'.
-      UseCounter::Count(this, UseCounter::kTopNavInSandboxWithPerm);
+      UseCounter::Count(this, WebFeature::kTopNavInSandboxWithPerm);
       if (!has_user_gesture) {
         UseCounter::Count(this,
-                          UseCounter::kTopNavInSandboxWithPermButNoGesture);
+                          WebFeature::kTopNavInSandboxWithPermButNoGesture);
       }
     }
 

@@ -82,9 +82,9 @@ class CORE_EXPORT CSSParserContext
 
   KURL CompleteURL(const String& url) const;
 
-  void Count(UseCounter::Feature) const;
+  void Count(WebFeature) const;
   void Count(CSSParserMode, CSSPropertyID) const;
-  void CountDeprecation(UseCounter::Feature) const;
+  void CountDeprecation(WebFeature) const;
   bool IsUseCounterRecordingEnabled() const { return document_; }
   bool IsDocumentHandleEqual(const Document* other) const;
 

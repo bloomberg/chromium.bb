@@ -63,7 +63,7 @@ ShadowRoot& ElementShadow::AddShadowRoot(Element& shadow_host,
   if (type == ShadowRootType::V0 && shadow_root_) {
     DCHECK_EQ(shadow_root_->GetType(), ShadowRootType::V0);
     Deprecation::CountDeprecation(shadow_host.GetDocument(),
-                                  UseCounter::kElementCreateShadowRootMultiple);
+                                  WebFeature::kElementCreateShadowRootMultiple);
   }
 
   if (shadow_root_) {

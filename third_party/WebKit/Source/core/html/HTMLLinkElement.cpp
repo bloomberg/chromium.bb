@@ -86,7 +86,7 @@ void HTMLLinkElement::ParseAttribute(
       SecurityPolicy::ReferrerPolicyFromString(
           value, kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy_);
       UseCounter::Count(GetDocument(),
-                        UseCounter::kHTMLLinkElementReferrerPolicyAttribute);
+                        WebFeature::kHTMLLinkElementReferrerPolicyAttribute);
     }
   } else if (name == sizesAttr) {
     sizes_->DidUpdateAttributeValue(params.old_value, value);
@@ -103,7 +103,7 @@ void HTMLLinkElement::ParseAttribute(
     scope_ = value;
     Process();
   } else if (name == disabledAttr) {
-    UseCounter::Count(GetDocument(), UseCounter::kHTMLLinkElementDisabled);
+    UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
     if (LinkStyle* link = GetLinkStyle())
       link->SetDisabledState(!value.IsNull());
   } else {
@@ -154,7 +154,7 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
     } else {
       LinkStyle* link = LinkStyle::Create(this);
       if (FastHasAttribute(disabledAttr)) {
-        UseCounter::Count(GetDocument(), UseCounter::kHTMLLinkElementDisabled);
+        UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
         link->SetDisabledState(true);
       }
       link_ = link;

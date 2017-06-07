@@ -95,7 +95,7 @@ bool CSPSource::HostMatches(const String& host) const {
     // relying on that behavior.
     if (document && equal_hosts) {
       UseCounter::Count(*document,
-                        UseCounter::kCSPSourceWildcardWouldMatchExactHost);
+                        WebFeature::kCSPSourceWildcardWouldMatchExactHost);
     }
   } else {
     // host-part = 1*host-char *( "." 1*host-char )

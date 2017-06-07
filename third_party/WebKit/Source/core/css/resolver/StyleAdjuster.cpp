@@ -359,11 +359,11 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
     if (style.PaddingBefore().IsPercentOrCalc() ||
         style.PaddingAfter().IsPercentOrCalc()) {
       UseCounter::Count(document,
-                        UseCounter::kFlexboxPercentagePaddingVertical);
+                        WebFeature::kFlexboxPercentagePaddingVertical);
     }
     if (style.MarginBefore().IsPercentOrCalc() ||
         style.MarginAfter().IsPercentOrCalc()) {
-      UseCounter::Count(document, UseCounter::kFlexboxPercentageMarginVertical);
+      UseCounter::Count(document, WebFeature::kFlexboxPercentageMarginVertical);
     }
   }
 }

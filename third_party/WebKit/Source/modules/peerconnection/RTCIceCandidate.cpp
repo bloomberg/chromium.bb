@@ -62,7 +62,7 @@ RTCIceCandidate* RTCIceCandidate::Create(
     sdp_m_line_index = candidate_init.sdpMLineIndex();
   } else {
     UseCounter::Count(context,
-                      UseCounter::kRTCIceCandidateDefaultSdpMLineIndex);
+                      WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
   }
 
   return new RTCIceCandidate(WebRTCICECandidate(candidate_init.candidate(),

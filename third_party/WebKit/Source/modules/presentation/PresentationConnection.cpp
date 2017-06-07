@@ -227,17 +227,17 @@ void PresentationConnection::AddedEventListener(
                                                 registered_listener);
   if (event_type == EventTypeNames::connect) {
     UseCounter::Count(GetExecutionContext(),
-                      UseCounter::kPresentationConnectionConnectEventListener);
+                      WebFeature::kPresentationConnectionConnectEventListener);
   } else if (event_type == EventTypeNames::close) {
     UseCounter::Count(GetExecutionContext(),
-                      UseCounter::kPresentationConnectionCloseEventListener);
+                      WebFeature::kPresentationConnectionCloseEventListener);
   } else if (event_type == EventTypeNames::terminate) {
     UseCounter::Count(
         GetExecutionContext(),
-        UseCounter::kPresentationConnectionTerminateEventListener);
+        WebFeature::kPresentationConnectionTerminateEventListener);
   } else if (event_type == EventTypeNames::message) {
     UseCounter::Count(GetExecutionContext(),
-                      UseCounter::kPresentationConnectionMessageEventListener);
+                      WebFeature::kPresentationConnectionMessageEventListener);
   }
 }
 

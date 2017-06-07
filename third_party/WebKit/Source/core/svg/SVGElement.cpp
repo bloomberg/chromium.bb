@@ -363,7 +363,7 @@ AffineTransform SVGElement::CalculateTransform(
     }
 
     if (TransformUsesBoxSize(*style, apply_transform_origin))
-      UseCounter::Count(GetDocument(), UseCounter::kTransformUsesBoxSizeOnSVG);
+      UseCounter::Count(GetDocument(), WebFeature::kTransformUsesBoxSizeOnSVG);
 
     // CSS transforms operate with pre-scaled lengths. To make this work with
     // SVG (which applies the zoom factor globally, at the root level) we

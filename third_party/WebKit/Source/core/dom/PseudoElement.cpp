@@ -94,7 +94,7 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
   if ((pseudo_id == kPseudoIdBefore || pseudo_id == kPseudoIdAfter) &&
       parent->HasTagName(HTMLNames::inputTag)) {
     UseCounter::Count(parent->GetDocument(),
-                      UseCounter::kPseudoBeforeAfterForInputElement);
+                      WebFeature::kPseudoBeforeAfterForInputElement);
   }
 }
 

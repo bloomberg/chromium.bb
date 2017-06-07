@@ -42,37 +42,12 @@ class CORE_EXPORT Deprecation {
   static void CountDeprecation(const LocalFrame*, WebFeature);
   static void CountDeprecation(ExecutionContext*, WebFeature);
   static void CountDeprecation(const Document&, WebFeature);
-  static void CountDeprecation(const LocalFrame* frame,
-                               UseCounter::Feature feature) {
-    return CountDeprecation(frame, static_cast<WebFeature>(feature));
-  }
-  static void CountDeprecation(ExecutionContext* exec_context,
-                               UseCounter::Feature feature) {
-    return CountDeprecation(exec_context, static_cast<WebFeature>(feature));
-  }
-  static void CountDeprecation(const Document& document,
-                               UseCounter::Feature feature) {
-    return CountDeprecation(document, static_cast<WebFeature>(feature));
-  }
 
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.
   static void CountDeprecationCrossOriginIframe(const LocalFrame*, WebFeature);
   static void CountDeprecationCrossOriginIframe(const Document&, WebFeature);
   static String DeprecationMessage(WebFeature);
-  static void CountDeprecationCrossOriginIframe(const LocalFrame* frame,
-                                                UseCounter::Feature feature) {
-    return CountDeprecationCrossOriginIframe(frame,
-                                             static_cast<WebFeature>(feature));
-  }
-  static void CountDeprecationCrossOriginIframe(const Document& document,
-                                                UseCounter::Feature feature) {
-    return CountDeprecationCrossOriginIframe(document,
-                                             static_cast<WebFeature>(feature));
-  }
-  static String DeprecationMessage(UseCounter::Feature feature) {
-    return DeprecationMessage(static_cast<WebFeature>(feature));
-  }
 
   // Note: this is only public for tests.
   bool IsSuppressed(CSSPropertyID unresolved_property);

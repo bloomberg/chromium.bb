@@ -105,7 +105,7 @@ void BluetoothDevice::AddedEventListener(
                                                 registered_listener);
   if (event_type == EventTypeNames::gattserverdisconnected) {
     UseCounter::Count(GetExecutionContext(),
-                      UseCounter::kGATTServerDisconnectedEvent);
+                      WebFeature::kGATTServerDisconnectedEvent);
   }
 }
 

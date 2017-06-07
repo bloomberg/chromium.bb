@@ -269,7 +269,7 @@ bool PerformanceBase::PassesTimingAllowCheck(
     return false;
 
   if (timing_allow_origin_string == "*") {
-    UseCounter::Count(context, UseCounter::kStarInTimingAllowOrigin);
+    UseCounter::Count(context, WebFeature::kStarInTimingAllowOrigin);
     return true;
   }
 
@@ -277,9 +277,9 @@ bool PerformanceBase::PassesTimingAllowCheck(
   Vector<String> timing_allow_origins;
   timing_allow_origin_string.GetString().Split(' ', timing_allow_origins);
   if (timing_allow_origins.size() > 1)
-    UseCounter::Count(context, UseCounter::kMultipleOriginsInTimingAllowOrigin);
+    UseCounter::Count(context, WebFeature::kMultipleOriginsInTimingAllowOrigin);
   else if (timing_allow_origins.size() == 1)
-    UseCounter::Count(context, UseCounter::kSingleOriginInTimingAllowOrigin);
+    UseCounter::Count(context, WebFeature::kSingleOriginInTimingAllowOrigin);
   for (const String& allow_origin : timing_allow_origins) {
     if (allow_origin == security_origin)
       return true;

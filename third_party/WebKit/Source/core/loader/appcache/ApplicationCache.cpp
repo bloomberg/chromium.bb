@@ -129,10 +129,10 @@ void ApplicationCache::RecordAPIUseType() const {
     return;
 
   if (document->IsSecureContext()) {
-    UseCounter::Count(document, UseCounter::kApplicationCacheAPISecureOrigin);
+    UseCounter::Count(document, WebFeature::kApplicationCacheAPISecureOrigin);
   } else {
     Deprecation::CountDeprecation(
-        document, UseCounter::kApplicationCacheAPIInsecureOrigin);
+        document, WebFeature::kApplicationCacheAPIInsecureOrigin);
     HostsUsingFeatures::CountAnyWorld(
         *document,
         HostsUsingFeatures::Feature::kApplicationCacheAPIInsecureHost);

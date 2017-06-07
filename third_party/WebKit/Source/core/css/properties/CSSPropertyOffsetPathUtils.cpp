@@ -57,7 +57,7 @@ CSSValue* ConsumeRay(CSSParserTokenRange& range,
   while (!function_args.AtEnd()) {
     if (!angle) {
       angle = CSSPropertyParserHelpers::ConsumeAngle(
-          function_args, context, WTF::Optional<UseCounter::Feature>());
+          function_args, context, WTF::Optional<WebFeature>());
       if (angle)
         continue;
     }
@@ -96,7 +96,7 @@ CSSValue* CSSPropertyOffsetPathUtils::ConsumeOffsetPath(
 
   // Count when we receive a valid path other than 'none'.
   if (value && !value->IsIdentifierValue())
-    context.Count(UseCounter::kCSSOffsetInEffect);
+    context.Count(WebFeature::kCSSOffsetInEffect);
   return value;
 }
 

@@ -87,10 +87,10 @@ TEST_F(TouchEventTest, PreventDefaultUncancelable) {
   EXPECT_THAT(MessageSources(), ElementsAre(kJSMessageSource));
 
   EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), UseCounter::kUncancelableTouchEventPreventDefaulted));
+      GetDocument(), WebFeature::kUncancelableTouchEventPreventDefaulted));
   EXPECT_FALSE(UseCounter::IsCounted(
       GetDocument(),
-      UseCounter::
+      WebFeature::
           kUncancelableTouchEventDueToMainThreadResponsivenessPreventDefaulted));
 }
 
@@ -110,10 +110,10 @@ TEST_F(TouchEventTest,
   EXPECT_THAT(MessageSources(), ElementsAre(kInterventionMessageSource));
 
   EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), UseCounter::kUncancelableTouchEventPreventDefaulted));
+      GetDocument(), WebFeature::kUncancelableTouchEventPreventDefaulted));
   EXPECT_TRUE(UseCounter::IsCounted(
       GetDocument(),
-      UseCounter::
+      WebFeature::
           kUncancelableTouchEventDueToMainThreadResponsivenessPreventDefaulted));
 }
 

@@ -318,7 +318,7 @@ void ScrollAnchor::Adjust() {
                       ("Layout.ScrollAnchor.AdjustedScrollOffset", 2));
   adjusted_offset_histogram.Count(1);
   UseCounter::Count(ScrollerLayoutBox(scroller_)->GetDocument(),
-                    UseCounter::kScrollAnchored);
+                    WebFeature::kScrollAnchored);
 }
 
 void ScrollAnchor::ClearSelf() {

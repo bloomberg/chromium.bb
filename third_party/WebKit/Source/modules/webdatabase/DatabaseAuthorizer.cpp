@@ -253,7 +253,7 @@ int DatabaseAuthorizer::CreateVTable(const String& table_name,
     return kSQLAuthDeny;
 
   UseCounter::Count(database_context_->GetExecutionContext(),
-                    UseCounter::kWebDatabaseCreateDropFTS3Table);
+                    WebFeature::kWebDatabaseCreateDropFTS3Table);
   last_action_changed_database_ = true;
   return DenyBasedOnTableName(table_name);
 }
@@ -268,7 +268,7 @@ int DatabaseAuthorizer::DropVTable(const String& table_name,
     return kSQLAuthDeny;
 
   UseCounter::Count(database_context_->GetExecutionContext(),
-                    UseCounter::kWebDatabaseCreateDropFTS3Table);
+                    WebFeature::kWebDatabaseCreateDropFTS3Table);
   return UpdateDeletesBasedOnTableName(table_name);
 }
 

@@ -133,7 +133,7 @@ File* File::Create(
   DCHECK(options.hasEndings());
   bool normalize_line_endings_to_native = options.endings() == "native";
   if (normalize_line_endings_to_native)
-    UseCounter::Count(context, UseCounter::kFileAPINativeLineEndings);
+    UseCounter::Count(context, WebFeature::kFileAPINativeLineEndings);
 
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(NormalizeType(options.type()));

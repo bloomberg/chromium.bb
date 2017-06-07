@@ -42,7 +42,7 @@ InputType* URLInputType::Create(HTMLInputElement& element) {
 }
 
 void URLInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeURL);
+  CountUsageIfVisible(WebFeature::kInputTypeURL);
 }
 
 const AtomicString& URLInputType::FormControlType() const {

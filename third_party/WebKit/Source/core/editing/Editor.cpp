@@ -1289,10 +1289,10 @@ void Editor::PerformDelete() {
 
 static void CountEditingEvent(ExecutionContext* execution_context,
                               const Event* event,
-                              UseCounter::Feature feature_on_input,
-                              UseCounter::Feature feature_on_text_area,
-                              UseCounter::Feature feature_on_content_editable,
-                              UseCounter::Feature feature_on_non_node) {
+                              WebFeature feature_on_input,
+                              WebFeature feature_on_text_area,
+                              WebFeature feature_on_content_editable,
+                              WebFeature feature_on_non_node) {
   EventTarget* event_target = event->target();
   Node* node = event_target->ToNode();
   if (!node) {
@@ -1331,29 +1331,29 @@ void Editor::CountEvent(ExecutionContext* execution_context,
 
   if (event->type() == EventTypeNames::textInput) {
     CountEditingEvent(execution_context, event,
-                      UseCounter::kTextInputEventOnInput,
-                      UseCounter::kTextInputEventOnTextArea,
-                      UseCounter::kTextInputEventOnContentEditable,
-                      UseCounter::kTextInputEventOnNotNode);
+                      WebFeature::kTextInputEventOnInput,
+                      WebFeature::kTextInputEventOnTextArea,
+                      WebFeature::kTextInputEventOnContentEditable,
+                      WebFeature::kTextInputEventOnNotNode);
     return;
   }
 
   if (event->type() == EventTypeNames::webkitBeforeTextInserted) {
     CountEditingEvent(execution_context, event,
-                      UseCounter::kWebkitBeforeTextInsertedOnInput,
-                      UseCounter::kWebkitBeforeTextInsertedOnTextArea,
-                      UseCounter::kWebkitBeforeTextInsertedOnContentEditable,
-                      UseCounter::kWebkitBeforeTextInsertedOnNotNode);
+                      WebFeature::kWebkitBeforeTextInsertedOnInput,
+                      WebFeature::kWebkitBeforeTextInsertedOnTextArea,
+                      WebFeature::kWebkitBeforeTextInsertedOnContentEditable,
+                      WebFeature::kWebkitBeforeTextInsertedOnNotNode);
     return;
   }
 
   if (event->type() == EventTypeNames::webkitEditableContentChanged) {
     CountEditingEvent(
         execution_context, event,
-        UseCounter::kWebkitEditableContentChangedOnInput,
-        UseCounter::kWebkitEditableContentChangedOnTextArea,
-        UseCounter::kWebkitEditableContentChangedOnContentEditable,
-        UseCounter::kWebkitEditableContentChangedOnNotNode);
+        WebFeature::kWebkitEditableContentChangedOnInput,
+        WebFeature::kWebkitEditableContentChangedOnTextArea,
+        WebFeature::kWebkitEditableContentChangedOnContentEditable,
+        WebFeature::kWebkitEditableContentChangedOnNotNode);
   }
 }
 
@@ -1808,7 +1808,7 @@ void Editor::TidyUpHTMLStructure(Document& document) {
       kJSMessageSource, kWarningMessageLevel,
       "document.execCommand() doesn't work with an invalid HTML structure. It "
       "is corrected automatically."));
-  UseCounter::Count(document, UseCounter::kExecCommandAltersHTMLStructure);
+  UseCounter::Count(document, WebFeature::kExecCommandAltersHTMLStructure);
 
   Element* root = HTMLHtmlElement::Create(document);
   if (existing_head)

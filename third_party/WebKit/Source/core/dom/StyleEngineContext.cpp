@@ -39,7 +39,7 @@ void StyleEngineContext::AddingPendingSheet(const Document& document) {
     added_pending_sheet_before_body_ = !document.body();
     if (!added_pending_sheet_before_body_) {
       UseCounter::Count(document,
-                        UseCounter::kPendingStylesheetAddedAfterBodyStarted);
+                        WebFeature::kPendingStylesheetAddedAfterBodyStarted);
     }
   }
 }

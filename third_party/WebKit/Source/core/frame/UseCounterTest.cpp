@@ -35,7 +35,7 @@ const char kExtensionUrl[] = "chrome-extension://dummysite/";
 
 int GetPageVisitsBucketforHistogram(const std::string& histogram_name) {
   if (histogram_name.find("CSS") == std::string::npos)
-    return blink::UseCounter::kPageVisits;
+    return static_cast<int>(blink::WebFeature::kPageVisits);
   // For CSS histograms, the page visits bucket should be 1.
   return 1;
 }
@@ -258,7 +258,7 @@ TEST(UseCounterTest, InspectorDisablesMeasurement) {
   HistogramTester histogram_tester;
 
   // The specific feature we use here isn't important.
-  UseCounter::Feature feature = UseCounter::Feature::kSVGSMILElementInDocument;
+  WebFeature feature = WebFeature::kSVGSMILElementInDocument;
   CSSPropertyID property = CSSPropertyFontWeight;
   CSSParserMode parser_mode = kHTMLStandardMode;
 
@@ -293,7 +293,8 @@ TEST(UseCounterTest, InspectorDisablesMeasurement) {
   EXPECT_TRUE(use_counter.HasRecordedMeasurement(feature));
   use_counter.Count(parser_mode, property);
   EXPECT_TRUE(use_counter.IsCounted(property));
-  histogram_tester.ExpectUniqueSample(kFeaturesHistogramName, feature, 1);
+  histogram_tester.ExpectUniqueSample(kFeaturesHistogramName,
+                                      static_cast<int>(feature), 1);
   histogram_tester.ExpectUniqueSample(
       kCSSHistogramName,
       UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property), 1);
@@ -301,14 +302,15 @@ TEST(UseCounterTest, InspectorDisablesMeasurement) {
 
 void ExpectHistograms(const HistogramTester& histogram_tester,
                       int visits_count,
-                      UseCounter::Feature feature,
+                      WebFeature feature,
                       int feature_count,
                       CSSPropertyID property,
                       int property_count) {
   histogram_tester.ExpectBucketCount(kFeaturesHistogramName,
-                                     UseCounter::kPageVisits, visits_count);
-  histogram_tester.ExpectBucketCount(kFeaturesHistogramName, feature,
-                                     feature_count);
+                                     static_cast<int>(WebFeature::kPageVisits),
+                                     visits_count);
+  histogram_tester.ExpectBucketCount(kFeaturesHistogramName,
+                                     static_cast<int>(feature), feature_count);
   histogram_tester.ExpectTotalCount(kFeaturesHistogramName,
                                     visits_count + feature_count);
   histogram_tester.ExpectBucketCount(kCSSHistogramName, 1, visits_count);
@@ -325,81 +327,81 @@ TEST(UseCounterTest, MutedDocuments) {
   HistogramTester histogram_tester;
 
   // Counters triggered before any load are always reported.
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 0, UseCounter::kFetch, 1,
+  ExpectHistograms(histogram_tester, 0, WebFeature::kFetch, 1,
                    CSSPropertyFontWeight, 1);
 
   // Loading an internal page doesn't bump PageVisits and metrics not reported.
   use_counter.DidCommitLoad(URLTestHelpers::ToKURL(kInternalUrl));
-  EXPECT_FALSE(use_counter.HasRecordedMeasurement(UseCounter::kFetch));
+  EXPECT_FALSE(use_counter.HasRecordedMeasurement(WebFeature::kFetch));
   EXPECT_FALSE(use_counter.IsCounted(CSSPropertyFontWeight));
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 0, UseCounter::kFetch, 1,
+  ExpectHistograms(histogram_tester, 0, WebFeature::kFetch, 1,
                    CSSPropertyFontWeight, 1);
 
   // But the fact that the features were seen is still known.
-  EXPECT_TRUE(use_counter.HasRecordedMeasurement(UseCounter::kFetch));
+  EXPECT_TRUE(use_counter.HasRecordedMeasurement(WebFeature::kFetch));
   EXPECT_TRUE(use_counter.IsCounted(CSSPropertyFontWeight));
 
   // Inspector muting then unmuting doesn't change the behavior.
   use_counter.MuteForInspector();
   use_counter.UnmuteForInspector();
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 0, UseCounter::kFetch, 1,
+  ExpectHistograms(histogram_tester, 0, WebFeature::kFetch, 1,
                    CSSPropertyFontWeight, 1);
 
   // If we now load a real web page, metrics are reported again.
   use_counter.DidCommitLoad(URLTestHelpers::ToKURL("http://foo.com/"));
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 1, UseCounter::kFetch, 2,
+  ExpectHistograms(histogram_tester, 1, WebFeature::kFetch, 2,
                    CSSPropertyFontWeight, 2);
 
   // HTTPs URLs are the same.
   use_counter.DidCommitLoad(URLTestHelpers::ToKURL(kHttpsUrl));
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 2, UseCounter::kFetch, 3,
+  ExpectHistograms(histogram_tester, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // Extensions aren't counted.
   use_counter.DidCommitLoad(URLTestHelpers::ToKURL(kExtensionUrl));
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 2, UseCounter::kFetch, 3,
+  ExpectHistograms(histogram_tester, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // Nor is devtools
   use_counter.DidCommitLoad(
       URLTestHelpers::ToKURL("chrome-devtools://1238ba908adf/"));
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 2, UseCounter::kFetch, 3,
+  ExpectHistograms(histogram_tester, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // Nor are data URLs
   use_counter.DidCommitLoad(
       URLTestHelpers::ToKURL("data:text/plain,thisisaurl"));
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 2, UseCounter::kFetch, 3,
+  ExpectHistograms(histogram_tester, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // Or empty URLs (a main frame with no Document)
   use_counter.DidCommitLoad(KURL());
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 2, UseCounter::kFetch, 3,
+  ExpectHistograms(histogram_tester, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
   // But file URLs are
   use_counter.DidCommitLoad(URLTestHelpers::ToKURL("file:///c/autoexec.bat"));
-  use_counter.RecordMeasurement(UseCounter::kFetch);
+  use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester, 3, UseCounter::kFetch, 4,
+  ExpectHistograms(histogram_tester, 3, WebFeature::kFetch, 4,
                    CSSPropertyFontWeight, 4);
 }
 
@@ -420,7 +422,7 @@ class DeprecationTest : public ::testing::Test {
 
 TEST_F(DeprecationTest, InspectorDisablesDeprecation) {
   // The specific feature we use here isn't important.
-  UseCounter::Feature feature = UseCounter::Feature::kCSSDeepCombinator;
+  WebFeature feature = WebFeature::kCSSDeepCombinator;
   CSSPropertyID property = CSSPropertyFontWeight;
 
   EXPECT_FALSE(deprecation_.IsSuppressed(property));

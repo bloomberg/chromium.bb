@@ -180,7 +180,7 @@ Response* Response::Create(ScriptState* script_state,
   } else if (ReadableStreamOperations::IsReadableStream(script_state,
                                                         body_value)) {
     UseCounter::Count(execution_context,
-                      UseCounter::kFetchResponseConstructionWithStream);
+                      WebFeature::kFetchResponseConstructionWithStream);
     body_buffer = new BodyStreamBuffer(script_state, body_value);
   } else {
     String string = ToUSVString(isolate, body, exception_state);

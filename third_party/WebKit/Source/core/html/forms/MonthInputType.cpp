@@ -54,7 +54,7 @@ InputType* MonthInputType::Create(HTMLInputElement& element) {
 }
 
 void MonthInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeMonth);
+  CountUsageIfVisible(WebFeature::kInputTypeMonth);
 }
 
 const AtomicString& MonthInputType::FormControlType() const {

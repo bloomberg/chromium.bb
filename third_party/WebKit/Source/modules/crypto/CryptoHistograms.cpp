@@ -12,50 +12,50 @@
 
 namespace blink {
 
-static UseCounter::Feature AlgorithmIdToFeature(WebCryptoAlgorithmId id) {
+static WebFeature AlgorithmIdToFeature(WebCryptoAlgorithmId id) {
   switch (id) {
     case kWebCryptoAlgorithmIdAesCbc:
-      return UseCounter::kCryptoAlgorithmAesCbc;
+      return WebFeature::kCryptoAlgorithmAesCbc;
     case kWebCryptoAlgorithmIdHmac:
-      return UseCounter::kCryptoAlgorithmHmac;
+      return WebFeature::kCryptoAlgorithmHmac;
     case kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-      return UseCounter::kCryptoAlgorithmRsaSsaPkcs1v1_5;
+      return WebFeature::kCryptoAlgorithmRsaSsaPkcs1v1_5;
     case kWebCryptoAlgorithmIdSha1:
-      return UseCounter::kCryptoAlgorithmSha1;
+      return WebFeature::kCryptoAlgorithmSha1;
     case kWebCryptoAlgorithmIdSha256:
-      return UseCounter::kCryptoAlgorithmSha256;
+      return WebFeature::kCryptoAlgorithmSha256;
     case kWebCryptoAlgorithmIdSha384:
-      return UseCounter::kCryptoAlgorithmSha384;
+      return WebFeature::kCryptoAlgorithmSha384;
     case kWebCryptoAlgorithmIdSha512:
-      return UseCounter::kCryptoAlgorithmSha512;
+      return WebFeature::kCryptoAlgorithmSha512;
     case kWebCryptoAlgorithmIdAesGcm:
-      return UseCounter::kCryptoAlgorithmAesGcm;
+      return WebFeature::kCryptoAlgorithmAesGcm;
     case kWebCryptoAlgorithmIdRsaOaep:
-      return UseCounter::kCryptoAlgorithmRsaOaep;
+      return WebFeature::kCryptoAlgorithmRsaOaep;
     case kWebCryptoAlgorithmIdAesCtr:
-      return UseCounter::kCryptoAlgorithmAesCtr;
+      return WebFeature::kCryptoAlgorithmAesCtr;
     case kWebCryptoAlgorithmIdAesKw:
-      return UseCounter::kCryptoAlgorithmAesKw;
+      return WebFeature::kCryptoAlgorithmAesKw;
     case kWebCryptoAlgorithmIdRsaPss:
-      return UseCounter::kCryptoAlgorithmRsaPss;
+      return WebFeature::kCryptoAlgorithmRsaPss;
     case kWebCryptoAlgorithmIdEcdsa:
-      return UseCounter::kCryptoAlgorithmEcdsa;
+      return WebFeature::kCryptoAlgorithmEcdsa;
     case kWebCryptoAlgorithmIdEcdh:
-      return UseCounter::kCryptoAlgorithmEcdh;
+      return WebFeature::kCryptoAlgorithmEcdh;
     case kWebCryptoAlgorithmIdHkdf:
-      return UseCounter::kCryptoAlgorithmHkdf;
+      return WebFeature::kCryptoAlgorithmHkdf;
     case kWebCryptoAlgorithmIdPbkdf2:
-      return UseCounter::kCryptoAlgorithmPbkdf2;
+      return WebFeature::kCryptoAlgorithmPbkdf2;
   }
 
   NOTREACHED();
-  return static_cast<UseCounter::Feature>(0);
+  return static_cast<WebFeature>(0);
 }
 
 static void HistogramAlgorithmId(ExecutionContext* context,
                                  WebCryptoAlgorithmId algorithm_id) {
-  UseCounter::Feature feature = AlgorithmIdToFeature(algorithm_id);
-  if (feature)
+  WebFeature feature = AlgorithmIdToFeature(algorithm_id);
+  if (static_cast<bool>(feature))
     UseCounter::Count(context, feature);
 }
 

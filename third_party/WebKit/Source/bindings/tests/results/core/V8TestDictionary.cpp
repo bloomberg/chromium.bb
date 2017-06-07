@@ -154,7 +154,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (deprecatedCreateMemberValue.IsEmpty() || deprecatedCreateMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    Deprecation::CountDeprecation(CurrentExecutionContext(isolate), UseCounter::kCreateMember);
+    Deprecation::CountDeprecation(CurrentExecutionContext(isolate), WebFeature::kCreateMember);
     bool deprecatedCreateMember = NativeValueTraits<IDLBoolean>::NativeValue(isolate, deprecatedCreateMemberValue, exceptionState);
     if (exceptionState.HadException())
       return;

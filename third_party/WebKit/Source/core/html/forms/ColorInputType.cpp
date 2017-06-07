@@ -98,7 +98,7 @@ InputType::ValueMode ColorInputType::GetValueMode() const {
 }
 
 void ColorInputType::CountUsage() {
-  CountUsageIfVisible(UseCounter::kInputTypeColor);
+  CountUsageIfVisible(WebFeature::kInputTypeColor);
 }
 
 const AtomicString& ColorInputType::FormControlType() const {

@@ -758,12 +758,12 @@ void TextControlElement::ScheduleSelectEvent() {
 void TextControlElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == autocapitalizeAttr)
-    UseCounter::Count(GetDocument(), UseCounter::kAutocapitalizeAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kAutocapitalizeAttribute);
 
   if (params.name == placeholderAttr) {
     UpdatePlaceholderText();
     UpdatePlaceholderVisibility();
-    UseCounter::Count(GetDocument(), UseCounter::kPlaceholderAttribute);
+    UseCounter::Count(GetDocument(), WebFeature::kPlaceholderAttribute);
   } else {
     HTMLFormControlElementWithState::ParseAttribute(params);
   }

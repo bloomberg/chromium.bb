@@ -137,7 +137,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
     const ImageBitmapSourceUnion& bitmap_source,
     const ImageBitmapOptions& options,
     ExceptionState& exception_state) {
-  UseCounter::Feature feature = UseCounter::kCreateImageBitmap;
+  WebFeature feature = WebFeature::kCreateImageBitmap;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   ImageBitmapSource* bitmap_source_internal = ToImageBitmapSourceInternal(
       bitmap_source, exception_state, options, false);
@@ -157,7 +157,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
     int sh,
     const ImageBitmapOptions& options,
     ExceptionState& exception_state) {
-  UseCounter::Feature feature = UseCounter::kCreateImageBitmap;
+  WebFeature feature = WebFeature::kCreateImageBitmap;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   ImageBitmapSource* bitmap_source_internal = ToImageBitmapSourceInternal(
       bitmap_source, exception_state, options, true);

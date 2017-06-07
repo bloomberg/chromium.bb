@@ -47,7 +47,7 @@ DEFINE_TRACE(OffscreenCanvasRenderingContext2D) {
 ScriptPromise OffscreenCanvasRenderingContext2D::commit(
     ScriptState* script_state,
     ExceptionState& exception_state) {
-  UseCounter::Feature feature = UseCounter::kOffscreenCanvasCommit2D;
+  WebFeature feature = WebFeature::kOffscreenCanvasCommit2D;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   bool is_web_gl_software_rendering = false;
   SkIRect damage_rect(dirty_rect_for_commit_);
@@ -116,8 +116,7 @@ OffscreenCanvasRenderingContext2D::TransferToStaticBitmapImage() {
 
 ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
     ScriptState* script_state) {
-  UseCounter::Feature feature =
-      UseCounter::kOffscreenCanvasTransferToImageBitmap2D;
+  WebFeature feature = WebFeature::kOffscreenCanvasTransferToImageBitmap2D;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   RefPtr<StaticBitmapImage> image = TransferToStaticBitmapImage();
   if (!image)

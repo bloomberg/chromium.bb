@@ -32,7 +32,7 @@ void PresentationConnectionList::AddedEventListener(
   if (event_type == EventTypeNames::connectionavailable) {
     UseCounter::Count(
         GetExecutionContext(),
-        UseCounter::kPresentationRequestConnectionAvailableEventListener);
+        WebFeature::kPresentationRequestConnectionAvailableEventListener);
   }
 }
 

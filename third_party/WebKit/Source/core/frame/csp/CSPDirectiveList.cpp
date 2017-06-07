@@ -841,7 +841,7 @@ bool CSPDirectiveList::AllowBaseURI(
   if (result &&
       !CheckSource(OperativeDirective(base_uri_.Get()), url, redirect_status)) {
     UseCounter::Count(policy_->GetDocument(),
-                      UseCounter::kBaseWouldBeBlockedByDefaultSrc);
+                      WebFeature::kBaseWouldBeBlockedByDefaultSrc);
   }
 
   return result;
@@ -878,7 +878,7 @@ bool CSPDirectiveList::AllowWorkerFromSource(
       child_src_ && CheckSource(child_src_, url, redirect_status)) {
     Deprecation::CountDeprecation(
         policy_->GetDocument(),
-        UseCounter::kChildSrcAllowedWorkerThatScriptSrcBlocked);
+        WebFeature::kChildSrcAllowedWorkerThatScriptSrcBlocked);
     return true;
   }
 

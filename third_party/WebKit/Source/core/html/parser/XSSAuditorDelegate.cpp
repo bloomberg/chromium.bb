@@ -105,8 +105,8 @@ void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {
   DCHECK(IsMainThread());
 
   UseCounter::Count(document_, xss_info.did_block_entire_page_
-                                   ? UseCounter::kXSSAuditorBlockedEntirePage
-                                   : UseCounter::kXSSAuditorBlockedScript);
+                                   ? WebFeature::kXSSAuditorBlockedEntirePage
+                                   : WebFeature::kXSSAuditorBlockedScript);
 
   document_->AddConsoleMessage(ConsoleMessage::Create(
       kJSMessageSource, kErrorMessageLevel, xss_info.BuildConsoleError()));

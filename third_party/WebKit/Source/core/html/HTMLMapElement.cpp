@@ -37,7 +37,7 @@ using namespace HTMLNames;
 
 inline HTMLMapElement::HTMLMapElement(Document& document)
     : HTMLElement(mapTag, document) {
-  UseCounter::Count(document, UseCounter::kMapElement);
+  UseCounter::Count(document, WebFeature::kMapElement);
 }
 
 DEFINE_NODE_FACTORY(HTMLMapElement)

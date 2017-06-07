@@ -969,14 +969,14 @@ void LayoutTableSection::UpdateLayout() {
 
       if (!Table()->HasSameDirectionAs(row)) {
         UseCounter::Count(GetDocument(),
-                          UseCounter::kTableRowDirectionDifferentFromTable);
+                          WebFeature::kTableRowDirectionDifferentFromTable);
       }
     }
   }
 
   if (!Table()->HasSameDirectionAs(this)) {
     UseCounter::Count(GetDocument(),
-                      UseCounter::kTableSectionDirectionDifferentFromTable);
+                      WebFeature::kTableSectionDirectionDifferentFromTable);
   }
 
   ClearNeedsLayout();

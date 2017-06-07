@@ -28,7 +28,7 @@ namespace blink {
 
 inline SVGSwitchElement::SVGSwitchElement(Document& document)
     : SVGGraphicsElement(SVGNames::switchTag, document) {
-  UseCounter::Count(document, UseCounter::kSVGSwitchElement);
+  UseCounter::Count(document, WebFeature::kSVGSwitchElement);
 }
 
 DEFINE_NODE_FACTORY(SVGSwitchElement)

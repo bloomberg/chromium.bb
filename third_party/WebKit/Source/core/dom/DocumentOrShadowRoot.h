@@ -45,7 +45,7 @@ class DocumentOrShadowRoot {
   }
 
   static Element* pointerLockElement(Document& document) {
-    UseCounter::Count(document, UseCounter::kDocumentPointerLockElement);
+    UseCounter::Count(document, WebFeature::kDocumentPointerLockElement);
     const Element* target = document.PointerLockElement();
     if (!target)
       return nullptr;
@@ -55,7 +55,7 @@ class DocumentOrShadowRoot {
     // unnecessary.
     if (target && target->IsInV0ShadowTree()) {
       UseCounter::Count(document,
-                        UseCounter::kDocumentPointerLockElementInV0Shadow);
+                        WebFeature::kDocumentPointerLockElementInV0Shadow);
       return const_cast<Element*>(target);
     }
     return document.AdjustedElement(*target);
@@ -68,7 +68,7 @@ class DocumentOrShadowRoot {
     if (!shadow_root.IsV1())
       return nullptr;
     UseCounter::Count(shadow_root.GetDocument(),
-                      UseCounter::kShadowRootPointerLockElement);
+                      WebFeature::kShadowRootPointerLockElement);
     const Element* target = shadow_root.GetDocument().PointerLockElement();
     if (!target)
       return nullptr;

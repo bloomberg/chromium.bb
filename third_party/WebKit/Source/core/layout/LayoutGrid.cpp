@@ -58,7 +58,7 @@ LayoutGrid::LayoutGrid(Element* element)
     : LayoutBlock(element), grid_(this), track_sizing_algorithm_(this, grid_) {
   DCHECK(!ChildrenInline());
   if (!IsAnonymous())
-    UseCounter::Count(GetDocument(), UseCounter::kCSSGridLayout);
+    UseCounter::Count(GetDocument(), WebFeature::kCSSGridLayout);
 }
 
 LayoutGrid::~LayoutGrid() {}

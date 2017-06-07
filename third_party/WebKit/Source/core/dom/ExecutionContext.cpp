@@ -226,9 +226,9 @@ void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
 void ExecutionContext::SetReferrerPolicy(ReferrerPolicy referrer_policy) {
   // When a referrer policy has already been set, the latest value takes
   // precedence.
-  UseCounter::Count(this, UseCounter::kSetReferrerPolicy);
+  UseCounter::Count(this, WebFeature::kSetReferrerPolicy);
   if (referrer_policy_ != kReferrerPolicyDefault)
-    UseCounter::Count(this, UseCounter::kResetReferrerPolicy);
+    UseCounter::Count(this, WebFeature::kResetReferrerPolicy);
 
   referrer_policy_ = referrer_policy;
 }

@@ -42,7 +42,7 @@ class Document;
 
 inline HTMLShadowElement::HTMLShadowElement(Document& document)
     : InsertionPoint(HTMLNames::shadowTag, document) {
-  UseCounter::Count(document, UseCounter::kHTMLShadowElement);
+  UseCounter::Count(document, WebFeature::kHTMLShadowElement);
 }
 
 DEFINE_NODE_FACTORY(HTMLShadowElement)

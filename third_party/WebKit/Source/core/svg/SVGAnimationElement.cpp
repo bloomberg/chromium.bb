@@ -40,7 +40,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tag_name,
       calc_mode_(kCalcModeLinear),
       animation_mode_(kNoAnimation) {
   DCHECK(RuntimeEnabledFeatures::SMILEnabled());
-  UseCounter::Count(document, UseCounter::kSVGAnimationElement);
+  UseCounter::Count(document, WebFeature::kSVGAnimationElement);
 }
 
 bool SVGAnimationElement::ParseValues(const String& value,
@@ -287,20 +287,20 @@ void SVGAnimationElement::SetCalcMode(const AtomicString& calc_mode) {
   DEFINE_STATIC_LOCAL(const AtomicString, paced, ("paced"));
   DEFINE_STATIC_LOCAL(const AtomicString, spline, ("spline"));
   if (calc_mode == discrete) {
-    UseCounter::Count(GetDocument(), UseCounter::kSVGCalcModeDiscrete);
+    UseCounter::Count(GetDocument(), WebFeature::kSVGCalcModeDiscrete);
     SetCalcMode(kCalcModeDiscrete);
   } else if (calc_mode == linear) {
     if (isSVGAnimateMotionElement(*this))
-      UseCounter::Count(GetDocument(), UseCounter::kSVGCalcModeLinear);
+      UseCounter::Count(GetDocument(), WebFeature::kSVGCalcModeLinear);
     // else linear is the default.
     SetCalcMode(kCalcModeLinear);
   } else if (calc_mode == paced) {
     if (!isSVGAnimateMotionElement(*this))
-      UseCounter::Count(GetDocument(), UseCounter::kSVGCalcModePaced);
+      UseCounter::Count(GetDocument(), WebFeature::kSVGCalcModePaced);
     // else paced is the default.
     SetCalcMode(kCalcModePaced);
   } else if (calc_mode == spline) {
-    UseCounter::Count(GetDocument(), UseCounter::kSVGCalcModeSpline);
+    UseCounter::Count(GetDocument(), WebFeature::kSVGCalcModeSpline);
     SetCalcMode(kCalcModeSpline);
   } else
     SetCalcMode(isSVGAnimateMotionElement(*this) ? kCalcModePaced
@@ -590,7 +590,7 @@ void SVGAnimationElement::StartedActiveInterval() {
   }
 
   if (animation_valid_ && (IsAdditive() || IsAccumulated()))
-    UseCounter::Count(&GetDocument(), UseCounter::kSVGSMILAdditiveAnimation);
+    UseCounter::Count(&GetDocument(), WebFeature::kSVGSMILAdditiveAnimation);
 }
 
 void SVGAnimationElement::UpdateAnimation(float percent,

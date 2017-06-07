@@ -68,8 +68,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
                                        ResourceRequestBlockedReason) const = 0;
   virtual bool ShouldBypassMainWorldCSP() const = 0;
   virtual bool IsSVGImageChromeClient() const = 0;
-  virtual void CountUsage(UseCounter::Feature) const = 0;
-  virtual void CountDeprecation(UseCounter::Feature) const = 0;
+  virtual void CountUsage(WebFeature) const = 0;
+  virtual void CountDeprecation(WebFeature) const = 0;
   virtual bool ShouldBlockFetchByMixedContentCheck(
       const ResourceRequest&,
       const KURL&,
