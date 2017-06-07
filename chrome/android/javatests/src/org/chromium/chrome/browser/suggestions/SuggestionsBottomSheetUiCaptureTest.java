@@ -67,6 +67,7 @@ public class SuggestionsBottomSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
+    @ScreenShooter.Directory("Suggestions Bottom Sheet Position")
     public void testBottomSheetPosition() throws Exception {
         setSheetState(BottomSheet.SHEET_STATE_HALF);
         mScreenShooter.shoot("Half");
@@ -79,6 +80,7 @@ public class SuggestionsBottomSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
+    @ScreenShooter.Directory("Suggestions Context Menu")
     public void testContextMenu() throws Exception {
         // Needs to be "Full" to for this to work on small screens in landscape.
         setSheetState(BottomSheet.SHEET_STATE_FULL);
