@@ -2208,18 +2208,29 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'x86-generic',
   ])
 
-  _paladin_experimental_boards = frozenset([
-      'cobblepot',
+  # Paladin configs that exist and should be important as soon as they are
+  # shown to be green. All new paladins should start in this group and get
+  # promoted to _paladin_important_boards.
+  # A paladin is generally considered good enough for important if it can
+  # pass the last ~20 build attempts, e.g. the builder page shows all green.
+  _paladin_new_boards = frozenset([
+      'cyan',
       'gale',
-      'gonzo',
-      'guado_moblab',
-      'lasilla-ground',
-      'lasilla-sky',
-      'tatl',
       'veyron_jaq',
       'veyron_tiger',
       'whirlwind',
-      'wooten',
+  ])
+
+  # Paladin configs that exist and should stay as experimental until further
+  # notice, preferably with a comment indicating why and a bug.
+  _paladin_experimental_boards = _paladin_new_boards | frozenset([
+      'cobblepot', # contact:jkoleszar@
+      'gonzo', # contact:jkoleszar@
+      'guado_moblab', # Known lab flakes are too common - contact:haddowk@
+      'lasilla-ground', # contact:jkoleszar@
+      'lasilla-sky', # contact:jkoleszar@
+      'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
+      'wooten', # contact:jkoleszar@
   ])
 
   _paladin_active = _paladin_important_boards | _paladin_experimental_boards
