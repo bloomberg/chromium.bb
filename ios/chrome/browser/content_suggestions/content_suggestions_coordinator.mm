@@ -228,7 +228,7 @@
                                      [weakSelf dismissArticle:weakArticle
                                                   atIndexPath:indexPath];
                                    }
-                                    style:UIAlertActionStyleDefault];
+                                    style:UIAlertActionStyleDestructive];
 
   [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
                                    action:^{
@@ -299,7 +299,7 @@
                       blacklistMostVisitedURL:strongItem.URL];
                   [strongSelf showMostVisitedUndoForURL:strongItem.URL];
                 }
-                 style:UIAlertActionStyleDefault];
+                 style:UIAlertActionStyleDestructive];
 
   [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
                                    action:nil
