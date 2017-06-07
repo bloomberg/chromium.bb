@@ -220,7 +220,9 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       was_alpn_negotiated_(false),
       negotiated_protocol_(kProtoUnknown),
       num_streams_(0),
-      spdy_session_direct_(false),
+      spdy_session_direct_(
+          !(proxy_info.is_https() && origin_url_.SchemeIs(url::kHttpScheme))),
+      spdy_session_key_(GetSpdySessionKey()),
       stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
       ptr_factory_(this) {
   DCHECK(session);
@@ -398,7 +400,7 @@ SpdySessionKey HttpStreamFactoryImpl::Job::GetSpdySessionKey() const {
   // In the case that we're using an HTTPS proxy for an HTTP url,
   // we look for a SPDY session *to* the proxy, instead of to the
   // origin server.
-  if (IsHttpsProxyAndHttpUrl()) {
+  if (!spdy_session_direct_) {
     return SpdySessionKey(proxy_info_.proxy_server().host_port_pair(),
                           ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   }
@@ -875,14 +877,12 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
     return rv;
   }
 
-  SpdySessionKey spdy_session_key = GetSpdySessionKey();
-
   // Check first if we have a spdy session for this group.  If so, then go
   // straight to using that.
   if (CanUseExistingSpdySession()) {
     base::WeakPtr<SpdySession> spdy_session =
         session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key, origin_url_, enable_ip_based_pooling_, net_log_);
+            spdy_session_key_, origin_url_, enable_ip_based_pooling_, net_log_);
     if (spdy_session) {
       // If we're preconnecting, but we already have a SpdySession, we don't
       // actually need to preconnect any sockets, so we're done.
@@ -897,7 +897,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
   if (using_ssl_) {
     // Ask |delegate_delegate_| to update the spdy session key for the request
     // that launched this job.
-    delegate_->SetSpdySessionKey(this, spdy_session_key);
+    delegate_->SetSpdySessionKey(this, spdy_session_key_);
   }
 
   if (proxy_info_.is_http() || proxy_info_.is_https())
@@ -929,7 +929,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
   OnHostResolutionCallback resolution_callback =
       CanUseExistingSpdySession()
           ? base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
-                       spdy_session_key, origin_url_, enable_ip_based_pooling_)
+                       spdy_session_key_, origin_url_, enable_ip_based_pooling_)
           : OnHostResolutionCallback();
   if (delegate_->for_websockets()) {
     SSLConfig websocket_server_ssl_config = server_ssl_config_;
@@ -961,10 +961,9 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
     // We found a SPDY connection after resolving the host. This is
     // probably an IP pooled connection.
-    SpdySessionKey spdy_session_key = GetSpdySessionKey();
     existing_spdy_session_ =
         session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key, origin_url_, enable_ip_based_pooling_, net_log_);
+            spdy_session_key_, origin_url_, enable_ip_based_pooling_, net_log_);
     if (existing_spdy_session_) {
       using_spdy_ = true;
       next_state_ = STATE_CREATE_STREAM;
@@ -1165,13 +1164,11 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   CHECK(!stream_.get());
 
-  SpdySessionKey spdy_session_key = GetSpdySessionKey();
   if (!existing_spdy_session_) {
     existing_spdy_session_ =
         session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key, origin_url_, enable_ip_based_pooling_, net_log_);
+            spdy_session_key_, origin_url_, enable_ip_based_pooling_, net_log_);
   }
-  bool direct = !IsHttpsProxyAndHttpUrl();
   if (existing_spdy_session_.get()) {
     // We picked up an existing session, so we don't need our socket.
     if (connection_->socket())
@@ -1179,7 +1176,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     connection_->Reset();
 
     int set_result = SetSpdyHttpStreamOrBidirectionalStreamImpl(
-        existing_spdy_session_, direct);
+        existing_spdy_session_, spdy_session_direct_);
     existing_spdy_session_.reset();
     return set_result;
   }
@@ -1191,7 +1188,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   base::WeakPtr<SpdySession> spdy_session =
       session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          spdy_session_key, std::move(connection_), net_log_, using_ssl_);
+          spdy_session_key_, std::move(connection_), net_log_, using_ssl_);
 
   if (!spdy_session->HasAcceptableTransportSecurity()) {
     spdy_session->CloseSessionOnError(
@@ -1200,11 +1197,10 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   }
 
   new_spdy_session_ = spdy_session;
-  spdy_session_direct_ = direct;
-  const HostPortPair host_port_pair = spdy_session_key.host_port_pair();
   url::SchemeHostPort scheme_host_port(
-      using_ssl_ ? url::kHttpsScheme : url::kHttpScheme, host_port_pair.host(),
-      host_port_pair.port());
+      using_ssl_ ? url::kHttpsScheme : url::kHttpScheme,
+      spdy_session_key_.host_port_pair().host(),
+      spdy_session_key_.host_port_pair().port());
 
   HttpServerProperties* http_server_properties =
       session_->http_server_properties();
@@ -1273,20 +1269,6 @@ void HttpStreamFactoryImpl::Job::SetSocketMotivation() {
   else if (request_info_.motivation == HttpRequestInfo::OMNIBOX_MOTIVATED)
     connection_->socket()->SetOmniboxSpeculation();
   // TODO(mbelshe): Add other motivations (like EARLY_LOAD_MOTIVATED).
-}
-
-bool HttpStreamFactoryImpl::Job::IsHttpsProxyAndHttpUrl() const {
-  if (!proxy_info_.is_https())
-    return false;
-  DCHECK(!IsSpdyAlternative());
-  if (IsQuicAlternative()) {
-    // We currently only support Alternate-Protocol where the original scheme
-    // is http.
-    // TODO(bnc): This comment is probably incorrect.
-    DCHECK(origin_url_.SchemeIs(url::kHttpScheme));
-    return origin_url_.SchemeIs(url::kHttpScheme);
-  }
-  return request_info_.url.SchemeIs(url::kHttpScheme);
 }
 
 bool HttpStreamFactoryImpl::Job::IsSpdyAlternative() const {
