@@ -65,7 +65,9 @@ void PrimaryBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
 }
 
 bool PrimaryBeginFrameSource::IsThrottled() const {
-  return begin_frame_source_.IsThrottled();
+  return current_begin_frame_source_
+             ? current_begin_frame_source_->IsThrottled()
+             : true;
 }
 
 void PrimaryBeginFrameSource::OnNeedsBeginFrames(bool needs_begin_frames) {
