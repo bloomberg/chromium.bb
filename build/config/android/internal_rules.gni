@@ -852,6 +852,11 @@ if (enable_java_templates) {
                                "testonly",
                              ])
       script = "//build/android/gyp/proguard.py"
+
+      # http://crbug.com/725224. Speculative fix for bots running out of memory.
+      # TODO(agrieve): Change this to an explicit pool once those are supported.
+      #     http://crbug.com/635308
+      console = true
       if (defined(invoker.proguard_jar_path)) {
         _proguard_jar_path = invoker.proguard_jar_path
       } else {
@@ -1029,6 +1034,12 @@ if (enable_java_templates) {
         script = "//build/android/gyp/main_dex_list.py"
         depfile = "$target_gen_dir/$target_name.d"
 
+        # http://crbug.com/725224. Speculative fix for bots running out of
+        #     memory.
+        # TODO(agrieve): Change this to an explicit pool once those are
+        #     supported. http://crbug.com/635308
+        console = true
+
         main_dex_rules = "//build/android/main_dex_classes.flags"
 
         if (defined(invoker.proguard_jar_path)) {
@@ -1094,6 +1105,12 @@ if (enable_java_templates) {
       outputs = [
         invoker.output,
       ]
+
+      if (defined(invoker.use_pool) && invoker.use_pool) {
+        # TODO(agrieve): Change this to an explicit pool once those are
+        #     supported. http://crbug.com/635308
+        console = true
+      }
 
       rebased_output = rebase_path(invoker.output, root_build_dir)
 
