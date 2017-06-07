@@ -305,12 +305,12 @@ be describing additional metrics about the same event.
   <metric name="AudioVideo.Background.Battery"/>
   <metric name="AudioVideo.Background.EME"/>
   <metric name="AudioVideo.Background.MSE"/>
-  <metric name="AudioVideo.Background.NativeControlsOff"/>
-  <metric name="AudioVideo.Background.NativeControlsOn"/>
   <metric name="AudioVideo.Background.SRC"/>
   <metric name="AudioVideo.Battery"/>
   <metric name="AudioVideo.EME"/>
   <metric name="AudioVideo.MSE"/>
+  <metric name="AudioVideo.NativeControlsOff"/>
+  <metric name="AudioVideo.NativeControlsOn"/>
   <metric name="AudioVideo.SRC"/>
 </event>
 
