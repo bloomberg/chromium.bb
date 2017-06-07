@@ -29,10 +29,6 @@ TestPermissionBubbleViewDelegate::Requests() {
   return requests_;
 }
 
-const std::vector<bool>& TestPermissionBubbleViewDelegate::AcceptStates() {
-  return accept_states_;
-}
-
 PermissionBubbleBrowserTest::PermissionBubbleBrowserTest() {
 }
 

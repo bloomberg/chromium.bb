@@ -63,13 +63,6 @@ TEST_F(PermissionMenuModelTest, TestDefaultMediaHttp) {
   }
 }
 
-TEST_F(PermissionMenuModelTest, TestAllowBlock) {
-  TestCallback callback;
-  PermissionMenuModel model(profile(), GURL("http://www.google.com"),
-                            CONTENT_SETTING_ALLOW, callback.callback());
-  EXPECT_EQ(2, model.GetItemCount());
-}
-
 TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
   TestCallback callback;
   PageInfoUI::PermissionInfo permission;

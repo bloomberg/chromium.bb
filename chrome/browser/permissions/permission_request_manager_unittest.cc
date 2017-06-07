@@ -61,10 +61,6 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void ToggleAccept(int index, bool value) {
-    manager_->ToggleAccept(index, value);
-  }
-
   void Accept() {
     manager_->Accept();
   }

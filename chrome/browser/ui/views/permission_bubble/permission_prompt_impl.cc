@@ -327,11 +327,6 @@ void PermissionPromptImpl::Closing() {
     delegate_->Closing();
 }
 
-void PermissionPromptImpl::ToggleAccept(int index, bool value) {
-  if (delegate_)
-    delegate_->ToggleAccept(index, value);
-}
-
 void PermissionPromptImpl::TogglePersist(bool value) {
   if (delegate_)
     delegate_->TogglePersist(value);

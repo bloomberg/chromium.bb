@@ -32,7 +32,6 @@ class PermissionPromptAndroid : public PermissionPrompt {
 
   void Closing();
   void TogglePersist(bool value);
-  void ToggleAccept(int index, bool value);
   void Accept();
   void Deny();
 
