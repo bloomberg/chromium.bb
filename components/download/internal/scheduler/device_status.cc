@@ -17,7 +17,7 @@ DeviceStatus::DeviceStatus()
     : battery_status(BatteryStatus::NOT_CHARGING),
       network_status(NetworkStatus::DISCONNECTED) {}
 
-bool DeviceStatus::operator==(const DeviceStatus& rhs) {
+bool DeviceStatus::operator==(const DeviceStatus& rhs) const {
   return network_status == rhs.network_status &&
          battery_status == rhs.battery_status;
 }

@@ -40,10 +40,11 @@ DownloadService* CreateDownloadService(
   auto store = base::MakeUnique<DownloadStore>(entry_db_storage_dir,
                                                std::move(entry_db));
   auto model = base::MakeUnique<ModelImpl>(std::move(store));
+  auto device_status_listener = base::MakeUnique<DeviceStatusListener>();
 
-  auto controller =
-      base::MakeUnique<ControllerImpl>(std::move(client_set), std::move(config),
-                                       std::move(driver), std::move(model));
+  auto controller = base::MakeUnique<ControllerImpl>(
+      std::move(client_set), std::move(config), std::move(driver),
+      std::move(model), std::move(device_status_listener));
   return new DownloadServiceImpl(std::move(controller));
 }
 

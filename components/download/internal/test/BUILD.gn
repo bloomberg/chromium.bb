@@ -22,6 +22,8 @@ source_set("test_support") {
     "mock_model_client.h",
     "noop_store.cc",
     "noop_store.h",
+    "test_device_status_listener.cc",
+    "test_device_status_listener.h",
     "test_download_driver.cc",
     "test_download_driver.h",
     "test_store.cc",

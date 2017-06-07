@@ -19,6 +19,7 @@
 #include "components/download/internal/model_impl.h"
 #include "components/download/internal/test/entry_utils.h"
 #include "components/download/internal/test/mock_client.h"
+#include "components/download/internal/test/test_device_status_listener.h"
 #include "components/download/internal/test/test_download_driver.h"
 #include "components/download/internal/test/test_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,10 +60,11 @@ class DownloadServiceControllerImplTest : public testing::Test {
     clients->insert(std::make_pair(DownloadClient::TEST, std::move(client)));
     auto client_set = base::MakeUnique<ClientSet>(std::move(clients));
     auto model = base::MakeUnique<ModelImpl>(std::move(store));
+    auto device_status_listener = base::MakeUnique<TestDeviceStatusListener>();
 
     controller_ = base::MakeUnique<ControllerImpl>(
         std::move(client_set), std::move(config), std::move(driver),
-        std::move(model));
+        std::move(model), std::move(device_status_listener));
   }
 
  protected:
