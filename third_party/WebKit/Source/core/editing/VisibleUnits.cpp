@@ -1679,6 +1679,36 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
   return last_visible.DeprecatedComputePosition();
 }
 
+// The text continues on the next line only if the last text box is not on this
+// line and none of the boxes on this line have a larger start offset.
+static bool DoesContinueOnNextLine(const LayoutText& text_layout_object,
+                                   InlineBox* box,
+                                   unsigned text_offset) {
+  InlineTextBox* const last_text_box = text_layout_object.LastTextBox();
+  DCHECK_NE(box, last_text_box);
+  for (InlineBox* runner = box->NextLeafChild(); runner;
+       runner = runner->NextLeafChild()) {
+    if (runner == last_text_box)
+      return false;
+    if (LineLayoutAPIShim::LayoutObjectFrom(runner->GetLineLayoutItem()) ==
+            text_layout_object &&
+        ToInlineTextBox(runner)->Start() >= text_offset)
+      return false;
+  }
+
+  for (InlineBox* runner = box->PrevLeafChild(); runner;
+       runner = runner->PrevLeafChild()) {
+    if (runner == last_text_box)
+      return false;
+    if (LineLayoutAPIShim::LayoutObjectFrom(runner->GetLineLayoutItem()) ==
+            text_layout_object &&
+        ToInlineTextBox(runner)->Start() >= text_offset)
+      return false;
+  }
+
+  return true;
+}
+
 // TODO(editing-dev): This function is just moved out from
 // |MostBackwardCaretPosition()|. We should study this function more and
 // name it appropriately. See https://trac.webkit.org/changeset/32438/
@@ -1718,40 +1748,7 @@ static bool CanBeBackwardCaretPosition(const LayoutText* text_layout_object,
     if (box == last_text_box || text_offset != box->Start() + box->Len() + 1)
       continue;
 
-    // TODO(yosin): We should move below code fragment into
-    // |DoesContinueOnNextLine()|. Note: |MostForwardCaretPosition()| has
-    // same code fragment except for comparison on |text_offset|.
-    // Backward: other_box->Start() >  text_offset
-    // Forward:  other_box->Start() >= text_offset
-    // The text continues on the next line only if the last text box is not
-    // on this line and none of the boxes on this line have a larger start
-    // offset.
-    bool continues_on_next_line = true;
-    InlineBox* other_box = box;
-    while (continues_on_next_line) {
-      other_box = other_box->NextLeafChild();
-      if (!other_box)
-        break;
-      if (other_box == last_text_box ||
-          (LineLayoutAPIShim::LayoutObjectFrom(
-               other_box->GetLineLayoutItem()) == text_layout_object &&
-           ToInlineTextBox(other_box)->Start() > text_offset))
-        continues_on_next_line = false;
-    }
-
-    other_box = box;
-    while (continues_on_next_line) {
-      other_box = other_box->PrevLeafChild();
-      if (!other_box)
-        break;
-      if (other_box == last_text_box ||
-          (LineLayoutAPIShim::LayoutObjectFrom(
-               other_box->GetLineLayoutItem()) == text_layout_object &&
-           ToInlineTextBox(other_box)->Start() > text_offset))
-        continues_on_next_line = false;
-    }
-
-    if (continues_on_next_line)
+    if (DoesContinueOnNextLine(*text_layout_object, box, text_offset + 1))
       return true;
   }
   return false;
@@ -1890,40 +1887,7 @@ static bool CanBeForwardCaretPosition(const LayoutText* text_layout_object,
     if (box == last_text_box || text_offset != box->Start() + box->Len())
       continue;
 
-    // TODO(yosin): We should move below code fragment into
-    // |DoesContinueOnNextLine()|. Note: |MostBackwardCaretPosition()| has
-    // same code fragment except for comparison on |text_offset|.
-    // Backward: other_box->Start() >  text_offset
-    // Forward:  other_box->Start() >= text_offset
-    // The text continues on the next line only if the last text box is not
-    // on this line and none of the boxes on this line have a larger start
-    // offset.
-    bool continues_on_next_line = true;
-    InlineBox* other_box = box;
-    while (continues_on_next_line) {
-      other_box = other_box->NextLeafChild();
-      if (!other_box)
-        break;
-      if (other_box == last_text_box ||
-          (LineLayoutAPIShim::LayoutObjectFrom(
-               other_box->GetLineLayoutItem()) == text_layout_object &&
-           ToInlineTextBox(other_box)->Start() >= text_offset))
-        continues_on_next_line = false;
-    }
-
-    other_box = box;
-    while (continues_on_next_line) {
-      other_box = other_box->PrevLeafChild();
-      if (!other_box)
-        break;
-      if (other_box == last_text_box ||
-          (LineLayoutAPIShim::LayoutObjectFrom(
-               other_box->GetLineLayoutItem()) == text_layout_object &&
-           ToInlineTextBox(other_box)->Start() >= text_offset))
-        continues_on_next_line = false;
-    }
-
-    if (continues_on_next_line)
+    if (DoesContinueOnNextLine(*text_layout_object, box, text_offset))
       return true;
   }
   return false;
