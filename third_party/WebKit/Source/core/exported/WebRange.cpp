@@ -57,7 +57,7 @@ WebRange::WebRange(const PlainTextRange& range) {
     return;
 
   start_ = range.Start();
-  end_ = range.end();
+  end_ = range.End();
 }
 
 EphemeralRange WebRange::CreateEphemeralRange(LocalFrame* frame) const {

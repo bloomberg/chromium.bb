@@ -393,7 +393,7 @@ bool InputMethodController::FinishComposingText(
 
   Clear();
 
-  if (!MoveCaret(composition_range.end()))
+  if (!MoveCaret(composition_range.End()))
     return false;
 
   DispatchCompositionEndEvent(GetFrame(), composing);
@@ -891,7 +891,7 @@ void InputMethodController::ExtendSelectionAndDelete(int before, int after) {
   do {
     if (!SetSelectionOffsets(PlainTextRange(
             std::max(static_cast<int>(selection_offsets.Start()) - before, 0),
-            selection_offsets.end() + after)))
+            selection_offsets.End() + after)))
       return;
     if (before == 0)
       break;
@@ -929,7 +929,7 @@ void InputMethodController::DeleteSurroundingText(int before, int after) {
   if (!root_editable_element)
     return;
   int selection_start = static_cast<int>(selection_offsets.Start());
-  int selection_end = static_cast<int>(selection_offsets.end());
+  int selection_end = static_cast<int>(selection_offsets.End());
 
   // Select the text to be deleted before SelectionState::kStart.
   if (before > 0 && selection_start > 0) {
@@ -966,7 +966,7 @@ void InputMethodController::DeleteSurroundingText(int before, int after) {
     if (valid_range.IsNull())
       return;
     const int end =
-        PlainTextRange::Create(*root_editable_element, valid_range).end();
+        PlainTextRange::Create(*root_editable_element, valid_range).End();
     const Position& position = valid_range.EndPosition();
 
     // Adjust the end of selection for multi-code text. TODO(yabinh): Adjustment
@@ -1008,7 +1008,7 @@ void InputMethodController::DeleteSurroundingTextInCodePoints(int before,
     return DeleteSurroundingText(before, after);
 
   const int selection_start = static_cast<int>(selection_offsets.Start());
-  const int selection_end = static_cast<int>(selection_offsets.end());
+  const int selection_end = static_cast<int>(selection_offsets.End());
 
   const int before_length =
       CalculateBeforeDeletionLengthsInCodePoints(text, before, selection_start);
@@ -1069,7 +1069,7 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
         PlainTextRange::Create(*element, first_range));
     if (plain_text_range.IsNotNull()) {
       info.selection_start = plain_text_range.Start();
-      info.selection_end = plain_text_range.end();
+      info.selection_end = plain_text_range.End();
     }
   }
 
@@ -1078,7 +1078,7 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
     PlainTextRange plain_text_range(PlainTextRange::Create(*element, range));
     if (plain_text_range.IsNotNull()) {
       info.composition_start = plain_text_range.Start();
-      info.composition_end = plain_text_range.end();
+      info.composition_end = plain_text_range.End();
     }
   }
 

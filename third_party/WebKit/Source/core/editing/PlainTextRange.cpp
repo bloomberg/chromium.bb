@@ -97,7 +97,7 @@ EphemeralRange PlainTextRange::CreateRangeFor(const ContainerNode& scope,
     bool found_start =
         Start() >= doc_text_position && Start() <= doc_text_position + len;
     bool found_end =
-        end() >= doc_text_position && end() <= doc_text_position + len;
+        End() >= doc_text_position && End() <= doc_text_position + len;
 
     // Fix textRunRange->endPosition(), but only if foundStart || foundEnd,
     // because it is only in those cases that textRunRange is used.
@@ -137,12 +137,12 @@ EphemeralRange PlainTextRange::CreateRangeFor(const ContainerNode& scope,
 
     if (found_end) {
       if (text_run_start_position.ComputeContainerNode()->IsTextNode()) {
-        int offset = end() - doc_text_position;
+        int offset = End() - doc_text_position;
         result_end =
             Position(text_run_start_position.ComputeContainerNode(),
                      offset + text_run_start_position.OffsetInContainerNode());
       } else {
-        if (end() == doc_text_position)
+        if (End() == doc_text_position)
           result_end = text_run_start_position;
         else
           result_end = text_run_end_position;
@@ -156,7 +156,7 @@ EphemeralRange PlainTextRange::CreateRangeFor(const ContainerNode& scope,
   if (!start_range_found)
     return EphemeralRange();
 
-  if (length() && end() > doc_text_position) {  // end() is out of bounds
+  if (length() && End() > doc_text_position) {  // End() is out of bounds
     result_end = text_run_end_position;
   }
 

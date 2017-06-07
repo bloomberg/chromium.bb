@@ -181,7 +181,7 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
 
   PlainTextRange plain_text_range(PlainTextRange::Create(*div, *range));
   EXPECT_EQ(0u, plain_text_range.Start());
-  EXPECT_EQ(5u, plain_text_range.end());
+  EXPECT_EQ(5u, plain_text_range.End());
 }
 
 TEST_F(InputMethodControllerTest, SetCompositionAfterEmoji) {
@@ -225,7 +225,7 @@ TEST_F(InputMethodControllerTest, SetCompositionWithGraphemeCluster) {
       String::FromUTF8("\xE0\xA4\xB9\xE0\xA5\x87\xE0\xA4\xB2\xE0\xA4\xB2"),
       underlines, 4, 4);
   EXPECT_EQ(4u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(4u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(4u, Controller().GetSelectionOffsets().End());
 
   // UTF16 = 0x0939 0x0947 0x0932 0x094D 0x0932 0x094B.
   Controller().SetComposition(
@@ -233,7 +233,7 @@ TEST_F(InputMethodControllerTest, SetCompositionWithGraphemeCluster) {
                        "\xA4\xB2\xE0\xA5\x8B"),
       underlines, 6, 6);
   EXPECT_EQ(6u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(6u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(6u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest,
@@ -259,7 +259,7 @@ TEST_F(InputMethodControllerTest,
       "\x8B\nab c",
       div->innerText().Utf8().data());
   EXPECT_EQ(11u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(11u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(11u, Controller().GetSelectionOffsets().End());
 
   Controller().SetComposition(String("cd"), underlines, 2, 2);
   EXPECT_STREQ(
@@ -267,7 +267,7 @@ TEST_F(InputMethodControllerTest,
       "\x8B\nab cd",
       div->innerText().Utf8().data());
   EXPECT_EQ(12u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(12u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(12u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
@@ -285,14 +285,14 @@ TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
   EXPECT_STREQ("abc1<b>2</b>3457<b>8</b>9d<b>e</b>f",
                div->innerHTML().Utf8().data());
   EXPECT_EQ(11u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(11u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(11u, Controller().GetSelectionOffsets().End());
 
   // Append a character.
   Controller().SetComposition(String("123456789"), underlines, 9, 9);
   EXPECT_STREQ("abc1<b>2</b>34567<b>8</b>9d<b>e</b>f",
                div->innerHTML().Utf8().data());
   EXPECT_EQ(12u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(12u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(12u, Controller().GetSelectionOffsets().End());
 
   // Subtract and append characters.
   Controller().SetComposition(String("123hello789"), underlines, 11, 11);
@@ -464,7 +464,7 @@ TEST_F(InputMethodControllerTest,
 
   PlainTextRange plain_text_range(PlainTextRange::Create(*div, *range));
   EXPECT_EQ(0u, plain_text_range.Start());
-  EXPECT_EQ(5u, plain_text_range.end());
+  EXPECT_EQ(5u, plain_text_range.End());
 }
 
 TEST_F(InputMethodControllerTest,
@@ -787,22 +787,22 @@ TEST_F(InputMethodControllerTest, DeleteSurroundingTextForMultipleNodes) {
   Controller().SetEditableSelectionOffsets(PlainTextRange(8, 8));
   EXPECT_STREQ("aaa\nbbb\nccc\nddd\neee", div->innerText().Utf8().data());
   EXPECT_EQ(8u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(8u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(8u, Controller().GetSelectionOffsets().End());
 
   Controller().DeleteSurroundingText(1, 0);
   EXPECT_STREQ("aaa\nbbbccc\nddd\neee", div->innerText().Utf8().data());
   EXPECT_EQ(7u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(7u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(7u, Controller().GetSelectionOffsets().End());
 
   Controller().DeleteSurroundingText(0, 4);
   EXPECT_STREQ("aaa\nbbbddd\neee", div->innerText().Utf8().data());
   EXPECT_EQ(7u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(7u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(7u, Controller().GetSelectionOffsets().End());
 
   Controller().DeleteSurroundingText(5, 5);
   EXPECT_STREQ("aaee", div->innerText().Utf8().data());
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(2u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(2u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest,
@@ -883,7 +883,7 @@ TEST_F(InputMethodControllerTest, DeleteSurroundingTextInCodePointsWithImage) {
   Controller().DeleteSurroundingTextInCodePoints(1, 1);
   EXPECT_STREQ("aaabb", div->innerText().Utf8().data());
   EXPECT_EQ(3u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(3u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(3u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest,
@@ -933,7 +933,7 @@ TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions) {
   Controller().SetEditableSelectionOffsets(PlainTextRange(2, 2));
   EXPECT_STREQ("hello", input->value().Utf8().data());
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(2u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(2u, Controller().GetSelectionOffsets().End());
 
   Vector<CompositionUnderline> underlines;
   underlines.push_back(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
@@ -943,42 +943,42 @@ TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions) {
   Controller().SetComposition("AB", underlines, -100, -100);
   EXPECT_STREQ("heABllo", input->value().Utf8().data());
   EXPECT_EQ(0u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(0u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(0u, Controller().GetSelectionOffsets().End());
 
   // The caret is on left boundary.
   // "*heABllo".
   Controller().SetComposition("AB", underlines, -2, -2);
   EXPECT_STREQ("heABllo", input->value().Utf8().data());
   EXPECT_EQ(0u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(0u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(0u, Controller().GetSelectionOffsets().End());
 
   // The caret is before the composing text.
   // "he*ABllo".
   Controller().SetComposition("AB", underlines, 0, 0);
   EXPECT_STREQ("heABllo", input->value().Utf8().data());
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(2u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(2u, Controller().GetSelectionOffsets().End());
 
   // The caret is after the composing text.
   // "heAB*llo".
   Controller().SetComposition("AB", underlines, 2, 2);
   EXPECT_STREQ("heABllo", input->value().Utf8().data());
   EXPECT_EQ(4u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(4u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(4u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary.
   // "heABllo*".
   Controller().SetComposition("AB", underlines, 5, 5);
   EXPECT_STREQ("heABllo", input->value().Utf8().data());
   EXPECT_EQ(7u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(7u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(7u, Controller().GetSelectionOffsets().End());
 
   // The caret exceeds right boundary.
   // "heABllo*".
   Controller().SetComposition("AB", underlines, 100, 100);
   EXPECT_STREQ("heABllo", input->value().Utf8().data());
   EXPECT_EQ(7u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(7u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(7u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest,
@@ -997,7 +997,7 @@ TEST_F(InputMethodControllerTest,
   Controller().SetEditableSelectionOffsets(PlainTextRange(17, 17));
   EXPECT_STREQ("hello\nworld\n0123456789", div->innerText().Utf8().data());
   EXPECT_EQ(17u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(17u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(17u, Controller().GetSelectionOffsets().End());
 
   Vector<CompositionUnderline> underlines;
   underlines.push_back(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
@@ -1007,77 +1007,77 @@ TEST_F(InputMethodControllerTest,
   Controller().SetComposition("AB", underlines, -100, -100);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(0u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(0u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(0u, Controller().GetSelectionOffsets().End());
 
   // The caret is on left boundary.
   // "*hello\nworld\n01234AB56789".
   Controller().SetComposition("AB", underlines, -17, -17);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(0u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(0u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(0u, Controller().GetSelectionOffsets().End());
 
   // The caret is in the 1st node.
   // "he*llo\nworld\n01234AB56789".
   Controller().SetComposition("AB", underlines, -15, -15);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(2u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(2u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary of the 1st node.
   // "hello*\nworld\n01234AB56789".
   Controller().SetComposition("AB", underlines, -12, -12);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(5u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(5u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(5u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary of the 2nd node.
   // "hello\n*world\n01234AB56789".
   Controller().SetComposition("AB", underlines, -11, -11);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(6u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(6u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(6u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary of the 3rd node.
   // "hello\nworld*\n01234AB56789".
   Controller().SetComposition("AB", underlines, -6, -6);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(11u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(11u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(11u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary of the 4th node.
   // "hello\nworld\n*01234AB56789".
   Controller().SetComposition("AB", underlines, -5, -5);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(12u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(12u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(12u, Controller().GetSelectionOffsets().End());
 
   // The caret is before the composing text.
   // "hello\nworld\n01234*AB56789".
   Controller().SetComposition("AB", underlines, 0, 0);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(17u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(17u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(17u, Controller().GetSelectionOffsets().End());
 
   // The caret is after the composing text.
   // "hello\nworld\n01234AB*56789".
   Controller().SetComposition("AB", underlines, 2, 2);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(19u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(19u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(19u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary.
   // "hello\nworld\n01234AB56789*".
   Controller().SetComposition("AB", underlines, 7, 7);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(24u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(24u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(24u, Controller().GetSelectionOffsets().End());
 
   // The caret exceeds right boundary.
   // "hello\nworld\n01234AB56789*".
   Controller().SetComposition("AB", underlines, 100, 100);
   EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(24u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(24u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(24u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText) {
@@ -1087,7 +1087,7 @@ TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText) {
   Controller().SetEditableSelectionOffsets(PlainTextRange(2, 2));
   EXPECT_STREQ("hello", div->innerText().Utf8().data());
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(2u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(2u, Controller().GetSelectionOffsets().End());
 
   Vector<CompositionUnderline> underlines0;
   underlines0.push_back(CompositionUnderline(0, 0, Color(255, 0, 0), false, 0));
@@ -1099,13 +1099,13 @@ TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText) {
   Controller().SetComposition("", underlines0, 2, 2);
   EXPECT_STREQ("hello", div->innerText().Utf8().data());
   EXPECT_EQ(4u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(4u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(4u, Controller().GetSelectionOffsets().End());
 
   // Without previous composition.
   Controller().SetComposition("", underlines0, -1, -1);
   EXPECT_STREQ("hello", div->innerText().Utf8().data());
   EXPECT_EQ(3u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(3u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(3u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText) {
@@ -1117,12 +1117,12 @@ TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText) {
   Controller().SetComposition("hello", underlines, 5, 5);
   EXPECT_STREQ("hello", div->innerText().Utf8().data());
   EXPECT_EQ(5u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(5u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(5u, Controller().GetSelectionOffsets().End());
 
   GetFrame().GetEditor().InsertLineBreak();
   EXPECT_STREQ("\n\n", div->innerText().Utf8().data());
   EXPECT_EQ(1u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(1u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(1u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText) {
@@ -1136,12 +1136,12 @@ TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText) {
 
   Controller().SetEditableSelectionOffsets(PlainTextRange(2, 2));
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(2u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(2u, Controller().GetSelectionOffsets().End());
 
   GetFrame().GetEditor().InsertLineBreak();
   EXPECT_STREQ("he\nllo", div->innerText().Utf8().data());
   EXPECT_EQ(3u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(3u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(3u, Controller().GetSelectionOffsets().End());
 }
 
 TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
@@ -1297,7 +1297,7 @@ TEST_F(InputMethodControllerTest, CompositionEndEventWithNoSelection) {
   Controller().SetComposition("hello", underlines, 1, 1);
   GetDocument().UpdateStyleAndLayout();
   EXPECT_EQ(1u, Controller().GetSelectionOffsets().Start());
-  EXPECT_EQ(1u, Controller().GetSelectionOffsets().end());
+  EXPECT_EQ(1u, Controller().GetSelectionOffsets().End());
 
   // Confirm the ongoing composition. Note that it moves the caret to the end of
   // text [5,5] before firing 'compositonend' event.
