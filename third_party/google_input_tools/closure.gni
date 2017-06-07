@@ -34,7 +34,7 @@ template("build_closure") {
     if (defined(invoker.path)) {
       args += [
         "--path",
-        invoker.path,
+        rebase_path(invoker.path, root_build_dir),
       ]
     }
   }
