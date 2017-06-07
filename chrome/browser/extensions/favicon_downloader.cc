@@ -73,7 +73,7 @@ void FaviconDownloader::FetchIcons(
   for (std::vector<content::FaviconURL>::const_iterator it =
            favicon_urls.begin();
        it != favicon_urls.end(); ++it) {
-    if (it->icon_type != content::FaviconURL::INVALID_ICON)
+    if (it->icon_type != content::FaviconURL::IconType::kInvalid)
       urls.push_back(it->icon_url);
   }
   FetchIcons(urls);

@@ -50,7 +50,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
-#include "third_party/WebKit/public/web/WebIconURL.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
@@ -74,7 +73,6 @@ namespace blink {
 class WebDataSource;
 class WebDateTimeChooserCompletion;
 class WebGestureEvent;
-class WebIconURL;
 class WebMouseEvent;
 class WebSpeechRecognizer;
 class WebStorageNamespace;
@@ -99,7 +97,6 @@ class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
 class SpeechRecognitionDispatcher;
-struct FaviconURL;
 struct FileChooserParams;
 struct ResizeParams;
 
@@ -493,8 +490,6 @@ class CONTENT_EXPORT RenderViewImpl
   // still live here and are called from RenderFrameImpl. These implementations
   // are to be moved to RenderFrameImpl <http://crbug.com/361761>.
 
-  void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
-
   static Referrer GetReferrerFromRequest(
       blink::WebFrame* frame,
       const blink::WebURLRequest& request);
@@ -592,13 +587,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Update the target url and tell the browser that the target URL has changed.
   // If |url| is empty, show |fallback_url|.
   void UpdateTargetURL(const GURL& url, const GURL& fallback_url);
-
-  // Tells the browser what the new list of favicons for the webpage is.
-  void SendUpdateFaviconURL(const std::vector<FaviconURL>& urls);
-
-  // Invoked from DidStopLoading(). Sends the current list of loaded favicons to
-  // the browser.
-  void DidStopLoadingIcons();
 
   // Coordinate conversion -----------------------------------------------------
 

@@ -87,11 +87,6 @@ void WebRemoteFrameImpl::SetName(const WebString&) {
   NOTREACHED();
 }
 
-WebVector<WebIconURL> WebRemoteFrameImpl::IconURLs(int icon_types_mask) const {
-  NOTREACHED();
-  return WebVector<WebIconURL>();
-}
-
 WebSize WebRemoteFrameImpl::GetScrollOffset() const {
   NOTREACHED();
   return WebSize();

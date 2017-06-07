@@ -17,13 +17,13 @@ namespace {
 favicon_base::IconType IconTypeFromContentIconType(
     content::FaviconURL::IconType icon_type) {
   switch (icon_type) {
-    case content::FaviconURL::FAVICON:
+    case content::FaviconURL::IconType::kFavicon:
       return favicon_base::FAVICON;
-    case content::FaviconURL::TOUCH_ICON:
+    case content::FaviconURL::IconType::kTouchIcon:
       return favicon_base::TOUCH_ICON;
-    case content::FaviconURL::TOUCH_PRECOMPOSED_ICON:
+    case content::FaviconURL::IconType::kTouchPrecomposedIcon:
       return favicon_base::TOUCH_PRECOMPOSED_ICON;
-    case content::FaviconURL::INVALID_ICON:
+    case content::FaviconURL::IconType::kInvalid:
       return favicon_base::INVALID_ICON;
   }
   NOTREACHED();

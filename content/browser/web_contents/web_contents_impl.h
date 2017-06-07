@@ -1122,7 +1122,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
                               const IPC::Message& message);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-  void OnUpdateFaviconURL(RenderViewHostImpl* source,
+  void OnUpdateFaviconURL(RenderFrameHostImpl* source,
                           const std::vector<FaviconURL>& candidates);
   void OnFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source);
   void OnShowValidationMessage(RenderViewHostImpl* source,

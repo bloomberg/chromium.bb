@@ -1911,7 +1911,7 @@ TEST_F(RenderViewImplTest, SendFaviconURLUpdateEvent) {
            "</head>"
            "</html>");
   EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-      ViewHostMsg_UpdateFaviconURL::ID));
+      FrameHostMsg_UpdateFaviconURL::ID));
   render_thread_->sink().ClearMessages();
 
   // An event should not be sent if no favicon url exists. This is an assumption
@@ -1921,7 +1921,7 @@ TEST_F(RenderViewImplTest, SendFaviconURLUpdateEvent) {
            "</head>"
            "</html>");
   EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      ViewHostMsg_UpdateFaviconURL::ID));
+      FrameHostMsg_UpdateFaviconURL::ID));
 }
 
 TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {

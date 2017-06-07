@@ -17,11 +17,12 @@ namespace content {
 struct CONTENT_EXPORT FaviconURL {
   // The icon type in a page. The definition must be same as
   // favicon_base::IconType.
-  enum IconType {
-    INVALID_ICON = 0x0,
-    FAVICON = 1 << 0,
-    TOUCH_ICON = 1 << 1,
-    TOUCH_PRECOMPOSED_ICON = 1 << 2
+  enum class IconType {
+    kInvalid,
+    kFavicon,
+    kTouchIcon,
+    kTouchPrecomposedIcon,
+    kMax = kTouchPrecomposedIcon,
   };
 
   FaviconURL();

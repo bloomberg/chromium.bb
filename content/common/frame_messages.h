@@ -34,6 +34,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -104,6 +105,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameOwnerProperties::ScrollingMode,
                           blink::WebFrameOwnerProperties::ScrollingMode::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
                           content::STOP_FIND_ACTION_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::FaviconURL::IconType,
+                          content::FaviconURL::IconType::kMax)
 IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::kLast)
@@ -169,6 +172,12 @@ IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
   IPC_STRUCT_TRAITS_MEMBER(render_widget_id)
   IPC_STRUCT_TRAITS_MEMBER(link_followed)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::FaviconURL)
+  IPC_STRUCT_TRAITS_MEMBER(icon_url)
+  IPC_STRUCT_TRAITS_MEMBER(icon_type)
+  IPC_STRUCT_TRAITS_MEMBER(icon_sizes)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameOwnerProperties)
@@ -1641,6 +1650,10 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_RequestOverlayRoutingToken)
 // Asks the browser to display the file chooser.  The result is returned in a
 // FrameMsg_RunFileChooserResponse message.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_RunFileChooser, content::FileChooserParams)
+
+// Notification that the urls for the favicon of a site has been determined.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateFaviconURL,
+                    std::vector<content::FaviconURL> /* candidates */)
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 
