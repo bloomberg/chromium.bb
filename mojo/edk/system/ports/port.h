@@ -21,6 +21,8 @@ namespace mojo {
 namespace edk {
 namespace ports {
 
+class PortLocker;
+
 class Port : public base::RefCountedThreadSafe<Port> {
  public:
   enum State {
@@ -31,7 +33,6 @@ class Port : public base::RefCountedThreadSafe<Port> {
     kClosed
   };
 
-  base::Lock lock;
   State state;
   NodeName peer_node_name;
   PortName peer_port_name;
@@ -46,10 +47,19 @@ class Port : public base::RefCountedThreadSafe<Port> {
   Port(uint64_t next_sequence_num_to_send,
        uint64_t next_sequence_num_to_receive);
 
+  void AssertLockAcquired() {
+#if DCHECK_IS_ON()
+    lock_.AssertAcquired();
+#endif
+  }
+
  private:
   friend class base::RefCountedThreadSafe<Port>;
+  friend class PortLocker;
 
   ~Port();
+
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(Port);
 };

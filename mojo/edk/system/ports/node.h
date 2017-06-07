@@ -149,10 +149,6 @@ class Node {
   int LostConnectionToNode(const NodeName& node_name);
 
  private:
-  class LockedPort;
-
-  // Note: Functions that end with _Locked require |ports_lock_| to be held
-  // before calling.
   int OnUserMessage(std::unique_ptr<UserMessageEvent> message);
   int OnPortAccepted(std::unique_ptr<PortAcceptedEvent> event);
   int OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event);
@@ -162,40 +158,37 @@ class Node {
 
   int AddPortWithName(const PortName& port_name, scoped_refptr<Port> port);
   void ErasePort(const PortName& port_name);
-  void ErasePort_Locked(const PortName& port_name);
-  scoped_refptr<Port> GetPort(const PortName& port_name);
-  scoped_refptr<Port> GetPort_Locked(const PortName& port_name);
 
   int SendUserMessageInternal(const PortRef& port_ref,
                               std::unique_ptr<UserMessageEvent>* message);
-  int MergePorts_Locked(const PortRef& port0_ref, const PortRef& port1_ref);
-  void WillSendPort(const LockedPort& port,
-                    const NodeName& to_node_name,
-                    PortName* port_name,
-                    Event::PortDescriptor* port_descriptor);
+  int MergePortsInternal(const PortRef& port0_ref,
+                         const PortRef& port1_ref,
+                         bool allow_close_on_bad_state);
+  void ConvertToProxy(Port* port,
+                      const NodeName& to_node_name,
+                      PortName* port_name,
+                      Event::PortDescriptor* port_descriptor);
   int AcceptPort(const PortName& port_name,
                  const Event::PortDescriptor& port_descriptor);
 
-  int WillForwardUserMessage_Locked(const LockedPort& port,
-                                    const PortName& port_name,
-                                    UserMessageEvent* message);
-  int BeginProxying_Locked(const LockedPort& port, const PortName& port_name);
-  int BeginProxying(PortRef port_ref);
-  int ForwardMessages_Locked(const LockedPort& port, const PortName& port_name);
-  void InitiateProxyRemoval(const LockedPort& port, const PortName& port_name);
-  void MaybeRemoveProxy_Locked(const LockedPort& port,
-                               const PortName& port_name);
-  void TryRemoveProxy(PortRef port_ref);
+  int PrepareToForwardUserMessage(const PortRef& forwarding_port_ref,
+                                  Port::State expected_port_state,
+                                  bool ignore_closed_peer,
+                                  UserMessageEvent* message,
+                                  NodeName* forward_to_node);
+  int BeginProxying(const PortRef& port_ref);
+  int ForwardUserMessagesFromProxy(const PortRef& port_ref);
+  void InitiateProxyRemoval(const PortRef& port_ref);
+  void TryRemoveProxy(const PortRef& port_ref);
   void DestroyAllPortsWithPeer(const NodeName& node_name,
                                const PortName& port_name);
 
   const NodeName name_;
   NodeDelegate* const delegate_;
 
-  // Guards |ports_| as well as any operation which needs to hold multiple port
-  // locks simultaneously. Usage of this is subtle: it must NEVER be acquired
-  // after a Port lock is acquired, and it must ALWAYS be acquired before
-  // calling WillForwardUserMessage_Locked or ForwardMessages_Locked.
+  // Guards |ports_|. This must never be acquired while an individual port's
+  // lock is held on the same thread. Conversely, individual port locks may be
+  // acquired while this one is held.
   base::Lock ports_lock_;
   std::unordered_map<PortName, scoped_refptr<Port>> ports_;
 

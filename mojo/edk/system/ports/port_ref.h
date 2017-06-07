@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_SYSTEM_PORTS_PORT_REF_H_
 #define MOJO_EDK_SYSTEM_PORTS_PORT_REF_H_
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/ports/name.h"
 
@@ -13,7 +14,7 @@ namespace edk {
 namespace ports {
 
 class Port;
-class Node;
+class PortLocker;
 
 class PortRef {
  public:
@@ -22,12 +23,18 @@ class PortRef {
   PortRef(const PortName& name, scoped_refptr<Port> port);
 
   PortRef(const PortRef& other);
+  PortRef(PortRef&& other);
+
   PortRef& operator=(const PortRef& other);
+  PortRef& operator=(PortRef&& other);
 
   const PortName& name() const { return name_; }
 
+  bool is_valid() const { return !!port_; }
+
  private:
-  friend class Node;
+  friend class PortLocker;
+
   Port* port() const { return port_.get(); }
 
   PortName name_;
