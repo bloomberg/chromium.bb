@@ -7,7 +7,9 @@
 
 #include <stddef.h>
 
+#include <ostream>
 #include <string>
+
 #include "base/containers/hash_tables.h"
 
 enum class AccountType { UNKNOWN, GOOGLE, ACTIVE_DIRECTORY };
@@ -97,6 +99,8 @@ class AccountId {
                           AccountId* out_account_id);
 
  private:
+  friend std::ostream& operator<<(std::ostream&, const AccountId&);
+
   AccountId(const std::string& id,
             const std::string& user_email,
             const AccountType& account_type);
@@ -105,6 +109,9 @@ class AccountId {
   std::string user_email_;
   AccountType account_type_ = AccountType::UNKNOWN;
 };
+
+// Overload << operator to allow logging of AccountIds.
+std::ostream& operator<<(std::ostream& stream, const AccountId& account_id);
 
 // Returns a reference to a singleton.
 const AccountId& EmptyAccountId();

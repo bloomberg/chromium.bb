@@ -319,6 +319,16 @@ bool AccountId::Deserialize(const std::string& serialized,
   return false;
 }
 
+std::ostream& operator<<(std::ostream& stream, const AccountId& account_id) {
+  stream << "{id: " << account_id.id_ << ", email: " << account_id.user_email_
+         << ", type: "
+         << static_cast<
+                std::underlying_type<decltype(account_id.account_type_)>::type>(
+                account_id.account_type_)
+         << "}";
+  return stream;
+}
+
 const AccountId& EmptyAccountId() {
   return AccountId::EmptyAccountId::GetInstance()->user_id;
 }
