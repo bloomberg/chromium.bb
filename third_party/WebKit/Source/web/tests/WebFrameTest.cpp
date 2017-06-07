@@ -11281,7 +11281,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
       web_view->CoreHitTestResultAt(WebPoint(18, a_tag->OffsetTop()));
 
   EXPECT_FALSE(hit_test_result.URLElement());
-  EXPECT_FALSE(hit_test_result.InnerElement());
+  EXPECT_TRUE(hit_test_result.InnerElement());
   EXPECT_TRUE(hit_test_result.GetScrollbar());
   EXPECT_FALSE(hit_test_result.GetScrollbar()->IsCustomScrollbar());
 
@@ -11326,8 +11326,8 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   document->GetFrame()->GetEventHandler().HandleMousePressEvent(
       mouse_press_event);
 
-  EXPECT_FALSE(document->ActiveHoverElement());
-  EXPECT_FALSE(document->HoverElement());
+  EXPECT_TRUE(document->ActiveHoverElement());
+  EXPECT_TRUE(document->HoverElement());
 
   WebMouseEvent mouse_release_event(
       WebInputEvent::kMouseUp, WebFloatPoint(18, a_tag->OffsetTop()),
@@ -11463,7 +11463,7 @@ TEST_F(WebFrameTest, MouseOverScrollbarAndIFrame) {
 
   // Ensure hittest has scrollbar.
   hit_test_result = web_view->CoreHitTestResultAt(WebPoint(195, 5));
-  EXPECT_FALSE(hit_test_result.InnerElement());
+  EXPECT_TRUE(hit_test_result.InnerElement());
   EXPECT_TRUE(hit_test_result.GetScrollbar());
   EXPECT_TRUE(hit_test_result.GetScrollbar()->Enabled());
 
@@ -11585,6 +11585,41 @@ TEST_F(WebFrameTest, MouseOverScrollbarAndParentElement) {
 
   // Not change the DIV :hover.
   EXPECT_EQ(document->HoverElement(), parent_div);
+}
+
+// Makes sure that mouse over a root scrollbar also hover the html element.
+TEST_F(WebFrameTest, MouseOverRootScrollbar) {
+  RegisterMockedHttpURLLoad("hover-root-scrollbar.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "hover-root-scrollbar.html");
+
+  web_view_helper.Resize(WebSize(200, 200));
+
+  web_view->UpdateAllLifecyclePhases();
+
+  Document* document =
+      ToLocalFrame(web_view->GetPage()->MainFrame())->GetDocument();
+
+  // Ensure hittest has <html> element and scrollbar.
+  HitTestResult hit_test_result =
+      web_view->CoreHitTestResultAt(WebPoint(195, 5));
+
+  EXPECT_TRUE(hit_test_result.InnerElement());
+  EXPECT_EQ(hit_test_result.InnerElement(), document->documentElement());
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+
+  // Mouse over scrollbar.
+  WebMouseEvent mouse_move_over_div_and_scrollbar(
+      WebInputEvent::kMouseMove, WebFloatPoint(195, 5), WebFloatPoint(195, 5),
+      WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouse_move_over_div_and_scrollbar.SetFrameScale(1);
+  document->GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_over_div_and_scrollbar, Vector<WebMouseEvent>());
+
+  // Hover <html element.
+  EXPECT_EQ(document->HoverElement(), document->documentElement());
 }
 
 TEST_F(WebFrameTest, MouseReleaseUpdatesScrollbarHoveredPart) {
