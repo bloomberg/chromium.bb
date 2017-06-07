@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.vr_shell;
+package org.chromium.chrome.browser.vr_shell.util;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.infobar.InfoBarLayout;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 

@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_CHECK_INTERVAL_LONG_MS;
-import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_CHECK_INTERVAL_SHORT_MS;
-import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_CHECK_INTERVAL_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_CHECK_INTERVAL_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_TIMEOUT_SHORT_MS;
 
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
@@ -19,6 +19,7 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.vr_shell.util.VrUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.ClickUtils;

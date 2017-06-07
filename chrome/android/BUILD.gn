@@ -551,15 +551,15 @@ if (enable_vr) {
     java_files = [
       "javatests/src/org/chromium/chrome/browser/media/RouterTestUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/EmulatedVrController.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/MockVrCoreVersionCheckerImpl.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/MockVrDaydreamApi.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrCoreVersionCheckerImpl.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/mock/MockVrDaydreamApi.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/nfc_apk/SimNfcActivity.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/NfcSimUtils.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/util/NfcSimUtils.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrFeedbackInfoBarTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNavigationTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrTestRule.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTest.java",
     ]
 
