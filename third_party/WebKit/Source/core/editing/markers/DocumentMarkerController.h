@@ -64,6 +64,10 @@ class CORE_EXPORT DocumentMarkerController final
                             Color underline_color,
                             StyleableMarker::Thickness,
                             Color background_color);
+  void AddActiveSuggestionMarker(const EphemeralRange&,
+                                 Color underline_color,
+                                 StyleableMarker::Thickness,
+                                 Color background_color);
 
   void MoveMarkers(Node* src_node, int length, Node* dst_node);
 
