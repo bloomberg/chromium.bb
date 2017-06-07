@@ -541,6 +541,31 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       device = gpu.devices[0]
       if not device:
         self.fail("System Info doesn't have a device")
+      # Validate extensions.
+      ext_list = [
+        'ANGLE_instanced_arrays',
+        'EXT_blend_minmax',
+        'EXT_texture_filter_anisotropic',
+        'WEBKIT_EXT_texture_filter_anisotropic',
+        'OES_element_index_uint',
+        'OES_standard_derivatives',
+        'OES_texture_float',
+        'OES_texture_float_linear',
+        'OES_texture_half_float',
+        'OES_texture_half_float_linear',
+        'OES_vertex_array_object',
+        'WEBGL_compressed_texture_etc1',
+        'WEBGL_debug_renderer_info',
+        'WEBGL_debug_shaders',
+        'WEBGL_depth_texture',
+        'WEBKIT_WEBGL_depth_texture',
+        'WEBGL_lose_context',
+        'WEBKIT_WEBGL_lose_context',
+      ]
+      tab = self.tab
+      for ext in ext_list:
+        if tab.EvaluateJavaScript('!gl_context.getExtension("' + ext + '")'):
+          self.fail("Expected " + ext + " support")
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
