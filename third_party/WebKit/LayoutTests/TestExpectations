@@ -88,6 +88,8 @@ crbug.com/728566 virtual/gpu-rasterization/images/color-profile-background-image
 crbug.com/728566 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ NeedsManualRebaseline ]
 crbug.com/728566 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ NeedsManualRebaseline ]
 
+crbug.com/722000 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsManualRebaseline ]
+
 ########## Bugs to fix ##########
 # This is a missing event and increasing the timeout or using run-after-layout-and-paint doesn't
 # seem to fix it.
