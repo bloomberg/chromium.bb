@@ -57,7 +57,7 @@ class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
 
  private:
   // MouseLockDispatcher implementation.
-  void SendLockMouseRequest(bool unlocked_by_target) override;
+  void SendLockMouseRequest() override;
   void SendUnlockMouseRequest() override;
 
   RenderWidgetFullscreenPepper* widget_;
@@ -114,10 +114,8 @@ FullscreenMouseLockDispatcher::FullscreenMouseLockDispatcher(
 FullscreenMouseLockDispatcher::~FullscreenMouseLockDispatcher() {
 }
 
-void FullscreenMouseLockDispatcher::SendLockMouseRequest(
-    bool unlocked_by_target) {
-  widget_->Send(new ViewHostMsg_LockMouse(widget_->routing_id(), false,
-                                          unlocked_by_target, true));
+void FullscreenMouseLockDispatcher::SendLockMouseRequest() {
+  widget_->Send(new ViewHostMsg_LockMouse(widget_->routing_id(), false, true));
 }
 
 void FullscreenMouseLockDispatcher::SendUnlockMouseRequest() {

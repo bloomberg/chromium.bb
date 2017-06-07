@@ -27,7 +27,7 @@ class RenderWidgetMouseLockDispatcher : public MouseLockDispatcher {
 
  private:
   // MouseLockDispatcher implementation.
-  void SendLockMouseRequest(bool unlocked_by_target) override;
+  void SendLockMouseRequest() override;
   void SendUnlockMouseRequest() override;
 
   void OnLockMouseACK(bool succeeded);

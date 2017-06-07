@@ -53,7 +53,7 @@ class CONTENT_EXPORT MouseLockDispatcher {
  protected:
   // Subclasses must implement these methods to send mouse lock requests to the
   // browser.
-  virtual void SendLockMouseRequest(bool unlocked_by_target) = 0;
+  virtual void SendLockMouseRequest() = 0;
   virtual void SendUnlockMouseRequest() = 0;
 
  private:
@@ -68,11 +68,6 @@ class CONTENT_EXPORT MouseLockDispatcher {
   // lock request won't be sent when there is a pending unlock request.
   bool pending_lock_request_;
   bool pending_unlock_request_;
-
-  // Used when locking to indicate when a target application has voluntarily
-  // unlocked and desires to relock the mouse. If the mouse is unlocked due
-  // to ESC being pressed by the user, this will be false
-  bool unlocked_by_target_;
 
   // |target_| is the pending or current owner of mouse lock. We retain a non
   // owning reference here that must be cleared by |OnLockTargetDestroyed|

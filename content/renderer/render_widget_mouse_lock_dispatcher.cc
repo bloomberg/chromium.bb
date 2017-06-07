@@ -22,12 +22,11 @@ RenderWidgetMouseLockDispatcher::RenderWidgetMouseLockDispatcher(
 
 RenderWidgetMouseLockDispatcher::~RenderWidgetMouseLockDispatcher() {}
 
-void RenderWidgetMouseLockDispatcher::SendLockMouseRequest(
-    bool unlocked_by_target) {
+void RenderWidgetMouseLockDispatcher::SendLockMouseRequest() {
   bool user_gesture = WebUserGestureIndicator::IsProcessingUserGesture();
 
-  render_widget_->Send(new ViewHostMsg_LockMouse(
-      render_widget_->routing_id(), user_gesture, unlocked_by_target, false));
+  render_widget_->Send(new ViewHostMsg_LockMouse(render_widget_->routing_id(),
+                                                 user_gesture, false));
 }
 
 void RenderWidgetMouseLockDispatcher::SendUnlockMouseRequest() {

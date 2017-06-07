@@ -841,7 +841,6 @@ class PwnMessageHelper {
   static void LockMouse(RenderProcessHost* process,
                         int routing_id,
                         bool user_gesture,
-                        bool last_unlocked_by_target,
                         bool privileged);
 
  private:
