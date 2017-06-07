@@ -841,7 +841,7 @@ android_library("android_webview_java") {
     "//components/policy/android:policy_java",
     "//components/safe_browsing_db/android:safe_browsing_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
-    "//components/web_restrictions:web_restrictions_java",
+    "//components/web_restrictions:client_java",
     "//content/public/android:content_java",
     "//device/gamepad:java",
     "//device/geolocation:geolocation_java",
