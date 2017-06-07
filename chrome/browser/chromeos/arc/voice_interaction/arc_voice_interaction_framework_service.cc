@@ -317,6 +317,32 @@ void ArcVoiceInteractionFrameworkService::SetMetalayerVisibility(bool visible) {
   framework_instance->SetMetalayerVisibility(visible);
 }
 
+void ArcVoiceInteractionFrameworkService::SetVoiceInteractionEnabled(
+    bool enable) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  mojom::VoiceInteractionFrameworkInstance* framework_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service()->voice_interaction_framework(),
+          SetVoiceInteractionEnabled);
+  if (!framework_instance)
+    return;
+  framework_instance->SetVoiceInteractionEnabled(enable);
+}
+
+void ArcVoiceInteractionFrameworkService::SetVoiceInteractionContextEnabled(
+    bool enable) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  mojom::VoiceInteractionFrameworkInstance* framework_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service()->voice_interaction_framework(),
+          SetVoiceInteractionContextEnabled);
+  if (!framework_instance)
+    return;
+  framework_instance->SetVoiceInteractionContextEnabled(enable);
+}
+
 void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
     const gfx::Rect& rect) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
