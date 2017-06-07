@@ -5713,15 +5713,6 @@ void Document::SetFeaturePolicy(const String& feature_policy_header) {
       container_policy = frame_->Owner()->ContainerPolicy();
   }
 
-  // Check that if there is a parent frame, that its feature policy is
-  // correctly initialized. Crash if that is not the case. (Temporary crash for
-  // isolating the cause of https://crbug.com/722333)
-  // Note that even with this check removed, the process will stil crash in
-  // feature_policy.cc when it attempts to dereference parent_feature_policy.
-  // This check is to distinguish between two possible causes.
-  if (!container_policy.empty())
-    CHECK(frame_ && (frame_->IsMainFrame() || parent_feature_policy));
-
   InitializeFeaturePolicy(parsed_header, container_policy,
                           parent_feature_policy);
 
