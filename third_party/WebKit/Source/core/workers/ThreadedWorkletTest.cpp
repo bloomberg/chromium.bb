@@ -121,8 +121,6 @@ class ThreadedWorkletMessagingProxyForTest
       : ThreadedWorkletMessagingProxy(execution_context, worker_clients) {
     worklet_object_proxy_ = WTF::MakeUnique<ThreadedWorkletObjectProxyForTest>(
         weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
-    worker_thread_ =
-        WTF::MakeUnique<ThreadedWorkletThreadForTest>(WorkletObjectProxy());
     ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 
@@ -140,7 +138,7 @@ class ThreadedWorkletMessagingProxyForTest
     WorkerClients* worker_clients = nullptr;
     Vector<String> origin_trial_tokens;
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
-    worker_thread_->Start(
+    InitializeWorkerThread(
         WorkerThreadStartupData::Create(
             script_url, "fake user agent", "// fake source code",
             std::move(cached_meta_data), kDontPauseWorkerGlobalScopeOnStart,
@@ -148,15 +146,12 @@ class ThreadedWorkletMessagingProxyForTest
             security_origin_.Get(), worker_clients, kWebAddressSpaceLocal,
             &origin_trial_tokens, std::move(worker_settings),
             WorkerV8Settings::Default()),
-        GetParentFrameTaskRunners());
-    GetWorkerInspectorProxy()->WorkerThreadCreated(
-        ToDocument(GetExecutionContext()), worker_thread_.get(), script_url);
+        script_url);
   }
 
  protected:
   std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) final {
-    NOTREACHED();
-    return nullptr;
+    return WTF::MakeUnique<ThreadedWorkletThreadForTest>(WorkletObjectProxy());
   }
 
  private:

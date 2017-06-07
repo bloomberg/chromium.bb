@@ -117,9 +117,7 @@ void InProcessWorkerMessagingProxy::StartWorkerGlobalScope(
           OriginTrialContext::GetTokens(document).get(),
           std::move(worker_settings), worker_v8_settings);
 
-  InitializeWorkerThread(std::move(startup_data));
-  GetWorkerInspectorProxy()->WorkerThreadCreated(document, GetWorkerThread(),
-                                                 script_url);
+  InitializeWorkerThread(std::move(startup_data), script_url);
 }
 
 void InProcessWorkerMessagingProxy::PostMessageToWorkerObject(

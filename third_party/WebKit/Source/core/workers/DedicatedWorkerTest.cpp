@@ -118,14 +118,6 @@ class InProcessWorkerMessagingProxyForTest
                                       nullptr /* workerClients */) {
     worker_object_proxy_ = WTF::MakeUnique<InProcessWorkerObjectProxyForTest>(
         weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
-    worker_thread_ =
-        WTF::MakeUnique<DedicatedWorkerThreadForTest>(WorkerObjectProxy());
-    mock_worker_thread_lifecycle_observer_ =
-        new MockWorkerThreadLifecycleObserver(
-            worker_thread_->GetWorkerThreadLifecycleContext());
-    EXPECT_CALL(*mock_worker_thread_lifecycle_observer_,
-                ContextDestroyed(::testing::_))
-        .Times(1);
   }
 
   ~InProcessWorkerMessagingProxyForTest() override {
@@ -143,7 +135,7 @@ class InProcessWorkerMessagingProxyForTest
     WorkerV8Settings worker_v8_settings = WorkerV8Settings::Default();
     worker_v8_settings.atomics_wait_mode_ =
         WorkerV8Settings::AtomicsWaitMode::kAllow;
-    GetWorkerThread()->Start(
+    InitializeWorkerThread(
         WorkerThreadStartupData::Create(
             script_url, "fake user agent", source, nullptr /* cachedMetaData */,
             kDontPauseWorkerGlobalScopeOnStart, headers.get(),
@@ -151,11 +143,7 @@ class InProcessWorkerMessagingProxyForTest
             nullptr /* workerClients */, kWebAddressSpaceLocal,
             nullptr /* originTrialTokens */, nullptr /* workerSettings */,
             worker_v8_settings),
-        GetParentFrameTaskRunners());
-
-    GetWorkerInspectorProxy()->WorkerThreadCreated(
-        ToDocument(GetExecutionContext()), worker_thread_.get(), script_url);
-    WorkerThreadCreated();
+        script_url);
   }
 
   enum class Notification {
@@ -204,8 +192,15 @@ class InProcessWorkerMessagingProxyForTest
 
   std::unique_ptr<WorkerThread> CreateWorkerThread(
       double origin_time) override {
-    NOTREACHED();
-    return nullptr;
+    auto worker_thread =
+        WTF::MakeUnique<DedicatedWorkerThreadForTest>(WorkerObjectProxy());
+    mock_worker_thread_lifecycle_observer_ =
+        new MockWorkerThreadLifecycleObserver(
+            worker_thread->GetWorkerThreadLifecycleContext());
+    EXPECT_CALL(*mock_worker_thread_lifecycle_observer_,
+                ContextDestroyed(::testing::_))
+        .Times(1);
+    return std::move(worker_thread);
   }
 
   DedicatedWorkerThreadForTest* GetWorkerThread() {

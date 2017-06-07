@@ -66,13 +66,9 @@ int ThreadedMessagingProxyBase::ProxyCount() {
   return g_live_messaging_proxy_count;
 }
 
-void ThreadedMessagingProxyBase::SetWorkerThreadForTest(
-    std::unique_ptr<WorkerThread> worker_thread) {
-  worker_thread_ = std::move(worker_thread);
-}
-
 void ThreadedMessagingProxyBase::InitializeWorkerThread(
-    std::unique_ptr<WorkerThreadStartupData> startup_data) {
+    std::unique_ptr<WorkerThreadStartupData> startup_data,
+    const KURL& script_url) {
   DCHECK(IsParentContextThread());
 
   Document* document = ToDocument(GetExecutionContext());
@@ -84,6 +80,8 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
   worker_thread_ = CreateWorkerThread(origin_time);
   worker_thread_->Start(std::move(startup_data), GetParentFrameTaskRunners());
   WorkerThreadCreated();
+  GetWorkerInspectorProxy()->WorkerThreadCreated(document, GetWorkerThread(),
+                                                 script_url);
 }
 
 ThreadableLoadingContext*
