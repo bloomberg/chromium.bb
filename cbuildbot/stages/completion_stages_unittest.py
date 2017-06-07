@@ -15,7 +15,6 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot import relevant_changes
-from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -36,6 +35,7 @@ from chromite.lib import hwtest_results
 from chromite.lib import results_lib
 from chromite.lib import patch_unittest
 from chromite.lib import timeout_util
+from chromite.lib import tree_status
 
 
 # pylint: disable=protected-access

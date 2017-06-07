@@ -10,9 +10,9 @@ import mock
 import urllib
 
 from chromite.lib import constants
-from chromite.cbuildbot import tree_status
 from chromite.lib import cros_test_lib
 from chromite.lib import timeout_util
+from chromite.lib import tree_status
 
 
 # pylint: disable=protected-access

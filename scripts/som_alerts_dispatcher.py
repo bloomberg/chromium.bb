@@ -11,7 +11,6 @@ import datetime
 import json
 
 from chromite.cbuildbot import topology
-from chromite.cbuildbot import tree_status
 from chromite.lib import cidb
 from chromite.lib import classifier
 from chromite.lib import commandline
@@ -22,6 +21,7 @@ from chromite.lib import milo
 from chromite.lib import parallel
 from chromite.lib import prpc
 from chromite.lib import som
+from chromite.lib import tree_status
 
 
 # Only display this many links per stage

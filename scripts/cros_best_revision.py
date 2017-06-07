@@ -13,7 +13,6 @@ import distutils.version
 import os
 
 from chromite.cbuildbot import archive_lib
-from chromite.cbuildbot import tree_status
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -26,6 +25,7 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import retry_util
+from chromite.lib import tree_status
 
 
 class LKGMNotFound(Exception):

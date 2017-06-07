@@ -9,7 +9,6 @@ from __future__ import print_function
 import os
 import time
 
-from chromite.cbuildbot import tree_status
 from chromite.lib import builder_status_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib_unittest
@@ -17,6 +16,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from chromite.lib import tree_status
 from chromite.scripts import cros_best_revision
 
 

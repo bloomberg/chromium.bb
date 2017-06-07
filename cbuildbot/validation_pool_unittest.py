@@ -21,7 +21,6 @@ import time
 
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
-from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.lib import cidb
 from chromite.lib import config_lib
@@ -40,6 +39,7 @@ from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 from chromite.lib import timeout_util
+from chromite.lib import tree_status
 from chromite.lib import triage_lib
 
 

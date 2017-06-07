@@ -10,7 +10,6 @@ import collections
 import cPickle
 import os
 
-from chromite.cbuildbot import tree_status
 from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -18,6 +17,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failure_message_lib
 from chromite.lib import gs
+from chromite.lib import tree_status
 
 
 site_config = config_lib.GetConfig()

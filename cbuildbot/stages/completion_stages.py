@@ -10,7 +10,6 @@ from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot import relevant_changes
-from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import buildbucket_lib
@@ -26,6 +25,7 @@ from chromite.lib import hwtest_results
 from chromite.lib import metrics
 from chromite.lib import results_lib
 from chromite.lib import timeout_util
+from chromite.lib import tree_status
 
 
 def GetBuilderSuccessMap(builder_run, overall_success):

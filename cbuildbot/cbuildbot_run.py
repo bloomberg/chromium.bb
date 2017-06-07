@@ -38,12 +38,12 @@ import types
 from chromite.cbuildbot import archive_lib
 from chromite.lib import constants
 from chromite.lib import metadata_lib
-from chromite.cbuildbot import tree_status
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import portage_util
+from chromite.lib import tree_status
 
 
 class RunAttributesError(Exception):

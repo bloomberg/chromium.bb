@@ -24,7 +24,6 @@ from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
-from chromite.cbuildbot import tree_status
 from chromite.cli.cros.tests import cros_vm_test
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -36,6 +35,7 @@ from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+from chromite.lib import tree_status
 from chromite.scripts import pushimage
 
 site_config = config_lib.GetConfig()
