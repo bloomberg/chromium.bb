@@ -19,12 +19,16 @@ import sys
 import tempfile
 from multiprocessing import Process, Queue
 
+SRC_DIR = os.path.abspath(
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), os.path.pardir))
+DEPOT_TOOLS_DIR = os.path.join(SRC_DIR, 'third_party', 'depot_tools')
+
 
 def GetHeadersFromNinja(out_dir, q):
   """Return all the header files from ninja_deps"""
 
   def NinjaSource():
-    cmd = ['ninja', '-C', out_dir, '-t', 'deps']
+    cmd = [os.path.join(DEPOT_TOOLS_DIR, 'ninja'), '-C', out_dir, '-t', 'deps']
     # A negative bufsize means to use the system default, which usually
     # means fully buffered.
     popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=-1)
@@ -82,7 +86,8 @@ def GetHeadersFromGN(out_dir, q):
     shutil.copy2(os.path.join(out_dir, 'args.gn'),
                  os.path.join(tmp, 'args.gn'))
     # Do "gn gen" in a temp dir to prevent dirtying |out_dir|.
-    subprocess.check_call(['gn', 'gen', tmp, '--ide=json', '-q'])
+    subprocess.check_call([
+      os.path.join(DEPOT_TOOLS_DIR, 'gn'), 'gen', tmp, '--ide=json', '-q'])
     gn_json = json.load(open(os.path.join(tmp, 'project.json')))
     ans = ParseGNProjectJSON(gn_json, out_dir, tmp)
   except Exception as e:
@@ -118,9 +123,10 @@ def GetDepsPrefixes(q):
   """Return all the folders controlled by DEPS file"""
   prefixes, err = set(), None
   try:
-    gclient_out = subprocess.check_output(
-        ['gclient', 'recurse', '--no-progress', '-j1',
-         'python', '-c', 'import os;print os.environ["GCLIENT_DEP_PATH"]'])
+    gclient_out = subprocess.check_output([
+      os.path.join(DEPOT_TOOLS_DIR, 'gclient'),
+      'recurse', '--no-progress', '-j1',
+      'python', '-c', 'import os;print os.environ["GCLIENT_DEP_PATH"]'])
     for i in gclient_out.split('\n'):
       if i.startswith('src/'):
         i = i[4:]
@@ -131,7 +137,7 @@ def GetDepsPrefixes(q):
 
 
 def IsBuildClean(out_dir):
-  cmd = ['ninja', '-C', out_dir, '-n']
+  cmd = [os.path.join(DEPOT_TOOLS_DIR, 'ninja'), '-C', out_dir, '-n']
   out = subprocess.check_output(cmd)
   return 'no work to do.' in out
 
