@@ -1071,6 +1071,8 @@ split_static_library("ui") {
       "webui/options/supervised_user_learn_more_handler.h",
       "webui/options/sync_setup_handler.cc",
       "webui/options/sync_setup_handler.h",
+      "webui/plural_string_handler.cc",
+      "webui/plural_string_handler.h",
       "webui/policy_indicator_localized_strings_provider.cc",
       "webui/policy_indicator_localized_strings_provider.h",
       "webui/profile_helper.cc",

@@ -172,6 +172,20 @@ TEST_F('MaterialBookmarksFolderNodeTest', 'All', function() {
   mocha.run();
 });
 
+function MaterialBookmarksToastManagerTest() {}
+
+MaterialBookmarksToastManagerTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'toast_manager_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksToastManagerTest', 'All', function() {
+  mocha.run();
+});
+
 function MaterialBookmarksPolicyTest() {}
 
 MaterialBookmarksPolicyTest.prototype = {

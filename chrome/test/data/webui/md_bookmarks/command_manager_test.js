@@ -43,6 +43,8 @@ suite('<bookmarks-command-manager>', function() {
 
     commandManager = new TestCommandManager();
     replaceBody(commandManager);
+    document.body.appendChild(
+        document.createElement('bookmarks-toast-manager'));
 
     Polymer.dom.flush();
   });

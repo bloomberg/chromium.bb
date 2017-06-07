@@ -67,6 +67,8 @@ Polymer({
   onSortTap_: function() {
     chrome.bookmarkManagerPrivate.sortChildren(
         assert(this.getState().selectedFolder));
+    bookmarks.ToastManager.getInstance().show(
+        loadTimeData.getString('toastFolderSorted'), true);
     this.closeDropdownMenu_();
   },
 

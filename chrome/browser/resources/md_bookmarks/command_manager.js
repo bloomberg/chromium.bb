@@ -44,6 +44,12 @@ cr.define('bookmarks', function() {
       this.boundOnOpenItemMenu_ = this.onOpenItemMenu_.bind(this);
       document.addEventListener('open-item-menu', this.boundOnOpenItemMenu_);
 
+      /** @private {function()} */
+      this.boundOnCommandUndo_ = function() {
+        this.handle(Command.UNDO, new Set());
+      }.bind(this);
+      document.addEventListener('command-undo', this.boundOnCommandUndo_);
+
       /** @private {function(!Event)} */
       this.boundOnKeydown_ = this.onKeydown_.bind(this);
       document.addEventListener('keydown', this.boundOnKeydown_);
@@ -66,6 +72,7 @@ cr.define('bookmarks', function() {
     detached: function() {
       CommandManager.instance_ = null;
       document.removeEventListener('open-item-menu', this.boundOnOpenItemMenu_);
+      document.removeEventListener('command-undo', this.boundOnCommandUndo_);
       document.removeEventListener('keydown', this.boundOnKeydown_);
     },
 
@@ -179,17 +186,31 @@ cr.define('bookmarks', function() {
         case Command.COPY:
           var idList = Array.from(itemIds);
           chrome.bookmarkManagerPrivate.copy(idList, function() {
-            // TODO(jiaxi): Add toast later.
+            bookmarks.ToastManager.getInstance().show(
+                loadTimeData.getString('toastUrlCopied'), false);
           });
           break;
         case Command.DELETE:
-          chrome.bookmarkManagerPrivate.removeTrees(
-              Array.from(this.minimizeDeletionSet_(itemIds)), function() {
-                // TODO(jiaxi): Add toast later.
-              });
+          var idList = Array.from(this.minimizeDeletionSet_(itemIds));
+          var labelPromise;
+          if (idList.length == 1) {
+            // TODO(calamity): fold this separate label into
+            // 'toastItemsDeleted'.
+            labelPromise = Promise.resolve(loadTimeData.getStringF(
+                'toastItemDeleted', this.getState().nodes[idList[0]].title));
+          } else {
+            labelPromise = cr.sendWithPromise(
+                'getPluralString', 'toastItemsDeleted', idList.length);
+          }
+          chrome.bookmarkManagerPrivate.removeTrees(idList, function() {
+            labelPromise.then(function(label) {
+              bookmarks.ToastManager.getInstance().show(label, true);
+            });
+          }.bind(this));
           break;
         case Command.UNDO:
           chrome.bookmarkManagerPrivate.undo();
+          bookmarks.ToastManager.getInstance().hide();
           break;
         case Command.REDO:
           chrome.bookmarkManagerPrivate.redo();
