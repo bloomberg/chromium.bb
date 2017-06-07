@@ -207,11 +207,6 @@ struct macroblock {
   int pvq_coded;  // Indicates whether pvq_info needs be stored to tokenize
 #endif
 #if CONFIG_DAALA_DIST
-  // Keep rate of each 4x4 block in the current macroblock during RDO
-  // This is needed when using the 8x8 Daala distortion metric during RDO,
-  // because it evaluates distortion in a different order than the underlying
-  // 4x4 blocks are coded.
-  int rate_4x4[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
 #if CONFIG_CB4X4
   DECLARE_ALIGNED(16, uint8_t, decoded_8x8[8 * 8]);
 #endif  // CONFIG_CB4X4
