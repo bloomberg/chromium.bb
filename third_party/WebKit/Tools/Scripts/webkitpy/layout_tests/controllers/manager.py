@@ -128,7 +128,7 @@ class Manager(object):
 
         tests_to_run, tests_to_skip = self._prepare_lists(paths, test_names)
 
-        self._expectations.remove_tests(tests_in_other_chunks)
+        self._expectations.remove_tests_from_expectations(tests_in_other_chunks)
 
         self._printer.print_found(
             len(all_test_names), len(test_names), len(tests_to_run),
