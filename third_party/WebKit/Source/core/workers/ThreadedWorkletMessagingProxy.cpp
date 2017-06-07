@@ -108,10 +108,7 @@ void ThreadedWorkletMessagingProxy::Initialize() {
           ReleaseWorkerClients(), document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
           std::move(worker_settings), WorkerV8Settings::Default());
-
-  InitializeWorkerThread(std::move(startup_data));
-  GetWorkerInspectorProxy()->WorkerThreadCreated(document, GetWorkerThread(),
-                                                 script_url);
+  InitializeWorkerThread(std::move(startup_data), script_url);
 }
 
 void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
