@@ -180,10 +180,8 @@ typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 // actually stored directly in ComputedStyle, but rather in a generated parent
 // class ComputedStyleBase. This separation of concerns allows us to optimise
 // the memory layout without affecting users of ComputedStyle. ComputedStyle
-// inherits from ComputedStyleBase, which in turn takes ComputedStyle as a
-// template argument so that ComputedStyleBase can access methods declared on
-// ComputedStyle. For more about the memory layout, there is documentation in
-// ComputedStyleBase and make_computed_style_base.py.
+// inherits from ComputedStyleBase. For more about the memory layout, there is
+// documentation in ComputedStyleBase and make_computed_style_base.py.
 //
 // INTERFACE:
 //
@@ -206,11 +204,11 @@ typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 // Currently, some properties are stored in ComputedStyle and some in
 // ComputedStyleBase. Eventually, the storage of all properties (except SVG
 // ones) will be in ComputedStyleBase.
-class CORE_EXPORT ComputedStyle : public ComputedStyleBase<ComputedStyle>,
+class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                                   public RefCounted<ComputedStyle> {
   // Needed to allow access to private/protected getters of fields to allow diff
   // generation
-  friend class ComputedStyleBase<ComputedStyle>;
+  friend class ComputedStyleBase;
   // Used by Web Animations CSS. Sets the color styles.
   friend class AnimatedStyleBuilder;
   // Used by Web Animations CSS. Gets visited and unvisited colors separately.

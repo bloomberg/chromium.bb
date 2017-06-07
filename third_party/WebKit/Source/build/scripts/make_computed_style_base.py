@@ -442,11 +442,22 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         self._include_paths = _get_include_paths(all_properties)
         self._outputs = {
             'ComputedStyleBase.h': self.generate_base_computed_style_h,
+            'ComputedStyleBase.cpp': self.generate_base_computed_style_cpp,
             'ComputedStyleBaseConstants.h': self.generate_base_computed_style_constants,
         }
 
     @template_expander.use_jinja('ComputedStyleBase.h.tmpl', tests={'in': lambda a, b: a in b})
     def generate_base_computed_style_h(self):
+        return {
+            'properties': self._properties,
+            'enums': self._generated_enums,
+            'include_paths': self._include_paths,
+            'computed_style': self._root_group,
+            'diff_functions_map': self._diff_functions_map,
+        }
+
+    @template_expander.use_jinja('ComputedStyleBase.cpp.tmpl', tests={'in': lambda a, b: a in b})
+    def generate_base_computed_style_cpp(self):
         return {
             'properties': self._properties,
             'enums': self._generated_enums,

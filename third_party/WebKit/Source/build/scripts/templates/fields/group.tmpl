@@ -1,6 +1,6 @@
 {% from 'fields/field.tmpl' import encode, declare_storage, compare %}
 {% from 'macros.tmpl' import print_if %}
-{% macro define_field_group_class(group): -%}
+{% macro declare_field_group_class(group): -%}
 class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
  public:
   static PassRefPtr<{{group.type_name}}> Create() {
@@ -24,20 +24,25 @@ class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
   {% endfor %}
 
  private:
-  {{group.type_name}}() :
+  {{group.type_name}}();
+  {{group.type_name}}(const {{group.type_name}}&);
+};
+{%- endmacro %}
+
+{% macro define_field_group_class(group): -%}
+ComputedStyleBase::{{group.type_name}}::{{group.type_name}}() :
   {% for field in group.fields %}
       {{field.name}}({{encode(field, field.default_value)}}){{print_if(not loop.last, ',')}}
   {% endfor %}
   {}
 
-  {{group.type_name}}(const {{group.type_name}}& other) :
+ComputedStyleBase::{{group.type_name}}::{{group.type_name}}(const {{group.type_name}}& other) :
   {% for field in group.fields %}
-      {% if field.wrapper_pointer_name %}
+    {% if field.wrapper_pointer_name %}
       {{field.name}}(MemberCopy(other.{{field.name}})){{print_if(not loop.last, ',')}}
-      {% else %}
+    {% else %}
       {{field.name}}(other.{{field.name}}){{print_if(not loop.last, ',')}}
-      {% endif %}
+     {% endif %}
   {% endfor %}
   {}
-};
 {%- endmacro %}

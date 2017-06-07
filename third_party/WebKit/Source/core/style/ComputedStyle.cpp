@@ -81,11 +81,6 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
   void* data_ref_svg_style;
 };
 
-// If this fails, the packing algorithm in make_computed_style_base.py has
-// failed to produce the optimal packed size. To fix, update the algorithm to
-// ensure that the buckets are placed so that each takes up at most 1 word.
-ASSERT_SIZE(ComputedStyleBase<ComputedStyle>, SameSizeAsComputedStyleBase);
-
 // If this assert fails, it means that size of ComputedStyle has changed. Please
 // check that you really *do* what to increase the size of ComputedStyle, then
 // update the SameSizeAsComputedStyle struct to match the updated storage of
@@ -536,7 +531,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
 bool ComputedStyle::ScrollAnchorDisablingPropertyChanged(
     const ComputedStyle& other,
     const StyleDifference& diff) const {
-  if (ComputedStyleBase::ScrollAnchorDisablingPropertyChanged(other))
+  if (ComputedStyleBase::ScrollAnchorDisablingPropertyChanged(*this, other))
     return true;
 
   if (diff.TransformChanged())
@@ -554,7 +549,7 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
   // - or the layoutObject knows how to exactly invalidate paints caused by the
   //   layout change instead of forced full paint invalidation.
 
-  if (ComputedStyleBase::DiffNeedsFullLayoutAndPaintInvalidation(other))
+  if (ComputedStyleBase::DiffNeedsFullLayoutAndPaintInvalidation(*this, other))
     return true;
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
@@ -634,7 +629,8 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
 
   if (IsDisplayTableType(Display())) {
     if (ComputedStyleBase::
-            DiffNeedsFullLayoutAndPaintInvalidationDisplayTableType(other))
+            DiffNeedsFullLayoutAndPaintInvalidationDisplayTableType(*this,
+                                                                    other))
       return true;
 
     // In the collapsing border model, 'hidden' suppresses other borders, while
@@ -659,7 +655,8 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
       return true;
   } else if (Display() == EDisplay::kListItem) {
     if (ComputedStyleBase::
-            DiffNeedsFullLayoutAndPaintInvalidationDisplayListItem(other))
+            DiffNeedsFullLayoutAndPaintInvalidationDisplayListItem(*this,
+                                                                   other))
       return true;
   }
 
@@ -674,7 +671,7 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
 }
 
 bool ComputedStyle::DiffNeedsFullLayout(const ComputedStyle& other) const {
-  if (ComputedStyleBase::DiffNeedsFullLayout(other))
+  if (ComputedStyleBase::DiffNeedsFullLayout(*this, other))
     return true;
 
   if (box_data_.Get() != other.box_data_.Get()) {
@@ -729,7 +726,7 @@ bool ComputedStyle::DiffNeedsPaintInvalidationSubtree(
 
 bool ComputedStyle::DiffNeedsPaintInvalidationObject(
     const ComputedStyle& other) const {
-  if (ComputedStyleBase::DiffNeedsPaintInvalidationObject(other))
+  if (ComputedStyleBase::DiffNeedsPaintInvalidationObject(*this, other))
     return true;
 
   if (!BorderVisuallyEqual(other) || !RadiiEqual(other) ||
@@ -813,7 +810,7 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
 bool ComputedStyle::DiffNeedsVisualRectUpdate(
     const ComputedStyle& other) const {
   // Visual rect is empty if visibility is hidden.
-  if (ComputedStyleBase::DiffNeedsVisualRectUpdate(other))
+  if (ComputedStyleBase::DiffNeedsVisualRectUpdate(*this, other))
     return true;
 
   // Need to update visual rect of the resizer.
@@ -889,7 +886,8 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
               other.rare_non_inherited_data_
                   ->visited_link_text_decoration_color_)) ||
         ComputedStyleBase::
-            UpdatePropertySpecificDifferencesTextDecorationOrColor(other)) {
+            UpdatePropertySpecificDifferencesTextDecorationOrColor(*this,
+                                                                   other)) {
       diff.SetTextDecorationOrColorChanged();
     }
   }
