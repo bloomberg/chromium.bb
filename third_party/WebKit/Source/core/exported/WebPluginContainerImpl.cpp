@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebPluginContainerImpl.h"
+#include "core/exported/WebPluginContainerImpl.h"
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
@@ -563,13 +563,14 @@ void WebPluginContainerImpl::RequestTouchEventType(
   if (Page* page = element_->GetDocument().GetPage()) {
     EventHandlerRegistry& registry = page->GetEventHandlerRegistry();
     if (request_type != kTouchEventRequestTypeNone &&
-        touch_event_request_type_ == kTouchEventRequestTypeNone)
+        touch_event_request_type_ == kTouchEventRequestTypeNone) {
       registry.DidAddEventHandler(
           *element_, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
-    else if (request_type == kTouchEventRequestTypeNone &&
-             touch_event_request_type_ != kTouchEventRequestTypeNone)
+    } else if (request_type == kTouchEventRequestTypeNone &&
+               touch_event_request_type_ != kTouchEventRequestTypeNone) {
       registry.DidRemoveEventHandler(
           *element_, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+    }
   }
   touch_event_request_type_ = request_type;
 }
@@ -579,12 +580,13 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
     return;
   if (Page* page = element_->GetDocument().GetPage()) {
     EventHandlerRegistry& registry = page->GetEventHandlerRegistry();
-    if (wants_wheel_events)
+    if (wants_wheel_events) {
       registry.DidAddEventHandler(*element_,
                                   EventHandlerRegistry::kWheelEventBlocking);
-    else
+    } else {
       registry.DidRemoveEventHandler(*element_,
                                      EventHandlerRegistry::kWheelEventBlocking);
+    }
   }
 
   wants_wheel_events_ = wants_wheel_events;
@@ -1023,13 +1025,14 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
           .EnclosingBoundingBox();
   // As a performance optimization, map the clipped rect separately if is
   // different than the unclipped rect.
-  if (layout_clipped_local_rect != unclipped_layout_local_rect)
+  if (layout_clipped_local_rect != unclipped_layout_local_rect) {
     clipped_local_rect =
         box->AbsoluteToLocalQuad(FloatRect(layout_clipped_local_rect),
                                  kTraverseDocumentBoundaries | kUseTransforms)
             .EnclosingBoundingBox();
-  else
+  } else {
     clipped_local_rect = unclipped_int_local_rect;
+  }
 }
 
 void WebPluginContainerImpl::CalculateGeometry(IntRect& window_rect,

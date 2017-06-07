@@ -123,8 +123,6 @@ component("web") {
     "WebPepperSocketChannelClientProxy.h",
     "WebPepperSocketImpl.cpp",
     "WebPepperSocketImpl.h",
-    "WebPluginContainerImpl.cpp",
-    "WebPluginContainerImpl.h",
     "WebPluginDocument.cpp",
     "WebRemoteFrameImpl.cpp",
     "WebRemoteFrameImpl.h",

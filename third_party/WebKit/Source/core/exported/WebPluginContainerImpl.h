@@ -32,6 +32,7 @@
 #ifndef WebPluginContainerImpl_h
 #define WebPluginContainerImpl_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/exported/WebPluginContainerBase.h"
 #include "platform/heap/Handle.h"
@@ -42,7 +43,6 @@
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebTouchEvent.h"
 #include "public/web/WebPluginContainer.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -61,7 +61,7 @@ class WheelEvent;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 
-class WEB_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
+class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   USING_PRE_FINALIZER(WebPluginContainerImpl, PreFinalize);
 
  public:
