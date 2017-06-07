@@ -4,48 +4,11 @@
 
 #include "components/download/internal/download_service_impl.h"
 
-#include <memory>
-
-#include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
-#include "components/download/internal/client_set.h"
-#include "components/download/internal/config.h"
-#include "components/download/internal/controller_impl.h"
-#include "components/download/internal/download_driver.h"
-#include "components/download/internal/download_store.h"
-#include "components/download/internal/model_impl.h"
-#include "components/download/internal/proto/entry.pb.h"
+#include "components/download/internal/controller.h"
+#include "components/download/internal/startup_status.h"
 #include "components/download/internal/stats.h"
-#include "components/leveldb_proto/proto_database_impl.h"
 
 namespace download {
-namespace {
-const char kEntryDBStorageDir[] = "EntryDB";
-}  // namespace
-
-// static
-DownloadService* DownloadService::Create(
-    std::unique_ptr<DownloadClientMap> clients,
-    const base::FilePath& storage_dir,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner) {
-  auto entry_db_storage_dir = storage_dir.AppendASCII(kEntryDBStorageDir);
-  auto entry_db =
-      base::MakeUnique<leveldb_proto::ProtoDatabaseImpl<protodb::Entry>>(
-          background_task_runner);
-
-  auto store = base::MakeUnique<DownloadStore>(entry_db_storage_dir,
-                                               std::move(entry_db));
-  auto client_set = base::MakeUnique<ClientSet>(std::move(clients));
-  auto config = Configuration::CreateFromFinch();
-  auto driver = base::WrapUnique<DownloadDriver>(nullptr);
-  auto model = base::MakeUnique<ModelImpl>(std::move(store));
-
-  std::unique_ptr<Controller> controller =
-      base::MakeUnique<ControllerImpl>(std::move(client_set), std::move(config),
-                                       std::move(driver), std::move(model));
-
-  return new DownloadServiceImpl(std::move(controller));
-}
 
 DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Controller> controller)
     : controller_(std::move(controller)) {
@@ -55,10 +18,10 @@ DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Controller> controller)
 DownloadServiceImpl::~DownloadServiceImpl() = default;
 
 DownloadService::ServiceStatus DownloadServiceImpl::GetStatus() {
-  if (!controller_->GetStartupStatus().Complete())
+  if (!controller_->GetStartupStatus()->Complete())
     return DownloadService::ServiceStatus::STARTING_UP;
 
-  if (!controller_->GetStartupStatus().Ok())
+  if (!controller_->GetStartupStatus()->Ok())
     return DownloadService::ServiceStatus::UNAVAILABLE;
 
   return DownloadService::ServiceStatus::READY;

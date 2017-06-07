@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/guid.h"
 #include "components/download/internal/test/entry_utils.h"
 
 namespace download {
@@ -44,6 +45,10 @@ bool CompareEntryList(const std::vector<Entry>& list1,
                       const std::vector<Entry>& list2) {
   return std::is_permutation(list1.begin(), list1.end(), list2.begin(),
                              EntryComparison);
+}
+
+Entry BuildBasicEntry() {
+  return BuildEntry(DownloadClient::TEST, base::GenerateGUID());
 }
 
 Entry BuildEntry(DownloadClient client, const std::string& guid) {

@@ -21,6 +21,8 @@ bool CompareEntryList(const std::vector<Entry*>& a,
 bool CompareEntryList(const std::vector<Entry>& list1,
                       const std::vector<Entry>& list2);
 
+Entry BuildBasicEntry();
+
 Entry BuildEntry(DownloadClient client, const std::string& guid);
 
 Entry BuildEntry(DownloadClient client,

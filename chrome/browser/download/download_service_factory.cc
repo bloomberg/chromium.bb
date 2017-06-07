@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/download/content/factory/download_service_factory.h"
 #include "components/download/public/clients.h"
 #include "components/download/public/download_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -39,24 +40,24 @@ DownloadServiceFactory::~DownloadServiceFactory() = default;
 
 KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
+  auto clients = base::MakeUnique<download::DownloadClientMap>();
+
+  // TODO(dtrainor): Register all clients here.
+
+  auto* download_manager = content::BrowserContext::GetDownloadManager(context);
+
+  base::FilePath storage_dir;
+  if (!context->IsOffTheRecord() && !context->GetPath().empty()) {
+    storage_dir =
+        context->GetPath().Append(chrome::kDownloadServiceStorageDirname);
+  }
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
-  base::FilePath storage_dir;
-  if (!profile->IsOffTheRecord() && !profile->GetPath().empty()) {
-    storage_dir =
-        profile->GetPath().Append(chrome::kDownloadServiceStorageDirname);
-  }
-
-  download::DownloadService* service = download::DownloadService::Create(
-      base::MakeUnique<download::DownloadClientMap>(), storage_dir,
-      background_task_runner);
-
-  // TODO(dtrainor): Register all clients here.
-  return service;
+  return download::CreateDownloadService(std::move(clients), download_manager,
+                                         storage_dir, background_task_runner);
 }
 
 content::BrowserContext* DownloadServiceFactory::GetBrowserContextToUse(

@@ -1,0 +1,8 @@
+DownloadDriverImplTest.*
+DownloadServiceClientSetTest.*
+DownloadServiceControllerImplTest.*
+DownloadServiceImplTest.*
+DownloadServiceEntryUtilsTest.*
+DownloadServiceModelImplTest.*
+BatteryListenerTest.*
+NetworkListenerTest.*

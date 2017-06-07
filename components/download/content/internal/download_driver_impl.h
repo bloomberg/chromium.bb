@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_CONTENT_DOWNLOAD_DRIVER_IMPL_H_
-#define COMPONENTS_DOWNLOAD_CONTENT_DOWNLOAD_DRIVER_IMPL_H_
+#ifndef COMPONENTS_DOWNLOAD_CONTENT_INTERNAL_DOWNLOAD_DRIVER_IMPL_H_
+#define COMPONENTS_DOWNLOAD_CONTENT_INTERNAL_DOWNLOAD_DRIVER_IMPL_H_
 
 #include <string>
 
@@ -67,4 +67,4 @@ class DownloadDriverImpl : public DownloadDriver,
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_CONTENT_DOWNLOAD_DRIVER_IMPL_H_
+#endif  // COMPONENTS_DOWNLOAD_CONTENT_INTERNAL_DOWNLOAD_DRIVER_IMPL_H_
