@@ -87,8 +87,8 @@ namespace fileSystem {
     // The ID of the requested volume.
     DOMString volumeId;
 
-    // Whether the requested file system should be writeable, or read-only.
-    // By default read-only.
+    // Whether the requested file system should be writable. The default is
+    // read-only.
     boolean? writable;
   };
 
