@@ -45,13 +45,6 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
     return base::ContainsKey(undrawn_surfaces_, surface_id);
   }
 
-  bool SurfaceDamaged(const SurfaceId& surface_id,
-                      const BeginFrameAck& ack) override {
-    return false;
-  }
-
-  void SurfaceDiscarded(const SurfaceId& surface_id) override {}
-
   int draw_and_swap_count() const { return draw_and_swap_count_; }
 
   void SetNextDrawAndSwapFails() { next_draw_and_swap_fails_ = true; }
@@ -69,11 +62,12 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
 class TestDisplayScheduler : public DisplayScheduler {
  public:
   TestDisplayScheduler(BeginFrameSource* begin_frame_source,
-                       SurfaceManager* surface_manager,
                        base::SingleThreadTaskRunner* task_runner,
                        int max_pending_swaps)
-      : DisplayScheduler(begin_frame_source, task_runner, max_pending_swaps),
-        scheduler_begin_frame_deadline_count_(0) {}
+      : DisplayScheduler(task_runner, max_pending_swaps),
+        scheduler_begin_frame_deadline_count_(0) {
+    SetBeginFrameSource(begin_frame_source);
+  }
 
   base::TimeTicks DesiredBeginFrameDeadlineTimeForTest() {
     return DesiredBeginFrameDeadlineTime();
@@ -112,17 +106,13 @@ class DisplaySchedulerTest : public testing::Test {
       : fake_begin_frame_source_(0.f, false),
         task_runner_(new base::NullTaskRunner),
         scheduler_(&fake_begin_frame_source_,
-                   &surface_manager_,
                    task_runner_.get(),
                    kMaxPendingSwaps) {
     now_src_.Advance(base::TimeDelta::FromMicroseconds(10000));
-    surface_manager_.AddObserver(&scheduler_);
     scheduler_.SetClient(&client_);
   }
 
-  ~DisplaySchedulerTest() override {
-    surface_manager_.RemoveObserver(&scheduler_);
-  }
+  ~DisplaySchedulerTest() override {}
 
   void SetUp() override { scheduler_.SetRootSurfaceResourcesLocked(false); }
 
@@ -134,13 +124,12 @@ class DisplaySchedulerTest : public testing::Test {
         BEGINFRAME_FROM_HERE, &now_src_);
     fake_begin_frame_source_.TestOnBeginFrame(last_begin_frame_args_);
     for (const SurfaceId& surface : observing_surfaces)
-      scheduler_.OnSurfaceDamageExpected(surface, last_begin_frame_args_);
+      scheduler_.SurfaceDamageExpected(surface, last_begin_frame_args_);
   }
 
   void SurfaceDamaged(const SurfaceId& surface_id) {
     client_.SurfaceDamaged(surface_id);
-    scheduler_.ProcessSurfaceDamage(surface_id, AckForCurrentBeginFrame(),
-                                    true);
+    scheduler_.SurfaceDamaged(surface_id, AckForCurrentBeginFrame(), true);
   }
 
  protected:
@@ -159,7 +148,6 @@ class DisplaySchedulerTest : public testing::Test {
 
   base::SimpleTestTickClock now_src_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
-  SurfaceManager surface_manager_;
   FakeDisplaySchedulerClient client_;
   TestDisplayScheduler scheduler_;
 };
@@ -179,7 +167,7 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {
 
   // Go trough an initial BeginFrame cycle with the root surface.
   AdvanceTimeAndBeginFrameForTest(std::vector<SurfaceId>());
-  scheduler_.OnSurfaceCreated(SurfaceInfo(root_surface_id1, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(root_surface_id1, 1.0f, gfx::Size()));
   scheduler_.SetNewRootSurface(root_surface_id1);
   scheduler_.BeginFrameDeadlineForTest();
 
@@ -187,13 +175,13 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {
   // for a new root surface.
   AdvanceTimeAndBeginFrameForTest({root_surface_id1});
   late_deadline = now_src().NowTicks() + BeginFrameArgs::DefaultInterval();
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
   SurfaceDamaged(sid1);
   EXPECT_GT(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.DisplayResized();
   EXPECT_EQ(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
-  scheduler_.OnSurfaceDestroyed(root_surface_id1);
-  scheduler_.OnSurfaceCreated(SurfaceInfo(root_surface_id2, 1.0f, gfx::Size()));
+  scheduler_.SurfaceDestroyed(root_surface_id1);
+  scheduler_.SurfaceCreated(SurfaceInfo(root_surface_id2, 1.0f, gfx::Size()));
   scheduler_.SetNewRootSurface(root_surface_id2);
   EXPECT_GE(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
@@ -222,7 +210,7 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilDamagedSurface) {
 
   // Go trough an initial BeginFrame cycle with the root surface.
   AdvanceTimeAndBeginFrameForTest(std::vector<SurfaceId>());
-  scheduler_.OnSurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
   scheduler_.SetNewRootSurface(root_surface_id);
   scheduler_.BeginFrameDeadlineForTest();
 
@@ -230,7 +218,7 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilDamagedSurface) {
   // for a new root surface.
   AdvanceTimeAndBeginFrameForTest({root_surface_id});
   late_deadline = now_src().NowTicks() + BeginFrameArgs::DefaultInterval();
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
   SurfaceDamaged(sid1);
   EXPECT_GT(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.DisplayResized();
@@ -263,9 +251,9 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   scheduler_.SetVisible(true);
 
   // Create surfaces and set the root surface.
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid2, 1.0f, gfx::Size()));
-  scheduler_.OnSurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid2, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
   scheduler_.SetNewRootSurface(root_surface_id);
 
   // Set surface1 as active via SurfaceDamageExpected().
@@ -304,7 +292,7 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   BeginFrameAck ack = AckForCurrentBeginFrame();
   ack.has_damage = false;
-  scheduler_.ProcessSurfaceDamage(sid1, ack, false);
+  scheduler_.SurfaceDamaged(sid1, ack, false);
   EXPECT_GE(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
@@ -315,12 +303,12 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
 
   // SurfaceDamage with |!display_damaged| does not affect needs_draw and
   // scheduler stays idle.
-  scheduler_.ProcessSurfaceDamage(sid1, AckForCurrentBeginFrame(), false);
+  scheduler_.SurfaceDamaged(sid1, AckForCurrentBeginFrame(), false);
   EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
 
   // Deadline should trigger early if child surfaces are idle and
   // we get damage on the root surface.
-  scheduler_.OnSurfaceDamageExpected(root_surface_id, last_begin_frame_args_);
+  scheduler_.SurfaceDamageExpected(root_surface_id, last_begin_frame_args_);
   EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
   SurfaceDamaged(root_surface_id);
   EXPECT_GE(now_src().NowTicks(),
@@ -338,8 +326,8 @@ TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
   scheduler_.SetVisible(true);
 
   // Create surfaces and set the root surface.
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
-  scheduler_.OnSurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
   scheduler_.SetNewRootSurface(root_surface_id);
 
   // DrawAndSwap normally.
@@ -407,8 +395,8 @@ TEST_F(DisplaySchedulerTest, Visibility) {
                  LocalSurfaceId(2, base::UnguessableToken::Create()));
 
   // Create surfaces and set the root surface.
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
-  scheduler_.OnSurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
   scheduler_.SetNewRootSurface(root_surface_id);
   scheduler_.SetVisible(true);
   EXPECT_EQ(1u, fake_begin_frame_source_.num_observers());
@@ -464,8 +452,8 @@ TEST_F(DisplaySchedulerTest, ResizeCausesSwap) {
   scheduler_.SetVisible(true);
 
   // Create surfaces and set the root surface.
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
-  scheduler_.OnSurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
   scheduler_.SetNewRootSurface(root_surface_id);
 
   // DrawAndSwap normally.
@@ -495,8 +483,8 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
   scheduler_.SetVisible(true);
 
   // Create surfaces and set the root surface.
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
-  scheduler_.OnSurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
   scheduler_.SetNewRootSurface(root_surface_id);
 
   // DrawAndSwap normally.
@@ -549,9 +537,9 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
   scheduler_.SetVisible(true);
 
   // Create surfaces and set the root surface.
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
-  scheduler_.OnSurfaceCreated(SurfaceInfo(sid2, 1.0f, gfx::Size()));
-  scheduler_.OnSurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid1, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(sid2, 1.0f, gfx::Size()));
+  scheduler_.SurfaceCreated(SurfaceInfo(root_surface_id, 1.0f, gfx::Size()));
   scheduler_.SetNewRootSurface(root_surface_id);
 
   // Set surface 1 and 2 as active.

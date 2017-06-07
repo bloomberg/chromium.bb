@@ -37,6 +37,7 @@ Display::Display(SharedBitmapManager* bitmap_manager,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                  const RendererSettings& settings,
                  const FrameSinkId& frame_sink_id,
+                 BeginFrameSource* begin_frame_source,
                  std::unique_ptr<OutputSurface> output_surface,
                  std::unique_ptr<DisplayScheduler> scheduler,
                  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter)
@@ -44,13 +45,17 @@ Display::Display(SharedBitmapManager* bitmap_manager,
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
       frame_sink_id_(frame_sink_id),
+      begin_frame_source_(begin_frame_source),
       output_surface_(std::move(output_surface)),
       scheduler_(std::move(scheduler)),
       texture_mailbox_deleter_(std::move(texture_mailbox_deleter)) {
   DCHECK(output_surface_);
+  DCHECK_EQ(!scheduler_, !begin_frame_source_);
   DCHECK(frame_sink_id_.is_valid());
-  if (scheduler_)
+  if (scheduler_) {
     scheduler_->SetClient(this);
+    scheduler_->SetBeginFrameSource(begin_frame_source);
+  }
 }
 
 Display::~Display() {
@@ -58,8 +63,9 @@ Display::~Display() {
   if (client_) {
     if (auto* context = output_surface_->context_provider())
       context->SetLostContextCallback(base::Closure());
-    if (scheduler_)
-      surface_manager_->RemoveObserver(scheduler_.get());
+    if (begin_frame_source_)
+      surface_manager_->UnregisterBeginFrameSource(begin_frame_source_);
+    surface_manager_->RemoveObserver(this);
   }
   if (aggregator_) {
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
@@ -76,8 +82,15 @@ void Display::Initialize(DisplayClient* client,
   DCHECK(surface_manager);
   client_ = client;
   surface_manager_ = surface_manager;
-  if (scheduler_)
-    surface_manager_->AddObserver(scheduler_.get());
+
+  surface_manager_->AddObserver(this);
+
+  // This must be done in Initialize() so that the caller can delay this until
+  // they are ready to receive a BeginFrameSource.
+  if (begin_frame_source_) {
+    surface_manager_->RegisterBeginFrameSource(begin_frame_source_,
+                                               frame_sink_id_);
+  }
 
   output_surface_->BindToClient(this);
   InitializeRenderer();
@@ -371,12 +384,12 @@ void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   if (scheduler_) {
     BeginFrameAck ack;
     ack.has_damage = true;
-    scheduler_->ProcessSurfaceDamage(current_surface_id_, ack, true);
+    scheduler_->SurfaceDamaged(current_surface_id_, ack, true);
   }
 }
 
-bool Display::SurfaceDamaged(const SurfaceId& surface_id,
-                             const BeginFrameAck& ack) {
+bool Display::OnSurfaceDamaged(const SurfaceId& surface_id,
+                               const BeginFrameAck& ack) {
   bool display_damaged = false;
   if (ack.has_damage) {
     if (aggregator_ &&
@@ -396,12 +409,9 @@ bool Display::SurfaceDamaged(const SurfaceId& surface_id,
     }
   }
 
+  if (scheduler_)
+    scheduler_->SurfaceDamaged(surface_id, ack, display_damaged);
   return display_damaged;
-}
-
-void Display::SurfaceDiscarded(const SurfaceId& surface_id) {
-  if (aggregator_)
-    aggregator_->ReleaseResources(surface_id);
 }
 
 bool Display::SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const {
@@ -413,6 +423,27 @@ bool Display::SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const {
     return false;
 
   return surface->HasUndrawnActiveFrame();
+}
+
+void Display::OnSurfaceCreated(const SurfaceInfo& surface_info) {
+  if (scheduler_)
+    scheduler_->SurfaceCreated(surface_info);
+}
+
+void Display::OnSurfaceDestroyed(const SurfaceId& surface_id) {
+  if (scheduler_)
+    scheduler_->SurfaceDestroyed(surface_id);
+}
+
+void Display::OnSurfaceDamageExpected(const SurfaceId& surface_id,
+                                      const BeginFrameArgs& args) {
+  if (scheduler_)
+    scheduler_->SurfaceDamageExpected(surface_id, args);
+}
+
+void Display::OnSurfaceDiscarded(const SurfaceId& surface_id) {
+  if (aggregator_)
+    aggregator_->ReleaseResources(surface_id);
 }
 
 const SurfaceId& Display::CurrentSurfaceId() {
