@@ -10,7 +10,6 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/mac/cocoa_protocols.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
