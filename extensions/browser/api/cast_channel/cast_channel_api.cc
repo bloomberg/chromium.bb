@@ -178,35 +178,14 @@ CastChannelAsyncApiFunction::~CastChannelAsyncApiFunction() { }
 
 bool CastChannelAsyncApiFunction::PrePrepare() {
   cast_socket_service_ =
-      api::cast_channel::CastSocketServiceFactory::GetInstance()
-          ->GetForBrowserContext(browser_context());
+      api::cast_channel::CastSocketServiceFactory::GetForBrowserContext(
+          browser_context());
   DCHECK(cast_socket_service_);
   return true;
 }
 
 bool CastChannelAsyncApiFunction::Respond() {
   return GetError().empty();
-}
-
-CastSocket* CastChannelAsyncApiFunction::GetSocketOrCompleteWithError(
-    int channel_id) {
-  CastSocket* socket = GetSocket(channel_id);
-  if (!socket) {
-    SetResultFromError(channel_id,
-                       cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
-    AsyncWorkCompleted();
-  }
-  return socket;
-}
-
-int CastChannelAsyncApiFunction::AddSocket(std::unique_ptr<CastSocket> socket) {
-  auto* sockets = cast_socket_service_->GetOrCreateSocketRegistry();
-  return sockets->AddSocket(std::move(socket));
-}
-
-void CastChannelAsyncApiFunction::RemoveSocket(int channel_id) {
-  auto* sockets = cast_socket_service_->GetOrCreateSocketRegistry();
-  sockets->RemoveSocket(channel_id);
 }
 
 void CastChannelAsyncApiFunction::SetResultFromSocket(
@@ -233,11 +212,6 @@ void CastChannelAsyncApiFunction::SetResultFromError(
   channel_info.connect_info.auth = cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED;
   SetResultFromChannelInfo(channel_info);
   SetError("Channel error = " + base::IntToString(error));
-}
-
-CastSocket* CastChannelAsyncApiFunction::GetSocket(int channel_id) const {
-  auto* sockets = cast_socket_service_->GetOrCreateSocketRegistry();
-  return sockets->GetSocket(channel_id);
 }
 
 void CastChannelAsyncApiFunction::SetResultFromChannelInfo(
@@ -324,7 +298,7 @@ void CastChannelOpenFunction::AsyncWorkStart() {
         connect_info.capabilities.get() ? *connect_info.capabilities
                                         : CastDeviceCapability::NONE);
   }
-  new_channel_id_ = AddSocket(base::WrapUnique(socket));
+  new_channel_id_ = cast_socket_service_->AddSocket(base::WrapUnique(socket));
 
   // Construct read delegates.
   std::unique_ptr<CastTransport::Delegate> delegate(
@@ -357,7 +331,7 @@ void CastChannelOpenFunction::OnOpen(ChannelError result) {
   // rather than relying on the extension to call close(). This can be done by
   // calling RemoveSocket() and api_->GetLogger()->ClearLastErrors(channel_id).
   if (result != ChannelError::UNKNOWN) {
-    CastSocket* socket = GetSocket(new_channel_id_);
+    CastSocket* socket = cast_socket_service_->GetSocket(new_channel_id_);
     CHECK(socket);
     SetResultFromSocket(*socket);
   } else {
@@ -399,7 +373,8 @@ bool CastChannelSendFunction::Prepare() {
 }
 
 void CastChannelSendFunction::AsyncWorkStart() {
-  CastSocket* socket = GetSocket(params_->channel.channel_id);
+  CastSocket* socket =
+      cast_socket_service_->GetSocket(params_->channel.channel_id);
   if (!socket) {
     SetResultFromError(params_->channel.channel_id,
                        cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
@@ -420,7 +395,7 @@ void CastChannelSendFunction::AsyncWorkStart() {
 void CastChannelSendFunction::OnSend(int result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int channel_id = params_->channel.channel_id;
-  CastSocket* socket = GetSocket(channel_id);
+  CastSocket* socket = cast_socket_service_->GetSocket(channel_id);
   if (result < 0 || !socket) {
     SetResultFromError(channel_id,
                        cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
@@ -446,7 +421,8 @@ bool CastChannelCloseFunction::Prepare() {
 }
 
 void CastChannelCloseFunction::AsyncWorkStart() {
-  CastSocket* socket = GetSocket(params_->channel.channel_id);
+  CastSocket* socket =
+      cast_socket_service_->GetSocket(params_->channel.channel_id);
   if (!socket) {
     SetResultFromError(params_->channel.channel_id,
                        cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
@@ -460,14 +436,14 @@ void CastChannelCloseFunction::OnClose(int result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VLOG(1) << "CastChannelCloseFunction::OnClose result = " << result;
   int channel_id = params_->channel.channel_id;
-  CastSocket* socket = GetSocket(channel_id);
+  CastSocket* socket = cast_socket_service_->GetSocket(channel_id);
   if (result < 0 || !socket) {
     SetResultFromError(channel_id,
                        cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
   } else {
     SetResultFromSocket(*socket);
     // This will delete |socket|.
-    RemoveSocket(channel_id);
+    cast_socket_service_->RemoveSocket(channel_id);
     api_->GetLogger()->ClearLastErrors(channel_id);
   }
   AsyncWorkCompleted();
