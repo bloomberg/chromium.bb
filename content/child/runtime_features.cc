@@ -349,6 +349,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableFeatureFromString("CompositeOpaqueScrollers",
                                                 false);
 
+  if (base::FeatureList::IsEnabled(features::kSkipCompositingSmallScrollers))
+    WebRuntimeFeatures::EnableSkipCompositingSmallScrollers(true);
+
   if (base::FeatureList::IsEnabled(features::kGenericSensor))
     WebRuntimeFeatures::EnableGenericSensor(true);
 

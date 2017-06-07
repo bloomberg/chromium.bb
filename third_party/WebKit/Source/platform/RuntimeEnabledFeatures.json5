@@ -953,6 +953,10 @@
       status: "stable",
     },
     {
+      name: "SkipCompositingSmallScrollers",
+      status: "test",
+    },
+    {
       name: "SlimmingPaintInvalidation",
       implied_by: ["SlimmingPaintV2"],
       status: "stable",
