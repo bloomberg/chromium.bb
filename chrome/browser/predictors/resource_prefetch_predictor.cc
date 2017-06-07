@@ -584,10 +584,6 @@ void ResourcePrefetchPredictor::OnPrefetchingFinished(
 
 bool ResourcePrefetchPredictor::IsUrlPrefetchable(
     const GURL& main_frame_url) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (initialization_state_ != INITIALIZED)
-    return false;
-
   return GetPrefetchData(main_frame_url, nullptr);
 }
 
@@ -743,6 +739,10 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
 bool ResourcePrefetchPredictor::GetPrefetchData(
     const GURL& main_frame_url,
     ResourcePrefetchPredictor::Prediction* prediction) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (initialization_state_ != INITIALIZED)
+    return false;
+
   std::vector<GURL>* urls =
       prediction ? &prediction->subresource_urls : nullptr;
   DCHECK(!urls || urls->empty());
@@ -1397,15 +1397,13 @@ void ResourcePrefetchPredictor::ConnectToHistoryService() {
   }
 }
 
-void ResourcePrefetchPredictor::StartPrefetching(const GURL& url) {
+void ResourcePrefetchPredictor::StartPrefetching(
+    const GURL& url,
+    const ResourcePrefetchPredictor::Prediction& prediction) {
   TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
                url.spec());
   if (!prefetch_manager_.get())  // Not enabled.
     return;
-
-  ResourcePrefetchPredictor::Prediction prediction;
-  bool has_data = GetPrefetchData(url, &prediction);
-  DCHECK(has_data);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

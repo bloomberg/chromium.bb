@@ -29,15 +29,17 @@ LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
 LoadingPredictor::~LoadingPredictor() = default;
 
 void LoadingPredictor::PrepareForPageLoad(const GURL& url, HintOrigin origin) {
-  if (active_hints_.find(url) != active_hints_.end() ||
-      !resource_prefetch_predictor_->IsUrlPrefetchable(url))
+  if (active_hints_.find(url) != active_hints_.end())
+    return;
+  ResourcePrefetchPredictor::Prediction prediction;
+  if (!resource_prefetch_predictor_->GetPrefetchData(url, &prediction))
     return;
 
   // To report hint durations.
   active_hints_.emplace(url, base::TimeTicks::Now());
 
   if (config_.IsPrefetchingEnabledForOrigin(profile_, origin))
-    resource_prefetch_predictor_->StartPrefetching(url);
+    resource_prefetch_predictor_->StartPrefetching(url, prediction);
 }
 
 void LoadingPredictor::CancelPageLoadHint(const GURL& url) {
