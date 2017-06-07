@@ -1153,6 +1153,19 @@ void AXObjectCacheImpl::HandleTextFormControlChanged(Node* node) {
   HandleEditableTextContentChanged(node);
 }
 
+void AXObjectCacheImpl::HandleTextMarkerDataAdded(Node* start, Node* end) {
+  AXObjectImpl* start_object = Get(start);
+  AXObjectImpl* end_object = Get(end);
+  if (!start_object || !end_object)
+    return;
+
+  // Notify the client of new text marker data.
+  PostNotification(start_object, kAXChildrenChanged);
+  if (start_object != end_object) {
+    PostNotification(end_object, kAXChildrenChanged);
+  }
+}
+
 void AXObjectCacheImpl::HandleValueChanged(Node* node) {
   PostNotification(node, AXObjectCache::kAXValueChanged);
 }
