@@ -62,7 +62,8 @@ const char* const kChallengeResponseHeaders[] = {
 // not to be stored by caches or disclosed otherwise.
 const char* const kCookieResponseHeaders[] = {
   "set-cookie",
-  "set-cookie2"
+  "set-cookie2",
+  "clear-site-data",
 };
 
 // By default, do not cache Strict-Transport-Security or Public-Key-Pins.

@@ -36,12 +36,11 @@
 # http://crbug.com/715630
 -DownloadContentTest.*
 
+# http://crbug.com/721398
+-ClearSiteDataThrottleBrowserTest.*
 
 -AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
 -BrowserSideNavigationBrowserTest.FailedNavigation
--ClearSiteDataThrottleBrowserTest.Insecure
--ClearSiteDataThrottleBrowserTest.Redirect
--ClearSiteDataThrottleBrowserTest.Types
 -CrossSiteResourceHandlerTest.NoDeliveryToDetachedFrame
 -CrossSiteTransferTest/CrossSiteTransferTest.NoLeakOnCrossSiteCancel*
 -CrossSiteTransferTest/CrossSiteTransferTest.ReplaceEntryCrossProcessThenTransfer*

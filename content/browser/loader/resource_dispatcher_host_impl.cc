@@ -40,6 +40,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/browsing_data/clear_site_data_throttle.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/async_resource_handler.h"
@@ -361,7 +362,10 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       allow_cross_origin_auth_prompt_(false),
       create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_thread_task_runner_(io_thread_runner) {
+      io_thread_task_runner_(io_thread_runner),
+      experimental_web_features_enabled_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableExperimentalWebPlatformFeatures)) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
@@ -1596,6 +1600,14 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     // Request wake lock while uploading data.
     throttles.push_back(
         base::MakeUnique<WakeLockResourceThrottle>(request->url().host()));
+  }
+
+  // The experimental Clear-Site-Data throttle.
+  if (experimental_web_features_enabled_) {
+    std::unique_ptr<ResourceThrottle> clear_site_data_throttle =
+        ClearSiteDataThrottle::MaybeCreateThrottleForRequest(request);
+    if (clear_site_data_throttle)
+      throttles.push_back(std::move(clear_site_data_throttle));
   }
 
   // TODO(ricea): Stop looking this up so much.

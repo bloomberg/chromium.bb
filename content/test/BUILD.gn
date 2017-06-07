@@ -76,6 +76,8 @@ static_library("test_support") {
     "../public/test/javascript_test_observer.h",
     "../public/test/memory_coordinator_test_utils.cc",
     "../public/test/memory_coordinator_test_utils.h",
+    "../public/test/mock_browsing_data_remover_delegate.cc",
+    "../public/test/mock_browsing_data_remover_delegate.h",
     "../public/test/mock_download_item.cc",
     "../public/test/mock_download_item.h",
     "../public/test/mock_download_manager.cc",

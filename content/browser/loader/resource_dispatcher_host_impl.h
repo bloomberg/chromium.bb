@@ -792,6 +792,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Task runner for the IO thead.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
+  // Whether experimental web platform features are enabled.
+  bool experimental_web_features_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };
 
