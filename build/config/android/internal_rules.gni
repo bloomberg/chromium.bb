@@ -1176,8 +1176,9 @@ if (enable_java_templates) {
         defined(invoker.supports_android) && invoker.supports_android &&
         (is_java_debug || dcheck_always_on)
 
-    _retrolambda = defined(invoker.supports_android) &&
-                   invoker.supports_android && use_java8
+    _retrolambda =
+        defined(invoker.supports_android) && invoker.supports_android &&
+        ((defined(invoker.process_java8) && invoker.process_java8) || use_java8)
 
     _deps = []
     _previous_output_jar = _input_jar_path
@@ -1980,6 +1981,7 @@ if (enable_java_templates) {
                              [
                                "jar_excluded_patterns",
                                "strip_resource_classes",
+                               "process_java8",
                              ])
 
       visibility = [
