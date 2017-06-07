@@ -209,10 +209,8 @@ GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
   GURL url = base_url_.Resolve(kDriveV2FilesUrl);
   if (enable_team_drives_) {
     url = net::AppendOrReplaceQueryParameter(url, kSupportsTeamDrives, "true");
-    if (corpora != FilesListCorpora::DEFAULT) {
-      url = net::AppendOrReplaceQueryParameter(url, kIncludeTeamDriveItems,
-                                               "true");
-    }
+    url =
+        net::AppendOrReplaceQueryParameter(url, kIncludeTeamDriveItems, "true");
     url = net::AppendOrReplaceQueryParameter(url, kCorpora,
                                              GetCorporaString(corpora));
     if (!team_drive_id.empty())
