@@ -13,7 +13,6 @@
 #include "ash/frame/header_painter_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -29,7 +28,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -102,11 +100,9 @@ void BrowserNonClientFrameViewAsh::Init() {
     header_painter->Init(frame(), this, caption_button_container_);
     if (window_icon_)
       header_painter->UpdateLeftHeaderView(window_icon_);
-    if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
-      // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
-      if (!browser_view()->browser()->is_app())
-        header_painter->SetFrameColors(kMdWebUIFrameColor, kMdWebUIFrameColor);
-    }
+    // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
+    if (!browser_view()->browser()->is_app())
+      header_painter->SetFrameColors(kMdWebUIFrameColor, kMdWebUIFrameColor);
   } else {
     BrowserHeaderPainterAsh* header_painter = new BrowserHeaderPainterAsh;
     header_painter_.reset(header_painter);

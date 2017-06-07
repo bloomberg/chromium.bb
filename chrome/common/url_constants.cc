@@ -373,7 +373,6 @@ const char kTriggeredResetProfileSettingsSubPage[] =
 const char kAccessibilitySubPage[] = "accessibility";
 const char kBluetoothSubPage[] = "bluetoothDevices";
 const char kDateTimeSubPage[] = "dateTime";
-const char kDeprecatedOptionsSearchSubPage[] = "search";
 const char kDisplaySubPage[] = "display";
 const char kHelpSubPage[] = "help";
 const char kInternetSubPage[] = "internet";

@@ -413,10 +413,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(origin));
 
   std::string url = web_contents->GetLastCommittedURL().spec();
-  if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings))
-    ASSERT_EQ("chrome://settings/content/notifications", url);
-  else
-    ASSERT_EQ("chrome://settings/contentExceptions#notifications", url);
+  ASSERT_EQ("chrome://settings/content/notifications", url);
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,

@@ -12,8 +12,6 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
@@ -78,50 +76,7 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
   TestWillHandleBrowserAboutURL(test_cases);
 }
 
-#if defined(OS_CHROMEOS)
-// Chrome OS defaults to showing Options in a window and including About in
-// Options.
-TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForOptionsChromeOS) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kMaterialDesignSettings);
-
-  std::string chrome_prefix(content::kChromeUIScheme);
-  chrome_prefix.append(url::kStandardSchemeSeparator);
-  std::vector<AboutURLTestCase> test_cases(
-      {{GURL(chrome_prefix + chrome::kChromeUISettingsHost),
-        GURL(chrome_prefix + chrome::kChromeUISettingsFrameHost)},
-       {GURL(chrome_prefix + chrome::kChromeUIHelpHost),
-        GURL(chrome_prefix + chrome::kChromeUISettingsFrameHost + "/" +
-             chrome::kChromeUIHelpHost)}});
-  TestWillHandleBrowserAboutURL(test_cases);
-}
-
-#else
-TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForOptions) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kMaterialDesignSettings);
-
-  std::string chrome_prefix(content::kChromeUIScheme);
-  chrome_prefix.append(url::kStandardSchemeSeparator);
-  std::vector<AboutURLTestCase> test_cases(
-      {{
-           GURL(chrome_prefix + chrome::kChromeUISettingsHost),
-           GURL(chrome_prefix + chrome::kChromeUIUberHost + "/" +
-                chrome::kChromeUISettingsHost + "/"),
-       },
-       {
-           GURL(chrome_prefix + chrome::kChromeUIHelpHost),
-           GURL(chrome_prefix + chrome::kChromeUIUberHost + "/" +
-                chrome::kChromeUIHelpHost + "/"),
-       }});
-  TestWillHandleBrowserAboutURL(test_cases);
-}
-#endif
-
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForMDSettings) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kMaterialDesignSettings);
-
   std::string chrome_prefix(content::kChromeUIScheme);
   chrome_prefix.append(url::kStandardSchemeSeparator);
   std::vector<AboutURLTestCase> test_cases(

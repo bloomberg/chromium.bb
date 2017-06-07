@@ -11,11 +11,9 @@
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -41,31 +39,11 @@ class LogWebUIUrlTest : public InProcessBrowserTest {
     return histogram_tester_.GetAllSamples(webui::kWebUICreatedForUrl);
   }
 
-  void SetUpOnMainThread() override {
-    // Disable MD Settings to test non-MD settings page.
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kMaterialDesignSettings);
-  }
-
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(LogWebUIUrlTest);
 };
-
-IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestSettingsFrame) {
-  GURL settings_frame_url(chrome::kChromeUISettingsFrameURL);
-
-  ui_test_utils::NavigateToURL(browser(), settings_frame_url);
-
-  uint32_t settings_frame_url_hash = base::Hash(settings_frame_url.spec());
-  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(settings_frame_url_hash, 1)));
-
-  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-
-  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(settings_frame_url_hash, 2)));
-}
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestExtensionsPage) {
@@ -93,25 +71,6 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestExtensionsPage) {
   uint32_t extensions_frame_url_hash = base::Hash(extensions_frame_url.spec());
 
   EXPECT_THAT(GetSamples(), ElementsAre(Bucket(extensions_frame_url_hash, 1),
-                                        Bucket(uber_frame_url_hash, 1),
-                                        Bucket(uber_url_hash, 1)));
-
-  {
-    // Pretend a user clicked on "Settings".
-    base::string16 settings_title =
-        l10n_util::GetStringUTF16(IDS_SETTINGS_SETTINGS);
-    content::TitleWatcher title_watcher(tab, settings_title);
-    std::string javascript =
-        "uber.invokeMethodOnWindow(window, 'showPage', {pageId: 'settings'})";
-    ASSERT_TRUE(content::ExecuteScript(tab, javascript));
-    ASSERT_EQ(settings_title, title_watcher.WaitAndGetTitle());
-  }
-
-  GURL settings_frame_url(chrome::kChromeUISettingsFrameURL);
-  uint32_t settings_frame_url_hash = base::Hash(settings_frame_url.spec());
-
-  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(extensions_frame_url_hash, 1),
-                                        Bucket(settings_frame_url_hash, 1),
                                         Bucket(uber_frame_url_hash, 1),
                                         Bucket(uber_url_hash, 1)));
 }

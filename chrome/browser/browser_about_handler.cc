@@ -87,31 +87,15 @@ bool WillHandleBrowserAboutURL(GURL* url,
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIExtensionsHost;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-  // Redirect chrome://history.
   } else if (host == chrome::kChromeUIHistoryHost) {
+    // Redirect chrome://history.
     path = url->path();
-  // Redirect chrome://settings, unless MD settings is enabled.
   } else if (host == chrome::kChromeUISettingsHost) {
-    if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
-      return true;  // Prevent further rewriting - this is a valid URL.
-    } else if (::switches::SettingsWindowEnabled()) {
-      host = chrome::kChromeUISettingsFrameHost;
-    } else {
-      host = chrome::kChromeUIUberHost;
-      path = chrome::kChromeUISettingsHost + url->path();
-    }
-  // Redirect chrome://help, unless MD settings is enabled.
+    // Redirect chrome://settings.
+    return true;  // Prevent further rewriting - this is a valid URL.
   } else if (host == chrome::kChromeUIHelpHost) {
-    if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
-      return false;  // Handled in the HandleWebUI handler.
-    } else if (::switches::SettingsWindowEnabled()) {
-      host = chrome::kChromeUISettingsFrameHost;
-      if (url->path().empty() || url->path() == "/")
-        path = chrome::kChromeUIHelpHost;
-    } else {
-      host = chrome::kChromeUIUberHost;
-      path = chrome::kChromeUIHelpHost + url->path();
-    }
+    // Redirect chrome://help, unless MD settings is enabled.
+    return false;  // Handled in the HandleWebUI handler.
   }
 
   GURL::Replacements replacements;

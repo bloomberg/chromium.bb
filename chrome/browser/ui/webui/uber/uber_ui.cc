@@ -79,9 +79,8 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
 
   source->AddBoolean("hideExtensions",
       base::FeatureList::IsEnabled(features::kMaterialDesignExtensions));
-  source->AddBoolean("hideSettingsAndHelp",
-      ::switches::SettingsWindowEnabled() ||
-      base::FeatureList::IsEnabled(features::kMaterialDesignSettings));
+  // TODO(dbeam): remove hideSettingsAndHelp soon.
+  source->AddBoolean("hideSettingsAndHelp", true);
   source->AddString("extensionsHost", chrome::kChromeUIExtensionsHost);
   source->AddLocalizedString("extensionsDisplayName",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
