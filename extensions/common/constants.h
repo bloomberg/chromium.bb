@@ -113,6 +113,12 @@ extern const char kWebStoreAppId[];
 extern const uint8_t kWebstoreSignaturesPublicKey[];
 extern const size_t kWebstoreSignaturesPublicKeySize;
 
+// A thread identifier used in extension events where the thread id in question
+// does not belong to a worker thread.
+// This is the default thread id used for extension event listeners registered
+// from a non-service worker context
+extern const int kNonWorkerThreadId;
+
 // Enumeration of possible app launch sources.
 // This should be kept in sync with LaunchSource in
 // extensions/common/api/app_runtime.idl, and GetLaunchSourceEnum() in

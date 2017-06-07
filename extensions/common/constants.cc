@@ -83,6 +83,8 @@ const uint8_t kWebstoreSignaturesPublicKey[] = {
 const size_t kWebstoreSignaturesPublicKeySize =
     arraysize(kWebstoreSignaturesPublicKey);
 
+const int kNonWorkerThreadId = 0;
+
 const char kMimeTypeJpeg[] = "image/jpeg";
 const char kMimeTypePng[] = "image/png";
 

@@ -18,12 +18,15 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/event_filter.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/value_counter.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/service_worker_request_sender.h"
+#include "extensions/renderer/worker_thread_dispatcher.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -200,18 +203,23 @@ void EventBindings::AttachEvent(const std::string& event_name) {
   // chrome/test/data/extensions/api_test/events/background.js.
   attached_event_names_.insert(event_name);
 
+  const int worker_thread_id = content::WorkerThread::GetCurrentId();
   const std::string& extension_id = context()->GetExtensionID();
+  IPC::Sender* sender = GetIPCSender();
   if (IncrementEventListenerCount(context(), event_name) == 1) {
-    content::RenderThread::Get()->Send(new ExtensionHostMsg_AddListener(
-        extension_id, context()->url(), event_name));
+    sender->Send(new ExtensionHostMsg_AddListener(
+        extension_id, context()->url(), event_name, worker_thread_id));
   }
 
   // This is called the first time the page has added a listener. Since
   // the background page is the only lazy page, we know this is the first
   // time this listener has been registered.
-  if (ExtensionFrameHelper::IsContextForEventPage(context())) {
-    content::RenderThread::Get()->Send(
-        new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
+  bool is_lazy_context =
+      ExtensionFrameHelper::IsContextForEventPage(context()) ||
+      context()->context_type() == Feature::SERVICE_WORKER_CONTEXT;
+  if (is_lazy_context) {
+    sender->Send(new ExtensionHostMsg_AddLazyListener(extension_id, event_name,
+                                                      worker_thread_id));
   }
 }
 
@@ -227,20 +235,27 @@ void EventBindings::DetachEvent(const std::string& event_name, bool is_manual) {
   // See comment in AttachEvent().
   attached_event_names_.erase(event_name);
 
+  int worker_thread_id = content::WorkerThread::GetCurrentId();
+  IPC::Sender* sender = GetIPCSender();
   const std::string& extension_id = context()->GetExtensionID();
 
   if (DecrementEventListenerCount(context(), event_name) == 0) {
-    content::RenderThread::Get()->Send(new ExtensionHostMsg_RemoveListener(
-        extension_id, context()->url(), event_name));
+    sender->Send(new ExtensionHostMsg_RemoveListener(
+        extension_id, context()->url(), event_name, worker_thread_id));
   }
 
   // DetachEvent is called when the last listener for the context is
-  // removed. If the context is the background page, and it removes the
-  // last listener manually, then we assume that it is no longer interested
-  // in being awakened for this event.
-  if (is_manual && ExtensionFrameHelper::IsContextForEventPage(context())) {
-    content::RenderThread::Get()->Send(
-        new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
+  // removed. If the context is the background page or service worker, and it
+  // removes the last listener manually, then we assume that it is no longer
+  // interested in being awakened for this event.
+  if (is_manual) {
+    bool is_lazy_context =
+        ExtensionFrameHelper::IsContextForEventPage(context()) ||
+        context()->context_type() == Feature::SERVICE_WORKER_CONTEXT;
+    if (is_lazy_context) {
+      sender->Send(new ExtensionHostMsg_RemoveLazyListener(
+          extension_id, event_name, worker_thread_id));
+    }
   }
 }
 
@@ -349,6 +364,16 @@ std::unique_ptr<EventMatcher> EventBindings::ParseEventMatcher(
     std::unique_ptr<base::DictionaryValue> filter) {
   return base::MakeUnique<EventMatcher>(
       std::move(filter), context()->GetRenderFrame()->GetRoutingID());
+}
+
+IPC::Sender* EventBindings::GetIPCSender() {
+  const bool is_service_worker_context =
+      context()->context_type() == Feature::SERVICE_WORKER_CONTEXT;
+  DCHECK_EQ(is_service_worker_context,
+            content::WorkerThread::GetCurrentId() != kNonWorkerThreadId);
+  return is_service_worker_context
+             ? static_cast<IPC::Sender*>(WorkerThreadDispatcher::Get())
+             : static_cast<IPC::Sender*>(content::RenderThread::Get());
 }
 
 void EventBindings::OnInvalidated() {

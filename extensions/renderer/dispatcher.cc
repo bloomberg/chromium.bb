@@ -217,6 +217,9 @@ void SendEventListenersIPC(binding::EventListenersChanged changed,
                            const base::DictionaryValue* filter,
                            bool was_manual) {
   bool lazy = ExtensionFrameHelper::IsContextForEventPage(context);
+  // TODO(lazyboy): For service workers, use worker specific IPC::Sender
+  // instead of |render_thread|.
+  const int worker_thread_id = content::WorkerThread::GetCurrentId();
   std::string extension_id = context->GetExtensionID();
   content::RenderThread* render_thread = content::RenderThread::Get();
 
@@ -232,18 +235,18 @@ void SendEventListenersIPC(binding::EventListenersChanged changed,
   } else {
     if (changed == binding::EventListenersChanged::HAS_LISTENERS) {
       render_thread->Send(new ExtensionHostMsg_AddListener(
-          extension_id, context->url(), event_name));
+          extension_id, context->url(), event_name, worker_thread_id));
       if (lazy) {
-        render_thread->Send(
-            new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
+        render_thread->Send(new ExtensionHostMsg_AddLazyListener(
+            extension_id, event_name, worker_thread_id));
       }
     } else {
       DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
       render_thread->Send(new ExtensionHostMsg_RemoveListener(
-          extension_id, context->url(), event_name));
+          extension_id, context->url(), event_name, worker_thread_id));
       if (lazy && was_manual) {
-        render_thread->Send(
-            new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
+        render_thread->Send(new ExtensionHostMsg_RemoveLazyListener(
+            extension_id, event_name, worker_thread_id));
       }
     }
   }
@@ -472,7 +475,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
 
   if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
     WorkerThreadDispatcher::Get()->AddWorkerData(service_worker_version_id,
-                                                 &source_map_);
+                                                 context, &source_map_);
 
     // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
     // safe.
@@ -893,6 +896,9 @@ void Dispatcher::RegisterNativeHandlers(
 }
 
 bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
+  if (WorkerThreadDispatcher::Get()->OnControlMessageReceived(message))
+    return true;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(Dispatcher, message)
   IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateExtension, OnActivateExtension)

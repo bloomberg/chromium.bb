@@ -401,7 +401,7 @@
     "contexts": ["blessed_extension"]
   },
   "extension.getURL": {
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script", "extension_service_worker"]
   },
   "extension.getViews": [
     {

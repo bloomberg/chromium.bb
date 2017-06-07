@@ -6,6 +6,8 @@
 #define EXTENSIONS_RENDERER_WORKER_THREAD_DISPATCHER_H_
 
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
+#include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "ipc/ipc_sync_message_filter.h"
 
@@ -17,9 +19,11 @@ namespace content {
 class RenderThread;
 }
 
+struct ExtensionMsg_DispatchEvent_Params;
 namespace extensions {
 class ExtensionBindingsSystem;
 class ResourceBundleSourceMap;
+class ScriptContext;
 class ServiceWorkerRequestSender;
 class V8SchemaRegistry;
 
@@ -29,7 +33,8 @@ class V8SchemaRegistry;
 // 1) A content::WorkerThreadMessageFilter, so that we can receive IPC directly
 // on worker thread.
 // 2) A content::ThreadSafeSender, so we can safely send IPC from worker thread.
-class WorkerThreadDispatcher : public content::RenderThreadObserver {
+class WorkerThreadDispatcher : public content::RenderThreadObserver,
+                               public IPC::Sender {
  public:
   WorkerThreadDispatcher();
   ~WorkerThreadDispatcher() override;
@@ -41,17 +46,21 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver {
   static V8SchemaRegistry* GetV8SchemaRegistry();
 
   void Init(content::RenderThread* render_thread);
-  bool Send(IPC::Message* message);
+
+  // IPC::Sender:
+  bool Send(IPC::Message* message) override;
+
   void AddWorkerData(int64_t service_worker_version_id,
+                     ScriptContext* context,
                      ResourceBundleSourceMap* source_map);
   void RemoveWorkerData(int64_t service_worker_version_id);
+
+  // content::RenderThreadObserver:
+  bool OnControlMessageReceived(const IPC::Message& message) override;
 
  private:
   static bool HandlesMessageOnWorkerThread(const IPC::Message& message);
   static void ForwardIPC(int worker_thread_id, const IPC::Message& message);
-
-  // content::RenderThreadObserver:
-  bool OnControlMessageReceived(const IPC::Message& message) override;
 
   void OnMessageReceivedOnWorkerThread(int worker_thread_id,
                                        const IPC::Message& message);
@@ -64,6 +73,8 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver {
                         bool succeeded,
                         const base::ListValue& response,
                         const std::string& error);
+  void OnDispatchEvent(const ExtensionMsg_DispatchEvent_Params& params,
+                       const base::ListValue& event_args);
 
   // IPC sender. Belongs to the render thread, but thread safe.
   scoped_refptr<IPC::SyncMessageFilter> message_filter_;

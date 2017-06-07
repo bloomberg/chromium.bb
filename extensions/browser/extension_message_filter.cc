@@ -142,7 +142,8 @@ bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void ExtensionMessageFilter::OnExtensionAddListener(
     const std::string& extension_id,
     const GURL& listener_url,
-    const std::string& event_name) {
+    const std::string& event_name,
+    int worker_thread_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!browser_context_)
     return;
@@ -151,10 +152,16 @@ void ExtensionMessageFilter::OnExtensionAddListener(
   if (!process)
     return;
 
+  EventRouter* event_router = GetEventRouter();
   if (crx_file::id_util::IdIsValid(extension_id)) {
-    GetEventRouter()->AddEventListener(event_name, process, extension_id);
+    if (worker_thread_id != kNonWorkerThreadId) {
+      event_router->AddServiceWorkerEventListener(
+          event_name, process, extension_id, worker_thread_id);
+    } else {
+      event_router->AddEventListener(event_name, process, extension_id);
+    }
   } else if (listener_url.is_valid()) {
-    GetEventRouter()->AddEventListenerForURL(event_name, process, listener_url);
+    event_router->AddEventListenerForURL(event_name, process, listener_url);
   } else {
     NOTREACHED() << "Tried to add an event listener without a valid "
                  << "extension ID nor listener URL";
@@ -164,7 +171,8 @@ void ExtensionMessageFilter::OnExtensionAddListener(
 void ExtensionMessageFilter::OnExtensionRemoveListener(
     const std::string& extension_id,
     const GURL& listener_url,
-    const std::string& event_name) {
+    const std::string& event_name,
+    int worker_thread_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!browser_context_)
     return;
@@ -174,7 +182,12 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
     return;
 
   if (crx_file::id_util::IdIsValid(extension_id)) {
-    GetEventRouter()->RemoveEventListener(event_name, process, extension_id);
+    if (worker_thread_id != kNonWorkerThreadId) {
+      GetEventRouter()->RemoveServiceWorkerEventListener(
+          event_name, process, extension_id, worker_thread_id);
+    } else {
+      GetEventRouter()->RemoveEventListener(event_name, process, extension_id);
+    }
   } else if (listener_url.is_valid()) {
     GetEventRouter()->RemoveEventListenerForURL(event_name, process,
                                                 listener_url);
@@ -185,21 +198,35 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
 }
 
 void ExtensionMessageFilter::OnExtensionAddLazyListener(
-    const std::string& extension_id, const std::string& event_name) {
+    const std::string& extension_id,
+    const std::string& event_name,
+    int worker_thread_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!browser_context_)
     return;
 
-  GetEventRouter()->AddLazyEventListener(event_name, extension_id);
+  if (worker_thread_id == kNonWorkerThreadId) {
+    GetEventRouter()->AddLazyEventListener(event_name, extension_id);
+  } else {
+    GetEventRouter()->AddLazyServiceWorkerEventListener(
+        event_name, extension_id, worker_thread_id);
+  }
 }
 
 void ExtensionMessageFilter::OnExtensionRemoveLazyListener(
-    const std::string& extension_id, const std::string& event_name) {
+    const std::string& extension_id,
+    const std::string& event_name,
+    int worker_thread_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!browser_context_)
     return;
 
-  GetEventRouter()->RemoveLazyEventListener(event_name, extension_id);
+  if (worker_thread_id == kNonWorkerThreadId) {
+    GetEventRouter()->RemoveLazyEventListener(event_name, extension_id);
+  } else {
+    GetEventRouter()->RemoveLazyServiceWorkerEventListener(
+        event_name, extension_id, worker_thread_id);
+  }
 }
 
 void ExtensionMessageFilter::OnExtensionAddFilteredListener(

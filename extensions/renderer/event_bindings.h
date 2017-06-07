@@ -13,6 +13,10 @@
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "v8/include/v8.h"
 
+namespace IPC {
+class Sender;
+}
+
 namespace base {
 class DictionaryValue;
 }
@@ -72,6 +76,8 @@ class EventBindings : public ObjectBackedNativeHandler {
 
   std::unique_ptr<EventMatcher> ParseEventMatcher(
       std::unique_ptr<base::DictionaryValue> filter);
+
+  IPC::Sender* GetIPCSender();
 
   // Called when our context, and therefore us, is invalidated. Run any cleanup.
   void OnInvalidated();
