@@ -7,9 +7,12 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 if (is_android) {
-  android_library("web_restrictions_java") {
+  android_library("provider_java") {
+    java_files = [ "browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsContentProvider.java" ]
+  }
+
+  android_library("client_java") {
     java_files = [
-      "browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsContentProvider.java",
       "browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClient.java",
       "browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClientResult.java",
     ]
@@ -24,7 +27,8 @@ if (is_android) {
       "browser/junit/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClientTest.java",
     ]
     deps = [
-      ":web_restrictions_java",
+      ":client_java",
+      ":provider_java",
       "//base:base_java",
       "//third_party/hamcrest:hamcrest_java",
     ]
@@ -71,14 +75,14 @@ if (is_android) {
     ]
     jni_package = "web_restrictions"
     deps = [
-      ":web_restrictions_java",
+      ":client_java",
     ]
   }
 
   android_library("test_support_java") {
     java_files = [ "browser/javatest/src/org/chromium/components/webrestrictions/browser/MockWebRestrictionsClient.java" ]
     deps = [
-      ":web_restrictions_java",
+      ":client_java",
       "//base:base_java",
     ]
   }
