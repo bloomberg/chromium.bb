@@ -15,10 +15,12 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/safe_browsing/download_feedback.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -130,8 +132,8 @@ bool WillStorePings(DownloadProtectionService::DownloadCheckResult result,
 class DownloadFeedbackServiceTest : public testing::Test {
  public:
   DownloadFeedbackServiceTest()
-      : file_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::FILE)),
+      : file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BACKGROUND})),
         io_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO)),
         request_context_getter_(
@@ -165,7 +167,7 @@ class DownloadFeedbackServiceTest : public testing::Test {
  protected:
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   FakeDownloadFeedbackFactory download_feedback_factory_;
@@ -248,7 +250,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndDiscardDownload) {
   feedback(0)->finish_callback().Run();
   EXPECT_FALSE(feedback(0));
 
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(base::PathExists(file_path));
 }
 
@@ -355,7 +357,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
     EXPECT_FALSE(feedback(2));
   }
 
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
   // These files should still exist since the FakeDownloadFeedback does not
   // delete them.
   EXPECT_TRUE(base::PathExists(file_path[0]));
@@ -425,7 +427,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
   // File should still exist since the FileUtilProxy task hasn't run yet.
   EXPECT_TRUE(base::PathExists(file_path[2]));
 
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
   // File should be deleted since the AcquireFileCallback ran after the service
   // was deleted.
   EXPECT_FALSE(base::PathExists(file_path[2]));
