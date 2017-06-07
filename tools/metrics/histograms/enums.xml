@@ -53,6 +53,56 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="ScrolledMainFrameWithUnacceleratedFixedRootBackground"/>
 </enum>
 
+<enum name="AccessibilityAndroidServiceInfoEnum" type="int">
+  <summary>
+    Track flags and capabilities of enabled accessibility services on Android.
+  </summary>
+  <int value="0" label="CAPABILITY_CAN_CONTROL_MAGNIFICATION"/>
+  <int value="1" label="CAPABILITY_CAN_PERFORM_GESTURES"/>
+  <int value="2" label="CAPABILITY_CAN_REQUEST_ENHANCED_WEB_ACCESSIBILITY"/>
+  <int value="3" label="CAPABILITY_CAN_REQUEST_FILTER_KEY_EVENTS"/>
+  <int value="4" label="CAPABILITY_CAN_REQUEST_TOUCH_EXPLORATION"/>
+  <int value="5" label="CAPABILITY_CAN_RETRIEVE_WINDOW_CONTENT"/>
+  <int value="6" label="EVENT_ANNOUNCEMENT"/>
+  <int value="7" label="EVENT_ASSIST_READING_CONTEXT"/>
+  <int value="8" label="EVENT_GESTURE_DETECTION_END"/>
+  <int value="9" label="EVENT_GESTURE_DETECTION_START"/>
+  <int value="10" label="EVENT_NOTIFICATION_STATE_CHANGED"/>
+  <int value="11" label="EVENT_TOUCH_EXPLORATION_GESTURE_END"/>
+  <int value="12" label="EVENT_TOUCH_EXPLORATION_GESTURE_START"/>
+  <int value="13" label="EVENT_TOUCH_INTERACTION_END"/>
+  <int value="14" label="EVENT_TOUCH_INTERACTION_START"/>
+  <int value="15" label="EVENT_VIEW_ACCESSIBILITY_FOCUSED"/>
+  <int value="16" label="EVENT_VIEW_ACCESSIBILITY_FOCUS_CLEARED"/>
+  <int value="17" label="EVENT_VIEW_CLICKED"/>
+  <int value="18" label="EVENT_VIEW_CONTEXT_CLICKED"/>
+  <int value="19" label="EVENT_VIEW_FOCUSED"/>
+  <int value="20" label="EVENT_VIEW_HOVER_ENTER"/>
+  <int value="21" label="EVENT_VIEW_HOVER_EXIT"/>
+  <int value="22" label="EVENT_VIEW_LONG_CLICKED"/>
+  <int value="23" label="EVENT_VIEW_SCROLLED"/>
+  <int value="24" label="EVENT_VIEW_SELECTED"/>
+  <int value="25" label="EVENT_VIEW_TEXT_CHANGED"/>
+  <int value="26" label="EVENT_VIEW_TEXT_SELECTION_CHANGED"/>
+  <int value="27" label="EVENT_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY"/>
+  <int value="28" label="EVENT_WINDOWS_CHANGED"/>
+  <int value="29" label="EVENT_WINDOW_CONTENT_CHANGED"/>
+  <int value="30" label="EVENT_WINDOW_STATE_CHANGED"/>
+  <int value="31" label="FEEDBACK_AUDIBLE"/>
+  <int value="32" label="FEEDBACK_BRAILLE"/>
+  <int value="33" label="FEEDBACK_GENERIC"/>
+  <int value="34" label="FEEDBACK_HAPTIC"/>
+  <int value="35" label="FEEDBACK_SPOKEN"/>
+  <int value="36" label="FEEDBACK_VISUAL"/>
+  <int value="37" label="FLAG_FORCE_DIRECT_BOOT_AWARE"/>
+  <int value="38" label="FLAG_INCLUDE_NOT_IMPORTANT_VIEWS"/>
+  <int value="39" label="FLAG_REPORT_VIEW_IDS"/>
+  <int value="40" label="FLAG_REQUEST_ENHANCED_WEB_ACCESSIBILITY"/>
+  <int value="41" label="FLAG_REQUEST_FILTER_KEY_EVENTS"/>
+  <int value="42" label="FLAG_REQUEST_TOUCH_EXPLORATION_MODE"/>
+  <int value="43" label="FLAG_RETRIEVE_INTERACTIVE_WINDOWS"/>
+</enum>
+
 <enum name="AccessibilityModeFlagEnum" type="int">
   <summary>Track individual accessibility mode flags that are enabled.</summary>
   <int value="0" label="Native APIs"/>
