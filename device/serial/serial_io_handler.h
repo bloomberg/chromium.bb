@@ -26,7 +26,7 @@ namespace device {
 // devices by hiding platform-specific MessageLoop interfaces. Pending I/O
 // operations hold a reference to this object until completion so that memory
 // doesn't disappear out from under the OS.
-class SerialIoHandler : public base::RefCounted<SerialIoHandler> {
+class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
  public:
   // Constructs an instance of some platform-specific subclass.
   static scoped_refptr<SerialIoHandler> Create(
@@ -208,7 +208,7 @@ class SerialIoHandler : public base::RefCounted<SerialIoHandler> {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
-  friend class base::RefCounted<SerialIoHandler>;
+  friend class base::RefCountedThreadSafe<SerialIoHandler>;
 
   void MergeConnectionOptions(const serial::ConnectionOptions& options);
 
