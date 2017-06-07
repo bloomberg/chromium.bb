@@ -499,9 +499,18 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
         return nullptr;
     }
 
-    // Does this one more time because removeChild() fires a MutationEvent.
+    // Check DOM structure one more time because removeChild() above fires
+    // synchronous events.
     if (!CheckAcceptChild(new_child, old_child, exception_state))
       return old_child;
+    if (next && next->parentNode() != this) {
+      exception_state.ThrowDOMException(
+          kNotFoundError,
+          "The node before which the new node is to "
+          "be inserted is not a child of this "
+          "node.");
+      return old_child;
+    }
 
     // 13. Let nodes be node’s children if node is a DocumentFragment node, and
     // a list containing solely node otherwise.
