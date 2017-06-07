@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/path_util.h"
+#include "extensions/browser/path_util.h"
 
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -11,10 +11,6 @@
 #if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
 #include "base/mac/foundation_util.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #endif
 
 namespace extensions {

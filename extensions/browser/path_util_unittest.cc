@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/path_util.h"
+#include "extensions/browser/path_util.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -12,8 +12,7 @@ using base::FilePath;
 
 namespace extensions {
 
-// Basic unittest for path_util::PrettifyPath in
-// chrome/browser/extensions/path_util.cc.
+// Basic unittest for path_util::PrettifyPath.
 // For legacy reasons, it's tested more in
 // FileSystemApiTest.FileSystemApiGetDisplayPathPrettify.
 TEST(ExtensionPathUtilTest, BasicPrettifyPathTest) {
