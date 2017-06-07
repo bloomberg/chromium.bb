@@ -12,18 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-void TestPaymentRequest::ClearShippingProfiles() {
-  shipping_profiles_.clear();
-}
-
-void TestPaymentRequest::ClearContactProfiles() {
-  contact_profiles_.clear();
-}
-
-void TestPaymentRequest::ClearCreditCards() {
-  credit_cards_.clear();
-}
-
 autofill::RegionDataLoader* TestPaymentRequest::GetRegionDataLoader() {
   return region_data_loader_;
 }
