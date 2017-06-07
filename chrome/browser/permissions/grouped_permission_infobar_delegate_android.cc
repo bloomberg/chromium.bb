@@ -88,6 +88,10 @@ void GroupedPermissionInfoBarDelegate::InfoBarDismissed() {
     permission_prompt_->Closing();
 }
 
+base::string16 GroupedPermissionInfoBarDelegate::GetLinkText() const {
+  return permission_prompt_->GetLinkText();
+}
+
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     PermissionPromptAndroid* permission_prompt,
     const GURL& requesting_origin)
@@ -124,6 +128,10 @@ base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
 
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_PERMISSION_ALLOW
                                                          : IDS_PERMISSION_DENY);
+}
+
+GURL GroupedPermissionInfoBarDelegate::GetLinkURL() const {
+  return permission_prompt_->GetLinkURL();
 }
 
 bool GroupedPermissionInfoBarDelegate::EqualsDelegate(

@@ -9,6 +9,9 @@
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/common/url_constants.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 PermissionPromptAndroid::PermissionPromptAndroid(
     content::WebContents* web_contents)
@@ -127,6 +130,22 @@ base::string16 PermissionPromptAndroid::GetMessageTextFragment(
   const std::vector<PermissionRequest*>& requests = delegate_->Requests();
   DCHECK_LT(position, requests.size());
   return requests[position]->GetMessageTextFragment();
+}
+
+base::string16 PermissionPromptAndroid::GetLinkText() const {
+  if (GetContentSettingType(0) ==
+      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
+    return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  }
+  return base::string16();
+}
+
+GURL PermissionPromptAndroid::GetLinkURL() const {
+  if (GetContentSettingType(0) ==
+      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
+    return GURL(chrome::kEnhancedPlaybackNotificationLearnMoreURL);
+  }
+  return GURL();
 }
 
 // static
