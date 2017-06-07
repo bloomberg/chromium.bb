@@ -58,6 +58,7 @@ DownloadWorker::DownloadWorker(DownloadWorker::Delegate* delegate,
       length_(length),
       is_paused_(false),
       is_canceled_(false),
+      is_user_cancel_(false),
       weak_factory_(this) {
   DCHECK(delegate_);
 }
@@ -87,10 +88,11 @@ void DownloadWorker::Resume() {
     request_handle_->ResumeRequest();
 }
 
-void DownloadWorker::Cancel() {
+void DownloadWorker::Cancel(bool user_cancel) {
   is_canceled_ = true;
+  is_user_cancel_ = user_cancel;
   if (request_handle_)
-    request_handle_->CancelRequest();
+    request_handle_->CancelRequest(user_cancel);
 }
 
 void DownloadWorker::OnUrlDownloaderStarted(
@@ -103,7 +105,7 @@ void DownloadWorker::OnUrlDownloaderStarted(
   // Destroy the request if user canceled.
   if (is_canceled_) {
     VLOG(kVerboseLevel) << "Byte stream arrived after user cancel the request.";
-    create_info->request_handle->CancelRequest();
+    create_info->request_handle->CancelRequest(is_user_cancel_);
     return;
   }
 

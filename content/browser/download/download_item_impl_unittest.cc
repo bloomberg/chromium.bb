@@ -119,7 +119,7 @@ class MockRequestHandle : public DownloadRequestHandleInterface {
   MOCK_CONST_METHOD0(GetDownloadManager, DownloadManager*());
   MOCK_CONST_METHOD0(PauseRequest, void());
   MOCK_CONST_METHOD0(ResumeRequest, void());
-  MOCK_CONST_METHOD0(CancelRequest, void());
+  MOCK_CONST_METHOD1(CancelRequest, void(bool));
   MOCK_CONST_METHOD0(DebugString, std::string());
 };
 
@@ -1127,7 +1127,7 @@ TEST_F(DownloadItemTest, InitDownloadFileFails) {
       base::MakeUnique<MockRequestHandle>();
 
   EXPECT_CALL(*file, Cancel());
-  EXPECT_CALL(*request_handle, CancelRequest());
+  EXPECT_CALL(*request_handle, CancelRequest(_));
   EXPECT_CALL(*file, Initialize(_, _, _, _))
       .WillOnce(ScheduleCallbackWithParam(
           DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED));
@@ -2161,7 +2161,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
   // Expect that the download file and the request will be cancelled as a
   // result.
   EXPECT_CALL(*file_, Cancel());
-  EXPECT_CALL(*request_handle_, CancelRequest());
+  EXPECT_CALL(*request_handle_, CancelRequest(_));
 
   base::RunLoop download_start_loop;
   DownloadFile::InitializeCallback initialize_callback;
@@ -2205,7 +2205,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
   // Expect that the download file and the request will be cancelled as a
   // result.
   EXPECT_CALL(*file_, Cancel());
-  EXPECT_CALL(*request_handle_, CancelRequest());
+  EXPECT_CALL(*request_handle_, CancelRequest(_));
 
   // Intermediate rename loop is not used immediately, but let's set up the
   // DownloadFile expectations since we are about to transfer its ownership to
@@ -2271,7 +2271,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
   // DownloadFile will Detach()). It depends on the list of observations that
   // are given to us.
   EXPECT_CALL(*file_, Cancel()).Times(::testing::AnyNumber());
-  EXPECT_CALL(*request_handle_, CancelRequest()).Times(::testing::AnyNumber());
+  EXPECT_CALL(*request_handle_, CancelRequest(_)).Times(::testing::AnyNumber());
   EXPECT_CALL(*file_, Detach()).Times(::testing::AnyNumber());
 
   EXPECT_CALL(*file_, FullPath())

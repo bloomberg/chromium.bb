@@ -48,7 +48,7 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloader::Delegate {
   // Download operations.
   void Pause();
   void Resume();
-  void Cancel();
+  void Cancel(bool user_cancel);
 
  private:
   // UrlDownloader::Delegate implementation.
@@ -73,6 +73,7 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloader::Delegate {
   // States of the worker.
   bool is_paused_;
   bool is_canceled_;
+  bool is_user_cancel_;
 
   // Used to control the network request. Live on UI thread.
   std::unique_ptr<DownloadRequestHandleInterface> request_handle_;

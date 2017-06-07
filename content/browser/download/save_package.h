@@ -97,7 +97,7 @@ class CONTENT_EXPORT SavePackage
   bool Init(const SavePackageDownloadCreatedCallback& cb);
 
   // Cancel all in progress request, might be called by user or internal error.
-  void Cancel(bool user_action);
+  void Cancel(bool user_action, bool cancel_download_item = true);
 
   void Finish();
 
@@ -165,7 +165,7 @@ class CONTENT_EXPORT SavePackage
   // Notes from Init() above applies here as well.
   void InternalInit();
 
-  void Stop();
+  void Stop(bool cancel_download_item);
   void CheckFinish();
 
   // Initiate a saving job of a specific URL. We send the request to
@@ -181,14 +181,8 @@ class CONTENT_EXPORT SavePackage
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
 
-  // DownloadItem::Observer implementation.
-  void OnDownloadDestroyed(DownloadItem* download) override;
-
   // Update the download history of this item upon completion.
   void FinalizeDownloadEntry();
-
-  // Detach from DownloadManager.
-  void RemoveObservers();
 
   // Return max length of a path for a specific base directory.
   // This is needed on POSIX, which restrict the length of file names in
