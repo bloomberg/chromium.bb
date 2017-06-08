@@ -516,8 +516,8 @@ bool WebRequestAction::HasPermission(ApplyInfo* apply_info,
   // TODO(devlin): Pass in the real tab id here.
   return WebRequestPermissions::CanExtensionAccessURL(
              extension_info_map, extension_id, request->url(), -1,
-             apply_info->crosses_incognito,
-             permission_check) == PermissionsData::ACCESS_ALLOWED;
+             apply_info->crosses_incognito, permission_check,
+             request->initiator()) == PermissionsData::ACCESS_ALLOWED;
 }
 
 // static
