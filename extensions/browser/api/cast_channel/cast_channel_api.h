@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "components/cast_channel/cast_channel_enum.h"
-#include "extensions/browser/api/api_resource_manager.h"
+#include "components/cast_channel/cast_socket.h"
+#include "components/cast_channel/proto/logging.pb.h"
 #include "extensions/browser/api/async_api_function.h"
-#include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/cast_channel.h"
 
@@ -29,18 +29,13 @@ namespace net {
 class IPEndPoint;
 }
 
+namespace cast_channel {
+class CastSocketService;
+}  // namespace cast_channel
+
 namespace extensions {
 
 struct Event;
-
-namespace api {
-namespace cast_channel {
-class CastSocketService;
-class Logger;
-}  // namespace cast_channel
-}  // namespace api
-
-namespace cast_channel = api::cast_channel;
 
 class CastChannelAPI : public BrowserContextKeyedAPI,
                        public base::SupportsWeakPtr<CastChannelAPI> {
@@ -116,14 +111,16 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
 
   // Sets the function result to a ChannelInfo populated with |channel_id| and
   // |error|.
-  void SetResultFromError(int channel_id, cast_channel::ChannelError error);
+  void SetResultFromError(int channel_id,
+                          api::cast_channel::ChannelError error);
 
   // Manages creating and removing Cast sockets.
-  scoped_refptr<api::cast_channel::CastSocketService> cast_socket_service_;
+  scoped_refptr<cast_channel::CastSocketService> cast_socket_service_;
 
  private:
   // Sets the function result from |channel_info|.
-  void SetResultFromChannelInfo(const cast_channel::ChannelInfo& channel_info);
+  void SetResultFromChannelInfo(
+      const api::cast_channel::ChannelInfo& channel_info);
 };
 
 class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
@@ -152,11 +149,11 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
    public:
     CastMessageHandler(const EventDispatchCallback& ui_dispatch_cb,
                        cast_channel::CastSocket* socket,
-                       scoped_refptr<api::cast_channel::Logger> logger);
+                       scoped_refptr<cast_channel::Logger> logger);
     ~CastMessageHandler() override;
 
     // CastTransport::Delegate implementation.
-    void OnError(::cast_channel::ChannelError error_state) override;
+    void OnError(cast_channel::ChannelError error_state) override;
     void OnMessage(const cast_channel::CastMessage& message) override;
     void Start() override;
 
@@ -167,7 +164,7 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
     EventDispatchCallback const ui_dispatch_cb_;
     cast_channel::CastSocket* const socket_;
     // Logger object for reporting error details.
-    scoped_refptr<api::cast_channel::Logger> logger_;
+    scoped_refptr<cast_channel::Logger> logger_;
 
     DISALLOW_COPY_AND_ASSIGN(CastMessageHandler);
   };
@@ -175,16 +172,16 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   // Validates that |connect_info| represents a valid IP end point and returns a
   // new IPEndPoint if so.  Otherwise returns nullptr.
   static net::IPEndPoint* ParseConnectInfo(
-      const cast_channel::ConnectInfo& connect_info);
+      const api::cast_channel::ConnectInfo& connect_info);
 
-  void OnOpen(::cast_channel::ChannelError result);
+  void OnOpen(cast_channel::ChannelError result);
 
-  std::unique_ptr<cast_channel::Open::Params> params_;
+  std::unique_ptr<api::cast_channel::Open::Params> params_;
   // The id of the newly opened socket.
   int new_channel_id_;
   CastChannelAPI* api_;
   std::unique_ptr<net::IPEndPoint> ip_endpoint_;
-  ::cast_channel::ChannelAuthType channel_auth_;
+  cast_channel::ChannelAuthType channel_auth_;
   base::TimeDelta liveness_timeout_;
   base::TimeDelta ping_interval_;
 
@@ -208,7 +205,7 @@ class CastChannelSendFunction : public CastChannelAsyncApiFunction {
 
   void OnSend(int result);
 
-  std::unique_ptr<cast_channel::Send::Params> params_;
+  std::unique_ptr<api::cast_channel::Send::Params> params_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelSendFunction);
 };
@@ -230,7 +227,7 @@ class CastChannelCloseFunction : public CastChannelAsyncApiFunction {
 
   void OnClose(int result);
 
-  std::unique_ptr<cast_channel::Close::Params> params_;
+  std::unique_ptr<api::cast_channel::Close::Params> params_;
   CastChannelAPI* api_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelCloseFunction);

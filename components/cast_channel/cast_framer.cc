@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/cast_channel/cast_framer.h"
+#include "components/cast_channel/cast_framer.h"
 
 #include <stdlib.h>
 
@@ -12,21 +12,17 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "extensions/common/api/cast_channel/cast_channel.pb.h"
+#include "components/cast_channel/proto/cast_channel.pb.h"
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 MessageFramer::MessageFramer(scoped_refptr<net::GrowableIOBuffer> input_buffer)
     : input_buffer_(input_buffer), error_(false) {
   Reset();
 }
 
-MessageFramer::~MessageFramer() {
-}
+MessageFramer::~MessageFramer() {}
 
-MessageFramer::MessageHeader::MessageHeader() : message_size(0) {
-}
+MessageFramer::MessageHeader::MessageHeader() : message_size(0) {}
 
 void MessageFramer::MessageHeader::SetMessageSize(size_t size) {
   DCHECK_LT(size, static_cast<size_t>(std::numeric_limits<uint32_t>::max()));
@@ -102,9 +98,8 @@ size_t MessageFramer::BytesRequested() {
     case BODY:
       bytes_left =
           (body_size_ + MessageHeader::header_size()) - message_bytes_received_;
-      DCHECK_LE(
-          bytes_left,
-          MessageHeader::max_message_size() - MessageHeader::header_size());
+      DCHECK_LE(bytes_left, MessageHeader::max_message_size() -
+                                MessageHeader::header_size());
       VLOG(2) << "Bytes needed for body: " << bytes_left;
       return bytes_left;
     default:
@@ -177,5 +172,3 @@ void MessageFramer::Reset() {
 }
 
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_SOCKET_H_
-#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_SOCKET_H_
+#ifndef COMPONENTS_CAST_CHANNEL_CAST_SOCKET_H_
+#define COMPONENTS_CAST_CHANNEL_CAST_SOCKET_H_
 
 #include <stdint.h>
 
@@ -16,13 +16,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "components/cast_channel/cast_auth_util.h"
 #include "components/cast_channel/cast_channel_enum.h"
-#include "extensions/browser/api/api_resource.h"
-#include "extensions/browser/api/api_resource_manager.h"
-#include "extensions/browser/api/cast_channel/cast_auth_util.h"
-#include "extensions/browser/api/cast_channel/cast_socket.h"
-#include "extensions/browser/api/cast_channel/cast_transport.h"
-#include "extensions/common/api/cast_channel/logging.pb.h"
+#include "components/cast_channel/cast_socket.h"
+#include "components/cast_channel/cast_transport.h"
+#include "components/cast_channel/proto/logging.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -40,8 +38,6 @@ class TransportSecurityState;
 class X509Certificate;
 }
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 class CastMessage;
 class Logger;
@@ -289,14 +285,12 @@ class CastSocketImpl : public CastSocket {
   // Runs the external connection callback and resets it.
   void DoConnectCallback();
 
-  virtual bool CalledOnValidThread() const;
-
   virtual base::Timer* GetTimer();
 
   void SetConnectState(proto::ConnectionState connect_state);
   void SetReadyState(ReadyState ready_state);
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // The id of the channel.
   int channel_id_;
@@ -396,7 +390,5 @@ class CastSocketImpl : public CastSocket {
   DISALLOW_COPY_AND_ASSIGN(CastSocketImpl);
 };
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_SOCKET_H_
+#endif  // COMPONENTS_CAST_CHANNEL_CAST_SOCKET_H_

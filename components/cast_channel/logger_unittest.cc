@@ -7,13 +7,11 @@
 
 #include <string>
 
-#include "extensions/browser/api/cast_channel/cast_auth_util.h"
-#include "extensions/browser/api/cast_channel/logger.h"
+#include "components/cast_channel/cast_auth_util.h"
+#include "components/cast_channel/logger.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 
 using proto::EventType;
@@ -67,5 +65,3 @@ TEST(CastChannelLoggerTest, LogLastErrorEvents) {
 }
 
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions
