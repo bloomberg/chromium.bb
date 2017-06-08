@@ -16,13 +16,13 @@ cr.define('login', function() {
   var CROS_EXTRA_SMALL_POD_WIDTH = 282;
   var DESKTOP_POD_WIDTH = 180;
   var MD_DESKTOP_POD_WIDTH = 160;
-  var PUBLIC_EXPANDED_BASIC_WIDTH = 500;
-  var PUBLIC_EXPANDED_ADVANCED_WIDTH = 610;
+  var PUBLIC_EXPANDED_WIDTH = 622;
   var CROS_POD_HEIGHT = 346;
   var CROS_SMALL_POD_HEIGHT = 74;
   var CROS_EXTRA_SMALL_POD_HEIGHT = 60;
   var DESKTOP_POD_HEIGHT = 226;
   var MD_DESKTOP_POD_HEIGHT = 200;
+  var PUBLIC_EXPANDED_HEIGHT = 324;
   var POD_ROW_PADDING = 10;
   var DESKTOP_ROW_PADDING = 32;
   var CUSTOM_ICON_CONTAINER_SIZE = 40;
@@ -30,6 +30,7 @@ cr.define('login', function() {
   var SCROLL_MASK_HEIGHT = 112;
   var BANNER_MESSAGE_WIDTH = 520;
   var CROS_POD_HEIGHT_WITH_PIN = 618;
+  var PUBLIC_SESSION_ICON_WIDTH = 12;
 
   /**
    * The maximum number of users that each pod placement method can handle.
@@ -1152,6 +1153,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Returns true if it's a public session pod.
+     * @type {boolean}
+     */
+    get isPublicSessionPod() {
+      return this.classList.contains('public-account');
+    },
+
+    /**
      * Sets the pod style.
      * @param {UserPod.Style} style Style set to the pod.
      */
@@ -2087,6 +2096,11 @@ cr.define('login', function() {
       if (this.parentNode.disabled)
         return;
 
+      // Click events on public session pods should only be handled by their
+      // overriding handler.
+      if (this.isPublicSessionPod)
+        return;
+
       if (this.getPodStyle() != UserPod.Style.LARGE) {
         $('pod-row').switchMainPod(this);
         return;
@@ -2173,6 +2187,12 @@ cr.define('login', function() {
     __proto__: UserPod.prototype,
 
     /**
+     * Keeps track of the pod's original position before it's expanded.
+     * @type {Object}
+     */
+    lastPosition: {left: 'unset', top: 'unset'},
+
+    /**
      * "Enter" button in expanded side pane.
      * @type {!HTMLButtonElement}
      */
@@ -2192,6 +2212,11 @@ cr.define('login', function() {
     },
 
     set expanded(expanded) {
+      if (this.getPodStyle() != UserPod.Style.LARGE) {
+        console.error(
+            'Attempt to expand a public session pod when it is not large.');
+        return;
+      }
       if (this.expanded == expanded)
         return;
 
@@ -2203,26 +2228,10 @@ cr.define('login', function() {
         // environments where users are likely to want to choose among locales.
         if (this.querySelector('.language-select').multipleRecommendedLocales)
           this.classList.add('advanced');
-        this.usualLeft = this.left;
-        this.makeSpaceForExpandedPod_();
-      } else if (typeof(this.usualLeft) != 'undefined') {
-        this.left = this.usualLeft;
+      } else {
+        this.classList.remove('advanced');
       }
-
-      var self = this;
-      this.classList.add('animating');
-      this.addEventListener('transitionend', function f(e) {
-        self.removeEventListener('transitionend', f);
-        self.classList.remove('animating');
-
-        // Accessibility focus indicator does not move with the focused
-        // element. Sends a 'focus' event on the currently focused element
-        // so that accessibility focus indicator updates its location.
-        if (document.activeElement)
-          document.activeElement.dispatchEvent(new Event('focus'));
-      });
-      // Guard timer set to animation duration + 20ms.
-      ensureTransitionEndEvent(this, 200);
+      this.parentNode.handlePublicPodExpansion(this, expanded);
     },
 
     get advanced() {
@@ -2259,10 +2268,6 @@ cr.define('login', function() {
       learnMore.addEventListener('click', this.handleLearnMoreEvent);
       learnMore.addEventListener('keydown', this.handleLearnMoreEvent);
 
-      learnMore = this.querySelector('.expanded-pane-learn-more');
-      learnMore.addEventListener('click', this.handleLearnMoreEvent);
-      learnMore.addEventListener('keydown', this.handleLearnMoreEvent);
-
       var languageSelect = this.querySelector('.language-select');
       languageSelect.tabIndex = UserPodTabOrder.POD_INPUT;
       languageSelect.manuallyChanged = false;
@@ -2277,10 +2282,15 @@ cr.define('login', function() {
       keyboardSelect.tabIndex = UserPodTabOrder.POD_INPUT;
       keyboardSelect.loadedLocale = null;
 
-      var languageAndInput = this.querySelector('.language-and-input');
-      languageAndInput.tabIndex = UserPodTabOrder.POD_INPUT;
-      languageAndInput.addEventListener('click',
-                                        this.transitionToAdvanced_.bind(this));
+      var languageAndInputLink = this.querySelector('.language-and-input');
+      languageAndInputLink.tabIndex = UserPodTabOrder.POD_INPUT;
+      languageAndInputLink.addEventListener(
+          'click', this.transitionToAdvanced_.bind(this));
+
+      var languageAndInputIcon =
+          this.querySelector('.language-and-input-dropdown');
+      languageAndInputIcon.addEventListener(
+          'click', this.transitionToAdvanced_.bind(this));
 
       var monitoringLearnMore = this.querySelector('.monitoring-learn-more');
       monitoringLearnMore.tabIndex = UserPodTabOrder.POD_INPUT;
@@ -2323,8 +2333,6 @@ cr.define('login', function() {
     /** @override **/
     update: function() {
       UserPod.prototype.update.call(this);
-      this.querySelector('.expanded-pane-name').textContent =
-          this.user_.displayName;
       this.querySelector('.info').textContent =
           loadTimeData.getStringF('publicAccountInfoFormat',
                                   this.user_.enterpriseDomain);
@@ -2409,38 +2417,12 @@ cr.define('login', function() {
       stopEventPropagation(event);
     },
 
-    makeSpaceForExpandedPod_: function() {
-      var width = this.classList.contains('advanced') ?
-          PUBLIC_EXPANDED_ADVANCED_WIDTH : PUBLIC_EXPANDED_BASIC_WIDTH;
-      var isDesktopUserManager = Oobe.getInstance().displayType ==
-          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
-      var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
-                                              POD_ROW_PADDING;
-      if (this.left + width > $('pod-row').offsetWidth - rowPadding)
-        this.left = $('pod-row').offsetWidth - rowPadding - width;
-    },
-
     /**
      * Transition the expanded pod from the basic to the advanced view.
      */
     transitionToAdvanced_: function() {
-      var pod = this;
-      var languageAndInputSection =
-          this.querySelector('.language-and-input-section');
-      this.classList.add('transitioning-to-advanced');
-      setTimeout(function() {
-        pod.classList.add('advanced');
-        pod.makeSpaceForExpandedPod_();
-        languageAndInputSection.addEventListener('transitionend',
-                                                 function observer() {
-          languageAndInputSection.removeEventListener('transitionend',
-                                                      observer);
-          pod.classList.remove('transitioning-to-advanced');
-          pod.querySelector('.language-select').focus();
-        });
-        // Guard timer set to animation duration + 20ms.
-        ensureTransitionEndEvent(languageAndInputSection, 380);
-      }, 0);
+      this.classList.add('advanced');
+      // TODO(wzang): Add transition animation when its spec becomes available.
     },
 
     /**
@@ -2496,7 +2478,7 @@ cr.define('login', function() {
       }
       chrome.send('getPublicSessionKeyboardLayouts',
                   [this.user.username, selectedLocale]);
-     },
+    },
 
     /**
      * Populates the keyboard layout "select" element with a list of layouts.
@@ -3415,6 +3397,9 @@ cr.define('login', function() {
       this.touchViewEnabled_ = isTouchViewEnabled;
       this.pods.forEach(function(pod, index) {
         pod.actionBoxAreaElement.classList.toggle('forced', isTouchViewEnabled);
+        if (pod.isPublicSessionPod)
+          pod.querySelector('.button-container')
+              .classList.toggle('forced', isTouchViewEnabled);
       });
     },
 
@@ -3576,12 +3561,11 @@ cr.define('login', function() {
      */
     placeSinglePod_: function() {
       this.mainPod_.setPodStyle(UserPod.Style.LARGE);
-      this.mainPod_.left = (this.screenSize.width - CROS_POD_WIDTH) / 2;
-      this.mainPod_.top = (this.screenSize.height - CROS_POD_HEIGHT) / 2;
+      this.centerPod_(this.mainPod_, CROS_POD_WIDTH, CROS_POD_HEIGHT);
     },
 
     /**
-     * Called when there are two users pods.
+     * Called when the number of pods is within the POD_ROW_LIMIT.
      * @private
      */
     placePodsOnPodRow_: function() {
@@ -3603,7 +3587,7 @@ cr.define('login', function() {
     },
 
     /**
-     * Called when there are more than two user pods.
+     * Called when the number of pods exceeds the POD_ROW_LIMIT.
      * @private
      */
     placePodsOnContainer_: function() {
@@ -3685,8 +3669,8 @@ cr.define('login', function() {
     },
 
     /**
-     * Called when there are more than 6 user pods in landscape mode, or more
-     * than 10 user pods in portrait mode.
+     * Called when the LANDSCAPE_MODE_LIMIT or PORTRAIT_MODE_LIMIT is exceeded
+     * and the scrollable container is shown.
      * @private
      */
     placePodsOnScrollableContainer_: function() {
@@ -3791,10 +3775,8 @@ cr.define('login', function() {
         // the last position in the scrollable container, a bottom padding
         // was added to ensure a symmetric layout.
         pod.style.paddingBottom = cr.ui.toCssPx(0);
-        // Remove the switch animation that might be added earlier.
-        pod.imageElement.classList.remove('switch-image-animation');
-        pod.smallPodImageElement.classList.remove('switch-image-animation');
       }
+      this.clearPodsAnimation_();
       this.hideEmptyArea_();
       // Clear error bubbles whenever pod placement is happening, i.e., after
       // orientation change, showing or hiding virtual keyboard, and user
@@ -3862,26 +3844,58 @@ cr.define('login', function() {
           pod.nameElement.style.width = cr.ui.toCssPx(CROS_POD_WIDTH);
           nameArea.style.left = cr.ui.toCssPx(0);
         }
+        // Update info container area for public session pods.
+        if (pod.isPublicSessionPod) {
+          var infoElement = pod.querySelector('.info');
+          var infoIcon = pod.querySelector('.learn-more');
+          var totalWidth = PUBLIC_SESSION_ICON_WIDTH + infoElement.offsetWidth;
+          var infoLeftMargin = (CROS_POD_WIDTH - totalWidth) / 2;
+          if (infoLeftMargin > 0) {
+            infoIcon.style.left = cr.ui.toCssPx(infoLeftMargin);
+            infoElement.style.left =
+                cr.ui.toCssPx(infoLeftMargin + PUBLIC_SESSION_ICON_WIDTH);
+          } else {
+            infoIcon.style.left = cr.ui.toCssPx(0);
+            infoElement.style.left = cr.ui.toCssPx(PUBLIC_SESSION_ICON_WIDTH);
+            infoElement.style.width = cr.ui.toCssPx(
+                CROS_POD_WIDTH - PUBLIC_SESSION_ICON_WIDTH -
+                infoElement.style.paddingLeft);
+          }
+          // If the public session pod is already expanded, make sure it's
+          // still centered.
+          if (pod.expanded)
+            this.centerPod_(pod, PUBLIC_EXPANDED_WIDTH, PUBLIC_EXPANDED_HEIGHT);
+        }
         // Update action box menu position to ensure it doesn't overlap with
         // elements outside the pod.
         var actionBoxMenu = pod.querySelector('.action-box-menu');
         var actionBoxButton = pod.querySelector('.action-box-button');
-        actionBoxMenu.style.top =
-            cr.ui.toCssPx(actionBoxButton.offsetHeight);
+        var MENU_TOP_PADDING = 7;
         if (this.isPortraitMode_() && pods.length > 1) {
           // Confine the menu inside the pod when it may overlap with outside
           // elements.
           actionBoxMenu.style.left = 'auto';
           actionBoxMenu.style.right = cr.ui.toCssPx(0);
+          actionBoxMenu.style.top =
+              cr.ui.toCssPx(actionBoxButton.offsetHeight + MENU_TOP_PADDING);
+        } else if (!this.isPortraitMode_() && this.isScreenShrinked_()) {
+          // Prevent the virtual keyboard from blocking the remove user button.
+          actionBoxMenu.style.left = cr.ui.toCssPx(
+              pod.nameElement.offsetWidth + actionBoxButton.offsetWidth);
+          actionBoxMenu.style.right = 'auto';
+          actionBoxMenu.style.top = cr.ui.toCssPx(0);
         } else {
           actionBoxMenu.style.left = cr.ui.toCssPx(
               pod.nameElement.offsetWidth + actionBoxButton.style.marginLeft);
           actionBoxMenu.style.right = 'auto';
+          actionBoxMenu.style.top =
+              cr.ui.toCssPx(actionBoxButton.offsetHeight + MENU_TOP_PADDING);
         }
         // Add ripple animation.
         var actionBoxRippleEffect =
             pod.querySelector('.action-box-button.ripple-circle');
-        actionBoxRippleEffect.style.left = actionBoxMenu.style.left;
+        actionBoxRippleEffect.style.left = cr.ui.toCssPx(
+            pod.nameElement.offsetWidth + actionBoxButton.style.marginLeft);
         actionBoxRippleEffect.style.top =
             cr.ui.toCssPx(actionBoxButton.style.marginTop);
         // Adjust the vertical position of the pod if pin keyboard is shown.
@@ -3891,9 +3905,7 @@ cr.define('login', function() {
       // Update the position of the sign-in banner if it's shown.
       if ($('signin-banner').textContent.length != 0) {
         var bannerContainer = $('signin-banner-container1');
-        var BANNER_TOP_PADDING = this.isScreenShrinked_() ? 0 : 38;
-        bannerContainer.style.top = cr.ui.toCssPx(
-            this.mainPod_.top + CROS_POD_HEIGHT + BANNER_TOP_PADDING);
+        bannerContainer.style.top = cr.ui.toCssPx(this.mainPod_.top / 2);
         if (this.pods.length <= POD_ROW_LIMIT) {
           bannerContainer.style.left =
               cr.ui.toCssPx((this.screenSize.width - BANNER_MESSAGE_WIDTH) / 2);
@@ -3907,12 +3919,67 @@ cr.define('login', function() {
     },
 
     /**
+     * Handles required UI changes when a public session pod toggles the
+     * expanded state.
+     * @param {UserPod} pod Public session pod.
+     * @param {boolean} expanded Whether the pod is expanded or not.
+     */
+    handlePublicPodExpansion: function(pod, expanded) {
+      // Hide all other elements in the account picker if the pod is expanded.
+      this.parentNode.classList.toggle('public-account-expanded', expanded);
+      if (expanded) {
+        this.centerPod_(pod, PUBLIC_EXPANDED_WIDTH, PUBLIC_EXPANDED_HEIGHT);
+      } else {
+        // Return the pod to its last position.
+        pod.left = pod.lastPosition.left;
+        pod.top = pod.lastPosition.top;
+        // Pod placement has already finished by this point, but we still need
+        // to make sure that the styles of all the elements in the pod row are
+        // updated before being shown.
+        this.handleAfterPodPlacement_();
+        this.clearPodsAnimation_();
+      }
+    },
+
+    /**
+     * Called when a pod needs to be centered.
+     * @param {UserPod} pod Pod to be centered.
+     * @param {number} podWidth The pod width.
+     * @param {number} podHeight The pod height.
+     * @private
+     */
+    centerPod_: function(pod, podWidth, podHeight) {
+      // The original position of a public session pod is recorded in case of
+      // future need.
+      if (pod.isPublicSessionPod)
+        pod.lastPosition = {left: pod.left, top: pod.top};
+      // Avoid using offsetWidth and offsetHeight in case the pod is not fully
+      // loaded yet.
+      pod.left = (this.screenSize.width - podWidth) / 2;
+      pod.top = (this.screenSize.height - podHeight) / 2;
+    },
+
+    /**
+     * Clears animation classes that may be added earlier to ensure a clean
+     * state.
+     * @private
+     */
+    clearPodsAnimation_: function() {
+      var pods = this.pods;
+      for (var pod of pods) {
+        pod.imageElement.classList.remove('switch-image-animation');
+        pod.smallPodImageElement.classList.remove('switch-image-animation');
+      }
+    },
+
+    /**
      * Called when a small or extra small pod is clicked to trigger the switch
      * with the main pod.
+     * @param {UserPod} pod Pod to be switched with the main pod.
      */
     switchMainPod: function(pod) {
       if (this.disabled) {
-        console.error('Cannot change main pod while sign-in UI is disabled.');
+        console.error('Cannot switch main pod while sign-in UI is disabled.');
         return;
       }
       if (!this.mainPod_) {
@@ -4267,6 +4334,10 @@ cr.define('login', function() {
             this.focusedPod_, true /* force */, true /* opt_skipInputFocus */);
         this.focusedPod_.userTypeBubbleElement.classList.remove('bubble-shown');
         this.focusedPod_.isActionBoxMenuHovered = false;
+        // If the click is outside the public session pod, still focus on it
+        // but do not expand it any more.
+        if (this.focusedPod_.isPublicSessionPod)
+          this.focusedPod_.expanded = false;
       }
     },
 
@@ -4395,7 +4466,9 @@ cr.define('login', function() {
           }
           break;
         case 'Enter':
-          if (this.focusedPod_) {
+          // Keydown events on public session pods should only be handled by
+          // their own handler.
+          if (this.focusedPod_ && !this.focusedPod_.isPublicSessionPod) {
             var targetTag = e.target.tagName;
             if (e.target == this.focusedPod_.passwordElement ||
                 (this.focusedPod_.pinKeyboard &&
