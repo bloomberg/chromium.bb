@@ -17,18 +17,20 @@ import android.util.Log;
  * other than LicenseContentProvider.
  */
 public class LicenseActivity extends Activity {
+    private static final String LICENSES_URI_SUFFIX = "LicenseContentProvider/webview_licenses";
+    private static final String LICENSES_CONTENT_TYPE = "text/html";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final String packageName = getPackageName();
         final Intent intent = new Intent(Intent.ACTION_VIEW);
-        final String licenseUri = String.format("content://%s.%s",
-                packageName, LicenseContentProvider.LICENSES_URI_SUFFIX);
-        intent.setDataAndType(
-                Uri.parse(licenseUri), LicenseContentProvider.LICENSES_CONTENT_TYPE);
+        final String licenseUri =
+                String.format("content://%s.%s", packageName, LICENSES_URI_SUFFIX);
+        intent.setDataAndType(Uri.parse(licenseUri), LICENSES_CONTENT_TYPE);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
-        final int titleId = getResources().getIdentifier(
-                "license_activity_title", "string", packageName);
+        final int titleId =
+                getResources().getIdentifier("license_activity_title", "string", packageName);
         if (titleId != 0) {
             intent.putExtra(Intent.EXTRA_TITLE, getString(titleId));
         }

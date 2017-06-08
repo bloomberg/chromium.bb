@@ -14,15 +14,18 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.components.aboutui.CreditUtils;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
  * Content provider for the OSS licenses file.
- * This is compiled into the stub WebView and so should not depend on any classes from Chromium.
  */
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class LicenseContentProvider
@@ -47,15 +50,21 @@ public class LicenseContentProvider
     @Override
     public void writeDataToPipe(
             ParcelFileDescriptor output, Uri uri, String mimeType, Bundle opts, String filename) {
-        try (InputStream in = getContext().getAssets().open(filename);
-                OutputStream out = new FileOutputStream(output.getFileDescriptor());) {
-            byte[] buf = new byte[8192];
-            int size = -1;
-            while ((size = in.read(buf)) != -1) {
-                out.write(buf, 0, size);
-            }
+        try (OutputStream out = new FileOutputStream(output.getFileDescriptor());) {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ChromeBrowserInitializer.getInstance(getContext())
+                                .handleSynchronousStartup();
+                    } catch (ProcessInitException e) {
+                        Log.e(TAG, "Fail to initialize the Chrome Browser.", e);
+                    }
+                }
+            });
+            out.write(CreditUtils.nativeGetJavaWrapperCredits());
         } catch (IOException e) {
-            Log.e(TAG, "Failed to read the license file", e);
+            Log.e(TAG, "Failed to write the license file", e);
         }
     }
 
@@ -68,8 +77,7 @@ public class LicenseContentProvider
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String where,
-                      String[] whereArgs) {
+    public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
         throw new UnsupportedOperationException();
     }
 
@@ -84,8 +92,8 @@ public class LicenseContentProvider
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
-                        String[] selectionArgs, String sortOrder) {
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
+            String sortOrder) {
         throw new UnsupportedOperationException();
     }
 }

@@ -191,11 +191,7 @@ android_assets("pak_file_assets") {
 # These assets are needed by both monochrome and stand alone WebView, but not by
 # Chrome.
 android_assets("monochrome_webview_assets") {
-  sources = [
-    webview_license_path,
-  ]
   deps = [
-    ":generate_webview_license_notice",
     "//third_party/icu:icu_assets",
     "//v8:v8_external_startup_data_assets",
   ]

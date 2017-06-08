@@ -486,6 +486,7 @@ split_static_library("ui") {
     "//chrome/common:instant_mojom",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",
+    "//components/about_ui",
     "//components/app_modal",
     "//components/autofill/content/browser:risk_proto",
     "//components/autofill/core/browser",
