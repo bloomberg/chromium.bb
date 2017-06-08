@@ -61,7 +61,12 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // only be called once per call of setMuted().
   bool RequestAutoplayUnmute();
 
+  // Indicates the media element is autoplaying because of being muted.
   bool IsAutoplayingMuted() const;
+
+  // Indicates the media element is or will autoplay because of being
+  // muted.
+  CORE_EXPORT bool IsOrWillBeAutoplayingMuted() const;
 
   // Unlock user gesture if a user gesture can be utilized.
   void TryUnlockingUserGesture();
@@ -108,6 +113,7 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   bool IsAutoplayAllowedPerSettings() const;
 
   bool IsAutoplayingMutedInternal(bool muted) const;
+  bool IsOrWillBeAutoplayingMutedInternal(bool muted) const;
 
   // Called when the video visibility changes while autoplaying muted, will
   // pause the video when invisible and resume the video when visible.

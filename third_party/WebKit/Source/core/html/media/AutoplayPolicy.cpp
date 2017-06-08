@@ -211,12 +211,20 @@ bool AutoplayPolicy::IsAutoplayingMuted() const {
 }
 
 bool AutoplayPolicy::IsAutoplayingMutedInternal(bool muted) const {
+  return !element_->paused() && IsOrWillBeAutoplayingMutedInternal(muted);
+}
+
+bool AutoplayPolicy::IsOrWillBeAutoplayingMuted() const {
+  return IsOrWillBeAutoplayingMutedInternal(element_->muted());
+}
+
+bool AutoplayPolicy::IsOrWillBeAutoplayingMutedInternal(bool muted) const {
   if (!element_->IsHTMLVideoElement() ||
       !RuntimeEnabledFeatures::AutoplayMutedVideosEnabled()) {
     return false;
   }
 
-  return !element_->paused() && muted && IsLockedPendingUserGesture();
+  return muted && IsLockedPendingUserGesture();
 }
 
 bool AutoplayPolicy::IsLockedPendingUserGesture() const {

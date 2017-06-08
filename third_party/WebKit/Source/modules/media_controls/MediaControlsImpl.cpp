@@ -42,6 +42,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/html/media/AutoplayPolicy.h"
 #include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/track/TextTrackContainer.h"
 #include "core/html/track/TextTrackList.h"
@@ -726,15 +727,16 @@ void MediaControlsImpl::RefreshCastButtonVisibilityWithoutUpdate() {
     return;
   }
 
-  // The reason for the autoplay test is that some pages (e.g. vimeo.com) have
-  // an autoplay background video, which doesn't autoplay on Chrome for Android
-  // (we prevent it) so starts paused. In such cases we don't want to
-  // automatically show the cast button, since it looks strange and is unlikely
-  // to correspond with anything the user wants to do.  If a user does want to
-  // cast a paused autoplay video then they can still do so by touching or
-  // clicking on the video, which will cause the cast button to appear.
-  if (!MediaElement().ShouldShowControls() && !MediaElement().Autoplay() &&
-      MediaElement().paused()) {
+  // The reason for the autoplay muted test is that some pages (e.g. vimeo.com)
+  // have an autoplay background video which has to be muted on Android to play.
+  // In such cases we don't want to automatically show the cast button, since
+  // it looks strange and is unlikely to correspond with anything the user wants
+  // to do.  If a user does want to cast a muted autoplay video then they can
+  // still do so by touching or clicking on the video, which will cause the cast
+  // button to appear. Note that this concerns various animated images websites
+  // too.
+  if (!MediaElement().ShouldShowControls() &&
+      !MediaElement().GetAutoplayPolicy().IsOrWillBeAutoplayingMuted()) {
     // Note that this is a case where we add the overlay cast button
     // without wanting the panel cast button.  We depend on the fact
     // that computeWhichControlsFit() won't change overlay cast button
@@ -969,12 +971,12 @@ void MediaControlsImpl::OnPlay() {
   UpdatePlayState();
   timeline_->SetPosition(MediaElement().currentTime());
   UpdateCurrentTimeDisplay();
-
-  StartHideMediaControlsTimer();
 }
 
 void MediaControlsImpl::OnPlaying() {
   timeline_->OnPlaying();
+
+  StartHideMediaControlsTimer();
 }
 
 void MediaControlsImpl::OnPause() {
