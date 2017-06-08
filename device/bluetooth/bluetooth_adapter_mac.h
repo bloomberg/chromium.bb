@@ -29,6 +29,25 @@
 @class NSArray;
 @class NSDate;
 
+#if !defined(MAC_OS_X_VERSION_10_13)
+
+// The 10.13 SDK deprecates the CBCentralManagerState enum. When building
+// against older SDKs, define the new enum in terms of the deprecated one.
+using CBManagerState = CBCentralManagerState;
+constexpr CBManagerState CBManagerStateUnknown = CBCentralManagerStateUnknown;
+constexpr CBManagerState CBManagerStateResetting =
+    CBCentralManagerStateResetting;
+constexpr CBManagerState CBManagerStateUnsupported =
+    CBCentralManagerStateUnsupported;
+constexpr CBManagerState CBManagerStateUnauthorized =
+    CBCentralManagerStateUnauthorized;
+constexpr CBManagerState CBManagerStatePoweredOff =
+    CBCentralManagerStatePoweredOff;
+constexpr CBManagerState CBManagerStatePoweredOn =
+    CBCentralManagerStatePoweredOn;
+
+#endif  // MAC_OS_X_VERSION_10_13
+
 namespace base {
 
 class SequencedTaskRunner;
