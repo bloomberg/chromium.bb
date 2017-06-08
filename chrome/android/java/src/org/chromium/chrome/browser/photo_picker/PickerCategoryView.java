@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.PhotoPickerListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -108,6 +107,9 @@ public class PickerCategoryView extends RelativeLayout
     // Whether the connection to the service has been established.
     private boolean mServiceReady;
 
+    // The MIME types requested.
+    private List<String> mMimeTypes;
+
     // A list of files to use for testing (instead of reading files on disk).
     private static List<PickerBitmap> sTestFiles;
 
@@ -126,8 +128,6 @@ public class PickerCategoryView extends RelativeLayout
 
         mDecoderServiceHost = new DecoderServiceHost(this);
         mDecoderServiceHost.bind(mContext);
-
-        enumerateBitmaps();
 
         mSelectionDelegate = new SelectionDelegate<PickerBitmap>();
 
@@ -191,14 +191,18 @@ public class PickerCategoryView extends RelativeLayout
      * @param dialog The dialog showing us.
      * @param listener The listener who should be notified of actions.
      * @param multiSelectionAllowed Whether to allow the user to select more than one image.
+     * @param mimeTypes A list of mime types to show in the dialog.
      */
-    public void initialize(
-            PhotoPickerDialog dialog, PhotoPickerListener listener, boolean multiSelectionAllowed) {
+    public void initialize(PhotoPickerDialog dialog, PhotoPickerListener listener,
+            boolean multiSelectionAllowed, List<String> mimeTypes) {
         if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
 
         mDialog = dialog;
         mMultiSelectionAllowed = multiSelectionAllowed;
         mListener = listener;
+        mMimeTypes = new ArrayList<>(mimeTypes);
+
+        enumerateBitmaps();
 
         mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
@@ -340,8 +344,7 @@ public class PickerCategoryView extends RelativeLayout
             mWorkerTask.cancel(true);
         }
 
-        mWorkerTask =
-                new FileEnumWorkerTask(this, new MimeTypeFileFilter(Arrays.asList("image/*")));
+        mWorkerTask = new FileEnumWorkerTask(this, new MimeTypeFileFilter(mMimeTypes));
         mWorkerTask.execute();
     }
 

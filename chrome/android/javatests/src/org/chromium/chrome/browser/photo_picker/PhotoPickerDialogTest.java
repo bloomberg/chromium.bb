@@ -103,13 +103,14 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         return (RecyclerView) mDialog.findViewById(R.id.recycler_view);
     }
 
-    private PhotoPickerDialog createDialog(final boolean multiselect) throws Exception {
+    private PhotoPickerDialog createDialog(final boolean multiselect, final List<String> mimeTypes)
+            throws Exception {
         final PhotoPickerDialog dialog =
                 ThreadUtils.runOnUiThreadBlocking(new Callable<PhotoPickerDialog>() {
                     @Override
                     public PhotoPickerDialog call() {
                         final PhotoPickerDialog dialog = new PhotoPickerDialog(
-                                getActivity(), PhotoPickerDialogTest.this, multiselect);
+                                getActivity(), PhotoPickerDialogTest.this, multiselect, mimeTypes);
                         dialog.show();
                         return dialog;
                     }
@@ -170,7 +171,7 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @LargeTest
     public void testNoSelection() throws Throwable {
-        createDialog(false); // Multi-select = false.
+        createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
         assertTrue(mDialog.isShowing());
 
         int expectedSelectionCount = 1;
@@ -185,7 +186,7 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @LargeTest
     public void testSingleSelectionPhoto() throws Throwable {
-        createDialog(false); // Multi-select = false.
+        createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
         assertTrue(mDialog.isShowing());
 
         // Expected selection count is 1 because clicking on a new view unselects other.
@@ -203,7 +204,7 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @LargeTest
     public void testMultiSelectionPhoto() throws Throwable {
-        createDialog(true); // Multi-select = true.
+        createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
         assertTrue(mDialog.isShowing());
 
         // Multi-selection is enabled, so each click is counted.

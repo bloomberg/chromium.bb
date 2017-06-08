@@ -220,9 +220,9 @@ public class ProcessInitializationHandler {
                 private PhotoPickerDialog mDialog;
 
                 @Override
-                public void showPhotoPicker(
-                        Context context, PhotoPickerListener listener, boolean allowMultiple) {
-                    mDialog = new PhotoPickerDialog(context, listener, allowMultiple);
+                public void showPhotoPicker(Context context, PhotoPickerListener listener,
+                        boolean allowMultiple, List<String> mimeTypes) {
+                    mDialog = new PhotoPickerDialog(context, listener, allowMultiple, mimeTypes);
                     mDialog.getWindow().getAttributes().windowAnimations =
                             R.style.PhotoPickerDialogAnimation;
                     mDialog.show();
