@@ -39,7 +39,7 @@
 #include "chrome/browser/password_manager/password_store_win.h"
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/password_manager/password_store_proxy_mac.h"
+#include "chrome/browser/password_manager/password_store_mac.h"
 #include "crypto/apple_keychain.h"
 #include "crypto/mock_apple_keychain.h"
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -174,8 +174,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
           os_crypt::switches::kUseMockKeychain)
           ? new crypto::MockAppleKeychain()
           : new crypto::AppleKeychain());
-  ps = new PasswordStoreProxyMac(main_thread_runner, std::move(login_db),
-                                 profile->GetPrefs());
+  ps = new PasswordStoreMac(main_thread_runner, std::move(login_db),
+                            profile->GetPrefs());
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.

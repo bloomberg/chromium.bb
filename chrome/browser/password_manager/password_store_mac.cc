@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_store_proxy_mac.h"
+#include "chrome/browser/password_manager/password_store_mac.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -10,7 +10,7 @@
 
 using password_manager::MigrationStatus;
 
-PasswordStoreProxyMac::PasswordStoreProxyMac(
+PasswordStoreMac::PasswordStoreMac(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     std::unique_ptr<password_manager::LoginDatabase> login_db,
     PrefService* prefs)
@@ -19,7 +19,7 @@ PasswordStoreProxyMac::PasswordStoreProxyMac(
                          prefs);
 }
 
-bool PasswordStoreProxyMac::Init(
+bool PasswordStoreMac::Init(
     const syncer::SyncableService::StartSyncFlare& flare,
     PrefService* prefs) {
   // Set up a background thread.
@@ -33,14 +33,14 @@ bool PasswordStoreProxyMac::Init(
 
   if (PasswordStoreDefault::Init(flare, prefs)) {
     return ScheduleTask(
-        base::Bind(&PasswordStoreProxyMac::InitOnBackgroundThread, this,
+        base::Bind(&PasswordStoreMac::InitOnBackgroundThread, this,
                    static_cast<MigrationStatus>(migration_status_.GetValue())));
   }
 
   return false;
 }
 
-void PasswordStoreProxyMac::ShutdownOnUIThread() {
+void PasswordStoreMac::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PasswordStoreDefault::ShutdownOnUIThread();
   thread_->Stop();
@@ -50,13 +50,13 @@ void PasswordStoreProxyMac::ShutdownOnUIThread() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-PasswordStoreProxyMac::GetBackgroundTaskRunner() {
+PasswordStoreMac::GetBackgroundTaskRunner() {
   return thread_ ? thread_->task_runner() : nullptr;
 }
 
-PasswordStoreProxyMac::~PasswordStoreProxyMac() = default;
+PasswordStoreMac::~PasswordStoreMac() = default;
 
-void PasswordStoreProxyMac::InitOnBackgroundThread(MigrationStatus status) {
+void PasswordStoreMac::InitOnBackgroundThread(MigrationStatus status) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
 
   if (login_db() && (status == MigrationStatus::NOT_STARTED ||
@@ -68,7 +68,7 @@ void PasswordStoreProxyMac::InitOnBackgroundThread(MigrationStatus status) {
     status = MigrationStatus::MIGRATION_STOPPED;
     main_thread_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&PasswordStoreProxyMac::UpdateStatusPref, this, status));
+        base::Bind(&PasswordStoreMac::UpdateStatusPref, this, status));
   }
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -76,7 +76,7 @@ void PasswordStoreProxyMac::InitOnBackgroundThread(MigrationStatus status) {
       static_cast<int>(MigrationStatus::MIGRATION_STATUS_COUNT));
 }
 
-void PasswordStoreProxyMac::UpdateStatusPref(MigrationStatus status) {
+void PasswordStoreMac::UpdateStatusPref(MigrationStatus status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The method can be called after ShutdownOnUIThread().
   if (migration_status_.prefs())

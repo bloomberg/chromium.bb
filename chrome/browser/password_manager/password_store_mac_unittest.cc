@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_store_proxy_mac.h"
+#include "chrome/browser/password_manager/password_store_mac.h"
 
 #include <utility>
 
@@ -71,7 +71,7 @@ class MockPasswordStoreConsumer
 class MockPasswordStoreObserver
     : public password_manager::PasswordStore::Observer {
  public:
-  explicit MockPasswordStoreObserver(PasswordStoreProxyMac* password_store)
+  explicit MockPasswordStoreObserver(PasswordStoreMac* password_store)
       : guard_(this) {
     guard_.Add(password_store);
   }
@@ -79,7 +79,7 @@ class MockPasswordStoreObserver
                void(const password_manager::PasswordStoreChangeList& changes));
 
  private:
-  ScopedObserver<PasswordStoreProxyMac, MockPasswordStoreObserver> guard_;
+  ScopedObserver<PasswordStoreMac, MockPasswordStoreObserver> guard_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreObserver);
 };
@@ -97,11 +97,10 @@ class BadLoginDatabase : public password_manager::LoginDatabase {
   DISALLOW_COPY_AND_ASSIGN(BadLoginDatabase);
 };
 
-class PasswordStoreProxyMacTest
-    : public testing::TestWithParam<MigrationStatus> {
+class PasswordStoreMacTest : public testing::TestWithParam<MigrationStatus> {
  public:
-  PasswordStoreProxyMacTest();
-  ~PasswordStoreProxyMacTest() override;
+  PasswordStoreMacTest();
+  ~PasswordStoreMacTest() override;
 
   void CreateAndInitPasswordStore(
       std::unique_ptr<password_manager::LoginDatabase> login_db);
@@ -126,17 +125,17 @@ class PasswordStoreProxyMacTest
     return store_->login_metadata_db();
   }
 
-  PasswordStoreProxyMac* store() { return store_.get(); }
+  PasswordStoreMac* store() { return store_.get(); }
 
  protected:
   content::TestBrowserThreadBundle ui_thread_;
 
   base::ScopedTempDir db_dir_;
-  scoped_refptr<PasswordStoreProxyMac> store_;
+  scoped_refptr<PasswordStoreMac> store_;
   sync_preferences::TestingPrefServiceSyncable testing_prefs_;
 };
 
-PasswordStoreProxyMacTest::PasswordStoreProxyMacTest() {
+PasswordStoreMacTest::PasswordStoreMacTest() {
   EXPECT_TRUE(db_dir_.CreateUniqueTempDir());
   chrome::RegisterUserProfilePrefs(testing_prefs_.registry());
   testing_prefs_.SetInteger(password_manager::prefs::kKeychainMigrationStatus,
@@ -146,20 +145,20 @@ PasswordStoreProxyMacTest::PasswordStoreProxyMacTest() {
   OSCryptMocker::SetUpWithSingleton();
 }
 
-PasswordStoreProxyMacTest::~PasswordStoreProxyMacTest() {
+PasswordStoreMacTest::~PasswordStoreMacTest() {
   ClosePasswordStore();
   OSCryptMocker::TearDown();
 }
 
-void PasswordStoreProxyMacTest::CreateAndInitPasswordStore(
+void PasswordStoreMacTest::CreateAndInitPasswordStore(
     std::unique_ptr<password_manager::LoginDatabase> login_db) {
-  store_ = new PasswordStoreProxyMac(
+  store_ = new PasswordStoreMac(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       std::move(login_db), &testing_prefs_);
   ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
 }
 
-void PasswordStoreProxyMacTest::ClosePasswordStore() {
+void PasswordStoreMacTest::ClosePasswordStore() {
   if (!store_)
     return;
   store_->ShutdownOnUIThread();
@@ -167,7 +166,7 @@ void PasswordStoreProxyMacTest::ClosePasswordStore() {
   store_ = nullptr;
 }
 
-void PasswordStoreProxyMacTest::FinishAsyncProcessing() {
+void PasswordStoreMacTest::FinishAsyncProcessing() {
   // Do a store-level query to wait for all the previously enqueued operations
   // to finish.
   MockPasswordStoreConsumer consumer;
@@ -176,11 +175,11 @@ void PasswordStoreProxyMacTest::FinishAsyncProcessing() {
   consumer.WaitForResult();
 }
 
-base::FilePath PasswordStoreProxyMacTest::test_login_db_file_path() const {
+base::FilePath PasswordStoreMacTest::test_login_db_file_path() const {
   return db_dir_.GetPath().Append(FILE_PATH_LITERAL("login.db"));
 }
 
-MigrationStatus PasswordStoreProxyMacTest::GetTargetStatus() const {
+MigrationStatus PasswordStoreMacTest::GetTargetStatus() const {
   if (GetParam() == MigrationStatus::NOT_STARTED ||
       GetParam() == MigrationStatus::FAILED_ONCE ||
       GetParam() == MigrationStatus::FAILED_TWICE) {
@@ -189,7 +188,7 @@ MigrationStatus PasswordStoreProxyMacTest::GetTargetStatus() const {
   return GetParam();
 }
 
-void PasswordStoreProxyMacTest::AddForm(const PasswordForm& form) {
+void PasswordStoreMacTest::AddForm(const PasswordForm& form) {
   MockPasswordStoreObserver mock_observer(store());
 
   password_manager::PasswordStoreChangeList list;
@@ -200,7 +199,7 @@ void PasswordStoreProxyMacTest::AddForm(const PasswordForm& form) {
   FinishAsyncProcessing();
 }
 
-void PasswordStoreProxyMacTest::UpdateForm(const PasswordForm& form) {
+void PasswordStoreMacTest::UpdateForm(const PasswordForm& form) {
   MockPasswordStoreObserver mock_observer(store());
 
   password_manager::PasswordStoreChangeList list;
@@ -211,7 +210,7 @@ void PasswordStoreProxyMacTest::UpdateForm(const PasswordForm& form) {
   FinishAsyncProcessing();
 }
 
-void PasswordStoreProxyMacTest::RemoveForm(const PasswordForm& form) {
+void PasswordStoreMacTest::RemoveForm(const PasswordForm& form) {
   MockPasswordStoreObserver mock_observer(store());
 
   password_manager::PasswordStoreChangeList list;
@@ -224,7 +223,7 @@ void PasswordStoreProxyMacTest::RemoveForm(const PasswordForm& form) {
 
 // ----------- Tests -------------
 
-TEST_P(PasswordStoreProxyMacTest, Sanity) {
+TEST_P(PasswordStoreMacTest, Sanity) {
   base::HistogramTester histogram_tester;
 
   CreateAndInitPasswordStore(base::MakeUnique<password_manager::LoginDatabase>(
@@ -239,7 +238,7 @@ TEST_P(PasswordStoreProxyMacTest, Sanity) {
       "PasswordManager.KeychainMigration.Status", status, 1);
 }
 
-TEST_P(PasswordStoreProxyMacTest, StartAndStop) {
+TEST_P(PasswordStoreMacTest, StartAndStop) {
   base::HistogramTester histogram_tester;
   // PasswordStore::ShutdownOnUIThread() immediately follows
   // PasswordStore::Init(). The message loop isn't running in between. Anyway,
@@ -253,7 +252,7 @@ TEST_P(PasswordStoreProxyMacTest, StartAndStop) {
       static_cast<int>(GetTargetStatus()), 1);
 }
 
-TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
+TEST_P(PasswordStoreMacTest, OperationsOnABadDatabaseSilentlyFail) {
   // Verify that operations on a PasswordStore with a bad database cause no
   // explosions, but fail without side effect, return no data and trigger no
   // notifications.
@@ -262,7 +261,7 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
   EXPECT_FALSE(login_db());
 
   // The store should outlive the observer.
-  scoped_refptr<PasswordStoreProxyMac> store_refptr = store();
+  scoped_refptr<PasswordStoreMac> store_refptr = store();
   MockPasswordStoreObserver mock_observer(store());
   EXPECT_CALL(mock_observer, OnLoginsChanged(_)).Times(0);
 
@@ -325,7 +324,7 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
 }
 
 INSTANTIATE_TEST_CASE_P(,
-                        PasswordStoreProxyMacTest,
+                        PasswordStoreMacTest,
                         testing::Values(MigrationStatus::NOT_STARTED,
                                         MigrationStatus::MIGRATED,
                                         MigrationStatus::FAILED_ONCE,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_PROXY_MAC_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_PROXY_MAC_H_
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_MAC_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_MAC_H_
 
 #include <memory>
 
@@ -18,9 +18,9 @@ class LoginDatabase;
 }
 
 // Password store for Mac. It creates a dedicated background thread
-class PasswordStoreProxyMac : public password_manager::PasswordStoreDefault {
+class PasswordStoreMac : public password_manager::PasswordStoreDefault {
  public:
-  PasswordStoreProxyMac(
+  PasswordStoreMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       std::unique_ptr<password_manager::LoginDatabase> login_db,
       PrefService* prefs);
@@ -37,7 +37,7 @@ class PasswordStoreProxyMac : public password_manager::PasswordStoreDefault {
 #endif
 
  private:
-  ~PasswordStoreProxyMac() override;
+  ~PasswordStoreMac() override;
 
   void InitOnBackgroundThread(password_manager::MigrationStatus status);
 
@@ -50,7 +50,7 @@ class PasswordStoreProxyMac : public password_manager::PasswordStoreDefault {
   // Current migration status for the profile.
   IntegerPrefMember migration_status_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreProxyMac);
+  DISALLOW_COPY_AND_ASSIGN(PasswordStoreMac);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_PROXY_MAC_H_
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_MAC_H_
