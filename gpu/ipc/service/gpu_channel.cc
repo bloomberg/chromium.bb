@@ -18,6 +18,7 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -242,6 +243,9 @@ class GPU_EXPORT GpuChannelMessageFilter : public IPC::MessageFilter {
   Scheduler* scheduler_;
   scoped_refptr<GpuChannelMessageQueue> message_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+  // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
+  base::ThreadCheckerImpl io_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageFilter);
 };
@@ -579,7 +583,9 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
     : gpu_channel_(gpu_channel),
       scheduler_(scheduler),
       message_queue_(std::move(message_queue)),
-      main_task_runner_(std::move(main_task_runner)) {}
+      main_task_runner_(std::move(main_task_runner)) {
+  io_thread_checker_.DetachFromThread();
+}
 
 GpuChannelMessageFilter::~GpuChannelMessageFilter() {
   DCHECK(!gpu_channel_);
@@ -606,6 +612,11 @@ void GpuChannelMessageFilter::RemoveRoute(int32_t route_id) {
 }
 
 void GpuChannelMessageFilter::OnFilterAdded(IPC::Channel* channel) {
+  // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
+  CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
+
   DCHECK(!ipc_channel_);
   ipc_channel_ = channel;
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
@@ -613,6 +624,11 @@ void GpuChannelMessageFilter::OnFilterAdded(IPC::Channel* channel) {
 }
 
 void GpuChannelMessageFilter::OnFilterRemoved() {
+  // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
+  CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
+
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
     filter->OnFilterRemoved();
   ipc_channel_ = nullptr;
@@ -620,6 +636,11 @@ void GpuChannelMessageFilter::OnFilterRemoved() {
 }
 
 void GpuChannelMessageFilter::OnChannelConnected(int32_t peer_pid) {
+  // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
+  CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
+
   DCHECK(peer_pid_ == base::kNullProcessId);
   peer_pid_ = peer_pid;
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
@@ -627,17 +648,32 @@ void GpuChannelMessageFilter::OnChannelConnected(int32_t peer_pid) {
 }
 
 void GpuChannelMessageFilter::OnChannelError() {
+  // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
+  CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
+
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
     filter->OnChannelError();
 }
 
 void GpuChannelMessageFilter::OnChannelClosing() {
+  // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
+  CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
+
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
     filter->OnChannelClosing();
 }
 
 void GpuChannelMessageFilter::AddChannelFilter(
     scoped_refptr<IPC::MessageFilter> filter) {
+  // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
+  CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
+
   channel_filters_.push_back(filter);
   if (ipc_channel_)
     filter->OnFilterAdded(ipc_channel_);
@@ -647,6 +683,11 @@ void GpuChannelMessageFilter::AddChannelFilter(
 
 void GpuChannelMessageFilter::RemoveChannelFilter(
     scoped_refptr<IPC::MessageFilter> filter) {
+  // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
+  CHECK(io_thread_checker_.CalledOnValidThread());
+  GpuChannelMessageFilter* alias_this = this;
+  base::debug::Alias(&alias_this);
+
   if (ipc_channel_)
     filter->OnFilterRemoved();
   base::Erase(channel_filters_, filter);
