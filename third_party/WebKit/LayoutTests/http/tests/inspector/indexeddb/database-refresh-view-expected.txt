@@ -24,10 +24,22 @@ Dumping ObjectStore data:
             (no entries)
     Object store: testObjectStore2
             (no entries)
-Refreshed database.
+Refreshed database view.
 Dumping ObjectStore data:
     Object store: testObjectStore1
             Key = testKey, value = [object Object]
     Object store: testObjectStore2
             (no entries)
+Added testObjectStore2 entry.
+Dumping ObjectStore data:
+    Object store: testObjectStore1
+            Key = testKey, value = [object Object]
+    Object store: testObjectStore2
+            (no entries)
+Right-click refreshed database.
+Dumping ObjectStore data:
+    Object store: testObjectStore1
+            Key = testKey, value = [object Object]
+    Object store: testObjectStore2
+            Key = testKey2, value = [object Object]
 

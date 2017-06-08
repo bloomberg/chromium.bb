@@ -6,70 +6,6 @@
 <script src="indexeddb-test.js"></script>
 <script>
 
-function onIndexedDBError(e) {
-    console.error("IndexedDB error: " + e);
-}
-
-function createDatabase(databaseName) {
-    var callback;
-    var promise = new Promise((fulfill) => callback = fulfill);
-    var request = indexedDB.open(databaseName);
-    request.onerror = onIndexedDBError;
-    request.onsuccess = function(event) {
-        request.result.close();
-        callback();
-    }
-    return promise;
-}
-
-function createObjectStore(databaseName, objectStoreName, indexName, keyPath) {
-    var callback;
-    var promise = new Promise((fulfill) => callback = fulfill);
-    var request = indexedDB.open(databaseName);
-    request.onerror = onIndexedDBError;
-    request.onsuccess = function(event) {
-        var db = request.result;
-        var version = db.version;
-        db.close();
-
-        var upgradeRequest = indexedDB.open(databaseName, version + 1);
-
-        upgradeRequest.onerror = onIndexedDBError;
-        upgradeRequest.onupgradeneeded = function(e) {
-            var upgradeDb = e.target.result;
-            var store = upgradeDb.createObjectStore(objectStoreName, { keyPath: "test", autoIncrement: false });
-            store.createIndex(indexName, "test", { unique: false, multiEntry: false });
-            callback();
-        }
-        upgradeRequest.onsuccess = function(e) {
-            var upgradeDb = e.target.result;
-            upgradeDb.close();
-            callback();
-        }
-    }
-    return promise;
-}
-
-function addIDBValue(databaseName, objectStoreName, key, value) {
-    var callback;
-    var promise = new Promise((fulfill) => callback = fulfill);
-    var request = indexedDB.open(databaseName);
-    request.onerror = onIndexedDBError;
-    request.onsuccess = function(event) {
-        var db = request.result;
-        var transaction = db.transaction(objectStoreName, "readwrite");
-        var store = transaction.objectStore(objectStoreName);
-        store.put({ test: key, testValue: value });
-
-        transaction.onerror = onIndexedDBError;
-        transaction.oncomplete = function() {
-            db.close();
-            callback();
-        };
-    }
-    return promise;
-}
-
 async function test()
 {
     var databaseName = "testDatabase";
@@ -81,14 +17,23 @@ async function test()
     var indexedDBModel = InspectorTest.mainTarget.model(Resources.IndexedDBModel);
     var databaseId;
 
-    function waitRefreshDatabase(callback) {
+    function waitRefreshDatabase() {
         var view = UI.panels.resources._sidebar.indexedDBListTreeElement._idbDatabaseTreeElements[0]._view;
-        InspectorTest.addSniffer(Resources.IDBDatabaseView.prototype, "_updatedForTests", callback, false);
         view._refreshDatabaseButtonClicked();
+        return new Promise((resolve) => {
+            InspectorTest.addSniffer(Resources.IDBDatabaseView.prototype, "_updatedForTests", resolve, false)
+        });
     }
 
-    function waitUpdateDataView(callback) {
-        InspectorTest.addSniffer(Resources.IDBDataView.prototype, "_updatedDataForTests", callback, false);
+    function waitRefreshDatabaseRightClick() {
+        idbDatabaseTreeElement._refreshIndexedDB();
+        return waitUpdateDataView();
+    }
+
+    function waitUpdateDataView() {
+        return new Promise((resolve) => {
+            InspectorTest.addSniffer(Resources.IDBDataView.prototype, "_updatedDataForTests", resolve, false)
+        });
     }
 
     function waitDatabaseLoaded(callback) {
@@ -128,7 +73,7 @@ async function test()
     InspectorTest.dumpIndexedDBTree();
 
     // Create database
-    await InspectorTest.evaluateInPageAsync("createDatabase('" + databaseName + "')");
+    await InspectorTest.createDatabaseAsync(databaseName);
     await new Promise(waitDatabaseAdded);
     var idbDatabaseTreeElement = UI.panels.resources._sidebar.indexedDBListTreeElement._idbDatabaseTreeElements[0];
     databaseId = idbDatabaseTreeElement._databaseId;
@@ -142,14 +87,14 @@ async function test()
     var databaseView = idbDatabaseTreeElement._view;
 
     // Create first objectstore
-    await InspectorTest.evaluateInPageAsync("createObjectStore('" + databaseName + "', '" + objectStoreName1 + "', '" + indexName + "', '" + keyPath + "')");
-    await new Promise(waitRefreshDatabase);
+    await InspectorTest.createObjectStoreAsync(databaseName, objectStoreName1, indexName, keyPath);
+    await waitRefreshDatabase();
     InspectorTest.addResult("Created first objectstore.");
     InspectorTest.dumpIndexedDBTree();
 
     // Create second objectstore
-    await InspectorTest.evaluateInPageAsync("createObjectStore('" + databaseName + "', '" + objectStoreName2 + "', '" + indexName + "', '" + keyPath + "')");
-    await new Promise(waitRefreshDatabase);
+    await InspectorTest.createObjectStoreAsync(databaseName, objectStoreName2, indexName, keyPath);
+    await waitRefreshDatabase();
     InspectorTest.addResult("Created second objectstore.");
     InspectorTest.dumpIndexedDBTree();
 
@@ -160,21 +105,25 @@ async function test()
     }
 
     // Add entries
-    await InspectorTest.evaluateInPageAsync("addIDBValue('" + databaseName + "', '" + objectStoreName1 + "', 'testKey', 'testValue')");
+    await InspectorTest.addIDBValueAsync(databaseName, objectStoreName1, "testKey", "testValue");
     InspectorTest.addResult("Added " + objectStoreName1 + " entry.");
     dumpObjectStores();
 
     // Refresh database view
-    await new Promise(waitRefreshDatabase);
-    for (var i = 0; i < idbDatabaseTreeElement.childCount(); ++i) {
-        var objectStoreTreeElement = idbDatabaseTreeElement.childAt(i);
-        if (objectStoreTreeElement._objectStore.name === objectStoreName1) {
-            objectStoreTreeElement.onselect(false);
-            break;
-        }
-    }
-    await new Promise(waitUpdateDataView);      // Wait for objectstore data to load on page.
-    InspectorTest.addResult("Refreshed database.");
+    await waitRefreshDatabase();
+    await waitUpdateDataView();  // Wait for second objectstore data to load on page.
+    InspectorTest.addResult("Refreshed database view.");
+    dumpObjectStores();
+
+    // Add entries
+    await InspectorTest.addIDBValueAsync(databaseName, objectStoreName2, "testKey2", "testValue2");
+    InspectorTest.addResult("Added " + objectStoreName2 + " entry.");
+    dumpObjectStores();
+
+    // Right-click refresh database view
+    await waitRefreshDatabaseRightClick();
+    await waitUpdateDataView();  // Wait for second objectstore data to load on page.
+    InspectorTest.addResult("Right-click refreshed database.");
     dumpObjectStores();
 
     InspectorTest.completeTest();
