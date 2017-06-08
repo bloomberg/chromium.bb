@@ -55,7 +55,7 @@ class CC_EXPORT ImageController {
   // unlocked using UnlockImageDecode.
   // Virtual for testing.
   virtual ImageDecodeRequestId QueueImageDecode(
-      sk_sp<const SkImage> image,
+      const DrawImage& draw_image,
       const ImageDecodedCallback& callback);
   size_t image_cache_max_limit_bytes() const {
     return image_cache_max_limit_bytes_;

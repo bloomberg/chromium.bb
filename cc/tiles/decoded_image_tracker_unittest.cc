@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "cc/test/skia_common.h"
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +23,7 @@ class TestImageController : public ImageController {
   }
 
   ImageDecodeRequestId QueueImageDecode(
-      sk_sp<const SkImage> image,
+      const DrawImage& image,
       const ImageDecodedCallback& callback) override {
     auto id = next_id_++;
     locked_ids_.push_back(id);
@@ -56,7 +57,8 @@ class DecodedImageTrackerTest : public testing::Test {
 TEST_F(DecodedImageTrackerTest, QueueImageLocksImages) {
   bool locked = false;
   decoded_image_tracker()->QueueImageDecode(
-      PaintImage(),
+      PaintImage(PaintImage::GetNextId(),
+                 CreateDiscardableImage(gfx::Size(1, 1))),
       base::Bind([](bool* locked, bool success) { *locked = true; },
                  base::Unretained(&locked)));
   EXPECT_TRUE(locked);
@@ -66,7 +68,8 @@ TEST_F(DecodedImageTrackerTest, QueueImageLocksImages) {
 TEST_F(DecodedImageTrackerTest, NotifyFrameFinishedUnlocksImages) {
   bool locked = false;
   decoded_image_tracker()->QueueImageDecode(
-      PaintImage(),
+      PaintImage(PaintImage::GetNextId(),
+                 CreateDiscardableImage(gfx::Size(1, 1))),
       base::Bind([](bool* locked, bool success) { *locked = true; },
                  base::Unretained(&locked)));
   EXPECT_TRUE(locked);
@@ -77,7 +80,8 @@ TEST_F(DecodedImageTrackerTest, NotifyFrameFinishedUnlocksImages) {
 
   locked = false;
   decoded_image_tracker()->QueueImageDecode(
-      PaintImage(),
+      PaintImage(PaintImage::GetNextId(),
+                 CreateDiscardableImage(gfx::Size(1, 1))),
       base::Bind([](bool* locked, bool success) { *locked = true; },
                  base::Unretained(&locked)));
   EXPECT_TRUE(locked);

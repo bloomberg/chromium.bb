@@ -234,10 +234,17 @@ class BlockingTask : public TileTask {
 // to allow the worker thread to do its work.
 int kDefaultTimeoutSeconds = 10;
 
+DrawImage CreateDiscardableDrawImage(gfx::Size size) {
+  return DrawImage(
+      PaintImage(PaintImage::kUnknownStableId, CreateDiscardableImage(size)),
+      SkIRect::MakeWH(size.width(), size.height()), kNone_SkFilterQuality,
+      SkMatrix::I(), gfx::ColorSpace());
+}
+
 class ImageControllerTest : public testing::Test {
  public:
   ImageControllerTest() : task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-    image_ = CreateDiscardableImage(gfx::Size(1, 1));
+    image_ = CreateDiscardableDrawImage(gfx::Size(1, 1));
   }
   ~ImageControllerTest() override = default;
 
@@ -257,7 +264,7 @@ class ImageControllerTest : public testing::Test {
   base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
   ImageController* controller() { return controller_.get(); }
   TestableCache* cache() { return &cache_; }
-  sk_sp<const SkImage> image() const { return image_; }
+  const DrawImage& image() const { return image_; }
 
   // Timeout callback, which errors and exits the runloop.
   static void Timeout(base::RunLoop* run_loop) {
@@ -282,7 +289,7 @@ class ImageControllerTest : public testing::Test {
   scoped_refptr<WorkerTaskRunner> worker_task_runner_;
   TestableCache cache_;
   std::unique_ptr<ImageController> controller_;
-  sk_sp<const SkImage> image_;
+  DrawImage image_;
 };
 
 TEST_F(ImageControllerTest, NullControllerUnrefsImages) {
@@ -302,7 +309,7 @@ TEST_F(ImageControllerTest, NullControllerUnrefsImages) {
 TEST_F(ImageControllerTest, QueueImageDecode) {
   base::RunLoop run_loop;
   DecodeClient decode_client;
-  EXPECT_EQ(image()->bounds().width(), 1);
+  EXPECT_EQ(image().image()->bounds().width(), 1);
   ImageController::ImageDecodeRequestId expected_id =
       controller()->QueueImageDecode(
           image(),
@@ -320,7 +327,10 @@ TEST_F(ImageControllerTest, QueueImageDecodeNonLazy) {
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(1, 1);
-  sk_sp<const SkImage> image = SkImage::MakeFromBitmap(bitmap);
+  DrawImage image = DrawImage(
+      PaintImage(PaintImage::kUnknownStableId, SkImage::MakeFromBitmap(bitmap)),
+      SkIRect::MakeWH(1, 1), kNone_SkFilterQuality, SkMatrix::I(),
+      gfx::ColorSpace());
 
   ImageController::ImageDecodeRequestId expected_id =
       controller()->QueueImageDecode(
@@ -337,7 +347,7 @@ TEST_F(ImageControllerTest, QueueImageDecodeTooLarge) {
   base::RunLoop run_loop;
   DecodeClient decode_client;
 
-  sk_sp<const SkImage> image = CreateDiscardableImage(gfx::Size(2000, 2000));
+  DrawImage image = CreateDiscardableDrawImage(gfx::Size(2000, 2000));
   ImageController::ImageDecodeRequestId expected_id =
       controller()->QueueImageDecode(
           image,

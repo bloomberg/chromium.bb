@@ -7803,14 +7803,16 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
       return;
     first_ = false;
 
-    image_ = PaintImage(PaintImage::GetNextId(),
-                        CreateDiscardableImage(gfx::Size(400, 400)));
+    image_ = DrawImage(PaintImage(PaintImage::GetNextId(),
+                                  CreateDiscardableImage(gfx::Size(400, 400))),
+                       SkIRect::MakeWH(400, 400), kNone_SkFilterQuality,
+                       SkMatrix::I(), gfx::ColorSpace());
     auto callback =
         base::Bind(&LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
                    base::Unretained(this));
     // Schedule the decode twice for the same image.
-    layer_tree_host()->QueueImageDecode(image_, callback);
-    layer_tree_host()->QueueImageDecode(image_, callback);
+    layer_tree_host()->QueueImageDecode(image_.paint_image(), callback);
+    layer_tree_host()->QueueImageDecode(image_.paint_image(), callback);
   }
 
   void ReadyToCommitOnThread(LayerTreeHostImpl* impl) override {
@@ -7844,7 +7846,7 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
   bool first_ = true;
   bool one_commit_done_ = false;
   int finished_decode_count_ = 0;
-  PaintImage image_;
+  DrawImage image_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestQueueImageDecode);

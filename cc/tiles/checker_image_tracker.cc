@@ -21,6 +21,20 @@ size_t SafeSizeOfImage(const SkImage* image) {
   return checked_size.ValueOrDefault(std::numeric_limits<size_t>::max());
 }
 
+std::string ToString(PaintImage::Id paint_image_id,
+                     SkImageId sk_image_id,
+                     bool complete,
+                     bool static_image,
+                     bool fits_size_constraints,
+                     size_t size) {
+  std::ostringstream str;
+  str << "paint_image_id[" << paint_image_id << "] sk_image_id[" << sk_image_id
+      << "] complete[" << complete << "] static[" << static_image
+      << "], fits_size_constraints[" << fits_size_constraints << "], size["
+      << size << "]";
+  return str.str();
+}
+
 }  // namespace
 
 CheckerImageTracker::CheckerImageTracker(ImageController* image_controller,
@@ -89,8 +103,8 @@ void CheckerImageTracker::ClearTracker(bool can_clear_decode_policy_tracking) {
     for (auto image_id : images_pending_invalidation_) {
       auto it = image_async_decode_state_.find(image_id);
       DCHECK(it != image_async_decode_state_.end());
-      DCHECK_EQ(it->second, DecodePolicy::SYNC);
-      it->second = DecodePolicy::ASYNC;
+      DCHECK_EQ(it->second.policy, DecodePolicy::SYNC);
+      it->second.policy = DecodePolicy::ASYNC;
     }
   }
   images_pending_invalidation_.clear();
@@ -98,7 +112,7 @@ void CheckerImageTracker::ClearTracker(bool can_clear_decode_policy_tracking) {
 
 void CheckerImageTracker::DisallowCheckeringForImage(const PaintImage& image) {
   image_async_decode_state_.insert(
-      std::make_pair(image.stable_id(), DecodePolicy::SYNC));
+      std::make_pair(image.stable_id(), DecodeState()));
 }
 
 void CheckerImageTracker::DidFinishImageDecode(
@@ -122,21 +136,21 @@ void CheckerImageTracker::DidFinishImageDecode(
     return;
   }
 
-  it->second = DecodePolicy::SYNC;
+  it->second.policy = DecodePolicy::SYNC;
   images_pending_invalidation_.insert(image_id);
   ScheduleNextImageDecode();
   client_->NeedsInvalidationForCheckerImagedTiles();
 }
 
-bool CheckerImageTracker::ShouldCheckerImage(const PaintImage& image,
+bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
                                              WhichTree tree) {
+  const PaintImage& image = draw_image.paint_image();
+  PaintImage::Id image_id = image.stable_id();
   TRACE_EVENT1("cc", "CheckerImageTracker::ShouldCheckerImage", "image_id",
-               image.stable_id());
+               image_id);
 
   if (!enable_checker_imaging_)
     return false;
-
-  PaintImage::Id image_id = image.stable_id();
 
   // If the image was invalidated on the current sync tree and the tile is
   // for the active tree, continue checkering it on the active tree to ensure
@@ -154,32 +168,74 @@ bool CheckerImageTracker::ShouldCheckerImage(const PaintImage& image,
   }
 
   auto insert_result = image_async_decode_state_.insert(
-      std::pair<PaintImage::Id, DecodePolicy>(image_id, DecodePolicy::SYNC));
+      std::pair<PaintImage::Id, DecodeState>(image_id, DecodeState()));
   auto it = insert_result.first;
   if (insert_result.second) {
-    bool can_checker_image =
-        image.animation_type() == PaintImage::AnimationType::STATIC &&
+    bool complete =
         image.completion_state() == PaintImage::CompletionState::DONE;
-    if (can_checker_image) {
-      size_t size = SafeSizeOfImage(image.sk_image().get());
-      it->second = (size >= kMinImageSizeToCheckerBytes &&
-                    size <= image_controller_->image_cache_max_limit_bytes())
-                       ? DecodePolicy::ASYNC
-                       : DecodePolicy::SYNC;
-    }
+    bool static_image =
+        image.animation_type() == PaintImage::AnimationType::STATIC;
+    size_t size = SafeSizeOfImage(image.sk_image().get());
+    bool fits_size_constraints =
+        size >= kMinImageSizeToCheckerBytes &&
+        size <= image_controller_->image_cache_max_limit_bytes();
+
+    // Only checker images that are static and completely loaded and fit within
+    // the size constraints.
+    bool can_checker_image = complete && static_image && fits_size_constraints;
+    if (can_checker_image)
+      it->second.policy = DecodePolicy::ASYNC;
+
+    TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                 "CheckerImageTracker::CheckerImagingDecision",
+                 "can_checker_image", can_checker_image, "image_params",
+                 ToString(image_id, image.sk_image()->uniqueID(), complete,
+                          static_image, fits_size_constraints, size));
   }
 
-  return it->second == DecodePolicy::ASYNC;
+  // Update the decode state from the latest image we have seen. Note that it
+  // is not necessary to perform this in the early out cases above since in
+  // each of those cases the image has already been decoded.
+  UpdateDecodeState(draw_image, image_id, &it->second);
+
+  return it->second.policy == DecodePolicy::ASYNC;
+}
+
+void CheckerImageTracker::UpdateDecodeState(const DrawImage& draw_image,
+                                            PaintImage::Id paint_image_id,
+                                            DecodeState* decode_state) {
+  // If the policy is not async then either we decoded this image already or
+  // we decided not to ever checker it.
+  if (decode_state->policy != DecodePolicy::ASYNC)
+    return;
+
+  // If the decode is already in flight, then we will have to live with what we
+  // have now.
+  if (outstanding_image_decode_.has_value() &&
+      outstanding_image_decode_.value().stable_id() == paint_image_id) {
+    return;
+  }
+
+  // Choose the max scale and filter quality. This keeps the memory usage to the
+  // minimum possible while still increasing the possibility of getting a cache
+  // hit.
+  decode_state->scale = SkSize::Make(
+      std::max(decode_state->scale.fWidth, draw_image.scale().fWidth),
+      std::max(decode_state->scale.fHeight, draw_image.scale().fHeight));
+  decode_state->filter_quality =
+      std::max(decode_state->filter_quality, draw_image.filter_quality());
+  decode_state->color_space = draw_image.target_color_space();
 }
 
 void CheckerImageTracker::ScheduleNextImageDecode() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "CheckerImageTracker::ScheduleNextImageDecode");
-  // We can have only one outsanding decode pending completion with the decode
+  // We can have only one outstanding decode pending completion with the decode
   // service. We'll come back here when it is completed.
   if (outstanding_image_decode_.has_value())
     return;
 
+  DrawImage draw_image;
   while (!image_decode_queue_.empty()) {
     auto candidate = std::move(image_decode_queue_.front());
     image_decode_queue_.erase(image_decode_queue_.begin());
@@ -191,9 +247,14 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
     PaintImage::Id image_id = candidate.stable_id();
     auto it = image_async_decode_state_.find(image_id);
     DCHECK(it != image_async_decode_state_.end());
-    if (it->second != DecodePolicy::ASYNC)
+    if (it->second.policy != DecodePolicy::ASYNC)
       continue;
 
+    draw_image = DrawImage(candidate, candidate.sk_image()->bounds(),
+                           it->second.filter_quality,
+                           SkMatrix::MakeScale(it->second.scale.width(),
+                                               it->second.scale.height()),
+                           it->second.color_space);
     outstanding_image_decode_.emplace(candidate);
     break;
   }
@@ -211,9 +272,8 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
                            image_id);
   ImageController::ImageDecodeRequestId request_id =
       image_controller_->QueueImageDecode(
-          outstanding_image_decode_.value().sk_image(),
-          base::Bind(&CheckerImageTracker::DidFinishImageDecode,
-                     weak_factory_.GetWeakPtr(), image_id));
+          draw_image, base::Bind(&CheckerImageTracker::DidFinishImageDecode,
+                                 weak_factory_.GetWeakPtr(), image_id));
 
   image_id_to_decode_.emplace(image_id, base::MakeUnique<ScopedDecodeHolder>(
                                             image_controller_, request_id));
