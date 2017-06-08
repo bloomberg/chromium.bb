@@ -150,7 +150,8 @@ void StartupPagesHandler::OnItemsRemoved(int start, int length) {
 
 void StartupPagesHandler::SetStartupPagesToCurrentPages(
     const base::ListValue* args) {
-  startup_custom_pages_table_model_->SetToCurrentlyOpenPages();
+  startup_custom_pages_table_model_->SetToCurrentlyOpenPages(
+      web_ui()->GetWebContents());
 }
 
 void StartupPagesHandler::RemoveStartupPages(const base::ListValue* args) {

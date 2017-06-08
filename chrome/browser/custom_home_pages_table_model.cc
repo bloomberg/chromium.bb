@@ -26,36 +26,6 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
-namespace {
-
-// Checks whether the given URL should count as one of the "current" pages.
-// Returns true for all pages except dev tools and settings.
-bool ShouldAddPage(const GURL& url) {
-  if (url.is_empty())
-    return false;
-
-  if (url.SchemeIs(content::kChromeDevToolsScheme))
-    return false;
-
-  if (url.SchemeIs(content::kChromeUIScheme)) {
-    if (url.host_piece() == chrome::kChromeUISettingsHost ||
-        url.host_piece() == chrome::kChromeUISettingsFrameHost) {
-      return false;
-    }
-
-    // For a settings page, the path will start with "/settings" not "settings"
-    // so find() will return 1, not 0.
-    if (url.host_piece() == chrome::kChromeUIUberHost &&
-        url.path_piece().find(chrome::kChromeUISettingsHost) == 1) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-}  // namespace
-
 struct CustomHomePagesTableModel::Entry {
   Entry() : task_id(base::CancelableTaskTracker::kBadTaskId) {}
 
@@ -178,7 +148,8 @@ void CustomHomePagesTableModel::Remove(int index) {
     observer_->OnItemsRemoved(index, 1);
 }
 
-void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
+void CustomHomePagesTableModel::SetToCurrentlyOpenPages(
+    const content::WebContents* ignore_contents) {
   // Remove the current entries.
   while (RowCount())
     RemoveWithoutNotification(0);
@@ -192,9 +163,12 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
     for (int tab_index = 0;
          tab_index < browser->tab_strip_model()->count();
          ++tab_index) {
-      const GURL url =
-          browser->tab_strip_model()->GetWebContentsAt(tab_index)->GetURL();
-      if (ShouldAddPage(url))
+      const content::WebContents* contents =
+          browser->tab_strip_model()->GetWebContentsAt(tab_index);
+      if (contents == ignore_contents)
+        continue;
+      const GURL url = contents->GetURL();
+      if (!url.is_empty() && !url.SchemeIs(content::kChromeDevToolsScheme))
         AddWithoutNotification(add_index++, url);
     }
   }
