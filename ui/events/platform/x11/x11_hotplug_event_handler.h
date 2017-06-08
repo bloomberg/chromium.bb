@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 
@@ -22,8 +21,6 @@ class X11HotplugEventHandler {
   void OnHotplugEvent();
 
  private:
-  X11AtomCache atom_cache_;
-
   DISALLOW_COPY_AND_ASSIGN(X11HotplugEventHandler);
 };
 

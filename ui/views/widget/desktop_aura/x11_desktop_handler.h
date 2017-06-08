@@ -17,7 +17,6 @@
 #include "ui/aura/env_observer.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler_observer.h"
@@ -80,8 +79,6 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
 
   // Events selected on x_root_window_.
   std::unique_ptr<ui::XScopedEventSelector> x_root_window_events_;
-
-  ui::X11AtomCache atom_cache_;
 
   base::ObserverList<X11DesktopHandlerObserver> observers_;
 

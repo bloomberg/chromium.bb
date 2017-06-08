@@ -17,7 +17,6 @@
 
 namespace ui {
 class ScopedEventDispatcher;
-class X11AtomCache;
 class XScopedEventSelector;
 }
 
@@ -57,8 +56,6 @@ class X11PropertyChangeWaiter : public ui::PlatformEventDispatcher {
   base::Closure quit_closure_;
 
   std::unique_ptr<ui::ScopedEventDispatcher> dispatcher_;
-
-  std::unique_ptr<ui::X11AtomCache> atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(X11PropertyChangeWaiter);
 };

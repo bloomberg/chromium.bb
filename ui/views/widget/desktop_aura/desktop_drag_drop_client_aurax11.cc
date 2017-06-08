@@ -75,14 +75,6 @@ const char kXdndActionCopy[] = "XdndActionCopy";
 const char kXdndActionMove[] = "XdndActionMove";
 const char kXdndActionLink[] = "XdndActionLink";
 
-// "The target will do something that the source would not understand." The
-// source only needs to provide a copy of the dragged data.
-const char kXdndActionPrivate[] = "XdndActionPrivate";
-
-// The target should ask the user what action it wants to perform. Intended to
-// match Windows' right-click drag and drop, which shows a dropdown.
-const char kXdndActionAsk[] = "XdndActionAsk";
-
 // Triggers the XDS protocol.
 const char kXdndActionDirectSave[] = "XdndActionDirectSave";
 
@@ -155,30 +147,6 @@ const char kXdndPosition[] = "XdndPosition";
 // action will be taken if the drop is accepted.
 const char kXdndStatus[] = "XdndStatus";
 
-const char* kAtomsToCache[] = {
-  kChromiumDragReciever,
-  kXdndActionAsk,
-  kXdndActionCopy,
-  kXdndActionDirectSave,
-  kXdndActionLink,
-  kXdndActionList,
-  kXdndActionMove,
-  kXdndActionPrivate,
-  kXdndAware,
-  kXdndDirectSave0,
-  kXdndDrop,
-  kXdndEnter,
-  kXdndFinished,
-  kXdndLeave,
-  kXdndPosition,
-  kXdndProxy,
-  kXdndSelection,
-  kXdndStatus,
-  kXdndTypeList,
-  ui::Clipboard::kMimeTypeText,
-  NULL
-};
-
 int XGetModifiers() {
   XDisplay* display = gfx::GetXDisplay();
 
@@ -242,9 +210,7 @@ DesktopDragDropClientAuraX11::g_current_drag_drop_client = NULL;
 class DesktopDragDropClientAuraX11::X11DragContext
     : public ui::PlatformEventDispatcher {
  public:
-  X11DragContext(ui::X11AtomCache* atom_cache,
-                 ::Window local_window,
-                 const XClientMessageEvent& event);
+  X11DragContext(::Window local_window, const XClientMessageEvent& event);
   ~X11DragContext() override;
 
   // When we receive an XdndPosition message, we need to have all the data
@@ -286,9 +252,6 @@ class DesktopDragDropClientAuraX11::X11DragContext
   // ui::PlatformEventDispatcher:
   bool CanDispatchEvent(const ui::PlatformEvent& event) override;
   uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
-
-  // The atom cache owned by our parent.
-  ui::X11AtomCache* atom_cache_;
 
   // The XID of our chrome local aura window handling our events.
   ::Window local_window_;
@@ -336,11 +299,9 @@ class DesktopDragDropClientAuraX11::X11DragContext
 };
 
 DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
-    ui::X11AtomCache* atom_cache,
     ::Window local_window,
     const XClientMessageEvent& event)
-    : atom_cache_(atom_cache),
-      local_window_(local_window),
+    : local_window_(local_window),
       source_window_(event.data.l[0]),
       source_client_(
           DesktopDragDropClientAuraX11::GetForWindow(source_window_)),
@@ -430,11 +391,8 @@ void DesktopDragDropClientAuraX11::X11DragContext::RequestNextTarget() {
   ::Atom target = unfetched_targets_.back();
   unfetched_targets_.pop_back();
 
-  XConvertSelection(gfx::GetXDisplay(),
-                    atom_cache_->GetAtom(kXdndSelection),
-                    target,
-                    atom_cache_->GetAtom(kChromiumDragReciever),
-                    local_window_,
+  XConvertSelection(gfx::GetXDisplay(), ui::GetAtom(kXdndSelection), target,
+                    ui::GetAtom(kChromiumDragReciever), local_window_,
                     position_time_stamp_);
 }
 
@@ -450,7 +408,7 @@ void DesktopDragDropClientAuraX11::X11DragContext::OnSelectionNotify(
   DVLOG(1) << "SelectionNotify, format " << event.target;
 
   if (event.property != None) {
-    DCHECK_EQ(event.property, atom_cache_->GetAtom(kChromiumDragReciever));
+    DCHECK_EQ(event.property, ui::GetAtom(kChromiumDragReciever));
 
     scoped_refptr<base::RefCountedMemory> data;
     ::Atom type = None;
@@ -508,11 +466,11 @@ int DesktopDragDropClientAuraX11::X11DragContext::GetDragOperation() const {
 void DesktopDragDropClientAuraX11::X11DragContext::MaskOperation(
     ::Atom xdnd_operation,
     int* drag_operation) const {
-  if (xdnd_operation == atom_cache_->GetAtom(kXdndActionCopy))
+  if (xdnd_operation == ui::GetAtom(kXdndActionCopy))
     *drag_operation |= ui::DragDropTypes::DRAG_COPY;
-  else if (xdnd_operation == atom_cache_->GetAtom(kXdndActionMove))
+  else if (xdnd_operation == ui::GetAtom(kXdndActionMove))
     *drag_operation |= ui::DragDropTypes::DRAG_MOVE;
-  else if (xdnd_operation == atom_cache_->GetAtom(kXdndActionLink))
+  else if (xdnd_operation == ui::GetAtom(kXdndActionLink))
     *drag_operation |= ui::DragDropTypes::DRAG_LINK;
 }
 
@@ -524,7 +482,7 @@ bool DesktopDragDropClientAuraX11::X11DragContext::CanDispatchEvent(
 uint32_t DesktopDragDropClientAuraX11::X11DragContext::DispatchEvent(
     const ui::PlatformEvent& event) {
   if (event->type == PropertyNotify &&
-      event->xproperty.atom == atom_cache_->GetAtom(kXdndActionList)) {
+      event->xproperty.atom == ui::GetAtom(kXdndActionList)) {
     ReadActions();
     return ui::POST_DISPATCH_STOP_PROPAGATION;
   }
@@ -542,7 +500,6 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
       cursor_manager_(cursor_manager),
       xdisplay_(xdisplay),
       xwindow_(xwindow),
-      atom_cache_(xdisplay_, kAtomsToCache),
       current_modifier_state_(ui::EF_NONE),
       target_window_(NULL),
       waiting_on_status_(false),
@@ -559,8 +516,8 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
 
   // Mark that we are aware of drag and drop concepts.
   unsigned long xdnd_version = kMaxXdndVersion;
-  XChangeProperty(xdisplay_, xwindow_, atom_cache_.GetAtom(kXdndAware),
-                  XA_ATOM, 32, PropModeReplace,
+  XChangeProperty(xdisplay_, xwindow_, ui::GetAtom(kXdndAware), XA_ATOM, 32,
+                  PropModeReplace,
                   reinterpret_cast<unsigned char*>(&xdnd_version), 1);
 }
 
@@ -609,8 +566,7 @@ void DesktopDragDropClientAuraX11::OnXdndEnter(
 
   // Make sure that we've run ~X11DragContext() before creating another one.
   target_current_context_.reset();
-  target_current_context_.reset(
-      new X11DragContext(&atom_cache_, xwindow_, event));
+  target_current_context_.reset(new X11DragContext(xwindow_, event));
 
   // In the Windows implementation, we immediately call DesktopDropTargetWin::
   // Translate(). The XDND specification demands that we wait until we receive
@@ -770,7 +726,7 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
 
   XEvent xev;
   xev.xclient.type = ClientMessage;
-  xev.xclient.message_type = atom_cache_.GetAtom(kXdndFinished);
+  xev.xclient.message_type = ui::GetAtom(kXdndFinished);
   xev.xclient.format = 32;
   xev.xclient.window = source_window;
   xev.xclient.data.l[0] = xwindow_;
@@ -819,11 +775,10 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
 
   std::vector<::Atom> actions = GetOfferedDragOperations();
   if (!source_provider_->file_contents_name().empty()) {
-    actions.push_back(atom_cache_.GetAtom(kXdndActionDirectSave));
+    actions.push_back(ui::GetAtom(kXdndActionDirectSave));
     ui::SetStringProperty(
-        xwindow_,
-        atom_cache_.GetAtom(kXdndDirectSave0),
-        atom_cache_.GetAtom(ui::Clipboard::kMimeTypeText),
+        xwindow_, ui::GetAtom(kXdndDirectSave0),
+        ui::GetAtom(ui::Clipboard::kMimeTypeText),
         source_provider_->file_contents_name().AsUTF8Unsafe());
   }
   ui::SetAtomArrayProperty(xwindow_, kXdndActionList, "ATOM", actions);
@@ -865,8 +820,8 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
     source_provider_ = NULL;
     g_current_drag_drop_client = NULL;
     drag_operation_ = 0;
-    XDeleteProperty(xdisplay_, xwindow_, atom_cache_.GetAtom(kXdndActionList));
-    XDeleteProperty(xdisplay_, xwindow_, atom_cache_.GetAtom(kXdndDirectSave0));
+    XDeleteProperty(xdisplay_, xwindow_, ui::GetAtom(kXdndActionList));
+    XDeleteProperty(xdisplay_, xwindow_, ui::GetAtom(kXdndDirectSave0));
 
     return negotiated_operation_;
   }
@@ -1007,22 +962,22 @@ void DesktopDragDropClientAuraX11::SendXClientEvent(::Window xid,
   DesktopDragDropClientAuraX11* short_circuit = GetForWindow(xid);
   if (short_circuit) {
     Atom message_type = xev->xclient.message_type;
-    if (message_type == atom_cache_.GetAtom(kXdndEnter)) {
+    if (message_type == ui::GetAtom(kXdndEnter)) {
       short_circuit->OnXdndEnter(xev->xclient);
       return;
-    } else if (message_type == atom_cache_.GetAtom(kXdndLeave)) {
+    } else if (message_type == ui::GetAtom(kXdndLeave)) {
       short_circuit->OnXdndLeave(xev->xclient);
       return;
-    } else if (message_type == atom_cache_.GetAtom(kXdndPosition)) {
+    } else if (message_type == ui::GetAtom(kXdndPosition)) {
       short_circuit->OnXdndPosition(xev->xclient);
       return;
-    } else if (message_type == atom_cache_.GetAtom(kXdndStatus)) {
+    } else if (message_type == ui::GetAtom(kXdndStatus)) {
       short_circuit->OnXdndStatus(xev->xclient);
       return;
-    } else if (message_type == atom_cache_.GetAtom(kXdndFinished)) {
+    } else if (message_type == ui::GetAtom(kXdndFinished)) {
       short_circuit->OnXdndFinished(xev->xclient);
       return;
-    } else if (message_type == atom_cache_.GetAtom(kXdndDrop)) {
+    } else if (message_type == ui::GetAtom(kXdndDrop)) {
       short_circuit->OnXdndDrop(xev->xclient);
       return;
     }
@@ -1160,22 +1115,22 @@ void DesktopDragDropClientAuraX11::NotifyDragLeave() {
 ::Atom DesktopDragDropClientAuraX11::DragOperationToAtom(
     int drag_operation) {
   if (drag_operation & ui::DragDropTypes::DRAG_COPY)
-    return atom_cache_.GetAtom(kXdndActionCopy);
+    return ui::GetAtom(kXdndActionCopy);
   if (drag_operation & ui::DragDropTypes::DRAG_MOVE)
-    return atom_cache_.GetAtom(kXdndActionMove);
+    return ui::GetAtom(kXdndActionMove);
   if (drag_operation & ui::DragDropTypes::DRAG_LINK)
-    return atom_cache_.GetAtom(kXdndActionLink);
+    return ui::GetAtom(kXdndActionLink);
 
   return None;
 }
 
 ui::DragDropTypes::DragOperation
 DesktopDragDropClientAuraX11::AtomToDragOperation(::Atom atom) {
-  if (atom == atom_cache_.GetAtom(kXdndActionCopy))
+  if (atom == ui::GetAtom(kXdndActionCopy))
     return ui::DragDropTypes::DRAG_COPY;
-  if (atom == atom_cache_.GetAtom(kXdndActionMove))
+  if (atom == ui::GetAtom(kXdndActionMove))
     return ui::DragDropTypes::DRAG_MOVE;
-  if (atom == atom_cache_.GetAtom(kXdndActionLink))
+  if (atom == ui::GetAtom(kXdndActionLink))
     return ui::DragDropTypes::DRAG_LINK;
 
   return ui::DragDropTypes::DRAG_NONE;
@@ -1184,11 +1139,11 @@ DesktopDragDropClientAuraX11::AtomToDragOperation(::Atom atom) {
 std::vector<::Atom> DesktopDragDropClientAuraX11::GetOfferedDragOperations() {
   std::vector<::Atom> operations;
   if (drag_operation_ & ui::DragDropTypes::DRAG_COPY)
-    operations.push_back(atom_cache_.GetAtom(kXdndActionCopy));
+    operations.push_back(ui::GetAtom(kXdndActionCopy));
   if (drag_operation_ & ui::DragDropTypes::DRAG_MOVE)
-    operations.push_back(atom_cache_.GetAtom(kXdndActionMove));
+    operations.push_back(ui::GetAtom(kXdndActionMove));
   if (drag_operation_ & ui::DragDropTypes::DRAG_LINK)
-    operations.push_back(atom_cache_.GetAtom(kXdndActionLink));
+    operations.push_back(ui::GetAtom(kXdndActionLink));
   return operations;
 }
 
@@ -1216,7 +1171,7 @@ void DesktopDragDropClientAuraX11::CompleteXdndPosition(
   // sets this nor respects it if set.
   XEvent xev;
   xev.xclient.type = ClientMessage;
-  xev.xclient.message_type = atom_cache_.GetAtom(kXdndStatus);
+  xev.xclient.message_type = ui::GetAtom(kXdndStatus);
   xev.xclient.format = 32;
   xev.xclient.window = source_window;
   xev.xclient.data.l[0] = xwindow_;
@@ -1232,7 +1187,7 @@ void DesktopDragDropClientAuraX11::CompleteXdndPosition(
 void DesktopDragDropClientAuraX11::SendXdndEnter(::Window dest_window) {
   XEvent xev;
   xev.xclient.type = ClientMessage;
-  xev.xclient.message_type = atom_cache_.GetAtom(kXdndEnter);
+  xev.xclient.message_type = ui::GetAtom(kXdndEnter);
   xev.xclient.format = 32;
   xev.xclient.window = dest_window;
   xev.xclient.data.l[0] = xwindow_;
@@ -1259,7 +1214,7 @@ void DesktopDragDropClientAuraX11::SendXdndEnter(::Window dest_window) {
 void DesktopDragDropClientAuraX11::SendXdndLeave(::Window dest_window) {
   XEvent xev;
   xev.xclient.type = ClientMessage;
-  xev.xclient.message_type = atom_cache_.GetAtom(kXdndLeave);
+  xev.xclient.message_type = ui::GetAtom(kXdndLeave);
   xev.xclient.format = 32;
   xev.xclient.window = dest_window;
   xev.xclient.data.l[0] = xwindow_;
@@ -1278,7 +1233,7 @@ void DesktopDragDropClientAuraX11::SendXdndPosition(
 
   XEvent xev;
   xev.xclient.type = ClientMessage;
-  xev.xclient.message_type = atom_cache_.GetAtom(kXdndPosition);
+  xev.xclient.message_type = ui::GetAtom(kXdndPosition);
   xev.xclient.format = 32;
   xev.xclient.window = dest_window;
   xev.xclient.data.l[0] = xwindow_;
@@ -1303,7 +1258,7 @@ void DesktopDragDropClientAuraX11::SendXdndPosition(
 void DesktopDragDropClientAuraX11::SendXdndDrop(::Window dest_window) {
   XEvent xev;
   xev.xclient.type = ClientMessage;
-  xev.xclient.message_type = atom_cache_.GetAtom(kXdndDrop);
+  xev.xclient.message_type = ui::GetAtom(kXdndDrop);
   xev.xclient.format = 32;
   xev.xclient.window = dest_window;
   xev.xclient.data.l[0] = xwindow_;

@@ -16,6 +16,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_hotplug_event_handler.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 
@@ -156,7 +157,7 @@ Time X11EventSource::GetCurrentServerTime() {
     // Create a new Window and Atom that will be used for the property change.
     dummy_window_ = XCreateSimpleWindow(display_, DefaultRootWindow(display_),
                                         0, 0, 1, 1, 0, 0, 0);
-    dummy_atom_ = XInternAtom(display_, "CHROMIUM_TIMESTAMP", False);
+    dummy_atom_ = X11AtomCache::GetInstance()->GetAtom("CHROMIUM_TIMESTAMP");
     dummy_window_events_.reset(
         new XScopedEventSelector(dummy_window_, PropertyChangeMask));
     dummy_initialized_ = true;

@@ -57,6 +57,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 
 #if defined(OS_FREEBSD)
@@ -894,8 +895,7 @@ bool SetStringProperty(XID window,
 }
 
 XAtom GetAtom(const char* name) {
-  // TODO(derat): Cache atoms to avoid round-trips to the server.
-  return XInternAtom(gfx::GetXDisplay(), name, false);
+  return X11AtomCache::GetInstance()->GetAtom(name);
 }
 
 void SetWindowClassHint(XDisplay* display,
@@ -1391,7 +1391,7 @@ XVisualManager::XVisualManager()
   for (int i = 0; i < visuals_len; ++i)
     visuals_[visual_list[i].visualid].reset(new XVisualData(visual_list[i]));
 
-  XAtom NET_WM_CM_S0 = XInternAtom(display_, "_NET_WM_CM_S0", False);
+  XAtom NET_WM_CM_S0 = GetAtom("_NET_WM_CM_S0");
   using_compositing_wm_ = XGetSelectionOwner(display_, NET_WM_CM_S0) != None;
 
   // Choose the opaque visual.

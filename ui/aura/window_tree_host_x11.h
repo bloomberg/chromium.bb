@@ -15,7 +15,6 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 
 // X forward decls to avoid including Xlib.h in a header file.
 typedef struct _XDisplay XDisplay;
@@ -67,7 +66,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   ::Window x_root_window() { return x_root_window_; }
   XDisplay* xdisplay() { return xdisplay_; }
   const gfx::Rect& bounds() const { return bounds_; }
-  ui::X11AtomCache* atom_cache() { return &atom_cache_; }
 
  private:
   // Dispatches XI2 events. Note that some events targetted for the X root
@@ -97,8 +95,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
-
-  ui::X11AtomCache atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostX11);
 };

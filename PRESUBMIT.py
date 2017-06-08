@@ -189,6 +189,17 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
+      r'XInternAtom|xcb_intern_atom',
+      (
+       'Use ui::GetAtom() or ui::X11AtomCache::GetAtom() instead of',
+       'interning atoms directly.',
+      ),
+      True,
+      (
+        r"^ui[\\\/]gfx[\\\/]x[\\\/]x11_atom_cache\.cc$",
+      ),
+    ),
+    (
       'ScopedAllowIO',
       (
        'New production code should not use ScopedAllowIO (using it in',

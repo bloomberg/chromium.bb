@@ -25,11 +25,13 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
 #include "ui/events/devices/device_util_linux.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 
 #ifndef XI_PROP_PRODUCT_ID
@@ -49,17 +51,6 @@ const char* kKnownInvalidKeyboardDeviceNames[] = {"Power Button",
                                                   "gpio-keys.5",
                                                   "gpio-keys.12",
                                                   "ROCKCHIP-I2S Headset Jack"};
-
-const char* kCachedAtomList[] = {
-  "Abs MT Position X",
-  "Abs MT Position Y",
-  XI_KEYBOARD,
-  XI_MOUSE,
-  XI_TOUCHPAD,
-  XI_TOUCHSCREEN,
-  XI_PROP_PRODUCT_ID,
-  NULL,
-};
 
 enum DeviceType {
   DEVICE_TYPE_KEYBOARD,
@@ -206,7 +197,7 @@ base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
 
   // Input device has a property "Device Node" pointing to its dev input node,
   // e.g.   Device Node (250): "/dev/input/event8"
-  Atom device_node = XInternAtom(dpy, "Device Node", False);
+  Atom device_node = ui::X11AtomCache::GetInstance()->GetAtom("Device Node");
   if (device_node == None)
     return base::FilePath();
 
@@ -409,9 +400,7 @@ void OnHotplugFinished() {
 
 }  // namespace
 
-X11HotplugEventHandler::X11HotplugEventHandler()
-    : atom_cache_(gfx::GetXDisplay(), kCachedAtomList) {
-}
+X11HotplugEventHandler::X11HotplugEventHandler() {}
 
 X11HotplugEventHandler::~X11HotplugEventHandler() {
 }
@@ -434,13 +423,13 @@ void X11HotplugEventHandler::OnHotplugEvent() {
       continue;
 
     Atom type = device_list_xi[i].type;
-    if (type == atom_cache_.GetAtom(XI_KEYBOARD))
+    if (type == GetAtom(XI_KEYBOARD))
       device_types[id] = DEVICE_TYPE_KEYBOARD;
-    else if (type == atom_cache_.GetAtom(XI_MOUSE))
+    else if (type == GetAtom(XI_MOUSE))
       device_types[id] = DEVICE_TYPE_MOUSE;
-    else if (type == atom_cache_.GetAtom(XI_TOUCHPAD))
+    else if (type == GetAtom(XI_TOUCHPAD))
       device_types[id] = DEVICE_TYPE_TOUCHPAD;
-    else if (type == atom_cache_.GetAtom(XI_TOUCHSCREEN))
+    else if (type == GetAtom(XI_TOUCHSCREEN))
       device_types[id] = DEVICE_TYPE_TOUCHSCREEN;
   }
 
@@ -465,9 +454,8 @@ void X11HotplugEventHandler::OnHotplugEvent() {
     uint16_t vendor = 0;
     uint16_t product = 0;
     if (XIGetProperty(gfx::GetXDisplay(), device.deviceid,
-                      atom_cache_.GetAtom(XI_PROP_PRODUCT_ID), 0, 2, 0,
-                      XA_INTEGER, &type, &format_return, &num_items_return,
-                      &bytes_after_return,
+                      GetAtom(XI_PROP_PRODUCT_ID), 0, 2, 0, XA_INTEGER, &type,
+                      &format_return, &num_items_return, &bytes_after_return,
                       reinterpret_cast<unsigned char**>(&product_info)) == 0 &&
         product_info) {
       if (num_items_return == 2) {
@@ -483,8 +471,8 @@ void X11HotplugEventHandler::OnHotplugEvent() {
 
   // X11 is not thread safe, so first get all the required state.
   DisplayState display_state;
-  display_state.mt_position_x = atom_cache_.GetAtom("Abs MT Position X");
-  display_state.mt_position_y = atom_cache_.GetAtom("Abs MT Position Y");
+  display_state.mt_position_x = GetAtom("Abs MT Position X");
+  display_state.mt_position_y = GetAtom("Abs MT Position Y");
 
   UiCallbacks callbacks;
   callbacks.keyboard_callback = base::Bind(&OnKeyboardDevices);

@@ -26,7 +26,6 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -41,10 +40,7 @@ namespace {
 class MinimizeWaiter : public X11PropertyChangeWaiter {
  public:
   explicit MinimizeWaiter(XID window)
-      : X11PropertyChangeWaiter(window, "_NET_WM_STATE") {
-    const char* const kAtomsToCache[] = {"_NET_WM_STATE_HIDDEN", nullptr};
-    atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomsToCache));
-  }
+      : X11PropertyChangeWaiter(window, "_NET_WM_STATE") {}
 
   ~MinimizeWaiter() override {}
 
@@ -54,13 +50,11 @@ class MinimizeWaiter : public X11PropertyChangeWaiter {
     std::vector<Atom> wm_states;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &wm_states)) {
       auto it = std::find(wm_states.cbegin(), wm_states.cend(),
-                          atom_cache_->GetAtom("_NET_WM_STATE_HIDDEN"));
+                          ui::GetAtom("_NET_WM_STATE_HIDDEN"));
       return it == wm_states.cend();
     }
     return true;
   }
-
-  std::unique_ptr<ui::X11AtomCache> atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(MinimizeWaiter);
 };
@@ -400,12 +394,8 @@ TEST_F(X11TopmostWindowFinderTest, Menu) {
                                CWOverrideRedirect,
                                &swa);
   {
-    const char* const kAtomsToCache[] = {"_NET_WM_WINDOW_TYPE_MENU", nullptr};
-    ui::X11AtomCache atom_cache(gfx::GetXDisplay(), kAtomsToCache);
-    ui::SetAtomProperty(menu_xid,
-                        "_NET_WM_WINDOW_TYPE",
-                        "ATOM",
-                        atom_cache.GetAtom("_NET_WM_WINDOW_TYPE_MENU"));
+    ui::SetAtomProperty(menu_xid, "_NET_WM_WINDOW_TYPE", "ATOM",
+                        ui::GetAtom("_NET_WM_WINDOW_TYPE_MENU"));
   }
   ui::SetUseOSWindowFrame(menu_xid, false);
   ShowAndSetXWindowBounds(menu_xid, gfx::Rect(140, 110, 100, 100));

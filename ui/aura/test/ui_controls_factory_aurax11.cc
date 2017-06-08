@@ -38,7 +38,7 @@ unsigned button_down_mask = 0;
 
 // Returns atom that indidates that the XEvent is marker event.
 Atom MarkerEventAtom() {
-  return XInternAtom(gfx::GetXDisplay(), "marker_event", False);
+  return ui::GetAtom("marker_event");
 }
 
 // Returns true when the event is a marker event.

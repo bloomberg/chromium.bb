@@ -21,7 +21,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
 
@@ -211,8 +210,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   Display* xdisplay_;
   ::Window xwindow_;
-
-  ui::X11AtomCache atom_cache_;
 
   // Target side information.
   class X11DragContext;

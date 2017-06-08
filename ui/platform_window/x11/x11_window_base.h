@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -66,7 +65,6 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   XDisplay* xdisplay_;
   XID xwindow_;
   XID xroot_window_;
-  X11AtomCache atom_cache_;
   std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;
 
   base::string16 window_title_;
