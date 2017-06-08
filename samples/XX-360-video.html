@@ -111,7 +111,16 @@ found in the LICENSE file.
         gl.enable(gl.CULL_FACE);
 
         panorama = new VRPanorama(gl);
-        panorama.setVideo("media/textures/pano.webm");
+
+        var defaultVideo = "media/textures/pano.webm";
+        var videoUrl = WGLUUrl.getString(
+            'videoUrl', defaultVideo);
+        panorama.setVideo(videoUrl).catch(
+            function(error) {
+              if (error instanceof MediaError && error.code === 4) {
+                panorama.setVideo(defaultVideo);
+              }
+            });
 
         var enablePerformanceMonitoring = WGLUUrl.getBool(
             'enablePerformanceMonitoring', false);
