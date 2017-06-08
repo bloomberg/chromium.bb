@@ -2499,6 +2499,7 @@
     {
       "id": 230,
       "description": "Disable use of Direct3D 11 on Intel Cherryview due to visual glitches.",
+      "cr_bugs": [730126],
       "os": {
         "type": "win"
       },
