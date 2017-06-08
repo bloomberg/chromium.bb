@@ -564,11 +564,10 @@ public class AndroidPaymentApp
             if (details == null) {
                 details = data.getExtras().getString(EXTRA_DEPRECATED_RESPONSE_INSTRUMENT_DETAILS);
             }
-            if (details == null) {
-                details = EMPTY_JSON_DATA;
-            }
-            mInstrumentDetailsCallback.onInstrumentDetailsReady(
-                    data.getExtras().getString(EXTRA_RESPONSE_METHOD_NAME), details);
+            if (details == null) details = EMPTY_JSON_DATA;
+            String methodName = data.getExtras().getString(EXTRA_RESPONSE_METHOD_NAME);
+            if (methodName == null) methodName = "";
+            mInstrumentDetailsCallback.onInstrumentDetailsReady(methodName, details);
         }
         mInstrumentDetailsCallback = null;
     }
