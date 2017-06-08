@@ -14,12 +14,6 @@ namespace win {
 
 namespace {
 
-enum class ComInitStatus {
-  NONE,
-  STA,
-  MTA,
-};
-
 // Derived from combase.dll.
 struct OleTlsData {
   enum ApartmentFlags {
@@ -36,27 +30,31 @@ struct OleTlsData {
   // to work between x86 and x64 builds.
 };
 
-ComInitStatus GetComInitStatusForThread() {
+ComApartmentType GetComApartmentTypeForThread() {
   TEB* teb = NtCurrentTeb();
   OleTlsData* ole_tls_data = reinterpret_cast<OleTlsData*>(teb->ReservedForOle);
   if (!ole_tls_data)
-    return ComInitStatus::NONE;
+    return ComApartmentType::NONE;
 
   if (ole_tls_data->apartment_flags & OleTlsData::ApartmentFlags::STA)
-    return ComInitStatus::STA;
+    return ComApartmentType::STA;
 
   if ((ole_tls_data->apartment_flags & OleTlsData::ApartmentFlags::MTA) ==
       OleTlsData::ApartmentFlags::MTA) {
-    return ComInitStatus::MTA;
+    return ComApartmentType::MTA;
   }
 
-  return ComInitStatus::NONE;
+  return ComApartmentType::NONE;
 }
 
 }  // namespace
 
 void AssertComInitialized() {
-  DCHECK_NE(ComInitStatus::NONE, GetComInitStatusForThread());
+  DCHECK_NE(ComApartmentType::NONE, GetComApartmentTypeForThread());
+}
+
+void AssertComApartmentType(ComApartmentType apartment_type) {
+  DCHECK_EQ(apartment_type, GetComApartmentTypeForThread());
 }
 
 #endif  // DCHECK_IS_ON()

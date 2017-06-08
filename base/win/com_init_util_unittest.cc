@@ -16,6 +16,8 @@ TEST(ComInitUtil, AssertNotInitialized) {
 }
 
 TEST(ComInitUtil, AssertUninitialized) {
+  // When COM is uninitialized, the TLS data will remain, but the apartment
+  // status will be updated. This covers that case.
   {
     ScopedCOMInitializer com_initializer;
     ASSERT_TRUE(com_initializer.succeeded());
@@ -35,6 +37,38 @@ TEST(ComInitUtil, AssertMTAInitialized) {
   ASSERT_TRUE(com_initializer.succeeded());
 
   AssertComInitialized();
+}
+
+TEST(ComInitUtil, AssertNoneApartmentType) {
+  AssertComApartmentType(ComApartmentType::NONE);
+  EXPECT_DCHECK_DEATH(AssertComApartmentType(ComApartmentType::STA));
+  EXPECT_DCHECK_DEATH(AssertComApartmentType(ComApartmentType::MTA));
+}
+
+TEST(ComInitUtil, AssertNoneApartmentTypeUninitialized) {
+  // When COM is uninitialized, the TLS data will remain, but the apartment
+  // status will be updated. This covers that case.
+  {
+    ScopedCOMInitializer com_initializer;
+    ASSERT_TRUE(com_initializer.succeeded());
+  }
+  AssertComApartmentType(ComApartmentType::NONE);
+  EXPECT_DCHECK_DEATH(AssertComApartmentType(ComApartmentType::STA));
+  EXPECT_DCHECK_DEATH(AssertComApartmentType(ComApartmentType::MTA));
+}
+
+TEST(ComInitUtil, AssertSTAApartmentType) {
+  ScopedCOMInitializer com_initializer;
+  EXPECT_DCHECK_DEATH(AssertComApartmentType(ComApartmentType::NONE));
+  AssertComApartmentType(ComApartmentType::STA);
+  EXPECT_DCHECK_DEATH(AssertComApartmentType(ComApartmentType::MTA));
+}
+
+TEST(ComInitUtil, AssertMTAApartmentType) {
+  ScopedCOMInitializer com_initializer(ScopedCOMInitializer::kMTA);
+  EXPECT_DCHECK_DEATH(AssertComApartmentType(ComApartmentType::NONE));
+  EXPECT_DCHECK_DEATH(AssertComApartmentType(ComApartmentType::STA));
+  AssertComApartmentType(ComApartmentType::MTA);
 }
 
 }  // namespace win
