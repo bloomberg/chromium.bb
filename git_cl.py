@@ -2794,11 +2794,30 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     fetch_info = revision_info['fetch']['http']
     RunGit(['fetch', fetch_info['url'], fetch_info['ref']])
-    self.SetIssue(self.GetIssue())
-    self.SetPatchset(patchset)
-    RunGit(['cherry-pick', 'FETCH_HEAD'])
-    print('Committed patch for change %i patchset %i locally.' %
-          (self.GetIssue(), self.GetPatchset()))
+
+    clean, _ = RunGitWithCode(
+        ['merge-base', '--ancestor', 'HEAD', 'origin/master'])
+    if clean != 0:
+      clean, _ = RunGitWithCode(
+          ['merge-base', '--ancestor', 'HEAD', 'FETCH_HEAD'])
+    if clean != 0:
+      confirm_or_exit(
+          'It looks like you\'re on a branch with some local commits.\n'
+          'If you apply this patch on top of your local content, you will not '
+          'be able to easily upload further changes based on it.\n'
+          'Would you like to proceed with applying this patch anyway?\n')
+      RunGit(['cherry-pick', 'FETCH_HEAD'])
+      print('Committed patch for change %i patchset %i locally.' %
+            (self._changelist.issue, patchset))
+    else:
+      RunGit(['reset', '--hard', 'FETCH_HEAD'])
+      self.SetIssue(self.GetIssue())
+      self.SetPatchset(patchset)
+      fetched_hash = RunGit(['rev-parse', 'FETCH_HEAD']).strip()
+      self._GitSetBranchConfigValue('last-upload-hash', fetched_hash)
+      self._GitSetBranchConfigValue('gerritsquashhash', fetched_hash)
+      print('Checked out commit for change %i patchset %i locally' %
+            (self.GetIssue(), self.GetPatchset()))
     return 0
 
   @staticmethod
