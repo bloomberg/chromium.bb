@@ -45,10 +45,8 @@ void VideoDecodeAccelerator::ImportBufferForPicture(
   NOTREACHED() << "Buffer import not supported.";
 }
 
-void VideoDecodeAccelerator::SetSurface(
-    int32_t surface_id,
-    const base::Optional<base::UnguessableToken>& routing_token) {
-  NOTREACHED() << "Surfaces are not supported.";
+void VideoDecodeAccelerator::SetOverlayInfo(const OverlayInfo& overlay_info) {
+  NOTREACHED() << "Overlays are not supported.";
 }
 
 GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {

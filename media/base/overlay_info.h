@@ -9,13 +9,38 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "media/base/media_export.h"
+#include "media/base/surface_manager.h"
 
 namespace media {
 
-// Request information to construct an overlay.  This can be either a surface_id
-// or an AndroidOverlay routing token.
-using ProvideOverlayInfoCB =
-    base::Callback<void(int, const base::Optional<base::UnguessableToken>&)>;
+struct MEDIA_EXPORT OverlayInfo {
+  // An unset routing token indicates "do not use any routing token".  A null
+  // routing token isn't serializable, else we'd probably use that instead.
+  using RoutingToken = base::Optional<base::UnguessableToken>;
+
+  OverlayInfo();
+  OverlayInfo(const OverlayInfo&);
+
+  // Convenience functions to return true if and only if this specifies a
+  // surface ID / routing token that is not kNoSurfaceID / empty.  I.e., if we
+  // provide enough info to create an overlay.
+  bool HasValidSurfaceId() const;
+  bool HasValidRoutingToken() const;
+
+  // This is the SurfaceManager surface id, or SurfaceManager::kNoSurfaceID to
+  // indicate that no surface from SurfaceManager should be used.
+  int surface_id = SurfaceManager::kNoSurfaceID;
+
+  // The routing token for AndroidOverlay, if any.
+  RoutingToken routing_token;
+
+  // Is the player in fullscreen?
+  bool is_fullscreen = false;
+};
+
+// Request OverlayInformation.
+using ProvideOverlayInfoCB = base::Callback<void(const OverlayInfo&)>;
 using RequestOverlayInfoCB =
     base::Callback<void(bool, const ProvideOverlayInfoCB&)>;
 

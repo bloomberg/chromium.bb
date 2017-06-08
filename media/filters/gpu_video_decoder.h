@@ -155,17 +155,13 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // Provided to the |request_overlay_info_cb_| callback given during
   // construction.  Sets or changes the output surface.
-  void OnOverlayInfoAvailable(
-      int surface_id,
-      const base::Optional<base::UnguessableToken>& routing_token);
+  void OnOverlayInfoAvailable(const OverlayInfo& overlay_info);
 
   // If the VDA supports external surfaces, we must wait for the surface before
   // completing initialization. This will be called by OnSurfaceAvailable() once
   // the surface is known or immediately by Initialize() if external surfaces
   // are unsupported.
-  void CompleteInitialization(
-      int surface_id,
-      const base::Optional<base::UnguessableToken>& token);
+  void CompleteInitialization(const OverlayInfo& overlay_info);
 
   bool needs_bitstream_conversion_;
 

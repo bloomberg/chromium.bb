@@ -307,8 +307,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   // If external surfaces are not supported we can complete initialization now.
-  CompleteInitialization(SurfaceManager::kNoSurfaceID,
-                         base::UnguessableToken());
+  CompleteInitialization(OverlayInfo());
 }
 
 // OnOverlayInfoAvailable() might be called at any time between Initialize() and
@@ -316,9 +315,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 // the current state.
 // At most one of |surface_id| and |token| should be provided.  The other will
 // be kNoSurfaceID or an empty token, respectively.
-void GpuVideoDecoder::OnOverlayInfoAvailable(
-    int surface_id,
-    const base::Optional<base::UnguessableToken>& token) {
+void GpuVideoDecoder::OnOverlayInfoAvailable(const OverlayInfo& overlay_info) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   if (!vda_)
@@ -329,18 +326,16 @@ void GpuVideoDecoder::OnOverlayInfoAvailable(
   // SetSurface() before initializing because there is no remote VDA to handle
   // the call yet.
   if (!vda_initialized_) {
-    CompleteInitialization(surface_id, token);
+    CompleteInitialization(overlay_info);
     return;
   }
 
   // The VDA must be already initialized (or async initialization is in
   // progress) so we can call SetSurface().
-  vda_->SetSurface(surface_id, token);
+  vda_->SetOverlayInfo(overlay_info);
 }
 
-void GpuVideoDecoder::CompleteInitialization(
-    int surface_id,
-    const base::Optional<base::UnguessableToken>& token) {
+void GpuVideoDecoder::CompleteInitialization(const OverlayInfo& overlay_info) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(vda_);
   DCHECK(!init_cb_.is_null());
@@ -349,8 +344,7 @@ void GpuVideoDecoder::CompleteInitialization(
   VideoDecodeAccelerator::Config vda_config;
   vda_config.profile = config_.profile();
   vda_config.cdm_id = cdm_id_;
-  vda_config.surface_id = surface_id;
-  vda_config.overlay_routing_token = token;
+  vda_config.overlay_info = overlay_info;
   vda_config.encryption_scheme = config_.encryption_scheme();
   vda_config.is_deferred_initialization_allowed = true;
   vda_config.initial_expected_coded_size = config_.coded_size();

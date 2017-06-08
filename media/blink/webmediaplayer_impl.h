@@ -260,8 +260,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // AndroidOverlay, this is the routing token.
   bool HaveOverlayInfo();
 
-  // Send the overlay surface ID / routing token to the decoder if we have it
-  // and if it has been requested.
+  // Send OverlayInfo to the decoder.
+  //
+  // If we've requested but not yet received the surface id or routing token, or
+  // if there's no decoder-provided callback to send the overlay info, then this
+  // call will do nothing.
   void MaybeSendOverlayInfoToDecoder();
 
   void OnPipelineSuspended();
@@ -776,11 +779,15 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Optional callback to request the routing token for AndroidOverlay.
   RequestRoutingTokenCallback request_routing_token_cb_;
 
-  // Routing token, if we have one.  No value if we have a request pending to
-  // get it via |request_routing_token_cb_|.  A has_value() is_empty() token
-  // indicates that we requested and received an empty token.  Note that we
-  // can't send an empty token via IPC, so we handle that specially.
-  base::Optional<base::UnguessableToken> overlay_routing_token_;
+  // If |overlay_routing_token_is_pending_| is false, then
+  // |overlay_routing_token_| contains the routing token we should send, if any.
+  // Otherwise, |overlay_routing_token_| is undefined.  We set the flag while
+  // we have a request for the token that hasn't been answered yet; i.e., it
+  // means that we don't know what, if any, token we should be using.
+  bool overlay_routing_token_is_pending_ = false;
+  OverlayInfo::RoutingToken overlay_routing_token_;
+
+  OverlayInfo overlay_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

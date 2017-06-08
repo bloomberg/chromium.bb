@@ -17,6 +17,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/encryption_scheme.h"
+#include "media/base/overlay_info.h"
 #include "media/base/surface_manager.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
@@ -150,14 +151,9 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // Whether the client supports deferred initialization.
     bool is_deferred_initialization_allowed = false;
 
-    // An optional graphics surface that the VDA should render to. For setting
-    // an output SurfaceView on Android. It's only valid when not equal to
-    // |kNoSurfaceID|.
-    // TODO(liberato): should this be Optional<> instead?
-    int surface_id = SurfaceManager::kNoSurfaceID;
-
-    // An optional routing token for AndroidOverlay.
-    base::Optional<base::UnguessableToken> overlay_routing_token;
+    // Optional overlay info available at startup, rather than waiting for the
+    // VDA to receive a callback.
+    OverlayInfo overlay_info;
 
     // Coded size of the video frame hint, subject to change.
     gfx::Size initial_expected_coded_size = gfx::Size(320, 240);
@@ -313,9 +309,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // previously set surface in favor of an internally generated texture.
   // |routing_token| is an optional AndroidOverlay routing token.  At most one
   // should be non-empty.
-  virtual void SetSurface(
-      int32_t surface_id,
-      const base::Optional<base::UnguessableToken>& routing_token);
+  virtual void SetOverlayInfo(const OverlayInfo& overlay_info);
 
   // Destroys the decoder: all pending inputs are dropped immediately and the
   // component is freed.  This call may asynchornously free system resources,
