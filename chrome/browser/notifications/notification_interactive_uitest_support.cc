@@ -240,6 +240,14 @@ bool NotificationsTest::RequestPermissionAndWait(Browser* browser) {
   return observer.request_shown();
 }
 
+std::string NotificationsTest::QueryPermissionStatus(Browser* browser) {
+  std::string result;
+  content::WebContents* web_contents = GetActiveWebContents(browser);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "queryPermissionStatus();", &result));
+  return result;
+}
+
 bool NotificationsTest::CancelNotification(const char* notification_id,
                                            Browser* browser) {
   std::string script =
@@ -291,6 +299,12 @@ GURL NotificationsTest::GetTestPageURL() const {
 content::WebContents* NotificationsTest::GetActiveWebContents(
     Browser* browser) {
   return browser->tab_strip_model()->GetActiveWebContents();
+}
+
+void NotificationsTest::EnablePermissionsEmbargo() {
+  feature_list_.InitWithFeatures({features::kBlockPromptsIfDismissedOften,
+                                  features::kBlockPromptsIfIgnoredOften},
+                                 {});
 }
 
 void NotificationsTest::EnableFullscreenNotifications() {
