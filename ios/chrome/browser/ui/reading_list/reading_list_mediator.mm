@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#import "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -52,6 +53,19 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
 }
 
 #pragma mark - ReadingListDataSource
+
+- (BOOL)isEntryRead:(CollectionViewItem*)item {
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
+  const ReadingListEntry* readingListEntry =
+      self.model->GetEntryByURL(readingListItem.url);
+
+  if (!readingListEntry) {
+    return NO;
+  }
+
+  return readingListEntry->IsRead();
+}
 
 - (void)dataSinkWillBeDismissed {
   self.model->MarkAllSeen();

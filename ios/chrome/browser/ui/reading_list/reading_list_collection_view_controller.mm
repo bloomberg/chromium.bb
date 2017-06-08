@@ -30,7 +30,6 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/ui/url_loader.h"
-#import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -104,10 +103,6 @@ typedef void (^EntryUpdater)(const GURL&);
 - (void)collectionIsEmpty;
 // Handles a long press.
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer;
-// Returns the ReadingListEntry associated with the |item|. If there is not such
-// an entry, returns nullptr.
-- (const ReadingListEntry*)readingListEntryForItem:
-    (ReadingListCollectionViewItem*)item;
 // Updates the toolbar state according to the selected items.
 - (void)updateToolbarState;
 // Displays an action sheet to let the user choose to mark all the elements as
@@ -363,90 +358,48 @@ typedef void (^EntryUpdater)(const GURL&);
 
 #pragma mark - ReadingListCollectionViewItemAccessibilityDelegate
 
-- (BOOL)isEntryRead:(ReadingListCollectionViewItem*)entry {
-  const ReadingListEntry* readingListEntry =
-      [self readingListEntryForItem:entry];
-
-  if (!readingListEntry) {
-    return NO;
-  }
-
-  return readingListEntry->IsRead();
+- (BOOL)isEntryRead:(CollectionViewItem*)entry {
+  return [self.dataSource isEntryRead:entry];
 }
 
-- (void)deleteEntry:(ReadingListCollectionViewItem*)entry {
-  const ReadingListEntry* readingListEntry =
-      [self readingListEntryForItem:entry];
-
-  if (!readingListEntry) {
-    return;
+- (void)deleteEntry:(CollectionViewItem*)entry {
+  if ([self.collectionViewModel hasItem:entry]) {
+    [self deleteItemsAtIndexPaths:@[ [self.collectionViewModel
+                                      indexPathForItem:entry] ]];
   }
-
-  SectionIdentifier sectionIdentifier = SectionIdentifierUnread;
-  if (readingListEntry->IsRead()) {
-    sectionIdentifier = SectionIdentifierRead;
-  }
-  if (![self.collectionViewModel hasItem:entry
-                 inSectionWithIdentifier:sectionIdentifier]) {
-    return;
-  }
-
-  [self deleteItemsAtIndexPaths:@[ [self.collectionViewModel
-                                    indexPathForItem:entry] ]];
 }
 
-- (void)openEntryInNewTab:(ReadingListCollectionViewItem*)entry {
+- (void)openEntryInNewTab:(CollectionViewItem*)entry {
   [self.delegate readingListCollectionViewController:self
-                                   openNewTabWithURL:entry.url
+                                    openItemInNewTab:entry
                                            incognito:NO];
 }
 
-- (void)openEntryInNewIncognitoTab:(ReadingListCollectionViewItem*)entry {
+- (void)openEntryInNewIncognitoTab:(CollectionViewItem*)entry {
   [self.delegate readingListCollectionViewController:self
-                                   openNewTabWithURL:entry.url
+                                    openItemInNewTab:entry
                                            incognito:YES];
 }
 
-- (void)copyEntryURL:(ReadingListCollectionViewItem*)entry {
-  StoreURLInPasteboard(entry.url);
+- (void)openEntryOffline:(CollectionViewItem*)entry {
+  [self.delegate readingListCollectionViewController:self
+                             openItemOfflineInNewTab:entry];
 }
 
-- (void)openEntryOffline:(ReadingListCollectionViewItem*)entry {
-  const ReadingListEntry* readingListEntry =
-      [self readingListEntryForItem:entry];
-
-  if (!readingListEntry) {
-    return;
-  }
-
-  if (readingListEntry->DistilledState() == ReadingListEntry::PROCESSED) {
-    const GURL entryURL = readingListEntry->URL();
-    GURL offlineURL = reading_list::OfflineURLForPath(
-        readingListEntry->DistilledPath(), entryURL,
-        readingListEntry->DistilledURL());
-
-    [self.delegate readingListCollectionViewController:self
-                                        openOfflineURL:offlineURL
-                                 correspondingEntryURL:entryURL];
-  }
-}
-
-- (void)markEntryRead:(ReadingListCollectionViewItem*)entry {
-  if (![self.collectionViewModel hasItem:entry
-                 inSectionWithIdentifier:SectionIdentifierUnread]) {
-    return;
-  }
-  [self markItemsReadAtIndexPath:@[ [self.collectionViewModel
-                                     indexPathForItem:entry] ]];
-}
-
-- (void)markEntryUnread:(ReadingListCollectionViewItem*)entry {
-  if (![self.collectionViewModel hasItem:entry
-                 inSectionWithIdentifier:SectionIdentifierRead]) {
-    return;
-  }
-  [self markItemsUnreadAtIndexPath:@[ [self.collectionViewModel
+- (void)markEntryRead:(CollectionViewItem*)entry {
+  if ([self.collectionViewModel hasItem:entry
+                inSectionWithIdentifier:SectionIdentifierUnread]) {
+    [self markItemsReadAtIndexPath:@[ [self.collectionViewModel
                                        indexPathForItem:entry] ]];
+  }
+}
+
+- (void)markEntryUnread:(CollectionViewItem*)entry {
+  if ([self.collectionViewModel hasItem:entry
+                inSectionWithIdentifier:SectionIdentifierRead]) {
+    [self markItemsUnreadAtIndexPath:@[ [self.collectionViewModel
+                                         indexPathForItem:entry] ]];
+  }
 }
 
 #pragma mark - Private methods
@@ -646,14 +599,6 @@ typedef void (^EntryUpdater)(const GURL&);
   [self.delegate readingListCollectionViewController:self
                            displayContextMenuForItem:readingListItem
                                              atPoint:touchLocation];
-}
-
-- (const ReadingListEntry*)readingListEntryForItem:
-    (ReadingListCollectionViewItem*)item {
-  const ReadingListEntry* readingListEntry =
-      [self.dataSource entryWithURL:item.url];
-
-  return readingListEntry;
 }
 
 #pragma mark - ReadingListToolbarDelegate
