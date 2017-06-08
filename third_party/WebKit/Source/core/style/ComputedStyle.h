@@ -1656,11 +1656,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   bool QuotesDataEquivalent(const ComputedStyle&) const;
 
-  // text-justify
-  static TextJustify InitialTextJustify() { return TextJustify::kAuto; }
-  TextJustify GetTextJustify() const { return TextJustifyInternal(); }
-  void SetTextJustify(TextJustify v) { SetTextJustifyInternal(v); }
-
   // text-shadow
   static ShadowList* InitialTextShadow() { return 0; }
   ShadowList* TextShadow() const { return TextShadowInternal().Get(); }

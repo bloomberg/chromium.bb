@@ -1020,44 +1020,6 @@ inline ETableLayout CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(TextJustify e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case TextJustify::kAuto:
-      value_id_ = CSSValueAuto;
-      break;
-    case TextJustify::kNone:
-      value_id_ = CSSValueNone;
-      break;
-    case TextJustify::kInterWord:
-      value_id_ = CSSValueInterWord;
-      break;
-    case TextJustify::kDistribute:
-      value_id_ = CSSValueDistribute;
-      break;
-  }
-}
-
-template <>
-inline TextJustify CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueAuto:
-      return TextJustify::kAuto;
-    case CSSValueNone:
-      return TextJustify::kNone;
-    case CSSValueInterWord:
-      return TextJustify::kInterWord;
-    case CSSValueDistribute:
-      return TextJustify::kDistribute;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return TextJustify::kAuto;
-}
-
-template <>
 inline TextDecoration CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueNone:
