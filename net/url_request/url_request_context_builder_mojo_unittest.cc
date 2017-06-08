@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/url_request/url_request_context_builder_v8.h"
+#include "net/url_request/url_request_context_builder_mojo.h"
 
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
+#include "net/proxy/test_mojo_proxy_resolver_factory.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -20,10 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
-
-#ifdef ENABLE_NET_MOJO
-#include "net/proxy/test_mojo_proxy_resolver_factory.h"
-#endif
 
 namespace net {
 
@@ -46,63 +43,19 @@ std::unique_ptr<test_server::HttpResponse> HandlePacRequest(
   return std::move(response);
 }
 
-class URLRequestContextBuilderV8Test : public PlatformTest {
+class URLRequestContextBuilderMojoTest : public PlatformTest {
  protected:
-  URLRequestContextBuilderV8Test() {
+  URLRequestContextBuilderMojoTest() {
     test_server_.RegisterRequestHandler(base::Bind(&HandlePacRequest));
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   }
 
   EmbeddedTestServer test_server_;
-  URLRequestContextBuilderV8 builder_;
+  URLRequestContextBuilderMojo builder_;
 };
 
-TEST_F(URLRequestContextBuilderV8Test, V8InProcess) {
-  EXPECT_TRUE(test_server_.Start());
-
-  builder_.set_proxy_config_service(base::MakeUnique<ProxyConfigServiceFixed>(
-      ProxyConfig::CreateFromCustomPacURL(test_server_.GetURL(kPacPath))));
-  std::unique_ptr<URLRequestContext> context(builder_.Build());
-
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request(context->CreateRequest(
-      GURL("http://hats:12345/echoheader?Foo"), DEFAULT_PRIORITY, &delegate,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->SetExtraRequestHeaderByName("Foo", "Bar", false);
-  request->Start();
-  base::RunLoop().Run();
-  EXPECT_EQ("Bar", delegate.data_received());
-}
-
-// Makes sure that pending PAC requests are correctly shutdown during teardown.
-TEST_F(URLRequestContextBuilderV8Test, V8InProcessShutdownWithHungRequest) {
-  test_server::SimpleConnectionListener connection_listener(
-      1, test_server::SimpleConnectionListener::FAIL_ON_ADDITIONAL_CONNECTIONS);
-  test_server_.SetConnectionListener(&connection_listener);
-  EXPECT_TRUE(test_server_.Start());
-
-  builder_.set_proxy_config_service(base::MakeUnique<ProxyConfigServiceFixed>(
-      ProxyConfig::CreateFromCustomPacURL(test_server_.GetURL("/hung"))));
-
-  std::unique_ptr<URLRequestContext> context(builder_.Build());
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request(context->CreateRequest(
-      GURL("http://hats:12345/echoheader?Foo"), DEFAULT_PRIORITY, &delegate,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
-  connection_listener.WaitForConnections();
-
-  // Have to shut down the test server before |connection_listener| falls out of
-  // scope.
-  EXPECT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
-
-  // Tearing down the URLRequestContext should not cause an AssertNoURLRequests
-  // failure.
-}
-
-#ifdef ENABLE_NET_MOJO
-TEST_F(URLRequestContextBuilderV8Test, MojoProxyResolver) {
+TEST_F(URLRequestContextBuilderMojoTest, MojoProxyResolver) {
   EXPECT_TRUE(test_server_.Start());
   TestMojoProxyResolverFactory::GetInstance()->set_resolver_created(false);
 
@@ -124,7 +77,36 @@ TEST_F(URLRequestContextBuilderV8Test, MojoProxyResolver) {
   // Make sure that the Mojo factory was used.
   EXPECT_TRUE(TestMojoProxyResolverFactory::GetInstance()->resolver_created());
 }
-#endif  // ENABLE_NET_MOJO
+
+// Makes sure that pending PAC requests are correctly shut down during teardown.
+TEST_F(URLRequestContextBuilderMojoTest, ShutdownWithHungRequest) {
+  test_server::SimpleConnectionListener connection_listener(
+      1, test_server::SimpleConnectionListener::FAIL_ON_ADDITIONAL_CONNECTIONS);
+  test_server_.SetConnectionListener(&connection_listener);
+  EXPECT_TRUE(test_server_.Start());
+
+  builder_.set_proxy_config_service(base::MakeUnique<ProxyConfigServiceFixed>(
+      ProxyConfig::CreateFromCustomPacURL(test_server_.GetURL("/hung"))));
+  builder_.set_mojo_proxy_resolver_factory(
+      TestMojoProxyResolverFactory::GetInstance());
+
+  std::unique_ptr<URLRequestContext> context(builder_.Build());
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request(context->CreateRequest(
+      GURL("http://hats:12345/echoheader?Foo"), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  connection_listener.WaitForConnections();
+
+  // Tearing down the URLRequestContext should not cause an AssertNoURLRequests
+  // failure.
+  request.reset();
+  context.reset();
+
+  // Have to shut down the test server before |connection_listener| falls out of
+  // scope.
+  EXPECT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
+}
 
 }  // namespace
 
