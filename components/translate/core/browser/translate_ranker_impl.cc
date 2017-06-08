@@ -140,8 +140,7 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
       is_decision_override_enabled_(base::FeatureList::IsEnabled(
           translate::kTranslateRankerDecisionOverride)),
       weak_ptr_factory_(this) {
-  if (is_query_enabled_ || is_enforcement_enabled_ ||
-      is_decision_override_enabled_) {
+  if (is_query_enabled_ || is_enforcement_enabled_) {
     model_loader_ = base::MakeUnique<RankerModelLoader>(
         base::Bind(&ValidateModel),
         base::Bind(&TranslateRankerImpl::OnModelAvailable,
@@ -203,8 +202,7 @@ bool TranslateRankerImpl::ShouldOfferTranslation(
       (base::TimeTicks::Now() - base::TimeTicks()).InSeconds());
   translate_event->set_ranker_version(GetModelVersion());
 
-  if (!is_query_enabled_ && !is_enforcement_enabled_ &&
-      !is_decision_override_enabled_) {
+  if (!is_query_enabled_ && !is_enforcement_enabled_) {
     translate_event->set_ranker_response(
         metrics::TranslateEventProto::NOT_QUERIED);
     return kDefaultResponse;
@@ -234,7 +232,7 @@ bool TranslateRankerImpl::ShouldOfferTranslation(
       result ? metrics::TranslateEventProto::SHOW
              : metrics::TranslateEventProto::DONT_SHOW);
 
-  if (!is_enforcement_enabled_ && !is_decision_override_enabled_) {
+  if (!is_enforcement_enabled_) {
     return kDefaultResponse;
   }
 
