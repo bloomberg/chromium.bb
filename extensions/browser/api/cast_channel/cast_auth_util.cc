@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cast_channel/cast_auth_util.h"
+#include "extensions/browser/api/cast_channel/cast_auth_util.h"
 
 #include <vector>
 
@@ -17,12 +17,14 @@
 #include "base/strings/stringprintf.h"
 #include "components/cast_certificate/cast_cert_validator.h"
 #include "components/cast_certificate/cast_crl.h"
-#include "components/cast_channel/cast_message_util.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "crypto/random.h"
+#include "extensions/browser/api/cast_channel/cast_message_util.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/cert/x509_certificate.h"
 #include "net/der/parse_values.h"
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -167,7 +169,8 @@ AuthResult::AuthResult()
 AuthResult::AuthResult(const std::string& error_message, ErrorType error_type)
     : error_message(error_message), error_type(error_type) {}
 
-AuthResult::~AuthResult() {}
+AuthResult::~AuthResult() {
+}
 
 // static
 AuthResult AuthResult::CreateWithParseError(const std::string& error_message,
@@ -392,3 +395,5 @@ AuthResult VerifyCredentialsForTest(const AuthResponse& response,
 }
 
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions

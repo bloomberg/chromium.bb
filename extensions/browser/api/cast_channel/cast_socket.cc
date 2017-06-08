@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -22,12 +22,12 @@
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/cast_channel/cast_auth_util.h"
-#include "components/cast_channel/cast_framer.h"
-#include "components/cast_channel/cast_message_util.h"
-#include "components/cast_channel/cast_transport.h"
-#include "components/cast_channel/logger.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
+#include "extensions/browser/api/cast_channel/cast_auth_util.h"
+#include "extensions/browser/api/cast_channel/cast_framer.h"
+#include "extensions/browser/api/cast_channel/cast_message_util.h"
+#include "extensions/browser/api/cast_channel/cast_transport.h"
+#include "extensions/browser/api/cast_channel/logger.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -57,6 +57,8 @@
 #define VLOG_WITH_CONNECTION(level) VLOG(level) << CONNECTION_INFO()
 #define LOG_WITH_CONNECTION(level) LOG(level) << CONNECTION_INFO()
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -205,8 +207,8 @@ std::unique_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
   std::unique_ptr<net::ClientSocketHandle> connection(
       new net::ClientSocketHandle);
   connection->SetSocket(std::move(socket));
-  net::HostPortPair host_and_port =
-      net::HostPortPair::FromIPEndPoint(ip_endpoint_);
+  net::HostPortPair host_and_port = net::HostPortPair::FromIPEndPoint(
+      ip_endpoint_);
 
   return net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
       std::move(connection), host_and_port, ssl_config, context);
@@ -252,7 +254,7 @@ void CastSocketImpl::SetTransportForTesting(
 
 void CastSocketImpl::Connect(std::unique_ptr<CastTransport::Delegate> delegate,
                              base::Callback<void(ChannelError)> callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(CalledOnValidThread());
   VLOG_WITH_CONNECTION(1) << "Connect readyState = "
                           << ::cast_channel::ReadyStateToString(ready_state_);
   DCHECK_EQ(proto::CONN_STATE_START_CONNECT, connect_state_);
@@ -273,7 +275,8 @@ void CastSocketImpl::Connect(std::unique_ptr<CastTransport::Delegate> delegate,
     DCHECK(connect_timeout_callback_.IsCancelled());
     connect_timeout_callback_.Reset(
         base::Bind(&CastSocketImpl::OnConnectTimeout, base::Unretained(this)));
-    GetTimer()->Start(FROM_HERE, connect_timeout_,
+    GetTimer()->Start(FROM_HERE,
+                      connect_timeout_,
                       connect_timeout_callback_.callback());
   }
 
@@ -285,7 +288,7 @@ CastTransport* CastSocketImpl::transport() const {
 }
 
 void CastSocketImpl::OnConnectTimeout() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(CalledOnValidThread());
   // Stop all pending connection setup tasks and report back to the client.
   is_canceled_ = true;
   VLOG_WITH_CONNECTION(1) << "Timeout while establishing a connection.";
@@ -300,7 +303,7 @@ void CastSocketImpl::ResetConnectLoopCallback() {
 }
 
 void CastSocketImpl::PostTaskToStartConnectLoop(int result) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(CalledOnValidThread());
 
   ResetConnectLoopCallback();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -505,7 +508,8 @@ void CastSocketImpl::AuthTransportDelegate::OnMessage(
   }
 }
 
-void CastSocketImpl::AuthTransportDelegate::Start() {}
+void CastSocketImpl::AuthTransportDelegate::Start() {
+}
 
 int CastSocketImpl::DoAuthChallengeReplyComplete(int result) {
   VLOG_WITH_CONNECTION(1) << "DoAuthChallengeReplyComplete: " << result;
@@ -552,7 +556,7 @@ void CastSocketImpl::DoConnectCallback() {
 }
 
 void CastSocketImpl::Close(const net::CompletionCallback& callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(CalledOnValidThread());
   CloseInternal();
   // Run this callback last.  It may delete the socket.
   callback.Run(net::OK);
@@ -561,7 +565,7 @@ void CastSocketImpl::Close(const net::CompletionCallback& callback) {
 void CastSocketImpl::CloseInternal() {
   // TODO(mfoltz): Enforce this when CastChannelAPITest is rewritten to create
   // and free sockets on the same thread.  crbug.com/398242
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(CalledOnValidThread());
   if (ready_state_ == ReadyState::CLOSED) {
     return;
   }
@@ -581,6 +585,10 @@ void CastSocketImpl::CloseInternal() {
   connect_loop_callback_.Cancel();
   connect_timeout_callback_.Cancel();
   SetReadyState(ReadyState::CLOSED);
+}
+
+bool CastSocketImpl::CalledOnValidThread() const {
+  return thread_checker_.CalledOnValidThread();
 }
 
 base::Timer* CastSocketImpl::GetTimer() {
@@ -607,4 +615,6 @@ void CastSocketImpl::SetErrorState(ChannelError error_state) {
 }
 
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions
 #undef VLOG_WITH_CONNECTION

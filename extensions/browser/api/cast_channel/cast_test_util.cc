@@ -2,16 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cast_channel/cast_test_util.h"
+#include "extensions/browser/api/cast_channel/cast_test_util.h"
 
 #include <utility>
 
 #include "net/base/ip_address.h"
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 
-MockCastTransport::MockCastTransport() {}
-MockCastTransport::~MockCastTransport() {}
+const char kTestExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
+
+MockCastTransport::MockCastTransport() {
+}
+MockCastTransport::~MockCastTransport() {
+}
 
 CastTransport::Delegate* MockCastTransport::current_delegate() const {
   CHECK(delegate_);
@@ -23,14 +29,19 @@ void MockCastTransport::SetReadDelegate(
   delegate_ = std::move(delegate);
 }
 
-MockCastTransportDelegate::MockCastTransportDelegate() {}
-MockCastTransportDelegate::~MockCastTransportDelegate() {}
+MockCastTransportDelegate::MockCastTransportDelegate() {
+}
+MockCastTransportDelegate::~MockCastTransportDelegate() {
+}
 
 MockCastSocket::MockCastSocket() : mock_transport_(new MockCastTransport()) {}
-MockCastSocket::~MockCastSocket() {}
+MockCastSocket::~MockCastSocket() {
+}
 
 net::IPEndPoint CreateIPEndPointForTest() {
   return net::IPEndPoint(net::IPAddress(192, 168, 1, 1), 8009);
 }
 
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions
