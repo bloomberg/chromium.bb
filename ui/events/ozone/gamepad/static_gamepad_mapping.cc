@@ -131,6 +131,56 @@ bool PlaystationSixAxisMapper(uint16_t type,
   return DO_MAPPING;
 }
 
+bool DualShock4Mapper(uint16_t type,
+                      uint16_t code,
+                      GamepadEventType* mapped_type,
+                      uint16_t* mapped_code) {
+  static const KeyMapType key_mapping = {
+      {BTN_A, WG_BUTTON_A},           {BTN_B, WG_BUTTON_B},
+      {BTN_C, WG_BUTTON_X},           {BTN_X, WG_BUTTON_Y},
+      {BTN_Y, WG_BUTTON_L1},          {BTN_Z, WG_BUTTON_R1},
+      {BTN_TL, WG_BUTTON_LT},         {BTN_TR, WG_BUTTON_RT},
+      {BTN_TL2, WG_BUTTON_SELECT},    {BTN_TR2, WG_BUTTON_START},
+      {BTN_SELECT, WG_BUTTON_THUMBL}, {BTN_START, WG_BUTTON_THUMBR}};
+
+  static const AbsMapType abs_mapping = {
+      TO_ABS(ABS_X, WG_ABS_X),      TO_ABS(ABS_Y, WG_ABS_Y),
+      TO_ABS(ABS_RX, WG_BUTTON_LT), TO_ABS(ABS_RY, WG_BUTTON_RT),
+      TO_ABS(ABS_Z, WG_ABS_RX),     TO_ABS(ABS_RZ, WG_ABS_RY),
+      TO_BTN(ABS_HAT0X, kHAT_X),    TO_BTN(ABS_HAT0Y, kHAT_Y)};
+  return DO_MAPPING;
+}
+
+bool NintendoSwitchLeft(uint16_t type,
+                        uint16_t code,
+                        GamepadEventType* mapped_type,
+                        uint16_t* mapped_code) {
+  static const KeyMapType key_mapping = {
+      {BTN_A, WG_BUTTON_A},        {BTN_B, WG_BUTTON_B},
+      {BTN_C, WG_BUTTON_X},        {BTN_X, WG_BUTTON_Y},
+      {BTN_Y, WG_BUTTON_L1},       {BTN_Z, WG_BUTTON_R1},
+      {BTN_TL2, WG_BUTTON_SELECT}, {BTN_THUMBL, WG_BUTTON_START}};
+
+  static const AbsMapType abs_mapping = {TO_BTN(ABS_HAT0X, kHAT_X),
+                                         TO_BTN(ABS_HAT0Y, kHAT_Y)};
+  return DO_MAPPING;
+}
+
+bool NintendoSwitchRight(uint16_t type,
+                         uint16_t code,
+                         GamepadEventType* mapped_type,
+                         uint16_t* mapped_code) {
+  static const KeyMapType key_mapping = {
+      {BTN_A, WG_BUTTON_A},         {BTN_B, WG_BUTTON_B},
+      {BTN_C, WG_BUTTON_X},         {BTN_X, WG_BUTTON_Y},
+      {BTN_Y, WG_BUTTON_L1},        {BTN_Z, WG_BUTTON_R1},
+      {BTN_MODE, WG_BUTTON_SELECT}, {BTN_TR2, WG_BUTTON_START}};
+
+  static const AbsMapType abs_mapping = {TO_BTN(ABS_HAT0X, kHAT_X),
+                                         TO_BTN(ABS_HAT0Y, kHAT_Y)};
+  return DO_MAPPING;
+}
+
 bool IBuffalocClassicMapper(uint16_t type,
                             uint16_t code,
                             GamepadEventType* mapped_type,
@@ -360,23 +410,23 @@ bool JoydevLikeMapper(uint16_t type,
   return DO_MAPPING;
 }
 
-bool DualShock4(uint16_t type,
-                uint16_t code,
-                GamepadEventType* mapped_type,
-                uint16_t* mapped_code) {
+bool NvidiaShieldMapper(uint16_t type,
+                        uint16_t code,
+                        GamepadEventType* mapped_type,
+                        uint16_t* mapped_code) {
   static const KeyMapType key_mapping = {
       {BTN_A, WG_BUTTON_A},           {BTN_B, WG_BUTTON_B},
-      {BTN_C, WG_BUTTON_X},           {BTN_X, WG_BUTTON_Y},
-      {BTN_Y, WG_BUTTON_L1},          {BTN_Z, WG_BUTTON_R1},
-      {BTN_TL, WG_BUTTON_LT},         {BTN_TR, WG_BUTTON_RT},
-      {BTN_TL2, WG_BUTTON_SELECT},    {BTN_TR2, WG_BUTTON_START},
-      {BTN_SELECT, WG_BUTTON_THUMBL}, {BTN_START, WG_BUTTON_THUMBR}};
+      {BTN_X, WG_BUTTON_X},           {BTN_Y, WG_BUTTON_Y},
+      {BTN_TL, WG_BUTTON_L1},         {BTN_TR, WG_BUTTON_R1},
+      {KEY_BACK, WG_BUTTON_SELECT},   {BTN_START, WG_BUTTON_START},
+      {KEY_HOMEPAGE, WG_BUTTON_MODE}, {BTN_THUMBL, WG_BUTTON_THUMBL},
+      {BTN_THUMBR, WG_BUTTON_THUMBR}};
 
   static const AbsMapType abs_mapping = {
-      TO_ABS(ABS_X, WG_ABS_X),      TO_ABS(ABS_Y, WG_ABS_Y),
-      TO_ABS(ABS_RX, WG_BUTTON_LT), TO_ABS(ABS_RY, WG_BUTTON_RT),
-      TO_ABS(ABS_Z, WG_ABS_RX),     TO_ABS(ABS_RZ, WG_ABS_RY),
-      TO_BTN(ABS_HAT0X, kHAT_X),    TO_BTN(ABS_HAT0Y, kHAT_Y)};
+      TO_ABS(ABS_X, WG_ABS_X),         TO_ABS(ABS_Y, WG_ABS_Y),
+      TO_ABS(ABS_Z, WG_ABS_RX),        TO_ABS(ABS_RZ, WG_ABS_RY),
+      TO_BTN(ABS_BRAKE, WG_BUTTON_LT), TO_BTN(ABS_GAS, WG_BUTTON_RT),
+      TO_BTN(ABS_HAT0X, kHAT_X),       TO_BTN(ABS_HAT0Y, kHAT_Y)};
   return DO_MAPPING;
 }
 
@@ -407,7 +457,10 @@ static const struct MappingData {
     {0x1689, 0xfe00, XInputStyleMapper},  // Razer sabertooth elite.
     // Sony gamepads.
     {0x054c, 0x0268, PlaystationSixAxisMapper},  // Playstation 3.
-    {0x054c, 0x05c4, DualShock4},                // Dualshock 4.
+    {0x054c, 0x05c4, DualShock4Mapper},          // Dualshock 4.
+    // Nintendo switch.
+    {0x057e, 0x2006, NintendoSwitchLeft},   // Nintendo switch left.
+    {0x057e, 0x2007, NintendoSwitchRight},  // Nintendo switch right.
     // NES style gamepad.
     {0x0583, 0x2060, IBuffalocClassicMapper},  // iBuffalo Classic.
     {0x0079, 0x0011, ClassicNESMapper},        // Classic NES controller.
@@ -427,7 +480,8 @@ static const struct MappingData {
     {0x1038, 0x1412, Vendor_1038Product_1412Mapper},  // Steelseries free.
     // Razer onza tournment edition.
     {0x1689, 0xfd00, Vendor_1689Product_fd00Mapper},
-    {0x11c5, 0x5506, JoydevLikeMapper}  // HJC Game ZD-V
+    {0x0955, 0x7214, NvidiaShieldMapper},  // Nvidia shield.
+    {0x11c5, 0x5506, JoydevLikeMapper}     // HJC Game ZD-V
 };
 
 class StaticGamepadMapper : public GamepadMapper {
