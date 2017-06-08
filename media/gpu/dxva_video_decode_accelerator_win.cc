@@ -1180,12 +1180,12 @@ void DXVAVideoDecodeAccelerator::Reset() {
 
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::NotifyResetDone, weak_ptr_));
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped,
                  weak_ptr_, std::move(pending_input_buffers_)));
   pending_input_buffers_.clear();
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::NotifyResetDone, weak_ptr_));
 
   RETURN_AND_NOTIFY_ON_FAILURE(StartDecoderThread(),
                                "Failed to start decoder thread.",
