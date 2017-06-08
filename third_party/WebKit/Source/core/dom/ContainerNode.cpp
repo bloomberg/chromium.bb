@@ -100,6 +100,25 @@ class DOMTreeMutationDetector {
   const uint64_t original_parent_document_version_;
 };
 
+inline bool CheckReferenceChildParent(const Node& parent,
+                                      const Node* next,
+                                      const Node* old_child,
+                                      ExceptionState& exception_state) {
+  if (next && next->parentNode() != &parent) {
+    exception_state.ThrowDOMException(kNotFoundError,
+                                      "The node before which the new node is "
+                                      "to be inserted is not a child of this "
+                                      "node.");
+    return false;
+  }
+  if (old_child && old_child->parentNode() != &parent) {
+    exception_state.ThrowDOMException(
+        kNotFoundError, "The node to be replaced is not a child of this node.");
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 // This dispatches various events; DOM mutation events, blur events, IFRAME
@@ -169,12 +188,16 @@ bool ContainerNode::EnsurePreInsertionValidity(
   if ((new_child.IsElementNode() || new_child.IsTextNode()) &&
       IsElementNode()) {
     DCHECK(IsChildTypeAllowed(new_child));
+    // 2. If node is a host-including inclusive ancestor of parent, throw a
+    // HierarchyRequestError.
     if (ContainsConsideringHostElements(new_child)) {
       exception_state.ThrowDOMException(
           kHierarchyRequestError, "The new child element contains the parent.");
       return false;
     }
-    return true;
+    // 3. If child is not null and its parent is not parent, then throw a
+    // NotFoundError.
+    return CheckReferenceChildParent(*this, next, old_child, exception_state);
   }
 
   // This should never happen, but also protect release builds from tree
@@ -195,9 +218,19 @@ bool ContainerNode::CheckAcceptChildGuaranteedNodeTypes(
     const Node* next,
     const Node* old_child,
     ExceptionState& exception_state) const {
-  if (IsDocumentNode())
+  if (IsDocumentNode()) {
+    // Step 2 is unnecessary. No one can have a Document child.
+    // Step 3:
+    if (!CheckReferenceChildParent(*this, next, old_child, exception_state))
+      return false;
+    // Step 4-6.
     return ToDocument(this)->CanAcceptChild(new_child, next, old_child,
                                             exception_state);
+  }
+
+  // 2. If node is a host-including inclusive ancestor of parent, throw a
+  // HierarchyRequestError.
+  //
   // Skip containsIncludingHostElements() if !newChild.parentNode() &&
   // isConnected(). |newChild| typically has no parentNode(), and it means
   // it's !isConnected(). In such case, the contains check for connected
@@ -210,6 +243,17 @@ bool ContainerNode::CheckAcceptChildGuaranteedNodeTypes(
         kHierarchyRequestError, "The new child element contains the parent.");
     return false;
   }
+
+  // 3. If child is not null and its parent is not parent, then throw a
+  // NotFoundError.
+  if (!CheckReferenceChildParent(*this, next, old_child, exception_state))
+    return false;
+
+  // 4. If node is not a DocumentFragment, DocumentType, Element, Text,
+  // ProcessingInstruction, or Comment node, throw a HierarchyRequestError.
+  // 5. If either node is a Text node and parent is a document, or node is a
+  // doctype and parent is not a document, throw a HierarchyRequestError.
+  //
   // TODO(tkent): IsChildTypeAllowed() is unnecessary for
   // RecheckNodeInsertionStructuralPrereq().
   if (!IsChildTypeAllowed(new_child)) {
@@ -219,6 +263,8 @@ bool ContainerNode::CheckAcceptChildGuaranteedNodeTypes(
             "' may not be inserted inside nodes of type '" + nodeName() + "'.");
     return false;
   }
+
+  // Step 6 is unnecessary for non-Document nodes.
   return true;
 }
 
@@ -238,15 +284,7 @@ bool ContainerNode::RecheckNodeInsertionStructuralPrereq(
                                              exception_state))
       return false;
   }
-  if (next && next->parentNode() != this) {
-    exception_state.ThrowDOMException(
-        kNotFoundError,
-        "The node before which the new node is to "
-        "be inserted is not a child of this "
-        "node.");
-    return false;
-  }
-  return true;
+  return CheckReferenceChildParent(*this, next, nullptr, exception_state);
 }
 
 template <typename Functor>
@@ -325,16 +363,7 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   if (!ref_child)
     return AppendChild(new_child, exception_state);
 
-  // NotFoundError: Raised if refChild is not a child of this node
-  if (ref_child->parentNode() != this) {
-    exception_state.ThrowDOMException(
-        kNotFoundError,
-        "The node before which the new node is to "
-        "be inserted is not a child of this "
-        "node.");
-    return nullptr;
-  }
-
+  // 2. Let reference child be child.
   // 3. If reference child is node, set it to node’s next sibling.
   if (ref_child == new_child) {
     ref_child = new_child->nextSibling();
@@ -342,7 +371,7 @@ Node* ContainerNode::InsertBefore(Node* new_child,
       return AppendChild(new_child, exception_state);
   }
 
-  // Make sure adding the new child is OK.
+  // 1. Ensure pre-insertion validity of node into parent before child.
   if (!EnsurePreInsertionValidity(*new_child, ref_child, nullptr,
                                   exception_state))
     return new_child;
@@ -470,26 +499,10 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
     return nullptr;
   }
 
-  // 1. If parent is not a Document, DocumentFragment, or Element node, throw a
-  // HierarchyRequestError.
-  // 2. If node is a host-including inclusive ancestor of parent, throw a
-  // HierarchyRequestError.
-  // 4. If node is not a DocumentFragment, DocumentType, Element, Text,
-  // ProcessingInstruction, or Comment node, throw a HierarchyRequestError.
-  // 5. If either node is a Text node and parent is a document, or node is a
-  // doctype and parent is not a document, throw a HierarchyRequestError.
-  // 6. If parent is a document, and any of the statements below, switched on
-  // node, are true, throw a HierarchyRequestError.
+  // Step 2 to 6.
   if (!EnsurePreInsertionValidity(*new_child, nullptr, old_child,
                                   exception_state))
     return old_child;
-
-  // 3. If child’s parent is not parent, then throw a NotFoundError.
-  if (old_child->parentNode() != this) {
-    exception_state.ThrowDOMException(
-        kNotFoundError, "The node to be replaced is not a child of this node.");
-    return nullptr;
-  }
 
   // 7. Let reference child be child’s next sibling.
   Node* next = old_child->nextSibling();
