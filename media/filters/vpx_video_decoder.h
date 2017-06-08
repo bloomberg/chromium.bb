@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
@@ -119,6 +120,9 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   std::unique_ptr<base::AtomicFlag> should_abort_decodes_;
 
   VideoFramePool frame_pool_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<VpxVideoDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VpxVideoDecoder);
 };
