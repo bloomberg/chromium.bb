@@ -559,6 +559,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_debug_shaders',
         'WEBGL_depth_texture',
         'WEBKIT_WEBGL_depth_texture',
+        'WEBGL_draw_buffers',
         'WEBGL_lose_context',
         'WEBKIT_WEBGL_lose_context',
       ]
