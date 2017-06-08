@@ -256,11 +256,6 @@ class Git(object):
     def _status_regexp(self, expected_types):
         return '^(?P<status>[%s])\t(?P<filename>.+)$' % expected_types
 
-    @staticmethod
-    def supports_local_commits():
-        # TODO(qyearsley): Remove this.
-        return True
-
     def display_name(self):
         return 'git'
 
