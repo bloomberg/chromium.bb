@@ -37,6 +37,8 @@ void MediaSinkServiceBase::OnFetchCompleted() {
   sink_discovery_callback_.Run(std::vector<MediaSinkInternal>(
       current_sinks_.begin(), current_sinks_.end()));
   mrp_sinks_ = current_sinks_;
+
+  RecordDeviceCounts();
 }
 
 void MediaSinkServiceBase::StartTimer() {

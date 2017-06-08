@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_METRICS_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_METRICS_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 
 namespace media_router {
@@ -54,7 +57,12 @@ enum class MediaRouterUserAction {
 
 class MediaRouterMetrics {
  public:
+  MediaRouterMetrics();
+  ~MediaRouterMetrics();
+
   // UMA histogram names.
+  static const char kHistogramDialAvailableDeviceCount[];
+  static const char kHistogramDialKnownDeviceCount[];
   static const char kHistogramIconClickLocation[];
   static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiDialogLoadedWithData[];
@@ -83,6 +91,20 @@ class MediaRouterMetrics {
   // Records the outcome in a create route response.
   static void RecordRouteCreationOutcome(
       MediaRouterRouteCreationOutcome outcome);
+
+  // Records device counts.
+  // TODO(zhaobin): Move device count specific metrics and state into its own
+  // class eventually.
+  void RecordDialDeviceCounts(size_t available_device_count,
+                              size_t known_device_count);
+
+  // Allows tests to swap in a fake clock.
+  void SetClockForTest(std::unique_ptr<base::Clock> clock);
+
+ private:
+  base::Time device_count_metrics_record_time_;
+
+  std::unique_ptr<base::Clock> clock_;
 };
 
 }  // namespace media_router
