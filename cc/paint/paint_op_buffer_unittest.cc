@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "cc/paint/paint_op_buffer.h"
-#include "base/memory/ptr_util.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_skcanvas.h"
@@ -448,9 +447,8 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_OpWithFlags) {
   PaintOpBuffer buffer;
   PaintFlags flags;
   sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(100, 100));
-  flags.setShader(PaintShader::MakeImage(std::move(image),
-                                         SkShader::kClamp_TileMode,
-                                         SkShader::kClamp_TileMode, nullptr));
+  flags.setShader(
+      image->makeShader(SkShader::kClamp_TileMode, SkShader::kClamp_TileMode));
   buffer.push<DrawRectOp>(SkRect::MakeWH(100, 100), flags);
   EXPECT_TRUE(buffer.HasDiscardableImages());
 }

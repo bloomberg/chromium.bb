@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "cc/paint/paint_export.h"
-#include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -19,6 +18,8 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace cc {
+
+using PaintShader = SkShader;
 
 class CC_PAINT_EXPORT PaintFlags {
  public:
@@ -159,21 +160,9 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE void setMaskFilter(sk_sp<SkMaskFilter> mask) {
     paint_.setMaskFilter(std::move(mask));
   }
-  // TODO(vmpstr): Remove this from recording calls, since we want to avoid
-  // constructing the shader until rasterization.
-  ALWAYS_INLINE SkShader* getSkShader() const { return paint_.getShader(); }
-
-  // Returns true if the shader has been set on the flags.
-  ALWAYS_INLINE bool HasShader() const { return !!paint_.getShader(); }
-
-  // Returns whether the shader is opaque. Note that it is only valid to call
-  // this function if HasShader() returns true.
-  ALWAYS_INLINE bool ShaderIsOpaque() const {
-    return paint_.getShader()->isOpaque();
-  }
-
-  ALWAYS_INLINE void setShader(std::unique_ptr<PaintShader> shader) {
-    paint_.setShader(shader ? shader->sk_shader() : nullptr);
+  ALWAYS_INLINE PaintShader* getShader() const { return paint_.getShader(); }
+  ALWAYS_INLINE void setShader(sk_sp<PaintShader> shader) {
+    paint_.setShader(std::move(shader));
   }
   ALWAYS_INLINE SkPathEffect* getPathEffect() const {
     return paint_.getPathEffect();

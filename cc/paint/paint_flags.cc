@@ -16,7 +16,7 @@ bool PaintFlags::IsSimpleOpacity() const {
     return false;
   if (getPathEffect())
     return false;
-  if (HasShader())
+  if (getShader())
     return false;
   if (getMaskFilter())
     return false;

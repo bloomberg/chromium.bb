@@ -227,15 +227,14 @@ void Image::DrawTiledBorder(GraphicsContext& ctxt,
 
 namespace {
 
-std::unique_ptr<PaintShader> CreatePatternShader(const PaintImage& image,
-                                                 const SkMatrix& shader_matrix,
-                                                 const PaintFlags& paint,
-                                                 const FloatSize& spacing,
-                                                 SkShader::TileMode tmx,
-                                                 SkShader::TileMode tmy) {
-  if (spacing.IsZero()) {
-    return PaintShader::MakeImage(image.sk_image(), tmx, tmy, &shader_matrix);
-  }
+sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
+                                       const SkMatrix& shader_matrix,
+                                       const PaintFlags& paint,
+                                       const FloatSize& spacing,
+                                       SkShader::TileMode tmx,
+                                       SkShader::TileMode tmy) {
+  if (spacing.IsZero())
+    return MakePaintShaderImage(image.sk_image(), tmx, tmy, &shader_matrix);
 
   // Arbitrary tiling is currently only supported for SkPictureShader, so we use
   // that instead of a plain bitmap shader to implement spacing.
@@ -247,8 +246,8 @@ std::unique_ptr<PaintShader> CreatePatternShader(const PaintImage& image,
   PaintCanvas* canvas = recorder.beginRecording(tile_rect);
   canvas->drawImage(image, 0, 0, &paint);
 
-  return PaintShader::MakePaintRecord(recorder.finishRecordingAsPicture(),
-                                      tile_rect, tmx, tmy, &shader_matrix);
+  return MakePaintShaderRecord(recorder.finishRecordingAsPicture(), tile_rect,
+                               tmx, tmy, &shader_matrix);
 }
 
 SkShader::TileMode ComputeTileMode(float left,
@@ -328,7 +327,7 @@ void Image::DrawPattern(GraphicsContext& context,
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
-  if (!flags.HasShader())
+  if (!flags.getShader())
     flags.setColor(SK_ColorTRANSPARENT);
 
   context.DrawRect(dest_rect, flags);
@@ -360,10 +359,9 @@ bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
   if (!image)
     return false;
 
-  flags.setShader(
-      PaintShader::MakeImage(std::move(image), SkShader::kRepeat_TileMode,
-                             SkShader::kRepeat_TileMode, &local_matrix));
-  if (!flags.HasShader())
+  flags.setShader(image->makeShader(SkShader::kRepeat_TileMode,
+                                    SkShader::kRepeat_TileMode, &local_matrix));
+  if (!flags.getShader())
     return false;
 
   // Animation is normally refreshed in draw() impls, which we don't call when

@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -106,11 +105,11 @@ void AddFadeEffect(const Rect& text_rect,
 
 // Creates a SkShader to fade the text, with |left_part| specifying the left
 // fade effect, if any, and |right_part| specifying the right fade effect.
-std::unique_ptr<cc::PaintShader> CreateFadeShader(const FontList& font_list,
-                                                  const Rect& text_rect,
-                                                  const Rect& left_part,
-                                                  const Rect& right_part,
-                                                  SkColor color) {
+sk_sp<SkShader> CreateFadeShader(const FontList& font_list,
+                                 const Rect& text_rect,
+                                 const Rect& left_part,
+                                 const Rect& right_part,
+                                 SkColor color) {
   // The shader should only specify transparency of the fade itself, not the
   // original transparency, which will be applied by the actual renderer.
   DCHECK_EQ(SkColorGetA(color), static_cast<uint8_t>(0xff));
@@ -145,9 +144,9 @@ std::unique_ptr<cc::PaintShader> CreateFadeShader(const FontList& font_list,
 
   const SkPoint points[2] = { PointToSkPoint(text_rect.origin()),
                               PointToSkPoint(text_rect.top_right()) };
-  return cc::PaintShader::MakeLinearGradient(&points[0], &colors[0],
-                                             &positions[0], colors.size(),
-                                             SkShader::kClamp_TileMode);
+  return
+      SkGradientShader::MakeLinear(&points[0], &colors[0], &positions[0],
+                                   colors.size(), SkShader::kClamp_TileMode);
 }
 
 // Converts a FontRenderParams::Hinting value to the corresponding
@@ -232,8 +231,8 @@ void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
   flags_.setColor(foreground);
 }
 
-void SkiaTextRenderer::SetShader(std::unique_ptr<cc::PaintShader> shader) {
-  flags_.setShader(std::move(shader));
+void SkiaTextRenderer::SetShader(sk_sp<SkShader> shader) {
+  flags_.setShader(cc::WrapSkShader(std::move(shader)));
 }
 
 void SkiaTextRenderer::SetUnderlineMetrics(SkScalar thickness,

@@ -33,11 +33,11 @@ PaintRecordPattern::PaintRecordPattern(sk_sp<PaintRecord> record,
 
 PaintRecordPattern::~PaintRecordPattern() {}
 
-std::unique_ptr<PaintShader> PaintRecordPattern::CreateShader(
+sk_sp<PaintShader> PaintRecordPattern::CreateShader(
     const SkMatrix& local_matrix) {
-  return PaintShader::MakePaintRecord(
-      tile_record_, tile_record_bounds_, SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &local_matrix);
+  return MakePaintShaderRecord(tile_record_, tile_record_bounds_,
+                               SkShader::kRepeat_TileMode,
+                               SkShader::kRepeat_TileMode, &local_matrix);
 }
 
 }  // namespace blink
