@@ -28,7 +28,6 @@ namespace net {
 
 class HttpNetworkSession;
 class ProxyInfo;
-class SpdySession;
 class NetLogWithSource;
 
 class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
@@ -92,8 +91,6 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
 
   friend class HttpStreamFactoryImplPeer;
 
-  typedef std::set<Request*> RequestSet;
-  typedef std::map<SpdySessionKey, RequestSet> SpdySessionRequestMap;
   typedef std::set<std::unique_ptr<JobController>> JobControllerSet;
 
   // |PreconnectingProxyServer| holds information of a connection to a single
@@ -132,18 +129,6 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
       bool enable_ip_based_pooling,
       bool enable_alternative_services,
       const NetLogWithSource& net_log);
-
-  // Called when a SpdySession is ready. It will find appropriate Requests and
-  // fulfill them. |direct| indicates whether or not |spdy_session| uses a
-  // proxy.
-  void OnNewSpdySessionReady(const base::WeakPtr<SpdySession>& spdy_session,
-                             bool direct,
-                             const SSLConfig& used_ssl_config,
-                             const ProxyInfo& used_proxy_info,
-                             bool was_alpn_negotiated,
-                             NextProto negotiated_protocol,
-                             bool using_spdy,
-                             NetLogSource source_dependency);
 
   // Called when the Job detects that the endpoint indicated by the
   // Alternate-Protocol does not work. Lets the factory update
@@ -192,8 +177,6 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   // Set of proxy servers that support request priorities to which subsequent
   // preconnects should be skipped.
   std::set<PreconnectingProxyServer> preconnecting_proxy_servers_;
-
-  SpdySessionRequestMap spdy_session_request_map_;
 
   const bool for_websockets_;
 
