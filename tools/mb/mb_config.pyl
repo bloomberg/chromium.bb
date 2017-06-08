@@ -102,7 +102,7 @@
       'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
       'Android deterministic (dbg)': 'android_debug_bot',
       'Browser Side Navigation Linux': 'release_bot',
-      'CFI Linux CF': 'cfi_full_cfi_diag_release_static',
+      'CFI Linux CF': 'cfi_full_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'cfi_full_clang_tot_release_static',
       'CFI Linux': 'cfi_release_static',
       'CFI Linux Full': 'cfi_thin_lto_full_release_static_use_lld',
@@ -974,8 +974,8 @@
       'cast', 'cast_audio', 'release_trybot',
     ],
 
-    'cfi_full_cfi_diag_release_static': [
-      'cfi_full', 'cfi_diag', 'release', 'static',
+    'cfi_full_cfi_diag_recover_release_static': [
+      'cfi_full', 'cfi_diag', 'cfi_recover', 'release', 'static',
     ],
 
     'cfi_full_clang_tot_release_static': [
@@ -1589,6 +1589,10 @@
 
     'cfi_diag': {
       'gn_args': 'use_cfi_diag=true',
+    },
+
+    'cfi_recover': {
+      'gn_args': 'use_cfi_recover=true',
     },
 
     'chrome_pgo_phase_1': {
