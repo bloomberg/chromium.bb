@@ -61,6 +61,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/plugins/PluginData.h"
+#include "platform/scroll/SmoothScrollSequencer.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -170,6 +171,13 @@ ScrollingCoordinator* Page::GetScrollingCoordinator() {
 
 PageScaleConstraintsSet& Page::GetPageScaleConstraintsSet() {
   return *page_scale_constraints_set_;
+}
+
+SmoothScrollSequencer* Page::GetSmoothScrollSequencer() {
+  if (!smooth_scroll_sequencer_)
+    smooth_scroll_sequencer_ = new SmoothScrollSequencer();
+
+  return smooth_scroll_sequencer_.Get();
 }
 
 const PageScaleConstraintsSet& Page::GetPageScaleConstraintsSet() const {
@@ -620,6 +628,7 @@ DEFINE_TRACE(Page) {
   visitor->Trace(context_menu_controller_);
   visitor->Trace(pointer_lock_controller_);
   visitor->Trace(scrolling_coordinator_);
+  visitor->Trace(smooth_scroll_sequencer_);
   visitor->Trace(browser_controls_);
   visitor->Trace(console_message_storage_);
   visitor->Trace(event_handler_registry_);

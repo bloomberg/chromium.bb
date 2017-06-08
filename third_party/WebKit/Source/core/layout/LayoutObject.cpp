@@ -631,13 +631,15 @@ bool LayoutObject::ScrollRectToVisible(const LayoutRect& rect,
                                        const ScrollAlignment& align_x,
                                        const ScrollAlignment& align_y,
                                        ScrollType scroll_type,
-                                       bool make_visible_in_visual_viewport) {
+                                       bool make_visible_in_visual_viewport,
+                                       ScrollBehavior scroll_behavior) {
   LayoutBox* enclosing_box = this->EnclosingBox();
   if (!enclosing_box)
     return false;
 
   enclosing_box->ScrollRectToVisible(rect, align_x, align_y, scroll_type,
-                                     make_visible_in_visual_viewport);
+                                     make_visible_in_visual_viewport,
+                                     scroll_behavior);
   return true;
 }
 

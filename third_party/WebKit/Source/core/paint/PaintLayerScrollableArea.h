@@ -237,6 +237,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   PlatformChromeClient* GetChromeClient() const override;
 
+  SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
+
   // For composited scrolling, we allocate an extra GraphicsLayer to hold
   // onto the scrolling content. The layer can be shifted on the GPU and
   // composited at little cost.
@@ -389,6 +391,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   LayoutRect ScrollIntoView(const LayoutRect&,
                             const ScrollAlignment& align_x,
                             const ScrollAlignment& align_y,
+                            bool is_smooth,
                             ScrollType = kProgrammaticScroll) override;
 
   // Returns true if scrollable area is in the FrameView's collection of

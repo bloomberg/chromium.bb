@@ -2141,6 +2141,13 @@ PlatformChromeClient* LocalFrameView::GetChromeClient() const {
   return &page->GetChromeClient();
 }
 
+SmoothScrollSequencer* LocalFrameView::GetSmoothScrollSequencer() const {
+  Page* page = GetFrame().GetPage();
+  if (!page)
+    return nullptr;
+  return page->GetSmoothScrollSequencer();
+}
+
 void LocalFrameView::ContentsResized() {
   if (frame_->IsMainFrame() && frame_->GetDocument()) {
     if (TextAutosizer* text_autosizer =
@@ -4629,14 +4636,20 @@ bool LocalFrameView::ShouldPlaceVerticalScrollbarOnLeft() const {
 LayoutRect LocalFrameView::ScrollIntoView(const LayoutRect& rect_in_content,
                                           const ScrollAlignment& align_x,
                                           const ScrollAlignment& align_y,
+                                          bool is_smooth,
                                           ScrollType scroll_type) {
   LayoutRect view_rect(VisibleContentRect());
   LayoutRect expose_rect = ScrollAlignment::GetRectToExpose(
       view_rect, rect_in_content, align_x, align_y);
   if (expose_rect != view_rect) {
-    SetScrollOffset(
-        ScrollOffset(expose_rect.X().ToFloat(), expose_rect.Y().ToFloat()),
-        scroll_type);
+    ScrollOffset target_offset(expose_rect.X().ToFloat(),
+                               expose_rect.Y().ToFloat());
+    if (is_smooth) {
+      DCHECK(scroll_type == kProgrammaticScroll);
+      GetSmoothScrollSequencer()->QueueAnimation(this, target_offset);
+    } else {
+      SetScrollOffset(target_offset, scroll_type);
+    }
   }
 
   // Scrolling the LocalFrameView cannot change the input rect's location

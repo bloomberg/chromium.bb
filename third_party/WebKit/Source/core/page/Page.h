@@ -67,6 +67,7 @@ class PluginData;
 class PointerLockController;
 class ScopedPageSuspender;
 class ScrollingCoordinator;
+class SmoothScrollSequencer;
 class Settings;
 class ConsoleMessageStorage;
 class SpellCheckerClient;
@@ -177,6 +178,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void SetValidationMessageClient(ValidationMessageClient*);
 
   ScrollingCoordinator* GetScrollingCoordinator();
+
+  SmoothScrollSequencer* GetSmoothScrollSequencer();
 
   ClientRectList* NonFastScrollableRects(const LocalFrame*);
 
@@ -310,6 +313,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const std::unique_ptr<PageScaleConstraintsSet> page_scale_constraints_set_;
   const Member<PointerLockController> pointer_lock_controller_;
   Member<ScrollingCoordinator> scrolling_coordinator_;
+  Member<SmoothScrollSequencer> smooth_scroll_sequencer_;
   const Member<BrowserControls> browser_controls_;
   const Member<ConsoleMessageStorage> console_message_storage_;
   const Member<EventHandlerRegistry> event_handler_registry_;

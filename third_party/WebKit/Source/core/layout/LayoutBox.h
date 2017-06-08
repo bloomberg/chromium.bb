@@ -592,7 +592,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                            const ScrollAlignment& align_x,
                            const ScrollAlignment& align_y,
                            ScrollType = kProgrammaticScroll,
-                           bool make_visible_in_visual_viewport = true);
+                           bool make_visible_in_visual_viewport = true,
+                           ScrollBehavior = kScrollBehaviorAuto);
 
   LayoutRectOutsets MarginBoxOutsets() const override {
     return margin_box_outsets_;

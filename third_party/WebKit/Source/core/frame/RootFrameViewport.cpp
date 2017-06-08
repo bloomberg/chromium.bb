@@ -209,6 +209,7 @@ ScrollBehavior RootFrameViewport::ScrollBehaviorStyle() const {
 LayoutRect RootFrameViewport::ScrollIntoView(const LayoutRect& rect_in_content,
                                              const ScrollAlignment& align_x,
                                              const ScrollAlignment& align_y,
+                                             bool is_smooth,
                                              ScrollType scroll_type) {
   // We want to move the rect into the viewport that excludes the scrollbars so
   // we intersect the visual viewport with the scrollbar-excluded frameView
@@ -229,8 +230,13 @@ LayoutRect RootFrameViewport::ScrollIntoView(const LayoutRect& rect_in_content,
   LayoutRect target_viewport = ScrollAlignment::GetRectToExpose(
       view_rect_in_content, rect_in_content, align_x, align_y);
   if (target_viewport != view_rect_in_content) {
-    SetScrollOffset(ScrollOffset(target_viewport.X(), target_viewport.Y()),
-                    scroll_type);
+    ScrollOffset target_offset(target_viewport.X(), target_viewport.Y());
+    if (is_smooth) {
+      DCHECK(scroll_type == kProgrammaticScroll);
+      GetSmoothScrollSequencer()->QueueAnimation(this, target_offset);
+    } else {
+      SetScrollOffset(target_offset, scroll_type);
+    }
   }
 
   // RootFrameViewport only changes the viewport relative to the document so we
@@ -269,6 +275,10 @@ void RootFrameViewport::DistributeScrollBetweenViewports(
   ScrollOffset target_offset = primary.ClampScrollOffset(
       primary.GetScrollAnimator().CurrentOffset() + delta);
 
+  // DistributeScrollBetweenViewports can be called from SetScrollOffset,
+  // so we assume that aborting sequenced smooth scrolls has been handled.
+  // It can also be called from inside an animation to set the offset in
+  // each frame. In that case, we shouldn't abort sequenced smooth scrolls.
   primary.SetScrollOffset(target_offset, scroll_type, behavior);
 
   // Scroll the secondary viewport if all of the scroll was not applied to the
@@ -400,6 +410,8 @@ ScrollResult RootFrameViewport::UserScroll(ScrollGranularity granularity,
   }
 
   CancelProgrammaticScrollAnimation();
+  if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer())
+    sequencer->AbortAnimations();
 
   // TODO(bokan): Why do we call userScroll on the animators directly and
   // not through the ScrollableAreas?
@@ -429,6 +441,10 @@ bool RootFrameViewport::ScrollAnimatorEnabled() const {
 
 PlatformChromeClient* RootFrameViewport::GetChromeClient() const {
   return LayoutViewport().GetChromeClient();
+}
+
+SmoothScrollSequencer* RootFrameViewport::GetSmoothScrollSequencer() const {
+  return LayoutViewport().GetSmoothScrollSequencer();
 }
 
 void RootFrameViewport::ServiceScrollAnimations(double monotonic_time) {

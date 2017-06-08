@@ -59,6 +59,10 @@ const ScrollAlignment ScrollAlignment::kAlignTopAlways = {
     kScrollAlignmentTop, kScrollAlignmentTop, kScrollAlignmentTop};
 const ScrollAlignment ScrollAlignment::kAlignBottomAlways = {
     kScrollAlignmentBottom, kScrollAlignmentBottom, kScrollAlignmentBottom};
+const ScrollAlignment ScrollAlignment::kAlignLeftAlways = {
+    kScrollAlignmentLeft, kScrollAlignmentLeft, kScrollAlignmentLeft};
+const ScrollAlignment ScrollAlignment::kAlignRightAlways = {
+    kScrollAlignmentRight, kScrollAlignmentRight, kScrollAlignmentRight};
 
 #define MIN_INTERSECT_FOR_REVEAL 32
 

@@ -558,6 +558,7 @@ core_dictionary_idl_files =
                     "events/WheelEventInit.idl",
                     "fileapi/BlobPropertyBag.idl",
                     "fileapi/FilePropertyBag.idl",
+                    "frame/ScrollIntoViewOptions.idl",
                     "frame/ScrollOptions.idl",
                     "frame/ScrollToOptions.idl",
                     "html/AssignedNodesOptions.idl",

@@ -52,6 +52,7 @@
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
+#include "platform/scroll/SmoothScrollSequencer.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/Forward.h"
@@ -469,12 +470,15 @@ class CORE_EXPORT LocalFrameView final
   LayoutRect ScrollIntoView(const LayoutRect& rect_in_content,
                             const ScrollAlignment& align_x,
                             const ScrollAlignment& align_y,
+                            bool is_smooth,
                             ScrollType = kProgrammaticScroll) override;
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
   // coordinate space.
   PlatformChromeClient* GetChromeClient() const;
+
+  SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
 
   // Functions for child manipulation and inspection.
   bool IsSelfVisible() const {

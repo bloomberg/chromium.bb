@@ -1390,6 +1390,8 @@ component("platform") {
     "scroll/ScrollbarThemeOverlay.cpp",
     "scroll/ScrollbarThemeOverlay.h",
     "scroll/ScrollbarThemeOverlayMock.h",
+    "scroll/SmoothScrollSequencer.cpp",
+    "scroll/SmoothScrollSequencer.h",
     "speech/PlatformSpeechSynthesisUtterance.cpp",
     "speech/PlatformSpeechSynthesisUtterance.h",
     "speech/PlatformSpeechSynthesisVoice.cpp",
