@@ -5,20 +5,19 @@
 #ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COLLECTION_VIEW_ITEM_ACCESSIBILITY_DELEGATE_H_
 #define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COLLECTION_VIEW_ITEM_ACCESSIBILITY_DELEGATE_H_
 
-@class ReadingListCollectionViewItem;
+@class CollectionViewItem;
 
 @protocol ReadingListCollectionViewItemAccessibilityDelegate
 
 // Returns whether the entry is read.
-- (BOOL)isEntryRead:(ReadingListCollectionViewItem*)entry;
+- (BOOL)isEntryRead:(CollectionViewItem*)entry;
 
-- (void)deleteEntry:(ReadingListCollectionViewItem*)entry;
-- (void)openEntryInNewTab:(ReadingListCollectionViewItem*)entry;
-- (void)openEntryInNewIncognitoTab:(ReadingListCollectionViewItem*)entry;
-- (void)copyEntryURL:(ReadingListCollectionViewItem*)entry;
-- (void)openEntryOffline:(ReadingListCollectionViewItem*)entry;
-- (void)markEntryRead:(ReadingListCollectionViewItem*)entry;
-- (void)markEntryUnread:(ReadingListCollectionViewItem*)entry;
+- (void)deleteEntry:(CollectionViewItem*)entry;
+- (void)openEntryInNewTab:(CollectionViewItem*)entry;
+- (void)openEntryInNewIncognitoTab:(CollectionViewItem*)entry;
+- (void)openEntryOffline:(CollectionViewItem*)entry;
+- (void)markEntryRead:(CollectionViewItem*)entry;
+- (void)markEntryUnread:(CollectionViewItem*)entry;
 
 @end
 

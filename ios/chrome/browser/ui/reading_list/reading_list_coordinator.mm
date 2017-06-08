@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 
+#import "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -255,6 +256,48 @@ readingListCollectionViewController:
 - (void)readingListCollectionViewController:
             (ReadingListCollectionViewController*)
                 readingListCollectionViewController
+                           openItemInNewTab:(CollectionViewItem*)item
+                                  incognito:(BOOL)incognito {
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
+  [self readingListCollectionViewController:readingListCollectionViewController
+                          openNewTabWithURL:readingListItem.url
+                                  incognito:incognito];
+}
+
+- (void)readingListCollectionViewController:
+            (ReadingListCollectionViewController*)
+                readingListCollectionViewController
+                    openItemOfflineInNewTab:(CollectionViewItem*)item {
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
+  const ReadingListEntry* entry =
+      [readingListCollectionViewController.dataSource
+          entryWithURL:readingListItem.url];
+
+  if (!entry) {
+    return;
+  }
+
+  if (entry->DistilledState() == ReadingListEntry::PROCESSED) {
+    const GURL entryURL = entry->URL();
+    GURL offlineURL = reading_list::OfflineURLForPath(
+        entry->DistilledPath(), entryURL, entry->DistilledURL());
+
+    [self
+        readingListCollectionViewController:readingListCollectionViewController
+                             openOfflineURL:offlineURL
+                      correspondingEntryURL:entryURL];
+  }
+}
+
+#pragma mark - Private
+
+// Opens the offline url |offlineURL| of the entry saved in the reading list
+// model with the |entryURL| url.
+- (void)readingListCollectionViewController:
+            (ReadingListCollectionViewController*)
+                readingListCollectionViewController
                              openOfflineURL:(const GURL&)offlineURL
                       correspondingEntryURL:(const GURL&)entryURL {
   [self readingListCollectionViewController:readingListCollectionViewController
@@ -267,6 +310,7 @@ readingListCollectionViewController:
                                                          forURL:updateURL];
 }
 
+// Opens |URL| in a new tab |incognito| or not.
 - (void)readingListCollectionViewController:
             (ReadingListCollectionViewController*)
                 readingListCollectionViewController

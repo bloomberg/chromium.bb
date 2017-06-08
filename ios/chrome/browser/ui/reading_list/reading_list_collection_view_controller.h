@@ -7,20 +7,15 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
-#include <string>
-
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 
 namespace favicon {
 class LargeIconService;
 }
 
-class GURL;
 @class ReadingListCollectionViewController;
 @class ReadingListCollectionViewItem;
 @protocol ReadingListDataSource;
-class ReadingListModel;
-@class TabModel;
 
 // Audience for the ReadingListCollectionViewController
 @protocol ReadingListCollectionViewControllerAudience
@@ -55,20 +50,19 @@ readingListCollectionViewController:
                            openItem:
                                (ReadingListCollectionViewItem*)readingListItem;
 
-// Opens |URL| in a new tab |incognito| or not.
+// Opens the entry corresponding to the |item| in a new tab, |incognito| or not.
 - (void)readingListCollectionViewController:
             (ReadingListCollectionViewController*)
                 readingListCollectionViewController
-                          openNewTabWithURL:(const GURL&)URL
+                           openItemInNewTab:(CollectionViewItem*)item
                                   incognito:(BOOL)incognito;
 
-// Opens the offline url |offlineURL| of the entry saved in the reading list
-// model with the |entryURL| url.
+// Opens the offline version of the entry corresponding to the |item| in a new
+// tab, if available.
 - (void)readingListCollectionViewController:
             (ReadingListCollectionViewController*)
                 readingListCollectionViewController
-                             openOfflineURL:(const GURL&)offlineURL
-                      correspondingEntryURL:(const GURL&)entryURL;
+                    openItemOfflineInNewTab:(CollectionViewItem*)item;
 
 @end
 
@@ -94,7 +88,7 @@ readingListCollectionViewController:
 // Prepares this view controller to be dismissed.
 - (void)willBeDismissed;
 
-// Reloads all the data from the ReadingListModel.
+// Reloads all the data.
 - (void)reloadData;
 
 @end

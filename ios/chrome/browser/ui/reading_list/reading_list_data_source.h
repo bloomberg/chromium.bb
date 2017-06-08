@@ -12,6 +12,7 @@
 
 class GURL;
 class ReadingListEntry;
+@class CollectionViewItem;
 @class ReadingListCollectionViewItem;
 @protocol ReadingListDataSink;
 
@@ -27,6 +28,8 @@ class ReadingListEntry;
 - (BOOL)hasElements;
 // Whether the data source has some read elements.
 - (BOOL)hasRead;
+// Whether the entry corresponding to the |item| is read.
+- (BOOL)isEntryRead:(nonnull CollectionViewItem*)item;
 
 // Mark all entries as seen and stop sending updates to the data sink.
 - (void)dataSinkWillBeDismissed;
