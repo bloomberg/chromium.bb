@@ -55,6 +55,11 @@ const base::Feature kCompositeOpaqueFixedPosition{
 const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables handling touch events in compositor using impl side touch action
+// knowledge.
+const base::Feature kCompositorTouchAction{"CompositorTouchAction",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Speculatively pre-evaluate Javascript which will likely use document.write to
 // load an external script. The feature extracts the written markup and sends it
 // to the preload scanner.

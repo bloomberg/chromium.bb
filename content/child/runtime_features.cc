@@ -345,6 +345,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (!base::FeatureList::IsEnabled(features::kCompositeOpaqueScrollers))
     WebRuntimeFeatures::EnableFeatureFromString("CompositeOpaqueScrollers",
                                                 false);
+  if (base::FeatureList::IsEnabled(features::kCompositorTouchAction))
+    WebRuntimeFeatures::EnableCompositorTouchAction(true);
 
   if (base::FeatureList::IsEnabled(features::kSkipCompositingSmallScrollers))
     WebRuntimeFeatures::EnableSkipCompositingSmallScrollers(true);

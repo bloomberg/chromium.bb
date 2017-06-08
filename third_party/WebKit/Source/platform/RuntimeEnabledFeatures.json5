@@ -181,6 +181,10 @@
       status: "stable",
     },
     {
+      name: "CompositorTouchAction",
+      status: "test",
+    },
+    {
       name: "CompositorWorker",
       status: "experimental",
     },
