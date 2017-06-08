@@ -33,6 +33,9 @@ const int kMaxNumRetries = 1;
 // String constant defining the url tail we upload system logs to.
 const char* kSystemLogUploadUrlTail = "/upload";
 
+// The cutoff point (in bytes) after which log contents are ignored.
+const size_t kLogCutoffSize = 50 * 1024 * 1024;  // 50 MiB.
+
 // The file names of the system logs to upload.
 // Note: do not add anything to this list without checking for PII in the file.
 const char* const kSystemLogFileNames[] = {
@@ -41,6 +44,24 @@ const char* const kSystemLogFileNames[] = {
     "/var/log/messages",      "/var/log/messages.1",
     "/var/log/net.log",       "/var/log/net.1.log",
     "/var/log/ui/ui.LATEST",  "/var/log/update_engine.log"};
+
+std::string ReadAndAnonymizeLogFile(feedback::AnonymizerTool* anonymizer,
+                                    const base::FilePath& file_path) {
+  std::string data;
+  if (!base::ReadFileToStringWithMaxSize(file_path, &data, kLogCutoffSize) &&
+      data.empty()) {
+    SYSLOG(ERROR) << "Failed to read the system log file from the disk "
+                  << file_path.value();
+  }
+  // We want to remove the last line completely because PII data might be cut in
+  // half (anonymizer might not recognize it).
+  if (!data.empty() && data.back() != '\n') {
+    size_t pos = data.find_last_of('\n');
+    data.erase(pos != std::string::npos ? pos + 1 : 0);
+    data += "... [truncated]\n";
+  }
+  return policy::SystemLogUploader::RemoveSensitiveData(anonymizer, data);
+}
 
 // Reads the system log files as binary files, anonymizes data, stores the files
 // as pairs (file name, data) and returns. Called on blocking thread.
@@ -51,14 +72,9 @@ std::unique_ptr<policy::SystemLogUploader::SystemLogs> ReadFiles() {
   for (auto* file_path : kSystemLogFileNames) {
     if (!base::PathExists(base::FilePath(file_path)))
       continue;
-    std::string data = std::string();
-    if (!base::ReadFileToString(base::FilePath(file_path), &data)) {
-      SYSLOG(ERROR) << "Failed to read the system log file from the disk "
-                    << file_path << std::endl;
-    }
     system_logs->push_back(std::make_pair(
         file_path,
-        policy::SystemLogUploader::RemoveSensitiveData(&anonymizer, data)));
+        ReadAndAnonymizeLogFile(&anonymizer, base::FilePath(file_path))));
   }
   return system_logs;
 }
