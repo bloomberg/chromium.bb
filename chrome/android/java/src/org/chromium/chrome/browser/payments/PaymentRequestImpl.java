@@ -1629,6 +1629,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void onInstrumentDetailsReady(String methodName, String stringifiedDetails) {
+        assert methodName != null;
+        assert stringifiedDetails != null;
+
         if (mClient == null || mPaymentResponseHelper == null) return;
 
         // Record the payment method used to complete the transaction. If the payment method was an
