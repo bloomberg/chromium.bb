@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/service_worker/service_worker_url_job_wrapper.h"
+#include "content/browser/service_worker/service_worker_url_loader_job.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/request_context_frame_type.h"
@@ -38,7 +39,7 @@ class ServiceWorkerVersion;
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
     : public ServiceWorkerRequestHandler,
       public ServiceWorkerURLRequestJob::Delegate,
-      public NON_EXPORTED_BASE(ServiceWorkerURLJobWrapper::Delegate) {
+      public NON_EXPORTED_BASE(ServiceWorkerURLLoaderJob::Delegate) {
  public:
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,

@@ -1410,6 +1410,8 @@ source_set("browser") {
     "service_worker/service_worker_unregister_job.h",
     "service_worker/service_worker_url_job_wrapper.cc",
     "service_worker/service_worker_url_job_wrapper.h",
+    "service_worker/service_worker_url_loader_job.cc",
+    "service_worker/service_worker_url_loader_job.h",
     "service_worker/service_worker_url_request_job.cc",
     "service_worker/service_worker_url_request_job.h",
     "service_worker/service_worker_version.cc",
