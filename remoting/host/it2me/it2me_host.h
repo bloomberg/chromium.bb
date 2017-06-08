@@ -22,7 +22,7 @@
 
 namespace base {
 class DictionaryValue;
-}
+}  // namespace base
 
 namespace remoting {
 
@@ -33,6 +33,10 @@ class HostEventLogger;
 class HostStatusLogger;
 class RegisterSupportHostRequest;
 class RsaKeyPair;
+
+namespace protocol {
+struct IceConfig;
+}  // namespace protocol
 
 // These state values are duplicated in host_session.js.  Remember to update
 // both copies when making changes.
@@ -73,7 +77,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       base::WeakPtr<It2MeHost::Observer> observer,
       std::unique_ptr<SignalStrategy> signal_strategy,
       const std::string& username,
-      const std::string& directory_bot_jid);
+      const std::string& directory_bot_jid,
+      const protocol::IceConfig& ice_config);
 
   // Disconnects and shuts down the host.
   virtual void Disconnect();
@@ -106,8 +111,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
  private:
   friend class MockIt2MeHost;
-  FRIEND_TEST_ALL_PREFIXES(It2MeHostTest, HostUdpPortRangePolicy_ValidRange);
-  FRIEND_TEST_ALL_PREFIXES(It2MeHostTest, HostUdpPortRangePolicy_NoRange);
+  friend class It2MeHostTest;
 
   // Updates state of the host. Can be called only on the network thread.
   void SetState(It2MeHostState state, const std::string& error_message);
@@ -122,7 +126,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   // Task posted to the network thread from Connect().
   void ConnectOnNetworkThread(const std::string& username,
-                              const std::string& directory_bot_jid);
+                              const std::string& directory_bot_jid,
+                              const protocol::IceConfig& ice_config);
 
   // Called when the support host registration completes.
   void OnReceivedSupportID(const std::string& support_id,
