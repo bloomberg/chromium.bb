@@ -89,9 +89,10 @@ using net::URLRequestTestJob;
 
 namespace {
 
-// Returns true if |text| is displayed on the page |browser| is currently
-// displaying.  Uses "innerText", so will miss hidden text, and whitespace
-// space handling may be weird.
+// Searches for first node containing |text|, and if it finds one, searches
+// through all ancestors seeing if any of them is of class "hidden". Since it
+// relies on the hidden class used by network error pages, not suitable for
+// general use.
 bool WARN_UNUSED_RESULT IsDisplayingText(Browser* browser,
                                          const std::string& text) {
   // clang-format off

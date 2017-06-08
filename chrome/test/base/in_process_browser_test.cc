@@ -26,6 +26,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -254,6 +255,10 @@ void InProcessBrowserTest::SetUp() {
   // Polymer Elements are used for quick unlock configuration in options page,
   // which is chromeos specific feature.
   options::BrowserOptionsHandler::DisablePolymerPreloadForTesting();
+  // On Chrome OS, access to files via file: scheme is restricted. Enable
+  // access to all files here since browser_tests and interactive_ui_tests
+  // rely on the ability to open any files via file: scheme.
+  ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(true);
 #endif  // defined(OS_CHROMEOS)
 
   // Use hardcoded quota settings to have a consistent testing environment.

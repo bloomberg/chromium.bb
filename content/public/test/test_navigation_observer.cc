@@ -56,7 +56,8 @@ class TestNavigationObserver::TestWebContentsObserver
       return;
 
     parent_->OnDidFinishNavigation(navigation_handle->IsErrorPage(),
-                                   navigation_handle->GetURL());
+                                   navigation_handle->GetURL(),
+                                   navigation_handle->GetNetErrorCode());
   }
 
   TestNavigationObserver* parent_;
@@ -72,6 +73,7 @@ TestNavigationObserver::TestNavigationObserver(
       navigations_completed_(0),
       number_of_navigations_(number_of_navigations),
       last_navigation_succeeded_(false),
+      last_net_error_code_(net::OK),
       message_loop_runner_(new MessageLoopRunner(quit_mode)),
       web_contents_created_callback_(
           base::Bind(&TestNavigationObserver::OnWebContentsCreated,
@@ -156,9 +158,11 @@ void TestNavigationObserver::OnDidStartNavigation() {
 }
 
 void TestNavigationObserver::OnDidFinishNavigation(bool is_error_page,
-                                                   const GURL& url) {
+                                                   const GURL& url,
+                                                   net::Error error_code) {
   last_navigation_url_ = url;
   last_navigation_succeeded_ = !is_error_page;
+  last_net_error_code_ = error_code;
 }
 
 }  // namespace content

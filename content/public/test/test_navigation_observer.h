@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/net_errors.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -43,7 +44,9 @@ class TestNavigationObserver {
 
   const GURL& last_navigation_url() const { return last_navigation_url_; }
 
-  int last_navigation_succeeded() const { return last_navigation_succeeded_; }
+  bool last_navigation_succeeded() const { return last_navigation_succeeded_; }
+
+  net::Error last_net_error_code() const { return last_net_error_code_; }
 
  protected:
   // Register this TestNavigationObserver as an observer of the |web_contents|.
@@ -64,7 +67,9 @@ class TestNavigationObserver {
   void OnDidStartLoading(WebContents* web_contents);
   void OnDidStopLoading(WebContents* web_contents);
   void OnDidStartNavigation();
-  void OnDidFinishNavigation(bool is_error_page, const GURL& url);
+  void OnDidFinishNavigation(bool is_error_page,
+                             const GURL& url,
+                             net::Error error_code);
 
   // If true the navigation has started.
   bool navigation_started_;
@@ -80,6 +85,9 @@ class TestNavigationObserver {
 
   // True if the last navigation succeeded.
   bool last_navigation_succeeded_;
+
+  // The net error code of the last navigation.
+  net::Error last_net_error_code_;
 
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
