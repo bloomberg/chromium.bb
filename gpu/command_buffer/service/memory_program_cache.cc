@@ -7,8 +7,10 @@
 #include <stddef.h>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -220,7 +222,10 @@ MemoryProgramCache::MemoryProgramCache(
           disable_program_caching_for_transform_feedback),
       curr_size_bytes_(0),
       store_(ProgramMRUCache::NO_AUTO_EVICT),
-      activity_flags_(activity_flags) {}
+      activity_flags_(activity_flags),
+      memory_pressure_listener_(
+          base::Bind(&MemoryProgramCache::HandleMemoryPressure,
+                     base::Unretained(this))) {}
 
 MemoryProgramCache::~MemoryProgramCache() {}
 
@@ -469,6 +474,23 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
   } else {
     LOG(ERROR) << "Failed to parse proto file.";
   }
+}
+
+void MemoryProgramCache::HandleMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // Set a low limit on cache size for MEMORY_PRESSURE_LEVEL_MODERATE.
+  size_t limit = max_size_bytes_ / 4;
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    limit = 0;
+  }
+  if (curr_size_bytes_ <= limit)
+    return;
+  size_t initial_size = curr_size_bytes_;
+  while (curr_size_bytes_ > limit && !store_.empty())
+    store_.Erase(store_.rbegin());
+  UMA_HISTOGRAM_COUNTS_100000("GPU.ProgramCache.MemoryReleasedOnPressure",
+                              (initial_size - curr_size_bytes_) / 1024);
 }
 
 MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
