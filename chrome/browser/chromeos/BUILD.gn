@@ -1262,6 +1262,7 @@ source_set("chromeos") {
     "printing/printer_configurer.h",
     "printing/printer_discoverer.cc",
     "printing/printer_discoverer.h",
+    "printing/printer_info.h",
     "printing/printers_manager.cc",
     "printing/printers_manager.h",
     "printing/printers_manager_factory.cc",
@@ -1502,11 +1503,13 @@ source_set("chromeos") {
     sources += [
       "printing/cups_print_job_manager_impl.cc",
       "printing/cups_print_job_manager_impl.h",
+      "printing/printer_info_cups.cc",
     ]
   } else {
     sources += [
       "printing/fake_cups_print_job_manager.cc",
       "printing/fake_cups_print_job_manager.h",
+      "printing/printer_info_stub.cc",
     ]
   }
 

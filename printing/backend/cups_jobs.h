@@ -10,9 +10,15 @@
 #include <cups/cups.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/version.h"
 #include "printing/printing_export.h"
+
+// This file contains a collection of functions used to query IPP printers or
+// print servers and the related code to parse these responses.  All Get*
+// operations block on the network request and cannot be run on the UI thread.
 
 namespace printing {
 
@@ -110,6 +116,27 @@ struct PRINTING_EXPORT PrinterStatus {
   std::string message;
 };
 
+struct PRINTING_EXPORT PrinterInfo {
+  PrinterInfo();
+  PrinterInfo(const PrinterInfo& info);
+
+  ~PrinterInfo();
+
+  // printer-make-and-model
+  std::string make_and_model;
+
+  // document-format-supported
+  // MIME types for supported formats.
+  std::vector<std::string> document_formats;
+
+  // ipp-versions-supported
+  // A collection of supported IPP protocol versions.
+  std::vector<base::Version> ipp_versions;
+
+  // Does ipp-features-supported contain 'ipp-everywhere'.
+  bool ipp_everywhere = false;
+};
+
 // Specifies classes of jobs.
 enum JobCompletionState {
   COMPLETED,  // only completed jobs
@@ -124,6 +151,13 @@ void ParseJobsResponse(ipp_t* response,
 
 // Attempts to extract a PrinterStatus object out of |response|.
 void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status);
+
+// Queries the printer at |address| on |port| with a Get-Printer-Attributes
+// request to populate |printer_info|.  Returns false if the request failed.
+bool PRINTING_EXPORT GetPrinterInfo(const std::string& address,
+                                    const int port,
+                                    const std::string& resource,
+                                    PrinterInfo* printer_info);
 
 // Attempts to retrieve printer status using connection |http| for |printer_id|.
 // Returns true if succcssful and updates the fields in |printer_status| as
