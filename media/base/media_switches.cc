@@ -230,7 +230,7 @@ const base::Feature kNewRemotePlaybackPipeline{
 
 // CanPlayThrough issued according to standard.
 const base::Feature kSpecCompliantCanPlayThrough{
-    "SpecCompliantCanPlayThrough", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SpecCompliantCanPlayThrough", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use shared block-based buffering for media.
 const base::Feature kUseNewMediaCache{"use-new-media-cache",
