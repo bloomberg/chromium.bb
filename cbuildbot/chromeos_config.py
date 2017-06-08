@@ -3002,34 +3002,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _x86_depthcharge_firmware_boards = frozenset([
-      'auron',
-      'banjo',
-      'candy',
-      'clapper',
-      'cyan',
-      'enguarde',
-      'expresso',
-      'glados',
-      'glimmer',
-      'gnawty',
-      'heli',
-      'jecht',
-      'kip',
-      'kunimitsu',
-      'leon',
       'link',
-      'ninja',
-      'orco',
-      'quawks',
-      'rambi',
-      'rikku',
-      'samus',
-      'squawks',
-      'strago',
-      'sumo',
-      'swanky',
-      'winky',
-      'zako',
   ])
 
   # Add x86 and arm firmware configs.

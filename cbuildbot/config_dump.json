@@ -2356,25 +2356,6 @@
             "chrome_internal"
         ]
     },
-    "auron-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "auron"
-        ],
-        "manifest": "official.xml"
-    },
-    "auron-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "auron"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "auron-firmware": {
         "_template": "firmware",
         "boards": [
@@ -2916,25 +2897,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "banjo-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "banjo"
-        ],
-        "manifest": "official.xml"
-    },
-    "banjo-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "banjo"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "banjo-firmware": {
@@ -4419,25 +4381,6 @@
             "chrome_internal"
         ]
     },
-    "candy-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "candy"
-        ],
-        "manifest": "official.xml"
-    },
-    "candy-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "candy"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "candy-firmware": {
         "_template": "firmware",
         "boards": [
@@ -5648,25 +5591,6 @@
             "chrome_internal"
         ]
     },
-    "clapper-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "clapper"
-        ],
-        "manifest": "official.xml"
-    },
-    "clapper-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "clapper"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "clapper-firmware": {
         "_template": "firmware",
         "boards": [
@@ -6189,25 +6113,6 @@
         ],
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
-    },
-    "cyan-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "cyan"
-        ],
-        "manifest": "official.xml"
-    },
-    "cyan-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "cyan"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "cyan-firmware": {
@@ -7463,25 +7368,6 @@
             "chrome_internal"
         ]
     },
-    "enguarde-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "enguarde"
-        ],
-        "manifest": "official.xml"
-    },
-    "enguarde-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "enguarde"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "enguarde-firmware": {
         "_template": "firmware",
         "boards": [
@@ -7852,25 +7738,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "expresso-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "expresso"
-        ],
-        "manifest": "official.xml"
-    },
-    "expresso-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "expresso"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "expresso-firmware": {
@@ -8919,25 +8786,6 @@
             "chrome_internal"
         ]
     },
-    "glados-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "glados"
-        ],
-        "manifest": "official.xml"
-    },
-    "glados-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "glados"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "glados-full": {
         "_template": "full",
         "boards": [
@@ -9116,25 +8964,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "glimmer-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "glimmer"
-        ],
-        "manifest": "official.xml"
-    },
-    "glimmer-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "glimmer"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "glimmer-firmware": {
@@ -9316,25 +9145,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "gnawty-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "gnawty"
-        ],
-        "manifest": "official.xml"
-    },
-    "gnawty-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "gnawty"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "gnawty-firmware": {
@@ -10587,25 +10397,6 @@
             "chrome_internal"
         ]
     },
-    "heli-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "heli"
-        ],
-        "manifest": "official.xml"
-    },
-    "heli-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "heli"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "heli-full": {
         "_template": "full",
         "boards": [
@@ -10959,25 +10750,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "jecht-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "jecht"
-        ],
-        "manifest": "official.xml"
-    },
-    "jecht-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "jecht"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "jecht-firmware": {
@@ -11736,25 +11508,6 @@
             "chrome_internal"
         ]
     },
-    "kip-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "kip"
-        ],
-        "manifest": "official.xml"
-    },
-    "kip-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "kip"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "kip-firmware": {
         "_template": "firmware",
         "boards": [
@@ -11937,25 +11690,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "kunimitsu-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "kunimitsu"
-        ],
-        "manifest": "official.xml"
-    },
-    "kunimitsu-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "kunimitsu"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "kunimitsu-full": {
@@ -13439,25 +13173,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "leon-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "leon"
-        ],
-        "manifest": "official.xml"
-    },
-    "leon-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "leon"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "leon-firmware": {
@@ -15448,25 +15163,6 @@
             "chrome_internal"
         ]
     },
-    "ninja-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "ninja"
-        ],
-        "manifest": "official.xml"
-    },
-    "ninja-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "ninja"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "ninja-firmware": {
         "_template": "firmware",
         "boards": [
@@ -16831,25 +16527,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "orco-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "orco"
-        ],
-        "manifest": "official.xml"
-    },
-    "orco-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "orco"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "orco-firmware": {
@@ -18777,25 +18454,6 @@
             "chrome_internal"
         ]
     },
-    "quawks-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "quawks"
-        ],
-        "manifest": "official.xml"
-    },
-    "quawks-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "quawks"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "quawks-firmware": {
         "_template": "firmware",
         "boards": [
@@ -18980,25 +18638,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "rambi-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "rambi"
-        ],
-        "manifest": "official.xml"
-    },
-    "rambi-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "rambi"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "rambi-firmware": {
@@ -19864,25 +19503,6 @@
             "chrome_internal"
         ]
     },
-    "rikku-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "rikku"
-        ],
-        "manifest": "official.xml"
-    },
-    "rikku-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "rikku"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "rikku-firmware": {
         "_template": "firmware",
         "boards": [
@@ -20262,25 +19882,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "samus-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "samus"
-        ],
-        "manifest": "official.xml"
-    },
-    "samus-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "samus"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "samus-firmware": {
@@ -22088,25 +21689,6 @@
             "chrome_internal"
         ]
     },
-    "squawks-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "squawks"
-        ],
-        "manifest": "official.xml"
-    },
-    "squawks-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "squawks"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "squawks-firmware": {
         "_template": "firmware",
         "boards": [
@@ -22489,25 +22071,6 @@
             "chrome_internal"
         ]
     },
-    "strago-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "strago"
-        ],
-        "manifest": "official.xml"
-    },
-    "strago-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "strago"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "strago-firmware": {
         "_template": "firmware",
         "boards": [
@@ -22885,25 +22448,6 @@
             "chrome_internal"
         ]
     },
-    "sumo-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "sumo"
-        ],
-        "manifest": "official.xml"
-    },
-    "sumo-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "sumo"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "sumo-firmware": {
         "_template": "firmware",
         "boards": [
@@ -23083,25 +22627,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "swanky-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "swanky"
-        ],
-        "manifest": "official.xml"
-    },
-    "swanky-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "swanky"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "swanky-firmware": {
@@ -26585,25 +26110,6 @@
             "chrome_internal"
         ]
     },
-    "winky-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "winky"
-        ],
-        "manifest": "official.xml"
-    },
-    "winky-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "winky"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
-        ]
-    },
     "winky-firmware": {
         "_template": "firmware",
         "boards": [
@@ -28406,25 +27912,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "zako-depthcharge-firmware": {
-        "_template": "depthcharge_firmware",
-        "boards": [
-            "zako"
-        ],
-        "manifest": "official.xml"
-    },
-    "zako-depthcharge-full-firmware": {
-        "_template": "depthcharge_full_firmware",
-        "boards": [
-            "zako"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty",
-            "depthcharge"
         ]
     },
     "zako-firmware": {
