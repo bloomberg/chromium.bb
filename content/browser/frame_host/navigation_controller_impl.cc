@@ -1297,7 +1297,10 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     } else {
       // When restoring a tab, the serialized NavigationEntry doesn't have the
       // SSL state.
-      entry->GetSSL() = handle->ssl_status();
+      // Only copy in the restore case since this code path can be taken during
+      // navigation. See http://crbug.com/727892
+      if (was_restored)
+        entry->GetSSL() = handle->ssl_status();
     }
   } else {
     // This is renderer-initiated. The only kinds of renderer-initated
