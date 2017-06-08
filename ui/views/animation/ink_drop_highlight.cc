@@ -4,11 +4,16 @@
 
 #include "ui/views/animation/ink_drop_highlight.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/animation/ink_drop_highlight_observer.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
@@ -100,6 +105,9 @@ void InkDropHighlight::AnimateFade(AnimationType animation_type,
                                    const base::TimeDelta& duration,
                                    const gfx::SizeF& initial_size,
                                    const gfx::SizeF& target_size) {
+  const base::TimeDelta effective_duration =
+      gfx::Animation::ShouldRenderRichAnimation() ? duration
+                                                  : base::TimeDelta();
   last_animation_initiated_was_fade_in_ = animation_type == FADE_IN;
 
   layer_->SetTransform(CalculateTransform(initial_size));
@@ -122,7 +130,7 @@ void InkDropHighlight::AnimateFade(AnimationType animation_type,
   std::unique_ptr<ui::LayerAnimationElement> opacity_element =
       ui::LayerAnimationElement::CreateOpacityElement(
           animation_type == FADE_IN ? visible_opacity_ : kHiddenOpacity,
-          duration);
+          effective_duration);
   ui::LayerAnimationSequence* opacity_sequence =
       new ui::LayerAnimationSequence(std::move(opacity_element));
   opacity_sequence->AddObserver(animation_observer);
@@ -131,7 +139,7 @@ void InkDropHighlight::AnimateFade(AnimationType animation_type,
   if (initial_size != target_size) {
     std::unique_ptr<ui::LayerAnimationElement> transform_element =
         ui::LayerAnimationElement::CreateTransformElement(
-            CalculateTransform(target_size), duration);
+            CalculateTransform(target_size), effective_duration);
 
     ui::LayerAnimationSequence* transform_sequence =
         new ui::LayerAnimationSequence(std::move(transform_element));
