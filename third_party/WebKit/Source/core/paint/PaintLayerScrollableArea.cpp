@@ -209,6 +209,13 @@ PlatformChromeClient* PaintLayerScrollableArea::GetChromeClient() const {
   return nullptr;
 }
 
+SmoothScrollSequencer* PaintLayerScrollableArea::GetSmoothScrollSequencer()
+    const {
+  if (Page* page = Box().GetFrame()->GetPage())
+    return page->GetSmoothScrollSequencer();
+  return nullptr;
+}
+
 GraphicsLayer* PaintLayerScrollableArea::LayerForScrolling() const {
   return Layer()->HasCompositedLayerMapping()
              ? Layer()->GetCompositedLayerMapping()->ScrollingContentsLayer()
@@ -1740,6 +1747,7 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
     const LayoutRect& rect,
     const ScrollAlignment& align_x,
     const ScrollAlignment& align_y,
+    bool is_smooth,
     ScrollType scroll_type) {
   LayoutRect local_expose_rect(
       Box()
@@ -1753,8 +1761,14 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
   ScrollOffset old_scroll_offset = GetScrollOffset();
   ScrollOffset new_scroll_offset(ClampScrollOffset(RoundedIntSize(
       ToScrollOffset(FloatPoint(r.Location()) + old_scroll_offset))));
-  SetScrollOffset(new_scroll_offset, scroll_type, kScrollBehaviorInstant);
-  ScrollOffset scroll_offset_difference = GetScrollOffset() - old_scroll_offset;
+  if (is_smooth) {
+    DCHECK(scroll_type == kProgrammaticScroll);
+    GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset);
+  } else {
+    SetScrollOffset(new_scroll_offset, scroll_type, kScrollBehaviorInstant);
+  }
+  ScrollOffset scroll_offset_difference =
+      ClampScrollOffset(new_scroll_offset) - old_scroll_offset;
   local_expose_rect.Move(-LayoutSize(scroll_offset_difference));
 
   LayoutRect intersect =

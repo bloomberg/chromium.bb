@@ -30,6 +30,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScrollIntoViewOptionsOrBoolean.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/CSSValueKeywords.h"
 #include "core/SVGNames.h"
@@ -95,6 +96,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/ScrollIntoViewOptions.h"
 #include "core/frame/ScrollToOptions.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -141,6 +143,7 @@
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "platform/scroll/SmoothScrollSequencer.h"
 #include "platform/wtf/BitVector.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/text/CString.h"
@@ -438,27 +441,89 @@ void Element::setNonce(const AtomicString& nonce) {
   EnsureElementRareData().SetNonce(nonce);
 }
 
+void Element::scrollIntoView(ScrollIntoViewOptionsOrBoolean arg) {
+  ScrollIntoViewOptions options;
+  if (arg.isBoolean()) {
+    if (arg.getAsBoolean())
+      options.setBlock("start");
+    else
+      options.setBlock("end");
+    options.setInlinePosition("nearest");
+  } else if (arg.isScrollIntoViewOptions()) {
+    options = arg.getAsScrollIntoViewOptions();
+    if (!RuntimeEnabledFeatures::CSSOMSmoothScrollEnabled() &&
+        options.behavior() == "smooth") {
+      options.setBehavior("instant");
+    }
+  }
+  scrollIntoViewWithOptions(options);
+}
+
 void Element::scrollIntoView(bool align_to_top) {
+  ScrollIntoViewOptionsOrBoolean arg;
+  arg.setBoolean(align_to_top);
+  scrollIntoView(arg);
+}
+
+static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions& options,
+                                           ScrollOrientation axis,
+                                           bool is_horizontal_writing_mode) {
+  String alignment =
+      ((axis == kHorizontalScroll && is_horizontal_writing_mode) ||
+       (axis == kVerticalScroll && !is_horizontal_writing_mode))
+          ? options.inlinePosition()
+          : options.block();
+
+  if (alignment == "center")
+    return ScrollAlignment::kAlignCenterAlways;
+  if (alignment == "nearest")
+    return ScrollAlignment::kAlignToEdgeIfNeeded;
+  if (alignment == "start") {
+    return (axis == kHorizontalScroll) ? ScrollAlignment::kAlignLeftAlways
+                                       : ScrollAlignment::kAlignTopAlways;
+  }
+  if (alignment == "end") {
+    return (axis == kHorizontalScroll) ? ScrollAlignment::kAlignRightAlways
+                                       : ScrollAlignment::kAlignBottomAlways;
+  }
+
+  // Default values
+  if (is_horizontal_writing_mode) {
+    return (axis == kHorizontalScroll) ? ScrollAlignment::kAlignToEdgeIfNeeded
+                                       : ScrollAlignment::kAlignTopAlways;
+  }
+  return (axis == kHorizontalScroll) ? ScrollAlignment::kAlignLeftAlways
+                                     : ScrollAlignment::kAlignToEdgeIfNeeded;
+}
+
+void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions& options) {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
 
-  if (!GetLayoutObject())
+  if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
 
   bool make_visible_in_visual_viewport =
       !GetDocument().GetPage()->GetSettings().GetInertVisualViewport();
 
+  ScrollBehavior behavior = (options.behavior() == "smooth")
+                                ? kScrollBehaviorSmooth
+                                : kScrollBehaviorAuto;
+
+  bool is_horizontal_writing_mode =
+      GetComputedStyle()->IsHorizontalWritingMode();
+  ScrollAlignment align_x = ToPhysicalAlignment(options, kHorizontalScroll,
+                                                is_horizontal_writing_mode);
+  ScrollAlignment align_y =
+      ToPhysicalAlignment(options, kVerticalScroll, is_horizontal_writing_mode);
+
+  GetDocument().GetPage()->GetSmoothScrollSequencer()->AbortAnimations();
   LayoutRect bounds = BoundingBox();
-  // Align to the top / bottom and to the closest edge.
-  if (align_to_top)
-    GetLayoutObject()->ScrollRectToVisible(
-        bounds, ScrollAlignment::kAlignToEdgeIfNeeded,
-        ScrollAlignment::kAlignTopAlways, kProgrammaticScroll,
-        make_visible_in_visual_viewport);
-  else
-    GetLayoutObject()->ScrollRectToVisible(
-        bounds, ScrollAlignment::kAlignToEdgeIfNeeded,
-        ScrollAlignment::kAlignBottomAlways, kProgrammaticScroll,
-        make_visible_in_visual_viewport);
+  GetLayoutObject()->ScrollRectToVisible(
+      bounds, align_x, align_y, kProgrammaticScroll,
+      make_visible_in_visual_viewport, behavior);
+
+  if (behavior == kScrollBehaviorSmooth)
+    GetDocument().GetPage()->GetSmoothScrollSequencer()->RunQueuedAnimations();
 
   GetDocument().SetSequentialFocusNavigationStartingPoint(this);
 }

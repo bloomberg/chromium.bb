@@ -199,4 +199,7 @@ void PrintTo(const FloatSize&, std::ostream*);
 
 }  // namespace blink
 
+// Allows this class to be stored in a HeapVector.
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::FloatSize);
+
 #endif  // FloatSize_h
