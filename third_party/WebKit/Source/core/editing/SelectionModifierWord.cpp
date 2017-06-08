@@ -378,8 +378,10 @@ VisiblePosition VisualWordPosition(const VisiblePosition& visible_position,
                                          logical_end_in_layout_object);
     }
 
-    if (is_word_break)
-      return adjacent_character_position;
+    if (is_word_break) {
+      return HonorEditingBoundaryAtOrBefore(adjacent_character_position,
+                                            visible_position.DeepEquivalent());
+    }
 
     current = adjacent_character_position;
   }
@@ -392,42 +394,36 @@ VisiblePosition SelectionModifier::LeftWordPosition(
     const VisiblePosition& visible_position,
     bool skips_space_when_moving_right) {
   DCHECK(visible_position.IsValid()) << visible_position;
-  VisiblePosition left_word_break = VisualWordPosition(
+  const VisiblePosition& left_word_break = VisualWordPosition(
       visible_position, kMoveLeft, skips_space_when_moving_right);
-  left_word_break = HonorEditingBoundaryAtOrBefore(
-      left_word_break, visible_position.DeepEquivalent());
-
+  if (left_word_break.IsNotNull())
+    return left_word_break;
   // TODO(editing-dev) How should we handle a non-editable position?
-  if (left_word_break.IsNull() &&
-      IsEditablePosition(visible_position.DeepEquivalent())) {
-    TextDirection block_direction =
-        DirectionOfEnclosingBlockOf(visible_position.DeepEquivalent());
-    left_word_break = block_direction == TextDirection::kLtr
-                          ? StartOfEditableContent(visible_position)
-                          : EndOfEditableContent(visible_position);
-  }
-  return left_word_break;
+  if (!IsEditablePosition(visible_position.DeepEquivalent()))
+    return left_word_break;
+  const TextDirection block_direction =
+      DirectionOfEnclosingBlockOf(visible_position.DeepEquivalent());
+  return block_direction == TextDirection::kLtr
+             ? StartOfEditableContent(visible_position)
+             : EndOfEditableContent(visible_position);
 }
 
 VisiblePosition SelectionModifier::RightWordPosition(
     const VisiblePosition& visible_position,
     bool skips_space_when_moving_right) {
   DCHECK(visible_position.IsValid()) << visible_position;
-  VisiblePosition right_word_break = VisualWordPosition(
+  const VisiblePosition& right_word_break = VisualWordPosition(
       visible_position, kMoveRight, skips_space_when_moving_right);
-  right_word_break = HonorEditingBoundaryAtOrBefore(
-      right_word_break, visible_position.DeepEquivalent());
-
+  if (right_word_break.IsNotNull())
+    return right_word_break;
   // TODO(editing-dev) How should we handle a non-editable position?
-  if (right_word_break.IsNull() &&
-      IsEditablePosition(visible_position.DeepEquivalent())) {
-    TextDirection block_direction =
-        blink::DirectionOfEnclosingBlockOf(visible_position.DeepEquivalent());
-    right_word_break = block_direction == TextDirection::kLtr
-                           ? EndOfEditableContent(visible_position)
-                           : StartOfEditableContent(visible_position);
-  }
-  return right_word_break;
+  if (!IsEditablePosition(visible_position.DeepEquivalent()))
+    return right_word_break;
+  const TextDirection block_direction =
+      blink::DirectionOfEnclosingBlockOf(visible_position.DeepEquivalent());
+  return block_direction == TextDirection::kLtr
+             ? EndOfEditableContent(visible_position)
+             : StartOfEditableContent(visible_position);
 }
 
 }  // namespace blink
