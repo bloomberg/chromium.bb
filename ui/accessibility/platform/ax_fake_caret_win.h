@@ -43,6 +43,7 @@ class AX_EXPORT AXFakeCaretWin : private AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetFocus() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
+  bool ShouldIgnoreHoveredStateForTesting() override;
 
   AXPlatformNodeWin* caret_;
   gfx::AcceleratedWidget event_target_;

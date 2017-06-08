@@ -47,6 +47,7 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   gfx::NativeViewAccessible GetFocus() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
+  bool ShouldIgnoreHoveredStateForTesting() override;
 
   // WidgetObserver
   void OnWidgetDestroying(Widget* widget) override;

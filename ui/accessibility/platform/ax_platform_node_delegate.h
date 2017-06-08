@@ -84,6 +84,16 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Perform an accessibility action, switching on the ui::AXAction
   // provided in |data|.
   virtual bool AccessibilityPerformAction(const ui::AXActionData& data) = 0;
+
+  //
+  // Testing.
+  //
+
+  // Accessibility objects can have the "hot tracked" state set when
+  // the mouse is hovering over them, but this makes tests flaky because
+  // the test behaves differently when the mouse happens to be over an
+  // element. The default value should be falses if not in testing mode.
+  virtual bool ShouldIgnoreHoveredStateForTesting() = 0;
 };
 
 }  // namespace ui

@@ -199,6 +199,10 @@ bool NativeViewAccessibilityBase::AccessibilityPerformAction(
   return view_->HandleAccessibleAction(data);
 }
 
+bool NativeViewAccessibilityBase::ShouldIgnoreHoveredStateForTesting() {
+  return false;
+}
+
 void NativeViewAccessibilityBase::OnWidgetDestroying(Widget* widget) {
   if (parent_widget_ == widget) {
     parent_widget_->RemoveObserver(this);

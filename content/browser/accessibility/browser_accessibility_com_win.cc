@@ -642,23 +642,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accState(VARIANT var_id,
   if (!owner())
     return E_FAIL;
 
-  auto* manager = Manager();
-  if (!manager)
-    return E_FAIL;
-
-  if (!state)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityComWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  state->vt = VT_I4;
-  state->lVal = target->ia_state();
-  if (manager->GetFocus() == owner())
-    state->lVal |= STATE_SYSTEM_FOCUSED;
-
-  return S_OK;
+  return AXPlatformNodeWin::get_accState(var_id, state);
 }
 
 bool BrowserAccessibilityComWin::IsRangeValueSupported() {
