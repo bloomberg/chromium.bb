@@ -102,16 +102,16 @@
 
     // Pointer Events
     // https://w3c.github.io/pointerevents/#extensions-to-the-globaleventhandlers-interface
-    [RuntimeEnabled=PointerEvent] attribute EventHandler ongotpointercapture;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onlostpointercapture;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerdown;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointermove;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerup;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointercancel;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerover;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerout;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerenter;
-    [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerleave;
+    attribute EventHandler ongotpointercapture;
+    attribute EventHandler onlostpointercapture;
+    attribute EventHandler onpointerdown;
+    attribute EventHandler onpointermove;
+    attribute EventHandler onpointerup;
+    attribute EventHandler onpointercancel;
+    attribute EventHandler onpointerover;
+    attribute EventHandler onpointerout;
+    attribute EventHandler onpointerenter;
+    attribute EventHandler onpointerleave;
 
     // Touch Events
     // https://w3c.github.io/touch-events/#extensions-to-the-globaleventhandlers-interface

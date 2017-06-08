@@ -104,7 +104,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnablePassiveDocumentEventListeners(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentRequest(bool);
   BLINK_PLATFORM_EXPORT static void EnablePermissionsAPI(bool);
-  BLINK_PLATFORM_EXPORT static void EnablePointerEvent(bool);
   BLINK_PLATFORM_EXPORT static void EnablePreciseMemoryInfo(bool);
   BLINK_PLATFORM_EXPORT static void EnablePrintBrowser(bool);
   BLINK_PLATFORM_EXPORT static void EnablePresentationAPI(bool);

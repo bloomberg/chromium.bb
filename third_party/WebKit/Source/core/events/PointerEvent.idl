@@ -6,7 +6,6 @@
 
 [
     Constructor(DOMString type, optional PointerEventInit eventInitDict),
-    RuntimeEnabled=PointerEvent,
 ] interface PointerEvent : MouseEvent {
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute long      pointerId;
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute double    width;

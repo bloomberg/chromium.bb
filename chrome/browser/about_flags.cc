@@ -2524,9 +2524,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabsInCbdDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kTabsInCbd)},
 #endif  // OS_ANDROID
-    {"enable-pointer-events", flag_descriptions::kExperimentalPointerEventName,
-     flag_descriptions::kExperimentalPointerEventDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kPointerEvents)},
     {"passive-listener-default",
      flag_descriptions::kPassiveEventListenerDefaultName,
      flag_descriptions::kPassiveEventListenerDefaultDescription, kOsAll,

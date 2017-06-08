@@ -38,9 +38,9 @@ interface Element : Node {
 
     // Pointer Events
     // https://w3c.github.io/pointerevents/#extensions-to-the-element-interface
-    [RuntimeEnabled=PointerEvent, RaisesException] void setPointerCapture (long pointerId);
-    [RuntimeEnabled=PointerEvent, RaisesException] void releasePointerCapture (long pointerId);
-    [RuntimeEnabled=PointerEvent] boolean hasPointerCapture (long pointerId);
+    [RaisesException] void setPointerCapture (long pointerId);
+    [RaisesException] void releasePointerCapture (long pointerId);
+    boolean hasPointerCapture (long pointerId);
 
     boolean hasAttributes();
     [SameObject, PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap attributes;

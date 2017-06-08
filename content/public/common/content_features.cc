@@ -179,10 +179,6 @@ const base::Feature kPassiveDocumentEventListeners{
 const base::Feature kPassiveEventListenersDueToFling{
     "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Pointer events support.
-const base::Feature kPointerEvents{"PointerEvent",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables Purge+Throttle on platforms except Android and MacOS.
 // (Android) Purge+Throttle depends on TabManager, but TabManager doesn't
 // support Android. Enable after Android is supported.

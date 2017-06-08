@@ -836,12 +836,6 @@ const char kExperimentalWebPlatformFeaturesName[] =
 const char kExperimentalWebPlatformFeaturesDescription[] =
     "Enables experimental Web Platform features that are in development.";
 
-const char kExperimentalPointerEventName[] = "Pointer Events";
-
-const char kExperimentalPointerEventDescription[] =
-    "Enables support for the Pointer Events API. This is intended only for "
-    "testing by web developers.";
-
 const char kOriginTrialsName[] = "Origin Trials";
 
 const char kOriginTrialsDescription[] =
