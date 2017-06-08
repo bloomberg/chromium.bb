@@ -15511,6 +15511,7 @@
             "novato"
         ],
         "buildslave_type": "baremetal",
+        "important": true,
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
