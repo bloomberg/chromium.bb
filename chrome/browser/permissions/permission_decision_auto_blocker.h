@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/permissions/permission_result.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -57,6 +58,17 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   };
 
   static PermissionDecisionAutoBlocker* GetForProfile(Profile* profile);
+
+  // Checks the status of the content setting to determine if |request_origin|
+  // is under embargo for |permission|. This checks both embargo for Permissions
+  // Blacklisting and repeated dismissals. Prefer to use
+  // PermissionManager::GetPermissionStatus when possible. This method is only
+  // exposed to facilitate permission checks from threads other than the
+  // UI thread. See crbug.com/658020.
+  static PermissionResult GetEmbargoResult(HostContentSettingsMap* settings_map,
+                                           const GURL& request_origin,
+                                           ContentSettingsType permission,
+                                           base::Time current_time);
 
   // Updates the threshold to start blocking prompts from the field trial.
   static void UpdateFromVariations();
