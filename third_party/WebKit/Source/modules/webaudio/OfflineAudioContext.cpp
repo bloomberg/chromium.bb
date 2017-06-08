@@ -388,17 +388,13 @@ void OfflineAudioContext::HandlePostOfflineRenderTasks() {
 
   // OfflineGraphAutoLocker here locks the audio graph for the same reason
   // above in |handlePreOfflineRenderTasks|.
-  bool did_remove = false;
   {
     OfflineGraphAutoLocker locker(this);
 
     GetDeferredTaskHandler().BreakConnections();
-    did_remove = ReleaseFinishedSourceNodes();
     GetDeferredTaskHandler().HandleDeferredTasks();
     GetDeferredTaskHandler().RequestToDeleteHandlersOnMainThread();
   }
-
-  RemoveFinishedSourceNodes(did_remove);
 }
 
 OfflineAudioDestinationHandler& OfflineAudioContext::DestinationHandler() {
