@@ -45,7 +45,7 @@ using offline_pages::OfflinePageModelQueryBuilder;
 namespace {
 
 const int kDefaultMaxSuggestionsCount = 5;
-const int kDefaultMaxDownloadAgeHours = 6 * 7 * 24;  // 6 weeks
+const int kDefaultMaxDownloadAgeHours = 24;
 const char kAssetDownloadsPrefix = 'D';
 const char kOfflinePageDownloadsPrefix = 'O';
 
