@@ -61,6 +61,7 @@
 #include "net/log/net_log_util.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_qualities_prefs_manager.h"
+#include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
 #include "net/sdch/sdch_owner.h"
@@ -686,8 +687,9 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     variation_params["effective_connection_type_algorithm"] =
         "TransportRTTOrDownstreamThroughput";
     network_quality_estimator_ = base::MakeUnique<net::NetworkQualityEstimator>(
-        std::unique_ptr<net::ExternalEstimateProvider>(), variation_params,
-        false, false, g_net_log.Get().net_log());
+        std::unique_ptr<net::ExternalEstimateProvider>(),
+        base::MakeUnique<net::NetworkQualityEstimatorParams>(variation_params),
+        g_net_log.Get().net_log());
     // Set the socket performance watcher factory so that network quality
     // estimator is notified of socket performance metrics from TCP and QUIC.
     context_builder.set_socket_performance_watcher_factory(

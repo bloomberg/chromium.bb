@@ -2842,12 +2842,12 @@ TEST(NetworkQualityEstimatorTest,
         EXPECT_EQ(nqe::internal::kInvalidThroughput,
                   rtt_throughput_observer.downstream_throughput_kbps());
       } else {
-        EXPECT_EQ(estimator.params_.TypicalNetworkQuality(ect_type).http_rtt(),
+        EXPECT_EQ(estimator.params_->TypicalNetworkQuality(ect_type).http_rtt(),
                   rtt_throughput_observer.http_rtt());
         EXPECT_EQ(
-            estimator.params_.TypicalNetworkQuality(ect_type).transport_rtt(),
+            estimator.params_->TypicalNetworkQuality(ect_type).transport_rtt(),
             rtt_throughput_observer.transport_rtt());
-        EXPECT_EQ(estimator.params_.TypicalNetworkQuality(ect_type)
+        EXPECT_EQ(estimator.params_->TypicalNetworkQuality(ect_type)
                       .downstream_throughput_kbps(),
                   rtt_throughput_observer.downstream_throughput_kbps());
       }
@@ -2888,12 +2888,12 @@ TEST(NetworkQualityEstimatorTest, TypicalNetworkQualities) {
       // computed as |effective_connection_type|.
       estimator.set_start_time_null_http_rtt(
           estimator.params_
-              .TypicalNetworkQuality(static_cast<EffectiveConnectionType>(
+              ->TypicalNetworkQuality(static_cast<EffectiveConnectionType>(
                   effective_connection_type))
               .http_rtt());
       estimator.set_start_time_null_transport_rtt(
           estimator.params_
-              .TypicalNetworkQuality(static_cast<EffectiveConnectionType>(
+              ->TypicalNetworkQuality(static_cast<EffectiveConnectionType>(
                   effective_connection_type))
               .transport_rtt());
       estimator.set_start_time_null_downlink_throughput_kbps(INT32_MAX);
