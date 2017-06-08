@@ -15,6 +15,22 @@ Polymer({
     },
 
     /**
+     * Hide the box shadow on the top of oobe-bottom
+     */
+    hideShadow: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Control visibility of the footer container.
+     */
+    noFooter: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Switches styles to "Welcome screen".
      */
     welcomeScreen: {

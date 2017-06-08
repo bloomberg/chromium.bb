@@ -33,6 +33,7 @@ extern const char kArcPackages[];
 extern const char kArcSetNotificationsEnabledDeferred[];
 extern const char kArcSignedIn[];
 extern const char kArcCompatibleFilesystemChosen[];
+extern const char kArcVoiceInteractionValuePropAccepted[];
 #endif
 extern const char kChildAccountStatusKnown[];
 extern const char kDefaultApps[];

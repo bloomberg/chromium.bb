@@ -6069,6 +6069,12 @@ All users must sign out to continue.
   <message name="IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE" desc="Message of the toast shown on the first sign-in after the successfully completed migration needed for using Android apps.">
     Update successful. You can now use Android apps.
   </message>
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_NO_THANKS_BUTTON" desc="tmp">
+    No thanks
+  </message>
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_CONTINUE_BUTTION" desc="tmp">
+    Continue
+  </message>
 
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE" desc="Title of the printing-in-progress notification.">

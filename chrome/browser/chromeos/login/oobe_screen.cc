@@ -44,11 +44,12 @@ const char* kScreenNames[] = {
     "userBoard",                       // SCREEN_USER_SELECTION
     // SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE
     "ad-password-change",
-    "encryption-migration",  // SCREEN_ENCRYPTION_MIGRATION
-    "login",                 // SCREEN_SPECIAL_LOGIN
-    "oobe",                  // SCREEN_SPECIAL_OOBE
-    "test:nowindow",         // SCREEN_TEST_NO_WINDOW
-    "unknown",               // SCREEN_UNKNOWN
+    "encryption-migration",          // SCREEN_ENCRYPTION_MIGRATION
+    "voice-interaction-value-prop",  // SCREEN_VOICE_INTERACTION_VALUE_PROP
+    "login",                         // SCREEN_SPECIAL_LOGIN
+    "oobe",                          // SCREEN_SPECIAL_OOBE
+    "test:nowindow",                 // SCREEN_TEST_NO_WINDOW
+    "unknown",                       // SCREEN_UNKNOWN
 };
 
 static_assert(static_cast<size_t>(OobeScreen::SCREEN_UNKNOWN) ==

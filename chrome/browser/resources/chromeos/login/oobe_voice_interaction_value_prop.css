@@ -1,0 +1,23 @@
+/* Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+oobe-text-button {
+  -webkit-margin-end: 16px;
+  color: #5a5a5a;
+}
+
+#value-prop-view {
+  display: block;
+  height: 496px;
+  margin: auto;
+  padding: 0;
+}
+
+#cancelButton {
+  -webkit-margin-end: 4px;
+}
+
+.subtitle {
+  line-height: 20px;
+}

@@ -77,6 +77,9 @@ class ArcVoiceInteractionFrameworkService
   // initiated interaction. Logs UMA metric when it's not.
   bool ValidateTimeSinceUserInteraction();
 
+  // Start the voice interaction setup wizard in container.
+  void StartVoiceInteractionSetupWizard();
+
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
 

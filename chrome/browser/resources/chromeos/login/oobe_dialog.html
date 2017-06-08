@@ -57,11 +57,13 @@
         <content select=".header"></content>
       </div>
     </div>
-    <div id="footer-container" class="flex layout vertical">
+    <div id="footer-container" noFooter$="[[noFooter]]"
+        class="flex layout vertical">
       <content select=".footer"></content>
     </div>
     <template is="dom-if" if="[[hasButtons]]">
-      <div id="oobe-bottom" class="layout horizontal center">
+      <div id="oobe-bottom" hideShadow$="[[hideShadow]]"
+          class="layout horizontal center">
         <content select=".bottom-buttons"></content>
       </div>
     </template>

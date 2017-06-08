@@ -152,6 +152,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowHostPairingScreen();
   void ShowDeviceDisabledScreen();
   void ShowEncryptionMigrationScreen();
+  void ShowVoiceInteractionValuePropScreen();
 
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
@@ -177,8 +178,11 @@ class WizardController : public BaseScreenDelegate,
   void OnTermsOfServiceDeclined();
   void OnTermsOfServiceAccepted();
   void OnArcTermsOfServiceFinished();
+  void OnVoiceInteractionValuePropSkipped();
+  void OnVoiceInteractionValuePropAccepted();
   void OnControllerPairingFinished();
   void OnAutoEnrollmentCheckCompleted();
+  void OnOobeFlowFinished();
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
@@ -291,6 +295,12 @@ class WizardController : public BaseScreenDelegate,
   // pairing remora OOBE from the beginning no matter an eligible controller is
   // detected or not.
   bool IsRemoraPairingOobe() const;
+
+  // Returns true if arc terms of service should be shown.
+  bool ShouldShowArcTerms() const;
+
+  // Returns true if voice interaction value prop should be shown.
+  bool ShouldShowVoiceInteractionValueProp() const;
 
   // Starts listening for an incoming shark controller connection, if we are
   // running remora OOBE.
