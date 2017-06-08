@@ -263,9 +263,12 @@ public class EditorDialog
 
     @Override
     public void onClick(View view) {
+        // Disable interaction during animation.
+        if (mDialogInOutAnimator != null) return;
+
         if (view.getId() == R.id.payments_edit_done_button) {
             if (validateForm()) {
-                mEditorModel.done();
+                if (mEditorModel != null) mEditorModel.done();
                 mEditorModel = null;
                 dismissDialog();
                 return;
@@ -323,6 +326,8 @@ public class EditorDialog
      * much more human-parsable with inefficient LinearLayouts for half-width controls sharing rows.
      */
     private void prepareEditor() {
+        assert mEditorModel != null;
+
         // Ensure the layout is empty.
         removeTextChangedListenersAndInputFilters();
         mDataView = (ViewGroup) mLayout.findViewById(R.id.contents);
@@ -406,6 +411,9 @@ public class EditorDialog
             Runnable prepareEditorRunnable = new Runnable() {
                 @Override
                 public void run() {
+                    // The dialog has been dismissed.
+                    if (mEditorModel == null) return;
+
                     // The fields may have changed.
                     prepareEditor();
                     if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
@@ -468,7 +476,7 @@ public class EditorDialog
      *
      * @param editorModel The description of the editor user interface to display.
      */
-    public void show(final EditorModel editorModel) {
+    public void show(EditorModel editorModel) {
         setOnShowListener(this);
         setOnDismissListener(this);
         mEditorModel = editorModel;
