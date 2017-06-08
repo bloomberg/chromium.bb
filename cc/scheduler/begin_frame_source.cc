@@ -337,7 +337,7 @@ BeginFrameArgs ExternalBeginFrameSource::GetMissedBeginFrameArgs(
 
   const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
   if (last_args.IsValid() &&
-      last_begin_frame_args_.frame_time == last_args.frame_time) {
+      last_begin_frame_args_.frame_time <= last_args.frame_time) {
     return BeginFrameArgs();
   }
 
