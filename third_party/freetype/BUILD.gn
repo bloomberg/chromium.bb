@@ -19,14 +19,7 @@ config("freetype-warnings") {
   if (is_clang) {
     # The reduction of FreeType files to a minimum triggers -Wunused-function
     # warnings in ftbase.c
-
-    # "-Wno-int-to-pointer-cast" tracked by
-    # https://savannah.nongnu.org/bugs/index.php?50560,
-    # TODO(drott): Remove this once we roll past 7aeee3c50f2656b65f.
-    cflags += [
-      "-Wno-unused-function",
-      "-Wno-int-to-pointer-cast",
-    ]
+    cflags += [ "-Wno-unused-function" ]
   }
 }
 
