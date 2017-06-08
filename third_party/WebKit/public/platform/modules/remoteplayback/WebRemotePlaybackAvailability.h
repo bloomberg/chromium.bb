@@ -14,10 +14,6 @@ enum class WebRemotePlaybackAvailability {
   // The availability is unknown.
   kUnknown,
 
-  // The media source is not supported by the browser - device availability
-  // monitoring is unnecessary.
-  kSourceNotSupported,
-
   // The media source is compatible with some supported device types but
   // no devices were found.
   kDeviceNotAvailable,

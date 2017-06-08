@@ -202,10 +202,8 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
     return promise;
   }
 
-  // TODO(avayvod): none of these two states is propagated with the new
-  // pipeline.
-  if (availability_ == WebRemotePlaybackAvailability::kSourceNotSupported ||
-      availability_ == WebRemotePlaybackAvailability::kSourceNotCompatible) {
+  // TODO(avayvod): this state is not propagated with the new pipeline.
+  if (availability_ == WebRemotePlaybackAvailability::kSourceNotCompatible) {
     resolver->Reject(DOMException::Create(
         kNotSupportedError,
         "The currentSrc is not compatible with remote playback"));
