@@ -41,9 +41,7 @@ void ConflictsHandler::HandleRequestModuleList(const base::ListValue* args) {
 
 void ConflictsHandler::SendModuleList() {
   auto* loaded_modules = EnumerateModulesModel::GetInstance();
-  base::ListValue* list = loaded_modules->GetModuleList();
-  base::DictionaryValue results;
-  results.Set("moduleList", list);
+  std::unique_ptr<base::ListValue> list = loaded_modules->GetModuleList();
 
   // Add the section title and the total count for bad modules found.
   int confirmed_bad = loaded_modules->confirmed_bad_modules_detected();
@@ -59,6 +57,8 @@ void ConflictsHandler::SendModuleList() {
         base::IntToString16(list->GetSize()),
         base::IntToString16(confirmed_bad), base::IntToString16(suspected_bad));
   }
+  base::DictionaryValue results;
+  results.Set("moduleList", std::move(list));
   results.SetString("modulesTableTitle", table_title);
 
   web_ui()->CallJavascriptFunctionUnsafe("returnModuleList", results);

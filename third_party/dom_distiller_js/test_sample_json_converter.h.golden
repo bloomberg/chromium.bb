@@ -3,6 +3,7 @@
 #include "test_sample.pb.h"
 
 // base dependencies
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 #include <memory>
@@ -150,11 +151,11 @@ namespace dom_distiller {
             static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::test_sample::proto::Repeated::Message& message) {
               std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
               {
-                base::ListValue* field_list = new base::ListValue();
-                dict->Set("1", field_list);
+                auto field_list = base::MakeUnique<base::ListValue>();
                 for (int i = 0; i < message.dummy_size(); ++i) {
                   field_list->AppendBoolean(message.dummy(i));
                 }
+                dict->Set("1", std::move(field_list));
               }
               return dict;
             }
@@ -252,48 +253,48 @@ namespace dom_distiller {
           static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::test_sample::proto::Repeated& message) {
             std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
             {
-              base::ListValue* field_list = new base::ListValue();
-              dict->Set("1", field_list);
+              auto field_list = base::MakeUnique<base::ListValue>();
               for (int i = 0; i < message.float_value_size(); ++i) {
                 field_list->AppendDouble(message.float_value(i));
               }
+              dict->Set("1", std::move(field_list));
             }
             {
-              base::ListValue* field_list = new base::ListValue();
-              dict->Set("2", field_list);
+              auto field_list = base::MakeUnique<base::ListValue>();
               for (int i = 0; i < message.double_value_size(); ++i) {
                 field_list->AppendDouble(message.double_value(i));
               }
+              dict->Set("2", std::move(field_list));
             }
             {
-              base::ListValue* field_list = new base::ListValue();
-              dict->Set("3", field_list);
+              auto field_list = base::MakeUnique<base::ListValue>();
               for (int i = 0; i < message.int32_value_size(); ++i) {
                 field_list->AppendInteger(message.int32_value(i));
               }
+              dict->Set("3", std::move(field_list));
             }
             {
-              base::ListValue* field_list = new base::ListValue();
-              dict->Set("4", field_list);
+              auto field_list = base::MakeUnique<base::ListValue>();
               for (int i = 0; i < message.bool_value_size(); ++i) {
                 field_list->AppendBoolean(message.bool_value(i));
               }
+              dict->Set("4", std::move(field_list));
             }
             {
-              base::ListValue* field_list = new base::ListValue();
-              dict->Set("5", field_list);
+              auto field_list = base::MakeUnique<base::ListValue>();
               for (int i = 0; i < message.string_value_size(); ++i) {
                 field_list->AppendString(message.string_value(i));
               }
+              dict->Set("5", std::move(field_list));
             }
             {
-              base::ListValue* field_list = new base::ListValue();
-              dict->Set("6", field_list);
+              auto field_list = base::MakeUnique<base::ListValue>();
               for (int i = 0; i < message.message_value_size(); ++i) {
                 std::unique_ptr<base::Value> inner_message_value =
                     dom_distiller::test_sample::proto::json::Repeated::Message::WriteToValue(message.message_value(i));
                 field_list->Append(std::move(inner_message_value));
               }
+              dict->Set("6", std::move(field_list));
             }
             return dict;
           }

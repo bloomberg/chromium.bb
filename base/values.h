@@ -249,8 +249,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   // to the path in that location. |in_value| must be non-null.
   // Returns a pointer to the inserted value.
   Value* Set(StringPiece path, std::unique_ptr<Value> in_value);
-  // Deprecated version of the above. TODO(estade): remove.
-  Value* Set(StringPiece path, Value* in_value);
 
   // Convenience forms of Set().  These methods will replace any existing
   // value at that path, even if it has a different type.

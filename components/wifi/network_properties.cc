@@ -4,6 +4,8 @@
 
 #include "components/wifi/network_properties.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -52,14 +54,14 @@ std::unique_ptr<base::DictionaryValue> NetworkProperties::ToValue(
       frequency_list->AppendInteger(*it);
     }
     if (!frequency_list->empty())
-      wifi->Set(onc::wifi::kFrequencyList, frequency_list.release());
+      wifi->Set(onc::wifi::kFrequencyList, std::move(frequency_list));
     if (!bssid.empty())
       wifi->SetString(onc::wifi::kBSSID, bssid);
     wifi->SetString(onc::wifi::kSSID, ssid);
     wifi->SetString(onc::wifi::kHexSSID,
                     base::HexEncode(ssid.c_str(), ssid.size()));
   }
-  value->Set(onc::network_type::kWiFi, wifi.release());
+  value->Set(onc::network_type::kWiFi, std::move(wifi));
 
   return value;
 }

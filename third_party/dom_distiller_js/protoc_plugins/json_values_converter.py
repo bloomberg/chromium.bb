@@ -32,6 +32,7 @@ class CppConverterWriter(writer.CodeWriter):
     assert [] == proto_file.GetDependencies()
 
     self.Output('// base dependencies')
+    self.Output('#include "base/memory/ptr_util.h"')
     self.Output('#include "base/values.h"')
     self.Output('')
     self.Output('#include <memory>')
@@ -116,8 +117,7 @@ class CppConverterWriter(writer.CodeWriter):
 
   def RepeatedMemberFieldWriteToValue(self, field):
     prologue = (
-        'base::ListValue* field_list = new base::ListValue();\n'
-        'dict->Set("{field_number}", field_list);\n'
+        'auto field_list = base::MakeUnique<base::ListValue>();\n'
         'for (int i = 0; i < message.{field_name}_size(); ++i) {{\n'
     )
 
@@ -131,8 +131,13 @@ class CppConverterWriter(writer.CodeWriter):
       middle = (
           'field_list->Append{value_type}(message.{field_name}(i));\n'
       )
+
+    epilogue = (
+        '\n}}\n'
+        'dict->Set("{field_number}", std::move(field_list));'
+    )
     self.Output(
-        prologue + Indented(middle) + '\n}}',
+        prologue + Indented(middle) + epilogue,
         field_number=field.JavascriptIndex(),
         field_name=field.name,
         value_type=field.CppValueType() if not field.IsClassType() else None,

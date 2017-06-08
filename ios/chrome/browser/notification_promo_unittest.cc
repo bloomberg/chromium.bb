@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/json/json_reader.h"
@@ -303,14 +304,14 @@ class NotificationPromoTest : public testing::Test {
     ntp_promo->SetInteger("views", views);
     ntp_promo->SetBoolean("closed", true);
 
-    base::ListValue* promo_list = new base::ListValue;
+    auto promo_list = base::MakeUnique<base::ListValue>();
     promo_list->Append(std::move(ntp_promo));
 
     std::string promo_list_key = "mobile_ntp_whats_new_promo";
     std::string promo_dict_key = "ios.ntppromo";
 
     base::DictionaryValue promo_dict;
-    promo_dict.Set(promo_list_key, promo_list);
+    promo_dict.Set(promo_list_key, std::move(promo_list));
     local_state_.Set(promo_dict_key, promo_dict);
 
     // Initialize promo and verify that its instance variables match the data

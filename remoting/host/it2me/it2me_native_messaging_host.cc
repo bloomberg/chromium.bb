@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -133,7 +134,7 @@ void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
   // might be a string or a number, so cope with both.
   const base::Value* id;
   if (message_dict->Get("id", &id))
-    response->Set("id", id->CreateDeepCopy());
+    response->Set("id", base::MakeUnique<base::Value>(*id));
 
   std::string type;
   if (!message_dict->GetString("type", &type)) {
@@ -183,9 +184,7 @@ void It2MeNativeMessagingHost::ProcessHello(
   response->SetString("version", STRINGIZE(VERSION));
 
   // This list will be populated when new features are added.
-  std::unique_ptr<base::ListValue> supported_features_list(
-      new base::ListValue());
-  response->Set("supportedFeatures", supported_features_list.release());
+  response->Set("supportedFeatures", base::MakeUnique<base::ListValue>());
 
   SendMessageToClient(std::move(response));
 }

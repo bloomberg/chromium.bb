@@ -10,6 +10,7 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 
@@ -227,9 +228,9 @@ void StatsEventSubscriber::UpdateFirstLastEventTime(base::TimeTicks timestamp,
 std::unique_ptr<base::DictionaryValue> StatsEventSubscriber::GetStats() const {
   StatsMap stats_map;
   GetStatsInternal(&stats_map);
-  std::unique_ptr<base::DictionaryValue> ret(new base::DictionaryValue);
+  auto ret = base::MakeUnique<base::DictionaryValue>();
 
-  std::unique_ptr<base::DictionaryValue> stats(new base::DictionaryValue);
+  auto stats = base::MakeUnique<base::DictionaryValue>();
   for (StatsMap::const_iterator it = stats_map.begin(); it != stats_map.end();
        ++it) {
     // Round to 3 digits after the decimal point.
@@ -241,12 +242,11 @@ std::unique_ptr<base::DictionaryValue> StatsEventSubscriber::GetStats() const {
   for (HistogramMap::const_iterator it = histograms_.begin();
        it != histograms_.end();
        ++it) {
-    stats->Set(CastStatToString(it->first),
-               it->second->GetHistogram().release());
+    stats->Set(CastStatToString(it->first), it->second->GetHistogram());
   }
 
   ret->Set(event_media_type_ == AUDIO_EVENT ? "audio" : "video",
-           stats.release());
+           std::move(stats));
 
   return ret;
 }

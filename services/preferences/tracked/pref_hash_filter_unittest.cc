@@ -684,9 +684,7 @@ TEST_P(PrefHashFilterTest, StampSuperMACAltersStore) {
 
 TEST_P(PrefHashFilterTest, FilterTrackedPrefUpdate) {
   base::DictionaryValue root_dict;
-  // Ownership of |string_value| is transfered to |root_dict|.
-  base::Value* string_value = new base::Value("string value");
-  root_dict.Set(kAtomicPref, string_value);
+  base::Value* string_value = root_dict.SetString(kAtomicPref, "string value");
 
   // No path should be stored on FilterUpdate.
   pref_hash_filter_->FilterUpdate(kAtomicPref);
@@ -742,11 +740,10 @@ TEST_P(PrefHashFilterTest, ReportSuperMacValidity) {
 
 TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
   base::DictionaryValue root_dict;
-  // Ownership of |dict_value| is transfered to |root_dict|.
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
+  base::DictionaryValue* dict_value = root_dict.SetDictionary(
+      kSplitPref, base::MakeUnique<base::DictionaryValue>());
   dict_value->SetString("a", "foo");
   dict_value->SetInteger("b", 1234);
-  root_dict.Set(kSplitPref, dict_value);
 
   // No path should be stored on FilterUpdate.
   pref_hash_filter_->FilterUpdate(kSplitPref);
@@ -766,7 +763,7 @@ TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
 
 TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
   base::DictionaryValue root_dict;
-  root_dict.Set("untracked", new base::Value("some value"));
+  root_dict.SetString("untracked", "some value");
   pref_hash_filter_->FilterUpdate("untracked");
 
   // No paths should be stored on FilterUpdate.
@@ -783,18 +780,13 @@ TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
 
 TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
   base::DictionaryValue root_dict;
-  // Ownership of the following values is transfered to |root_dict|.
-  base::Value* int_value1 = new base::Value(1);
-  base::Value* int_value2 = new base::Value(2);
-  base::Value* int_value3 = new base::Value(3);
-  base::Value* int_value4 = new base::Value(4);
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
-  dict_value->Set("a", new base::Value(true));
-  root_dict.Set(kAtomicPref, int_value1);
-  root_dict.Set(kAtomicPref2, int_value2);
-  root_dict.Set(kAtomicPref3, int_value3);
-  root_dict.Set("untracked", int_value4);
-  root_dict.Set(kSplitPref, dict_value);
+  base::Value* int_value1 = root_dict.SetInteger(kAtomicPref, 1);
+  root_dict.SetInteger(kAtomicPref2, 2);
+  root_dict.SetInteger(kAtomicPref3, 3);
+  root_dict.SetInteger("untracked", 4);
+  base::DictionaryValue* dict_value = root_dict.SetDictionary(
+      kSplitPref, base::MakeUnique<base::DictionaryValue>());
+  dict_value->SetBoolean("a", true);
 
   // Only update kAtomicPref, kAtomicPref3, and kSplitPref.
   pref_hash_filter_->FilterUpdate(kAtomicPref);
@@ -803,8 +795,7 @@ TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
   ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
 
   // Update kAtomicPref3 again, nothing should be stored still.
-  base::Value* int_value5 = new base::Value(5);
-  root_dict.Set(kAtomicPref3, int_value5);
+  base::Value* int_value5 = root_dict.SetInteger(kAtomicPref3, 5);
   ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
 
   // On FilterSerializeData, only kAtomicPref, kAtomicPref3, and kSplitPref
@@ -872,14 +863,13 @@ TEST_P(PrefHashFilterTest, UnknownNullValue) {
 }
 
 TEST_P(PrefHashFilterTest, InitialValueUnknown) {
-  // Ownership of these values is transfered to |pref_store_contents_|.
-  base::Value* string_value = new base::Value("string value");
-  pref_store_contents_->Set(kAtomicPref, string_value);
+  base::Value* string_value =
+      pref_store_contents_->SetString(kAtomicPref, "string value");
 
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
+  base::DictionaryValue* dict_value = pref_store_contents_->SetDictionary(
+      kSplitPref, base::MakeUnique<base::DictionaryValue>());
   dict_value->SetString("a", "foo");
   dict_value->SetInteger("b", 1234);
-  pref_store_contents_->Set(kSplitPref, dict_value);
 
   ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref, NULL));
   ASSERT_TRUE(pref_store_contents_->Get(kSplitPref, NULL));
@@ -938,14 +928,13 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
 }
 
 TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
-  // Ownership of this value is transfered to |pref_store_contents_|.
-  base::Value* string_value = new base::Value("test");
-  pref_store_contents_->Set(kAtomicPref, string_value);
+  base::Value* string_value =
+      pref_store_contents_->SetString(kAtomicPref, "test");
 
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
+  auto* dict_value = pref_store_contents_->SetDictionary(
+      kSplitPref, base::MakeUnique<base::DictionaryValue>());
   dict_value->SetString("a", "foo");
   dict_value->SetInteger("b", 1234);
-  pref_store_contents_->Set(kSplitPref, dict_value);
 
   ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref, NULL));
   ASSERT_TRUE(pref_store_contents_->Get(kSplitPref, NULL));
@@ -988,16 +977,14 @@ TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
 }
 
 TEST_P(PrefHashFilterTest, InitialValueChanged) {
-  // Ownership of this value is transfered to |pref_store_contents_|.
-  base::Value* int_value = new base::Value(1234);
-  pref_store_contents_->Set(kAtomicPref, int_value);
+  base::Value* int_value = pref_store_contents_->SetInteger(kAtomicPref, 1234);
 
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
+  base::DictionaryValue* dict_value = pref_store_contents_->SetDictionary(
+      kSplitPref, base::MakeUnique<base::DictionaryValue>());
   dict_value->SetString("a", "foo");
   dict_value->SetInteger("b", 1234);
   dict_value->SetInteger("c", 56);
   dict_value->SetBoolean("d", false);
-  pref_store_contents_->Set(kSplitPref, dict_value);
 
   ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref, NULL));
   ASSERT_TRUE(pref_store_contents_->Get(kSplitPref, NULL));
@@ -1098,14 +1085,13 @@ TEST_P(PrefHashFilterTest, EmptyCleared) {
 }
 
 TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
-  // Ownership of these values is transfered to |pref_store_contents_|.
-  base::Value* string_value = new base::Value("string value");
-  pref_store_contents_->Set(kAtomicPref, string_value);
+  base::Value* string_value =
+      pref_store_contents_->SetString(kAtomicPref, "string value");
 
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
+  base::DictionaryValue* dict_value = pref_store_contents_->SetDictionary(
+      kSplitPref, base::MakeUnique<base::DictionaryValue>());
   dict_value->SetString("a", "foo");
   dict_value->SetInteger("b", 1234);
-  pref_store_contents_->Set(kSplitPref, dict_value);
 
   ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref, NULL));
   ASSERT_TRUE(pref_store_contents_->Get(kSplitPref, NULL));
@@ -1152,16 +1138,14 @@ TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
 }
 
 TEST_P(PrefHashFilterTest, DontResetReportOnly) {
-  // Ownership of these values is transfered to |pref_store_contents_|.
-  base::Value* int_value1 = new base::Value(1);
-  base::Value* int_value2 = new base::Value(2);
-  base::Value* report_only_val = new base::Value(3);
-  base::DictionaryValue* report_only_split_val = new base::DictionaryValue;
+  base::Value* int_value1 = pref_store_contents_->SetInteger(kAtomicPref, 1);
+  base::Value* int_value2 = pref_store_contents_->SetInteger(kAtomicPref2, 2);
+  base::Value* report_only_val =
+      pref_store_contents_->SetInteger(kReportOnlyPref, 3);
+  base::DictionaryValue* report_only_split_val =
+      pref_store_contents_->SetDictionary(
+          kReportOnlySplitPref, base::MakeUnique<base::DictionaryValue>());
   report_only_split_val->SetInteger("a", 1234);
-  pref_store_contents_->Set(kAtomicPref, int_value1);
-  pref_store_contents_->Set(kAtomicPref2, int_value2);
-  pref_store_contents_->Set(kReportOnlyPref, report_only_val);
-  pref_store_contents_->Set(kReportOnlySplitPref, report_only_split_val);
 
   ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref, NULL));
   ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref2, NULL));
@@ -1226,14 +1210,11 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
 
 TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacks) {
   base::DictionaryValue root_dict;
-  // Ownership of the following values is transfered to |root_dict|.
-  base::Value* int_value1 = new base::Value(1);
-  base::Value* int_value2 = new base::Value(2);
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
-  dict_value->Set("a", new base::Value(true));
-  root_dict.Set(kAtomicPref, int_value1);
-  root_dict.Set(kAtomicPref2, int_value2);
-  root_dict.Set(kSplitPref, dict_value);
+  auto dict_value = base::MakeUnique<base::DictionaryValue>();
+  dict_value->SetBoolean("a", true);
+  root_dict.SetInteger(kAtomicPref, 1);
+  root_dict.SetInteger(kAtomicPref2, 2);
+  root_dict.Set(kSplitPref, std::move(dict_value));
 
   // Skip updating kAtomicPref2.
   pref_hash_filter_->FilterUpdate(kAtomicPref);
@@ -1275,9 +1256,7 @@ TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacks) {
 
 TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacksWithFailure) {
   base::DictionaryValue root_dict;
-  // Ownership of the following values is transfered to |root_dict|.
-  base::Value* int_value1 = new base::Value(1);
-  root_dict.Set(kAtomicPref, int_value1);
+  root_dict.SetInteger(kAtomicPref, 1);
 
   // Only update kAtomicPref.
   pref_hash_filter_->FilterUpdate(kAtomicPref);
@@ -1303,16 +1282,14 @@ TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacksWithFailure) {
 }
 
 TEST_P(PrefHashFilterTest, ExternalValidationValueChanged) {
-  // Ownership of this value is transfered to |pref_store_contents_|.
-  base::Value* int_value = new base::Value(1234);
-  pref_store_contents_->Set(kAtomicPref, int_value);
+  pref_store_contents_->SetInteger(kAtomicPref, 1234);
 
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
+  auto dict_value = base::MakeUnique<base::DictionaryValue>();
   dict_value->SetString("a", "foo");
   dict_value->SetInteger("b", 1234);
   dict_value->SetInteger("c", 56);
   dict_value->SetBoolean("d", false);
-  pref_store_contents_->Set(kSplitPref, dict_value);
+  pref_store_contents_->Set(kSplitPref, std::move(dict_value));
 
   mock_external_validation_pref_hash_store_->SetCheckResult(
       kAtomicPref, ValueState::CHANGED);

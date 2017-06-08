@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/webui/flags_ui.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -155,12 +156,12 @@ void FlagsDOMHandler::HandleRequestExperimentalFeatures(
 
   base::DictionaryValue results;
 
-  std::unique_ptr<base::ListValue> supported_features(new base::ListValue);
-  std::unique_ptr<base::ListValue> unsupported_features(new base::ListValue);
+  auto supported_features = base::MakeUnique<base::ListValue>();
+  auto unsupported_features = base::MakeUnique<base::ListValue>();
   GetFlagFeatureEntries(flags_storage_.get(), access_, supported_features.get(),
                         unsupported_features.get());
-  results.Set(flags_ui::kSupportedFeatures, supported_features.release());
-  results.Set(flags_ui::kUnsupportedFeatures, unsupported_features.release());
+  results.Set(flags_ui::kSupportedFeatures, std::move(supported_features));
+  results.Set(flags_ui::kUnsupportedFeatures, std::move(unsupported_features));
   // Cannot restart the browser on iOS.
   results.SetBoolean(flags_ui::kNeedsRestart, false);
   results.SetBoolean(flags_ui::kShowOwnerWarning,

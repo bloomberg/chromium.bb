@@ -14,6 +14,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "dbus/message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -516,11 +517,11 @@ TEST(ValuesUtilTest, AppendDictionary) {
   const double kDoubleValue = 4.9;
   const std::string kStringValue = "fifty";
 
-  base::ListValue* list_value = new base::ListValue();
+  auto list_value = base::MakeUnique<base::ListValue>();
   list_value->AppendBoolean(kBoolValue);
   list_value->AppendInteger(kInt32Value);
 
-  base::DictionaryValue* dictionary_value = new base::DictionaryValue();
+  auto dictionary_value = base::MakeUnique<base::DictionaryValue>();
   dictionary_value->SetBoolean(kKey1, kBoolValue);
   dictionary_value->SetInteger(kKey2, kDoubleValue);
 
@@ -529,8 +530,8 @@ TEST(ValuesUtilTest, AppendDictionary) {
   test_dictionary.SetInteger(kKey2, kInt32Value);
   test_dictionary.SetDouble(kKey3, kDoubleValue);
   test_dictionary.SetString(kKey4, kStringValue);
-  test_dictionary.Set(kKey5, list_value);  // takes ownership
-  test_dictionary.Set(kKey6, dictionary_value);  // takes ownership
+  test_dictionary.Set(kKey5, std::move(list_value));
+  test_dictionary.Set(kKey6, std::move(dictionary_value));
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());
@@ -563,11 +564,11 @@ TEST(ValuesUtilTest, AppendDictionaryAsVariant) {
   const double kDoubleValue = 4.9;
   const std::string kStringValue = "fifty";
 
-  base::ListValue* list_value = new base::ListValue();
+  auto list_value = base::MakeUnique<base::ListValue>();
   list_value->AppendBoolean(kBoolValue);
   list_value->AppendInteger(kInt32Value);
 
-  base::DictionaryValue* dictionary_value = new base::DictionaryValue();
+  auto dictionary_value = base::MakeUnique<base::DictionaryValue>();
   dictionary_value->SetBoolean(kKey1, kBoolValue);
   dictionary_value->SetInteger(kKey2, kDoubleValue);
 
@@ -576,8 +577,8 @@ TEST(ValuesUtilTest, AppendDictionaryAsVariant) {
   test_dictionary.SetInteger(kKey2, kInt32Value);
   test_dictionary.SetDouble(kKey3, kDoubleValue);
   test_dictionary.SetString(kKey4, kStringValue);
-  test_dictionary.Set(kKey5, list_value);  // takes ownership
-  test_dictionary.Set(kKey6, dictionary_value);  // takes ownership
+  test_dictionary.Set(kKey5, std::move(list_value));
+  test_dictionary.Set(kKey6, std::move(dictionary_value));
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());

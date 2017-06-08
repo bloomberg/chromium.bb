@@ -230,22 +230,21 @@ TEST(RegistryDictTest, ConvertToJSON) {
   std::unique_ptr<base::Value> actual(test_dict.ConvertToJSON(schema));
 
   base::DictionaryValue expected;
-  expected.Set("one", int_value.CreateDeepCopy());
-  std::unique_ptr<base::DictionaryValue> expected_subdict(
-      new base::DictionaryValue());
-  expected_subdict->Set("two", string_value.CreateDeepCopy());
+  expected.Set("one", base::MakeUnique<base::Value>(int_value));
+  auto expected_subdict = base::MakeUnique<base::DictionaryValue>();
+  expected_subdict->Set("two", base::MakeUnique<base::Value>(string_value));
   expected.Set("three", std::move(expected_subdict));
-  std::unique_ptr<base::ListValue> expected_list(new base::ListValue());
-  expected_list->Append(string_value.CreateDeepCopy());
+  auto expected_list = base::MakeUnique<base::ListValue>();
+  expected_list->Append(base::MakeUnique<base::Value>(string_value));
   expected.Set("dict-to-list", std::move(expected_list));
-  expected.Set("int-to-bool", new base::Value(true));
-  expected.Set("int-to-double", new base::Value(42.0));
-  expected.Set("string-to-bool", new base::Value(false));
-  expected.Set("string-to-double", new base::Value(0.0));
-  expected.Set("string-to-int", new base::Value(static_cast<int>(0)));
-  expected_list.reset(new base::ListValue());
+  expected.SetBoolean("int-to-bool", true);
+  expected.SetDouble("int-to-double", 42.0);
+  expected.SetBoolean("string-to-bool", false);
+  expected.SetDouble("string-to-double", 0.0);
+  expected.SetInteger("string-to-int", static_cast<int>(0));
+  expected_list = base::MakeUnique<base::ListValue>();
   expected_list->Append(base::MakeUnique<base::Value>("value"));
-  expected_subdict.reset(new base::DictionaryValue());
+  expected_subdict = base::MakeUnique<base::DictionaryValue>();
   expected_subdict->Set("key", std::move(expected_list));
   expected.Set("string-to-dict", std::move(expected_subdict));
 

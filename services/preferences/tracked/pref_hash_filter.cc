@@ -243,9 +243,9 @@ void PrefHashFilter::FinalizeFilterOnLoad(
   }
 
   if (did_reset) {
-    pref_store_contents->Set(user_prefs::kPreferenceResetTime,
-                             new base::Value(base::Int64ToString(
-                                 base::Time::Now().ToInternalValue())));
+    pref_store_contents->SetString(
+        user_prefs::kPreferenceResetTime,
+        base::Int64ToString(base::Time::Now().ToInternalValue()));
     FilterUpdate(user_prefs::kPreferenceResetTime);
 
     if (reset_on_load_observer_)
