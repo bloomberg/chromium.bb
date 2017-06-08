@@ -2025,6 +2025,10 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 - (Tab*)dismissWithNewTabAnimation:(const GURL&)URL
                            atIndex:(NSUInteger)position
                         transition:(ui::PageTransition)transition {
+  // Record the start time for this operation so it may be reported as a metric
+  // in the animation completion block.
+  NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
+
   // This helps smooth out the animation.
   [[_scrollView layer] setShouldRasterize:YES];
   if (_isBeingDismissed)
@@ -2077,6 +2081,15 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
     [newCard removeFromSuperview];
     [[_scrollView layer] setShouldRasterize:NO];
     [_delegate tabSwitcherDismissTransitionDidEnd:self];
+    double duration = [NSDate timeIntervalSinceReferenceDate] - startTime;
+    if (_activeCardSet.tabModel.isOffTheRecord) {
+      UMA_HISTOGRAM_TIMES(
+          "Toolbar.TabSwitcher.NewIncognitoTabPresentationDurationn",
+          base::TimeDelta::FromSecondsD(duration));
+    } else {
+      UMA_HISTOGRAM_TIMES("Toolbar.TabSwitcher.NewTabPresentationDuration",
+                          base::TimeDelta::FromSecondsD(duration));
+    }
   };
 
   CGPoint origin = _lastTapPoint;
