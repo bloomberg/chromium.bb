@@ -97,7 +97,7 @@ class PaymentsProfileComparator : public autofill::AutofillProfileComparator {
 
   // Clears the cached evaluation result for |profile|. Must be called when a
   // profile is modified and saved during the course of a PaymentRequest.
-  void Invalidate(const autofill::AutofillProfile& profile);
+  virtual void Invalidate(const autofill::AutofillProfile& profile);
 
  private:
   ProfileFields ComputeMissingFields(

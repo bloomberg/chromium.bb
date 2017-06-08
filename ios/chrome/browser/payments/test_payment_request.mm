@@ -6,6 +6,7 @@
 
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_data_loader.h"
+#include "components/payments/core/payments_profile_comparator.h"
 #include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,4 +27,8 @@ void TestPaymentRequest::ClearCreditCards() {
 
 autofill::RegionDataLoader* TestPaymentRequest::GetRegionDataLoader() {
   return region_data_loader_;
+}
+
+payments::PaymentsProfileComparator* TestPaymentRequest::profile_comparator() {
+  return profile_comparator_;
 }

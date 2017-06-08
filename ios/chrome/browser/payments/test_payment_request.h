@@ -13,6 +13,10 @@ class PersonalDataManager;
 class RegionDataLoader;
 }  // namespace autofill
 
+namespace payments {
+class PaymentsProfileComparator;
+}  // namespace payments
+
 namespace web {
 class PaymentRequest;
 class PaymentShippingOption;
@@ -30,6 +34,11 @@ class TestPaymentRequest : public PaymentRequest {
 
   void SetRegionDataLoader(autofill::RegionDataLoader* region_data_loader) {
     region_data_loader_ = region_data_loader;
+  }
+
+  void SetProfileComparator(
+      payments::PaymentsProfileComparator* profile_comparator) {
+    profile_comparator_ = profile_comparator;
   }
 
   // Returns the web::PaymentRequest instance that was used to build this
@@ -52,10 +61,14 @@ class TestPaymentRequest : public PaymentRequest {
 
   // PaymentRequest
   autofill::RegionDataLoader* GetRegionDataLoader() override;
+  payments::PaymentsProfileComparator* profile_comparator() override;
 
  private:
   // Not owned and must outlive this object.
   autofill::RegionDataLoader* region_data_loader_;
+
+  // Not owned and must outlive this object.
+  payments::PaymentsProfileComparator* profile_comparator_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaymentRequest);
 };

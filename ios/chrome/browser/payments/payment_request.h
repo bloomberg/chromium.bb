@@ -31,7 +31,7 @@ class CurrencyFormatter;
 // |personal_data_manager| and manages shared resources and user selections for
 // the current PaymentRequest flow. It must be initialized with a non-null
 // instance of |personal_data_manager| that outlives this class.
-class PaymentRequest : payments::PaymentOptionsProvider {
+class PaymentRequest : public payments::PaymentOptionsProvider {
  public:
   // |personal_data_manager| should not be null and should outlive this object.
   PaymentRequest(const web::PaymentRequest& web_payment_request,
@@ -159,6 +159,8 @@ class PaymentRequest : payments::PaymentOptionsProvider {
   web::PaymentShippingOption* selected_shipping_option() const {
     return selected_shipping_option_;
   }
+
+  virtual payments::PaymentsProfileComparator* profile_comparator();
 
   // Returns whether the current PaymentRequest can be used to make a payment.
   bool CanMakePayment() const;
