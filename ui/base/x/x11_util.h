@@ -177,9 +177,6 @@ UI_BASE_X_EXPORT bool SetStringProperty(XID window,
                                         XAtom type,
                                         const std::string& value);
 
-// Gets the X atom for default display corresponding to atom_name.
-UI_BASE_X_EXPORT XAtom GetAtom(const char* atom_name);
-
 // Sets the WM_CLASS attribute for a given X11 window.
 UI_BASE_X_EXPORT void SetWindowClassHint(XDisplay* display,
                                          XID window,

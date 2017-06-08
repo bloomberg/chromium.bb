@@ -7,10 +7,10 @@
 #include <X11/Xlib.h>
 
 #include "base/run_loop.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace views {
 
@@ -58,7 +58,7 @@ uint32_t X11PropertyChangeWaiter::DispatchEvent(
     const ui::PlatformEvent& event) {
   if (!wait_ || event->type != PropertyNotify ||
       event->xproperty.window != x_window_ ||
-      event->xproperty.atom != ui::GetAtom(property_) ||
+      event->xproperty.atom != gfx::GetAtom(property_) ||
       ShouldKeepOnWaiting(event)) {
     return ui::POST_DISPATCH_PERFORM_DEFAULT;
   }

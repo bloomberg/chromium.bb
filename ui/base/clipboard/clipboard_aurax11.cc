@@ -34,6 +34,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 
@@ -82,7 +83,7 @@ SelectionChangeObserver::SelectionChangeObserver()
       primary_sequence_number_(0) {
   int ignored;
   if (XFixesQueryExtension(gfx::GetXDisplay(), &event_base_, &ignored)) {
-    clipboard_atom_ = GetAtom(kClipboard);
+    clipboard_atom_ = gfx::GetAtom(kClipboard);
     XFixesSelectSelectionInput(gfx::GetXDisplay(), GetX11RootWindow(),
                                clipboard_atom_,
                                XFixesSetSelectionOwnerNotifyMask |
@@ -159,7 +160,7 @@ bool TargetList::ContainsText() const {
 
 bool TargetList::ContainsFormat(
     const Clipboard::FormatType& format_type) const {
-  ::Atom atom = GetAtom(format_type.ToString().c_str());
+  ::Atom atom = gfx::GetAtom(format_type.ToString().c_str());
   return ContainsAtom(atom);
 }
 
@@ -314,7 +315,7 @@ ClipboardAuraX11::AuraX11Details::AuraX11Details()
                               0,
                               NULL)),
       selection_requestor_(x_display_, x_window_, this),
-      clipboard_owner_(x_display_, x_window_, GetAtom(kClipboard)),
+      clipboard_owner_(x_display_, x_window_, gfx::GetAtom(kClipboard)),
       primary_owner_(x_display_, x_window_, XA_PRIMARY) {
   XStoreName(x_display_, x_window_, "Chromium clipboard");
   x_window_events_.reset(
@@ -340,7 +341,7 @@ ClipboardAuraX11::AuraX11Details::~AuraX11Details() {
 }
 
 ::Atom ClipboardAuraX11::AuraX11Details::GetCopyPasteSelection() const {
-  return GetAtom(kClipboard);
+  return gfx::GetAtom(kClipboard);
 }
 
 const SelectionFormatMap&
@@ -359,7 +360,7 @@ void ClipboardAuraX11::AuraX11Details::CreateNewClipboardData() {
 void ClipboardAuraX11::AuraX11Details::InsertMapping(
     const std::string& key,
     const scoped_refptr<base::RefCountedMemory>& memory) {
-  ::Atom atom_key = GetAtom(key.c_str());
+  ::Atom atom_key = gfx::GetAtom(key.c_str());
   clipboard_data_.Insert(atom_key, memory);
 }
 
@@ -391,7 +392,7 @@ SelectionData ClipboardAuraX11::AuraX11Details::RequestAndWaitForTypes(
 
     ::Atom selection_name = LookupSelectionForClipboardType(type);
     std::vector< ::Atom> intersection;
-    ui::GetAtomIntersection(types, targets.target_list(), &intersection);
+    GetAtomIntersection(types, targets.target_list(), &intersection);
     return selection_requestor_.RequestAndWaitForTypes(selection_name,
                                                        intersection);
   }
@@ -417,10 +418,10 @@ TargetList ClipboardAuraX11::AuraX11Details::WaitAndGetTargetsList(
     ::Atom out_type = None;
 
     if (selection_requestor_.PerformBlockingConvertSelection(
-            selection_name, GetAtom(kTargets), &data, &out_data_items,
+            selection_name, gfx::GetAtom(kTargets), &data, &out_data_items,
             &out_type)) {
       // Some apps return an |out_type| of "TARGETS". (crbug.com/377893)
-      if (out_type == XA_ATOM || out_type == GetAtom(kTargets)) {
+      if (out_type == XA_ATOM || out_type == gfx::GetAtom(kTargets)) {
         const ::Atom* atom_array =
             reinterpret_cast<const ::Atom*>(data->front());
         for (size_t i = 0; i < out_data_items; ++i)
@@ -459,7 +460,7 @@ std::vector<::Atom> ClipboardAuraX11::AuraX11Details::GetTextAtoms() const {
 std::vector<::Atom> ClipboardAuraX11::AuraX11Details::GetAtomsForFormat(
     const Clipboard::FormatType& format) {
   std::vector< ::Atom> atoms;
-  atoms.push_back(GetAtom(format.ToString().c_str()));
+  atoms.push_back(gfx::GetAtom(format.ToString().c_str()));
   return atoms;
 }
 
@@ -475,7 +476,7 @@ void ClipboardAuraX11::AuraX11Details::StoreCopyPasteDataAndWait() {
   if (XGetSelectionOwner(x_display_, selection) != x_window_)
     return;
 
-  ::Atom clipboard_manager_atom = GetAtom(kClipboardManager);
+  ::Atom clipboard_manager_atom = gfx::GetAtom(kClipboardManager);
   if (XGetSelectionOwner(x_display_, clipboard_manager_atom) == None)
     return;
 
@@ -486,7 +487,7 @@ void ClipboardAuraX11::AuraX11Details::StoreCopyPasteDataAndWait() {
 
   base::TimeTicks start = base::TimeTicks::Now();
   selection_requestor_.PerformBlockingConvertSelectionWithParameter(
-      GetAtom(kClipboardManager), GetAtom(kSaveTargets), targets);
+      gfx::GetAtom(kClipboardManager), gfx::GetAtom(kSaveTargets), targets);
   UMA_HISTOGRAM_TIMES("Clipboard.X11StoreCopyPasteDuration",
                       base::TimeTicks::Now() - start);
 }

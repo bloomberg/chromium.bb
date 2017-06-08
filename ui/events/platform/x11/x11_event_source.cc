@@ -157,7 +157,7 @@ Time X11EventSource::GetCurrentServerTime() {
     // Create a new Window and Atom that will be used for the property change.
     dummy_window_ = XCreateSimpleWindow(display_, DefaultRootWindow(display_),
                                         0, 0, 1, 1, 0, 0, 0);
-    dummy_atom_ = X11AtomCache::GetInstance()->GetAtom("CHROMIUM_TIMESTAMP");
+    dummy_atom_ = gfx::GetAtom("CHROMIUM_TIMESTAMP");
     dummy_window_events_.reset(
         new XScopedEventSelector(dummy_window_, PropertyChangeMask));
     dummy_initialized_ = true;

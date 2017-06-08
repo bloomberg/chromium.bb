@@ -24,6 +24,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -301,7 +302,7 @@ TestDragDropClient::~TestDragDropClient() {
 }
 
 Atom TestDragDropClient::GetAtom(const char* name) {
-  return ui::GetAtom(name);
+  return gfx::GetAtom(name);
 }
 
 bool TestDragDropClient::MessageHasType(const XClientMessageEvent& event,

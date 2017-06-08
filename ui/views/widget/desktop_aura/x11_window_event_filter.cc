@@ -15,11 +15,11 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
@@ -220,7 +220,7 @@ bool X11WindowEventFilter::DispatchHostWindowDragMovement(
   event.xclient.type = ClientMessage;
   event.xclient.display = xdisplay_;
   event.xclient.window = xwindow_;
-  event.xclient.message_type = ui::GetAtom("_NET_WM_MOVERESIZE");
+  event.xclient.message_type = gfx::GetAtom("_NET_WM_MOVERESIZE");
   event.xclient.format = 32;
   event.xclient.data.l[0] = screen_location.x();
   event.xclient.data.l[1] = screen_location.y();

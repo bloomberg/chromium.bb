@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 
@@ -27,24 +27,24 @@ const char kUtf8String[] = "UTF8_STRING";
 
 std::vector<::Atom> GetTextAtomsFrom() {
   std::vector< ::Atom> atoms;
-  atoms.push_back(GetAtom(kUtf8String));
-  atoms.push_back(GetAtom(kString));
-  atoms.push_back(GetAtom(kText));
-  atoms.push_back(GetAtom(kTextPlain));
-  atoms.push_back(GetAtom(kTextPlainUtf8));
+  atoms.push_back(gfx::GetAtom(kUtf8String));
+  atoms.push_back(gfx::GetAtom(kString));
+  atoms.push_back(gfx::GetAtom(kText));
+  atoms.push_back(gfx::GetAtom(kTextPlain));
+  atoms.push_back(gfx::GetAtom(kTextPlainUtf8));
   return atoms;
 }
 
 std::vector<::Atom> GetURLAtomsFrom() {
   std::vector< ::Atom> atoms;
-  atoms.push_back(GetAtom(Clipboard::kMimeTypeURIList));
-  atoms.push_back(GetAtom(Clipboard::kMimeTypeMozillaURL));
+  atoms.push_back(gfx::GetAtom(Clipboard::kMimeTypeURIList));
+  atoms.push_back(gfx::GetAtom(Clipboard::kMimeTypeMozillaURL));
   return atoms;
 }
 
 std::vector<::Atom> GetURIListAtomsFrom() {
   std::vector< ::Atom> atoms;
-  atoms.push_back(GetAtom(Clipboard::kMimeTypeURIList));
+  atoms.push_back(gfx::GetAtom(Clipboard::kMimeTypeURIList));
   return atoms;
 }
 
@@ -181,10 +181,11 @@ size_t SelectionData::GetSize() const {
 }
 
 std::string SelectionData::GetText() const {
-  if (type_ == GetAtom(kUtf8String) || type_ == GetAtom(kText) ||
-      type_ == GetAtom(kTextPlainUtf8)) {
+  if (type_ == gfx::GetAtom(kUtf8String) || type_ == gfx::GetAtom(kText) ||
+      type_ == gfx::GetAtom(kTextPlainUtf8)) {
     return RefCountedMemoryToString(memory_);
-  } else if (type_ == GetAtom(kString) || type_ == GetAtom(kTextPlain)) {
+  } else if (type_ == gfx::GetAtom(kString) ||
+             type_ == gfx::GetAtom(kTextPlain)) {
     std::string result;
     base::ConvertToUtf8AndNormalize(RefCountedMemoryToString(memory_),
                                     base::kCodepageLatin1,
@@ -201,7 +202,7 @@ std::string SelectionData::GetText() const {
 base::string16 SelectionData::GetHtml() const {
   base::string16 markup;
 
-  if (type_ == GetAtom(Clipboard::kMimeTypeHTML)) {
+  if (type_ == gfx::GetAtom(Clipboard::kMimeTypeHTML)) {
     const unsigned char* data = GetData();
     size_t size = GetSize();
 

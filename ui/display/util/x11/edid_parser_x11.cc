@@ -34,8 +34,7 @@ bool GetEDIDProperty(XID output, std::vector<uint8_t>* edid) {
 
   Display* display = gfx::GetXDisplay();
 
-  static Atom edid_property =
-      ui::X11AtomCache::GetInstance()->GetAtom(RR_PROPERTY_RANDR_EDID);
+  Atom edid_property = gfx::GetAtom(RR_PROPERTY_RANDR_EDID);
 
   bool has_edid_property = false;
   int num_properties = 0;

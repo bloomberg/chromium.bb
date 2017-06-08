@@ -26,6 +26,7 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -50,7 +51,7 @@ class MinimizeWaiter : public X11PropertyChangeWaiter {
     std::vector<Atom> wm_states;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &wm_states)) {
       auto it = std::find(wm_states.cbegin(), wm_states.cend(),
-                          ui::GetAtom("_NET_WM_STATE_HIDDEN"));
+                          gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
       return it == wm_states.cend();
     }
     return true;
@@ -395,7 +396,7 @@ TEST_F(X11TopmostWindowFinderTest, Menu) {
                                &swa);
   {
     ui::SetAtomProperty(menu_xid, "_NET_WM_WINDOW_TYPE", "ATOM",
-                        ui::GetAtom("_NET_WM_WINDOW_TYPE_MENU"));
+                        gfx::GetAtom("_NET_WM_WINDOW_TYPE_MENU"));
   }
   ui::SetUseOSWindowFrame(menu_xid, false);
   ShowAndSetXWindowBounds(menu_xid, gfx::Rect(140, 110, 100, 100));

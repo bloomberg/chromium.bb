@@ -191,11 +191,12 @@ _BANNED_CPP_FUNCTIONS = (
     (
       r'XInternAtom|xcb_intern_atom',
       (
-       'Use ui::GetAtom() or ui::X11AtomCache::GetAtom() instead of',
-       'interning atoms directly.',
+       'Use gfx::GetAtom() instead of interning atoms directly.',
       ),
       True,
       (
+        r"^gpu[\\\/]ipc[\\\/]service[\\\/]gpu_watchdog_thread\.cc$",
+        r"^remoting[\\\/]host[\\\/]linux[\\\/]x_server_clipboard\.cc$",
         r"^ui[\\\/]gfx[\\\/]x[\\\/]x11_atom_cache\.cc$",
       ),
     ),

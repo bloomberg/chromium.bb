@@ -25,7 +25,7 @@ ICCProfile ICCProfile::FromBestMonitor() {
   ICCProfile icc_profile;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
     return icc_profile;
-  Atom property = ui::X11AtomCache::GetInstance()->GetAtom("_ICC_PROFILE");
+  Atom property = GetAtom("_ICC_PROFILE");
   if (property != None) {
     Atom prop_type = None;
     int prop_format = 0;
