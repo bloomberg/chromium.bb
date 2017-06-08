@@ -435,8 +435,8 @@ const char kOobeTimerInterval[] = "oobe-timer-interval";
 // If true, the views-based md login and lock screens will be shown.
 const char kShowMdLogin[] = "show-md-login";
 
-// If true, the non-views-based md login and lock screens will be shown.
-const char kShowNonViewMdLogin[] = "show-non-view-md-login";
+// If true, the non-md login and lock screens will be shown.
+const char kShowNonMdLogin[] = "show-non-md-login";
 
 // Specifies power stub behavior:
 //  'cycle=2' - Cycles power states every 2 seconds.
