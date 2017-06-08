@@ -64,7 +64,6 @@
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
-#include "chrome/browser/ui/views/extensions/bookmark_app_confirmation_view.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
@@ -1190,13 +1189,6 @@ void BrowserView::ShowUpdateChromeDialog() {
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   toolbar_->ShowBookmarkBubble(url, already_bookmarked,
                                bookmark_bar_view_.get());
-}
-
-void BrowserView::ShowBookmarkAppBubble(
-    const WebApplicationInfo& web_app_info,
-    const ShowBookmarkAppBubbleCallback& callback) {
-  BookmarkAppConfirmationView::CreateAndShow(GetNativeWindow(), web_app_info,
-                                             callback);
 }
 
 autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(

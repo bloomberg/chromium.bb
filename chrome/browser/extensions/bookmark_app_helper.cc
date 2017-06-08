@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -667,9 +668,10 @@ void BookmarkAppHelper::OnIconsDownloaded(
     OnBubbleCompleted(true, web_app_info_);
     return;
   }
-  browser->window()->ShowBookmarkAppBubble(
-      web_app_info_, base::Bind(&BookmarkAppHelper::OnBubbleCompleted,
-                                weak_factory_.GetWeakPtr()));
+  chrome::ShowBookmarkAppDialog(
+      browser->window()->GetNativeWindow(), web_app_info_,
+      base::Bind(&BookmarkAppHelper::OnBubbleCompleted,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void BookmarkAppHelper::OnBubbleCompleted(

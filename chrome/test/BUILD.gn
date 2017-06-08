@@ -1958,6 +1958,7 @@ test("browser_tests") {
       sources += [
         "../browser/apps/app_browsertest_util.cc",
         "../browser/apps/app_browsertest_util.h",
+        "../browser/extensions/bookmark_app_helper_browsertest.cc",
         "../browser/extensions/browsertest_util.cc",
         "../browser/extensions/browsertest_util.h",
         "../browser/extensions/extension_apitest.cc",

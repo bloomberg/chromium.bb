@@ -1867,11 +1867,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </message>
 
       <!-- Bookmark app bubble -->
-      <if expr="is_macosx">
-        <message name="IDS_ADD_TO_APPLICATIONS_BUBBLE_TITLE" desc="Title of the bubble adding a bookmark app to the Applications Folder.">
-          Add to Applications
-        </message>
-      </if>
       <if expr="use_ash">
         <message name="IDS_ADD_TO_SHELF_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the shelf.">
           Add to shelf
@@ -1882,9 +1877,14 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           Add to desktop
         </message>
       </if>
-      <if expr="use_titlecase">
+      <if expr="use_titlecase and not is_macosx">
         <message name="IDS_ADD_TO_DESKTOP_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the desktop.">
           Add to Desktop
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <message name="IDS_ADD_TO_DESKTOP_BUBBLE_TITLE" desc="Title of the bubble adding a bookmark app to the Applications Folder on Mac.">
+          Add to Applications
         </message>
       </if>
 
