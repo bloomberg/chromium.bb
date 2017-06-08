@@ -31,7 +31,12 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/vr/features/features.h"
 #include "ppapi/features/features.h"
+
+#if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
+#endif  // BUILDFLAG(ENABLE_VR)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/flash_permission_context.h"
@@ -282,6 +287,15 @@ int PermissionManager::RequestPermissions(
 
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
+
+#if BUILDFLAG(ENABLE_VR)
+  if (vr_shell::VrTabHelper::IsInVr(web_contents)) {
+    callback.Run(
+        std::vector<ContentSetting>(permissions.size(), CONTENT_SETTING_BLOCK));
+    return kNoPendingOperation;
+  }
+#endif  // BUILDFLAG(ENABLE_VR)
+
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
   int request_id = pending_requests_.Add(base::MakeUnique<PendingRequest>(
