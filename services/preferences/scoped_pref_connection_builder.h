@@ -43,6 +43,8 @@ class ScopedPrefConnectionBuilder
   void ProvideIncognitoConnector(
       const mojom::PrefStoreConnectorPtr& incognito_connector);
 
+  void ProvideDefaults(std::vector<mojom::PrefRegistrationPtr> defaults);
+
  private:
   friend class base::RefCounted<ScopedPrefConnectionBuilder>;
   ~ScopedPrefConnectionBuilder();
@@ -61,6 +63,8 @@ class ScopedPrefConnectionBuilder
   std::unordered_map<PrefValueStore::PrefStoreType,
                      mojom::PrefStoreConnectionPtr>
       connections_;
+
+  std::vector<mojom::PrefRegistrationPtr> defaults_;
 
   mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection_;
   mojom::PersistentPrefStoreConnectionPtr incognito_connection_;

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -47,6 +48,9 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
     // This marks the pref as "lossy". There is no strict time guarantee on when
     // a lossy pref will be persisted to permanent storage when it is modified.
     LOSSY_PREF = 1 << 8,
+
+    // Registering a pref as public allows other services to access it.
+    PUBLIC = 1 << 9,
   };
 
   typedef PrefValueMap::const_iterator const_iterator;
@@ -70,6 +74,20 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
   // |pref_name| must be a previously registered preference.
   void SetDefaultPrefValue(const std::string& pref_name, base::Value* value);
 
+  // Registers a pref owned by another service for use with the current service.
+  // The owning service must register that pref with the |PUBLIC| flag.
+  void RegisterForeignPref(const std::string& path);
+
+  // Sets the default value and flags of a previously-registered foreign pref
+  // value.
+  void SetDefaultForeignPrefValue(const std::string& path,
+                                  std::unique_ptr<base::Value> default_value,
+                                  uint32_t flags);
+
+  const std::set<std::string>& foreign_pref_keys() const {
+    return foreign_pref_keys_;
+  }
+
  protected:
   friend class base::RefCounted<PrefRegistry>;
   virtual ~PrefRegistry();
@@ -84,6 +102,8 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
 
   // A map of pref name to a bitmask of PrefRegistrationFlags.
   PrefRegistrationFlagsMap registration_flags_;
+
+  std::set<std::string> foreign_pref_keys_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefRegistry);

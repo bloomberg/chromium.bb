@@ -10,26 +10,78 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "components/prefs/default_pref_store.h"
 #include "components/prefs/pref_value_store.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/preferences/persistent_pref_store_factory.h"
 #include "services/preferences/persistent_pref_store_impl.h"
-#include "services/preferences/public/cpp/pref_store_impl.h"
 #include "services/preferences/scoped_pref_connection_builder.h"
+#include "services/preferences/shared_pref_registry.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace prefs {
+
+class PrefStoreManagerImpl::ConnectorConnection
+    : public mojom::PrefStoreConnector {
+ public:
+  ConnectorConnection(PrefStoreManagerImpl* owner,
+                      const service_manager::BindSourceInfo& source_info)
+      : owner_(owner), source_info_(source_info) {}
+
+  // mojom::PrefStoreConnector: |already_connected_types| must not include
+  // PrefValueStore::DEFAULT_STORE and PrefValueStore::USER_STORE as these must
+  // always be accessed through the service.
+  void Connect(
+      mojom::PrefRegistryPtr pref_registry,
+      const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
+      ConnectCallback callback) override {
+    std::set<PrefValueStore::PrefStoreType> required_remote_types;
+    for (auto type : owner_->expected_pref_stores_) {
+      if (!base::ContainsValue(already_connected_types, type)) {
+        required_remote_types.insert(type);
+      }
+    }
+    auto connection = owner_->shared_pref_registry_->CreateConnectionBuilder(
+        std::move(pref_registry), std::move(required_remote_types),
+        source_info_.identity, std::move(callback));
+    if (owner_->persistent_pref_store_ &&
+        owner_->persistent_pref_store_->initialized()) {
+      connection->ProvidePersistentPrefStore(
+          owner_->persistent_pref_store_.get());
+    } else {
+      owner_->pending_persistent_connections_.push_back(connection);
+    }
+    auto remaining_remote_types =
+        connection->ProvidePrefStoreConnections(owner_->pref_store_ptrs_);
+    for (auto type : remaining_remote_types) {
+      owner_->pending_connections_[type].push_back(connection);
+    }
+    if (!owner_->Initialized()) {
+      owner_->pending_incognito_connections_.push_back(connection);
+    } else if (owner_->incognito_connector_) {
+      connection->ProvideIncognitoConnector(owner_->incognito_connector_);
+    }
+  }
+
+  void ConnectToUserPrefStore(
+      const std::vector<std::string>& observed_prefs,
+      mojom::PrefStoreConnector::ConnectToUserPrefStoreCallback callback)
+      override {
+    std::move(callback).Run(owner_->persistent_pref_store_->CreateConnection(
+        PersistentPrefStoreImpl::ObservedPrefs(observed_prefs.begin(),
+                                               observed_prefs.end())));
+  }
+
+ private:
+  PrefStoreManagerImpl* const owner_;
+  const service_manager::BindSourceInfo source_info_;
+};
 
 PrefStoreManagerImpl::PrefStoreManagerImpl(
     std::set<PrefValueStore::PrefStoreType> expected_pref_stores,
     scoped_refptr<base::SequencedWorkerPool> worker_pool)
     : expected_pref_stores_(std::move(expected_pref_stores)),
       init_binding_(this),
-      defaults_(new DefaultPrefStore),
-      defaults_wrapper_(base::MakeUnique<PrefStoreImpl>(
-          defaults_,
-          mojo::MakeRequest(&pref_store_ptrs_[PrefValueStore::DEFAULT_STORE]))),
+      shared_pref_registry_(base::MakeUnique<SharedPrefRegistry>()),
       worker_pool_(std::move(worker_pool)) {
   DCHECK(
       base::ContainsValue(expected_pref_stores_, PrefValueStore::USER_STORE) &&
@@ -82,51 +134,12 @@ void PrefStoreManagerImpl::Register(PrefValueStore::PrefStoreType type,
   DCHECK(success) << "The same pref store registered twice: " << type;
 }
 
-void PrefStoreManagerImpl::Connect(
-    mojom::PrefRegistryPtr pref_registry,
-    const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
-    ConnectCallback callback) {
-  DVLOG(1) << "Will connect to "
-           << expected_pref_stores_.size() - already_connected_types.size()
-           << " pref store(s)";
-  std::set<PrefValueStore::PrefStoreType> required_remote_types;
-  for (auto type : expected_pref_stores_) {
-    if (!base::ContainsValue(already_connected_types, type)) {
-      required_remote_types.insert(type);
-    }
-  }
-  auto connection = base::MakeRefCounted<ScopedPrefConnectionBuilder>(
-      std::move(pref_registry->registrations), std::move(required_remote_types),
-      std::move(callback));
-  if (persistent_pref_store_ && persistent_pref_store_->initialized()) {
-    connection->ProvidePersistentPrefStore(persistent_pref_store_.get());
-  } else {
-    pending_persistent_connections_.push_back(connection);
-  }
-  auto remaining_remote_types =
-      connection->ProvidePrefStoreConnections(pref_store_ptrs_);
-  for (auto type : remaining_remote_types) {
-    pending_connections_[type].push_back(connection);
-  }
-  if (!Initialized()) {
-    pending_incognito_connections_.push_back(connection);
-  } else if (incognito_connector_) {
-    connection->ProvideIncognitoConnector(incognito_connector_);
-  }
-}
-
-void PrefStoreManagerImpl::ConnectToUserPrefStore(
-    const std::vector<std::string>& observed_prefs,
-    mojom::PrefStoreConnector::ConnectToUserPrefStoreCallback callback) {
-  std::move(callback).Run(persistent_pref_store_->CreateConnection(
-      PersistentPrefStoreImpl::ObservedPrefs(observed_prefs.begin(),
-                                             observed_prefs.end())));
-}
-
 void PrefStoreManagerImpl::BindPrefStoreConnectorRequest(
     const service_manager::BindSourceInfo& source_info,
     prefs::mojom::PrefStoreConnectorRequest request) {
-  connector_bindings_.AddBinding(this, std::move(request));
+  connector_bindings_.AddBinding(
+      base::MakeUnique<ConnectorConnection>(this, source_info),
+      std::move(request));
 }
 
 void PrefStoreManagerImpl::BindPrefStoreRegistryRequest(

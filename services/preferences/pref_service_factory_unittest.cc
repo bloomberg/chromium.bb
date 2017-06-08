@@ -31,10 +31,13 @@ namespace {
 class ServiceTestClient : public service_manager::test::ServiceTestClient,
                           public service_manager::mojom::ServiceFactory {
  public:
-  ServiceTestClient(service_manager::test::ServiceTest* test,
-                    scoped_refptr<base::SequencedWorkerPool> worker_pool)
+  ServiceTestClient(
+      service_manager::test::ServiceTest* test,
+      scoped_refptr<base::SequencedWorkerPool> worker_pool,
+      base::OnceCallback<void(service_manager::Connector*)> connector_callback)
       : service_manager::test::ServiceTestClient(test),
-        worker_pool_(std::move(worker_pool)) {
+        worker_pool_(std::move(worker_pool)),
+        connector_callback_(std::move(connector_callback)) {
     registry_.AddInterface<service_manager::mojom::ServiceFactory>(
         base::Bind(&ServiceTestClient::Create, base::Unretained(this)));
   }
@@ -57,6 +60,12 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
                PrefValueStore::DEFAULT_STORE},
               worker_pool_),
           std::move(request)));
+    } else if (name == "prefs_unittest_helper") {
+      test_helper_service_context_ =
+          base::MakeUnique<service_manager::ServiceContext>(
+              base::MakeUnique<service_manager::Service>(), std::move(request));
+      std::move(connector_callback_)
+          .Run(test_helper_service_context_->connector());
     }
   }
 
@@ -71,6 +80,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
   std::unique_ptr<service_manager::ServiceContext> pref_service_context_;
+  std::unique_ptr<service_manager::ServiceContext> test_helper_service_context_;
+  base::OnceCallback<void(service_manager::Connector*)> connector_callback_;
 };
 
 constexpr int kInitialValue = 1;
@@ -87,8 +98,14 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
 
  protected:
   void SetUp() override {
+    base::RunLoop run_loop;
+    connector_callback_ =
+        base::BindOnce(&PrefServiceFactoryTest::SetOtherClientConnector,
+                       base::Unretained(this), run_loop.QuitClosure());
     ServiceTest::SetUp();
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
+    connector()->StartService("prefs_unittest_helper");
+    run_loop.Run();
 
     // Init the pref service (in production Chrome startup would do this.)
     mojom::PrefServiceControlPtr control;
@@ -104,6 +121,10 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
     CreateLayeredPrefStores();
   }
 
+  service_manager::Connector* other_client_connector() {
+    return other_client_connector_;
+  }
+
   virtual void CreateLayeredPrefStores() {
     above_user_prefs_impl_ = PrefStoreImpl::Create(
         pref_store_registry(), above_user_prefs_pref_store_,
@@ -115,43 +136,71 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
 
   // service_manager::test::ServiceTest:
   std::unique_ptr<service_manager::Service> CreateService() override {
-    return base::MakeUnique<ServiceTestClient>(this, worker_pool_owner_.pool());
+    return base::MakeUnique<ServiceTestClient>(this, worker_pool_owner_.pool(),
+                                               std::move(connector_callback_));
   }
 
   // Create a fully initialized PrefService synchronously.
-  std::unique_ptr<PrefService> Create() { return CreateImpl({}); }
+  std::unique_ptr<PrefService> Create() {
+    return CreateImpl(CreateDefaultPrefRegistry(), {}, connector());
+  }
+
+  std::unique_ptr<PrefService> CreateForeign() {
+    return CreateImpl(CreateDefaultForeignPrefRegistry(), {},
+                      other_client_connector());
+  }
 
   std::unique_ptr<PrefService> CreateWithLocalLayeredPrefStores() {
     return CreateImpl(
+        CreateDefaultPrefRegistry(),
         {{
              {PrefValueStore::COMMAND_LINE_STORE, above_user_prefs_pref_store_},
              {PrefValueStore::RECOMMENDED_STORE, below_user_prefs_pref_store_},
          },
-         base::KEEP_LAST_OF_DUPES});
+         base::KEEP_LAST_OF_DUPES},
+        connector());
   }
 
   std::unique_ptr<PrefService> CreateImpl(
+      scoped_refptr<PrefRegistry> pref_registry,
       base::flat_map<PrefValueStore::PrefStoreType, scoped_refptr<PrefStore>>
-          local_pref_stores) {
+          local_pref_stores,
+      service_manager::Connector* connector) {
     std::unique_ptr<PrefService> pref_service;
     base::RunLoop run_loop;
-    CreateAsync(std::move(local_pref_stores), run_loop.QuitClosure(),
-                &pref_service);
+    CreateAsync(std::move(pref_registry), std::move(local_pref_stores),
+                connector, run_loop.QuitClosure(), &pref_service);
     run_loop.Run();
     return pref_service;
   }
 
-  void CreateAsync(base::flat_map<PrefValueStore::PrefStoreType,
+  void CreateAsync(scoped_refptr<PrefRegistry> pref_registry,
+                   base::flat_map<PrefValueStore::PrefStoreType,
                                   scoped_refptr<PrefStore>> local_pref_stores,
+                   service_manager::Connector* connector,
                    base::Closure callback,
                    std::unique_ptr<PrefService>* out) {
-    auto pref_registry = make_scoped_refptr(new PrefRegistrySimple());
-    pref_registry->RegisterIntegerPref(kKey, kInitialValue);
-    pref_registry->RegisterIntegerPref(kOtherKey, kInitialValue);
-    pref_registry->RegisterDictionaryPref(kDictionaryKey);
     ConnectToPrefService(
-        connector(), std::move(pref_registry), std::move(local_pref_stores),
+        connector, std::move(pref_registry), std::move(local_pref_stores),
         base::Bind(&PrefServiceFactoryTest::OnCreate, callback, out));
+  }
+
+  scoped_refptr<PrefRegistrySimple> CreateDefaultPrefRegistry() {
+    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+    pref_registry->RegisterIntegerPref(kKey, kInitialValue,
+                                       PrefRegistry::PUBLIC);
+    pref_registry->RegisterIntegerPref(kOtherKey, kInitialValue,
+                                       PrefRegistry::PUBLIC);
+    pref_registry->RegisterDictionaryPref(kDictionaryKey, PrefRegistry::PUBLIC);
+    return pref_registry;
+  }
+
+  scoped_refptr<PrefRegistrySimple> CreateDefaultForeignPrefRegistry() {
+    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+    pref_registry->RegisterForeignPref(kKey);
+    pref_registry->RegisterForeignPref(kOtherKey);
+    pref_registry->RegisterForeignPref(kDictionaryKey);
+    return pref_registry;
   }
 
   // Wait until first update of the pref |key| in |pref_service| synchronously.
@@ -174,6 +223,12 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
   }
 
  private:
+  void SetOtherClientConnector(base::OnceClosure done,
+                               service_manager::Connector* connector) {
+    other_client_connector_ = connector;
+    std::move(done).Run();
+  }
+
   // Called when the PrefService has been created.
   static void OnCreate(const base::Closure& quit_closure,
                        std::unique_ptr<PrefService>* out,
@@ -197,6 +252,8 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
   scoped_refptr<WriteablePrefStore> below_user_prefs_pref_store_;
   std::unique_ptr<PrefStoreImpl> below_user_prefs_impl_;
   mojom::PrefStoreRegistryPtr pref_store_registry_;
+  service_manager::Connector* other_client_connector_ = nullptr;
+  base::OnceCallback<void(service_manager::Connector*)> connector_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceFactoryTest);
 };
@@ -213,13 +270,49 @@ TEST_F(PrefServiceFactoryTest, Basic) {
 // Check that updates in one client eventually propagates to the other.
 TEST_F(PrefServiceFactoryTest, MultipleClients) {
   auto pref_service = Create();
-  auto pref_service2 = Create();
+  auto pref_service2 = CreateForeign();
 
   EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
   EXPECT_EQ(kInitialValue, pref_service2->GetInteger(kKey));
   pref_service->SetInteger(kKey, kUpdatedValue);
   WaitForPrefChange(pref_service2.get(), kKey);
   EXPECT_EQ(kUpdatedValue, pref_service2->GetInteger(kKey));
+}
+
+TEST_F(PrefServiceFactoryTest, MultipleConnectionsFromSingleClient) {
+  Create();
+  CreateForeign();
+  Create();
+  CreateForeign();
+}
+
+// Check that defaults set by one client are correctly shared to the other
+// client.
+TEST_F(PrefServiceFactoryTest, MultipleClients_Defaults) {
+  std::unique_ptr<PrefService> pref_service, pref_service2;
+  {
+    base::RunLoop run_loop;
+    auto done_closure = base::BarrierClosure(2, run_loop.QuitClosure());
+
+    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+    pref_registry->RegisterIntegerPref(kKey, kInitialValue,
+                                       PrefRegistry::PUBLIC);
+    pref_registry->RegisterForeignPref(kOtherKey);
+    auto pref_registry2 = base::MakeRefCounted<PrefRegistrySimple>();
+    pref_registry2->RegisterForeignPref(kKey);
+    pref_registry2->RegisterIntegerPref(kOtherKey, kInitialValue,
+                                        PrefRegistry::PUBLIC);
+    CreateAsync(std::move(pref_registry), {}, connector(), done_closure,
+                &pref_service);
+    CreateAsync(std::move(pref_registry2), {}, other_client_connector(),
+                done_closure, &pref_service2);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
+  EXPECT_EQ(kInitialValue, pref_service2->GetInteger(kKey));
+  EXPECT_EQ(kInitialValue, pref_service->GetInteger(kOtherKey));
+  EXPECT_EQ(kInitialValue, pref_service2->GetInteger(kOtherKey));
 }
 
 // Check that read-only pref store changes are observed.
@@ -296,7 +389,7 @@ void Fail(PrefService* pref_service) {
 
 TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Basic) {
   auto pref_service = Create();
-  auto pref_service2 = Create();
+  auto pref_service2 = CreateForeign();
 
   void (*updates[])(ScopedDictionaryPrefUpdate*) = {
       [](ScopedDictionaryPrefUpdate* update) {
@@ -454,7 +547,7 @@ TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Basic) {
 
 TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Erase) {
   auto pref_service = Create();
-  auto pref_service2 = Create();
+  auto pref_service2 = CreateForeign();
   {
     ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
     update->SetInteger("path.to.integer", 1);
@@ -472,7 +565,7 @@ TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Erase) {
 
 TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_ClearDictionary) {
   auto pref_service = Create();
-  auto pref_service2 = Create();
+  auto pref_service2 = CreateForeign();
 
   {
     ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
@@ -492,7 +585,7 @@ TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_ClearDictionary) {
 TEST_F(PrefServiceFactoryTest,
        MultipleClients_SubPrefUpdates_ClearEmptyDictionary) {
   auto pref_service = Create();
-  auto pref_service2 = Create();
+  auto pref_service2 = CreateForeign();
 
   {
     ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
@@ -564,9 +657,11 @@ TEST_F(PrefServiceFactoryManualPrefStoreRegistrationTest,
                                   std::move(below_ptr));
 
   std::unique_ptr<PrefService> pref_service;
+
   base::RunLoop run_loop;
   auto barrier = base::BarrierClosure(2, run_loop.QuitClosure());
-  CreateAsync({}, barrier, &pref_service);
+  CreateAsync(CreateDefaultPrefRegistry(), {}, connector(), barrier,
+              &pref_service);
 
   add_observer_run_loop.Run();
   ASSERT_TRUE(below_user_prefs.observer_added());

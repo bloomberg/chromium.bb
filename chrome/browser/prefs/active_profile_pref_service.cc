@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 ActiveProfilePrefService::ActiveProfilePrefService() {
   registry_.AddInterface<prefs::mojom::PrefStoreConnector>(
@@ -20,24 +21,15 @@ void ActiveProfilePrefService::Connect(
     prefs::mojom::PrefRegistryPtr pref_registry,
     const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
     ConnectCallback callback) {
-  auto* connector = content::BrowserContext::GetConnectorFor(
-      ProfileManager::GetActiveUserProfile()->GetOriginalProfile());
-  connector->BindInterface(prefs::mojom::kServiceName, &connector_ptr_);
-  connector_ptr_.set_connection_error_handler(base::Bind(
-      &ActiveProfilePrefService::OnConnectError, base::Unretained(this)));
-  connector_ptr_->Connect(std::move(pref_registry), already_connected_types,
-                          std::move(callback));
+  GetPrefStoreConnector().Connect(std::move(pref_registry),
+                                  already_connected_types, std::move(callback));
 }
 
 void ActiveProfilePrefService::ConnectToUserPrefStore(
     const std::vector<std::string>& prefs_to_observe,
     ConnectToUserPrefStoreCallback callback) {
-  auto* connector = content::BrowserContext::GetConnectorFor(
-      ProfileManager::GetActiveUserProfile()->GetOriginalProfile());
-  connector->BindInterface(prefs::mojom::kServiceName, &connector_ptr_);
-  connector_ptr_.set_connection_error_handler(base::Bind(
-      &ActiveProfilePrefService::OnConnectError, base::Unretained(this)));
-  connector_ptr_->ConnectToUserPrefStore(prefs_to_observe, std::move(callback));
+  GetPrefStoreConnector().ConnectToUserPrefStore(prefs_to_observe,
+                                                 std::move(callback));
 }
 
 void ActiveProfilePrefService::Create(
@@ -55,7 +47,7 @@ void ActiveProfilePrefService::OnBindInterface(
   // N.B. This check is important as not doing it would allow one user to read
   // another user's prefs.
   // TODO(beng): This should be obsoleted by Service Manager user id routing.
-  if (source_info.identity.user_id() != service_manager::mojom::kRootUserID) {
+  if (context()->identity().user_id() != source_info.identity.user_id()) {
     LOG(WARNING) << "Blocked service instance="
                  << source_info.identity.instance()
                  << ", name=" << source_info.identity.name()
@@ -69,4 +61,30 @@ void ActiveProfilePrefService::OnBindInterface(
 
 void ActiveProfilePrefService::OnConnectError() {
   connector_bindings_.CloseAllBindings();
+}
+
+prefs::mojom::PrefStoreConnector&
+ActiveProfilePrefService::GetPrefStoreConnector() {
+  // The pref service enforces that each service always registers the same set
+  // of prefs. If the ActiveProfilePrefService connects directly using
+  // content::BrowserContext::GetConnectorFor(), the pref service will receive
+  // two connections from |content::mojom::kBrowserServiceName|: one for the
+  // browser and one from mash, each registering different prefs.
+  //
+  // Instead, the prefs::mojom::kForwarderServiceName running as root connects
+  // to the prefs::mojom::kForwarderServiceName running as the user for the
+  // active user profile, which then connects to the pref service. Thus, mash
+  // appears to be |prefs::mojom::kForwarderServiceName| instead of
+  // |content::mojom::kBrowserServiceName|.
+  if (context()->identity().user_id() == service_manager::mojom::kRootUserID) {
+    content::BrowserContext::GetConnectorFor(
+        ProfileManager::GetActiveUserProfile()->GetOriginalProfile())
+        ->BindInterface(prefs::mojom::kForwarderServiceName, &connector_ptr_);
+  } else if (!connector_ptr_) {
+    context()->connector()->BindInterface(prefs::mojom::kServiceName,
+                                          &connector_ptr_);
+  }
+  connector_ptr_.set_connection_error_handler(base::Bind(
+      &ActiveProfilePrefService::OnConnectError, base::Unretained(this)));
+  return *connector_ptr_;
 }

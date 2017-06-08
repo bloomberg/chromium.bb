@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -137,7 +138,8 @@ void Preferences::RegisterProfilePrefs(
   }
 
   // Register ash prefs.
-  ash::Shell::RegisterPrefs(registry);
+  if (!ash_util::IsRunningInMash())
+    ash::Shell::RegisterPrefs(registry);
 
   registry->RegisterBooleanPref(prefs::kPerformanceTracingEnabled, false);
 

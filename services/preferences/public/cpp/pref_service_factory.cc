@@ -67,6 +67,15 @@ void OnPrefServiceInit(std::unique_ptr<PrefService> pref_service,
   }
 }
 
+void RegisterRemoteDefaults(PrefRegistry* pref_registry,
+                            std::vector<mojom::PrefRegistrationPtr> defaults) {
+  for (auto& registration : defaults) {
+    pref_registry->SetDefaultForeignPrefValue(
+        registration->key, std::move(registration->default_value),
+        registration->flags);
+  }
+}
+
 void OnConnect(
     scoped_refptr<RefCountedInterfacePtr<mojom::PrefStoreConnector>>
         connector_ptr,
@@ -76,6 +85,7 @@ void OnConnect(
     ConnectCallback callback,
     mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
     mojom::PersistentPrefStoreConnectionPtr incognito_connection,
+    std::vector<mojom::PrefRegistrationPtr> defaults,
     std::unordered_map<PrefValueStore::PrefStoreType,
                        mojom::PrefStoreConnectionPtr> connections) {
   scoped_refptr<PrefStore> managed_prefs = CreatePrefStoreClient(
@@ -92,9 +102,7 @@ void OnConnect(
   scoped_refptr<PrefStore> recommended_prefs =
       CreatePrefStoreClient(PrefValueStore::RECOMMENDED_STORE, &connections,
                             &local_layered_pref_stores);
-  // TODO(crbug.com/719770): Once owning registrations are supported, pass the
-  // default values of owned prefs to the service and connect to the service's
-  // defaults pref store instead of using a local one.
+  RegisterRemoteDefaults(pref_registry.get(), std::move(defaults));
   scoped_refptr<PersistentPrefStore> persistent_pref_store(
       new PersistentPrefStoreClient(
           std::move(persistent_pref_store_connection)));
