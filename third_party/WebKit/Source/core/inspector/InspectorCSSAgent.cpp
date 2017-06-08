@@ -1168,8 +1168,7 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
 
   FontCachePurgePreventer preventer;
   LayoutText* layout_text = ToLayoutText(layout_object);
-  for (InlineTextBox* box = layout_text->FirstTextBox(); box;
-       box = box->NextTextBox()) {
+  for (InlineTextBox* box : InlineTextBoxesOf(*layout_text)) {
     const ComputedStyle& style = layout_text->StyleRef(box->IsFirstLineStyle());
     const Font& font = style.GetFont();
     TextRun run = box->ConstructTextRunForInspector(style);
@@ -2461,8 +2460,7 @@ void InspectorCSSAgent::VisitLayoutTreeNodes(
         std::unique_ptr<protocol::Array<protocol::CSS::InlineTextBox>>
             inline_text_nodes =
                 protocol::Array<protocol::CSS::InlineTextBox>::create();
-        for (const InlineTextBox* text_box = layout_text->FirstTextBox();
-             text_box; text_box = text_box->NextTextBox()) {
+        for (const InlineTextBox* text_box : InlineTextBoxesOf(*layout_text)) {
           FloatRect local_coords_text_box_rect(text_box->FrameRect());
           FloatRect absolute_coords_text_box_rect =
               layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)

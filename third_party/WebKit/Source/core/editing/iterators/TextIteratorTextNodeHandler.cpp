@@ -175,8 +175,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeInRange(Text* node,
   // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)
   if (layout_object->ContainsReversedText()) {
     sorted_text_boxes_.clear();
-    for (InlineTextBox* text_box = layout_object->FirstTextBox(); text_box;
-         text_box = text_box->NextTextBox()) {
+    for (InlineTextBox* text_box : InlineTextBoxesOf(*layout_object)) {
       sorted_text_boxes_.push_back(text_box);
     }
     std::sort(sorted_text_boxes_.begin(), sorted_text_boxes_.end(),

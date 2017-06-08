@@ -23,6 +23,7 @@
 #ifndef LayoutText_h
 #define LayoutText_h
 
+#include <iterator>
 #include "core/CoreExport.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
@@ -351,6 +352,39 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutText, IsText());
 inline LayoutText* Text::GetLayoutObject() const {
   return ToLayoutText(CharacterData::GetLayoutObject());
 }
+
+// Represents list of |InlineTextBox| objects associated to |LayoutText| in
+// layout order.
+class InlineTextBoxRange {
+ public:
+  class Iterator
+      : public std::iterator<std::input_iterator_tag, InlineTextBox*> {
+   public:
+    explicit Iterator(InlineTextBox*);
+    Iterator(const Iterator&) = default;
+
+    Iterator& operator++();
+    InlineTextBox* operator*() const;
+
+    bool operator==(const Iterator& other) const {
+      return current_ == other.current_;
+    }
+    bool operator!=(const Iterator& other) const { return !operator==(other); }
+
+   private:
+    InlineTextBox* current_;
+  };
+
+  explicit InlineTextBoxRange(const LayoutText&);
+
+  Iterator begin() const { return Iterator(layout_text_->FirstTextBox()); }
+  Iterator end() const { return Iterator(nullptr); }
+
+ private:
+  const LayoutText* layout_text_;
+};
+
+InlineTextBoxRange InlineTextBoxesOf(const LayoutText&);
 
 void ApplyTextTransform(const ComputedStyle*, String&, UChar);
 

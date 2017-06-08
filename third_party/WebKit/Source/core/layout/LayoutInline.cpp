@@ -706,8 +706,7 @@ void LayoutInline::GenerateCulledLineBoxRects(
       }
     } else if (curr->IsText()) {
       LayoutText* curr_text = ToLayoutText(curr);
-      for (InlineTextBox* child_text = curr_text->FirstTextBox(); child_text;
-           child_text = child_text->NextTextBox()) {
+      for (InlineTextBox* child_text : InlineTextBoxesOf(*curr_text)) {
         RootInlineBox& root_box = child_text->Root();
         ComputeItemTopHeight(container, root_box, &logical_top,
                              &logical_height);
@@ -1340,8 +1339,7 @@ void LayoutInline::DirtyLineBoxes(bool full_layout) {
             child_line->Root().MarkDirty();
         } else if (curr->IsText()) {
           LayoutText* curr_text = ToLayoutText(curr);
-          for (InlineTextBox* child_text = curr_text->FirstTextBox();
-               child_text; child_text = child_text->NextTextBox())
+          for (InlineTextBox* child_text : InlineTextBoxesOf(*curr_text))
             child_text->Root().MarkDirty();
         }
       }
