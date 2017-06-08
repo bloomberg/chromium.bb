@@ -265,12 +265,6 @@ void WebRemoteFrameImpl::PrintPagesWithBoundaries(WebCanvas*, const WebSize&) {
   NOTREACHED();
 }
 
-void WebRemoteFrameImpl::DispatchMessageEventWithOriginCheck(
-    const WebSecurityOrigin& intended_target_origin,
-    const WebDOMEvent&) {
-  NOTREACHED();
-}
-
 WebRect WebRemoteFrameImpl::SelectionBoundsRect() const {
   NOTREACHED();
   return WebRect();

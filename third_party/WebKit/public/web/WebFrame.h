@@ -56,7 +56,6 @@ class Page;
 class Visitor;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
-class WebDOMEvent;
 class WebDocument;
 class WebElement;
 class WebLocalFrame;
@@ -359,13 +358,6 @@ class WebFrame {
   // plugin whose content indicates that printed output should not be scaled,
   // return true, otherwise return false.
   virtual bool IsPrintScalingDisabledForPlugin(const WebNode& = WebNode()) = 0;
-
-  // Events --------------------------------------------------------------
-
-  // Dispatches a message event on the current DOMWindow in this WebFrame.
-  virtual void DispatchMessageEventWithOriginCheck(
-      const WebSecurityOrigin& intended_target_origin,
-      const WebDOMEvent&) = 0;
 
   // Utility -------------------------------------------------------------
 

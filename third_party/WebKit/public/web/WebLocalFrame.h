@@ -30,11 +30,13 @@ class WebDataSource;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
 class WebDoubleSize;
+class WebDOMEvent;
 class WebFrameClient;
 class WebFrameWidget;
 class WebFrameScheduler;
 class WebInputMethodController;
 class WebRange;
+class WebSecurityOrigin;
 class WebScriptExecutionCallback;
 class WebSharedWorkerRepositoryClient;
 class WebTextCheckClient;
@@ -574,6 +576,13 @@ class WebLocalFrame : public WebFrame {
   // Save as the image located at a particular point in visual viewport
   // coordinates.
   virtual void SaveImageAt(const WebPoint&) = 0;
+
+  // Events --------------------------------------------------------------
+
+  // Dispatches a message event on the current DOMWindow in this WebFrame.
+  virtual void DispatchMessageEventWithOriginCheck(
+      const WebSecurityOrigin& intended_target_origin,
+      const WebDOMEvent&) = 0;
 
   // Site engagement --------------------------------------------------------
 
