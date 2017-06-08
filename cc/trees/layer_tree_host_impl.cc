@@ -2387,6 +2387,7 @@ void LayerTreeHostImpl::QueueImageDecode(
   decoded_image_tracker_.QueueImageDecode(
       image, base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
                         base::Unretained(this), embedder_callback));
+  tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);
 }
 
 void LayerTreeHostImpl::ImageDecodeFinished(

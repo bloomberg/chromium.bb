@@ -88,14 +88,17 @@ void CheckerImageTracker::ClearTracker(bool can_clear_decode_policy_tracking) {
     // re-decode and checker images that were pending invalidation.
     for (auto image_id : images_pending_invalidation_) {
       auto it = image_async_decode_state_.find(image_id);
-
       DCHECK(it != image_async_decode_state_.end());
-      DCHECK_EQ(it->second, DecodePolicy::SYNC_DECODED_ONCE);
-
+      DCHECK_EQ(it->second, DecodePolicy::SYNC);
       it->second = DecodePolicy::ASYNC;
     }
   }
   images_pending_invalidation_.clear();
+}
+
+void CheckerImageTracker::DisallowCheckeringForImage(const PaintImage& image) {
+  image_async_decode_state_.insert(
+      std::make_pair(image.stable_id(), DecodePolicy::SYNC));
 }
 
 void CheckerImageTracker::DidFinishImageDecode(
@@ -119,7 +122,7 @@ void CheckerImageTracker::DidFinishImageDecode(
     return;
   }
 
-  it->second = DecodePolicy::SYNC_DECODED_ONCE;
+  it->second = DecodePolicy::SYNC;
   images_pending_invalidation_.insert(image_id);
   ScheduleNextImageDecode();
   client_->NeedsInvalidationForCheckerImagedTiles();
@@ -150,9 +153,8 @@ bool CheckerImageTracker::ShouldCheckerImage(const PaintImage& image,
     return true;
   }
 
-  auto insert_result =
-      image_async_decode_state_.insert(std::pair<PaintImage::Id, DecodePolicy>(
-          image_id, DecodePolicy::SYNC_PERMANENT));
+  auto insert_result = image_async_decode_state_.insert(
+      std::pair<PaintImage::Id, DecodePolicy>(image_id, DecodePolicy::SYNC));
   auto it = insert_result.first;
   if (insert_result.second) {
     bool can_checker_image =
@@ -163,7 +165,7 @@ bool CheckerImageTracker::ShouldCheckerImage(const PaintImage& image,
       it->second = (size >= kMinImageSizeToCheckerBytes &&
                     size <= image_controller_->image_cache_max_limit_bytes())
                        ? DecodePolicy::ASYNC
-                       : DecodePolicy::SYNC_PERMANENT;
+                       : DecodePolicy::SYNC;
     }
   }
 

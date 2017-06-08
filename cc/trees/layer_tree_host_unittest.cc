@@ -7794,19 +7794,40 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_checker_imaging = true;
+  }
+
   void WillBeginMainFrame() override {
     if (!first_)
       return;
     first_ = false;
 
-    PaintImage image(PaintImage::GetNextId(),
-                     CreateDiscardableImage(gfx::Size(10, 10)));
+    image_ = PaintImage(PaintImage::GetNextId(),
+                        CreateDiscardableImage(gfx::Size(400, 400)));
     auto callback =
         base::Bind(&LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
                    base::Unretained(this));
     // Schedule the decode twice for the same image.
-    layer_tree_host()->QueueImageDecode(image, callback);
-    layer_tree_host()->QueueImageDecode(image, callback);
+    layer_tree_host()->QueueImageDecode(image_, callback);
+    layer_tree_host()->QueueImageDecode(image_, callback);
+  }
+
+  void ReadyToCommitOnThread(LayerTreeHostImpl* impl) override {
+    if (one_commit_done_)
+      return;
+    EXPECT_TRUE(
+        impl->tile_manager()->checker_image_tracker().ShouldCheckerImage(
+            image_, WhichTree::PENDING_TREE));
+    // Reset the tracker as if it has never seen this image.
+    impl->tile_manager()->checker_image_tracker().ClearTracker(true);
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    one_commit_done_ = true;
+    EXPECT_FALSE(
+        impl->tile_manager()->checker_image_tracker().ShouldCheckerImage(
+            image_, WhichTree::PENDING_TREE));
   }
 
   void ImageDecodeFinished(bool decode_succeeded) {
@@ -7821,7 +7842,9 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
 
  private:
   bool first_ = true;
+  bool one_commit_done_ = false;
   int finished_decode_count_ = 0;
+  PaintImage image_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestQueueImageDecode);

@@ -416,5 +416,26 @@ TEST_F(CheckerImageTrackerTest, CheckersOnlyStaticCompletedImages) {
       completed_paint_image, WhichTree::PENDING_TREE));
 }
 
+TEST_F(CheckerImageTrackerTest, DontCheckerDisallowedImages) {
+  SetUpTracker(true);
+
+  PaintImage image = CreateImage(ImageType::CHECKERABLE);
+  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
+      image, WhichTree::PENDING_TREE));
+  checker_image_tracker_->DisallowCheckeringForImage(image);
+  // Since the tracker already saw the image, even disallowing it would still
+  // ensure that we checker it until it's completed.
+  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
+      image, WhichTree::PENDING_TREE));
+
+  // Reset the tracker.
+  checker_image_tracker_->ClearTracker(true);
+  // If we haven't seen the image and disallow it first, then it's not
+  // checkerable anymore.
+  checker_image_tracker_->DisallowCheckeringForImage(image);
+  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
+      image, WhichTree::PENDING_TREE));
+}
+
 }  // namespace
 }  // namespace cc
