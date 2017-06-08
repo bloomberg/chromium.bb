@@ -117,6 +117,9 @@ namespace {
 
 // Converts from bounds in CSS space to device space based on the given
 // frame.
+// TODO(tanvir.rizvi): DeviceSpaceBounds is used for drag related functionality
+// and is irrelevant to core functionality of LocalFrame. This should be moved
+// out of LocalFrame to appropriate place.
 static FloatRect DeviceSpaceBounds(const FloatRect css_bounds,
                                    const LocalFrame& frame) {
   float device_scale_factor = frame.GetPage()->DeviceScaleFactorDeprecated();
@@ -131,7 +134,10 @@ static FloatRect DeviceSpaceBounds(const FloatRect css_bounds,
 
 // Returns a DragImage whose bitmap contains |contents|, positioned and scaled
 // in device space.
-static std::unique_ptr<DragImage> CreateDragImage(
+// TODO(tanvir.rizvi): CreateDragImageForFrame is used for drag related
+// functionality and is irrelevant to core functionality of LocalFrame. This
+// should be moved out of LocalFrame to appropriate place.
+static std::unique_ptr<DragImage> CreateDragImageForFrame(
     const LocalFrame& frame,
     float opacity,
     RespectImageOrientationEnum image_orientation,
@@ -168,6 +174,9 @@ static std::unique_ptr<DragImage> CreateDragImage(
                            opacity);
 }
 
+// TODO(tanvir.rizvi): DraggedNodeImageBuilder is used for drag related
+// functionality and is irrelevant to core functionality of LocalFrame. This
+// should be moved out of LocalFrame to appropriate place.
 class DraggedNodeImageBuilder {
   STACK_ALLOCATED();
 
@@ -228,7 +237,7 @@ class DraggedNodeImageBuilder {
       border_box_properties =
           *layer->GetLayoutObject().LocalBorderBoxProperties();
     }
-    return CreateDragImage(
+    return CreateDragImageForFrame(
         *local_frame_, 1.0f,
         LayoutObject::ShouldRespectImageOrientation(dragged_layout_object),
         bounding_box, builder, border_box_properties);
@@ -750,11 +759,17 @@ double LocalFrame::DevicePixelRatio() const {
   return ratio;
 }
 
+// TODO(tanvir.rizvi): NodeImage is used only by DataTransfer,
+// and is irrelevant to LocalFrame core functionality, so it can be moved to
+// DataTransfer.
 std::unique_ptr<DragImage> LocalFrame::NodeImage(Node& node) {
   DraggedNodeImageBuilder image_node(*this, node);
   return image_node.CreateImage();
 }
 
+// TODO(tanvir.rizvi): DragImageForSelection is used only by DragController,
+// and is irrelevant to LocalFrame core functionality, so it can be moved to
+// DragController.
 std::unique_ptr<DragImage> LocalFrame::DragImageForSelection(float opacity) {
   if (!Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange())
     return nullptr;
@@ -769,8 +784,9 @@ std::unique_ptr<DragImage> LocalFrame::DragImageForSelection(float opacity) {
   PaintRecordBuilder builder(DeviceSpaceBounds(painting_rect, *this));
   view_->PaintContents(builder.Context(), paint_flags,
                        EnclosingIntRect(painting_rect));
-  return CreateDragImage(*this, opacity, kDoNotRespectImageOrientation,
-                         painting_rect, builder, PropertyTreeState::Root());
+  return CreateDragImageForFrame(*this, opacity, kDoNotRespectImageOrientation,
+                                 painting_rect, builder,
+                                 PropertyTreeState::Root());
 }
 
 String LocalFrame::SelectedText() const {
