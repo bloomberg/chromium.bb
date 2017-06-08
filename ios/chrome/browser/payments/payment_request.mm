@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/region_data_loader_impl.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_request_data_util.h"
-#include "components/payments/core/payments_profile_comparator.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/web/public/payments/payment_request.h"
@@ -180,6 +179,10 @@ autofill::CreditCard* PaymentRequest::AddCreditCard(
   PopulateAvailableCreditCards();
 
   return credit_card_cache_.back().get();
+}
+
+payments::PaymentsProfileComparator* PaymentRequest::profile_comparator() {
+  return &profile_comparator_;
 }
 
 bool PaymentRequest::CanMakePayment() const {
