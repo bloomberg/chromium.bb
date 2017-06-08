@@ -12,7 +12,7 @@ function test() {
             return;
         }
 
-        Common.formatterWorkerPool.parseJSONRelaxed(resultData.data).then(success);
+        Formatter.formatterWorkerPool().parseJSONRelaxed(resultData.data).then(success);
 
         function success(data)
         {

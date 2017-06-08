@@ -56,7 +56,7 @@ function test()
     {
         InspectorTest.addResult("Text:");
         InspectorTest.addResult("    " + text + "\n");
-        Common.formatterWorkerPool.javaScriptIdentifiers(text)
+        Formatter.formatterWorkerPool().javaScriptIdentifiers(text)
             .then(onIdentifiers)
             .then(next);
     }
