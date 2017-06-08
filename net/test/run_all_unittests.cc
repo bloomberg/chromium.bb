@@ -18,7 +18,7 @@
 #include "net/android/net_jni_registrar.h"
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_IOS)
 #include "mojo/edk/embedder/embedder.h"  // nogncheck
 #endif
 
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
   NetTestSuite test_suite(argc, argv);
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_IOS)
   mojo::edk::Init();
 #endif
 

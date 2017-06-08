@@ -36,7 +36,7 @@ posix_avoid_mmap = is_android && current_cpu != "x86"
 
 use_v8_in_net = !is_ios && !is_proto_quic
 enable_built_in_dns = !is_ios && !is_proto_quic
-enable_net_mojo = !is_ios && !is_android && !is_proto_quic
+enable_net_mojo = !is_ios && !is_proto_quic
 
 # True if certificates are represented with DER byte buffers. This can be true
 # in addition to use_openssl_certs or use_nss_certs, in that case byte certs
@@ -2657,6 +2657,8 @@ if (enable_net_mojo) {
       "proxy/proxy_resolver_factory_mojo.h",
       "proxy/proxy_service_mojo.cc",
       "proxy/proxy_service_mojo.h",
+      "url_request/url_request_context_builder_mojo.cc",
+      "url_request/url_request_context_builder_mojo.h",
     ]
 
     public_deps = [
@@ -2688,33 +2690,6 @@ if (enable_net_mojo) {
       "//mojo/public/cpp/bindings",
       "//net/interfaces",
     ]
-  }
-}
-
-if (use_v8_in_net) {
-  source_set("net_context_builder_with_v8") {
-    sources = [
-      "url_request/url_request_context_builder_v8.cc",
-      "url_request/url_request_context_builder_v8.h",
-    ]
-
-    defines = []
-
-    deps = [
-      ":net",
-      ":net_with_v8",
-      "//base",
-    ]
-
-    if (enable_net_mojo) {
-      deps += [
-        ":net_browser_services",
-        "//mojo/public/cpp/bindings",
-        "//net/interfaces",
-      ]
-
-      defines += [ "ENABLE_NET_MOJO" ]
-    }
   }
 }
 
@@ -5089,8 +5064,8 @@ test("net_unittests") {
     "url_request/sdch_dictionary_fetcher_unittest.cc",
     "url_request/url_fetcher_impl_unittest.cc",
     "url_request/url_fetcher_response_writer_unittest.cc",
+    "url_request/url_request_context_builder_mojo_unittest.cc",
     "url_request/url_request_context_builder_unittest.cc",
-    "url_request/url_request_context_builder_v8_unittest.cc",
     "url_request/url_request_context_unittest.cc",
     "url_request/url_request_data_job_unittest.cc",
     "url_request/url_request_file_dir_job_unittest.cc",
@@ -5329,16 +5304,12 @@ test("net_unittests") {
   }
 
   if (use_v8_in_net) {
-    deps += [
-      ":net_context_builder_with_v8",
-      ":net_with_v8",
-    ]
+    deps += [ ":net_with_v8" ]
   } else {
     sources -= [
       "proxy/proxy_resolver_v8_tracing_unittest.cc",
       "proxy/proxy_resolver_v8_tracing_wrapper_unittest.cc",
       "proxy/proxy_resolver_v8_unittest.cc",
-      "url_request/url_request_context_builder_v8_unittest.cc",
     ]
   }
 
@@ -5348,8 +5319,6 @@ test("net_unittests") {
       ":net_utility_services",
       "//mojo/edk/system",
     ]
-
-    defines += [ "ENABLE_NET_MOJO" ]
   } else {
     sources -= [
       "dns/host_resolver_mojo_unittest.cc",
@@ -5361,6 +5330,7 @@ test("net_unittests") {
       "proxy/proxy_service_mojo_unittest.cc",
       "proxy/test_mojo_proxy_resolver_factory.cc",
       "proxy/test_mojo_proxy_resolver_factory.h",
+      "url_request/url_request_context_builder_mojo_unittest.cc",
     ]
   }
 

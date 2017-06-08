@@ -34,7 +34,7 @@
 #include "chrome/common/resource_usage_reporter.mojom.h"
 #include "chrome/utility/media_router/dial_device_description_parser_impl.h"
 #include "chrome/utility/profile_import_handler.h"
-#include "net/proxy/mojo_proxy_resolver_factory_impl.h"
+#include "net/proxy/mojo_proxy_resolver_factory_impl.h"  // nogncheck
 #include "net/proxy/proxy_resolver_v8.h"
 #endif  // !defined(OS_ANDROID)
 
