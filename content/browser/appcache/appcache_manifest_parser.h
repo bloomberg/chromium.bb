@@ -51,13 +51,14 @@ struct CONTENT_EXPORT AppCacheManifest {
   AppCacheNamespaceVector intercept_namespaces;
   AppCacheNamespaceVector fallback_namespaces;
   AppCacheNamespaceVector online_whitelist_namespaces;
-  bool online_whitelist_all;
-  bool did_ignore_intercept_namespaces;
+  bool online_whitelist_all = false;
+  bool did_ignore_intercept_namespaces = false;
+  bool did_ignore_fallback_namespaces = false;
 };
 
 enum ParseMode {
   PARSE_MANIFEST_PER_STANDARD,
-  PARSE_MANIFEST_ALLOWING_INTERCEPTS
+  PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES
 };
 
 CONTENT_EXPORT bool ParseManifest(
