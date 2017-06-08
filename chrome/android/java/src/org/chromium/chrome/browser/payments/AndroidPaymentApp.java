@@ -341,7 +341,12 @@ public class AndroidPaymentApp
 
         mPayIntent.putExtras(buildExtras(id, merchantName, origin, iframeOrigin, certificateChain,
                 methodDataMap, total, displayItems, modifiers));
-        if (!window.showIntent(mPayIntent, this, R.string.payments_android_app_error)) {
+        try {
+            if (!window.showIntent(mPayIntent, this, R.string.payments_android_app_error)) {
+                notifyErrorInvokingPaymentApp();
+            }
+        } catch (SecurityException e) {
+            // Payment app does not have android:exported="true" on the PAY activity.
             notifyErrorInvokingPaymentApp();
         }
     }
