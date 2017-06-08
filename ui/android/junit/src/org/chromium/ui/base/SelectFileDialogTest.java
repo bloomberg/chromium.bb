@@ -5,8 +5,6 @@
 package org.chromium.ui.base;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import android.webkit.MimeTypeMap;
 
@@ -108,14 +106,24 @@ public class SelectFileDialogTest {
         // Unknown extension, expect default response:
         assertEquals("application/octet-stream", SelectFileDialog.ensureMimeType(".flv"));
 
-        assertFalse(SelectFileDialog.usePhotoPicker(Arrays.asList("")));
-        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList(".jpg")));
-        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList("image/jpeg")));
-        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList(".jpg", "image/jpeg")));
-        assertTrue(SelectFileDialog.usePhotoPicker(Arrays.asList(".gif", "image/jpeg")));
-        // Returns false because generic picker is required (due to addition of .txt file).
-        assertFalse(SelectFileDialog.usePhotoPicker(Arrays.asList(".txt", ".jpg", "image/jpeg")));
-        // Returns false because video file is included.
-        assertFalse(SelectFileDialog.usePhotoPicker(Arrays.asList(".jpg", "image/jpeg", ".mpg")));
+        assertEquals(null, SelectFileDialog.convertToImageMimeTypes(Arrays.asList("")));
+        assertEquals(null, SelectFileDialog.convertToImageMimeTypes(Arrays.asList("foo/bar")));
+        assertEquals(Arrays.asList("image/jpeg"),
+                SelectFileDialog.convertToImageMimeTypes(Arrays.asList(".jpg")));
+        assertEquals(Arrays.asList("image/jpeg"),
+                SelectFileDialog.convertToImageMimeTypes(Arrays.asList("image/jpeg")));
+        assertEquals(Arrays.asList("image/jpeg"),
+                SelectFileDialog.convertToImageMimeTypes(Arrays.asList(".jpg", "image/jpeg")));
+        assertEquals(Arrays.asList("image/gif", "image/jpeg"),
+                SelectFileDialog.convertToImageMimeTypes(Arrays.asList(".gif", "image/jpeg")));
+
+        // Returns null because generic picker is required (due to addition of .txt file).
+        assertEquals(null,
+                SelectFileDialog.convertToImageMimeTypes(
+                        Arrays.asList(".txt", ".jpg", "image/jpeg")));
+        // Returns null because video file is included.
+        assertEquals(null,
+                SelectFileDialog.convertToImageMimeTypes(
+                        Arrays.asList(".jpg", "image/jpeg", ".mpg")));
     }
 }

@@ -218,10 +218,11 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
             if (mWindowAndroid.showIntent(soundRecorder, this, R.string.low_memory_error)) return;
         }
 
-        // Use new photo picker, if available.
+        // Use the new photo picker, if available.
         Activity activity = mWindowAndroid.getActivity().get();
-        if (activity != null && usePhotoPicker(mFileTypes)
-                && UiUtils.showPhotoPicker(activity, this, mAllowMultiple)) {
+        List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
+        if (activity != null && imageMimeTypes != null
+                && UiUtils.showPhotoPicker(activity, this, mAllowMultiple, imageMimeTypes)) {
             return;
         }
 
@@ -273,16 +274,23 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
     }
 
     /**
-     * Determines if a photo picker can be used instead of the stock Android picker.
-     * @return True if only images types are being requested.
+     * Converts a list of extensions and Mime types to a list of de-duped Mime types containing
+     * image types only. If the input list contains a non-image type, then null is returned.
+     * @param fileTypes the list of filetypes (extensions and Mime types) to convert.
+     * @return A de-duped list of Image Mime types only, or null if one or more non-image types were
+     *         given as input.
      */
     @VisibleForTesting
-    public static boolean usePhotoPicker(List<String> fileTypes) {
+    public static List<String> convertToImageMimeTypes(List<String> fileTypes) {
+        List<String> mimeTypes = new ArrayList<>();
         for (String type : fileTypes) {
             String mimeType = ensureMimeType(type);
-            if (!mimeType.startsWith("image/")) return false;
+            if (!mimeType.startsWith("image/")) {
+                return null;
+            }
+            if (!mimeTypes.contains(mimeType)) mimeTypes.add(mimeType);
         }
-        return true;
+        return mimeTypes;
     }
 
     /**

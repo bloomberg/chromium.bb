@@ -83,8 +83,10 @@ public class UiUtils {
          * @param listener The listener that will be notified of the action the user took in the
          *                 picker.
          * @param allowMultiple Whether the dialog should allow multiple images to be selected.
+         * @param mimeTypes A list of mime types to show in the dialog.
          */
-        void showPhotoPicker(Context context, PhotoPickerListener listener, boolean allowMultiple);
+        void showPhotoPicker(Context context, PhotoPickerListener listener, boolean allowMultiple,
+                List<String> mimeTypes);
 
         /**
          * Called when the photo picker dialog should be dismissed.
@@ -115,11 +117,12 @@ public class UiUtils {
      * @param listener The listener that will be notified of the action the user took in the
      *                 picker.
      * @param allowMultiple Whether the dialog should allow multiple images to be selected.
+     * @param mimeTypes A list of mime types to show in the dialog.
      */
-    public static boolean showPhotoPicker(
-            Context context, PhotoPickerListener listener, boolean allowMultiple) {
+    public static boolean showPhotoPicker(Context context, PhotoPickerListener listener,
+            boolean allowMultiple, List<String> mimeTypes) {
         if (sPhotoPickerDelegate == null) return false;
-        sPhotoPickerDelegate.showPhotoPicker(context, listener, allowMultiple);
+        sPhotoPickerDelegate.showPhotoPicker(context, listener, allowMultiple, mimeTypes);
         return true;
     }
 
