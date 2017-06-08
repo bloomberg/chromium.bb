@@ -3904,9 +3904,11 @@
     },
     "bob-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "bob"
         ],
+        "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -14216,6 +14218,7 @@
             "beaglebone-release",
             "beaglebone_servo-release",
             "betty-release",
+            "bob-release",
             "buddy-release",
             "butterfly-release",
             "candy-release",
