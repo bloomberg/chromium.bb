@@ -638,10 +638,8 @@ struct stream_config {
   int arg_ctrls[ARG_CTRL_CNT_MAX][2];
   int arg_ctrl_cnt;
   int write_webm;
-#if CONFIG_HIGHBITDEPTH
   // whether to use 16bit internal buffers
   int use_16bit_internal;
-#endif
 };
 
 struct stream_state {
@@ -1802,11 +1800,8 @@ int main(int argc, const char **argv_) {
         }
       }
       if (stream->config.cfg.g_profile > 1) {
-#if CONFIG_HIGHBITDEPTH
+        if (!CONFIG_HIGHBITDEPTH) fatal("Unsupported profile.");
         stream->config.use_16bit_internal = 1;
-#else
-        fatal("Unsupported profile.");
-#endif
       }
       if (profile_updated && !global.quiet) {
         fprintf(stderr,
