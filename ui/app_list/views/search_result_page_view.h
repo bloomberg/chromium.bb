@@ -66,6 +66,9 @@ class APP_LIST_EXPORT SearchResultPageView
   // -1 indicates no selection.
   int selected_index_;
 
+  // Whether launcher is shown in fullscreen mode.
+  bool const is_fullscreen_app_list_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };
 

@@ -15,6 +15,11 @@
 
 namespace app_list {
 
+namespace {
+constexpr int kVerticalPadding = 11;
+constexpr int kHorizontalPadding = 16;
+}
+
 // Container of the search answer view.
 class SearchResultAnswerCardView::SearchAnswerContainerView
     : public views::CustomButton,
@@ -25,11 +30,11 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       : CustomButton(this), view_delegate_(view_delegate) {
     // Center the card horizontally in the container.
     views::BoxLayout* answer_container_layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal);
+        new views::BoxLayout(views::BoxLayout::kHorizontal,
+                             gfx::Insets(kVerticalPadding, kHorizontalPadding));
     answer_container_layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     SetLayoutManager(answer_container_layout);
-    SetVisible(false);
   }
 
   void SetSelected(bool selected) {
@@ -58,8 +63,6 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       search_result_->AddObserver(this);
       SetAccessibleName(search_result_->title());
     }
-
-    SetVisible(new_result_view != nullptr);
   }
 
   // views::CustomButton overrides:
@@ -138,6 +141,7 @@ int SearchResultAnswerCardView::DoUpdate() {
 
   search_answer_container_view_->SetSearchResult(
       have_result ? display_results[0] : nullptr);
+  parent()->SetVisible(have_result);
 
   set_container_score(have_result ? display_results.front()->relevance() : 0);
   return have_result ? 1 : 0;
