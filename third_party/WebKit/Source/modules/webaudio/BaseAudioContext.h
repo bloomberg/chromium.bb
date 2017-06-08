@@ -273,16 +273,6 @@ class MODULES_EXPORT BaseAudioContext
   // Called at the end of each render quantum.
   void HandlePostRenderTasks();
 
-  // Called periodically at the end of each render quantum to release
-  // finished source nodes.  Updates m_finishedSourceNodes with nodes
-  // to be deleted.  Returns true if any node needs deletion.  Must be
-  // run from the audio thread.
-  bool ReleaseFinishedSourceNodes();
-
-  // The finished source nodes found by |releaseFinishedSourceNodes|
-  // will be removed on the main thread, which is done here.
-  void RemoveFinishedSourceNodes(bool needs_removal);
-
   // Keeps track of the number of connections made.
   void IncrementConnectionCount() {
     DCHECK(IsMainThread());
@@ -413,11 +403,6 @@ class MODULES_EXPORT BaseAudioContext
   // haven't finished playing.  Make sure to release them here.
   void ReleaseActiveSourceNodes();
 
-  // Actually remove the nodes noted for deletion by
-  // releaseFinishedSourceNodes.  Must be run from the main thread,
-  // and must not be run with the context lock.
-  void RemoveFinishedSourceNodesOnMainThread();
-
   // Returns the Document wich wich the instance is associated.
   Document* GetDocument() const;
 
@@ -430,9 +415,12 @@ class MODULES_EXPORT BaseAudioContext
   // Listener for the PannerNodes
   Member<AudioListener> listener_;
 
-  // Only accessed in the audio thread.
+  // Accessed by audio thread and main thread, coordinated using
+  // the associated mutex.
+  //
   // These raw pointers are safe because AudioSourceNodes in
-  // m_activeSourceNodes own them.
+  // active_source_nodes_ own them.
+  Mutex finished_source_handlers_mutex_;
   Vector<AudioHandler*> finished_source_handlers_;
 
   // List of source nodes. This is either accessed when the graph lock is
@@ -443,17 +431,24 @@ class MODULES_EXPORT BaseAudioContext
   // this.
   HeapVector<Member<AudioNode>> active_source_nodes_;
 
-  // The main thread controls m_activeSourceNodes, all updates and additions
-  // are performed by it. When the audio thread marks a source node as finished,
-  // the nodes are added to |m_finishedSourceNodes| and scheduled for removal
-  // from |m_activeSourceNodes| by the main thread.
-  HashSet<UntracedMember<AudioNode>> finished_source_nodes_;
-
-  // FIXME(dominicc): Move these to AudioContext because only
-  // it creates these Promises.
-  // Handle Promises for resume() and suspend()
+  // Called by the audio thread to handle Promises for resume() and suspend(),
+  // posting a main thread task to perform the actual resolving, if needed.
+  //
+  // TODO(dominicc): Move to AudioContext because only it creates
+  // these Promises.
   void ResolvePromisesForResume();
-  void ResolvePromisesForResumeOnMainThread();
+
+  // The audio thread relies on the main thread to perform some operations
+  // over the objects that it owns and controls; |ScheduleMainThreadCleanup()|
+  // posts the task to initiate those.
+  //
+  // That is, we combine all those sub-tasks into one task action for
+  // convenience and performance, |PerformCleanupOnMainThread()|. It handles
+  // promise resolving, stopping and finishing up of audio source nodes etc.
+  // Actions that should happen, but can happen asynchronously to the
+  // audio thread making rendering progress.
+  void ScheduleMainThreadCleanup();
+  void PerformCleanupOnMainThread();
 
   // When the context is going away, reject any pending script promise
   // resolvers.
@@ -466,6 +461,11 @@ class MODULES_EXPORT BaseAudioContext
   // can take some time and the audio context process loop is very fast, so we
   // don't want to call resolve an excessive number of times.
   bool is_resolving_resume_promises_;
+
+  // Set to |true| by the audio thread when it posts a main-thread task to
+  // perform delayed state sync'ing updates that needs to be done on the main
+  // thread. Cleared by the main thread task once it has run.
+  bool has_posted_cleanup_task_;
 
   // Whether a user gesture is required to start this AudioContext.
   bool user_gesture_required_;

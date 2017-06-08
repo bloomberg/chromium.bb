@@ -95,6 +95,7 @@ BaseAudioContext::BaseAudioContext(Document* document)
       destination_node_(nullptr),
       is_cleared_(false),
       is_resolving_resume_promises_(false),
+      has_posted_cleanup_task_(false),
       user_gesture_required_(false),
       connection_count_(0),
       deferred_task_handler_(DeferredTaskHandler::Create()),
@@ -149,7 +150,6 @@ BaseAudioContext::~BaseAudioContext() {
   // be in the destructor if there are still AudioNodes around.
   DCHECK(!IsDestinationInitialized());
   DCHECK(!active_source_nodes_.size());
-  DCHECK(!finished_source_handlers_.size());
   DCHECK(!is_resolving_resume_promises_);
   DCHECK(!resume_resolvers_.size());
   DCHECK(!autoplay_status_.has_value());
@@ -700,32 +700,8 @@ void BaseAudioContext::NotifyStateChange() {
 void BaseAudioContext::NotifySourceNodeFinishedProcessing(
     AudioHandler* handler) {
   DCHECK(IsAudioThread());
+  MutexLocker lock(finished_source_handlers_mutex_);
   finished_source_handlers_.push_back(handler);
-}
-
-void BaseAudioContext::RemoveFinishedSourceNodes(bool needs_removal) {
-  DCHECK(IsAudioThread());
-
-  if (needs_removal) {
-    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(
-            &BaseAudioContext::RemoveFinishedSourceNodesOnMainThread,
-            WrapCrossThreadPersistent(this)));
-  }
-}
-
-void BaseAudioContext::RemoveFinishedSourceNodesOnMainThread() {
-  DCHECK(IsMainThread());
-  AutoLocker locker(this);
-  // Quadratic worst case, but sizes of both vectors are considered
-  // manageable, especially |m_finishedSourceNodes| is likely to be short.
-  for (AudioNode* node : finished_source_nodes_) {
-    size_t i = active_source_nodes_.Find(node);
-    if (i != kNotFound)
-      active_source_nodes_.erase(i);
-  }
-  finished_source_nodes_.clear();
 }
 
 Document* BaseAudioContext::GetDocument() const {
@@ -754,26 +730,6 @@ bool BaseAudioContext::AreAutoplayRequirementsFulfilled() const {
   return false;
 }
 
-bool BaseAudioContext::ReleaseFinishedSourceNodes() {
-  DCHECK(IsGraphOwner());
-  DCHECK(IsAudioThread());
-  bool did_remove = false;
-  for (AudioHandler* handler : finished_source_handlers_) {
-    for (AudioNode* node : active_source_nodes_) {
-      if (finished_source_nodes_.Contains(node))
-        continue;
-      if (handler == &node->Handler()) {
-        handler->BreakConnection();
-        finished_source_nodes_.insert(node);
-        did_remove = true;
-        break;
-      }
-    }
-  }
-  finished_source_handlers_.clear();
-  return did_remove;
-}
-
 void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
   DCHECK(IsMainThread());
   AutoLocker locker(this);
@@ -791,23 +747,11 @@ void BaseAudioContext::ReleaseActiveSourceNodes() {
 }
 
 void BaseAudioContext::HandleStoppableSourceNodes() {
+  DCHECK(IsAudioThread());
   DCHECK(IsGraphOwner());
 
-  // Find AudioBufferSourceNodes to see if we can stop playing them.
-  for (AudioNode* node : active_source_nodes_) {
-    // If the AudioNode has been marked as finished and released by
-    // the audio thread, but not yet removed by the main thread
-    // (see releaseActiveSourceNodes() above), |node| must not be
-    // touched as its handler may have been released already.
-    if (finished_source_nodes_.Contains(node))
-      continue;
-    if (node->Handler().GetNodeType() ==
-        AudioHandler::kNodeTypeAudioBufferSource) {
-      AudioBufferSourceNode* source_node =
-          static_cast<AudioBufferSourceNode*>(node);
-      source_node->GetAudioBufferSourceHandler().HandleStoppableSourceNode();
-    }
-  }
+  if (active_source_nodes_.size())
+    ScheduleMainThreadCleanup();
 }
 
 void BaseAudioContext::HandlePreRenderTasks(
@@ -844,39 +788,88 @@ void BaseAudioContext::HandlePostRenderTasks() {
   // is that there will be some nodes which will take slightly longer than usual
   // to be deleted or removed from the render graph (in which case they'll
   // render silence).
-  bool did_remove = false;
   if (TryLock()) {
     // Take care of AudioNode tasks where the tryLock() failed previously.
     GetDeferredTaskHandler().BreakConnections();
-
-    // Dynamically clean up nodes which are no longer needed.
-    did_remove = ReleaseFinishedSourceNodes();
 
     GetDeferredTaskHandler().HandleDeferredTasks();
     GetDeferredTaskHandler().RequestToDeleteHandlersOnMainThread();
 
     unlock();
   }
-
-  RemoveFinishedSourceNodes(did_remove);
 }
 
-void BaseAudioContext::ResolvePromisesForResumeOnMainThread() {
+void BaseAudioContext::PerformCleanupOnMainThread() {
   DCHECK(IsMainThread());
   AutoLocker locker(this);
 
-  for (auto& resolver : resume_resolvers_) {
-    if (context_state_ == kClosed) {
-      resolver->Reject(DOMException::Create(
-          kInvalidStateError, "Cannot resume a context that has been closed"));
-    } else {
-      SetContextState(kRunning);
-      resolver->Resolve();
+  if (is_resolving_resume_promises_) {
+    for (auto& resolver : resume_resolvers_) {
+      if (context_state_ == kClosed) {
+        resolver->Reject(DOMException::Create(
+            kInvalidStateError,
+            "Cannot resume a context that has been closed"));
+      } else {
+        SetContextState(kRunning);
+        resolver->Resolve();
+      }
     }
+    resume_resolvers_.clear();
+    is_resolving_resume_promises_ = false;
   }
 
-  resume_resolvers_.clear();
-  is_resolving_resume_promises_ = false;
+  if (active_source_nodes_.size()) {
+    // Find AudioBufferSourceNodes to see if we can stop playing them.
+    for (AudioNode* node : active_source_nodes_) {
+      if (node->Handler().GetNodeType() ==
+          AudioHandler::kNodeTypeAudioBufferSource) {
+        AudioBufferSourceNode* source_node =
+            static_cast<AudioBufferSourceNode*>(node);
+        source_node->GetAudioBufferSourceHandler().HandleStoppableSourceNode();
+      }
+    }
+
+    Vector<AudioHandler*> finished_handlers;
+    {
+      MutexLocker lock(finished_source_handlers_mutex_);
+      finished_source_handlers_.swap(finished_handlers);
+    }
+    // Break the connection and release active nodes that have finished
+    // playing.
+    unsigned remove_count = 0;
+    Vector<bool> removables;
+    removables.resize(active_source_nodes_.size());
+    for (AudioHandler* handler : finished_handlers) {
+      for (unsigned i = 0; i < active_source_nodes_.size(); ++i) {
+        if (handler == &active_source_nodes_[i]->Handler()) {
+          handler->BreakConnection();
+          removables[i] = true;
+          remove_count++;
+          break;
+        }
+      }
+    }
+
+    // Copy over the surviving active nodes.
+    HeapVector<Member<AudioNode>> actives;
+    actives.ReserveInitialCapacity(active_source_nodes_.size() - remove_count);
+    for (unsigned i = 0; i < removables.size(); ++i) {
+      if (!removables[i])
+        actives.push_back(active_source_nodes_[i]);
+    }
+    active_source_nodes_.swap(actives);
+  }
+  has_posted_cleanup_task_ = false;
+}
+
+void BaseAudioContext::ScheduleMainThreadCleanup() {
+  if (has_posted_cleanup_task_)
+    return;
+  Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(&BaseAudioContext::PerformCleanupOnMainThread,
+                      WrapCrossThreadPersistent(this)));
+  has_posted_cleanup_task_ = true;
 }
 
 void BaseAudioContext::ResolvePromisesForResume() {
@@ -890,10 +883,7 @@ void BaseAudioContext::ResolvePromisesForResume() {
   // often and it takes some time to resolve the promises in the main thread.
   if (!is_resolving_resume_promises_ && resume_resolvers_.size() > 0) {
     is_resolving_resume_promises_ = true;
-    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&BaseAudioContext::ResolvePromisesForResumeOnMainThread,
-                        WrapCrossThreadPersistent(this)));
+    ScheduleMainThreadCleanup();
   }
 }
 
