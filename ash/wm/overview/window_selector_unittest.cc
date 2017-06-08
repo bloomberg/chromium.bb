@@ -1251,6 +1251,41 @@ TEST_F(WindowSelectorTest, RemoveDisplay) {
   EXPECT_FALSE(IsSelecting());
 }
 
+// Tests removing a display during overview with NON_ZERO_DURATION animation.
+TEST_F(WindowSelectorTest, RemoveDisplayWithAnimation) {
+  // TODO: hits CHECK in stl as order of |ShelfModel::items_| is wrong.
+  // http://crbug.com/698878.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  gfx::Rect bounds1(0, 0, 100, 100);
+  gfx::Rect bounds2(450, 0, 100, 100);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds1));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds2));
+  std::unique_ptr<aura::Window> window3(CreatePanelWindow(bounds1));
+  std::unique_ptr<aura::Window> window4(CreatePanelWindow(bounds2));
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(root_windows[0], window1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window2->GetRootWindow());
+  EXPECT_EQ(root_windows[0], window3->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window4->GetRootWindow());
+
+  wm::ActivateWindow(window4.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+
+  ToggleOverview();
+  EXPECT_TRUE(IsSelecting());
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  UpdateDisplay("400x400");
+  EXPECT_FALSE(IsSelecting());
+}
+
 // Tests starting overview during a drag and drop tracking operation.
 // TODO(flackr): Fix memory corruption crash when running locally (not failing
 // on bots). See http://crbug.com/342528.
