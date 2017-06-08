@@ -73,7 +73,7 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
     test('keyboard selection', function() {
       function assertFocused(oldFocus, newFocus) {
         assertEquals(
-            '', getFolderNode(oldFocus).$.container.getAttribute('tabindex'));
+            '-1', getFolderNode(oldFocus).$.container.getAttribute('tabindex'));
         assertEquals(
             '0', getFolderNode(newFocus).$.container.getAttribute('tabindex'));
         assertEquals(
@@ -88,8 +88,9 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       assertEquals(
           '0', getFolderNode('1').$.container.getAttribute('tabindex'));
 
-      // Only the selected folder should be focusable.
-      assertEquals('', getFolderNode('2').$.container.getAttribute('tabindex'));
+      // Only the selected folder should be keyboard focusable.
+      assertEquals(
+          '-1', getFolderNode('2').$.container.getAttribute('tabindex'));
 
       // Give keyboard focus to the first item.
       getFolderNode('1').$.container.focus();
@@ -101,7 +102,8 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       store.data.selectedFolder = '2';
       store.notifyObservers();
 
-      assertEquals('', getFolderNode('1').$.container.getAttribute('tabindex'));
+      assertEquals(
+          '-1', getFolderNode('1').$.container.getAttribute('tabindex'));
       assertEquals(
           '0', getFolderNode('2').$.container.getAttribute('tabindex'));
       assertFocused('1', '2');
