@@ -27,6 +27,7 @@
 
 #include "core/editing/iterators/TextIteratorTextState.h"
 
+#include "core/html/HTMLElement.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
