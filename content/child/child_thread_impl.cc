@@ -80,6 +80,8 @@
 
 #if defined(OS_MACOSX)
 #include "base/allocator/allocator_interception_mac.h"
+#include "base/process/process.h"
+#include "content/common/mac/app_nap_activity.h"
 #endif
 
 using tracked_objects::ThreadData;
@@ -563,6 +565,10 @@ void ChildThreadImpl::Init(const Options& options) {
           switches::kEnableHeapProfiling)) {
     base::allocator::PeriodicallyShimNewMallocZones();
   }
+  if (base::Process::IsAppNapEnabled()) {
+    app_nap_activity_.reset(new AppNapActivity());
+    app_nap_activity_->Begin();
+  };
 #endif
 
   message_loop_->task_runner()->PostDelayedTask(
@@ -757,6 +763,15 @@ void ChildThreadImpl::OnProcessBackgrounded(bool backgrounded) {
   if (backgrounded)
     timer_slack = base::TIMER_SLACK_MAXIMUM;
   base::MessageLoop::current()->SetTimerSlack(timer_slack);
+#if defined(OS_MACOSX)
+  if (base::Process::IsAppNapEnabled()) {
+    if (backgrounded) {
+      app_nap_activity_->End();
+    } else {
+      app_nap_activity_->Begin();
+    }
+  }
+#endif  // defined(OS_MACOSX)
 }
 
 void ChildThreadImpl::OnProcessPurgeAndSuspend() {

@@ -8,6 +8,12 @@
 
 #include "base/mac/scoped_nsobject.h"
 
+extern "C" {
+void __CFRunLoopSetOptionsReason(uint64_t options,
+                                 NSString* reason,
+                                 int unused);
+}
+
 namespace content {
 
 namespace {
@@ -32,6 +38,21 @@ AppNapActivity::AppNapActivity() {
 AppNapActivity::~AppNapActivity() {
   DCHECK(!assertion_->obj.get());
 };
+
+void AppNapActivity::InitializeAppNapSupport() {
+  // Reason strings are the same as
+  // what macOS sends in the corresponding call.
+  // |options| (argument 1) are magic numbers as found in the
+  // callsites mentioned above.
+  //
+  // Normally happens during launch services check-in. (HIToolbox)
+  __CFRunLoopSetOptionsReason(
+      1, @"Finished checking in as application - waiting for events", 0);
+  // Normally happens in a dispatch_once in the NSApplication event loop.
+  // (CoreFoundation).
+  __CFRunLoopSetOptionsReason(
+      0x3b000000, @"Finished delay after app launch and bundle check", 0);
+}
 
 void AppNapActivity::Begin() {
   DCHECK(!assertion_->obj.get());
