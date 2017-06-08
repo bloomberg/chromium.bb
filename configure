@@ -491,7 +491,6 @@ post_process_cmdline() {
     soft_enable loopfiltering_across_tiles
     soft_enable ec_smallmul
     soft_enable var_tx
-    soft_enable one_sided_compound
     soft_enable ext_inter
     soft_enable wedge
     soft_enable compound_segment
