@@ -109,6 +109,11 @@ extern "C" {
 #define EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE 0x33A6
 #endif /* EGL_ANGLE_flexible_surface_compatibility */
 
+#ifndef EGL_ANGLE_display_robust_resource_initialization
+#define EGL_ANGLE_display_robust_resource_initialization 1
+#define EGL_DISPLAY_ROBUST_RESOURCE_INITIALIZATION_ANGLE 0x3453
+#endif /* EGL_ANGLE_display_robust_resource_initialization */
+
 using ui::GetLastEGLErrorString;
 
 namespace gl {
@@ -173,7 +178,8 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
 
 EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
                                    EGLenum platform_type,
-                                   bool warpDevice) {
+                                   bool warpDevice,
+                                   bool robustResourceInit) {
   std::vector<EGLint> display_attribs;
 
   display_attribs.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
@@ -182,6 +188,11 @@ EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
   if (warpDevice) {
     display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
     display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE);
+  }
+
+  if (robustResourceInit) {
+    display_attribs.push_back(EGL_DISPLAY_ROBUST_RESOURCE_INITIALIZATION_ANGLE);
+    display_attribs.push_back(EGL_TRUE);
   }
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
@@ -204,26 +215,32 @@ EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
 }
 
 EGLDisplay GetDisplayFromType(DisplayType display_type,
-                              EGLNativeDisplayType native_display) {
+                              EGLNativeDisplayType native_display,
+                              bool robustResourceInit) {
   switch (display_type) {
     case DEFAULT:
     case SWIFT_SHADER:
       return eglGetDisplay(native_display);
     case ANGLE_D3D9:
       return GetPlatformANGLEDisplay(native_display,
-                                     EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, false);
+                                     EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, false,
+                                     robustResourceInit);
     case ANGLE_D3D11:
-      return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, false);
+      return GetPlatformANGLEDisplay(native_display,
+                                     EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, false,
+                                     robustResourceInit);
     case ANGLE_OPENGL:
-      return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE, false);
+      return GetPlatformANGLEDisplay(native_display,
+                                     EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE,
+                                     false, robustResourceInit);
     case ANGLE_OPENGLES:
-      return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE, false);
+      return GetPlatformANGLEDisplay(native_display,
+                                     EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE,
+                                     false, robustResourceInit);
     case ANGLE_NULL:
       return GetPlatformANGLEDisplay(native_display,
-                                     EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE, false);
+                                     EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE, false,
+                                     robustResourceInit);
     default:
       NOTREACHED();
       return EGL_NO_DISPLAY;
@@ -680,6 +697,15 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
         ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_null");
   }
 
+  bool supports_robust_resource_init =
+      client_extensions &&
+      ExtensionsContain(client_extensions,
+                        "EGL_ANGLE_display_robust_resource_initialization");
+  bool use_robust_resource_init =
+      supports_robust_resource_init &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUsePassthroughCmdDecoderGL);
+
   std::vector<DisplayType> init_displays;
   GetEGLInitDisplays(supports_angle_d3d, supports_angle_opengl,
                      supports_angle_null,
@@ -687,8 +713,8 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
 
   for (size_t disp_index = 0; disp_index < init_displays.size(); ++disp_index) {
     DisplayType display_type = init_displays[disp_index];
-    EGLDisplay display =
-        GetDisplayFromType(display_type, g_native_display);
+    EGLDisplay display = GetDisplayFromType(display_type, g_native_display,
+                                            use_robust_resource_init);
     if (display == EGL_NO_DISPLAY) {
       LOG(ERROR) << "EGL display query failed with error "
                  << GetLastEGLErrorString();
