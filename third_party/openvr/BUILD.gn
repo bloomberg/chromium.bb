@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-loadable_module("openvr") {
+component("openvr") {
   output_name = "openvr_api"
 
   # Some ascii versions of Windows APIs are used in this code.
@@ -23,6 +23,10 @@ loadable_module("openvr") {
     "src/src/vrcommon/strtools_public.cpp",
     "src/src/vrcommon/vrpathregistry_public.cpp",
   ]
+
+  if (target_cpu == "x64" && is_win) {
+    defines += [ "WIN64" ]
+  }
 
   include_dirs = [
     "src/headers",
