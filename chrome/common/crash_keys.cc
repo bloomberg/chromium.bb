@@ -218,10 +218,6 @@ size_t RegisterChromeCrashKeys() {
     {"engine_params", crash_keys::kMediumSize},
     {"engine1_params", crash_keys::kMediumSize},
     {"engine2_params", crash_keys::kMediumSize},
-
-    // Temporary for http://crbug.com/703649.
-    {"field_trial_shmem_create_error", crash_keys::kSmallSize},
-    {"field_trial_shmem_map_error", crash_keys::kSmallSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
