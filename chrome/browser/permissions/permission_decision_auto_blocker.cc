@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/variations/variations_associated_data.h"
@@ -197,6 +196,43 @@ PermissionDecisionAutoBlocker* PermissionDecisionAutoBlocker::GetForProfile(
 }
 
 // static
+PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
+    HostContentSettingsMap* settings_map,
+    const GURL& request_origin,
+    ContentSettingsType permission,
+    base::Time current_time) {
+  DCHECK(settings_map);
+  std::unique_ptr<base::DictionaryValue> dict =
+      GetOriginDict(settings_map, request_origin);
+  base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
+      dict.get(), PermissionUtil::GetPermissionString(permission));
+
+  if (IsUnderEmbargo(permission_dict, features::kPermissionsBlacklist,
+                     kPermissionBlacklistEmbargoKey, current_time,
+                     base::TimeDelta::FromDays(g_blacklist_embargo_days))) {
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::SAFE_BROWSING_BLACKLIST);
+  }
+
+  if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfDismissedOften,
+                     kPermissionDismissalEmbargoKey, current_time,
+                     base::TimeDelta::FromDays(g_dismissal_embargo_days))) {
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::MULTIPLE_DISMISSALS);
+  }
+
+  if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfIgnoredOften,
+                     kPermissionIgnoreEmbargoKey, current_time,
+                     base::TimeDelta::FromDays(g_ignore_embargo_days))) {
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::MULTIPLE_IGNORES);
+  }
+
+  return PermissionResult(CONTENT_SETTING_ASK,
+                          PermissionStatusSource::UNSPECIFIED);
+}
+
+// static
 void PermissionDecisionAutoBlocker::UpdateFromVariations() {
   int dismissals_before_block = -1;
   int ignores_before_block = -1;
@@ -275,37 +311,9 @@ void PermissionDecisionAutoBlocker::CheckSafeBrowsingBlacklist(
 PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
     const GURL& request_origin,
     ContentSettingsType permission) {
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<base::DictionaryValue> dict =
-      GetOriginDict(map, request_origin);
-  base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
-
-  base::Time current_time = clock_->Now();
-  if (IsUnderEmbargo(permission_dict, features::kPermissionsBlacklist,
-                     kPermissionBlacklistEmbargoKey, current_time,
-                     base::TimeDelta::FromDays(g_blacklist_embargo_days))) {
-    return PermissionResult(CONTENT_SETTING_BLOCK,
-                            PermissionStatusSource::SAFE_BROWSING_BLACKLIST);
-  }
-
-  if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfDismissedOften,
-                     kPermissionDismissalEmbargoKey, current_time,
-                     base::TimeDelta::FromDays(g_dismissal_embargo_days))) {
-    return PermissionResult(CONTENT_SETTING_BLOCK,
-                            PermissionStatusSource::MULTIPLE_DISMISSALS);
-  }
-
-  if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfIgnoredOften,
-                     kPermissionIgnoreEmbargoKey, current_time,
-                     base::TimeDelta::FromDays(g_ignore_embargo_days))) {
-    return PermissionResult(CONTENT_SETTING_BLOCK,
-                            PermissionStatusSource::MULTIPLE_IGNORES);
-  }
-
-  return PermissionResult(CONTENT_SETTING_ASK,
-                          PermissionStatusSource::UNSPECIFIED);
+  return GetEmbargoResult(
+      HostContentSettingsMapFactory::GetForProfile(profile_), request_origin,
+      permission, clock_->Now());
 }
 
 int PermissionDecisionAutoBlocker::GetDismissCount(

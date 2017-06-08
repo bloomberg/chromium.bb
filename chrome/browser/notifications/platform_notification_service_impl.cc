@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
@@ -293,7 +295,18 @@ PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
   if (setting == CONTENT_SETTING_BLOCK)
     return blink::mojom::PermissionStatus::DENIED;
 
-  return blink::mojom::PermissionStatus::ASK;
+  // Check whether the permission has been embargoed (automatically blocked).
+  // TODO(crbug.com/658020): make PermissionManager::GetPermissionStatus thread
+  // safe so it isn't necessary to do this HostContentSettingsMap and embargo
+  // check outside of the permissions code.
+  PermissionResult result = PermissionDecisionAutoBlocker::GetEmbargoResult(
+      host_content_settings_map, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      base::Time::Now());
+  DCHECK(result.content_setting == CONTENT_SETTING_ASK ||
+         result.content_setting == CONTENT_SETTING_BLOCK);
+  return result.content_setting == CONTENT_SETTING_ASK
+             ? blink::mojom::PermissionStatus::ASK
+             : blink::mojom::PermissionStatus::DENIED;
 }
 
 void PlatformNotificationServiceImpl::DisplayNotification(
