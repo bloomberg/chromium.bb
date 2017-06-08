@@ -7,44 +7,25 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "net/base/host_port_pair.h"
 
-namespace content {
-class ResourceContext;
-}
-
 // Delegate to handle unlocking a slot or indicating which slot to store a key
 // in. When passing to NSS functions which take a wincx argument, use the value
 // returned from the wincx() method.
 class ChromeNSSCryptoModuleDelegate
-    : public crypto::NSSCryptoModuleDelegate {
+    : public crypto::CryptoModuleBlockingPasswordDelegate {
  public:
   // Create a ChromeNSSCryptoModuleDelegate. |reason| is used to select what
   // string to show the user, |server| is displayed to indicate which connection
   // is causing the dialog to appear. |slot| can be NULL.
   ChromeNSSCryptoModuleDelegate(chrome::CryptoModulePasswordReason reason,
-                                const net::HostPortPair& server,
-                                crypto::ScopedPK11Slot slot);
+                                const net::HostPortPair& server);
 
   ~ChromeNSSCryptoModuleDelegate() override;
-
-  // Must be called on IO thread. Creates a delegate and returns it
-  // synchronously or asynchronously to |callback|. If the delegate could not be
-  // created, |callback| is called with NULL.
-  static void CreateForResourceContext(
-      chrome::CryptoModulePasswordReason reason,
-      const net::HostPortPair& server,
-      content::ResourceContext* context,
-      const base::Callback<
-          void(std::unique_ptr<ChromeNSSCryptoModuleDelegate>)>& callback);
-
-  // crypto::NSSCryptoModuleDelegate implementation.
-  crypto::ScopedPK11Slot RequestSlot() override;
 
   // crypto::CryptoModuleBlockingPasswordDelegate implementation.
   std::string RequestPassword(const std::string& slot_name,
@@ -66,9 +47,6 @@ class ChromeNSSCryptoModuleDelegate
   // Stores the results from the dialog for access on worker thread.
   std::string password_;
   bool cancelled_;
-
-  // The slot which will be returned by RequestSlot.
-  crypto::ScopedPK11Slot slot_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNSSCryptoModuleDelegate);
 };
