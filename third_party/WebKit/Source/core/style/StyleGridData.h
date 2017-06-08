@@ -28,19 +28,13 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/GridArea.h"
 #include "core/style/GridTrackSize.h"
+#include "core/style/NamedGridLinesMap.h"
+#include "core/style/OrderedNamedGridLines.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
-
-typedef HashMap<String, Vector<size_t>> NamedGridLinesMap;
-typedef HashMap<size_t,
-                Vector<String>,
-                WTF::IntHash<size_t>,
-                WTF::UnsignedWithZeroKeyHashTraits<size_t>>
-    OrderedNamedGridLines;
 
 class StyleGridData : public RefCounted<StyleGridData> {
  public:
