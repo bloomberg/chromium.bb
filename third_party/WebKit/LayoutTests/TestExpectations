@@ -126,6 +126,7 @@ crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-tr-top.ht
 crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-tr-bottom.html [ Failure ]
 crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-tfoot-bottom.html [ Failure ]
 crbug.com/702927 external/wpt/css/css-position-3/position-sticky-table-thead-top.html [ Failure ]
+crbug.com/702927 external/wpt/css/css-position-3/position-sticky-parsing.html [ Failure ]
 
 # ====== Layout team owned tests from here ======
 
