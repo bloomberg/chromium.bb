@@ -45,7 +45,6 @@ StyleGridData::StyleGridData()
           ComputedStyle::InitialOrderedNamedGridColumnLines()),
       auto_repeat_ordered_named_grid_row_lines_(
           ComputedStyle::InitialOrderedNamedGridRowLines()),
-      grid_auto_flow_(ComputedStyle::InitialGridAutoFlow()),
       grid_auto_rows_(ComputedStyle::InitialGridAutoRows()),
       grid_auto_columns_(ComputedStyle::InitialGridAutoColumns()),
       named_grid_area_(ComputedStyle::InitialNamedGridArea()),
@@ -59,6 +58,7 @@ StyleGridData::StyleGridData()
           ComputedStyle::InitialGridAutoRepeatInsertionPoint()),
       auto_repeat_rows_insertion_point_(
           ComputedStyle::InitialGridAutoRepeatInsertionPoint()),
+      grid_auto_flow_(ComputedStyle::InitialGridAutoFlow()),
       auto_repeat_columns_type_(ComputedStyle::InitialGridAutoRepeatType()),
       auto_repeat_rows_type_(ComputedStyle::InitialGridAutoRepeatType()) {}
 
@@ -77,7 +77,6 @@ StyleGridData::StyleGridData(const StyleGridData& o)
           o.auto_repeat_ordered_named_grid_column_lines_),
       auto_repeat_ordered_named_grid_row_lines_(
           o.auto_repeat_ordered_named_grid_row_lines_),
-      grid_auto_flow_(o.grid_auto_flow_),
       grid_auto_rows_(o.grid_auto_rows_),
       grid_auto_columns_(o.grid_auto_columns_),
       named_grid_area_(o.named_grid_area_),
@@ -90,6 +89,7 @@ StyleGridData::StyleGridData(const StyleGridData& o)
       auto_repeat_columns_insertion_point_(
           o.auto_repeat_columns_insertion_point_),
       auto_repeat_rows_insertion_point_(o.auto_repeat_rows_insertion_point_),
+      grid_auto_flow_(o.grid_auto_flow_),
       auto_repeat_columns_type_(o.auto_repeat_columns_type_),
       auto_repeat_rows_type_(o.auto_repeat_rows_type_) {}
 
