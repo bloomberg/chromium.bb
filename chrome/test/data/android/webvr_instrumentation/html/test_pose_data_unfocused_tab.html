@@ -29,7 +29,7 @@ Tests that WebVR doesn't update frame data when the tab is not focused
           finishJavaScriptStep();
         }
         // Make sure at least one rAF call has happened so we get valid data
-        window.requestAnimationFrame(onAnimationFrame);
+        vrDisplay.requestAnimationFrame(onAnimationFrame);
       }
 
       function stepCheckFrameDataWhileNonFocusedTab() {

@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -164,8 +163,7 @@ public class WebVrTest {
      * Tests that non-focused tabs cannot get pose information.
      */
     @Test
-    // @SmallTest
-    @DisabledTest(message = "Flaky. http://crbug.com/726986")
+    @SmallTest
     public void testPoseDataUnfocusedTab() throws InterruptedException {
         mVrTestRule.loadUrlAndAwaitInitialization(
                 VrTestRule.getHtmlTestFile("test_pose_data_unfocused_tab"), PAGE_LOAD_TIMEOUT_S);
