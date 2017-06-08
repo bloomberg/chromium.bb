@@ -70,6 +70,9 @@ HttpServer& HttpServer::GetSharedInstanceWithResponseProviders(
 
 std::unique_ptr<net::test_server::HttpResponse> HttpServer::GetResponse(
     const net::test_server::HttpRequest& request) {
+  if (isSuspended) {
+    return base::MakeUnique<net::test_server::HungResponse>();
+  }
   ResponseProvider::Request provider_request =
       ResponseProviderRequestFromEmbeddedTestServerRequest(request);
   ResponseProvider* response_provider =
@@ -109,6 +112,7 @@ void HttpServer::StartOrDie() {
   if (embedded_test_server_->Start()) {
     SetPort((NSUInteger)embedded_test_server_->port());
   }
+  isSuspended = NO;
   CHECK(IsRunning());
 }
 
@@ -120,6 +124,10 @@ void HttpServer::Stop() {
   // server works for iOS.
   embedded_test_server_.release();
   SetPort(0);
+}
+
+void HttpServer::SetSuspend(bool suspended) {
+  isSuspended = suspended;
 }
 
 bool HttpServer::IsRunning() const {
