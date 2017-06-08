@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/common/content_export.h"
@@ -284,6 +285,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   mojo::ScopedDataPipeConsumerHandle handle_;
 
   base::Closure on_start_checks_complete_closure_;
+
+  base::WeakPtrFactory<NavigationRequest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationRequest);
 };

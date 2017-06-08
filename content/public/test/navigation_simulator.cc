@@ -556,13 +556,18 @@ void NavigationSimulator::OnWillProcessResponse() {
 void NavigationSimulator::WaitForThrottleChecksComplete() {
   // If last_throttle_check_result_ is set, then throttle checks completed
   // synchronously.
-  if (last_throttle_check_result_)
-    return;
+  if (!last_throttle_check_result_) {
+    base::RunLoop run_loop;
+    throttle_checks_wait_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+    throttle_checks_wait_closure_.Reset();
+  }
 
-  base::RunLoop run_loop;
-  throttle_checks_wait_closure_ = run_loop.QuitClosure();
-  run_loop.Run();
-  throttle_checks_wait_closure_.Reset();
+  if (IsBrowserSideNavigationEnabled()) {
+    // Run message loop once since NavigationRequest::OnStartChecksComplete
+    // posted a task.
+    base::RunLoop().RunUntilIdle();
+  }
 }
 
 void NavigationSimulator::OnThrottleChecksComplete(
