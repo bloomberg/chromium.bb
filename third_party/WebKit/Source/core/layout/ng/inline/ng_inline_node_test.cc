@@ -285,8 +285,8 @@ static NGInlineNodeForTest CreateBidiIsolateNode(NGInlineNodeForTest node,
 }
 
 TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
-  NGInlineNodeForTest node =
-      CreateBidiIsolateNode(CreateInlineNode(), style_.Get(), layout_object_);
+  NGInlineNodeForTest node = CreateInlineNode();
+  node = CreateBidiIsolateNode(node, style_.Get(), layout_object_);
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(9u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
@@ -313,8 +313,8 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   style->SetLineHeight(Length(1, kFixed));
   style->GetFont().Update(nullptr);
-  NGInlineNodeForTest node =
-      CreateBidiIsolateNode(CreateInlineNode(), style.Get(), layout_object_);
+  NGInlineNodeForTest node = CreateInlineNode();
+  node = CreateBidiIsolateNode(node, style.Get(), layout_object_);
   node.ShapeText();
   Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
@@ -327,21 +327,18 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
 }
 
 TEST_F(NGInlineNodeTest, MinMaxContentSize) {
-  UseLayoutObjectAndAhem();
+  LoadAhem();
+  SetupHtml("t", "<div id=t style='font:10px Ahem'>AB CDEF</div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  node.Append("AB CDEF", style_.Get(), layout_object_);
-  node.ShapeText();
   MinMaxContentSize sizes = node.ComputeMinMaxContentSize();
   EXPECT_EQ(40, sizes.min_content);
   EXPECT_EQ(70, sizes.max_content);
 }
 
 TEST_F(NGInlineNodeTest, MinMaxContentSizeElementBoundary) {
-  UseLayoutObjectAndAhem();
+  LoadAhem();
+  SetupHtml("t", "<div id=t style='font:10px Ahem'>A B<span>C D</span></div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  node.Append("A B", style_.Get(), layout_object_);
-  node.Append("C D", style_.Get(), layout_object_);
-  node.ShapeText();
   MinMaxContentSize sizes = node.ComputeMinMaxContentSize();
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
