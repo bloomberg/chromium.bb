@@ -2504,7 +2504,7 @@ crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03b.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-04.html [ Failure ]
 
-# Flakily timing out.
+# Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer.html [ Pass Timeout Failure ]
