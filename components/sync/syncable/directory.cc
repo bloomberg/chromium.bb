@@ -112,13 +112,12 @@ Directory::Kernel::Kernel(
 Directory::Kernel::~Kernel() {}
 
 Directory::Directory(
-    DirectoryBackingStore* store,
+    std::unique_ptr<DirectoryBackingStore> store,
     const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
     NigoriHandler* nigori_handler,
     Cryptographer* cryptographer)
-    : kernel_(nullptr),
-      store_(store),
+    : store_(std::move(store)),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       report_unrecoverable_error_function_(report_unrecoverable_error_function),
       unrecoverable_error_set_(false),
@@ -199,7 +198,8 @@ DirOpenResult Directory::OpenImpl(
     return result;
 
   DCHECK(!kernel_);
-  kernel_ = new Kernel(name, info, delegate, transaction_observer);
+  kernel_ =
+      base::MakeUnique<Kernel>(name, info, delegate, transaction_observer);
   kernel_->metahandles_to_purge.swap(metahandles_to_purge);
   delete_journal_ = base::MakeUnique<DeleteJournal>(std::move(delete_journals));
   InitializeIndices(&tmp_handles_map);
@@ -224,10 +224,7 @@ DeleteJournal* Directory::delete_journal() {
 
 void Directory::Close() {
   store_.reset();
-  if (kernel_) {
-    delete kernel_;
-    kernel_ = nullptr;
-  }
+  kernel_.reset();
 }
 
 void Directory::OnUnrecoverableError(const BaseTransaction* trans,
@@ -1632,11 +1629,11 @@ void Directory::OnCatastrophicError() {
 }
 
 Directory::Kernel* Directory::kernel() {
-  return kernel_;
+  return kernel_.get();
 }
 
 const Directory::Kernel* Directory::kernel() const {
-  return kernel_;
+  return kernel_.get();
 }
 
 }  // namespace syncable

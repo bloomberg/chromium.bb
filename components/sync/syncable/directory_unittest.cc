@@ -79,7 +79,7 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
   // data persist across Directory object lifetimes while getting the
   // performance benefits of not writing to disk.
   dir_ = base::MakeUnique<Directory>(
-      new TestDirectoryBackingStore(kDirectoryName, &connection_),
+      base::MakeUnique<TestDirectoryBackingStore>(kDirectoryName, &connection_),
       MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr, nullptr);
 
   DirOpenResult open_result =
@@ -2034,9 +2034,10 @@ TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
 // DirectoryBackingStore error is detected.
 TEST_F(SyncableDirectoryTest, CatastrophicError) {
   MockUnrecoverableErrorHandler unrecoverable_error_handler;
-  Directory dir(new InMemoryDirectoryBackingStore("catastrophic_error"),
-                MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()),
-                base::Closure(), nullptr, nullptr);
+  Directory dir(
+      base::MakeUnique<InMemoryDirectoryBackingStore>("catastrophic_error"),
+      MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()), base::Closure(),
+      nullptr, nullptr);
   ASSERT_EQ(OPENED, dir.Open(kDirectoryName, directory_change_delegate(),
                              NullTransactionObserver()));
   ASSERT_EQ(0, unrecoverable_error_handler.invocation_count());

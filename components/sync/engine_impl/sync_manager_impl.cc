@@ -247,7 +247,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   DCHECK(backing_store.get());
   share_.directory = base::MakeUnique<syncable::Directory>(
-      backing_store.release(), args->unrecoverable_error_handler,
+      std::move(backing_store), args->unrecoverable_error_handler,
       report_unrecoverable_error_function_, sync_encryption_handler_.get(),
       sync_encryption_handler_->GetCryptographerUnsafe());
   share_.sync_credentials = args->credentials;

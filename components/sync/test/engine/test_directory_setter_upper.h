@@ -56,7 +56,8 @@ class TestDirectorySetterUpper {
 
   // Create a Directory instance using |directory_store| as backend storage.
   // Takes ownership of |directory_store|.
-  virtual void SetUpWith(syncable::DirectoryBackingStore* directory_store);
+  virtual void SetUpWith(
+      std::unique_ptr<syncable::DirectoryBackingStore> directory_store);
 
   // Undo everything done by SetUp(): close the directory and delete the
   // backing files. Before closing the directory, this will run the directory
