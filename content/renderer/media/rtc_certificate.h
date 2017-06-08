@@ -28,6 +28,8 @@ class CONTENT_EXPORT RTCCertificate
   // blink::WebRTCCertificate implementation.
   std::unique_ptr<blink::WebRTCCertificate> ShallowCopy() const override;
   uint64_t Expires() const override;
+  blink::WebVector<blink::WebRTCDtlsFingerprint> GetFingerprints()
+      const override;
   blink::WebRTCCertificatePEM ToPEM() const override;
   bool Equals(const blink::WebRTCCertificate& other) const override;
 

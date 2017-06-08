@@ -32,4 +32,5 @@
 interface RTCCertificate {
     // The expiration time in ms relative to epoch, 1970-01-01T00:00:00Z.
     readonly attribute DOMTimeStamp expires;
+    sequence<RTCDtlsFingerprint> getFingerprints();
 };

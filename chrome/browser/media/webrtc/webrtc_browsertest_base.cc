@@ -427,6 +427,14 @@ void WebRtcTestBase::NegotiateCall(content::WebContents* from_tab,
   GatherAndSendIceCandidates(from_tab, to_tab);
 }
 
+void WebRtcTestBase::VerifyLocalDescriptionContainsCertificate(
+    content::WebContents* tab,
+    const std::string& certificate) const {
+  std::string javascript = base::StringPrintf(
+      "verifyLocalDescriptionContainsCertificate(%s)", certificate.c_str());
+  EXPECT_EQ("ok-verified", ExecuteJavascript(javascript, tab));
+}
+
 void WebRtcTestBase::HangUp(content::WebContents* from_tab) const {
   EXPECT_EQ("ok-call-hung-up", ExecuteJavascript("hangUp()", from_tab));
 }

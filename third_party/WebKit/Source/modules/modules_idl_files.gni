@@ -493,6 +493,7 @@ modules_dictionary_idl_files =
                     "peerconnection/RTCAnswerOptions.idl",
                     "peerconnection/RTCConfiguration.idl",
                     "peerconnection/RTCDataChannelEventInit.idl",
+                    "peerconnection/RTCDtlsFingerprint.idl",
                     "peerconnection/RTCDTMFToneChangeEventInit.idl",
                     "peerconnection/RTCDataChannelInit.idl",
                     "peerconnection/RTCIceCandidateInit.idl",

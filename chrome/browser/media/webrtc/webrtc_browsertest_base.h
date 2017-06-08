@@ -139,6 +139,10 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void NegotiateCall(content::WebContents* from_tab,
                      content::WebContents* to_tab) const;
 
+  void VerifyLocalDescriptionContainsCertificate(
+      content::WebContents* tab,
+      const std::string& certificate) const;
+
   // Hangs up a negotiated call.
   void HangUp(content::WebContents* from_tab) const;
 
