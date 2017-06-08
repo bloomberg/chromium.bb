@@ -4820,12 +4820,6 @@
           "shards": 2
         }
       }
-    ],
-    "scripts": [
-      {
-        "name": "nacl_integration",
-        "script": "nacl_integration.py"
-      }
     ]
   },
   "ClangToTMacASan tester": {
