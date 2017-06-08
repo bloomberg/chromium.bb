@@ -200,7 +200,7 @@ void MostVisitedSites::InitiateTopSitesQuery() {
 
 base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
   if (supervisor_) {
-    for (const auto& whitelist : supervisor_->whitelists()) {
+    for (const auto& whitelist : supervisor_->GetWhitelists()) {
       if (AreURLsEquivalent(whitelist.entry_point, url))
         return whitelist.large_icon_path;
     }
@@ -302,7 +302,7 @@ NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
   }
 
   NTPTilesVector whitelist_tiles;
-  for (const auto& whitelist : supervisor_->whitelists()) {
+  for (const auto& whitelist : supervisor_->GetWhitelists()) {
     if (whitelist_tiles.size() + num_actual_tiles >= num_sites_)
       break;
 

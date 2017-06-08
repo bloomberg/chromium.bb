@@ -40,7 +40,7 @@ class SupervisorBridge : public ntp_tiles::MostVisitedSitesSupervisor,
 
   void SetObserver(Observer* observer) override;
   bool IsBlocked(const GURL& url) override;
-  std::vector<MostVisitedSitesSupervisor::Whitelist> whitelists() override;
+  std::vector<MostVisitedSitesSupervisor::Whitelist> GetWhitelists() override;
   bool IsChildProfile() override;
 
   // SupervisedUserServiceObserver implementation.
@@ -81,7 +81,7 @@ bool SupervisorBridge::IsBlocked(const GURL& url) {
 }
 
 std::vector<ntp_tiles::MostVisitedSitesSupervisor::Whitelist>
-SupervisorBridge::whitelists() {
+SupervisorBridge::GetWhitelists() {
   std::vector<MostVisitedSitesSupervisor::Whitelist> results;
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
