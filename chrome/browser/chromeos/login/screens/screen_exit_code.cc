@@ -60,6 +60,10 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "ARC_TERMS_OF_SERVICE_FINISHED";
     case ScreenExitCode::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE:
       return "UPDATE_ERROR_UPDATING_CRITICAL_UPDATE";
+    case ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_SKIPPED:
+      return "VOICE_INTERACTION_VALUE_PROP_SKIPPED";
+    case ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_ACCEPTED:
+      return "VOICE_INTERACTION_VALUE_PROP_ACCEPTED";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

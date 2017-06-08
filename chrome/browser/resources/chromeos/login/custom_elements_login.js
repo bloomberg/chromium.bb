@@ -24,3 +24,4 @@
 // <include src="oobe_reset.js">
 // <include src="oobe_reset_confirmation_overlay.js">
 // <include src="encryption_migration.js">
+// <include src="oobe_voice_interaction_value_prop.js">

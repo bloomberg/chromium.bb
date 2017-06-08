@@ -14,9 +14,17 @@
   padding: 44px 64px 0 64px;
 }
 
+#footer-container[noFooter] {
+  padding: 0;
+}
+
 #oobe-bottom {
   box-shadow: 0 -1px 1px rgba(0, 0, 0, 0.14);
   height: 80px;
   padding: 0;
   z-index: 1;
+}
+
+#oobe-bottom[hideShadow] {
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }

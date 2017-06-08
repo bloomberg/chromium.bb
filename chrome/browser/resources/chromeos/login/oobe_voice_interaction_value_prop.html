@@ -1,0 +1,27 @@
+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module id="voice-interaction-value-prop-md">
+  <template>
+    <link rel="stylesheet" href="oobe_voice_interaction_value_prop.css">
+    <link rel="stylesheet" href="oobe_dialog_parameters.css">
+    <oobe-dialog id="voiceInteractionValuePropDialog" role="dialog" hide-shadow
+        has-buttons no-footer>
+      <div class = "header">
+        <webview id="value-prop-view"></webview>
+      </div>
+      <div class="bottom-buttons flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button id="noThanksButton" border on-tap="onNoThanksTap_">
+          <div i18n-content="voiceInteractionValuePropNoThanksButton"></div>
+        </oobe-text-button>
+        <oobe-text-button inverse on-tap="onContinueTap_">
+          <div i18n-content="voiceInteractionValuePropContinueButton"></div>
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

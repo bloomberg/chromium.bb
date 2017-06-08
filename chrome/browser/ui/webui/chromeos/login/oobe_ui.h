@@ -32,6 +32,7 @@ namespace chromeos {
 class AppLaunchSplashScreenView;
 class ArcKioskSplashScreenView;
 class ArcTermsOfServiceScreenView;
+class VoiceInteractionValuePropScreenView;
 class AutoEnrollmentCheckScreenView;
 class BaseScreenHandler;
 class ControllerPairingScreenView;
@@ -117,6 +118,7 @@ class OobeUI : public content::WebUIController,
   HostPairingScreenView* GetHostPairingScreenView();
   DeviceDisabledScreenView* GetDeviceDisabledScreenView();
   EncryptionMigrationScreenView* GetEncryptionMigrationScreenView();
+  VoiceInteractionValuePropScreenView* GetVoiceInteractionValuePropScreenView();
   GaiaView* GetGaiaScreenView();
   UserBoardView* GetUserBoardView();
 

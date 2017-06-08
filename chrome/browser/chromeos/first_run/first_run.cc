@@ -8,6 +8,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -102,7 +104,12 @@ class DialogLauncher : public content::NotificationObserver {
     DCHECK(type == chrome::NOTIFICATION_SESSION_STARTED);
     DCHECK(content::Details<const user_manager::User>(details).ptr() ==
            ProfileHelper::Get()->GetUserByProfile(profile_));
-    TryLaunchFirstRunDialog(profile_);
+
+    // If voice interaction value prop has been accepted, the tutorial will be
+    // shown after the voice interaction OOBE flow.
+    if (!profile_->GetPrefs()->GetBoolean(
+            prefs::kArcVoiceInteractionValuePropAccepted))
+      TryLaunchFirstRunDialog(profile_);
     delete this;
   }
 
