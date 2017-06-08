@@ -664,7 +664,8 @@ hooks = [
   {
     'name': 'gn_win',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=win32',
                 '--no_auth',
@@ -675,7 +676,8 @@ hooks = [
   {
     'name': 'gn_mac',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=darwin',
                 '--no_auth',
@@ -686,7 +688,8 @@ hooks = [
   {
     'name': 'gn_linux64',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=linux*',
                 '--no_auth',
@@ -698,7 +701,8 @@ hooks = [
   {
     'name': 'clang_format_win',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=win32',
                 '--no_auth',
@@ -709,7 +713,8 @@ hooks = [
   {
     'name': 'clang_format_mac',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=darwin',
                 '--no_auth',
@@ -720,7 +725,8 @@ hooks = [
   {
     'name': 'clang_format_linux',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=linux*',
                 '--no_auth',
@@ -732,7 +738,8 @@ hooks = [
   {
     'name': 'luci-go_win',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=win32',
                 '--no_auth',
@@ -743,7 +750,8 @@ hooks = [
   {
     'name': 'luci-go_mac',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=darwin',
                 '--no_auth',
@@ -754,7 +762,8 @@ hooks = [
   {
     'name': 'luci-go_linux',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=linux*',
                 '--no_auth',
@@ -766,7 +775,8 @@ hooks = [
   {
     'name': 'eu-strip',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=linux*',
                 '--no_auth',
@@ -777,7 +787,8 @@ hooks = [
   {
     'name': 'drmemory',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=win32',
                 '--no_auth',
@@ -800,7 +811,8 @@ hooks = [
   {
     'name': 'apache_win32',
     'pattern': '\\.sha1',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=win32',
                 '--directory',
@@ -821,7 +833,8 @@ hooks = [
   {
     "name": "wasm_fuzzer",
     "pattern": ".",
-    "action": [ "download_from_google_storage",
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 "--no_resume",
                 "--no_auth",
                 "-u",
@@ -832,7 +845,8 @@ hooks = [
   {
     "name": "wasm_asmjs_fuzzer",
     "pattern": ".",
-    "action": [ "download_from_google_storage",
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 "--no_resume",
                 "--no_auth",
                 "-u",
@@ -853,7 +867,8 @@ hooks = [
   {
     'name': 'node_linux64',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=linux*',
                 '--extract',
@@ -865,7 +880,8 @@ hooks = [
   {
     'name': 'node_mac',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=darwin',
                 '--extract',
@@ -877,7 +893,8 @@ hooks = [
   {
     'name': 'node_win',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--platform=win32',
                 '--no_auth',
@@ -890,7 +907,8 @@ hooks = [
   {
     'name': 'webui_node_modules',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--extract',
                 '--no_auth',
@@ -916,7 +934,8 @@ hooks = [
   {
     'name': 'checkstyle',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
                 '--no_auth',
                 '--bucket', 'chromium-android-tools/checkstyle',
@@ -1124,7 +1143,8 @@ hooks_os = {
     {
       'name': 'gvr_static_shim_android_arm',
       'pattern': '\\.sha1',
-      'action': [ 'download_from_google_storage',
+    'action': [   'python',
+                  'src/third_party/depot_tools/download_from_google_storage.py',
                   '--no_resume',
                   '--platform=linux*',
                   '--no_auth',
@@ -1135,7 +1155,8 @@ hooks_os = {
     {
       'name': 'gvr_static_shim_android_arm64',
       'pattern': '\\.sha1',
-      'action': [ 'download_from_google_storage',
+    'action': [   'python',
+                  'src/third_party/depot_tools/download_from_google_storage.py',
                   '--no_resume',
                   '--platform=linux*',
                   '--no_auth',
@@ -1146,7 +1167,8 @@ hooks_os = {
     {
       'name': 'gvr_common_aar',
       'pattern': '\\.sha1',
-      'action': [ 'download_from_google_storage',
+    'action': [   'python',
+                  'src/third_party/depot_tools/download_from_google_storage.py',
                   '--no_resume',
                   '--platform=linux*',
                   '--no_auth',
@@ -1157,7 +1179,8 @@ hooks_os = {
     {
       'name': 'vr_controller_test_api',
       'pattern': '\\.sha1',
-      'action': [ 'download_from_google_storage',
+    'action': [   'python',
+                  'src/third_party/depot_tools/download_from_google_storage.py',
                   '--no_resume',
                   '--platform=linux*',
                   '--no_auth',
