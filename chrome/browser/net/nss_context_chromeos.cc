@@ -118,19 +118,6 @@ void SetSystemSlotOfDBForResourceContext(content::ResourceContext* context,
 
 }  // namespace
 
-crypto::ScopedPK11Slot GetPublicNSSKeySlotForResourceContext(
-    content::ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return crypto::GetPublicSlotForChromeOSUser(GetUsername(context));
-}
-
-crypto::ScopedPK11Slot GetPrivateNSSKeySlotForResourceContext(
-    content::ResourceContext* context,
-    const base::Callback<void(crypto::ScopedPK11Slot)>& callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return crypto::GetPrivateSlotForChromeOSUser(GetUsername(context), callback);
-}
-
 net::NSSCertDatabase* GetNSSCertDatabaseForResourceContext(
     content::ResourceContext* context,
     const base::Callback<void(net::NSSCertDatabase*)>& callback) {

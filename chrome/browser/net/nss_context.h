@@ -22,20 +22,6 @@ namespace content {
 class ResourceContext;
 }  // namespace content
 
-// Returns a reference to the public slot for the user associated with
-// |context|.  Should be called only on the IO thread.
-crypto::ScopedPK11Slot GetPublicNSSKeySlotForResourceContext(
-    content::ResourceContext* context);
-
-// Returns a reference to the private slot for the user associated with
-// |context|, if it is loaded. If it is not loaded and |callback| is non-null,
-// the |callback| will be run once the slot is loaded.
-// Should be called only on the IO thread.
-crypto::ScopedPK11Slot GetPrivateNSSKeySlotForResourceContext(
-    content::ResourceContext* context,
-    const base::Callback<void(crypto::ScopedPK11Slot)>& callback)
-    WARN_UNUSED_RESULT;
-
 // Returns a pointer to the NSSCertDatabase for the user associated with
 // |context|, if it is ready. If it is not ready and |callback| is non-null, the
 // |callback| will be run once the DB is initialized. Ownership is not
