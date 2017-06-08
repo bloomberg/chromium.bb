@@ -73,6 +73,7 @@ static_library("test_support") {
   deps = [
     ":prefetch",
     "//base",
+    "//components/gcm_driver/instance_id",
     "//components/keyed_service/core",
     "//components/offline_pages/core",
   ]

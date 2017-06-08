@@ -2196,6 +2196,8 @@ split_static_library("browser") {
       "offline_pages/background_loader_offliner.h",
       "offline_pages/prefetch/offline_metrics_collector_impl.cc",
       "offline_pages/prefetch/offline_metrics_collector_impl.h",
+      "offline_pages/prefetch/prefetch_instance_id_proxy.cc",
+      "offline_pages/prefetch/prefetch_instance_id_proxy.h",
       "offline_pages/prefetch/prefetch_service_factory.cc",
       "offline_pages/prefetch/prefetch_service_factory.h",
     ]

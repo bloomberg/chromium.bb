@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "components/gcm_driver/instance_id/instance_id.h"
+
 namespace gcm {
 class GCMAppHandler;
 }  // namespace gcm
@@ -19,6 +21,7 @@ class PrefetchGCMHandler;
 // controls the lifetime of all major subcomponents of the prefetching system.
 class PrefetchGCMHandler {
  public:
+  PrefetchGCMHandler() = default;
   virtual ~PrefetchGCMHandler() = default;
 
   // Returns the GCMAppHandler for this object.  Can return |nullptr| in unit
@@ -28,8 +31,10 @@ class PrefetchGCMHandler {
   // The app ID to register with at the GCM layer.
   virtual std::string GetAppId() const = 0;
 
-  // TODO(dewittj): Add methods for acquiring an Instance ID token to this
-  // interface.
+  // Gets a token suitable for sending to Offline Page Service for notifications
+  // when work is completed.
+  virtual void GetGCMToken(
+      instance_id::InstanceID::GetTokenCallback callback) = 0;
 };
 
 }  // namespace offline_pages

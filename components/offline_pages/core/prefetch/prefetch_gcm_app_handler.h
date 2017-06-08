@@ -7,22 +7,32 @@
 
 #include <string>
 
-#include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_app_handler.h"
-#include "components/gcm_driver/gcm_driver.h"
-#include "components/gcm_driver/gcm_profile_service.h"
+#include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
-#include "url/gurl.h"
 
 namespace offline_pages {
+
+extern const char kPrefetchingOfflinePagesAppId[];
 
 // Receives GCM messages and other channel status messages on behalf of the
 // prefetch system.
 class PrefetchGCMAppHandler : public gcm::GCMAppHandler,
                               public PrefetchGCMHandler {
  public:
-  PrefetchGCMAppHandler();
+  class TokenFactory {
+   public:
+    virtual ~TokenFactory() = default;
+
+    virtual void GetGCMToken(
+        instance_id::InstanceID::GetTokenCallback callback) = 0;
+  };
+
+  PrefetchGCMAppHandler(std::unique_ptr<TokenFactory> token_factory);
   ~PrefetchGCMAppHandler() override;
+
+  // PrefetchGCMHandler implementation.
+  void GetGCMToken(instance_id::InstanceID::GetTokenCallback callback) override;
 
   // gcm::GCMAppHandler implementation.
   void ShutdownHandler() override;
@@ -42,6 +52,8 @@ class PrefetchGCMAppHandler : public gcm::GCMAppHandler,
   std::string GetAppId() const override;
 
  private:
+  std::unique_ptr<TokenFactory> token_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(PrefetchGCMAppHandler);
 };
 

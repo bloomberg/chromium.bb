@@ -3476,6 +3476,7 @@ test("unit_tests") {
       "../browser/android/offline_pages/test_request_coordinator_builder.cc",
       "../browser/android/offline_pages/test_request_coordinator_builder.h",
       "../browser/offline_pages/background_loader_offliner_unittest.cc",
+      "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
     ]
     deps += [
       "//components/offline_pages/content/background_loader:test_support",

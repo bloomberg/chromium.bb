@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 
 namespace offline_pages {
@@ -19,6 +20,7 @@ class TestPrefetchGCMHandler : public PrefetchGCMHandler {
 
   gcm::GCMAppHandler* AsGCMAppHandler() override;
   std::string GetAppId() const override;
+  void GetGCMToken(instance_id::InstanceID::GetTokenCallback callback) override;
 };
 
 }  // namespace offline_pages

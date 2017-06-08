@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
+#include "chrome/browser/offline_pages/prefetch/prefetch_instance_id_proxy.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_app_handler.h"
@@ -37,8 +38,10 @@ PrefetchService* PrefetchServiceFactory::GetForBrowserContext(
 
 KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  auto prefetch_gcm_app_handler = base::MakeUnique<PrefetchGCMAppHandler>();
   auto prefetch_dispatcher = base::MakeUnique<PrefetchDispatcherImpl>();
+  auto prefetch_gcm_app_handler = base::MakeUnique<PrefetchGCMAppHandler>(
+      base::MakeUnique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
+                                                context));
   auto offline_metrics_collector =
       base::MakeUnique<OfflineMetricsCollectorImpl>();
   auto suggested_articles_observer =
