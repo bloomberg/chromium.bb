@@ -243,6 +243,10 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
     return num_of_tiles_with_checker_images_;
   }
 
+  CheckerImageTracker& checker_image_tracker() {
+    return checker_image_tracker_;
+  }
+
  protected:
   friend class Tile;
   // Must be called by tile during destruction.

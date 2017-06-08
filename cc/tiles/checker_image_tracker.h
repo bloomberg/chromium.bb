@@ -58,6 +58,14 @@ class CC_EXPORT CheckerImageTracker {
   // in re-checkering any images already decoded by the tracker.
   void ClearTracker(bool can_clear_decode_policy_tracking);
 
+  // Informs the tracker to not checker the given image. This can be used to opt
+  // out of the checkering behavior for certain images, such as ones that were
+  // decoded using the img.decode api.
+  // Note that if the image is already being checkered, then it will continue to
+  // do so. This call is meant to be issued prior to the image appearing during
+  // raster.
+  void DisallowCheckeringForImage(const PaintImage& image);
+
  private:
   enum class DecodePolicy {
     // The image can be decoded asynchronously from raster. When set, the image
@@ -65,10 +73,9 @@ class CC_EXPORT CheckerImageTracker {
     // image until it has been decoded using the decode service.
     ASYNC,
     // The image has been decoded asynchronously once and should now be
-    // synchronously rasterized with the content.
-    SYNC_DECODED_ONCE,
-    // The image has been permanently vetoed from being decoded async.
-    SYNC_PERMANENT,
+    // synchronously rasterized with the content or the image has been
+    // permanently vetoed from being decoded async.
+    SYNC
   };
 
   // Wrapper to unlock an image decode requested from the ImageController on
@@ -123,6 +130,8 @@ class CC_EXPORT CheckerImageTracker {
       image_id_to_decode_;
 
   base::WeakPtrFactory<CheckerImageTracker> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CheckerImageTracker);
 };
 
 }  // namespace cc
