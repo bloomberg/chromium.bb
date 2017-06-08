@@ -11,11 +11,27 @@
 namespace base {
 namespace win {
 
-// DCHECKs if COM is not initialized on this thread as an STA or MTA.
+enum class ComApartmentType {
+  // Uninitialized or has an unrecognized apartment type.
+  NONE,
+  // Single-threaded Apartment.
+  STA,
+  // Multi-threaded Apartment.
+  MTA,
+};
+
 #if DCHECK_IS_ON()
+
+// DCHECKs if COM is not initialized on this thread as an STA or MTA.
 BASE_EXPORT void AssertComInitialized();
+
+// DCHECKs if |apartment_type| is not the same as the current thread's apartment
+// type.
+BASE_EXPORT void AssertComApartmentType(ComApartmentType apartment_type);
+
 #else   // DCHECK_IS_ON()
 void AssertComInitialized() {}
+void AssertComApartmentType(ComApartmentType apartment_type) {}
 #endif  // DCHECK_IS_ON()
 
 }  // namespace win
