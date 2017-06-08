@@ -595,6 +595,8 @@ cr.define('print_preview', function() {
       this.pdfPrinterEnabled_ = !isInAppKioskMode;
       this.systemDefaultDestinationId_ = systemDefaultDestinationId;
       this.createLocalPdfPrintDestination_();
+      cr.addWebUIListener('extension-printers-added',
+          this.onExtensionPrintersAdded_.bind(this));
 
       if (!this.appState_.isSelectedDestinationValid()) {
         var destinationMatch = this.convertToDestinationMatch_(
@@ -1110,7 +1112,8 @@ cr.define('print_preview', function() {
         clearTimeout(this.extensionSearchTimeout_);
 
       this.isExtensionDestinationSearchInProgress_ = true;
-      this.nativeLayer_.startGetExtensionDestinations();
+      this.nativeLayer_.getExtensionPrinters().then(
+          this.onExtensionPrintersDone_.bind(this));
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
       this.extensionSearchTimeout_ = setTimeout(
@@ -1383,10 +1386,6 @@ cr.define('print_preview', function() {
           this.onPrivetCapabilitiesSet_.bind(this));
       this.tracker_.add(
           nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.EXTENSION_PRINTERS_ADDED,
-          this.onExtensionPrintersAdded_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.EXTENSION_CAPABILITIES_SET,
           this.onExtensionCapabilitiesSet_.bind(this));
       this.tracker_.add(
@@ -1625,18 +1624,26 @@ cr.define('print_preview', function() {
     /**
      * Called when an extension responds to a getExtensionDestinations
      * request.
-     * @param {Object} event Contains information about list of printers
-     *     reported by the extension.
-     *     {@code done} parameter is set iff this is the final list of printers
-     *     returned as part of getExtensionDestinations request.
+     * @param {!Array<!{extensionId: string,
+     *                  extensionName: string,
+     *                  id: string,
+     *                  name: string,
+     *                  description: (string|undefined),
+     *                  provisional: (boolean|undefined)}>} printers The list
+     *     containing information about printers added by an extension.
      * @private
      */
-    onExtensionPrintersAdded_: function(event) {
-      this.insertDestinations_(event.printers.map(function(printer) {
-        return print_preview.ExtensionDestinationParser.parse(printer);
-      }));
+    onExtensionPrintersAdded_: function(printers) {
+      this.insertDestinations_(
+          printers.map(print_preview.ExtensionDestinationParser.parse));
+    },
 
-      if (event.done && this.isExtensionDestinationSearchInProgress_) {
+    /**
+     * Called when all extensions are done adding printers.
+     * @private
+     */
+    onExtensionPrintersDone_: function() {
+      if (this.isExtensionDestinationSearchInProgress_) {
         clearTimeout(this.extensionSearchTimeout_);
         this.endExtensionPrinterSearch_();
       }

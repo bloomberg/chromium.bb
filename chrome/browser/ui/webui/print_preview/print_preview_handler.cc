@@ -709,13 +709,18 @@ void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
 
 void PrintPreviewHandler::HandleGetExtensionPrinters(
     const base::ListValue* args) {
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  CHECK(!callback_id.empty());
+
+  AllowJavascript();
   EnsureExtensionPrinterHandlerSet();
   // Make sure all in progress requests are canceled before new printer search
   // starts.
   extension_printer_handler_->Reset();
   extension_printer_handler_->StartGetPrinters(
       base::Bind(&PrintPreviewHandler::OnGotPrintersForExtension,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
@@ -1735,10 +1740,15 @@ void PrintPreviewHandler::EnsureExtensionPrinterHandlerSet() {
 }
 
 void PrintPreviewHandler::OnGotPrintersForExtension(
+    const std::string& callback_id,
     const base::ListValue& printers,
     bool done) {
-  web_ui()->CallJavascriptFunctionUnsafe("onExtensionPrintersAdded", printers,
-                                         base::Value(done));
+  AllowJavascript();
+
+  FireWebUIListener("extension-printers-added", printers);
+  if (done) {
+    ResolveJavascriptCallback(base::Value(callback_id), base::Value());
+  }
 }
 
 void PrintPreviewHandler::OnGotExtensionPrinterInfo(

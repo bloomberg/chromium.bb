@@ -10,7 +10,11 @@ cr.define('print_preview', function() {
   */
   function NativeLayerStub() {
     TestBrowserProxy.call(this, [
-        'getInitialSettings', 'getPrinters', 'setupPrinter' ]);
+        'getInitialSettings',
+        'getPrinters',
+        'getExtensionPrinters',
+        'setupPrinter'
+      ]);
 
     /**
      * @private {!cr.EventTarget} The event target used for dispatching and
@@ -80,6 +84,12 @@ cr.define('print_preview', function() {
     },
 
     /** @override */
+    getExtensionPrinters: function() {
+      this.methodCalled('getExtensionPrinters');
+      return Promise.resolve(true);
+    },
+
+    /** @override */
     setupPrinter: function(printerId) {
       this.methodCalled('setupPrinter', printerId);
       return this.shouldRejectPrinterSetup_ ?
@@ -91,7 +101,6 @@ cr.define('print_preview', function() {
     previewReadyForTest: function() {},
     startGetLocalDestinations: function() {},
     startGetPrivetDestinations: function() {},
-    startGetExtensionDestinations: function() {},
     startGetLocalDestinationCapabilities: function(destinationId) {
       if (destinationId == this.destinationToWatch_)
         this.getLocalDestinationCapabilitiesCallCount_++;
