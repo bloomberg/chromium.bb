@@ -19,6 +19,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/examples/box_layout_example.h"
 #include "ui/views/examples/bubble_example.h"
 #include "ui/views/examples/button_example.h"
 #include "ui/views/examples/button_sticker_sheet.h"
@@ -58,6 +59,7 @@ namespace {
 // Creates the default set of examples.
 ExampleVector CreateExamples() {
   ExampleVector examples;
+  examples.push_back(base::MakeUnique<BoxLayoutExample>());
   examples.push_back(base::MakeUnique<BubbleExample>());
   examples.push_back(base::MakeUnique<ButtonExample>());
   examples.push_back(base::MakeUnique<ButtonStickerSheet>());

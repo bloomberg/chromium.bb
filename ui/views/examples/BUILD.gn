@@ -8,6 +8,8 @@ component("views_examples_lib") {
   testonly = true
 
   sources = [
+    "box_layout_example.cc",
+    "box_layout_example.h",
     "bubble_example.cc",
     "bubble_example.h",
     "button_example.cc",
