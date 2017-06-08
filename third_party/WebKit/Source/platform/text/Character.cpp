@@ -131,7 +131,7 @@ unsigned Character::ExpansionOpportunityCount(const LChar* characters,
                                               bool& is_after_expansion,
                                               const TextJustify text_justify) {
   unsigned count = 0;
-  if (text_justify == kTextJustifyDistribute) {
+  if (text_justify == TextJustify::kDistribute) {
     is_after_expansion = true;
     return length;
   }
@@ -178,7 +178,7 @@ unsigned Character::ExpansionOpportunityCount(const UChar* characters,
         character = U16_GET_SUPPLEMENTARY(character, characters[i + 1]);
         i++;
       }
-      if (text_justify == TextJustify::kTextJustifyAuto &&
+      if (text_justify == TextJustify::kAuto &&
           IsCJKIdeographOrSymbol(character)) {
         if (!is_after_expansion)
           count++;
@@ -200,7 +200,7 @@ unsigned Character::ExpansionOpportunityCount(const UChar* characters,
         character = U16_GET_SUPPLEMENTARY(characters[i - 2], character);
         i--;
       }
-      if (text_justify == TextJustify::kTextJustifyAuto &&
+      if (text_justify == TextJustify::kAuto &&
           IsCJKIdeographOrSymbol(character)) {
         if (!is_after_expansion)
           count++;

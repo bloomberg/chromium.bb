@@ -7,11 +7,11 @@
 
 namespace blink {
 
-enum TextJustify {
-  kTextJustifyAuto = 0x0,
-  kTextJustifyNone = 0x1,
-  kTextJustifyInterWord = 0x2,
-  kTextJustifyDistribute = 0x3
+enum class TextJustify : unsigned {
+  kAuto = 0x0,
+  kNone = 0x1,
+  kInterWord = 0x2,
+  kDistribute = 0x3
 };
 
 }  // namespace blink

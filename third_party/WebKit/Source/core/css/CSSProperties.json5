@@ -2120,7 +2120,7 @@
       type_name: "TextJustify",
       include_paths: ["platform/text/TextJustify.h"],
       type_name: "TextJustify",
-      default_value: "kTextJustifyAuto",
+      default_value: "TextJustify::kAuto",
       field_size: 2,
       field_group: "rare-inherited",
     },

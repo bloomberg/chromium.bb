@@ -1023,16 +1023,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextJustify e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kTextJustifyAuto:
+    case TextJustify::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case kTextJustifyNone:
+    case TextJustify::kNone:
       value_id_ = CSSValueNone;
       break;
-    case kTextJustifyInterWord:
+    case TextJustify::kInterWord:
       value_id_ = CSSValueInterWord;
       break;
-    case kTextJustifyDistribute:
+    case TextJustify::kDistribute:
       value_id_ = CSSValueDistribute;
       break;
   }
@@ -1042,19 +1042,19 @@ template <>
 inline TextJustify CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return kTextJustifyAuto;
+      return TextJustify::kAuto;
     case CSSValueNone:
-      return kTextJustifyNone;
+      return TextJustify::kNone;
     case CSSValueInterWord:
-      return kTextJustifyInterWord;
+      return TextJustify::kInterWord;
     case CSSValueDistribute:
-      return kTextJustifyDistribute;
+      return TextJustify::kDistribute;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextJustifyAuto;
+  return TextJustify::kAuto;
 }
 
 template <>
