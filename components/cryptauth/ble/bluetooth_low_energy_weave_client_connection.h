@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_characteristics_finder.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_packet_generator.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_packet_receiver.h"
@@ -78,6 +79,11 @@ class BluetoothLowEnergyWeaveClientConnection
     static Factory* factory_instance_;
   };
 
+  class TimerFactory {
+   public:
+    virtual std::unique_ptr<base::Timer> CreateTimer();
+  };
+
   // The sub-state of a BluetoothLowEnergyWeaveClientConnection
   // extends the IN_PROGRESS state of Connection::Status.
   enum SubStatus {
@@ -94,7 +100,7 @@ class BluetoothLowEnergyWeaveClientConnection
 
   // Constructs a Bluetooth low energy connection to the service with
   // |remote_service_| on the |remote_device|. The |adapter| must be already
-  // initialized and ready. The GATT connection may alreaady be established and
+  // initialized and ready. The GATT connection may already be established and
   // pass through |gatt_connection|. A subsequent call to Connect() must be
   // made.
   BluetoothLowEnergyWeaveClientConnection(
@@ -102,7 +108,8 @@ class BluetoothLowEnergyWeaveClientConnection
       const std::string& device_address,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      BluetoothThrottler* bluetooth_throttler);
+      BluetoothThrottler* bluetooth_throttler,
+      std::unique_ptr<TimerFactory> timer_factory);
 
   ~BluetoothLowEnergyWeaveClientConnection() override;
 
@@ -252,6 +259,9 @@ class BluetoothLowEnergyWeaveClientConnection
   // Prints the time elapsed since |Connect()| was called.
   void PrintTimeElapsed();
 
+  // Called when waiting for connection response from server times out.
+  void OnConnectionResponseTimeout();
+
   // Returns the service corresponding to |remote_service_| in the current
   // device.
   device::BluetoothRemoteGattService* GetRemoteService();
@@ -294,6 +304,9 @@ class BluetoothLowEnergyWeaveClientConnection
   // workaround for crbug.com/508919. Not owned, must outlive this instance.
   BluetoothThrottler* bluetooth_throttler_;
 
+  // Used for timing out when waiting for connection response from the server.
+  std::unique_ptr<TimerFactory> timer_factory_;
+
   scoped_refptr<base::TaskRunner> task_runner_;
 
   // The GATT connection with the remote device.
@@ -319,8 +332,11 @@ class BluetoothLowEnergyWeaveClientConnection
 
   std::queue<WriteRequest> write_requests_queue_;
 
-  // Stores when the instace was created.
+  // Stores when the instance was created.
   base::TimeTicks start_time_;
+
+  // Used for timing out when waiting for connection response from the server.
+  std::unique_ptr<base::Timer> connection_response_timer_;
 
   base::WeakPtrFactory<BluetoothLowEnergyWeaveClientConnection>
       weak_ptr_factory_;
