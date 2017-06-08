@@ -46,6 +46,7 @@ class BASE_EXPORT MemoryDumpManager {
                              const GlobalMemoryDumpCallback& callback)>;
 
   static const char* const kTraceCategory;
+  static const char* const kLogPrefix;
 
   // This value is returned as the tracing id of the child processes by
   // GetTracingProcessId() when tracing is not enabled.
@@ -112,12 +113,13 @@ class BASE_EXPORT MemoryDumpManager {
   // to notify about the completion of the global dump (i.e. after all the
   // processes have dumped) and its success (true iff all the dumps were
   // successful).
-  void RequestGlobalDump(MemoryDumpType,
-                         MemoryDumpLevelOfDetail,
-                         const GlobalMemoryDumpCallback&);
+  void RequestGlobalDump(MemoryDumpType dump_type,
+                         MemoryDumpLevelOfDetail level_of_detail,
+                         const GlobalMemoryDumpCallback& callback);
 
   // Same as above (still asynchronous), but without callback.
-  void RequestGlobalDump(MemoryDumpType, MemoryDumpLevelOfDetail);
+  void RequestGlobalDump(MemoryDumpType dump_type,
+                         MemoryDumpLevelOfDetail level_of_detail);
 
   // Prepare MemoryDumpManager for RequestGlobalMemoryDump calls for tracing
   // related modes (non-SUMMARY_ONLY).
@@ -277,9 +279,6 @@ class BASE_EXPORT MemoryDumpManager {
   // registered with is_fast_polling_supported == true.
   void GetDumpProvidersForPolling(
       std::vector<scoped_refptr<MemoryDumpProviderInfo>>*);
-
-  // Returns true if Initialize() has been called, false otherwise.
-  bool is_initialized() const { return !request_dump_function_.is_null(); }
 
   // An ordererd set of registered MemoryDumpProviderInfo(s), sorted by task
   // runner affinity (MDPs belonging to the same task runners are adjacent).
