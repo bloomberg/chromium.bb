@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_web_state_list_observer.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
@@ -294,9 +295,13 @@ std::unique_ptr<web::WebState> CreateWebState(
         base::MakeUnique<WebStateListObserverBridge>(
             tabModelClosingWebStateObserver));
 
-    _webStateListObservers.push_back(
-        base::MakeUnique<SnapshotCacheWebStateListObserver>(
-            [SnapshotCache sharedInstance]));
+    SnapshotCache* snapshotCache =
+        SnapshotCacheFactory::GetForBrowserState(_browserState);
+    if (snapshotCache) {
+      _webStateListObservers.push_back(
+          base::MakeUnique<SnapshotCacheWebStateListObserver>(snapshotCache));
+    }
+
     if (_tabUsageRecorder) {
       _webStateListObservers.push_back(
           base::MakeUnique<TabUsageRecorderWebStateListObserver>(
@@ -777,7 +782,7 @@ std::unique_ptr<web::WebState> CreateWebState(
 // Called when UIApplicationWillResignActiveNotification is received.
 - (void)willResignActive:(NSNotification*)notify {
   if (_webUsageEnabled && self.currentTab) {
-    [[SnapshotCache sharedInstance]
+    [SnapshotCacheFactory::GetForBrowserState(_browserState)
         willBeSavedGreyWhenBackgrounding:self.currentTab.tabId];
   }
 }
@@ -804,7 +809,7 @@ std::unique_ptr<web::WebState> CreateWebState(
 
   // Write out a grey version of the current website to disk.
   if (_webUsageEnabled && self.currentTab) {
-    [[SnapshotCache sharedInstance]
+    [SnapshotCacheFactory::GetForBrowserState(_browserState)
         saveGreyInBackgroundForSessionID:self.currentTab.tabId];
   }
 }

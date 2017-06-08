@@ -8,6 +8,8 @@ source_set("snapshots") {
     "lru_cache.mm",
     "snapshot_cache.h",
     "snapshot_cache.mm",
+    "snapshot_cache_factory.h",
+    "snapshot_cache_factory.mm",
     "snapshot_cache_internal.h",
     "snapshot_cache_web_state_list_observer.h",
     "snapshot_cache_web_state_list_observer.mm",
@@ -20,7 +22,10 @@ source_set("snapshots") {
   ]
   deps = [
     "//base",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/web_state_list",
