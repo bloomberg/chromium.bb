@@ -712,9 +712,9 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   AppCacheManifest manifest;
   if (!ParseManifest(manifest_url_, manifest_data_.data(),
                      manifest_data_.length(),
-                     manifest_has_valid_mime_type_ ?
-                        PARSE_MANIFEST_ALLOWING_INTERCEPTS :
-                        PARSE_MANIFEST_PER_STANDARD,
+                     manifest_has_valid_mime_type_
+                         ? PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES
+                         : PARSE_MANIFEST_PER_STANDARD,
                      manifest)) {
     const char kFormatString[] = "Failed to parse manifest %s";
     const std::string message = base::StringPrintf(kFormatString,
@@ -746,11 +746,18 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     }
   }
 
+  // Warn about dangerous features being ignored due to the wrong content-type
+  // Must be done after associating all pending master hosts.
   if (manifest.did_ignore_intercept_namespaces) {
-    // Must be done after associating all pending master hosts.
     std::string message(
         "Ignoring the INTERCEPT section of the application cache manifest "
         "because the content type is not text/cache-manifest");
+    LogConsoleMessageToAll(message);
+  }
+  if (manifest.did_ignore_fallback_namespaces) {
+    std::string message(
+        "Ignoring out of scope FALLBACK entries of the application cache "
+        "manifest because the content-type is not text/cache-manifest");
     LogConsoleMessageToAll(message);
   }
 

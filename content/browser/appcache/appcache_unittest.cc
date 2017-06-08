@@ -565,7 +565,8 @@ TEST(AppCacheTest, ToFromDatabaseRecords) {
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), kCacheId));
   AppCacheManifest manifest;
   EXPECT_TRUE(ParseManifest(kManifestUrl, kData.c_str(), kData.length(),
-                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
+                            PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
+                            manifest));
   cache->InitializeWithManifest(&manifest);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);

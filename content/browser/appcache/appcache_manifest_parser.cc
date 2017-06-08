@@ -37,6 +37,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "url/gurl.h"
 
@@ -57,7 +58,13 @@ bool HasPatternMatchingAnnotation(const wchar_t* line_p,
   return annotation == L"isPattern";
 }
 
+bool ScopeMatches(const GURL& manifest_url, const GURL& namespace_url) {
+  return base::StartsWith(namespace_url.spec(),
+                          manifest_url.Resolve(".").spec(),
+                          base::CompareCase::SENSITIVE);
 }
+
+}  // namespace
 
 enum Mode {
   EXPLICIT,
@@ -73,10 +80,7 @@ enum InterceptVerb {
   UNKNOWN_VERB,
 };
 
-AppCacheManifest::AppCacheManifest()
-    : online_whitelist_all(false),
-      did_ignore_intercept_namespaces(false) {
-}
+AppCacheManifest::AppCacheManifest() {}
 
 AppCacheManifest::~AppCacheManifest() {}
 
@@ -99,6 +103,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
   DCHECK(manifest.online_whitelist_namespaces.empty());
   DCHECK(!manifest.online_whitelist_all);
   DCHECK(!manifest.did_ignore_intercept_namespaces);
+  DCHECK(!manifest.did_ignore_fallback_namespaces);
 
   Mode mode = EXPLICIT;
 
@@ -223,7 +228,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
                 is_pattern));
       }
     } else if (mode == INTERCEPT) {
-      if (parse_mode != PARSE_MANIFEST_ALLOWING_INTERCEPTS) {
+      if (parse_mode != PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES) {
         manifest.did_ignore_intercept_namespaces = true;
         continue;
       }
@@ -335,6 +340,13 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       // as the manifest's URL.
       if (manifest_url.GetOrigin() != namespace_url.GetOrigin()) {
         continue;
+      }
+
+      if (parse_mode != PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES) {
+        if (!ScopeMatches(manifest_url, namespace_url)) {
+          manifest.did_ignore_fallback_namespaces = true;
+          continue;
+        }
       }
 
       // Skip whitespace separating fallback namespace from URL.
