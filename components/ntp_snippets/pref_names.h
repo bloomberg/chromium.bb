@@ -90,6 +90,10 @@ extern const char kClickBasedCategoryRankerOrderWithClicks[];
 // The pref name for the time when last click decay has happened.
 extern const char kClickBasedCategoryRankerLastDecayTime[];
 
+// The pref name for the subscription token used when subscription for breaking
+// news push updates,
+extern const char kContentSuggestionsSubscriptionDataToken[];
+
 }  // namespace prefs
 }  // namespace ntp_snippets
 
