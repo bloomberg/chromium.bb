@@ -502,8 +502,11 @@ class CC_EXPORT LayerTreeImpl {
   // Mark the scrollbar geometries (e.g., thumb size and position) as needing an
   // update.
   void SetScrollbarGeometriesNeedUpdate() {
-    if (IsActiveTree())
+    if (IsActiveTree()) {
       scrollbar_geometries_need_update_ = true;
+      // Scrollbar geometries are updated in |UpdateDrawProperties|.
+      set_needs_update_draw_properties();
+    }
   }
   bool ScrollbarGeometriesNeedUpdate() const {
     return scrollbar_geometries_need_update_;
