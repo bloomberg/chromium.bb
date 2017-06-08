@@ -90,6 +90,7 @@ CGFloat kTabStripHeight = 120.0f;
       [self.tabStripView.heightAnchor constraintEqualToConstant:0.0f];
   self.toolbarHeightConstraint =
       [self.toolbarView.heightAnchor constraintEqualToConstant:0.0f];
+  self.toolbarHeightConstraint.priority = UILayoutPriorityDefaultHigh;
   if (self.toolbarViewController) {
     self.toolbarHeightConstraint.constant = kToolbarHeight;
   }
