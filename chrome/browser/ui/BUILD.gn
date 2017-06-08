@@ -1639,6 +1639,8 @@ split_static_library("ui") {
         "views/frame/opaque_browser_frame_view_linux.h",
         "views/frame/opaque_browser_frame_view_platform_specific.cc",
         "views/frame/opaque_browser_frame_view_platform_specific.h",
+        "views/profiles/forced_reauthentication_dialog.cc",
+        "views/profiles/forced_reauthentication_dialog.h",
         "views/profiles/profile_chooser_view.cc",
         "views/profiles/profile_chooser_view.h",
         "views/screen_capture_notification_ui_views.cc",
@@ -1970,6 +1972,7 @@ split_static_library("ui") {
         ]
       }
     }
+
     if (use_ash) {
       sources += [
         "views/frame/browser_frame_ash.cc",

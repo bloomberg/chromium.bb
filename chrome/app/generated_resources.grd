@@ -8107,6 +8107,21 @@ I don't think this site should be blocked!
         This account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>
       </message>
 
+      <!-- Enterprise force-sign-out dialog-->
+      <message name="IDS_ENTERPRISE_FORCE_SIGNOUT_TITLE" desc="The title of the dialog shown when the user closes a browser and force sign in is enabled and local auth info is not valid.">
+        Sign in certification is not valid, window closing in <ph name="MINUTES">{0,number,00}<ex>5</ex></ph> : <ph name="SECONDS">{1,number,00}<ex>00</ex></ph>
+      </message>
+      <message name="IDS_ENTERPRISE_FORCE_SIGNOUT_CLOSE_CONFIRM" desc="Text of the button to sign in again immediately.">
+        Sign in now
+      </message>
+      <message name="IDS_ENTERPRISE_FORCE_SIGNOUT_CLOSE_DELAY" desc="Text of the button to sign in again later">
+        Cancel
+      </message>
+      <message name="IDS_ENTERPRISE_FORCE_SIGNOUT_ADDITIONAL_EXPLANATION" desc="Text of auto close warning">
+        All browser windows will soon be closed automatically without sign in.
+      </message>
+
+
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
         Cookies and site data

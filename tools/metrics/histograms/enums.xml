@@ -33220,6 +33220,7 @@ from previous Chrome versions.
   <int value="20" label="NTP Content Suggestions"/>
   <int value="21" label="Re-signin infobar"/>
   <int value="22" label="Tab switcher"/>
+  <int value="23" label="Force signin warning"/>
 </enum>
 
 <enum name="SigninAccountEquality" type="int">
