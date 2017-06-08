@@ -339,7 +339,10 @@ void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
 }
 
 VpxVideoDecoder::VpxVideoDecoder()
-    : state_(kUninitialized), vpx_codec_(nullptr), vpx_codec_alpha_(nullptr) {
+    : state_(kUninitialized),
+      vpx_codec_(nullptr),
+      vpx_codec_alpha_(nullptr),
+      weak_factory_(this) {
   thread_checker_.DetachFromThread();
 }
 
@@ -454,7 +457,7 @@ void VpxVideoDecoder::Reset(const base::Closure& closure) {
     offload_task_runner_->PostTask(
         FROM_HERE,
         BindToCurrentLoop(base::Bind(&VpxVideoDecoder::ResetHelper,
-                                     base::Unretained(this), closure)));
+                                     weak_factory_.GetWeakPtr(), closure)));
     return;
   }
 
