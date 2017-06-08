@@ -49,7 +49,6 @@ static_library("test_support_common") {
   testonly = true
   visibility = [ ":*" ]
   sources = [
-    # TODO(jamescook): Move these files into ash/test.
     "../laser/laser_pointer_controller_test_api.cc",
     "../laser/laser_pointer_controller_test_api.h",
     "../laser/laser_pointer_points_test_api.cc",
@@ -58,6 +57,7 @@ static_library("test_support_common") {
     "../rotator/test/screen_rotation_animator_test_api.h",
     "../shell/toplevel_window.cc",
     "../shell/toplevel_window.h",
+    "../system/tray/system_tray_test_api.h",
     "ash_test_base.cc",
     "ash_test_base.h",
     "ash_test_environment.h",

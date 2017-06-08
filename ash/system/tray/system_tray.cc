@@ -589,35 +589,6 @@ void SystemTray::HideBubble(const TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
-TrayCast* SystemTray::GetTrayCastForTesting() const {
-  return tray_cast_;
-}
-
-TrayEnterprise* SystemTray::GetTrayEnterpriseForTesting() const {
-  return tray_enterprise_;
-}
-
-TrayNetwork* SystemTray::GetTrayNetworkForTesting() const {
-  return tray_network_;
-}
-
-TraySessionLengthLimit* SystemTray::GetTraySessionLengthLimitForTesting()
-    const {
-  return tray_session_length_limit_;
-}
-
-TraySupervisedUser* SystemTray::GetTraySupervisedUserForTesting() const {
-  return tray_supervised_user_;
-}
-
-TraySystemInfo* SystemTray::GetTraySystemInfoForTesting() const {
-  return tray_system_info_;
-}
-
-TrayTiles* SystemTray::GetTrayTilesForTesting() const {
-  return tray_tiles_;
-}
-
 void SystemTray::CloseBubble(const ui::KeyEvent& key_event) {
   CloseSystemBubble();
 }

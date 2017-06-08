@@ -7,6 +7,7 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_test_api.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/test/shell_test_api.h"
 #include "base/callback.h"
@@ -115,15 +116,13 @@ class TrayAccessibilityTest
   }
 
   ash::TrayAccessibility* tray() {
-    return ash::Shell::Get()
-        ->GetPrimarySystemTray()
-        ->GetTrayAccessibilityForTest();
+    return const_cast<ash::TrayAccessibility*>(
+        const_cast<const TrayAccessibilityTest*>(this)->tray());
   }
 
   const ash::TrayAccessibility* tray() const {
-    return ash::Shell::Get()
-        ->GetPrimarySystemTray()
-        ->GetTrayAccessibilityForTest();
+    return ash::SystemTrayTestApi(ash::Shell::Get()->GetPrimarySystemTray())
+        .tray_accessibility();
   }
 
   bool IsTrayIconVisible() const { return tray()->tray_icon_visible_; }
