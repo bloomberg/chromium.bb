@@ -500,6 +500,9 @@ if (is_android) {
       "@executable_path/../",
     ]
     info_plist_target = ":content_shell_plist"
+    data_deps = [
+      ":content_shell_lib",
+    ]
   }
 } else {
   executable("content_shell") {
