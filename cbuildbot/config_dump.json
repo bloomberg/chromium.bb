@@ -1262,6 +1262,13 @@
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
+    "amd64-generic-cheets-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "amd64-generic-cheets"
+        ],
+        "manifest": "official.xml"
+    },
     "amd64-generic-cheets-full": {
         "_template": "full",
         "boards": [
@@ -1501,6 +1508,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "amd64-generic-goofy-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "amd64-generic-goofy"
+        ],
+        "manifest": "official.xml"
     },
     "amd64-generic-goofy-full": {
         "_template": "full",
@@ -1770,6 +1784,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "arkham-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "arkham"
+        ],
+        "manifest": "official.xml"
     },
     "arkham-full": {
         "_template": "full",
@@ -2534,6 +2555,13 @@
             "chrome_internal"
         ]
     },
+    "auron_paine-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "auron_paine"
+        ],
+        "manifest": "official.xml"
+    },
     "auron_paine-full": {
         "_template": "full",
         "boards": [
@@ -2715,6 +2743,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "auron_yuna-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "auron_yuna"
+        ],
+        "manifest": "official.xml"
     },
     "auron_yuna-full": {
         "_template": "full",
@@ -3256,6 +3291,14 @@
             "chrome_internal"
         ]
     },
+    "beaglebone-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "beaglebone"
+        ],
+        "manifest": "official.xml",
+        "rootfs_verification": false
+    },
     "beaglebone-full": {
         "_template": "full",
         "boards": [
@@ -3406,6 +3449,14 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "beaglebone_servo-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "beaglebone_servo"
+        ],
+        "manifest": "official.xml",
+        "rootfs_verification": false
     },
     "beaglebone_servo-full": {
         "_template": "full",
@@ -3569,6 +3620,13 @@
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
+    },
+    "betty-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "betty"
+        ],
+        "manifest": "official.xml"
     },
     "betty-full": {
         "_template": "full",
@@ -4015,6 +4073,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "buddy-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "buddy"
+        ],
+        "manifest": "official.xml"
     },
     "buddy-full": {
         "_template": "full",
@@ -5126,6 +5191,13 @@
             "chrome_internal"
         ]
     },
+    "celes-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "celes"
+        ],
+        "manifest": "official.xml"
+    },
     "celes-full": {
         "_template": "full",
         "boards": [
@@ -5754,6 +5826,14 @@
             "chrome_internal"
         ]
     },
+    "cobblepot-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "cobblepot"
+        ],
+        "manifest": "official.xml",
+        "upload_hw_test_artifacts": false
+    },
     "cobblepot-full": {
         "_template": "full",
         "boards": [
@@ -5909,6 +5989,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "coral-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "coral"
+        ],
+        "manifest": "official.xml"
     },
     "coral-full": {
         "_template": "full",
@@ -7182,6 +7269,13 @@
             "chrome_internal"
         ]
     },
+    "elm-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "elm"
+        ],
+        "manifest": "official.xml"
+    },
     "elm-full": {
         "_template": "full",
         "boards": [
@@ -8126,6 +8220,13 @@
             "chrome_internal"
         ]
     },
+    "falco_li-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "falco_li"
+        ],
+        "manifest": "official.xml"
+    },
     "falco_li-full": {
         "_template": "full",
         "boards": [
@@ -8299,6 +8400,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "fizz-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "fizz"
+        ],
+        "manifest": "official.xml"
     },
     "fizz-full": {
         "_template": "full",
@@ -8603,6 +8711,13 @@
             "chrome_internal"
         ]
     },
+    "gandof-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "gandof"
+        ],
+        "manifest": "official.xml"
+    },
     "gandof-full": {
         "_template": "full",
         "boards": [
@@ -8785,6 +8900,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "glados-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "glados"
+        ],
+        "manifest": "official.xml"
     },
     "glados-full": {
         "_template": "full",
@@ -9311,6 +9433,14 @@
             "chrome_internal"
         ]
     },
+    "gonzo-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "gonzo"
+        ],
+        "manifest": "official.xml",
+        "upload_hw_test_artifacts": false
+    },
     "gonzo-full": {
         "_template": "full",
         "boards": [
@@ -9645,6 +9775,13 @@
             "chrome_internal"
         ]
     },
+    "guado-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "guado"
+        ],
+        "manifest": "official.xml"
+    },
     "guado-full": {
         "_template": "full",
         "boards": [
@@ -9818,6 +9955,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "guado_labstation-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "guado_labstation"
+        ],
+        "manifest": "official.xml"
     },
     "guado_labstation-full": {
         "_template": "full",
@@ -10000,6 +10144,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "guado_moblab-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "guado_moblab"
+        ],
+        "manifest": "official.xml"
     },
     "guado_moblab-full": {
         "_template": "full",
@@ -10214,6 +10365,13 @@
             "chrome_internal"
         ]
     },
+    "hana-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "hana"
+        ],
+        "manifest": "official.xml"
+    },
     "hana-full": {
         "_template": "full",
         "boards": [
@@ -10397,6 +10555,13 @@
             "chrome_internal"
         ]
     },
+    "heli-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "heli"
+        ],
+        "manifest": "official.xml"
+    },
     "heli-full": {
         "_template": "full",
         "boards": [
@@ -10570,6 +10735,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "jadeite-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "jadeite"
+        ],
+        "manifest": "official.xml"
     },
     "jadeite-full": {
         "_template": "full",
@@ -10931,6 +11103,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "kahlee-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "kahlee"
+        ],
+        "manifest": "official.xml"
     },
     "kahlee-full": {
         "_template": "full",
@@ -11692,6 +11871,13 @@
             "chrome_internal"
         ]
     },
+    "kunimitsu-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "kunimitsu"
+        ],
+        "manifest": "official.xml"
+    },
     "kunimitsu-full": {
         "_template": "full",
         "boards": [
@@ -11858,6 +12044,16 @@
             "chrome_internal"
         ]
     },
+    "lakitu-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "lakitu"
+        ],
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "manifest": "official.xml"
+    },
     "lakitu-full": {
         "_template": "full",
         "boards": [
@@ -11899,6 +12095,16 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "lakitu-gpu-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "lakitu-gpu"
+        ],
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "manifest": "official.xml"
     },
     "lakitu-gpu-full": {
         "_template": "full",
@@ -12271,6 +12477,16 @@
             "chrome_internal"
         ]
     },
+    "lakitu-st-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "lakitu-st"
+        ],
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "manifest": "official.xml"
+    },
     "lakitu-st-full": {
         "_template": "full",
         "boards": [
@@ -12503,6 +12719,16 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "lakitu_next-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "lakitu_next"
+        ],
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "manifest": "official.xml"
     },
     "lakitu_next-full": {
         "_template": "full",
@@ -12902,6 +13128,14 @@
             "chrome_internal"
         ]
     },
+    "lasilla-ground-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "lasilla-ground"
+        ],
+        "manifest": "official.xml",
+        "upload_hw_test_artifacts": false
+    },
     "lasilla-ground-full": {
         "_template": "full",
         "boards": [
@@ -13029,6 +13263,14 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "lasilla-sky-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "lasilla-sky"
+        ],
+        "manifest": "official.xml",
+        "upload_hw_test_artifacts": false
     },
     "lasilla-sky-full": {
         "_template": "full",
@@ -13577,6 +13819,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "lulu-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "lulu"
+        ],
+        "manifest": "official.xml"
     },
     "lulu-full": {
         "_template": "full",
@@ -14323,6 +14572,13 @@
             "chrome_internal"
         ]
     },
+    "mccloud-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "mccloud"
+        ],
+        "manifest": "official.xml"
+    },
     "mccloud-full": {
         "_template": "full",
         "boards": [
@@ -14757,6 +15013,13 @@
             "chrome_internal"
         ]
     },
+    "nasher-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "nasher"
+        ],
+        "manifest": "official.xml"
+    },
     "nasher-full": {
         "_template": "full",
         "boards": [
@@ -14947,6 +15210,13 @@
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
+    },
+    "newbie-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "newbie"
+        ],
+        "manifest": "official.xml"
     },
     "newbie-full": {
         "_template": "full",
@@ -15354,6 +15624,13 @@
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
+    "novato-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "novato"
+        ],
+        "manifest": "official.xml"
+    },
     "novato-full": {
         "_template": "full",
         "boards": [
@@ -15569,6 +15846,13 @@
             "chrome_internal"
         ]
     },
+    "nyan-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "nyan"
+        ],
+        "manifest": "official.xml"
+    },
     "nyan-full": {
         "_template": "full",
         "boards": [
@@ -15774,6 +16058,13 @@
             "chrome_internal"
         ]
     },
+    "nyan_big-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "nyan_big"
+        ],
+        "manifest": "official.xml"
+    },
     "nyan_big-full": {
         "_template": "full",
         "boards": [
@@ -15977,6 +16268,13 @@
             "chrome_internal"
         ]
     },
+    "nyan_blaze-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "nyan_blaze"
+        ],
+        "manifest": "official.xml"
+    },
     "nyan_blaze-full": {
         "_template": "full",
         "boards": [
@@ -16159,6 +16457,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "nyan_kitty-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "nyan_kitty"
+        ],
+        "manifest": "official.xml"
     },
     "nyan_kitty-full": {
         "_template": "full",
@@ -16345,6 +16650,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "oak-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "oak"
+        ],
+        "manifest": "official.xml"
     },
     "oak-full": {
         "_template": "full",
@@ -17094,6 +17406,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "parrot_ivb-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "parrot_ivb"
+        ],
+        "manifest": "official.xml"
     },
     "parrot_ivb-full": {
         "_template": "full",
@@ -17884,6 +18203,13 @@
             "chrome_internal"
         ]
     },
+    "plaso-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "plaso"
+        ],
+        "manifest": "official.xml"
+    },
     "plaso-full": {
         "_template": "full",
         "boards": [
@@ -18055,6 +18381,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "poppy-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "poppy"
+        ],
+        "manifest": "official.xml"
     },
     "poppy-full": {
         "_template": "full",
@@ -18270,6 +18603,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "pyro-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "pyro"
+        ],
+        "manifest": "official.xml"
     },
     "pyro-full": {
         "_template": "full",
@@ -18834,6 +19174,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "reef-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "reef"
+        ],
+        "manifest": "official.xml"
     },
     "reef-full": {
         "_template": "full",
@@ -19684,6 +20031,13 @@
             "chrome_internal"
         ]
     },
+    "rowan-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "rowan"
+        ],
+        "manifest": "official.xml"
+    },
     "rowan-full": {
         "_template": "full",
         "boards": [
@@ -20090,6 +20444,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "sand-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "sand"
+        ],
+        "manifest": "official.xml"
     },
     "sand-full": {
         "_template": "full",
@@ -21325,6 +21686,13 @@
             "chrome_internal"
         ]
     },
+    "snappy-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "snappy"
+        ],
+        "manifest": "official.xml"
+    },
     "snappy-full": {
         "_template": "full",
         "boards": [
@@ -21507,6 +21875,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "soraka-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "soraka"
+        ],
+        "manifest": "official.xml"
     },
     "soraka-full": {
         "_template": "full",
@@ -23349,6 +23724,13 @@
             "chrome_internal"
         ]
     },
+    "tidus-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "tidus"
+        ],
+        "manifest": "official.xml"
+    },
     "tidus-full": {
         "_template": "full",
         "boards": [
@@ -23528,6 +23910,13 @@
             "chrome_internal"
         ]
     },
+    "tricky-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "tricky"
+        ],
+        "manifest": "official.xml"
+    },
     "tricky-full": {
         "_template": "full",
         "boards": [
@@ -23705,6 +24094,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "ultima-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "ultima"
+        ],
+        "manifest": "official.xml"
     },
     "ultima-full": {
         "_template": "full",
@@ -23889,6 +24285,13 @@
             "chrome_internal"
         ]
     },
+    "umaro-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "umaro"
+        ],
+        "manifest": "official.xml"
+    },
     "umaro-full": {
         "_template": "full",
         "boards": [
@@ -24068,6 +24471,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "veyron_fievel-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_fievel"
+        ],
+        "manifest": "official.xml"
     },
     "veyron_fievel-full": {
         "_template": "full",
@@ -24251,6 +24661,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "veyron_jaq-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_jaq"
+        ],
+        "manifest": "official.xml"
     },
     "veyron_jaq-full": {
         "_template": "full",
@@ -24453,6 +24870,13 @@
             "chrome_internal"
         ]
     },
+    "veyron_jerry-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_jerry"
+        ],
+        "manifest": "official.xml"
+    },
     "veyron_jerry-full": {
         "_template": "full",
         "boards": [
@@ -24650,6 +25074,13 @@
             "chrome_internal"
         ]
     },
+    "veyron_mickey-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_mickey"
+        ],
+        "manifest": "official.xml"
+    },
     "veyron_mickey-full": {
         "_template": "full",
         "boards": [
@@ -24832,6 +25263,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "veyron_mighty-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_mighty"
+        ],
+        "manifest": "official.xml"
     },
     "veyron_mighty-full": {
         "_template": "full",
@@ -25022,6 +25460,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "veyron_minnie-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_minnie"
+        ],
+        "manifest": "official.xml"
     },
     "veyron_minnie-full": {
         "_template": "full",
@@ -25229,6 +25674,13 @@
             "chrome_internal"
         ]
     },
+    "veyron_pinky-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_pinky"
+        ],
+        "manifest": "official.xml"
+    },
     "veyron_pinky-full": {
         "_template": "full",
         "boards": [
@@ -25408,6 +25860,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "veyron_rialto-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_rialto"
+        ],
+        "manifest": "official.xml"
     },
     "veyron_rialto-full": {
         "_template": "full",
@@ -25591,6 +26050,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "veyron_speedy-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_speedy"
+        ],
+        "manifest": "official.xml"
     },
     "veyron_speedy-full": {
         "_template": "full",
@@ -25806,6 +26272,13 @@
             "chrome_internal"
         ]
     },
+    "veyron_tiger-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "veyron_tiger"
+        ],
+        "manifest": "official.xml"
+    },
     "veyron_tiger-full": {
         "_template": "full",
         "boards": [
@@ -25969,6 +26442,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "whirlwind-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "whirlwind"
+        ],
+        "manifest": "official.xml"
     },
     "whirlwind-full": {
         "_template": "full",
@@ -26307,6 +26787,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "wizpig-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "wizpig"
+        ],
+        "manifest": "official.xml"
     },
     "wizpig-full": {
         "_template": "full",
@@ -26681,6 +27168,14 @@
             "chrome_internal"
         ]
     },
+    "wooten-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "wooten"
+        ],
+        "manifest": "official.xml",
+        "upload_hw_test_artifacts": false
+    },
     "wooten-full": {
         "_template": "full",
         "boards": [
@@ -26907,6 +27402,13 @@
             "chrome_internal"
         ]
     },
+    "x86-alex-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "x86-alex"
+        ],
+        "manifest": "official.xml"
+    },
     "x86-alex-full": {
         "_template": "full",
         "boards": [
@@ -27077,6 +27579,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "x86-alex_he-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "x86-alex_he"
+        ],
+        "manifest": "official.xml"
     },
     "x86-alex_he-full": {
         "_template": "full",
@@ -27572,6 +28081,13 @@
             "chrome_internal"
         ]
     },
+    "x86-zgb-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "x86-zgb"
+        ],
+        "manifest": "official.xml"
+    },
     "x86-zgb-full": {
         "_template": "full",
         "boards": [
@@ -27742,6 +28258,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "x86-zgb_he-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "x86-zgb_he"
+        ],
+        "manifest": "official.xml"
     },
     "x86-zgb_he-full": {
         "_template": "full",
