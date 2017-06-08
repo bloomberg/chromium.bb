@@ -176,7 +176,7 @@ void DiscardableImageStore::GatherDiscardableImages(
 // are not yet handled.
 void DiscardableImageStore::AddImageFromFlags(const SkRect& rect,
                                               const PaintFlags& flags) {
-  SkShader* shader = flags.getSkShader();
+  SkShader* shader = flags.getShader();
   if (shader) {
     SkMatrix matrix;
     SkShader::TileMode xy[2];

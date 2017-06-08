@@ -37,6 +37,7 @@
 
 class SkDrawLooper;
 struct SkPoint;
+class SkShader;
 class SkTypeface;
 
 namespace gfx {
@@ -62,7 +63,7 @@ class GFX_EXPORT SkiaTextRenderer {
   void SetTypeface(sk_sp<SkTypeface> typeface);
   void SetTextSize(SkScalar size);
   void SetForegroundColor(SkColor foreground);
-  void SetShader(std::unique_ptr<cc::PaintShader> shader);
+  void SetShader(sk_sp<SkShader> shader);
   // Sets underline metrics to use if the text will be drawn with an underline.
   // If not set, default values based on the size of the text will be used. The
   // two metrics must be set together.

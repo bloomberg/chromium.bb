@@ -21,7 +21,7 @@ class PLATFORM_EXPORT PaintRecordPattern final : public Pattern {
   ~PaintRecordPattern() override;
 
  protected:
-  std::unique_ptr<PaintShader> CreateShader(const SkMatrix&) override;
+  sk_sp<PaintShader> CreateShader(const SkMatrix&) override;
 
  private:
   PaintRecordPattern(sk_sp<PaintRecord>,

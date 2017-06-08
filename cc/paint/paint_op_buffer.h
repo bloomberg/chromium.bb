@@ -117,7 +117,7 @@ struct CC_PAINT_EXPORT PaintOpWithFlags : PaintOp {
     if (!IsDrawOp())
       return false;
 
-    SkShader* shader = flags.getSkShader();
+    SkShader* shader = flags.getShader();
     SkImage* image = shader ? shader->isAImage(nullptr, nullptr) : nullptr;
     return image && image->isLazyGenerated();
   }
