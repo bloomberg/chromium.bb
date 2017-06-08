@@ -25,6 +25,9 @@ class ExtensionAppWindowLauncherItemController
 
   void AddAppWindow(extensions::AppWindow* app_window);
 
+  // aura::WindowObserver overrides:
+  void OnWindowTitleChanged(aura::Window* window) override;
+
   // AppWindowLauncherItemController:
   ash::MenuItemList GetAppMenuItems(int event_flags) override;
   void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;

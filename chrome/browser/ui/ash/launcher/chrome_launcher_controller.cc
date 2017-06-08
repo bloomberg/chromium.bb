@@ -331,6 +331,16 @@ void ChromeLauncherController::SetItemStatus(const ash::ShelfID& id,
   }
 }
 
+void ChromeLauncherController::SetItemTitle(const ash::ShelfID& id,
+                                            const base::string16& title) {
+  const ash::ShelfItem* item = GetItem(id);
+  if (item && item->title != title) {
+    ash::ShelfItem new_item = *item;
+    new_item.title = title;
+    model_->Set(model_->ItemIndexByID(id), new_item);
+  }
+}
+
 void ChromeLauncherController::CloseLauncherItem(const ash::ShelfID& id) {
   CHECK(!id.IsNull());
   if (IsPinned(id)) {
