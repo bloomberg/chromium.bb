@@ -19,6 +19,14 @@ mojom::LockScreenClientPtr MockLockScreenClient::CreateInterfacePtrAndBind() {
   return ptr;
 }
 
+void MockLockScreenClient::AuthenticateUser(const AccountId& account_id,
+                                            const std::string& password,
+                                            bool authenticated_by_pin,
+                                            AuthenticateUserCallback callback) {
+  AuthenticateUser_(account_id, password, authenticated_by_pin, callback);
+  std::move(callback).Run(authenticate_user_callback_result_);
+}
+
 std::unique_ptr<MockLockScreenClient> BindMockLockScreenClient() {
   LockScreenController* lock_screen_controller =
       Shell::Get()->lock_screen_controller();

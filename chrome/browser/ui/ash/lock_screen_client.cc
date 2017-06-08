@@ -41,7 +41,8 @@ LockScreenClient* LockScreenClient::Get() {
 
 void LockScreenClient::AuthenticateUser(const AccountId& account_id,
                                         const std::string& hashed_password,
-                                        bool authenticated_by_pin) {
+                                        bool authenticated_by_pin,
+                                        AuthenticateUserCallback callback) {
   // TODO(xiaoyinh): Complete the implementation below.
   // It should be similar as SigninScreenHandler::HandleAuthenticateUser.
   chromeos::UserContext user_context(account_id);
@@ -49,7 +50,13 @@ void LockScreenClient::AuthenticateUser(const AccountId& account_id,
                     std::string(), hashed_password);
   user_context.SetKey(key);
   user_context.SetIsUsingPin(authenticated_by_pin);
-  chromeos::ScreenLocker::default_screen_locker()->Authenticate(user_context);
+  chromeos::ScreenLocker::default_screen_locker()->Authenticate(
+      user_context, std::move(callback));
+}
+
+void LockScreenClient::ShowLockScreen(
+    ash::mojom::LockScreen::ShowLockScreenCallback on_shown) {
+  lock_screen_->ShowLockScreen(std::move(on_shown));
 }
 
 void LockScreenClient::AttemptUnlock(const AccountId& account_id) {

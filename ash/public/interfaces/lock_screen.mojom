@@ -34,6 +34,10 @@ interface LockScreen {
   // Sets the client interface.
   SetClient(LockScreenClient client);
 
+  // Displays the lock screen. |did_show| is true iff the lock UI was
+  // successfully displayed.
+  ShowLockScreen() => (bool did_show);
+
   // Requests to show error message in the ash lock screen.
   // TODO(xiaoyinh): login_attempts is probabaly not needed from chrome,
   // remove it when we start to count the login attempts in ash lock screen.
@@ -87,9 +91,11 @@ interface LockScreenClient {
   // |account_id|:           The account id of the user we are authenticating.
   // |hashed_password|:      The hashed password of the user.
   // |authenticated_by_pin|: True if we are using pin to authenticate.
+  //
+  // The result will be set to true if auth was successful, false if not.
   AuthenticateUser(signin.mojom.AccountId account_id,
                    string hashed_password,
-	           bool authenticated_by_pin);
+                   bool authenticated_by_pin) => (bool auth_success);
 
   // Request to attempt easy unlock in chrome.
   // |account_id|:   The account id of the user we are authenticating.

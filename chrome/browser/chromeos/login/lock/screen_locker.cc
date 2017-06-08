@@ -218,11 +218,12 @@ void ScreenLocker::Init() {
     views_screen_locker_->Init();
 
     // Create and display lock screen.
-    // TODO(jdufault): Calling ash::ShowLockScreenInWidget should be a mojo
-    // call. We should only set the session state to locked after the mojo call
-    // has completed.
-    if (ash::ShowLockScreen())
-      views_screen_locker_->OnLockScreenReady();
+    LockScreenClient::Get()->ShowLockScreen(base::BindOnce(
+        [](ViewsScreenLocker* screen_locker, bool did_show) {
+          CHECK(did_show);
+          screen_locker->OnLockScreenReady();
+        },
+        views_screen_locker_.get()));
   } else {
     web_ui_.reset(new WebUIScreenLocker(this));
     delegate_ = web_ui_.get();
@@ -265,6 +266,9 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
 
   if (auth_status_consumer_)
     auth_status_consumer_->OnAuthFailure(error);
+
+  if (on_auth_complete_)
+    std::move(on_auth_complete_).Run(false);
 }
 
 void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
@@ -319,6 +323,9 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
                             weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kUnlockGuardTimeoutMs));
   delegate_->AnimateAuthenticationSuccess();
+
+  if (on_auth_complete_)
+    std::move(on_auth_complete_).Run(true);
 }
 
 void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
@@ -348,9 +355,13 @@ void ScreenLocker::UnlockOnLoginSuccess() {
   chromeos::ScreenLocker::Hide();
 }
 
-void ScreenLocker::Authenticate(const UserContext& user_context) {
+void ScreenLocker::Authenticate(const UserContext& user_context,
+                                AuthenticateCallback callback) {
   LOG_ASSERT(IsUserLoggedIn(user_context.GetAccountId()))
       << "Invalid user trying to unlock.";
+
+  DCHECK(!on_auth_complete_);
+  on_auth_complete_ = std::move(callback);
 
   authentication_start_time_ = base::Time::Now();
   delegate_->SetPasswordInputEnabled(false);

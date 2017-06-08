@@ -18,16 +18,29 @@ class MockLockScreenClient : public mojom::LockScreenClient {
 
   mojom::LockScreenClientPtr CreateInterfacePtrAndBind();
 
-  // mojom::LockScreenClient:
-  MOCK_METHOD3(AuthenticateUser,
+  MOCK_METHOD4(AuthenticateUser_,
                void(const AccountId& account_id,
                     const std::string& password,
-                    bool authenticated_by_pin));
+                    bool authenticated_by_pin,
+                    AuthenticateUserCallback& callback));
+
+  // Set the result that should be passed to |callback| in |AuthenticateUser|.
+  void set_authenticate_user_callback_result(bool value) {
+    authenticate_user_callback_result_ = value;
+  }
+
+  // mojom::LockScreenClient:
+  void AuthenticateUser(const AccountId& account_id,
+                        const std::string& password,
+                        bool authenticated_by_pin,
+                        AuthenticateUserCallback callback) override;
   MOCK_METHOD1(AttemptUnlock, void(const AccountId& account_id));
   MOCK_METHOD1(HardlockPod, void(const AccountId& account_id));
   MOCK_METHOD1(RecordClickOnLockIcon, void(const AccountId& account_id));
 
  private:
+  bool authenticate_user_callback_result_ = true;
+
   mojo::Binding<ash::mojom::LockScreenClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MockLockScreenClient);
