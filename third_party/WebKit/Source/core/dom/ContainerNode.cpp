@@ -154,11 +154,15 @@ bool ContainerNode::ContainsConsideringHostElements(
   return new_child.contains(this);
 }
 
+// EnsurePreInsertionValidity() is an implementation of step 2 to 6 of
+// https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity and
+// https://dom.spec.whatwg.org/#concept-node-replace .
 DISABLE_CFI_PERF
-bool ContainerNode::CheckAcceptChild(const Node* new_child,
-                                     const Node* next,
-                                     const Node* old_child,
-                                     ExceptionState& exception_state) const {
+bool ContainerNode::EnsurePreInsertionValidity(
+    const Node* new_child,
+    const Node* next,
+    const Node* old_child,
+    ExceptionState& exception_state) const {
   DCHECK(!(next && old_child));
   // Not mentioned in spec: throw NotFoundError if newChild is null
   if (!new_child) {
@@ -344,7 +348,8 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   }
 
   // Make sure adding the new child is OK.
-  if (!CheckAcceptChild(new_child, ref_child, nullptr, exception_state))
+  if (!EnsurePreInsertionValidity(new_child, ref_child, nullptr,
+                                  exception_state))
     return new_child;
   DCHECK(new_child);
 
@@ -480,7 +485,8 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
   // doctype and parent is not a document, throw a HierarchyRequestError.
   // 6. If parent is a document, and any of the statements below, switched on
   // node, are true, throw a HierarchyRequestError.
-  if (!CheckAcceptChild(new_child, nullptr, old_child, exception_state))
+  if (!EnsurePreInsertionValidity(new_child, nullptr, old_child,
+                                  exception_state))
     return old_child;
 
   // 3. If child’s parent is not parent, then throw a NotFoundError.
@@ -771,7 +777,7 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
 Node* ContainerNode::AppendChild(Node* new_child,
                                  ExceptionState& exception_state) {
   // Make sure adding the new child is ok
-  if (!CheckAcceptChild(new_child, nullptr, nullptr, exception_state))
+  if (!EnsurePreInsertionValidity(new_child, nullptr, nullptr, exception_state))
     return new_child;
   DCHECK(new_child);
 
