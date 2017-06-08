@@ -1729,9 +1729,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyMarkerEnd:
     case CSSPropertyMask:
       return ConsumeNoneOrURI(range_, context_);
-    case CSSPropertyFlexGrow:
-    case CSSPropertyFlexShrink:
-      return ConsumeNumber(range_, kValueRangeNonNegative);
     case CSSPropertyWebkitBoxFlex:
       return ConsumeNumber(range_, kValueRangeAll);
     case CSSPropertyStrokeWidth:
