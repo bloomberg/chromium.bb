@@ -59,6 +59,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     tags = ['buildset:%s' % buildset_tag,
             'build_type:%s' % build_config.build_type,
             'master:False',
+            'master_config:%s' % self._run.config.name,
             'cbb_config:%s' % build_name,
             'cbb_branch:%s' % self._run.manifest_branch,
             'cbb_master_build_id:%s' % master_build_id]

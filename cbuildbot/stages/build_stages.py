@@ -147,7 +147,8 @@ class CleanUpStage(generic_stages.BuilderStage):
             buckets=slave_buildbucket_buckets,
             tags=['build_type:%s' % self._run.config.build_type,
                   'cbb_branch:%s' % self._run.manifest_branch,
-                  'master:False',],
+                  'master:False',
+                  'master_config:%s' % self._run.config.name],
             status=status)
 
         ids = buildbucket_lib.ExtractBuildIds(builds)
