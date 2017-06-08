@@ -575,7 +575,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   uint8_t *dst;
   int16_t *pred;
   const int dst_stride = pd->dst.stride;
-  int tx_blk_size;
+  const int txw = tx_size_wide[tx_size];
+  const int txh = tx_size_high[tx_size];
   int i, j;
 #endif
 
@@ -615,18 +616,16 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   src_int16 =
       &p->src_int16[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
 
-  // transform block size in pixels
-  tx_blk_size = tx_size_wide[tx_size];
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (j = 0; j < tx_blk_size; j++)
-      for (i = 0; i < tx_blk_size; i++)
+    for (j = 0; j < txh; j++)
+      for (i = 0; i < txw; i++)
         src_int16[diff_stride * j + i] =
             CONVERT_TO_SHORTPTR(src)[src_stride * j + i];
   } else {
 #endif  // CONFIG_HIGHBITDEPTH
-    for (j = 0; j < tx_blk_size; j++)
-      for (i = 0; i < tx_blk_size; i++)
+    for (j = 0; j < txh; j++)
+      for (i = 0; i < txw; i++)
         src_int16[diff_stride * j + i] = src[src_stride * j + i];
 #if CONFIG_HIGHBITDEPTH
   }
@@ -637,21 +636,18 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   pred = &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
 
-  // transform block size in pixels
-  tx_blk_size = tx_size_wide[tx_size];
-
 // copy uint8 orig and predicted block to int16 buffer
 // in order to use existing VP10 transform functions
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (j = 0; j < tx_blk_size; j++)
-      for (i = 0; i < tx_blk_size; i++)
+    for (j = 0; j < txh; j++)
+      for (i = 0; i < txw; i++)
         pred[diff_stride * j + i] =
             CONVERT_TO_SHORTPTR(dst)[dst_stride * j + i];
   } else {
 #endif  // CONFIG_HIGHBITDEPTH
-    for (j = 0; j < tx_blk_size; j++)
-      for (i = 0; i < tx_blk_size; i++)
+    for (j = 0; j < txh; j++)
+      for (i = 0; i < txw; i++)
         pred[diff_stride * j + i] = dst[dst_stride * j + i];
 #if CONFIG_HIGHBITDEPTH
   }
