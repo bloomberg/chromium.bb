@@ -83,7 +83,7 @@ bool TestBackingStore::SaveChanges(
 class TestDirectory : public Directory {
  public:
   // A factory function used to work around some initialization order issues.
-  static TestDirectory* Create(
+  static std::unique_ptr<TestDirectory> Create(
       Encryptor* encryptor,
       const WeakHandle<UnrecoverableErrorHandler>& handler,
       const std::string& dir_name,
@@ -101,21 +101,25 @@ class TestDirectory : public Directory {
   TestBackingStore* backing_store_;
 };
 
-TestDirectory* TestDirectory::Create(
+std::unique_ptr<TestDirectory> TestDirectory::Create(
     Encryptor* encryptor,
     const WeakHandle<UnrecoverableErrorHandler>& handler,
     const std::string& dir_name,
     const base::FilePath& backing_filepath) {
   TestBackingStore* backing_store =
       new TestBackingStore(dir_name, backing_filepath);
-  return new TestDirectory(encryptor, handler, backing_store);
+  return base::WrapUnique(new TestDirectory(encryptor, handler, backing_store));
 }
 
 TestDirectory::TestDirectory(
     Encryptor* encryptor,
     const WeakHandle<UnrecoverableErrorHandler>& handler,
     TestBackingStore* backing_store)
-    : Directory(backing_store, handler, base::Closure(), nullptr, nullptr),
+    : Directory(base::WrapUnique(backing_store),
+                handler,
+                base::Closure(),
+                nullptr,
+                nullptr),
       backing_store_(backing_store) {}
 
 TestDirectory::~TestDirectory() {}
@@ -137,8 +141,8 @@ TEST(OnDiskSyncableDirectory, MAYBE_FailInitialWrite) {
   std::string name = "user@x.com";
   NullDirectoryChangeDelegate delegate;
 
-  std::unique_ptr<TestDirectory> test_dir(TestDirectory::Create(
-      &encryptor, MakeWeakHandle(handler.GetWeakPtr()), name, file_path));
+  std::unique_ptr<TestDirectory> test_dir = TestDirectory::Create(
+      &encryptor, MakeWeakHandle(handler.GetWeakPtr()), name, file_path);
 
   test_dir->StartFailingSaveChanges();
   ASSERT_EQ(FAILED_INITIAL_WRITE,
@@ -168,11 +172,12 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
 
   // Creates a new directory.  Deletes the old directory, if it exists.
   void CreateDirectory() {
-    test_directory_ = TestDirectory::Create(
+    std::unique_ptr<TestDirectory> test_directory = TestDirectory::Create(
         encryptor(),
         MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
         kDirectoryName, file_path_);
-    dir().reset(test_directory_);
+    test_directory_ = test_directory.get();
+    dir() = std::move(test_directory);
     ASSERT_TRUE(dir().get());
     ASSERT_EQ(OPENED, dir()->Open(kDirectoryName, directory_change_delegate(),
                                   NullTransactionObserver()));
@@ -344,7 +349,7 @@ TEST_F(OnDiskSyncableDirectoryTest,
 
   dir()->SaveChanges();
   dir() = base::MakeUnique<Directory>(
-      new OnDiskDirectoryBackingStore(kDirectoryName, file_path_),
+      base::MakeUnique<OnDiskDirectoryBackingStore>(kDirectoryName, file_path_),
       MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
       base::Closure(), nullptr, nullptr);
 
@@ -555,9 +560,10 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
       temp_dir_.GetPath().Append(Directory::kSyncDatabaseFilename);
 
   {
-    Directory dir(new OnDiskDirectoryBackingStore("ScopeTest", path),
-                  MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
-                  nullptr, nullptr);
+    Directory dir(
+        base::MakeUnique<OnDiskDirectoryBackingStore>("ScopeTest", path),
+        MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr,
+        nullptr);
     DirOpenResult result =
         dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
     ASSERT_EQ(result, OPENED);
