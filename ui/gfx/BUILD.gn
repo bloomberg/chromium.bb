@@ -363,7 +363,7 @@ component("gfx") {
 
   # Linux.
   if (is_linux) {
-    deps += [ "//build/linux:fontconfig" ]
+    deps += [ "//third_party/fontconfig" ]
   }
 
   if (is_mac) {
@@ -604,7 +604,7 @@ static_library("test_support") {
     ]
   }
   if (is_linux) {
-    deps += [ "//build/linux:fontconfig" ]
+    deps += [ "//third_party/fontconfig" ]
   }
 }
 

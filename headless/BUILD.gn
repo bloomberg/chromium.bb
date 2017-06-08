@@ -209,7 +209,7 @@ if (headless_fontconfig_utils) {
     ]
 
     deps = [
-      "//build/linux:fontconfig",
+      "//third_party/fontconfig",
       "//third_party/freetype",
     ]
 

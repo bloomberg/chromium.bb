@@ -136,8 +136,8 @@ source_set("browser") {
     ]
 
     deps += [
-      "//build/linux:fontconfig",
       "//components/metrics:serialization",
+      "//third_party/fontconfig",
       "//ui/aura",
     ]
   } else if (is_android) {

@@ -3829,7 +3829,7 @@ split_static_library("browser") {
 
   if (is_linux) {
     if (use_aura) {
-      deps += [ "//build/linux:fontconfig" ]
+      deps += [ "//third_party/fontconfig" ]
       if (use_dbus) {
         deps += [ "//dbus" ]
       }
