@@ -3457,6 +3457,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Memory low, tabs discarded"/>
 </enum>
 
+<enum name="BooleanTabDiscardFastShutdown" type="int">
+  <int value="0" label="Fast shutdown failed"/>
+  <int value="1" label="Fast shutdown succeeded"/>
+</enum>
+
 <enum name="BooleanTablet" type="int">
   <int value="0" label="Non tablet"/>
   <int value="1" label="Tablet"/>

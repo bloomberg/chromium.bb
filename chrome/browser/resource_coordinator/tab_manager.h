@@ -173,6 +173,7 @@ class TabManager : public TabStripModelObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ReloadDiscardedTabContextMenu);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FastShutdownSingleTabProcess);
 
   // The time of the first purging after a renderer is backgrounded.
   // The initial value was chosen because most of users activate backgrounded

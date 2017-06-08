@@ -723,6 +723,12 @@ WebContents* TabManager::DiscardWebContentsAt(int index, TabStripModel* model) {
   // Copy over the discard count.
   WebContentsData::CopyState(old_contents, null_contents);
 
+  // First try to fast-kill the process, if it's just running a single tab.
+  bool fast_shutdown_success =
+      old_contents->GetRenderProcessHost()->FastShutdownForPageCount(1u);
+  UMA_HISTOGRAM_BOOLEAN("TabManager.Discarding.DiscardedTabCouldFastShutdown",
+                        fast_shutdown_success);
+
   // Replace the discarded tab with the null version.
   model->ReplaceWebContentsAt(index, null_contents);
   // Mark the tab so it will reload when clicked on.
