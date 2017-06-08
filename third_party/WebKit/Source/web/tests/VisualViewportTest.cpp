@@ -2111,10 +2111,6 @@ static void configureAndroidCompositing(WebSettings* settings) {
 // Make sure a composited background-attachment:fixed background gets resized
 // when using inert (non-layout affecting) browser controls.
 TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
-  bool originalInertTopControls =
-      RuntimeEnabledFeatures::InertTopControlsEnabled();
-  RuntimeEnabledFeatures::SetInertTopControlsEnabled(true);
-
   std::unique_ptr<FrameTestHelpers::TestWebViewClient>
       fake_compositing_web_view_client =
           WTF::MakeUnique<FrameTestHelpers::TestWebViewClient>();
@@ -2181,8 +2177,6 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   EXPECT_EQ(page_width, compositor->FixedRootBackgroundLayer()->Size().Width());
   EXPECT_EQ(page_height,
             compositor->FixedRootBackgroundLayer()->Size().Height());
-
-  RuntimeEnabledFeatures::SetInertTopControlsEnabled(originalInertTopControls);
 }
 
 static void configureAndroidNonCompositing(WebSettings* settings) {
@@ -2197,10 +2191,6 @@ static void configureAndroidNonCompositing(WebSettings* settings) {
 // Make sure a non-composited background-attachment:fixed background gets
 // resized when using inert (non-layout affecting) browser controls.
 TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
-  bool originalInertTopControls =
-      RuntimeEnabledFeatures::InertTopControlsEnabled();
-  RuntimeEnabledFeatures::SetInertTopControlsEnabled(true);
-
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.Initialize(
       true, nullptr, nullptr, nullptr, &configureAndroidNonCompositing);
@@ -2295,16 +2285,11 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
             (*raster_invalidations)[0].rect);
 
   document->View()->SetTracksPaintInvalidations(false);
-  RuntimeEnabledFeatures::SetInertTopControlsEnabled(originalInertTopControls);
 }
 
 // Make sure a browser control resize with background-attachment:not-fixed
 // background doesn't cause invalidation or layout.
 TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
-  bool originalInertTopControls =
-      RuntimeEnabledFeatures::InertTopControlsEnabled();
-  RuntimeEnabledFeatures::SetInertTopControlsEnabled(true);
-
   std::unique_ptr<FrameTestHelpers::TestWebViewClient>
       fake_compositing_web_view_client =
           WTF::MakeUnique<FrameTestHelpers::TestWebViewClient>();
@@ -2381,14 +2366,9 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
     EXPECT_FALSE(invalidation_tracking);
 
   document->View()->SetTracksPaintInvalidations(false);
-  RuntimeEnabledFeatures::SetInertTopControlsEnabled(originalInertTopControls);
 }
 
 TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
-  bool originalInertTopControls =
-      RuntimeEnabledFeatures::InertTopControlsEnabled();
-  RuntimeEnabledFeatures::SetInertTopControlsEnabled(true);
-
   std::unique_ptr<FrameTestHelpers::TestWebViewClient>
       fake_compositing_web_view_client =
           WTF::MakeUnique<FrameTestHelpers::TestWebViewClient>();
@@ -2435,7 +2415,6 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
   }
 
   document->View()->SetTracksPaintInvalidations(false);
-  RuntimeEnabledFeatures::SetInertTopControlsEnabled(originalInertTopControls);
 }
 
 // Make sure we don't crash when the visual viewport's height is 0. This can
