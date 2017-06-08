@@ -87,6 +87,7 @@ void RegionComboboxModel::OnRegionDataLoaded(
   // Some countries expose a state field but have no region names available.
   if (regions.size() > 0) {
     failed_to_load_data_ = false;
+    regions_.push_back(std::make_pair("", "---"));
     for (auto* const region : regions) {
       regions_.push_back(std::make_pair(region->key(), region->name()));
     }

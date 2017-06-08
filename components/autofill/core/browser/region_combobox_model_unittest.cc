@@ -35,9 +35,10 @@ TEST(RegionComboboxModelTest, QuebecOntarioRegions) {
 
   test_region_data_loader.SendAsynchronousData(regions);
 
-  EXPECT_EQ(2, model.GetItemCount());
-  EXPECT_EQ(base::ASCIIToUTF16(kQuebec), model.GetItemAt(0));
-  EXPECT_EQ(base::ASCIIToUTF16(kOntario), model.GetItemAt(1));
+  EXPECT_EQ(3, model.GetItemCount());
+  EXPECT_EQ(base::ASCIIToUTF16("---"), model.GetItemAt(0));
+  EXPECT_EQ(base::ASCIIToUTF16(kQuebec), model.GetItemAt(1));
+  EXPECT_EQ(base::ASCIIToUTF16(kOntario), model.GetItemAt(2));
   EXPECT_FALSE(model.failed_to_load_data());
 }
 

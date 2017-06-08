@@ -33,10 +33,20 @@ class TestRegionDataLoader : public RegionDataLoader {
     synchronous_callback_ = synchronous_callback;
   }
 
+  void SetRegionData(
+      std::vector<std::pair<std::string, std::string>>& regions) {
+    regions_ = regions;
+  }
+
   void SendAsynchronousData(
       const std::vector<std::pair<std::string, std::string>>& regions);
 
  private:
+  void SendRegionData(
+      const std::vector<std::pair<std::string, std::string>>& regions,
+      autofill::RegionDataLoader::RegionDataLoaded callback);
+
+  std::vector<std::pair<std::string, std::string>> regions_;
   std::string country_code_;
   autofill::RegionDataLoader::RegionDataLoaded callback_;
   bool synchronous_callback_{false};

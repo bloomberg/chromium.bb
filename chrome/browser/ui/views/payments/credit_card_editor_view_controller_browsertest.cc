@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/browser/test_region_data_loader.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/core/autofill_payment_instrument.h"
@@ -673,6 +674,15 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   ASSERT_NE(nullptr, billing_address_combobox);
   EXPECT_FALSE(billing_address_combobox->enabled());
 
+  // Add some region data to load synchonously.
+  autofill::TestRegionDataLoader test_region_data_loader_;
+  SetRegionDataLoader(&test_region_data_loader_);
+  test_region_data_loader_.set_synchronous_callback(true);
+  std::vector<std::pair<std::string, std::string>> regions1;
+  regions1.push_back(std::make_pair("AL", "Alabama"));
+  regions1.push_back(std::make_pair("CA", "California"));
+  test_region_data_loader_.SetRegionData(regions1);
+
   // Click to open the address editor
   ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   ClickOnDialogViewAndWait(DialogViewID::ADD_BILLING_ADDRESS_BUTTON);
@@ -683,6 +693,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                           autofill::ADDRESS_HOME_STREET_ADDRESS);
   SetEditorTextfieldValue(base::ASCIIToUTF16("BobCity"),
                           autofill::ADDRESS_HOME_CITY);
+  SetComboboxValue(base::UTF8ToUTF16("California"),
+                   autofill::ADDRESS_HOME_STATE);
   SetEditorTextfieldValue(base::ASCIIToUTF16("BobZip"),
                           autofill::ADDRESS_HOME_ZIP);
   SetEditorTextfieldValue(base::ASCIIToUTF16("5755555555"),
