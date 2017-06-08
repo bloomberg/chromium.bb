@@ -8,11 +8,13 @@
 #include <utility>
 
 #include "base/at_exit.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/log/test_net_log.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/network_quality_estimator_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -42,9 +44,11 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
           external_estimate_provider,
       const std::map<std::string, std::string>& variation_params,
       net::NetLog* net_log)
-      : NetworkQualityEstimator(std::move(external_estimate_provider),
-                                variation_params,
-                                net_log),
+      : NetworkQualityEstimator(
+            std::move(external_estimate_provider),
+            base::MakeUnique<net::NetworkQualityEstimatorParams>(
+                variation_params),
+            net_log),
         notified_(false) {}
 
   ~TestNetworkQualityEstimator() override {}

@@ -571,7 +571,9 @@ void IOThread::Init() {
 #endif  // defined(OS_ANDROID)
   // Pass ownership.
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
-      std::move(external_estimate_provider), network_quality_estimator_params,
+      std::move(external_estimate_provider),
+      base::MakeUnique<net::NetworkQualityEstimatorParams>(
+          network_quality_estimator_params),
       net_log_));
   globals_->network_quality_observer = content::CreateNetworkQualityObserver(
       globals_->network_quality_estimator.get());

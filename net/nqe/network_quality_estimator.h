@@ -104,33 +104,12 @@ class NET_EXPORT NetworkQualityEstimator
   };
 
   // Creates a new NetworkQualityEstimator.
-  // |variation_params| is the map containing all field trial parameters
-  // related to NetworkQualityEstimator field trial.
-  // |external_estimates_provider| may be NULL. The caller must guarantee that
-  // |net_log| outlives |this|.
+  // |external_estimates_provider| may be NULL. |params| contains the
+  // configuration parameters relevant to network quality estimator. The caller
+  // must guarantee that |net_log| outlives |this|.
   NetworkQualityEstimator(
       std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
-      const std::map<std::string, std::string>& variation_params,
-      NetLog* net_log);
-
-  // Construct a NetworkQualityEstimator instance allowing for test
-  // configuration. Registers for network type change notifications so estimates
-  // can be kept network specific.
-  // |external_estimates_provider| may be NULL.
-  // |variation_params| is the map containing all field trial parameters for the
-  // network quality estimator field trial.
-  // |use_local_host_requests_for_tests| should only be true when testing
-  // against local HTTP server and allows the requests to local host to be
-  // used for network quality estimation.
-  // |use_smaller_responses_for_tests| should only be true when testing.
-  // Allows the responses smaller than |kMinTransferSizeInBits| to be used for
-  // network quality estimation. The caller must guarantee that |net_log|
-  // outlives |this|.
-  NetworkQualityEstimator(
-      std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
-      const std::map<std::string, std::string>& variation_params,
-      bool use_local_host_requests_for_tests,
-      bool use_smaller_responses_for_tests,
+      std::unique_ptr<NetworkQualityEstimatorParams> params,
       NetLog* net_log);
 
   ~NetworkQualityEstimator() override;
@@ -230,10 +209,18 @@ class NET_EXPORT NetworkQualityEstimator
 
  protected:
   // A protected constructor for testing that allows setting the value of
-  // |add_default_platform_observations_|.
+  // configuration params.
+  // |use_local_host_requests_for_tests| should only be true when testing
+  // against local HTTP server and allows the requests to local host to be
+  // used for network quality estimation.
+  // |use_smaller_responses_for_tests| should only be true when testing.
+  // Allows the responses smaller than |kMinTransferSizeInBits| to be used for
+  // network quality estimation.
+  // |add_default_platform_observations_| should be false only if |this| should
+  // not generate observations based on the platform and/or connection type.
   NetworkQualityEstimator(
       std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
-      const std::map<std::string, std::string>& variation_params,
+      std::unique_ptr<NetworkQualityEstimatorParams> params,
       bool use_local_host_requests_for_tests,
       bool use_smaller_responses_for_tests,
       bool add_default_platform_observations,
@@ -542,7 +529,7 @@ class NET_EXPORT NetworkQualityEstimator
   const char* GetNameForStatistic(int i) const;
 
   // Params to configure the network quality estimator.
-  const nqe::internal::NetworkQualityEstimatorParams params_;
+  const std::unique_ptr<NetworkQualityEstimatorParams> params_;
 
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
