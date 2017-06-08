@@ -111,14 +111,17 @@ VideoCaptureSettings::VideoCaptureSettings(
     media::VideoCaptureParams capture_params,
     base::Optional<bool> noise_reduction,
     const VideoTrackAdapterSettings& track_adapter_settings,
-    double min_frame_rate)
+    base::Optional<double> min_frame_rate,
+    base::Optional<double> max_frame_rate)
     : failed_constraint_name_(nullptr),
       device_id_(std::move(device_id)),
       capture_params_(capture_params),
       noise_reduction_(noise_reduction),
       track_adapter_settings_(track_adapter_settings),
-      min_frame_rate_(min_frame_rate) {
-  DCHECK_LE(min_frame_rate_, capture_params.requested_format.frame_rate);
+      min_frame_rate_(min_frame_rate),
+      max_frame_rate_(max_frame_rate) {
+  DCHECK(!min_frame_rate ||
+         *min_frame_rate_ <= capture_params.requested_format.frame_rate);
   DCHECK_LE(track_adapter_settings.max_width,
             capture_params.requested_format.frame_size.width());
   DCHECK_LE(track_adapter_settings.max_height,

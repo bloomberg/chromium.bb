@@ -47,8 +47,9 @@ class NumericRangeSet;
 //   * noise_reduction: used to control noise reduction for a screen-capture
 //     track sent to a peer connection. Derive from the googNoiseReduction
 //     constraint.
-//   * min_frame_rate: used to control frame refreshes in screen-capture tracks
-//     sent to a peer connection. Derived from the frameRate constraint.
+//   * min_frame_rate and max_frame_rate: used to control frame refreshes in
+//     screen-capture tracks sent to a peer connection. Derived from the
+//     frameRate constraint.
 class CONTENT_EXPORT VideoCaptureSettings {
  public:
   // Creates an object without value and with an empty failed constraint name.
@@ -65,7 +66,8 @@ class CONTENT_EXPORT VideoCaptureSettings {
                        media::VideoCaptureParams capture_params_,
                        base::Optional<bool> noise_reduction_,
                        const VideoTrackAdapterSettings& track_adapter_settings,
-                       double min_frame_rate);
+                       base::Optional<double> min_frame_rate,
+                       base::Optional<double> max_frame_rate);
 
   VideoCaptureSettings(const VideoCaptureSettings& other);
   VideoCaptureSettings& operator=(const VideoCaptureSettings& other);
@@ -119,9 +121,13 @@ class CONTENT_EXPORT VideoCaptureSettings {
     DCHECK(HasValue());
     return track_adapter_settings_;
   }
-  double min_frame_rate() const {
+  const base::Optional<double>& min_frame_rate() const {
     DCHECK(HasValue());
     return min_frame_rate_;
+  }
+  const base::Optional<double>& max_frame_rate() const {
+    DCHECK(HasValue());
+    return max_frame_rate_;
   }
 
  private:
@@ -130,7 +136,8 @@ class CONTENT_EXPORT VideoCaptureSettings {
   media::VideoCaptureParams capture_params_;
   base::Optional<bool> noise_reduction_;
   VideoTrackAdapterSettings track_adapter_settings_;
-  double min_frame_rate_;
+  base::Optional<double> min_frame_rate_;
+  base::Optional<double> max_frame_rate_;
 };
 
 // Method to get boolean value of constraint with |name| from constraints.
