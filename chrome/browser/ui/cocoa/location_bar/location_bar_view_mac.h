@@ -193,6 +193,8 @@ class LocationBarViewMac : public LocationBar,
     return translate_decoration_.get();
   }
 
+  ZoomDecoration* zoom_decoration() const { return zoom_decoration_.get(); }
+
   Browser* browser() const { return browser_; }
 
   // ZoomManagerObserver:
