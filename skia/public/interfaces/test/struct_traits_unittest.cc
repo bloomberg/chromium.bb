@@ -30,14 +30,13 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
-  void EchoBitmap(const SkBitmap& b,
-                  const EchoBitmapCallback& callback) override {
-    callback.Run(b);
+  void EchoBitmap(const SkBitmap& b, EchoBitmapCallback callback) override {
+    std::move(callback).Run(b);
   }
 
   void EchoImageFilter(const sk_sp<SkImageFilter>& i,
-                       const EchoImageFilterCallback& callback) override {
-    callback.Run(i);
+                       EchoImageFilterCallback callback) override {
+    std::move(callback).Run(i);
   }
 
   base::MessageLoop loop_;
