@@ -7,9 +7,6 @@
 
 #include <memory>
 
-// TODO(crbug.com/721758): Batch updates should be done in the mediator.
-#include "components/reading_list/core/reading_list_model.h"
-
 class GURL;
 class ReadingListEntry;
 @class CollectionViewItem;

@@ -3,10 +3,7 @@
 # found in the LICENSE file.
 
 source_set("reading_list") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "number_badge_view.h",
-    "number_badge_view.mm",
     "offline_page_native_content.h",
     "offline_page_native_content.mm",
     "reading_list_collection_view_controller.h",
@@ -16,10 +13,6 @@ source_set("reading_list") {
     "reading_list_collection_view_item_accessibility_delegate.h",
     "reading_list_coordinator.h",
     "reading_list_coordinator.mm",
-    "reading_list_data_sink.h",
-    "reading_list_data_source.h",
-    "reading_list_empty_collection_background.h",
-    "reading_list_empty_collection_background.mm",
     "reading_list_mediator.h",
     "reading_list_mediator.mm",
     "reading_list_menu_notification_delegate.h",
@@ -27,18 +20,16 @@ source_set("reading_list") {
     "reading_list_menu_notifier.mm",
     "reading_list_side_swipe_provider.h",
     "reading_list_side_swipe_provider.mm",
-    "reading_list_toolbar.h",
-    "reading_list_toolbar.mm",
     "reading_list_utils.h",
     "reading_list_utils.mm",
     "reading_list_view_controller.h",
     "reading_list_view_controller.mm",
   ]
   deps = [
+    ":reading_list_ui",
     ":resources",
     "//base",
     "//components/favicon/core",
-    "//components/prefs",
     "//components/reading_list/core",
     "//components/reading_list/ios",
     "//components/strings",
@@ -48,11 +39,8 @@ source_set("reading_list") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/reading_list",
-    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
-    "//ios/chrome/browser/ui/collection_view/cells",
-    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/favicon",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/keyboard",
@@ -60,12 +48,8 @@ source_set("reading_list") {
     "//ios/chrome/browser/ui/side_swipe",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common",
-    "//ios/third_party/material_components_ios",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//ios/web:reload_type",
-    "//net",
     "//ui/base",
     "//ui/strings",
     "//url",
@@ -74,6 +58,42 @@ source_set("reading_list") {
     "//ios/chrome/browser/ui/collection_view",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/side_swipe" ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("reading_list_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "number_badge_view.h",
+    "number_badge_view.mm",
+    "reading_list_collection_view_cell.h",
+    "reading_list_collection_view_cell.mm",
+    "reading_list_data_sink.h",
+    "reading_list_data_source.h",
+    "reading_list_empty_collection_background.h",
+    "reading_list_empty_collection_background.mm",
+    "reading_list_toolbar.h",
+    "reading_list_toolbar.mm",
+  ]
+  deps = [
+    ":resources",
+    "//base",
+    "//components/strings",
+    "//components/url_formatter",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/favicon:favicon_ui",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common",
+    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_roboto_font_loader_ios",
+    "//ui/base",
+  ]
   libs = [ "UIKit.framework" ]
 }
 
@@ -88,6 +108,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":reading_list",
+    ":reading_list_ui",
     "//base",
     "//base/test:test_support",
     "//components/favicon/core",
@@ -117,6 +138,7 @@ source_set("eg_tests") {
   ]
   deps = [
     ":reading_list",
+    ":reading_list_ui",
     "//base",
     "//base/test:test_support",
     "//components/reading_list/core",
