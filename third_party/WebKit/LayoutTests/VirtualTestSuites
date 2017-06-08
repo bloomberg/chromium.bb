@@ -76,6 +76,12 @@
              "--force-color-profile=srgb"]
   },
   {
+    "prefix": "exotic-color-space",
+    "base": "images",
+    "args": ["--enable-color-correct-rendering", 
+             "--force-color-profile=color-spin-gamma24"]
+  },
+  {
     "prefix": "stable",
     "base": "webexposed",
     "args": ["--stable-release-mode"]

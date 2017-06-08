@@ -457,11 +457,11 @@ void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
 
     case ColorSpace::PrimaryID::WIDE_GAMUT_COLOR_SPIN:
       primaries.fRX = 0.01f;
-      primaries.fRY = 0.01f;
-      primaries.fGX = 0.98f;
+      primaries.fRY = 0.98f;
+      primaries.fGX = 0.01f;
       primaries.fGY = 0.01f;
-      primaries.fBX = 0.01f;
-      primaries.fBY = 0.98f;
+      primaries.fBX = 0.98f;
+      primaries.fBY = 0.01f;
       primaries.fWX = 0.3127f;
       primaries.fWY = 0.3290f;
       break;
