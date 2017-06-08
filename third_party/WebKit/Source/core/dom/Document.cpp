@@ -2908,7 +2908,7 @@ HTMLElement* Document::body() const {
 }
 
 HTMLBodyElement* Document::FirstBodyElement() const {
-  if (!documentElement())
+  if (!documentElement() || !isHTMLHtmlElement(documentElement()))
     return 0;
 
   for (HTMLElement* child =
