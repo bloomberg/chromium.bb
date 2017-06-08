@@ -12,7 +12,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
@@ -26,13 +26,12 @@ class URLLoaderImpl : public mojom::URLLoader {
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-      mojom::URLLoaderAssociatedRequest request,
+      mojom::URLLoaderRequest request,
       mojom::URLLoaderClientPtr client) {
-    mojo::MakeStrongAssociatedBinding(
-        base::MakeUnique<URLLoaderImpl>(response, std::move(body_as_stream),
-                                        blob_storage_context,
-                                        std::move(client)),
-        std::move(request));
+    mojo::MakeStrongBinding(base::MakeUnique<URLLoaderImpl>(
+                                response, std::move(body_as_stream),
+                                blob_storage_context, std::move(client)),
+                            std::move(request));
   }
 
   URLLoaderImpl(const ServiceWorkerResponse& response,
