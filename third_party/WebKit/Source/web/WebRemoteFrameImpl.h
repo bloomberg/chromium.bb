@@ -84,9 +84,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void PrintEnd() override;
   bool IsPrintScalingDisabledForPlugin(const WebNode&) override;
   void PrintPagesWithBoundaries(WebCanvas*, const WebSize&) override;
-  void DispatchMessageEventWithOriginCheck(
-      const WebSecurityOrigin& intended_target_origin,
-      const WebDOMEvent&) override;
 
   WebRect SelectionBoundsRect() const override;
 

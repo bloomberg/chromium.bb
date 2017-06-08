@@ -1024,14 +1024,16 @@ TEST_P(ParameterizedWebFrameTest, DispatchMessageEventWithOriginCheck) {
   WebDocument document = web_view_helper.WebView()->MainFrame()->GetDocument();
   WebSerializedScriptValue data(WebSerializedScriptValue::CreateInvalid());
   WebDOMMessageEvent message(data, "http://origin.com");
-  web_view_helper.WebView()->MainFrame()->DispatchMessageEventWithOriginCheck(
-      correct_origin, message);
+  web_view_helper.WebView()
+      ->MainFrameImpl()
+      ->DispatchMessageEventWithOriginCheck(correct_origin, message);
 
   // Send another message with incorrect origin.
   WebSecurityOrigin incorrect_origin(
       WebSecurityOrigin::Create(ToKURL(chrome_url_)));
-  web_view_helper.WebView()->MainFrame()->DispatchMessageEventWithOriginCheck(
-      incorrect_origin, message);
+  web_view_helper.WebView()
+      ->MainFrameImpl()
+      ->DispatchMessageEventWithOriginCheck(incorrect_origin, message);
 
   // Verify that only the first addition is in the body of the page.
   std::string content =
