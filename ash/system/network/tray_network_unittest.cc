@@ -7,6 +7,7 @@
 #include "ash/login_status.h"
 #include "ash/system/network/network_list.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -59,7 +60,7 @@ TEST_F(TrayNetworkTest, Basics) {
   RunAllPendingInMessageLoop();
 
   // Show network details.
-  TrayNetwork* tray_network = system_tray->GetTrayNetworkForTesting();
+  TrayNetwork* tray_network = SystemTrayTestApi(system_tray).tray_network();
   const int close_delay_in_seconds = 0;
   bool activate = true;
   system_tray->ShowDetailedView(tray_network, close_delay_in_seconds, activate,
@@ -74,7 +75,7 @@ TEST_F(TrayNetworkTest, Basics) {
 // Verifies that toggling Wi-Fi (usually via keyboard) shows a notification.
 TEST_F(TrayNetworkTest, ToggleWifi) {
   TrayNetwork* tray_network =
-      GetPrimarySystemTray()->GetTrayNetworkForTesting();
+      SystemTrayTestApi(GetPrimarySystemTray()).tray_network();
 
   // No notifications at startup.
   ASSERT_EQ(0u, MessageCenter::Get()->NotificationCount());

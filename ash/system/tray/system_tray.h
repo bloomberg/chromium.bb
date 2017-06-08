@@ -139,23 +139,11 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   ScreenTrayItem* GetScreenShareItem() { return screen_share_tray_item_; }
   ScreenTrayItem* GetScreenCaptureItem() { return screen_capture_tray_item_; }
 
-  TrayAccessibility* GetTrayAccessibilityForTest() {
-    return tray_accessibility_;
-  }
-
-  // TODO(jamescook): Add a SystemTrayTestApi instead of these methods.
-  TrayCast* GetTrayCastForTesting() const;
-  TrayEnterprise* GetTrayEnterpriseForTesting() const;
-  TrayNetwork* GetTrayNetworkForTesting() const;
-  TraySessionLengthLimit* GetTraySessionLengthLimitForTesting() const;
-  TraySupervisedUser* GetTraySupervisedUserForTesting() const;
-  TraySystemInfo* GetTraySystemInfoForTesting() const;
-  TrayTiles* GetTrayTilesForTesting() const;
-
   // Activates the system tray bubble.
   void ActivateBubble();
 
  private:
+  friend class SystemTrayTestApi;
   class ActivationObserver;
 
   // Closes the bubble. Used to bind as a KeyEventWatcher::KeyEventCallback.

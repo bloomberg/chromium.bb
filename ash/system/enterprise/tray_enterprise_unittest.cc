@@ -8,6 +8,7 @@
 #include "ash/system/tray/label_tray_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/tray/system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
 
 namespace ash {
@@ -16,7 +17,8 @@ using TrayEnterpriseTest = test::AshTestBase;
 
 TEST_F(TrayEnterpriseTest, ItemVisible) {
   SystemTray* system_tray = GetPrimarySystemTray();
-  TrayEnterprise* tray_enterprise = system_tray->GetTrayEnterpriseForTesting();
+  TrayEnterprise* tray_enterprise =
+      SystemTrayTestApi(system_tray).tray_enterprise();
 
   // By default there is no enterprise item in the menu.
   system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -36,7 +38,8 @@ TEST_F(TrayEnterpriseTest, ItemVisible) {
 
 TEST_F(TrayEnterpriseTest, ItemVisibleForActiveDirectory) {
   SystemTray* system_tray = GetPrimarySystemTray();
-  TrayEnterprise* tray_enterprise = system_tray->GetTrayEnterpriseForTesting();
+  TrayEnterprise* tray_enterprise =
+      SystemTrayTestApi(system_tray).tray_enterprise();
 
   // Simulate enterprise information becoming available. Active Directory
   // devices do not have a domain.

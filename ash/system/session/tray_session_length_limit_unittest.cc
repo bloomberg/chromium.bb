@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/label_tray_view.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
@@ -25,8 +26,8 @@ class TraySessionLengthLimitTest : public AshTestBase {
 
  protected:
   LabelTrayView* GetSessionLengthLimitTrayView() {
-    return GetPrimarySystemTray()
-        ->GetTraySessionLengthLimitForTesting()
+    return SystemTrayTestApi(GetPrimarySystemTray())
+        .tray_session_length_limit()
         ->tray_bubble_view_;
   }
 

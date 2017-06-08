@@ -11,6 +11,7 @@
 #include "ash/system/tiles/tiles_default_view.h"
 #include "ash/system/tiles/tray_tiles.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_test_api.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -157,7 +158,8 @@ class ShutdownPolicyInSessionTest
   // Gets the shutdown button view.
   const views::View* GetShutdownButton() {
     ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
-    return tray->GetTrayTilesForTesting()
+    return ash::SystemTrayTestApi(tray)
+        .tray_tiles()
         ->GetDefaultViewForTesting()
         ->GetShutdownButtonViewForTest();
   }

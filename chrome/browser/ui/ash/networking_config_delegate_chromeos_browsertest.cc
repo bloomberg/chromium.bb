@@ -11,6 +11,7 @@
 #include "ash/system/network/network_list.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_test_api.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -58,7 +59,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigDelegateChromeosTest, SystemTrayItem) {
   ASSERT_TRUE(system_tray->HasSystemBubble());
 
   // Show the network detail view.
-  ash::TrayNetwork* tray_network = system_tray->GetTrayNetworkForTesting();
+  ash::TrayNetwork* tray_network =
+      ash::SystemTrayTestApi(system_tray).tray_network();
   system_tray->ShowDetailedView(tray_network, 0, false, ash::BUBBLE_CREATE_NEW);
   content::RunAllPendingInMessageLoop();
   ASSERT_TRUE(tray_network->detailed());

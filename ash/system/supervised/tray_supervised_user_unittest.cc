@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/label_tray_view.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_controller_client.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -99,7 +100,7 @@ TEST_F(TraySupervisedUserTest, SupervisedUserHasNotification) {
 // Verifies an item is created for a supervised user.
 TEST_F(TraySupervisedUserTest, CreateDefaultView) {
   TraySupervisedUser* tray =
-      GetPrimarySystemTray()->GetTraySupervisedUserForTesting();
+      SystemTrayTestApi(GetPrimarySystemTray()).tray_supervised_user();
   SessionController* session = Shell::Get()->session_controller();
   ASSERT_FALSE(session->IsActiveUserSessionStarted());
 
