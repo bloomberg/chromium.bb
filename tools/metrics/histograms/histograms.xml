@@ -91403,12 +91403,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="NewTabPageTimings" separator=".">
   <suffix name="MostLikely" label="Loaded server-side suggestions."/>
   <suffix name="MostVisited" label="Loaded client-side suggestions."/>
-  <suffix name="LocalNTP" label="Loaded local NTP"/>
-  <suffix name="Web" label="Loaded server-side NTP"/>
+  <suffix name="LocalNTP" label="Loaded local NTP."/>
+  <suffix name="Web" label="Loaded server-side NTP."/>
   <suffix name="Startup" label="NTP loaded during browser startup."/>
   <suffix name="NewTab" label="NTP loaded on a new tab."/>
   <affected-histogram name="NewTabPage.LoadTime"/>
   <affected-histogram name="NewTabPage.TilesReceivedTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NewTabPageTimingsIsGoogle" separator=".">
+  <suffix name="Google" label="Default search provider is Google."/>
+  <suffix name="Other" label="Default search provider is not Google."/>
+  <affected-histogram name="NewTabPage.LoadTime.LocalNTP"/>
+  <affected-histogram name="NewTabPage.LoadTime.Web"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NextTabState" separator="_">

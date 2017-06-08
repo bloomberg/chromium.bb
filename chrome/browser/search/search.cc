@@ -92,20 +92,6 @@ const TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
   return NULL;
 }
 
-bool DefaultSearchProviderIsGoogle(Profile* profile) {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  if (!template_url_service)
-    return false;
-  const TemplateURL* default_provider =
-      template_url_service->GetDefaultSearchProvider();
-  if (!default_provider)
-    return false;
-  return default_provider->GetEngineType(
-             template_url_service->search_terms_data()) ==
-         SearchEngineType::SEARCH_ENGINE_GOOGLE;
-}
-
 GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
                           const SearchTermsData& search_terms_data,
                           bool append_extra_query_params,
@@ -298,6 +284,24 @@ bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {
   return ShouldAssignURLToInstantRenderer(url, profile) &&
          (url.host_piece() == chrome::kChromeSearchLocalNtpHost ||
           url.host_piece() == chrome::kChromeSearchRemoteNtpHost);
+}
+
+bool DefaultSearchProviderIsGoogle(Profile* profile) {
+  return DefaultSearchProviderIsGoogle(
+      TemplateURLServiceFactory::GetForProfile(profile));
+}
+
+bool DefaultSearchProviderIsGoogle(
+    const TemplateURLService* template_url_service) {
+  if (!template_url_service)
+    return false;
+  const TemplateURL* default_provider =
+      template_url_service->GetDefaultSearchProvider();
+  if (!default_provider)
+    return false;
+  return default_provider->GetEngineType(
+             template_url_service->search_terms_data()) ==
+         SearchEngineType::SEARCH_ENGINE_GOOGLE;
 }
 
 bool IsNTPURL(const GURL& url, Profile* profile) {

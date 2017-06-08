@@ -23,6 +23,7 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -165,15 +166,6 @@ std::string GetLocalNtpPath() {
          std::string(chrome::kChromeSearchLocalNtpHost) + "/";
 }
 
-bool DefaultSearchProviderIsGoogleImpl(
-    const TemplateURLService* template_url_service) {
-  const TemplateURL* default_provider =
-      template_url_service->GetDefaultSearchProvider();
-  return default_provider && (default_provider->GetEngineType(
-                                  template_url_service->search_terms_data()) ==
-                              SEARCH_ENGINE_GOOGLE);
-}
-
 std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
     const OneGoogleBarData& og) {
   auto result = base::MakeUnique<base::DictionaryValue>();
@@ -198,7 +190,7 @@ class LocalNtpSource::GoogleSearchProviderTracker
       : service_(service), callback_(callback), is_google_(false) {
     DCHECK(service_);
     service_->AddObserver(this);
-    is_google_ = DefaultSearchProviderIsGoogleImpl(service_);
+    is_google_ = search::DefaultSearchProviderIsGoogle(service_);
   }
 
   ~GoogleSearchProviderTracker() override {
@@ -211,7 +203,7 @@ class LocalNtpSource::GoogleSearchProviderTracker
  private:
   void OnTemplateURLServiceChanged() override {
     bool old_is_google = is_google_;
-    is_google_ = DefaultSearchProviderIsGoogleImpl(service_);
+    is_google_ = search::DefaultSearchProviderIsGoogle(service_);
     if (is_google_ != old_is_google)
       callback_.Run(is_google_);
   }

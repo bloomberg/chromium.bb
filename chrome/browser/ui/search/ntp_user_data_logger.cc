@@ -150,6 +150,12 @@ void NTPUserDataLogger::NavigatedFromURLToURL(const GURL& from,
   }
 }
 
+bool NTPUserDataLogger::DefaultSearchProviderIsGoogle() const {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return search::DefaultSearchProviderIsGoogle(profile);
+}
+
 void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   // We only send statistics once per page.
   if (has_emitted_) {
@@ -192,15 +198,32 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.MostVisited", load_time);
   }
 
+  // Note: This could be inaccurate if the default search engine was changed
+  // since the page load started. That's unlikely enough to not warrant special
+  // handling.
+  bool is_google = DefaultSearchProviderIsGoogle();
+
   // Split between Web and Local.
   if (ntp_url_.SchemeIsHTTPOrHTTPS()) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.Web",
                             tiles_received_time_);
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web", load_time);
+    // Further split between Google and non-Google.
+    if (is_google) {
+      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web.Google", load_time);
+    } else {
+      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web.Other", load_time);
+    }
   } else {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime.LocalNTP",
                             tiles_received_time_);
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.LocalNTP", load_time);
+    // Further split between Google and non-Google.
+    if (is_google) {
+      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.LocalNTP.Google", load_time);
+    } else {
+      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.LocalNTP.Other", load_time);
+    }
   }
 
   // Split between Startup and non-startup.
