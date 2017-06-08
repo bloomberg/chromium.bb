@@ -419,7 +419,7 @@ class CORE_EXPORT ContainerNode : public Node {
                                                   const Node* next,
                                                   const Node* old_child,
                                                   ExceptionState&) const;
-  inline bool EnsurePreInsertionValidity(const Node* new_child,
+  inline bool EnsurePreInsertionValidity(const Node& new_child,
                                          const Node* next,
                                          const Node* old_child,
                                          ExceptionState&) const;

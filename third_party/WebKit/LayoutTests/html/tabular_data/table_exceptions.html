@@ -9,12 +9,8 @@
 
         var t = document.createElement('table');
 
-        // TODO(foolip): Setting caption/tHead to null should not throw
-        // an exception, it should just remove the old caption/thead.
-        shouldThrow("t.caption = null");
         shouldThrow("t.caption = document.body");
 
-        shouldThrow("t.tHead = null");
         shouldThrow("t.tHead = document.body");
 
         shouldBe("t.createTFoot()", "t.tFoot");

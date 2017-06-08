@@ -159,23 +159,17 @@ bool ContainerNode::ContainsConsideringHostElements(
 // https://dom.spec.whatwg.org/#concept-node-replace .
 DISABLE_CFI_PERF
 bool ContainerNode::EnsurePreInsertionValidity(
-    const Node* new_child,
+    const Node& new_child,
     const Node* next,
     const Node* old_child,
     ExceptionState& exception_state) const {
   DCHECK(!(next && old_child));
-  // Not mentioned in spec: throw NotFoundError if newChild is null
-  if (!new_child) {
-    exception_state.ThrowDOMException(kNotFoundError,
-                                      "The new child element is null.");
-    return false;
-  }
 
   // Use common case fast path if possible.
-  if ((new_child->IsElementNode() || new_child->IsTextNode()) &&
+  if ((new_child.IsElementNode() || new_child.IsTextNode()) &&
       IsElementNode()) {
-    DCHECK(IsChildTypeAllowed(*new_child));
-    if (ContainsConsideringHostElements(*new_child)) {
+    DCHECK(IsChildTypeAllowed(new_child));
+    if (ContainsConsideringHostElements(new_child)) {
       exception_state.ThrowDOMException(
           kHierarchyRequestError, "The new child element contains the parent.");
       return false;
@@ -185,14 +179,14 @@ bool ContainerNode::EnsurePreInsertionValidity(
 
   // This should never happen, but also protect release builds from tree
   // corruption.
-  DCHECK(!new_child->IsPseudoElement());
-  if (new_child->IsPseudoElement()) {
+  DCHECK(!new_child.IsPseudoElement());
+  if (new_child.IsPseudoElement()) {
     exception_state.ThrowDOMException(
         kHierarchyRequestError, "The new child element is a pseudo-element.");
     return false;
   }
 
-  return CheckAcceptChildGuaranteedNodeTypes(*new_child, next, old_child,
+  return CheckAcceptChildGuaranteedNodeTypes(new_child, next, old_child,
                                              exception_state);
 }
 
@@ -324,6 +318,7 @@ class ContainerNode::AdoptAndAppendChild {
 Node* ContainerNode::InsertBefore(Node* new_child,
                                   Node* ref_child,
                                   ExceptionState& exception_state) {
+  DCHECK(new_child);
   // https://dom.spec.whatwg.org/#concept-node-pre-insert
 
   // insertBefore(node, 0) is equivalent to appendChild(node)
@@ -348,10 +343,9 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   }
 
   // Make sure adding the new child is OK.
-  if (!EnsurePreInsertionValidity(new_child, ref_child, nullptr,
+  if (!EnsurePreInsertionValidity(*new_child, ref_child, nullptr,
                                   exception_state))
     return new_child;
-  DCHECK(new_child);
 
   NodeVector targets;
   DOMTreeMutationDetector detector(*new_child, *this);
@@ -467,6 +461,7 @@ void ContainerNode::ParserInsertBefore(Node* new_child, Node& next_child) {
 Node* ContainerNode::ReplaceChild(Node* new_child,
                                   Node* old_child,
                                   ExceptionState& exception_state) {
+  DCHECK(new_child);
   // https://dom.spec.whatwg.org/#concept-node-replace
 
   if (!old_child) {
@@ -485,7 +480,7 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
   // doctype and parent is not a document, throw a HierarchyRequestError.
   // 6. If parent is a document, and any of the statements below, switched on
   // node, are true, throw a HierarchyRequestError.
-  if (!EnsurePreInsertionValidity(new_child, nullptr, old_child,
+  if (!EnsurePreInsertionValidity(*new_child, nullptr, old_child,
                                   exception_state))
     return old_child;
 
@@ -776,10 +771,11 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
 
 Node* ContainerNode::AppendChild(Node* new_child,
                                  ExceptionState& exception_state) {
-  // Make sure adding the new child is ok
-  if (!EnsurePreInsertionValidity(new_child, nullptr, nullptr, exception_state))
-    return new_child;
   DCHECK(new_child);
+  // Make sure adding the new child is ok
+  if (!EnsurePreInsertionValidity(*new_child, nullptr, nullptr,
+                                  exception_state))
+    return new_child;
 
   NodeVector targets;
   DOMTreeMutationDetector detector(*new_child, *this);
