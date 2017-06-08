@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/ColorChooserUIController.h"
+#include "core/html/forms/ColorChooserUIController.h"
 
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/forms/ColorChooserClient.h"

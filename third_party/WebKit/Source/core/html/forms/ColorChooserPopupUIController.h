@@ -26,8 +26,9 @@
 #ifndef ColorChooserPopupUIController_h
 #define ColorChooserPopupUIController_h
 
+#include "core/CoreExport.h"
+#include "core/html/forms/ColorChooserUIController.h"
 #include "core/page/PagePopupClient.h"
-#include "web/ColorChooserUIController.h"
 
 namespace blink {
 
@@ -35,8 +36,9 @@ class ChromeClient;
 class ColorChooserClient;
 class PagePopup;
 
-class ColorChooserPopupUIController final : public ColorChooserUIController,
-                                            public PagePopupClient {
+class CORE_EXPORT ColorChooserPopupUIController final
+    : public ColorChooserUIController,
+      public PagePopupClient {
   USING_PRE_FINALIZER(ColorChooserPopupUIController, Dispose);
 
  public:
