@@ -796,11 +796,6 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 1, AOM_BITS_8),
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 2, AOM_BITS_8),
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 3, AOM_BITS_8)));
-INSTANTIATE_TEST_CASE_P(
-    C, PartialTrans16x16Test,
-    ::testing::Values(make_tuple(&aom_highbd_fdct16x16_1_c, AOM_BITS_8),
-                      make_tuple(&aom_highbd_fdct16x16_1_c, AOM_BITS_10),
-                      make_tuple(&aom_highbd_fdct16x16_1_c, AOM_BITS_12)));
 #else
 INSTANTIATE_TEST_CASE_P(
     C, Trans16x16HT,
@@ -809,9 +804,6 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 1, AOM_BITS_8),
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 2, AOM_BITS_8),
         make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 3, AOM_BITS_8)));
-INSTANTIATE_TEST_CASE_P(C, PartialTrans16x16Test,
-                        ::testing::Values(make_tuple(&aom_fdct16x16_1_c,
-                                                     AOM_BITS_8)));
 #endif  // CONFIG_HIGHBITDEPTH
 
 #if HAVE_NEON_ASM && !CONFIG_HIGHBITDEPTH
@@ -836,16 +828,7 @@ INSTANTIATE_TEST_CASE_P(
                                  2, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2,
                                  3, AOM_BITS_8)));
-INSTANTIATE_TEST_CASE_P(SSE2, PartialTrans16x16Test,
-                        ::testing::Values(make_tuple(&aom_fdct16x16_1_sse2,
-                                                     AOM_BITS_8)));
 #endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
-
-#if HAVE_AVX2 && !CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(AVX2, PartialTrans16x16Test,
-                        ::testing::Values(make_tuple(&aom_fdct16x16_1_avx2,
-                                                     AOM_BITS_8)));
-#endif  // HAVE_AVX2 && !CONFIG_HIGHBITDEPTH
 
 #if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(SSE2, Trans16x16DCT,
@@ -860,14 +843,6 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c, 2, AOM_BITS_8),
         make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c, 3,
                    AOM_BITS_8)));
-// TODO(luoyi):
-// For this test case, we should test function: aom_highbd_fdct16x16_1_sse2.
-// However this function is not available yet. if we mistakely test
-// aom_fdct16x16_1_sse2, it could only pass AOM_BITS_8/AOM_BITS_10 but not
-// AOM_BITS_12.
-INSTANTIATE_TEST_CASE_P(SSE2, PartialTrans16x16Test,
-                        ::testing::Values(make_tuple(&aom_fdct16x16_1_sse2,
-                                                     AOM_BITS_8)));
 #endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH
 
 #if HAVE_MSA && !CONFIG_HIGHBITDEPTH
@@ -886,8 +861,5 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa, 3,
                    AOM_BITS_8)));
 #endif  // !CONFIG_EXT_TX
-INSTANTIATE_TEST_CASE_P(MSA, PartialTrans16x16Test,
-                        ::testing::Values(make_tuple(&aom_fdct16x16_1_msa,
-                                                     AOM_BITS_8)));
 #endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
 }  // namespace
