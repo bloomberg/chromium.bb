@@ -13,6 +13,7 @@ import sys
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import goma_util
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
@@ -37,7 +38,6 @@ from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
 from chromite.lib import triage_lib
-from chromite.scripts import upload_goma_info
 
 
 site_config = config_lib.GetConfig()
@@ -1004,8 +1004,10 @@ class ReportStage(generic_stages.BuilderStage,
     # goma on bots, too.
     goma_tmp_dir = self._run.attrs.metadata.GetValueWithDefault('goma_tmp_dir')
     if goma_tmp_dir:
-      goma_url = upload_goma_info.GomaLogUploader(
-          goma_log_dir=os.path.join(goma_tmp_dir, 'log_dir')).Upload()
+      goma = goma_util.Goma(self._run.options.goma_dir,
+                            self._run.options.goma_client_json,
+                            goma_tmp_dir=goma_tmp_dir)
+      goma_url = goma.UploadLogs()
       if goma_url:
         logging.PrintBuildbotLink('Goma compiler_proxy log', goma_url)
 

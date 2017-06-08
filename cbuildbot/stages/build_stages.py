@@ -8,11 +8,11 @@ from __future__ import print_function
 
 import glob
 import os
-import tempfile
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import goma_util
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import topology
 from chromite.cbuildbot.stages import generic_stages
@@ -402,10 +402,13 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       logging.info('Recording packages under test')
       self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
 
-  def _IsGomaUsable(self):
+  def _ShouldEnableGoma(self):
+    # Enable goma if 1) chrome actually needs to be built, 2) goma is available
+    # and 3) AFDO is not enabled.
     # TODO(hidehiko): goma executor crashed on server if AFDO was used.
     # The fix should have been in, so enable AFDO after extra testing.
-    return not self._afdo_use
+    return (self._run.options.managed_chrome and self._run.options.goma_dir and
+            not self._afdo_use)
 
   def _SetupGomaIfNecessary(self):
     """Sets up goma envs if necessary.
@@ -415,79 +418,26 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     Returns:
       args which should be provided to chroot in order to enable goma.
       If goma is unusable or disabled, None is returned.
-
-    Raises:
-      ValueError: raised when 1) goma_client_json is not provided on bots, or
-      2) goma_client_json does not point a file.
     """
-
-    # Use goma iff chrome needs to be built.
-    if (not self._run.options.managed_chrome or not self._IsGomaUsable() or
-        not self._run.options.goma_dir):
+    if not self._ShouldEnableGoma():
       return None
 
-    # Sanity check of goma_client_json before updating fields.
-    if self._run.options.goma_client_json:
-      # If goma_client_json file is provided, it must be an existing file.
-      if not os.path.isfile(self._run.options.goma_client_json):
-        raise ValueError(
-            'Goma client json file is missing: %s' % (
-                self._run.options.goma_client_json))
-    else:
-      # If this script runs on bot, service account json file needs to be
-      # provided, otherwise it cannot access to goma service.
-      if cros_build_lib.HostIsCIBuilder():
-        raise ValueError(
-            'goma is enabled on bot, but goma_client_json is not provided')
-
-    chroot_args = []
-
-    # Mount goma directory into chroot.
-    chroot_args.extend(['--goma_dir', self._run.options.goma_dir])
-    # Set GOMA_DIR for portage. The path is one in the chroot.
-    self._portage_extra_env['GOMA_DIR'] = os.path.join(
-        '/home', os.environ.get('USER'), 'goma')
+    goma = goma_util.Goma(
+        self._run.options.goma_dir, self._run.options.goma_client_json)
 
     # Set USE_GOMA env var so that chrome is built with goma.
     self._portage_extra_env['USE_GOMA'] = 'true'
+    self._portage_extra_env.update(goma.GetChrootExtraEnv())
 
-    # Set MAX_COMPILER_DISABLED_TASKS. In case of local fallback
-    # goma enters to Burst mode.
-    # Specifically, this is short-term workaround of the case that all compile
-    # processes get local fallback. This happens when toolchain is updated
-    # in repository, but prebuilt package is not yet ready.
-    # (cf. crbug.com/728971)
-    # Note that '30' is just heuristically chosen by discussion with goma team.
-    self._portage_extra_env['GOMA_MAX_COMPILER_DISABLED_TASKS'] = '30'
+    # Keep GOMA_TMP_DIR for Report stage to upload logs.
+    self._run.attrs.metadata.UpdateWithDict(
+        {'goma_tmp_dir': goma.goma_tmp_dir})
 
-    if self._run.options.goma_client_json:
-      chroot_args.extend([
-          '--goma_client_json', self._run.options.goma_client_json])
-      # Set env var. The path is one in the chroot.
-      self._portage_extra_env['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = (
-          '/creds/service_accounts/service-account-goma-client.json')
-
-    # Create GOMA_TMP_DIR (goma compiler_proxy's working directory), and its
-    # log directory. In report phase, logs will be uploaded to Cloud Storage,
-    # so pass the path via metadata.
-    chroot_tmp = path_util.FromChrootPath('/tmp')
-
-    # Create unique directory by mkdtemp. Expect this directory is removed
-    # in next run's clean up phase.
-    goma_tmp_dir = tempfile.mkdtemp(prefix='goma_tmp_dir.', dir=chroot_tmp)
-    self._run.attrs.metadata.UpdateWithDict({'goma_tmp_dir': goma_tmp_dir})
-
-    # Pass the path via GOMA_TMP_DIR env var so that compiler_proxy started
-    # in chroot uses it as working directory.
-    self._portage_extra_env['GOMA_TMP_DIR'] = path_util.ToChrootPath(
-        goma_tmp_dir)
-
-    # Set GLOG_log_dir, which goma programs use as their log directory.
-    goma_log_dir = os.path.join(goma_tmp_dir, 'log_dir')
-    os.mkdir(goma_log_dir)
-    self._portage_extra_env['GLOG_log_dir'] = path_util.ToChrootPath(
-        goma_log_dir)
-
+    # Mount goma directory and service account json file (if necessary)
+    # into chroot.
+    chroot_args = ['--goma_dir', goma.goma_dir]
+    if goma.goma_client_json:
+      chroot_args.extend(['--goma_client_json', goma.goma_client_json])
     return chroot_args
 
   def PerformStage(self):

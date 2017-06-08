@@ -11,11 +11,11 @@ import datetime
 import json
 import os
 
+from chromite.cbuildbot import goma_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.scripts import upload_goma_info
 
 
 class TestGomaLogUploader(cros_test_lib.MockTempDirTestCase):
@@ -30,16 +30,6 @@ class TestGomaLogUploader(cros_test_lib.MockTempDirTestCase):
         timestamp.strftime('Log file created at: %Y/%m/%d %H:%M:%S'))
 
   def testUpload(self):
-    # Prepare two sets of logs. Expect that latter set is reported.
-    self._CreateLogFile(
-        'compiler_proxy', datetime.datetime(2017, 4, 25, 12, 0, 0))
-    self._CreateLogFile(
-        'compiler_proxy-subproc', datetime.datetime(2017, 4, 25, 12, 0, 0))
-    self._CreateLogFile(
-        'gomacc', datetime.datetime(2017, 4, 25, 12, 1, 0))
-    self._CreateLogFile(
-        'gomacc', datetime.datetime(2017, 4, 25, 12, 2, 0))
-
     self._CreateLogFile(
         'compiler_proxy', datetime.datetime(2017, 4, 26, 12, 0, 0))
     self._CreateLogFile(
@@ -65,9 +55,8 @@ class TestGomaLogUploader(cros_test_lib.MockTempDirTestCase):
         lambda _, __, remote_dir, filename=None, **kwargs: copy_log.append(
             (remote_dir, filename, kwargs.get('headers'))))
 
-    # Set dry_run just in case.
-    upload_goma_info.GomaLogUploader(dry_run=True).Upload(
-        today=datetime.date(2017, 4, 26))
+    goma_util.GomaLogUploader(self.tempdir, today=datetime.date(2017, 4, 26),
+                              dry_run=True).Upload()
 
     expect_builderinfo = json.dumps(collections.OrderedDict([
         ('builder', 'builder-name'),

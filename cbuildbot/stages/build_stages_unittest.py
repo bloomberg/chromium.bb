@@ -356,19 +356,19 @@ class BuildPackagesStageTest(AllConfigsTestCase,
 
   def testGoma(self):
     self.PatchObject(build_stages.BuildPackagesStage,
-                     '_IsGomaUsable', return_value=True)
+                     '_ShouldEnableGoma', return_value=True)
     self._Prepare('x86-generic-paladin')
     # Set dummy dir name to enable goma.
-    self._run.options.goma_dir = 'goma_dir'
-    self._run.options.managed_chrome = True
-    with tempfile.NamedTemporaryFile() as temp_goma_client_json:
+    with osutils.TempDir() as goma_dir, \
+         tempfile.NamedTemporaryFile() as temp_goma_client_json:
+      self._run.options.goma_dir = goma_dir
       self._run.options.goma_client_json = temp_goma_client_json.name
 
       stage = self.ConstructStage()
       # pylint: disable=protected-access
       chroot_args = stage._SetupGomaIfNecessary()
       self.assertEqual(
-          ['--goma_dir', 'goma_dir',
+          ['--goma_dir', goma_dir,
            '--goma_client_json', temp_goma_client_json.name],
           chroot_args)
       # pylint: disable=protected-access
@@ -382,32 +382,32 @@ class BuildPackagesStageTest(AllConfigsTestCase,
 
   def testGomaWithMissingCertFile(self):
     self.PatchObject(build_stages.BuildPackagesStage,
-                     '_IsGomaUsable', return_value=True)
+                     '_ShouldEnableGoma', return_value=True)
     self._Prepare('x86-generic-paladin')
     # Set dummy dir name to enable goma.
-    self._run.options.goma_dir = 'goma_dir'
-    self._run.options.managed_chrome = True
-    self._run.options.goma_client_json = 'dummy-goma-client-json-path'
+    with osutils.TempDir() as goma_dir:
+      self._run.options.goma_dir = goma_dir
+      self._run.options.goma_client_json = 'dummy-goma-client-json-path'
 
-    stage = self.ConstructStage()
-    with self.assertRaisesRegexp(ValueError, 'json file is missing'):
-      # pylint: disable=protected-access
-      stage._SetupGomaIfNecessary()
+      stage = self.ConstructStage()
+      with self.assertRaisesRegexp(ValueError, 'json file is missing'):
+        # pylint: disable=protected-access
+        stage._SetupGomaIfNecessary()
 
   def testGomaOnBotWithoutCertFile(self):
     self.PatchObject(build_stages.BuildPackagesStage,
-                     '_IsGomaUsable', return_value=True)
+                     '_ShouldEnableGoma', return_value=True)
     self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
     self._Prepare('x86-generic-paladin')
     # Set dummy dir name to enable goma.
-    self._run.options.goma_dir = 'goma_dir'
-    self._run.options.managed_chrome = True
-    stage = self.ConstructStage()
+    with osutils.TempDir() as goma_dir:
+      self._run.options.goma_dir = goma_dir
+      stage = self.ConstructStage()
 
-    with self.assertRaisesRegexp(
-        ValueError, 'goma_client_json is not provided'):
-      # pylint: disable=protected-access
-      stage._SetupGomaIfNecessary()
+      with self.assertRaisesRegexp(
+          ValueError, 'goma_client_json is not provided'):
+        # pylint: disable=protected-access
+        stage._SetupGomaIfNecessary()
 
 
 class BuildImageStageMock(partial_mock.PartialMock):
