@@ -6,9 +6,9 @@ function testSourceMapping(text1, text2, mapping, testToken)
 {
     var originalPosition = text1.indexOf(testToken);
     InspectorTest.assertTrue(originalPosition !== -1);
-    var originalLocation = Sources.Formatter.positionToLocation(text1.computeLineEndings(), originalPosition);
+    var originalLocation = Formatter.Formatter.positionToLocation(text1.computeLineEndings(), originalPosition);
     var formattedLocation = mapping.originalToFormatted(originalLocation[0], originalLocation[1]);
-    var formattedPosition = Sources.Formatter.locationToPosition(text2.computeLineEndings(), formattedLocation[0], formattedLocation[1]);
+    var formattedPosition = Formatter.Formatter.locationToPosition(text2.computeLineEndings(), formattedLocation[0], formattedLocation[1]);
     var expectedFormattedPosition = text2.indexOf(testToken);
     if (expectedFormattedPosition === formattedPosition)
         InspectorTest.addResult(String.sprintf("Correct mapping for <%s>", testToken));
@@ -18,7 +18,7 @@ function testSourceMapping(text1, text2, mapping, testToken)
 
 InspectorTest.testPrettyPrint = function(mimeType, text, mappingQueries, next)
 {
-    new Sources.ScriptFormatter(mimeType, text, didFormatContent);
+    new Formatter.ScriptFormatter(mimeType, text, didFormatContent);
 
     function didFormatContent(formattedSource, mapping)
     {
@@ -35,7 +35,7 @@ InspectorTest.testPrettyPrint = function(mimeType, text, mappingQueries, next)
 InspectorTest.testJavascriptOutline = function(text) {
     var fulfill;
     var promise = new Promise(x => fulfill = x);
-    Common.formatterWorkerPool.javaScriptOutline(text, onChunk);
+    Formatter.formatterWorkerPool().javaScriptOutline(text, onChunk);
     var items = [];
     return promise;
 

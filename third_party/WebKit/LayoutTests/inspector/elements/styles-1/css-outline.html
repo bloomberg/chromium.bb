@@ -53,6 +53,10 @@ svg|a {
 </style>
 <script>
 
+function initialize_Formatter() {
+    InspectorTest.preloadModule('formatter');
+}
+
 function getCSS()
 {
     return document.querySelector("#styler").textContent;
@@ -70,7 +74,7 @@ function test()
 
     function onStyleFetched(result)
     {
-        Common.formatterWorkerPool.parseCSS(result.value, onRulesParsed);
+        Formatter.formatterWorkerPool().parseCSS(result.value, onRulesParsed);
     }
 
     InspectorTest.evaluateInPage("getCSS()", onStyleFetched);

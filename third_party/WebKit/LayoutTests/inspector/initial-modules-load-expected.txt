@@ -71,6 +71,7 @@ Loaded modules:
     emulation
     event_listeners
     extensions
+    formatter
     help
     host
     inline_editor
@@ -111,6 +112,7 @@ Loaded modules:
     emulation
     event_listeners
     extensions
+    formatter
     help
     host
     inline_editor
@@ -154,6 +156,7 @@ Loaded modules:
     emulation
     event_listeners
     extensions
+    formatter
     help
     host
     inline_editor
