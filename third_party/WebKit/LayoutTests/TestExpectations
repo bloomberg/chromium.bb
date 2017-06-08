@@ -914,8 +914,6 @@ crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call
 
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 
-crbug.com/731144 inspector/elements/edit/set-outer-html-2.html [ Failure Pass ]
-
 crbug.com/596968 [ Win ] inspector-protocol/input/eventTimestamp.html [ Failure Pass ]
 
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
