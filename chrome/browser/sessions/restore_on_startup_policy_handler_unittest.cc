@@ -130,24 +130,6 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_NotHomePage) {
 }
 
 TEST_F(RestoreOnStartupPolicyHandlerTest,
-       CheckPolicySettings_RestoreLastSession_ClearDataOnExit) {
-  // Specify the Last value and the Clear-Data-On-Exit value.
-  SetPolicyValue(
-      key::kRestoreOnStartup,
-      base::WrapUnique(new base::Value(SessionStartupPref::kPrefValueLast)));
-  SetPolicyValue(key::kClearSiteDataOnExit,
-                 base::MakeUnique<base::Value>(true));
-  // Checking should succeed but add an error to the error map.
-  EXPECT_TRUE(CheckPolicySettings());
-  ASSERT_EQ(1U, errors().size());
-  EXPECT_EQ(key::kClearSiteDataOnExit, errors().begin()->first);
-  EXPECT_EQ(l10n_util::GetStringFUTF16(
-                IDS_POLICY_OVERRIDDEN,
-                base::ASCIIToUTF16(key::kRestoreOnStartup)),
-            errors().begin()->second);
-}
-
-TEST_F(RestoreOnStartupPolicyHandlerTest,
        CheckPolicySettings_RestoreLastSession) {
   // Specify the Last value without the conflicts.
   SetPolicyValue(
