@@ -433,8 +433,8 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
       ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
-// Crashes on Mac only. http://crbug.com/656211
-#if defined(OS_MACOSX)
+// Crashes on Mac and Windows. http://crbug.com/656211
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_LocalStorageClearedOnExit DISABLED_LocalStorageClearedOnExit
 #else
 #define MAYBE_LocalStorageClearedOnExit LocalStorageClearedOnExit
