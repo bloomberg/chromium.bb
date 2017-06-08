@@ -233,7 +233,8 @@ void HttpStreamFactoryImpl::JobController::OnStreamReady(
   DCHECK(!factory_->for_websockets_);
   DCHECK_EQ(HttpStreamRequest::HTTP_STREAM, request_->stream_type());
   OnJobSucceeded(job);
-  request_->OnStreamReady(used_ssl_config, job->proxy_info(), stream.release());
+  request_->OnStreamReady(used_ssl_config, job->proxy_info(),
+                          std::move(stream));
 }
 
 void HttpStreamFactoryImpl::JobController::OnBidirectionalStreamImplReady(
@@ -261,14 +262,14 @@ void HttpStreamFactoryImpl::JobController::OnBidirectionalStreamImplReady(
 
   OnJobSucceeded(job);
   request_->OnBidirectionalStreamImplReady(used_ssl_config, used_proxy_info,
-                                           stream.release());
+                                           std::move(stream));
 }
 
 void HttpStreamFactoryImpl::JobController::OnWebSocketHandshakeStreamReady(
     Job* job,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    WebSocketHandshakeStreamBase* stream) {
+    std::unique_ptr<WebSocketHandshakeStreamBase> stream) {
   DCHECK(job);
   MarkRequestComplete(job->was_alpn_negotiated(), job->negotiated_protocol(),
                       job->using_spdy());
@@ -281,7 +282,7 @@ void HttpStreamFactoryImpl::JobController::OnWebSocketHandshakeStreamReady(
 
   OnJobSucceeded(job);
   request_->OnWebSocketHandshakeStreamReady(used_ssl_config, used_proxy_info,
-                                            stream);
+                                            std::move(stream));
 }
 
 void HttpStreamFactoryImpl::JobController::OnStreamFailed(
@@ -474,12 +475,12 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
       DCHECK(bidirectional_stream_impl);
       delegate_->OnBidirectionalStreamImplReady(
           used_ssl_config, used_proxy_info,
-          bidirectional_stream_impl.release());
+          std::move(bidirectional_stream_impl));
     } else {
       std::unique_ptr<HttpStream> stream = job->ReleaseStream();
       DCHECK(stream);
       delegate_->OnStreamReady(used_ssl_config, used_proxy_info,
-                               stream.release());
+                               std::move(stream));
     }
   }
 

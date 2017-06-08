@@ -191,11 +191,11 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
 
   void OnStreamReady(const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
-                     HttpStream* stream) override {
+                     std::unique_ptr<HttpStream> stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
       loop_.Quit();
-    stream_.reset(stream);
+    stream_ = std::move(stream);
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
   }
@@ -203,11 +203,11 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      WebSocketHandshakeStreamBase* stream) override {
+      std::unique_ptr<WebSocketHandshakeStreamBase> stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
       loop_.Quit();
-    websocket_stream_.reset(stream);
+    websocket_stream_ = std::move(stream);
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
   }
@@ -215,11 +215,11 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void OnBidirectionalStreamImplReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      BidirectionalStreamImpl* stream) override {
+      std::unique_ptr<BidirectionalStreamImpl> stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
       loop_.Quit();
-    bidirectional_stream_impl_.reset(stream);
+    bidirectional_stream_impl_ = std::move(stream);
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
   }

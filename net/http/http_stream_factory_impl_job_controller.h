@@ -85,7 +85,7 @@ class HttpStreamFactoryImpl::JobController
       Job* job,
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      WebSocketHandshakeStreamBase* stream) override;
+      std::unique_ptr<WebSocketHandshakeStreamBase> stream) override;
 
   // Invoked when |job| fails to create a stream.
   void OnStreamFailed(Job* job,

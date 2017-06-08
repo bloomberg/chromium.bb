@@ -442,7 +442,7 @@ void HttpStreamFactoryImpl::Job::OnWebSocketHandshakeStreamReadyCallback() {
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
   delegate_->OnWebSocketHandshakeStreamReady(
-      this, server_ssl_config_, proxy_info_, websocket_stream_.release());
+      this, server_ssl_config_, proxy_info_, std::move(websocket_stream_));
   // |this| may be deleted after this call.
 }
 

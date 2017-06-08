@@ -64,7 +64,7 @@ class HttpStreamFactoryImpl::Job {
         Job* job,
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
-        WebSocketHandshakeStreamBase* stream) = 0;
+        std::unique_ptr<WebSocketHandshakeStreamBase> stream) = 0;
 
     // Invoked when |job| fails to create a stream.
     virtual void OnStreamFailed(Job* job,

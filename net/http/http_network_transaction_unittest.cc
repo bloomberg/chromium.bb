@@ -15147,11 +15147,11 @@ class FakeStreamRequest : public HttpStreamRequest,
   // Create a new FakeStream and pass it to the request's
   // delegate. Returns a weak pointer to the FakeStream.
   base::WeakPtr<FakeStream> FinishStreamRequest() {
-    FakeStream* fake_stream = new FakeStream(priority_);
+    auto fake_stream = base::MakeUnique<FakeStream>(priority_);
     // Do this before calling OnStreamReady() as OnStreamReady() may
     // immediately delete |fake_stream|.
     base::WeakPtr<FakeStream> weak_stream = fake_stream->AsWeakPtr();
-    delegate_->OnStreamReady(SSLConfig(), ProxyInfo(), fake_stream);
+    delegate_->OnStreamReady(SSLConfig(), ProxyInfo(), std::move(fake_stream));
     return weak_stream;
   }
 
