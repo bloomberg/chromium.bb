@@ -25,14 +25,10 @@ var test = function()
         InspectorTest.showScriptSource("script-formatter-search.html", didShowScriptSource);
     }
 
-    function didShowScriptSource(frame)
+    async function didShowScriptSource(frame)
     {
         scriptSource = frame._uiSourceCode;
-        scriptSource.searchInContent("magic-string", true, false, dump1);
-    }
-
-    function dump1(matches)
-    {
+        var matches = await scriptSource.searchInContent("magic-string", true, false);
         InspectorTest.addResult("Pre-format search results:");
         InspectorTest.dumpSearchMatches(matches);
         shouldRequestContent = true;
@@ -40,13 +36,9 @@ var test = function()
         scriptFormatter._toggleFormatScriptSource();
     }
 
-    function uiSourceCodeScriptFormatted()
+    async function uiSourceCodeScriptFormatted()
     {
-        scriptSource.searchInContent("magic-string", true, false, dump2);
-    }
-
-    function dump2(matches)
-    {
+        var matches = await scriptSource.searchInContent("magic-string", true, false);
         InspectorTest.addResult("Post-format search results:");
         InspectorTest.dumpSearchMatches(matches);
         InspectorTest.completeTest();

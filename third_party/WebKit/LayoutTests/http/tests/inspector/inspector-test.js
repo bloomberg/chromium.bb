@@ -585,11 +585,9 @@ InspectorTest.runWhenPageLoads = function(callback)
 
 InspectorTest.deprecatedRunAfterPendingDispatches = function(callback)
 {
-    var barrier = new CallbackBarrier();
     var targets = SDK.targetManager.targets();
-    for (var i = 0; i < targets.length; ++i)
-        targets[i]._deprecatedRunAfterPendingDispatches(barrier.createCallback());
-    barrier.callWhenDone(InspectorTest.safeWrap(callback));
+    var promises = targets.map(target => new Promise(resolve => target._deprecatedRunAfterPendingDispatches(resolve)));
+    Promise.all(promises).then(InspectorTest.safeWrap(callback));
 }
 
 InspectorTest.createKeyEvent = function(key, ctrlKey, altKey, shiftKey, metaKey)

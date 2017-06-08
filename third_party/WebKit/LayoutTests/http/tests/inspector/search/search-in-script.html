@@ -20,7 +20,7 @@ function test()
         InspectorTest.showScriptSource("search.js", step3);
     }
 
-    function step3()
+    async function step3()
     {
         var url = "http://127.0.0.1:8000/inspector/search/resources/search.js";
         var scripts = InspectorTest.queryScripts(function(s) { return s.sourceURL === url; });
@@ -29,36 +29,20 @@ function test()
 
         // This file should not match search query.
         var text = "searchTest" + "UniqueString";
-        script.searchInContent(text, false, false, step4);
-    }
-
-    function step4(searchMatches)
-    {
+        var searchMatches = await script.searchInContent(text, false, false);
         InspectorTest.dumpSearchMatches(searchMatches);
 
         // This file should not match search query.
         var text = "searchTest" + "UniqueString";
-        script.searchInContent(text, true, false, step5);
-    }
-
-    function step5(searchMatches)
-    {
+        searchMatches = await script.searchInContent(text, true, false);
         InspectorTest.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
-        script.searchInContent(text, false, true, step6);
-    }
-
-    function step6(searchMatches)
-    {
+        searchMatches = await script.searchInContent(text, false, true);
         InspectorTest.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
-        script.searchInContent(text, true, true, step7);
-    }
-
-    function step7(searchMatches)
-    {
+        searchMatches = await script.searchInContent(text, true, true);
         InspectorTest.dumpSearchMatches(searchMatches);
 
         InspectorTest.completeDebuggerTest();

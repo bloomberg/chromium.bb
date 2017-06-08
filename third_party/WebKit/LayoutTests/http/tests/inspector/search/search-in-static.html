@@ -16,41 +16,25 @@ function test()
         resource.requestContent().then(step3);
     }
 
-    function step3()
+    async function step3()
     {
         staticContentProvider = Common.StaticContentProvider.fromString("", Common.resourceTypes.Script, resource.content);
         InspectorTest.addResult(resource.url);
 
         var text = "searchTestUniqueString";
-        staticContentProvider.searchInContent(text, true, false, step4);
-    }
-
-    function step4(searchMatches)
-    {
+        var searchMatches = await staticContentProvider.searchInContent(text, true, false);
         InspectorTest.dumpSearchMatches(searchMatches);
 
         var text = "searchTestUniqueString";
-        staticContentProvider.searchInContent(text, true, false, step5);
-    }
-
-    function step5(searchMatches)
-    {
+        searchMatches = await staticContentProvider.searchInContent(text, true, false);
         InspectorTest.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
-        staticContentProvider.searchInContent(text, false, true, step6);
-    }
-
-    function step6(searchMatches)
-    {
+        searchMatches = await staticContentProvider.searchInContent(text, false, true);
         InspectorTest.dumpSearchMatches(searchMatches);
 
         var text = "[a-z]earchTestUniqueString";
-        staticContentProvider.searchInContent(text, true, true, step7);
-    }
-
-    function step7(searchMatches)
-    {
+        searchMatches = await staticContentProvider.searchInContent(text, true, true);
         InspectorTest.dumpSearchMatches(searchMatches);
 
         InspectorTest.completeTest();
