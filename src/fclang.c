@@ -680,6 +680,7 @@ FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb)
 {
     int		    i, j, count;
     FcLangResult    best, r;
+    FcChar32 aInCountrySet, bInCountrySet;
 
     count = FC_MIN (lsa->map_size, lsb->map_size);
     count = FC_MIN (NUM_LANG_SET_MAP, count);
@@ -688,13 +689,22 @@ FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb)
 	    return FcLangEqual;
     best = FcLangDifferentLang;
     for (j = 0; j < NUM_COUNTRY_SET; j++)
+    {
+	aInCountrySet = 0;
+	bInCountrySet = 0;
+
 	for (i = 0; i < count; i++)
-	    if ((lsa->map[i] & fcLangCountrySets[j][i]) &&
-		(lsb->map[i] & fcLangCountrySets[j][i]))
+	{
+	    aInCountrySet |= lsa->map[i] & fcLangCountrySets[j][i];
+	    bInCountrySet |= lsb->map[i] & fcLangCountrySets[j][i];
+
+	    if (aInCountrySet && bInCountrySet)
 	    {
 		best = FcLangDifferentTerritory;
 		break;
 	    }
+	}
+    }
     if (lsa->extra)
     {
 	r = FcLangSetCompareStrSet (lsb, lsa->extra);
