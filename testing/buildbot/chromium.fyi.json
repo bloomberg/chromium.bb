@@ -225,6 +225,11 @@
       }
     ]
   },
+  "Android Builder Goma Canary (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "Android VR Tests": {
     "gtest_tests": [
       {
