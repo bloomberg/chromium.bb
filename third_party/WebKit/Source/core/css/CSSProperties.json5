@@ -1167,12 +1167,14 @@
     {
       name: "flex-grow",
       api_class: "CSSPropertyAPIFlexGrowOrShrink",
+      api_methods: ["parseSingleValue"],
       interpolable: true,
       type_name: "float",
     },
     {
       name: "flex-shrink",
       api_class: "CSSPropertyAPIFlexGrowOrShrink",
+      api_methods: ["parseSingleValue"],
       interpolable: true,
       type_name: "float",
     },
