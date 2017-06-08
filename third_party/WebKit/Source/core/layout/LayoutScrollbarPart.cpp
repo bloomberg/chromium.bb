@@ -44,14 +44,6 @@ LayoutScrollbarPart::LayoutScrollbarPart(ScrollableArea* scrollable_area,
   DCHECK(scrollable_area_);
 }
 
-LayoutScrollbarPart::~LayoutScrollbarPart() {
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  // We may not have invalidated the painting layer for now, but the
-  // scrollable area will invalidate during paint invalidation.
-  EndShouldKeepAlive();
-#endif
-}
-
 static void RecordScrollbarPartStats(Document& document, ScrollbarPart part) {
   switch (part) {
     case kBackButtonStartPart:

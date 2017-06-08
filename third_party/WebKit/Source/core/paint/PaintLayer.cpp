@@ -3313,14 +3313,6 @@ void PaintLayer::ClearNeedsRepaintRecursively() {
   needs_repaint_ = false;
 }
 
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-void PaintLayer::EndShouldKeepAliveAllClientsRecursive() {
-  for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
-    child->EndShouldKeepAliveAllClientsRecursive();
-  DisplayItemClient::EndShouldKeepAliveAllClients(this);
-}
-#endif
-
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
     : disabler_(&g_compositing_query_mode, kCompositingQueriesAreAllowed) {}
 

@@ -65,9 +65,6 @@ class PLATFORM_EXPORT PaintController {
     // New display items should be committed before PaintController is
     // destructed.
     DCHECK(new_display_item_list_.IsEmpty());
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::EndShouldKeepAliveAllClients(this);
-#endif
   }
 
   void InvalidateAll();
@@ -194,8 +191,6 @@ class PLATFORM_EXPORT PaintController {
 #endif
 
 #if DCHECK_IS_ON()
-  void AssertDisplayItemClientsAreLive();
-
   enum Usage { kForNormalUsage, kForPaintRecordBuilder };
   void SetUsage(Usage usage) { usage_ = usage; }
   bool IsForPaintRecordBuilder() const {
@@ -210,17 +205,6 @@ class PLATFORM_EXPORT PaintController {
                ? &raster_invalidation_tracking_info_->map
                : nullptr;
   }
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  void BeginShouldKeepAlive(const DisplayItemClient&);
-
-  void BeginSubsequence(const DisplayItemClient& client) {
-    current_subsequence_clients_.push_back(&client);
-    BeginShouldKeepAlive(client);
-  }
-
-  void EndSubsequence() { current_subsequence_clients_.pop_back(); }
-#endif
 
   bool LastDisplayItemIsSubsequenceEnd() const;
 
@@ -447,11 +431,6 @@ class PLATFORM_EXPORT PaintController {
   };
   std::unique_ptr<RasterInvalidationTrackingInfo>
       raster_invalidation_tracking_info_;
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  // A stack recording subsequence clients that are currently painting.
-  Vector<const DisplayItemClient*> current_subsequence_clients_;
-#endif
 
   typedef HashMap<const DisplayItemClient*, SubsequenceMarkers>
       CachedSubsequenceMap;

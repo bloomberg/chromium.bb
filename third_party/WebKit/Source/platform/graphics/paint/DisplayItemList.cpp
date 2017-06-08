@@ -53,12 +53,11 @@ std::unique_ptr<JSONArray> DisplayItemList::SubsequenceAsJSON(
 
 #endif
     if (display_item.HasValidClient()) {
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+#if DCHECK_IS_ON()
       if (!display_item.Client().IsAlive()) {
-        json->SetBoolean("clientIsAlive", true);
+        json->SetBoolean("clientIsAlive", false);
       } else {
 #else
-
       if (options & kShowClientDebugName) {
 #endif
         json->SetString(

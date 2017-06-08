@@ -1292,10 +1292,6 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   EXPECT_EQ(4u, markers->start);
   EXPECT_EQ(7u, markers->end);
 
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  DisplayItemClient::EndShouldKeepAliveAllClients();
-#endif
-
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
     EXPECT_EQ(PaintChunk::Id(container2, kBackgroundDrawingType),
@@ -1692,10 +1688,6 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
     EXPECT_THAT(GetPaintController().PaintChunks()[2].raster_invalidation_rects,
                 UnorderedElementsAre(FloatRect(100, 100, 100, 100)));
   }
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  DisplayItemClient::EndShouldKeepAliveAllClients();
-#endif
 }
 
 TEST_P(PaintControllerTest, SkipCache) {
@@ -2124,10 +2116,6 @@ class PaintControllerUnderInvalidationTest
     EXPECT_TRUE(GetPaintController().LastDisplayItemIsSubsequenceEnd());
 
     GetPaintController().CommitNewDisplayItems();
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::EndShouldKeepAliveAllClients();
-#endif
   }
 
   void TestChangeDrawingInSubsequence() {
@@ -2247,10 +2235,6 @@ class PaintControllerUnderInvalidationTest
                FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::EndShouldKeepAliveAllClients();
-#endif
   }
 };
 

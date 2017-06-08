@@ -838,13 +838,6 @@ PaintLayerCompositor* LayoutView::Compositor() {
 void LayoutView::SetIsInWindow(bool is_in_window) {
   if (compositor_)
     compositor_->SetIsInWindow(is_in_window);
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  // We don't invalidate layers during Document::detachLayoutTree(), so must
-  // clear the should-keep-alive DisplayItemClients which may be deleted before
-  // the layers being subsequence owners.
-  if (!is_in_window && Layer())
-    Layer()->EndShouldKeepAliveAllClientsRecursive();
-#endif
 }
 
 IntervalArena* LayoutView::GetIntervalArena() {

@@ -11,8 +11,6 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/WTFString.h"
 
-#define CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS DCHECK_IS_ON()
-
 namespace blink {
 
 // The class for objects that can be associated with display items. A
@@ -22,28 +20,13 @@ namespace blink {
 // dereferenced unless we can make sure the client is still valid.
 class PLATFORM_EXPORT DisplayItemClient {
  public:
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+#if DCHECK_IS_ON()
   DisplayItemClient();
   virtual ~DisplayItemClient();
 
   // Tests if this DisplayItemClient object has been created and has not been
   // deleted yet.
   bool IsAlive() const;
-
-  // Called when any DisplayItem of this DisplayItemClient is added into
-  // PaintController using PaintController::createAndAppend() or into a cached
-  // subsequence.
-  void BeginShouldKeepAlive(const void* owner) const;
-
-  // Called when the DisplayItemClient is sure that it can safely die before its
-  // owners have chance to remove it from the aliveness control.
-  void EndShouldKeepAlive() const;
-
-  // Clears all should-keep-alive DisplayItemClients of a PaintController.
-  // Called after PaintController commits new display items or the subsequence
-  // owner is invalidated.
-  static void EndShouldKeepAliveAllClients(const void* owner);
-  static void EndShouldKeepAliveAllClients();
 #else
   DisplayItemClient() {}
   virtual ~DisplayItemClient() {}
@@ -81,11 +64,6 @@ class PLATFORM_EXPORT DisplayItemClient {
   void SetDisplayItemsUncached(
       PaintInvalidationReason reason = PaintInvalidationReason::kFull) const {
     cache_generation_or_invalidation_reason_.Invalidate(reason);
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    // Clear should-keep-alive of DisplayItemClients in a subsequence if this
-    // object is a subsequence.
-    EndShouldKeepAliveAllClients(this);
-#endif
   }
 
   PaintInvalidationReason GetPaintInvalidationReason() const {
