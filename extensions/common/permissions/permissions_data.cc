@@ -280,7 +280,7 @@ URLPatternSet PermissionsData::GetEffectiveHostPermissions() const {
 bool PermissionsData::HasHostPermission(const GURL& url) const {
   base::AutoLock auto_lock(runtime_lock_);
   return active_permissions_unsafe_->HasExplicitAccessToOrigin(url) &&
-         !IsRuntimeBlockedHostUnsafe(url);
+         !IsRuntimeBlockedHost(url);
 }
 
 bool PermissionsData::HasEffectiveAccessToAllHosts() const {
@@ -412,7 +412,7 @@ bool PermissionsData::HasTabSpecificPermissionToExecuteScript(
   return false;
 }
 
-bool PermissionsData::IsRuntimeBlockedHostUnsafe(const GURL& url) const {
+bool PermissionsData::IsRuntimeBlockedHost(const GURL& url) const {
   runtime_lock_.AssertAcquired();
   return PolicyBlockedHostsUnsafe().MatchesURL(url) &&
          !PolicyAllowedHostsUnsafe().MatchesURL(url);
@@ -431,7 +431,7 @@ PermissionsData::AccessType PermissionsData::CanRunOnPage(
     return ACCESS_DENIED;
 
   if (extension->location() != Manifest::COMPONENT &&
-      extension->permissions_data()->IsRuntimeBlockedHostUnsafe(document_url)) {
+      extension->permissions_data()->IsRuntimeBlockedHost(document_url)) {
     if (error)
       *error = extension_misc::kPolicyBlockedScripting;
     return ACCESS_DENIED;
