@@ -37,6 +37,9 @@ class MediaSinkServiceBase : public MediaSinkService {
   // timer is currently running.
   void RestartTimer();
 
+  // Overriden by subclass to report device counts.
+  virtual void RecordDeviceCounts() {}
+
   // Time out value for |finish_timer_|
   int fetch_complete_timeout_secs_;
 

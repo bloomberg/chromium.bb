@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/media/router/media_router_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,6 +93,43 @@ TEST(MediaRouterMetricsTest, RecordRouteCreationOutcome) {
       tester.GetAllSamples(MediaRouterMetrics::kHistogramRouteCreationOutcome),
       ElementsAre(Bucket(static_cast<int>(outcome1), 1),
                   Bucket(static_cast<int>(outcome2), 2)));
+}
+
+TEST(MediaRouterMetricsTest, RecordDialDeviceCounts) {
+  MediaRouterMetrics metrics;
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  metrics.SetClockForTest(base::WrapUnique(clock));
+  base::HistogramTester tester;
+  tester.ExpectTotalCount(
+      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 0);
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
+                          0);
+
+  clock->SetNow(base::Time::Now());
+  metrics.RecordDialDeviceCounts(6, 10);
+  metrics.RecordDialDeviceCounts(7, 10);
+  tester.ExpectTotalCount(
+      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 1);
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
+                          1);
+  tester.ExpectBucketCount(
+      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 6, 1);
+  tester.ExpectBucketCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
+                           10, 1);
+
+  clock->Advance(base::TimeDelta::FromHours(2));
+  metrics.RecordDialDeviceCounts(7, 10);
+
+  tester.ExpectTotalCount(
+      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 2);
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
+                          2);
+  tester.ExpectBucketCount(
+      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 6, 1);
+  tester.ExpectBucketCount(
+      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 7, 1);
+  tester.ExpectBucketCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
+                           10, 2);
 }
 
 }  // namespace media_router

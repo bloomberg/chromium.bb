@@ -30368,6 +30368,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Various usage counts for media galleries.</summary>
 </histogram>
 
+<histogram name="MediaRouter.Dial.AvailableDevicesCount" units="devices">
+  <owner>zhaobin@chromium.org</owner>
+  <summary>
+    The number of available DIAL devices. Recorded when browser finishes
+    discovering DIAL devices. Recording happens roughly once per hour.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Dial.KnownDevicesCount" units="devices">
+  <owner>zhaobin@chromium.org</owner>
+  <summary>
+    The number of known DIAL devices. Recorded when browser finishes discovering
+    DIAL devices. Recording happens roughly once per hour.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Icon.Click.Location"
     enum="MediaRouterDialogOpenOrigin">
   <owner>apacible@chromium.org</owner>
