@@ -74,6 +74,10 @@ class GPU_EXPORT Renderbuffer
     return has_been_bound_ && !IsDeleted();
   }
 
+  // Regenerates the object backing this client_id, creating a new service_id.
+  // Also reattaches any framebuffers using this renderbuffer.
+  bool RegenerateAndBindBackingObjectIfNeeded();
+
   void AddFramebufferAttachmentPoint(Framebuffer* framebuffer,
                                      GLenum attachment);
   void RemoveFramebufferAttachmentPoint(Framebuffer* framebuffer,
@@ -114,6 +118,9 @@ class GPU_EXPORT Renderbuffer
 
   // Whether this renderbuffer has been cleared
   bool cleared_;
+
+  // Whether this renderbuffer has been allocated.
+  bool allocated_;
 
   // Whether this renderbuffer has ever been bound.
   bool has_been_bound_;
