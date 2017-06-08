@@ -2509,10 +2509,9 @@ crbug.com/730821 virtual/exotic-color-space/images/color-profile-layer-filter.ht
 crbug.com/713891 virtual/exotic-color-space/images/animated-png.html [ Pass Failure ]
 crbug.com/713891 virtual/exotic-color-space/images/color-profile-border-image.html [ Pass Failure ]
 crbug.com/713891 virtual/exotic-color-space/images/color-profile-group.html [ Pass Failure ]
-crbug.com/713891 virtual/exotic-color-space/images/color-profile-munsell-adobe-to-srgb.html [ Pass Failure ]
-crbug.com/713891 virtual/exotic-color-space/images/color-profile-munsell-srgb-to-srgb.html [ Pass Failure ]
+crbug.com/731211 virtual/exotic-color-space/images/color-profile-munsell-adobe-to-srgb.html [ Pass Failure Timeout ]
+crbug.com/731211 virtual/exotic-color-space/images/color-profile-munsell-srgb-to-srgb.html [ Pass Failure Timeout ]
 crbug.com/731153 [ Mac10.9 ] virtual/exotic-color-space/images/color-profile-reflection.html [ Failure ]
-
 
 # [selectors-4]
 crbug.com/706118 external/wpt/css/selectors4/hover-001-manual.html [ Skip ]
