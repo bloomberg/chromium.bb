@@ -20,9 +20,10 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy final
   DedicatedWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
   ~DedicatedWorkerMessagingProxy() override;
 
-  std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) override;
-
   bool IsAtomicsWaitAllowed() override;
+
+ private:
+  std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) override;
 };
 
 }  // namespace blink

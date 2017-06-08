@@ -125,7 +125,7 @@ class ThreadedWorkletMessagingProxyForTest
   }
 
   ~ThreadedWorkletMessagingProxyForTest() override {
-    worker_thread_->TerminateAndWait();
+    GetWorkerThread()->TerminateAndWait();
     ThreadedWorkletThreadForTest::ClearSharedBackingThread();
   };
 
@@ -149,13 +149,12 @@ class ThreadedWorkletMessagingProxyForTest
         script_url);
   }
 
- protected:
+ private:
+  friend class ThreadedWorkletTest;
+
   std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) final {
     return WTF::MakeUnique<ThreadedWorkletThreadForTest>(WorkletObjectProxy());
   }
-
- private:
-  friend class ThreadedWorkletTest;
 
   RefPtr<SecurityOrigin> security_origin_;
 };

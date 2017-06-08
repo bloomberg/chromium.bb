@@ -19,7 +19,7 @@ AnimationWorkletMessagingProxy::~AnimationWorkletMessagingProxy() {}
 
 std::unique_ptr<WorkerThread>
 AnimationWorkletMessagingProxy::CreateWorkerThread(double origin_time) {
-  return AnimationWorkletThread::Create(GetThreadableLoadingContext(),
+  return AnimationWorkletThread::Create(CreateThreadableLoadingContext(),
                                         WorkletObjectProxy());
 }
 

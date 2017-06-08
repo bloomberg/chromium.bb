@@ -21,7 +21,7 @@ CompositorWorkerMessagingProxy::~CompositorWorkerMessagingProxy() {}
 
 std::unique_ptr<WorkerThread>
 CompositorWorkerMessagingProxy::CreateWorkerThread(double origin_time) {
-  return CompositorWorkerThread::Create(GetThreadableLoadingContext(),
+  return CompositorWorkerThread::Create(CreateThreadableLoadingContext(),
                                         WorkerObjectProxy(), origin_time);
 }
 
