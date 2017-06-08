@@ -61,6 +61,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableCompositedSelectionUpdate(bool);
   BLINK_PLATFORM_EXPORT static bool IsCompositedSelectionUpdateEnabled();
 
+  BLINK_PLATFORM_EXPORT static void EnableCompositorTouchAction(bool);
+
   BLINK_PLATFORM_EXPORT static void EnableDisplayList2dCanvas(bool);
   BLINK_PLATFORM_EXPORT static void ForceDisplayList2dCanvas(bool);
   BLINK_PLATFORM_EXPORT static void ForceDisable2dCanvasCopyOnWrite(bool);
