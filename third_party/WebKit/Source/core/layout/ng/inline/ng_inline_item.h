@@ -80,7 +80,7 @@ class NGInlineItem {
   }
   UBiDiLevel BidiLevel() const { return static_cast<UBiDiLevel>(bidi_level_); }
   UScriptCode GetScript() const { return script_; }
-  const ComputedStyle* Style() const { return style_; }
+  const ComputedStyle* Style() const { return style_.Get(); }
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
   void SetOffset(unsigned start, unsigned end);
@@ -112,7 +112,7 @@ class NGInlineItem {
   unsigned end_offset_;
   UScriptCode script_;
   RefPtr<const ShapeResult> shape_result_;
-  const ComputedStyle* style_;
+  RefPtr<const ComputedStyle> style_;
   LayoutObject* layout_object_;
 
   unsigned type_ : 3;

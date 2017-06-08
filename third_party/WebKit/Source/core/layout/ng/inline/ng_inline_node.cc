@@ -372,8 +372,9 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
 }
 
 MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
-  if (!IsPrepareLayoutFinished())
-    PrepareLayout();
+  // TODO(kojii): Invalidate PrepareLayout() more efficiently.
+  InvalidatePrepareLayout();
+  PrepareLayout();
 
   // Run line breaking with 0 and indefinite available width.
 
@@ -398,8 +399,9 @@ MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
 }
 
 NGLayoutInputNode NGInlineNode::NextSibling() {
-  if (!IsPrepareLayoutFinished())
-    PrepareLayout();
+  // TODO(kojii): Invalidate PrepareLayout() more efficiently.
+  InvalidatePrepareLayout();
+  PrepareLayout();
   return NGBlockNode(Data().next_sibling_);
 }
 
@@ -500,6 +502,16 @@ void NGInlineNode::GetLayoutTextOffsets(
     current_text->SetTextInternal(
         Text(current_offset, Data().text_content_.length()).ToString().Impl());
   }
+}
+
+void NGInlineNode::CheckConsistency() const {
+#if DCHECK_IS_ON()
+  const Vector<NGInlineItem>& items = Data().items_;
+  for (const NGInlineItem& item : items) {
+    DCHECK(!item.GetLayoutObject() || !item.Style() ||
+           item.Style() == item.GetLayoutObject()->Style());
+  }
+#endif
 }
 
 String NGInlineNode::ToString() const {

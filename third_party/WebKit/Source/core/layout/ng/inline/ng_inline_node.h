@@ -64,6 +64,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   void AssertOffset(unsigned index, unsigned offset) const;
   void AssertEndOffset(unsigned index, unsigned offset) const;
+  void CheckConsistency() const;
 
   String ToString() const;
 
