@@ -38,7 +38,6 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
-#include "core/style/StyleRareNonInheritedData.h"
 
 namespace blink {
 
