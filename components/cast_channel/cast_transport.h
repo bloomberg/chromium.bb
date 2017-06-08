@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TRANSPORT_H_
-#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TRANSPORT_H_
+#ifndef COMPONENTS_CAST_CHANNEL_CAST_TRANSPORT_H_
+#define COMPONENTS_CAST_CHANNEL_CAST_TRANSPORT_H_
 
 #include <queue>
 #include <string>
@@ -13,8 +13,8 @@
 #include "base/sequence_checker.h"
 #include "base/threading/thread_checker.h"
 #include "components/cast_channel/cast_channel_enum.h"
-#include "extensions/browser/api/cast_channel/logger.h"
-#include "extensions/common/api/cast_channel/logging.pb.h"
+#include "components/cast_channel/logger.h"
+#include "components/cast_channel/proto/logging.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
 
@@ -25,8 +25,6 @@ class GrowableIOBuffer;
 class Socket;
 }  // namespace net
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 class CastMessage;
 class MessageFramer;
@@ -225,7 +223,5 @@ class CastTransportImpl : public CastTransport {
   DISALLOW_COPY_AND_ASSIGN(CastTransportImpl);
 };
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TRANSPORT_H_
+#endif  // COMPONENTS_CAST_CHANNEL_CAST_TRANSPORT_H_

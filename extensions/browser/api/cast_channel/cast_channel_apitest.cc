@@ -12,13 +12,13 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/cast_channel/cast_socket.h"
+#include "components/cast_channel/cast_test_util.h"
+#include "components/cast_channel/logger.h"
+#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/cast_channel/cast_channel_api.h"
-#include "extensions/browser/api/cast_channel/cast_socket.h"
-#include "extensions/browser/api/cast_channel/cast_test_util.h"
-#include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/common/api/cast_channel.h"
-#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/test_util.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -30,23 +30,19 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 
-// TODO(mfoltz): Mock out the ApiResourceManager to resolve threading issues
-// (crbug.com/398242) and simulate unloading of the extension.
-
+using ::cast_channel::CastMessage;
+using ::cast_channel::CastSocket;
+using ::cast_channel::CastTransport;
 using ::cast_channel::ChannelAuthType;
 using ::cast_channel::ChannelError;
+using ::cast_channel::CreateIPEndPointForTest;
+using ::cast_channel::LastErrors;
+using ::cast_channel::Logger;
+using ::cast_channel::MockCastSocket;
+using ::cast_channel::MockCastTransport;
 using ::cast_channel::ReadyState;
-
-using extensions::api::cast_channel::CastMessage;
-using extensions::api::cast_channel::CastSocket;
-using extensions::api::cast_channel::CastTransport;
-using extensions::api::cast_channel::CreateIPEndPointForTest;
 using extensions::api::cast_channel::ErrorInfo;
-using extensions::api::cast_channel::LastErrors;
-using extensions::api::cast_channel::Logger;
 using extensions::api::cast_channel::MessageInfo;
-using extensions::api::cast_channel::MockCastSocket;
-using extensions::api::cast_channel::MockCastTransport;
 using extensions::Extension;
 
 namespace utils = extension_function_test_utils;
@@ -63,6 +59,8 @@ using ::testing::ReturnPointee;
 using ::testing::SaveArg;
 
 namespace {
+
+const char kTestExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
 
 static void FillCastMessage(const std::string& message,
                             CastMessage* cast_message) {
@@ -88,8 +86,7 @@ class CastChannelAPITest : public ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
-        extensions::api::cast_channel::kTestExtensionId);
+        extensions::switches::kWhitelistedExtensionID, kTestExtensionId);
   }
 
   void SetUpMockCastSocket() {
@@ -158,9 +155,9 @@ class CastChannelAPITest : public ExtensionApiTest {
 
   // Logs some bogus error details and calls the OnError handler.
   void DoCallOnError(extensions::CastChannelAPI* api) {
-    api->GetLogger()->LogSocketEventWithRv(
-        mock_cast_socket_->id(),
-        extensions::api::cast_channel::proto::SOCKET_WRITE, net::ERR_FAILED);
+    api->GetLogger()->LogSocketEventWithRv(mock_cast_socket_->id(),
+                                           ::cast_channel::proto::SOCKET_WRITE,
+                                           net::ERR_FAILED);
     message_delegate_->OnError(ChannelError::CONNECT_ERROR);
   }
 

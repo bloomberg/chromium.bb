@@ -142,7 +142,6 @@ json_schema_api("api_registration") {
     ":api",
     "//device/serial",
     "//extensions/common/api",
-    "//extensions/common/api/cast_channel:cast_channel_proto",
     "//skia",
   ]
 }

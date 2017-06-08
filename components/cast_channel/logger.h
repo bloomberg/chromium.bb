@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_LOGGER_H_
-#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_LOGGER_H_
+#ifndef COMPONENTS_CAST_CHANNEL_LOGGER_H_
+#define COMPONENTS_CAST_CHANNEL_LOGGER_H_
 
 #include <stddef.h>
 
@@ -15,11 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "extensions/common/api/cast_channel/logging.pb.h"
+#include "components/cast_channel/proto/logging.pb.h"
 
-
-namespace extensions {
-namespace api {
 namespace cast_channel {
 
 struct AuthResult;
@@ -76,12 +73,10 @@ class Logger : public base::RefCountedThreadSafe<Logger> {
 
   LastErrorsMap last_errors_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(Logger);
 };
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_LOGGER_H_
+#endif  // COMPONENTS_CAST_CHANNEL_LOGGER_H_

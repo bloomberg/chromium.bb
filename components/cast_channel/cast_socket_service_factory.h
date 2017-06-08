@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_SERVICE_FACTORY_H_
-#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_SERVICE_FACTORY_H_
+#ifndef COMPONENTS_CAST_CHANNEL_CAST_SOCKET_SERVICE_FACTORY_H_
+#define COMPONENTS_CAST_CHANNEL_CAST_SOCKET_SERVICE_FACTORY_H_
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 
 class CastSocketService;
@@ -44,7 +42,5 @@ class CastSocketServiceFactory
 };
 
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_SERVICE_FACTORY_H_
+#endif  // COMPONENTS_CAST_CHANNEL_CAST_SOCKET_SERVICE_FACTORY_H_
