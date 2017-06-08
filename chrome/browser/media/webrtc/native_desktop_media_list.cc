@@ -83,8 +83,8 @@ class NativeDesktopMediaList::Worker
     : public webrtc::DesktopCapturer::Callback {
  public:
   Worker(base::WeakPtr<NativeDesktopMediaList> media_list,
-         std::unique_ptr<webrtc::DesktopCapturer> screen_capturer,
-         std::unique_ptr<webrtc::DesktopCapturer> window_capturer);
+         DesktopMediaID::Type type,
+         std::unique_ptr<webrtc::DesktopCapturer> capturer);
   ~Worker() override;
 
   void Refresh(const DesktopMediaID::Id& view_dialog_id);
@@ -101,8 +101,8 @@ class NativeDesktopMediaList::Worker
 
   base::WeakPtr<NativeDesktopMediaList> media_list_;
 
-  std::unique_ptr<webrtc::DesktopCapturer> screen_capturer_;
-  std::unique_ptr<webrtc::DesktopCapturer> window_capturer_;
+  DesktopMediaID::Type type_;
+  std::unique_ptr<webrtc::DesktopCapturer> capturer_;
 
   std::unique_ptr<webrtc::DesktopFrame> current_frame_;
 
@@ -113,64 +113,57 @@ class NativeDesktopMediaList::Worker
 
 NativeDesktopMediaList::Worker::Worker(
     base::WeakPtr<NativeDesktopMediaList> media_list,
-    std::unique_ptr<webrtc::DesktopCapturer> screen_capturer,
-    std::unique_ptr<webrtc::DesktopCapturer> window_capturer)
-    : media_list_(media_list),
-      screen_capturer_(std::move(screen_capturer)),
-      window_capturer_(std::move(window_capturer)) {
-  if (screen_capturer_)
-    screen_capturer_->Start(this);
-  if (window_capturer_)
-    window_capturer_->Start(this);
+    DesktopMediaID::Type type,
+    std::unique_ptr<webrtc::DesktopCapturer> capturer)
+    : media_list_(media_list), type_(type), capturer_(std::move(capturer)) {
+  capturer_->Start(this);
 }
 
 NativeDesktopMediaList::Worker::~Worker() {}
 
 void NativeDesktopMediaList::Worker::Refresh(
     const DesktopMediaID::Id& view_dialog_id) {
-  std::vector<SourceDescription> sources;
+  std::vector<SourceDescription> result;
 
-  if (screen_capturer_) {
-    webrtc::DesktopCapturer::SourceList screens;
-    if (screen_capturer_->GetSourceList(&screens)) {
-      bool mutiple_screens = screens.size() > 1;
-      base::string16 title;
-      for (size_t i = 0; i < screens.size(); ++i) {
-        if (mutiple_screens) {
-          // Just in case 'Screen' is inflected depending on the screen number,
-          // use plural formatter.
-          title = l10n_util::GetPluralStringFUTF16(
-              IDS_DESKTOP_MEDIA_PICKER_MULTIPLE_SCREEN_NAME,
-              static_cast<int>(i + 1));
-        } else {
-          title = l10n_util::GetStringUTF16(
-              IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME);
-        }
-        sources.push_back(SourceDescription(DesktopMediaID(
-            DesktopMediaID::TYPE_SCREEN, screens[i].id), title));
-      }
-    }
+  webrtc::DesktopCapturer::SourceList sources;
+  if (!capturer_->GetSourceList(&sources)) {
+    // Will pass empty results list to RefreshForAuraWindows().
+    sources.clear();
   }
 
-  if (window_capturer_) {
-    webrtc::DesktopCapturer::SourceList windows;
-    if (window_capturer_->GetSourceList(&windows)) {
-      for (auto it = windows.begin(); it != windows.end(); ++it) {
-        // Skip the picker dialog window.
-        if (it->id == view_dialog_id)
-          continue;
+  bool mutiple_sources = sources.size() > 1;
+  base::string16 title;
+  for (size_t i = 0; i < sources.size(); ++i) {
+    switch (type_) {
+      case DesktopMediaID::TYPE_SCREEN:
+        // Just in case 'Screen' is inflected depending on the screen number,
+        // use plural formatter.
+        title = mutiple_sources
+                    ? l10n_util::GetPluralStringFUTF16(
+                          IDS_DESKTOP_MEDIA_PICKER_MULTIPLE_SCREEN_NAME,
+                          static_cast<int>(i + 1))
+                    : l10n_util::GetStringUTF16(
+                          IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME);
+        break;
 
-        DesktopMediaID media_id(DesktopMediaID::TYPE_WINDOW, it->id);
-        sources.push_back(
-            SourceDescription(media_id, base::UTF8ToUTF16(it->title)));
-      }
+      case DesktopMediaID::TYPE_WINDOW:
+        // Skip the picker dialog window.
+        if (sources[i].id == view_dialog_id)
+          continue;
+        title = base::UTF8ToUTF16(sources[i].title);
+        break;
+
+      default:
+        NOTREACHED();
     }
+    result.push_back(
+        SourceDescription(DesktopMediaID(type_, sources[i].id), title));
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&NativeDesktopMediaList::RefreshForAuraWindows,
-                     media_list_, sources));
+                     media_list_, result));
 }
 
 void NativeDesktopMediaList::Worker::RefreshThumbnails(
@@ -180,22 +173,9 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
 
   // Get a thumbnail for each native source.
   for (const auto& id : native_ids) {
-    switch (id.type) {
-      case DesktopMediaID::TYPE_SCREEN:
-        if (!screen_capturer_->SelectSource(id.id))
-          continue;
-        screen_capturer_->CaptureFrame();
-        break;
-
-      case DesktopMediaID::TYPE_WINDOW:
-        if (!window_capturer_->SelectSource(id.id))
-          continue;
-        window_capturer_->CaptureFrame();
-        break;
-
-      default:
-        NOTREACHED();
-    }
+    if (!capturer_->SelectSource(id.id))
+      continue;
+    capturer_->CaptureFrame();
 
     // Expect that DesktopCapturer to always captures frames synchronously.
     // |current_frame_| may be NULL if capture failed (e.g. because window has
@@ -232,17 +212,16 @@ void NativeDesktopMediaList::Worker::OnCaptureResult(
 }
 
 NativeDesktopMediaList::NativeDesktopMediaList(
-    std::unique_ptr<webrtc::DesktopCapturer> screen_capturer,
-    std::unique_ptr<webrtc::DesktopCapturer> window_capturer)
+    DesktopMediaID::Type type,
+    std::unique_ptr<webrtc::DesktopCapturer> capturer)
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       weak_factory_(this) {
   capture_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
-  worker_.reset(new Worker(weak_factory_.GetWeakPtr(),
-                           std::move(screen_capturer),
-                           std::move(window_capturer)));
+  worker_.reset(
+      new Worker(weak_factory_.GetWeakPtr(), type, std::move(capturer)));
 }
 
 NativeDesktopMediaList::~NativeDesktopMediaList() {

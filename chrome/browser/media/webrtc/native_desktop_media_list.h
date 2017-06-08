@@ -21,12 +21,8 @@ class DesktopCapturer;
 // native windows.
 class NativeDesktopMediaList : public DesktopMediaListBase {
  public:
-  // Caller may pass NULL for either of the arguments in case when only some
-  // types of sources the model should be populated with (e.g. it will only
-  // contain windows, if |screen_capturer| is NULL).
-  NativeDesktopMediaList(
-      std::unique_ptr<webrtc::DesktopCapturer> screen_capturer,
-      std::unique_ptr<webrtc::DesktopCapturer> window_capturer);
+  NativeDesktopMediaList(content::DesktopMediaID::Type type,
+                         std::unique_ptr<webrtc::DesktopCapturer> capturer);
   ~NativeDesktopMediaList() override;
 
  private:
