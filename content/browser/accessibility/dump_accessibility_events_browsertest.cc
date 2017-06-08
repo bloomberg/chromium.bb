@@ -277,6 +277,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsLiveRegionAddLiveAttribute) {
+  RunEventTest(FILE_PATH_LITERAL("live-region-add-live-attribute.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsLiveRegionChange) {
   RunEventTest(FILE_PATH_LITERAL("live-region-change.html"));
 }

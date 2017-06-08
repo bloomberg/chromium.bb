@@ -343,7 +343,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   void OnNodeDataWillChange(ui::AXTree* tree,
                             const ui::AXNodeData& old_node_data,
                             const ui::AXNodeData& new_node_data) override;
-  void OnTreeDataChanged(ui::AXTree* tree) override;
+  void OnTreeDataChanged(ui::AXTree* tree,
+                         const ui::AXTreeData& old_tree_data,
+                         const ui::AXTreeData& new_tree_data) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeWillBeReparented(ui::AXTree* tree, ui::AXNode* node) override;
@@ -443,9 +445,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
   base::hash_map<int32_t, BrowserAccessibility*> id_wrapper_map_;
 
-  // A queue of accessibility events to fire based on changes to the
-  // accessibility tree. Each one is an event and a node id.
-  std::vector<std::pair<ui::AXEvent, int32_t>> tree_events_;
+  // A set of accessibility events to fire based on changes to the
+  // accessibility tree. It's represented as a map from node id
+  // to a set of events, which makes it easy to remove duplicates.
+  std::map<int32_t, std::set<ui::AXEvent>> tree_events_;
 
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;

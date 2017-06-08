@@ -1242,7 +1242,10 @@ void AutomationInternalCustomBindings::OnNodeDataWillChange(
     text_changed_node_ids_.push_back(new_node_data.id);
 }
 
-void AutomationInternalCustomBindings::OnTreeDataChanged(ui::AXTree* tree) {}
+void AutomationInternalCustomBindings::OnTreeDataChanged(
+    ui::AXTree* tree,
+    const ui::AXTreeData& old_tree_data,
+    const ui::AXTreeData& new_tree_data) {}
 
 void AutomationInternalCustomBindings::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                            ui::AXNode* node) {

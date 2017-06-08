@@ -390,24 +390,39 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   }
 
   // Fire any events related to changes to the tree.
-  for (auto& event : tree_events_) {
-    BrowserAccessibility* event_target = GetFromID(event.second);
+  for (auto& entry : tree_events_) {
+    BrowserAccessibility* event_target = GetFromID(entry.first);
     if (!event_target)
       continue;
-    NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
-                             event.first, event_target);
+    std::set<ui::AXEvent>& events = entry.second;
+    if (events.find(ui::AX_EVENT_LIVE_REGION_CREATED) != events.end() ||
+        events.find(ui::AX_EVENT_ALERT) != events.end()) {
+      events.erase(ui::AX_EVENT_LIVE_REGION_CHANGED);
+    }
+    for (auto event : events) {
+      NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange, event,
+                               event_target);
+    }
   }
   tree_events_.clear();
 
-  // Based on the changes to the tree, first fire focus events if needed.
+  // Based on the changes to the tree, fire focus events if needed.
   // Screen readers might not do the right thing if they're not aware of what
   // has focus, so always try that first. Nothing will be fired if the window
   // itself isn't focused or if focus hasn't changed.
   GetRootManager()->FireFocusEventsIfNeeded(
       BrowserAccessibilityEvent::FromBlink);
 
-  // Now iterate over the events from the renderer and fire the events
-  // other than focus events.
+  // We are in the process of inferring all native events from tree changes.
+  // Mac OS X no longer needs to iterate over the specific events coming from
+  // the renderer, all needed events were fired above by iterating over
+  // tree_events_.
+  //
+  // When all platforms have switched to inferring all events, we can delete
+  // the following code, which iterates over the non-focus events from the
+  // renderer and fires native events based on them.
+  //
+  // See http://crbug.com/699438 for details.
   for (uint32_t index = 0; index < details.size(); index++) {
     const AXEventNotificationDetails& detail = details[index];
 
@@ -418,6 +433,12 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
       continue;
 
     ui::AXEvent event_type = detail.event_type;
+
+#if defined(OS_MACOSX)
+    if (event_type != ui::AX_EVENT_HOVER)
+      continue;
+#endif  // !defined(OS_MACOSX)
+
     if (event_type == ui::AX_EVENT_FOCUS ||
         event_type == ui::AX_EVENT_BLUR) {
       if (osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_HIDDEN &&
@@ -1100,8 +1121,10 @@ void BrowserAccessibilityManager::OnNodeDataWillChange(
     const ui::AXNodeData& old_node_data,
     const ui::AXNodeData& new_node_data) {}
 
-void BrowserAccessibilityManager::OnTreeDataChanged(ui::AXTree* tree) {
-}
+void BrowserAccessibilityManager::OnTreeDataChanged(
+    ui::AXTree* tree,
+    const ui::AXTreeData& old_tree_data,
+    const ui::AXTreeData& new_tree_data) {}
 
 void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                       ui::AXNode* node) {
@@ -1197,10 +1220,9 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     if (object && object->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
       int32_t id = object->GetId();
       if (object->GetRole() == ui::AX_ROLE_ALERT) {
-        tree_events_.push_back(std::make_pair(ui::AX_EVENT_ALERT, id));
+        tree_events_[id].insert(ui::AX_EVENT_ALERT);
       } else {
-        tree_events_.push_back(
-            std::make_pair(ui::AX_EVENT_LIVE_REGION_CREATED, id));
+        tree_events_[id].insert(ui::AX_EVENT_LIVE_REGION_CREATED);
       }
     }
   }

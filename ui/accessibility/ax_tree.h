@@ -85,8 +85,9 @@ class AX_EXPORT AXTreeDelegate {
       const std::vector<int32_t>& new_value) {}
 
   // Called when tree data changes.
-  virtual void OnTreeDataChanged(AXTree* tree) = 0;
-
+  virtual void OnTreeDataChanged(AXTree* tree,
+                                 const ui::AXTreeData& old_data,
+                                 const ui::AXTreeData& new_data) = 0;
   // Called just before a node is deleted. Its id and data will be valid,
   // but its links to parents and children are invalid. This is called
   // in the middle of an update, the tree may be in an invalid state!
