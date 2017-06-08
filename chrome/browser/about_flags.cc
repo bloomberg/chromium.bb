@@ -1067,26 +1067,30 @@ const FeatureEntry::FeatureVariation
 
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin4px[] = {
     {OmniboxFieldTrial::kUIVerticalMarginParam, "4"}};
+const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin6px[] = {
+    {OmniboxFieldTrial::kUIVerticalMarginParam, "6"}};
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin8px[] = {
     {OmniboxFieldTrial::kUIVerticalMarginParam, "8"}};
+const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin10px[] = {
+    {OmniboxFieldTrial::kUIVerticalMarginParam, "10"}};
 const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin12px[] = {
     {OmniboxFieldTrial::kUIVerticalMarginParam, "12"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin16px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "16"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin20px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "20"}};
+const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin14px[] = {
+    {OmniboxFieldTrial::kUIVerticalMarginParam, "14"}};
 
 const FeatureEntry::FeatureVariation kOmniboxUIVerticalMarginVariations[] = {
     {"4px vertical margin", kOmniboxUIVerticalMargin4px,
      arraysize(kOmniboxUIVerticalMargin4px), nullptr},
+    {"6px vertical margin", kOmniboxUIVerticalMargin6px,
+     arraysize(kOmniboxUIVerticalMargin6px), nullptr},
     {"8px vertical margin", kOmniboxUIVerticalMargin8px,
      arraysize(kOmniboxUIVerticalMargin8px), nullptr},
+    {"10px vertical margin", kOmniboxUIVerticalMargin10px,
+     arraysize(kOmniboxUIVerticalMargin10px), nullptr},
     {"12px vertical margin", kOmniboxUIVerticalMargin12px,
      arraysize(kOmniboxUIVerticalMargin12px), nullptr},
-    {"16px vertical margin", kOmniboxUIVerticalMargin16px,
-     arraysize(kOmniboxUIVerticalMargin16px), nullptr},
-    {"20px vertical margin", kOmniboxUIVerticalMargin20px,
-     arraysize(kOmniboxUIVerticalMargin20px), nullptr}};
+    {"14px vertical margin", kOmniboxUIVerticalMargin14px,
+     arraysize(kOmniboxUIVerticalMargin14px), nullptr}};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
