@@ -106,6 +106,7 @@
           "blink::mojom::WebSocket",
           // TODO(beng): figure out how to overlay test interfaces like this.
           "content::mojom::BrowserTarget",
+          "content::mojom::RendererAudioOutputStreamFactory",
           "device::mojom::VRService",
           "device::mojom::GeolocationService",
           "device::mojom::NFC",

@@ -266,6 +266,11 @@ const base::Feature kTouchpadAndWheelScrollLatching{
 const base::Feature kUseFeaturePolicyForPermissions{
     "UseFeaturePolicyForPermissions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use MojoAudioOutputIPC and RenderFrameAudioOutputStreamFactory rather than
+// AudioMessageFilter and AudioRendererHost.
+const base::Feature kUseMojoAudioOutputStreamFactory{
+    "UseMojoAudioOutputStreamFactory", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether vibrate requires user gesture.
 const base::Feature kVibrateRequiresUserGesture{
     "VibrateRequiresUserGesture", base::FEATURE_ENABLED_BY_DEFAULT};
