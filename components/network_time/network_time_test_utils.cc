@@ -95,7 +95,14 @@ void FieldTrialTest::SetNetworkQueriesWithVariationsService(
   // ScopedFeatureList helper class. If this comment was useful to you
   // please send me a postcard.
 
-  field_trial_list_.reset();  // Averts a CHECK fail in constructor below.
+  // SetNetworkQueriesWithVariationsService() is usually called during test
+  // fixture setup (to establish a default state) and then again in certain
+  // tests that want to set special params. FieldTrialList is meant to be a
+  // singleton with only one instance existing at once, and the constructor
+  // fails a CHECK if this is violated. To allow these duplicate calls to this
+  // method, any existing FieldTrialList must be destroyed before creating a new
+  // one. (See https://crbug.com/684216#c5 for more discussion.)
+  field_trial_list_.reset();
   field_trial_list_.reset(
       new base::FieldTrialList(base::MakeUnique<base::MockEntropyProvider>()));
 
