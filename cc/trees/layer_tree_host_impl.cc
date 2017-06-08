@@ -1090,8 +1090,6 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   if (input_handler_client_)
     input_handler_client_->ReconcileElasticOverscrollAndRootScroll();
 
-  active_tree_->UpdateScrollbarGeometries();
-
   if (const char* client_name = GetClientNameForMetrics()) {
     size_t total_memory = 0;
     for (const PictureLayerImpl* layer : active_tree()->picture_layers())

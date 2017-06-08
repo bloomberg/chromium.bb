@@ -1019,6 +1019,11 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   if (!needs_update_draw_properties_)
     return true;
 
+  // Ensure the scrollbar geometries are up-to-date for hit testing and quads
+  // generation. This may cause damage on the scrollbar layers which is why
+  // it occurs before we reset |needs_update_draw_properties_|.
+  UpdateScrollbarGeometries();
+
   // Calling UpdateDrawProperties must clear this flag, so there can be no
   // early outs before this.
   needs_update_draw_properties_ = false;

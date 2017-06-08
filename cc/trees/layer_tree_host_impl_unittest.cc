@@ -3375,6 +3375,73 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   EXPECT_TRUE(animation_task_.Equals(base::Closure()));
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollBeforeMouseMove) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.scrollbar_animator = LayerTreeSettings::AURA_OVERLAY;
+  settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(20);
+  settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(20);
+  CreateHostImpl(settings, CreateCompositorFrameSink());
+
+  gfx::Size viewport_size(300, 200);
+  gfx::Size content_size(1000, 1000);
+
+  CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
+  auto* container = host_impl_->active_tree()->InnerViewportContainerLayer();
+  container->SetBounds(viewport_size);
+  auto* root_scroll = host_impl_->active_tree()->OuterViewportScrollLayer();
+
+  container->test_properties()->AddChild(SolidColorScrollbarLayerImpl::Create(
+      host_impl_->active_tree(), 10, VERTICAL, 5, 0, false, true));
+  SolidColorScrollbarLayerImpl* vert_scrollbar =
+      static_cast<SolidColorScrollbarLayerImpl*>(
+          container->test_properties()->children[1]);
+
+  vert_scrollbar->SetScrollElementId(root_scroll->element_id());
+  vert_scrollbar->SetBounds(gfx::Size(10, 200));
+  vert_scrollbar->SetPosition(gfx::PointF(300, 0));
+  vert_scrollbar->test_properties()->opacity_can_animate = true;
+  vert_scrollbar->SetCurrentPos(0);
+
+  host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
+  host_impl_->active_tree()->UpdateScrollbarGeometries();
+
+  EXPECT_EQ(1ul, host_impl_->ScrollbarsFor(root_scroll->element_id()).size());
+  auto* scrollbar_controller =
+      host_impl_->ScrollbarAnimationControllerForElementId(
+          root_scroll->element_id());
+
+  const float kDistanceToTriggerThumb =
+      SingleScrollbarAnimationControllerThinning::
+          kMouseMoveDistanceToTriggerExpand;
+
+  // Move the mouse near the thumb in the top position.
+  auto near_thumb_at_top = gfx::Point(300, -kDistanceToTriggerThumb + 1);
+  host_impl_->MouseMoveAt(near_thumb_at_top);
+  EXPECT_TRUE(scrollbar_controller->MouseIsNearScrollbarThumb(VERTICAL));
+
+  // Move the mouse away from the thumb.
+  host_impl_->MouseMoveAt(gfx::Point(300, -kDistanceToTriggerThumb - 1));
+  EXPECT_FALSE(scrollbar_controller->MouseIsNearScrollbarThumb(VERTICAL));
+
+  // Scroll the page down which moves the thumb down.
+  host_impl_->ScrollBegin(BeginState(gfx::Point()).get(), InputHandler::WHEEL);
+  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 100)).get());
+  host_impl_->ScrollEnd(EndState().get());
+
+  // Move the mouse near the thumb in the top position.
+  host_impl_->MouseMoveAt(near_thumb_at_top);
+  EXPECT_FALSE(scrollbar_controller->MouseIsNearScrollbarThumb(VERTICAL));
+
+  // Scroll the page up which moves the thumb back up.
+  host_impl_->ScrollBegin(BeginState(gfx::Point()).get(), InputHandler::WHEEL);
+  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, -100)).get());
+  host_impl_->ScrollEnd(EndState().get());
+
+  // Move the mouse near the thumb in the top position.
+  host_impl_->MouseMoveAt(near_thumb_at_top);
+  EXPECT_TRUE(scrollbar_controller->MouseIsNearScrollbarThumb(VERTICAL));
+}
+
 void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
     float device_scale_factor) {
   LayerTreeSettings settings = DefaultSettings();
