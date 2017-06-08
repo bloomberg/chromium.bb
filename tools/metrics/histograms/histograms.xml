@@ -77043,6 +77043,87 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TextToSpeech.Event" enum="TextToSpeechEvent">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Events fired by the text-to-speech engine when speaking an utterance.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.FromExtensionAPI"
+    enum="TextToSpeechFromExtensionAPI">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Indicates if an utterance spoken via synthesized text-to-speech was
+    triggered by the Chrome TTS extension API or the web speech API.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.HasGender" enum="TextToSpeechHasGender">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    True if an utterance spoken via synthesized text-to-speech requested a
+    specific gender.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.HasLang" enum="TextToSpeechHasLang">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    True if an utterance spoken via synthesized text-to-speech specified a
+    language code.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.HasPitch" enum="TextToSpeechHasPitch">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    True if an utterance spoken via synthesized text-to-speech requested a
+    specific pitch other than the default.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.HasRate" enum="TextToSpeechHasRate">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    True if an utterance spoken via synthesized text-to-speech requested a
+    specific speech rate other than the default.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.HasVoiceName"
+    enum="TextToSpeechHasVoiceName">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    True if an utterance spoken via synthesized text-to-speech requested a
+    specific voice by name.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.HasVolume" enum="TextToSpeechHasVolume">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    True if an utterance spoken via synthesized text-to-speech requested a
+    specific volume other than the default.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.Native" enum="TextToSpeechNative">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    True if an utterance is spoken with native speech provided by the operating
+    system, otherwise it's spoken via a Chrome extension that implements
+    text-to-speech support.
+  </summary>
+</histogram>
+
+<histogram name="TextToSpeech.Utterance.TextLength" units="bytes">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    The length of an utterance to be spoken via synthesized text-to-speech.
+  </summary>
+</histogram>
+
 <histogram name="ThirdPartyModules.Certificates.Microsoft" units="certificates">
   <owner>chrisha@chromium.org</owner>
   <summary>
