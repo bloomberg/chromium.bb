@@ -619,56 +619,78 @@ void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
       kWordGranularity, HandleVisibility::kNotVisible);
 }
 
-// TODO(xiaochengh): We should not use reference to return value.
-static void AdjustEndpointsAtBidiBoundary(
-    VisiblePositionInFlatTree& visible_base,
-    VisiblePositionInFlatTree& visible_extent) {
+static SelectionInFlatTree AdjustEndpointsAtBidiBoundary(
+    const VisiblePositionInFlatTree& visible_base,
+    const VisiblePositionInFlatTree& visible_extent) {
   DCHECK(visible_base.IsValid());
   DCHECK(visible_extent.IsValid());
 
   RenderedPosition base(visible_base);
   RenderedPosition extent(visible_extent);
 
+  const SelectionInFlatTree& unchanged_selection =
+      SelectionInFlatTree::Builder()
+          .SetBaseAndExtent(visible_base.DeepEquivalent(),
+                            visible_extent.DeepEquivalent())
+          .Build();
+
   if (base.IsNull() || extent.IsNull() || base.IsEquivalent(extent))
-    return;
+    return unchanged_selection;
 
   if (base.AtLeftBoundaryOfBidiRun()) {
     if (!extent.AtRightBoundaryOfBidiRun(base.BidiLevelOnRight()) &&
         base.IsEquivalent(
             extent.LeftBoundaryOfBidiRun(base.BidiLevelOnRight()))) {
-      visible_base = CreateVisiblePosition(
-          ToPositionInFlatTree(base.PositionAtLeftBoundaryOfBiDiRun()));
-      return;
+      return SelectionInFlatTree::Builder()
+          .SetBaseAndExtent(
+              CreateVisiblePosition(
+                  ToPositionInFlatTree(base.PositionAtLeftBoundaryOfBiDiRun()))
+                  .DeepEquivalent(),
+              visible_extent.DeepEquivalent())
+          .Build();
     }
-    return;
+    return unchanged_selection;
   }
 
   if (base.AtRightBoundaryOfBidiRun()) {
     if (!extent.AtLeftBoundaryOfBidiRun(base.BidiLevelOnLeft()) &&
         base.IsEquivalent(
             extent.RightBoundaryOfBidiRun(base.BidiLevelOnLeft()))) {
-      visible_base = CreateVisiblePosition(
-          ToPositionInFlatTree(base.PositionAtRightBoundaryOfBiDiRun()));
-      return;
+      return SelectionInFlatTree::Builder()
+          .SetBaseAndExtent(
+              CreateVisiblePosition(
+                  ToPositionInFlatTree(base.PositionAtRightBoundaryOfBiDiRun()))
+                  .DeepEquivalent(),
+              visible_extent.DeepEquivalent())
+          .Build();
     }
-    return;
+    return unchanged_selection;
   }
 
   if (extent.AtLeftBoundaryOfBidiRun() &&
       extent.IsEquivalent(
           base.LeftBoundaryOfBidiRun(extent.BidiLevelOnRight()))) {
-    visible_extent = CreateVisiblePosition(
-        ToPositionInFlatTree(extent.PositionAtLeftBoundaryOfBiDiRun()));
-    return;
+    return SelectionInFlatTree::Builder()
+        .SetBaseAndExtent(
+            visible_base.DeepEquivalent(),
+            CreateVisiblePosition(
+                ToPositionInFlatTree(extent.PositionAtLeftBoundaryOfBiDiRun()))
+                .DeepEquivalent())
+        .Build();
   }
 
   if (extent.AtRightBoundaryOfBidiRun() &&
       extent.IsEquivalent(
           base.RightBoundaryOfBidiRun(extent.BidiLevelOnLeft()))) {
-    visible_extent = CreateVisiblePosition(
-        ToPositionInFlatTree(extent.PositionAtRightBoundaryOfBiDiRun()));
-    return;
+    return SelectionInFlatTree::Builder()
+        .SetBaseAndExtent(
+            visible_base.DeepEquivalent(),
+            CreateVisiblePosition(
+                ToPositionInFlatTree(extent.PositionAtRightBoundaryOfBiDiRun()))
+                .DeepEquivalent())
+        .Build();
   }
+  return unchanged_selection;
 }
 
 // TODO(yosin): We should take |granularity| and |handleVisibility| from
@@ -692,20 +714,23 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
   const VisiblePositionInFlatTree& base =
       original_base.IsNotNull() ? original_base
                                 : CreateVisiblePosition(new_selection.Base());
-  VisiblePositionInFlatTree new_base = base;
   const VisiblePositionInFlatTree& extent =
       CreateVisiblePosition(new_selection.Extent());
-  VisiblePositionInFlatTree new_extent = extent;
-  if (endpoints_adjustment_mode == kAdjustEndpointsAtBidiBoundary)
-    AdjustEndpointsAtBidiBoundary(new_base, new_extent);
+  const SelectionInFlatTree& adjusted_selection =
+      endpoints_adjustment_mode == kAdjustEndpointsAtBidiBoundary
+          ? AdjustEndpointsAtBidiBoundary(base, extent)
+          : SelectionInFlatTree::Builder()
+                .SetBaseAndExtent(base.DeepEquivalent(),
+                                  extent.DeepEquivalent())
+                .Build();
 
   SelectionInFlatTree::Builder builder(new_selection.AsSelection());
-  if (new_base.DeepEquivalent() != base.DeepEquivalent() ||
-      new_extent.DeepEquivalent() != extent.DeepEquivalent()) {
+  if (adjusted_selection.Base() != base.DeepEquivalent() ||
+      adjusted_selection.Extent() != extent.DeepEquivalent()) {
     original_base_in_flat_tree_ = base;
     SetContext(&GetDocument());
-    builder.SetBaseAndExtent(new_base.DeepEquivalent(),
-                             new_extent.DeepEquivalent());
+    builder.SetBaseAndExtent(adjusted_selection.Base(),
+                             adjusted_selection.Extent());
   } else if (original_base.IsNotNull()) {
     if (Selection().ComputeVisibleSelectionInFlatTree().Base() ==
         new_selection.Base()) {
