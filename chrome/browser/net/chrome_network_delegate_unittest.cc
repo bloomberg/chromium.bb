@@ -606,6 +606,8 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
 #endif
 
 #if defined(OS_CHROMEOS)
+  base::FilePath temp_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &temp_dir));
   // Chrome OS allows the following directories.
   EXPECT_TRUE(IsAccessAllowed("/home/chronos/user/Downloads", ""));
   EXPECT_TRUE(IsAccessAllowed("/home/chronos/user/log", ""));
@@ -613,10 +615,10 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
   EXPECT_TRUE(IsAccessAllowed("/media", ""));
   EXPECT_TRUE(IsAccessAllowed("/opt/oem", ""));
   EXPECT_TRUE(IsAccessAllowed("/usr/share/chromeos-assets", ""));
-  EXPECT_TRUE(IsAccessAllowed("/tmp", ""));
+  EXPECT_TRUE(IsAccessAllowed(temp_dir.AsUTF8Unsafe(), ""));
   EXPECT_TRUE(IsAccessAllowed("/var/log", ""));
   // Files under the directories are allowed.
-  EXPECT_TRUE(IsAccessAllowed("/tmp/foo.txt", ""));
+  EXPECT_TRUE(IsAccessAllowed("/var/log/foo.txt", ""));
   // Make sure similar paths are not allowed.
   EXPECT_FALSE(IsAccessAllowed("/home/chronos/user/log.txt", ""));
   EXPECT_FALSE(IsAccessAllowed("/home/chronos/user", ""));
