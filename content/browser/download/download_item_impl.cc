@@ -323,7 +323,6 @@ DownloadItemImpl::DownloadItemImpl(
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     const net::NetLogWithSource& net_log)
     : request_info_(url),
-      is_save_package_download_(true),
       guid_(base::ToUpperASCII(base::GenerateGUID())),
       download_id_(download_id),
       mime_type_(mime_type),
@@ -334,8 +333,8 @@ DownloadItemImpl::DownloadItemImpl(
       destination_info_(path, path, 0, false, std::string(), base::Time()),
       net_log_(net_log),
       weak_ptr_factory_(this) {
-  job_ =
-      base::MakeUnique<DownloadJobImpl>(this, std::move(request_handle), false);
+  job_ = DownloadJobFactory::CreateJob(this, std::move(request_handle),
+                                       DownloadCreateInfo(), true);
   delegate_->Attach();
   Init(true /* actively downloading */, SRC_SAVE_PAGE_AS);
 }
@@ -711,7 +710,7 @@ const std::string& DownloadItemImpl::GetETag() const {
 }
 
 bool DownloadItemImpl::IsSavePackageDownload() const {
-  return is_save_package_download_;
+  return job_ && job_->IsSavePackageDownload();
 }
 
 const base::FilePath& DownloadItemImpl::GetFullPath() const {
@@ -1301,7 +1300,7 @@ void DownloadItemImpl::Start(
 
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(this, std::move(req_handle),
-                                       new_create_info);
+                                       new_create_info, false);
   if (job_->IsParallelizable()) {
     RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());
   }
@@ -1486,7 +1485,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   //               spurious rename when we can just rename to the final
   //               filename. Unnecessary renames may cause bugs like
   //               http://crbug.com/74187.
-  DCHECK(!is_save_package_download_);
+  DCHECK(!IsSavePackageDownload());
   DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
@@ -1568,7 +1567,7 @@ void DownloadItemImpl::OnTargetResolved() {
 // complete.
 void DownloadItemImpl::MaybeCompleteDownload() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!is_save_package_download_);
+  DCHECK(!IsSavePackageDownload());
 
   if (!IsDownloadReadyForCompletion(
           base::Bind(&DownloadItemImpl::MaybeCompleteDownload,
@@ -1617,7 +1616,7 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
     DownloadInterruptReason reason,
     const base::FilePath& full_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!is_save_package_download_);
+  DCHECK(!IsSavePackageDownload());
 
   // If a cancel or interrupt hit, we'll cancel the DownloadFile, which
   // will result in deleting the file on the file thread.  So we don't
@@ -1956,7 +1955,7 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
   DownloadInternalState old_state = state_;
   state_ = new_state;
 
-  DCHECK(is_save_package_download_
+  DCHECK(IsSavePackageDownload()
              ? IsValidSavePackageStateTransition(old_state, new_state)
              : IsValidStateTransition(old_state, new_state))
       << "Invalid state transition from:" << DebugDownloadStateString(old_state)

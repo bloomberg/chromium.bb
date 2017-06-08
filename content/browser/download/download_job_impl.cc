@@ -4,43 +4,16 @@
 
 #include "content/browser/download/download_job_impl.h"
 
-#include "content/public/browser/web_contents.h"
-
 namespace content {
 
 DownloadJobImpl::DownloadJobImpl(
     DownloadItemImpl* download_item,
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
     bool is_parallizable)
-    : DownloadJob(download_item),
-      request_handle_(std::move(request_handle)),
+    : DownloadJob(download_item, std::move(request_handle)),
       is_parallizable_(is_parallizable) {}
 
 DownloadJobImpl::~DownloadJobImpl() = default;
-
-void DownloadJobImpl::Cancel(bool user_cancel) {
-  if (request_handle_)
-    request_handle_->CancelRequest(user_cancel);
-}
-
-void DownloadJobImpl::Pause() {
-  DownloadJob::Pause();
-  if (request_handle_)
-    request_handle_->PauseRequest();
-}
-
-void DownloadJobImpl::Resume(bool resume_request) {
-  DownloadJob::Resume(resume_request);
-  if (!resume_request)
-    return;
-
-  if (request_handle_)
-    request_handle_->ResumeRequest();
-}
-
-WebContents* DownloadJobImpl::GetWebContents() const {
-  return request_handle_ ? request_handle_->GetWebContents() : nullptr;
-}
 
 bool DownloadJobImpl::IsParallelizable() const {
   return is_parallizable_;

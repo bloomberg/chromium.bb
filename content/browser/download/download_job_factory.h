@@ -22,7 +22,8 @@ class DownloadJobFactory {
   static std::unique_ptr<DownloadJob> CreateJob(
       DownloadItemImpl* download_item,
       std::unique_ptr<DownloadRequestHandleInterface> req_handle,
-      const DownloadCreateInfo& create_info);
+      const DownloadCreateInfo& create_info,
+      bool is_save_package_download);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadJobFactory);
