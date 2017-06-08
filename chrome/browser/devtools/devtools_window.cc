@@ -585,13 +585,6 @@ void DevToolsWindow::OpenExternalFrontend(
 
 // static
 void DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
-  for (DevToolsWindow* window : g_instances.Get()) {
-    if (window->frontend_type_ == kFrontendNode) {
-      window->ActivateWindow();
-      return;
-    }
-  }
-
   DevToolsWindow* window =
       Create(profile, nullptr, kFrontendNode, std::string(), false,
              std::string(), std::string());
@@ -813,14 +806,12 @@ void DevToolsWindow::OnPageCloseCanceled(WebContents* contents) {
   DevToolsWindow::OnPageCloseCanceled(window->main_web_contents_);
 }
 
-DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
-                               Profile* profile,
+DevToolsWindow::DevToolsWindow(Profile* profile,
                                WebContents* main_web_contents,
                                DevToolsUIBindings* bindings,
                                WebContents* inspected_web_contents,
                                bool can_dock)
-    : frontend_type_(frontend_type),
-      profile_(profile),
+    : profile_(profile),
       main_web_contents_(main_web_contents),
       toolbox_web_contents_(nullptr),
       bindings_(bindings),
@@ -915,8 +906,8 @@ DevToolsWindow* DevToolsWindow::Create(
     return nullptr;
   if (!settings.empty())
     SetPreferencesFromJson(profile, settings);
-  return new DevToolsWindow(frontend_type, profile, main_web_contents.release(),
-                            bindings, inspected_web_contents, can_dock);
+  return new DevToolsWindow(profile, main_web_contents.release(), bindings,
+                            inspected_web_contents, can_dock);
 }
 
 // static
