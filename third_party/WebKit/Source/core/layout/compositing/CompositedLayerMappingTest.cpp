@@ -1476,92 +1476,7 @@ TEST_P(CompositedLayerMappingTest,
   EXPECT_FALSE(child_mapping->AncestorClippingMaskLayer());
 }
 
-TEST_P(CompositedLayerMappingTest, StickyPositionContentOffset) {
-  SetBodyInnerHTML(
-      "<div style='width: 400px; height: 400px; overflow: auto; "
-      "will-change: transform;' >"
-      "    <div id='sticky1' style='position: sticky; top: 0px; width: 100px; "
-      "height: 100px; box-shadow: -5px -5px 5px 0 black; "
-      "will-change: transform;'></div>"
-      "    <div style='height: 2000px;'></div>"
-      "</div>"
-
-      "<div style='width: 400px; height: 400px; overflow: auto; "
-      "will-change: transform;' >"
-      "    <div id='sticky2' style='position: sticky; top: 0px; width: 100px; "
-      "height: 100px; will-change: transform;'>"
-      "        <div style='position: absolute; top: -50px; left: -50px; "
-      "width: 5px; height: 5px; background: red;'></div></div>"
-      "    <div style='height: 2000px;'></div>"
-      "</div>");
-  GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling();
-
-  CompositedLayerMapping* sticky1 =
-      ToLayoutBlock(GetLayoutObjectByElementId("sticky1"))
-          ->Layer()
-          ->GetCompositedLayerMapping();
-  CompositedLayerMapping* sticky2 =
-      ToLayoutBlock(GetLayoutObjectByElementId("sticky2"))
-          ->Layer()
-          ->GetCompositedLayerMapping();
-
-  // Box offsets the content by the combination of the shadow offset and blur
-  // radius plus an additional pixel of anti-aliasing.
-  ASSERT_TRUE(sticky1);
-  WebLayerStickyPositionConstraint constraint1 =
-      sticky1->MainGraphicsLayer()
-          ->ContentLayer()
-          ->Layer()
-          ->StickyPositionConstraint();
-  EXPECT_EQ(IntPoint(-11, -11),
-            IntPoint(constraint1.parent_relative_sticky_box_offset));
-
-  // Since the nested div will be squashed into the same composited layer the
-  // sticky element is offset by the nested element's offset.
-  ASSERT_TRUE(sticky2);
-  WebLayerStickyPositionConstraint constraint2 =
-      sticky2->MainGraphicsLayer()
-          ->ContentLayer()
-          ->Layer()
-          ->StickyPositionConstraint();
-  EXPECT_EQ(IntPoint(-50, -50),
-            IntPoint(constraint2.parent_relative_sticky_box_offset));
-}
-
-TEST_P(CompositedLayerMappingTest, StickyPositionTableCellContentOffset) {
-  SetBodyInnerHTML(
-      "<style>body {height: 2000px; width: 2000px;} "
-      "td, th { height: 50px; width: 50px; } "
-      "table {border: none; }"
-      "#scroller { overflow: auto; will-change: transform; height: 50px; }"
-      "#sticky { position: sticky; left: 0; will-change: transform; }"
-      "</style>"
-      "<div id='scroller'><table cellspacing='0' cellpadding='0'>"
-      "    <thead><tr><td></td></tr></thead>"
-      "    <tr><td id='sticky'></td></tr>"
-      "</table></div>");
-  GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling();
-
-  CompositedLayerMapping* sticky =
-      ToLayoutBlock(GetLayoutObjectByElementId("sticky"))
-          ->Layer()
-          ->GetCompositedLayerMapping();
-
-  ASSERT_TRUE(sticky);
-  WebLayerStickyPositionConstraint constraint =
-      sticky->MainGraphicsLayer()
-          ->ContentLayer()
-          ->Layer()
-          ->StickyPositionConstraint();
-  EXPECT_EQ(IntPoint(0, 50),
-            IntPoint(constraint.parent_relative_sticky_box_offset));
-}
-
-TEST_P(CompositedLayerMappingTest, StickyPositionEnclosingLayersContentOffset) {
-  // Using backface-visibility: hidden causes the scroller to become composited
-  // without creating a stacking context. This is important as enclosing layer
-  // scroll correction works differently depending on whether you are in a
-  // stacking context or not.
+TEST_P(CompositedLayerMappingTest, StickyPositionMainThreadOffset) {
   SetBodyInnerHTML(
       "<style>.composited { backface-visibility: hidden; }"
       "#scroller { overflow: auto; height: 200px; width: 200px; }"
@@ -1580,16 +1495,13 @@ TEST_P(CompositedLayerMappingTest, StickyPositionEnclosingLayersContentOffset) {
   CompositedLayerMapping* sticky_mapping =
       sticky_layer->GetCompositedLayerMapping();
   ASSERT_TRUE(sticky_mapping);
+  // Main thread offset for sticky should be "StickyTop - InnerPadding".
+  EXPECT_EQ(IntPoint(0, 15), IntPoint(sticky_mapping->MainGraphicsLayer()
+                                          ->ContentLayer()
+                                          ->Layer()
+                                          ->OffsetForStickyPosition()));
 
-  WebLayerStickyPositionConstraint constraint =
-      sticky_mapping->MainGraphicsLayer()
-          ->ContentLayer()
-          ->Layer()
-          ->StickyPositionConstraint();
-  EXPECT_EQ(IntPoint(0, 10),
-            IntPoint(constraint.parent_relative_sticky_box_offset));
-
-  // Now scroll the page - this should not affect the parent-relative offset.
+  // Now scroll the page - this should increase the main thread offset.
   LayoutBoxModelObject* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
@@ -1602,66 +1514,10 @@ TEST_P(CompositedLayerMappingTest, StickyPositionEnclosingLayersContentOffset) {
   GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling();
   EXPECT_FALSE(sticky_layer->NeedsCompositingInputsUpdate());
 
-  constraint = sticky_mapping->MainGraphicsLayer()
-                   ->ContentLayer()
-                   ->Layer()
-                   ->StickyPositionConstraint();
-  EXPECT_EQ(IntPoint(0, 10),
-            IntPoint(constraint.parent_relative_sticky_box_offset));
-}
-
-TEST_P(CompositedLayerMappingTest,
-       StickyPositionEnclosingLayersWithStackingContextContentOffset) {
-  // Using will-change: transform causes the scroller to become a stacking
-  // context. This changes how its descendant layers interact with it; they no
-  // longer have a scrollParent and instead just refer to it only as their
-  // ancestorOverflowLayer.
-  SetBodyInnerHTML(
-      "<style>.composited { will-change: transform; }"
-      "#scroller { overflow: auto; height: 200px; width: 200px; }"
-      ".container { height: 500px; }"
-      ".innerPadding { height: 10px; }"
-      "#sticky { position: sticky; top: 25px; height: 50px; }</style>"
-      "<div id='scroller' class='composited'>"
-      "  <div class='composited container'>"
-      "    <div class='composited container'>"
-      "      <div class='innerPadding'></div>"
-      "      <div id='sticky' class='composited'></div>"
-      "  </div></div></div>");
-
-  PaintLayer* sticky_layer =
-      ToLayoutBox(GetLayoutObjectByElementId("sticky"))->Layer();
-  CompositedLayerMapping* sticky_mapping =
-      sticky_layer->GetCompositedLayerMapping();
-  ASSERT_TRUE(sticky_mapping);
-
-  WebLayerStickyPositionConstraint constraint =
-      sticky_mapping->MainGraphicsLayer()
-          ->ContentLayer()
-          ->Layer()
-          ->StickyPositionConstraint();
-  EXPECT_EQ(IntPoint(0, 10),
-            IntPoint(constraint.parent_relative_sticky_box_offset));
-
-  // Now scroll the page - this should not affect the parent-relative offset.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
-  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
-  scrollable_area->ScrollToAbsolutePosition(
-      FloatPoint(scrollable_area->ScrollPosition().X(), 100));
-  ASSERT_EQ(100.0, scrollable_area->ScrollPosition().Y());
-
-  sticky_layer->SetNeedsCompositingInputsUpdate();
-  EXPECT_TRUE(sticky_layer->NeedsCompositingInputsUpdate());
-  GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling();
-  EXPECT_FALSE(sticky_layer->NeedsCompositingInputsUpdate());
-
-  constraint = sticky_mapping->MainGraphicsLayer()
-                   ->ContentLayer()
-                   ->Layer()
-                   ->StickyPositionConstraint();
-  EXPECT_EQ(IntPoint(0, 10),
-            IntPoint(constraint.parent_relative_sticky_box_offset));
+  EXPECT_EQ(IntPoint(0, 115), IntPoint(sticky_mapping->MainGraphicsLayer()
+                                           ->ContentLayer()
+                                           ->Layer()
+                                           ->OffsetForStickyPosition()));
 }
 
 TEST_P(CompositedLayerMappingTest, StickyPositionNotSquashed) {
@@ -1703,106 +1559,6 @@ TEST_P(CompositedLayerMappingTest, StickyPositionNotSquashed) {
   EXPECT_EQ(kPaintsIntoOwnBacking, sticky1->GetCompositingState());
   EXPECT_EQ(kPaintsIntoOwnBacking, sticky2->GetCompositingState());
   EXPECT_EQ(kPaintsIntoOwnBacking, sticky3->GetCompositingState());
-}
-
-TEST_P(CompositedLayerMappingTest, StickyPositionNestedStickyContentOffset) {
-  SetBodyInnerHTML(
-      "<style>.composited { will-change: transform; }"
-      "#scroller { overflow: auto; height: 200px; width: 200px; }"
-      ".container { height: 500px; }"
-      "#outerSticky { position: sticky; top: 0; height: 100px; }"
-      "#middleSticky { position: sticky; top: 10px; height: 50px; }"
-      "#innerSticky { position: sticky; top: 25px; height: 25px; }</style>"
-      "<div id='scroller' class='composited'>"
-      "  <div style='height: 50px'></div>"
-      "  <div class='composited container'>"
-      "    <div style='height: 10px;'></div>"
-      "    <div id='outerSticky' class='composited'>"
-      "      <div id='middleSticky' class='composited'>"
-      "        <div style='height: 5px;'></div>"
-      "        <div id='innerSticky' class='composited'></div>"
-      "      </div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
-
-  PaintLayer* outer_sticky =
-      ToLayoutBox(GetLayoutObjectByElementId("outerSticky"))->Layer();
-  PaintLayer* middle_sticky =
-      ToLayoutBox(GetLayoutObjectByElementId("middleSticky"))->Layer();
-  PaintLayer* inner_sticky =
-      ToLayoutBox(GetLayoutObjectByElementId("innerSticky"))->Layer();
-
-  WebLayerStickyPositionConstraint outer_sticky_constraint =
-      outer_sticky->GetCompositedLayerMapping()
-          ->MainGraphicsLayer()
-          ->ContentLayer()
-          ->Layer()
-          ->StickyPositionConstraint();
-  WebLayerStickyPositionConstraint middle_sticky_constraint =
-      middle_sticky->GetCompositedLayerMapping()
-          ->MainGraphicsLayer()
-          ->ContentLayer()
-          ->Layer()
-          ->StickyPositionConstraint();
-  WebLayerStickyPositionConstraint inner_sticky_constraint =
-      inner_sticky->GetCompositedLayerMapping()
-          ->MainGraphicsLayer()
-          ->ContentLayer()
-          ->Layer()
-          ->StickyPositionConstraint();
-
-  EXPECT_EQ(
-      IntPoint(0, 10),
-      IntPoint(outer_sticky_constraint.parent_relative_sticky_box_offset));
-  EXPECT_EQ(
-      IntPoint(0, 0),
-      IntPoint(middle_sticky_constraint.parent_relative_sticky_box_offset));
-  EXPECT_EQ(
-      IntPoint(0, 5),
-      IntPoint(inner_sticky_constraint.parent_relative_sticky_box_offset));
-
-  // Scroll the content to engage the sticky elements.
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
-  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
-  scrollable_area->ScrollToAbsolutePosition(
-      FloatPoint(scrollable_area->ScrollPosition().X(), 110));
-  ASSERT_EQ(110.0, scrollable_area->ScrollPosition().Y());
-
-  outer_sticky->SetNeedsCompositingInputsUpdate();
-  middle_sticky->SetNeedsCompositingInputsUpdate();
-  inner_sticky->SetNeedsCompositingInputsUpdate();
-
-  GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling();
-
-  outer_sticky_constraint = outer_sticky->GetCompositedLayerMapping()
-                                ->MainGraphicsLayer()
-                                ->ContentLayer()
-                                ->Layer()
-                                ->StickyPositionConstraint();
-  middle_sticky_constraint = middle_sticky->GetCompositedLayerMapping()
-                                 ->MainGraphicsLayer()
-                                 ->ContentLayer()
-                                 ->Layer()
-                                 ->StickyPositionConstraint();
-  inner_sticky_constraint = inner_sticky->GetCompositedLayerMapping()
-                                ->MainGraphicsLayer()
-                                ->ContentLayer()
-                                ->Layer()
-                                ->StickyPositionConstraint();
-
-  // After scrolling and despite ancestor sticky changes, the offset relative to
-  // the parent layer should remain constant.
-  EXPECT_EQ(
-      IntPoint(0, 10),
-      IntPoint(outer_sticky_constraint.parent_relative_sticky_box_offset));
-  EXPECT_EQ(
-      IntPoint(0, 0),
-      IntPoint(middle_sticky_constraint.parent_relative_sticky_box_offset));
-  EXPECT_EQ(
-      IntPoint(0, 5),
-      IntPoint(inner_sticky_constraint.parent_relative_sticky_box_offset));
 }
 
 }  // namespace blink

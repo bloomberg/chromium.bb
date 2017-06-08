@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
+#include "core/paint/PaintLayer.h"
 
 namespace blink {
 
@@ -86,6 +87,18 @@ FloatSize StickyPositionScrollingConstraints::ComputeStickyOffset(
                                           sticky_offset;
 
   return sticky_offset;
+}
+
+FloatSize StickyPositionScrollingConstraints::GetOffsetForStickyPosition(
+    const StickyConstraintsMap& constraints_map) const {
+  FloatSize nearest_sticky_box_shifting_sticky_box_constraints_offset;
+  if (nearest_sticky_box_shifting_sticky_box_) {
+    nearest_sticky_box_shifting_sticky_box_constraints_offset =
+        constraints_map.at(nearest_sticky_box_shifting_sticky_box_->Layer())
+            .GetTotalStickyBoxStickyOffset();
+  }
+  return total_sticky_box_sticky_offset_ -
+         nearest_sticky_box_shifting_sticky_box_constraints_offset;
 }
 
 }  // namespace blink

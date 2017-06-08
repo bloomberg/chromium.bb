@@ -55,6 +55,11 @@ struct CC_EXPORT TransformNode {
   // transform node. -1 indicates there are no sticky position constraints.
   int sticky_position_constraint_id;
 
+  // This stores the offset applied to the sticky element from main
+  // thread. It's used to calculate the additional sticky position offset from
+  // cc.
+  gfx::Vector2dF offset_for_sticky_position_from_main_thread;
+
   // This is the node with respect to which source_offset is defined. This will
   // not be needed once layerization moves to cc, but is needed in order to
   // efficiently update the transform tree for changes to position in the layer

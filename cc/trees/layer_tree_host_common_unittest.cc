@@ -6340,7 +6340,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionTop) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(10, 20);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(10, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
@@ -6416,7 +6415,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionTopScrollParent) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(10, 20);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(10, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
@@ -6489,7 +6487,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionSubpixelScroll) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(0, 200);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 200, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
@@ -6535,7 +6532,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottom) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(0, 150);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 150, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
@@ -6608,7 +6604,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottomInnerViewportDelta) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(0, 70);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 70, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
@@ -6687,7 +6682,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottomOuterViewportDelta) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(0, 70);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 70, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
@@ -6764,7 +6758,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionLeftRight) {
   sticky_position.is_anchored_right = true;
   sticky_position.left_offset = 10.f;
   sticky_position.right_offset = 10.f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(145, 0);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(145, 0, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
@@ -6867,12 +6860,12 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionMainThreadUpdates) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(10, 20);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(10, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 0, 50, 50);
   sticky_pos->SetStickyPositionConstraint(sticky_position);
+  sticky_pos->SetElementId(LayerIdToElementIdForTesting(sticky_pos->id()));
 
   root->SetBounds(gfx::Size(100, 100));
   container->SetBounds(gfx::Size(100, 100));
@@ -6913,6 +6906,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionMainThreadUpdates) {
   // Now the main thread commits the new position of the sticky element.
   scroller->SetScrollOffset(gfx::ScrollOffset(15, 15));
   sticky_pos->SetPosition(gfx::PointF(10, 25));
+  sticky_pos->SetOffsetForStickyPositionFromMainThread(gfx::Size(0, 5));
   ExecuteCalculateDrawProperties(root.get());
   host()->host_impl()->CreatePendingTree();
   host()->CommitAndCreatePendingTree();
@@ -6959,15 +6953,12 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionCompositedContainer) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
-  // The sticky position layer is only offset by (0, 10) from its parent
-  // layer, this position is used to determine the offset applied by the main
-  // thread.
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(0, 10);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(20, 30, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(20, 20, 30, 30);
   sticky_pos->SetStickyPositionConstraint(sticky_position);
+  sticky_pos->SetElementId(LayerIdToElementIdForTesting(sticky_pos->id()));
 
   root->SetBounds(gfx::Size(100, 100));
   container->SetBounds(gfx::Size(100, 100));
@@ -7010,6 +7001,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionCompositedContainer) {
   // Now the main thread commits the new position of the sticky element.
   scroller->SetScrollOffset(gfx::ScrollOffset(0, 25));
   sticky_pos->SetPosition(gfx::PointF(0, 15));
+  sticky_pos->SetOffsetForStickyPositionFromMainThread(gfx::Size(0, 5));
   ExecuteCalculateDrawProperties(root.get());
   host()->host_impl()->CreatePendingTree();
   host()->CommitAndCreatePendingTree();
@@ -7062,7 +7054,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionScaledStickyBox) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 0.0f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(0, 20);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
@@ -7141,7 +7132,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionScaledContainer) {
   sticky_position.is_sticky = true;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 0.0f;
-  sticky_position.parent_relative_sticky_box_offset = gfx::Point(0, 20);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
@@ -7225,7 +7215,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionNested) {
   outer_sticky_pos.is_sticky = true;
   outer_sticky_pos.is_anchored_top = true;
   outer_sticky_pos.top_offset = 10.0f;
-  outer_sticky_pos.parent_relative_sticky_box_offset = gfx::Point(0, 50);
   outer_sticky_pos.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 50, 10, 50);
   outer_sticky_pos.scroll_container_relative_containing_block_rect =
@@ -7236,7 +7225,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionNested) {
   inner_sticky_pos.is_sticky = true;
   inner_sticky_pos.is_anchored_top = true;
   inner_sticky_pos.top_offset = 25.0f;
-  inner_sticky_pos.parent_relative_sticky_box_offset = gfx::Point(0, 0);
   inner_sticky_pos.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 50, 10, 10);
   inner_sticky_pos.scroll_container_relative_containing_block_rect =

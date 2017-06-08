@@ -598,18 +598,6 @@ void Layer::SetPosition(const gfx::PointF& position) {
           property_trees->transform_tree.UpdateNodeFromOwningLayerId(id())) {
     DCHECK_EQ(transform_tree_index(), transform_node->id);
     transform_node->update_post_local_transform(position, transform_origin());
-    if (transform_node->sticky_position_constraint_id >= 0) {
-      StickyPositionNodeData* sticky_data =
-          property_trees->transform_tree.StickyPositionData(
-              transform_tree_index());
-      // TODO(smcgruer): Pass main thread sticky-shifting offsets of
-      // non-promoted ancestors, or promote all ancestor sticky elements.
-      // See http://crbug.com/702229
-      sticky_data->main_thread_offset =
-          position.OffsetFromOrigin() -
-          sticky_data->constraints.parent_relative_sticky_box_offset
-              .OffsetFromOrigin();
-    }
     transform_node->needs_local_transform_update = true;
     transform_node->transform_changed = true;
     layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
@@ -1119,6 +1107,31 @@ void Layer::SetStickyPositionConstraint(
     return;
   inputs_.sticky_position_constraint = constraint;
   SetPropertyTreesNeedRebuild();
+  SetNeedsCommit();
+}
+
+void Layer::SetOffsetForStickyPositionFromMainThread(const gfx::Size& offset) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.offset_for_sticky_position_from_main_thread == offset)
+    return;
+  inputs_.offset_for_sticky_position_from_main_thread = offset;
+
+  if (!layer_tree_host_)
+    return;
+
+  SetSubtreePropertyChanged();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
+  if (TransformNode* transform_node =
+          property_trees->transform_tree.FindNodeFromElementId(
+              inputs_.element_id)) {
+    DCHECK_EQ(transform_tree_index(), transform_node->id);
+    transform_node->offset_for_sticky_position_from_main_thread =
+        gfx::Vector2dF(offset.width(), offset.height());
+    transform_node->needs_local_transform_update = true;
+    transform_node->transform_changed = true;
+    layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
+  }
+
   SetNeedsCommit();
 }
 

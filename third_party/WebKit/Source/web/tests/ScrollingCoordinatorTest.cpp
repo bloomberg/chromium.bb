@@ -374,8 +374,6 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
     EXPECT_EQ(
         IntRect(100, 100, 200, 200),
         IntRect(constraint.scroll_container_relative_containing_block_rect));
-    EXPECT_EQ(IntPoint(100, 100),
-              IntPoint(constraint.parent_relative_sticky_box_offset));
   }
   {
     Element* element = document->getElementById("div-tr");
@@ -451,8 +449,6 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
     EXPECT_EQ(
         IntRect(100, 100, 200, 200),
         IntRect(constraint.scroll_container_relative_containing_block_rect));
-    EXPECT_EQ(IntPoint(0, 10),
-              IntPoint(constraint.parent_relative_sticky_box_offset));
   }
 }
 

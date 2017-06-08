@@ -51,10 +51,6 @@ struct WebLayerStickyPositionConstraint {
   float top_offset;
   float bottom_offset;
 
-  // This is the layout position of the sticky element before it has been
-  // shifted relative to the enclosing composited layer.
-  WebPoint parent_relative_sticky_box_offset;
-
   // The layout rectangle of the sticky element before it has been shifted
   // to stick.
   WebRect scroll_container_relative_sticky_box_rect;

@@ -328,11 +328,6 @@ struct StickyPositionNodeData {
   int scroll_ancestor;
   LayerStickyPositionConstraint constraints;
 
-  // This is the offset that blink has already applied to counteract the main
-  // thread scroll offset of the scroll ancestor. We need to account for this
-  // by computing the additional offset necessary to keep the element stuck.
-  gfx::Vector2dF main_thread_offset;
-
   // In order to properly compute the sticky offset, we need to know if we have
   // any sticky ancestors both between ourselves and our containing block and
   // between our containing block and the viewport. These ancestors are then

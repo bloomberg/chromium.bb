@@ -378,7 +378,6 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
       scroll_position,
       gfx::SizeF(property_trees.scroll_tree.scroll_clip_layer_bounds(
           scroll_node->id)));
-  gfx::Vector2dF layer_offset(sticky_data->main_thread_offset);
 
   gfx::Vector2dF ancestor_sticky_box_offset;
   if (sticky_data->nearest_node_shifting_sticky_box !=
@@ -406,7 +405,7 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
       gfx::RectF(constraint.scroll_container_relative_containing_block_rect) +
       ancestor_containing_block_offset;
 
-  gfx::Vector2dF sticky_offset(sticky_box_rect.OffsetFromOrigin());
+  gfx::Vector2dF sticky_offset;
 
   // In each of the following cases, we measure the limit which is the point
   // that the element should stick to, clamping on one side to 0 (because sticky
@@ -457,14 +456,12 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
   }
 
   sticky_data->total_sticky_box_sticky_offset =
-      ancestor_sticky_box_offset + sticky_offset -
-      sticky_box_rect.OffsetFromOrigin();
+      ancestor_sticky_box_offset + sticky_offset;
   sticky_data->total_containing_block_sticky_offset =
       ancestor_sticky_box_offset + ancestor_containing_block_offset +
-      sticky_offset - sticky_box_rect.OffsetFromOrigin();
+      sticky_offset;
 
-  return sticky_offset - layer_offset - node->source_to_parent -
-         sticky_box_rect.OffsetFromOrigin();
+  return sticky_offset - node->offset_for_sticky_position_from_main_thread;
 }
 
 void TransformTree::UpdateLocalTransform(TransformNode* node) {
