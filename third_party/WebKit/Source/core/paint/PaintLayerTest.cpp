@@ -610,7 +610,7 @@ TEST_P(PaintLayerTest, CompositingContainerNonStackedFloatUnderStackingInline) {
       "    will-change: transform'>"
       "  <div id='containingBlock' style='position: relative; z-index: 0'>"
       "    <span id='span' style='opacity: 0.9'>"
-      "      <div id='target' style='float: right; overflow: hidden'</div>"
+      "      <div id='target' style='float: right; overflow: hidden'></div>"
       "    </span>"
       "  </div>"
       "</div>");
@@ -635,7 +635,7 @@ TEST_P(PaintLayerTest,
       "    will-change: transform'>"
       "  <div id='containingBlock' style='position: relative; z-index: 0'>"
       "    <span id='span' style='opacity: 0.9; will-change: transform'>"
-      "      <div id='target' style='float: right; overflow: hidden'</div>"
+      "      <div id='target' style='float: right; overflow: hidden'></div>"
       "    </span>"
       "  </div>"
       "</div>");
@@ -1032,6 +1032,40 @@ TEST_P(PaintLayerTest, PaintLayerTransformUpdatedOnStyleTransformAnimation) {
   target_paint_layer->UpdateTransform(old_style.Get(), *new_style);
 
   EXPECT_NE(nullptr, target_paint_layer->Transform());
+}
+
+TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
+  SetBodyInnerHTML(
+      "<span id='span' style='opacity: 0.1'>"
+      "  <div id='target' style='overflow: hidden; float: left;"
+      "      column-width: 10px'>"
+      "  </div>"
+      "</span>");
+
+  auto* span_layer =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"))->Layer();
+  auto* target_element = GetDocument().getElementById("target");
+  auto* target_object = target_element->GetLayoutObject();
+  auto* target_layer = ToLayoutBoxModelObject(target_object)->Layer();
+
+  // Target layer is self painting because it is a multicol container.
+  EXPECT_TRUE(target_layer->IsSelfPaintingLayer());
+  EXPECT_EQ(span_layer, target_layer->CompositingContainer());
+  EXPECT_FALSE(target_layer->NeedsRepaint());
+  EXPECT_FALSE(span_layer->NeedsRepaint());
+
+  // Removing column-width: 10px makes target layer no longer self-painting,
+  // and change its compositing container. The original compositing container
+  // span_layer should be marked NeedsRepaint.
+  target_element->setAttribute(HTMLNames::styleAttr,
+                               "overflow: hidden; float: left");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(target_layer->IsSelfPaintingLayer());
+  EXPECT_EQ(span_layer->Parent(), target_layer->CompositingContainer());
+  EXPECT_TRUE(target_layer->NeedsRepaint());
+  EXPECT_TRUE(target_layer->CompositingContainer()->NeedsRepaint());
+  EXPECT_TRUE(span_layer->NeedsRepaint());
+  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
 }  // namespace blink

@@ -2914,8 +2914,12 @@ void PaintLayer::UpdateSelfPaintingLayer() {
   if (this->IsSelfPaintingLayer() == is_self_painting_layer)
     return;
 
+  // Invalidate the old subsequences which may no longer contain some
+  // descendants of this layer because of the self painting status change.
+  SetNeedsRepaint();
   is_self_painting_layer_ = is_self_painting_layer;
   self_painting_status_changed_ = true;
+  SetNeedsRepaint();
 
   if (PaintLayer* parent = this->Parent()) {
     parent->DirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
