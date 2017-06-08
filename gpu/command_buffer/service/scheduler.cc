@@ -366,9 +366,6 @@ bool Scheduler::ShouldYield(SequenceId sequence_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
 
-  if (should_yield_)
-    return true;
-
   RebuildSchedulingQueue();
 
   if (scheduling_queue_.empty())
@@ -382,9 +379,7 @@ bool Scheduler::ShouldYield(SequenceId sequence_id) {
   DCHECK(next_sequence);
   DCHECK(next_sequence->scheduled());
 
-  should_yield_ = running_sequence->ShouldYieldTo(next_sequence);
-
-  return should_yield_;
+  return running_sequence->ShouldYieldTo(next_sequence);
 }
 
 void Scheduler::SyncTokenFenceReleased(const SyncToken& sync_token,
@@ -455,8 +450,6 @@ void Scheduler::RebuildSchedulingQueue() {
 void Scheduler::RunNextTask() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
-
-  should_yield_ = false;
 
   RebuildSchedulingQueue();
 
