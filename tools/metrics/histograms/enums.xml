@@ -28832,6 +28832,13 @@ from previous Chrome versions.
   <int value="8" label="Other"/>
 </enum>
 
+<enum name="PhotoPickerDialogAction" type="int">
+  <int value="0" label="Cancel"/>
+  <int value="1" label="Photo picked"/>
+  <int value="2" label="New photo"/>
+  <int value="3" label="Use Android picker"/>
+</enum>
+
 <enum name="PhysicalWebActivityReferer" type="int">
   <int value="0" label="REFERER_UNDEFINED"/>
   <int value="1" label="REFERER_NOTIFICATION (Obsolete)"/>

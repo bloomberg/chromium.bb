@@ -14,6 +14,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.os.SystemClock;
 
 import org.chromium.base.Log;
 
@@ -39,6 +40,7 @@ public class DecoderService extends Service {
     static final String KEY_IMAGE_DESCRIPTOR = "image_descriptor";
     static final String KEY_SIZE = "size";
     static final String KEY_SUCCESS = "success";
+    static final String KEY_DECODE_TIME = "decode_time";
 
     // A tag for logging error messages.
     private static final String TAG = "ImageDecoder";
@@ -70,7 +72,11 @@ public class DecoderService extends Service {
                         bundle.putBoolean(KEY_SUCCESS, false);
 
                         FileDescriptor fd = pfd.getFileDescriptor();
+
+                        long begin = SystemClock.elapsedRealtime();
                         Bitmap bitmap = BitmapUtils.decodeBitmapFromFileDescriptor(fd, size);
+                        long decodeTime = SystemClock.elapsedRealtime() - begin;
+
                         try {
                             pfd.close();
                         } catch (IOException e) {
@@ -90,6 +96,7 @@ public class DecoderService extends Service {
                         // ashmem since it's immutable and carry on.
                         bundle.putParcelable(KEY_IMAGE_BITMAP, bitmap);
                         bundle.putBoolean(KEY_SUCCESS, true);
+                        bundle.putLong(KEY_DECODE_TIME, decodeTime);
                         sendReply(client, bundle);
                         bitmap.recycle();
                     } catch (Exception e) {

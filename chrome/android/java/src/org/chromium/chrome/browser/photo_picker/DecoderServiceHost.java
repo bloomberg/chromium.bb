@@ -17,8 +17,11 @@ import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.StrictMode;
+import android.os.SystemClock;
 
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.util.ConversionUtils;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -26,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.LinkedHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class to communicate with the {@link DecoderService}.
@@ -92,6 +96,9 @@ public class DecoderServiceHost {
 
         // The callback to use to communicate the results of the decoding.
         ImageDecodedCallback mCallback;
+
+        // The timestamp for when the request was sent for decoding.
+        long mTimestamp;
 
         public DecoderServiceParams(String filePath, int size, ImageDecodedCallback callback) {
             mFilePath = filePath;
@@ -169,6 +176,7 @@ public class DecoderServiceHost {
     private void dispatchNextDecodeImageRequest() {
         if (mRequests.entrySet().iterator().hasNext()) {
             DecoderServiceParams params = mRequests.entrySet().iterator().next().getValue();
+            params.mTimestamp = SystemClock.elapsedRealtime();
             dispatchDecodeImageRequest(params.mFilePath, params.mSize);
         }
     }
@@ -179,11 +187,25 @@ public class DecoderServiceHost {
      * the request queue).
      * @param filePath The path to the image that was just decoded.
      * @param bitmap The resulting decoded bitmap.
+     * @param decodeTime The length of time it took to decode the bitmap.
      */
-    public void closeRequest(String filePath, Bitmap bitmap) {
+    public void closeRequest(String filePath, Bitmap bitmap, long decodeTime) {
         DecoderServiceParams params = getRequests().get(filePath);
         if (params != null) {
+            long endRpcCall = SystemClock.elapsedRealtime();
+            RecordHistogram.recordTimesHistogram("Android.PhotoPicker.RequestProcessTime",
+                    endRpcCall - params.mTimestamp, TimeUnit.MILLISECONDS);
+
             params.mCallback.imageDecodedCallback(filePath, bitmap);
+
+            if (decodeTime != -1) {
+                RecordHistogram.recordTimesHistogram(
+                        "Android.PhotoPicker.ImageDecodeTime", decodeTime, TimeUnit.MILLISECONDS);
+
+                int sizeInKB = bitmap.getByteCount() / ConversionUtils.BYTES_PER_KILOBYTE;
+                RecordHistogram.recordCustomCountHistogram(
+                        "Android.PhotoPicker.ImageByteCount", sizeInKB, 1, 100000, 50);
+            }
             getRequests().remove(filePath);
         }
         dispatchNextDecodeImageRequest();
@@ -212,7 +234,7 @@ public class DecoderServiceHost {
                 bundle.putParcelable(DecoderService.KEY_FILE_DESCRIPTOR, pfd);
             } catch (IOException e) {
                 Log.e(TAG, "Unable to obtain FileDescriptor: " + e);
-                closeRequest(filePath, null);
+                closeRequest(filePath, null, -1);
             }
         } finally {
             try {
@@ -236,10 +258,10 @@ public class DecoderServiceHost {
             pfd.close();
         } catch (RemoteException e) {
             Log.e(TAG, "Communications failed (Remote): " + e);
-            closeRequest(filePath, null);
+            closeRequest(filePath, null, -1);
         } catch (IOException e) {
             Log.e(TAG, "Communications failed (IO): " + e);
-            closeRequest(filePath, null);
+            closeRequest(filePath, null, -1);
         }
     }
 
@@ -284,7 +306,8 @@ public class DecoderServiceHost {
                     Bitmap bitmap = success
                             ? (Bitmap) payload.getParcelable(DecoderService.KEY_IMAGE_BITMAP)
                             : null;
-                    host.closeRequest(filePath, bitmap);
+                    long decodeTime = payload.getLong(DecoderService.KEY_DECODE_TIME);
+                    host.closeRequest(filePath, bitmap, decodeTime);
                     break;
                 default:
                     super.handleMessage(msg);
