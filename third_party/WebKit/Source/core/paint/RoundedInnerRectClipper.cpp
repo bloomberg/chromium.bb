@@ -76,10 +76,9 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(
         layout_object, clip_type_, LayoutRect::InfiniteIntRect(),
         rounded_rect_clips);
   } else {
-    ClipDisplayItem clip_display_item(layout_object, clip_type_,
-                                      LayoutRect::InfiniteIntRect(),
-                                      rounded_rect_clips);
-    clip_display_item.Replay(paint_info.context);
+    paint_info.context.Save();
+    for (const auto& rrect : rounded_rect_clips)
+      paint_info.context.ClipRoundedRect(rrect);
   }
 }
 
@@ -92,8 +91,7 @@ RoundedInnerRectClipper::~RoundedInnerRectClipper() {
     paint_info_.context.GetPaintController().EndItem<EndClipDisplayItem>(
         layout_object_, end_type);
   } else {
-    EndClipDisplayItem end_clip_display_item(layout_object_, end_type);
-    end_clip_display_item.Replay(paint_info_.context);
+    paint_info_.context.Restore();
   }
 }
 

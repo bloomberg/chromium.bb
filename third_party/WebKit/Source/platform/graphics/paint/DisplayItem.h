@@ -6,6 +6,7 @@
 #define DisplayItem_h
 
 #include "platform/PlatformExport.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/wtf/Allocator.h"
@@ -403,7 +404,9 @@ class PLATFORM_EXPORT PairedBeginDisplayItem : public DisplayItem {
   PairedBeginDisplayItem(const DisplayItemClient& client,
                          Type type,
                          size_t derived_size)
-      : DisplayItem(client, type, derived_size) {}
+      : DisplayItem(client, type, derived_size) {
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  }
 
  private:
   bool IsBegin() const final { return true; }
@@ -414,7 +417,9 @@ class PLATFORM_EXPORT PairedEndDisplayItem : public DisplayItem {
   PairedEndDisplayItem(const DisplayItemClient& client,
                        Type type,
                        size_t derived_size)
-      : DisplayItem(client, type, derived_size) {}
+      : DisplayItem(client, type, derived_size) {
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  }
 
 #if DCHECK_IS_ON()
   bool IsEndAndPairedWith(DisplayItem::Type other_type) const override = 0;
