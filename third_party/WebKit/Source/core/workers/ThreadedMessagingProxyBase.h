@@ -21,11 +21,14 @@ class WorkerInspectorProxy;
 class WorkerThread;
 class WorkerThreadStartupData;
 
+// The base proxy class to talk to Worker/WorkletGlobalScope on a worker thread
+// from the parent context thread (Note that this is always the main thread for
+// now because nested worker is not supported yet).
+//
+// This must be created, accessed and destroyed on the parent context thread.
 class CORE_EXPORT ThreadedMessagingProxyBase {
  public:
   void TerminateGlobalScope();
-
-  virtual void WorkerThreadCreated();
 
   // This method should be called in the destructor of the object which
   // initially created it. This object could either be a Worker or a Worklet.
@@ -43,16 +46,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase {
   // 'virtual' for testing.
   virtual void WorkerThreadTerminated();
 
-  // Accessed only from the parent thread.
-  ExecutionContext* GetExecutionContext() const {
-    return execution_context_.Get();
-  }
-
-  // Accessed from both the parent thread and the worker.
-  ParentFrameTaskRunners* GetParentFrameTaskRunners() {
-    return parent_frame_task_runners_.Get();
-  }
-
   // Number of live messaging proxies, used by leak detection.
   static int ProxyCount();
 
@@ -62,27 +55,26 @@ class CORE_EXPORT ThreadedMessagingProxyBase {
 
   void InitializeWorkerThread(std::unique_ptr<WorkerThreadStartupData>,
                               const KURL& script_url);
-  virtual std::unique_ptr<WorkerThread> CreateWorkerThread(
-      double origin_time) = 0;
+  virtual void WorkerThreadCreated();
 
-  WorkerThread* GetWorkerThread() const { return worker_thread_.get(); }
+  ThreadableLoadingContext* CreateThreadableLoadingContext() const;
+
+  ExecutionContext* GetExecutionContext() const;
+  ParentFrameTaskRunners* GetParentFrameTaskRunners() const;
+  WorkerInspectorProxy* GetWorkerInspectorProxy() const;
+  WorkerThread* GetWorkerThread() const;
 
   bool AskedToTerminate() const { return asked_to_terminate_; }
 
+  // Transfers ownership of the clients to the caller.
   WorkerClients* ReleaseWorkerClients();
-
-  WorkerInspectorProxy* GetWorkerInspectorProxy() const {
-    return worker_inspector_proxy_.Get();
-  }
 
   // Returns true if this is called on the parent context thread.
   bool IsParentContextThread() const;
 
-  ThreadableLoadingContext* GetThreadableLoadingContext();
-
  private:
-  friend class InProcessWorkerMessagingProxyForTest;
-  friend class ThreadedWorkletMessagingProxyForTest;
+  virtual std::unique_ptr<WorkerThread> CreateWorkerThread(
+      double origin_time) = 0;
 
   void ParentObjectDestroyedInternal();
 

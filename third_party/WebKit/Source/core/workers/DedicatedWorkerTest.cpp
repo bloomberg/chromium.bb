@@ -190,6 +190,15 @@ class InProcessWorkerMessagingProxyForTest
     blocking_ = false;
   }
 
+  DedicatedWorkerThreadForTest* GetDedicatedWorkerThread() {
+    return static_cast<DedicatedWorkerThreadForTest*>(GetWorkerThread());
+  }
+
+  unsigned UnconfirmedMessageCount() const {
+    return unconfirmed_message_count_;
+  }
+
+ private:
   std::unique_ptr<WorkerThread> CreateWorkerThread(
       double origin_time) override {
     auto worker_thread =
@@ -203,15 +212,6 @@ class InProcessWorkerMessagingProxyForTest
     return std::move(worker_thread);
   }
 
-  DedicatedWorkerThreadForTest* GetWorkerThread() {
-    return static_cast<DedicatedWorkerThreadForTest*>(worker_thread_.get());
-  }
-
-  unsigned UnconfirmedMessageCount() const {
-    return unconfirmed_message_count_;
-  }
-
- private:
   Persistent<MockWorkerThreadLifecycleObserver>
       mock_worker_thread_lifecycle_observer_;
   RefPtr<SecurityOrigin> security_origin_;
@@ -248,7 +248,7 @@ class DedicatedWorkerTest : public ::testing::Test {
   }
 
   DedicatedWorkerThreadForTest* GetWorkerThread() {
-    return worker_messaging_proxy_->GetWorkerThread();
+    return worker_messaging_proxy_->GetDedicatedWorkerThread();
   }
 
   Document& GetDocument() { return page_->GetDocument(); }

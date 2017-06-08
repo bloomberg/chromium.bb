@@ -18,7 +18,7 @@ class CompositorWorkerMessagingProxy final
  public:
   CompositorWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
 
- protected:
+ private:
   ~CompositorWorkerMessagingProxy() override;
 
   std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) override;

@@ -84,12 +84,6 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
                                                  script_url);
 }
 
-ThreadableLoadingContext*
-ThreadedMessagingProxyBase::GetThreadableLoadingContext() {
-  DCHECK(IsParentContextThread());
-  return ThreadableLoadingContext::Create(*ToDocument(execution_context_));
-}
-
 void ThreadedMessagingProxyBase::CountFeature(WebFeature feature) {
   DCHECK(IsParentContextThread());
   UseCounter::Count(execution_context_, feature);
@@ -172,7 +166,37 @@ void ThreadedMessagingProxyBase::PostMessageToPageInspector(
     worker_inspector_proxy_->DispatchMessageFromWorker(message);
 }
 
+ThreadableLoadingContext*
+ThreadedMessagingProxyBase::CreateThreadableLoadingContext() const {
+  DCHECK(IsParentContextThread());
+  return ThreadableLoadingContext::Create(*ToDocument(execution_context_));
+}
+
+ExecutionContext* ThreadedMessagingProxyBase::GetExecutionContext() const {
+  DCHECK(IsParentContextThread());
+  return execution_context_;
+}
+
+ParentFrameTaskRunners* ThreadedMessagingProxyBase::GetParentFrameTaskRunners()
+    const {
+  DCHECK(IsParentContextThread());
+  return parent_frame_task_runners_;
+}
+
+WorkerInspectorProxy* ThreadedMessagingProxyBase::GetWorkerInspectorProxy()
+    const {
+  DCHECK(IsParentContextThread());
+  return worker_inspector_proxy_;
+}
+
+WorkerThread* ThreadedMessagingProxyBase::GetWorkerThread() const {
+  DCHECK(IsParentContextThread());
+  return worker_thread_.get();
+}
+
 WorkerClients* ThreadedMessagingProxyBase::ReleaseWorkerClients() {
+  DCHECK(IsParentContextThread());
+  DCHECK(worker_clients_);
   return worker_clients_.Release();
 }
 
