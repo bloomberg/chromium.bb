@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/cast_channel/cast_socket_service.h"
+#include "components/cast_channel/cast_socket_service.h"
+#include "components/cast_channel/cast_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "extensions/browser/api/cast_channel/cast_test_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 using testing::SaveArg;
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 
 class CastSocketServiceTest : public testing::Test {
@@ -75,5 +73,3 @@ TEST_F(CastSocketServiceTest, TestRemoveAndGetSocket) {
 }
 
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions

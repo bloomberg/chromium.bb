@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_FRAMER_H_
-#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_FRAMER_H_
+#ifndef COMPONENTS_CAST_CHANNEL_CAST_FRAMER_H_
+#define COMPONENTS_CAST_CHANNEL_CAST_FRAMER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,8 +15,6 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "net/base/io_buffer.h"
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 class CastMessage;
 
@@ -100,6 +98,4 @@ class MessageFramer {
   DISALLOW_COPY_AND_ASSIGN(MessageFramer);
 };
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions
-#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_FRAMER_H_
+#endif  // COMPONENTS_CAST_CHANNEL_CAST_FRAMER_H_

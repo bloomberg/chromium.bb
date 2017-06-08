@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/cast_channel/cast_socket_service_factory.h"
+#include "components/cast_channel/cast_socket_service_factory.h"
 
+#include "components/cast_channel/cast_socket_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "extensions/browser/api/cast_channel/cast_socket_service.h"
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 
 using content::BrowserContext;
@@ -53,5 +51,3 @@ CastSocketServiceFactory::BuildServiceInstanceFor(
 }
 
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions

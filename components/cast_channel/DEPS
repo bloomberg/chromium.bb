@@ -1,0 +1,8 @@
+include_rules = [
+  "+components/cast_certificate",
+  "+components/keyed_service",
+  "+content/public/browser",
+  "+content/public/test",
+  "+crypto",
+  "+net",
+]
