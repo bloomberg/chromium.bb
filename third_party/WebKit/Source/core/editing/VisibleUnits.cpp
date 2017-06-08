@@ -305,19 +305,8 @@ static Node* ParentEditingBoundary(const PositionTemplate<Strategy>& position) {
   return boundary;
 }
 
-enum BoundarySearchContextAvailability {
-  kDontHaveMoreContext,
-  kMayHaveMoreContext
-};
-
-typedef unsigned (*BoundarySearchFunction)(const UChar*,
-                                           unsigned length,
-                                           unsigned offset,
-                                           BoundarySearchContextAvailability,
-                                           bool& need_more_context);
-
 template <typename Strategy>
-static PositionTemplate<Strategy> PreviousBoundary(
+static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
     const VisiblePositionTemplate<Strategy>& c,
     BoundarySearchFunction search_function) {
   DCHECK(c.IsValid()) << c;
@@ -414,7 +403,7 @@ static PositionTemplate<Strategy> PreviousBoundary(
 }
 
 template <typename Strategy>
-static PositionTemplate<Strategy> NextBoundary(
+static PositionTemplate<Strategy> NextBoundaryAlgorithm(
     const VisiblePositionTemplate<Strategy>& c,
     BoundarySearchFunction search_function) {
   DCHECK(c.IsValid()) << c;
@@ -528,167 +517,26 @@ static PositionTemplate<Strategy> NextBoundary(
   return pos;
 }
 
-// ---------
-
-static unsigned StartWordBoundary(
-    const UChar* characters,
-    unsigned length,
-    unsigned offset,
-    BoundarySearchContextAvailability may_have_more_context,
-    bool& need_more_context) {
-  TRACE_EVENT0("blink", "startWordBoundary");
-  DCHECK(offset);
-  if (may_have_more_context &&
-      !StartOfLastWordBoundaryContext(characters, offset)) {
-    need_more_context = true;
-    return 0;
-  }
-  need_more_context = false;
-  int start, end;
-  U16_BACK_1(characters, 0, offset);
-  FindWordBoundary(characters, length, offset, &start, &end);
-  return start;
+Position NextBoundary(const VisiblePosition& visible_position,
+                      BoundarySearchFunction search_function) {
+  return NextBoundaryAlgorithm(visible_position, search_function);
 }
 
-template <typename Strategy>
-static PositionTemplate<Strategy> StartOfWordAlgorithm(
-    const VisiblePositionTemplate<Strategy>& c,
-    EWordSide side) {
-  DCHECK(c.IsValid()) << c;
-  // TODO(yosin) This returns a null VP for c at the start of the document
-  // and |side| == |LeftWordIfOnBoundary|
-  VisiblePositionTemplate<Strategy> p = c;
-  if (side == kRightWordIfOnBoundary) {
-    // at paragraph end, the startofWord is the current position
-    if (IsEndOfParagraph(c))
-      return c.DeepEquivalent();
-
-    p = NextPositionOf(c);
-    if (p.IsNull())
-      return c.DeepEquivalent();
-  }
-  return PreviousBoundary(p, StartWordBoundary);
+PositionInFlatTree NextBoundary(
+    const VisiblePositionInFlatTree& visible_position,
+    BoundarySearchFunction search_function) {
+  return NextBoundaryAlgorithm(visible_position, search_function);
 }
 
-Position StartOfWordPosition(const VisiblePosition& position, EWordSide side) {
-  return StartOfWordAlgorithm<EditingStrategy>(position, side);
+Position PreviousBoundary(const VisiblePosition& visible_position,
+                          BoundarySearchFunction search_function) {
+  return PreviousBoundaryAlgorithm(visible_position, search_function);
 }
 
-VisiblePosition StartOfWord(const VisiblePosition& position, EWordSide side) {
-  return CreateVisiblePosition(StartOfWordPosition(position, side));
-}
-
-PositionInFlatTree StartOfWordPosition(
-    const VisiblePositionInFlatTree& position,
-    EWordSide side) {
-  return StartOfWordAlgorithm<EditingInFlatTreeStrategy>(position, side);
-}
-
-VisiblePositionInFlatTree StartOfWord(const VisiblePositionInFlatTree& position,
-                                      EWordSide side) {
-  return CreateVisiblePosition(StartOfWordPosition(position, side));
-}
-
-static unsigned EndWordBoundary(
-    const UChar* characters,
-    unsigned length,
-    unsigned offset,
-    BoundarySearchContextAvailability may_have_more_context,
-    bool& need_more_context) {
-  DCHECK_LE(offset, length);
-  if (may_have_more_context &&
-      EndOfFirstWordBoundaryContext(characters + offset, length - offset) ==
-          static_cast<int>(length - offset)) {
-    need_more_context = true;
-    return length;
-  }
-  need_more_context = false;
-  return FindWordEndBoundary(characters, length, offset);
-}
-
-template <typename Strategy>
-static PositionTemplate<Strategy> EndOfWordAlgorithm(
-    const VisiblePositionTemplate<Strategy>& c,
-    EWordSide side) {
-  DCHECK(c.IsValid()) << c;
-  VisiblePositionTemplate<Strategy> p = c;
-  if (side == kLeftWordIfOnBoundary) {
-    if (IsStartOfParagraph(c))
-      return c.DeepEquivalent();
-
-    p = PreviousPositionOf(c);
-    if (p.IsNull())
-      return c.DeepEquivalent();
-  } else if (IsEndOfParagraph(c)) {
-    return c.DeepEquivalent();
-  }
-
-  return NextBoundary(p, EndWordBoundary);
-}
-
-Position EndOfWordPosition(const VisiblePosition& position, EWordSide side) {
-  return EndOfWordAlgorithm<EditingStrategy>(position, side);
-}
-
-VisiblePosition EndOfWord(const VisiblePosition& position, EWordSide side) {
-  return CreateVisiblePosition(EndOfWordPosition(position, side),
-                               VP_UPSTREAM_IF_POSSIBLE);
-}
-
-PositionInFlatTree EndOfWordPosition(const VisiblePositionInFlatTree& position,
-                                     EWordSide side) {
-  return EndOfWordAlgorithm<EditingInFlatTreeStrategy>(position, side);
-}
-
-VisiblePositionInFlatTree EndOfWord(const VisiblePositionInFlatTree& position,
-                                    EWordSide side) {
-  return CreateVisiblePosition(EndOfWordPosition(position, side),
-                               VP_UPSTREAM_IF_POSSIBLE);
-}
-
-static unsigned PreviousWordPositionBoundary(
-    const UChar* characters,
-    unsigned length,
-    unsigned offset,
-    BoundarySearchContextAvailability may_have_more_context,
-    bool& need_more_context) {
-  if (may_have_more_context &&
-      !StartOfLastWordBoundaryContext(characters, offset)) {
-    need_more_context = true;
-    return 0;
-  }
-  need_more_context = false;
-  return FindNextWordFromIndex(characters, length, offset, false);
-}
-
-VisiblePosition PreviousWordPosition(const VisiblePosition& c) {
-  DCHECK(c.IsValid()) << c;
-  VisiblePosition prev =
-      CreateVisiblePosition(PreviousBoundary(c, PreviousWordPositionBoundary));
-  return HonorEditingBoundaryAtOrBefore(prev, c.DeepEquivalent());
-}
-
-static unsigned NextWordPositionBoundary(
-    const UChar* characters,
-    unsigned length,
-    unsigned offset,
-    BoundarySearchContextAvailability may_have_more_context,
-    bool& need_more_context) {
-  if (may_have_more_context &&
-      EndOfFirstWordBoundaryContext(characters + offset, length - offset) ==
-          static_cast<int>(length - offset)) {
-    need_more_context = true;
-    return length;
-  }
-  need_more_context = false;
-  return FindNextWordFromIndex(characters, length, offset, true);
-}
-
-VisiblePosition NextWordPosition(const VisiblePosition& c) {
-  DCHECK(c.IsValid()) << c;
-  VisiblePosition next = CreateVisiblePosition(
-      NextBoundary(c, NextWordPositionBoundary), VP_UPSTREAM_IF_POSSIBLE);
-  return HonorEditingBoundaryAtOrAfter(next, c.DeepEquivalent());
+PositionInFlatTree PreviousBoundary(
+    const VisiblePositionInFlatTree& visible_position,
+    BoundarySearchFunction search_function) {
+  return PreviousBoundaryAlgorithm(visible_position, search_function);
 }
 
 // ---------
