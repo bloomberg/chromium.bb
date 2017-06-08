@@ -185,7 +185,7 @@ const char kSavePageAsMhtmlDescription[] =
     "Enables saving pages as MHTML: a single text file containing HTML and "
     "all sub-resources.";
 
-//  Flag and values for MHTML Geenrator options lab.
+//  Flag and values for MHTML Generator options lab.
 
 const char kMhtmlGeneratorOptionName[] = "MHTML Generation Option";
 
@@ -2180,7 +2180,7 @@ const char kMergeKeyCharEventsName[] =
     "event (WM_CHAR).";
 
 const char kMergeKeyCharEventsDescription[] =
-    "If disabled, Chrome will handle WM_KEY* and WM_CHAR separatedly.";
+    "If disabled, Chrome will handle WM_KEY* and WM_CHAR separately.";
 
 const char kUseWinrtMidiApiName[] = "Use Windows Runtime MIDI API";
 
@@ -3103,7 +3103,7 @@ const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
-    "Changes the maximum number af autocomplete matches displayed in the "
+    "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
 
 const char kOmniboxUIVerticalLayoutName[] = "Omnibox UI Vertical Layout";
