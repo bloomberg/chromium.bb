@@ -341,6 +341,24 @@ IntRect ComputeTextRect(const EphemeralRangeInFlatTree&);
 FloatRect ComputeTextFloatRect(const EphemeralRange&);
 
 // Export below functions only for |VisibleUnit| family.
+enum BoundarySearchContextAvailability {
+  kDontHaveMoreContext,
+  kMayHaveMoreContext
+};
+
+typedef unsigned (*BoundarySearchFunction)(const UChar*,
+                                           unsigned length,
+                                           unsigned offset,
+                                           BoundarySearchContextAvailability,
+                                           bool& need_more_context);
+
+Position NextBoundary(const VisiblePosition&, BoundarySearchFunction);
+PositionInFlatTree NextBoundary(const VisiblePositionInFlatTree&,
+                                BoundarySearchFunction);
+Position PreviousBoundary(const VisiblePosition&, BoundarySearchFunction);
+PositionInFlatTree PreviousBoundary(const VisiblePositionInFlatTree&,
+                                    BoundarySearchFunction);
+
 PositionWithAffinity HonorEditingBoundaryAtOrBefore(const PositionWithAffinity&,
                                                     const Position&);
 
