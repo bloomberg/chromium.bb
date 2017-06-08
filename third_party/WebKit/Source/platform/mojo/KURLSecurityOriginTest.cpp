@@ -18,13 +18,13 @@ class UrlTestImpl : public url::mojom::blink::UrlTest {
       : binding_(this, std::move(request)) {}
 
   // UrlTest:
-  void BounceUrl(const KURL& in, const BounceUrlCallback& callback) override {
-    callback.Run(in);
+  void BounceUrl(const KURL& in, BounceUrlCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   void BounceOrigin(const RefPtr<SecurityOrigin>& in,
-                    const BounceOriginCallback& callback) override {
-    callback.Run(in);
+                    BounceOriginCallback callback) override {
+    std::move(callback).Run(in);
   }
 
  private:
