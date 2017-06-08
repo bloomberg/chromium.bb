@@ -229,7 +229,8 @@ public class WebApkValidatorTest {
                 "extra-len-too-large.apk", "fcomment-too-large.apk", "no-cd.apk", "no-comment.apk",
                 "no-eocd.apk", "no-lfh.apk", "not-an.apk", "too-many-metainf.apk", "truncated.apk",
                 "zeros.apk", "zeros-at-end.apk", "block-before-first.apk", "block-at-end.apk",
-                "block-before-eocd.apk", "block-before-cd.apk", "v2-signed-too-large.apk",
+                "block-before-eocd.apk", "block-before-cd.apk", "block-middle.apk",
+                "v2-signed-too-large.apk",
         };
         String packageName = "com.webapk.a9c419502bb98fcb7";
         Signature[] signature = new Signature[] {new Signature(SIGNATURE_1)};
