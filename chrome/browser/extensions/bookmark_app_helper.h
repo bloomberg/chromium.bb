@@ -109,8 +109,8 @@ class BookmarkAppHelper : public content::NotificationObserver {
   void CreateFromAppBanner(const CreateBookmarkAppCallback& callback,
                            const content::Manifest& manifest);
 
- private:
-  friend class TestBookmarkAppHelper;
+ protected:
+  // Protected methods for testing.
 
   // Called by the WebContents when the manifest has been downloaded. If there
   // is no manifest, or the WebContents is destroyed before the manifest could
@@ -119,9 +119,11 @@ class BookmarkAppHelper : public content::NotificationObserver {
                         const content::Manifest& manifest);
 
   // Performs post icon download tasks including installing the bookmark app.
-  void OnIconsDownloaded(bool success,
-                         const std::map<GURL, std::vector<SkBitmap> >& bitmaps);
+  virtual void OnIconsDownloaded(
+      bool success,
+      const std::map<GURL, std::vector<SkBitmap>>& bitmaps);
 
+ private:
   // Called after the bubble has been shown, and the user has either accepted or
   // the dialog was dismissed.
   void OnBubbleCompleted(bool user_accepted,

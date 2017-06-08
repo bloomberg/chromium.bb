@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -56,21 +56,11 @@ class WebAppInfoImageSource : public gfx::ImageSkiaSource {
 
 BookmarkAppConfirmationView::~BookmarkAppConfirmationView() {}
 
-// static
-void BookmarkAppConfirmationView::CreateAndShow(
-    gfx::NativeWindow parent,
-    const WebApplicationInfo& web_app_info,
-    const BrowserWindow::ShowBookmarkAppBubbleCallback& callback) {
-  constrained_window::CreateBrowserModalDialogViews(
-      new BookmarkAppConfirmationView(web_app_info, callback), parent)
-      ->Show();
-}
-
 BookmarkAppConfirmationView::BookmarkAppConfirmationView(
     const WebApplicationInfo& web_app_info,
-    const BrowserWindow::ShowBookmarkAppBubbleCallback& callback)
+    chrome::ShowBookmarkAppDialogCallback callback)
     : web_app_info_(web_app_info),
-      callback_(callback),
+      callback_(std::move(callback)),
       open_as_window_checkbox_(nullptr),
       title_tf_(nullptr) {
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
@@ -109,12 +99,16 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
   layout->AddPaddingRow(
       0, layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL));
 
-  open_as_window_checkbox_ = new views::Checkbox(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
-  open_as_window_checkbox_->SetChecked(web_app_info_.open_as_window);
-  layout->StartRow(0, column_set_id);
-  layout->SkipColumns(1);
-  layout->AddView(open_as_window_checkbox_);
+  // When CanHostedAppsOpenInWindows() returns false, do not show the open as
+  // window checkbox to avoid confusing users.
+  if (extensions::util::CanHostedAppsOpenInWindows()) {
+    open_as_window_checkbox_ = new views::Checkbox(
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
+    open_as_window_checkbox_->SetChecked(web_app_info_.open_as_window);
+    layout->StartRow(0, column_set_id);
+    layout->SkipColumns(1);
+    layout->AddView(open_as_window_checkbox_);
+  }
 
   title_tf_->SelectAll(true);
   chrome::RecordDialogCreation(
@@ -145,12 +139,13 @@ bool BookmarkAppConfirmationView::ShouldShowCloseButton() const {
 
 void BookmarkAppConfirmationView::WindowClosing() {
   if (!callback_.is_null())
-    callback_.Run(false, web_app_info_);
+    std::move(callback_).Run(false, web_app_info_);
 }
 
 bool BookmarkAppConfirmationView::Accept() {
   web_app_info_.title = GetTrimmedTitle();
-  web_app_info_.open_as_window = open_as_window_checkbox_->checked();
+  web_app_info_.open_as_window =
+      open_as_window_checkbox_ && open_as_window_checkbox_->checked();
   base::ResetAndReturn(&callback_).Run(true, web_app_info_);
   return true;
 }
@@ -184,3 +179,16 @@ base::string16 BookmarkAppConfirmationView::GetTrimmedTitle() const {
   base::TrimWhitespace(title, base::TRIM_ALL, &title);
   return title;
 }
+
+namespace chrome {
+
+void ShowBookmarkAppDialog(gfx::NativeWindow parent,
+                           const WebApplicationInfo& web_app_info,
+                           ShowBookmarkAppDialogCallback callback) {
+  constrained_window::CreateBrowserModalDialogViews(
+      new BookmarkAppConfirmationView(web_app_info, std::move(callback)),
+      parent)
+      ->Show();
+}
+
+}  // namespace chrome

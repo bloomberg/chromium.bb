@@ -277,8 +277,6 @@ void TestIconGeneration(int icon_size,
                                             expected_resized);
 }
 
-}  // namespace
-
 class TestBookmarkAppHelper : public BookmarkAppHelper {
  public:
   TestBookmarkAppHelper(ExtensionService* service,
@@ -310,6 +308,8 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
 
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppHelper);
 };
+
+}  // namespace
 
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   WebApplicationInfo web_app_info;

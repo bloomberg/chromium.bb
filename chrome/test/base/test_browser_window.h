@@ -91,9 +91,6 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsToolbarShowing() const override;
   void ShowUpdateChromeDialog() override {}
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
-  void ShowBookmarkAppBubble(
-      const WebApplicationInfo& web_app_info,
-      const ShowBookmarkAppBubbleCallback& callback) override {}
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,

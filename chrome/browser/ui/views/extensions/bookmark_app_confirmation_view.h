@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/web_application_info.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -22,18 +22,11 @@ class Textfield;
 class BookmarkAppConfirmationView : public views::DialogDelegateView,
                                     public views::TextfieldController {
  public:
+  BookmarkAppConfirmationView(const WebApplicationInfo& web_app_info,
+                              chrome::ShowBookmarkAppDialogCallback callback);
   ~BookmarkAppConfirmationView() override;
 
-  static void CreateAndShow(
-      gfx::NativeWindow parent,
-      const WebApplicationInfo& web_app_info,
-      const BrowserWindow::ShowBookmarkAppBubbleCallback& callback);
-
  private:
-  BookmarkAppConfirmationView(
-      const WebApplicationInfo& web_app_info,
-      const BrowserWindow::ShowBookmarkAppBubbleCallback& callback);
-
   // Overridden from views::WidgetDelegate:
   views::View* GetInitiallyFocusedView() override;
   ui::ModalType GetModalType() const override;
@@ -63,7 +56,7 @@ class BookmarkAppConfirmationView : public views::DialogDelegateView,
   WebApplicationInfo web_app_info_;
 
   // The callback to be invoked when the dialog is completed.
-  BrowserWindow::ShowBookmarkAppBubbleCallback callback_;
+  chrome::ShowBookmarkAppDialogCallback callback_;
 
   // Checkbox to launch as a window.
   views::Checkbox* open_as_window_checkbox_;

@@ -14,7 +14,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/metrics/browser_window_histogram_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,7 +50,6 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -80,58 +78,6 @@
 
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
-
-namespace {
-
-// These UI constants are used in BrowserWindowCocoa::ShowBookmarkAppBubble.
-// Used for defining the layout of the NSAlert and NSTextField within the
-// accessory view.
-const int kAppTextFieldVerticalSpacing = 2;
-const int kAppTextFieldWidth = 200;
-const int kAppTextFieldHeight = 22;
-const int kBookmarkAppBubbleViewWidth = 200;
-const int kBookmarkAppBubbleViewHeight = 46;
-
-const int kIconPreviewTargetSize = 128;
-
-base::string16 TrimText(NSString* controlText) {
-  base::string16 text = base::SysNSStringToUTF16(controlText);
-  base::TrimWhitespace(text, base::TRIM_ALL, &text);
-  return text;
-}
-
-}  // namespace
-
-@interface TextRequiringDelegate : NSObject<NSTextFieldDelegate> {
- @private
-  // Disable |control_| when text changes to just whitespace or empty string.
-  NSControl* control_;
-}
-- (id)initWithControl:(NSControl*)control text:(NSString*)text;
-- (void)controlTextDidChange:(NSNotification*)notification;
-@end
-
-@interface TextRequiringDelegate ()
-- (void)validateText:(NSString*)text;
-@end
-
-@implementation TextRequiringDelegate
-- (id)initWithControl:(NSControl*)control text:(NSString*)text {
-  if ((self = [super init])) {
-    control_ = control;
-    [self validateText:text];
-  }
-  return self;
-}
-
-- (void)controlTextDidChange:(NSNotification*)notification {
-  [self validateText:[[notification object] stringValue]];
-}
-
-- (void)validateText:(NSString*)text {
-  [control_ setEnabled:TrimText(text).empty() ? NO : YES];
-}
-@end
 
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller)
@@ -554,83 +500,6 @@ void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
                                             bool already_bookmarked) {
   [controller_ showBookmarkBubbleForURL:url
                       alreadyBookmarked:(already_bookmarked ? YES : NO)];
-}
-
-void BrowserWindowCocoa::ShowBookmarkAppBubble(
-    const WebApplicationInfo& web_app_info,
-    const ShowBookmarkAppBubbleCallback& callback) {
-  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
-  [alert setMessageText:l10n_util::GetNSString(
-      IDS_ADD_TO_APPLICATIONS_BUBBLE_TITLE)];
-  [alert setAlertStyle:NSInformationalAlertStyle];
-
-  NSButton* continue_button =
-      [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
-  [continue_button setKeyEquivalent:kKeyEquivalentReturn];
-  NSButton* cancel_button =
-      [alert addButtonWithTitle:l10n_util::GetNSString(IDS_CANCEL)];
-  [cancel_button setKeyEquivalent:kKeyEquivalentEscape];
-
-  base::scoped_nsobject<NSButton> open_as_window_checkbox(
-      [[NSButton alloc] initWithFrame:NSZeroRect]);
-  [open_as_window_checkbox setButtonType:NSSwitchButton];
-  [open_as_window_checkbox
-      setTitle:l10n_util::GetNSString(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW)];
-  [open_as_window_checkbox setState:web_app_info.open_as_window];
-  [open_as_window_checkbox sizeToFit];
-
-  base::scoped_nsobject<NSTextField> app_title([[NSTextField alloc]
-      initWithFrame:NSMakeRect(0, kAppTextFieldHeight +
-                                      kAppTextFieldVerticalSpacing,
-                               kAppTextFieldWidth, kAppTextFieldHeight)]);
-  NSString* original_title = SysUTF16ToNSString(web_app_info.title);
-  [[app_title cell] setWraps:NO];
-  [[app_title cell] setScrollable:YES];
-  [app_title setStringValue:original_title];
-  base::scoped_nsobject<TextRequiringDelegate> delegate(
-      [[TextRequiringDelegate alloc] initWithControl:continue_button
-                                                text:[app_title stringValue]]);
-  [app_title setDelegate:delegate];
-
-  base::scoped_nsobject<NSView> view([[NSView alloc]
-      initWithFrame:NSMakeRect(0, 0, kBookmarkAppBubbleViewWidth,
-                               kBookmarkAppBubbleViewHeight)]);
-
-  // When CanHostedAppsOpenInWindows() returns false, do not show the open as
-  // window checkbox to avoid confusing users.
-  if (extensions::util::CanHostedAppsOpenInWindows())
-    [view addSubview:open_as_window_checkbox];
-  [view addSubview:app_title];
-  [alert setAccessoryView:view];
-
-  // Find the image with target size.
-  // Assumes that the icons are sorted in ascending order of size.
-  if (!web_app_info.icons.empty()) {
-    for (const WebApplicationInfo::IconInfo& info : web_app_info.icons) {
-      if (info.width == kIconPreviewTargetSize &&
-          info.height == kIconPreviewTargetSize) {
-        gfx::Image icon_image = gfx::Image::CreateFrom1xBitmap(info.data);
-        [alert setIcon:icon_image.ToNSImage()];
-        break;
-      }
-    }
-  }
-
-  NSInteger response = [alert runModal];
-
-  // Prevent |app_title| from accessing |delegate| after it's destroyed.
-  [app_title setDelegate:nil];
-
-  if (response == NSAlertFirstButtonReturn) {
-    WebApplicationInfo updated_info = web_app_info;
-    updated_info.open_as_window = [open_as_window_checkbox state] == NSOnState;
-    updated_info.title = TrimText([app_title stringValue]);
-
-    callback.Run(true, updated_info);
-    return;
-  }
-
-  callback.Run(false, web_app_info);
 }
 
 autofill::SaveCardBubbleView* BrowserWindowCocoa::ShowSaveCreditCardBubble(
