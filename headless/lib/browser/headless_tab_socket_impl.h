@@ -26,7 +26,7 @@ class HeadlessTabSocketImpl : public HeadlessTabSocket, public TabSocket {
   // TabSocket implementation:
   void SendMessageToEmbedder(const std::string& message) override;
   void AwaitNextMessageFromEmbedder(
-      const AwaitNextMessageFromEmbedderCallback& callback) override;
+      AwaitNextMessageFromEmbedderCallback callback) override;
 
   void CreateMojoService(mojo::InterfaceRequest<TabSocket> request);
 

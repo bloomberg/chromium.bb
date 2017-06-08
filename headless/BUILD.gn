@@ -106,9 +106,6 @@ mojom("tab_socket") {
   sources = [
     "lib/tab_socket.mojom",
   ]
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 }
 
 grit("resources") {
