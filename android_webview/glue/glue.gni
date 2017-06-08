@@ -10,6 +10,7 @@ glue_library_deps = [
   "//android_webview:android_webview_platform_services_java",
   "//base:base_java",
   "//components/autofill/android:autofill_java",
+  "//components/autofill/android:provider_java",
   "//content/public/android:content_java",
   "//net/android:net_java",
   "//ui/android:ui_java",
