@@ -18,6 +18,12 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}
+}
+
 namespace content {
 
 // This is a wrapper around a leveldb::mojom::LevelDBDatabase. Multiple
@@ -77,6 +83,10 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   // Clears the in-memory cache if currently no changes are pending. If there
   // are uncommitted changes this method does nothing.
   void PurgeMemory();
+
+  // Adds memory statistics to |pmd| for memory infra.
+  void OnMemoryDump(const std::string& name,
+                    base::trace_event::ProcessMemoryDump* pmd);
 
   // LevelDBWrapper:
   void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;

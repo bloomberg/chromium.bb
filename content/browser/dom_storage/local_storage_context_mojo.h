@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,18 +31,20 @@ struct LocalStorageUsageInfo;
 
 // Used for mojo-based LocalStorage implementation (can be disabled with
 // --disable-mojo-local-storage for now).
-// Created on the UI thread, but all further methods are called on the IO
-// thread. Furthermore since destruction of this class can involve asynchronous
-// steps, it can only be deleted by calling ShutdownAndDelete (on the IO
-// thread),
-class CONTENT_EXPORT LocalStorageContextMojo {
+// Created on the UI thread, but all further methods are called on the task
+// runner passed to the constructor. Furthermore since destruction of this class
+// can involve asynchronous steps, it can only be deleted by calling
+// ShutdownAndDelete (on the correct task runner).
+class CONTENT_EXPORT LocalStorageContextMojo
+    : public base::trace_event::MemoryDumpProvider {
  public:
   using GetStorageUsageCallback =
       base::OnceCallback<void(std::vector<LocalStorageUsageInfo>)>;
 
   LocalStorageContextMojo(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       service_manager::Connector* connector,
-      scoped_refptr<DOMStorageTaskRunner> task_runner,
+      scoped_refptr<DOMStorageTaskRunner> legacy_task_runner,
       const base::FilePath& old_localstorage_path,
       const base::FilePath& subdirectory,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
@@ -73,6 +76,10 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   void SetDatabaseForTesting(
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
 
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
   // Converts a string from the old storage format to the new storage format.
   static std::vector<uint8_t> MigrateString(const base::string16& input);
 
@@ -81,7 +88,7 @@ class CONTENT_EXPORT LocalStorageContextMojo {
 
   class LevelDBWrapperHolder;
 
-  ~LocalStorageContextMojo();
+  ~LocalStorageContextMojo() override;
 
   // Runs |callback| immediately if already connected to a database, otherwise
   // delays running |callback| untill after a connection has been established.

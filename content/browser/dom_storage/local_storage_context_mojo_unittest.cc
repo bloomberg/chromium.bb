@@ -136,8 +136,8 @@ class LocalStorageContextMojoTest : public testing::Test {
   LocalStorageContextMojo* context() {
     if (!context_) {
       context_ = new LocalStorageContextMojo(
-          nullptr, task_runner_, temp_path_.GetPath(),
-          base::FilePath(FILE_PATH_LITERAL("leveldb")),
+          base::ThreadTaskRunnerHandle::Get(), nullptr, task_runner_,
+          temp_path_.GetPath(), base::FilePath(FILE_PATH_LITERAL("leveldb")),
           special_storage_policy());
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database_ptr;
       leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
@@ -778,7 +778,8 @@ class LocalStorageContextMojoTestWithService
 
 TEST_F(LocalStorageContextMojoTestWithService, InMemory) {
   auto* context = new LocalStorageContextMojo(
-      connector(), nullptr, base::FilePath(), base::FilePath(), nullptr);
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
+      base::FilePath(), base::FilePath(), nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -799,7 +800,8 @@ TEST_F(LocalStorageContextMojoTestWithService, InMemory) {
   EXPECT_TRUE(FirstEntryInDir().empty());
 
   // Re-opening should get fresh data.
-  context = new LocalStorageContextMojo(connector(), nullptr, base::FilePath(),
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
                                         base::FilePath(), nullptr);
   EXPECT_FALSE(DoTestGet(context, key, &result));
   context->ShutdownAndDelete();
@@ -807,8 +809,8 @@ TEST_F(LocalStorageContextMojoTestWithService, InMemory) {
 
 TEST_F(LocalStorageContextMojoTestWithService, InMemoryInvalidPath) {
   auto* context = new LocalStorageContextMojo(
-      connector(), nullptr, base::FilePath(),
-      base::FilePath(FILE_PATH_LITERAL("../../")), nullptr);
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("../../")), nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -832,7 +834,8 @@ TEST_F(LocalStorageContextMojoTestWithService, InMemoryInvalidPath) {
 TEST_F(LocalStorageContextMojoTestWithService, OnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
   auto* context = new LocalStorageContextMojo(
-      connector(), nullptr, base::FilePath(), test_path, nullptr);
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
+      base::FilePath(), test_path, nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -849,7 +852,8 @@ TEST_F(LocalStorageContextMojoTestWithService, OnDisk) {
   EXPECT_EQ(test_path, FirstEntryInDir().BaseName());
 
   // Should be able to re-open.
-  context = new LocalStorageContextMojo(connector(), nullptr, base::FilePath(),
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
                                         test_path, nullptr);
   EXPECT_TRUE(DoTestGet(context, key, &result));
   EXPECT_EQ(value, result);
@@ -861,7 +865,8 @@ TEST_F(LocalStorageContextMojoTestWithService, InvalidVersionOnDisk) {
 
   // Create context and add some data to it.
   auto* context = new LocalStorageContextMojo(
-      connector(), nullptr, base::FilePath(), test_path, nullptr);
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
+      base::FilePath(), test_path, nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -888,7 +893,8 @@ TEST_F(LocalStorageContextMojoTestWithService, InvalidVersionOnDisk) {
   }
 
   // Make sure data is gone.
-  context = new LocalStorageContextMojo(connector(), nullptr, base::FilePath(),
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
                                         test_path, nullptr);
   EXPECT_FALSE(DoTestGet(context, key, &result));
 
@@ -900,7 +906,8 @@ TEST_F(LocalStorageContextMojoTestWithService, InvalidVersionOnDisk) {
   base::RunLoop().RunUntilIdle();
 
   // Data should have been preserved now.
-  context = new LocalStorageContextMojo(connector(), nullptr, base::FilePath(),
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
                                         test_path, nullptr);
   EXPECT_TRUE(DoTestGet(context, key, &result));
   EXPECT_EQ(value, result);
@@ -912,7 +919,8 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
 
   // Create context and add some data to it.
   auto* context = new LocalStorageContextMojo(
-      connector(), nullptr, base::FilePath(), test_path, nullptr);
+      base::ThreadTaskRunnerHandle::Get(), connector(), nullptr,
+      base::FilePath(), test_path, nullptr);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -936,7 +944,8 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
   }
 
   // Make sure data is gone.
-  context = new LocalStorageContextMojo(connector(), nullptr, base::FilePath(),
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
                                         test_path, nullptr);
   EXPECT_FALSE(DoTestGet(context, key, &result));
 
@@ -948,7 +957,8 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
   base::RunLoop().RunUntilIdle();
 
   // Data should have been preserved now.
-  context = new LocalStorageContextMojo(connector(), nullptr, base::FilePath(),
+  context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
+                                        connector(), nullptr, base::FilePath(),
                                         test_path, nullptr);
   EXPECT_TRUE(DoTestGet(context, key, &result));
   EXPECT_EQ(value, result);
