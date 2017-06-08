@@ -64,16 +64,6 @@ bool RestoreOnStartupPolicyHandler::CheckPolicySettings(
                            IDS_POLICY_OVERRIDDEN,
                            key::kRestoreOnStartup);
         }
-
-        const base::Value* exit_policy =
-            policies.GetValue(key::kClearSiteDataOnExit);
-        bool exit_value;
-        if (exit_policy && exit_policy->GetAsBoolean(&exit_value) &&
-            exit_value) {
-          errors->AddError(key::kClearSiteDataOnExit,
-                           IDS_POLICY_OVERRIDDEN,
-                           key::kRestoreOnStartup);
-        }
         break;
       }
       case SessionStartupPref::kPrefValueURLs:
