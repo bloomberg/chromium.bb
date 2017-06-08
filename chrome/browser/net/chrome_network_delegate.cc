@@ -82,6 +82,8 @@ using content::ResourceRequestInfo;
 
 namespace {
 
+bool g_access_to_all_files_enabled = false;
+
 const char kDNTHeader[] = "DNT";
 
 // Gets called when the extensions finish work on the URL. If the extensions
@@ -451,12 +453,8 @@ bool ChromeNetworkDelegate::OnCanAccessFile(
     const net::URLRequest& request,
     const base::FilePath& original_path,
     const base::FilePath& absolute_path) const {
-#if defined(OS_CHROMEOS)
-  // browser_tests and interactive_ui_tests rely on the ability to open any
-  // files via file: scheme.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+  if (g_access_to_all_files_enabled)
     return true;
-#endif
 
 #if defined(OS_ANDROID)
   // Android's whitelist relies on symbolic links (ex. /sdcard is whitelisted
@@ -532,6 +530,11 @@ bool ChromeNetworkDelegate::IsAccessAllowed(
   DVLOG(1) << "File access denied - " << path.value().c_str();
   return false;
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+}
+
+// static
+void ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(bool enabled) {
+  g_access_to_all_files_enabled = enabled;
 }
 
 bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
