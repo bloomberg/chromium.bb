@@ -21,7 +21,10 @@
         -webkit-margin-end: 16px;
       }
 
-      span {
+      /* Using ">" operator to ensure that this CSS rule will not accidentally
+       * be applied to a search highlight span (which is inserted dynamically if
+       * when search "hit" occurs within this element. */
+      :host > span {
         -webkit-margin-end: 8px;
         flex: 1;
       }
