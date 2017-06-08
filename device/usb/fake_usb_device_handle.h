@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef DEVICE_USB_FAKE_USB_DEVICE_HANDLE_H_
+#define DEVICE_USB_FAKE_USB_DEVICE_HANDLE_H_
+
 #include "device/usb/usb_device_handle.h"
 
 namespace device {
@@ -79,3 +82,5 @@ class FakeUsbDeviceHandle : public UsbDeviceHandle {
 };
 
 }  // namespace device
+
+#endif  // DEVICE_USB_FAKE_USB_DEVICE_HANDLE_H_
