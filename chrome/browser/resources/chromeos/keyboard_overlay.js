@@ -255,6 +255,14 @@ function topRowKeysAreFunctionKeys() {
 }
 
 /**
+ * Tests if voice interaction is enabled.
+ * @return {boolean} True if voice interaction feature is enabled.
+ */
+function isVoiceInteractionEnabled() {
+  return loadTimeData.getBoolean('voiceInteractionEnabled');
+}
+
+/**
  * Converts a single hex number to a character.
  * @param {string} hex Hexadecimal string.
  * @return {string} Unicode values of hexadecimal string.
@@ -569,6 +577,11 @@ function update(modifiers, normModifiers) {
     }
 
     classes.push('keyboard-overlay-key-background');
+
+    if (shortcutId == 'keyboardOverlayVoiceInteraction' &&
+        !isVoiceInteractionEnabled()) {
+      continue;
+    }
 
     if (shortcutId) {
       classes.push('is-shortcut');

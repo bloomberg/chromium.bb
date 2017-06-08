@@ -59,15 +59,12 @@ bool IsDisplayUIScalingEnabled(content::WebContents* web_contents) {
 // keyboardOverlayData['shortcut'], so it can not be tested by this test.
 // 2. If it has debug modifiers: ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
 // ui::EF_SHIFT_DOWN
-// 3. If the shortcut action is device specific so it should not be shown
-// on the keyboard overlay, i.e. START_VOICE_INTERACTION.
 bool ShouldSkip(const ash::AcceleratorData& accelerator) {
   return accelerator.keycode == ui::VKEY_MENU ||
          accelerator.keycode == ui::VKEY_LWIN ||
          accelerator.modifiers == ui::EF_NONE ||
          accelerator.modifiers ==
-             (ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN) ||
-         accelerator.action == ash::START_VOICE_INTERACTION;
+             (ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
 }
 
 std::string KeyboardCodeToLabel(const ash::AcceleratorData& accelerator,

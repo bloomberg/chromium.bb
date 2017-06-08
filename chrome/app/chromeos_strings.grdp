@@ -4426,6 +4426,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_DOWN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'down' arrow key.">
     down
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_VOICE_INTERACTION" desc="The text in the keyboard overlay for voice interaction shortcut">
+    Start voice interaction
+  </message>
   <!-- BEGIN GENERATED KEYBOARD OVERLAY STRINGS -->
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_SHELF_ITEM" desc="The text in the keyboard overlay to explain the shortcut (Open the last shelf item).">
     Last shelf item
