@@ -446,6 +446,15 @@ public class LocaleManager {
     }
 
     /**
+     * @return Whether we still have to check for whether search engine dialog is necessary.
+     */
+    public boolean needToCheckForSearchEnginePromo() {
+        int state = ContextUtils.getAppSharedPreferences().getInt(
+                KEY_SEARCH_ENGINE_PROMO_SHOW_STATE, SEARCH_ENGINE_PROMO_SHOULD_CHECK);
+        return state == SEARCH_ENGINE_PROMO_SHOULD_CHECK;
+    }
+
+    /**
      * Record any locale based metrics related with search. Recorded per search.
      * @param isFromSearchWidget Whether the search was performed from the search widget.
      * @param url Url for the search made.

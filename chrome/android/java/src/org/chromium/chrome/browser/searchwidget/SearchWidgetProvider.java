@@ -389,9 +389,12 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     }
 
     static boolean shouldShowFullString() {
-        Intent freIntent = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                getDelegate().getContext(), null, false);
-        return freIntent == null;
+        boolean freIsNotNecessary = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
+                                            getDelegate().getContext(), null, false)
+                == null;
+        boolean noNeedToCheckForSearchDialog =
+                !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
+        return freIsNotNecessary && noNeedToCheckForSearchDialog;
     }
 
     /** Sets an {@link SearchWidgetProviderDelegate} to interact with. */
