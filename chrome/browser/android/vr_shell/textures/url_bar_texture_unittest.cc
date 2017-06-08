@@ -54,6 +54,19 @@ class TestUrlBarTexture : public UrlBarTexture {
     SetForceFontFallbackFailureForTesting(force);
   }
 
+  size_t GetNumberOfFontFallbacksForURL(const GURL& gurl) {
+    url::Parsed parsed;
+    const base::string16 text = url_formatter::FormatUrl(
+        gurl, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
+        &parsed, nullptr, nullptr);
+
+    gfx::FontList font_list;
+    if (!GetFontList(kUrlHeight, text, &font_list))
+      return 0;
+
+    return font_list.GetFonts().size();
+  }
+
   // Reports the last unsupported mode that was encountered. Returns kCount if
   // no unsupported mode was encountered.
   UiUnsupportedMode unsupported_mode() const { return unsupported_mode_; }
@@ -113,6 +126,12 @@ class UrlEmphasisTest : public testing::Test {
   testing::InSequence in_sequence_;
   MockRenderText mock_;
 };
+
+TEST(UrlBarTextureTest, WillNotFailOnNonAsciiURLs) {
+  TestUrlBarTexture texture;
+  EXPECT_EQ(3lu, texture.GetNumberOfFontFallbacksForURL(
+                     GURL("http://中央大学.ಠ_ಠ.tw/")));
+}
 
 TEST_F(UrlEmphasisTest, SecureHttpsHost) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
