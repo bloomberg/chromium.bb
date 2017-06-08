@@ -2145,6 +2145,8 @@ split_static_library("ui") {
       "views/sad_tab_view.h",
       "views/tab_contents/chrome_web_contents_view_delegate_views.cc",
       "views/tab_contents/chrome_web_contents_view_delegate_views.h",
+      "views/theme_profile_key.cc",
+      "views/theme_profile_key.h",
       "window_sizer/window_sizer_aura.cc",
     ]
     deps += [
