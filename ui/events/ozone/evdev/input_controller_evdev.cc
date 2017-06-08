@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -85,9 +86,9 @@ void InputControllerEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
   keyboard_->GetAutoRepeatRate(delay, interval);
 }
 
-bool InputControllerEvdev::SetCurrentLayoutByName(
+void InputControllerEvdev::SetCurrentLayoutByName(
     const std::string& layout_name) {
-  return keyboard_->SetCurrentLayoutByName(layout_name);
+  keyboard_->SetCurrentLayoutByName(layout_name);
 }
 
 void InputControllerEvdev::SetInternalTouchpadEnabled(bool enabled) {
@@ -159,20 +160,19 @@ void InputControllerEvdev::SetTapToClickPaused(bool state) {
 }
 
 void InputControllerEvdev::GetTouchDeviceStatus(
-    const GetTouchDeviceStatusReply& reply) {
+    GetTouchDeviceStatusReply reply) {
   if (input_device_factory_)
-    input_device_factory_->GetTouchDeviceStatus(reply);
+    input_device_factory_->GetTouchDeviceStatus(std::move(reply));
   else
-    reply.Run(base::WrapUnique(new std::string));
+    std::move(reply).Run(std::string());
 }
 
-void InputControllerEvdev::GetTouchEventLog(
-    const base::FilePath& out_dir,
-    const GetTouchEventLogReply& reply) {
+void InputControllerEvdev::GetTouchEventLog(const base::FilePath& out_dir,
+                                            GetTouchEventLogReply reply) {
   if (input_device_factory_)
-    input_device_factory_->GetTouchEventLog(out_dir, reply);
+    input_device_factory_->GetTouchEventLog(out_dir, std::move(reply));
   else
-    reply.Run(base::WrapUnique(new std::vector<base::FilePath>));
+    std::move(reply).Run(std::vector<base::FilePath>());
 }
 
 void InputControllerEvdev::ScheduleUpdateDeviceSettings() {

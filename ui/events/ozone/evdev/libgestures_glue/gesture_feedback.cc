@@ -173,8 +173,8 @@ void DumpTouchEventLog(
         converters,
     GesturePropertyProvider* provider,
     const base::FilePath& out_dir,
-    std::unique_ptr<std::vector<base::FilePath>> log_paths,
-    const GetTouchEventLogReply& reply) {
+    InputController::GetTouchEventLogReply reply) {
+  std::vector<base::FilePath> log_paths;
   // Get device ids.
   std::vector<int> ids;
   provider->GetDeviceIdsByType(DT_ALL, &ids);
@@ -215,9 +215,9 @@ void DumpTouchEventLog(
     // Historically, we compress touchpad/mouse logs with gzip before tarring
     // them up. We DONT compress touchscreen logs though.
     log_paths_to_be_compressed->push_back(gesture_log_filename);
-    log_paths->push_back(base::FilePath(gesture_log_filename));
+    log_paths.push_back(base::FilePath(gesture_log_filename));
     log_paths_to_be_compressed->push_back(evdev_log_filename);
-    log_paths->push_back(base::FilePath(evdev_log_filename));
+    log_paths.push_back(base::FilePath(evdev_log_filename));
   }
 
   for (const auto& converter_pair : converters) {
@@ -228,7 +228,7 @@ void DumpTouchEventLog(
           out_dir, "evdev_input_events_", now, converter->id());
       base::Move(base::FilePath(kInputEventsLogFile),
                  base::FilePath(touch_evdev_log_filename));
-      log_paths->push_back(base::FilePath(touch_evdev_log_filename));
+      log_paths.push_back(base::FilePath(touch_evdev_log_filename));
     }
   }
 
@@ -238,7 +238,7 @@ void DumpTouchEventLog(
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&CompressDumpedLog, base::Passed(&log_paths_to_be_compressed)),
-      base::Bind(reply, base::Passed(&log_paths)));
+      base::BindOnce(std::move(reply), log_paths));
 }
 
 }  // namespace ui
