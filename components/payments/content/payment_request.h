@@ -99,8 +99,10 @@ class PaymentRequest : public mojom::PaymentRequest,
   PaymentRequestState* state() { return state_.get(); }
 
  private:
-  void RecordFirstCompletionStatus(
-      JourneyLogger::CompletionStatus completion_status);
+  // Only records the abort reason if it's the first completion for this Payment
+  // Request. This is necessary since the aborts cascade into one another with
+  // the first one being the most precise.
+  void RecordFirstAbortReason(JourneyLogger::AbortReason completion_status);
 
   content::WebContents* web_contents_;
   std::unique_ptr<PaymentRequestDelegate> delegate_;
@@ -121,7 +123,8 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   JourneyLogger journey_logger_;
 
-  bool has_recorded_abort_reason_ = false;
+  // Whether a completion was already recorded for this Payment Request.
+  bool has_recorded_completion_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };
