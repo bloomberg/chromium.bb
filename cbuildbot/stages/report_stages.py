@@ -178,6 +178,32 @@ def GetChildConfigListMetadata(child_configs, config_status_map):
   return child_config_list
 
 
+def _UploadAndLinkGomaLogIfNecessary(
+    stage_name, goma_dir, goma_client_json, goma_tmp_dir):
+  """Uploads the logs for goma, if needed. Also create a link to the visualizer.
+
+  If |goma_tmp_dir| is given, |goma_dir| and |goma_client_json| must not be
+  None.
+
+  Args:
+    stage_name: Name of the stage where goma is used.
+    goma_dir: Path to goma installed directory.
+    goma_client_json: Path to the service account json file.
+    goma_tmp_dir: Goma's working directory.
+  """
+  if not goma_tmp_dir:
+    return
+
+  goma = goma_util.Goma(goma_dir, goma_client_json, goma_tmp_dir=goma_tmp_dir)
+  # Just in case, stop the goma. E.g. In case of timeout, we do not want to
+  # keep goma compiler_proxy running.
+  goma.Stop()
+  goma_url = goma.UploadLogs()
+  if goma_url:
+    logging.PrintBuildbotLink(
+        stage_name + ' Goma compiler_proxy log', goma_url)
+
+
 class BuildStartStage(generic_stages.BuilderStage):
   """The first stage to run.
 
@@ -999,17 +1025,18 @@ class ReportStage(generic_stages.BuilderStage,
     results_lib.Results.Report(
         sys.stdout, current_version=(self._run.attrs.release_tag or ''))
 
-    # Upload goma log if used. Currently BuildPackage uses this.
-    # TODO(hidehiko): Report another log set, when SimpleChrome starts to use
-    # goma on bots, too.
-    goma_tmp_dir = self._run.attrs.metadata.GetValueWithDefault('goma_tmp_dir')
-    if goma_tmp_dir:
-      goma = goma_util.Goma(self._run.options.goma_dir,
-                            self._run.options.goma_client_json,
-                            goma_tmp_dir=goma_tmp_dir)
-      goma_url = goma.UploadLogs()
-      if goma_url:
-        logging.PrintBuildbotLink('Goma compiler_proxy log', goma_url)
+    # Upload goma log if used for BuildPackage and TestSimpleChrome.
+    _UploadAndLinkGomaLogIfNecessary(
+        'BuildPackages',
+        self._run.options.goma_dir,
+        self._run.options.goma_client_json,
+        self._run.attrs.metadata.GetValueWithDefault('goma_tmp_dir'))
+    _UploadAndLinkGomaLogIfNecessary(
+        'TestSimpleChromeWorkflow',
+        self._run.options.goma_dir,
+        self._run.options.goma_client_json,
+        self._run.attrs.metadata.GetValueWithDefault(
+            'goma_tmp_dir_for_simple_chrome'))
 
     if db:
       status_for_db = final_status

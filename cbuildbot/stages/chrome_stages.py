@@ -11,18 +11,19 @@ import multiprocessing
 import os
 
 from chromite.cbuildbot import commands
-from chromite.lib import constants
-from chromite.lib import failures_lib
+from chromite.cbuildbot import goma_util
 from chromite.cbuildbot import manifest_version
-from chromite.lib import results_lib
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
+from chromite.lib import results_lib
 
 MASK_CHANGES_ERROR_SNIPPET = 'The following mask changes are necessary'
 CHROMEPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
@@ -241,7 +242,16 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
     logging.info('ARGS.GN=\n%s',
                  osutils.ReadFile(os.path.join(self.out_board_dir, 'args.gn')))
 
-  def _BuildChrome(self, sdk_cmd):
+  def _ShouldEnableGoma(self):
+    # Enable goma if 1) Chrome actually needs to be built, 2) goma is
+    # available, 3) AFDO is not enabled, and 4) config says goma should be used
+    # to build Chrome.
+    # TODO(hidehiko): goma executor crashed on server if AFDO was used.
+    # The fix should have been in, so enable AFDO after extra testing.
+    return (self._run.options.managed_chrome and self._run.options.goma_dir and
+            not self._run.config.afdo_use and self._run.config.chrome_sdk_goma)
+
+  def _BuildChrome(self, sdk_cmd, goma):
     """Use the generated SDK to build Chrome."""
 
     # Validate fetching of the SDK and setting everything up.
@@ -257,7 +267,14 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
     self._VerifySDKEnvironment()
 
     # Build chromium.
-    sdk_cmd.Ninja()
+    if goma:
+      goma.Start()
+    try:
+      sdk_cmd.Ninja(
+          run_args={'extra_env': goma.GetExtraEnv() if goma else None})
+    finally:
+      if goma:
+        goma.Stop()
 
   def _TestDeploy(self, sdk_cmd):
     """Test SDK deployment."""
@@ -274,11 +291,19 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
       cache_dir = os.path.join(tempdir, 'cache')
       extra_args = ['--cwd', self.chrome_src, '--sdk-path',
                     self.archive_path]
+      if self._ShouldEnableGoma():
+        goma = goma_util.Goma(self._run.options.goma_dir,
+                              self._run.options.goma_client_json)
+        extra_args.extend(['--nostart-goma', '--gomadir', goma.goma_dir])
+        self._run.attrs.metadata.UpdateWithDict(
+            {'goma_tmp_dir_for_simple_chrome': goma.goma_tmp_dir})
+      else:
+        goma = None
+
       sdk_cmd = commands.ChromeSDK(
           self._build_root, self._current_board, chrome_src=self.chrome_src,
-          goma=self._run.config.chrome_sdk_goma,
-          extra_args=extra_args, cache_dir=cache_dir)
-      self._BuildChrome(sdk_cmd)
+          goma=bool(goma), extra_args=extra_args, cache_dir=cache_dir)
+      self._BuildChrome(sdk_cmd, goma)
       self._TestDeploy(sdk_cmd)
 
 

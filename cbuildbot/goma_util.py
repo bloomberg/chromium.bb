@@ -108,6 +108,17 @@ class Goma(object):
     """Path to goma's log directory."""
     return os.path.join(self.goma_tmp_dir, 'log_dir')
 
+  def GetExtraEnv(self):
+    """Extra env vars set to use goma."""
+    result = dict(
+        Goma._DEFAULT_ENV_VARS,
+        GOMA_DIR=self.goma_dir,
+        GOMA_TMP_DIR=self.goma_tmp_dir,
+        GLOG_log_dir=self.goma_log_dir)
+    if self.goma_client_json:
+      result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = self.goma_client_json
+    return result
+
   def GetChrootExtraEnv(self):
     """Extra env vars set to use goma inside chroot."""
     # Note: GOMA_DIR and GOMA_SERVICE_ACCOUNT_JSON_FILE in chroot is hardcoded.
@@ -121,6 +132,19 @@ class Goma(object):
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = (
           '/creds/service_accounts/service-account-goma-client.json')
     return result
+
+  def _RunGomaCtl(self, command):
+    goma_ctl = os.path.join(self.goma_dir, 'goma_ctl.py')
+    cros_build_lib.RunCommand(
+        ['python', goma_ctl, command], extra_env=self.GetExtraEnv())
+
+  def Start(self):
+    """Starts goma compiler proxy."""
+    self._RunGomaCtl('start')
+
+  def Stop(self):
+    """Stops goma compiler proxy."""
+    self._RunGomaCtl('stop')
 
   def UploadLogs(self):
     """Uploads INFO files related to goma.
