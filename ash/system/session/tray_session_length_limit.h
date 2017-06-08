@@ -35,6 +35,7 @@ class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
   void OnDefaultViewDestroyed() override;
 
   // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnSessionLengthLimitChanged() override;
 
  private:

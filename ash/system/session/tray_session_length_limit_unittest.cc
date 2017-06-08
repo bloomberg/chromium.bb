@@ -164,5 +164,24 @@ TEST_F(TraySessionLengthLimitTest, RemoveNotification) {
                   .should_make_spoken_feedback_for_popup_updates);
 }
 
+class TraySessionLengthLimitLoginTest : public TraySessionLengthLimitTest {
+ public:
+  TraySessionLengthLimitLoginTest() { set_start_session(false); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TraySessionLengthLimitLoginTest);
+};
+
+TEST_F(TraySessionLengthLimitLoginTest, NotificationShownAfterLogin) {
+  UpdateSessionLengthLimitInMin(15);
+
+  // No notifications before login.
+  EXPECT_FALSE(GetNotification());
+
+  // Notification is shown after login.
+  SetSessionStarted(true);
+  EXPECT_TRUE(GetNotification());
+}
+
 }  // namespace test
 }  // namespace ash
