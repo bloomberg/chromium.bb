@@ -1127,9 +1127,12 @@ void DocumentThreadableLoader::LoadRequestSync(
   if (!client_)
     return;
 
-  RefPtr<const SharedBuffer> data = resource->ResourceBuffer();
-  if (data)
-    HandleReceivedData(data->Data(), data->size());
+  if (RefPtr<const SharedBuffer> data = resource->ResourceBuffer()) {
+    data->ForEachSegment([this](const char* segment, size_t segment_size,
+                                size_t segment_offset) {
+      HandleReceivedData(segment, segment_size);
+    });
+  }
 
   // The client may cancel this loader in handleReceivedData(). In such a case,
   // skip the rest.
