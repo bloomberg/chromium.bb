@@ -27,8 +27,9 @@ namespace app_list {
 
 namespace {
 
-const int kGroupSpacing = 6;
-const int kTopPadding = 8;
+constexpr int kGroupSpacing = 6;
+constexpr int kTopPadding = 8;
+constexpr int kFullscreenHeight = 440;
 
 // The z-height of the search box and cards in this view.
 const int kSearchResultZHeight = 1;
@@ -46,12 +47,17 @@ class SearchCardView : public views::View {
     AddChildView(content_view);
   }
 
+  // views::View overrides:
+  const char* GetClassName() const override { return "SearchCardView"; }
+
   ~SearchCardView() override {}
 };
 
 }  // namespace
 
-SearchResultPageView::SearchResultPageView() : selected_index_(0) {
+SearchResultPageView::SearchResultPageView()
+    : selected_index_(0),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   gfx::ShadowValue shadow = GetShadowForZHeight(kSearchResultZHeight);
   std::unique_ptr<views::Border> border(new views::ShadowBorder(shadow));
 
@@ -213,10 +219,11 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
     AppListModel::State state) const {
-  gfx::Rect onscreen_bounds =
-      features::IsAnswerCardEnabled() && !features::IsAnswerCardDarkRunEnabled()
-          ? GetFullContentsBounds()
-          : GetDefaultContentsBounds();
+  gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
+
+  if (is_fullscreen_app_list_enabled_)
+    onscreen_bounds.set_height(kFullscreenHeight);
+
   switch (state) {
     case AppListModel::STATE_SEARCH_RESULTS:
       return onscreen_bounds;
