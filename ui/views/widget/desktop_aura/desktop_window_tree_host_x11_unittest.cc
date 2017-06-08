@@ -31,6 +31,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -59,7 +60,7 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
   bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     std::vector<Atom> hints;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &hints)) {
-      auto it = std::find(hints.cbegin(), hints.cend(), ui::GetAtom(hint_));
+      auto it = std::find(hints.cbegin(), hints.cend(), gfx::GetAtom(hint_));
       bool hint_set = (it != hints.cend());
       return hint_set != wait_till_set_;
     }
@@ -238,7 +239,7 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
     EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 205, 15));
   }
 
-  if (ui::WmSupportsHint(ui::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"))) {
+  if (ui::WmSupportsHint(gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"))) {
     // The shape should be changed to a rectangle which fills the entire screen
     // when |widget1| is maximized.
     {
@@ -315,7 +316,7 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
 // Test that the widget ignores changes in fullscreen state initiated by the
 // window manager (e.g. via a window manager accelerator key).
 TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
-  if (!ui::WmSupportsHint(ui::GetAtom("_NET_WM_STATE_FULLSCREEN")))
+  if (!ui::WmSupportsHint(gfx::GetAtom("_NET_WM_STATE_FULLSCREEN")))
     return;
 
   std::unique_ptr<Widget> widget = CreateWidget(new ShapedWidgetDelegate());
@@ -340,10 +341,10 @@ TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
     memset(&xclient, 0, sizeof(xclient));
     xclient.type = ClientMessage;
     xclient.xclient.window = xid;
-    xclient.xclient.message_type = ui::GetAtom("_NET_WM_STATE");
+    xclient.xclient.message_type = gfx::GetAtom("_NET_WM_STATE");
     xclient.xclient.format = 32;
     xclient.xclient.data.l[0] = 0;
-    xclient.xclient.data.l[1] = ui::GetAtom("_NET_WM_STATE_FULLSCREEN");
+    xclient.xclient.data.l[1] = gfx::GetAtom("_NET_WM_STATE_FULLSCREEN");
     xclient.xclient.data.l[2] = 0;
     xclient.xclient.data.l[3] = 1;
     xclient.xclient.data.l[4] = 0;
@@ -380,7 +381,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
   // Minimize by sending _NET_WM_STATE_HIDDEN
   {
     std::vector< ::Atom> atom_list;
-    atom_list.push_back(ui::GetAtom("_NET_WM_STATE_HIDDEN"));
+    atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
     ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
 
     XEvent xevent;
@@ -390,7 +391,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
     xevent.xproperty.send_event = 1;
     xevent.xproperty.display = display;
     xevent.xproperty.window = xid;
-    xevent.xproperty.atom = ui::GetAtom("_NET_WM_STATE");
+    xevent.xproperty.atom = gfx::GetAtom("_NET_WM_STATE");
     xevent.xproperty.state = 0;
     XSendEvent(display, DefaultRootWindow(display), False,
         SubstructureRedirectMask | SubstructureNotifyMask,
@@ -404,7 +405,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
   // Show from minimized by sending _NET_WM_STATE_FOCUSED
   {
     std::vector< ::Atom> atom_list;
-    atom_list.push_back(ui::GetAtom("_NET_WM_STATE_FOCUSED"));
+    atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_FOCUSED"));
     ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
 
     XEvent xevent;
@@ -414,7 +415,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
     xevent.xproperty.send_event = 1;
     xevent.xproperty.display = display;
     xevent.xproperty.window = xid;
-    xevent.xproperty.atom = ui::GetAtom("_NET_WM_STATE");
+    xevent.xproperty.atom = gfx::GetAtom("_NET_WM_STATE");
     xevent.xproperty.state = 0;
     XSendEvent(display, DefaultRootWindow(display), False,
         SubstructureRedirectMask | SubstructureNotifyMask,

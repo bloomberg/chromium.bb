@@ -15,6 +15,7 @@
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 
 #include <X11/Xlib.h>
@@ -34,8 +35,8 @@ class SelectionRequestorTest : public testing::Test {
   void SendSelectionNotify(XAtom selection,
                            XAtom target,
                            const std::string& value) {
-    ui::SetStringProperty(x_window_, requestor_->x_property_, GetAtom("STRING"),
-                          value);
+    ui::SetStringProperty(x_window_, requestor_->x_property_,
+                          gfx::GetAtom("STRING"), value);
 
     XEvent xev;
     xev.type = SelectionNotify;
@@ -106,7 +107,7 @@ void PerformBlockingConvertSelection(SelectionRequestor* requestor,
       selection, target, &out_data, &out_data_items, &out_type));
   EXPECT_EQ(expected_data, ui::RefCountedMemoryToString(out_data));
   EXPECT_EQ(expected_data.size(), out_data_items);
-  EXPECT_EQ(GetAtom("STRING"), out_type);
+  EXPECT_EQ(gfx::GetAtom("STRING"), out_type);
 }
 
 }  // namespace
@@ -117,10 +118,10 @@ TEST_F(SelectionRequestorTest, NestedRequests) {
   // Assume that |selection| will have no owner. If there is an owner, the owner
   // will set the property passed into the XConvertSelection() request which is
   // undesirable.
-  XAtom selection = GetAtom("FAKE_SELECTION");
+  XAtom selection = gfx::GetAtom("FAKE_SELECTION");
 
-  XAtom target1 = GetAtom("TARGET1");
-  XAtom target2 = GetAtom("TARGET2");
+  XAtom target1 = gfx::GetAtom("TARGET1");
+  XAtom target2 = gfx::GetAtom("TARGET2");
 
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   loop->task_runner()->PostTask(

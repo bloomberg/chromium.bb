@@ -27,6 +27,7 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -235,7 +236,7 @@ bool DesktopScreenX11::CanDispatchEvent(const ui::PlatformEvent& event) {
          event->type - xrandr_event_base_ == RRNotify ||
          (event->type == PropertyNotify &&
           event->xproperty.window == x_root_window_ &&
-          event->xproperty.atom == ui::GetAtom("_NET_WORKAREA"));
+          event->xproperty.atom == gfx::GetAtom("_NET_WORKAREA"));
 }
 
 uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
@@ -244,7 +245,7 @@ uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
     XRRUpdateConfiguration(event);
   } else if (event->type - xrandr_event_base_ == RRNotify ||
              (event->type == PropertyNotify &&
-              event->xproperty.atom == ui::GetAtom("_NET_WORKAREA"))) {
+              event->xproperty.atom == gfx::GetAtom("_NET_WORKAREA"))) {
     // There's some sort of observer dispatch going on here, but I don't think
     // it's the screen's?
     if (configure_timer_.get() && configure_timer_->IsRunning()) {

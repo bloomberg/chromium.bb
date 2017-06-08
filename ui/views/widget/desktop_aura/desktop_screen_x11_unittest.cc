@@ -15,10 +15,10 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font_render_params.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -304,7 +304,7 @@ TEST_F(DesktopScreenX11Test, GetDisplayNearestWindow) {
 
 // Tests that the window is maximized in response to a double click event.
 TEST_F(DesktopScreenX11Test, DoubleClickHeaderMaximizes) {
-  if (!ui::WmSupportsHint(ui::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT")))
+  if (!ui::WmSupportsHint(gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT")))
     return;
 
   Widget* widget = BuildTopLevelDesktopWidget(gfx::Rect(0, 0, 100, 100), true);

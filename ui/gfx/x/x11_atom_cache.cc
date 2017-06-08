@@ -156,7 +156,11 @@ const char* kAtomsToCache[] = {"Abs Dbl End Timestamp",
 
 }  // namespace
 
-namespace ui {
+namespace gfx {
+
+XAtom GetAtom(const char* name) {
+  return X11AtomCache::GetInstance()->GetAtom(name);
+}
 
 X11AtomCache* X11AtomCache::GetInstance() {
   return base::Singleton<X11AtomCache>::get();
@@ -191,4 +195,4 @@ XAtom X11AtomCache::GetAtom(const char* name) const {
   return it->second;
 }
 
-}  // namespace ui
+}  // namespace gfx

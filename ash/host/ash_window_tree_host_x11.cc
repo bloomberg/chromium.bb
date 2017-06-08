@@ -217,7 +217,7 @@ void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {
   if (!ui::IsXInput2Available())
     return;
   // Temporarily pause tap-to-click when the cursor is hidden.
-  Atom prop = ui::X11AtomCache::GetInstance()->GetAtom("Tap Paused");
+  Atom prop = gfx::GetAtom("Tap Paused");
   unsigned char value = state;
   const XIDeviceList& dev_list =
       ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(xdisplay());

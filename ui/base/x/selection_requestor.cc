@@ -13,6 +13,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -62,7 +63,7 @@ SelectionRequestor::SelectionRequestor(XDisplay* x_display,
       x_property_(None),
       dispatcher_(dispatcher),
       current_request_index_(0u) {
-  x_property_ = GetAtom(kChromeSelection);
+  x_property_ = gfx::GetAtom(kChromeSelection);
 }
 
 SelectionRequestor::~SelectionRequestor() {}
@@ -162,7 +163,7 @@ void SelectionRequestor::OnSelectionNotify(const XEvent& event) {
   if (event_property != None)
     XDeleteProperty(x_display_, x_window_, event_property);
 
-  if (request->out_type == GetAtom(kIncr)) {
+  if (request->out_type == gfx::GetAtom(kIncr)) {
     request->data_sent_incrementally = true;
     request->out_data.clear();
     request->out_data_items = 0u;

@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/x/selection_utils.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 
@@ -144,7 +144,7 @@ void SelectionOwner::OnSelectionRequest(const XEvent& event) {
   reply.xselection.property = None;  // Indicates failure
   reply.xselection.time = event.xselectionrequest.time;
 
-  if (requested_target == GetAtom(kMultiple)) {
+  if (requested_target == gfx::GetAtom(kMultiple)) {
     // The contents of |requested_property| should be a list of
     // <target,property> pairs.
     std::vector<std::pair<XAtom,XAtom> > conversions;
@@ -164,8 +164,8 @@ void SelectionOwner::OnSelectionRequest(const XEvent& event) {
       // Set the property to indicate which conversions succeeded. This matches
       // what GTK does.
       XChangeProperty(
-          x_display_, requestor, requested_property, GetAtom(kAtomPair), 32,
-          PropModeReplace,
+          x_display_, requestor, requested_property, gfx::GetAtom(kAtomPair),
+          32, PropModeReplace,
           reinterpret_cast<const unsigned char*>(&conversion_results.front()),
           conversion_results.size());
 
@@ -206,10 +206,10 @@ void SelectionOwner::OnPropertyEvent(const XEvent& event) {
 bool SelectionOwner::ProcessTarget(XAtom target,
                                    XID requestor,
                                    XAtom property) {
-  XAtom multiple_atom = GetAtom(kMultiple);
-  XAtom save_targets_atom = GetAtom(kSaveTargets);
-  XAtom targets_atom = GetAtom(kTargets);
-  XAtom timestamp_atom = GetAtom(kTimestamp);
+  XAtom multiple_atom = gfx::GetAtom(kMultiple);
+  XAtom save_targets_atom = gfx::GetAtom(kSaveTargets);
+  XAtom targets_atom = gfx::GetAtom(kTargets);
+  XAtom timestamp_atom = gfx::GetAtom(kTimestamp);
 
   if (target == multiple_atom || target == save_targets_atom)
     return false;
@@ -246,7 +246,7 @@ bool SelectionOwner::ProcessTarget(XAtom target,
       // the size of X requests. Notify the selection requestor that the data
       // will be sent incrementally by returning data of type "INCR".
       long length = it->second->size();
-      XChangeProperty(x_display_, requestor, property, GetAtom(kIncr), 32,
+      XChangeProperty(x_display_, requestor, property, gfx::GetAtom(kIncr), 32,
                       PropModeReplace,
                       reinterpret_cast<unsigned char*>(&length), 1);
 

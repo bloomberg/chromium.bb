@@ -24,6 +24,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/test/platform_event_waiter.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_connection.h"
 #include "ui/views/test/test_desktop_screen_x11.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
@@ -45,7 +46,7 @@ unsigned button_down_mask = 0;
 
 // Returns atom that indidates that the XEvent is marker event.
 Atom MarkerEventAtom() {
-  return ui::GetAtom("marker_event");
+  return gfx::GetAtom("marker_event");
 }
 
 // Returns true when the event is a marker event.

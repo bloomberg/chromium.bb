@@ -17,7 +17,10 @@ template <typename T>
 struct DefaultSingletonTraits;
 }
 
-namespace ui {
+namespace gfx {
+
+// Gets the X atom for default display corresponding to atom_name.
+GFX_EXPORT XAtom GetAtom(const char* atom_name);
 
 // Pre-caches all Atoms on first use to minimize roundtrips to the X11
 // server. By default, GetAtom() will CHECK() that atoms accessed through
@@ -27,14 +30,15 @@ class GFX_EXPORT X11AtomCache {
  public:
   static X11AtomCache* GetInstance();
 
-  // Returns the pre-interned Atom without having to go to the x server.
-  XAtom GetAtom(const char*) const;
-
  private:
+  friend XAtom GetAtom(const char* atom_name);
   friend struct base::DefaultSingletonTraits<X11AtomCache>;
 
   X11AtomCache();
   ~X11AtomCache();
+
+  // Returns the pre-interned Atom without having to go to the x server.
+  XAtom GetAtom(const char*) const;
 
   XDisplay* xdisplay_;
 
@@ -43,6 +47,6 @@ class GFX_EXPORT X11AtomCache {
   DISALLOW_COPY_AND_ASSIGN(X11AtomCache);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_GFX_X_X11_ATOM_CACHE_H_

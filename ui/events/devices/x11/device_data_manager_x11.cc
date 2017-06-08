@@ -243,7 +243,7 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
   // Find all the touchpad devices.
   const XDeviceList& dev_list =
       ui::DeviceListCacheX11::GetInstance()->GetXDeviceList(display);
-  Atom xi_touchpad = ui::X11AtomCache::GetInstance()->GetAtom(XI_TOUCHPAD);
+  Atom xi_touchpad = gfx::GetAtom(XI_TOUCHPAD);
   for (int i = 0; i < dev_list.count; ++i)
     if (dev_list[i].type == xi_touchpad)
       touchpads_[dev_list[i].id] = true;
@@ -256,8 +256,7 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
       ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(display);
   Atom atoms[DT_LAST_ENTRY];
   for (int data_type = 0; data_type < DT_LAST_ENTRY; ++data_type)
-    atoms[data_type] =
-        ui::X11AtomCache::GetInstance()->GetAtom(kCachedAtoms[data_type]);
+    atoms[data_type] = gfx::GetAtom(kCachedAtoms[data_type]);
 
   for (int i = 0; i < info_list.count; ++i) {
     const XIDeviceInfo& info = info_list[i];
