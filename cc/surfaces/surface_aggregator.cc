@@ -787,6 +787,7 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
   std::vector<SurfaceId> surfaces_to_copy(
       prewalk_result->undrawn_surfaces.begin(),
       prewalk_result->undrawn_surfaces.end());
+  DCHECK(referenced_surfaces_.empty());
 
   for (size_t i = 0; i < surfaces_to_copy.size(); i++) {
     SurfaceId surface_id = surfaces_to_copy[i];
@@ -814,9 +815,10 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
         }
       }
     } else {
-      auto it = referenced_surfaces_.insert(surface_id).first;
+      referenced_surfaces_.insert(surface_id);
       CopyPasses(frame, surface);
-      referenced_surfaces_.erase(it);
+      // CopyPasses may have mutated container, need to re-query to erase.
+      referenced_surfaces_.erase(referenced_surfaces_.find(surface_id));
     }
   }
 }
