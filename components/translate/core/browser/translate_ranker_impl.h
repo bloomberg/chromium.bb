@@ -150,9 +150,7 @@ class TranslateRankerImpl : public TranslateRanker {
   bool is_enforcement_enabled_ = true;
 
   // Tracks whether or not translate ranker decision override is enabled. This
-  // will override suppression heuristics and follow ranker's decision. Note
-  // that that also enables the code paths for translate ranker querying and
-  // enforcement.
+  // will override suppression heuristics.
   bool is_decision_override_enabled_ = true;
 
   // Saved cache of translate event protos.
