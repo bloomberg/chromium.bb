@@ -5,6 +5,7 @@
 #ifndef UI_GFX_SKIA_PAINT_UTIL_H_
 #define UI_GFX_SKIA_PAINT_UTIL_H_
 
+#include <memory>
 #include <vector>
 
 #include "cc/paint/paint_shader.h"
@@ -25,24 +26,25 @@ class ImageSkiaRep;
 // TODO(pkotwicz): Allow shader's local matrix to be changed after the shader
 // is created.
 //
-GFX_EXPORT sk_sp<cc::PaintShader> CreateImageRepShader(
+GFX_EXPORT std::unique_ptr<cc::PaintShader> CreateImageRepShader(
     const gfx::ImageSkiaRep& image_rep,
-    cc::PaintShader::TileMode tile_mode,
+    SkShader::TileMode tile_mode,
     const SkMatrix& local_matrix);
 
 // Creates a bitmap shader for the image rep with the passed in scale factor.
-GFX_EXPORT sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
+GFX_EXPORT std::unique_ptr<cc::PaintShader> CreateImageRepShaderForScale(
     const gfx::ImageSkiaRep& image_rep,
-    cc::PaintShader::TileMode tile_mode,
+    SkShader::TileMode tile_mode,
     const SkMatrix& local_matrix,
     SkScalar scale);
 
 // Creates a vertical gradient shader. The caller owns the shader.
 // Example usage to avoid leaks:
-GFX_EXPORT sk_sp<cc::PaintShader> CreateGradientShader(int start_point,
-                                                       int end_point,
-                                                       SkColor start_color,
-                                                       SkColor end_color);
+GFX_EXPORT std::unique_ptr<cc::PaintShader> CreateGradientShader(
+    int start_point,
+    int end_point,
+    SkColor start_color,
+    SkColor end_color);
 
 // Creates a draw looper to generate |shadows|. The caller owns the draw looper.
 // NULL is returned if |shadows| is empty since no draw looper is needed in

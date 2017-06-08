@@ -15,6 +15,7 @@ component("touch_hud") {
 
   deps = [
     "//base",
+    "//cc/paint",
     "//skia",
     "//ui/compositor",
     "//ui/events",

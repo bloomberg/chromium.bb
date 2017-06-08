@@ -29,6 +29,7 @@ cc_component("paint") {
     "paint_record.h",
     "paint_recorder.cc",
     "paint_recorder.h",
+    "paint_shader.cc",
     "paint_shader.h",
     "record_paint_canvas.cc",
     "record_paint_canvas.h",

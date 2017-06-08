@@ -20,7 +20,7 @@ class PLATFORM_EXPORT ImagePattern final : public Pattern {
   bool IsTextureBacked() const override;
 
  protected:
-  sk_sp<PaintShader> CreateShader(const SkMatrix&) override;
+  std::unique_ptr<PaintShader> CreateShader(const SkMatrix&) override;
   bool IsLocalMatrixChanged(const SkMatrix&) const override;
 
  private:
