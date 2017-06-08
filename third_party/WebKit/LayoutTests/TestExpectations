@@ -2854,6 +2854,7 @@ crbug.com/727014 [ Linux ] external/wpt/IndexedDB/large-nested-cloning.html [ Pa
 crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass ]
 crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass ]
 crbug.com/731018 [ Mac ] sensor/gyroscope.html [ Failure Pass ]
+crbug.com/731018 [ Mac ] sensor/magnetometer.html [ Failure Pass ]
 crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass ]
 
 crbug.com/731035 [ Win ] virtual/new-remote-playback-pipeline/media/controls/video-controls-overflow-menu-hide-on-click-panel.html [ Failure Pass ]
