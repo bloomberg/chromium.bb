@@ -17,7 +17,7 @@ void TestRegionDataLoader::LoadRegionData(
     autofill::RegionDataLoader::RegionDataLoaded callback,
     int64_t unused_timeout_ms) {
   if (synchronous_callback_) {
-    callback.Run(std::vector<const ::i18n::addressinput::RegionData*>());
+    SendRegionData(regions_, callback);
   } else {
     country_code_ = country_code;
     callback_ = callback;
@@ -37,12 +37,19 @@ void TestRegionDataLoader::SendAsynchronousData(
   if (callback_.is_null())
     return;
 
+  SendRegionData(regions, callback_);
+  callback_.Reset();
+}
+
+void TestRegionDataLoader::SendRegionData(
+    const std::vector<std::pair<std::string, std::string>>& regions,
+    autofill::RegionDataLoader::RegionDataLoaded callback) {
   ::i18n::addressinput::RegionData root_region("");
   for (const auto& region : regions) {
     root_region.AddSubRegion(region.first, region.second);
   }
-  callback_.Run(root_region.sub_regions());
-  callback_.Reset();
+
+  callback.Run(root_region.sub_regions());
 }
 
 }  // namespace autofill
