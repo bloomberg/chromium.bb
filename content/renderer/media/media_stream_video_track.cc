@@ -228,7 +228,7 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     const VideoTrackAdapterSettings& adapter_settings,
     const base::Optional<bool>& noise_reduction,
     bool is_screencast,
-    double min_frame_rate,
+    const base::Optional<double>& min_frame_rate,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled) {
   blink::WebMediaStreamTrack track;
@@ -260,7 +260,6 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       adapter_settings_(base::MakeUnique<VideoTrackAdapterSettings>(
           VideoTrackAdapterSettings())),
       is_screencast_(false),
-      min_frame_rate_(0.0),
       source_(source->GetWeakPtr()) {
   if (IsOldVideoConstraints()) {
     blink::WebMediaConstraints constraints;
@@ -304,7 +303,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     const VideoTrackAdapterSettings& adapter_settings,
     const base::Optional<bool>& noise_reduction,
     bool is_screen_cast,
-    double min_frame_rate,
+    const base::Optional<double>& min_frame_rate,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled)
     : MediaStreamTrack(true),

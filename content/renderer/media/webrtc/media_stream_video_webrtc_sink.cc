@@ -268,8 +268,8 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
   DCHECK(video_track);
   rtc::Optional<bool> needs_denoising;
   bool is_screencast = false;
-  double min_frame_rate = 0.0;
-  double max_frame_rate = 0.0;
+  base::Optional<double> min_frame_rate;
+  base::Optional<double> max_frame_rate;
 
   if (IsOldVideoConstraints()) {
     const blink::WebMediaConstraints& constraints = video_track->constraints();
@@ -292,17 +292,24 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
             &denoising_value)) {
       needs_denoising = rtc::Optional<bool>(denoising_value);
     }
-    GetConstraintMinAsDouble(constraints,
-                             &blink::WebMediaTrackConstraintSet::frame_rate,
-                             &min_frame_rate);
-    GetConstraintMaxAsDouble(constraints,
-                             &blink::WebMediaTrackConstraintSet::frame_rate,
-                             &max_frame_rate);
+    double frame_rate_value;
+    if (GetConstraintMinAsDouble(constraints,
+                                 &blink::WebMediaTrackConstraintSet::frame_rate,
+                                 &frame_rate_value) &&
+        frame_rate_value >= 0.0) {
+      min_frame_rate = frame_rate_value;
+    }
+    if (GetConstraintMaxAsDouble(constraints,
+                                 &blink::WebMediaTrackConstraintSet::frame_rate,
+                                 &frame_rate_value) &&
+        frame_rate_value >= 0.0) {
+      max_frame_rate = frame_rate_value;
+    }
   } else {
     needs_denoising = ToRtcOptional(video_track->noise_reduction());
     is_screencast = video_track->is_screencast();
     min_frame_rate = video_track->min_frame_rate();
-    max_frame_rate = video_track->adapter_settings().max_frame_rate;
+    max_frame_rate = video_track->max_frame_rate();
   }
 
   // Enable automatic frame refreshes for the screen capture sources, which will
@@ -315,15 +322,15 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
     // Start with the default refresh interval, and refine based on constraints.
     refresh_interval =
         base::TimeDelta::FromMicroseconds(kDefaultRefreshIntervalMicros);
-    if (min_frame_rate > 0.0) {
+    if (min_frame_rate.has_value()) {
       refresh_interval =
           base::TimeDelta::FromMicroseconds(base::saturated_cast<int64_t>(
-              base::Time::kMicrosecondsPerSecond / min_frame_rate));
+              base::Time::kMicrosecondsPerSecond / *min_frame_rate));
     }
-    if (max_frame_rate > 0.0) {
+    if (max_frame_rate.has_value()) {
       const base::TimeDelta alternate_refresh_interval =
           base::TimeDelta::FromMicroseconds(base::saturated_cast<int64_t>(
-              base::Time::kMicrosecondsPerSecond / max_frame_rate));
+              base::Time::kMicrosecondsPerSecond / *max_frame_rate));
       refresh_interval = std::max(refresh_interval, alternate_refresh_interval);
     }
     if (refresh_interval.InMicroseconds() < kLowerBoundRefreshIntervalMicros) {

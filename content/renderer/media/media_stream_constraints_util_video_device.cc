@@ -185,8 +185,8 @@ VideoCaptureSettings ComputeVideoDeviceCaptureSettings(
 
   return VideoCaptureSettings(
       candidate.device_id(), capture_params, candidate.noise_reduction(),
-      track_adapter_settings,
-      constrained_format.constrained_frame_rate().Min());
+      track_adapter_settings, constrained_format.constrained_frame_rate().Min(),
+      constrained_format.constrained_frame_rate().Max());
 }
 
 // Generic distance function between two numeric values. Based on the fitness

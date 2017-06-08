@@ -52,7 +52,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
       const VideoTrackAdapterSettings& adapter_settings,
       const base::Optional<bool>& noise_reduction,
       bool is_screencast,
-      double min_frame_rate,
+      const base::Optional<double>& min_frame_rate,
       const MediaStreamVideoSource::ConstraintsCallback& callback,
       bool enabled);
 
@@ -76,7 +76,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
       const VideoTrackAdapterSettings& adapter_settings,
       const base::Optional<bool>& noise_reduction,
       bool is_screen_cast,
-      double min_frame_rate,
+      const base::Optional<double>& min_frame_rate,
       const MediaStreamVideoSource::ConstraintsCallback& callback,
       bool enabled);
   ~MediaStreamVideoTrack() override;
@@ -102,9 +102,13 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
     DCHECK(!IsOldVideoConstraints());
     return is_screencast_;
   }
-  double min_frame_rate() const {
+  const base::Optional<double>& min_frame_rate() const {
     DCHECK(!IsOldVideoConstraints());
     return min_frame_rate_;
+  }
+  const base::Optional<double>& max_frame_rate() const {
+    DCHECK(!IsOldVideoConstraints());
+    return max_frame_rate_;
   }
   const VideoTrackAdapterSettings& adapter_settings() const {
     DCHECK(!IsOldVideoConstraints());
@@ -152,7 +156,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   std::unique_ptr<VideoTrackAdapterSettings> adapter_settings_;
   base::Optional<bool> noise_reduction_;
   bool is_screencast_;
-  double min_frame_rate_;
+  base::Optional<double> min_frame_rate_;
+  base::Optional<double> max_frame_rate_;
 
   // Weak ref to the source this tracks is connected to.
   base::WeakPtr<MediaStreamVideoSource> source_;
