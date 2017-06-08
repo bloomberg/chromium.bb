@@ -29,3 +29,8 @@ Chromium patches in c32abcaba428921d8ac12ac98b272ecf8241f9bb and
 because our version of clang does not support __builtin_types_compatible_p.
 As we are building with Objective-C++, we need to add 'extern "C"' in
 OCMFunctions.h to have C linkage.
+
+Chromium patches in a fix for crbug.com/731129 to assume that unnamed types
+are equal to named ones (see bug for example of types). This is probably due
+to differences between the type embedded by Chromium version of clang and by
+the introspection used by Xcode 9 SDK.
