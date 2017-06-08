@@ -485,6 +485,10 @@ void LocalStorageContextMojo::OnDirectoryOpened(
 
   auto options = leveldb::mojom::OpenOptions::New();
   options->create_if_missing = true;
+  options->max_open_files = 0;  // use minimum
+  // Default write_buffer_size is 4 MB but that might leave a 3.999
+  // memory allocation in RAM from a log file recovery.
+  options->write_buffer_size = 64 * 1024;
   leveldb_service_->OpenWithOptions(
       std::move(options), std::move(directory_clone), "leveldb",
       MakeRequest(&database_),
