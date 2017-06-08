@@ -966,7 +966,6 @@ component("base") {
     "trace_event/memory_allocator_dump_guid.h",
     "trace_event/memory_dump_manager.cc",
     "trace_event/memory_dump_manager.h",
-    "trace_event/memory_dump_manager_test_utils.h",
     "trace_event/memory_dump_provider.h",
     "trace_event/memory_dump_provider_info.cc",
     "trace_event/memory_dump_provider_info.h",
