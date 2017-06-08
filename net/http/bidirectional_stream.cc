@@ -313,18 +313,18 @@ void BidirectionalStream::OnFailed(int status) {
 
 void BidirectionalStream::OnStreamReady(const SSLConfig& used_ssl_config,
                                         const ProxyInfo& used_proxy_info,
-                                        HttpStream* stream) {
+                                        std::unique_ptr<HttpStream> stream) {
   NOTREACHED();
 }
 
 void BidirectionalStream::OnBidirectionalStreamImplReady(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    BidirectionalStreamImpl* stream) {
+    std::unique_ptr<BidirectionalStreamImpl> stream) {
   DCHECK(!stream_impl_);
 
   stream_request_.reset();
-  stream_impl_.reset(stream);
+  stream_impl_ = std::move(stream);
   stream_impl_->Start(request_info_.get(), net_log_,
                       send_request_headers_automatically_, this,
                       std::move(timer_));
@@ -333,7 +333,7 @@ void BidirectionalStream::OnBidirectionalStreamImplReady(
 void BidirectionalStream::OnWebSocketHandshakeStreamReady(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    WebSocketHandshakeStreamBase* stream) {
+    std::unique_ptr<WebSocketHandshakeStreamBase> stream) {
   NOTREACHED();
 }
 

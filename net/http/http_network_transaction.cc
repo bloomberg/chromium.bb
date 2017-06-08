@@ -32,6 +32,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/url_util.h"
 #include "net/filter/filter_source_stream.h"
+#include "net/http/bidirectional_stream_impl.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -448,7 +449,7 @@ int HttpNetworkTransaction::ResumeNetworkStart() {
 
 void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
                                            const ProxyInfo& used_proxy_info,
-                                           HttpStream* stream) {
+                                           std::unique_ptr<HttpStream> stream) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
   DCHECK(stream_request_.get());
 
@@ -456,7 +457,7 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
     total_received_bytes_ += stream_->GetTotalReceivedBytes();
     total_sent_bytes_ += stream_->GetTotalSentBytes();
   }
-  stream_.reset(stream);
+  stream_ = std::move(stream);
   server_ssl_config_ = used_ssl_config;
   proxy_info_ = used_proxy_info;
   response_.was_alpn_negotiated = stream_request_->was_alpn_negotiated();
@@ -476,15 +477,15 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
 void HttpNetworkTransaction::OnBidirectionalStreamImplReady(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    BidirectionalStreamImpl* stream) {
+    std::unique_ptr<BidirectionalStreamImpl> stream) {
   NOTREACHED();
 }
 
 void HttpNetworkTransaction::OnWebSocketHandshakeStreamReady(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    WebSocketHandshakeStreamBase* stream) {
-  OnStreamReady(used_ssl_config, used_proxy_info, stream);
+    std::unique_ptr<WebSocketHandshakeStreamBase> stream) {
+  OnStreamReady(used_ssl_config, used_proxy_info, std::move(stream));
 }
 
 void HttpNetworkTransaction::OnStreamFailed(int result,

@@ -47,20 +47,29 @@ class MockHttpStreamRequestDelegate : public HttpStreamRequest::Delegate {
 
   ~MockHttpStreamRequestDelegate() override;
 
-  MOCK_METHOD3(OnStreamReady,
+  // std::unique_ptr is not copyable and therefore cannot be mocked.
+  MOCK_METHOD3(OnStreamReadyImpl,
                void(const SSLConfig& used_ssl_config,
                     const ProxyInfo& used_proxy_info,
                     HttpStream* stream));
 
-  MOCK_METHOD3(OnBidirectionalStreamImplReady,
-               void(const SSLConfig& used_ssl_config,
-                    const ProxyInfo& used_proxy_info,
-                    BidirectionalStreamImpl* stream));
+  void OnStreamReady(const SSLConfig& used_ssl_config,
+                     const ProxyInfo& used_proxy_info,
+                     std::unique_ptr<HttpStream> stream) override {
+    OnStreamReadyImpl(used_ssl_config, used_proxy_info, stream.get());
+  }
 
-  MOCK_METHOD3(OnWebSocketHandshakeStreamReady,
-               void(const SSLConfig& used_ssl_config,
-                    const ProxyInfo& used_proxy_info,
-                    WebSocketHandshakeStreamBase* stream));
+  // std::unique_ptr is not copyable and therefore cannot be mocked.
+  void OnBidirectionalStreamImplReady(
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      std::unique_ptr<BidirectionalStreamImpl> stream) override {}
+
+  // std::unique_ptr is not copyable and therefore cannot be mocked.
+  void OnWebSocketHandshakeStreamReady(
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      std::unique_ptr<WebSocketHandshakeStreamBase> stream) override {}
 
   MOCK_METHOD2(OnStreamFailed,
                void(int status, const SSLConfig& used_ssl_config));

@@ -72,10 +72,9 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
     // during stream processing.
     // |used_proxy_info| indicates the actual ProxyInfo used for this stream,
     // since the HttpStreamRequest performs the proxy resolution.
-    virtual void OnStreamReady(
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        HttpStream* stream) = 0;
+    virtual void OnStreamReady(const SSLConfig& used_ssl_config,
+                               const ProxyInfo& used_proxy_info,
+                               std::unique_ptr<HttpStream> stream) = 0;
 
     // This is the success case for RequestWebSocketHandshakeStream.
     // |stream| is now owned by the delegate.
@@ -87,12 +86,12 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
     virtual void OnWebSocketHandshakeStreamReady(
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
-        WebSocketHandshakeStreamBase* stream) = 0;
+        std::unique_ptr<WebSocketHandshakeStreamBase> stream) = 0;
 
     virtual void OnBidirectionalStreamImplReady(
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
-        BidirectionalStreamImpl* stream) = 0;
+        std::unique_ptr<BidirectionalStreamImpl> stream) = 0;
 
     // This is the failure to create a stream case.
     // |used_ssl_config| indicates the actual SSL configuration used for this
