@@ -275,7 +275,8 @@ struct I18nContentToMessage {
     {"keyboardOverlayZoomOut", IDS_KEYBOARD_OVERLAY_ZOOM_OUT},
     {"keyboardOverlayZoomScreenIn", IDS_KEYBOARD_OVERLAY_ZOOM_SCREEN_IN},
     {"keyboardOverlayZoomScreenOut", IDS_KEYBOARD_OVERLAY_ZOOM_SCREEN_OUT},
-};
+    {"keyboardOverlayVoiceInteraction",
+     IDS_KEYBOARD_OVERLAY_VOICE_INTERACTION}};
 
 bool TopRowKeysAreFunctionKeys(Profile* profile) {
   if (!profile)
@@ -310,6 +311,8 @@ content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource(Profile* profile) {
                          chromeos::switches::kHasChromeOSDiamondKey));
   source->AddBoolean("keyboardOverlayTopRowKeysAreFunctionKeys",
                      TopRowKeysAreFunctionKeys(profile));
+  source->AddBoolean("voiceInteractionEnabled",
+                     chromeos::switches::IsVoiceInteractionEnabled());
   ash::Shell* shell = ash::Shell::Get();
   display::DisplayManager* display_manager = shell->display_manager();
   source->AddBoolean("keyboardOverlayIsDisplayUIScalingEnabled",
