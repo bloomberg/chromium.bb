@@ -16,7 +16,7 @@ class ResourceContext;
 struct ResourceRequest;
 
 using StartLoaderCallback =
-    base::OnceCallback<void(mojom::URLLoaderAssociatedRequest request,
+    base::OnceCallback<void(mojom::URLLoaderRequest request,
                             mojom::URLLoaderClientPtr client)>;
 
 using LoaderCallback = base::OnceCallback<void(StartLoaderCallback)>;
