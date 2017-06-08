@@ -14,6 +14,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/timer/mock_timer.h"
+#include "base/timer/timer.h"
 #include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/connection_observer.h"
@@ -311,6 +313,21 @@ class MockBluetoothLowEnergyWeavePacketReceiverFactory
   MockBluetoothLowEnergyWeavePacketReceiver* most_recent_instance_;
 };
 
+class TestTimerFactory
+    : public BluetoothLowEnergyWeaveClientConnection::TimerFactory {
+ public:
+  std::unique_ptr<base::Timer> CreateTimer() override {
+    last_created_timer_ = new base::MockTimer(false /* retains_user_task */,
+                                              false /* is_repeating */);
+    return base::WrapUnique(last_created_timer_);
+  }
+
+  base::MockTimer* last_created_timer() { return last_created_timer_; }
+
+ private:
+  base::MockTimer* last_created_timer_;
+};
+
 class TestBluetoothLowEnergyWeaveClientConnection
     : public BluetoothLowEnergyWeaveClientConnection {
  public:
@@ -319,12 +336,15 @@ class TestBluetoothLowEnergyWeaveClientConnection
       const std::string& device_address,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      BluetoothThrottler* bluetooth_throttler)
+      BluetoothThrottler* bluetooth_throttler,
+      std::unique_ptr<BluetoothLowEnergyWeaveClientConnection::TimerFactory>
+          timer_factory)
       : BluetoothLowEnergyWeaveClientConnection(remote_device,
                                                 device_address,
                                                 adapter,
                                                 remote_service_uuid,
-                                                bluetooth_throttler) {}
+                                                bluetooth_throttler,
+                                                std::move(timer_factory)) {}
 
   ~TestBluetoothLowEnergyWeaveClientConnection() override {}
 
@@ -363,6 +383,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
         rx_characteristic_uuid_(device::BluetoothUUID(kRXCharacteristicUUID)),
         notify_session_alias_(NULL),
         bluetooth_throttler_(new NiceMock<MockBluetoothThrottler>),
+        test_timer_factory_(new TestTimerFactory()),
         task_runner_(new base::TestSimpleTaskRunner),
         generator_factory_(
             new MockBluetoothLowEnergyWeavePacketGeneratorFactory()),
@@ -426,7 +447,8 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
         new TestBluetoothLowEnergyWeaveClientConnection(
             remote_device_, kTestRemoteDeviceBluetoothAddress, adapter_,
-            service_uuid_, bluetooth_throttler_.get()));
+            service_uuid_, bluetooth_throttler_.get(),
+            base::WrapUnique(test_timer_factory_)));
 
     EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
     EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
@@ -624,6 +646,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   std::vector<uint8_t> last_value_written_on_tx_characteristic_;
   device::MockBluetoothGattNotifySession* notify_session_alias_;
   std::unique_ptr<MockBluetoothThrottler> bluetooth_throttler_;
+  TestTimerFactory* test_timer_factory_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::MessageLoop message_loop_;
   bool last_wire_message_success_;
@@ -662,7 +685,8 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
        CreateAndDestroyWithoutConnectCallDoesntCrash) {
   BluetoothLowEnergyWeaveClientConnection connection(
       remote_device_, kTestRemoteDeviceBluetoothAddress, adapter_,
-      service_uuid_, bluetooth_throttler_.get());
+      service_uuid_, bluetooth_throttler_.get(),
+      base::WrapUnique(test_timer_factory_));
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
@@ -1160,6 +1184,20 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   CharacteristicsFound(connection.get());
   NotifySessionStarted(connection.get());
   ConnectionResponseReceived(connection.get(), kDefaultMaxPacketSize);
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       ConnectionResponseTimeout) {
+  std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
+      CreateConnection());
+  ConnectGatt(connection.get());
+  CharacteristicsFound(connection.get());
+  NotifySessionStarted(connection.get());
+
+  test_timer_factory_->last_created_timer()->Fire();
+
+  EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
+  EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
 }
 
 }  // namespace weave

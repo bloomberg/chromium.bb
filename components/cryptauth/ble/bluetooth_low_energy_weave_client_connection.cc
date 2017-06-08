@@ -35,6 +35,10 @@ const char kRXCharacteristicUUID[] = "00000100-0004-1000-8000-001A11000102";
 // each message gets 3 attempts: the first one, and 2 retries.
 const int kMaxNumberOfRetryAttempts = 2;
 
+// The time to wait in seconds for the server to send its connection response.
+// If not received within this time, the connection will fail.
+const int kConnectionResponseTimeoutSeconds = 2;
+
 }  // namespace
 
 // static
@@ -76,7 +80,12 @@ BluetoothLowEnergyWeaveClientConnection::Factory::BuildInstance(
     BluetoothThrottler* bluetooth_throttler) {
   return base::MakeUnique<BluetoothLowEnergyWeaveClientConnection>(
       remote_device, device_address, adapter, remote_service_uuid,
-      bluetooth_throttler);
+      bluetooth_throttler, base::MakeUnique<TimerFactory>());
+}
+
+std::unique_ptr<base::Timer>
+BluetoothLowEnergyWeaveClientConnection::TimerFactory::CreateTimer() {
+  return base::MakeUnique<base::OneShotTimer>();
 }
 
 BluetoothLowEnergyWeaveClientConnection::
@@ -85,7 +94,8 @@ BluetoothLowEnergyWeaveClientConnection::
         const std::string& device_address,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const device::BluetoothUUID remote_service_uuid,
-        BluetoothThrottler* bluetooth_throttler)
+        BluetoothThrottler* bluetooth_throttler,
+        std::unique_ptr<TimerFactory> timer_factory)
     : Connection(device),
       device_address_(device_address),
       adapter_(adapter),
@@ -98,6 +108,7 @@ BluetoothLowEnergyWeaveClientConnection::
       tx_characteristic_({device::BluetoothUUID(kTXCharacteristicUUID), ""}),
       rx_characteristic_({device::BluetoothUUID(kRXCharacteristicUUID), ""}),
       bluetooth_throttler_(bluetooth_throttler),
+      timer_factory_(std::move(timer_factory)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       sub_status_(SubStatus::DISCONNECTED),
       write_remote_characteristic_pending_(false),
@@ -346,6 +357,7 @@ void BluetoothLowEnergyWeaveClientConnection::GattCharacteristicValueChanged(
 void BluetoothLowEnergyWeaveClientConnection::CompleteConnection() {
   PA_LOG(INFO) << "Connection completed. Time elapsed: "
                << base::TimeTicks::Now() - start_time_;
+  connection_response_timer_->Stop();
   SetSubStatus(SubStatus::CONNECTED);
 }
 
@@ -489,6 +501,13 @@ void BluetoothLowEnergyWeaveClientConnection::SendConnectionRequest() {
   if (sub_status() == SubStatus::NOTIFY_SESSION_READY) {
     PA_LOG(INFO) << "Sending connection request to the server";
     SetSubStatus(SubStatus::WAITING_CONNECTION_RESPONSE);
+    connection_response_timer_ = timer_factory_->CreateTimer();
+    connection_response_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kConnectionResponseTimeoutSeconds),
+        base::Bind(&BluetoothLowEnergyWeaveClientConnection::
+                       OnConnectionResponseTimeout,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     WriteRequest write_request(packet_generator_->CreateConnectionRequest(),
                                WriteRequestType::CONNECTION_REQUEST);
@@ -613,6 +632,13 @@ void BluetoothLowEnergyWeaveClientConnection::OnPacketReceiverError() {
 
 void BluetoothLowEnergyWeaveClientConnection::PrintTimeElapsed() {
   PA_LOG(INFO) << "Time elapsed: " << base::TimeTicks::Now() - start_time_;
+}
+
+void BluetoothLowEnergyWeaveClientConnection::OnConnectionResponseTimeout() {
+  DCHECK(sub_status() == SubStatus::WAITING_CONNECTION_RESPONSE);
+  PA_LOG(ERROR) << "Timed out waiting for connection response. Closing "
+                << "connection.";
+  DestroyConnection();
 }
 
 std::string BluetoothLowEnergyWeaveClientConnection::GetDeviceAddress() {
