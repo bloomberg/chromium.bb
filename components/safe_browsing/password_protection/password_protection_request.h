@@ -46,6 +46,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
                             const GURL& password_form_frame_url,
                             const std::string& saved_domain,
                             LoginReputationClientRequest::TriggerType type,
+                            bool password_field_exists,
                             PasswordProtectionService* pps,
                             int request_timeout_in_ms);
 
@@ -129,6 +130,9 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
 
   // If this request is for unfamiliar login page or for a password reuse event.
   const LoginReputationClientRequest::TriggerType request_type_;
+
+  // If there is a password field on the page.
+  const bool password_field_exists_;
 
   // When request is sent.
   base::TimeTicks request_start_time_;

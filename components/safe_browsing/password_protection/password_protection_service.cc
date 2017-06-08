@@ -272,13 +272,14 @@ void PasswordProtectionService::StartRequest(
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
     const std::string& saved_domain,
-    LoginReputationClientRequest::TriggerType type) {
+    LoginReputationClientRequest::TriggerType type,
+    bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<PasswordProtectionRequest> request(
-      new PasswordProtectionRequest(web_contents, main_frame_url,
-                                    password_form_action,
-                                    password_form_frame_url, saved_domain, type,
-                                    this, GetRequestTimeoutInMS()));
+      new PasswordProtectionRequest(
+          web_contents, main_frame_url, password_form_action,
+          password_form_frame_url, saved_domain, type, password_field_exists,
+          this, GetRequestTimeoutInMS()));
   DCHECK(request);
   request->Start();
   requests_.insert(std::move(request));
@@ -294,18 +295,20 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     StartRequest(web_contents, main_frame_url, password_form_action,
                  password_form_frame_url,
                  std::string(), /* saved_domain: not used for this type */
-                 LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
+                 LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   }
 }
 
 void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
-    const std::string& saved_domain) {
+    const std::string& saved_domain,
+    bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (CanSendPing(kProtectedPasswordEntryPinging, main_frame_url)) {
     StartRequest(web_contents, main_frame_url, GURL(), GURL(), saved_domain,
-                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
+                 LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                 password_field_exists);
   }
 }
 
