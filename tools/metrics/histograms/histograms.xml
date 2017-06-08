@@ -76339,10 +76339,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>treib@chromium.org</owner>
   <summary>
     The time for the new tab page to fire the &quot;load&quot; event. Note: This
-    is usually recorded with a suffix (.Local*/Google/Other). The base version
-    is recorded only on Android, as well as for the old NTP (&quot;NTP4&quot;)
-    on other platforms. Recorded only once per tab, i.e. excluding back/forward
-    navigations.
+    is usually recorded with a suffix (.Local/Google/Other). The base version
+    is recorded only on Android. Recorded only once per tab, i.e. excluding
+    back/forward navigations.
   </summary>
 </histogram>
 
@@ -95173,9 +95172,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="TabNewTabOnload" separator=".">
   <suffix name="Local" label="Local New Tab page."/>
-  <suffix name="LocalGoogle" label="Local New Tab page for Google."/>
+  <suffix name="LocalGoogle" label="Local New Tab page for Google.">
+    <obsolete>
+      Removed 06/2017, never worked correctly.
+    </obsolete>
+  </suffix>
   <suffix name="LocalOther"
-      label="Local New Tab page for a non-Google provider."/>
+      label="Local New Tab page for a non-Google provider.">
+    <obsolete>
+      Removed 06/2017, never worked correctly.
+    </obsolete>
+  </suffix>
   <suffix name="Google" label="New Tab page for Google."/>
   <suffix name="Other" label="New Tab page for a non-Google provider."/>
   <affected-histogram name="Tab.NewTabOnload"/>
