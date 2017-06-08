@@ -1587,26 +1587,26 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
   DCHECK(!NeedsLayoutTreeUpdate(position)) << position;
   TRACE_EVENT0("input", "VisibleUnits::mostBackwardCaretPosition");
 
-  Node* start_node = position.AnchorNode();
+  Node* const start_node = position.AnchorNode();
   if (!start_node)
     return PositionTemplate<Strategy>();
 
   // iterate backward from there, looking for a qualified position
-  Node* boundary = EnclosingVisualBoundary<Strategy>(start_node);
+  Node* const boundary = EnclosingVisualBoundary<Strategy>(start_node);
   // FIXME: PositionIterator should respect Before and After positions.
   PositionIteratorAlgorithm<Strategy> last_visible(
       AdjustPositionForBackwardIteration<Strategy>(position));
-  PositionIteratorAlgorithm<Strategy> current_pos = last_visible;
-  bool start_editable = HasEditableStyle(*start_node);
+  const bool start_editable = HasEditableStyle(*start_node);
   Node* last_node = start_node;
   bool boundary_crossed = false;
-  for (; !current_pos.AtStart(); current_pos.Decrement()) {
+  for (PositionIteratorAlgorithm<Strategy> current_pos = last_visible;
+       !current_pos.AtStart(); current_pos.Decrement()) {
     Node* current_node = current_pos.GetNode();
     // Don't check for an editability change if we haven't moved to a different
     // node, to avoid the expense of computing hasEditableStyle().
     if (current_node != last_node) {
       // Don't change editability.
-      bool current_editable = HasEditableStyle(*current_node);
+      const bool current_editable = HasEditableStyle(*current_node);
       if (start_editable != current_editable) {
         if (rule == kCannotCrossEditingBoundary)
           break;
@@ -1623,7 +1623,7 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
       return last_visible.DeprecatedComputePosition();
 
     // skip position in non-laid out or invisible node
-    LayoutObject* layout_object =
+    LayoutObject* const layout_object =
         AssociatedLayoutObjectOf(*current_node, current_pos.OffsetInLeafNode());
     if (!layout_object ||
         layout_object->Style()->Visibility() != EVisibility::kVisible)
@@ -1655,25 +1655,26 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
     }
 
     // return current position if it is in laid out text
-    if (layout_object->IsText() &&
-        ToLayoutText(layout_object)->FirstTextBox()) {
-      LayoutText* const text_layout_object = ToLayoutText(layout_object);
-      const unsigned text_start_offset = text_layout_object->TextStartOffset();
-      if (current_node != start_node) {
-        // This assertion fires in layout tests in the case-transform.html test
-        // because of a mix-up between offsets in the text in the DOM tree with
-        // text in the layout tree which can have a different length due to case
-        // transformation.
-        // Until we resolve that, disable this so we can run the layout tests!
-        // DCHECK_GE(currentOffset, layoutObject->caretMaxOffset());
-        return PositionTemplate<Strategy>(
-            current_node, layout_object->CaretMaxOffset() + text_start_offset);
-      }
+    if (!layout_object->IsText())
+      continue;
+    LayoutText* const text_layout_object = ToLayoutText(layout_object);
+    if (!text_layout_object->FirstTextBox())
+      continue;
+    const unsigned text_start_offset = text_layout_object->TextStartOffset();
+    if (current_node != start_node) {
+      // This assertion fires in layout tests in the case-transform.html test
+      // because of a mix-up between offsets in the text in the DOM tree with
+      // text in the layout tree which can have a different length due to case
+      // transformation.
+      // Until we resolve that, disable this so we can run the layout tests!
+      // DCHECK_GE(currentOffset, layoutObject->caretMaxOffset());
+      return PositionTemplate<Strategy>(
+          current_node, layout_object->CaretMaxOffset() + text_start_offset);
+    }
 
-      if (CanBeBackwardCaretPosition(text_layout_object,
-                                     current_pos.OffsetInLeafNode())) {
-        return current_pos.ComputePosition();
-      }
+    if (CanBeBackwardCaretPosition(text_layout_object,
+                                   current_pos.OffsetInLeafNode())) {
+      return current_pos.ComputePosition();
     }
   }
   return last_visible.DeprecatedComputePosition();
@@ -1771,12 +1772,12 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
   DCHECK(!NeedsLayoutTreeUpdate(position)) << position;
   TRACE_EVENT0("input", "VisibleUnits::mostForwardCaretPosition");
 
-  Node* start_node = position.AnchorNode();
+  Node* const start_node = position.AnchorNode();
   if (!start_node)
     return PositionTemplate<Strategy>();
 
   // iterate forward from there, looking for a qualified position
-  Node* boundary = EnclosingVisualBoundary<Strategy>(start_node);
+  Node* const boundary = EnclosingVisualBoundary<Strategy>(start_node);
   // FIXME: PositionIterator should respect Before and After positions.
   PositionIteratorAlgorithm<Strategy> last_visible(
       position.IsAfterAnchor()
@@ -1784,17 +1785,17 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
                 position.AnchorNode(),
                 Strategy::CaretMaxOffset(*position.AnchorNode()))
           : position);
-  PositionIteratorAlgorithm<Strategy> current_pos = last_visible;
-  bool start_editable = HasEditableStyle(*start_node);
+  const bool start_editable = HasEditableStyle(*start_node);
   Node* last_node = start_node;
   bool boundary_crossed = false;
-  for (; !current_pos.AtEnd(); current_pos.Increment()) {
+  for (PositionIteratorAlgorithm<Strategy> current_pos = last_visible;
+       !current_pos.AtEnd(); current_pos.Increment()) {
     Node* current_node = current_pos.GetNode();
     // Don't check for an editability change if we haven't moved to a different
     // node, to avoid the expense of computing hasEditableStyle().
     if (current_node != last_node) {
       // Don't change editability.
-      bool current_editable = HasEditableStyle(*current_node);
+      const bool current_editable = HasEditableStyle(*current_node);
       if (start_editable != current_editable) {
         if (rule == kCannotCrossEditingBoundary)
           break;
@@ -1821,16 +1822,14 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
       return last_visible.DeprecatedComputePosition();
 
     // skip position in non-laid out or invisible node
-    LayoutObject* layout_object =
+    LayoutObject* const layout_object =
         AssociatedLayoutObjectOf(*current_node, current_pos.OffsetInLeafNode());
     if (!layout_object ||
         layout_object->Style()->Visibility() != EVisibility::kVisible)
       continue;
 
-    if (rule == kCanCrossEditingBoundary && boundary_crossed) {
-      last_visible = current_pos;
-      break;
-    }
+    if (rule == kCanCrossEditingBoundary && boundary_crossed)
+      return current_pos.DeprecatedComputePosition();
 
     // track last visible streamer position
     if (IsStreamer<Strategy>(current_pos))
@@ -1847,20 +1846,21 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
     }
 
     // return current position if it is in laid out text
-    if (layout_object->IsText() &&
-        ToLayoutText(layout_object)->FirstTextBox()) {
-      LayoutText* const text_layout_object = ToLayoutText(layout_object);
-      const unsigned text_start_offset = text_layout_object->TextStartOffset();
-      if (current_node != start_node) {
-        DCHECK(current_pos.AtStartOfNode());
-        return PositionTemplate<Strategy>(
-            current_node, layout_object->CaretMinOffset() + text_start_offset);
-      }
+    if (!layout_object->IsText())
+      continue;
+    LayoutText* const text_layout_object = ToLayoutText(layout_object);
+    if (!text_layout_object->FirstTextBox())
+      continue;
+    const unsigned text_start_offset = text_layout_object->TextStartOffset();
+    if (current_node != start_node) {
+      DCHECK(current_pos.AtStartOfNode());
+      return PositionTemplate<Strategy>(
+          current_node, layout_object->CaretMinOffset() + text_start_offset);
+    }
 
-      if (CanBeForwardCaretPosition(text_layout_object,
-                                    current_pos.OffsetInLeafNode())) {
-        return current_pos.ComputePosition();
-      }
+    if (CanBeForwardCaretPosition(text_layout_object,
+                                  current_pos.OffsetInLeafNode())) {
+      return current_pos.ComputePosition();
     }
   }
   return last_visible.DeprecatedComputePosition();
