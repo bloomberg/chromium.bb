@@ -572,6 +572,10 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // the user from interacting with the browser view.
 @property(nonatomic, strong)
     ActivityOverlayCoordinator* activityOverlayCoordinator;
+// A block to be run when the |tabWasAdded:| method completes the animation
+// for the presentation of a new tab. Can be used to record performance metrics.
+@property(nonatomic, strong, nullable)
+    ProceduralBlock foregroundTabWasAddedCompletionBlock;
 
 // The user agent type used to load the currently visible page. User agent type
 // is NONE if there is no visible page or visible page is a native page.
@@ -932,6 +936,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 @synthesize hideStatusBar = _hideStatusBar;
 @synthesize activityOverlayCoordinator = _activityOverlayCoordinator;
 @synthesize presenting = _presenting;
+@synthesize foregroundTabWasAddedCompletionBlock =
+    _foregroundTabWasAddedCompletionBlock;
 
 #pragma mark - Object lifecycle
 
@@ -1195,6 +1201,23 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)newTab:(id)sender {
+  // Observe the timing of the new tab creation, both MainController
+  // and BrowserViewController call into this method on the correct BVC to
+  // create new tabs making it preferable to doing this in
+  // |chromeExecuteCommand:|.
+  NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
+  BOOL offTheRecord = self.isOffTheRecord;
+  self.foregroundTabWasAddedCompletionBlock = ^{
+    double duration = [NSDate timeIntervalSinceReferenceDate] - startTime;
+    base::TimeDelta timeDelta = base::TimeDelta::FromSecondsD(duration);
+    if (offTheRecord) {
+      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewIncognitoTabPresentationDuration",
+                          timeDelta);
+    } else {
+      UMA_HISTOGRAM_TIMES("Toolbar.Menu.NewTabPresentationDuration", timeDelta);
+    }
+  };
+
   [self setLastTapPoint:sender];
   DCHECK(self.visible || self.dismissingModal);
   Tab* currentTab = [_model currentTab];
@@ -1622,6 +1645,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
             [self tabSelected:currentTab];
           }
           startVoiceSearchIfNecessaryBlock();
+
+          if (self.foregroundTabWasAddedCompletionBlock) {
+            self.foregroundTabWasAddedCompletionBlock();
+          }
         });
   } else {
     // -updateSnapshotWithOverlay will force a screen redraw, so take the
@@ -1660,6 +1687,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
           startVoiceSearchIfNecessaryBlock();
         });
   }
+  // Reset the foreground tab completion block so that it can never be
+  // called more than once regardless of foreground/background tab appearances.
+  self.foregroundTabWasAddedCompletionBlock = nil;
 }
 
 #pragma mark - UI Configuration and Layout

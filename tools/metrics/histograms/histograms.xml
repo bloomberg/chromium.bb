@@ -77413,6 +77413,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Toolbar.Menu.NewIncognitoTabPresentationDuration" units="ms">
+  <owner>peterlaurens@chromium.org</owner>
+  <summary>
+    The number of millseconds between the user requesting a new incognito tab,
+    e.g. by tapping the New Incognito Tab entry in the main tools menu, and it
+    completing its animation on screen.
+  </summary>
+</histogram>
+
+<histogram name="Toolbar.Menu.NewTabPresentationDuration" units="ms">
+  <owner>peterlaurens@chromium.org</owner>
+  <summary>
+    The number of millseconds between the user requesting a new tab, e.g. by
+    tapping the New Tab entry in the main tools menu, and it completing its
+    animation on screen.
+  </summary>
+</histogram>
+
 <histogram name="Toolbar.ShowToolsMenuResponsiveness" units="ms">
   <owner>peterlaurens@chromium.org</owner>
   <summary>
@@ -77420,6 +77438,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     presentation of the tools menu (the main menu of actions accessed from the
     toolbar), and the actual appearance of the menu on screen. Includes the
     animation duration.
+  </summary>
+</histogram>
+
+<histogram name="Toolbar.TabSwitcher.NewIncognitoTabPresentationDuration"
+    units="ms">
+  <owner>peterlaurens@chromium.org</owner>
+  <summary>
+    The number of millseconds between the user requesting a new incognito tab,
+    from within the tab switcher, e.g. by tapping the New Tab button from the
+    tab switcher UI, and it completing its animation on screen.
+  </summary>
+</histogram>
+
+<histogram name="Toolbar.TabSwitcher.NewTabPresentationDuration" units="ms">
+  <owner>peterlaurens@chromium.org</owner>
+  <summary>
+    The number of millseconds between the user requesting a new tab, from within
+    the tab switcher UI, e.g. by tapping the New Tab button from the tab
+    switcher UI, and it completing its animation on screen.
   </summary>
 </histogram>
 
