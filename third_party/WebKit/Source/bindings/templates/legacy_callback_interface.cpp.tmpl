@@ -16,17 +16,17 @@ namespace blink {
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = {
-  gin::kEmbedderBlink,
-  {{v8_class}}::DomTemplate,
-  nullptr,
-  nullptr,
-  nullptr,
-  "{{interface_name}}",
-  nullptr,
-  WrapperTypeInfo::kWrapperTypeNoPrototype,
-  WrapperTypeInfo::kObjectClassId,
-  WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
-  WrapperTypeInfo::kDependent
+    gin::kEmbedderBlink,
+    {{v8_class}}::DomTemplate,
+    nullptr,
+    nullptr,
+    nullptr,
+    "{{interface_name}}",
+    nullptr,
+    WrapperTypeInfo::kWrapperTypeNoPrototype,
+    WrapperTypeInfo::kObjectClassId,
+    WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
+    WrapperTypeInfo::kDependent,
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
