@@ -168,6 +168,7 @@ class TestExporterTest(unittest.TestCase):
                 'subject': 'subject',
                 '_number': '1',
                 'current_revision': '1',
+                'reviewers': ['rutabaga'],
                 'revisions': {
                     '1': {'commit_with_footers': 'a commit with footers'}
                 },
@@ -203,6 +204,7 @@ class TestExporterTest(unittest.TestCase):
                 'subject': 'subject',
                 '_number': '1',
                 'current_revision': '1',
+                'reviewers': ['rutabaga'],
                 'revisions': {
                     '1': {'commit_with_footers': 'a commit with footers'}
                 },
@@ -232,6 +234,7 @@ class TestExporterTest(unittest.TestCase):
                 'subject': 'subject',
                 '_number': '1',
                 'current_revision': '2',
+                'reviewers': ['rutabaga'],
                 'revisions': {
                     '1': {
                         'commit_with_footers': 'a commit with footers 1',
@@ -287,3 +290,35 @@ class TestExporterTest(unittest.TestCase):
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])
         self.assertEqual(test_exporter.wpt_github.pull_requests_merged, [1234])
+
+    def test_does_not_create_pr_if_cl_has_no_reviewers(self):
+        host = MockHost()
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
+                                     gerrit_token=None, dry_run=False)
+        test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
+        test_exporter.get_exportable_commits = lambda limit: []
+        test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
+        test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
+        test_exporter.gerrit.query_exportable_open_cls = lambda: [
+            GerritCL(data={
+                'change_id': '1',
+                'subject': 'subject',
+                '_number': '1',
+                'current_revision': '2',
+                'reviewers': [],
+                'revisions': {
+                    '1': {
+                        'commit_with_footers': 'a commit with footers 1',
+                        'description': 'subject 1',
+                    },
+                    '2': {
+                        'commit_with_footers': 'a commit with footers 2',
+                        'description': 'subject 2',
+                    },
+                },
+                'owner': {'email': 'test@chromium.org'},
+            }, api=test_exporter.gerrit),
+        ]
+        test_exporter.run()
+        self.assertEqual(test_exporter.wpt_github.calls, [])
+        self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])
