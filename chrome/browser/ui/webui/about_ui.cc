@@ -49,6 +49,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/about_ui/credit_utils.h"
 #include "components/grit/components_resources.h"
 #include "components/strings/grit/components_locale_settings.h"
 #include "content/public/browser/browser_thread.h"
@@ -691,32 +692,14 @@ void AboutUIHTMLSource::StartDataRequest(
       idr = IDR_KEYBOARD_UTILS_JS;
 #endif
 
-    base::StringPiece raw_response =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(idr);
     if (idr == IDR_ABOUT_UI_CREDITS_HTML) {
-      const uint8_t* next_encoded_byte =
-          reinterpret_cast<const uint8_t*>(raw_response.data());
-      size_t input_size_remaining = raw_response.size();
-      BrotliDecoderState* decoder =
-          BrotliDecoderCreateInstance(nullptr /* no custom allocator */,
-                                      nullptr /* no custom deallocator */,
-                                      nullptr /* no custom memory handle */);
-      CHECK(!!decoder);
-      while (!BrotliDecoderIsFinished(decoder)) {
-        size_t output_size_remaining = 0;
-        CHECK(BrotliDecoderDecompressStream(
-                  decoder, &input_size_remaining, &next_encoded_byte,
-                  &output_size_remaining, nullptr,
-                  nullptr) != BROTLI_DECODER_RESULT_ERROR);
-        const uint8_t* output_buffer =
-            BrotliDecoderTakeOutput(decoder, &output_size_remaining);
-        response.insert(response.end(), output_buffer,
-                        output_buffer + output_size_remaining);
-      }
-      BrotliDecoderDestroyInstance(decoder);
+      response = about_ui::GetCredits(true /*include_scripts*/);
     } else {
-      response = raw_response.as_string();
+      response = ResourceBundle::GetSharedInstance()
+                     .GetRawDataResource(idr)
+                     .as_string();
     }
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   } else if (source_name_ == chrome::kChromeUIDiscardsHost) {
     response = AboutDiscards(path);

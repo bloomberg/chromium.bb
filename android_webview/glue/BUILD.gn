@@ -61,8 +61,6 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/DrawGLFunctor.java",
     "java/src/com/android/webview/chromium/GeolocationPermissionsAdapter.java",
     "java/src/com/android/webview/chromium/GraphicsUtils.java",
-    "java/src/com/android/webview/chromium/LicenseActivity.java",
-    "java/src/com/android/webview/chromium/LicenseContentProvider.java",
     "java/src/com/android/webview/chromium/MonochromeLibraryPreloader.java",
     "java/src/com/android/webview/chromium/ServiceWorkerClientAdapter.java",
     "java/src/com/android/webview/chromium/ServiceWorkerControllerAdapter.java",

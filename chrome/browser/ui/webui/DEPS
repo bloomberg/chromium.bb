@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/about_ui"
   "+components/invalidation",
   "+components/onc",
   "+components/proximity_auth",
