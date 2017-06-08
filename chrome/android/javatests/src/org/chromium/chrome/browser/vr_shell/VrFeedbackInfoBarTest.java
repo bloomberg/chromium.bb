@@ -82,8 +82,8 @@ public class VrFeedbackInfoBarTest {
 
     private void assertState(boolean isInVr, boolean isInfobarVisible) {
         Assert.assertEquals("Browser is in VR", isInVr, VrShellDelegate.isInVr());
-        Assert.assertEquals("Infobar is visible", isInfobarVisible,
-                VrUtils.isInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView()));
+        VrUtils.expectInfoBarPresent(
+                mVrTestRule.getActivity().getWindow().getDecorView(), isInfobarVisible);
     }
 
     private void enterThenExitVr() {
@@ -100,7 +100,6 @@ public class VrFeedbackInfoBarTest {
     @MediumTest
     public void testFeedbackFrequency() throws InterruptedException, TimeoutException {
         mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
-
         // Set frequency of infobar to every 2nd time.
         VrUtils.getVrShellDelegateInstance().setFeedbackFrequencyForTesting(2);
 
