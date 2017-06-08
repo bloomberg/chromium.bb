@@ -472,7 +472,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [[self webController] addObserver:self];
     [[self webController] setDelegate:self];
 
-    _snapshotManager = [[SnapshotManager alloc] initWithWebState:webState];
+    _snapshotManager = [[SnapshotManager alloc] init];
     _webControllerSnapshotHelper = [[WebControllerSnapshotHelper alloc]
         initWithSnapshotManager:_snapshotManager
                             tab:self];

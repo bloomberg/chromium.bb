@@ -20,6 +20,8 @@
 // |UIApplicationDidBecomeActiveNotification|.
 @property(nonatomic, strong) NSSet* pinnedIDs;
 
++ (SnapshotCache*)sharedInstance;
+
 // The scale that should be used for snapshots.
 - (CGFloat)snapshotScaleForDevice;
 
@@ -60,10 +62,6 @@
 // Write a grey copy of the snapshot for |sessionID| to disk, but if and only if
 // a color version of the snapshot already exists in memory or on disk.
 - (void)saveGreyInBackgroundForSessionID:(NSString*)sessionID;
-
-// Invoked before the instance is deallocated. Needs to release all reference
-// to C++ objects. Object will soon be deallocated.
-- (void)shutdown;
 @end
 
 // Additionnal methods that should only be used for tests.

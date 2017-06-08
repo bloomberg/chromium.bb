@@ -99,7 +99,6 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/services/gcm",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/suggestions",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/sync/glue",

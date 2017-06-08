@@ -93,7 +93,6 @@
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
@@ -2432,13 +2431,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)purgeSnapshots {
   NSMutableSet* liveSessions = [self liveSessionsForTabModel:self.mainTabModel];
   [liveSessions unionSet:[self liveSessionsForTabModel:self.otrTabModel]];
-
   // Keep snapshots that are less than one minute old, to prevent a concurrency
   // issue if they are created while the purge is running.
-  const base::Time oneMinuteAgo =
-      base::Time::Now() - base::TimeDelta::FromMinutes(1);
-  [SnapshotCacheFactory::GetForBrowserState([self currentBrowserState])
-      purgeCacheOlderThan:oneMinuteAgo
+  [[SnapshotCache sharedInstance]
+      purgeCacheOlderThan:(base::Time::Now() - base::TimeDelta::FromMinutes(1))
                   keeping:liveSessions];
 }
 

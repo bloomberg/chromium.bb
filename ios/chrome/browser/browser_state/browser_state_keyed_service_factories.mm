@@ -41,7 +41,6 @@
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
@@ -107,7 +106,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ReadingListModelFactory::GetInstance();
   SigninClientFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
-  SnapshotCacheFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
   TabRestoreServiceDelegateImplIOSFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();
