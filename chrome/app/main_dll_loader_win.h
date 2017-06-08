@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -38,18 +39,18 @@ class MainDllLoader {
   void RelaunchChromeBrowserWithNewCommandLineIfNeeded();
 
  protected:
-  // Called after chrome.dll has been loaded but before the entry point
-  // is invoked. Derived classes can implement custom actions here.
-  // |process_type| is the argument to the --type command line argument, e.g.
-  // "renderer", "watcher", etc.
-  // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual void OnBeforeLaunch(const std::string& process_type,
+  // Called after chrome.dll has been loaded but before the entry point is
+  // invoked. Derived classes can implement custom actions here. |cmd_line| is
+  // the process command line. |process_type| is the argument to the --type
+  // command line argument (e.g., "renderer" or "watcher"). |dll_path| refers
+  // to the path of the Chrome dll being loaded.
+  virtual void OnBeforeLaunch(const base::CommandLine& cmd_line,
+                              const std::string& process_type,
                               const base::FilePath& dll_path) = 0;
 
-  // Called after the chrome.dll entry point returns and before terminating
-  // this process. The return value will be used as the process return code.
-  // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual int OnBeforeExit(int return_code, const base::FilePath& dll_path) = 0;
+  // Called after the chrome.dll entry point returns and before terminating this
+  // process. |dll_path| refers to the path of the Chrome dll that was loaded.
+  virtual void OnBeforeExit(const base::FilePath& dll_path) = 0;
 
  private:
   // Loads the appropriate DLL for the process type |process_type_|. Populates

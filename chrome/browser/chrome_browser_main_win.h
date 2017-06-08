@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main.h"
 
-class DidRunUpdater;
 class ModuleWatcher;
 
 namespace base {
@@ -70,10 +69,6 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   static void SetupInstallerUtilStrings();
 
  private:
-#if defined(GOOGLE_CHROME_BUILD)
-  std::unique_ptr<DidRunUpdater> did_run_updater_;
-#endif
-
   std::unique_ptr<ModuleWatcher> module_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);

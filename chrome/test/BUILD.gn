@@ -2936,6 +2936,7 @@ test("unit_tests") {
 
     # All unittests in browser, common, renderer and service.
     "../browser/about_flags_unittest.cc",
+    "../browser/active_use_util_unittest.cc",
     "../browser/after_startup_task_utils_unittest.cc",
     "../browser/android/bookmarks/partner_bookmarks_shim_unittest.cc",
     "../browser/android/compositor/layer/tab_layer_unittest.cc",
