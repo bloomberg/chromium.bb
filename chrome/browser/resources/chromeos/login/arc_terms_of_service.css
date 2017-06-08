@@ -32,6 +32,12 @@ p {
   display: none;
 }
 
+.arc-tos-loading #arc-tos-accept-button-md,
+.arc-tos-loading #arc-tos-skip-button-md,
+.arc-tos-loading #arc-tos-retry-button-md {
+  pointer-events: none;
+}
+
 .arc-tos-loading p,
 .error p {
   color: rgba(0, 0, 0, 0.87);

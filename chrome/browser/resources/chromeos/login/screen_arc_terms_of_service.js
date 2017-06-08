@@ -369,7 +369,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       this.removeClass_('arc-tos-loaded');
       this.addClass_('error');
 
-      $('arc-tos-retry-button').focus();
+      this.enableButtons_(true);
+      this.getElement_('arc-tos-retry-button').focus();
     },
 
     /**
