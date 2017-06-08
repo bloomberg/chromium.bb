@@ -19,13 +19,12 @@ void HeadlessTabSocketImpl::SendMessageToTab(const std::string& message) {
       outgoing_message_queue_.push_back(message);
       return;
     } else {
-      callback = waiting_for_message_cb_;
-      waiting_for_message_cb_ = AwaitNextMessageFromEmbedderCallback();
+      callback = std::move(waiting_for_message_cb_);
       DCHECK(waiting_for_message_cb_.is_null());
     }
   }
 
-  callback.Run(message);
+  std::move(callback).Run(message);
 }
 
 void HeadlessTabSocketImpl::SetListener(Listener* listener) {
@@ -61,12 +60,12 @@ void HeadlessTabSocketImpl::SendMessageToEmbedder(const std::string& message) {
 }
 
 void HeadlessTabSocketImpl::AwaitNextMessageFromEmbedder(
-    const AwaitNextMessageFromEmbedderCallback& callback) {
+    AwaitNextMessageFromEmbedderCallback callback) {
   std::string message;
   {
     base::AutoLock lock(lock_);
     if (outgoing_message_queue_.empty()) {
-      waiting_for_message_cb_ = callback;
+      waiting_for_message_cb_ = std::move(callback);
       DCHECK(!waiting_for_message_cb_.is_null());
       return;
     } else {
@@ -74,7 +73,7 @@ void HeadlessTabSocketImpl::AwaitNextMessageFromEmbedder(
       outgoing_message_queue_.pop_front();
     }
   }
-  callback.Run(message);
+  std::move(callback).Run(message);
 }
 
 void HeadlessTabSocketImpl::CreateMojoService(
