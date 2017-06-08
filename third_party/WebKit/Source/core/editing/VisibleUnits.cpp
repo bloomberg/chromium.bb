@@ -833,8 +833,7 @@ static InlineTextBox* SearchAheadForBetterMatch(LayoutObject* layout_object) {
     if (next->IsText()) {
       InlineTextBox* match = 0;
       int min_offset = INT_MAX;
-      for (InlineTextBox* box = ToLayoutText(next)->FirstTextBox(); box;
-           box = box->NextTextBox()) {
+      for (InlineTextBox* box : InlineTextBoxesOf(*ToLayoutText(next))) {
         int caret_min_offset = box->CaretMinOffset();
         if (caret_min_offset < min_offset) {
           match = box;
@@ -929,11 +928,9 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
   } else {
     LayoutText* text_layout_object = ToLayoutText(layout_object);
 
-    InlineTextBox* box;
-    InlineTextBox* candidate = 0;
+    InlineTextBox* candidate = nullptr;
 
-    for (box = text_layout_object->FirstTextBox(); box;
-         box = box->NextTextBox()) {
+    for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
       int caret_min_offset = box->CaretMinOffset();
       int caret_max_offset = box->CaretMaxOffset();
 
@@ -949,18 +946,21 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
           ((caret_offset == caret_min_offset) ^
            (affinity == TextAffinity::kUpstream)) ||
           (caret_offset == caret_max_offset && box->NextLeafChild() &&
-           box->NextLeafChild()->IsLineBreak()))
+           box->NextLeafChild()->IsLineBreak())) {
+        inline_box = box;
         break;
+      }
 
       candidate = box;
     }
     if (candidate && candidate == text_layout_object->LastTextBox() &&
         affinity == TextAffinity::kDownstream) {
-      box = SearchAheadForBetterMatch(text_layout_object);
-      if (box)
-        caret_offset = box->CaretMinOffset();
+      inline_box = SearchAheadForBetterMatch(text_layout_object);
+      if (inline_box)
+        caret_offset = inline_box->CaretMinOffset();
     }
-    inline_box = box ? box : candidate;
+    if (!inline_box)
+      inline_box = candidate;
   }
 
   if (!inline_box)
@@ -1314,8 +1314,7 @@ static bool InRenderedText(const PositionTemplate<Strategy>& position) {
   LayoutText* text_layout_object = ToLayoutText(layout_object);
   const int text_offset =
       offset_in_node - text_layout_object->TextStartOffset();
-  for (InlineTextBox* box = text_layout_object->FirstTextBox(); box;
-       box = box->NextTextBox()) {
+  for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
     if (text_offset < static_cast<int>(box->Start()) &&
         !text_layout_object->ContainsReversedText()) {
       // The offset we're looking for is before this node
@@ -1568,8 +1567,7 @@ static bool CanBeBackwardCaretPosition(const LayoutText* text_layout_object,
   DCHECK_GE(offset_in_node, static_cast<int>(text_start_offset));
   const unsigned text_offset = offset_in_node - text_start_offset;
   InlineTextBox* const last_text_box = text_layout_object->LastTextBox();
-  for (InlineTextBox* box = text_layout_object->FirstTextBox(); box;
-       box = box->NextTextBox()) {
+  for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
     if (text_offset == box->Start()) {
       if (text_layout_object->IsTextFragment() &&
           ToLayoutTextFragment(text_layout_object)
@@ -1724,8 +1722,7 @@ static bool CanBeForwardCaretPosition(const LayoutText* text_layout_object,
   DCHECK_GE(offset_in_node, static_cast<int>(text_start_offset));
   const unsigned text_offset = offset_in_node - text_start_offset;
   InlineTextBox* const last_text_box = text_layout_object->LastTextBox();
-  for (InlineTextBox* box = text_layout_object->FirstTextBox(); box;
-       box = box->NextTextBox()) {
+  for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
     if (text_offset <= box->end()) {
       if (text_offset >= box->Start())
         return true;

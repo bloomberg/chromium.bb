@@ -125,7 +125,7 @@ LayoutRect LayoutSVGInlineText::LocalCaretRect(InlineBox* box,
 
 FloatRect LayoutSVGInlineText::FloatLinesBoundingBox() const {
   FloatRect bounding_box;
-  for (InlineTextBox* box = FirstTextBox(); box; box = box->NextTextBox())
+  for (InlineTextBox* box : InlineTextBoxesOf(*this))
     bounding_box.Unite(FloatRect(box->FrameRect()));
   return bounding_box;
 }
@@ -177,7 +177,7 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
   const SVGTextFragment* closest_distance_fragment = nullptr;
   SVGInlineTextBox* closest_distance_box = nullptr;
 
-  for (InlineTextBox* box = FirstTextBox(); box; box = box->NextTextBox()) {
+  for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
     if (!box->IsSVGInlineTextBox())
       continue;
 
