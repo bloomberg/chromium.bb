@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
 
@@ -56,8 +55,6 @@ class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
 
   // The native root window.
   ::Window x_root_window_;
-
-  ui::X11AtomCache atom_cache_;
 
   DesktopWindowTreeHost* window_tree_host_;
 

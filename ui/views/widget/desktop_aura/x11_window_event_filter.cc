@@ -15,6 +15,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -39,11 +40,6 @@ const int k_NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT =  6;
 const int k_NET_WM_MOVERESIZE_SIZE_LEFT =        7;
 const int k_NET_WM_MOVERESIZE_MOVE =             8;
 
-const char* kAtomsToCache[] = {
-  "_NET_WM_MOVERESIZE",
-  NULL
-};
-
 }  // namespace
 
 namespace views {
@@ -53,7 +49,6 @@ X11WindowEventFilter::X11WindowEventFilter(
     : xdisplay_(gfx::GetXDisplay()),
       xwindow_(window_tree_host->AsWindowTreeHost()->GetAcceleratedWidget()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
-      atom_cache_(xdisplay_, kAtomsToCache),
       window_tree_host_(window_tree_host),
       click_component_(HTNOWHERE) {
 }
@@ -225,7 +220,7 @@ bool X11WindowEventFilter::DispatchHostWindowDragMovement(
   event.xclient.type = ClientMessage;
   event.xclient.display = xdisplay_;
   event.xclient.window = xwindow_;
-  event.xclient.message_type = atom_cache_.GetAtom("_NET_WM_MOVERESIZE");
+  event.xclient.message_type = ui::GetAtom("_NET_WM_MOVERESIZE");
   event.xclient.format = 32;
   event.xclient.data.l[0] = screen_location.x();
   event.xclient.data.l[1] = screen_location.y();

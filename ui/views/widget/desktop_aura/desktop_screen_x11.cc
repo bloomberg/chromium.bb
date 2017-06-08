@@ -35,11 +35,6 @@
 
 namespace {
 
-const char* const kAtomsToCache[] = {
-  "_NET_WORKAREA",
-  nullptr
-};
-
 // The delay to perform configuration after RRNotify.  See the comment
 // in |Dispatch()|.
 const int64_t kConfigureDelayMs = 500;
@@ -94,8 +89,7 @@ DesktopScreenX11::DesktopScreenX11()
       x_root_window_(DefaultRootWindow(xdisplay_)),
       has_xrandr_(false),
       xrandr_event_base_(0),
-      primary_display_index_(0),
-      atom_cache_(xdisplay_, kAtomsToCache) {
+      primary_display_index_(0) {
   // We only support 1.3+. There were library changes before this and we should
   // use the new interface instead of the 1.2 one.
   int randr_version_major = 0;
@@ -241,7 +235,7 @@ bool DesktopScreenX11::CanDispatchEvent(const ui::PlatformEvent& event) {
          event->type - xrandr_event_base_ == RRNotify ||
          (event->type == PropertyNotify &&
           event->xproperty.window == x_root_window_ &&
-          event->xproperty.atom == atom_cache_.GetAtom("_NET_WORKAREA"));
+          event->xproperty.atom == ui::GetAtom("_NET_WORKAREA"));
 }
 
 uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
@@ -250,7 +244,7 @@ uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
     XRRUpdateConfiguration(event);
   } else if (event->type - xrandr_event_base_ == RRNotify ||
              (event->type == PropertyNotify &&
-              event->xproperty.atom == atom_cache_.GetAtom("_NET_WORKAREA"))) {
+              event->xproperty.atom == ui::GetAtom("_NET_WORKAREA"))) {
     // There's some sort of observer dispatch going on here, but I don't think
     // it's the screen's?
     if (configure_timer_.get() && configure_timer_->IsRunning()) {
@@ -287,8 +281,7 @@ DesktopScreenX11::DesktopScreenX11(
       has_xrandr_(false),
       xrandr_event_base_(0),
       displays_(test_displays),
-      primary_display_index_(0),
-      atom_cache_(xdisplay_, kAtomsToCache) {}
+      primary_display_index_(0) {}
 
 std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   std::vector<display::Display> displays;

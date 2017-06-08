@@ -26,6 +26,7 @@
 #include "ui/events/event_switches.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 // XIScrollClass was introduced in XI 2.1 so we need to define it here
 // for backward-compatibility with older versions of XInput.
@@ -165,7 +166,6 @@ DeviceDataManagerX11* DeviceDataManagerX11::GetInstance() {
 DeviceDataManagerX11::DeviceDataManagerX11()
     : xi_opcode_(-1),
       high_precision_scrolling_disabled_(IsHighPrecisionScrollingDisabled()),
-      atom_cache_(gfx::GetXDisplay(), kCachedAtoms),
       button_map_count_(0) {
   CHECK(gfx::GetXDisplay());
   InitializeXInputInternal();
@@ -243,7 +243,7 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
   // Find all the touchpad devices.
   const XDeviceList& dev_list =
       ui::DeviceListCacheX11::GetInstance()->GetXDeviceList(display);
-  Atom xi_touchpad = XInternAtom(display, XI_TOUCHPAD, false);
+  Atom xi_touchpad = ui::X11AtomCache::GetInstance()->GetAtom(XI_TOUCHPAD);
   for (int i = 0; i < dev_list.count; ++i)
     if (dev_list[i].type == xi_touchpad)
       touchpads_[dev_list[i].id] = true;
@@ -256,7 +256,8 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
       ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(display);
   Atom atoms[DT_LAST_ENTRY];
   for (int data_type = 0; data_type < DT_LAST_ENTRY; ++data_type)
-    atoms[data_type] = atom_cache_.GetAtom(kCachedAtoms[data_type]);
+    atoms[data_type] =
+        ui::X11AtomCache::GetInstance()->GetAtom(kCachedAtoms[data_type]);
 
   for (int i = 0; i < info_list.count; ++i) {
     const XIDeviceInfo& info = info_list[i];

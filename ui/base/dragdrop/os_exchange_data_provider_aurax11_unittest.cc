@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/dragdrop/file_info.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source_glib.h"
 #include "url/gurl.h"
 
@@ -32,9 +33,7 @@ class OSExchangeDataProviderAuraX11Test : public testing::Test {
     scoped_refptr<base::RefCountedMemory> mem(
         base::RefCountedString::TakeString(&contents_copy));
 
-    provider.format_map_.Insert(
-        provider.atom_cache_.GetAtom(ui::Clipboard::kMimeTypeURIList),
-        mem);
+    provider.format_map_.Insert(GetAtom(ui::Clipboard::kMimeTypeURIList), mem);
   }
 
  protected:

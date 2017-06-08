@@ -12,6 +12,11 @@
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/x/x11_types.h"
 
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}
+
 namespace ui {
 
 // Pre-caches all Atoms on first use to minimize roundtrips to the X11
@@ -20,21 +25,18 @@ namespace ui {
 // with allow_uncached_atoms().
 class GFX_EXPORT X11AtomCache {
  public:
-  // Preinterns the NULL terminated list of string |to_cache| on |xdisplay|.
-  X11AtomCache(XDisplay* xdisplay, const char* const* to_cache);
-  ~X11AtomCache();
+  static X11AtomCache* GetInstance();
 
   // Returns the pre-interned Atom without having to go to the x server.
   XAtom GetAtom(const char*) const;
 
-  // When an Atom isn't in the list of items we've cached, we should look it
-  // up, cache it locally, and then return the result.
-  void allow_uncached_atoms() { uncached_atoms_allowed_ = true; }
-
  private:
-  XDisplay* xdisplay_;
+  friend struct base::DefaultSingletonTraits<X11AtomCache>;
 
-  bool uncached_atoms_allowed_;
+  X11AtomCache();
+  ~X11AtomCache();
+
+  XDisplay* xdisplay_;
 
   mutable std::map<std::string, XAtom> cached_atoms_;
 

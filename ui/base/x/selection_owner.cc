@@ -26,9 +26,6 @@ const char kSaveTargets[] = "SAVE_TARGETS";
 const char kTargets[] = "TARGETS";
 const char kTimestamp[] = "TIMESTAMP";
 
-const char* kAtomsToCache[] = {kAtomPair, kIncr,      kMultiple, kSaveTargets,
-                               kTargets,  kTimestamp, NULL};
-
 // The period of |incremental_transfer_abort_timer_|. Arbitrary but must be <=
 // than kIncrementalTransferTimeoutMs.
 const int kTimerPeriodMs = 1000;
@@ -98,9 +95,7 @@ SelectionOwner::SelectionOwner(XDisplay* x_display,
     : x_display_(x_display),
       x_window_(x_window),
       selection_name_(selection_name),
-      max_request_size_(GetMaxRequestSize(x_display)),
-      atom_cache_(x_display_, kAtomsToCache) {
-}
+      max_request_size_(GetMaxRequestSize(x_display)) {}
 
 SelectionOwner::~SelectionOwner() {
   // If we are the selection owner, we need to release the selection so we
@@ -149,7 +144,7 @@ void SelectionOwner::OnSelectionRequest(const XEvent& event) {
   reply.xselection.property = None;  // Indicates failure
   reply.xselection.time = event.xselectionrequest.time;
 
-  if (requested_target == atom_cache_.GetAtom(kMultiple)) {
+  if (requested_target == GetAtom(kMultiple)) {
     // The contents of |requested_property| should be a list of
     // <target,property> pairs.
     std::vector<std::pair<XAtom,XAtom> > conversions;
@@ -169,11 +164,7 @@ void SelectionOwner::OnSelectionRequest(const XEvent& event) {
       // Set the property to indicate which conversions succeeded. This matches
       // what GTK does.
       XChangeProperty(
-          x_display_,
-          requestor,
-          requested_property,
-          atom_cache_.GetAtom(kAtomPair),
-          32,
+          x_display_, requestor, requested_property, GetAtom(kAtomPair), 32,
           PropModeReplace,
           reinterpret_cast<const unsigned char*>(&conversion_results.front()),
           conversion_results.size());
@@ -215,10 +206,10 @@ void SelectionOwner::OnPropertyEvent(const XEvent& event) {
 bool SelectionOwner::ProcessTarget(XAtom target,
                                    XID requestor,
                                    XAtom property) {
-  XAtom multiple_atom = atom_cache_.GetAtom(kMultiple);
-  XAtom save_targets_atom = atom_cache_.GetAtom(kSaveTargets);
-  XAtom targets_atom = atom_cache_.GetAtom(kTargets);
-  XAtom timestamp_atom = atom_cache_.GetAtom(kTimestamp);
+  XAtom multiple_atom = GetAtom(kMultiple);
+  XAtom save_targets_atom = GetAtom(kSaveTargets);
+  XAtom targets_atom = GetAtom(kTargets);
+  XAtom timestamp_atom = GetAtom(kTimestamp);
 
   if (target == multiple_atom || target == save_targets_atom)
     return false;
@@ -255,14 +246,9 @@ bool SelectionOwner::ProcessTarget(XAtom target,
       // the size of X requests. Notify the selection requestor that the data
       // will be sent incrementally by returning data of type "INCR".
       long length = it->second->size();
-      XChangeProperty(x_display_,
-                      requestor,
-                      property,
-                      atom_cache_.GetAtom(kIncr),
-                      32,
+      XChangeProperty(x_display_, requestor, property, GetAtom(kIncr), 32,
                       PropModeReplace,
-                      reinterpret_cast<unsigned char*>(&length),
-                      1);
+                      reinterpret_cast<unsigned char*>(&length), 1);
 
       // Wait for the selection requestor to indicate that it has processed
       // the selection result before sending the first chunk of data. The

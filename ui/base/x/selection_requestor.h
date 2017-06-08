@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -149,8 +148,6 @@ class UI_BASE_EXPORT SelectionRequestor {
 
   // Used to abort requests if the selection owner takes too long to respond.
   base::RepeatingTimer abort_timer_;
-
-  X11AtomCache atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectionRequestor);
 };

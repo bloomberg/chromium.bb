@@ -23,7 +23,6 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -128,8 +127,6 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   const bool own_window_;
 
   ::Window x_window_;
-
-  X11AtomCache atom_cache_;
 
   // A representation of data. This is either passed to us from the other
   // process, or built up through a sequence of Set*() calls. It can be passed

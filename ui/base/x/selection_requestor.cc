@@ -22,12 +22,6 @@ namespace {
 const char kChromeSelection[] = "CHROME_SELECTION";
 const char kIncr[] = "INCR";
 
-const char* kAtomsToCache[] = {
-  kChromeSelection,
-  kIncr,
-  NULL
-};
-
 // The period of |abort_timer_|. Arbitrary but must be <= than
 // kRequestTimeoutMs.
 const int kTimerPeriodMs = 100;
@@ -67,9 +61,8 @@ SelectionRequestor::SelectionRequestor(XDisplay* x_display,
       x_window_(x_window),
       x_property_(None),
       dispatcher_(dispatcher),
-      current_request_index_(0u),
-      atom_cache_(x_display_, kAtomsToCache) {
-  x_property_ = atom_cache_.GetAtom(kChromeSelection);
+      current_request_index_(0u) {
+  x_property_ = GetAtom(kChromeSelection);
 }
 
 SelectionRequestor::~SelectionRequestor() {}
@@ -169,7 +162,7 @@ void SelectionRequestor::OnSelectionNotify(const XEvent& event) {
   if (event_property != None)
     XDeleteProperty(x_display_, x_window_, event_property);
 
-  if (request->out_type == atom_cache_.GetAtom(kIncr)) {
+  if (request->out_type == GetAtom(kIncr)) {
     request->data_sent_incrementally = true;
     request->out_data.clear();
     request->out_data_items = 0u;

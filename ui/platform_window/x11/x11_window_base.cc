@@ -13,6 +13,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/platform_window_defaults.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
@@ -26,10 +27,6 @@
 namespace ui {
 
 namespace {
-
-const char* kAtomsToCache[] = {"UTF8_STRING",  "WM_DELETE_WINDOW",
-                               "_NET_WM_NAME", "_NET_WM_PID",
-                               "_NET_WM_PING", NULL};
 
 XID FindXEventTarget(const XEvent& xev) {
   XID target = xev.xany.window;
@@ -46,7 +43,6 @@ X11WindowBase::X11WindowBase(PlatformWindowDelegate* delegate,
       xdisplay_(gfx::GetXDisplay()),
       xwindow_(None),
       xroot_window_(DefaultRootWindow(xdisplay_)),
-      atom_cache_(xdisplay_, kAtomsToCache),
       bounds_(bounds) {
   DCHECK(delegate_);
   TouchFactory::SetTouchDeviceListFromCommandLine();
@@ -117,8 +113,8 @@ void X11WindowBase::Create() {
   XFlush(xdisplay_);
 
   ::Atom protocols[2];
-  protocols[0] = atom_cache_.GetAtom("WM_DELETE_WINDOW");
-  protocols[1] = atom_cache_.GetAtom("_NET_WM_PING");
+  protocols[0] = GetAtom("WM_DELETE_WINDOW");
+  protocols[1] = GetAtom("_NET_WM_PING");
   XSetWMProtocols(xdisplay_, xwindow_, protocols, 2);
 
   // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
@@ -131,9 +127,8 @@ void X11WindowBase::Create() {
   static_assert(sizeof(long) >= sizeof(pid_t),
                 "pid_t should not be larger than long");
   long pid = getpid();
-  XChangeProperty(xdisplay_, xwindow_, atom_cache_.GetAtom("_NET_WM_PID"),
-                  XA_CARDINAL, 32, PropModeReplace,
-                  reinterpret_cast<unsigned char*>(&pid), 1);
+  XChangeProperty(xdisplay_, xwindow_, GetAtom("_NET_WM_PID"), XA_CARDINAL, 32,
+                  PropModeReplace, reinterpret_cast<unsigned char*>(&pid), 1);
   // Before we map the window, set size hints. Otherwise, some window managers
   // will ignore toplevel XMoveWindow commands.
   XSizeHints size_hints;
@@ -219,8 +214,8 @@ void X11WindowBase::SetTitle(const base::string16& title) {
     return;
   window_title_ = title;
   std::string utf8str = base::UTF16ToUTF8(title);
-  XChangeProperty(xdisplay_, xwindow_, atom_cache_.GetAtom("_NET_WM_NAME"),
-                  atom_cache_.GetAtom("UTF8_STRING"), 8, PropModeReplace,
+  XChangeProperty(xdisplay_, xwindow_, GetAtom("_NET_WM_NAME"),
+                  GetAtom("UTF8_STRING"), 8, PropModeReplace,
                   reinterpret_cast<const unsigned char*>(utf8str.c_str()),
                   utf8str.size());
   XTextProperty xtp;
@@ -298,9 +293,9 @@ void X11WindowBase::ProcessXWindowEvent(XEvent* xev) {
 
     case ClientMessage: {
       Atom message = static_cast<Atom>(xev->xclient.data.l[0]);
-      if (message == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
+      if (message == GetAtom("WM_DELETE_WINDOW")) {
         delegate_->OnCloseRequest();
-      } else if (message == atom_cache_.GetAtom("_NET_WM_PING")) {
+      } else if (message == GetAtom("_NET_WM_PING")) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = xroot_window_;
 

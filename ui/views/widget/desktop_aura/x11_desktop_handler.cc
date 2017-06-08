@@ -20,11 +20,6 @@
 
 namespace {
 
-const char* const kAtomsToCache[] = {
-  "_NET_CURRENT_DESKTOP",
-  nullptr
-};
-
 // Our global instance. Deleted when our Env() is deleted.
 views::X11DesktopHandler* g_handler = NULL;
 
@@ -47,8 +42,7 @@ X11DesktopHandler* X11DesktopHandler::get_dont_create() {
 
 X11DesktopHandler::X11DesktopHandler()
     : xdisplay_(gfx::GetXDisplay()),
-      x_root_window_(DefaultRootWindow(xdisplay_)),
-      atom_cache_(xdisplay_, kAtomsToCache) {
+      x_root_window_(DefaultRootWindow(xdisplay_)) {
   if (ui::PlatformEventSource::GetInstance())
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   aura::Env::GetInstance()->AddObserver(this);
@@ -96,8 +90,7 @@ bool X11DesktopHandler::CanDispatchEvent(const ui::PlatformEvent& event) {
 uint32_t X11DesktopHandler::DispatchEvent(const ui::PlatformEvent& event) {
   switch (event->type) {
     case PropertyNotify: {
-      if (event->xproperty.atom ==
-          atom_cache_.GetAtom("_NET_CURRENT_DESKTOP")) {
+      if (event->xproperty.atom == ui::GetAtom("_NET_CURRENT_DESKTOP")) {
         if (UpdateWorkspace()) {
           for (views::X11DesktopHandlerObserver& observer : observers_)
             observer.OnWorkspaceChanged(workspace_);

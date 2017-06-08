@@ -16,25 +16,20 @@
 #include "base/memory/ref_counted_memory.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 class SelectionData;
-class X11AtomCache;
 
 extern const char kString[];
 extern const char kText[];
 extern const char kUtf8String[];
 
 // Returns a list of all text atoms that we handle.
-UI_BASE_EXPORT std::vector< ::Atom> GetTextAtomsFrom(
-    const X11AtomCache* atom_cache);
+UI_BASE_EXPORT std::vector<::Atom> GetTextAtomsFrom();
 
-UI_BASE_EXPORT std::vector< ::Atom> GetURLAtomsFrom(
-    const X11AtomCache* atom_cache);
+UI_BASE_EXPORT std::vector<::Atom> GetURLAtomsFrom();
 
-UI_BASE_EXPORT std::vector< ::Atom> GetURIListAtomsFrom(
-    const X11AtomCache* atom_cache);
+UI_BASE_EXPORT std::vector<::Atom> GetURIListAtomsFrom();
 
 // Places the intersection of |desired| and |offered| into |output|.
 UI_BASE_EXPORT void GetAtomIntersection(const std::vector< ::Atom>& desired,
@@ -122,8 +117,6 @@ class UI_BASE_EXPORT SelectionData {
  private:
   ::Atom type_;
   scoped_refptr<base::RefCountedMemory> memory_;
-
-  X11AtomCache atom_cache_;
 };
 
 }  // namespace ui

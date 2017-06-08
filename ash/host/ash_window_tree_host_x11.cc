@@ -30,6 +30,7 @@
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ash {
 
@@ -216,7 +217,7 @@ void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {
   if (!ui::IsXInput2Available())
     return;
   // Temporarily pause tap-to-click when the cursor is hidden.
-  Atom prop = atom_cache()->GetAtom("Tap Paused");
+  Atom prop = ui::X11AtomCache::GetInstance()->GetAtom("Tap Paused");
   unsigned char value = state;
   const XIDeviceList& dev_list =
       ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(xdisplay());

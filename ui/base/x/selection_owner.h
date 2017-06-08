@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/x/selection_utils.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -139,8 +138,6 @@ class UI_BASE_EXPORT SelectionOwner {
 
   // Used to abort stale incremental data transfers.
   base::RepeatingTimer incremental_transfer_abort_timer_;
-
-  X11AtomCache atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectionOwner);
 };

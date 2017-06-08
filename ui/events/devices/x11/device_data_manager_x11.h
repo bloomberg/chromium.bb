@@ -28,7 +28,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -396,9 +395,6 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
   // Map that stores meta-data for blocked keyboards. This is needed to restore
   // devices when they are re-enabled.
   std::map<int, ui::InputDevice> blocked_keyboard_devices_;
-
-  // X11 atoms cache.
-  X11AtomCache atom_cache_;
 
   unsigned char button_map_[256];
   int button_map_count_;

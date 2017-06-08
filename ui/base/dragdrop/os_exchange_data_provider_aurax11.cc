@@ -33,17 +33,6 @@ const char kRendererTaint[] = "chromium/x-renderer-taint";
 
 const char kNetscapeURL[] = "_NETSCAPE_URL";
 
-const char* kAtomsToCache[] = {kString,
-                               kText,
-                               kUtf8String,
-                               kDndSelection,
-                               Clipboard::kMimeTypeURIList,
-                               Clipboard::kMimeTypeMozillaURL,
-                               kNetscapeURL,
-                               Clipboard::kMimeTypeText,
-                               kRendererTaint,
-                               nullptr};
-
 }  // namespace
 
 OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11(
@@ -53,35 +42,27 @@ OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11(
       x_root_window_(DefaultRootWindow(x_display_)),
       own_window_(false),
       x_window_(x_window),
-      atom_cache_(x_display_, kAtomsToCache),
       format_map_(selection),
-      selection_owner_(x_display_, x_window_,
-                       atom_cache_.GetAtom(kDndSelection)) {
-  // We don't know all possible MIME types at compile time.
-  atom_cache_.allow_uncached_atoms();
-}
+      selection_owner_(x_display_, x_window_, GetAtom(kDndSelection)) {}
 
 OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11()
     : x_display_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
       own_window_(true),
-      x_window_(XCreateWindow(
-          x_display_,
-          x_root_window_,
-          -100, -100, 10, 10,  // x, y, width, height
-          0,                   // border width
-          CopyFromParent,      // depth
-          InputOnly,
-          CopyFromParent,      // visual
-          0,
-          NULL)),
-      atom_cache_(x_display_, kAtomsToCache),
+      x_window_(XCreateWindow(x_display_,
+                              x_root_window_,
+                              -100,
+                              -100,
+                              10,
+                              10,              // x, y, width, height
+                              0,               // border width
+                              CopyFromParent,  // depth
+                              InputOnly,
+                              CopyFromParent,  // visual
+                              0,
+                              NULL)),
       format_map_(),
-      selection_owner_(x_display_, x_window_,
-                       atom_cache_.GetAtom(kDndSelection)) {
-  // We don't know all possible MIME types at compile time.
-  atom_cache_.allow_uncached_atoms();
-
+      selection_owner_(x_display_, x_window_, GetAtom(kDndSelection)) {
   XStoreName(x_display_, x_window_, "Chromium Drag & Drop Window");
 
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
@@ -119,14 +100,13 @@ OSExchangeDataProviderAuraX11::Clone() const {
 
 void OSExchangeDataProviderAuraX11::MarkOriginatedFromRenderer() {
   std::string empty;
-  format_map_.Insert(atom_cache_.GetAtom(kRendererTaint),
+  format_map_.Insert(GetAtom(kRendererTaint),
                      scoped_refptr<base::RefCountedMemory>(
                          base::RefCountedString::TakeString(&empty)));
 }
 
 bool OSExchangeDataProviderAuraX11::DidOriginateFromRenderer() const {
-  return format_map_.find(atom_cache_.GetAtom(kRendererTaint)) !=
-         format_map_.end();
+  return format_map_.find(GetAtom(kRendererTaint)) != format_map_.end();
 }
 
 void OSExchangeDataProviderAuraX11::SetString(const base::string16& text_data) {
@@ -137,10 +117,10 @@ void OSExchangeDataProviderAuraX11::SetString(const base::string16& text_data) {
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&utf8));
 
-  format_map_.Insert(atom_cache_.GetAtom(Clipboard::kMimeTypeText), mem);
-  format_map_.Insert(atom_cache_.GetAtom(kText), mem);
-  format_map_.Insert(atom_cache_.GetAtom(kString), mem);
-  format_map_.Insert(atom_cache_.GetAtom(kUtf8String), mem);
+  format_map_.Insert(GetAtom(Clipboard::kMimeTypeText), mem);
+  format_map_.Insert(GetAtom(kText), mem);
+  format_map_.Insert(GetAtom(kString), mem);
+  format_map_.Insert(GetAtom(kUtf8String), mem);
 }
 
 void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
@@ -158,8 +138,7 @@ void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
     scoped_refptr<base::RefCountedMemory> mem(
         base::RefCountedBytes::TakeVector(&data));
 
-    format_map_.Insert(atom_cache_.GetAtom(Clipboard::kMimeTypeMozillaURL),
-                       mem);
+    format_map_.Insert(GetAtom(Clipboard::kMimeTypeMozillaURL), mem);
 
     // Set a string fallback as well.
     SetString(spec);
@@ -179,7 +158,7 @@ void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
     std::string netscape_url = url.spec();
     netscape_url += "\n";
     netscape_url += base::UTF16ToUTF8(title);
-    format_map_.Insert(atom_cache_.GetAtom(kNetscapeURL),
+    format_map_.Insert(GetAtom(kNetscapeURL),
                        scoped_refptr<base::RefCountedMemory>(
                            base::RefCountedString::TakeString(&netscape_url)));
   }
@@ -205,7 +184,7 @@ void OSExchangeDataProviderAuraX11::SetFilenames(
   std::string joined_data = base::JoinString(paths, "\n");
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&joined_data));
-  format_map_.Insert(atom_cache_.GetAtom(Clipboard::kMimeTypeURIList), mem);
+  format_map_.Insert(GetAtom(Clipboard::kMimeTypeURIList), mem);
 }
 
 void OSExchangeDataProviderAuraX11::SetPickledData(
@@ -219,7 +198,7 @@ void OSExchangeDataProviderAuraX11::SetPickledData(
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));
 
-  format_map_.Insert(atom_cache_.GetAtom(format.ToString().c_str()), mem);
+  format_map_.Insert(GetAtom(format.ToString().c_str()), mem);
 }
 
 bool OSExchangeDataProviderAuraX11::GetString(base::string16* result) const {
@@ -230,7 +209,7 @@ bool OSExchangeDataProviderAuraX11::GetString(base::string16* result) const {
     return false;
   }
 
-  std::vector< ::Atom> text_atoms = ui::GetTextAtomsFrom(&atom_cache_);
+  std::vector<::Atom> text_atoms = ui::GetTextAtomsFrom();
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
 
@@ -248,7 +227,7 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
     OSExchangeData::FilenameToURLPolicy policy,
     GURL* url,
     base::string16* title) const {
-  std::vector< ::Atom> url_atoms = ui::GetURLAtomsFrom(&atom_cache_);
+  std::vector<::Atom> url_atoms = ui::GetURLAtomsFrom();
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
@@ -258,7 +237,7 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
     // but that doesn't match the assumptions of the rest of the system which
     // expect single types.
 
-    if (data.GetType() == atom_cache_.GetAtom(Clipboard::kMimeTypeMozillaURL)) {
+    if (data.GetType() == GetAtom(Clipboard::kMimeTypeMozillaURL)) {
       // Mozilla URLs are (UTF16: URL, newline, title).
       base::string16 unparsed;
       data.AssignTo(&unparsed);
@@ -275,8 +254,7 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
         *url = GURL(tokens[0]);
         return true;
       }
-    } else if (data.GetType() == atom_cache_.GetAtom(
-                   Clipboard::kMimeTypeURIList)) {
+    } else if (data.GetType() == GetAtom(Clipboard::kMimeTypeURIList)) {
       std::vector<std::string> tokens = ui::ParseURIList(data);
       for (std::vector<std::string>::const_iterator it = tokens.begin();
            it != tokens.end(); ++it) {
@@ -306,7 +284,7 @@ bool OSExchangeDataProviderAuraX11::GetFilename(base::FilePath* path) const {
 
 bool OSExchangeDataProviderAuraX11::GetFilenames(
     std::vector<FileInfo>* filenames) const {
-  std::vector< ::Atom> url_atoms = ui::GetURIListAtomsFrom(&atom_cache_);
+  std::vector<::Atom> url_atoms = ui::GetURIListAtomsFrom();
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
@@ -331,7 +309,7 @@ bool OSExchangeDataProviderAuraX11::GetPickledData(
     const Clipboard::FormatType& format,
     base::Pickle* pickle) const {
   std::vector< ::Atom> requested_types;
-  requested_types.push_back(atom_cache_.GetAtom(format.ToString().c_str()));
+  requested_types.push_back(GetAtom(format.ToString().c_str()));
 
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
   if (data.IsValid()) {
@@ -346,7 +324,7 @@ bool OSExchangeDataProviderAuraX11::GetPickledData(
 }
 
 bool OSExchangeDataProviderAuraX11::HasString() const {
-  std::vector< ::Atom> text_atoms = ui::GetTextAtomsFrom(&atom_cache_);
+  std::vector<::Atom> text_atoms = ui::GetTextAtomsFrom();
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
   return !requested_types.empty() && !HasFile();
@@ -354,7 +332,7 @@ bool OSExchangeDataProviderAuraX11::HasString() const {
 
 bool OSExchangeDataProviderAuraX11::HasURL(
     OSExchangeData::FilenameToURLPolicy policy) const {
-  std::vector< ::Atom> url_atoms = ui::GetURLAtomsFrom(&atom_cache_);
+  std::vector<::Atom> url_atoms = ui::GetURLAtomsFrom();
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
@@ -365,11 +343,10 @@ bool OSExchangeDataProviderAuraX11::HasURL(
   // Windows does and stuffs all the data into one mime type.
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
   if (data.IsValid()) {
-    if (data.GetType() == atom_cache_.GetAtom(Clipboard::kMimeTypeMozillaURL)) {
+    if (data.GetType() == GetAtom(Clipboard::kMimeTypeMozillaURL)) {
       // File managers shouldn't be using this type, so this is a URL.
       return true;
-    } else if (data.GetType() == atom_cache_.GetAtom(
-        ui::Clipboard::kMimeTypeURIList)) {
+    } else if (data.GetType() == GetAtom(ui::Clipboard::kMimeTypeURIList)) {
       std::vector<std::string> tokens = ui::ParseURIList(data);
       for (std::vector<std::string>::const_iterator it = tokens.begin();
            it != tokens.end(); ++it) {
@@ -386,7 +363,7 @@ bool OSExchangeDataProviderAuraX11::HasURL(
 }
 
 bool OSExchangeDataProviderAuraX11::HasFile() const {
-  std::vector< ::Atom> url_atoms = ui::GetURIListAtomsFrom(&atom_cache_);
+  std::vector<::Atom> url_atoms = ui::GetURIListAtomsFrom();
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
@@ -414,7 +391,7 @@ bool OSExchangeDataProviderAuraX11::HasFile() const {
 bool OSExchangeDataProviderAuraX11::HasCustomFormat(
     const Clipboard::FormatType& format) const {
   std::vector< ::Atom> url_atoms;
-  url_atoms.push_back(atom_cache_.GetAtom(format.ToString().c_str()));
+  url_atoms.push_back(GetAtom(format.ToString().c_str()));
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
@@ -426,7 +403,7 @@ void OSExchangeDataProviderAuraX11::SetFileContents(
     const std::string& file_contents) {
   DCHECK(!filename.empty());
   DCHECK(format_map_.end() ==
-         format_map_.find(atom_cache_.GetAtom(Clipboard::kMimeTypeMozillaURL)));
+         format_map_.find(GetAtom(Clipboard::kMimeTypeMozillaURL)));
 
   file_contents_name_ = filename;
 
@@ -446,13 +423,12 @@ void OSExchangeDataProviderAuraX11::SetFileContents(
   //   things simpler for Chrome, we always 'fail' and let the destination do
   //   the work.
   std::string failure("F");
-  format_map_.Insert(
-      atom_cache_.GetAtom("XdndDirectSave0"),
-                          scoped_refptr<base::RefCountedMemory>(
-                              base::RefCountedString::TakeString(&failure)));
+  format_map_.Insert(GetAtom("XdndDirectSave0"),
+                     scoped_refptr<base::RefCountedMemory>(
+                         base::RefCountedString::TakeString(&failure)));
   std::string file_contents_copy = file_contents;
   format_map_.Insert(
-      atom_cache_.GetAtom("application/octet-stream"),
+      GetAtom("application/octet-stream"),
       scoped_refptr<base::RefCountedMemory>(
           base::RefCountedString::TakeString(&file_contents_copy)));
 }
@@ -468,13 +444,13 @@ void OSExchangeDataProviderAuraX11::SetHtml(const base::string16& html,
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));
 
-  format_map_.Insert(atom_cache_.GetAtom(Clipboard::kMimeTypeHTML), mem);
+  format_map_.Insert(GetAtom(Clipboard::kMimeTypeHTML), mem);
 }
 
 bool OSExchangeDataProviderAuraX11::GetHtml(base::string16* html,
                                             GURL* base_url) const {
   std::vector< ::Atom> url_atoms;
-  url_atoms.push_back(atom_cache_.GetAtom(Clipboard::kMimeTypeHTML));
+  url_atoms.push_back(GetAtom(Clipboard::kMimeTypeHTML));
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
@@ -490,7 +466,7 @@ bool OSExchangeDataProviderAuraX11::GetHtml(base::string16* html,
 
 bool OSExchangeDataProviderAuraX11::HasHtml() const {
   std::vector< ::Atom> url_atoms;
-  url_atoms.push_back(atom_cache_.GetAtom(Clipboard::kMimeTypeHTML));
+  url_atoms.push_back(GetAtom(Clipboard::kMimeTypeHTML));
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 

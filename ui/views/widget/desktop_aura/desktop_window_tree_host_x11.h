@@ -22,7 +22,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 
@@ -288,8 +287,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // The native root window.
   ::Window x_root_window_;
-
-  ui::X11AtomCache atom_cache_;
 
   // Whether the window is mapped with respect to the X server.
   bool window_mapped_in_server_;

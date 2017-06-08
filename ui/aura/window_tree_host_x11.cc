@@ -59,13 +59,6 @@ namespace aura {
 
 namespace {
 
-const char* kAtomsToCache[] = {
-  "WM_DELETE_WINDOW",
-  "_NET_WM_PING",
-  "_NET_WM_PID",
-  NULL
-};
-
 constexpr uint32_t kInputEventMask =
     ButtonPressMask | ButtonReleaseMask | FocusChangeMask | KeyPressMask |
     KeyReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask;
@@ -122,8 +115,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(ui::CursorType::kNull),
       window_mapped_(false),
-      bounds_(bounds),
-      atom_cache_(xdisplay_, kAtomsToCache) {
+      bounds_(bounds) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
@@ -153,8 +145,8 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
   // should listen for activation events and anything else that GTK+ listens
   // for, and do something useful.
   ::Atom protocols[2];
-  protocols[0] = atom_cache_.GetAtom("WM_DELETE_WINDOW");
-  protocols[1] = atom_cache_.GetAtom("_NET_WM_PING");
+  protocols[0] = ui::GetAtom("WM_DELETE_WINDOW");
+  protocols[1] = ui::GetAtom("_NET_WM_PING");
   XSetWMProtocols(xdisplay_, xwindow_, protocols, 2);
 
   // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
@@ -168,16 +160,9 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
   static_assert(sizeof(long) >= sizeof(pid_t),
                 "pid_t should not be larger than long");
   long pid = getpid();
-  XChangeProperty(xdisplay_,
-                  xwindow_,
-                  atom_cache_.GetAtom("_NET_WM_PID"),
-                  XA_CARDINAL,
-                  32,
-                  PropModeReplace,
-                  reinterpret_cast<unsigned char*>(&pid), 1);
-
-  // Allow subclasses to create and cache additional atoms.
-  atom_cache_.allow_uncached_atoms();
+  XChangeProperty(xdisplay_, xwindow_, ui::GetAtom("_NET_WM_PID"), XA_CARDINAL,
+                  32, PropModeReplace, reinterpret_cast<unsigned char*>(&pid),
+                  1);
 
   XRRSelectInput(xdisplay_, x_root_window_,
                  RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
@@ -322,10 +307,10 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
       break;
     case ClientMessage: {
       Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
-      if (message_type == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
+      if (message_type == ui::GetAtom("WM_DELETE_WINDOW")) {
         // We have received a close message from the window manager.
         OnHostCloseRequested();
-      } else if (message_type == atom_cache_.GetAtom("_NET_WM_PING")) {
+      } else if (message_type == ui::GetAtom("_NET_WM_PING")) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = x_root_window_;
 

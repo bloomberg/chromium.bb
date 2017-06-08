@@ -12,6 +12,7 @@ extern "C" {
 #include "base/command_line.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace gfx {
@@ -24,7 +25,7 @@ ICCProfile ICCProfile::FromBestMonitor() {
   ICCProfile icc_profile;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
     return icc_profile;
-  Atom property = XInternAtom(GetXDisplay(), "_ICC_PROFILE", true);
+  Atom property = ui::X11AtomCache::GetInstance()->GetAtom("_ICC_PROFILE");
   if (property != None) {
     Atom prop_type = None;
     int prop_format = 0;
