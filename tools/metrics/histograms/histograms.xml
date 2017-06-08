@@ -23485,6 +23485,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.ProgramCache.MemoryReleasedOnPressure" units="KB">
+  <owner>ssid@chromium.org</owner>
+  <summary>
+    Amount of memory released from the program cache on memory pressure.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ProgramCache.MemorySizeAfterKb" units="KB">
   <owner>vmiura@chromium.org</owner>
   <summary>

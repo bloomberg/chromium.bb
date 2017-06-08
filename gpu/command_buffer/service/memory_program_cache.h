@@ -14,6 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/program_cache.h"
@@ -166,12 +167,17 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
   typedef base::MRUCache<std::string,
                          scoped_refptr<ProgramCacheValue> > ProgramMRUCache;
 
+  void HandleMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   const size_t max_size_bytes_;
   const bool disable_gpu_shader_disk_cache_;
   const bool disable_program_caching_for_transform_feedback_;
   size_t curr_size_bytes_;
   ProgramMRUCache store_;
   GpuProcessActivityFlags* activity_flags_;
+
+  base::MemoryPressureListener memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryProgramCache);
 };
