@@ -43,10 +43,11 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
   void OnNodeDataWillChange(AXTree* tree,
                             const AXNodeData& old_node_data,
                             const AXNodeData& new_node_data) override {}
-  void OnTreeDataChanged(AXTree* tree) override {
+  void OnTreeDataChanged(AXTree* tree,
+                         const ui::AXTreeData& old_data,
+                         const ui::AXTreeData& new_data) override {
     tree_data_changed_ = true;
   }
-
   void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
     deleted_ids_.push_back(node->id());
   }

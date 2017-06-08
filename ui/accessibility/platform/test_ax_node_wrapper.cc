@@ -23,7 +23,9 @@ class TestAXTreeDelegate : public AXTreeDelegate {
   void OnNodeDataWillChange(AXTree* tree,
                             const AXNodeData& old_node_data,
                             const AXNodeData& new_node_data) override {}
-  void OnTreeDataChanged(AXTree* tree) override {}
+  void OnTreeDataChanged(AXTree* tree,
+                         const ui::AXTreeData& old_data,
+                         const ui::AXTreeData& new_data) override {}
   void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
     auto iter = g_node_to_wrapper_map.find(node);
     if (iter != g_node_to_wrapper_map.end()) {

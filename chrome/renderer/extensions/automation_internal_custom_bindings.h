@@ -159,7 +159,9 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   void OnNodeDataWillChange(ui::AXTree* tree,
                             const ui::AXNodeData& old_node_data,
                             const ui::AXNodeData& new_node_data) override;
-  void OnTreeDataChanged(ui::AXTree* tree) override;
+  void OnTreeDataChanged(ui::AXTree* tree,
+                         const ui::AXTreeData& old_tree_data,
+                         const ui::AXTreeData& new_tree_data) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeWillBeReparented(ui::AXTree* tree, ui::AXNode* node) override;

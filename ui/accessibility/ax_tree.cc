@@ -154,10 +154,14 @@ AXNode* AXTree::GetFromId(int32_t id) const {
   return iter != id_map_.end() ? iter->second : NULL;
 }
 
-void AXTree::UpdateData(const AXTreeData& data) {
-  data_ = data;
+void AXTree::UpdateData(const AXTreeData& new_data) {
+  if (data_ == new_data)
+    return;
+
+  AXTreeData old_data = data_;
+  data_ = new_data;
   if (delegate_)
-    delegate_->OnTreeDataChanged(this);
+    delegate_->OnTreeDataChanged(this, old_data, new_data);
 }
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
