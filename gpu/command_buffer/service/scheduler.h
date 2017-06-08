@@ -118,10 +118,6 @@ class GPU_EXPORT Scheduler {
   // SchedulingState with highest priority (lowest order) in front.
   std::vector<SchedulingState> scheduling_queue_;
 
-  // If the running sequence should yield so that a higher priority sequence can
-  // run.
-  bool should_yield_ = false;
-
   // If the scheduling queue needs to be rebuild because a sequence changed
   // priority.
   bool rebuild_scheduling_queue_ = false;
