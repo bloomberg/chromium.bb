@@ -124,7 +124,6 @@ cr.define('print_preview', function() {
     FILE_SELECTION_COMPLETE:
         'print_preview.NativeLayer.FILE_SELECTION_COMPLETE',
     GET_CAPABILITIES_FAIL: 'print_preview.NativeLayer.GET_CAPABILITIES_FAIL',
-    LOCAL_DESTINATIONS_SET: 'print_preview.NativeLayer.LOCAL_DESTINATIONS_SET',
     MANIPULATE_SETTINGS_FOR_TEST:
         'print_preview.NativeLayer.MANIPULATE_SETTINGS_FOR_TEST',
     PAGE_COUNT_READY: 'print_preview.NativeLayer.PAGE_COUNT_READY',
@@ -224,8 +223,8 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Requests the system's local print destinations. A LOCAL_DESTINATIONS_SET
-     * event will be dispatched in response.
+     * Requests the system's local print destinations. The promise will be
+     * resolved with a list of the local destinations.
      * @return {!Promise<!Array<print_preview.LocalDestinationInfo>>}
      */
     getPrinters: function() {
