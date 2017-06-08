@@ -15,7 +15,10 @@
 
 namespace blink {
 
+class FloatPoint;
 class FloatRect;
+class FloatSize;
+class GraphicsContext;
 class ImageObserver;
 
 // A generated placeholder image that shows a translucent gray rectangle.
@@ -42,8 +45,7 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
   void DestroyDecodedData() override;
 
  private:
-  PlaceholderImage(ImageObserver* observer, const IntSize& size)
-      : Image(observer), size_(size) {}
+  PlaceholderImage(ImageObserver*, const IntSize&);
 
   bool CurrentFrameHasSingleSecurityOrigin() const override { return true; }
 
@@ -53,7 +55,16 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
     return false;
   }
 
-  IntSize size_;
+  void DrawPattern(GraphicsContext&,
+                   const FloatRect& src_rect,
+                   const FloatSize& scale,
+                   const FloatPoint& phase,
+                   SkBlendMode,
+                   const FloatRect& dest_rect,
+                   const FloatSize& repeat_spacing = FloatSize()) override;
+
+  const IntSize size_;
+
   // Lazily initialized.
   sk_sp<SkImage> image_for_current_frame_;
 };
