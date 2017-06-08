@@ -22,13 +22,19 @@ namespace content {
 
 #if defined(OS_WIN)
 // These tests are flaky on WebRTC Windows bots: https://crbug.com/633242.
-#define MAYBE_GetCapabilities DISABLED_GetCapabilities
+#define MAYBE_GetPhotoCapabilities DISABLED_GetPhotoCapabilities
 #define MAYBE_TakePhoto DISABLED_TakePhoto
 #define MAYBE_GrabFrame DISABLED_GrabFrame
+#define MAYBE_GetTrackCapabilities DISABLED_GetTrackCapabilities
+#define MAYBE_GetTrackSettings DISABLED_GetTrackSettings
+#define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
 #else
-#define MAYBE_GetCapabilities GetCapabilities
+#define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
 #define MAYBE_TakePhoto TakePhoto
 #define MAYBE_GrabFrame GrabFrame
+#define MAYBE_GetTrackCapabilities GetTrackCapabilities
+#define MAYBE_GetTrackSettings GetTrackSettings
+#define MAYBE_ManipulateZoom ManipulateZoom
 #endif
 
 namespace {
@@ -71,10 +77,8 @@ class WebRtcImageCaptureBrowserTest
 
     // "GetUserMedia": enables navigator.mediaDevices.getUserMedia();
     // TODO(mcasas): remove GetUserMedia after https://crbug.com/503227.
-    // "ImageCapture": enables the ImageCapture API.
-    // TODO(mcasas): remove ImageCapture after https://crbug.com/603328.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "GetUserMedia,ImageCapture");
+        switches::kEnableBlinkFeatures, "GetUserMedia");
   }
 
   void SetUp() override {
@@ -112,9 +116,10 @@ class WebRtcImageCaptureBrowserTest
   DISALLOW_COPY_AND_ASSIGN(WebRtcImageCaptureBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_GetCapabilities) {
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
+                       MAYBE_GetPhotoCapabilities) {
   embedded_test_server()->StartAcceptingConnections();
-  ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetCapabilities()"));
+  ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetPhotoCapabilities()"));
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_TakePhoto) {
@@ -125,6 +130,22 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_TakePhoto) {
 IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_GrabFrame) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrame()"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
+                       MAYBE_GetTrackCapabilities) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetTrackCapabilities()"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_GetTrackSettings) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetTrackSettings()"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_ManipulateZoom) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testManipulateZoom()"));
 }
 
 INSTANTIATE_TEST_CASE_P(,
