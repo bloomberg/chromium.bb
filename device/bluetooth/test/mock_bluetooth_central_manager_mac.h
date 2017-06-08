@@ -5,11 +5,12 @@
 #ifndef DEVICE_BLUETOOTH_MOCK_BLUETOOTH_CENTRAL_MANAGER_MAC_H_
 #define DEVICE_BLUETOOTH_MOCK_BLUETOOTH_CENTRAL_MANAGER_MAC_H_
 
-#include "base/mac/sdk_forward_declarations.h"
-#include "build/build_config.h"
-#include "device/bluetooth/test/bluetooth_test_mac.h"
-
 #import <CoreBluetooth/CoreBluetooth.h>
+
+#import "base/mac/sdk_forward_declarations.h"
+#include "build/build_config.h"
+#import "device/bluetooth/bluetooth_adapter_mac.h"
+#import "device/bluetooth/test/bluetooth_test_mac.h"
 
 // Class to mock a CBCentralManager. Cannot use a OCMockObject because mocking
 // the 'state' property gives a compiler warning when mock_central_manager is of
@@ -21,7 +22,7 @@
 @property(nonatomic, assign) NSInteger scanForPeripheralsCallCount;
 @property(nonatomic, assign) NSInteger stopScanCallCount;
 @property(nonatomic, assign) id<CBCentralManagerDelegate> delegate;
-@property(nonatomic, assign) CBCentralManagerState state;
+@property(nonatomic, assign) CBManagerState state;
 @property(nonatomic, assign) device::BluetoothTestMac* bluetoothTestMac;
 @property(nonatomic, readonly) NSArray* retrieveConnectedPeripheralServiceUUIDs;
 

@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 
+#import <Foundation/Foundation.h>
+
 #include <memory>
 
 #include "base/bind.h"
@@ -15,19 +17,17 @@
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
-#include "device/bluetooth/bluetooth_low_energy_device_mac.h"
-#include "device/bluetooth/test/mock_bluetooth_cbperipheral_mac.h"
-#include "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
+#import "device/bluetooth/bluetooth_low_energy_device_mac.h"
+#import "device/bluetooth/test/mock_bluetooth_cbperipheral_mac.h"
+#import "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>
 #else  // !defined(OS_IOS)
 #import <IOBluetooth/IOBluetooth.h>
 #endif  // defined(OS_IOS)
-
-#import <Foundation/Foundation.h>
 
 namespace {
 // |kTestHashAddress| is the hash corresponding to identifier |kTestNSUUID|.
@@ -92,7 +92,7 @@ class BluetoothAdapterMacTest : public testing::Test {
     return (device != NULL);
   }
 
-  bool SetMockCentralManager(CBCentralManagerState desired_state) {
+  bool SetMockCentralManager(CBManagerState desired_state) {
     if (!BluetoothAdapterMac::IsLowEnergyAvailable()) {
       LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
       return false;
@@ -148,7 +148,7 @@ TEST_F(BluetoothAdapterMacTest, Poll) {
 }
 
 TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
   EXPECT_EQ(0, NumDiscoverySessions());
@@ -168,7 +168,7 @@ TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
 // TODO(krstnmnlsn): Test changing the filter when adding the second discovery
 // session (once we have that ability).
 TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
@@ -189,7 +189,7 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
 }
 
 TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
 
@@ -212,7 +212,7 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
 }
 
 TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilterFail) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   EXPECT_EQ(0, [mock_central_manager_ scanForPeripheralsCallCount]);
   EXPECT_EQ(0, [mock_central_manager_ stopScanCallCount]);
@@ -230,7 +230,7 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilterFail) {
 }
 
 TEST_F(BluetoothAdapterMacTest, CheckGetPeripheralHashAddress) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   base::scoped_nsobject<CBPeripheral> mock_peripheral(
       CreateMockPeripheral(kTestNSUUID));
@@ -240,7 +240,7 @@ TEST_F(BluetoothAdapterMacTest, CheckGetPeripheralHashAddress) {
 }
 
 TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedNewDevice) {
-  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+  if (!SetMockCentralManager(CBManagerStatePoweredOn))
     return;
   base::scoped_nsobject<CBPeripheral> mock_peripheral(
       CreateMockPeripheral(kTestNSUUID));
