@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -87,6 +89,39 @@ void LevelDBWrapperImpl::ScheduleImmediateCommit() {
   if (!database_ || !commit_batch_)
     return;
   CommitChanges();
+}
+
+void LevelDBWrapperImpl::OnMemoryDump(
+    const std::string& name,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  if (!map_)
+    return;
+
+  const char* system_allocator_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+  if (commit_batch_) {
+    size_t data_size = 0;
+    for (const auto& key : commit_batch_->changed_keys)
+      data_size += key.size();
+    auto* commit_batch_mad = pmd->CreateAllocatorDump(name + "/commit_batch");
+    commit_batch_mad->AddScalar(
+        base::trace_event::MemoryAllocatorDump::kNameSize,
+        base::trace_event::MemoryAllocatorDump::kUnitsBytes, data_size);
+    if (system_allocator_name)
+      pmd->AddSuballocation(commit_batch_mad->guid(), system_allocator_name);
+  }
+
+  // Do not add storage map usage if less than 1KB.
+  if (bytes_used_ < 1024)
+    return;
+
+  auto* map_mad = pmd->CreateAllocatorDump(name + "/storage_map");
+  map_mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                     bytes_used_);
+  if (system_allocator_name)
+    pmd->AddSuballocation(map_mad->guid(), system_allocator_name);
 }
 
 void LevelDBWrapperImpl::PurgeMemory() {

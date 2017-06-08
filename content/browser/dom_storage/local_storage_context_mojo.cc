@@ -4,10 +4,14 @@
 
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 
+#include <inttypes.h>
+#include <cctype>  // for std::isalnum
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
@@ -235,17 +239,21 @@ class LocalStorageContextMojo::LevelDBWrapperHolder
 };
 
 LocalStorageContextMojo::LocalStorageContextMojo(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     service_manager::Connector* connector,
-    scoped_refptr<DOMStorageTaskRunner> task_runner,
+    scoped_refptr<DOMStorageTaskRunner> legacy_task_runner,
     const base::FilePath& old_localstorage_path,
     const base::FilePath& subdirectory,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy)
     : connector_(connector ? connector->Clone() : nullptr),
       subdirectory_(subdirectory),
       special_storage_policy_(std::move(special_storage_policy)),
-      task_runner_(std::move(task_runner)),
+      task_runner_(std::move(legacy_task_runner)),
       old_localstorage_path_(old_localstorage_path),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "LocalStorage", task_runner);
+}
 
 void LocalStorageContextMojo::OpenLocalStorage(
     const url::Origin& origin,
@@ -349,6 +357,43 @@ void LocalStorageContextMojo::SetDatabaseForTesting(
   OnDatabaseOpened(true, leveldb::mojom::DatabaseError::OK);
 }
 
+bool LocalStorageContextMojo::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  if (connection_state_ != CONNECTION_FINISHED)
+    return true;
+  // TODO(mek): Somehow account for leveldb memory usage.
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    size_t total_cache_size = 0;
+    for (const auto& it : level_db_wrappers_)
+      total_cache_size += it.second->level_db_wrapper()->bytes_used();
+    auto* mad = pmd->CreateAllocatorDump(
+        base::StringPrintf("dom_storage/0x%" PRIXPTR "/cache_size",
+                           reinterpret_cast<uintptr_t>(this)));
+    mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                   total_cache_size);
+    mad->AddScalar("total_areas",
+                   base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                   level_db_wrappers_.size());
+    return true;
+  }
+  for (const auto& it : level_db_wrappers_) {
+    // Limit the url length to 50 and strip special characters.
+    std::string url = it.first.Serialize().substr(0, 50);
+    for (size_t index = 0; index < url.size(); ++index) {
+      if (!std::isalnum(url[index]))
+        url[index] = '_';
+    }
+    std::string name = base::StringPrintf(
+        "dom_storage/%s/0x%" PRIXPTR, url.c_str(),
+        reinterpret_cast<uintptr_t>(it.second->level_db_wrapper()));
+    it.second->level_db_wrapper()->OnMemoryDump(name, pmd);
+  }
+  return true;
+}
+
 // static
 std::vector<uint8_t> LocalStorageContextMojo::MigrateString(
     const base::string16& input) {
@@ -364,6 +409,8 @@ std::vector<uint8_t> LocalStorageContextMojo::MigrateString(
 
 LocalStorageContextMojo::~LocalStorageContextMojo() {
   DCHECK_EQ(connection_state_, CONNECTION_SHUTDOWN);
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {

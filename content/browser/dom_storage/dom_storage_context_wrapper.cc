@@ -129,7 +129,7 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
     mojo_task_runner_ =
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
     mojo_state_ = new LocalStorageContextMojo(
-        connector, context_->task_runner(),
+        mojo_task_runner_, connector, context_->task_runner(),
         data_path.empty() ? data_path
                           : data_path.AppendASCII(kLocalStorageDirectory),
         storage_dir, special_storage_policy);
