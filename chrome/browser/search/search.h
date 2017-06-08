@@ -14,6 +14,7 @@
 
 class GURL;
 class Profile;
+class TemplateURLService;
 
 namespace content {
 class BrowserContext;
@@ -46,6 +47,11 @@ bool IsRenderedInInstantProcess(const content::WebContents* contents,
 
 // Returns true if the Instant |url| should use process per site.
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile);
+
+// Returns whether Google is selected as the default search engine.
+bool DefaultSearchProviderIsGoogle(Profile* profile);
+bool DefaultSearchProviderIsGoogle(
+    const TemplateURLService* template_url_service);
 
 // Returns true if |url| corresponds to a New Tab page (it can be either an
 // Instant Extended NTP or a non-extended NTP). A page that matches the search

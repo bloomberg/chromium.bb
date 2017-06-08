@@ -53,12 +53,14 @@ class NTPUserDataLogger
  protected:
   explicit NTPUserDataLogger(content::WebContents* contents);
 
+  void set_ntp_url_for_testing(const GURL& ntp_url) { ntp_url_ = ntp_url; }
+
  private:
   friend class content::WebContentsUserData<NTPUserDataLogger>;
 
+  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestLoadTime);
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestLogMostVisitedImpression);
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestNumberOfTiles);
-  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestLoadTime);
 
   // Number of Most Visited elements on the NTP for logging purposes.
   static const int kNumMostVisited = 8;
@@ -69,6 +71,10 @@ class NTPUserDataLogger
 
   // Implementation of NavigationEntryCommitted; separate for test.
   void NavigatedFromURLToURL(const GURL& from, const GURL& to);
+
+  // Returns whether Google is selected as the default search engine. Virtual
+  // for testing.
+  virtual bool DefaultSearchProviderIsGoogle() const;
 
   // Logs a number of statistics regarding the NTP. Called when an NTP tab is
   // about to be deactivated (be it by switching tabs, losing focus or closing
