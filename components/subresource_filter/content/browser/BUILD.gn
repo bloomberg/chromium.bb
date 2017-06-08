@@ -37,7 +37,6 @@ static_library("browser") {
     "//base",
     "//components/safe_browsing_db:database_manager",
     "//components/safe_browsing_db:util",
-    "//components/safe_browsing_db:v4_local_database_manager",
     "//components/subresource_filter/content/common",
     "//components/subresource_filter/core/browser",
     "//components/subresource_filter/core/common",

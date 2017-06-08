@@ -13,7 +13,6 @@
 #include "base/timer/timer.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/util.h"
-#include "components/safe_browsing_db/v4_local_database_manager.h"
 #include "url/gurl.h"
 
 namespace base {
