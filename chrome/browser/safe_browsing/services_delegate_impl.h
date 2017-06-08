@@ -8,11 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_detector.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
+#include "components/safe_browsing/password_protection/password_protection_service.h"
 
 namespace safe_browsing {
 
@@ -61,6 +63,11 @@ class ServicesDelegateImpl : public ServicesDelegate {
   IncidentReportingService* CreateIncidentReportingService();
   ResourceRequestDetector* CreateResourceRequestDetector();
 
+  void CreatePasswordProtectionService(Profile* profile) override;
+  void RemovePasswordProtectionService(Profile* profile) override;
+  PasswordProtectionService* GetPasswordProtectionService(
+      Profile* profile) const override;
+
   std::unique_ptr<ClientSideDetectionService> csd_service_;
   std::unique_ptr<DownloadProtectionService> download_service_;
   std::unique_ptr<IncidentReportingService> incident_service_;
@@ -72,6 +79,12 @@ class ServicesDelegateImpl : public ServicesDelegate {
   // The Pver4 local database manager handles the database and download logic
   // Accessed on both UI and IO thread.
   scoped_refptr<SafeBrowsingDatabaseManager> v4_local_database_manager_;
+
+  // Tracks existing Profiles, and their corresponding
+  // ChromePasswordProtectionService instances.
+  // Accessed on UI thread.
+  std::map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
+      password_protection_service_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesDelegateImpl);
 };

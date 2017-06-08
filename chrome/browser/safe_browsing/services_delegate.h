@@ -31,6 +31,7 @@ namespace safe_browsing {
 class ClientSideDetectionService;
 class DownloadProtectionService;
 class IncidentReportingService;
+class PasswordProtectionService;
 class ResourceRequestDetector;
 struct ResourceRequestInfo;
 class SafeBrowsingService;
@@ -106,6 +107,11 @@ class ServicesDelegate {
     net::URLRequestContextGetter* url_request_context_getter,
     const V4ProtocolConfig& v4_config) = 0;
   virtual void StopOnIOThread(bool shutdown) = 0;
+
+  virtual void CreatePasswordProtectionService(Profile* profile) = 0;
+  virtual void RemovePasswordProtectionService(Profile* profile) = 0;
+  virtual PasswordProtectionService* GetPasswordProtectionService(
+      Profile* profile) const = 0;
 };
 
 }  // namespace safe_browsing

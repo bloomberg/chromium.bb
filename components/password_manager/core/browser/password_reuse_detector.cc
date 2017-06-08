@@ -37,6 +37,8 @@ bool IsSuffix(const base::string16& str,
 
 }  // namespace
 
+const char kSyncPasswordDomain[] = "CHROME SYNC";
+
 bool ReverseStringLess::operator()(const base::string16& lhs,
                                    const base::string16& rhs) const {
   return std::lexicographical_compare(lhs.rbegin(), lhs.rend(), rhs.rbegin(),
@@ -94,8 +96,8 @@ bool PasswordReuseDetector::CheckSyncPasswordReuse(
     base::StringPiece16 input_suffix(input.c_str() + i, input.size() - i);
     if (password_manager_util::Calculate37BitsOfSHA256Hash(input_suffix) ==
         sync_password_hash_.value()) {
-      consumer->OnReuseFound(input_suffix.as_string(), gaia_origin.host(), 1,
-                             0);
+      consumer->OnReuseFound(input_suffix.as_string(),
+                             std::string(kSyncPasswordDomain), 1, 0);
       return true;
     }
   }

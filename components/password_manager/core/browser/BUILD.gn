@@ -189,10 +189,6 @@ static_library("browser") {
     sources -= [ "login_database_posix.cc" ]
   }
 
-  if (!is_ios) {
-    deps += [ "//components/safe_browsing/password_protection" ]
-  }
-
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }

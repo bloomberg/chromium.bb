@@ -21,8 +21,8 @@ class PasswordReuseDetectorConsumer
   virtual ~PasswordReuseDetectorConsumer();
 
   // Called when a password reuse is found.
-  // |legitimate_domain| is the domain on which |password| is saved or the sync
-  // domain if |password| is a sync password.
+  // |legitimate_domain| is the domain on which |password| is saved or
+  // safe_browsing::kChromeSyncDomain if |password| is a sync password.
   // |saved_passwords| is total number of passwords stored in Password Manager.
   // |number_matches| is a number of sites on which |password| is saved.
   virtual void OnReuseFound(const base::string16& password,

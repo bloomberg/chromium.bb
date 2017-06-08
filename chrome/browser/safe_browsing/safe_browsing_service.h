@@ -54,7 +54,6 @@ namespace safe_browsing {
 class ClientSideDetectionService;
 class DownloadProtectionService;
 class PasswordProtectionService;
-class ChromePasswordProtectionService;
 struct ResourceRequestInfo;
 struct SafeBrowsingProtocolConfig;
 class SafeBrowsingDatabaseManager;
@@ -282,10 +281,6 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Process the observed resource requests on the UI thread.
   void ProcessResourceRequest(const ResourceRequestInfo& request);
 
-  void CreatePasswordProtectionService(Profile* profile);
-
-  void RemovePasswordProtectionService(Profile* profile);
-
   void CreateTriggerManager();
 
   // The factory used to instantiate a SafeBrowsingService object.
@@ -356,12 +351,6 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // events.
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
-
-  // Tracks existing Profiles, and their corresponding
-  // ChromePasswordProtectionService instances.
-  // Accessed on UI thread.
-  std::map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
-      password_protection_service_map_;
 
   std::unique_ptr<TriggerManager> trigger_manager_;
 

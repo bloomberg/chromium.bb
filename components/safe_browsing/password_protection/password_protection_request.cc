@@ -7,12 +7,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -124,7 +126,10 @@ void PasswordProtectionRequest::FillRequestProto() {
       break;
     }
     case LoginReputationClientRequest::PASSWORD_REUSE_EVENT: {
-      // TODO(jialiul): Fill more password reuse related information when ready.
+      LoginReputationClientRequest::PasswordReuseEvent* reuse_event =
+          request_proto_->mutable_password_reuse_event();
+      reuse_event->set_is_chrome_signin_password(
+          saved_domain_ == std::string(password_manager::kSyncPasswordDomain));
       break;
     }
     default:

@@ -11,9 +11,6 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-#include "components/safe_browsing/password_protection/password_protection_service.h"
-#endif
 
 using base::Time;
 using base::TimeDelta;
