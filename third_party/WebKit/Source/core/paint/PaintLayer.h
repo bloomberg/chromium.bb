@@ -1021,10 +1021,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     self_painting_status_changed_ = false;
   }
 
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  void EndShouldKeepAliveAllClientsRecursive();
-#endif
-
  private:
   void SetNeedsCompositingInputsUpdateInternal();
 

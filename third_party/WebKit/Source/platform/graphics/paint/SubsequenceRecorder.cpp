@@ -15,10 +15,6 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context,
     : paint_controller_(context.GetPaintController()),
       client_(client),
       begin_subsequence_index_(0) {
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  paint_controller_.BeginSubsequence(client_);
-#endif
-
   if (paint_controller_.DisplayItemConstructionIsDisabled())
     return;
 
@@ -26,10 +22,6 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context,
 }
 
 SubsequenceRecorder::~SubsequenceRecorder() {
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  paint_controller_.EndSubsequence();
-#endif
-
   if (paint_controller_.DisplayItemConstructionIsDisabled())
     return;
 

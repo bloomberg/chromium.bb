@@ -40,7 +40,6 @@ class LayoutScrollbarPart final : public LayoutBlock {
                                               ScrollableArea*,
                                               LayoutScrollbar* = nullptr,
                                               ScrollbarPart = kNoPart);
-  ~LayoutScrollbarPart() override;
 
   const char* GetName() const override { return "LayoutScrollbarPart"; }
 

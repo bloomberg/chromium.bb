@@ -228,31 +228,8 @@ const DisplayItem* PaintController::LastDisplayItem(unsigned offset) {
   return nullptr;
 }
 
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-void PaintController::BeginShouldKeepAlive(const DisplayItemClient& client) {
-  if (!IsSkippingCache()) {
-    // Mark the client shouldKeepAlive under this PaintController.
-    // The status will end after the new display items are committed.
-    client.BeginShouldKeepAlive(this);
-
-    if (!current_subsequence_clients_.IsEmpty()) {
-      // Mark the client shouldKeepAlive under the current subsequence.
-      // The status will end when the subsequence owner is invalidated or
-      // deleted.
-      client.BeginShouldKeepAlive(current_subsequence_clients_.back());
-    }
-  }
-}
-#endif
-
 void PaintController::ProcessNewItem(DisplayItem& display_item) {
   DCHECK(!construction_disabled_);
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  if (display_item.IsCacheable()) {
-    BeginShouldKeepAlive(display_item.Client());
-  }
-#endif
 
   if (IsSkippingCache())
     display_item.SetSkippedCache();
@@ -347,8 +324,8 @@ void PaintController::InvalidateAll() {
 
 bool PaintController::ClientCacheIsValid(
     const DisplayItemClient& client) const {
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  CHECK(client.IsAlive());
+#if DCHECK_IS_ON()
+  DCHECK(client.IsAlive());
 #endif
   if (IsSkippingCache())
     return false;
@@ -511,8 +488,8 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     // TODO(chrishtr); remove this hack once crbug.com/712660 is resolved.
     if (!cached_item->HasValidClient())
       continue;
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    CHECK(cached_item->Client().IsAlive());
+#if DCHECK_IS_ON()
+    DCHECK(cached_item->Client().IsAlive());
 #endif
     ++num_cached_new_items_;
     if (!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
@@ -584,13 +561,8 @@ void PaintController::CommitNewDisplayItems() {
   new_cached_subsequences_.swap(current_cached_subsequences_);
   new_cached_subsequences_.clear();
   last_cached_subsequence_end_ = 0;
-  for (auto& item : current_cached_subsequences_) {
+  for (auto& item : current_cached_subsequences_)
     item.key->SetDisplayItemsCached(current_cache_generation_);
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::EndShouldKeepAliveAllClients(item.key);
-    DCHECK(current_subsequence_clients_.IsEmpty());
-#endif
-  }
 
   Vector<const DisplayItemClient*> skipped_cache_clients;
   for (const auto& item : new_display_item_list_) {
@@ -632,10 +604,6 @@ void PaintController::CommitNewDisplayItems() {
 
   // We'll allocate the initial buffer when we start the next paint.
   new_display_item_list_ = DisplayItemList(0);
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  DisplayItemClient::EndShouldKeepAliveAllClients(this);
-#endif
 
 #ifndef NDEBUG
   num_sequential_matches_ = 0;

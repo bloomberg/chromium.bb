@@ -54,8 +54,8 @@ struct PaintChunk {
       return false;
     if (*id != *old.id)
       return false;
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    CHECK(id->client.IsAlive());
+#if DCHECK_IS_ON()
+    DCHECK(id->client.IsAlive());
 #endif
     // A chunk whose client is just created should not match any cached chunk,
     // even if it's id equals the old chunk's id (which may happen if this
