@@ -61,9 +61,7 @@ class WebResourceUtilTest : public testing::Test {
   bool success_called_;
 };
 
-// TODO(crbug.com/728216): Disabled because
-// ScopedTaskEnvironment::RunUntilIdle() may hang.
-TEST_F(WebResourceUtilTest, DISABLED_Success) {
+TEST_F(WebResourceUtilTest, Success) {
   const std::string kExpectedKey("foo");
   const std::string kExpectedValue("bar");
   std::string json = base::StringPrintf("{\"%s\":\"%s\"}", kExpectedKey.c_str(),
@@ -87,10 +85,8 @@ TEST_F(WebResourceUtilTest, DISABLED_Success) {
   EXPECT_EQ(kExpectedValue, actual_value_as_string);
 }
 
-// Only DictionaryValues are expected.
-// TODO(crbug.com/728216): Disabled because
-// ScopedTaskEnvironment::RunUntilIdle() may hang.
-TEST_F(WebResourceUtilTest, DISABLED_UnexpectedValue) {
+// Only DictionartValues are expected.
+TEST_F(WebResourceUtilTest, UnexpectedValue) {
   GetIOSChromeParseJSONCallback().Run("foo", GetSuccessCallback(),
                                       GetErrorCallback());
 
@@ -103,9 +99,7 @@ TEST_F(WebResourceUtilTest, DISABLED_UnexpectedValue) {
 }
 
 // Empty data is not expected.
-// TODO(crbug.com/728216): Disabled because
-// ScopedTaskEnvironment::RunUntilIdle() may hang.
-TEST_F(WebResourceUtilTest, DISABLED_EmptyValue) {
+TEST_F(WebResourceUtilTest, EmptyValue) {
   GetIOSChromeParseJSONCallback().Run(std::string(), GetSuccessCallback(),
                                       GetErrorCallback());
 
@@ -118,9 +112,7 @@ TEST_F(WebResourceUtilTest, DISABLED_EmptyValue) {
 }
 
 // Wrong syntax.
-// TODO(crbug.com/728216): Disabled because
-// ScopedTaskEnvironment::RunUntilIdle() may hang.
-TEST_F(WebResourceUtilTest, DISABLED_SyntaxError) {
+TEST_F(WebResourceUtilTest, SyntaxError) {
   GetIOSChromeParseJSONCallback().Run("%$[", GetSuccessCallback(),
                                       GetErrorCallback());
 
