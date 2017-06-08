@@ -12,7 +12,7 @@ function test()
 
         function testNoCrash(next)
         {
-            InspectorTest.domModel.performSearch("FooBar", false, next);
+            InspectorTest.domModel.performSearch("FooBar", false).then(next);
         }
     ]);
 }

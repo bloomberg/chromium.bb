@@ -55,116 +55,116 @@ function test()
 
         function testPlainText(next)
         {
-            InspectorTest.domModel.performSearch("Fo" + "o" + "Bar", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("Fo" + "o" + "Bar", false).then(searchCallback.bind(this, next));
         },
 
         function testPartialText(next)
         {
-            InspectorTest.domModel.performSearch("oo" + "Ba", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("oo" + "Ba", false).then(searchCallback.bind(this, next));
         },
 
         function testStartTag(next)
         {
-            InspectorTest.domModel.performSearch("<inpu" + "t", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("<inpu" + "t", false).then(searchCallback.bind(this, next));
         },
 
         function testEndTag(next)
         {
-            InspectorTest.domModel.performSearch("npu" + "t>", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("npu" + "t>", false).then(searchCallback.bind(this, next));
         },
 
         function testPartialTag(next)
         {
-            InspectorTest.domModel.performSearch("npu" + "t", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("npu" + "t", false).then(searchCallback.bind(this, next));
         },
 
         function testPartialAbsentTagStart(next)
         {
-            InspectorTest.domModel.performSearch("<npu" + "t", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("<npu" + "t", false).then(searchCallback.bind(this, next));
         },
 
         function testPartialAbsentTagEnd(next)
         {
-            InspectorTest.domModel.performSearch("npu" + ">", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("npu" + ">", false).then(searchCallback.bind(this, next));
         },
 
         function testFullTag(next)
         {
-            InspectorTest.domModel.performSearch("<inpu" + "t>", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("<inpu" + "t>", false).then(searchCallback.bind(this, next));
         },
 
         function testExactAttributeName(next)
         {
-            InspectorTest.domModel.performSearch("valu" + "e", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("valu" + "e", false).then(searchCallback.bind(this, next));
         },
 
         function testExactAttributeVal_ue(next)
         {
-            InspectorTest.domModel.performSearch("In" + "putVa" + "l", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("In" + "putVa" + "l", false).then(searchCallback.bind(this, next));
         },
 
         function testExactAttributeVal_ueOnRoot(next)
         {
             omitInnerHTML = true;
-            InspectorTest.domModel.performSearch("documen" + "tElement", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("documen" + "tElement", false).then(searchCallback.bind(this, next));
         },
 
         function testExactAttributeVal_ueWithQuotes(next)
         {
             omitInnerHTML = false;
-            InspectorTest.domModel.performSearch("\"fo" + "o\"", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("\"fo" + "o\"", false).then(searchCallback.bind(this, next));
         },
 
         function testPartialAttributeVal_ue(next)
         {
-            InspectorTest.domModel.performSearch("n" + "putVa" + "l", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("n" + "putVa" + "l", false).then(searchCallback.bind(this, next));
         },
 
         function testXPathAttribute(next)
         {
-            InspectorTest.domModel.performSearch("//html" + "//@attr", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("//html" + "//@attr", false).then(searchCallback.bind(this, next));
         },
 
         function testSelector(next)
         {
-            InspectorTest.domModel.performSearch("d" + "iv.divclass span", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("d" + "iv.divclass span", false).then(searchCallback.bind(this, next));
         },
 
         function testCaseUpperFindsLower(next)
         {
-            InspectorTest.domModel.performSearch("K" +"OO", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("K" +"OO", false).then(searchCallback.bind(this, next));
         },
 
         function testCaseLowerFindsUpper(next)
         {
-            InspectorTest.domModel.performSearch("c" + "aseless", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("c" + "aseless", false).then(searchCallback.bind(this, next));
         },
 
         function testCaseAttribute(next)
         {
-            InspectorTest.domModel.performSearch("C" + "AMEL", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("C" + "AMEL", false).then(searchCallback.bind(this, next));
         },
 
         function testSearchShadowDOM(next)
         {
-            InspectorTest.domModel.performSearch("<c" + "ontent", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("<c" + "ontent", false).then(searchCallback.bind(this, next));
         },
 
         function testSearchUAShadowDOM(next)
         {
             InspectorTest.addResult("Searching UA shadow DOM with setting disabled:")
-            InspectorTest.domModel.performSearch("inne" + "r-editor", false, searchCallback.bind(this, step2));
+            InspectorTest.domModel.performSearch("inne" + "r-editor", false).then(searchCallback.bind(this, step2));
 
             function step2()
             {
                 InspectorTest.addResult("Searching UA shadow DOM with setting enabled:")
-                InspectorTest.domModel.performSearch("inne" + "r-editor", true, searchCallback.bind(this, next));
+                InspectorTest.domModel.performSearch("inne" + "r-editor", true).then(searchCallback.bind(this, next));
             }
         },
 
         function testSearchShadowHostChildren(next)
         {
-            InspectorTest.domModel.performSearch("shadow-host-c" + "ontent", false, searchCallback.bind(this, next));
+            InspectorTest.domModel.performSearch("shadow-host-c" + "ontent", false).then(searchCallback.bind(this, next));
         },
     ]);
 
