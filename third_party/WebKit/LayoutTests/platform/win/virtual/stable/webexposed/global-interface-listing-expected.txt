@@ -4094,6 +4094,7 @@ interface RTCCertificate
     attribute @@toStringTag
     getter expires
     method constructor
+    method getFingerprints
 interface RTCDataChannel : EventTarget
     attribute @@toStringTag
     getter binaryType

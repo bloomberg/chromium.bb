@@ -4,7 +4,11 @@
 
 #include "content/renderer/media/rtc_certificate.h"
 
+#include <vector>
+
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
+#include "third_party/webrtc/base/sslidentity.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -24,6 +28,22 @@ std::unique_ptr<blink::WebRTCCertificate> RTCCertificate::ShallowCopy() const {
 
 uint64_t RTCCertificate::Expires() const {
   return certificate_->Expires();
+}
+
+blink::WebVector<blink::WebRTCDtlsFingerprint> RTCCertificate::GetFingerprints()
+    const {
+  std::vector<blink::WebRTCDtlsFingerprint> fingerprints;
+  std::unique_ptr<rtc::SSLCertificateStats> first_certificate_stats =
+      certificate_->identity()->certificate().GetStats();
+  for (rtc::SSLCertificateStats* certificate_stats =
+           first_certificate_stats.get();
+       certificate_stats; certificate_stats = certificate_stats->issuer.get()) {
+    fingerprints.push_back(blink::WebRTCDtlsFingerprint(
+        blink::WebString::FromUTF8(certificate_stats->fingerprint_algorithm),
+        blink::WebString::FromUTF8(
+            base::ToLowerASCII(certificate_stats->fingerprint))));
+  }
+  return blink::WebVector<blink::WebRTCDtlsFingerprint>(fingerprints);
 }
 
 blink::WebRTCCertificatePEM RTCCertificate::ToPEM() const {

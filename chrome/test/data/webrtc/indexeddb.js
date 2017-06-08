@@ -77,11 +77,35 @@ function generateAndCloneCertificate(keygenAlgorithm) {
   RTCPeerConnection.generateCertificate(keygenAlgorithm).then(
       function(certificate) {
         gCertificate = certificate;
+        if (gCertificate.getFingerprints().length == 0)
+          throw failTest('getFingerprints() is empty.');
+        for (let i = 0; i < gCertificate.getFingerprints().length; ++i) {
+          if (gCertificate.getFingerprints()[i].algorithm != 'sha-256')
+            throw failTest('Unexpected fingerprint algorithm.');
+          if (gCertificate.getFingerprints()[i].value.length == 0)
+            throw failTest('Unexpected fingerprint value.');
+        }
         cloneCertificate_(gCertificate).then(
             function(clone) {
+              let cloneIsEqual = (clone.getFingerprints().length ==
+                                  gCertificate.getFingerprints().length);
+              if (cloneIsEqual) {
+                for (let i = 0; i < clone.getFingerprints().length; ++i) {
+                  if (clone.getFingerprints()[i].algorithm !=
+                      gCertificate.getFingerprints()[i].algorithm ||
+                      clone.getFingerprints()[i].value !=
+                      gCertificate.getFingerprints()[i].value) {
+                    cloneIsEqual = false;
+                    break;
+                  }
+                }
+              }
+              if (!cloneIsEqual) {
+                throw failTest('The cloned certificate\'s fingerprints does ' +
+                               'not match the original certificate.');
+              }
+
               gCertificateClone = clone;
-              // TODO(hbos): Verify that |gCertificate| is value-equal to
-              // |gCertificateClone|. crbug.com/609108
               returnToTest('ok-generated-and-cloned');
             },
             function() {

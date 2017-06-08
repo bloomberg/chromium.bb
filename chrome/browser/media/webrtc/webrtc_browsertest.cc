@@ -88,6 +88,7 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     SetupPeerconnectionWithLocalStream(right_tab_, cert_keygen_alg);
 
     NegotiateCall(left_tab_, right_tab_);
+    VerifyLocalDescriptionContainsCertificate(left_tab_, "gCertificate");
 
     DetectVideoAndHangUp();
   }
