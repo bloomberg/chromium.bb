@@ -107,3 +107,34 @@ GuestViewImpl.prototype.createImpl$ = function(createParams, callback) {
 
   this.state = GuestViewImpl.GuestState.GUEST_STATE_CREATED;
 };
+
+// Internal implementation of destroy().
+GuestViewImpl.prototype.destroyImpl = function(callback) {
+  // Check the current state.
+  if (!this.checkState('destroy')) {
+    this.handleCallback(callback);
+    return;
+  }
+
+  if (this.state == GuestViewImpl.GuestState.GUEST_STATE_START) {
+    // destroy() does nothing in this case.
+    this.handleCallback(callback);
+    return;
+  }
+
+  // If this guest is attached, then detach it first.
+  if (!!this.internalInstanceId) {
+    GuestViewInternalNatives.DetachGuest(this.internalInstanceId);
+  }
+
+  this.handleCallback(callback);
+
+  // Reset the state of the destroyed guest;
+  this.contentWindow = null;
+  this.id = 0;
+  this.internalInstanceId = 0;
+  this.state = GuestViewImpl.GuestState.GUEST_STATE_START;
+  if (ResizeEvent.hasListener(this.callOnResize)) {
+    ResizeEvent.removeListener(this.callOnResize);
+  }
+};
