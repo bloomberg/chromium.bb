@@ -1829,7 +1829,7 @@ source_set("browser") {
   }
 
   if (is_linux && use_aura) {
-    deps += [ "//build/linux:fontconfig" ]
+    deps += [ "//third_party/fontconfig" ]
   }
 
   if (use_x11) {

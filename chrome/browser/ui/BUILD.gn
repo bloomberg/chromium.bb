@@ -3217,7 +3217,7 @@ split_static_library("ui") {
       "webui/certificate_viewer_webui.h",
     ]
     if (use_aura) {
-      deps += [ "//build/linux:fontconfig" ]
+      deps += [ "//third_party/fontconfig" ]
       if (use_dbus) {
         deps += [ "//dbus" ]
       }

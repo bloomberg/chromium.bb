@@ -300,7 +300,7 @@ static_library("content_shell_lib") {
 
   if (is_linux) {
     deps += [
-      "//build/linux:fontconfig",
+      "//third_party/fontconfig",
       "//ui/gfx:test_support",
     ]
   }

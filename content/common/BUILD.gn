@@ -496,7 +496,7 @@ source_set("common") {
   }
 
   if (is_linux) {
-    deps += [ "//build/linux:fontconfig" ]
+    deps += [ "//third_party/fontconfig" ]
   }
 
   if (is_mac || is_win || is_android) {

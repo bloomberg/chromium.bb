@@ -42,7 +42,6 @@ source_set("chromeos") {
     "//ash:ash_with_content",
     "//ash/autoclick/mus/public/interfaces",
     "//ash/public/cpp:ash_public_cpp",
-    "//build/linux:fontconfig",
     "//chrome/browser/devtools",
     "//chrome/browser/extensions",
     "//chrome/browser/safe_browsing:chunk_proto",
@@ -76,6 +75,7 @@ source_set("chromeos") {
     "//components/session_manager/core",
     "//components/sync_wifi",
     "//components/user_manager",
+    "//third_party/fontconfig",
 
     # This depends directly on the variations target, rather than just
     # transitively via the common target because the proto sources need to

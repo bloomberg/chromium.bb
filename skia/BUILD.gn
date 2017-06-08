@@ -451,8 +451,8 @@ component("skia") {
       ]
     }
     deps += [
-      "//build/linux:fontconfig",
       "//third_party/expat",
+      "//third_party/fontconfig",
       "//third_party/icu:icuuc",
     ]
   }
