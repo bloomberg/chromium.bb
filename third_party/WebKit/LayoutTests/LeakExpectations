@@ -29,11 +29,6 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 # Untriaged but known leaks which may be false positives.
 # -----------------------------------------------------------------
 
-crbug.com/455369 html/marquee/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
-
-crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
-crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
-
 crbug.com/662477 external/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Leak ]
 crbug.com/662477 external/wpt/html/webappapis/scripting/events/onerroreventhandler.html [ Leak ]
 
