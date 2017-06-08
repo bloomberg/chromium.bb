@@ -1404,8 +1404,7 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
   layout_size.SetHeight(layout_view_item.ViewHeight(kIncludeScrollbars) / zoom);
 
   BrowserControls& browser_controls = frame_->GetPage()->GetBrowserControls();
-  if (RuntimeEnabledFeatures::InertTopControlsEnabled() &&
-      browser_controls.PermittedState() != kWebBrowserControlsHidden) {
+  if (browser_controls.PermittedState() != kWebBrowserControlsHidden) {
     // We use the layoutSize rather than frameRect to calculate viewport units
     // so that we get correct results on mobile where the page is laid out into
     // a rect that may be larger than the viewport (e.g. the 980px fallback
@@ -1652,8 +1651,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
 
   ShowOverlayScrollbars();
 
-  if (RuntimeEnabledFeatures::InertTopControlsEnabled() && GetLayoutView() &&
-      frame_->IsMainFrame() &&
+  if (GetLayoutView() && frame_->IsMainFrame() &&
       frame_->GetPage()->GetBrowserControls().Height()) {
     if (GetLayoutView()->Style()->HasFixedBackgroundImage()) {
       // In the case where we don't change layout size from top control resizes,
