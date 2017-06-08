@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -354,5 +355,46 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest, ScreenOrientation) {
     EXPECT_EQ(types[i], orientation_type);
   }
 }
+
+#ifdef OS_ANDROID
+// This test is disabled because th trybots run in system portrait lock, which
+// prevents the test from changing the screen orientation.
+IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
+                       DISABLED_ScreenOrientationLock) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WaitForResizeComplete(shell()->web_contents());
+
+  const char* types[] = {"portrait-primary", "portrait-secondary",
+                         "landscape-primary", "landscape-secondary"};
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  RenderFrameHostImpl* frames[] = {root->current_frame_host(),
+                                   child->current_frame_host()};
+
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+                            "document.body.webkitRequestFullscreen()"));
+  for (const char* type : types) {
+    std::string script =
+        base::StringPrintf("screen.orientation.lock('%s')", type);
+    EXPECT_TRUE(ExecuteScript(child->current_frame_host(), script));
+
+    for (auto* frame : frames) {
+      std::string orientation_type;
+      while (type != orientation_type) {
+        EXPECT_TRUE(ExecuteScriptAndExtractString(
+            frame,
+            "window.domAutomationController.send(screen.orientation.type)",
+            &orientation_type));
+      }
+    }
+
+    EXPECT_TRUE(ExecuteScript(child->current_frame_host(),
+                              "screen.orientation.unlock()"));
+  }
+}
+#endif  // OS_ANDROID
 
 } // namespace content
