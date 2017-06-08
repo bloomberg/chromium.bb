@@ -571,7 +571,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (BOOL)loadFinished {
-  return [self.webController loadPhase] == web::PAGE_LOADED;
+  return self.webState && !self.webState->IsLoading();
 }
 
 - (void)setIsVoiceSearchResultsTab:(BOOL)isVoiceSearchResultsTab {
@@ -765,13 +765,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // If the page has finished loading, take a snapshot.  If the page is still
   // loading, do nothing, as CRWWebController will automatically take a
   // snapshot once the load completes.
-  BOOL loadingFinished = self.webController.loadPhase == web::PAGE_LOADED;
-  if (loadingFinished)
+  if ([self loadFinished])
     [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
 
   [[OmniboxGeolocationController sharedInstance]
       finishPageLoadForTab:self
-               loadSuccess:loadingFinished];
+               loadSuccess:[self loadFinished]];
   [self countMainFrameLoad];
 }
 
@@ -1461,7 +1460,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {
-  DCHECK(self.webController.loadPhase == web::PAGE_LOADED);
+  DCHECK([self loadFinished]);
 
   // Cancel prerendering if response is "application/octet-stream". It can be a
   // video file which should not be played from preload tab (crbug.com/436813).
