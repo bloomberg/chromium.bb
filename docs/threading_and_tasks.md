@@ -50,7 +50,7 @@ A group of tasks can be executed in one of the following ways:
 
 ### Prefer Sequences to Threads
 
-**Sequenced execution mode is far prefered to Single Threaded** in scenarios
+**Sequenced execution mode is far preferred to Single Threaded** in scenarios
 that require mere thread-safety as it opens up scheduling paradigms that
 wouldn't be possible otherwise (sequences can hop threads instead of being stuck
 behind unrelated work on a dedicated thread). Ability to hop threads also means
@@ -633,7 +633,7 @@ base::TaskScheduler::GetInstance()->Shutdown();
 // TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN may still be
 // running.
 ```
-## TaskRunner ownership
+## TaskRunner ownership (encourage no dependency injection)
 
 TaskRunners shouldn't be passed through several components. Instead, the
 components that uses a TaskRunner should be the one that creates it.
@@ -643,3 +643,24 @@ refactoring where a TaskRunner was passed through a lot of components only to be
 used in an eventual leaf. The leaf can and should now obtain its TaskRunner
 directly from
 [`base/task_scheduler/post_task.h`](https://cs.chromium.org/chromium/src/base/task_scheduler/post_task.h).
+
+Dependency injection of TaskRunners can still seldomly be useful to unit test a
+component when triggering a specific race in a specific way is essential to the
+test. For such cases the preferred approach is the following:
+
+```cpp
+class FooWithCustomizableTaskRunnerForTesting {
+ public:
+
+  void SetBackgroundTaskRunnerForTesting(
+      scoped_refptr<base::SequenceTaskRunner> background_task_runner);
+
+ private:
+  scoped_refptr<base::SequenceTaskRunner> background_task_runner_ =
+      base::CreateSequenceTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+}
+```
+
+Note that this still allows removing all layers of plumbing between //chrome and
+that component since unit tests will use the leaf layer directly.
