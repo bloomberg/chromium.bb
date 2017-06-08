@@ -1082,13 +1082,17 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
 TEST_F(RendererSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
   std::vector<std::string> run_order;
 
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   SimulateExpensiveTasks(timer_task_runner_);
+  DoMainFrame();
+  // A navigation occurs which creates a new Document thus resetting the task
+  // cost estimations.
   scheduler_->OnNavigate();
+  SimulateMainThreadGestureStart(TouchEventPolicy::SEND_TOUCH_START,
+                                 blink::WebInputEvent::kGestureScrollUpdate);
+
   PostTestTasks(&run_order, "C1 T1");
 
-  SimulateMainThreadGestureStart(TouchEventPolicy::DONT_SEND_TOUCH_START,
-                                 blink::WebInputEvent::kGestureScrollBegin);
-  scheduler_->DidCommitFrameToCompositor();  // Starts Idle Period
   RunUntilIdle();
 
   EXPECT_THAT(run_order,
