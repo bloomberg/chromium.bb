@@ -320,10 +320,14 @@ class PrintPreviewHandler
   void EnsureExtensionPrinterHandlerSet();
 
   // Called when a list of printers is reported by an extension.
+  // |callback_id|: The javascript callback to call if all extension printers
+  //     are loaded (when |done| = true)
   // |printers|: The list of printers managed by the extension.
   // |done|: Whether all the extensions have reported the list of printers
   //     they manage.
-  void OnGotPrintersForExtension(const base::ListValue& printers, bool done);
+  void OnGotPrintersForExtension(const std::string& callback_id,
+                                 const base::ListValue& printers,
+                                 bool done);
 
   // Called when an extension reports information requested for a provisional
   // printer.
