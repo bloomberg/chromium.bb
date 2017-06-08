@@ -745,13 +745,8 @@ TEST(XFormTest, CanBlend180DegreeRotation) {
       // A 180 degree rotation is exactly opposite on the sphere, therefore
       // either great circle arc to it is equivalent (and numerical precision
       // will determine which is closer).  Test both directions.
-      Transform expected1;
-      expected1.RotateAbout(axes[index], 180.0 * t);
-      Transform expected2;
-      expected2.RotateAbout(axes[index], -180.0 * t);
-
-      EXPECT_TRUE(MatricesAreNearlyEqual(expected1, to) ||
-                  MatricesAreNearlyEqual(expected2, to))
+      Transform expected = from;
+      EXPECT_TRUE(MatricesAreNearlyEqual(expected, to))
           << "axis: " << index << ", i: " << i;
     }
   }
@@ -972,36 +967,41 @@ TEST(XFormTest, VerifyBlendForSkew) {
   to = Transform();
   to.Skew(0.0, 45.0);
   to.Blend(from, 0.25);
-  EXPECT_ROW1_NEAR(1.0823489449280947471976333,
-                   0.0464370719145053845178239,
-                   0.0,
-                   0.0,
-                   to,
-                   LOOSE_ERROR_THRESHOLD);
-  EXPECT_ROW2_NEAR(0.2152925909665224513123150,
-                   0.9541702441750861130032035,
-                   0.0,
-                   0.0,
-                   to,
-                   LOOSE_ERROR_THRESHOLD);
+  EXPECT_LT(1.0, to.matrix().get(0, 0));
+  EXPECT_GT(1.5, to.matrix().get(0, 0));
+  EXPECT_LT(0.0, to.matrix().get(0, 1));
+  EXPECT_GT(0.5, to.matrix().get(0, 1));
+  EXPECT_FLOAT_EQ(0.0, to.matrix().get(0, 2));
+  EXPECT_FLOAT_EQ(0.0, to.matrix().get(0, 3));
+
+  EXPECT_LT(0.0, to.matrix().get(1, 0));
+  EXPECT_GT(0.5, to.matrix().get(1, 0));
+  EXPECT_LT(0.0, to.matrix().get(1, 1));
+  EXPECT_GT(1.0, to.matrix().get(1, 1));
+  EXPECT_FLOAT_EQ(0.0, to.matrix().get(1, 2));
+  EXPECT_FLOAT_EQ(0.0, to.matrix().get(1, 3));
+
   EXPECT_ROW3_EQ(0.0f, 0.0f, 1.0f, 0.0f, to);
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 
   to = Transform();
   to.Skew(0.0, 45.0);
   to.Blend(from, 0.5);
-  EXPECT_ROW1_NEAR(1.1152212925809066312865525,
-                   0.0676495144007326631996335,
-                   0.0,
-                   0.0,
-                   to,
-                   LOOSE_ERROR_THRESHOLD);
-  EXPECT_ROW2_NEAR(0.4619397844342648662419037,
-                   0.9519009045724774464858342,
-                   0.0,
-                   0.0,
-                   to,
-                   LOOSE_ERROR_THRESHOLD);
+
+  EXPECT_LT(1.0, to.matrix().get(0, 0));
+  EXPECT_GT(1.5, to.matrix().get(0, 0));
+  EXPECT_LT(0.0, to.matrix().get(0, 1));
+  EXPECT_GT(0.5, to.matrix().get(0, 1));
+  EXPECT_FLOAT_EQ(0.0, to.matrix().get(0, 2));
+  EXPECT_FLOAT_EQ(0.0, to.matrix().get(0, 3));
+
+  EXPECT_LT(0.0, to.matrix().get(1, 0));
+  EXPECT_GT(1.0, to.matrix().get(1, 0));
+  EXPECT_LT(0.0, to.matrix().get(1, 1));
+  EXPECT_GT(1.0, to.matrix().get(1, 1));
+  EXPECT_FLOAT_EQ(0.0, to.matrix().get(1, 2));
+  EXPECT_FLOAT_EQ(0.0, to.matrix().get(1, 3));
+
   EXPECT_ROW3_EQ(0.0f, 0.0f, 1.0f, 0.0f, to);
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 
@@ -1270,11 +1270,15 @@ TEST(XFormTest, DecomposedTransformCtor) {
     EXPECT_EQ(0.0, decomp.translate[i]);
     EXPECT_EQ(1.0, decomp.scale[i]);
     EXPECT_EQ(0.0, decomp.skew[i]);
-    EXPECT_EQ(0.0, decomp.quaternion[i]);
     EXPECT_EQ(0.0, decomp.perspective[i]);
   }
-  EXPECT_EQ(1.0, decomp.quaternion[3]);
   EXPECT_EQ(1.0, decomp.perspective[3]);
+
+  EXPECT_EQ(0.0, decomp.quaternion.x());
+  EXPECT_EQ(0.0, decomp.quaternion.y());
+  EXPECT_EQ(0.0, decomp.quaternion.z());
+  EXPECT_EQ(1.0, decomp.quaternion.w());
+
   Transform identity;
   Transform composed = ComposeTransform(decomp);
   EXPECT_TRUE(MatricesAreNearlyEqual(identity, composed));
@@ -1295,7 +1299,7 @@ TEST(XFormTest, FactorTRS) {
     EXPECT_FLOAT_EQ(decomp.translate[0], degrees * 2);
     EXPECT_FLOAT_EQ(decomp.translate[1], -degrees * 3);
     double rotation =
-        std::acos(SkMScalarToDouble(decomp.quaternion[3])) * 360.0 / M_PI;
+        std::acos(SkMScalarToDouble(decomp.quaternion.w())) * 360.0 / M_PI;
     while (rotation < 0.0)
       rotation += 360.0;
     while (rotation > 360.0)

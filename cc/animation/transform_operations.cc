@@ -303,11 +303,9 @@ bool TransformOperations::BlendInternal(const TransformOperations& from,
     return false;
 
   gfx::DecomposedTransform to_return;
-  if (!gfx::BlendDecomposedTransforms(&to_return,
-                                      *decomposed_transform_.get(),
-                                      *from.decomposed_transform_.get(),
-                                      progress))
-    return false;
+  to_return = gfx::BlendDecomposedTransforms(*decomposed_transform_.get(),
+                                             *from.decomposed_transform_.get(),
+                                             progress);
 
   *result = ComposeTransform(to_return);
   return true;

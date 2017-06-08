@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -98,6 +99,25 @@ Transform::Transform(SkMScalar col1row1,
   matrix_.set(1, 1, col2row2);
   matrix_.set(0, 3, x_translation);
   matrix_.set(1, 3, y_translation);
+}
+
+Transform::Transform(const Quaternion& q)
+    : matrix_(SkMatrix44::kUninitialized_Constructor) {
+  double x = q.x();
+  double y = q.y();
+  double z = q.z();
+  double w = q.w();
+
+  // Implicitly calls matrix.setIdentity()
+  matrix_.set3x3(SkDoubleToMScalar(1.0 - 2.0 * (y * y + z * z)),
+                 SkDoubleToMScalar(2.0 * (x * y + z * w)),
+                 SkDoubleToMScalar(2.0 * (x * z - y * w)),
+                 SkDoubleToMScalar(2.0 * (x * y - z * w)),
+                 SkDoubleToMScalar(1.0 - 2.0 * (x * x + z * z)),
+                 SkDoubleToMScalar(2.0 * (y * z + x * w)),
+                 SkDoubleToMScalar(2.0 * (x * z + y * w)),
+                 SkDoubleToMScalar(2.0 * (y * z - x * w)),
+                 SkDoubleToMScalar(1.0 - 2.0 * (x * x + y * y)));
 }
 
 void Transform::RotateAboutXAxis(double degrees) {
@@ -506,8 +526,7 @@ bool Transform::Blend(const Transform& from, double progress) {
       !DecomposeTransform(&from_decomp, from))
     return false;
 
-  if (!BlendDecomposedTransforms(&to_decomp, to_decomp, from_decomp, progress))
-    return false;
+  to_decomp = BlendDecomposedTransforms(to_decomp, from_decomp, progress);
 
   matrix_ = ComposeTransform(to_decomp).matrix();
   return true;

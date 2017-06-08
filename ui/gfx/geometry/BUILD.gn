@@ -29,6 +29,8 @@ component("geometry") {
     "point_f.h",
     "quad_f.cc",
     "quad_f.h",
+    "quaternion.cc",
+    "quaternion.h",
     "rect.cc",
     "rect.h",
     "rect_conversions.cc",

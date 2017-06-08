@@ -102,10 +102,10 @@ mojom::VRPosePtr GvrDelegate::VRPosePtrFromGvrPose(const vr::Mat4f& head_mat) {
     gfx::DecomposedTransform decomposed_transform;
     gfx::DecomposeTransform(&decomposed_transform, transform);
 
-    pose->orientation.value()[0] = decomposed_transform.quaternion[0];
-    pose->orientation.value()[1] = decomposed_transform.quaternion[1];
-    pose->orientation.value()[2] = decomposed_transform.quaternion[2];
-    pose->orientation.value()[3] = decomposed_transform.quaternion[3];
+    pose->orientation.value()[0] = decomposed_transform.quaternion.x();
+    pose->orientation.value()[1] = decomposed_transform.quaternion.y();
+    pose->orientation.value()[2] = decomposed_transform.quaternion.z();
+    pose->orientation.value()[3] = decomposed_transform.quaternion.w();
 
     pose->position.emplace(3);
     pose->position.value()[0] = decomposed_transform.translate[0];

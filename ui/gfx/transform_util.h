@@ -6,6 +6,7 @@
 #define UI_GFX_TRANSFORM_UTIL_H_
 
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/transform.h"
 
@@ -28,7 +29,7 @@ struct GFX_EXPORT DecomposedTransform {
   SkMScalar scale[3];
   SkMScalar skew[3];
   SkMScalar perspective[4];
-  SkMScalar quaternion[4];
+  Quaternion quaternion;
 
   std::string ToString() const;
 
@@ -37,12 +38,12 @@ struct GFX_EXPORT DecomposedTransform {
 
 // Interpolates the decomposed components |to| with |from| using the
 // routines described in http://www.w3.org/TR/css3-3d-transform/.
-// |progress| is in the range [0, 1] (0 leaves |out| unchanged, and 1
-// assigns |from| to |out|).
-GFX_EXPORT bool BlendDecomposedTransforms(DecomposedTransform* out,
-                                          const DecomposedTransform& to,
-                                          const DecomposedTransform& from,
-                                          double progress);
+// |progress| is in the range [0, 1]. If 0 we will return |from|, if 1, we will
+// return |to|.
+GFX_EXPORT DecomposedTransform
+BlendDecomposedTransforms(const DecomposedTransform& to,
+                          const DecomposedTransform& from,
+                          double progress);
 
 // Decomposes this transform into its translation, scale, skew, perspective,
 // and rotation components following the routines detailed in this spec:
