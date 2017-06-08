@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/ColorChooserPopupUIController.h"
+#include "core/html/forms/ColorChooserPopupUIController.h"
 
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
