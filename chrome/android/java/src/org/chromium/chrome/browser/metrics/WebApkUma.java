@@ -95,6 +95,14 @@ public class WebApkUma {
                 "WebApk.Install.GooglePlayInstallResult", result, GOOGLE_PLAY_INSTALL_RESULT_MAX);
     }
 
+    /** Records the error code if installing a WebAPK via Google Play fails. */
+    public static void recordGooglePlayInstallErrorCode(int errorCode) {
+        // Don't use an enumerated histogram as there are > 30 potential error codes. In practice,
+        // a given client will always get the same error code.
+        RecordHistogram.recordSparseSlowlyHistogram(
+                "WebApk.Install.GooglePlayErrorCode", Math.min(errorCode, 1000));
+    }
+
     /**
      * Records whether updating a WebAPK from Google Play succeeded. If not, records the reason
      * that the update failed.

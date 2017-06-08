@@ -81329,6 +81329,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebApk.Install.GooglePlayErrorCode" units="code">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the error code when installing a WebAPK from Google Play fails.
+  </summary>
+</histogram>
+
 <histogram name="WebApk.Install.GooglePlayInstallResult"
     enum="WebApkGooglePlayInstallResult">
   <owner>hanxi@chromium.org</owner>
