@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::NiceMock;
+using testing::_;
 
 namespace cc {
 namespace {
@@ -571,6 +572,30 @@ TEST_F(ExternalBeginFrameSourceTest, OnBeginFrameChecksBeginFrameContinuity) {
   ExternalBeginFrameSource source2(client_.get());
   source2.AddObserver(obs_.get());
   source2.OnBeginFrame(args);
+}
+
+// https://crbug.com/730218: Avoid DCHECK crash in
+// ExternalBeginFrameSource::GetMissedBeginFrameArgs.
+TEST_F(ExternalBeginFrameSourceTest, GetMissedBeginFrameArgs) {
+  BeginFrameArgs args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                                       2, 10000, 10100, 100);
+  source_->OnBeginFrame(args);
+
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
+  EXPECT_BEGIN_FRAME_USED_MISSED(*obs_, 0, 2, 10000, 10100, 100);
+  source_->AddObserver(obs_.get());
+  source_->RemoveObserver(obs_.get());
+
+  // Out of order frame_time. This might not be valid but still shouldn't
+  // cause a DCHECK in ExternalBeginFrameSource code.
+  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2, 9999, 10100,
+                                        101);
+  source_->OnBeginFrame(args);
+
+  EXPECT_CALL((*client_), OnNeedsBeginFrames(true)).Times(1);
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
+  EXPECT_CALL(*obs_, OnBeginFrame(_)).Times(0);
+  source_->AddObserver(obs_.get());
 }
 
 }  // namespace
