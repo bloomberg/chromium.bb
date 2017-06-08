@@ -39,7 +39,8 @@ import java.util.concurrent.TimeUnit;
 /** Unit tests for {@link PrefetchBackgroundTask}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+        "enable-features=OfflinePagesPrefetching"})
 public class PrefetchBackgroundTaskTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

@@ -17,4 +17,6 @@ std::string TestPrefetchGCMHandler::GetAppId() const {
   return "com.google.test.PrefetchAppId";
 }
 
+void TestPrefetchGCMHandler::GetGCMToken(
+    instance_id::InstanceID::GetTokenCallback callback) {}
 }  // namespace offline_pages

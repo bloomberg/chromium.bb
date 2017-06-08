@@ -28,6 +28,8 @@
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
+#include "components/gcm_driver/gcm_driver.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_app_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #endif
@@ -97,13 +99,15 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       blocking_task_runner));
 #endif
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  offline_pages::PrefetchService* prefetch_service =
-      offline_pages::PrefetchServiceFactory::GetForBrowserContext(context);
-  if (prefetch_service != nullptr) {
-    offline_pages::PrefetchGCMHandler* prefetch_gcm_handler =
-        prefetch_service->GetPrefetchGCMHandler();
-    service->driver()->AddAppHandler(prefetch_gcm_handler->GetAppId(),
-                                     prefetch_gcm_handler->AsGCMAppHandler());
+  if (offline_pages::IsPrefetchingOfflinePagesEnabled()) {
+    offline_pages::PrefetchService* prefetch_service =
+        offline_pages::PrefetchServiceFactory::GetForBrowserContext(context);
+    if (prefetch_service != nullptr) {
+      offline_pages::PrefetchGCMHandler* prefetch_gcm_handler =
+          prefetch_service->GetPrefetchGCMHandler();
+      service->driver()->AddAppHandler(prefetch_gcm_handler->GetAppId(),
+                                       prefetch_gcm_handler->AsGCMAppHandler());
+    }
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 

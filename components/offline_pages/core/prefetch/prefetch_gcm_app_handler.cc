@@ -8,13 +8,19 @@
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 
 namespace offline_pages {
-namespace {
 const char kPrefetchingOfflinePagesAppId[] =
     "com.google.chrome.OfflinePagePrefetch";
-}
 
-PrefetchGCMAppHandler::PrefetchGCMAppHandler() {}
+PrefetchGCMAppHandler::PrefetchGCMAppHandler(
+    std::unique_ptr<TokenFactory> token_factory)
+    : token_factory_(std::move(token_factory)) {}
+
 PrefetchGCMAppHandler::~PrefetchGCMAppHandler() = default;
+
+void PrefetchGCMAppHandler::GetGCMToken(
+    instance_id::InstanceID::GetTokenCallback callback) {
+  token_factory_->GetGCMToken(callback);
+}
 
 void PrefetchGCMAppHandler::ShutdownHandler() {
   NOTIMPLEMENTED();
