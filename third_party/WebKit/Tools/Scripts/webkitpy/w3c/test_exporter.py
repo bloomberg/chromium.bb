@@ -56,6 +56,10 @@ class TestExporter(object):
         for cl in gerrit_cls:
             _log.info('Found Gerrit in-flight CL: "%s" %s', cl.subject, cl.url)
 
+            if not cl.reviewers:
+                _log.info('CL has no reviewers, skipping.')
+                continue
+
             # Check if CL already has a corresponding PR
             pull_request = self.wpt_github.pr_with_change_id(cl.change_id)
 
