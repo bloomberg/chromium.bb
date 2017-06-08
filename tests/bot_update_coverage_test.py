@@ -17,33 +17,6 @@ sys.path.insert(0, os.path.join(
     'recipes', 'recipe_modules', 'bot_update', 'resources'))
 import bot_update
 
-DEFAULT_PARAMS = {
-    'solutions': [{
-        'name': 'somename',
-        'url': 'https://fake.com'
-    }],
-    'revisions': {},
-    'first_sln': 'somename',
-    'target_os': None,
-    'target_os_only': None,
-    'patch_root': None,
-    'issue': None,
-    'patchset': None,
-    'rietveld_server': None,
-    'gerrit_repo': None,
-    'gerrit_ref': None,
-    'gerrit_rebase_patch_ref': None,
-    'revision_mapping': {},
-    'apply_issue_email_file': None,
-    'apply_issue_key_file': None,
-    'apply_issue_oauth2_file': None,
-    'shallow': False,
-    'refs': [],
-    'git_cache_dir': '',
-    'gerrit_reset': None,
-    'disable_syntax_validation': False,
-}
-
 
 class MockedPopen(object):
   """A fake instance of a called subprocess.
@@ -165,6 +138,34 @@ def fake_git(*args, **kwargs):
 
 
 class BotUpdateUnittests(unittest.TestCase):
+  DEFAULT_PARAMS = {
+      'solutions': [{
+          'name': 'somename',
+          'url': 'https://fake.com'
+      }],
+      'revisions': {},
+      'first_sln': 'somename',
+      'target_os': None,
+      'target_os_only': None,
+      'patch_root': None,
+      'issue': None,
+      'patchset': None,
+      'rietveld_server': None,
+      'gerrit_repo': None,
+      'gerrit_ref': None,
+      'gerrit_rebase_patch_ref': None,
+      'revision_mapping': {},
+      'apply_issue_email_file': None,
+      'apply_issue_key_file': None,
+      'apply_issue_oauth2_file': None,
+      'shallow': False,
+      'refs': [],
+      'git_cache_dir': '',
+      'cleanup_dir': None,
+      'gerrit_reset': None,
+      'disable_syntax_validation': False,
+  }
+
   def setUp(self):
     sys.platform = 'linux2'  # For consistency, ya know?
     self.filesystem = FakeFilesystem()
@@ -174,7 +175,7 @@ class BotUpdateUnittests(unittest.TestCase):
         (sys.executable, '-u', bot_update.GCLIENT_PATH, 'sync')
     ).returns(self.gclient)
     self.old_call = getattr(bot_update, 'call')
-    self.params = copy.deepcopy(DEFAULT_PARAMS)
+    self.params = copy.deepcopy(self.DEFAULT_PARAMS)
     setattr(bot_update, 'call', self.call)
     setattr(bot_update, 'git', fake_git)
 

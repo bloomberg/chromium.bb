@@ -13,11 +13,13 @@ def infra_common(c):
 
 @CONFIG_CTX(includes=['infra_common'])
 def infra_buildbot(c):
+  """Used on BuildBot by "annotated_run"."""
   c.base_paths['root'] = c.START_DIR[:-4]
   c.base_paths['cache'] = c.base_paths['root'] + (
       'build', 'slave', 'cache')
   c.base_paths['git_cache'] = c.base_paths['root'] + (
       'build', 'slave', 'cache_dir')
+  c.base_paths['cleanup'] = c.START_DIR[:-1] + ('build.dead',)
   c.base_paths['goma_cache'] = c.base_paths['root'] + (
       'build', 'slave', 'goma_cache')
   for token in ('build_internal', 'build', 'depot_tools'):
@@ -26,7 +28,9 @@ def infra_buildbot(c):
 
 @CONFIG_CTX(includes=['infra_common'])
 def infra_kitchen(c):
+  """Used on BuildBot by "remote_run" when NOT running Kitchen."""
   c.base_paths['root'] = c.START_DIR
+  c.base_paths['cleanup'] = c.START_DIR[:-1] + ('build.dead',)
   # TODO(phajdan.jr): have one cache dir, let clients append suffixes.
 
   b_dir = c.START_DIR
@@ -53,6 +57,12 @@ def infra_kitchen(c):
 
 @CONFIG_CTX()
 def infra_generic(c):
+  """Used by Kitchen runs on both SwarmBucket and "remote_run"+Kitchen.
+
+  The default path values (ones not set explicitly here) are either installed by
+  Kitchen directly, or are recipe engine defaults. Note that in "kitchen",
+  the "start_dir" is ephemeral.
+  """
   c.base_paths['builder_cache'] = c.base_paths['cache'] + ('builder',)
   c.base_paths['git_cache'] = c.base_paths['cache'] + ('git',)
   c.base_paths['goma_cache'] = c.base_paths['cache'] + ('goma',)

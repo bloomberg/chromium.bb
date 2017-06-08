@@ -14,7 +14,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.step('show cache path', [])
+  api.step('show paths', [])
   api.step.active_result.presentation.logs['result'] = [
     'base_paths: %r' % (api.path.c.base_paths,),
     'default_git_cache_dir: %r' % (api.infra_paths.default_git_cache_dir,),

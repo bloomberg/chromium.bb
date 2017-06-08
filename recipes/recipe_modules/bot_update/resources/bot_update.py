@@ -31,10 +31,6 @@ BUF_SIZE = 256
 
 
 # Define a bunch of directory paths.
-# Relative to the current working directory.
-CURRENT_DIR = path.abspath(os.getcwd())
-BUILDER_DIR = path.dirname(CURRENT_DIR)
-
 # Relative to this script's filesystem path.
 THIS_DIR = path.dirname(path.abspath(__file__))
 
@@ -281,12 +277,12 @@ def modify_solutions(input_solutions):
   return solutions
 
 
-def remove(target):
-  """Remove a target by moving it into build.dead."""
-  dead_folder = path.join(BUILDER_DIR, 'build.dead')
-  if not path.exists(dead_folder):
-    os.makedirs(dead_folder)
-  dest = path.join(dead_folder, uuid.uuid4().hex)
+def remove(target, cleanup_dir):
+  """Remove a target by moving it into cleanup_dir."""
+  if not path.exists(cleanup_dir):
+    os.makedirs(cleanup_dir)
+  dest = path.join(cleanup_dir, '%s_%s' % (
+      path.basename(target), uuid.uuid4().hex))
   print 'Marking for removal %s => %s' % (target, dest)
   try:
     os.rename(target, dest)
@@ -295,7 +291,7 @@ def remove(target):
     raise
 
 
-def ensure_no_checkout(dir_names):
+def ensure_no_checkout(dir_names, cleanup_dir):
   """Ensure that there is no undesired checkout under build/."""
   build_dir = os.getcwd()
   has_checkout = any(path.exists(path.join(build_dir, dir_name, '.git'))
@@ -304,7 +300,7 @@ def ensure_no_checkout(dir_names):
     for filename in os.listdir(build_dir):
       deletion_target = path.join(build_dir, filename)
       print '.git detected in checkout, deleting %s...' % deletion_target,
-      remove(deletion_target)
+      remove(deletion_target, cleanup_dir)
       print 'done'
 
 
@@ -487,7 +483,8 @@ def _maybe_break_locks(checkout_path):
           raise
 
 
-def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
+def git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
+                 cleanup_dir):
   build_dir = os.getcwd()
   # Before we do anything, break all git_cache locks.
   if path.isdir(git_cache_dir):
@@ -529,7 +526,7 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
         # state.
         if path.exists(sln_dir) and is_broken_repo_dir(sln_dir):
           print 'Git repo %s appears to be broken, removing it' % sln_dir
-          remove(sln_dir)
+          remove(sln_dir, cleanup_dir)
 
         # Use "tries=1", since we retry manually in this loop.
         if not path.isdir(sln_dir):
@@ -570,7 +567,7 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
         sleep_secs = 2**tries
         print 'waiting %s seconds and trying again...' % sleep_secs
         time.sleep(sleep_secs)
-        remove(sln_dir)
+        remove(sln_dir, cleanup_dir)
 
     git('clean', '-dff', cwd=sln_dir)
 
@@ -750,13 +747,14 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     gerrit_ref, gerrit_rebase_patch_ref, revision_mapping,
                     apply_issue_email_file, apply_issue_key_file,
                     apply_issue_oauth2_file, shallow, refs, git_cache_dir,
-                    gerrit_reset, disable_syntax_validation):
+                    cleanup_dir, gerrit_reset, disable_syntax_validation):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
   print 'Fetching Git checkout'
 
-  git_ref = git_checkout(solutions, revisions, shallow, refs, git_cache_dir)
+  git_ref = git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
+                         cleanup_dir)
 
   print '===Processing patch solutions==='
   already_patched = []
@@ -931,6 +929,9 @@ def parse_args():
                     help='Always pass --with_tags to gclient.  This '
                           'does the same thing as --refs +refs/tags/*')
   parse.add_option('--git-cache-dir', help='Path to git cache directory.')
+  parse.add_option('--cleanup-dir',
+                   help='Path to a cleanup directory that can be used for '
+                        'deferred file cleanup.')
   parse.add_option(
       '--disable-syntax-validation', action='store_true',
       help='Disable validation of .gclient and DEPS syntax.')
@@ -976,7 +977,7 @@ def prepare(options, git_slns, active):
   """Prepares the target folder before we checkout."""
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
   if options.clobber:
-    ensure_no_checkout(dir_names)
+    ensure_no_checkout(dir_names, options.cleanup_dir)
   # Make sure we tell recipes that we didn't run if the script exits here.
   emit_json(options.output_json, did_run=active)
 
@@ -1042,12 +1043,13 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
           shallow=shallow,
           refs=options.refs,
           git_cache_dir=options.git_cache_dir,
+          cleanup_dir=options.cleanup_dir,
           gerrit_reset=not options.gerrit_no_reset,
           disable_syntax_validation=options.disable_syntax_validation)
       gclient_output = ensure_checkout(**checkout_parameters)
     except GclientSyncFailed:
       print 'We failed gclient sync, lets delete the checkout and retry.'
-      ensure_no_checkout(dir_names)
+      ensure_no_checkout(dir_names, options.cleanup_dir)
       gclient_output = ensure_checkout(**checkout_parameters)
   except PatchFailed as e:
     if options.output_json:
@@ -1098,8 +1100,7 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
 def print_debug_info():
   print "Debugging info:"
   debug_params = {
-    'CURRENT_DIR': CURRENT_DIR,
-    'BUILDER_DIR': BUILDER_DIR,
+    'CURRENT_DIR': path.abspath(os.getcwd()),
     'THIS_DIR': THIS_DIR,
     'DEPOT_TOOLS_DIR': DEPOT_TOOLS_DIR,
   }
