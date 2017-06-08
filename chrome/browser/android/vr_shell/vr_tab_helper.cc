@@ -36,6 +36,11 @@ void VrTabHelper::SetIsInVr(bool is_in_vr) {
 /* static */
 bool VrTabHelper::IsInVr(content::WebContents* contents) {
   VrTabHelper* vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  if (!vr_tab_helper) {
+    // This can only happen for unittests.
+    VrTabHelper::CreateForWebContents(contents);
+    vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  }
   return vr_tab_helper->is_in_vr();
 }
 
