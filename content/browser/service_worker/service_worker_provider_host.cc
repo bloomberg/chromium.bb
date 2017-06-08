@@ -565,6 +565,7 @@ bool ServiceWorkerProviderHost::GetRegistrationForReady(
 
 std::unique_ptr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
+  DCHECK(!IsBrowserSideNavigationEnabled());
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(MSG_ROUTING_NONE, info_.route_id);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
@@ -580,8 +581,7 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
 
-  for (auto& key_registration : matching_registrations_)
-    DecreaseProcessReference(key_registration.second->pattern());
+  RemoveAllMatchingRegistrations();
 
   if (associated_registration_.get()) {
     if (dispatcher_host_) {
@@ -598,11 +598,14 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
 
 void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     ServiceWorkerProviderHost* provisional_host) {
+  DCHECK(!IsBrowserSideNavigationEnabled());
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, provisional_host->process_id());
   DCHECK_NE(MSG_ROUTING_NONE, provisional_host->frame_id());
 
+  render_process_id_ = provisional_host->process_id();
   render_thread_id_ = kDocumentMainThreadId;
+  dispatcher_host_ = provisional_host->dispatcher_host();
   info_ = std::move(provisional_host->info_);
 
   // Take the connection over from the provisional host.
@@ -614,8 +617,11 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
       base::Bind(&RemoveProviderHost, context_, provisional_host->process_id(),
                  provider_id()));
 
-  FinalizeInitialization(provisional_host->process_id(),
-                         provisional_host->dispatcher_host());
+  for (const GURL& pattern : associated_patterns_)
+    IncreaseProcessReference(pattern);
+  SyncMatchingRegistrations();
+
+  NotifyControllerToAssociatedProvider();
 }
 
 // PlzNavigate
@@ -640,8 +646,17 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   binding_.set_connection_error_handler(
       base::Bind(&RemoveProviderHost, context_, process_id, provider_id()));
   info_.route_id = info.route_id;
+  render_process_id_ = process_id;
+  dispatcher_host_ = dispatcher_host;
 
-  FinalizeInitialization(process_id, dispatcher_host);
+  // Increase the references because the process which this provider host will
+  // host has been decided.
+  for (const GURL& pattern : associated_patterns_)
+    IncreaseProcessReference(pattern);
+  for (auto& key_registration : matching_registrations_)
+    IncreaseProcessReference(key_registration.second->pattern());
+
+  NotifyControllerToAssociatedProvider();
 }
 
 void ServiceWorkerProviderHost::SendUpdateFoundMessage(
@@ -808,18 +823,7 @@ void ServiceWorkerProviderHost::Send(IPC::Message* message) const {
   dispatcher_host_->Send(message);
 }
 
-void ServiceWorkerProviderHost::FinalizeInitialization(
-    int process_id,
-    ServiceWorkerDispatcherHost* dispatcher_host) {
-  render_process_id_ = process_id;
-  dispatcher_host_ = dispatcher_host;
-
-  for (const GURL& pattern : associated_patterns_)
-    IncreaseProcessReference(pattern);
-
-  for (auto& key_registration : matching_registrations_)
-    IncreaseProcessReference(key_registration.second->pattern());
-
+void ServiceWorkerProviderHost::NotifyControllerToAssociatedProvider() {
   if (associated_registration_.get()) {
     SendAssociateRegistrationMessage();
     if (dispatcher_host_ && associated_registration_->active_version()) {

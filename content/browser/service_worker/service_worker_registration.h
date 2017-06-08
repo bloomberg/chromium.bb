@@ -101,8 +101,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   ServiceWorkerVersion* GetNewestVersion() const;
 
-  void AddListener(Listener* listener);
-  void RemoveListener(Listener* listener);
+  virtual void AddListener(Listener* listener);
+  virtual void RemoveListener(Listener* listener);
   void NotifyRegistrationFailed();
   void NotifyUpdateFound();
   void NotifyVersionAttributesChanged(ChangedVersionAttributesMask mask);
@@ -157,10 +157,11 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void EnableNavigationPreload(bool enable);
   void SetNavigationPreloadHeader(const std::string& value);
 
+ protected:
+  ~ServiceWorkerRegistration() override;
+
  private:
   friend class base::RefCounted<ServiceWorkerRegistration>;
-
-  ~ServiceWorkerRegistration() override;
 
   void UnsetVersionInternal(
       ServiceWorkerVersion* version,

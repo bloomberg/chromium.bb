@@ -246,11 +246,44 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
       provider_host_insecure_parent->IsContextSecureForServiceWorker());
 }
 
+class MockServiceWorkerRegistration : public ServiceWorkerRegistration {
+ public:
+  MockServiceWorkerRegistration(const GURL& pattern,
+                                int64_t registration_id,
+                                base::WeakPtr<ServiceWorkerContextCore> context)
+      : ServiceWorkerRegistration(pattern, registration_id, context) {}
+
+  void AddListener(ServiceWorkerRegistration::Listener* listener) override {
+    listeners_.insert(listener);
+  }
+
+  void RemoveListener(ServiceWorkerRegistration::Listener* listener) override {
+    listeners_.erase(listener);
+  }
+
+  const std::set<ServiceWorkerRegistration::Listener*>& listeners() {
+    return listeners_;
+  }
+
+ protected:
+  ~MockServiceWorkerRegistration() override{};
+
+ private:
+  std::set<ServiceWorkerRegistration::Listener*> listeners_;
+};
+
 TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
   if (IsBrowserSideNavigationEnabled())
     return;
+
+  // Create a mock registration before creating the provider host which is in
+  // the scope.
+  scoped_refptr<MockServiceWorkerRegistration> registration =
+      new MockServiceWorkerRegistration(GURL("https://cross.example.com/"), 4L,
+                                        helper_->context()->AsWeakPtr());
+
   ServiceWorkerProviderHost* provider_host =
-      CreateProviderHost(GURL("https://www.example.com/example.html"));
+      CreateProviderHost(GURL("https://cross.example.com/example.html"));
   const int process_id = provider_host->process_id();
   const int provider_id = provider_host->provider_id();
   const int frame_id = provider_host->frame_id();
@@ -258,6 +291,8 @@ TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
   const bool is_parent_frame_secure = provider_host->is_parent_frame_secure();
   const ServiceWorkerDispatcherHost* dispatcher_host =
       provider_host->dispatcher_host();
+
+  EXPECT_EQ(1u, registration->listeners().count(provider_host));
 
   std::unique_ptr<ServiceWorkerProviderHost> provisional_host =
       provider_host->PrepareForCrossSiteTransfer();
@@ -276,6 +311,8 @@ TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
   EXPECT_FALSE(provider_host->is_parent_frame_secure());
   EXPECT_EQ(nullptr, provider_host->dispatcher_host());
 
+  EXPECT_EQ(0u, registration->listeners().size());
+
   provider_host->CompleteCrossSiteTransfer(provisional_host.get());
 
   EXPECT_EQ(process_id, provider_host->process_id());
@@ -290,6 +327,8 @@ TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
   EXPECT_EQ(SERVICE_WORKER_PROVIDER_UNKNOWN, provisional_host->provider_type());
   EXPECT_FALSE(provisional_host->is_parent_frame_secure());
   EXPECT_EQ(nullptr, provisional_host->dispatcher_host());
+
+  EXPECT_EQ(1u, registration->listeners().count(provider_host));
 }
 
 TEST_F(ServiceWorkerProviderHostTest, RemoveProvider) {
