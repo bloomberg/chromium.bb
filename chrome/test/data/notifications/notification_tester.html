@@ -53,6 +53,12 @@ function requestPermission() {
   Notification.requestPermission(permissionCallbackWithResponse);
 }
 
+// Checks the notification permission status. The result will be sent directly
+// via permissionCallbackWithResponse.
+function queryPermissionStatus() {
+  sendResultToTest(Notification.permission);
+}
+
 // Callback for requestPermissionAndRespond. Will send the permission status to
 // the test driver.
 function permissionCallbackWithResponse(permissionStatus) {
