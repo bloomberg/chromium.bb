@@ -9,6 +9,10 @@
       "idiom" : "universal",
       "filename" : "bkg1_2x.jpg",
       "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
     }
   ],
   "info" : {

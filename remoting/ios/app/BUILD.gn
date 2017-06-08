@@ -35,6 +35,8 @@ source_set("main") {
     "pin_entry_view.mm",
     "remoting_settings_view_controller.h",
     "remoting_settings_view_controller.mm",
+    "remoting_theme.h",
+    "remoting_theme.mm",
     "remoting_view_controller.h",
     "remoting_view_controller.mm",
   ]

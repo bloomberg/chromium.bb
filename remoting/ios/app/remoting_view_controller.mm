@@ -17,6 +17,7 @@
 #import "remoting/ios/app/host_collection_view_controller.h"
 #import "remoting/ios/app/host_view_controller.h"
 #import "remoting/ios/app/remoting_settings_view_controller.h"
+#import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
@@ -26,9 +27,6 @@
 #include "remoting/client/connect_to_host_info.h"
 
 static CGFloat kHostInset = 5.f;
-
-static UIColor* kChromotingBlueBackground =
-    [UIColor colorWithRed:0.11f green:0.23f blue:0.66f alpha:1.f];
 
 @interface RemotingViewController ()<HostCollectionViewControllerDelegate,
                                      UIViewControllerAnimatedTransitioning,
@@ -85,8 +83,9 @@ static UIColor* kChromotingBlueBackground =
     self.navigationItem.rightBarButtonItem = refreshButton;
 
     _appBar.headerViewController.headerView.backgroundColor =
-        kChromotingBlueBackground;
-    _appBar.navigationBar.backgroundColor = kChromotingBlueBackground;
+        RemotingTheme.hostListBackgroundColor;
+    _appBar.navigationBar.backgroundColor =
+        RemotingTheme.hostListBackgroundColor;
     MDCNavigationBarTextColorAccessibilityMutator* mutator =
         [[MDCNavigationBarTextColorAccessibilityMutator alloc] init];
     [mutator mutate:_appBar.navigationBar];
@@ -197,6 +196,7 @@ static UIColor* kChromotingBlueBackground =
     return;
   }
 
+  [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:nil];
   ClientConnectionViewController* clientConnectionViewController =
       [[ClientConnectionViewController alloc] initWithHostInfo:cell.hostInfo];
   [self.navigationController pushViewController:clientConnectionViewController
