@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/common/features.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -141,9 +142,6 @@ class PrintPreviewHandler
   // Grants an extension access to a provisional printer.  First element of
   // |args| is the provisional printer ID.
   void HandleGrantExtensionPrinterAccess(const base::ListValue* args);
-
-  // Stops getting all local privet printers. |arg| is unused.
-  void HandleStopGetPrivetPrinters(const base::ListValue* args);
 
   // Asks the initiator renderer to generate a preview.  First element of |args|
   // is a job settings JSON string.
@@ -286,6 +284,7 @@ class PrintPreviewHandler
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   void StartPrivetLister(const scoped_refptr<
       local_discovery::ServiceDiscoverySharedClient>& client);
+  void StopPrivetLister();
   void OnPrivetCapabilities(const base::DictionaryValue* capabilities);
   void PrivetCapabilitiesUpdateClient(
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
@@ -384,7 +383,7 @@ class PrintPreviewHandler
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
   std::unique_ptr<cloud_print::PrivetLocalPrinterLister> printer_lister_;
-
+  std::unique_ptr<base::OneShotTimer> privet_lister_timer_;
   std::unique_ptr<cloud_print::PrivetHTTPAsynchronousFactory>
       privet_http_factory_;
   std::unique_ptr<cloud_print::PrivetHTTPResolution> privet_http_resolution_;
@@ -402,6 +401,9 @@ class PrintPreviewHandler
   // Notifies tests that want to know if the PDF has been saved. This doesn't
   // notify the test if it was a successful save, only that it was attempted.
   base::Closure pdf_file_saved_closure_;
+
+  // Callback ID to be used to notify UI that privet search is finished.
+  std::string privet_callback_id_ = "";
 
   // Proxy for calls to the print backend.  Lazily initialized since web_ui() is
   // not available at construction time.

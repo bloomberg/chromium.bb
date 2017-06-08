@@ -69,7 +69,6 @@ cr.define('print_preview', function() {
     global.onDidPreviewPage = this.onDidPreviewPage_.bind(this);
     global.updatePrintPreview = this.onUpdatePrintPreview_.bind(this);
     global.onDidGetAccessToken = this.onDidGetAccessToken_.bind(this);
-    global.onPrivetPrinterChanged = this.onPrivetPrinterChanged_.bind(this);
     global.onPrivetCapabilitiesSet =
         this.onPrivetCapabilitiesSet_.bind(this);
     global.onPrivetPrintFailed = this.onPrivetPrintFailed_.bind(this);
@@ -232,20 +231,13 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Requests the network's privet print destinations. A number of
-     * PRIVET_PRINTER_CHANGED events will be fired in response, followed by a
-     * PRIVET_SEARCH_ENDED.
+     * Requests the network's privet print destinations. After this is called,
+     * a number of privet-printer-changed events may be fired.
+     * @return {!Promise} Resolves when privet printer search is completed.
+     *     Rejected if privet printers are not enabled.
      */
-    startGetPrivetDestinations: function() {
-      chrome.send('getPrivetPrinters');
-    },
-
-    /**
-     * Requests that the privet print stack stop searching for privet print
-     * destinations.
-     */
-    stopGetPrivetDestinations: function() {
-      chrome.send('stopGetPrivetPrinters');
+    getPrivetPrinters: function() {
+      return cr.sendWithPromise('getPrivetPrinters');
     },
 
     /**
@@ -779,18 +771,6 @@ cr.define('print_preview', function() {
           NativeLayer.EventType.PRINT_PRESET_OPTIONS);
       printPresetOptionsEvent.optionsFromDocument = options;
       this.eventTarget_.dispatchEvent(printPresetOptionsEvent);
-    },
-
-    /**
-     * @param {{serviceName: string, name: string}} printer Specifies
-     *     information about the printer that was added.
-     * @private
-     */
-    onPrivetPrinterChanged_: function(printer) {
-      var privetPrinterChangedEvent =
-            new Event(NativeLayer.EventType.PRIVET_PRINTER_CHANGED);
-      privetPrinterChangedEvent.printer = printer;
-      this.eventTarget_.dispatchEvent(privetPrinterChangedEvent);
     },
 
     /**
