@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-// Handles method calls delegated back to chrome from ash. Also notifies ash of
-// relevant state changes in chrome.
+// Handles method calls sent from ash to chrome. Also sends messages from chrome
+// to ash.
 class LockScreenClient : public ash::mojom::LockScreenClient {
  public:
   LockScreenClient();
@@ -34,12 +34,14 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
   // ash::mojom::LockScreenClient:
   void AuthenticateUser(const AccountId& account_id,
                         const std::string& hashed_password,
-                        bool authenticated_by_pin) override;
+                        bool authenticated_by_pin,
+                        AuthenticateUserCallback callback) override;
   void AttemptUnlock(const AccountId& account_id) override;
   void HardlockPod(const AccountId& account_id) override;
   void RecordClickOnLockIcon(const AccountId& account_id) override;
 
   // Wrappers around the mojom::LockScreen interface.
+  void ShowLockScreen(ash::mojom::LockScreen::ShowLockScreenCallback on_shown);
   void ShowErrorMessage(int32_t login_attempts,
                         const std::string& error_text,
                         const std::string& help_link_text,

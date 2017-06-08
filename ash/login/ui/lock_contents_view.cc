@@ -5,6 +5,7 @@
 #include "ash/login/ui/lock_contents_view.h"
 
 #include "ash/login/lock_screen_controller.h"
+#include "ash/login/ui/lock_screen.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -45,7 +46,10 @@ void LockContentsView::ButtonPressed(views::Button* sender,
       Shell::Get()->session_controller()->GetUserSession(user_index);
   Shell::Get()->lock_screen_controller()->AuthenticateUser(
       user_session->user_info->account_id, std::string(),
-      false /* authenticated_by_pin */);
+      false /* authenticated_by_pin */, base::BindOnce([](bool success) {
+        if (success)
+          DestroyLockScreen();
+      }));
 }
 
 }  // namespace ash

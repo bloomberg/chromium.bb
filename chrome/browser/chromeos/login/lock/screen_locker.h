@@ -102,6 +102,8 @@ class ScreenLocker : public AuthStatusConsumer,
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
+  using AuthenticateCallback = base::OnceCallback<void(bool auth_success)>;
+
   explicit ScreenLocker(const user_manager::UserList& users);
 
   // Returns the default instance if it has been created.
@@ -127,7 +129,8 @@ class ScreenLocker : public AuthStatusConsumer,
   void UnlockOnLoginSuccess();
 
   // Authenticates the user with given |user_context|.
-  void Authenticate(const UserContext& user_context);
+  void Authenticate(const UserContext& user_context,
+                    AuthenticateCallback callback);
 
   // Close message bubble to clear error messages.
   void ClearErrors();
@@ -268,6 +271,9 @@ class ScreenLocker : public AuthStatusConsumer,
 
   // Type of the last unlock attempt.
   UnlockType unlock_attempt_type_ = AUTH_PASSWORD;
+
+  // Callback to run, if any, when authentication is done.
+  AuthenticateCallback on_auth_complete_;
 
   // Copy of parameters passed to last call of OnLoginSuccess for usage in
   // UnlockOnLoginSuccess().

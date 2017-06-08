@@ -317,7 +317,8 @@ bool WebUIScreenLocker::IsSigninInProgress() const {
 
 void WebUIScreenLocker::Login(const UserContext& user_context,
                               const SigninSpecifics& specifics) {
-  chromeos::ScreenLocker::default_screen_locker()->Authenticate(user_context);
+  chromeos::ScreenLocker::default_screen_locker()->Authenticate(
+      user_context, ScreenLocker::AuthenticateCallback());
 }
 
 void WebUIScreenLocker::MigrateUserData(const std::string& old_password) {

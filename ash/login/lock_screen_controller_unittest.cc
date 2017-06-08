@@ -15,7 +15,6 @@ namespace ash {
 
 namespace {
 using LockScreenControllerTest = test::AshTestBase;
-}  // namespace
 
 TEST_F(LockScreenControllerTest, RequestAuthentication) {
   LockScreenController* controller = Shell::Get()->lock_screen_controller();
@@ -24,7 +23,7 @@ TEST_F(LockScreenControllerTest, RequestAuthentication) {
   AccountId id = AccountId::FromUserEmail("user1@test.com");
 
   // We hardcode the hashed password. This is fine because the password hash
-  // algorithm should never accidently change; if it does we will need to
+  // algorithm should never accidentally change; if it does we will need to
   // have cryptohome migration code and one failing test isn't a problem.
   std::string password = "password";
   std::string hashed_password = "40c7b00f3bccc7675ec5b732de4bfbe4";
@@ -32,10 +31,18 @@ TEST_F(LockScreenControllerTest, RequestAuthentication) {
 
   // Verify AuthenticateUser mojo call is run with the same account id, a
   // (hashed) password, and the correct PIN state.
-  EXPECT_CALL(*client, AuthenticateUser(id, hashed_password, false));
-  controller->AuthenticateUser(id, password, false);
+  EXPECT_CALL(*client, AuthenticateUser_(id, hashed_password, false, _));
+  base::Optional<bool> callback_result;
+  controller->AuthenticateUser(
+      id, password, false,
+      base::BindOnce([](base::Optional<bool>* result,
+                        bool did_auth) { *result = did_auth; },
+                     &callback_result));
 
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(callback_result.has_value());
+  EXPECT_TRUE(*callback_result);
 }
 
 TEST_F(LockScreenControllerTest, RequestEasyUnlock) {
@@ -60,4 +67,5 @@ TEST_F(LockScreenControllerTest, RequestEasyUnlock) {
   base::RunLoop().RunUntilIdle();
 }
 
+}  // namespace
 }  // namespace ash

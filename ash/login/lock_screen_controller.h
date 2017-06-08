@@ -20,6 +20,8 @@ namespace ash {
 class ASH_EXPORT LockScreenController
     : NON_EXPORTED_BASE(public mojom::LockScreen) {
  public:
+  using OnShownCallback = base::OnceCallback<void(bool did_show)>;
+
   LockScreenController();
   ~LockScreenController() override;
 
@@ -28,6 +30,7 @@ class ASH_EXPORT LockScreenController
 
   // mojom::LockScreen:
   void SetClient(mojom::LockScreenClientPtr client) override;
+  void ShowLockScreen(ShowLockScreenCallback callback) override;
   void ShowErrorMessage(int32_t login_attempts,
                         const std::string& error_text,
                         const std::string& help_link_text,
@@ -47,18 +50,27 @@ class ASH_EXPORT LockScreenController
   // LockScreenClient(chrome) will do the authentication and request to show
   // error messages in the lock screen if auth fails, or request to clear
   // errors if auth succeeds.
-  void AuthenticateUser(const AccountId& account_id,
-                        const std::string& password,
-                        bool authenticated_by_pin);
+  void AuthenticateUser(
+      const AccountId& account_id,
+      const std::string& password,
+      bool authenticated_by_pin,
+      mojom::LockScreenClient::AuthenticateUserCallback callback);
   void AttemptUnlock(const AccountId& account_id);
   void HardlockPod(const AccountId& account_id);
   void RecordClickOnLockIcon(const AccountId& account_id);
 
  private:
-  void DoAuthenticateUser(const AccountId& account_id,
-                          const std::string& password,
-                          bool authenticated_by_pin,
-                          const std::string& system_salt);
+  using PendingAuthenticateUserCall =
+      base::OnceCallback<void(const std::string& system_salt)>;
+
+  void DoAuthenticateUser(
+      const AccountId& account_id,
+      const std::string& password,
+      bool authenticated_by_pin,
+      mojom::LockScreenClient::AuthenticateUserCallback callback,
+      const std::string& system_salt);
+
+  void OnGetSystemSalt(const std::string& system_salt);
 
   // Client interface in chrome browser. May be null in tests.
   mojom::LockScreenClientPtr lock_screen_client_;
@@ -66,9 +78,12 @@ class ASH_EXPORT LockScreenController
   // Bindings for the LockScreen interface.
   mojo::BindingSet<mojom::LockScreen> bindings_;
 
+  // User authentication call that will run when we have system salt.
+  PendingAuthenticateUserCall pending_user_auth_;
+
   DISALLOW_COPY_AND_ASSIGN(LockScreenController);
 };
 
-}  // namspace ash
+}  // namespace ash
 
 #endif  // ASH_LOGIN_LOCK_SCREEN_CONTROLLER_H_

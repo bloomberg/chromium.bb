@@ -12,15 +12,29 @@
 
 namespace ash {
 
-bool ShowLockScreen() {
-  LockWindow* window = new LockWindow();
-  window->SetBounds(display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+namespace {
+// Reference to global lock screen instance. There can only ever be one lock
+// screen display at the same time.
+LockWindow* g_window = nullptr;
+}  // namespace
 
-  views::View* contents = new LockContentsView();
-  window->SetContentsView(contents);
-  window->Show();
+bool ShowLockScreen() {
+  CHECK(!g_window);
+  g_window = new LockWindow();
+  g_window->SetBounds(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
+
+  auto* contents = new LockContentsView();
+  g_window->SetContentsView(contents);
+  g_window->Show();
 
   return true;
+}
+
+void DestroyLockScreen() {
+  CHECK(g_window);
+  g_window->Close();
+  g_window = nullptr;
 }
 
 }  // namespace ash
