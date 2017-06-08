@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -42,7 +43,6 @@
 using content::WebContents;
 using content::WebUIMessageHandler;
 using system_logs::SystemLogsResponse;
-using system_logs::AboutSystemLogsFetcher;
 
 class SystemInfoUIHTMLSource : public content::URLDataSource{
  public:
@@ -116,7 +116,8 @@ void SystemInfoUIHTMLSource::StartDataRequest(
   path_ = path;
   callback_ = callback;
 
-  AboutSystemLogsFetcher* fetcher = new AboutSystemLogsFetcher();
+  system_logs::SystemLogsFetcher* fetcher =
+      system_logs::BuildAboutSystemLogsFetcher();
   fetcher->Fetch(base::Bind(&SystemInfoUIHTMLSource::SysInfoComplete,
                             weak_ptr_factory_.GetWeakPtr()));
 }

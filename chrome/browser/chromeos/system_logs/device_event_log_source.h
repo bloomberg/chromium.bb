@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_DEVICE_EVENT_LOG_SOURCE_H_
 
 #include "base/macros.h"
-#include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
 
 namespace system_logs {
 

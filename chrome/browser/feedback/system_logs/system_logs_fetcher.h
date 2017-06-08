@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
-#define CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
+#ifndef CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_H_
+#define CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_H_
 
 #include <stddef.h>
 
@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/feedback/anonymizer_tool.h"
 #include "components/feedback/feedback_common.h"
 
 namespace system_logs {
@@ -24,20 +25,19 @@ using SystemLogsResponse = FeedbackCommon::SystemLogsMap;
 // Callback that the data sources use to return data.
 using SysLogsSourceCallback = base::Callback<void(SystemLogsResponse*)>;
 
-// Callback that the SystemLogsFetcherBase uses to return data.
+// Callback that the SystemLogsFetcher uses to return data.
 using SysLogsFetcherCallback =
     base::Callback<void(std::unique_ptr<SystemLogsResponse>)>;
 
-// The SystemLogsSource provides a interface for the data sources that
-// the SystemLogsFetcherBase class uses to fetch logs and other
-// information.
+// The SystemLogsSource provides an interface for the data sources that
+// the SystemLogsFetcher class uses to fetch logs and other information.
 class SystemLogsSource {
  public:
   // |source_name| provides a descriptive identifier for debugging.
   explicit SystemLogsSource(const std::string& source_name);
   virtual ~SystemLogsSource();
 
-  // Fetches data and passes it by to the callback
+  // Fetches data and passes it by pointer to the callback
   virtual void Fetch(const SysLogsSourceCallback& callback) = 0;
 
   const std::string& source_name() const { return source_name_; }
@@ -46,38 +46,44 @@ class SystemLogsSource {
   std::string source_name_;
 };
 
-// The SystemLogsFetcherBaseBase specifies an interface for LogFetcher classes.
-// Derived LogFetcher classes aggregate the logs from a list of SystemLogSource
-// classes.
+// The SystemLogsFetcher fetches key-value data from a list of log sources.
 //
 // EXAMPLE:
 // class Example {
 //  public:
 //   void ProcessLogs(SystemLogsResponse* response) {
-//      //do something with the logs
+//      // do something with the logs
 //   }
 //   void GetLogs() {
-//     SystemLogsFetcherBase* fetcher = new SystemLogsFetcherBase();
+//     SystemLogsFetcher* fetcher = new SystemLogsFetcher(/*scrub_data=*/ true);
+//     fetcher->AddSource(base::MakeUnique<LogSourceOne>());
+//     fetcher->AddSource(base::MakeUnique<LogSourceTwo>());
 //     fetcher->Fetch(base::Bind(&Example::ProcessLogs, this));
 //   }
-class SystemLogsFetcherBase
-    : public base::SupportsWeakPtr<SystemLogsFetcherBase> {
+// };
+class SystemLogsFetcher {
  public:
-  SystemLogsFetcherBase();
-  virtual ~SystemLogsFetcherBase();
+  // If scrub_data is true, logs will be anonymized.
+  // TODO(battre): This class needs to be expanded to provide better scrubbing
+  // of system logs.
+  explicit SystemLogsFetcher(bool scrub_data);
+  ~SystemLogsFetcher();
 
+  // Adds a source to use when fetching.
+  void AddSource(std::unique_ptr<SystemLogsSource> source);
+
+  // Starts the fetch process.
   void Fetch(const SysLogsFetcherCallback& callback);
 
- protected:
-  // Callback passed to all the data sources. Calls Rewrite() and AddResponse().
+ private:
+  // Callback passed to all the data sources. May call Scrub(), then calls
+  // AddResponse().
   void OnFetched(const std::string& source_name, SystemLogsResponse* response);
 
-  // Virtual function that allows derived classes to modify the response before
-  // it gets added to the output.
-  virtual void Rewrite(const std::string& source_name,
-                       SystemLogsResponse* response);
+  // Anonymizes the response data.
+  void Scrub(SystemLogsResponse* response);
 
-  // Merges the |data| it receives into response_. When all the data sources
+  // Merges the |response| it receives into response_. When all the data sources
   // have responded, it deletes their objects and returns the response to the
   // callback_. After this it deletes this instance of the object.
   void AddResponse(const std::string& source_name,
@@ -87,13 +93,15 @@ class SystemLogsFetcherBase
   SysLogsFetcherCallback callback_;
 
   std::unique_ptr<SystemLogsResponse> response_;  // The actual response data.
-  size_t num_pending_requests_;   // The number of callbacks it should get.
+  size_t num_pending_requests_;  // The number of callbacks it should get.
 
- private:
+  std::unique_ptr<feedback::AnonymizerTool> anonymizer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SystemLogsFetcherBase);
+  base::WeakPtrFactory<SystemLogsFetcher> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemLogsFetcher);
 };
 
 }  // namespace system_logs
 
-#endif  // CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
+#endif  // CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_H_

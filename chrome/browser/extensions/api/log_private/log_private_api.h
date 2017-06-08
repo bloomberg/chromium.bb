@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
 #include "chrome/common/extensions/api/log_private.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"

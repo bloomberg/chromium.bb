@@ -5,22 +5,13 @@
 #ifndef CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_ABOUT_SYSTEM_LOGS_FETCHER_H_
 #define CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_ABOUT_SYSTEM_LOGS_FETCHER_H_
 
-#include "base/macros.h"
-#include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
-
 namespace system_logs {
 
-// The AboutAboutSystemLogsFetcher aggregates the unscrubbed logs for display
-// in the about:system page.
-class AboutSystemLogsFetcher : public SystemLogsFetcherBase {
- public:
-  AboutSystemLogsFetcher();
-  ~AboutSystemLogsFetcher() override;
+class SystemLogsFetcher;
 
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(AboutSystemLogsFetcher);
-};
+// Creates a SystemLogsFetcher to aggregate logs for chrome://system.
+// The fetcher deletes itself once it finishes fetching data.
+SystemLogsFetcher* BuildAboutSystemLogsFetcher();
 
 }  // namespace system_logs
 
