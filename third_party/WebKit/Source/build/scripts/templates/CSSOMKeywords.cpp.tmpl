@@ -10,32 +10,6 @@
 
 namespace blink {
 
-namespace {
-
-using KeywordTable = HashMap<CSSPropertyID, Vector<CSSValueID>>;
-
-KeywordTable createKeywordTable() {
-  KeywordTable table;
-
-  {% for property_id, property in properties.items() if property.keywordIDs %}
-  {
-    Vector<CSSValueID> {{property.lower_camel_name}}Keywords;
-    {% for keywordValueID in property.keywordIDs %}
-    {{property.lower_camel_name}}Keywords.push_back({{keywordValueID}});
-    {% endfor %}
-    table.Set({{property_id}}, {{property.lower_camel_name}}Keywords);
-  }
-  {% endfor %}
-  return table;
-}
-
-KeywordTable& keywordTable() {
-  DEFINE_STATIC_LOCAL(KeywordTable, keywordTable, (createKeywordTable()));
-  return keywordTable;
-}
-
-} // namespace
-
 bool CSSOMKeywords::ValidKeywordForProperty(CSSPropertyID id,
                                             const CSSKeywordValue& keyword) {
   CSSValueID valueID = keyword.KeywordValueID();
@@ -49,12 +23,22 @@ bool CSSOMKeywords::ValidKeywordForProperty(CSSPropertyID id,
     return true;
   }
 
-  const KeywordTable::iterator tableIterator = keywordTable().find(id);
-  if (tableIterator == keywordTable().end()) {
+  switch (id) {
+  {% for property_id, property in properties.items() if property.keywordIDs %}
+  case {{property_id}}: {
+    switch (valueID) {
+    {% for keywordValueID in property.keywordIDs %}
+    case {{keywordValueID}}:
+    {% endfor %}
+      return true;
+    default:
+      return false;
+    }
+  }
+  {% endfor %}
+  default:
     return false;
   }
-
-  return tableIterator->value.Contains(valueID);
 }
 
 } // namespace blink
