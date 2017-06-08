@@ -92,7 +92,7 @@ void PrintLayerHierarchyImp(const Layer* layer,
 
     *out << '\n' << property_indent_str;
     *out << "rotation: ";
-    *out << std::acos(decomp.quaternion[3]) * 360.0 / M_PI;
+    *out << std::acos(decomp.quaternion.w()) * 360.0 / M_PI;
 
     *out << '\n' << property_indent_str;
     *out << "scale: " << decomp.scale[0];

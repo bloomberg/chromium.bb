@@ -197,14 +197,19 @@ TEST(TransformUtilTest, TransformAboutPivot) {
 TEST(TransformUtilTest, BlendOppositeQuaternions) {
   DecomposedTransform first;
   DecomposedTransform second;
-  second.quaternion[3] = -second.quaternion[3];
+  second.quaternion.set_w(-second.quaternion.w());
 
-  DecomposedTransform result;
-  BlendDecomposedTransforms(&result, first, second, 0.25);
-  for (size_t i = 0; i < 4; ++i) {
-    EXPECT_TRUE(std::isfinite(result.quaternion[i]));
-    EXPECT_FALSE(std::isnan(result.quaternion[i]));
-  }
+  DecomposedTransform result = BlendDecomposedTransforms(first, second, 0.25);
+
+  EXPECT_TRUE(std::isfinite(result.quaternion.x()));
+  EXPECT_TRUE(std::isfinite(result.quaternion.y()));
+  EXPECT_TRUE(std::isfinite(result.quaternion.z()));
+  EXPECT_TRUE(std::isfinite(result.quaternion.w()));
+
+  EXPECT_FALSE(std::isnan(result.quaternion.x()));
+  EXPECT_FALSE(std::isnan(result.quaternion.y()));
+  EXPECT_FALSE(std::isnan(result.quaternion.z()));
+  EXPECT_FALSE(std::isnan(result.quaternion.w()));
 }
 
 }  // namespace

@@ -46,12 +46,9 @@ gfx::Transform TransformAnimationCurveAdapter::GetValue(
     return initial_value_;
   double progress = cc::TimeUtil::Divide(t, duration_);
 
-  gfx::DecomposedTransform to_return;
-  gfx::BlendDecomposedTransforms(&to_return,
-                                 decomposed_target_value_,
-                                 decomposed_initial_value_,
-                                 gfx::Tween::CalculateValue(tween_type_,
-                                                            progress));
+  gfx::DecomposedTransform to_return = gfx::BlendDecomposedTransforms(
+      decomposed_target_value_, decomposed_initial_value_,
+      gfx::Tween::CalculateValue(tween_type_, progress));
   return gfx::ComposeTransform(to_return);
 }
 

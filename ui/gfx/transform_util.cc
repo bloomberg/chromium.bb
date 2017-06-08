@@ -56,46 +56,6 @@ SkMScalar Round(SkMScalar n) {
   return SkDoubleToMScalar(std::floor(SkMScalarToDouble(n) + 0.5));
 }
 
-// Taken from http://www.w3.org/TR/css3-transforms/.
-bool Slerp(SkMScalar out[4],
-           const SkMScalar q1[4],
-           const SkMScalar q2[4],
-           double progress) {
-  double product = Dot<4>(q1, q2);
-
-  // Clamp product to -1.0 <= product <= 1.0.
-  product = std::min(std::max(product, -1.0), 1.0);
-
-  const double epsilon = 1e-5;
-  if (std::abs(product - 1.0) < epsilon) {
-    for (int i = 0; i < 4; ++i)
-      out[i] = q1[i];
-    return true;
-  }
-
-  // TODO(vmpstr): In case the product is -1, the vectors are exactly opposite
-  // of each other. In this case, it's technically not correct to just pick one
-  // of the vectors, we instead need to pick how to interpolate. However, the
-  // spec isn't clear on this. If we don't handle the -1 case explicitly, it
-  // results in inf and nans however, which is worse. See crbug.com/506543 for
-  // more discussion.
-  if (std::abs(product + 1.0) < epsilon) {
-    for (int i = 0; i < 4; ++i)
-      out[i] = q1[i];
-    return true;
-  }
-
-  double denom = std::sqrt(1.0 - product * product);
-  double theta = std::acos(product);
-  double w = std::sin(progress * theta) * (1.0 / denom);
-
-  double scale1 = std::cos(progress * theta) - product * w;
-  double scale2 = w;
-  Combine<4>(out, q1, q2, scale1, scale2);
-
-  return true;
-}
-
 // Returns false if the matrix cannot be normalized.
 bool Normalize(SkMatrix44& m) {
   if (m.get(3, 3) == 0.0)
@@ -135,24 +95,7 @@ SkMatrix44 BuildSnappedTranslationMatrix(DecomposedTransform decomp) {
 }
 
 SkMatrix44 BuildRotationMatrix(const DecomposedTransform& decomp) {
-  double x = decomp.quaternion[0];
-  double y = decomp.quaternion[1];
-  double z = decomp.quaternion[2];
-  double w = decomp.quaternion[3];
-
-  SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
-
-  // Implicitly calls matrix.setIdentity()
-  matrix.set3x3(SkDoubleToMScalar(1.0 - 2.0 * (y * y + z * z)),
-                SkDoubleToMScalar(2.0 * (x * y + z * w)),
-                SkDoubleToMScalar(2.0 * (x * z - y * w)),
-                SkDoubleToMScalar(2.0 * (x * y - z * w)),
-                SkDoubleToMScalar(1.0 - 2.0 * (x * x + z * z)),
-                SkDoubleToMScalar(2.0 * (y * z + x * w)),
-                SkDoubleToMScalar(2.0 * (x * z + y * w)),
-                SkDoubleToMScalar(2.0 * (y * z - x * w)),
-                SkDoubleToMScalar(1.0 - 2.0 * (x * x + y * y)));
-  return matrix;
+  return Transform(decomp.quaternion).matrix();
 }
 
 SkMatrix44 BuildSnappedRotationMatrix(const DecomposedTransform& decomp) {
@@ -282,22 +225,21 @@ DecomposedTransform::DecomposedTransform() {
   scale[0] = scale[1] = scale[2] = 1.0;
   skew[0] = skew[1] = skew[2] = 0.0;
   perspective[0] = perspective[1] = perspective[2] = 0.0;
-  quaternion[0] = quaternion[1] = quaternion[2] = 0.0;
-  perspective[3] = quaternion[3] = 1.0;
+  perspective[3] = 1.0;
 }
 
-bool BlendDecomposedTransforms(DecomposedTransform* out,
-                               const DecomposedTransform& to,
-                               const DecomposedTransform& from,
-                               double progress) {
+DecomposedTransform BlendDecomposedTransforms(const DecomposedTransform& to,
+                                              const DecomposedTransform& from,
+                                              double progress) {
+  DecomposedTransform out;
   double scalea = progress;
   double scaleb = 1.0 - progress;
-  Combine<3>(out->translate, to.translate, from.translate, scalea, scaleb);
-  Combine<3>(out->scale, to.scale, from.scale, scalea, scaleb);
-  Combine<3>(out->skew, to.skew, from.skew, scalea, scaleb);
-  Combine<4>(
-      out->perspective, to.perspective, from.perspective, scalea, scaleb);
-  return Slerp(out->quaternion, from.quaternion, to.quaternion, progress);
+  Combine<3>(out.translate, to.translate, from.translate, scalea, scaleb);
+  Combine<3>(out.scale, to.scale, from.scale, scalea, scaleb);
+  Combine<3>(out.skew, to.skew, from.skew, scalea, scaleb);
+  Combine<4>(out.perspective, to.perspective, from.perspective, scalea, scaleb);
+  out.quaternion = from.quaternion.Slerp(to.quaternion, progress);
+  return out;
 }
 
 // Taken from http://www.w3.org/TR/css3-transforms/.
@@ -420,21 +362,22 @@ bool DecomposeTransform(DecomposedTransform* decomp,
   double row00 = SkMScalarToDouble(row[0][0]);
   double row11 = SkMScalarToDouble(row[1][1]);
   double row22 = SkMScalarToDouble(row[2][2]);
-  decomp->quaternion[0] = SkDoubleToMScalar(
-      0.5 * std::sqrt(std::max(1.0 + row00 - row11 - row22, 0.0)));
-  decomp->quaternion[1] = SkDoubleToMScalar(
-      0.5 * std::sqrt(std::max(1.0 - row00 + row11 - row22, 0.0)));
-  decomp->quaternion[2] = SkDoubleToMScalar(
-      0.5 * std::sqrt(std::max(1.0 - row00 - row11 + row22, 0.0)));
-  decomp->quaternion[3] = SkDoubleToMScalar(
-      0.5 * std::sqrt(std::max(1.0 + row00 + row11 + row22, 0.0)));
+
+  decomp->quaternion.set_x(SkDoubleToMScalar(
+      0.5 * std::sqrt(std::max(1.0 + row00 - row11 - row22, 0.0))));
+  decomp->quaternion.set_y(SkDoubleToMScalar(
+      0.5 * std::sqrt(std::max(1.0 - row00 + row11 - row22, 0.0))));
+  decomp->quaternion.set_z(SkDoubleToMScalar(
+      0.5 * std::sqrt(std::max(1.0 - row00 - row11 + row22, 0.0))));
+  decomp->quaternion.set_w(SkDoubleToMScalar(
+      0.5 * std::sqrt(std::max(1.0 + row00 + row11 + row22, 0.0))));
 
   if (row[2][1] > row[1][2])
-      decomp->quaternion[0] = -decomp->quaternion[0];
+    decomp->quaternion.set_x(-decomp->quaternion.x());
   if (row[0][2] > row[2][0])
-      decomp->quaternion[1] = -decomp->quaternion[1];
+    decomp->quaternion.set_y(-decomp->quaternion.y());
   if (row[1][0] > row[0][1])
-      decomp->quaternion[2] = -decomp->quaternion[2];
+    decomp->quaternion.set_z(-decomp->quaternion.z());
 
   return true;
 }
@@ -495,23 +438,10 @@ std::string DecomposedTransform::ToString() const {
       "skew: %+0.4f %+0.4f %+0.4f\n"
       "perspective: %+0.4f %+0.4f %+0.4f %+0.4f\n"
       "quaternion: %+0.4f %+0.4f %+0.4f %+0.4f\n",
-      translate[0],
-      translate[1],
-      translate[2],
-      scale[0],
-      scale[1],
-      scale[2],
-      skew[0],
-      skew[1],
-      skew[2],
-      perspective[0],
-      perspective[1],
-      perspective[2],
-      perspective[3],
-      quaternion[0],
-      quaternion[1],
-      quaternion[2],
-      quaternion[3]);
+      translate[0], translate[1], translate[2], scale[0], scale[1], scale[2],
+      skew[0], skew[1], skew[2], perspective[0], perspective[1], perspective[2],
+      perspective[3], quaternion.x(), quaternion.y(), quaternion.z(),
+      quaternion.w());
 }
 
 }  // namespace gfx
