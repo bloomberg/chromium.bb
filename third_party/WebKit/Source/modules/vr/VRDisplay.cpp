@@ -55,16 +55,24 @@ VREye StringToVREye(const String& which_eye) {
 VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
                      device::mojom::blink::VRDisplayPtr display,
                      device::mojom::blink::VRDisplayClientRequest request)
-    : ContextLifecycleObserver(navigator_vr->GetDocument()),
+    : SuspendableObject(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
       capabilities_(new VRDisplayCapabilities()),
       eye_parameters_left_(new VREyeParameters()),
       eye_parameters_right_(new VREyeParameters()),
       display_(std::move(display)),
       submit_frame_client_binding_(this),
-      display_client_binding_(this, std::move(request)) {}
+      display_client_binding_(this, std::move(request)) {
+  SuspendIfNeeded();  // Initialize SuspendabaleObject.
+}
 
 VRDisplay::~VRDisplay() {}
+
+void VRDisplay::Suspend() {}
+
+void VRDisplay::Resume() {
+  RequestVSync();
+}
 
 VRController* VRDisplay::Controller() {
   return navigator_vr_->Controller();
@@ -134,6 +142,9 @@ void VRDisplay::RequestVSync() {
            << " start: pending_vrdisplay_raf_=" << pending_vrdisplay_raf_
            << " in_animation_frame_=" << in_animation_frame_
            << " did_submit_this_frame_=" << did_submit_this_frame_;
+
+  if (!pending_vrdisplay_raf_)
+    return;
 
   // The logic here is a bit subtle. We get called from one of the following
   // four contexts:
@@ -802,6 +813,12 @@ void VRDisplay::ProcessScheduledAnimations(double timestamp) {
     return;
   }
 
+  if (doc->IsContextSuspended()) {
+    // We are currently suspended - try ProcessScheduledAnimations again later
+    // when we resume.
+    return;
+  }
+
   TRACE_EVENT1("gpu", "VRDisplay::OnVSync", "frame", vr_frame_id_);
 
   if (pending_vrdisplay_raf_ && scripted_animation_controller_) {
@@ -911,7 +928,8 @@ const AtomicString& VRDisplay::InterfaceName() const {
   return EventTargetNames::VRDisplay;
 }
 
-void VRDisplay::ContextDestroyed(ExecutionContext*) {
+void VRDisplay::ContextDestroyed(ExecutionContext* context) {
+  SuspendableObject::ContextDestroyed(context);
   ForceExitPresent();
   scripted_animation_controller_.Clear();
 }
