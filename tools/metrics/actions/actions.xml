@@ -15401,6 +15401,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_FromForceSigninWarning">
+  <owner>zmin@chromium.org</owner>
+  <description>
+    Record when a user signs in again from the force sign in auth error warning
+    modal dialog.
+  </description>
+</action>
+
 <action name="Signin_Signin_FromMenu">
   <owner>gogerald@chromium.org</owner>
   <description>

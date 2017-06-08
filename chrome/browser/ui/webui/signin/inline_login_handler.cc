@@ -177,6 +177,10 @@ void InlineLoginHandler::RecordSigninUserActionForAccessPoint(
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
       break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromForceSigninWarning"));
+      break;
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
       break;
