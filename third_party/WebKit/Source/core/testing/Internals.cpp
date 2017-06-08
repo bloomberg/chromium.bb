@@ -156,6 +156,7 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
+#include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -2394,7 +2395,8 @@ void Internals::mediaPlayerRemoteRouteAvailabilityChanged(
     HTMLMediaElement* media_element,
     bool available) {
   DCHECK(media_element);
-  media_element->RemoteRouteAvailabilityChanged(
+  DCHECK(media_element->remote_playback_client_);
+  media_element->remote_playback_client_->AvailabilityChanged(
       available ? WebRemotePlaybackAvailability::kDeviceAvailable
                 : WebRemotePlaybackAvailability::kSourceNotSupported);
 }
