@@ -48,9 +48,6 @@ class MockGit(object):
     def delete_branch(self, name):
         pass
 
-    def supports_local_commits(self):
-        return True
-
     def exists(self, path):
         # TestRealMain.test_real_main (and several other rebaseline tests) are sensitive to this return value.
         # We should make those tests more robust, but for now we just return True always (since no test needs otherwise).
