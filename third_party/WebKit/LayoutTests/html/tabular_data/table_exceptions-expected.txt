@@ -3,9 +3,7 @@ This test should trigger exceptions on HTMLTableElement, and verify that the mes
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS t.caption = null threw exception NotFoundError: Failed to set the 'caption' property on 'HTMLTableElement': The new child element is null..
 PASS t.caption = document.body threw exception TypeError: Failed to set the 'caption' property on 'HTMLTableElement': The provided value is not of type 'HTMLTableCaptionElement'..
-PASS t.tHead = null threw exception NotFoundError: Failed to set the 'tHead' property on 'HTMLTableElement': The new child element is null..
 PASS t.tHead = document.body threw exception TypeError: Failed to set the 'tHead' property on 'HTMLTableElement': The provided value is not of type 'HTMLTableSectionElement'..
 PASS t.createTFoot() is t.tFoot
 PASS t.tFoot is non-null.
