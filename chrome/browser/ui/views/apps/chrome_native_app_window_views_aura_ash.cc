@@ -8,7 +8,6 @@
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/frame/custom_frame_view_ash.h"
-#include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shared/app_types.h"
@@ -129,12 +128,7 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
   ChromeNativeAppWindowViewsAura::InitializeWindow(app_window, create_params);
   aura::Window* window = widget()->GetNativeWindow();
 
-  if (app_window->window_type_is_panel()) {
-    // Ash's ShelfWindowWatcher handles app panel windows once this type is set.
-    // The type should have been initialized for mash below, via mus_properties.
-    if (!ash_util::IsRunningInMash())
-      window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP_PANEL);
-  } else {
+  if (!app_window->window_type_is_panel()) {
     window->SetProperty(aura::client::kAppType,
                         static_cast<int>(ash::AppType::CHROME_APP));
   }
@@ -171,17 +165,9 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
 void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
     views::Widget::InitParams* init_params,
     views::Widget* widget) {
-  ChromeNativeAppWindowViewsAura::OnBeforePanelWidgetInit(init_params,
-                                                          widget);
+  ChromeNativeAppWindowViewsAura::OnBeforePanelWidgetInit(init_params, widget);
 
-  if (ash_util::IsRunningInMash()) {
-    // Ash's ShelfWindowWatcher handles app panel windows once this type is set.
-    init_params
-        ->mus_properties[ui::mojom::WindowManager::kShelfItemType_Property] =
-        mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<aura::PropertyConverter::PrimitiveType>(
-                ash::TYPE_APP_PANEL));
-  } else if (ash::Shell::HasInstance()) {
+  if (!ash_util::IsRunningInMash() && ash::Shell::HasInstance()) {
     // Open a new panel on the target root.
     init_params->context = ash::Shell::GetRootWindowForNewWindows();
     init_params->bounds = gfx::Rect(GetPreferredSize());

@@ -24,18 +24,18 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/wm/core/transient_window_controller.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
 namespace {
 
 // Returns the window's shelf item type property value.
-// Mash provides an initial default shelf item type for untyped windows.
+// Mash returns the dialog type for normal windows without shelf item types.
 // TODO(msw): Extend this Mash behavior to all Ash configs.
 ShelfItemType GetShelfItemType(aura::Window* window) {
   if (Shell::GetAshConfig() == Config::MASH &&
       window->GetProperty(kShelfItemTypeKey) == TYPE_UNDEFINED &&
+      window->type() == aura::client::WINDOW_TYPE_NORMAL &&
       !wm::GetWindowState(window)->ignored_by_shelf()) {
     return TYPE_DIALOG;
   }
@@ -43,7 +43,7 @@ ShelfItemType GetShelfItemType(aura::Window* window) {
 }
 
 // Returns the window's shelf id property value, or provides a default value.
-// Mash provides an initial default shelf id for unidentified windows.
+// Mash sets and returns an initial default shelf id for unidentified windows.
 // TODO(msw): Extend this Mash behavior to all Ash configs.
 ShelfID GetShelfID(aura::Window* window) {
   if (Shell::GetAshConfig() == Config::MASH &&
@@ -226,9 +226,11 @@ void ShelfWindowWatcher::OnUserWindowDestroying(aura::Window* window) {
 }
 
 void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
-  if (GetShelfItemType(window) == TYPE_UNDEFINED ||
-      GetShelfID(window).IsNull() ||
-      ::wm::TransientWindowController::Get()->GetTransientParent(window)) {
+  // ShelfWindowWatcher only handles panels and dialogs for now, all other shelf
+  // item types are handled by ChromeLauncherController.
+  const ShelfItemType item_type = GetShelfItemType(window);
+  if ((item_type != TYPE_APP_PANEL && item_type != TYPE_DIALOG) ||
+      GetShelfID(window).IsNull()) {
     // Remove |window|'s ShelfItem if it was added by ShelfWindowWatcher.
     if (user_windows_with_items_.count(window) > 0)
       RemoveShelfItem(window);
@@ -244,8 +246,8 @@ void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
     return;
   }
 
-  // Create a new ShelfWindowWatcher item for |window|.
-  if (index < 0)
+  // Create a new item for |window|, if it is visible or a [minimized] panel.
+  if (index < 0 && (window->IsVisible() || item_type == TYPE_APP_PANEL))
     AddShelfItem(window);
 }
 

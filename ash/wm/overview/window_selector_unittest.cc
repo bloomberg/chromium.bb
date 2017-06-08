@@ -145,6 +145,7 @@ class WindowSelectorTest : public test::AshTestBase {
     static int id = 0;
     std::string shelf_id(ShelfID(base::IntToString(id++)).Serialize());
     window->SetProperty(kShelfIDKey, new std::string(shelf_id));
+    window->SetProperty<int>(kShelfItemTypeKey, TYPE_APP_PANEL);
     window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
@@ -1142,6 +1143,10 @@ TEST_F(WindowSelectorTest, ClickModalWindowParent) {
 // Tests that windows remain on the display they are currently on in overview
 // mode, and that the close buttons are on matching displays.
 TEST_F(WindowSelectorTest, MultipleDisplays) {
+  // TODO: Crashes in bounds_animator.cc in mash: http://crbug.com/730759
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   gfx::Rect bounds1(0, 0, 400, 400);

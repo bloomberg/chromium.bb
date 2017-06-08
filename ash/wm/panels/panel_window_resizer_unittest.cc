@@ -64,6 +64,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     static int id = 0;
     std::string shelf_id(ash::ShelfID(base::IntToString(id++)).Serialize());
     window->SetProperty(kShelfIDKey, new std::string(shelf_id));
+    window->SetProperty<int>(kShelfItemTypeKey, TYPE_APP_PANEL);
     shelf_view_test_->RunMessageLoopUntilAnimationsDone();
     return window;
   }

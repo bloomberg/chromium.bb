@@ -89,7 +89,7 @@ TEST_F(ShelfWindowWatcherTest, OpenAndClose) {
   EXPECT_EQ(1, model_->item_count());
 }
 
-// Ensure shelf items are added and removed for unknown windows in mash.
+// Ensure shelf items are added and removed for some unknown windows in mash.
 TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
   if (Shell::GetAshConfig() != Config::MASH)
     return;
@@ -110,6 +110,24 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
   EXPECT_EQ(2, model_->item_count());
   widget2.reset();
   EXPECT_EQ(1, model_->item_count());
+
+  // Windows with type WINDOW_TYPE_NORMAL get shelf items, others do not.
+  aura::client::WindowType no_item_types[] = {
+      aura::client::WINDOW_TYPE_UNKNOWN, aura::client::WINDOW_TYPE_NORMAL,
+      aura::client::WINDOW_TYPE_POPUP,   aura::client::WINDOW_TYPE_CONTROL,
+      aura::client::WINDOW_TYPE_PANEL,   aura::client::WINDOW_TYPE_MENU,
+      aura::client::WINDOW_TYPE_TOOLTIP};
+  for (aura::client::WindowType type : no_item_types) {
+    std::unique_ptr<aura::Window> window =
+        base::MakeUnique<aura::Window>(nullptr, type);
+    window->Init(ui::LAYER_NOT_DRAWN);
+    Shell::GetPrimaryRootWindow()
+        ->GetChildById(kShellWindowId_DefaultContainer)
+        ->AddChild(window.get());
+    window->Show();
+    EXPECT_EQ(type == aura::client::WINDOW_TYPE_NORMAL ? 2 : 1,
+              model_->item_count());
+  }
 
   // Windows with WindowState::ignored_by_shelf set do not get shelf items.
   widget1 =
@@ -200,10 +218,6 @@ TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
 }
 
 TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
-  // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
@@ -219,7 +233,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
 
   // Update the window's ShelfItemType.
   widget->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
-                                         static_cast<int32_t>(TYPE_APP));
+                                         static_cast<int32_t>(TYPE_APP_PANEL));
   // No new item is created after updating a launcher item.
   EXPECT_EQ(2, model_->item_count());
   // index and id are not changed after updating a launcher item.
@@ -228,10 +242,6 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
 }
 
 TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
-  // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
@@ -269,10 +279,6 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
 // Check |window|'s item is not changed during the dragging.
 // TODO(simonhong): Add a test for removing a Window during the dragging.
 TEST_F(ShelfWindowWatcherTest, DragWindow) {
-  // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
@@ -299,30 +305,20 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
   EXPECT_EQ(id, model_->items()[index].id);
 }
 
-// Ensure shelf items are added and removed as panels are opened and closed.
-TEST_F(ShelfWindowWatcherTest, PanelWindow) {
-  // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
+// Ensure panels and dialogs get shelf items.
+TEST_F(ShelfWindowWatcherTest, PanelAndDialogWindows) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
-  // Adding windows with valid ShelfItemType properties adds shelf items.
-  std::unique_ptr<views::Widget> widget1 =
+  // An item is created for a dialog window.
+  std::unique_ptr<views::Widget> dialog_widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  aura::Window* window1 = widget1->GetNativeWindow();
-  window1->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
-  window1->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
+  aura::Window* dialog = dialog_widget->GetNativeWindow();
+  dialog->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
+  dialog->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   EXPECT_EQ(2, model_->item_count());
-  std::unique_ptr<views::Widget> widget2 =
-      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  aura::Window* window2 = widget2->GetNativeWindow();
-  window2->SetProperty(kShelfIDKey, new std::string(ShelfID("b").Serialize()));
-  window2->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
-  EXPECT_EQ(3, model_->item_count());
 
-  // Create a panel-type widget to mimic Chrome's app panel windows.
+  // An item is created for a panel window.
   views::Widget panel_widget;
   views::Widget::InitParams panel_params(views::Widget::InitParams::TYPE_PANEL);
   panel_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -331,19 +327,24 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
           &panel_widget, kShellWindowId_PanelContainer, &panel_params);
   panel_widget.Init(panel_params);
   panel_widget.Show();
-  aura::Window* panel_window = panel_widget.GetNativeWindow();
-  panel_window->SetProperty(kShelfIDKey,
-                            new std::string(ShelfID("c").Serialize()));
-  panel_window->SetProperty(kShelfItemTypeKey,
-                            static_cast<int32_t>(TYPE_APP_PANEL));
-  EXPECT_EQ(4, model_->item_count());
+  aura::Window* panel = panel_widget.GetNativeWindow();
+  panel->SetProperty(kShelfIDKey, new std::string(ShelfID("b").Serialize()));
+  panel->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP_PANEL));
+  EXPECT_EQ(3, model_->item_count());
+
+  // An item is not created for an app window.
+  std::unique_ptr<views::Widget> app_widget =
+      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
+  aura::Window* app = app_widget->GetNativeWindow();
+  app->SetProperty(kShelfIDKey, new std::string(ShelfID("c").Serialize()));
+  app->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
+  EXPECT_EQ(3, model_->item_count());
+  app_widget.reset();
 
   // Each ShelfItem is removed when the associated window is destroyed.
   panel_widget.CloseNow();
-  EXPECT_EQ(3, model_->item_count());
-  widget2.reset();
   EXPECT_EQ(2, model_->item_count());
-  widget1.reset();
+  dialog_widget.reset();
   EXPECT_EQ(1, model_->item_count());
 }
 
@@ -379,61 +380,66 @@ TEST_F(ShelfWindowWatcherTest, ItemIcon) {
 }
 
 TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
-  const int initial_item_count = model_->item_count();
-
-  std::unique_ptr<aura::Window> window(base::MakeUnique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_NORMAL));
+  EXPECT_EQ(1, model_->item_count());
+  std::unique_ptr<aura::Window> window =
+      base::MakeUnique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
-  window->SetProperty(kShelfIDKey, new std::string(ShelfID("foo").Serialize()));
-  window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
+  window->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
+  window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   Shell::GetPrimaryRootWindow()
       ->GetChildById(kShellWindowId_DefaultContainer)
       ->AddChild(window.get());
   window->Show();
-  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
-  std::unique_ptr<aura::Window> child_window(base::MakeUnique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_NORMAL));
-  child_window->Init(ui::LAYER_NOT_DRAWN);
-  child_window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
-  window->AddChild(child_window.get());
-  child_window->Show();
-  // |child_window| should not result in adding a new entry.
-  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+  std::unique_ptr<aura::Window> child =
+      base::MakeUnique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+  child->Init(ui::LAYER_NOT_DRAWN);
+  child->SetProperty(kShelfIDKey, new std::string(ShelfID("b").Serialize()));
+  child->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
+  window->AddChild(child.get());
+  child->Show();
+  // There should not be a new shelf item for |child|.
+  EXPECT_EQ(2, model_->item_count());
 
-  child_window.reset();
+  child.reset();
+  EXPECT_EQ(2, model_->item_count());
   window.reset();
-  EXPECT_EQ(initial_item_count, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
 }
 
-TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForTransientWindows) {
-  const int initial_item_count = model_->item_count();
-
-  std::unique_ptr<aura::Window> window(base::MakeUnique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_NORMAL));
+TEST_F(ShelfWindowWatcherTest, CreateShelfEntriesForTransientWindows) {
+  EXPECT_EQ(1, model_->item_count());
+  std::unique_ptr<aura::Window> window =
+      base::MakeUnique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
-  window->SetProperty(kShelfIDKey, new std::string(ShelfID("foo").Serialize()));
-  window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
+  window->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
+  window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   Shell::GetPrimaryRootWindow()
       ->GetChildById(kShellWindowId_DefaultContainer)
       ->AddChild(window.get());
   window->Show();
-  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
-  std::unique_ptr<aura::Window> transient_window(base::MakeUnique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_NORMAL));
-  transient_window->Init(ui::LAYER_NOT_DRAWN);
-  transient_window->SetProperty(kShelfItemTypeKey,
-                                static_cast<int32_t>(TYPE_APP));
-  ::wm::TransientWindowController::Get()->AddTransientChild(
-      window.get(), transient_window.get());
-  transient_window->Show();
-  // |transient_window| should not result in adding a new entry.
-  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+  std::unique_ptr<aura::Window> transient =
+      base::MakeUnique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+  transient->Init(ui::LAYER_NOT_DRAWN);
+  transient->SetProperty(kShelfIDKey,
+                         new std::string(ShelfID("b").Serialize()));
+  transient->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
+  Shell::GetPrimaryRootWindow()
+      ->GetChildById(kShellWindowId_DefaultContainer)
+      ->AddChild(transient.get());
+  ::wm::TransientWindowController::Get()->AddTransientChild(window.get(),
+                                                            transient.get());
+  transient->Show();
+  // There should be a new shelf item for |transient|.
+  EXPECT_EQ(3, model_->item_count());
 
-  transient_window.reset();
+  transient.reset();
+  EXPECT_EQ(2, model_->item_count());
   window.reset();
-  EXPECT_EQ(initial_item_count, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
 }
 
 // Ensures ShelfWindowWatcher supports windows opened prior to session start.
