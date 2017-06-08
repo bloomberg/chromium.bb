@@ -99,8 +99,6 @@ class StyleGridData : public RefCounted<StyleGridData> {
   OrderedNamedGridLines auto_repeat_ordered_named_grid_column_lines_;
   OrderedNamedGridLines auto_repeat_ordered_named_grid_row_lines_;
 
-  unsigned grid_auto_flow_ : kGridAutoFlowBits;
-
   Vector<GridTrackSize> grid_auto_rows_;
   Vector<GridTrackSize> grid_auto_columns_;
 
@@ -120,8 +118,9 @@ class StyleGridData : public RefCounted<StyleGridData> {
   size_t auto_repeat_columns_insertion_point_;
   size_t auto_repeat_rows_insertion_point_;
 
-  AutoRepeatType auto_repeat_columns_type_;
-  AutoRepeatType auto_repeat_rows_type_;
+  unsigned grid_auto_flow_ : kGridAutoFlowBits;
+  unsigned auto_repeat_columns_type_ : 3;
+  unsigned auto_repeat_rows_type_ : 3;
 
  private:
   StyleGridData();

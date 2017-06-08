@@ -2153,10 +2153,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
         ->auto_repeat_rows_insertion_point_;
   }
   AutoRepeatType GridAutoRepeatColumnsType() const {
-    return rare_non_inherited_data_->grid_data_->auto_repeat_columns_type_;
+    return static_cast<AutoRepeatType>(
+        rare_non_inherited_data_->grid_data_->auto_repeat_columns_type_);
   }
   AutoRepeatType GridAutoRepeatRowsType() const {
-    return rare_non_inherited_data_->grid_data_->auto_repeat_rows_type_;
+    return static_cast<AutoRepeatType>(
+        rare_non_inherited_data_->grid_data_->auto_repeat_rows_type_);
   }
   const NamedGridLinesMap& NamedGridColumnLines() const {
     return rare_non_inherited_data_->grid_data_->named_grid_column_lines_;
