@@ -80,3 +80,22 @@ void ExtensionAppWindowLauncherItemController::ExecuteCommand(
     int32_t event_flags) {
   ChromeLauncherController::instance()->ActivateShellApp(app_id(), command_id);
 }
+
+void ExtensionAppWindowLauncherItemController::OnWindowTitleChanged(
+    aura::Window* window) {
+  ui::BaseWindow* base_window = GetAppWindow(window);
+  extensions::AppWindowRegistry* app_window_registry =
+      extensions::AppWindowRegistry::Get(
+          ChromeLauncherController::instance()->profile());
+  extensions::AppWindow* app_window =
+      app_window_registry->GetAppWindowForNativeWindow(
+          base_window->GetNativeWindow());
+
+  // Use the window title (if set) to differentiate show_in_shelf window shelf
+  // items instead of the default behavior of using the app name.
+  if (app_window->show_in_shelf()) {
+    base::string16 title = window->GetTitle();
+    if (!title.empty())
+      ChromeLauncherController::instance()->SetItemTitle(shelf_id(), title);
+  }
+}

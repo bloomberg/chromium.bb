@@ -111,6 +111,9 @@ class ChromeLauncherController
   // browsers shelf item if needed.
   void SetItemStatus(const ash::ShelfID& id, ash::ShelfItemStatus status);
 
+  // Updates the shelf item title (displayed in the tooltip).
+  void SetItemTitle(const ash::ShelfID& id, const base::string16& title);
+
   // Closes or unpins the shelf item.
   void CloseLauncherItem(const ash::ShelfID& id);
 
