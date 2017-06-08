@@ -9,6 +9,13 @@ const controlsFadeOutDurationMs = 300;
 // in MediaControls.cpp.
 const controlsMouseMovementTimeoutMs = 3000;
 
+function isControlVisible(control) {
+    var style = getComputedStyle(control);
+    var visibility = style.getPropertyValue("visibility");
+    var display = style.getPropertyValue("display");
+    return (display != "none" && visibility == "visible");
+}
+
 function castButton(videoElement) {
     var controlID = '-internal-media-controls-cast-button';
     var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
