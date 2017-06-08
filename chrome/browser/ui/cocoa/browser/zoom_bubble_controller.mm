@@ -8,8 +8,11 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
@@ -175,6 +178,15 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   [self close];
 }
 
+// OmniboxDecorationBubbleController implementation.
+- (LocationBarDecoration*)decorationForBubble {
+  BrowserWindowController* controller = [BrowserWindowController
+      browserWindowControllerForWindow:[self parentWindow]];
+  LocationBarViewMac* locationBar = [controller locationBarBridge];
+  return locationBar ? locationBar->zoom_decoration() : nullptr;
+}
+
+// NSWindowController implementation.
 - (void)windowWillClose:(NSNotification*)notification {
   // |delegate_| may be set null by this object's owner.
   if (delegate_) {

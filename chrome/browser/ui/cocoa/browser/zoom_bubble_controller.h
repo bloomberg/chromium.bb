@@ -7,7 +7,7 @@
 
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
 
 namespace content {
@@ -30,7 +30,7 @@ class ZoomBubbleControllerDelegate {
 // The ZoomBubbleController is used to display the current page zoom percent
 // when not at the user's default. It is opened by the ZoomDecoration in the
 // location bar.
-@interface ZoomBubbleController : BaseBubbleController {
+@interface ZoomBubbleController : OmniboxDecorationBubbleController {
  @private
   ZoomBubbleControllerDelegate* delegate_;
 

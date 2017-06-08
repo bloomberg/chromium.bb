@@ -72,13 +72,14 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
 
 void ShowZoomBubbleViewsAtPoint(content::WebContents* web_contents,
                                 const gfx::Point& anchor_point,
-                                bool user_action) {
+                                bool user_action,
+                                LocationBarDecoration* decoration) {
   ZoomBubbleView::ShowBubble(web_contents, anchor_point,
                              user_action
                                  ? LocationBarBubbleDelegateView::USER_GESTURE
                                  : LocationBarBubbleDelegateView::AUTOMATIC);
   if (ZoomBubbleView::GetZoomBubble())
-    KeepBubbleAnchored(ZoomBubbleView::GetZoomBubble());
+    KeepBubbleAnchored(ZoomBubbleView::GetZoomBubble(), decoration);
 }
 
 void CloseZoomBubbleViews() {
