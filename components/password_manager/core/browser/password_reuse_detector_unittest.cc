@@ -209,8 +209,9 @@ TEST(PasswordReuseDetectorTest, SyncPasswordReuseFound) {
 
   reuse_detector.SaveSyncPasswordHash(ASCIIToUTF16("sync_password"));
 
-  EXPECT_CALL(mockConsumer, OnReuseFound(ASCIIToUTF16("sync_password"),
-                                         "accounts.google.com", 1, 0));
+  EXPECT_CALL(mockConsumer,
+              OnReuseFound(ASCIIToUTF16("sync_password"),
+                           std::string(kSyncPasswordDomain), 1, 0));
   reuse_detector.CheckReuse(ASCIIToUTF16("sync_password"), "https://evil.com",
                             &mockConsumer);
 }

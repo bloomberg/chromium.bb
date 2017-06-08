@@ -71,4 +71,12 @@ void ServicesDelegateStub::StartOnIOThread(
 
 void ServicesDelegateStub::StopOnIOThread(bool shutdown) {}
 
+void ServicesDelegateStub::CreatePasswordProtectionService(Profile* profile) {}
+void ServicesDelegateStub::RemovePasswordProtectionService(Profile* profile) {}
+PasswordProtectionService* ServicesDelegateStub::GetPasswordProtectionService(
+    Profile* profile) const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 }  // namespace safe_browsing

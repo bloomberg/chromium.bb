@@ -38,6 +38,10 @@ class ServicesDelegateStub : public ServicesDelegate {
     net::URLRequestContextGetter* url_request_context_getter,
     const V4ProtocolConfig& v4_config) override;
   void StopOnIOThread(bool shutdown) override;
+  void CreatePasswordProtectionService(Profile* profile) override;
+  void RemovePasswordProtectionService(Profile* profile) override;
+  PasswordProtectionService* GetPasswordProtectionService(
+      Profile* profile) const override;
 
   scoped_refptr<SafeBrowsingDatabaseManager> v4_local_database_manager_;
 

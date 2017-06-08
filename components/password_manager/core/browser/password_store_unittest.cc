@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/affiliation_service.h"
 #include "components/password_manager/core/browser/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -989,8 +990,9 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
 
   // Check that sync password reuse is found.
   MockPasswordReuseDetectorConsumer mock_consumer;
-  EXPECT_CALL(mock_consumer,
-              OnReuseFound(sync_password, "accounts.google.com", 1, 0));
+  EXPECT_CALL(
+      mock_consumer,
+      OnReuseFound(sync_password, std::string(kSyncPasswordDomain), 1, 0));
   store->CheckReuse(input, "https://facebook.com", &mock_consumer);
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
