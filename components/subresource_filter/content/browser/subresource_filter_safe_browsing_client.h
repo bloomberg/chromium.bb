@@ -15,13 +15,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/util.h"
-#include "components/safe_browsing_db/v4_local_database_manager.h"
 
 class GURL;
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
+
+namespace safe_browsing {
+class SafeBrowsingDatabaseManager;
+}  // namespace safe_browsing
 
 namespace subresource_filter {
 
