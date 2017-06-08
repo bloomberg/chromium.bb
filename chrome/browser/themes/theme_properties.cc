@@ -69,8 +69,10 @@ const SkColor kDefaultColorNTPLink = SkColorSetRGB(0x06, 0x37, 0x74);
 
 // Then new MD Incognito NTP uses a slightly different shade of black.
 // TODO(msramek): Remove the old entry when the new NTP fully launches.
-const SkColor kDefaultColorNTPBackgroundOtr = SkColorSetRGB(0x32, 0x32, 0x32);
-const SkColor kDefaultColorNTPBackgroundOtrMD = SkColorSetRGB(0x30, 0x30, 0x30);
+const SkColor kDefaultColorNTPBackgroundIncognito =
+    SkColorSetRGB(0x32, 0x32, 0x32);
+const SkColor kDefaultColorNTPBackgroundIncognitoMD =
+    SkColorSetRGB(0x30, 0x30, 0x30);
 
 const SkColor kDefaultColorNTPHeader = SkColorSetRGB(0x96, 0x96, 0x96);
 constexpr SkColor kDefaultColorButtonBackground = SK_ColorTRANSPARENT;
@@ -200,50 +202,51 @@ std::string ThemeProperties::TilingToString(int tiling) {
 }
 
 // static
-color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool otr) {
+color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
   switch (id) {
     case TINT_FRAME:
-      return otr ? kDefaultTintFrameIncognito : kDefaultTintFrame;
+      return incognito ? kDefaultTintFrameIncognito : kDefaultTintFrame;
     case TINT_FRAME_INACTIVE:
-      return otr ? kDefaultTintFrameIncognitoInactive
-                 : kDefaultTintFrameInactive;
+      return incognito ? kDefaultTintFrameIncognitoInactive
+                       : kDefaultTintFrameInactive;
     case TINT_BUTTONS:
-      return otr ? kDefaultTintButtonsIncognito : kDefaultTintButtons;
+      return incognito ? kDefaultTintButtonsIncognito : kDefaultTintButtons;
     case TINT_BACKGROUND_TAB:
       return kDefaultTintBackgroundTab;
     case TINT_FRAME_INCOGNITO:
     case TINT_FRAME_INCOGNITO_INACTIVE:
       NOTREACHED() << "These values should be queried via their respective "
-                      "non-incognito equivalents and an appropriate |otr| "
-                      "value.";
+                      "non-incognito equivalents and an appropriate "
+                      "|incognito| value.";
     default:
       return {-1, -1, -1};
   }
 }
 
 // static
-SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
+SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
   switch (id) {
     // Properties stored in theme pack.
     case COLOR_FRAME:
-      return otr ? kDefaultColorFrameIncognito : kDefaultColorFrame;
+      return incognito ? kDefaultColorFrameIncognito : kDefaultColorFrame;
     case COLOR_FRAME_INACTIVE:
-      return otr ? kDefaultColorFrameIncognitoInactive
-                 : kDefaultColorFrameInactive;
+      return incognito ? kDefaultColorFrameIncognitoInactive
+                       : kDefaultColorFrameInactive;
     case COLOR_TOOLBAR:
-      return otr ? kDefaultColorToolbarIncognito : kDefaultColorToolbar;
+      return incognito ? kDefaultColorToolbarIncognito : kDefaultColorToolbar;
     case COLOR_TAB_TEXT:
     case COLOR_BOOKMARK_TEXT:
-      return otr ? kDefaultColorToolbarTextIncognito : kDefaultColorToolbarText;
+      return incognito ? kDefaultColorToolbarTextIncognito
+                       : kDefaultColorToolbarText;
     case COLOR_BACKGROUND_TAB_TEXT:
-      return otr ? kDefaultColorBackgroundTabTextIncognito
-                 : kDefaultColorBackgroundTabText;
+      return incognito ? kDefaultColorBackgroundTabTextIncognito
+                       : kDefaultColorBackgroundTabText;
     case COLOR_NTP_BACKGROUND:
-      if (!otr)
+      if (!incognito)
         return kDefaultColorNTPBackground;
       return base::FeatureList::IsEnabled(features::kMaterialDesignIncognitoNTP)
-                 ? kDefaultColorNTPBackgroundOtrMD
-                 : kDefaultColorNTPBackgroundOtr;
+                 ? kDefaultColorNTPBackgroundIncognitoMD
+                 : kDefaultColorNTPBackgroundIncognito;
     case COLOR_NTP_TEXT:
       return kDefaultColorNTPText;
     case COLOR_NTP_LINK:
@@ -257,28 +260,28 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_CONTROL_BACKGROUND:
       return kDefaultColorControlBackground;
     case COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT:
-      return otr ? kDefaultColorBookmarkInstructionsTextIncognito
-                 : kDefaultColorBookmarkInstructionsText;
+      return incognito ? kDefaultColorBookmarkInstructionsTextIncognito
+                       : kDefaultColorBookmarkInstructionsText;
     case COLOR_TOOLBAR_BOTTOM_SEPARATOR:
     case COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
-      return otr ? kDefaultDetachedBookmarkBarSeparatorIncognito
-                 : kDefaultDetachedBookmarkBarSeparator;
+      return incognito ? kDefaultDetachedBookmarkBarSeparatorIncognito
+                       : kDefaultDetachedBookmarkBarSeparator;
     case COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
-      return otr ? kDefaultDetachedBookmarkBarBackgroundIncognito
-                 : kDefaultDetachedBookmarkBarBackground;
+      return incognito ? kDefaultDetachedBookmarkBarBackgroundIncognito
+                       : kDefaultDetachedBookmarkBarBackground;
     case COLOR_TOOLBAR_TOP_SEPARATOR:
     case COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
       return kDefaultToolbarTopSeparator;
 #if defined(OS_MACOSX)
     case COLOR_FRAME_VIBRANCY_OVERLAY:
-      return otr ? kDefaultColorFrameVibrancyOverlayIncognito
-                 : kDefaultColorFrameVibrancyOverlay;
+      return incognito ? kDefaultColorFrameVibrancyOverlayIncognito
+                       : kDefaultColorFrameVibrancyOverlay;
     case COLOR_TOOLBAR_INACTIVE:
-      return otr ? kDefaultColorToolbarInactiveIncognito
-                 : kDefaultColorToolbarInactive;
+      return incognito ? kDefaultColorToolbarInactiveIncognito
+                       : kDefaultColorToolbarInactive;
     case COLOR_BACKGROUND_TAB_INACTIVE:
-      return otr ? kDefaultColorTabBackgroundInactiveIncognito
-                 : kDefaultColorTabBackgroundInactive;
+      return incognito ? kDefaultColorTabBackgroundInactiveIncognito
+                       : kDefaultColorTabBackgroundInactive;
     case COLOR_TOOLBAR_BUTTON_STROKE:
       return kDefaultColorToolbarButtonStroke;
     case COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE:
@@ -286,8 +289,8 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_TOOLBAR_BEZEL:
       return kDefaultColorToolbarBezel;
     case COLOR_TOOLBAR_STROKE:
-      return otr ? kDefaultColorToolbarIncognitoStroke
-                 : kDefaultColorToolbarStroke;
+      return incognito ? kDefaultColorToolbarIncognitoStroke
+                       : kDefaultColorToolbarStroke;
     case COLOR_TOOLBAR_STROKE_INACTIVE:
       return kDefaultColorToolbarStrokeInactive;
     case COLOR_TOOLBAR_STROKE_THEME:
@@ -304,8 +307,8 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_FRAME_INCOGNITO:
     case COLOR_FRAME_INCOGNITO_INACTIVE:
       NOTREACHED() << "These values should be queried via their respective "
-                      "non-incognito equivalents and an appropriate |otr| "
-                      "value.";
+                      "non-incognito equivalents and an appropriate "
+                      "|incognito| value.";
       return gfx::kPlaceholderColor;
   }
 
