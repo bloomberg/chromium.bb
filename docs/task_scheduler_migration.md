@@ -23,7 +23,7 @@ static API from post_task.h and encouraging that individual components grab the
 TaskRunner/TaskTraits they need instead of bring injected one from their owner
 and hoping for the right traits. This often allows cleaning up multiple layers
 of plumbing without otherwise hurting testing as documented
-[here](threading_and_tasks.md#TaskRunner-ownership).
+[here](threading_and_tasks.md#TaskRunner-ownership-encourage-no-dependency-injection).
 
 ## BrowserThreads
 
@@ -59,7 +59,7 @@ As a developer your goal is to get rid of all uses of BrowserThread::FOO in your
      dependency is addressed (again [Prefer Sequences to
      Threads](threading_and_tasks.md#Prefer-Sequences-to-Threads)).
 
-### Other relevant mappings for tests:
+### Other relevant mappings for tests
 
 * base::MessageLoop -> base::test::ScopedTaskEnvironment
 * content::TestBrowserThread -> content::TestBrowserThreadBundle (if you still
