@@ -40,7 +40,6 @@ HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session,
       last_logged_job_controller_count_(0) {}
 
 HttpStreamFactoryImpl::~HttpStreamFactoryImpl() {
-  DCHECK(spdy_session_request_map_.empty());
   UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfJobControllerAtShutDown",
                           job_controller_set_.size());
 }
@@ -153,50 +152,6 @@ void HttpStreamFactoryImpl::PreconnectStreams(
 
 const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
   return &session_->params().host_mapping_rules;
-}
-
-void HttpStreamFactoryImpl::OnNewSpdySessionReady(
-    const base::WeakPtr<SpdySession>& spdy_session,
-    bool direct,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    bool was_alpn_negotiated,
-    NextProto negotiated_protocol,
-    bool using_spdy,
-    NetLogSource source_dependency) {
-  while (true) {
-    if (!spdy_session)
-      break;
-    const SpdySessionKey& spdy_session_key = spdy_session->spdy_session_key();
-    // Each iteration may empty out the RequestSet for |spdy_session_key| in
-    // |spdy_session_request_map_|. So each time, check for RequestSet and use
-    // the first one.
-    //
-    // TODO(willchan): If it's important, switch RequestSet out for a FIFO
-    // queue (Order by priority first, then FIFO within same priority). Unclear
-    // that it matters here.
-    if (!base::ContainsKey(spdy_session_request_map_, spdy_session_key))
-      break;
-    Request* request = *spdy_session_request_map_[spdy_session_key].begin();
-    request->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
-    if (for_websockets_) {
-      // TODO(ricea): Restore this code path when WebSocket over SPDY
-      // implementation is ready.
-      NOTREACHED();
-    } else if (request->stream_type() ==
-               HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-      request->OnBidirectionalStreamImplReady(
-          used_ssl_config, used_proxy_info,
-          new BidirectionalStreamSpdyImpl(spdy_session, source_dependency));
-    } else {
-      bool use_relative_url =
-          direct || request->url().SchemeIs(url::kHttpsScheme);
-      request->OnStreamReady(used_ssl_config, used_proxy_info,
-                             new SpdyHttpStream(spdy_session, use_relative_url,
-                                                source_dependency));
-    }
-  }
-  // TODO(mbelshe): Alert other valid requests.
 }
 
 void HttpStreamFactoryImpl::OnJobControllerComplete(JobController* controller) {

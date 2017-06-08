@@ -448,7 +448,7 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
   const NetLogSource source_dependency = job->net_log().source();
 
   // Cache this so we can still use it if the JobController is deleted.
-  HttpStreamFactoryImpl* factory = factory_;
+  SpdySessionPool* spdy_session_pool = session_->spdy_session_pool();
 
   // Notify |request_|.
   if (!is_preconnect_ && !is_job_orphaned) {
@@ -483,12 +483,13 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
     }
   }
 
-  // Notify |factory_|. |request_| and |bounded_job_| might be deleted already.
+  // Notify other requests that have the same SpdySessionKey. |request_| and
+  // |bounded_job_| might be deleted already.
   if (spdy_session && spdy_session->IsAvailable()) {
-    factory->OnNewSpdySessionReady(spdy_session, direct, used_ssl_config,
-                                   used_proxy_info, was_alpn_negotiated,
-                                   negotiated_protocol, using_spdy,
-                                   source_dependency);
+    spdy_session_pool->OnNewSpdySessionReady(
+        spdy_session, direct, used_ssl_config, used_proxy_info,
+        was_alpn_negotiated, negotiated_protocol, using_spdy,
+        source_dependency);
   }
   if (is_job_orphaned) {
     OnOrphanedJobComplete(job);
@@ -603,13 +604,8 @@ void HttpStreamFactoryImpl::JobController::SetSpdySessionKey(
   if (is_preconnect_ || IsJobOrphaned(job))
     return;
 
-  if (!request_->HasSpdySessionKey()) {
-    RequestSet& request_set =
-        factory_->spdy_session_request_map_[spdy_session_key];
-    DCHECK(!base::ContainsKey(request_set, request_));
-    request_set.insert(request_);
-    request_->SetSpdySessionKey(spdy_session_key);
-  }
+  session_->spdy_session_pool()->AddRequestToSpdySessionRequestMap(
+      spdy_session_key, request_);
 }
 
 void HttpStreamFactoryImpl::JobController::
@@ -622,18 +618,10 @@ void HttpStreamFactoryImpl::JobController::
 
 void HttpStreamFactoryImpl::JobController::
     RemoveRequestFromSpdySessionRequestMap() {
-  if (request_->HasSpdySessionKey()) {
-    const SpdySessionKey& spdy_session_key = request_->GetSpdySessionKey();
-    SpdySessionRequestMap& spdy_session_request_map =
-        factory_->spdy_session_request_map_;
-    DCHECK(base::ContainsKey(spdy_session_request_map, spdy_session_key));
-    RequestSet& request_set = spdy_session_request_map[spdy_session_key];
-    DCHECK(base::ContainsKey(request_set, request_));
-    request_set.erase(request_);
-    if (request_set.empty())
-      spdy_session_request_map.erase(spdy_session_key);
-    request_->ResetSpdySessionKey();
-  }
+  // TODO(xunjieli): Use a DCHECK once https://crbug.com/718576 is fixed.
+  CHECK(request_);
+  session_->spdy_session_pool()->RemoveRequestFromSpdySessionRequestMap(
+      request_);
 }
 
 const NetLogWithSource* HttpStreamFactoryImpl::JobController::GetNetLog()
