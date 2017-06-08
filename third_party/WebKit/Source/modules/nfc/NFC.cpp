@@ -28,6 +28,7 @@ const char kJsonMimeType[] = "application/json";
 const char kOpaqueMimeType[] = "application/octet-stream";
 const char kPlainTextMimeType[] = "text/plain";
 const char kPlainTextMimePrefix[] = "text/";
+const char kProtocolHttps[] = "https";
 const char kCharSetUTF8[] = ";charset=UTF-8";
 }  // anonymous namespace
 
@@ -749,6 +750,15 @@ ScriptPromise NFC::watch(ScriptState* script_state,
   ScriptPromise promise = RejectIfNotSupported(script_state);
   if (!promise.IsEmpty())
     return promise;
+
+  // https://w3c.github.io/web-nfc/#dom-nfc-watch (Step 9)
+  if (options.hasURL() && !options.url().IsEmpty()) {
+    KURL pattern_url(kParsedURLString, options.url());
+    if (!pattern_url.IsValid() || pattern_url.Protocol() != kProtocolHttps) {
+      return RejectWithDOMException(script_state, kSyntaxError,
+                                    "Invalid URL pattern was provided.");
+    }
+  }
 
   callback->SetScriptState(script_state);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
