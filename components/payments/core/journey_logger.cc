@@ -116,7 +116,8 @@ void JourneyLogger::SetAborted(AbortReason reason) {
   base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.Aborted", reason,
                                 ABORT_REASON_MAX);
 
-  if (reason == ABORT_REASON_ABORTED_BY_USER)
+  if (reason == ABORT_REASON_ABORTED_BY_USER ||
+      reason == ABORT_REASON_USER_NAVIGATION)
     RecordJourneyStatsHistograms(COMPLETION_STATUS_USER_ABORTED);
   else
     RecordJourneyStatsHistograms(COMPLETION_STATUS_OTHER_ABORTED);

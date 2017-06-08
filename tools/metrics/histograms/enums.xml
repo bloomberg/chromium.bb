@@ -28441,6 +28441,8 @@ from previous Chrome versions.
   <int value="6" label="NoMatchingPaymentMethod - Deprecated"/>
   <int value="7" label="NoSupportedPaymentMethod - Deprecated"/>
   <int value="8" label="Other"/>
+  <int value="9" label="User Navigation"/>
+  <int value="10" label="Merchant Navigation"/>
 </enum>
 
 <enum name="PaymentRequestCanMakePaymentEffectOnShow" type="int">
