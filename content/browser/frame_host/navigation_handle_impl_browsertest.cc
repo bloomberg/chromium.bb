@@ -1079,6 +1079,31 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   }
 }
 
+// Checks that there's no UAF if NavigationHandleImpl::WillStartRequest cancels
+// the navigation.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       CancelNavigationInWillStartRequest) {
+  const GURL kUrl1 = embedded_test_server()->GetURL("/title1.html");
+  const GURL kUrl2 = embedded_test_server()->GetURL("/title2.html");
+  // First make a successful commit, as this issue only reproduces when there
+  // are existing entries (i.e. when NavigationControllerImpl::GetVisibleEntry
+  // has safe_to_show_pending=false).
+  EXPECT_TRUE(NavigateToURL(shell(), kUrl1));
+
+  // To take the path that doesn't run beforeunload, so that
+  // NavigationControllerImpl::NavigateToPendingEntry is on the botttom of the
+  // stack when NavigationHandleImpl::WillStartRequest is called.
+  CrashTab(shell()->web_contents());
+
+  // Set up a NavigationThrottle that will cancel the navigation in
+  // WillStartRequest.
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::CANCEL_AND_IGNORE,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+
+  EXPECT_FALSE(NavigateToURL(shell(), kUrl2));
+}
+
 // Specialized test that verifies the NavigationHandle gets the HTTPS upgraded
 // URL from the very beginning of the navigation.
 class NavigationHandleImplHttpsUpgradeBrowserTest
