@@ -1120,7 +1120,7 @@ FcCharSetHash (FcCharSet *fcs)
 static FcBool
 FcCharSetFreezeOrig (FcCharSetFreezer *freezer, const FcCharSet *orig, const FcCharSet *frozen)
 {
-    FcCharSetOrigEnt	**bucket = &freezer->orig_hash_table[((uintptr_t) orig) & FC_CHAR_SET_HASH_SIZE];
+    FcCharSetOrigEnt	**bucket = &freezer->orig_hash_table[((uintptr_t) orig) % FC_CHAR_SET_HASH_SIZE];
     FcCharSetOrigEnt	*ent;
 
     ent = malloc (sizeof (FcCharSetOrigEnt));
@@ -1204,7 +1204,7 @@ FcCharSetFreezeBase (FcCharSetFreezer *freezer, FcCharSet *fcs)
 static const FcCharSet *
 FcCharSetFindFrozen (FcCharSetFreezer *freezer, const FcCharSet *orig)
 {
-    FcCharSetOrigEnt    **bucket = &freezer->orig_hash_table[((uintptr_t) orig) & FC_CHAR_SET_HASH_SIZE];
+    FcCharSetOrigEnt    **bucket = &freezer->orig_hash_table[((uintptr_t) orig) % FC_CHAR_SET_HASH_SIZE];
     FcCharSetOrigEnt	*ent;
 
     for (ent = *bucket; ent; ent = ent->next)
