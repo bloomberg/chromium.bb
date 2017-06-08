@@ -8,11 +8,8 @@
 #import <WebKit/WebKit.h>
 
 #include "base/logging.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
-#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,17 +28,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 }
 }  // namespace
 
-@implementation SnapshotManager {
-  web::WebState* _webState;
-}
-
-- (instancetype)initWithWebState:(web::WebState*)webState {
-  if ((self = [super init])) {
-    DCHECK(webState);
-    _webState = webState;
-  }
-  return self;
-}
+@implementation SnapshotManager
 
 - (UIImage*)generateSnapshotForView:(UIView*)view
                            withRect:(CGRect)rect
@@ -52,7 +39,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
       << ": size.width=" << size.width;
   DCHECK(std::isnormal(size.height) && (size.height > 0))
       << ": size.height=" << size.height;
-  const CGFloat kScale = [[self snapshotCache] snapshotScaleForDevice];
+  const CGFloat kScale =
+      [[SnapshotCache sharedInstance] snapshotScaleForDevice];
   UIGraphicsBeginImageContextWithOptions(size, YES, kScale);
   CGContext* context = UIGraphicsGetCurrentContext();
   if (!context) {
@@ -103,33 +91,28 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (void)retrieveImageForSessionID:(NSString*)sessionID
                          callback:(void (^)(UIImage*))callback {
-  [[self snapshotCache] retrieveImageForSessionID:sessionID callback:callback];
+  [[SnapshotCache sharedInstance] retrieveImageForSessionID:sessionID
+                                                   callback:callback];
 }
 
 - (void)retrieveGreyImageForSessionID:(NSString*)sessionID
                              callback:(void (^)(UIImage*))callback {
-  [[self snapshotCache] retrieveGreyImageForSessionID:sessionID
-                                             callback:callback];
+  [[SnapshotCache sharedInstance] retrieveGreyImageForSessionID:sessionID
+                                                       callback:callback];
 }
 
 - (void)setImage:(UIImage*)image withSessionID:(NSString*)sessionID {
-  [[self snapshotCache] setImage:image withSessionID:sessionID];
+  [[SnapshotCache sharedInstance] setImage:image withSessionID:sessionID];
 }
 
 - (void)removeImageWithSessionID:(NSString*)sessionID {
-  [[self snapshotCache] removeImageWithSessionID:sessionID];
+  [[SnapshotCache sharedInstance] removeImageWithSessionID:sessionID];
 }
 
 - (void)greyImageForSessionID:(NSString*)sessionID
                      callback:(void (^)(UIImage*))callback {
-  [[self snapshotCache] greyImageForSessionID:sessionID callback:callback];
-}
-
-#pragma mark - Private methods.
-
-- (SnapshotCache*)snapshotCache {
-  return SnapshotCacheFactory::GetForBrowserState(
-      ios::ChromeBrowserState::FromBrowserState(_webState->GetBrowserState()));
+  [[SnapshotCache sharedInstance] greyImageForSessionID:sessionID
+                                               callback:callback];
 }
 
 @end
