@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/ozone/ozone_base_export.h"
@@ -30,10 +30,11 @@ enum class DomCode;
 // script that is originally located at /opt/google/chrome/.
 class OZONE_BASE_EXPORT InputController {
  public:
-  typedef base::Callback<void(std::unique_ptr<std::string>)>
-      GetTouchDeviceStatusReply;
-  typedef base::Callback<void(std::unique_ptr<std::vector<base::FilePath>>)>
-      GetTouchEventLogReply;
+  using GetTouchDeviceStatusReply =
+      base::OnceCallback<void(const std::string&)>;
+  // TODO(sky): convert this to value once mojo supports move for vectors.
+  using GetTouchEventLogReply =
+      base::OnceCallback<void(const std::vector<base::FilePath>&)>;
 
   InputController() {}
   virtual ~InputController() {}
@@ -52,7 +53,7 @@ class OZONE_BASE_EXPORT InputController {
                                  const base::TimeDelta& interval) = 0;
   virtual void GetAutoRepeatRate(base::TimeDelta* delay,
                                  base::TimeDelta* interval) = 0;
-  virtual bool SetCurrentLayoutByName(const std::string& layout_name) = 0;
+  virtual void SetCurrentLayoutByName(const std::string& layout_name) = 0;
 
   // Touchpad settings.
   virtual void SetTouchpadSensitivity(int value) = 0;
@@ -66,9 +67,9 @@ class OZONE_BASE_EXPORT InputController {
   virtual void SetPrimaryButtonRight(bool right) = 0;
 
   // Touch log collection.
-  virtual void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply) = 0;
+  virtual void GetTouchDeviceStatus(GetTouchDeviceStatusReply reply) = 0;
   virtual void GetTouchEventLog(const base::FilePath& out_dir,
-                                const GetTouchEventLogReply& reply) = 0;
+                                GetTouchEventLogReply reply) = 0;
   // Touchscreen log settings.
   virtual void SetTouchEventLoggingEnabled(bool enabled) = 0;
 

@@ -16,17 +16,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/ozone/public/input_controller.h"
 
 namespace ui {
 
 enum class DomCode;
 class InputDeviceFactoryEvdev;
 struct InputDeviceSettingsEvdev;
-
-typedef base::Callback<void(std::unique_ptr<std::string>)>
-    GetTouchDeviceStatusReply;
-typedef base::Callback<void(std::unique_ptr<std::vector<base::FilePath>>)>
-    GetTouchEventLogReply;
 
 // Thread safe proxy for InputDeviceFactoryEvdev.
 //
@@ -47,9 +43,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
   void SetCapsLockLed(bool enabled);
   void SetTouchEventLoggingEnabled(bool enabled);
   void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
-  void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
+  void GetTouchDeviceStatus(InputController::GetTouchDeviceStatusReply reply);
   void GetTouchEventLog(const base::FilePath& out_dir,
-                        const GetTouchEventLogReply& reply);
+                        InputController::GetTouchEventLogReply reply);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -20,6 +20,7 @@
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/input_device_settings_evdev.h"
+#include "ui/ozone/public/input_controller.h"
 
 namespace ui {
 
@@ -33,11 +34,6 @@ class DeviceEventDispatcherEvdev;
 #if defined(USE_EVDEV_GESTURES)
 class GesturePropertyProvider;
 #endif
-
-typedef base::Callback<void(std::unique_ptr<std::string>)>
-    GetTouchDeviceStatusReply;
-typedef base::Callback<void(std::unique_ptr<std::vector<base::FilePath>>)>
-    GetTouchEventLogReply;
 
 // Manager for event device objects. All device I/O starts here.
 class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
@@ -61,9 +57,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
   // Bits from InputController that have to be answered on IO.
   void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
-  void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
+  void GetTouchDeviceStatus(InputController::GetTouchDeviceStatusReply reply);
   void GetTouchEventLog(const base::FilePath& out_dir,
-                        const GetTouchEventLogReply& reply);
+                        InputController::GetTouchEventLogReply reply);
 
   base::WeakPtr<InputDeviceFactoryEvdev> GetWeakPtr();
 

@@ -267,24 +267,22 @@ void InputDeviceFactoryEvdev::UpdateInputDeviceSettings(
 }
 
 void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
-    const GetTouchDeviceStatusReply& reply) {
-  std::unique_ptr<std::string> status(new std::string);
+    InputController::GetTouchDeviceStatusReply reply) {
+  std::string status;
 #if defined(USE_EVDEV_GESTURES)
-  DumpTouchDeviceStatus(gesture_property_provider_.get(), status.get());
+  DumpTouchDeviceStatus(gesture_property_provider_.get(), &status);
 #endif
-  reply.Run(std::move(status));
+  std::move(reply).Run(status);
 }
 
 void InputDeviceFactoryEvdev::GetTouchEventLog(
     const base::FilePath& out_dir,
-    const GetTouchEventLogReply& reply) {
-  std::unique_ptr<std::vector<base::FilePath>> log_paths(
-      new std::vector<base::FilePath>);
+    InputController::GetTouchEventLogReply reply) {
 #if defined(USE_EVDEV_GESTURES)
   DumpTouchEventLog(converters_, gesture_property_provider_.get(), out_dir,
-                    std::move(log_paths), reply);
+                    std::move(reply));
 #else
-  reply.Run(std::move(log_paths));
+  std::move(reply).Run(std::vector<base::FilePath>());
 #endif
 }
 
