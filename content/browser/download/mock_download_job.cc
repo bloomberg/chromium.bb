@@ -7,7 +7,7 @@
 namespace content {
 
 MockDownloadJob::MockDownloadJob(DownloadItemImpl* download_item)
-    : DownloadJob(download_item) {}
+    : DownloadJob(download_item, nullptr) {}
 
 MockDownloadJob::~MockDownloadJob() = default;
 

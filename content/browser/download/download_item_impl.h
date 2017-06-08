@@ -626,10 +626,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   RequestInfo request_info_;
 
-  // Will be false for save package downloads retrieved from the history.
-  // TODO(rdsmith): Replace with a generalized enum for "download source".
-  const bool is_save_package_download_ = false;
-
   std::string guid_;
 
   uint32_t download_id_ = kInvalidId;

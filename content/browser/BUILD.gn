@@ -665,6 +665,8 @@ source_set("browser") {
     "download/save_item.h",
     "download/save_package.cc",
     "download/save_package.h",
+    "download/save_package_download_job.cc",
+    "download/save_package_download_job.h",
     "download/save_types.cc",
     "download/save_types.h",
     "download/url_downloader.cc",

@@ -13,6 +13,7 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/parallel_download_job.h"
 #include "content/browser/download/parallel_download_utils.h"
+#include "content/browser/download/save_package_download_job.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
@@ -89,7 +90,13 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info) {
 std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     DownloadItemImpl* download_item,
     std::unique_ptr<DownloadRequestHandleInterface> req_handle,
-    const DownloadCreateInfo& create_info) {
+    const DownloadCreateInfo& create_info,
+    bool is_save_package_download) {
+  if (is_save_package_download) {
+    return base::MakeUnique<SavePackageDownloadJob>(download_item,
+                                                    std::move(req_handle));
+  }
+
   bool is_parallelizable = IsParallelizableDownload(create_info);
   // Build parallel download job.
   if (IsParallelDownloadEnabled() && is_parallelizable) {

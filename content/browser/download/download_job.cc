@@ -7,22 +7,42 @@
 #include "base/bind_helpers.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 
 namespace content {
 
-DownloadJob::DownloadJob(DownloadItemImpl* download_item)
+DownloadJob::DownloadJob(
+    DownloadItemImpl* download_item,
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle)
     : download_item_(download_item),
+      request_handle_(std::move(request_handle)),
       is_paused_(false),
       weak_ptr_factory_(this) {}
 
 DownloadJob::~DownloadJob() = default;
 
+void DownloadJob::Cancel(bool user_cancel) {
+  if (request_handle_)
+    request_handle_->CancelRequest(user_cancel);
+}
+
 void DownloadJob::Pause() {
+  if (request_handle_)
+    request_handle_->PauseRequest();
   is_paused_ = true;
 }
 
 void DownloadJob::Resume(bool resume_request) {
   is_paused_ = false;
+  if (!resume_request)
+    return;
+
+  if (request_handle_)
+    request_handle_->ResumeRequest();
+}
+
+WebContents* DownloadJob::GetWebContents() const {
+  return request_handle_ ? request_handle_->GetWebContents() : nullptr;
 }
 
 void DownloadJob::Start(DownloadFile* download_file_,
@@ -69,6 +89,10 @@ void DownloadJob::CancelRequestWithOffset(int64_t offset) {
 }
 
 bool DownloadJob::IsParallelizable() const {
+  return false;
+}
+
+bool DownloadJob::IsSavePackageDownload() const {
   return false;
 }
 

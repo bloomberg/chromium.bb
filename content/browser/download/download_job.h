@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_file.h"
+#include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -24,7 +25,8 @@ class WebContents;
 // The base class is a friend class of DownloadItemImpl.
 class CONTENT_EXPORT DownloadJob {
  public:
-  explicit DownloadJob(DownloadItemImpl* download_item);
+  DownloadJob(DownloadItemImpl* download_item,
+              std::unique_ptr<DownloadRequestHandleInterface> request_handle);
   virtual ~DownloadJob();
 
   // Download operations.
@@ -33,7 +35,7 @@ class CONTENT_EXPORT DownloadJob {
   void Start(DownloadFile* download_file_,
              const DownloadFile::InitializeCallback& callback,
              const DownloadItem::ReceivedSlices& received_slices);
-  virtual void Cancel(bool user_cancel) = 0;
+  virtual void Cancel(bool user_cancel);
   virtual void Pause();
   virtual void Resume(bool resume_request);
 
@@ -44,7 +46,7 @@ class CONTENT_EXPORT DownloadJob {
   // user.
   // Or return nullptr if the download is not associated with an active
   // WebContents.
-  virtual WebContents* GetWebContents() const = 0;
+  WebContents* GetWebContents() const;
 
   // Returns whether the download is parallelizable. The download may not send
   // parallel requests as it can be disabled through flags.
@@ -54,6 +56,9 @@ class CONTENT_EXPORT DownloadJob {
   // canceled. Used in parallel download.
   // TODO(xingliu): Remove this function if download job owns download file.
   virtual void CancelRequestWithOffset(int64_t offset);
+
+  // Whether the download is save package.
+  virtual bool IsSavePackageDownload() const;
 
  protected:
   // Callback from file thread when we initialize the DownloadFile.
@@ -68,6 +73,10 @@ class CONTENT_EXPORT DownloadJob {
                      int64_t length);
 
   DownloadItemImpl* download_item_;
+
+  // Used to perform operations on network request.
+  // Can be null on interrupted download.
+  std::unique_ptr<DownloadRequestHandleInterface> request_handle_;
 
  private:
   // If the download progress is paused by the user.
