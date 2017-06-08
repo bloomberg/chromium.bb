@@ -23,7 +23,8 @@
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
 #include "chrome/browser/extensions/api/log_private/syslog_parser.h"
-#include "chrome/browser/feedback/system_logs/scrubbed_system_logs_fetcher.h"
+#include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
+#include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -426,11 +427,12 @@ bool LogPrivateGetHistoricalFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   filter_handler_.reset(new FilterHandler(params->filter));
 
-  system_logs::SystemLogsFetcherBase* fetcher;
+  // Self-deleting object.
+  system_logs::SystemLogsFetcher* fetcher = nullptr;
   if ((params->filter).scrub) {
-    fetcher = new system_logs::ScrubbedSystemLogsFetcher();
+    fetcher = system_logs::BuildChromeSystemLogsFetcher();
   } else {
-    fetcher = new system_logs::AboutSystemLogsFetcher();
+    fetcher = system_logs::BuildAboutSystemLogsFetcher();
   }
   fetcher->Fetch(
       base::Bind(&LogPrivateGetHistoricalFunction::OnSystemLogsLoaded, this));

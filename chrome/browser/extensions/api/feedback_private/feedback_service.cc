@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -57,8 +58,9 @@ void FeedbackService::SendFeedback(
 
 void FeedbackService::GetSystemInformation(
     const system_logs::SysLogsFetcherCallback& callback) {
-  system_logs::ScrubbedSystemLogsFetcher* fetcher =
-      new system_logs::ScrubbedSystemLogsFetcher();
+  // Self-deleting object.
+  system_logs::SystemLogsFetcher* fetcher =
+      system_logs::BuildChromeSystemLogsFetcher();
   fetcher->Fetch(callback);
 }
 

@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/anonymizer_tool.h"
 
 namespace system_logs {
