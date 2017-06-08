@@ -40,7 +40,7 @@ class CC_EXPORT CheckerImageTracker {
 
   // Returns true if the decode for |image| will be deferred to the image decode
   // service and it should be be skipped during raster.
-  bool ShouldCheckerImage(const PaintImage& image, WhichTree tree);
+  bool ShouldCheckerImage(const DrawImage& image, WhichTree tree);
 
   using ImageDecodeQueue = std::vector<PaintImage>;
   void ScheduleImageDecodeQueue(ImageDecodeQueue image_decode_queue);
@@ -78,6 +78,15 @@ class CC_EXPORT CheckerImageTracker {
     SYNC
   };
 
+  // Contains the information to construct a DrawImage from PaintImage when
+  // queuing the image decode.
+  struct DecodeState {
+    DecodePolicy policy = DecodePolicy::SYNC;
+    SkFilterQuality filter_quality = kNone_SkFilterQuality;
+    SkSize scale = SkSize::MakeEmpty();
+    gfx::ColorSpace color_space;
+  };
+
   // Wrapper to unlock an image decode requested from the ImageController on
   // destruction.
   class ScopedDecodeHolder {
@@ -101,6 +110,9 @@ class CC_EXPORT CheckerImageTracker {
   // Called when the next request in the |image_decode_queue_| should be
   // scheduled with the image decode service.
   void ScheduleNextImageDecode();
+  void UpdateDecodeState(const DrawImage& draw_image,
+                         PaintImage::Id paint_image_id,
+                         DecodeState* decode_state);
 
   ImageController* image_controller_;
   CheckerImageTrackerClient* client_;
@@ -123,7 +135,7 @@ class CC_EXPORT CheckerImageTracker {
   base::Optional<PaintImage> outstanding_image_decode_;
 
   // A map of ImageId to its DecodePolicy.
-  std::unordered_map<PaintImage::Id, DecodePolicy> image_async_decode_state_;
+  std::unordered_map<PaintImage::Id, DecodeState> image_async_decode_state_;
 
   // A map of image id to image decode request id for images to be unlocked.
   std::unordered_map<PaintImage::Id, std::unique_ptr<ScopedDecodeHolder>>

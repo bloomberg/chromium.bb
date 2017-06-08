@@ -21,9 +21,21 @@ void DecodedImageTracker::QueueImageDecode(
   DCHECK(image_controller_);
   // Queue the decode in the image controller, but switch out the callback for
   // our own.
+
+  // TODO(ccameron): The target color space specified here should match the
+  // target color space that will be used at rasterization time. Leave this
+  // unspecified now, since that will match the rasterization-time color
+  // space while color correct rendering is disabled.
+  gfx::ColorSpace target_color_space;
+
+  auto image_bounds = image.sk_image()->bounds();
+  // TODO(khushalsagar): Eliminate the use of an incorrect id here and have all
+  // call-sites provide PaintImage to the ImageController.
+  DrawImage draw_image(image, image_bounds, kNone_SkFilterQuality,
+                       SkMatrix::I(), target_color_space);
   image_controller_->QueueImageDecode(
-      image.sk_image(), base::Bind(&DecodedImageTracker::ImageDecodeFinished,
-                                   base::Unretained(this), callback));
+      draw_image, base::Bind(&DecodedImageTracker::ImageDecodeFinished,
+                             base::Unretained(this), callback));
 }
 
 void DecodedImageTracker::NotifyFrameFinished() {

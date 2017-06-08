@@ -864,8 +864,7 @@ void TileManager::PartitionImagesForCheckering(
   WhichTree tree = tile->tiling()->tree();
 
   for (auto& draw_image : images_in_tile) {
-    if (checker_image_tracker_.ShouldCheckerImage(draw_image.paint_image(),
-                                                  tree))
+    if (checker_image_tracker_.ShouldCheckerImage(draw_image, tree))
       checkered_images->push_back(draw_image.paint_image());
     else
       sync_decoded_images->push_back(draw_image);
@@ -884,8 +883,7 @@ void TileManager::AddCheckeredImagesToDecodeQueue(
   WhichTree tree = tile->tiling()->tree();
 
   for (auto& draw_image : images_in_tile) {
-    if (checker_image_tracker_.ShouldCheckerImage(draw_image.paint_image(),
-                                                  tree))
+    if (checker_image_tracker_.ShouldCheckerImage(draw_image, tree))
       image_decode_queue->push_back(draw_image.paint_image());
   }
 }
