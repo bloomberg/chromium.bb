@@ -77,7 +77,7 @@ const char *OCMTypeWithoutQualifiers(const char *objCType)
  * For some types some runtime functions throw exceptions, which is why we wrap this in an
  * exception handler just below.
  */
-static BOOL OCMEqualTypesAllowingOpaqueStructsInternal(const char *type1, const char *type2)
+static BOOL OCMEqualTypesAllowingOpaqueStructsInternal(const char *type1, const char *type2, BOOL pointers)
 {
     type1 = OCMTypeWithoutQualifiers(type1);
     type2 = OCMTypeWithoutQualifiers(type2);
@@ -104,8 +104,12 @@ static BOOL OCMEqualTypesAllowingOpaqueStructsInternal(const char *type1, const 
             BOOL type2Opaque = (type2Equals == NULL || (type2End < type2Equals) || type2Equals[1] == endChar);
             const char *type1NameEnd = (type1Equals == NULL || (type1End < type1Equals)) ? type1End : type1Equals;
             const char *type2NameEnd = (type2Equals == NULL || (type2End < type2Equals)) ? type2End : type2Equals;
-            intptr_t type1NameLen = type1NameEnd - type1;
-            intptr_t type2NameLen = type2NameEnd - type2;
+            intptr_t type1NameLen = type1NameEnd - type1 - 1;
+            intptr_t type2NameLen = type2NameEnd - type2 - 1;
+
+            /* If one type is unnammed and opaque, assume equality if they are pointers. */
+            if (!type1NameLen || !type2NameLen)
+                return pointers && (type1Opaque || type2Opaque);
 
             /* If the names are not equal, return NO */
             if (type1NameLen != type2NameLen || strncmp(type1, type2, type1NameLen))
@@ -131,7 +135,7 @@ static BOOL OCMEqualTypesAllowingOpaqueStructsInternal(const char *type1, const 
             /* for a pointer, make sure the other is a pointer, then recursively compare the rest */
             if (type2[0] != type1[0])
                 return NO;
-            return OCMEqualTypesAllowingOpaqueStructs(type1 + 1, type2 + 1);
+            return OCMEqualTypesAllowingOpaqueStructsInternal(type1 + 1, type2 + 1, YES);
 
         case '?':
             return type2[0] == '?';
@@ -156,7 +160,7 @@ BOOL OCMEqualTypesAllowingOpaqueStructs(const char *type1, const char *type2)
 {
     @try
     {
-        return OCMEqualTypesAllowingOpaqueStructsInternal(type1, type2);
+        return OCMEqualTypesAllowingOpaqueStructsInternal(type1, type2, NO);
     }
     @catch (NSException *e)
     {
