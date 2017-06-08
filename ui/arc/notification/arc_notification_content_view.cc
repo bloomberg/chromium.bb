@@ -86,6 +86,12 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
       ui::LocatedEvent* located_event = event->AsLocatedEvent();
       located_event->target()->ConvertEventToTarget(widget->GetNativeWindow(),
                                                     located_event);
+      if (located_event->type() == ui::ET_MOUSE_ENTERED ||
+          located_event->type() == ui::ET_MOUSE_EXITED) {
+        owner_->UpdateControlButtonsVisibility();
+        return;
+      }
+
       if (located_event->type() == ui::ET_MOUSE_MOVED ||
           located_event->IsMouseWheelEvent()) {
         widget->OnMouseEvent(located_event->AsMouseEvent());
