@@ -479,8 +479,8 @@ class ReflectorImpl : public IPC::mojom::Reflector {
 
  private:
   // IPC::mojom::Reflector:
-  void Ping(const std::string& value, const PingCallback& callback) override {
-    callback.Run(value);
+  void Ping(const std::string& value, PingCallback callback) override {
+    std::move(callback).Run(value);
   }
 
   void Quit() override {
