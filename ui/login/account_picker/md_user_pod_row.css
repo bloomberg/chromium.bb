@@ -211,7 +211,7 @@ html[dir=rtl] .main-pane {
   /* This should be 15.6px - the equivalent of 14px at 90% scale. */
   flex: auto;
   font-family: "Roboto";
-  font-size: 26px;
+  font-size: 24px;
   outline: none;
   overflow: hidden;
   text-align: center;
@@ -219,7 +219,6 @@ html[dir=rtl] .main-pane {
   white-space: nowrap;
 }
 
-.learn-more-container,
 .auth-container,
 .password-entry-container,
 .reauth-hint-container {
@@ -227,6 +226,7 @@ html[dir=rtl] .main-pane {
 }
 
 .input-line {
+  display: none;
   opacity: 0.34;
   position: absolute;
   stroke: #FFFFFF;
@@ -243,7 +243,9 @@ html[dir=rtl] .main-pane {
 }
 
 .pod[auth-type='offlinePassword'].focused .password-entry-container,
-.pod[auth-type='forceOfflinePassword'].focused .password-entry-container {
+.pod[auth-type='forceOfflinePassword'].focused .password-entry-container,
+.pod[auth-type='offlinePassword'].focused .input-line,
+.pod[auth-type='forceOfflinePassword'].focused .input-line {
   display: flex;
   flex: auto;
 }
@@ -637,7 +639,7 @@ html[dir=rtl] .user-type-icon-area {
   display: flex;
   flex-direction: column;
   font-size: 13px;
-  margin: 10px 0 0 12px;
+  margin: 3px 0 0 12px;
   width: 220px;
 }
 
@@ -781,83 +783,52 @@ html[dir=rtl] .user-type-bubble {
 
 /**** Public account user pod rules *******************************************/
 
-.pod.public-account.expanded {
-  height: 230px;
-  width: 500px;
+.public-account-expanded > * {
+  display: none;
 }
 
-.pod.public-account.expanded.advanced {
-  height: 280px;
-  width: 610px;
+.public-account-expanded .pod {
+  display: none;
 }
 
-.pod.public-account.focused .name-container {
-  display: flex;
-}
-
-.pod.public-account.expanded .name-container {
-  display: flex;
-}
-
-.pod.public-account .learn-more-container {
+.public-account-expanded podrow,
+.public-account-expanded .pod.public-account.expanded {
   display: block;
-  flex: none;
 }
 
-.pod.public-account .learn-more {
-  top: 22px;
+.pod.public-account.expanded {
+  background-color: rgba(0, 0, 0, 0.56);
+  border-radius: 2px;
+  height: 324px;
+  width: 622px;
 }
 
 .expanded-pane {
   display: none;
 }
 
-.pod.public-account.animating .expanded-pane,
 .pod.public-account.expanded .expanded-pane {
+  border-left: 0.5px solid rgba(255, 255, 255, .34);
+  color: #FFF;
   display: block;
-  font-size: 12px;
-  margin: 10px;
+  font-family: "Roboto";
+  font-size: 13px;
+  height: 324px;
+  left: 322px;
   overflow: hidden;
+  position: absolute;
+  top: 0;
+  width: 300px;
   z-index: 1;
 }
 
-.expanded-pane-contents {
-  display: flex;
-  flex-direction: column;
-  float: right;
-  height: 213px;
-  width: 490px;
-}
-
-.pod.public-account.transitioning-to-advanced .expanded-pane-contents {
-  transition: width 180ms;
-}
-
-.pod.public-account.expanded.advanced .expanded-pane-contents {
-  height: 263px;
-  width: 600px;
-}
-
-html[dir=rtl] .expanded-pane-contents {
+html[dir=rtl] .expanded-pane {
   float: left;
 }
 
-.side-container {
-  -webkit-margin-start: 200px;
-  flex: auto;
-}
-
-.expanded-pane-name {
-  font-size: 19px;
-  margin-bottom: 11px;
-  margin-top: -2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .expanded-pane-container {
-  color: grey;
+  margin-left: 28px;
+  margin-right: 28px;
 }
 
 .reminder {
@@ -868,26 +839,23 @@ html[dir=rtl] .expanded-pane-contents {
   display: none;
 }
 
-.pod.public-account.transitioning-to-advanced .language-and-input-section {
-  display: block;
-  opacity: 0;
-  transition: opacity 180ms ease 180ms;
-}
-
 .pod.public-account.expanded.advanced .language-and-input-section {
   display: block;
+  margin-left: 28px;
+  margin-right: 28px;
+  margin-top: 37px;
   opacity: 1;
 }
 
 .select-with-label {
   display: flex;
+  flex-direction: column;
   margin-top: 20px;
 }
 
 .language-select-label,
 .keyboard-select-label {
-  flex: none;
-  margin-top: 3px;
+  opacity: .34;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -895,7 +863,9 @@ html[dir=rtl] .expanded-pane-contents {
 }
 
 .select-container {
-  flex: auto;
+  height: 16px;
+  margin-top: 5px;
+  width: 178px;
 }
 
 .language-select,
@@ -903,51 +873,84 @@ html[dir=rtl] .expanded-pane-contents {
   width: 100%;
 }
 
-.bottom-container {
-  -webkit-margin-start: 20px;
-  align-items: center;
-  display: flex;
-  flex-direction: row-reverse;
-  flex: none;
-  font-size: 13px;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.expanded-pane-learn-more-container,
 .enter-button {
   flex: none;
 }
 
-.expanded-pane-learn-more,
-.pod.public-account .learn-more {
-  background-image: url(../../webui/resources/images/business.svg);
-  background-size: 18px;
-  height: 18px;
-  margin-top: -10px;
-  position: relative;
-  width: 18px;
+.pod .public-account-info-container {
+  display: none;
 }
 
-.expanded-pane-learn-more {
-  top: 5px;
+.pod.public-account .public-account-info-container {
+  display: block;
+  position: absolute;
+  top: 230px;
 }
 
-.info {
-  flex: auto;
-  margin: -10px 25px;
+.public-account-info-container .learn-more {
+  --iron-icon-height: 12px;
+  --iron-icon-width: 12px;
+  display: block;
+  opacity: .67;
+  padding: 0;
+  position: absolute;
+}
+
+.public-account-info-container .info {
+  color: rgba(255, 255, 255, .67);
+  font-family: "Roboto";
+  font-size: 13px;
   overflow: hidden;
+  padding-left: 8px;
+  position: absolute;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.pod.public-account .button-container {
+  background: rgba(255, 255, 255, .17);
+  border-radius: 50%;
+  display: none;
+  height: 40px;
+  left: 133px;
+  position: absolute;
+  top: 59px;
+  width: 40px;
+}
+
+.pod.public-account .button-container.forced,
+.pod.public-account.hovered .button-container,
+.pod.public-account.focused .button-container {
+  display: block;
+}
+
+.pod.public-account.expanded .button-container {
+  display: none;
+}
+
+.public-account-submit-button {
+  color: #FFF;
+  opacity: 1;
+  padding: 10px 7px 8px 11px;
+}
+
 .monitoring-container {
+  margin-top: 106px;
+}
+
+.advanced .monitoring-container {
   margin-top: 35px;
 }
 
 .monitoring-learn-more {
   color: rgb(49, 106, 197);
   text-decoration: none;
+}
+
+.monitoring-learn-more:focus,
+.language-and-input:focus {
+  font-weight: bold;
+  outline: none;
 }
 
 .monitoring-dialog-container .cr-dialog-shield {
@@ -961,16 +964,9 @@ html[dir=rtl] .expanded-pane-contents {
 
 .monitoring-dialog-container .cr-dialog-frame {
   height: 170px;
-  left: -46px;
   padding: 0px;
   position: relative;
-  top: -24px;
   width: 430px;
-}
-
-.monitoring-dialog-container.advanced .cr-dialog-frame {
-  left: -110px;
-  top: 0px;
 }
 
 .monitoring-dialog-container .cr-dialog-close {
@@ -1004,7 +1000,7 @@ html[dir=rtl] .expanded-pane-contents {
 }
 
 .language-and-input-container {
-  -webkit-margin-end: 25px;
+  margin-top: 20px;
   flex: none;
 }
 
@@ -1013,25 +1009,21 @@ html[dir=rtl] .expanded-pane-contents {
   text-decoration: none;
 }
 
-.pod.public-account.expanded.advanced .language-and-input-container {
-  display: none;
+.enter-button-container {
+  background-color: #4285F4;
+  border-radius: 50%;
+  bottom: 28px;
+  height: 40px;
+  position: absolute;
+  right: 28px;
+  width: 40px;
 }
 
-.enter-button {
-  background-color: rgb(66, 133, 244);
-  color: white;
-  font-size: 12px;
-  text-transform: none;
-}
-
-.enter-button.keyboard-focus {
-  font-weight: normal;
-}
-
-.horizontal-line {
-  border-bottom: 1px double #cccccc;
-  bottom: 8px;
-  position: relative;
+.language-and-input-dropdown {
+  height: 16px;
+  margin-left: 6px;
+  padding: 0;
+  width: 16px;
 }
 
 /* Animations for the animated ellipsis: */
@@ -1078,6 +1070,12 @@ html[dir=rtl] .expanded-pane-contents {
 
 .pod.pin-enabled .large-pod {
   height: 618px;
+}
+
+.pod.public-account.expanded .large-pod {
+  left: 8px;
+  position: absolute;
+  top: 8px;
 }
 
 .small-pod {
