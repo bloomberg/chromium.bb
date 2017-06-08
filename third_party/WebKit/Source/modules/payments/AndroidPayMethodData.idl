@@ -12,4 +12,5 @@ dictionary AndroidPayMethodData {
     sequence<DOMString> allowedCardNetworks;
     AndroidPayTokenization paymentMethodTokenizationParameters;
     DOMString minGooglePlayServicesVersion;
+    long apiVersion;
 };

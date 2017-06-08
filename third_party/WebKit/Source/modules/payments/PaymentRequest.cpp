@@ -346,6 +346,11 @@ void SetAndroidPayMethodData(const ScriptValue& input,
     }
   }
 
+  // 0 means the merchant did not specify or it was an invalid value
+  output->api_version = 0;
+  if (android_pay.hasApiVersion())
+    output->api_version = android_pay.apiVersion();
+
   if (android_pay.hasAllowedCardNetworks()) {
     using ::payments::mojom::blink::AndroidPayCardNetwork;
 

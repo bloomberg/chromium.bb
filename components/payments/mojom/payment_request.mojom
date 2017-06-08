@@ -176,6 +176,8 @@ struct PaymentMethodData {
   array<AndroidPayTokenizationParameter> parameters;
   // Value of 0 means the merchant did not specify or it was an invalid value.
   int32 min_google_play_services_version;
+  // Value of 0 means the merchant did not specify or it was an invalid value.
+  int32 api_version;
 
   // Basic card specific method data is parsed in the renderer.
   array<BasicCardNetwork> supported_networks;
