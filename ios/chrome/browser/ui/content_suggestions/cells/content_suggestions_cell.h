@@ -24,7 +24,7 @@
 // Sets the publisher |name| and |date| and add an icon to signal the offline
 // availability if |availableOffline| is YES.
 - (void)setAdditionalInformationWithPublisherName:(NSString*)publisherName
-                                             date:(NSDate*)publishDate
+                                             date:(NSString*)publishDate
                               offlineAvailability:(BOOL)availableOffline;
 
 // Setst the subtitle text. If |subtitle| is nil, the space taken by the

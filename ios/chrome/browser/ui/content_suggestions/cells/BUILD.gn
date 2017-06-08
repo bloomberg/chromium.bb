@@ -13,9 +13,11 @@ source_set("cells") {
     ":cells_ui",
     "//base",
     "//components/ntp_tiles",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
+    "//ui/base",
     "//url",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -57,11 +59,13 @@ source_set("unit_tests") {
     ":cells",
     ":cells_ui",
     "//base",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//testing/gtest",
     "//third_party/ocmock",
+    "//ui/base",
     "//url",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

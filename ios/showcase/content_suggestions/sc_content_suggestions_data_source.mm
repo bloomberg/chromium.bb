@@ -4,6 +4,8 @@
 
 #import "ios/showcase/content_suggestions/sc_content_suggestions_data_source.h"
 
+#include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
@@ -14,6 +16,7 @@
 #import "ios/showcase/content_suggestions/sc_content_suggestions_item.h"
 #import "ios/showcase/content_suggestions/sc_content_suggestions_most_visited_item.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/l10n/time_format.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -184,9 +187,11 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 }
 
 // Returns a random date between now and three days before now.
-- (NSDate*)randomDate {
+- (NSString*)randomDate {
   int offset = arc4random_uniform(259200);
-  return [NSDate dateWithTimeIntervalSinceNow:-offset];
+  return base::SysUTF16ToNSString(ui::TimeFormat::SimpleWithMonthAndYear(
+      ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_LONG,
+      base::TimeDelta::FromSeconds(offset + 60), true));
 }
 
 // Returns an article with the fields set except the IDInSection.
@@ -197,7 +202,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   suggestion.subtitle = @"Subtitle for this greeeeeaaaaaat suggestion!";
   suggestion.publisher = @"Publisher of the new";
   suggestion.hasImage = YES;
-  suggestion.publishDate = [self randomDate];
+  suggestion.publicationDate = [self randomDate];
   suggestion.attributes = [self randomColorFaviconAttributes];
   suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
   suggestion.suggestionIdentifier.sectionInfo = self.articleSection;

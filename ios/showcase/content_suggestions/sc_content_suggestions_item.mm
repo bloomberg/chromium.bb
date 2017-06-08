@@ -21,7 +21,7 @@
 @synthesize subtitle;
 @synthesize hasImage;
 @synthesize publisher;
-@synthesize publishDate;
+@synthesize publicationDate;
 @synthesize availableOffline;
 
 - (instancetype)initWithType:(NSInteger)type {
@@ -40,7 +40,7 @@
   cell.displayImage = self.hasImage;
   [cell setContentImage:self.image animated:NO];
   [cell setAdditionalInformationWithPublisherName:self.publisher
-                                             date:self.publishDate
+                                             date:self.publicationDate
                               offlineAvailability:self.availableOffline];
 }
 
