@@ -30,9 +30,8 @@ public class VrUtils {
     public static final int POLL_TIMEOUT_LONG_MS = 10000;
 
     /**
-     * Gets the VrShellDelegate instance on the UI thread, as otherwise the
-     * Choreographer obtained in VrShellDelegate's constructor is for the instrumentation
-     * thread instead of the UI thread.
+     * Gets the VrShellDelegate instance on the UI thread, as otherwise the Choreographer obtained
+     * in VrShellDelegate's constructor is for the instrumentation thread instead of the UI thread.
      * @return The browser's current VrShellDelegate instance
      */
     public static VrShellDelegate getVrShellDelegateInstance() {
@@ -104,9 +103,23 @@ public class VrUtils {
     /**
      * Determines is there is any InfoBar present in the given View hierarchy.
      * @param parentView The View to start the search in
+     * @param present Whether an InfoBar should be present.
+     */
+    public static void expectInfoBarPresent(final View parentView, boolean present) {
+        CriteriaHelper.pollUiThread(Criteria.equals(present, new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return isInfoBarPresentInternal(parentView);
+            }
+        }), POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_SHORT_MS);
+    }
+
+    /**
+     * Determines is there is any InfoBar present in the given View hierarchy.
+     * @param parentView The View to start the search in
      * @return Whether the InfoBar is present
      */
-    public static boolean isInfoBarPresent(View parentView) {
+    private static boolean isInfoBarPresentInternal(View parentView) {
         // TODO(ymalik): This will return true if any infobar is present. Is it
         // possible to determine the type of infobar present (e.g. Feedback)?
         // InfoBarContainer will be present regardless of whether an InfoBar
@@ -117,7 +130,7 @@ public class VrUtils {
         } else if (parentView instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) parentView;
             for (int i = 0; i < group.getChildCount(); i++) {
-                if (isInfoBarPresent(group.getChildAt(i))) return true;
+                if (isInfoBarPresentInternal(group.getChildAt(i))) return true;
             }
         }
         return false;

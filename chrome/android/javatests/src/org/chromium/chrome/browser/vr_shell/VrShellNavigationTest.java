@@ -112,8 +112,7 @@ public class VrShellNavigationTest {
         Assert.assertEquals("Browser is in fullscreen",
                 fullscreenMode == FullscreenMode.FULLSCREENED, DOMUtils.isFullscreen(wc));
         // Feedback infobar should never show up during navigations.
-        Assert.assertFalse(
-                VrUtils.isInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView()));
+        VrUtils.expectInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView(), false);
     }
 
     /**

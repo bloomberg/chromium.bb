@@ -1097,12 +1097,18 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     private static boolean isVrCoreCompatible(
-            VrCoreVersionChecker versionChecker, Tab tabToShowInfobarIn) {
-        int vrCoreCompatibility = versionChecker.getVrCoreInfo().compatibility;
+            final VrCoreVersionChecker versionChecker, final Tab tabToShowInfobarIn) {
+        final int vrCoreCompatibility = versionChecker.getVrCoreInfo().compatibility;
 
         if (vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE
                 || vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
-            promptToUpdateVrServices(vrCoreCompatibility, tabToShowInfobarIn);
+            // This is somewhat slow, so do it async.
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    promptToUpdateVrServices(vrCoreCompatibility, tabToShowInfobarIn);
+                }
+            });
         }
 
         return vrCoreCompatibility == VrCoreCompatibility.VR_READY;
@@ -1245,6 +1251,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     @VisibleForTesting
     public void overrideVrCoreVersionCheckerForTesting(VrCoreVersionChecker versionChecker) {
         mVrCoreVersionChecker = versionChecker;
+        updateVrSupportLevel();
     }
 
     /**

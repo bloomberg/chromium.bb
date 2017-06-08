@@ -13,6 +13,7 @@ import android.os.Build;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.view.View;
 import android.widget.TextView;
 
 import org.junit.Assert;
@@ -21,6 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -183,19 +185,21 @@ public class WebVrTest {
      *
      * @param checkerReturnCompatibility The compatibility to have the VrCoreVersionChecker return
      */
-    private void infoBarTestHelper(int checkerReturnCompatibility) throws InterruptedException {
-        MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();
-        mockChecker.setMockReturnValue(new VrCoreInfo(null, checkerReturnCompatibility));
-        VrUtils.getVrShellDelegateInstance().overrideVrCoreVersionCheckerForTesting(mockChecker);
-        mVrTestRule.loadUrlAndAwaitInitialization(
-                VrTestRule.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);
-        String displayFound = "VRDisplay Found";
-        String barPresent = "InfoBar present";
+    private void infoBarTestHelper(final int checkerReturnCompatibility) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();
+                mockChecker.setMockReturnValue(new VrCoreInfo(null, checkerReturnCompatibility));
+                VrShellDelegate.getInstanceForTesting().overrideVrCoreVersionCheckerForTesting(
+                        mockChecker);
+                Assert.assertEquals(
+                        checkerReturnCompatibility, mockChecker.getLastReturnValue().compatibility);
+            }
+        });
+        View decorView = mVrTestRule.getActivity().getWindow().getDecorView();
         if (checkerReturnCompatibility == VrCoreCompatibility.VR_READY) {
-            Assert.assertTrue(
-                    displayFound, mVrTestRule.vrDisplayFound(mVrTestRule.getFirstTabWebContents()));
-            Assert.assertFalse(barPresent,
-                    VrUtils.isInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView()));
+            VrUtils.expectInfoBarPresent(decorView, false);
         } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE
                 || checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
             // Out of date and missing cases are the same, but with different text
@@ -211,10 +215,7 @@ public class WebVrTest {
                 expectedButton = mVrTestRule.getActivity().getString(
                         R.string.vr_services_check_infobar_install_button);
             }
-            Assert.assertFalse(
-                    displayFound, mVrTestRule.vrDisplayFound(mVrTestRule.getFirstTabWebContents()));
-            Assert.assertTrue(barPresent,
-                    VrUtils.isInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView()));
+            VrUtils.expectInfoBarPresent(decorView, true);
             TextView tempView =
                     (TextView) mVrTestRule.getActivity().getWindow().getDecorView().findViewById(
                             R.id.infobar_message);
@@ -223,16 +224,11 @@ public class WebVrTest {
                     R.id.button_primary);
             Assert.assertEquals(expectedButton, tempView.getText().toString());
         } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_SUPPORTED) {
-            Assert.assertFalse(
-                    displayFound, mVrTestRule.vrDisplayFound(mVrTestRule.getFirstTabWebContents()));
-            Assert.assertFalse(barPresent,
-                    VrUtils.isInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView()));
+            VrUtils.expectInfoBarPresent(decorView, false);
         } else {
             Assert.fail("Invalid VrCoreVersionChecker compatibility: "
                     + String.valueOf(checkerReturnCompatibility));
         }
-        Assert.assertEquals(
-                checkerReturnCompatibility, mockChecker.getLastReturnValue().compatibility);
     }
 
     /**
