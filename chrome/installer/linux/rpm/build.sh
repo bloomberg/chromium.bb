@@ -131,7 +131,9 @@ do_package() {
   # lsb implies many dependencies.
   #
   # nss (bundled) is optional in LSB 4.0. Also specify a more recent version
-  # for security and stability updates.
+  # for security and stability updates. While we depend on libnss3.so and not
+  # libssl3.so, force the dependency on libssl3 to ensure the NSS version is
+  # 3.28 or later, since libssl3 should always be packaged with libnss3.
   #
   # libstdc++.so.6 is for C++11 support.
   #
@@ -153,7 +155,8 @@ do_package() {
   # TODO(thestig): Use the liberation-fonts package once its available on all
   # supported distros.
   DEPENDS="lsb >= 4.0, \
-  libnss3.so(NSS_3.19.1)${PKG_ARCH}, \
+  libnss3.so(NSS_3.22)${PKG_ARCH}, \
+  libssl3.so(NSS_3.28)${PKG_ARCH}, \
   libstdc++.so.6(GLIBCXX_3.4.18)${PKG_ARCH}, \
   wget, \
   xdg-utils, \

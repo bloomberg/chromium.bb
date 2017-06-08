@@ -325,7 +325,7 @@ fi
 # xdg-utils: For OS integration.
 # wget: For uploading crash reports with Breakpad.
 ADDITIONAL_DEPS="ca-certificates, fonts-liberation, libappindicator1, \
-  libnss3 (>= 3.17.2), lsb-release, xdg-utils (>= 1.0.2), wget"
+  libnss3 (>= 3.26), lsb-release, xdg-utils (>= 1.0.2), wget"
 
 # Fix-up libnspr dependency due to renaming in Ubuntu (the old package still
 # exists, but it was moved to "universe" repository, which isn't installed by
