@@ -180,7 +180,8 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   DCHECK(!use_network_);
 
   url_job_ = base::MakeUnique<ServiceWorkerURLJobWrapper>(
-      std::move(callback), this, resource_request, blob_storage_context_);
+      base::MakeUnique<ServiceWorkerURLLoaderJob>(
+          std::move(callback), this, resource_request, blob_storage_context_));
 
   resource_context_ = resource_context;
 
