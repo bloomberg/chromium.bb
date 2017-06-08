@@ -73,11 +73,20 @@ void TraySessionLengthLimit::OnDefaultViewDestroyed() {
   tray_bubble_view_ = nullptr;
 }
 
+void TraySessionLengthLimit::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  Update();
+}
+
 void TraySessionLengthLimit::OnSessionLengthLimitChanged() {
   Update();
 }
 
 void TraySessionLengthLimit::Update() {
+  // Don't show notification or tray item until the user is logged in.
+  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
+    return;
+
   UpdateState();
   UpdateNotification();
   UpdateTrayBubbleView();
