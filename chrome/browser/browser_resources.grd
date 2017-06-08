@@ -284,6 +284,8 @@
             <include name="IDR_MD_BOOKMARKS_ITEM_JS" file="resources\md_bookmarks\item.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_LIST_HTML" file="resources\md_bookmarks\list.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_LIST_JS" file="resources\md_bookmarks\list.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_HTML" file="resources\md_bookmarks\mouse_focus_behavior.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_JS" file="resources\md_bookmarks\mouse_focus_behavior.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_REDUCERS_HTML" file="resources\md_bookmarks\reducers.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_REDUCERS_JS" file="resources\md_bookmarks\reducers.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_ROUTER_HTML" file="resources\md_bookmarks\router.html" type="BINDATA" />

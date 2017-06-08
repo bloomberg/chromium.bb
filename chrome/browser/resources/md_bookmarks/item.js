@@ -6,6 +6,7 @@ Polymer({
   is: 'bookmarks-item',
 
   behaviors: [
+    bookmarks.MouseFocusBehavior,
     bookmarks.StoreClient,
   ],
 
@@ -30,12 +31,6 @@ Polymer({
     },
 
     /** @private */
-    mouseFocus_: {
-      type: Boolean,
-      reflectToAttribute: true,
-    },
-
-    /** @private */
     isFolder_: Boolean,
   },
 
@@ -44,8 +39,6 @@ Polymer({
   ],
 
   listeners: {
-    'mousedown': 'onMousedown_',
-    'blur': 'onItemBlur_',
     'click': 'onClick_',
     'dblclick': 'onDblClick_',
     'contextmenu': 'onContextMenu_',
@@ -124,20 +117,6 @@ Polymer({
   /** @private */
   onItemChanged_: function() {
     this.isFolder_ = !this.item_.url;
-  },
-
-  /**
-   * @private
-   */
-  onMousedown_: function() {
-    this.mouseFocus_ = true;
-  },
-
-  /**
-   * @private
-   */
-  onItemBlur_: function() {
-    this.mouseFocus_ = false;
   },
 
   /**

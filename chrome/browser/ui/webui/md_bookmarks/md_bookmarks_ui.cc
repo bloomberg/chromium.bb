@@ -129,6 +129,10 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("item.js", IDR_MD_BOOKMARKS_ITEM_JS);
   source->AddResourcePath("list.html", IDR_MD_BOOKMARKS_LIST_HTML);
   source->AddResourcePath("list.js", IDR_MD_BOOKMARKS_LIST_JS);
+  source->AddResourcePath("mouse_focus_behavior.html",
+                          IDR_MD_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_HTML);
+  source->AddResourcePath("mouse_focus_behavior.js",
+                          IDR_MD_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_JS);
   source->AddResourcePath("reducers.html", IDR_MD_BOOKMARKS_REDUCERS_HTML);
   source->AddResourcePath("reducers.js", IDR_MD_BOOKMARKS_REDUCERS_JS);
   source->AddResourcePath("router.html", IDR_MD_BOOKMARKS_ROUTER_HTML);

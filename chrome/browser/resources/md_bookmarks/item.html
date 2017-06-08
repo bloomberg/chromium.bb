@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://bookmarks/actions.html">
+<link rel="import" href="chrome://bookmarks/mouse_focus_behavior.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
 <link rel="import" href="chrome://bookmarks/store_client.html">
 
@@ -25,10 +26,6 @@
         display: flex;
         height: 40px;
         text-decoration: none;
-      }
-
-      :host([mouse-focus_]) {
-        outline: none;
       }
 
       :host([is-selected-item_]) {
@@ -73,7 +70,7 @@
       </div>
       <button is="paper-icon-button-light" class="more-vert-button"
           on-click="onMenuButtonClick_" on-dblclick="onMenuButtonDblClick_"
-          tabindex$="[[ironListTabIndex]]" on-focus="onItemBlur_">
+          tabindex$="[[ironListTabIndex]]" on-focus="clearMouseFocus">
         <div></div>
         <div></div>
         <div></div>
