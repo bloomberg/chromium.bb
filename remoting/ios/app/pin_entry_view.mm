@@ -46,7 +46,8 @@ static const CGFloat kLineSpace = 12.f;
 
     _pinButton =
         [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
-    [_pinButton setTitle:@"+" forState:UIControlStateNormal];
+    [_pinButton setBackgroundColor:UIColor.whiteColor
+                          forState:UIControlStateNormal];
 
     // TODO(nicholss): Update "->" to the arrow icon.
     [_pinButton setTitle:@"->" forState:UIControlStateNormal];

@@ -14,6 +14,7 @@
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
 #import "remoting/ios/app/host_view_controller.h"
 #import "remoting/ios/app/pin_entry_view.h"
+#import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/domain/host_info.h"
 #import "remoting/ios/facade/remoting_authentication.h"
@@ -86,7 +87,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     _navBar = [[MDCNavigationBar alloc] initWithFrame:CGRectZero];
     [_navBar observeNavigationItem:self.navigationItem];
 
-    [_navBar setBackgroundColor:[UIColor blackColor]];
+    [_navBar setBackgroundColor:RemotingTheme.connectionViewBackgroundColor];
     MDCNavigationBarTextColorAccessibilityMutator* mutator =
         [[MDCNavigationBarTextColorAccessibilityMutator alloc] init];
     [mutator mutate:_navBar];
@@ -111,7 +112,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)loadView {
   [super loadView];
 
-  self.view.backgroundColor = [UIColor blackColor];
+  self.view.backgroundColor = RemotingTheme.connectionViewBackgroundColor;
 
   _activityIndicator = [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
   [self.view addSubview:_activityIndicator];
@@ -132,7 +133,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
   _iconView.contentMode = UIViewContentModeCenter;
   _iconView.alpha = 0.87f;
-  _iconView.backgroundColor = UIColor.lightGrayColor;
+  _iconView.backgroundColor = RemotingTheme.onlineHostColor;
   _iconView.layer.cornerRadius = kIconRadius;
   _iconView.layer.masksToBounds = YES;
   _iconView.image = [UIImage imageNamed:@"ic_desktop"];
@@ -140,7 +141,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _activityIndicator.radius = kActivityIndicatorRadius;
   _activityIndicator.trackEnabled = YES;
   _activityIndicator.strokeWidth = kActivityIndicatorStrokeWidth;
-  _activityIndicator.cycleColors = @[ [UIColor whiteColor] ];
+  _activityIndicator.cycleColors = @[ UIColor.whiteColor ];
 
   _statusLabel.numberOfLines = 1;
   _statusLabel.lineBreakMode = NSLineBreakByTruncatingTail;
@@ -228,6 +229,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                                   _pinEntryView.frame.size.height + kPadding);
                  if (overlap < 0) {
                    f.origin.y = overlap;
+                   // TODO(yuweih): This may push the navigation bar off screen.
                    self.view.frame = f;
                  }
                }];
@@ -281,6 +283,9 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [_activityIndicator stopAnimating];
   _activityIndicator.hidden = YES;
   _pinEntryView.hidden = NO;
+
+  // TODO(yuweih): This may be called before viewDidAppear and miss the keyboard
+  // callback.
   [_pinEntryView becomeFirstResponder];
 }
 

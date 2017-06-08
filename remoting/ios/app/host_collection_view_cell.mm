@@ -11,6 +11,7 @@
 #import "remoting/ios/app/host_collection_view_cell.h"
 
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/domain/host_info.h"
 
 static const CGFloat kLinePadding = 2.f;
@@ -49,7 +50,7 @@ static const CGFloat kHostCardIconSize = 45.f;
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
   _imageView.contentMode = UIViewContentModeCenter;
   _imageView.alpha = 0.87f;
-  _imageView.backgroundColor = UIColor.lightGrayColor;
+  _imageView.backgroundColor = RemotingTheme.offlineHostColor;
   _imageView.layer.cornerRadius = kHostCardIconSize / 2.f;
   _imageView.layer.masksToBounds = YES;
   [self.contentView addSubview:_imageView];
@@ -131,13 +132,11 @@ static const CGFloat kHostCardIconSize = 45.f;
 
   _imageView.image = [UIImage imageNamed:@"ic_desktop"];
 
-  // TODO(nicholss): These colors are incorrect for the final product.
-  // Need to update to the values in the mocks.
   if ([_hostInfo.status isEqualToString:@"ONLINE"]) {
-    _imageView.backgroundColor = UIColor.greenColor;
+    _imageView.backgroundColor = RemotingTheme.onlineHostColor;
     _statusLabel.text = @"Online";
   } else {
-    _imageView.backgroundColor = UIColor.lightGrayColor;
+    _imageView.backgroundColor = RemotingTheme.offlineHostColor;
     _statusLabel.text =
         [NSString stringWithFormat:@"Last online: %@", hostInfo.updatedTime];
   }
