@@ -174,7 +174,8 @@ void StartupPagesHandler::HandleRemoveStartupPage(const base::ListValue* args) {
 
 void StartupPagesHandler::HandleSetStartupPagesToCurrentPages(
     const base::ListValue* args) {
-  startup_custom_pages_table_model_.SetToCurrentlyOpenPages();
+  startup_custom_pages_table_model_.SetToCurrentlyOpenPages(
+      web_ui()->GetWebContents());
   SaveStartupPagesPref();
 }
 

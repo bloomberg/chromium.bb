@@ -18,6 +18,10 @@ class Browser;
 class GURL;
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 namespace history {
 class URLRow;
 }
@@ -49,8 +53,8 @@ class CustomHomePagesTableModel : public ui::TableModel {
   void Remove(int index);
 
   // Clears any entries and fills the list with pages currently opened in the
-  // browser.
-  void SetToCurrentlyOpenPages();
+  // browser. |ignore_contents| is omitted from the open pages.
+  void SetToCurrentlyOpenPages(const content::WebContents* ignore_contents);
 
   // Returns the set of urls this model contains.
   std::vector<GURL> GetURLs();
