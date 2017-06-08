@@ -404,8 +404,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // be followed by MediaStoppedPlaying() after player teardown.  Observers must
   // release all stored copies of |id| when MediaStoppedPlaying() is received.
   struct MediaPlayerInfo {
-    explicit MediaPlayerInfo(bool in_has_video) : has_video(in_has_video) {}
+    MediaPlayerInfo(bool has_video, bool has_audio)
+        : has_video(has_video), has_audio(has_audio) {}
     bool has_video;
+    bool has_audio;
   };
   using MediaPlayerId = std::pair<RenderFrameHost*, int>;
   virtual void MediaStartedPlaying(const MediaPlayerInfo& video_type,

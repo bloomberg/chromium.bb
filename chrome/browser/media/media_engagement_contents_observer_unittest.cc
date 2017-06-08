@@ -41,14 +41,20 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulatePlaybackStarted(int id) {
-    content::WebContentsObserver::MediaPlayerInfo player_info(true);
+    content::WebContentsObserver::MediaPlayerInfo player_info(true, true);
+    SimulatePlaybackStarted(player_info, id);
+  }
+
+  void SimulatePlaybackStarted(
+      content::WebContentsObserver::MediaPlayerInfo player_info,
+      int id) {
     content::WebContentsObserver::MediaPlayerId player_id =
         std::make_pair(nullptr /* RenderFrameHost */, id);
     contents_observer_->MediaStartedPlaying(player_info, player_id);
   }
 
   void SimulatePlaybackStopped(int id) {
-    content::WebContentsObserver::MediaPlayerInfo player_info(true);
+    content::WebContentsObserver::MediaPlayerInfo player_info(true, true);
     content::WebContentsObserver::MediaPlayerId player_id =
         std::make_pair(nullptr /* RenderFrameHost */, id);
     contents_observer_->MediaStoppedPlaying(player_info, player_id);
@@ -168,4 +174,12 @@ TEST_F(MediaEngagementContentsObserverTest,
 
   SimulatePlaybackTimerFired();
   EXPECT_TRUE(WasSignificantPlaybackRecorded());
+}
+
+TEST_F(MediaEngagementContentsObserverTest, DoNotRecordAudiolessTrack) {
+  EXPECT_EQ(0u, GetSignificantActivePlayersCount());
+
+  content::WebContentsObserver::MediaPlayerInfo player_info(true, false);
+  SimulatePlaybackStarted(player_info, 0);
+  EXPECT_EQ(0u, GetSignificantActivePlayersCount());
 }
