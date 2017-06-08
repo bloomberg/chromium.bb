@@ -105,7 +105,7 @@ class PictureLayerImplPerfTest : public testing::Test {
     host_impl_.pending_tree()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            pending_layer_->id(),
+            pending_layer_->element_id(),
             gfx::ScrollOffset(viewport.x(), viewport.y()));
     bool update_lcd_text = false;
     host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
@@ -155,7 +155,7 @@ class PictureLayerImplPerfTest : public testing::Test {
     host_impl_.pending_tree()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            pending_layer_->id(),
+            pending_layer_->element_id(),
             gfx::ScrollOffset(viewport.x(), viewport.y()));
     bool update_lcd_text = false;
     host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);

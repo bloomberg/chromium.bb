@@ -793,7 +793,7 @@ void Layer::UpdateScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(transform_tree_index() != TransformTree::kInvalidNodeId);
 
   auto& property_trees = *layer_tree_host_->property_trees();
-  property_trees.scroll_tree.SetScrollOffset(id(), scroll_offset);
+  property_trees.scroll_tree.SetScrollOffset(element_id(), scroll_offset);
   auto* transform_node =
       property_trees.transform_tree.Node(transform_tree_index());
   DCHECK_EQ(transform_tree_index(), transform_node->id);
@@ -1212,7 +1212,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   if (ScrollOffsetAnimationWasInterrupted())
     layer->layer_tree_impl()
         ->property_trees()
-        ->scroll_tree.SetScrollOffsetClobberActiveValue(layer->id());
+        ->scroll_tree.SetScrollOffsetClobberActiveValue(layer->element_id());
 
   if (needs_show_scrollbars_)
     layer->set_needs_show_scrollbars(true);

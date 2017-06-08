@@ -497,7 +497,7 @@ class CC_EXPORT LayerTreeImpl {
       std::unique_ptr<PendingPageScaleAnimation> pending_animation);
   std::unique_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
 
-  void DidUpdateScrollOffset(int layer_id);
+  void DidUpdateScrollOffset(ElementId id);
 
   // Mark the scrollbar geometries (e.g., thumb size and position) as needing an
   // update.

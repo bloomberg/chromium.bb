@@ -151,7 +151,7 @@ void LayerTreeImpl::RecreateTileResources() {
   }
 }
 
-void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
+void LayerTreeImpl::DidUpdateScrollOffset(ElementId id) {
   // Scrollbar positions depend on the current scroll offset.
   SetScrollbarGeometriesNeedUpdate();
 
@@ -163,7 +163,10 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
   // If pending tree topology changed and we still want to notify the pending
   // tree about scroll offset in the active tree, we may not find the
   // corresponding pending layer.
-  if (auto* layer = LayerById(layer_id)) {
+  // TODO(pdr): Remove this use of LayerByElementId and instead look up the
+  // scroll node via ElementId and then set transform_id to the scroll node's
+  // transform node index.
+  if (auto* layer = LayerByElementId(id)) {
     // TODO(sunxd): when we have a layer_id to property_tree index map in
     // property trees, use the transform_id parameter instead of looking for
     // indices from LayerImpls.
@@ -175,8 +178,8 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
 
   if (transform_id != TransformTree::kInvalidNodeId) {
     TransformNode* node = transform_tree.Node(transform_id);
-    if (node->scroll_offset != scroll_tree.current_scroll_offset(layer_id)) {
-      node->scroll_offset = scroll_tree.current_scroll_offset(layer_id);
+    if (node->scroll_offset != scroll_tree.current_scroll_offset(id)) {
+      node->scroll_offset = scroll_tree.current_scroll_offset(id);
       node->needs_local_transform_update = true;
       transform_tree.set_needs_update(true);
     }
@@ -186,7 +189,7 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
   }
 
   if (IsActiveTree() && layer_tree_host_impl_->pending_tree())
-    layer_tree_host_impl_->pending_tree()->DidUpdateScrollOffset(layer_id);
+    layer_tree_host_impl_->pending_tree()->DidUpdateScrollOffset(id);
 }
 
 void LayerTreeImpl::UpdateScrollbarGeometries() {

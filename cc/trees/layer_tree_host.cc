@@ -753,7 +753,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 
 void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
   gfx::Vector2dF inner_viewport_scroll_delta;
-  if (info->inner_viewport_scroll.layer_id != Layer::INVALID_ID)
+  if (!info->inner_viewport_scroll.element_id)
     inner_viewport_scroll_delta = info->inner_viewport_scroll.scroll_delta;
 
   if (inner_viewport_scroll_delta.IsZero() && info->page_scale_delta == 1.f &&
@@ -803,7 +803,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
 
   if (root_layer_) {
     for (size_t i = 0; i < info->scrolls.size(); ++i) {
-      Layer* layer = LayerById(info->scrolls[i].layer_id);
+      Layer* layer = LayerByElementId(info->scrolls[i].element_id);
       if (!layer)
         continue;
       layer->SetScrollOffsetFromImplSide(gfx::ScrollOffsetWithDelta(

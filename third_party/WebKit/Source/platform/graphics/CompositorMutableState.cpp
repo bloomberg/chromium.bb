@@ -53,8 +53,8 @@ void CompositorMutableState::SetScrollLeft(float scroll_left) {
   scroll_layer_->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.OnScrollOffsetAnimated(
-          scroll_layer_->id(), scroll_layer_->scroll_tree_index(), offset,
-          scroll_layer_->layer_tree_impl());
+          scroll_layer_->element_id(), scroll_layer_->scroll_tree_index(),
+          offset, scroll_layer_->layer_tree_impl());
   mutation_->SetScrollLeft(scroll_left);
 }
 
@@ -70,8 +70,8 @@ void CompositorMutableState::SetScrollTop(float scroll_top) {
   scroll_layer_->layer_tree_impl()
       ->property_trees()
       ->scroll_tree.OnScrollOffsetAnimated(
-          scroll_layer_->id(), scroll_layer_->scroll_tree_index(), offset,
-          scroll_layer_->layer_tree_impl());
+          scroll_layer_->element_id(), scroll_layer_->scroll_tree_index(),
+          offset, scroll_layer_->layer_tree_impl());
   mutation_->SetScrollTop(scroll_top);
 }
 

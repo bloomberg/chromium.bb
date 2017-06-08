@@ -1089,7 +1089,7 @@ void AddScrollNodeIfNeeded(
 
     if (node.scrollable) {
       data_for_children->property_trees->scroll_tree.SetBaseScrollOffset(
-          layer->id(), layer->CurrentScrollOffset());
+          layer->element_id(), layer->CurrentScrollOffset());
     }
   }
 

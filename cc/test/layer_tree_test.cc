@@ -59,8 +59,12 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   inner_viewport_scroll_layer->SetScrollClipLayerId(
       inner_viewport_container_layer->id());
+  inner_viewport_scroll_layer->SetElementId(
+      LayerIdToElementIdForTesting(inner_viewport_scroll_layer->id()));
   outer_scroll_layer->SetScrollClipLayerId(
       outer_viewport_container_layer->id());
+  outer_scroll_layer->SetElementId(
+      LayerIdToElementIdForTesting(outer_scroll_layer->id()));
 
   inner_viewport_container_layer->SetBounds(inner_bounds);
   inner_viewport_scroll_layer->SetBounds(outer_bounds);
@@ -514,10 +518,10 @@ LayerTreeTest::~LayerTreeTest() {
 }
 
 gfx::Vector2dF LayerTreeTest::ScrollDelta(LayerImpl* layer_impl) {
-  gfx::ScrollOffset delta =
-      layer_impl->layer_tree_impl()
-          ->property_trees()
-          ->scroll_tree.GetScrollOffsetDeltaForTesting(layer_impl->id());
+  gfx::ScrollOffset delta = layer_impl->layer_tree_impl()
+                                ->property_trees()
+                                ->scroll_tree.GetScrollOffsetDeltaForTesting(
+                                    layer_impl->element_id());
   return gfx::Vector2dF(delta.x(), delta.y());
 }
 

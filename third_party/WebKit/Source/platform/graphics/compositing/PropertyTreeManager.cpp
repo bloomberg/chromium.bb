@@ -344,7 +344,7 @@ void PropertyTreeManager::UpdateLayerScrollMapping(
         *GetTransformTree().Node(compositor_scroll_node.transform_id);
     // TODO(pdr): Set this in updateScrollAndScrollTranslationNodes once the
     // layer id is no longer needed.
-    GetScrollTree().SetScrollOffset(layer_id,
+    GetScrollTree().SetScrollOffset(transform->GetCompositorElementId(),
                                     compositor_transform_node.scroll_offset);
     if (auto* scroll_client = enclosing_scroll_node->ScrollClient()) {
       layer->set_did_scroll_callback(
