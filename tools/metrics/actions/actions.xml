@@ -16556,6 +16556,28 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TextToSpeech.Pause">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Synthesized speech is paused.</description>
+</action>
+
+<action name="TextToSpeech.Resume">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Synthesized speech is resumed after being paused.</description>
+</action>
+
+<action name="TextToSpeech.Speak">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A single utterance is spoken using synthesized text-to-speech.
+  </description>
+</action>
+
+<action name="TextToSpeech.Stop">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Synthesized speech is stopped.</description>
+</action>
+
 <action name="Themes.Gone">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
