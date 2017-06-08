@@ -201,6 +201,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
         setBackgroundResourceForGroupPosition(
                 getItem().isFirstInGroup(), getItem().isLastInGroup());
+        setLongClickable(item.isComplete());
     }
 
     /**
