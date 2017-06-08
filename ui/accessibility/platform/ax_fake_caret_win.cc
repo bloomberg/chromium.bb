@@ -99,4 +99,8 @@ bool AXFakeCaretWin::AccessibilityPerformAction(const ui::AXActionData& data) {
   return false;
 }
 
+bool AXFakeCaretWin::ShouldIgnoreHoveredStateForTesting() {
+  return true;
+}
+
 }  // namespace ui

@@ -1438,8 +1438,7 @@ int AXPlatformNodeWin::MSAAState() {
     msaa_state |= STATE_SYSTEM_FOCUSABLE;
   if (state & (1 << ui::AX_STATE_HASPOPUP))
     msaa_state |= STATE_SYSTEM_HASPOPUP;
-  if (state & (1 << ui::AX_STATE_HOVERED))
-    msaa_state |= STATE_SYSTEM_HOTTRACKED;
+
   if (state & (1 << ui::AX_STATE_INVISIBLE) ||
       GetData().role == ui::AX_ROLE_IGNORED) {
     msaa_state |= STATE_SYSTEM_INVISIBLE;
@@ -1458,6 +1457,23 @@ int AXPlatformNodeWin::MSAAState() {
     msaa_state |= STATE_SYSTEM_SELECTED;
   if (state & (1 << ui::AX_STATE_DISABLED))
     msaa_state |= STATE_SYSTEM_UNAVAILABLE;
+  if (state & (1 << ui::AX_STATE_BUSY))
+    msaa_state |= STATE_SYSTEM_BUSY;
+  if (state & (1 << ui::AX_STATE_VISITED))
+    msaa_state |= STATE_SYSTEM_TRAVERSED;
+
+  if (state & (1 << ui::AX_STATE_MULTISELECTABLE)) {
+    msaa_state |= STATE_SYSTEM_EXTSELECTABLE;
+    msaa_state |= STATE_SYSTEM_MULTISELECTABLE;
+  }
+
+  // Expose whether or not the mouse is over an element, but suppress
+  // this for tests because it can make the test results flaky depending
+  // on the position of the mouse.
+  if (delegate_->ShouldIgnoreHoveredStateForTesting()) {
+    if (state & (1 << ui::AX_STATE_HOVERED))
+      msaa_state |= STATE_SYSTEM_HOTTRACKED;
+  }
 
   // Checked state
   const auto checked_state = static_cast<ui::AXCheckedState>(
@@ -1489,6 +1505,89 @@ int AXPlatformNodeWin::MSAAState() {
       !(state & (1 << ui::AX_STATE_INVISIBLE))) {
     msaa_state |= STATE_SYSTEM_FOCUSED;
   }
+
+  switch (GetData().role) {
+    case ui::AX_ROLE_ARTICLE:
+    case ui::AX_ROLE_BUSY_INDICATOR:
+    case ui::AX_ROLE_DEFINITION:
+    case ui::AX_ROLE_DESCRIPTION_LIST:
+    case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
+    case ui::AX_ROLE_IFRAME:
+    case ui::AX_ROLE_IMAGE:
+    case ui::AX_ROLE_IMAGE_MAP:
+    case ui::AX_ROLE_LIST:
+    case ui::AX_ROLE_LIST_ITEM:
+    case ui::AX_ROLE_PROGRESS_INDICATOR:
+    case ui::AX_ROLE_RULER:
+    case ui::AX_ROLE_SCROLL_AREA:
+    case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
+    case ui::AX_ROLE_TERM:
+    case ui::AX_ROLE_TIMER:
+    case ui::AX_ROLE_TOOLBAR:
+    case ui::AX_ROLE_TOOLTIP:
+      msaa_state |= STATE_SYSTEM_READONLY;
+      break;
+
+    case ui::AX_ROLE_DOCUMENT:
+    case ui::AX_ROLE_ROOT_WEB_AREA:
+    case ui::AX_ROLE_WEB_AREA:
+      msaa_state |= STATE_SYSTEM_READONLY;
+      msaa_state |= STATE_SYSTEM_FOCUSABLE;
+      break;
+
+    case ui::AX_ROLE_GRID:
+      // TODO(aleventhal) this changed between ARIA 1.0 and 1.1,
+      // need to determine whether grids/treegrids should really be readonly
+      // or editable by default
+      // msaa_state |= STATE_SYSTEM_READONLY;
+      break;
+
+    case ui::AX_ROLE_IMAGE_MAP_LINK:
+      msaa_state |= STATE_SYSTEM_LINKED;
+      msaa_state |= STATE_SYSTEM_READONLY;
+      break;
+
+    case ui::AX_ROLE_LINK:
+      msaa_state |= STATE_SYSTEM_LINKED;
+      break;
+
+    case ui::AX_ROLE_LIST_BOX_OPTION:
+      if (msaa_state & STATE_SYSTEM_SELECTABLE) {
+        msaa_state |= STATE_SYSTEM_FOCUSABLE;
+      }
+      break;
+
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+      if (msaa_state & STATE_SYSTEM_SELECTABLE) {
+        msaa_state |= STATE_SYSTEM_FOCUSABLE;
+      }
+      break;
+
+    case ui::AX_ROLE_TEXT_FIELD:
+    case ui::AX_ROLE_SEARCH_BOX:
+      if (state & (1 << ui::AX_STATE_READ_ONLY))
+        msaa_state |= STATE_SYSTEM_READONLY;
+      break;
+    default:
+      break;
+  }
+
+  // Compute the final value of READONLY for MSAA.
+  //
+  // We always set the READONLY state for elements that have the
+  // aria-readonly attribute and for a few roles (in the switch above),
+  // including read-only text fields.
+  // The majority of focusable controls should not have the read-only state set.
+  if (state & (1 << ui::AX_STATE_FOCUSABLE) &&
+      GetData().role != ROLE_SYSTEM_DOCUMENT &&
+      GetData().role != ROLE_SYSTEM_TEXT) {
+    msaa_state &= ~(STATE_SYSTEM_READONLY);
+  }
+  if (!(state & (1 << ui::AX_STATE_READ_ONLY)))
+    msaa_state &= ~(STATE_SYSTEM_READONLY);
+
+  if (GetData().GetBoolAttribute(ui::AX_ATTR_ARIA_READONLY))
+    msaa_state |= STATE_SYSTEM_READONLY;
 
   return msaa_state;
 }

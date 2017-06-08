@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
@@ -1199,6 +1200,12 @@ bool BrowserAccessibility::AccessibilityPerformAction(
   }
 
   return false;
+}
+
+bool BrowserAccessibility::ShouldIgnoreHoveredStateForTesting() {
+  BrowserAccessibilityStateImpl* accessibility_state =
+      BrowserAccessibilityStateImpl::GetInstance();
+  return accessibility_state->disable_hot_tracking_for_testing();
 }
 
 }  // namespace content
