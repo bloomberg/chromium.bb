@@ -17,7 +17,7 @@ ShapeResultSpacing::ShapeResultSpacing(const TextRun& run,
       expansion_(run.Expansion()),
       expansion_per_opportunity_(0),
       expansion_opportunity_count_(0),
-      text_justify_(TextJustify::kTextJustifyAuto),
+      text_justify_(TextJustify::kAuto),
       has_spacing_(false),
       normalize_space_(run.NormalizeSpace()),
       allow_tabs_(run.AllowTabs()),
@@ -101,7 +101,7 @@ float ShapeResultSpacing::ComputeSpacing(const TextRun& run,
   if (treat_as_space)
     return spacing + NextExpansion();
 
-  if (run.Is8Bit() || text_justify_ != TextJustify::kTextJustifyAuto)
+  if (run.Is8Bit() || text_justify_ != TextJustify::kAuto)
     return spacing;
 
   // isCJKIdeographOrSymbol() has expansion opportunities both before and

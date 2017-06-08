@@ -74,7 +74,7 @@ class PLATFORM_EXPORT TextRun final {
         direction_(static_cast<unsigned>(direction)),
         directional_override_(directional_override),
         disable_spacing_(false),
-        text_justify_(kTextJustifyAuto),
+        text_justify_(static_cast<unsigned>(TextJustify::kAuto)),
         normalize_space_(false),
         tab_size_(0) {
     data_.characters8 = c;
@@ -99,7 +99,7 @@ class PLATFORM_EXPORT TextRun final {
         direction_(static_cast<unsigned>(direction)),
         directional_override_(directional_override),
         disable_spacing_(false),
-        text_justify_(kTextJustifyAuto),
+        text_justify_(static_cast<unsigned>(TextJustify::kAuto)),
         normalize_space_(false),
         tab_size_(0) {
     data_.characters16 = c;
@@ -122,7 +122,7 @@ class PLATFORM_EXPORT TextRun final {
         direction_(static_cast<unsigned>(direction)),
         directional_override_(directional_override),
         disable_spacing_(false),
-        text_justify_(kTextJustifyAuto),
+        text_justify_(static_cast<unsigned>(TextJustify::kAuto)),
         normalize_space_(false),
         tab_size_(0) {
     if (!characters_length_) {

@@ -851,7 +851,7 @@ BidiRun* LayoutBlockFlow::ComputeInlineDirectionPositionsForSegment(
     if (r->line_layout_item_.IsText()) {
       LineLayoutText rt(r->line_layout_item_);
       if (text_align == ETextAlign::kJustify && r != trailing_space_run &&
-          text_justify != kTextJustifyNone) {
+          text_justify != TextJustify::kNone) {
         if (!is_after_expansion)
           ToInlineTextBox(r->box_)->SetCanHaveLeadingExpansion(true);
         expansions.AddRunWithExpansions(*r, is_after_expansion, text_justify);
