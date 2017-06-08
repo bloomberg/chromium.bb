@@ -19,7 +19,9 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.PhotoPickerListener;
@@ -35,7 +37,13 @@ import java.util.List;
 public class PickerCategoryView extends RelativeLayout
         implements FileEnumWorkerTask.FilesEnumeratedCallback, RecyclerView.RecyclerListener,
                    DecoderServiceHost.ServiceReadyCallback, View.OnClickListener {
-    private static final int KILOBYTE = 1024;
+    // These values are written to logs.  New enum values can be added, but existing
+    // enums must never be renumbered or deleted and reused.
+    private static final int ACTION_CANCEL = 0;
+    private static final int ACTION_PHOTO_PICKED = 1;
+    private static final int ACTION_NEW_PHOTO = 2;
+    private static final int ACTION_BROWSE = 3;
+    private static final int ACTION_BOUNDARY = 4;
 
     // The dialog that owns us.
     private PhotoPickerDialog mDialog;
@@ -145,11 +153,11 @@ public class PickerCategoryView extends RelativeLayout
         mSpacingDecoration = new GridSpacingItemDecoration(mColumns, mPadding);
         mRecyclerView.addItemDecoration(mSpacingDecoration);
 
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / KILOBYTE);
-        final int cacheSizeLarge = maxMemory / 2; // 1/2 of the available memory.
-        final int cacheSizeSmall = maxMemory / 8; // 1/8th of the available memory.
-        mLowResBitmaps = new LruCache<String, Bitmap>(cacheSizeSmall);
-        mHighResBitmaps = new LruCache<String, Bitmap>(cacheSizeLarge);
+        final long maxMemory = ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
+        final long cacheSizeLarge = maxMemory / 2; // 1/2 of the available memory.
+        final long cacheSizeSmall = maxMemory / 8; // 1/8th of the available memory.
+        mLowResBitmaps = new LruCache<String, Bitmap>((int) (cacheSizeSmall));
+        mHighResBitmaps = new LruCache<String, Bitmap>((int) (cacheSizeLarge));
     }
 
     @Override
@@ -195,6 +203,7 @@ public class PickerCategoryView extends RelativeLayout
         mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
+                recordFinalUmaStats(ACTION_CANCEL);
                 mListener.onPickerUserAction(PhotoPickerListener.Action.CANCEL, null);
             }
         });
@@ -232,8 +241,10 @@ public class PickerCategoryView extends RelativeLayout
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.done) {
+            recordFinalUmaStats(ACTION_PHOTO_PICKED);
             notifyPhotosSelected();
         } else {
+            recordFinalUmaStats(ACTION_CANCEL);
             mListener.onPickerUserAction(PhotoPickerListener.Action.CANCEL, null);
         }
 
@@ -284,6 +295,7 @@ public class PickerCategoryView extends RelativeLayout
      * Notifies the listener that the user selected to launch the gallery.
      */
     public void showGallery() {
+        recordFinalUmaStats(ACTION_BROWSE);
         mListener.onPickerUserAction(PhotoPickerListener.Action.LAUNCH_GALLERY, null);
     }
 
@@ -291,6 +303,7 @@ public class PickerCategoryView extends RelativeLayout
      * Notifies the listener that the user selected to launch the camera intent.
      */
     public void showCamera() {
+        recordFinalUmaStats(ACTION_NEW_PHOTO);
         mListener.onPickerUserAction(PhotoPickerListener.Action.LAUNCH_CAMERA, null);
     }
 
@@ -381,6 +394,19 @@ public class PickerCategoryView extends RelativeLayout
 
             outRect.set(left, top, right, bottom);
         }
+    }
+
+    /**
+     * Record UMA statistics (what action was taken in the dialog and other performance stats).
+     * @param action The action the user took in the dialog.
+     */
+    private void recordFinalUmaStats(int action) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.PhotoPicker.DialogAction", action, ACTION_BOUNDARY);
+        RecordHistogram.recordCountHistogram(
+                "Android.PhotoPicker.DecodeRequests", mPickerAdapter.getDecodeRequestCount());
+        RecordHistogram.recordCountHistogram(
+                "Android.PhotoPicker.CacheHits", mPickerAdapter.getCacheHitCount());
     }
 
     /** Sets a list of files to use as data for the dialog. For testing use only. */

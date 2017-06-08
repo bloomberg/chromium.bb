@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.feature_engagement_tracker.EventConstants;
 import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
@@ -93,10 +94,6 @@ public class DownloadUtils {
 
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
-
-    private static final long BYTES_PER_KILOBYTE = 1024;
-    private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
-    private static final long BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
 
     @VisibleForTesting
     static final long SECONDS_PER_MINUTE = TimeUnit.MINUTES.toSeconds(1);
@@ -769,15 +766,15 @@ public class DownloadUtils {
         int resourceId;
         float bytesInCorrectUnits;
 
-        if (bytes < BYTES_PER_MEGABYTE) {
+        if (ConversionUtils.bytesToMegabytes(bytes) < 1) {
             resourceId = stringSet[0];
-            bytesInCorrectUnits = bytes / (float) BYTES_PER_KILOBYTE;
-        } else if (bytes < BYTES_PER_GIGABYTE) {
+            bytesInCorrectUnits = bytes / (float) ConversionUtils.BYTES_PER_KILOBYTE;
+        } else if (ConversionUtils.bytesToGigabytes(bytes) < 1) {
             resourceId = stringSet[1];
-            bytesInCorrectUnits = bytes / (float) BYTES_PER_MEGABYTE;
+            bytesInCorrectUnits = bytes / (float) ConversionUtils.BYTES_PER_MEGABYTE;
         } else {
             resourceId = stringSet[2];
-            bytesInCorrectUnits = bytes / (float) BYTES_PER_GIGABYTE;
+            bytesInCorrectUnits = bytes / (float) ConversionUtils.BYTES_PER_GIGABYTE;
         }
 
         return context.getResources().getString(resourceId, bytesInCorrectUnits);

@@ -958,6 +958,79 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.PhotoPicker.BitmapScalerTask" units="ms">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the amount of time the BitmapScaler spent scaling a bitmap.
+  </summary>
+</histogram>
+
+<histogram name="Android.PhotoPicker.CacheHits" units="Hits">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the total number of images served from the high-res cache during
+    the lifetime of the dialog.
+  </summary>
+</histogram>
+
+<histogram name="Android.PhotoPicker.DecodeRequests" units="Hits">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the total number of images sent for decoding during the lifetime of
+    the dialog.
+  </summary>
+</histogram>
+
+<histogram name="Android.PhotoPicker.DialogAction"
+    enum="PhotoPickerDialogAction">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records which action the user takes in the PhotoPickerDialog.
+  </summary>
+</histogram>
+
+<histogram name="Android.PhotoPicker.ImageByteCount" units="KB">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the byte count of a decoded image. Only recorded on successful
+    decodes.
+  </summary>
+</histogram>
+
+<histogram name="Android.PhotoPicker.ImageDecodeTime" units="ms">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the amount of time it takes the decoder to decode one image. Only
+    recorded on successful decodes.
+  </summary>
+</histogram>
+
+<histogram name="Android.PhotoPicker.RequestProcessTime" units="ms">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the amount of time it takes to process one decode request end to
+    end (RPC and actual decoding of the bits by utility process). Recorded
+    whether or not the RPC/decode request was successful.
+  </summary>
+</histogram>
+
+<histogram name="Android.PhotoPicker.UpscaleLowResBitmap" units="ms">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the amount of time it takes to upscale a bitmap from the low-res
+    cache. Recorded only when there a cache miss from the high-res bitmap but a
+    cache hit from the low-res (placeholder) bitmap.
+  </summary>
+</histogram>
+
 <histogram name="Android.PrepareMenu.OpenWebApkVisibilityCheck" units="ms">
   <owner>hanxi@chromium.org</owner>
   <owner>pkotwicz@chromium.org</owner>
