@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -284,7 +285,7 @@ bool Validator::ValidateRecommendedField(
     repaired_recommended->AppendString(field_name);
   }
 
-  result->Set(::onc::kRecommended, repaired_recommended.release());
+  result->Set(::onc::kRecommended, std::move(repaired_recommended));
   return true;
 }
 

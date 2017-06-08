@@ -534,8 +534,8 @@ base::DictionaryValue* FakeShillServiceClient::GetModifiableServiceProperties(
   if (!stub_services_.GetDictionaryWithoutPathExpansion(service_path,
                                                         &properties) &&
       create_if_missing) {
-    properties = new base::DictionaryValue;
-    stub_services_.Set(service_path, properties);
+    properties = stub_services_.SetDictionary(
+        service_path, base::MakeUnique<base::DictionaryValue>());
   }
   return properties;
 }

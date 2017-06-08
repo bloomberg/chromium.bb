@@ -809,10 +809,10 @@ class PolicyLoaderWinTest : public PolicyTestBase,
     expected_policy.SetBoolean(test_keys::kKeyBoolean, true);
     expected_policy.SetString(test_keys::kKeyString, "GPO");
     expected_policy.SetInteger(test_keys::kKeyInteger, 42);
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendString("GPO 1");
     list->AppendString("GPO 2");
-    expected_policy.Set(test_keys::kKeyStringList, list.release());
+    expected_policy.Set(test_keys::kKeyStringList, std::move(list));
     PolicyBundle expected;
     expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY,

@@ -810,14 +810,14 @@ void GetFormAndField(autofill::FormData* form,
   formData->SetString("formName", base::UTF16ToUTF8(form.name));
   // Note: Destruction of all child base::Value types is handled by the root
   // formData object on its own destruction.
-  base::DictionaryValue* fieldsData = new base::DictionaryValue;
+  auto fieldsData = base::MakeUnique<base::DictionaryValue>();
 
   const std::vector<autofill::FormFieldData>& fields = form.fields;
   for (const auto& fieldData : fields) {
     fieldsData->SetStringWithoutPathExpansion(base::UTF16ToUTF8(fieldData.name),
                                               fieldData.value);
   }
-  formData->Set("fields", fieldsData);
+  formData->Set("fields", std::move(fieldsData));
 
   // Stringify the JSON data and send it to the UIWebView-side fillForm method.
   std::string dataString;

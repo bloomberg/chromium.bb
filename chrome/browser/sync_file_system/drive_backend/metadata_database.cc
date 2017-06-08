@@ -1612,7 +1612,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpFiles(
                       FileKindToString(tracker.synced_details().file_kind()));
     }
 
-    base::DictionaryValue* details = new base::DictionaryValue;
+    auto details = base::MakeUnique<base::DictionaryValue>();
     details->SetString("file_id", tracker.file_id());
     if (tracker.has_synced_details() &&
         tracker.synced_details().file_kind() == FILE_KIND_FILE)
@@ -1620,7 +1620,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpFiles(
     details->SetString("active", tracker.active() ? "true" : "false");
     details->SetString("dirty", tracker.dirty() ? "true" : "false");
 
-    file->Set("details", details);
+    file->Set("details", std::move(details));
 
     files->Append(std::move(file));
   }
@@ -1656,10 +1656,10 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
   };
   std::vector<std::string> key_strings(
       trackerKeys, trackerKeys + arraysize(trackerKeys));
-  base::ListValue* keys = new base::ListValue;
+  auto keys = base::MakeUnique<base::ListValue>();
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Trackers");
-  metadata->Set("keys", keys);
+  metadata->Set("keys", std::move(keys));
   trackers->Append(std::move(metadata));
 
   // Append tracker data.
@@ -1718,10 +1718,10 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
   };
   std::vector<std::string> key_strings(
       fileKeys, fileKeys + arraysize(fileKeys));
-  base::ListValue* keys = new base::ListValue;
+  auto keys = base::MakeUnique<base::ListValue>();
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Metadata");
-  metadata->Set("keys", keys);
+  metadata->Set("keys", std::move(keys));
   files->Append(std::move(metadata));
 
   // Append metadata data.

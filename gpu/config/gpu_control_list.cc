@@ -4,12 +4,16 @@
 
 #include "gpu/config/gpu_control_list.h"
 
+#include <utility>
+
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/values.h"
 #include "gpu/config/gpu_info.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -581,18 +585,18 @@ void GpuControlList::GetReasons(base::ListValue* problem_list,
   DCHECK(problem_list);
   for (auto index : active_entries_) {
     const Entry& entry = entries_[index];
-    std::unique_ptr<base::DictionaryValue> problem(new base::DictionaryValue());
+    auto problem = base::MakeUnique<base::DictionaryValue>();
 
     problem->SetString("description", entry.description);
 
-    base::ListValue* cr_bugs = new base::ListValue();
+    auto cr_bugs = base::MakeUnique<base::ListValue>();
     for (size_t jj = 0; jj < entry.cr_bug_size; ++jj)
       cr_bugs->AppendInteger(entry.cr_bugs[jj]);
-    problem->Set("crBugs", cr_bugs);
+    problem->Set("crBugs", std::move(cr_bugs));
 
-    base::ListValue* features = new base::ListValue();
-    entry.GetFeatureNames(features, feature_map_);
-    problem->Set("affectedGpuSettings", features);
+    auto features = base::MakeUnique<base::ListValue>();
+    entry.GetFeatureNames(features.get(), feature_map_);
+    problem->Set("affectedGpuSettings", std::move(features));
 
     DCHECK(tag == "workarounds" || tag == "disabledFeatures");
     problem->SetString("tag", tag);

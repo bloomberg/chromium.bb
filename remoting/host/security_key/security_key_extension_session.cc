@@ -4,11 +4,14 @@
 
 #include "remoting/host/security_key/security_key_extension_session.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "remoting/base/logging.h"
@@ -187,11 +190,11 @@ void SecurityKeyExtensionSession::SendMessageToClient(
   request.SetString(kMessageType, kDataMessage);
   request.SetInteger(kConnectionId, connection_id);
 
-  std::unique_ptr<base::ListValue> bytes(new base::ListValue());
+  auto bytes = base::MakeUnique<base::ListValue>();
   for (std::string::const_iterator i = data.begin(); i != data.end(); ++i) {
     bytes->AppendInteger(static_cast<unsigned char>(*i));
   }
-  request.Set(kDataPayload, bytes.release());
+  request.Set(kDataPayload, std::move(bytes));
 
   std::string request_json;
   CHECK(base::JSONWriter::Write(request, &request_json));

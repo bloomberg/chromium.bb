@@ -128,7 +128,7 @@ HistoryDataStore::~HistoryDataStore() {
 void HistoryDataStore::Init(base::DictionaryValue* cached_dict) {
   DCHECK(cached_dict);
   cached_dict->SetString(kKeyVersion, kCurrentVersion);
-  cached_dict->Set(kKeyAssociations, new base::DictionaryValue);
+  cached_dict->Set(kKeyAssociations, base::MakeUnique<base::DictionaryValue>());
 }
 
 void HistoryDataStore::Flush(

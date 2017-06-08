@@ -4,8 +4,12 @@
 
 #include "extensions/browser/api/storage/settings_test_util.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/values.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system_provider.h"
@@ -77,18 +81,18 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
       it != permissions_set.end(); ++it) {
     permissions->AppendString(*it);
   }
-  manifest.Set("permissions", permissions.release());
+  manifest.Set("permissions", std::move(permissions));
 
   switch (type) {
     case Manifest::TYPE_EXTENSION:
       break;
 
     case Manifest::TYPE_LEGACY_PACKAGED_APP: {
-      base::DictionaryValue* app = new base::DictionaryValue();
-      base::DictionaryValue* app_launch = new base::DictionaryValue();
+      auto app = base::MakeUnique<base::DictionaryValue>();
+      auto app_launch = base::MakeUnique<base::DictionaryValue>();
       app_launch->SetString("local_path", "fake.html");
-      app->Set("launch", app_launch);
-      manifest.Set("app", app);
+      app->Set("launch", std::move(app_launch));
+      manifest.Set("app", std::move(app));
       break;
     }
 

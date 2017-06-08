@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -126,7 +127,7 @@ void PerformanceLogger::AddLogEntry(
   base::DictionaryValue log_message_dict;
   log_message_dict.SetString("webview", webview);
   log_message_dict.SetString("message.method", method);
-  log_message_dict.Set("message.params", params.DeepCopy());
+  log_message_dict.Set("message.params", base::MakeUnique<base::Value>(params));
   std::string log_message_json;
   base::JSONWriter::Write(log_message_dict, &log_message_json);
 

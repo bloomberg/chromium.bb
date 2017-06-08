@@ -302,7 +302,7 @@ class EnumerateModulesModel {
   void ScanNow(bool background_mode);
 
   // Gets the whole module list as a ListValue.
-  base::ListValue* GetModuleList();
+  std::unique_ptr<base::ListValue> GetModuleList();
 
   // Returns the site to which the user should be taken when the conflict bubble
   // or app menu item is clicked. For now this is simply chrome://conflicts,

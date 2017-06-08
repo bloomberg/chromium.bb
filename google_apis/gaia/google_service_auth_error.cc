@@ -5,9 +5,11 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 
 #include <string>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -197,23 +199,23 @@ base::DictionaryValue* GoogleServiceAuthError::ToValue() const {
     value->SetString("errorMessage", error_message_);
   }
   if (state_ == CAPTCHA_REQUIRED) {
-    base::DictionaryValue* captcha_value = new base::DictionaryValue();
-    value->Set("captcha", captcha_value);
+    auto captcha_value = base::MakeUnique<base::DictionaryValue>();
     captcha_value->SetString("token", captcha_.token);
     captcha_value->SetString("audioUrl", captcha_.audio_url.spec());
     captcha_value->SetString("imageUrl", captcha_.image_url.spec());
     captcha_value->SetString("unlockUrl", captcha_.unlock_url.spec());
     captcha_value->SetInteger("imageWidth", captcha_.image_width);
     captcha_value->SetInteger("imageHeight", captcha_.image_height);
+    value->Set("captcha", std::move(captcha_value));
   } else if (state_ == CONNECTION_FAILED) {
     value->SetString("networkError", net::ErrorToString(network_error_));
   } else if (state_ == TWO_FACTOR) {
-    base::DictionaryValue* two_factor_value = new base::DictionaryValue();
-    value->Set("two_factor", two_factor_value);
+    auto two_factor_value = base::MakeUnique<base::DictionaryValue>();
     two_factor_value->SetString("token", second_factor_.token);
     two_factor_value->SetString("promptText", second_factor_.prompt_text);
     two_factor_value->SetString("alternateText", second_factor_.alternate_text);
     two_factor_value->SetInteger("fieldLength", second_factor_.field_length);
+    value->Set("two_factor", std::move(two_factor_value));
   }
   return value;
 }

@@ -11,7 +11,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/values.h"
 #include "components/cloud_devices/common/description_items.h"
 
 // Implementation of templates defined in header file.
@@ -126,17 +128,16 @@ template <class Option, class Traits>
 void SelectionCapability<Option, Traits>::SaveTo(
     CloudDeviceDescription* description) const {
   DCHECK(IsValid());
-  base::ListValue* options_list = new base::ListValue;
-  description->CreateItem(Traits::GetCapabilityPath())
-      ->Set(json::kKeyOption, options_list);
+  auto options_list = base::MakeUnique<base::ListValue>();
   for (size_t i = 0; i < options_.size(); ++i) {
-    std::unique_ptr<base::DictionaryValue> option_value(
-        new base::DictionaryValue);
+    auto option_value = base::MakeUnique<base::DictionaryValue>();
     if (base::checked_cast<int>(i) == default_idx_)
       option_value->SetBoolean(json::kKeyIsDefault, true);
     Traits::Save(options_[i], option_value.get());
     options_list->Append(std::move(option_value));
   }
+  description->CreateItem(Traits::GetCapabilityPath())
+      ->Set(json::kKeyOption, std::move(options_list));
 }
 
 template <class Traits>

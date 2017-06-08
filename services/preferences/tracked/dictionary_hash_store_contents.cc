@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/persistent_pref_store.h"
@@ -94,7 +95,7 @@ void DictionaryHashStoreContents::SetSplitMac(const std::string& path,
 void DictionaryHashStoreContents::ImportEntry(const std::string& path,
                                               const base::Value* in_value) {
   base::DictionaryValue* macs_dict = GetMutableContents(true);
-  macs_dict->Set(path, in_value->DeepCopy());
+  macs_dict->Set(path, base::MakeUnique<base::Value>(*in_value));
 }
 
 bool DictionaryHashStoreContents::RemoveEntry(const std::string& path) {
@@ -126,8 +127,8 @@ base::DictionaryValue* DictionaryHashStoreContents::GetMutableContents(
   base::DictionaryValue* macs_dict = NULL;
   storage_->GetDictionary(kPreferenceMACs, &macs_dict);
   if (!macs_dict && create_if_null) {
-    macs_dict = new base::DictionaryValue;
-    storage_->Set(kPreferenceMACs, macs_dict);
+    macs_dict = storage_->SetDictionary(
+        kPreferenceMACs, base::MakeUnique<base::DictionaryValue>());
   }
   return macs_dict;
 }

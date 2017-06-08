@@ -589,7 +589,7 @@ void EnumerateModulesModel::ScanNow(bool background_mode) {
   module_enumerator_->ScanNow(&enumerated_modules_);
 }
 
-base::ListValue* EnumerateModulesModel::GetModuleList() {
+std::unique_ptr<base::ListValue> EnumerateModulesModel::GetModuleList() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If a |module_enumerator_| is still around then scanning has not yet
@@ -600,7 +600,7 @@ base::ListValue* EnumerateModulesModel::GetModuleList() {
   if (enumerated_modules_.empty())
     return nullptr;
 
-  base::ListValue* list = new base::ListValue();
+  auto list = base::MakeUnique<base::ListValue>();
 
   for (ModuleEnumerator::ModulesVector::const_iterator module =
            enumerated_modules_.begin();

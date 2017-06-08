@@ -340,7 +340,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
 
   base::DictionaryValue value;
-  value.Set(key, new base::Value(networkName));
+  value.SetString(key, networkName);
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_,
               SetProperty(dbus::ObjectPath(service_path), key,
@@ -404,7 +404,7 @@ TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
   std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
 
   base::DictionaryValue value;
-  value.Set(key, new base::Value(networkName));
+  value.SetString(key, networkName);
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
       .WillOnce(
@@ -423,7 +423,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
 
   // First set up a value to clear.
   base::DictionaryValue value;
-  value.Set(key, new base::Value(networkName));
+  value.SetString(key, networkName);
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
       .WillOnce(
@@ -453,7 +453,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
 
   // First set up a value to clear.
   base::DictionaryValue value;
-  value.Set(key, new base::Value(networkName));
+  value.SetString(key, networkName);
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
       .WillOnce(

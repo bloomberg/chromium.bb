@@ -771,7 +771,7 @@ std::unique_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareLegacyResponse(
 
   base::DictionaryValue body_params;
   body_params.SetInteger("status", status.code());
-  body_params.Set("value", value.release());
+  body_params.Set("value", std::move(value));
   body_params.SetString("sessionId", session_id);
   std::string body;
   base::JSONWriter::WriteWithOptions(
@@ -848,7 +848,7 @@ HttpHandler::PrepareStandardResponse(
   } else {
     body_params.SetString("sessionId", session_id);
     body_params.SetString("status", status.message());
-    body_params.Set("value", value.release());
+    body_params.Set("value", std::move(value));
   }
 
   std::string body;

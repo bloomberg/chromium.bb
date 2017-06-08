@@ -5,11 +5,13 @@
 #include "chromecast/browser/cast_net_log.h"
 
 #include <stdio.h>
+
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/common/content_switches.h"
 #include "net/log/net_log_util.h"
@@ -19,21 +21,21 @@ namespace chromecast {
 
 namespace {
 
-base::DictionaryValue* GetShellConstants() {
+std::unique_ptr<base::DictionaryValue> GetShellConstants() {
   std::unique_ptr<base::DictionaryValue> constants_dict =
       net::GetNetConstants();
 
   // Add a dictionary with client information
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  auto dict = base::MakeUnique<base::DictionaryValue>();
 
   dict->SetString("name", "cast_shell");
   dict->SetString(
       "command_line",
       base::CommandLine::ForCurrentProcess()->GetCommandLineString());
 
-  constants_dict->Set("clientInfo", dict);
+  constants_dict->Set("clientInfo", std::move(dict));
 
-  return constants_dict.release();
+  return constants_dict;
 }
 
 }  // namespace

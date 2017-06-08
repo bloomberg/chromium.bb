@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -76,7 +79,7 @@ void NotificationPromo::InitFromVariations() {
       json_or_payload.SetString(iter->first, iter->second);
     }
   }
-  json.Set("payload", payload.DeepCopy());
+  json.Set("payload", base::MakeUnique<base::Value>(payload));
 
   InitFromJson(json);
 }
@@ -139,14 +142,14 @@ void NotificationPromo::WritePrefs(int promo_id,
                                    double first_view_time,
                                    int views,
                                    bool closed) {
-  base::DictionaryValue* ntp_promo = new base::DictionaryValue;
+  auto ntp_promo = base::MakeUnique<base::DictionaryValue>();
   ntp_promo->SetDouble(kPrefPromoFirstViewTime, first_view_time);
   ntp_promo->SetInteger(kPrefPromoViews, views);
   ntp_promo->SetBoolean(kPrefPromoClosed, closed);
 
   base::DictionaryValue promo_dict;
   promo_dict.MergeDictionary(local_state_->GetDictionary(kPrefPromoObject));
-  promo_dict.Set(base::IntToString(promo_id), ntp_promo);
+  promo_dict.Set(base::IntToString(promo_id), std::move(ntp_promo));
   local_state_->Set(kPrefPromoObject, promo_dict);
   DVLOG(1) << "WritePrefs " << promo_dict;
 }

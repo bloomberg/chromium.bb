@@ -360,7 +360,7 @@ void ChromotingInstance::OnVideoFrameDirtyRegion(
   }
 
   std::unique_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  data->Set("rects", rects_value.release());
+  data->Set("rects", std::move(rects_value));
   PostLegacyJsonMessage("onDebugRegion", std::move(data));
 }
 
@@ -1002,7 +1002,7 @@ void ChromotingInstance::PostLegacyJsonMessage(
     std::unique_ptr<base::DictionaryValue> data) {
   base::DictionaryValue message;
   message.SetString("method", method);
-  message.Set("data", data.release());
+  message.Set("data", std::move(data));
 
   std::string message_json;
   base::JSONWriter::Write(message, &message_json);

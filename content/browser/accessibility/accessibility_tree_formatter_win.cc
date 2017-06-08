@@ -12,11 +12,13 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
@@ -273,15 +275,15 @@ void AccessibilityTreeFormatterWin::AddProperties(
                                                  variant_self)) &&
       SUCCEEDED(ToBrowserAccessibilityWin(root)->GetCOM()->accLocation(
           &root_left, &root_top, &root_width, &root_height, variant_self))) {
-    base::DictionaryValue* location = new base::DictionaryValue;
+    auto location = base::MakeUnique<base::DictionaryValue>();
     location->SetInteger("x", left - root_left);
     location->SetInteger("y", top - root_top);
-    dict->Set("location", location);
+    dict->Set("location", std::move(location));
 
-    base::DictionaryValue* size = new base::DictionaryValue;
+    auto size = base::MakeUnique<base::DictionaryValue>();
     size->SetInteger("width", width);
     size->SetInteger("height", height);
-    dict->Set("size", size);
+    dict->Set("size", std::move(size));
   }
 
   LONG index_in_parent;

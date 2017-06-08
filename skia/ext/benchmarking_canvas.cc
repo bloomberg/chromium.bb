@@ -379,24 +379,23 @@ class BenchmarkingCanvas::AutoOp {
 public:
   // AutoOp objects are always scoped within draw call frames,
   // so the paint is guaranteed to be valid for their lifetime.
-  AutoOp(BenchmarkingCanvas* canvas, const char op_name[],
-         const SkPaint* paint = nullptr)
-      : canvas_(canvas)
-      , op_record_(new base::DictionaryValue())
-      , op_params_(new base::ListValue()) {
+ AutoOp(BenchmarkingCanvas* canvas,
+        const char op_name[],
+        const SkPaint* paint = nullptr)
+     : canvas_(canvas), op_record_(new base::DictionaryValue()) {
+   DCHECK(canvas);
+   DCHECK(op_name);
 
-    DCHECK(canvas);
-    DCHECK(op_name);
+   op_record_->SetString("cmd_string", op_name);
+   op_params_ =
+       op_record_->SetList("info", base::MakeUnique<base::ListValue>());
 
-    op_record_->SetString("cmd_string", op_name);
-    op_record_->Set("info", op_params_);
+   if (paint) {
+     this->addParam("paint", AsValue(*paint));
+     filtered_paint_ = *paint;
+   }
 
-    if (paint) {
-      this->addParam("paint", AsValue(*paint));
-      filtered_paint_ = *paint;
-    }
-
-    start_ticks_ = base::TimeTicks::Now();
+   start_ticks_ = base::TimeTicks::Now();
   }
 
   ~AutoOp() {

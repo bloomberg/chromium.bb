@@ -27,8 +27,8 @@ void DictionaryEntryToValue(const void* key, const void* value, void* context) {
         PropertyToValue(static_cast<CFPropertyListRef>(value));
     if (converted) {
       const std::string string = base::SysCFStringRefToUTF8(cf_key);
-      static_cast<base::DictionaryValue*>(context)->Set(
-          string, converted.release());
+      static_cast<base::DictionaryValue*>(context)->Set(string,
+                                                        std::move(converted));
     }
   }
 }

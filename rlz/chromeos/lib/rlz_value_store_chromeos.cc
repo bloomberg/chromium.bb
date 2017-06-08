@@ -250,8 +250,8 @@ bool RlzValueStoreChromeOS::AddValueToList(const std::string& list_name,
                                            std::unique_ptr<base::Value> value) {
   base::ListValue* list_value = NULL;
   if (!rlz_store_->GetList(list_name, &list_value)) {
-    list_value = new base::ListValue;
-    rlz_store_->Set(list_name, list_value);
+    list_value =
+        rlz_store_->SetList(list_name, base::MakeUnique<base::ListValue>());
   }
   list_value->AppendIfNotPresent(std::move(value));
   return true;
