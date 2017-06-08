@@ -9,13 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_management_test_util.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
-
-struct ManagementPolicyRequestLog {
-  std::string all_headers;
-  std::string host;
-};
 
 // The ExtensionSettings policy affects host permissions which impacts several
 // API integration tests. This class enables easy declaration of
@@ -29,12 +23,6 @@ class ExtensionApiTestWithManagementPolicy : public ExtensionApiTest {
 
  protected:
   policy::MockConfigurationPolicyProvider policy_provider_;
-  bool BrowsedTo(const std::string& test_host);
-  void ClearRequestLog();
-  void MonitorRequestHandler(const net::test_server::HttpRequest& request);
-
- private:
-  std::vector<ManagementPolicyRequestLog> request_log_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionApiTestWithManagementPolicy);
 };

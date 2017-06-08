@@ -9,9 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "url/origin.h"
 
 class GURL;
 
@@ -49,15 +47,14 @@ class WebRequestPermissions {
   static void AllowAllExtensionLocationsInPublicSessionForTesting(bool value);
 
   // |host_permission_check| controls how permissions are checked with regard to
-  // |url| and |initiator| if an initiator exists.
+  // |url|.
   static extensions::PermissionsData::AccessType CanExtensionAccessURL(
       const extensions::InfoMap* extension_info_map,
       const std::string& extension_id,
       const GURL& url,
       int tab_id,
       bool crosses_incognito,
-      HostPermissionsCheck host_permissions_check,
-      const base::Optional<url::Origin>& initiator);
+      HostPermissionsCheck host_permissions_check);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRequestPermissions);
