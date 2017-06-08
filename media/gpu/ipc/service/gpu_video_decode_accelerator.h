@@ -98,9 +98,7 @@ class GpuVideoDecodeAccelerator
   void OnReusePictureBuffer(int32_t picture_buffer_id);
   void OnFlush();
   void OnReset();
-  void OnSetSurface(
-      int32_t surface_id,
-      const base::Optional<base::UnguessableToken>& routing_token);
+  void OnSetOverlayInfo(const OverlayInfo& overlay_info);
   void OnDestroy();
 
   // Called on IO thread when |filter_| has been removed.

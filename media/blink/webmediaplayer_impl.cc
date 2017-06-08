@@ -260,7 +260,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       embedded_media_experience_enabled_(
           params->embedded_media_experience_enabled()),
       request_routing_token_cb_(params->request_routing_token_cb()),
-      overlay_routing_token_(base::UnguessableToken()) {
+      overlay_routing_token_(OverlayInfo::RoutingToken()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_selector_);
@@ -366,7 +366,7 @@ void WebMediaPlayerImpl::EnableOverlay() {
                                               surface_created_cb_.callback());
   } else if (request_routing_token_cb_ &&
              overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
-    overlay_routing_token_.reset();
+    overlay_routing_token_is_pending_ = true;
     token_available_cb_.Reset(
         base::Bind(&WebMediaPlayerImpl::OnOverlayRoutingToken, AsWeakPtr()));
     request_routing_token_cb_.Run(token_available_cb_.callback());
@@ -387,7 +387,8 @@ void WebMediaPlayerImpl::DisableOverlay() {
     overlay_surface_id_ = SurfaceManager::kNoSurfaceID;
   } else if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
     token_available_cb_.Cancel();
-    overlay_routing_token_ = base::UnguessableToken();
+    overlay_routing_token_is_pending_ = false;
+    overlay_routing_token_ = OverlayInfo::RoutingToken();
   }
 
   if (decoder_requires_restart_for_overlay_)
@@ -397,6 +398,8 @@ void WebMediaPlayerImpl::DisableOverlay() {
 }
 
 void WebMediaPlayerImpl::EnteredFullscreen() {
+  overlay_info_.is_fullscreen = true;
+
   // |force_video_overlays_| implies that we're already in overlay mode, so take
   // no action here.  Otherwise, switch to an overlay if it's allowed and if
   // it will display properly.
@@ -407,11 +410,20 @@ void WebMediaPlayerImpl::EnteredFullscreen() {
   if (observer_)
     observer_->OnEnteredFullscreen();
 
-  // TODO(liberato): if the decoder provided a callback for fullscreen state,
-  // then notify it now.
+  // We send this only if we can send multiple calls.  Otherwise, either (a)
+  // we already sent it and we don't have a callback anyway (we reset it when
+  // it's called in restart mode), or (b) we'll send this later when the surface
+  // actually arrives.  GVD assumes that the first overlay info will have the
+  // routing information.  Note that we set |is_fullscreen_| earlier, so that
+  // if EnableOverlay() can include fullscreen info in case it sends the overlay
+  // info before returning.
+  if (!decoder_requires_restart_for_overlay_)
+    MaybeSendOverlayInfoToDecoder();
 }
 
 void WebMediaPlayerImpl::ExitedFullscreen() {
+  overlay_info_.is_fullscreen = false;
+
   // If we're in overlay mode, then exit it unless we're supposed to be in
   // overlay mode all the time.
   if (!force_video_overlays_ && overlay_enabled_)
@@ -419,8 +431,9 @@ void WebMediaPlayerImpl::ExitedFullscreen() {
   if (observer_)
     observer_->OnExitedFullscreen();
 
-  // TODO(liberato): if the decoder provided a callback for fullscreen state,
-  // then notify it now.
+  // See EnteredFullscreen for why we do this.
+  if (!decoder_requires_restart_for_overlay_)
+    MaybeSendOverlayInfoToDecoder();
 }
 
 void WebMediaPlayerImpl::BecameDominantVisibleContent(bool isDominant) {
@@ -1747,7 +1760,9 @@ void WebMediaPlayerImpl::OnSurfaceCreated(int surface_id) {
 void WebMediaPlayerImpl::OnOverlayRoutingToken(
     const base::UnguessableToken& token) {
   DCHECK(overlay_mode_ == OverlayMode::kUseAndroidOverlay);
-  overlay_routing_token_ = token;
+  // TODO(liberato): |token| should already be a RoutingToken.
+  overlay_routing_token_is_pending_ = false;
+  overlay_routing_token_ = OverlayInfo::RoutingToken(token);
   MaybeSendOverlayInfoToDecoder();
 }
 
@@ -1795,37 +1810,27 @@ void WebMediaPlayerImpl::MaybeSendOverlayInfoToDecoder() {
   // using overlays.  Assuming that the decoder has requested info, the only
   // case in which we don't want to send something is if we've requested the
   // info but not received it yet.  Then, we should wait until we do.
+  //
+  // Initialization requires this; AVDA should start with enough info to make an
+  // overlay, so that (pre-M) the initial codec is created with the right output
+  // surface; it can't switch later.
   if (overlay_mode_ == OverlayMode::kUseContentVideoView) {
     if (!overlay_surface_id_.has_value())
       return;
+
+    overlay_info_.surface_id = *overlay_surface_id_;
   } else if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
-    if (!overlay_routing_token_.has_value())
+    if (overlay_routing_token_is_pending_)
       return;
+
+    overlay_info_.routing_token = overlay_routing_token_;
   }
-
-  // Note that we're guaranteed that both |overlay_surface_id_| and
-  // |overlay_routing_token_| have values, since both have values unless there
-  // is a request pending.  Nobody calls us if a request is pending.
-
-  int surface_id = SurfaceManager::kNoSurfaceID;
-  if (overlay_surface_id_)
-    surface_id = *overlay_surface_id_;
-
-  // Since we represent "no token" as a null UnguessableToken, we translate it
-  // into an optional here.  Alternatively, we could represent it as a
-  // base::Optional in |overlay_routing_token_|, but then we'd have a
-  // base::Optional<base::Optional<base::UnguessableToken> >.  We don't do that
-  // because... just because.
-  base::Optional<base::UnguessableToken> routing_token;
-  if (overlay_routing_token_.has_value() && !overlay_routing_token_->is_empty())
-    routing_token = *overlay_routing_token_;
 
   // If restart is required, the callback is one-shot only.
   if (decoder_requires_restart_for_overlay_) {
-    base::ResetAndReturn(&provide_overlay_info_cb_)
-        .Run(surface_id, routing_token);
+    base::ResetAndReturn(&provide_overlay_info_cb_).Run(overlay_info_);
   } else {
-    provide_overlay_info_cb_.Run(surface_id, routing_token);
+    provide_overlay_info_cb_.Run(overlay_info_);
   }
 }
 

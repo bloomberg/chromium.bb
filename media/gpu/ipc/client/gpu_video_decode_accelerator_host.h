@@ -47,8 +47,7 @@ class GpuVideoDecodeAcceleratorHost
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
-  void SetSurface(int32_t surface_id,
-                  const base::Optional<base::UnguessableToken>& token) override;
+  void SetOverlayInfo(const OverlayInfo&) override;
   void Destroy() override;
 
   // gpu::CommandBufferProxyImpl::DeletionObserver implemetnation.

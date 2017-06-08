@@ -113,8 +113,7 @@ constexpr base::TimeDelta IdleTimerTimeOut = base::TimeDelta::FromSeconds(1);
 // software fallback exists.
 bool ShouldDeferSurfaceCreation(
     AVDACodecAllocator* codec_allocator,
-    int surface_id,
-    base::Optional<base::UnguessableToken> overlay_routing_token,
+    const OverlayInfo& overlay_info,
     VideoCodec codec,
     const AndroidVideoDecodeAccelerator::PlatformConfig& platform_config) {
   if (platform_config.force_deferred_surface_creation)
@@ -122,7 +121,7 @@ bool ShouldDeferSurfaceCreation(
 
   // TODO(liberato): We might still want to defer if we've got a routing
   // token.  It depends on whether we want to use it right away or not.
-  if (surface_id != SurfaceManager::kNoSurfaceID || overlay_routing_token)
+  if (overlay_info.HasValidSurfaceId() || overlay_info.HasValidRoutingToken())
     return false;
 
   return codec == kCodecH264 && codec_allocator->IsAnyRegisteredAVDA() &&
@@ -359,12 +358,11 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   // If we're low on resources, we may decide to defer creation of the surface
   // until the codec is actually used.
-  if (ShouldDeferSurfaceCreation(codec_allocator_, config_.surface_id,
-                                 config_.overlay_routing_token,
+  if (ShouldDeferSurfaceCreation(codec_allocator_, config_.overlay_info,
                                  codec_config_->codec, platform_config_)) {
     // We should never be here if a SurfaceView is required.
     // TODO(liberato): This really isn't true with AndroidOverlay.
-    DCHECK_EQ(config_.surface_id, SurfaceManager::kNoSurfaceID);
+    DCHECK(!config_.overlay_info.HasValidSurfaceId());
     defer_surface_creation_ = true;
   }
 
@@ -416,18 +414,24 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   // surface creation for other reasons, in which case the sync path with just
   // signal success optimistically.
   if (during_initialize_ && !deferred_initialization_pending_) {
-    DCHECK_EQ(config_.surface_id, SurfaceManager::kNoSurfaceID);
-    DCHECK(!config_.overlay_routing_token);
+    DCHECK(!config_.overlay_info.HasValidSurfaceId());
+    DCHECK(!config_.overlay_info.HasValidRoutingToken());
     OnSurfaceTransition(nullptr);
     return;
   }
 
-  // If we have a surface, then notify |surface_chooser_| about it.
+  // If we have a surface, then notify |surface_chooser_| about it.  If we were
+  // told not to use an overlay (kNoSurfaceID or a null routing token), then we
+  // leave the factory blank.
   AndroidOverlayFactoryCB factory;
-  if (config_.surface_id != SurfaceManager::kNoSurfaceID)
-    factory = base::Bind(&CreateContentVideoViewOverlay, config_.surface_id);
-  else if (config_.overlay_routing_token && overlay_factory_cb_)
-    factory = base::Bind(overlay_factory_cb_, *config_.overlay_routing_token);
+  if (config_.overlay_info.HasValidSurfaceId()) {
+    factory = base::Bind(&CreateContentVideoViewOverlay,
+                         config_.overlay_info.surface_id);
+  } else if (config_.overlay_info.HasValidRoutingToken() &&
+             overlay_factory_cb_) {
+    factory =
+        base::Bind(overlay_factory_cb_, *config_.overlay_info.routing_token);
+  }
 
   // Notify |surface_chooser_| that we've started.  This guarantees that we'll
   // get a callback.  It might not be a synchronous callback, but we're not in
@@ -1250,28 +1254,42 @@ void AndroidVideoDecodeAccelerator::Reset() {
   StartCodecDrain(DRAIN_FOR_RESET);
 }
 
-void AndroidVideoDecodeAccelerator::SetSurface(
-    int32_t surface_id,
-    const base::Optional<base::UnguessableToken>& routing_token) {
+void AndroidVideoDecodeAccelerator::SetOverlayInfo(
+    const OverlayInfo& overlay_info) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // It's possible that we'll receive a SetSurface before initializing the
-  // surface chooser.  For example, if we defer surface creation, then we'll
-  // signal success to WMPI before initializing it.  WMPI is free to change the
-  // surface.  In this case, just pretend that |surface_id| is the initial one.
-  if (state_ == BEFORE_OVERLAY_INIT) {
-    config_.surface_id = surface_id;
-    config_.overlay_routing_token = routing_token;
+  // Update |config_| to contain the most recent info.  Also save a copy, so
+  // that we can check for duplicate info later.
+  OverlayInfo previous_info = config_.overlay_info;
+  config_.overlay_info = overlay_info;
+
+  // It's possible that we'll receive SetSurface before initializing the surface
+  // chooser.  For example, if we defer surface creation, then we'll signal
+  // success to WMPI before initializing it.  WMPI is then free to change
+  // |surface_id|.  In this case, take no additional action, since |config_| is
+  // up to date.  We'll use it later.
+  if (state_ == BEFORE_OVERLAY_INIT)
+    return;
+
+  // Note that these might be kNoSurfaceID / empty.  In that case, we will
+  // revoke the factory.
+  int32_t surface_id = overlay_info.surface_id;
+  OverlayInfo::RoutingToken routing_token = overlay_info.routing_token;
+
+  // We don't want to change the factory unless this info has actually changed.
+  // We'll get the same info many times if some other part of the config is now
+  // different, such as fullscreen state.
+  if (surface_id == previous_info.surface_id &&
+      routing_token == previous_info.routing_token) {
     return;
   }
 
   AndroidOverlayFactoryCB factory;
-  if (routing_token && overlay_factory_cb_) {
+  if (routing_token && overlay_factory_cb_)
     factory = base::Bind(overlay_factory_cb_, *routing_token);
-  } else if (surface_id != SurfaceManager::kNoSurfaceID) {
+  else if (surface_id != SurfaceManager::kNoSurfaceID)
     factory = base::Bind(&CreateContentVideoViewOverlay, surface_id);
-  }
 
   surface_chooser_->ReplaceOverlayFactory(std::move(factory));
 }

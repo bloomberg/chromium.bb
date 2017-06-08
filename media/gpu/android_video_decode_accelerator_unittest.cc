@@ -185,7 +185,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   // Initialize |vda_|, providing a new surface for it.  You may get the surface
   // by asking |codec_allocator_|.
   void InitializeAVDAWithOverlay() {
-    config_.surface_id = 123;
+    config_.overlay_info.surface_id = 123;
     ASSERT_TRUE(InitializeAVDA());
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(chooser_->factory_);
@@ -336,7 +336,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // in a state that AVDA isn't supposed to handle (e.g., if we give it a
   // surface, then it would never decide to defer surface creation).
   platform_config_.force_deferred_surface_creation = true;
-  config_.surface_id = SurfaceManager::kNoSurfaceID;
+  config_.overlay_info.surface_id = SurfaceManager::kNoSurfaceID;
 
   EXPECT_CALL(*chooser_, MockInitialize()).Times(0);
   EXPECT_CALL(client_, NotifyInitializationComplete(true));
@@ -493,6 +493,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // doesn't get confused about which surface is in use.  So, we assume that it
   // doesn't signal an error, and we check that it releases the right surface
   // with the codec.
+  SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
   EXPECT_CALL(client_, NotifyError(_)).Times(0);
 
   platform_config_.allow_setsurface = false;
@@ -508,6 +509,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
        OnSurfaceDestroyedWithoutSetSurfaceFreesTheCodec) {
   // If AVDA receives OnSurfaceDestroyed without support for SetSurface, then it
   // should free the codec.
+  SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
   platform_config_.allow_setsurface = false;
   InitializeAVDAWithOverlay();
   EXPECT_CALL(*codec_allocator_.most_recent_codec(), SetSurface(_)).Times(0);
@@ -539,6 +541,31 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   chooser_->ProvideSurfaceTexture();
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AndroidVideoDecodeAcceleratorTest,
+       OverlayInfoWithDuplicateSurfaceIDDoesntChangeTheFactory) {
+  // Send OverlayInfo with duplicate info, and verify that it doesn't change
+  // the factory.
+  SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
+  InitializeAVDAWithOverlay();
+
+  EXPECT_CALL(*chooser_, MockReplaceOverlayFactory()).Times(0);
+  OverlayInfo overlay_info = config_.overlay_info;
+  avda()->SetOverlayInfo(overlay_info);
+}
+
+TEST_F(AndroidVideoDecodeAcceleratorTest,
+       OverlayInfoWithNewSurfaceIDDoesChangeTheFactory) {
+  // Send OverlayInfo with new surface info, and verify that it does change the
+  // overlay factory.
+  SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
+  InitializeAVDAWithOverlay();
+
+  EXPECT_CALL(*chooser_, MockReplaceOverlayFactory()).Times(1);
+  OverlayInfo overlay_info = config_.overlay_info;
+  overlay_info.surface_id++;
+  avda()->SetOverlayInfo(overlay_info);
 }
 
 }  // namespace media
