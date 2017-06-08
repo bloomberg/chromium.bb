@@ -11,7 +11,7 @@ namespace api {
 namespace cast_channel {
 namespace {
 
-TEST(CastChannelEnumUtilTest, TestToReadyState) {
+TEST(CastChannelTypeUtilTest, TestToReadyState) {
   EXPECT_EQ(READY_STATE_NONE, ToReadyState(::cast_channel::ReadyState::NONE));
   EXPECT_EQ(READY_STATE_CONNECTING,
             ToReadyState(::cast_channel::ReadyState::CONNECTING));
@@ -22,7 +22,7 @@ TEST(CastChannelEnumUtilTest, TestToReadyState) {
             ToReadyState(::cast_channel::ReadyState::CLOSED));
 }
 
-TEST(CastChannelEnumUtilTest, TestToChannelError) {
+TEST(CastChannelTypeUtilTest, TestToChannelError) {
   EXPECT_EQ(CHANNEL_ERROR_NONE,
             ToChannelError(::cast_channel::ChannelError::NONE));
   EXPECT_EQ(CHANNEL_ERROR_CHANNEL_NOT_OPEN,
@@ -47,14 +47,14 @@ TEST(CastChannelEnumUtilTest, TestToChannelError) {
             ToChannelError(::cast_channel::ChannelError::UNKNOWN));
 }
 
-TEST(CastChannelEnumUtilTest, TestToChannelAuthType) {
+TEST(CastChannelTypeUtilTest, TestToChannelAuthType) {
   EXPECT_EQ(CHANNEL_AUTH_TYPE_NONE,
             ToChannelAuthType(::cast_channel::ChannelAuthType::NONE));
   EXPECT_EQ(CHANNEL_AUTH_TYPE_SSL_VERIFIED,
             ToChannelAuthType(::cast_channel::ChannelAuthType::SSL_VERIFIED));
 }
 
-TEST(CastChannelEnumUtilTest, TestToChannelAuthTypeInternal) {
+TEST(CastChannelTypeUtilTest, TestToChannelAuthTypeInternal) {
   EXPECT_EQ(::cast_channel::ChannelAuthType::NONE,
             ToChannelAuthTypeInternal(CHANNEL_AUTH_TYPE_NONE));
   EXPECT_EQ(::cast_channel::ChannelAuthType::SSL_VERIFIED,

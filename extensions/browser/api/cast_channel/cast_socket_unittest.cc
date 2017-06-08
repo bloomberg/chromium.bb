@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
 
 #include <stdint.h>
 
@@ -20,14 +20,14 @@
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
-#include "components/cast_channel/cast_auth_util.h"
-#include "components/cast_channel/cast_framer.h"
-#include "components/cast_channel/cast_message_util.h"
-#include "components/cast_channel/cast_test_util.h"
-#include "components/cast_channel/cast_transport.h"
-#include "components/cast_channel/logger.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
-#include "components/cast_channel/proto/logging.pb.h"
+#include "extensions/browser/api/cast_channel/cast_auth_util.h"
+#include "extensions/browser/api/cast_channel/cast_framer.h"
+#include "extensions/browser/api/cast_channel/cast_message_util.h"
+#include "extensions/browser/api/cast_channel/cast_test_util.h"
+#include "extensions/browser/api/cast_channel/cast_transport.h"
+#include "extensions/browser/api/cast_channel/logger.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
+#include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"
@@ -54,6 +54,8 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 const char kAuthNamespace[] = "urn:x-cast:com.google.cast.tp.deviceauth";
 
@@ -132,8 +134,10 @@ class MockTCPSocket : public net::TCPClientSocket {
     return true;
   }
 
-  MOCK_METHOD3(Read, int(net::IOBuffer*, int, const net::CompletionCallback&));
-  MOCK_METHOD3(Write, int(net::IOBuffer*, int, const net::CompletionCallback&));
+  MOCK_METHOD3(Read,
+               int(net::IOBuffer*, int, const net::CompletionCallback&));
+  MOCK_METHOD3(Write,
+               int(net::IOBuffer*, int, const net::CompletionCallback&));
 
   virtual void Disconnect() {
     // Do nothing in tests
@@ -232,14 +236,18 @@ class TestCastSocket : public CastSocketImpl {
   }
 
   // Socket I/O helpers.
-  void AddWriteResult(const net::MockWrite& write) { writes_.push_back(write); }
+  void AddWriteResult(const net::MockWrite& write) {
+    writes_.push_back(write);
+  }
   void AddWriteResult(net::IoMode mode, int result) {
     AddWriteResult(net::MockWrite(mode, result));
   }
   void AddWriteResultForData(net::IoMode mode, const std::string& msg) {
     AddWriteResult(mode, msg.size());
   }
-  void AddReadResult(const net::MockRead& read) { reads_.push_back(read); }
+  void AddReadResult(const net::MockRead& read) {
+    reads_.push_back(read);
+  }
   void AddReadResult(net::IoMode mode, int result) {
     AddReadResult(net::MockRead(mode, result));
   }
@@ -250,13 +258,17 @@ class TestCastSocket : public CastSocketImpl {
   // Helpers for modifying other connection-related behaviors.
   void SetupTcpConnectUnresponsive() { tcp_unresponsive_ = true; }
 
-  void SetExtractCertResult(bool value) { extract_cert_result_ = value; }
+  void SetExtractCertResult(bool value) {
+    extract_cert_result_ = value;
+  }
 
   void SetVerifyChallengeResult(bool value) {
     verify_challenge_result_ = value;
   }
 
-  void TriggerTimeout() { mock_timer_->Fire(); }
+  void TriggerTimeout() {
+    mock_timer_->Fire();
+  }
 
   bool TestVerifyChannelPolicyNone() {
     AuthResult authResult;
@@ -778,3 +790,5 @@ TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportSync) {
 }
 
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions

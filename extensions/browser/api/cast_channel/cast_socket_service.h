@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CAST_CHANNEL_CAST_CHANNEL_SERVICE_H_
-#define COMPONENTS_CAST_CHANNEL_CAST_CHANNEL_SERVICE_H_
+#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_SERVICE_H_
+#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_SERVICE_H_
 
 #include <map>
 #include <memory>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "components/cast_channel/cast_socket.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 
 // This class adds, removes, and returns cast sockets created by CastChannelAPI
@@ -54,5 +56,7 @@ class CastSocketService : public RefcountedKeyedService {
 };
 
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions
 
-#endif  // COMPONENTS_CAST_CHANNEL_CAST_CHANNEL_SERVICE_H_
+#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_SERVICE_H_

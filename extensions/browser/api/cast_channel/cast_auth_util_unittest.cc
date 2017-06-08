@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cast_channel/cast_auth_util.h"
+#include "extensions/browser/api/cast_channel/cast_auth_util.h"
 
 #include <string>
 
@@ -13,11 +13,13 @@
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 #include "components/cast_certificate/cast_crl.h"
 #include "components/cast_certificate/proto/test_suite.pb.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/x509_certificate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -333,3 +335,5 @@ TEST_F(CastAuthUtilTest, CRLTestSuite) {
 
 }  // namespace
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions

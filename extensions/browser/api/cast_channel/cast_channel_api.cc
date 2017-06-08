@@ -18,15 +18,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "components/cast_channel/cast_message_util.h"
-#include "components/cast_channel/cast_socket.h"
-#include "components/cast_channel/cast_socket_service.h"
-#include "components/cast_channel/cast_socket_service_factory.h"
-#include "components/cast_channel/keep_alive_delegate.h"
-#include "components/cast_channel/logger.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/cast_channel/cast_channel_enum_util.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/cast_socket_service.h"
+#include "extensions/browser/api/cast_channel/cast_socket_service_factory.h"
+#include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
+#include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/api/cast_channel/logging.pb.h"
@@ -40,25 +39,24 @@ const int kDefaultConnectTimeoutMillis = 5000;  // 5 seconds.
 
 namespace extensions {
 
-namespace Close = api::cast_channel::Close;
-namespace OnError = api::cast_channel::OnError;
-namespace OnMessage = api::cast_channel::OnMessage;
-namespace Open = api::cast_channel::Open;
-namespace Send = api::cast_channel::Send;
-using api::cast_channel::ChannelInfo;
-using api::cast_channel::ConnectInfo;
-using api::cast_channel::ErrorInfo;
-using api::cast_channel::MessageInfo;
-using cast_channel::ChannelError;
+namespace Close = cast_channel::Close;
+namespace OnError = cast_channel::OnError;
+namespace OnMessage = cast_channel::OnMessage;
+namespace Open = cast_channel::Open;
+namespace Send = cast_channel::Send;
+using ::cast_channel::ChannelError;
 using cast_channel::CastDeviceCapability;
 using cast_channel::CastMessage;
 using cast_channel::CastSocket;
 using cast_channel::CastSocketImpl;
 using cast_channel::CastTransport;
+using cast_channel::ChannelInfo;
+using cast_channel::ConnectInfo;
+using cast_channel::ErrorInfo;
 using cast_channel::KeepAliveDelegate;
 using cast_channel::LastErrors;
 using cast_channel::Logger;
-
+using cast_channel::MessageInfo;
 using content::BrowserThread;
 
 namespace {
@@ -80,17 +78,16 @@ void FillChannelInfo(const CastSocket& socket, ChannelInfo* channel_info) {
   channel_info->connect_info.ip_address = ip_endpoint.ToStringWithoutPort();
   channel_info->connect_info.port = ip_endpoint.port();
   channel_info->connect_info.auth =
-      api::cast_channel::ToChannelAuthType(socket.channel_auth());
-  channel_info->ready_state =
-      api::cast_channel::ToReadyState(socket.ready_state());
+      cast_channel::ToChannelAuthType(socket.channel_auth());
+  channel_info->ready_state = cast_channel::ToReadyState(socket.ready_state());
   channel_info->error_state =
-      api::cast_channel::ToChannelError(socket.error_state());
+      cast_channel::ToChannelError(socket.error_state());
   channel_info->keep_alive = socket.keep_alive();
   channel_info->audio_only = socket.audio_only();
 }
 
 // Fills |error_info| from |error_state| and |last_errors|.
-void FillErrorInfo(api::cast_channel::ChannelError error_state,
+void FillErrorInfo(cast_channel::ChannelError error_state,
                    const LastErrors& last_errors,
                    ErrorInfo* error_info) {
   error_info->error_state = error_state;
@@ -181,7 +178,7 @@ CastChannelAsyncApiFunction::~CastChannelAsyncApiFunction() { }
 
 bool CastChannelAsyncApiFunction::PrePrepare() {
   cast_socket_service_ =
-      cast_channel::CastSocketServiceFactory::GetForBrowserContext(
+      api::cast_channel::CastSocketServiceFactory::GetForBrowserContext(
           browser_context());
   DCHECK(cast_socket_service_);
   return true;
@@ -195,9 +192,9 @@ void CastChannelAsyncApiFunction::SetResultFromSocket(
     const CastSocket& socket) {
   ChannelInfo channel_info;
   FillChannelInfo(socket, &channel_info);
-  api::cast_channel::ChannelError error =
-      api::cast_channel::ToChannelError(socket.error_state());
-  if (error != api::cast_channel::CHANNEL_ERROR_NONE) {
+  cast_channel::ChannelError error =
+      cast_channel::ToChannelError(socket.error_state());
+  if (error != cast_channel::CHANNEL_ERROR_NONE) {
     SetError("Channel socket error = " + base::IntToString(error));
   }
   SetResultFromChannelInfo(channel_info);
@@ -205,15 +202,14 @@ void CastChannelAsyncApiFunction::SetResultFromSocket(
 
 void CastChannelAsyncApiFunction::SetResultFromError(
     int channel_id,
-    api::cast_channel::ChannelError error) {
+    cast_channel::ChannelError error) {
   ChannelInfo channel_info;
   channel_info.channel_id = channel_id;
-  channel_info.ready_state = api::cast_channel::READY_STATE_CLOSED;
+  channel_info.ready_state = cast_channel::READY_STATE_CLOSED;
   channel_info.error_state = error;
   channel_info.connect_info.ip_address = "";
   channel_info.connect_info.port = 0;
-  channel_info.connect_info.auth =
-      api::cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED;
+  channel_info.connect_info.auth = cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED;
   SetResultFromChannelInfo(channel_info);
   SetError("Channel error = " + base::IntToString(error));
 }
@@ -278,8 +274,7 @@ bool CastChannelOpenFunction::Prepare() {
     return false;
   }
 
-  channel_auth_ =
-      api::cast_channel::ToChannelAuthTypeInternal(connect_info.auth);
+  channel_auth_ = cast_channel::ToChannelAuthTypeInternal(connect_info.auth);
   ip_endpoint_.reset(ParseConnectInfo(connect_info));
   return true;
 }
@@ -341,8 +336,7 @@ void CastChannelOpenFunction::OnOpen(ChannelError result) {
     SetResultFromSocket(*socket);
   } else {
     // The socket is being destroyed.
-    SetResultFromError(new_channel_id_,
-                       api::cast_channel::CHANNEL_ERROR_UNKNOWN);
+    SetResultFromError(new_channel_id_, cast_channel::CHANNEL_ERROR_UNKNOWN);
   }
 
   AsyncWorkCompleted();
@@ -383,14 +377,14 @@ void CastChannelSendFunction::AsyncWorkStart() {
       cast_socket_service_->GetSocket(params_->channel.channel_id);
   if (!socket) {
     SetResultFromError(params_->channel.channel_id,
-                       api::cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
+                       cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
     AsyncWorkCompleted();
     return;
   }
   CastMessage message_to_send;
   if (!MessageInfoToCastMessage(params_->message, &message_to_send)) {
     SetResultFromError(params_->channel.channel_id,
-                       api::cast_channel::CHANNEL_ERROR_INVALID_MESSAGE);
+                       cast_channel::CHANNEL_ERROR_INVALID_MESSAGE);
     AsyncWorkCompleted();
     return;
   }
@@ -404,7 +398,7 @@ void CastChannelSendFunction::OnSend(int result) {
   CastSocket* socket = cast_socket_service_->GetSocket(channel_id);
   if (result < 0 || !socket) {
     SetResultFromError(channel_id,
-                       api::cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
+                       cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
   } else {
     SetResultFromSocket(*socket);
   }
@@ -431,7 +425,7 @@ void CastChannelCloseFunction::AsyncWorkStart() {
       cast_socket_service_->GetSocket(params_->channel.channel_id);
   if (!socket) {
     SetResultFromError(params_->channel.channel_id,
-                       api::cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
+                       cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
     AsyncWorkCompleted();
   } else {
     socket->Close(base::Bind(&CastChannelCloseFunction::OnClose, this));
@@ -445,7 +439,7 @@ void CastChannelCloseFunction::OnClose(int result) {
   CastSocket* socket = cast_socket_service_->GetSocket(channel_id);
   if (result < 0 || !socket) {
     SetResultFromError(channel_id,
-                       api::cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
+                       cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
   } else {
     SetResultFromSocket(*socket);
     // This will delete |socket|.
@@ -473,7 +467,7 @@ void CastChannelOpenFunction::CastMessageHandler::OnError(
 
   ChannelInfo channel_info;
   FillChannelInfo(*socket_, &channel_info);
-  channel_info.error_state = api::cast_channel::ToChannelError(error_state);
+  channel_info.error_state = cast_channel::ToChannelError(error_state);
   ErrorInfo error_info;
   FillErrorInfo(channel_info.error_state, logger_->GetLastErrors(socket_->id()),
                 &error_info);

@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cast_channel/keep_alive_delegate.h"
+#include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
 
 #include <string>
 #include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/values.h"
-#include "components/cast_channel/cast_socket.h"
-#include "components/cast_channel/logger.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
-#include "components/cast_channel/proto/logging.pb.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/logger.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
+#include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/net_errors.h"
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -87,7 +88,8 @@ KeepAliveDelegate::KeepAliveDelegate(
   pong_message_ = CreateKeepAliveMessage(kHeartbeatPongType);
 }
 
-KeepAliveDelegate::~KeepAliveDelegate() {}
+KeepAliveDelegate::~KeepAliveDelegate() {
+}
 
 void KeepAliveDelegate::SetTimersForTest(
     std::unique_ptr<base::Timer> injected_ping_timer,
@@ -97,7 +99,7 @@ void KeepAliveDelegate::SetTimersForTest(
 }
 
 void KeepAliveDelegate::Start() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!started_);
 
   VLOG(1) << "Starting keep-alive timers.";
@@ -132,7 +134,7 @@ void KeepAliveDelegate::ResetTimers() {
 
 void KeepAliveDelegate::SendKeepAliveMessage(const CastMessage& message,
                                              const char* message_type) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(2) << "Sending " << message_type;
   socket_->transport()->SendMessage(
       message, base::Bind(&KeepAliveDelegate::SendKeepAliveMessageComplete,
@@ -157,7 +159,7 @@ void KeepAliveDelegate::LivenessTimeout() {
 
 // CastTransport::Delegate interface.
 void KeepAliveDelegate::OnError(ChannelError error_state) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "KeepAlive::OnError: "
           << ::cast_channel::ChannelErrorToString(error_state);
   inner_delegate_->OnError(error_state);
@@ -165,7 +167,7 @@ void KeepAliveDelegate::OnError(ChannelError error_state) {
 }
 
 void KeepAliveDelegate::OnMessage(const CastMessage& message) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(2) << "KeepAlive::OnMessage : " << message.payload_utf8();
 
   if (started_)
@@ -194,3 +196,5 @@ void KeepAliveDelegate::Stop() {
 }
 
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions

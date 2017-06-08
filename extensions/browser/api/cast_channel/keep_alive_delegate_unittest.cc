@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cast_channel/keep_alive_delegate.h"
+#include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/timer/mock_timer.h"
-#include "components/cast_channel/cast_test_util.h"
+#include "extensions/browser/api/cast_channel/cast_test_util.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,6 +19,8 @@
 using testing::_;
 using testing::Sequence;
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 namespace {
 
@@ -213,3 +215,5 @@ TEST_F(KeepAliveDelegateTest, TestPassthroughMessagesAfterError) {
 
 }  // namespace
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions

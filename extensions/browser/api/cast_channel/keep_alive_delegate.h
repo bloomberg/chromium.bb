@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_
-#define COMPONENTS_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_
+#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_
+#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "components/cast_channel/cast_transport.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
+#include "extensions/browser/api/cast_channel/cast_transport.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 
 class CastSocket;
@@ -103,11 +105,13 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   // The PONG message to send over the wire.
   CastMessage pong_message_;
 
-  THREAD_CHECKER(thread_checker_);
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveDelegate);
 };
 
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions
 
-#endif  // COMPONENTS_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_
+#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_

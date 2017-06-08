@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cast_channel/cast_framer.h"
+#include "extensions/browser/api/cast_channel/cast_framer.h"
 
 #include <stddef.h>
 
 #include <algorithm>
 #include <string>
 
-#include "components/cast_channel/proto/cast_channel.pb.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 
 using ::cast_channel::ChannelError;
@@ -113,10 +115,12 @@ TEST_F(CastFramerTest, TestUnparsableBodyProto) {
   // Message header is OK, but the body is replaced with "x"en.
   std::string mangled_cast_message = cast_message_str_;
   for (size_t i = MessageFramer::MessageHeader::header_size();
-       i < mangled_cast_message.size(); ++i) {
+       i < mangled_cast_message.size();
+       ++i) {
     std::fill(mangled_cast_message.begin() +
                   MessageFramer::MessageHeader::header_size(),
-              mangled_cast_message.end(), 'x');
+              mangled_cast_message.end(),
+              'x');
   }
   WriteToBuffer(mangled_cast_message);
 
@@ -130,9 +134,10 @@ TEST_F(CastFramerTest, TestUnparsableBodyProto) {
 
   // Send body, expect an error.
   std::unique_ptr<CastMessage> message;
-  EXPECT_EQ(nullptr,
-            framer_->Ingest(framer_->BytesRequested(), &message_length, &error)
-                .get());
+  EXPECT_EQ(nullptr, framer_->Ingest(framer_->BytesRequested(), &message_length,
+                                     &error).get());
   EXPECT_EQ(ChannelError::INVALID_MESSAGE, error);
 }
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions

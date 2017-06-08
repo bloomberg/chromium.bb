@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CAST_CHANNEL_CAST_AUTH_UTIL_H_
-#define COMPONENTS_CAST_CHANNEL_CAST_AUTH_UTIL_H_
+#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_AUTH_UTIL_H_
+#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_AUTH_UTIL_H_
 
 #include <string>
 
@@ -19,6 +19,8 @@ class X509Certificate;
 class TrustStore;
 }  // namespace net
 
+namespace extensions {
+namespace api {
 namespace cast_channel {
 
 class AuthResponse;
@@ -118,5 +120,7 @@ AuthResult VerifyCredentialsForTest(
     const base::Time& verification_time);
 
 }  // namespace cast_channel
+}  // namespace api
+}  // namespace extensions
 
-#endif  // COMPONENTS_CAST_CHANNEL_CAST_AUTH_UTIL_H_
+#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_AUTH_UTIL_H_

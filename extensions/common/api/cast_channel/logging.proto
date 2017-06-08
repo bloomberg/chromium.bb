@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(crbug.com/513801) to replace this file with plain enums/structs.
-
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package cast_channel.proto;
+package extensions.api.cast_channel.proto;
 
 enum EventType {
   EVENT_TYPE_UNKNOWN = 0;
@@ -29,20 +27,20 @@ enum EventType {
   AUTH_CHALLENGE_REPLY = 15;
   CONNECT_TIMED_OUT = 16;
   SEND_MESSAGE_FAILED = 17;
-  MESSAGE_ENQUEUED = 18;  // Message
-  SOCKET_WRITE = 19;      // Logged with RV.
-  MESSAGE_WRITTEN = 20;   // Message
-  SOCKET_READ = 21;       // Logged with RV.
-  MESSAGE_READ = 22;      // Message
+  MESSAGE_ENQUEUED = 18;   // Message
+  SOCKET_WRITE = 19;       // Logged with RV.
+  MESSAGE_WRITTEN = 20;    // Message
+  SOCKET_READ = 21;        // Logged with RV.
+  MESSAGE_READ = 22;       // Message
   SOCKET_CLOSED = 25;
   SSL_CERT_EXCESSIVE_LIFETIME = 26;
   CHANNEL_POLICY_ENFORCED = 27;
-  TCP_SOCKET_CONNECT_COMPLETE = 28;  // Logged with RV.
-  SSL_SOCKET_CONNECT_COMPLETE = 29;  // Logged with RV.
-  SSL_SOCKET_CONNECT_FAILED = 30;    // Logged with RV.
-  SEND_AUTH_CHALLENGE_FAILED = 31;   // Logged with RV.
+  TCP_SOCKET_CONNECT_COMPLETE = 28;   // Logged with RV.
+  SSL_SOCKET_CONNECT_COMPLETE = 29;   // Logged with RV.
+  SSL_SOCKET_CONNECT_FAILED = 30;     // Logged with RV.
+  SEND_AUTH_CHALLENGE_FAILED = 31;    // Logged with RV.
   AUTH_CHALLENGE_REPLY_INVALID = 32;
-  PING_WRITE_ERROR = 33;  // Logged with RV.
+  PING_WRITE_ERROR = 33;              // Logged with RV.
 }
 
 enum ChannelAuth {
