@@ -4,31 +4,32 @@
 
 cr.define('settings_search_engines_page', function() {
   /**
+   * @param {string} name
    * @param {boolean} canBeDefault
    * @param {boolean} canBeEdited
    * @param {boolean} canBeRemoved
    * @return {!SearchEngine}
    */
-  var createSampleSearchEngine = function(
-      canBeDefault, canBeEdited, canBeRemoved) {
+  function createSampleSearchEngine(
+      name, canBeDefault, canBeEdited, canBeRemoved) {
     return {
       canBeDefault: canBeDefault,
       canBeEdited: canBeEdited,
       canBeRemoved: canBeRemoved,
       default: false,
-      displayName: "Google displayName",
+      displayName: name + " displayName",
       iconURL: "http://www.google.com/favicon.ico",
       isOmniboxExtension: false,
       keyword: "google.com",
       modelIndex: 0,
-      name: "Google",
+      name: name,
       url: "https://search.foo.com/search?p=%s",
       urlLocked: false,
     };
-  };
+  }
 
   /** @return {!SearchEngine} */
-  var createSampleOmniboxExtension = function() {
+  function createSampleOmniboxExtension() {
     return {
       canBeDefault: false,
       canBeEdited: false,
@@ -47,7 +48,7 @@ cr.define('settings_search_engines_page', function() {
       url: "chrome-extension://dummyextensionid/?q=%s",
       urlLocked: false
     };
-  };
+  }
 
   function registerDialogTests() {
     suite('AddSearchEngineDialogTests', function() {
@@ -146,7 +147,7 @@ cr.define('settings_search_engines_page', function() {
       var browserProxy = null;
 
       /** @type {!SearchEngine} */
-      var searchEngine = createSampleSearchEngine(true, true, true);
+      var searchEngine = createSampleSearchEngine('G', true, true, true);
 
       setup(function() {
         browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
@@ -248,24 +249,25 @@ cr.define('settings_search_engines_page', function() {
 
       test('Remove_Disabled', function() {
         testButtonDisabled(
-            createSampleSearchEngine(true, true, false), 'delete');
+            createSampleSearchEngine('G', true, true, false), 'delete');
       });
 
       test('MakeDefault_Disabled', function() {
         testButtonDisabled(
-            createSampleSearchEngine(false, true, true), 'makeDefault');
+            createSampleSearchEngine('G', false, true, true), 'makeDefault');
       });
 
       test('Edit_Disabled', function() {
-        testButtonDisabled(createSampleSearchEngine(true, false, true), 'edit');
+        testButtonDisabled(
+            createSampleSearchEngine('G', true, false, true), 'edit');
       });
 
       test('All_Disabled', function() {
-        entry.engine = createSampleSearchEngine(true, false, false);
+        entry.engine = createSampleSearchEngine('G', true, false, false);
         Polymer.dom.flush();
         assertTrue(entry.hasAttribute('show-dots_'));
 
-        entry.engine = createSampleSearchEngine(false, false, false);
+        entry.engine = createSampleSearchEngine('G', false, false, false);
         Polymer.dom.flush();
         assertFalse(entry.hasAttribute('show-dots_'));
       });
@@ -281,14 +283,24 @@ cr.define('settings_search_engines_page', function() {
 
       /** @type {!SearchEnginesInfo} */
       var searchEnginesInfo = {
-        defaults: [createSampleSearchEngine()],
-        others: [],
+        defaults: [createSampleSearchEngine('G', false, false, false)],
+        others: [
+          createSampleSearchEngine('B', false, false, false),
+          createSampleSearchEngine('A', false, false, false),
+        ],
         extensions: [createSampleOmniboxExtension()],
       };
 
       setup(function() {
         browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
-        browserProxy.setSearchEnginesInfo(searchEnginesInfo);
+
+        // Purposefully pass a clone of |searchEnginesInfo| to avoid any
+        // mutations on ground truth data.
+        browserProxy.setSearchEnginesInfo({
+          defaults: searchEnginesInfo.defaults.slice(),
+          others: searchEnginesInfo.others.slice(),
+          extensions: searchEnginesInfo.extensions.slice(),
+        });
         settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         page = document.createElement('settings-search-engines-page');
@@ -320,6 +332,15 @@ cr.define('settings_search_engines_page', function() {
         assertEquals(
             searchEnginesInfo.others.length, othersEntries.length);
 
+        // Ensure that the search engines have reverse alphabetical order in the
+        // model.
+        assertGT(
+            searchEnginesInfo.others[0].name, searchEnginesInfo.others[1].name);
+
+        // Ensure that they are displayed in alphabetical order.
+        assertEquals(searchEnginesInfo.others[1].name, othersEntries[0].name);
+        assertEquals(searchEnginesInfo.others[0].name, othersEntries[1].name);
+
         var extensionEntries = Polymer.dom(page.shadowRoot).
             querySelector('iron-list').items;
         assertEquals(
@@ -329,13 +350,17 @@ cr.define('settings_search_engines_page', function() {
       // Test that the "no other search engines" message is shown/hidden as
       // expected.
       test('NoOtherSearchEnginesMessage', function() {
+        cr.webUIListenerCallback('search-engines-changed', {
+          defaults: [], others: [], extensions: [],
+        });
+
         var message = page.root.querySelector('#noOtherEngines');
         assertTrue(!!message);
         assertFalse(message.hasAttribute('hidden'));
 
         cr.webUIListenerCallback('search-engines-changed', {
           defaults: [],
-          others: [createSampleSearchEngine()],
+          others: [createSampleSearchEngine('G', false, false, false)],
           extensions: [],
         });
         assertTrue(message.hasAttribute('hidden'));
