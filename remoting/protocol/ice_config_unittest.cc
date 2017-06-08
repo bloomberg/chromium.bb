@@ -73,6 +73,25 @@ TEST(IceConfigTest, ParseValid) {
   EXPECT_EQ(rtc::SocketAddress("1.2.3.4", 3478), config.stun_servers[1]);
 }
 
+TEST(IceConfigTest, ParseDataEnvelope) {
+  const char kTestConfigJson[] =
+      "{\"data\":{"
+      "  \"lifetimeDuration\": \"43200.000s\","
+      "  \"iceServers\": ["
+      "    {"
+      "      \"urls\": ["
+      "        \"stun:1.2.3.4\""
+      "      ]"
+      "    }"
+      "  ]"
+      "}}";
+
+  IceConfig config = IceConfig::Parse(kTestConfigJson);
+
+  EXPECT_EQ(1U, config.stun_servers.size());
+  EXPECT_EQ(rtc::SocketAddress("1.2.3.4", 3478), config.stun_servers[0]);
+}
+
 // Verify that we can still proceed if some servers cannot be parsed.
 TEST(IceConfigTest, ParsePartiallyInvalid) {
   const char kTestConfigJson[] =

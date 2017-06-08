@@ -54,6 +54,8 @@ const char kMismatchedDomain3[] = "not_even_close.com";
 // Note that this is intentionally different from the default port range.
 const char kPortRange[] = "12401-12408";
 
+const char kTestStunServer[] = "test_relay_server.com";
+
 }  // namespace
 
 class FakeIt2MeConfirmationDialog : public It2MeConfirmationDialog {
@@ -160,6 +162,8 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   static base::ListValue MakeList(
       std::initializer_list<base::StringPiece> values);
 
+  ChromotingHost* GetHost() { return it2me_host_->host_.get(); }
+
   ValidationResult validation_result_ = ValidationResult::SUCCESS;
 
   base::Closure state_change_callback_;
@@ -259,13 +263,18 @@ void It2MeHostTest::StartHost() {
       new FakeIt2MeDialogFactory());
   dialog_factory_ = dialog_factory.get();
 
+  protocol::IceConfig ice_config;
+  ice_config.stun_servers.push_back(rtc::SocketAddress(kTestStunServer, 100));
+  ice_config.expiration_time =
+      base::Time::Now() + base::TimeDelta::FromHours(1);
+
   it2me_host_ = new It2MeHost();
   it2me_host_->Connect(host_context_->Copy(),
                        base::MakeUnique<base::DictionaryValue>(*policies_),
                        std::move(dialog_factory), weak_factory_.GetWeakPtr(),
                        base::WrapUnique(new FakeSignalStrategy(
                            SignalingAddress("fake_local_jid"))),
-                       kTestUserName, "fake_bot_jid");
+                       kTestUserName, "fake_bot_jid", ice_config);
 
   base::RunLoop run_loop;
   state_change_callback_ =
@@ -330,9 +339,32 @@ base::ListValue It2MeHostTest::MakeList(
   return result;
 }
 
-TEST_F(It2MeHostTest, HostValidation_NoHostDomainListPolicy) {
+// Callback to receive IceConfig from TransportContext
+void ReceiveIceConfig(protocol::IceConfig* ice_config,
+                      const protocol::IceConfig& received_ice_config) {
+  *ice_config = received_ice_config;
+}
+
+TEST_F(It2MeHostTest, StartAndStop) {
   StartHost();
   ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+// Verify that IceConfig is passed to the TransportContext.
+TEST_F(It2MeHostTest, IceConfig) {
+  StartHost();
+  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
+
+  protocol::IceConfig ice_config;
+  GetHost()->transport_context_for_tests()->set_relay_mode(
+      protocol::TransportContext::TURN);
+  GetHost()->transport_context_for_tests()->GetIceConfig(
+      base::Bind(&ReceiveIceConfig, &ice_config));
+  EXPECT_EQ(ice_config.stun_servers[0].hostname(), kTestStunServer);
+
   ShutdownHost();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
@@ -522,18 +554,16 @@ TEST_F(It2MeHostTest, HostUdpPortRangePolicy_ValidRange) {
   SetPolicies(
       {{policy::key::kRemoteAccessHostUdpPortRange, base::Value(kPortRange)}});
   StartHost();
-  PortRange port_range = it2me_host_->host_->transport_context_for_tests()
-                             ->network_settings()
-                             .port_range;
+  PortRange port_range =
+      GetHost()->transport_context_for_tests()->network_settings().port_range;
   ASSERT_EQ(port_range_actual.min_port, port_range.min_port);
   ASSERT_EQ(port_range_actual.max_port, port_range.max_port);
 }
 
 TEST_F(It2MeHostTest, HostUdpPortRangePolicy_NoRange) {
   StartHost();
-  PortRange port_range = it2me_host_->host_->transport_context_for_tests()
-                             ->network_settings()
-                             .port_range;
+  PortRange port_range =
+      GetHost()->transport_context_for_tests()->network_settings().port_range;
   ASSERT_TRUE(port_range.is_null());
 }
 

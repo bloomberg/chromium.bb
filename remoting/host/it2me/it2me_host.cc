@@ -69,7 +69,8 @@ void It2MeHost::Connect(
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
-    const std::string& directory_bot_jid) {
+    const std::string& directory_bot_jid,
+    const protocol::IceConfig& ice_config) {
   DCHECK(host_context->ui_task_runner()->BelongsToCurrentThread());
 
   host_context_ = std::move(host_context);
@@ -87,7 +88,7 @@ void It2MeHost::Connect(
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
       FROM_HERE, base::Bind(&It2MeHost::ConnectOnNetworkThread, this, username,
-                            directory_bot_jid));
+                            directory_bot_jid, ice_config));
 }
 
 void It2MeHost::Disconnect() {
@@ -97,7 +98,8 @@ void It2MeHost::Disconnect() {
 }
 
 void It2MeHost::ConnectOnNetworkThread(const std::string& username,
-                                       const std::string& directory_bot_jid) {
+                                       const std::string& directory_bot_jid,
+                                       const protocol::IceConfig& ice_config) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(kDisconnected, state_);
 
@@ -158,8 +160,7 @@ void It2MeHost::ConnectOnNetworkThread(const std::string& username,
           base::WrapUnique(new ChromiumUrlRequestFactory(
               host_context_->url_request_context_getter())),
           network_settings, protocol::TransportRole::SERVER);
-  transport_context->set_ice_config_url(
-      ServiceUrls::GetInstance()->ice_config_url());
+  transport_context->set_turn_ice_config(ice_config);
 
   std::unique_ptr<protocol::SessionManager> session_manager(
       new protocol::JingleSessionManager(signal_strategy_.get()));

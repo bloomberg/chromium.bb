@@ -33,6 +33,7 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/policy_watcher.h"
+#include "remoting/protocol/ice_config.h"
 #include "remoting/signaling/delegating_signal_strategy.h"
 
 #if defined(OS_WIN)
@@ -316,6 +317,12 @@ void It2MeNativeMessagingHost::ProcessConnect(
   }
 #endif  // !defined(NDEBUG)
 
+  base::DictionaryValue* ice_config_dict;
+  protocol::IceConfig ice_config;
+  if (message->GetDictionary("iceConfig", &ice_config_dict)) {
+    ice_config = protocol::IceConfig::Parse(*ice_config_dict);
+  }
+
   std::unique_ptr<base::DictionaryValue> policies =
       policy_watcher_->GetCurrentPolicies();
   if (policies->size() == 0) {
@@ -332,7 +339,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
   it2me_host_->Connect(host_context_->Copy(), std::move(policies),
                        base::MakeUnique<It2MeConfirmationDialogFactory>(),
                        weak_ptr_, std::move(signal_strategy), username,
-                       directory_bot_jid);
+                       directory_bot_jid, ice_config);
 
   SendMessageToClient(std::move(response));
 }

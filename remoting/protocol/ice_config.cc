@@ -5,6 +5,7 @@
 #include "remoting/protocol/ice_config.h"
 
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -92,12 +93,9 @@ IceConfig::IceConfig(const IceConfig& other) = default;
 IceConfig::~IceConfig() {}
 
 // static
-IceConfig IceConfig::Parse(const std::string& config_json) {
-  std::unique_ptr<base::Value> json = base::JSONReader::Read(config_json);
-  base::DictionaryValue* dictionary = nullptr;
-  base::ListValue* ice_servers_list = nullptr;
-  if (!json || !json->GetAsDictionary(&dictionary) ||
-      !dictionary->GetList("iceServers", &ice_servers_list)) {
+IceConfig IceConfig::Parse(const base::DictionaryValue& dictionary) {
+  const base::ListValue* ice_servers_list = nullptr;
+  if (!dictionary.GetList("iceServers", &ice_servers_list)) {
     return IceConfig();
   }
 
@@ -106,7 +104,7 @@ IceConfig IceConfig::Parse(const std::string& config_json) {
   // Parse lifetimeDuration field.
   std::string lifetime_str;
   base::TimeDelta lifetime;
-  if (!dictionary->GetString("lifetimeDuration", &lifetime_str) ||
+  if (!dictionary.GetString("lifetimeDuration", &lifetime_str) ||
       !ParseLifetime(lifetime_str, &lifetime)) {
     LOG(ERROR) << "Received invalid lifetimeDuration value: " << lifetime_str;
 
@@ -151,7 +149,12 @@ IceConfig IceConfig::Parse(const std::string& config_json) {
   }
 
   if (errors_found) {
-    LOG(ERROR) << "Received ICE config with errors: " << config_json;
+    std::string json;
+    if (!base::JSONWriter::WriteWithOptions(
+            dictionary, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json)) {
+      NOTREACHED();
+    }
+    LOG(ERROR) << "Received ICE config with errors: " << json;
   }
 
   // If there are no STUN or no TURN servers then mark the config as expired so
@@ -162,6 +165,29 @@ IceConfig IceConfig::Parse(const std::string& config_json) {
   }
 
   return ice_config;
+}
+
+// static
+IceConfig IceConfig::Parse(const std::string& config_json) {
+  std::unique_ptr<base::Value> json = base::JSONReader::Read(config_json);
+  if (!json) {
+    return IceConfig();
+  }
+
+  base::DictionaryValue* dictionary = nullptr;
+  if (!json->GetAsDictionary(&dictionary)) {
+    return IceConfig();
+  }
+
+  // Handle the case when the config is wrapped in 'data', i.e. as {'data': {
+  // 'iceServers': {...} }}.
+  base::DictionaryValue* data_dictionary = nullptr;
+  if (!dictionary->HasKey("iceServers") &&
+      dictionary->GetDictionary("data", &data_dictionary)) {
+    return Parse(*data_dictionary);
+  }
+
+  return Parse(*dictionary);
 }
 
 }  // namespace protocol

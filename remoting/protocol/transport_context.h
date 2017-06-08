@@ -51,6 +51,10 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
                    const NetworkSettings& network_settings,
                    TransportRole role);
 
+  void set_turn_ice_config(const IceConfig& ice_config) {
+    ice_config_[TURN] = ice_config;
+  }
+
   void set_ice_config_url(const std::string& ice_config_url) {
     ice_config_url_ = ice_config_url;
   }
