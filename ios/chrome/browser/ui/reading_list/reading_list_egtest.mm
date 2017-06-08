@@ -336,10 +336,9 @@ void AssertIsShowingDistillablePage(bool online) {
   }
 
   // Test Omnibox URL
+  GURL distillableURL = web::test::HttpServer::MakeUrl(kDistillableURL);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          web::test::HttpServer::MakeUrl(
-                                              kDistillableURL)
-                                              .GetContent())]
+                                          distillableURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Test presence of online page
@@ -382,6 +381,7 @@ void AssertIsShowingDistillablePage(bool online) {
 
 - (void)tearDown {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
+  server.SetSuspend(NO);
   if (!server.IsRunning()) {
     server.StartOrDie();
     base::test::ios::SpinRunLoopWithMinDelay(
@@ -450,8 +450,7 @@ void AssertIsShowingDistillablePage(bool online) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads online version by tapping on entry.
-// TODO(crbug.com/724555): Re-enable the test.
-- (void)DISABLED_testSavingToReadingListAndLoadNormal {
+- (void)testSavingToReadingListAndLoadNormal {
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -478,7 +477,7 @@ void AssertIsShowingDistillablePage(bool online) {
 
   AssertIsShowingDistillablePage(true);
   // Stop server to reload offline.
-  server.Stop();
+  server.SetSuspend(YES);
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromSecondsD(kServerOperationDelay));
 
@@ -490,8 +489,7 @@ void AssertIsShowingDistillablePage(bool online) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
-// TODO(crbug.com/724555): Re-enable the test.
-- (void)DISABLED_testSavingToReadingListAndLoadNoNetwork {
+- (void)testSavingToReadingListAndLoadNoNetwork {
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -514,7 +512,7 @@ void AssertIsShowingDistillablePage(bool online) {
   WaitForDistillation();
 
   // Stop server to generate error.
-  server.Stop();
+  server.SetSuspend(YES);
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromSecondsD(kServerOperationDelay));
   // Long press the entry, and open it offline.
@@ -522,7 +520,7 @@ void AssertIsShowingDistillablePage(bool online) {
 
   AssertIsShowingDistillablePage(false);
   // Start server to reload online error.
-  server.StartOrDie();
+  server.SetSuspend(NO);
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromSecondsD(kServerOperationDelay));
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());

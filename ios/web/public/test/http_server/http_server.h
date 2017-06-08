@@ -77,6 +77,8 @@ class HttpServer : public base::RefCountedThreadSafe<HttpServer> {
   // Stops the server and prevents it from accepting new requests.
   // Must be called from the main thread.
   void Stop();
+  // Sets the server to hang and return no response.
+  void SetSuspend(bool suspended);
   // Returns true if the server is running.
   // Must be called from the main thread.
   bool IsRunning() const;
@@ -136,6 +138,8 @@ class HttpServer : public base::RefCountedThreadSafe<HttpServer> {
   // ResponseProvider response back to EmbeddedTestServer response.
   std::unique_ptr<net::test_server::HttpResponse> GetResponse(
       const net::test_server::HttpRequest& request);
+  // Status tracking if the server is hung.
+  bool isSuspended;
   DISALLOW_COPY_AND_ASSIGN(HttpServer);
 };
 
