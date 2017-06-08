@@ -27,6 +27,10 @@ class CONTENT_EXPORT AppNapActivity {
   AppNapActivity();
   ~AppNapActivity();
 
+  // Because there's no NSApplication in renderers, do some housekeeping
+  // to become eligible for App Nap.
+  static void InitializeAppNapSupport();
+
   // Begin an activity and store the provided token.
   void Begin();
 

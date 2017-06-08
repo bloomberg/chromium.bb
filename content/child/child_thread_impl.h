@@ -59,6 +59,10 @@ class QuotaMessageFilter;
 class ResourceDispatcher;
 class ThreadSafeSender;
 
+#if defined(OS_MACOSX)
+class AppNapActivity;
+#endif
+
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThreadImpl
     : public IPC::Listener,
@@ -280,6 +284,10 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner_;
+
+#if defined(OS_MACOSX)
+  std::unique_ptr<AppNapActivity> app_nap_activity_;
+#endif  // defined(OS_MACOSX)
 
   std::unique_ptr<base::WeakPtrFactory<ChildThreadImpl>>
       channel_connected_factory_;

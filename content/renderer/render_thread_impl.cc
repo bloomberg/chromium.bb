@@ -189,6 +189,8 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#include "base/process/process.h"
+#include "content/common/mac/app_nap_activity.h"
 #include "content/renderer/theme_helper_mac.h"
 #include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #endif
@@ -809,6 +811,10 @@ void RenderThreadImpl::Init(
   Boolean value = CFPreferencesGetAppBooleanValue(
       key, kCFPreferencesCurrentApplication, &key_exists);
   is_elastic_overscroll_enabled_ = !key_exists || value;
+
+  if (base::Process::IsAppNapEnabled()) {
+    AppNapActivity::InitializeAppNapSupport();
+  }
 #else
   is_elastic_overscroll_enabled_ = false;
 #endif
