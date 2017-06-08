@@ -14,7 +14,6 @@ body.safe-browsing {
 }
 
 button {
-  -webkit-user-select: none;
   background: rgb(66, 133, 244);
   border: 0;
   border-radius: 2px;
@@ -26,6 +25,7 @@ button {
   margin: 0;
   padding: 10px 24px;
   transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
 }
 
 [dir='rtl'] button {
