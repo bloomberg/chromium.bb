@@ -413,11 +413,6 @@ if (internal_gles2_conform_tests) {
       # Must be done this way for warning flags to be ordered correctly.
       ":gles2_conform_test_warnings",
     ]
-    if (is_linux) {
-      if (!is_chromeos) {
-        deps += [ "//build/config/linux/gtk2" ]
-      }
-    }
     if (is_win) {
       deps += [
         "//third_party/angle:libEGL",
