@@ -60,6 +60,8 @@ static_library("vr_common") {
     "ui_elements/button.h",
     "ui_elements/exit_prompt.cc",
     "ui_elements/exit_prompt.h",
+    "ui_elements/exit_prompt_backplane.cc",
+    "ui_elements/exit_prompt_backplane.h",
     "ui_elements/exit_warning.cc",
     "ui_elements/exit_warning.h",
     "ui_elements/loading_indicator.cc",

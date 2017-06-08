@@ -52,9 +52,10 @@ class UiSceneManager {
   void OnAppButtonClicked();
   void OnAppButtonGesturePerformed(UiInterface::Direction direction);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(UiSceneManagerTest, UiUpdatesExitPrompt);
+  void OnSecurityIconClickedForTesting();
+  void OnExitPromptPrimaryButtonClickedForTesting();
 
+ private:
   void CreateScreenDimmer();
   void CreateSecurityWarnings();
   void CreateSystemIndicators();
@@ -62,15 +63,18 @@ class UiSceneManager {
   void CreateBackground();
   void CreateUrlBar();
   void CreateCloseButton();
+  void CreateExitPrompt();
 
   void ConfigureScene();
   void ConfigureSecurityWarnings();
   void UpdateBackgroundColor();
+  void CloseExitPrompt();
   void OnSecurityWarningTimer();
   void OnBackButtonClicked();
   void OnSecurityIconClicked();
   void OnExitPromptPrimaryButtonClicked();
   void OnExitPromptSecondaryButtonClicked();
+  void OnExitPromptBackplaneClicked();
   void OnCloseButtonClicked();
   void OnUnsupportedMode(UiUnsupportedMode mode);
   int AllocateId();
@@ -84,9 +88,9 @@ class UiSceneManager {
   UiElement* permanent_security_warning_ = nullptr;
   UiElement* transient_security_warning_ = nullptr;
   UiElement* exit_prompt_ = nullptr;
+  UiElement* exit_prompt_backplane_ = nullptr;
   UiElement* exit_warning_ = nullptr;
   UiElement* main_content_ = nullptr;
-  UiElement* main_content_backplane_ = nullptr;
   UiElement* audio_capture_indicator_ = nullptr;
   UiElement* video_capture_indicator_ = nullptr;
   UiElement* screen_capture_indicator_ = nullptr;

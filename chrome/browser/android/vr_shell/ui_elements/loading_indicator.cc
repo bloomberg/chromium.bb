@@ -30,7 +30,6 @@ void LoadingIndicator::SetEnabled(bool enabled) {
   if (enabled_ == enabled)
     return;
   enabled_ = enabled;
-  ResetVisibilityTimer();
   SetVisibility();
 }
 

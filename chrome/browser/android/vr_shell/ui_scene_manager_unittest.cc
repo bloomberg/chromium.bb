@@ -34,7 +34,9 @@ class MockBrowserInterface : public UiBrowserInterface {
 };
 
 std::set<UiElementDebugId> kElementsVisibleInBrowsing = {
-    kContentQuad, kBackplane, kCeiling, kFloor, kUrlBar, kLoadingIndicator};
+    kContentQuad, kBackplane, kCeiling, kFloor, kUrlBar};
+std::set<UiElementDebugId> kElementsVisibleWithExitPrompt = {
+    kExitPrompt, kExitPromptBackplane, kCeiling, kFloor};
 
 }  // namespace
 
@@ -62,6 +64,17 @@ class UiSceneManagerTest : public testing::Test {
   bool IsVisible(UiElementDebugId debug_id) {
     UiElement* element = scene_->GetUiElementByDebugId(debug_id);
     return element ? element->visible() : false;
+  }
+
+  void VerifyElementsVisible(const std::string& debug_name,
+                             const std::set<UiElementDebugId>& elements) {
+    SCOPED_TRACE(debug_name);
+    for (const auto& element : scene_->GetUiElements()) {
+      SCOPED_TRACE(element->debug_id());
+      bool should_be_visible =
+          elements.find(element->debug_id()) != elements.end();
+      EXPECT_EQ(should_be_visible, element->visible());
+    }
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -203,43 +216,21 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
 
   // Hold onto the background color to make sure it changes.
   SkColor initial_background = scene_->GetWorldBackgroundColor();
+  VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
-  for (const auto& element : scene_->GetUiElements()) {
-    SCOPED_TRACE(element->debug_id());
-    bool should_be_visible =
-        kElementsVisibleInBrowsing.find(element->debug_id()) !=
-        kElementsVisibleInBrowsing.end();
-    EXPECT_EQ(should_be_visible, element->visible());
-  }
-
-  // Transistion to fullscreen.
+  // In fullscreen mode, content elements should be visible, control elements
+  // should be hidden.
   manager_->SetFullscreen(true);
-
-  // Content elements should be visible, control elements should be hidden.
-  for (const auto& element : scene_->GetUiElements()) {
-    SCOPED_TRACE(element->debug_id());
-    bool should_be_visible = visible_in_fullscreen.find(element->debug_id()) !=
-                             visible_in_fullscreen.end();
-    EXPECT_EQ(should_be_visible, element->visible());
-  }
-
+  VerifyElementsVisible("In fullscreen", visible_in_fullscreen);
   {
     SCOPED_TRACE("Entered Fullsceen");
     // Make sure background has changed for fullscreen.
     EXPECT_NE(initial_background, scene_->GetWorldBackgroundColor());
   }
 
-  // Exit fullscreen.
-  manager_->SetFullscreen(false);
-
   // Everything should return to original state after leaving fullscreen.
-  for (const auto& element : scene_->GetUiElements()) {
-    SCOPED_TRACE(element->debug_id());
-    bool should_be_visible =
-        kElementsVisibleInBrowsing.find(element->debug_id()) !=
-        kElementsVisibleInBrowsing.end();
-    EXPECT_EQ(should_be_visible, element->visible());
-  }
+  manager_->SetFullscreen(false);
+  VerifyElementsVisible("Restore initial", kElementsVisibleInBrowsing);
   {
     SCOPED_TRACE("Exited Fullsceen");
     EXPECT_EQ(initial_background, scene_->GetWorldBackgroundColor());
@@ -247,39 +238,38 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
 }
 
 TEST_F(UiSceneManagerTest, UiUpdatesExitPrompt) {
-  std::set<UiElementDebugId> visible_when_prompting = {kExitPrompt, kBackplane,
-                                                       kCeiling, kFloor};
   MakeManager(kNotInCct, kNotInWebVr);
 
   manager_->SetWebVrSecureOrigin(true);
 
   // Initial state.
-  for (const auto& element : scene_->GetUiElements()) {
-    SCOPED_TRACE(element->debug_id());
-    bool should_be_visible =
-        kElementsVisibleInBrowsing.find(element->debug_id()) !=
-        kElementsVisibleInBrowsing.end();
-    EXPECT_EQ(should_be_visible, element->visible());
-  }
+  VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
   // Exit prompt visible state.
-  manager_->OnSecurityIconClicked();
-  for (const auto& element : scene_->GetUiElements()) {
-    SCOPED_TRACE(element->debug_id());
-    bool should_be_visible = visible_when_prompting.find(element->debug_id()) !=
-                             visible_when_prompting.end();
-    EXPECT_EQ(should_be_visible, element->visible());
-  }
+  manager_->OnSecurityIconClickedForTesting();
+  VerifyElementsVisible("Prompt visible", kElementsVisibleWithExitPrompt);
 
   // Back to initial state.
-  manager_->OnExitPromptPrimaryButtonClicked();
-  for (const auto& element : scene_->GetUiElements()) {
-    SCOPED_TRACE(element->debug_id());
-    bool should_be_visible =
-        kElementsVisibleInBrowsing.find(element->debug_id()) !=
-        kElementsVisibleInBrowsing.end();
-    EXPECT_EQ(should_be_visible, element->visible());
-  }
+  manager_->OnExitPromptPrimaryButtonClickedForTesting();
+  VerifyElementsVisible("Restore initial", kElementsVisibleInBrowsing);
+}
+
+TEST_F(UiSceneManagerTest, BackplaneClickClosesExitPrompt) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  manager_->SetWebVrSecureOrigin(true);
+
+  // Initial state.
+  VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
+
+  // Exit prompt visible state.
+  manager_->OnSecurityIconClickedForTesting();
+  VerifyElementsVisible("Prompt visble", kElementsVisibleWithExitPrompt);
+
+  // Back to initial state.
+  scene_->GetUiElementByDebugId(kExitPromptBackplane)
+      ->OnButtonUp(gfx::PointF());
+  VerifyElementsVisible("Restore initial", kElementsVisibleInBrowsing);
 }
 
 TEST_F(UiSceneManagerTest, UiUpdatesForWebVR) {
@@ -291,10 +281,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForWebVR) {
   manager_->SetScreenCapturingIndicator(true);
 
   // All elements should be hidden.
-  for (const auto& element : scene_->GetUiElements()) {
-    SCOPED_TRACE(element->debug_id());
-    EXPECT_FALSE(element->visible());
-  }
+  VerifyElementsVisible("Elements hidden", std::set<UiElementDebugId>{});
 }
 
 TEST_F(UiSceneManagerTest, UiUpdateTransitionToWebVR) {
@@ -308,10 +295,7 @@ TEST_F(UiSceneManagerTest, UiUpdateTransitionToWebVR) {
   manager_->SetWebVrSecureOrigin(true);
 
   // All elements should be hidden.
-  for (const auto& element : scene_->GetUiElements()) {
-    SCOPED_TRACE(element->debug_id());
-    EXPECT_FALSE(element->visible());
-  }
+  VerifyElementsVisible("Elements hidden", std::set<UiElementDebugId>{});
 }
 
 TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {

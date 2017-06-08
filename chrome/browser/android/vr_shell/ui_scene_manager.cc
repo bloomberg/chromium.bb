@@ -12,6 +12,7 @@
 #include "chrome/browser/android/vr_shell/ui_elements/audio_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/button.h"
 #include "chrome/browser/android/vr_shell/ui_elements/exit_prompt.h"
+#include "chrome/browser/android/vr_shell/ui_elements/exit_prompt_backplane.h"
 #include "chrome/browser/android/vr_shell/ui_elements/exit_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/loading_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/permanent_security_warning.h"
@@ -55,6 +56,7 @@ static constexpr float kFullscreenVerticalOffset = -0.1 * kFullscreenDistance;
 static constexpr float kExitPromptWidth = 0.672 * kContentDistance;
 static constexpr float kExitPromptHeight = 0.2 * kContentDistance;
 static constexpr float kExitPromptVerticalOffset = -0.09 * kContentDistance;
+static constexpr float kExitPromptBackplaneSize = 1000.0;
 
 static constexpr float kUrlBarDistance = 2.4;
 static constexpr float kUrlBarWidth = 0.672 * kUrlBarDistance;
@@ -105,6 +107,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateUrlBar();
   CreateCloseButton();
   CreateScreenDimmer();
+  CreateExitPrompt();
 
   ConfigureScene();
   ConfigureSecurityWarnings();
@@ -229,24 +232,7 @@ void UiSceneManager::CreateContentQuad() {
   element->set_size({kBackplaneSize, kBackplaneSize, 1.0});
   element->set_translation({0.0, 0.0, -kTextureOffset});
   element->set_parent_id(main_content_->id());
-  main_content_backplane_ = element.get();
   content_elements_.push_back(element.get());
-  scene_->AddUiElement(std::move(element));
-
-  element = base::MakeUnique<ExitPrompt>(
-      512,
-      base::Bind(&UiSceneManager::OnExitPromptPrimaryButtonClicked,
-                 base::Unretained(this)),
-      base::Bind(&UiSceneManager::OnExitPromptSecondaryButtonClicked,
-                 base::Unretained(this)));
-  element->set_debug_id(kExitPrompt);
-  element->set_id(AllocateId());
-  element->set_fill(vr_shell::Fill::NONE);
-  element->set_size({kExitPromptWidth, kExitPromptHeight, 1});
-  element->set_translation({0.0, kExitPromptVerticalOffset, kTextureOffset});
-  element->set_parent_id(main_content_->id());
-  element->set_visible(false);
-  exit_prompt_ = element.get();
   scene_->AddUiElement(std::move(element));
 
   // Limit reticle distance to a sphere based on content distance.
@@ -332,6 +318,38 @@ void UiSceneManager::CreateCloseButton() {
   scene_->AddUiElement(std::move(element));
 }
 
+void UiSceneManager::CreateExitPrompt() {
+  std::unique_ptr<UiElement> element = base::MakeUnique<ExitPrompt>(
+      512,
+      base::Bind(&UiSceneManager::OnExitPromptPrimaryButtonClicked,
+                 base::Unretained(this)),
+      base::Bind(&UiSceneManager::OnExitPromptSecondaryButtonClicked,
+                 base::Unretained(this)));
+  element->set_debug_id(kExitPrompt);
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::NONE);
+  element->set_size({kExitPromptWidth, kExitPromptHeight, 1});
+  element->set_translation({0.0, kExitPromptVerticalOffset, kTextureOffset});
+  element->set_parent_id(main_content_->id());
+  element->set_visible(false);
+  exit_prompt_ = element.get();
+  scene_->AddUiElement(std::move(element));
+
+  // Place an invisible but hittable plane behind the exit prompt, to keep the
+  // reticle roughly planar with the content if near content.
+  element = base::MakeUnique<ExitPromptBackplane>(base::Bind(
+      &UiSceneManager::OnExitPromptBackplaneClicked, base::Unretained(this)));
+  element->set_debug_id(kExitPromptBackplane);
+  element->set_id(AllocateId());
+  element->set_fill(vr_shell::Fill::NONE);
+  element->set_size({kExitPromptBackplaneSize, kExitPromptBackplaneSize, 1.0});
+  element->set_translation({0.0, 0.0, -kTextureOffset});
+  element->set_parent_id(exit_prompt_->id());
+  exit_prompt_backplane_ = element.get();
+  content_elements_.push_back(element.get());
+  scene_->AddUiElement(std::move(element));
+}
+
 base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -349,7 +367,6 @@ void UiSceneManager::SetWebVrMode(bool web_vr) {
 
 void UiSceneManager::ConfigureScene() {
   exit_warning_->SetEnabled(scene_->is_exiting());
-  exit_prompt_->SetEnabled(scene_->is_prompting_to_exit());
   screen_dimmer_->SetEnabled(scene_->is_exiting());
 
   // Controls (URL bar, loading progress, etc).
@@ -363,12 +380,19 @@ void UiSceneManager::ConfigureScene() {
   close_button_->SetEnabled(!web_vr_mode_ && (fullscreen_ || in_cct_));
 
   // Content elements.
-  main_content_->SetEnabled(!web_vr_mode_ && !scene_->is_prompting_to_exit());
-  main_content_backplane_->SetEnabled(!web_vr_mode_);
+  for (UiElement* element : content_elements_) {
+    element->SetEnabled(!web_vr_mode_ && !scene_->is_prompting_to_exit());
+  }
+
   // Background elements.
   for (UiElement* element : background_elements_) {
     element->SetEnabled(!web_vr_mode_);
   }
+
+  // Exit prompt.
+  bool showExitPrompt = !web_vr_mode_ && scene_->is_prompting_to_exit();
+  exit_prompt_->SetEnabled(showExitPrompt);
+  exit_prompt_backplane_->SetEnabled(showExitPrompt);
 
   // Update content quad parameters depending on fullscreen.
   // TODO(http://crbug.com/642937): Animate fullscreen transitions.
@@ -475,6 +499,14 @@ void UiSceneManager::OnBackButtonClicked() {
   browser_->NavigateBack();
 }
 
+void UiSceneManager::OnSecurityIconClickedForTesting() {
+  OnSecurityIconClicked();
+}
+
+void UiSceneManager::OnExitPromptPrimaryButtonClickedForTesting() {
+  OnExitPromptPrimaryButtonClicked();
+}
+
 void UiSceneManager::OnSecurityIconClicked() {
   if (scene_->is_prompting_to_exit())
     return;
@@ -482,11 +514,19 @@ void UiSceneManager::OnSecurityIconClicked() {
   ConfigureScene();
 }
 
-void UiSceneManager::OnExitPromptPrimaryButtonClicked() {
+void UiSceneManager::OnExitPromptBackplaneClicked() {
+  CloseExitPrompt();
+}
+
+void UiSceneManager::CloseExitPrompt() {
   if (!scene_->is_prompting_to_exit())
     return;
   scene_->set_is_prompting_to_exit(false);
   ConfigureScene();
+}
+
+void UiSceneManager::OnExitPromptPrimaryButtonClicked() {
+  CloseExitPrompt();
 }
 
 void UiSceneManager::OnExitPromptSecondaryButtonClicked() {
