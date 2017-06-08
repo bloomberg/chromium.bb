@@ -47,6 +47,10 @@ class PLATFORM_EXPORT TranslateTransformOperation final
     return AdoptRef(new TranslateTransformOperation(tx, ty, tz, type));
   }
 
+  bool operator==(const TranslateTransformOperation& other) const {
+    return *this == static_cast<const TransformOperation&>(other);
+  }
+
   bool CanBlendWith(const TransformOperation& other) const override;
   bool DependsOnBoxSize() const override {
     return x_.IsPercentOrCalc() || y_.IsPercentOrCalc();

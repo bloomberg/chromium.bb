@@ -52,6 +52,10 @@ class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
     return AdoptRef(new RotateTransformOperation(rotation, type));
   }
 
+  bool operator==(const RotateTransformOperation& other) const {
+    return *this == static_cast<const TransformOperation&>(other);
+  }
+
   double X() const { return rotation_.axis.X(); }
   double Y() const { return rotation_.axis.Y(); }
   double Z() const { return rotation_.axis.Z(); }
