@@ -117,8 +117,10 @@ public class WebappRegistry {
 
             @Override
             protected final void onPostExecute(WebappDataStorage storage) {
-                // Guarantee that last used time != WebappDataStorage.LAST_USED_INVALID. Must be
-                // run on the main thread as SharedPreferences.Editor.apply() is called.
+                // Update the last used time in order to prevent
+                // {@link WebappRegistry@unregisterOldWebapps()} from deleting the
+                // WebappDataStorage. Must be run on the main thread as
+                // SharedPreferences.Editor.apply() is called.
                 mStorages.put(webappId, storage);
                 mPreferences.edit().putStringSet(KEY_WEBAPP_SET, mStorages.keySet()).apply();
                 storage.updateLastUsedTime();
