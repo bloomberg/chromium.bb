@@ -31,7 +31,19 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceNamedConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor::domTemplate, V8TestInterfaceNamedConstructor::Trace, V8TestInterfaceNamedConstructor::TraceWrappers, nullptr, "TestInterfaceNamedConstructor", 0, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kInheritFromActiveScriptWrappable, WrapperTypeInfo::kDependent };
+const WrapperTypeInfo V8TestInterfaceNamedConstructor::wrapperTypeInfo = {
+    gin::kEmbedderBlink,
+    V8TestInterfaceNamedConstructor::domTemplate,
+    V8TestInterfaceNamedConstructor::Trace,
+    V8TestInterfaceNamedConstructor::TraceWrappers,
+    nullptr,
+    "TestInterfaceNamedConstructor",
+    nullptr,
+    WrapperTypeInfo::kWrapperTypeObjectPrototype,
+    WrapperTypeInfo::kObjectClassId,
+    WrapperTypeInfo::kInheritFromActiveScriptWrappable,
+    WrapperTypeInfo::kDependent,
+};
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -78,7 +90,19 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedCons
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructorConstructor::domTemplate, V8TestInterfaceNamedConstructor::Trace, V8TestInterfaceNamedConstructor::TraceWrappers, nullptr, "TestInterfaceNamedConstructor", 0, WrapperTypeInfo::kWrapperTypeObjectPrototype, WrapperTypeInfo::kObjectClassId, WrapperTypeInfo::kInheritFromActiveScriptWrappable, WrapperTypeInfo::kDependent };
+const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInfo = {
+    gin::kEmbedderBlink,
+    V8TestInterfaceNamedConstructorConstructor::domTemplate,
+    V8TestInterfaceNamedConstructor::Trace,
+    V8TestInterfaceNamedConstructor::TraceWrappers,
+    nullptr,
+    "TestInterfaceNamedConstructor",
+    nullptr,
+    WrapperTypeInfo::kWrapperTypeObjectPrototype,
+    WrapperTypeInfo::kObjectClassId,
+    WrapperTypeInfo::kInheritFromActiveScriptWrappable,
+    WrapperTypeInfo::kDependent,
+};
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
