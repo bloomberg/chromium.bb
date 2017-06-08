@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/cast_channel/logger.h"
+#include "components/cast_channel/logger.h"
 
 #include <stdint.h>
 
@@ -11,12 +11,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "extensions/browser/api/cast_channel/cast_auth_util.h"
-#include "extensions/browser/api/cast_channel/cast_socket.h"
+#include "components/cast_channel/cast_auth_util.h"
+#include "components/cast_channel/cast_socket.h"
 #include "net/base/net_errors.h"
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 
 using net::IPEndPoint;
@@ -96,16 +94,15 @@ LastErrors::~LastErrors() {}
 Logger::Logger() {
   // Logger may not be necessarily be created on the IO thread, but logging
   // happens exclusively there.
-  thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(thread_checker_);
 }
 
-Logger::~Logger() {
-}
+Logger::~Logger() {}
 
 void Logger::LogSocketEventWithRv(int channel_id,
                                   EventType event_type,
                                   int rv) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   SocketEvent event = CreateEvent(event_type);
   event.set_net_return_value(rv);
@@ -115,7 +112,7 @@ void Logger::LogSocketEventWithRv(int channel_id,
 
 void Logger::LogSocketChallengeReplyEvent(int channel_id,
                                           const AuthResult& auth_result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   SocketEvent event = CreateEvent(proto::AUTH_CHALLENGE_REPLY);
   event.set_challenge_reply_error_type(
@@ -152,5 +149,3 @@ void Logger::LogSocketEvent(int channel_id, const SocketEvent& socket_event) {
 }
 
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions

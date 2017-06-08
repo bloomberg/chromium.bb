@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/cast_channel/cast_transport.h"
+#include "components/cast_channel/cast_transport.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -17,10 +17,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "extensions/browser/api/cast_channel/cast_framer.h"
-#include "extensions/browser/api/cast_channel/cast_message_util.h"
-#include "extensions/browser/api/cast_channel/logger.h"
-#include "extensions/common/api/cast_channel/cast_channel.pb.h"
+#include "components/cast_channel/cast_framer.h"
+#include "components/cast_channel/cast_message_util.h"
+#include "components/cast_channel/logger.h"
+#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 
@@ -29,8 +29,6 @@
               << ::cast_channel::ChannelAuthTypeToString(channel_auth_) \
               << "] "
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 
 CastTransportImpl::CastTransportImpl(net::Socket* socket,
@@ -173,8 +171,8 @@ void CastTransportImpl::SendMessage(const CastMessage& message,
         FROM_HERE, base::Bind(callback, net::ERR_FAILED));
     return;
   }
-  WriteRequest write_request(
-      message.namespace_(), serialized_message, callback);
+  WriteRequest write_request(message.namespace_(), serialized_message,
+                             callback);
 
   write_queue_.push(write_request);
   if (write_state_ == WRITE_STATE_IDLE) {
@@ -196,8 +194,7 @@ CastTransportImpl::WriteRequest::WriteRequest(
 CastTransportImpl::WriteRequest::WriteRequest(const WriteRequest& other) =
     default;
 
-CastTransportImpl::WriteRequest::~WriteRequest() {
-}
+CastTransportImpl::WriteRequest::~WriteRequest() {}
 
 void CastTransportImpl::SetReadState(ReadState read_state) {
   if (read_state_ != read_state)
@@ -352,8 +349,8 @@ void CastTransportImpl::OnReadResult(int result) {
   // synchronously.
   int rv = result;
   do {
-    VLOG_WITH_CONNECTION(2) << "OnReadResult(state=" << read_state_
-                            << ", result=" << rv << ")";
+    VLOG_WITH_CONNECTION(2)
+        << "OnReadResult(state=" << read_state_ << ", result=" << rv << ")";
     ReadState state = read_state_;
     read_state_ = READ_STATE_UNKNOWN;
 
@@ -451,5 +448,3 @@ int CastTransportImpl::DoReadHandleError(int result) {
 }
 
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions

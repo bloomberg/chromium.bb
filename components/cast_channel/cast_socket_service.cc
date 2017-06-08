@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/cast_channel/cast_socket_service.h"
+#include "components/cast_channel/cast_socket_service.h"
 
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 
 int CastSocketService::last_channel_id_ = 0;
@@ -57,5 +55,3 @@ CastSocket* CastSocketService::GetSocket(int channel_id) const {
 void CastSocketService::ShutdownOnUIThread() {}
 
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions

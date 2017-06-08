@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package extensions.api.cast_channel.proto;
+package cast_channel.proto;
 
 message AuthorityKeys {
   message Key {

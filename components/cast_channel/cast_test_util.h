@@ -2,27 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TEST_UTIL_H_
-#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TEST_UTIL_H_
+#ifndef COMPONENTS_CAST_CHANNEL_CAST_TEST_UTIL_H_
+#define COMPONENTS_CAST_CHANNEL_CAST_TEST_UTIL_H_
 
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "extensions/browser/api/cast_channel/cast_socket.h"
-#include "extensions/browser/api/cast_channel/cast_transport.h"
-#include "extensions/common/api/cast_channel/cast_channel.pb.h"
+#include "components/cast_channel/cast_socket.h"
+#include "components/cast_channel/cast_transport.h"
+#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 
-extern const char kTestExtensionId[];
-
-class MockCastTransport : public extensions::api::cast_channel::CastTransport {
+class MockCastTransport : public CastTransport {
  public:
   MockCastTransport();
   ~MockCastTransport() override;
@@ -31,7 +27,7 @@ class MockCastTransport : public extensions::api::cast_channel::CastTransport {
       std::unique_ptr<CastTransport::Delegate> delegate) override;
 
   MOCK_METHOD2(SendMessage,
-               void(const extensions::api::cast_channel::CastMessage& message,
+               void(const CastMessage& message,
                     const net::CompletionCallback& callback));
 
   MOCK_METHOD0(Start, void(void));
@@ -121,7 +117,5 @@ ACTION_TEMPLATE(PostCompletionCallbackTask,
 }
 
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TEST_UTIL_H_
+#endif  // COMPONENTS_CAST_CHANNEL_CAST_TEST_UTIL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/cast_channel/cast_transport.h"
+#include "components/cast_channel/cast_transport.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,11 +14,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
-#include "extensions/browser/api/cast_channel/cast_framer.h"
-#include "extensions/browser/api/cast_channel/cast_socket.h"
-#include "extensions/browser/api/cast_channel/cast_test_util.h"
-#include "extensions/browser/api/cast_channel/logger.h"
-#include "extensions/common/api/cast_channel/cast_channel.pb.h"
+#include "components/cast_channel/cast_framer.h"
+#include "components/cast_channel/cast_socket.h"
+#include "components/cast_channel/cast_test_util.h"
+#include "components/cast_channel/logger.h"
+#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"
@@ -34,8 +34,6 @@ using testing::NotNull;
 using testing::Return;
 using testing::WithArg;
 
-namespace extensions {
-namespace api {
 namespace cast_channel {
 namespace {
 
@@ -241,8 +239,9 @@ TEST_F(CastTransportTest, TestWriteFailureAsync) {
   CompletionQueue socket_cbs;
   CompleteHandler write_handler;
   CastMessage message = CreateCastMessage();
-  EXPECT_CALL(mock_socket_, Write(NotNull(), _, _)).WillOnce(
-      DoAll(EnqueueCallback<2>(&socket_cbs), Return(net::ERR_IO_PENDING)));
+  EXPECT_CALL(mock_socket_, Write(NotNull(), _, _))
+      .WillOnce(
+          DoAll(EnqueueCallback<2>(&socket_cbs), Return(net::ERR_IO_PENDING)));
   EXPECT_CALL(write_handler, Complete(net::ERR_FAILED));
   EXPECT_CALL(*delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
   transport_->SendMessage(
@@ -483,8 +482,7 @@ TEST_F(CastTransportTest, TestReadCorruptedMessageAsync) {
 
   // Corrupt the serialized message body(set it to X's).
   for (size_t i = MessageFramer::MessageHeader::header_size();
-       i < serialized_message.size();
-       ++i) {
+       i < serialized_message.size(); ++i) {
     serialized_message[i] = 'x';
   }
 
@@ -653,8 +651,7 @@ TEST_F(CastTransportTest, TestReadCorruptedMessageSync) {
 
   // Corrupt the serialized message body(set it to X's).
   for (size_t i = MessageFramer::MessageHeader::header_size();
-       i < serialized_message.size();
-       ++i) {
+       i < serialized_message.size(); ++i) {
     serialized_message[i] = 'x';
   }
 
@@ -683,5 +680,3 @@ TEST_F(CastTransportTest, TestReadCorruptedMessageSync) {
   transport_->Start();
 }
 }  // namespace cast_channel
-}  // namespace api
-}  // namespace extensions

@@ -4,35 +4,18 @@
 
 source_set("cast_channel") {
   sources = [
-    "cast_auth_util.cc",
-    "cast_auth_util.h",
     "cast_channel_api.cc",
     "cast_channel_api.h",
     "cast_channel_enum_util.cc",
     "cast_channel_enum_util.h",
-    "cast_framer.cc",
-    "cast_framer.h",
     "cast_message_util.cc",
     "cast_message_util.h",
-    "cast_socket.cc",
-    "cast_socket.h",
-    "cast_socket_service.cc",
-    "cast_socket_service.h",
-    "cast_socket_service_factory.cc",
-    "cast_socket_service_factory.h",
-    "cast_transport.cc",
-    "cast_transport.h",
-    "keep_alive_delegate.cc",
-    "keep_alive_delegate.h",
-    "logger.cc",
-    "logger.h",
   ]
 
   deps = [
     "//base",
     "//components/cast_channel",
     "//extensions/common/api",
-    "//extensions/common/api/cast_channel:cast_channel_proto",
     "//net",
   ]
 

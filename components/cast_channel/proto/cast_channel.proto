@@ -6,14 +6,12 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package extensions.api.cast_channel;
+package cast_channel;
 
 message CastMessage {
   // Always pass a version of the protocol for future compatibility
   // requirements.
-  enum ProtocolVersion {
-    CASTV2_1_0 = 0;
-  }
+  enum ProtocolVersion { CASTV2_1_0 = 0; }
   required ProtocolVersion protocol_version = 1;
 
   // source and destination ids identify the origin and destination of the
