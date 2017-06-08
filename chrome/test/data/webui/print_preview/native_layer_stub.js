@@ -13,6 +13,7 @@ cr.define('print_preview', function() {
         'getInitialSettings',
         'getPrinters',
         'getExtensionPrinters',
+        'getPrivetPrinters',
         'setupPrinter'
       ]);
 
@@ -90,6 +91,12 @@ cr.define('print_preview', function() {
     },
 
     /** @override */
+    getPrivetPrinters: function() {
+      this.methodCalled('getPrivetPrinters');
+      return Promise.resolve(true);
+    },
+
+    /** @override */
     setupPrinter: function(printerId) {
       this.methodCalled('setupPrinter', printerId);
       return this.shouldRejectPrinterSetup_ ?
@@ -99,8 +106,6 @@ cr.define('print_preview', function() {
 
     /** Stubs for |print_preview.NativeLayer| methods that call C++ handlers. */
     previewReadyForTest: function() {},
-    startGetLocalDestinations: function() {},
-    startGetPrivetDestinations: function() {},
     startGetLocalDestinationCapabilities: function(destinationId) {
       if (destinationId == this.destinationToWatch_)
         this.getLocalDestinationCapabilitiesCallCount_++;

@@ -199,6 +199,9 @@ const char kDefaultDestinationSelectionRules[] =
 // Id of the predefined PDF printer.
 const char kLocalPdfPrinterId[] = "Save as PDF";
 
+// Timeout for searching for privet printers, in seconds.
+const int kPrivetTimeoutSec = 5;
+
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
 std::unique_ptr<base::DictionaryValue> GetSettingsDictionary(
@@ -615,9 +618,6 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getPrivetPrinters",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinters,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("stopGetPrivetPrinters",
-      base::Bind(&PrintPreviewHandler::HandleStopGetPrivetPrinters,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getPrivetPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinterCapabilities,
                  base::Unretained(this)));
@@ -675,22 +675,32 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
 }
 
 void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
-  if (!PrivetPrintingEnabled())
-    return web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrinterSearchDone");
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  CHECK(!callback_id.empty());
+
+  AllowJavascript();
+
+  if (!PrivetPrintingEnabled()) {
+    RejectJavascriptCallback(base::Value(callback_id), base::Value(false));
+  }
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   using local_discovery::ServiceDiscoverySharedClient;
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery =
       ServiceDiscoverySharedClient::GetInstance();
+  DCHECK(privet_callback_id_.empty());
+  privet_callback_id_ = callback_id;
   StartPrivetLister(service_discovery);
 #endif
 }
 
-void PrintPreviewHandler::HandleStopGetPrivetPrinters(
-    const base::ListValue* args) {
+void PrintPreviewHandler::StopPrivetLister() {
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+  privet_lister_timer_.reset();
   if (PrivetPrintingEnabled() && printer_lister_) {
     printer_lister_->Stop();
   }
+  ResolveJavascriptCallback(base::Value(privet_callback_id_), base::Value());
 #endif
 }
 
@@ -1527,15 +1537,16 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 void PrintPreviewHandler::StartPrivetLister(const scoped_refptr<
     local_discovery::ServiceDiscoverySharedClient>& client) {
-  if (!PrivetPrintingEnabled())
-    return web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrinterSearchDone");
-
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(!service_discovery_client_.get() ||
          service_discovery_client_.get() == client.get());
   service_discovery_client_ = client;
   printer_lister_ = base::MakeUnique<cloud_print::PrivetLocalPrinterLister>(
       service_discovery_client_.get(), profile->GetRequestContext(), this);
+  privet_lister_timer_.reset(new base::OneShotTimer());
+  privet_lister_timer_->Start(FROM_HERE,
+                              base::TimeDelta::FromSeconds(kPrivetTimeoutSec),
+                              this, &PrintPreviewHandler::StopPrivetLister);
   printer_lister_->Start();
 }
 
@@ -1548,7 +1559,7 @@ void PrintPreviewHandler::LocalPrinterChanged(
       command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos)) {
     base::DictionaryValue info;
     FillPrinterDescription(name, description, has_local_printing, &info);
-    web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrinterChanged", info);
+    FireWebUIListener("privet-printer-added", info);
   }
 }
 

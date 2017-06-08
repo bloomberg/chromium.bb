@@ -20,95 +20,82 @@ cr.define('print_preview', function() {
 
     /**
      * Used to fetch local print destinations.
-     * @type {!print_preview.NativeLayer}
-     * @private
+     * @private {!print_preview.NativeLayer}
      */
     this.nativeLayer_ = nativeLayer;
 
     /**
      * User information repository.
-     * @type {!print_preview.UserInfo}
-     * @private
+     * @private {!print_preview.UserInfo}
      */
     this.userInfo_ = userInfo;
 
     /**
      * Used to load and persist the selected destination.
-     * @type {!print_preview.AppState}
-     * @private
+     * @private {!print_preview.AppState}
      */
     this.appState_ = appState;
 
     /**
      * Used to track metrics.
-     * @type {!print_preview.DestinationSearchMetricsContext}
-     * @private
+     * @private {!print_preview.DestinationSearchMetricsContext}
      */
     this.metrics_ = new print_preview.DestinationSearchMetricsContext();
 
     /**
      * Internal backing store for the data store.
-     * @type {!Array<!print_preview.Destination>}
-     * @private
+     * @private {!Array<!print_preview.Destination>}
      */
     this.destinations_ = [];
 
     /**
      * Cache used for constant lookup of destinations by origin and id.
-     * @type {Object<!print_preview.Destination>}
-     * @private
+     * @private {Object<!print_preview.Destination>}
      */
     this.destinationMap_ = {};
 
     /**
      * Currently selected destination.
-     * @type {print_preview.Destination}
-     * @private
+     * @private {print_preview.Destination}
      */
     this.selectedDestination_ = null;
 
     /**
      * Whether the destination store will auto select the destination that
      * matches this set of parameters.
-     * @type {print_preview.DestinationMatch}
-     * @private
+     * @private {print_preview.DestinationMatch}
      */
     this.autoSelectMatchingDestination_ = null;
 
     /**
      * Event tracker used to track event listeners of the destination store.
-     * @type {!EventTracker}
-     * @private
+     * @private {!EventTracker}
      */
     this.tracker_ = new EventTracker();
 
     /**
      * Whether PDF printer is enabled. It's disabled, for example, in App Kiosk
      * mode.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.pdfPrinterEnabled_ = false;
 
     /**
      * ID of the system default destination.
-     * @type {?string}
-     * @private
+     * @private {?string}
      */
     this.systemDefaultDestinationId_ = null;
 
     /**
      * Used to fetch cloud-based print destinations.
-     * @type {cloudprint.CloudPrintInterface}
-     * @private
+     * @private {cloudprint.CloudPrintInterface}
      */
     this.cloudPrintInterface_ = null;
 
     /**
      * Maps user account to the list of origins for which destinations are
      * already loaded.
-     * @type {!Object<Array<print_preview.DestinationOrigin>>}
-     * @private
+     * @private {!Object<Array<!print_preview.DestinationOrigin>>}
      */
     this.loadedCloudOrigins_ = {};
 
@@ -117,84 +104,66 @@ cr.define('print_preview', function() {
      * destination matches the initial destination ID after the specified
      * timeout, the first destination in the store will be automatically
      * selected.
-     * @type {?number}
-     * @private
+     * @private {?number}
      */
     this.autoSelectTimeout_ = null;
 
     /**
      * Whether a search for local destinations is in progress.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.isLocalDestinationSearchInProgress_ = false;
 
     /**
      * Whether the destination store has already loaded or is loading all local
      * destinations.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.hasLoadedAllLocalDestinations_ = false;
 
     /**
      * Whether a search for privet destinations is in progress.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.isPrivetDestinationSearchInProgress_ = false;
 
     /**
      * Whether the destination store has already loaded or is loading all privet
      * destinations.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.hasLoadedAllPrivetDestinations_ = false;
 
     /**
-     * ID of a timeout after the start of a privet search to end that privet
-     * search.
-     * @type {?number}
-     * @private
-     */
-    this.privetSearchTimeout_ = null;
-
-    /**
      * Whether a search for extension destinations is in progress.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.isExtensionDestinationSearchInProgress_ = false;
 
     /**
      * Whether the destination store has already loaded all extension
      * destinations.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.hasLoadedAllExtensionDestinations_ = false;
 
     /**
      * ID of a timeout set at the start of an extension destination search. The
      * timeout ends the search.
-     * @type {?number}
-     * @private
+     * @private {?number}
      */
     this.extensionSearchTimeout_ = null;
 
     /**
      * MDNS service name of destination that we are waiting to register.
-     * @type {?string}
-     * @private
+     * @private {?string}
      */
     this.waitForRegisterDestination_ = null;
 
     /**
      * Local destinations are CROS destinations on ChromeOS because they require
      * extra setup.
-     * @type {!print_preview.DestinationOrigin}
-     * @private
+     * @private {!print_preview.DestinationOrigin}
      */
     this.platformOrigin_ = cr.isChromeOS ?
         print_preview.DestinationOrigin.CROS :
@@ -233,13 +202,6 @@ cr.define('print_preview', function() {
    * @const
    */
   DestinationStore.AUTO_SELECT_TIMEOUT_ = 15000;
-
-  /**
-   * Amount of time spent searching for privet destination, in milliseconds.
-   * @private {number}
-   * @const
-   */
-  DestinationStore.PRIVET_SEARCH_DURATION_ = 5000;
 
   /**
    * Maximum amount of time spent searching for extension destinations, in
@@ -595,6 +557,8 @@ cr.define('print_preview', function() {
       this.pdfPrinterEnabled_ = !isInAppKioskMode;
       this.systemDefaultDestinationId_ = systemDefaultDestinationId;
       this.createLocalPdfPrintDestination_();
+      cr.addWebUIListener('privet-printer-added',
+                         this.onPrivetPrinterAdded_.bind(this));
       cr.addWebUIListener('extension-printers-added',
           this.onExtensionPrintersAdded_.bind(this));
 
@@ -725,7 +689,8 @@ cr.define('print_preview', function() {
       if (origin == print_preview.DestinationOrigin.PRIVET) {
         // TODO(noamsml): Resolve a specific printer instead of listing all
         // privet printers in this case.
-        this.nativeLayer_.startGetPrivetDestinations();
+        this.nativeLayer_.getPrivetPrinters().then(
+            this.endPrivetPrinterSearch_.bind(this));
 
         // Create a fake selectedDestination_ that is not actually in the
         // destination store. When the real destination is created, this
@@ -1090,17 +1055,18 @@ cr.define('print_preview', function() {
 
     /** Initiates loading of privet print destinations. */
     startLoadPrivetDestinations: function() {
-      if (!this.hasLoadedAllPrivetDestinations_) {
-        if (this.privetDestinationSearchInProgress_)
-          clearTimeout(this.privetSearchTimeout_);
-        this.isPrivetDestinationSearchInProgress_ = true;
-        this.nativeLayer_.startGetPrivetDestinations();
-        cr.dispatchSimpleEvent(
-            this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
-        this.privetSearchTimeout_ = setTimeout(
-            this.endPrivetPrinterSearch_.bind(this),
-            DestinationStore.PRIVET_SEARCH_DURATION_);
-      }
+      if (this.hasLoadedAllPrivetDestinations_)
+        return;
+      this.isPrivetDestinationSearchInProgress_ = true;
+      this.nativeLayer_.getPrivetPrinters().then(
+          this.endPrivetPrinterSearch_.bind(this),
+          function() {
+            // Rejected by C++, indicating privet printing is disabled.
+            this.hasLoadedAllPrivetDestinations_ = true;
+            this.isPrivetDestinationSearchInProgress_ = false;
+          }.bind(this));
+      cr.dispatchSimpleEvent(
+         this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
     },
 
     /** Initializes loading of extension managed print destinations. */
@@ -1163,7 +1129,8 @@ cr.define('print_preview', function() {
      * Wait for a privet device to be registered.
      */
     waitForRegister: function(id) {
-      this.nativeLayer_.startGetPrivetDestinations();
+      this.nativeLayer_.getPrivetPrinters().then(
+          this.endPrivetPrinterSearch_.bind(this));
       this.waitForRegisterDestination_ = id;
     },
 
@@ -1302,7 +1269,6 @@ cr.define('print_preview', function() {
      * @private
      */
     endPrivetPrinterSearch_: function() {
-      this.nativeLayer_.stopGetPrivetDestinations();
       this.isPrivetDestinationSearchInProgress_ = false;
       this.hasLoadedAllPrivetDestinations_ = true;
       cr.dispatchSimpleEvent(
@@ -1376,10 +1342,6 @@ cr.define('print_preview', function() {
           nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.DESTINATIONS_RELOAD,
           this.onDestinationsReload_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PRIVET_PRINTER_CHANGED,
-          this.onPrivetPrinterAdded_.bind(this));
       this.tracker_.add(
           nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.PRIVET_CAPABILITIES_SET,
@@ -1588,22 +1550,21 @@ cr.define('print_preview', function() {
 
     /**
      * Called when a Privet printer is added to the local network.
-     * @param {{printer: {serviceName: string,
-     *                    name: string,
-     *                    hasLocalPrinting: boolean,
-     *                    isUnregistered: boolean,
-     *                    cloudID: string}}} event Contains information about
-     *      the added printer.
+     * @param {!{serviceName: string,
+     *           name: string,
+     *           hasLocalPrinting: boolean,
+     *           isUnregistered: boolean,
+     *           cloudID: string}} printer Information about the added printer.
      * @private
      */
-    onPrivetPrinterAdded_: function(event) {
-      if (event.printer.serviceName == this.waitForRegisterDestination_ &&
-          !event.printer.isUnregistered) {
+    onPrivetPrinterAdded_: function(printer) {
+      if (printer.serviceName == this.waitForRegisterDestination_ &&
+          !printer.isUnregistered) {
         this.waitForRegisterDestination_ = null;
         this.onDestinationsReload_();
       } else {
         this.insertDestinations_(
-            print_preview.PrivetDestinationParser.parse(event.printer));
+            print_preview.PrivetDestinationParser.parse(printer));
       }
     },
 
