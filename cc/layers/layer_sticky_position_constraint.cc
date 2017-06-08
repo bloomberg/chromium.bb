@@ -32,8 +32,6 @@ LayerStickyPositionConstraint::LayerStickyPositionConstraint(
       right_offset(other.right_offset),
       top_offset(other.top_offset),
       bottom_offset(other.bottom_offset),
-      parent_relative_sticky_box_offset(
-          other.parent_relative_sticky_box_offset),
       scroll_container_relative_sticky_box_rect(
           other.scroll_container_relative_sticky_box_rect),
       scroll_container_relative_containing_block_rect(
@@ -55,8 +53,6 @@ bool LayerStickyPositionConstraint::operator==(
          left_offset == other.left_offset &&
          right_offset == other.right_offset && top_offset == other.top_offset &&
          bottom_offset == other.bottom_offset &&
-         parent_relative_sticky_box_offset ==
-             other.parent_relative_sticky_box_offset &&
          scroll_container_relative_sticky_box_rect ==
              other.scroll_container_relative_sticky_box_rect &&
          scroll_container_relative_containing_block_rect ==

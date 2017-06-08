@@ -375,8 +375,6 @@ ToWebLayerStickyPositionConstraint(
   web_constraint.right_offset = constraint.right_offset;
   web_constraint.top_offset = constraint.top_offset;
   web_constraint.bottom_offset = constraint.bottom_offset;
-  web_constraint.parent_relative_sticky_box_offset =
-      constraint.parent_relative_sticky_box_offset;
   web_constraint.scroll_container_relative_sticky_box_rect =
       constraint.scroll_container_relative_sticky_box_rect;
   web_constraint.scroll_container_relative_containing_block_rect =
@@ -399,8 +397,6 @@ static cc::LayerStickyPositionConstraint ToStickyPositionConstraint(
   constraint.right_offset = web_constraint.right_offset;
   constraint.top_offset = web_constraint.top_offset;
   constraint.bottom_offset = web_constraint.bottom_offset;
-  constraint.parent_relative_sticky_box_offset =
-      web_constraint.parent_relative_sticky_box_offset;
   constraint.scroll_container_relative_sticky_box_rect =
       web_constraint.scroll_container_relative_sticky_box_rect;
   constraint.scroll_container_relative_containing_block_rect =
@@ -419,6 +415,14 @@ blink::WebLayerStickyPositionConstraint WebLayerImpl::StickyPositionConstraint()
     const {
   return ToWebLayerStickyPositionConstraint(
       layer_->sticky_position_constraint());
+}
+
+void WebLayerImpl::SetOffsetForStickyPosition(const blink::WebSize& offset) {
+  layer_->SetOffsetForStickyPositionFromMainThread(offset);
+}
+
+blink::WebSize WebLayerImpl::OffsetForStickyPosition() const {
+  return layer_->offset_for_sticky_position_from_main_thread();
 }
 
 void WebLayerImpl::SetScrollClient(blink::WebLayerScrollClient* scroll_client) {

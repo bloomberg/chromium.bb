@@ -29,11 +29,6 @@ struct CC_EXPORT LayerStickyPositionConstraint {
   float top_offset;
   float bottom_offset;
 
-  // The layout offset of the sticky box relative to its containing layer.
-  // This is used to detect the sticky offset the main thread has applied
-  // to the layer.
-  gfx::Point parent_relative_sticky_box_offset;
-
   // The rectangle corresponding to original layout position of the sticky box
   // relative to the scroll ancestor. The sticky box is only offset once the
   // scroll has passed its initial position (e.g. top_offset will only push

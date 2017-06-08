@@ -1093,6 +1093,10 @@ void GraphicsLayer::SetStickyPositionConstraint(
   layer_->Layer()->SetStickyPositionConstraint(sticky_constraint);
 }
 
+void GraphicsLayer::SetOffsetForStickyPosition(const WebSize& offset) {
+  layer_->Layer()->SetOffsetForStickyPosition(offset);
+}
+
 void GraphicsLayer::SetFilterQuality(SkFilterQuality filter_quality) {
   if (image_layer_)
     image_layer_->SetNearestNeighbor(filter_quality == kNone_SkFilterQuality);

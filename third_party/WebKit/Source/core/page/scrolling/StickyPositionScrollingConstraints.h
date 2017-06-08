@@ -7,11 +7,19 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 
 class LayoutBoxModelObject;
+class PaintLayer;
+class StickyPositionScrollingConstraints;
 
+typedef WTF::HashMap<PaintLayer*, StickyPositionScrollingConstraints>
+    StickyConstraintsMap;
+
+// TODO(smcgruer): Add detailed comment explaining how
+// StickyPositionScrollingConstraints works.
 class StickyPositionScrollingConstraints final {
  public:
   enum AnchorEdgeFlags {
@@ -112,6 +120,11 @@ class StickyPositionScrollingConstraints final {
   const FloatSize& GetTotalContainingBlockStickyOffset() const {
     return total_containing_block_sticky_offset_;
   }
+
+  // Returns the relative position of the sticky box and its original position
+  // before scroll. This method is only safe to call if ComputeStickyOffset has
+  // been invoked.
+  FloatSize GetOffsetForStickyPosition(const StickyConstraintsMap&) const;
 
   const LayoutBoxModelObject* NearestStickyAncestor() const {
     // If we have one or more sticky ancestor elements between ourselves and our

@@ -282,8 +282,7 @@ void CompositedLayerMapping::UpdateBackdropFilters(const ComputedStyle& style) {
 }
 
 void CompositedLayerMapping::UpdateStickyConstraints(
-    const ComputedStyle& style,
-    const PaintLayer* compositing_container) {
+    const ComputedStyle& style) {
   bool sticky = style.GetPosition() == EPosition::kSticky;
   const PaintLayer* ancestor_overflow_layer =
       owning_layer_.AncestorOverflowLayer();
@@ -303,47 +302,6 @@ void CompositedLayerMapping::UpdateStickyConstraints(
     const StickyPositionScrollingConstraints& constraints =
         constraints_map.at(&owning_layer_);
 
-    // Find the layout offset of the unshifted sticky box within its parent
-    // composited layer. This information is used by the compositor side to
-    // compute the additional offset required to keep the element stuck under
-    // compositor scrolling.
-    //
-    // Starting from the scroll container relative location, removing the
-    // enclosing layer's offset and the content offset in the composited layer
-    // results in the parent-layer relative offset.
-    FloatPoint parent_relative_sticky_box_offset =
-        constraints.ScrollContainerRelativeStickyBoxRect().Location();
-
-    // The enclosing layers offset returned from |convertToLayerCoords| must be
-    // adjusted for both scroll and ancestor sticky elements.
-    LayoutPoint enclosing_layer_offset;
-    compositing_container->ConvertToLayerCoords(ancestor_overflow_layer,
-                                                enclosing_layer_offset);
-    DCHECK(!ScrollParent() || ScrollParent() == ancestor_overflow_layer);
-    if (!ScrollParent() && compositing_container != ancestor_overflow_layer) {
-      enclosing_layer_offset += LayoutSize(
-          ancestor_overflow_layer->GetScrollableArea()->GetScrollOffset());
-    }
-    // TODO(smcgruer): Until http://crbug.com/702229 is fixed, the nearest
-    // sticky ancestor may be non-composited which will make this offset wrong.
-    if (const LayoutBoxModelObject* ancestor =
-            constraints.NearestStickyAncestor()) {
-      enclosing_layer_offset -=
-          RoundedIntSize(constraints_map.at(ancestor->Layer())
-                             .GetTotalContainingBlockStickyOffset());
-    }
-
-    DCHECK(!content_offset_in_compositing_layer_dirty_);
-    parent_relative_sticky_box_offset.MoveBy(
-        FloatPoint(-enclosing_layer_offset) -
-        FloatSize(ContentOffsetInCompositingLayer()));
-
-    if (compositing_container != ancestor_overflow_layer) {
-      parent_relative_sticky_box_offset.MoveBy(
-          FloatPoint(compositing_container->GetCompositedLayerMapping()
-                         ->ContentOffsetInCompositingLayer()));
-    }
-
     web_constraint.is_sticky = true;
     web_constraint.is_anchored_left =
         constraints.GetAnchorEdges() &
@@ -361,8 +319,6 @@ void CompositedLayerMapping::UpdateStickyConstraints(
     web_constraint.right_offset = constraints.RightOffset();
     web_constraint.top_offset = constraints.TopOffset();
     web_constraint.bottom_offset = constraints.BottomOffset();
-    web_constraint.parent_relative_sticky_box_offset =
-        RoundedIntPoint(parent_relative_sticky_box_offset);
     web_constraint.scroll_container_relative_sticky_box_rect =
         EnclosingIntRect(constraints.ScrollContainerRelativeStickyBoxRect());
     web_constraint.scroll_container_relative_containing_block_rect =
@@ -1114,7 +1070,7 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
                                           graphics_layer_parent_location);
   UpdateContentsOffsetInCompositingLayer(
       snapped_offset_from_composited_ancestor, graphics_layer_parent_location);
-  UpdateStickyConstraints(GetLayoutObject().StyleRef(), compositing_container);
+  UpdateStickyConstraints(GetLayoutObject().StyleRef());
   UpdateSquashingLayerGeometry(
       graphics_layer_parent_location, compositing_container, squashed_layers_,
       squashing_layer_.get(),
@@ -1176,6 +1132,24 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
       relative_compositing_bounds.Location() - graphics_layer_parent_location));
   graphics_layer_->SetOffsetFromLayoutObject(
       ToIntSize(local_compositing_bounds.Location()));
+  // Find the layout offset of the unshifted sticky box within its parent
+  // composited layer. This information is used by the compositor side to
+  // compute the additional offset required to keep the element stuck under
+  // compositor scrolling.
+  FloatSize main_thread_sticky_offset;
+  if (GetLayoutObject().Style()->GetPosition() == EPosition::kSticky) {
+    const StickyConstraintsMap& constraints_map =
+        owning_layer_.AncestorOverflowLayer()
+            ->GetScrollableArea()
+            ->GetStickyConstraintsMap();
+    const StickyPositionScrollingConstraints& constraints =
+        constraints_map.at(&owning_layer_);
+
+    main_thread_sticky_offset =
+        constraints.GetOffsetForStickyPosition(constraints_map);
+  }
+  graphics_layer_->SetOffsetForStickyPosition(
+      RoundedIntSize(main_thread_sticky_offset));
 
   FloatSize old_size = graphics_layer_->Size();
   const FloatSize contents_size(relative_compositing_bounds.Size());
