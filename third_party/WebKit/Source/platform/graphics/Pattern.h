@@ -72,13 +72,13 @@ class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
   virtual bool IsTextureBacked() const { return false; }
 
  protected:
-  virtual sk_sp<PaintShader> CreateShader(const SkMatrix&) = 0;
+  virtual std::unique_ptr<PaintShader> CreateShader(const SkMatrix&) = 0;
   virtual bool IsLocalMatrixChanged(const SkMatrix&) const;
 
   RepeatMode repeat_mode_;
 
   Pattern(RepeatMode);
-  mutable sk_sp<PaintShader> cached_shader_;
+  mutable std::unique_ptr<PaintShader> cached_shader_;
 };
 
 }  // namespace blink

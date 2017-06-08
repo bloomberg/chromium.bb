@@ -23,6 +23,7 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecorder.h"
+#include "platform/graphics/paint/PaintShader.h"
 #include "platform/wtf/Optional.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
@@ -768,7 +769,7 @@ sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
   PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(color);
-  flags.setShader(SkGradientShader::MakeLinear(
+  flags.setShader(PaintShader::MakeLinearGradient(
       pts, colors, nullptr, ARRAY_SIZE(colors), SkShader::kClamp_TileMode));
   PaintRecorder recorder;
   recorder.beginRecording(kMarkerWidth, kMarkerHeight);
@@ -812,9 +813,9 @@ void DrawDocumentMarker(GraphicsContext& context,
 
   PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setShader(WrapSkShader(MakePaintShaderRecord(
+  flags.setShader(PaintShader::MakePaintRecord(
       sk_ref_sp(marker), FloatRect(0, 0, kMarkerWidth, kMarkerHeight),
-      SkShader::kRepeat_TileMode, SkShader::kClamp_TileMode, &local_matrix)));
+      SkShader::kRepeat_TileMode, SkShader::kClamp_TileMode, &local_matrix));
 
   // Apply the origin translation as a global transform.  This ensures that the
   // shader local matrix depends solely on zoom => Skia can reuse the same

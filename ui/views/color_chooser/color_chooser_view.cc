@@ -105,8 +105,8 @@ void DrawGradientRect(const gfx::Rect& rect, SkColor start_color,
   else
     points[1].iset(0, rect.height() + 1);
   cc::PaintFlags flags;
-  flags.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
-      points, colors, NULL, 2, SkShader::kClamp_TileMode)));
+  flags.setShader(cc::PaintShader::MakeLinearGradient(
+      points, colors, nullptr, 2, SkShader::kClamp_TileMode));
   canvas->DrawRect(rect, flags);
 }
 
