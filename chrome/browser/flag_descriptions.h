@@ -295,9 +295,6 @@ extern const char kExperimentalHotwordHardwareDescription[];
 extern const char kExperimentalKeyboardLockUiName[];
 extern const char kExperimentalKeyboardLockUiDescription[];
 
-extern const char kExperimentalPointerEventName[];
-extern const char kExperimentalPointerEventDescription[];
-
 extern const char kExperimentalSecurityFeaturesName[];
 extern const char kExperimentalSecurityFeaturesDescription[];
 

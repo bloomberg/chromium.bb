@@ -164,8 +164,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
   }
 
   if (!frame_ || !frame_->GetPage() ||
-      !HasPointerEventListener(frame_->GetPage()->GetEventHandlerRegistry()) ||
-      !RuntimeEnabledFeatures::PointerEventEnabled())
+      !HasPointerEventListener(frame_->GetPage()->GetEventHandlerRegistry()))
     return WebInputEventResult::kNotHandled;
 
   if (!check_for_listener || target->HasEventListeners(event_type)) {

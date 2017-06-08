@@ -232,10 +232,6 @@ void WebRuntimeFeatures::EnablePermissionsAPI(bool enable) {
   RuntimeEnabledFeatures::SetPermissionsEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnablePointerEvent(bool enable) {
-  RuntimeEnabledFeatures::SetPointerEventEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableScriptedSpeech(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechEnabled(enable);
 }
