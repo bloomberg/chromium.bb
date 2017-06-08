@@ -45,6 +45,10 @@ class PLATFORM_EXPORT ScaleTransformOperation final
     return AdoptRef(new ScaleTransformOperation(sx, sy, sz, type));
   }
 
+  bool operator==(const ScaleTransformOperation& other) const {
+    return *this == static_cast<const TransformOperation&>(other);
+  }
+
   double X() const { return x_; }
   double Y() const { return y_; }
   double Z() const { return z_; }
