@@ -6574,6 +6574,11 @@
         ],
         "critical_for_chrome": true,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal",
+            "kernel_afdo"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
