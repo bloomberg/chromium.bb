@@ -290,6 +290,7 @@ source_set("unit_tests") {
     "payments/PaymentTestHelper.h",
     "payments/PaymentsValidatorsTest.cpp",
     "peerconnection/RTCDataChannelTest.cpp",
+    "presentation/MockWebPresentationClient.h",
     "presentation/PresentationAvailabilityTest.cpp",
     "presentation/PresentationReceiverTest.cpp",
     "presentation/PresentationRequestTest.cpp",
