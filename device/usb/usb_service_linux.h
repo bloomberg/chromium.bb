@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef DEVICE_USB_USB_SERVICE_LINUX_H_
+#define DEVICE_USB_USB_SERVICE_LINUX_H_
+
 #include <list>
 #include <memory>
 #include <unordered_map>
@@ -61,3 +64,5 @@ class UsbServiceLinux : public UsbService {
 };
 
 }  // namespace device
+
+#endif  // DEVICE_USB_USB_SERVICE_LINUX_H_

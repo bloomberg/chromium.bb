@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef DEVICE_USB_USB_SERVICE_IMPL_H_
+#define DEVICE_USB_USB_SERVICE_IMPL_H_
+
 #include "device/usb/usb_service.h"
 
 #include <stddef.h>
@@ -120,3 +123,5 @@ class UsbServiceImpl :
 };
 
 }  // namespace device
+
+#endif  // DEVICE_USB_USB_SERVICE_IMPL_H_

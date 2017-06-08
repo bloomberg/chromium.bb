@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_USB_USB_DEVICE_IMPL_H_
-#define DEVICE_USB_USB_DEVICE_IMPL_H_
+#ifndef DEVICE_USB_USB_DEVICE_LINUX_H_
+#define DEVICE_USB_USB_DEVICE_LINUX_H_
 
 #include <stdint.h>
 
@@ -76,4 +76,4 @@ class UsbDeviceLinux : public UsbDevice {
 
 }  // namespace device
 
-#endif  // DEVICE_USB_USB_DEVICE_IMPL_H_
+#endif  // DEVICE_USB_USB_DEVICE_LINUX_H_
