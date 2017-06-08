@@ -138,6 +138,8 @@ split_static_library("browser") {
     "browser_process_platform_part_chromeos.h",
     "browser_process_platform_part_mac.h",
     "browser_process_platform_part_mac.mm",
+    "browser_process_platform_part_win.cc",
+    "browser_process_platform_part_win.h",
     "browser_shutdown.cc",
     "browser_shutdown.h",
     "browsing_data/browsing_data_appcache_helper.cc",
@@ -1481,6 +1483,7 @@ split_static_library("browser") {
     "//sql",
   ]
   deps = [
+    ":active_use_util",
     ":resource_prefetch_predictor_proto",
     "//cc",
     "//chrome:extra_resources",
@@ -3814,8 +3817,6 @@ split_static_library("browser") {
     if (!is_chrome_branded) {
       deps -= [ "//google_update" ]
       sources -= [
-        "google/did_run_updater_win.cc",
-        "google/did_run_updater_win.h",
         "google/google_update_win.cc",
         "google/google_update_win.h",
       ]
@@ -4381,6 +4382,23 @@ if (is_win) {
       "//chrome/browser/policy:path_parser",
       "//chrome/common:constants",
     ]
+  }
+}
+
+# This source set is built into both //chrome:chrome_initial (chrome.exe) and
+# //chrome:main_dll (chrome.dll). It must not pull in additional dependencies
+# over what those targets already require.
+source_set("active_use_util") {
+  sources = [
+    "active_use_util.cc",
+    "active_use_util.h",
+  ]
+  deps = [
+    "//base",
+    "//chrome/common:constants",
+  ]
+  if (is_win) {
+    deps += [ "//chrome/install_static:install_static_util" ]
   }
 }
 

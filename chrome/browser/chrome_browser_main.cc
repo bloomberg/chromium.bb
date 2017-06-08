@@ -46,6 +46,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/active_use_util.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -572,6 +573,11 @@ bool ProcessSingletonNotificationCallback(
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       command_line, current_directory, startup_profile_dir);
+
+  // Record now as the last successful chrome start.
+  if (ShouldRecordActiveUse(command_line))
+    GoogleUpdateSettings::SetLastRunTime();
+
   return true;
 }
 #endif  // !defined(OS_ANDROID)
@@ -1867,7 +1873,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
     // Record now as the last successful chrome start.
-    GoogleUpdateSettings::SetLastRunTime();
+    if (ShouldRecordActiveUse(parsed_command_line()))
+      GoogleUpdateSettings::SetLastRunTime();
 
 #if defined(OS_MACOSX)
     // Call Recycle() here as late as possible, before going into the loop

@@ -78,10 +78,6 @@
 #include "ui/gfx/switches.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/google/did_run_updater_win.h"
-#endif
-
 namespace {
 
 typedef HRESULT (STDAPICALLTYPE* RegisterApplicationRestartProc)(
@@ -371,10 +367,6 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
       base::Bind(&VerifyInstallation));
 
   InitializeChromeElf();
-
-#if defined(GOOGLE_CHROME_BUILD)
-  did_run_updater_.reset(new DidRunUpdater);
-#endif
 
   if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
     content::BrowserThread::PostAfterStartupTask(

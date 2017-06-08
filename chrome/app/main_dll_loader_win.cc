@@ -33,6 +33,7 @@
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/app/chrome_watcher_command_line_win.h"
 #include "chrome/app/file_pre_reader_win.h"
+#include "chrome/browser/active_use_util.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -62,10 +63,6 @@ HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
 
 void RecordDidRun(const base::FilePath& dll_path) {
   GoogleUpdateSettings::UpdateDidRunState(true);
-}
-
-void ClearDidRun(const base::FilePath& dll_path) {
-  GoogleUpdateSettings::UpdateDidRunState(false);
 }
 
 bool ProcessTypeUsesMainDll(const std::string& process_type) {
@@ -196,12 +193,12 @@ int MainDllLoader::Launch(HINSTANCE instance,
   if (!dll_)
     return chrome::RESULT_CODE_MISSING_DATA;
 
-  OnBeforeLaunch(process_type_, file);
+  OnBeforeLaunch(cmd_line, process_type_, file);
   DLL_MAIN chrome_main =
       reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
   int rc = chrome_main(instance, &sandbox_info,
                        exe_entry_point_ticks.ToInternalValue());
-  rc = OnBeforeExit(rc, file);
+  OnBeforeExit(file);
   return rc;
 }
 
@@ -227,18 +224,21 @@ void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 class ChromeDllLoader : public MainDllLoader {
  protected:
   // MainDllLoader implementation.
-  void OnBeforeLaunch(const std::string& process_type,
+  void OnBeforeLaunch(const base::CommandLine& cmd_line,
+                      const std::string& process_type,
                       const base::FilePath& dll_path) override;
-  int OnBeforeExit(int return_code, const base::FilePath& dll_path) override;
+  void OnBeforeExit(const base::FilePath& dll_path) override;
 
  private:
   std::unique_ptr<ChromeWatcherClient> chrome_watcher_client_;
 };
 
-void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
+void ChromeDllLoader::OnBeforeLaunch(const base::CommandLine& cmd_line,
+                                     const std::string& process_type,
                                      const base::FilePath& dll_path) {
   if (process_type.empty()) {
-    RecordDidRun(dll_path);
+    if (ShouldRecordActiveUse(cmd_line))
+      RecordDidRun(dll_path);
 
     // Launch the watcher process.
     base::FilePath exe_path;
@@ -257,29 +257,18 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
   }
 }
 
-int ChromeDllLoader::OnBeforeExit(int return_code,
-                                  const base::FilePath& dll_path) {
-  // NORMAL_EXIT_CANCEL is used for experiments when the user cancels
-  // so we need to reset the did_run signal so omaha does not count
-  // this run as active usage.
-  if (chrome::RESULT_CODE_NORMAL_EXIT_CANCEL == return_code) {
-    ClearDidRun(dll_path);
-  }
-
+void ChromeDllLoader::OnBeforeExit(const base::FilePath& dll_path) {
   chrome_watcher_client_.reset();
-
-  return return_code;
 }
 
 //=============================================================================
 
 class ChromiumDllLoader : public MainDllLoader {
  protected:
-  void OnBeforeLaunch(const std::string& process_type,
+  void OnBeforeLaunch(const base::CommandLine& cmd_line,
+                      const std::string& process_type,
                       const base::FilePath& dll_path) override {}
-  int OnBeforeExit(int return_code, const base::FilePath& dll_path) override {
-    return return_code;
-  }
+  void OnBeforeExit(const base::FilePath& dll_path) override {}
 };
 
 MainDllLoader* MakeMainDllLoader() {
