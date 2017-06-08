@@ -71,7 +71,7 @@ class MostVisitedSitesSupervisor {
   virtual bool IsBlocked(const GURL& url) = 0;
 
   // Explicitly-specified sites to show on NTP.
-  virtual std::vector<Whitelist> whitelists() = 0;
+  virtual std::vector<Whitelist> GetWhitelists() = 0;
 
   // If true, be conservative about suggesting sites from outside sources.
   virtual bool IsChildProfile() = 0;
