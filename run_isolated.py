@@ -592,7 +592,7 @@ def map_and_run(
             logging.error('Failure with %s', e)
             success = False
           if not success:
-            sys.stderr.write(OUTLIVING_ZOMBIE_MSG % ('run', grace_period))
+            sys.stderr.write(OUTLIVING_ZOMBIE_MSG % ('temp', grace_period))
             if result['exit_code'] == 0:
               result['exit_code'] = 1
 
