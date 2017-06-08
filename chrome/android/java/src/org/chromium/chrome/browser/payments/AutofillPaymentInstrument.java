@@ -81,6 +81,16 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     }
 
     @Override
+    public boolean isAutofillInstrument() {
+        return true;
+    }
+
+    @Override
+    public boolean isServerAutofillInstrument() {
+        return !mCard.getIsLocal();
+    }
+
+    @Override
     public void invokePaymentApp(String unusedRequestId, String unusedMerchantName,
             String unusedOrigin, String unusedIFrameOrigin, byte[][] unusedCertificateChain,
             Map<String, PaymentMethodData> unusedMethodDataMap, PaymentItem unusedTotal,

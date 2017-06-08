@@ -318,6 +318,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private boolean mPaymentAppRunning;
     private boolean mMerchantSupportsAutofillPaymentInstruments;
+    private boolean mHideServerAutofillInstruments;
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
     private Map<String, CurrencyFormatter> mCurrencyFormatterMap;
@@ -1487,7 +1488,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                         instrument.getInstrumentMethodNames());
                 instrumentMethodNames.retainAll(mMethodData.keySet());
                 if (!instrumentMethodNames.isEmpty()) {
-                    if (instrument instanceof AutofillPaymentInstrument) {
+                    mHideServerAutofillInstruments |=
+                            instrument.isServerAutofillInstrumentReplacement();
+                    if (instrument.isAutofillInstrument()) {
                         mPendingAutofillInstruments.add(instrument);
                     } else {
                         nonAutofillInstruments.add(instrument);
@@ -1506,6 +1509,16 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (!mPendingApps.isEmpty()) return;
 
         if (disconnectIfNoPaymentMethodsSupported()) return;
+
+        if (mHideServerAutofillInstruments) {
+            List<PaymentInstrument> localAutofillInstruments = new ArrayList<>();
+            for (int i = 0; i < mPendingAutofillInstruments.size(); i++) {
+                if (!mPendingAutofillInstruments.get(i).isServerAutofillInstrument()) {
+                    localAutofillInstruments.add(mPendingAutofillInstruments.get(i));
+                }
+            }
+            mPendingAutofillInstruments = localAutofillInstruments;
+        }
 
         // Load the validation rules for each unique region code in the credit card billing
         // addresses and check for validity.

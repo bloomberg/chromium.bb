@@ -69,6 +69,28 @@ public abstract class PaymentInstrument extends PaymentOption {
     public abstract Set<String> getInstrumentMethodNames();
 
     /**
+     * @return Whether this is an autofill instrument. All autofill instruments are sorted below all
+     * non-autofill instruments.
+     */
+    public boolean isAutofillInstrument() {
+        return false;
+    }
+
+    /** @return Whether this is a server autofill instrument. */
+    public boolean isServerAutofillInstrument() {
+        return false;
+    }
+
+    /**
+     * @return Whether this is a replacement for all server autofill instruments. If at least one of
+     *         the displayed instruments returns true here, then all instruments that return true
+     *         in isServerAutofillInstrument() should be hidden.
+     */
+    public boolean isServerAutofillInstrumentReplacement() {
+        return false;
+    }
+
+    /**
      * Invoke the payment app to retrieve the instrument details.
      *
      * The callback will be invoked with the resulting payment details or error.
