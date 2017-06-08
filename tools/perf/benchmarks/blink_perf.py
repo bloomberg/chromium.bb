@@ -67,11 +67,17 @@ def CreateStorySetFromPath(path, skipped_file,
   else:
     _AddPage(path)
   ps = story.StorySet(base_dir=os.getcwd() + os.sep,
-                      serving_dirs=serving_dirs)
+                      serving_dirs=serving_dirs,
+                      verify_names=True)
+
+  all_urls = [p.rstrip('/') for p in page_urls]
+  common_prefix = os.path.dirname(os.path.commonprefix(all_urls))
   for url in page_urls:
+    name = url[len(common_prefix):].strip('/')
     ps.AddStory(page_module.Page(
         url, ps, ps.base_dir,
-        shared_page_state_class=shared_page_state_class))
+        shared_page_state_class=shared_page_state_class,
+        name=name))
   return ps
 
 
