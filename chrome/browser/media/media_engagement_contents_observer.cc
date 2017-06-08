@@ -65,8 +65,10 @@ void MediaEngagementContentsObserver::MediaStartedPlaying(
     const MediaPlayerId& media_player_id) {
   // TODO(mlamouri): check if:
   // - the playback has the minimum size requirements;
-  // - the playback has an audio track;
   // - the playback isn't muted.
+  if (!media_player_info.has_audio)
+    return;
+
   DCHECK(significant_players_.find(media_player_id) ==
          significant_players_.end());
   significant_players_.insert(media_player_id);

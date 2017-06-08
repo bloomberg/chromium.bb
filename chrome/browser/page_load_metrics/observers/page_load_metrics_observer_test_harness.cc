@@ -119,7 +119,7 @@ void PageLoadMetricsObserverTestHarness::SimulateAppEnterBackground() {
 
 void PageLoadMetricsObserverTestHarness::SimulateMediaPlayed() {
   content::WebContentsObserver::MediaPlayerInfo video_type(
-      true /* in_has_video*/);
+      true /* has_video*/, true /* has_audio */);
   content::RenderFrameHost* render_frame_host = web_contents()->GetMainFrame();
   observer_->MediaStartedPlaying(video_type,
                                  std::make_pair(render_frame_host, 0));
