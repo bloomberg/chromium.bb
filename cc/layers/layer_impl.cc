@@ -704,12 +704,12 @@ void LayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {
 
 void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsActive());
-  if (GetScrollTree().SetScrollOffset(id(), scroll_offset))
-    layer_tree_impl()->DidUpdateScrollOffset(id());
+  if (GetScrollTree().SetScrollOffset(element_id(), scroll_offset))
+    layer_tree_impl()->DidUpdateScrollOffset(element_id());
 }
 
 gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {
-  return GetScrollTree().current_scroll_offset(id());
+  return GetScrollTree().current_scroll_offset(element_id());
 }
 
 void LayerImpl::UpdatePropertyTreeScrollOffset() {

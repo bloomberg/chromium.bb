@@ -455,7 +455,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void clear();
 
   gfx::ScrollOffset MaxScrollOffset(int scroll_node_id) const;
-  void OnScrollOffsetAnimated(int layer_id,
+  void OnScrollOffsetAnimated(ElementId id,
                               int scroll_tree_index,
                               const gfx::ScrollOffset& scroll_offset,
                               LayerTreeImpl* layer_tree_impl);
@@ -471,13 +471,13 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // Returns the current scroll offset. On the main thread this would return the
   // value for the LayerTree while on the impl thread this is the current value
   // on the active tree.
-  const gfx::ScrollOffset current_scroll_offset(int layer_id) const;
+  const gfx::ScrollOffset current_scroll_offset(ElementId id) const;
 
   // Collects deltas for scroll changes on the impl thread that need to be
   // reported to the main thread during the main frame. As such, should only be
   // called on the impl thread side PropertyTrees.
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
-                           int inner_viewport_layer_id);
+                           ElementId inner_viewport_scroll_element_id);
 
   // Applies deltas sent in the previous main frame onto the impl thread state.
   // Should only be called on the impl thread side PropertyTrees.
@@ -493,18 +493,18 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void PushScrollUpdatesFromPendingTree(PropertyTrees* pending_property_trees,
                                         LayerTreeImpl* active_tree);
 
-  bool SetBaseScrollOffset(int layer_id,
+  bool SetBaseScrollOffset(ElementId id,
                            const gfx::ScrollOffset& scroll_offset);
-  bool SetScrollOffset(int layer_id, const gfx::ScrollOffset& scroll_offset);
-  void SetScrollOffsetClobberActiveValue(int layer_id) {
-    GetOrCreateSyncedScrollOffset(layer_id)->set_clobber_active_value();
+  bool SetScrollOffset(ElementId id, const gfx::ScrollOffset& scroll_offset);
+  void SetScrollOffsetClobberActiveValue(ElementId id) {
+    GetOrCreateSyncedScrollOffset(id)->set_clobber_active_value();
   }
-  bool UpdateScrollOffsetBaseForTesting(int layer_id,
+  bool UpdateScrollOffsetBaseForTesting(ElementId id,
                                         const gfx::ScrollOffset& offset);
-  bool SetScrollOffsetDeltaForTesting(int layer_id,
+  bool SetScrollOffsetDeltaForTesting(ElementId id,
                                       const gfx::Vector2dF& delta);
-  const gfx::ScrollOffset GetScrollOffsetBaseForTesting(int layer_id) const;
-  const gfx::ScrollOffset GetScrollOffsetDeltaForTesting(int layer_id) const;
+  const gfx::ScrollOffset GetScrollOffsetBaseForTesting(ElementId id) const;
+  const gfx::ScrollOffset GetScrollOffsetDeltaForTesting(ElementId id) const;
   void CollectScrollDeltasForTesting();
 
   void DistributeScroll(ScrollNode* scroll_node, ScrollState* scroll_state);
@@ -514,7 +514,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset,
                                               ScrollNode* scroll_node) const;
 
-  const SyncedScrollOffset* GetSyncedScrollOffset(int layer_id) const;
+  const SyncedScrollOffset* GetSyncedScrollOffset(ElementId id) const;
 
 #if DCHECK_IS_ON()
   void CopyCompleteTreeState(const ScrollTree& other);
@@ -523,9 +523,9 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   ScrollNode* FindNodeFromElementId(ElementId id);
 
  private:
-  using ScrollOffsetMap = base::flat_map<int, gfx::ScrollOffset>;
+  using ScrollOffsetMap = base::flat_map<ElementId, gfx::ScrollOffset>;
   using SyncedScrollOffsetMap =
-      base::flat_map<int, scoped_refptr<SyncedScrollOffset>>;
+      base::flat_map<ElementId, scoped_refptr<SyncedScrollOffset>>;
 
   int currently_scrolling_node_id_;
 
@@ -534,10 +534,10 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // thread stores a map of SyncedProperty instances in order to track
   // additional state necessary to synchronize scroll changes between the main
   // and impl threads.
-  ScrollOffsetMap layer_id_to_scroll_offset_map_;
-  SyncedScrollOffsetMap layer_id_to_synced_scroll_offset_map_;
+  ScrollOffsetMap scroll_offset_map_;
+  SyncedScrollOffsetMap synced_scroll_offset_map_;
 
-  SyncedScrollOffset* GetOrCreateSyncedScrollOffset(int layer_id);
+  SyncedScrollOffset* GetOrCreateSyncedScrollOffset(ElementId id);
   gfx::ScrollOffset PullDeltaForMainThread(SyncedScrollOffset* scroll_offset);
 };
 

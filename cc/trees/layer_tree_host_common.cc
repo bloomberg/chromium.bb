@@ -153,12 +153,9 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                                         device_scale_factor,
                                         render_surface_list) {}
 
-LayerTreeHostCommon::ScrollUpdateInfo::ScrollUpdateInfo()
-    : layer_id(Layer::INVALID_ID) {}
-
 bool LayerTreeHostCommon::ScrollUpdateInfo::operator==(
     const LayerTreeHostCommon::ScrollUpdateInfo& other) const {
-  return layer_id == other.layer_id && scroll_delta == other.scroll_delta;
+  return element_id == other.element_id && scroll_delta == other.scroll_delta;
 }
 
 LayerTreeHostCommon::ScrollbarsUpdateInfo::ScrollbarsUpdateInfo()

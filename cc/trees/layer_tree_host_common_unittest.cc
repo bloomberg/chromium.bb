@@ -75,9 +75,10 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
                                    const gfx::Vector2dF& delta) {
     if (layer_impl->layer_tree_impl()
             ->property_trees()
-            ->scroll_tree.SetScrollOffsetDeltaForTesting(layer_impl->id(),
-                                                         delta))
-      layer_impl->layer_tree_impl()->DidUpdateScrollOffset(layer_impl->id());
+            ->scroll_tree.SetScrollOffsetDeltaForTesting(
+                layer_impl->element_id(), delta))
+      layer_impl->layer_tree_impl()->DidUpdateScrollOffset(
+          layer_impl->element_id());
   }
 
   static float GetMaximumAnimationScale(LayerImpl* layer_impl) {
@@ -540,6 +541,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
       LayerImpl::Create(host_impl.active_tree(), 4));
   LayerImpl* clip_layer = clip_layer_scoped_ptr.get();
 
+  scroll_layer->SetElementId(LayerIdToElementIdForTesting(scroll_layer->id()));
   scroll_layer->SetScrollClipLayer(clip_layer->id());
   clip_layer->SetBounds(
       gfx::Size(scroll_layer->bounds().width() + kMaxScrollOffset.x(),
@@ -552,8 +554,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   clip_layer->test_properties()->AddChild(std::move(scroll_layer_scoped_ptr));
   scroll_layer_raw_ptr->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer_raw_ptr->id(),
-                                                     kScrollOffset);
+      ->scroll_tree.UpdateScrollOffsetBaseForTesting(
+          scroll_layer_raw_ptr->element_id(), kScrollOffset);
 
   std::unique_ptr<LayerImpl> root(
       LayerImpl::Create(host_impl.active_tree(), 3));
@@ -5321,6 +5323,7 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   intervening->SetMasksToBounds(true);
   clip_parent->SetMasksToBounds(true);
   intervening->SetScrollClipLayer(clip_parent->id());
+  intervening->SetElementId(LayerIdToElementIdForTesting(intervening->id()));
   intervening->SetCurrentScrollOffset(gfx::ScrollOffset(3, 3));
 
   gfx::Transform translation_transform;
@@ -6122,6 +6125,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   constraint.set_is_fixed_position(true);
   fixed->test_properties()->position_constraint = constraint;
 
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayer(container->id());
 
   gfx::Transform container_transform;
@@ -6245,6 +6249,7 @@ TEST_F(LayerTreeHostCommonTest,
   surface->test_properties()->force_render_surface = true;
   container->SetBounds(gfx::Size(50, 50));
   scroller->SetBounds(gfx::Size(100, 100));
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayer(container->id());
   scroller->SetDrawsContent(true);
 
@@ -6287,6 +6292,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollSnappingWithScrollChild) {
   container->AddChild(scroller);
   host()->SetRootLayer(root);
 
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
   scroll_child->SetScrollParent(scroller.get());
 
@@ -6334,6 +6340,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionTop) {
   container->AddChild(scroller);
   scroller->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
 
   LayerStickyPositionConstraint sticky_position;
@@ -6406,6 +6413,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionTopScrollParent) {
   root->AddChild(sticky_pos);
   sticky_pos->SetScrollParent(scroller.get());
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
 
   // The sticky layer has already been scrolled on the main thread side, and has
@@ -6481,6 +6489,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionSubpixelScroll) {
   container->AddChild(scroller);
   scroller->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
 
   LayerStickyPositionConstraint sticky_position;
@@ -6526,6 +6535,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottom) {
   container->AddChild(scroller);
   scroller->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
 
   LayerStickyPositionConstraint sticky_position;
@@ -6593,6 +6603,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottomInnerViewportDelta) {
   root->AddChild(scroller);
   scroller->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(root->id());
   LayerTreeHost::ViewportLayers viewport_layers;
   viewport_layers.page_scale = root;
@@ -6668,6 +6679,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottomOuterViewportDelta) {
   outer_clip->AddChild(outer_viewport);
   outer_viewport->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(root->id());
   outer_viewport->SetScrollClipLayerId(outer_clip->id());
   LayerTreeHost::ViewportLayers viewport_layers;
@@ -6750,6 +6762,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionLeftRight) {
   container->AddChild(scroller);
   scroller->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
 
   LayerStickyPositionConstraint sticky_position;
@@ -6854,6 +6867,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionMainThreadUpdates) {
   container->AddChild(scroller);
   scroller->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
 
   LayerStickyPositionConstraint sticky_position;
@@ -6947,6 +6961,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionCompositedContainer) {
   scroller->AddChild(sticky_container);
   sticky_container->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
 
   LayerStickyPositionConstraint sticky_position;
@@ -7045,6 +7060,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionScaledStickyBox) {
   container->AddChild(scroller);
   scroller->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
   gfx::Transform t;
   t.Scale(2, 2);
@@ -7123,6 +7139,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionScaledContainer) {
   scroller->AddChild(sticky_container);
   sticky_container->AddChild(sticky_pos);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
   gfx::Transform t;
   t.Scale(2, 2);
@@ -7201,6 +7218,7 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionNested) {
   scroller->AddChild(outer_sticky);
   outer_sticky->AddChild(inner_sticky);
   host()->SetRootLayer(root);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
 
   root->SetBounds(gfx::Size(100, 100));
@@ -7301,6 +7319,7 @@ TEST_F(LayerTreeHostCommonTest, NonFlatContainerForFixedPosLayer) {
 
   LayerPositionConstraint fixed_position;
   fixed_position.set_is_fixed_position(true);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
   fixed_pos->SetPositionConstraint(fixed_position);
 
@@ -7345,6 +7364,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollSnappingWithFixedPosChild) {
 
   LayerPositionConstraint fixed_position;
   fixed_position.set_is_fixed_position(true);
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayerId(container->id());
   fixed_pos->SetPositionConstraint(fixed_position);
 
@@ -8587,7 +8607,9 @@ TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
   frame_clip->SetMasksToBounds(true);
   frame_clip->SetDrawsContent(true);
   scroller->SetBounds(gfx::Size(1000, 1000));
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetCurrentScrollOffset(gfx::ScrollOffset(100, 100));
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollClipLayer(frame_clip->id());
   scroller->SetDrawsContent(true);
   fixed->SetPosition(gfx::PointF(100, 100));
@@ -8676,6 +8698,8 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
   EXPECT_EQ(gfx::Rect(25, 25), scroll_child->visible_layer_rect());
 
   scroll_child->SetPosition(gfx::PointF(0, -10.f));
+  scroll_parent->SetElementId(
+      LayerIdToElementIdForTesting(scroll_parent->id()));
   scroll_parent->SetCurrentScrollOffset(gfx::ScrollOffset(0.f, 10.f));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
@@ -10038,6 +10062,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
       MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
   parent2->AddMainThreadScrollingReasons(
       MainThreadScrollingReason::kScrollbarScrolling);
+  parent2->SetElementId(LayerIdToElementIdForTesting(parent2->id()));
   parent2->SetScrollClipLayerId(root1->id());
   child6->AddMainThreadScrollingReasons(
       MainThreadScrollingReason::kScrollbarScrolling);
@@ -10045,9 +10070,12 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
       MainThreadScrollingReason::kScrollbarScrolling);
 
   child7->SetScrollClipLayerId(parent3->id());
+  child7->SetElementId(LayerIdToElementIdForTesting(child7->id()));
 
   child8->SetScrollParent(child7.get());
   grand_child11->SetScrollClipLayerId(parent3->id());
+  grand_child11->SetElementId(
+      LayerIdToElementIdForTesting(grand_child11->id()));
 
   parent5->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
   parent5->SetBounds(gfx::Size(10, 10));
@@ -10092,6 +10120,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   ScrollNode scroll_parent2;
   scroll_parent2.id = 2;
   scroll_parent2.owning_layer_id = parent2->id();
+  scroll_parent2.element_id = parent2->element_id();
   scroll_parent2.scrollable = true;
   scroll_parent2.main_thread_scrolling_reasons =
       parent2->main_thread_scrolling_reasons();
@@ -10124,6 +10153,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   ScrollNode scroll_child7;
   scroll_child7.id = 4;
   scroll_child7.owning_layer_id = child7->id();
+  scroll_child7.element_id = child7->element_id();
   scroll_child7.scrollable = true;
   scroll_child7.scroll_clip_layer_bounds = parent3->bounds();
   scroll_child7.bounds = child7->bounds();
@@ -10138,6 +10168,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   ScrollNode scroll_grand_child11;
   scroll_grand_child11.id = 5;
   scroll_grand_child11.owning_layer_id = grand_child11->id();
+  scroll_grand_child11.element_id = grand_child11->element_id();
   scroll_grand_child11.scrollable = true;
   scroll_grand_child11.user_scrollable_horizontal = true;
   scroll_grand_child11.user_scrollable_vertical = true;
@@ -10160,9 +10191,11 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   expected_scroll_tree.SetOwningLayerIdForNode(expected_scroll_tree.back(),
                                                parent5->id());
 
-  expected_scroll_tree.SetScrollOffset(parent2->id(), gfx::ScrollOffset(0, 0));
-  expected_scroll_tree.SetScrollOffset(child7->id(), gfx::ScrollOffset(0, 0));
-  expected_scroll_tree.SetScrollOffset(grand_child11->id(),
+  expected_scroll_tree.SetScrollOffset(parent2->element_id(),
+                                       gfx::ScrollOffset(0, 0));
+  expected_scroll_tree.SetScrollOffset(child7->element_id(),
+                                       gfx::ScrollOffset(0, 0));
+  expected_scroll_tree.SetScrollOffset(grand_child11->element_id(),
                                        gfx::ScrollOffset(0, 0));
   expected_scroll_tree.set_needs_update(false);
 
