@@ -1001,11 +1001,6 @@ class LayerTreeHostContextTestDontUseLostResources
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame,
                                    DrawResult draw_result) override {
-    if (host_impl->active_tree()->source_frame_number() == 2) {
-      // Lose the context during draw on the second commit. This will cause
-      // a third commit to recover.
-      context3d_->set_times_bind_texture_succeeds(0);
-    }
     return draw_result;
   }
 
@@ -1021,6 +1016,13 @@ class LayerTreeHostContextTestDontUseLostResources
 
   void DidCommitAndDrawFrame() override {
     ASSERT_TRUE(layer_tree_host()->hud_layer());
+
+    if (layer_tree_host()->SourceFrameNumber() == 2) {
+      // Lose the context after draw on the second commit. This will cause
+      // a third commit to recover.
+      context3d_->set_times_bind_texture_succeeds(0);
+    }
+
     // End the test once we know the 3nd frame drew.
     if (layer_tree_host()->SourceFrameNumber() < 5) {
       layer_tree_host()->root_layer()->SetNeedsDisplay();

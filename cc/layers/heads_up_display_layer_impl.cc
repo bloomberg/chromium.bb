@@ -18,10 +18,12 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/memory_history.h"
 #include "cc/trees/frame_rate_counter.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -95,9 +97,10 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
   }
 
   auto resource = base::MakeUnique<ScopedResource>(resource_provider);
-  resource->Allocate(
-      internal_content_bounds_, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      resource_provider->best_texture_format(), gfx::ColorSpace());
+  resource->Allocate(internal_content_bounds_,
+                     ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
+                     resource_provider->best_render_buffer_format(),
+                     gfx::ColorSpace());
   resources_.push_back(std::move(resource));
 }
 
@@ -157,48 +160,71 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
 
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     DrawMode draw_mode,
-    ResourceProvider* resource_provider) {
+    ResourceProvider* resource_provider,
+    ContextProvider* context_provider) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE || !resources_.back()->id())
     return;
 
-  SkISize canvas_size;
-  if (hud_surface_)
-    canvas_size = hud_surface_->getCanvas()->getBaseLayerSize();
-  else
-    canvas_size.set(0, 0);
+  if (context_provider) {
+    gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+    DCHECK(gl);
+    ScopedGpuRaster gpu_raster(context_provider);
+    bool using_worker_context = false;
+    ResourceProvider::ScopedWriteLockGL lock(
+        resource_provider, resources_.back()->id(), using_worker_context);
 
-  if (canvas_size.width() != internal_content_bounds_.width() ||
-      canvas_size.height() != internal_content_bounds_.height() ||
-      !hud_surface_) {
-    TRACE_EVENT0("cc", "ResizeHudCanvas");
+    TRACE_EVENT_BEGIN0("cc", "CreateHudCanvas");
+    bool use_distance_field_text = false;
+    bool can_use_lcd_text = false;
+    int msaa_sample_count = 0;
+    ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
+        context_provider, &lock, using_worker_context, use_distance_field_text,
+        can_use_lcd_text, msaa_sample_count);
+    SkCanvas* gpu_raster_canvas = scoped_surface.sk_surface()->getCanvas();
+    TRACE_EVENT_END0("cc", "CreateHudCanvas");
 
-    hud_surface_ = SkSurface::MakeRasterN32Premul(
-        internal_content_bounds_.width(), internal_content_bounds_.height());
-  }
+    UpdateHudContents();
 
-  UpdateHudContents();
+    DrawHudContents(gpu_raster_canvas);
 
-  {
-    TRACE_EVENT0("cc", "DrawHudContents");
-    hud_surface_->getCanvas()->clear(SkColorSetARGB(0, 0, 0, 0));
-    hud_surface_->getCanvas()->save();
-    hud_surface_->getCanvas()->scale(internal_contents_scale_,
-                                     internal_contents_scale_);
+    TRACE_EVENT_BEGIN0("cc", "UploadHudTexture");
+    const uint64_t fence = gl->InsertFenceSyncCHROMIUM();
+    gl->OrderingBarrierCHROMIUM();
+    gpu::SyncToken sync_token;
+    gl->GenSyncTokenCHROMIUM(fence, sync_token.GetData());
+    lock.set_sync_token(sync_token);
+    lock.set_synchronized(true);
+    TRACE_EVENT_END0("cc", "UploadHudTexture");
+  } else {
+    SkISize canvas_size;
+    if (hud_surface_)
+      canvas_size = hud_surface_->getCanvas()->getBaseLayerSize();
+    else
+      canvas_size.set(0, 0);
+
+    if (canvas_size.width() != internal_content_bounds_.width() ||
+        canvas_size.height() != internal_content_bounds_.height() ||
+        !hud_surface_) {
+      TRACE_EVENT0("cc", "ResizeHudCanvas");
+
+      hud_surface_ = SkSurface::MakeRasterN32Premul(
+          internal_content_bounds_.width(), internal_content_bounds_.height());
+    }
+
+    UpdateHudContents();
 
     DrawHudContents(hud_surface_->getCanvas());
 
-    hud_surface_->getCanvas()->restore();
+    TRACE_EVENT0("cc", "UploadHudTexture");
+    SkPixmap pixmap;
+    hud_surface_->peekPixels(&pixmap);
+    DCHECK(pixmap.addr());
+    DCHECK(pixmap.info().colorType() == kN32_SkColorType);
+    resource_provider->CopyToResource(
+        resources_.back()->id(), static_cast<const uint8_t*>(pixmap.addr()),
+        internal_content_bounds_);
+    resource_provider->GenerateSyncTokenForResource(resources_.back()->id());
   }
-
-  TRACE_EVENT0("cc", "UploadHudTexture");
-  SkPixmap pixmap;
-  hud_surface_->peekPixels(&pixmap);
-  DCHECK(pixmap.addr());
-  DCHECK(pixmap.info().colorType() == kN32_SkColorType);
-  resource_provider->CopyToResource(resources_.back()->id(),
-                                    static_cast<const uint8_t*>(pixmap.addr()),
-                                    internal_content_bounds_);
-  resource_provider->GenerateSyncTokenForResource(resources_.back()->id());
 }
 
 void HeadsUpDisplayLayerImpl::ReleaseResources() {
@@ -258,6 +284,11 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
 void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
   const LayerTreeDebugState& debug_state = layer_tree_impl()->debug_state();
 
+  TRACE_EVENT0("cc", "DrawHudContents");
+  canvas->clear(SkColorSetARGB(0, 0, 0, 0));
+  canvas->save();
+  canvas->scale(internal_contents_scale_, internal_contents_scale_);
+
   if (debug_state.ShowHudRects()) {
     DrawDebugRects(canvas, layer_tree_impl()->debug_rect_history());
     if (IsAnimatingHUDContents()) {
@@ -265,8 +296,10 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
     }
   }
 
-  if (!debug_state.show_fps_counter)
+  if (!debug_state.show_fps_counter) {
+    canvas->restore();
     return;
+  }
 
   SkRect area =
       DrawFPSDisplay(canvas, layer_tree_impl()->frame_rate_counter(), 0, 0);
@@ -275,6 +308,8 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
 
   if (debug_state.ShowMemoryStats() && memory_entry_.total_bytes_used)
     DrawMemoryDisplay(canvas, 0, area.bottom(), SkMaxScalar(area.width(), 150));
+
+  canvas->restore();
 }
 int HeadsUpDisplayLayerImpl::MeasureText(SkPaint* paint,
                                          const std::string& text,

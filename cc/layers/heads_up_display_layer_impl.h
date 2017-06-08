@@ -44,7 +44,8 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   void UpdateHudTexture(DrawMode draw_mode,
-                        ResourceProvider* resource_provider);
+                        ResourceProvider* resource_provider,
+                        ContextProvider* context_provider);
 
   void ReleaseResources() override;
 
