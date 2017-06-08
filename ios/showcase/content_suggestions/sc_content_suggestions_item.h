@@ -17,7 +17,7 @@
 @property(nonatomic, copy) NSString* subtitle;
 @property(nonatomic, assign) BOOL hasImage;
 @property(nonatomic, copy) NSString* publisher;
-@property(nonatomic, strong) NSDate* publishDate;
+@property(nonatomic, copy) NSString* publicationDate;
 @property(nonatomic, assign) BOOL availableOffline;
 
 @end

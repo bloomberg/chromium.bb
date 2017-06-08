@@ -4,11 +4,15 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/browser/ui/favicon/favicon_view.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -72,10 +76,8 @@
   cell.displayImage = self.hasImage;
   [cell setContentImage:self.image animated:self.firstTimeWithImage];
   self.firstTimeWithImage = NO;
-  NSDate* date =
-      [NSDate dateWithTimeIntervalSince1970:self.publishDate.ToDoubleT()];
   [cell setAdditionalInformationWithPublisherName:self.publisher
-                                             date:date
+                                             date:[self relativeDate]
                               offlineAvailability:self.availableOffline];
 }
 
@@ -83,6 +85,27 @@
   _image = image;
   if (image)
     self.firstTimeWithImage = YES;
+}
+
+#pragma mark - Private
+
+// Returns the date of publication relative to now.
+- (NSString*)relativeDate {
+  int64_t now = (base::Time::Now() - base::Time::UnixEpoch()).InSeconds();
+  int64_t elapsed = now - self.publishDate.ToDoubleT();
+  NSString* relativeDate;
+  if (elapsed < 60) {
+    // This will also catch items added in the future. In that case, show the
+    // "just now" string.
+    relativeDate = l10n_util::GetNSString(IDS_IOS_READING_LIST_JUST_NOW);
+  } else {
+    relativeDate =
+        base::SysUTF16ToNSString(ui::TimeFormat::SimpleWithMonthAndYear(
+            ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_LONG,
+            base::TimeDelta::FromSeconds(elapsed), true));
+  }
+
+  return relativeDate;
 }
 
 @end

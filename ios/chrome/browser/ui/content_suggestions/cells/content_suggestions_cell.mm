@@ -161,15 +161,10 @@ const CGFloat kAnimationDuration = 0.3;
 }
 
 - (void)setAdditionalInformationWithPublisherName:(NSString*)publisherName
-                                             date:(NSDate*)date
+                                             date:(NSString*)date
                               offlineAvailability:(BOOL)availableOffline {
-  NSString* dateString =
-      [NSDateFormatter localizedStringFromDate:date
-                                     dateStyle:NSDateFormatterMediumStyle
-                                     timeStyle:NSDateFormatterNoStyle];
-
   NSString* publisherString = AdjustStringForLocaleDirection(
-      [NSString stringWithFormat:@"%@ - %@ ", publisherName, dateString]);
+      [NSString stringWithFormat:@"%@ - %@ ", publisherName, date]);
 
   NSMutableAttributedString* additionInformation =
       [[NSMutableAttributedString alloc] initWithString:publisherString

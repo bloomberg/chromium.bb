@@ -6,9 +6,11 @@
 
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,7 +28,7 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
   GURL url = GURL("http://chromium.org");
   NSString* publisher = @"publisherName";
   base::Time publishTime = base::Time::Now();
-  NSDate* date = [NSDate dateWithTimeIntervalSince1970:publishTime.ToDoubleT()];
+  NSString* date = l10n_util::GetNSString(IDS_IOS_READING_LIST_JUST_NOW);
   id delegateMock = OCMProtocolMock(@protocol(SuggestedContentDelegate));
   ContentSuggestionsItem* item =
       [[ContentSuggestionsItem alloc] initWithType:0
