@@ -26,10 +26,9 @@
 #ifndef TextIteratorTextState_h
 #define TextIteratorTextState_h
 
-#include "base/macros.h"
 #include "core/CoreExport.h"
-#include "core/dom/Range.h"
 #include "core/editing/iterators/ForwardsTextBuffer.h"
+#include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
