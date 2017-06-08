@@ -106,7 +106,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     const GURL& password_form_action,
                     const GURL& password_form_frame_url,
                     const std::string& saved_domain,
-                    LoginReputationClientRequest::TriggerType type);
+                    LoginReputationClientRequest::TriggerType type,
+                    bool password_field_exists);
 
   virtual void MaybeStartPasswordFieldOnFocusRequest(
       content::WebContents* web_contents,
@@ -117,7 +118,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void MaybeStartProtectedPasswordEntryRequest(
       content::WebContents* web_contents,
       const GURL& main_frame_url,
-      const std::string& saved_domain);
+      const std::string& saved_domain,
+      bool password_field_exists);
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 

@@ -75,7 +75,8 @@ void StubPasswordManagerClient::CheckSafeBrowsingReputation(
     const GURL& frame_url) {}
 
 void StubPasswordManagerClient::CheckProtectedPasswordEntry(
-    const std::string& password_saved_domain) {}
+    const std::string& password_saved_domain,
+    bool password_field_exists) {}
 #endif
 
 }  // namespace password_manager

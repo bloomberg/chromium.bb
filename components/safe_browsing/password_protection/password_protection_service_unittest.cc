@@ -173,7 +173,7 @@ class PasswordProtectionServiceTest : public testing::Test {
     request_ = new PasswordProtectionRequest(
         nullptr, target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
         std::string(), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-        password_protection_service_.get(), timeout_in_ms);
+        true, password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
 
@@ -186,7 +186,7 @@ class PasswordProtectionServiceTest : public testing::Test {
 
     request_ = new PasswordProtectionRequest(
         nullptr, target_url, GURL(), GURL(), saved_domain,
-        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT, true,
         password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
@@ -550,7 +550,7 @@ TEST_F(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   password_protection_service_->StartRequest(
       nullptr, target_url, GURL("http://foo.com/submit"),
       GURL("http://foo.com/frame"), std::string(),
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
 
   // Destroy password_protection_service_ while there is one request pending.
   password_protection_service_.reset();
@@ -653,6 +653,7 @@ TEST_F(PasswordProtectionServiceTest, VerifyPasswordProtectionRequestProto) {
             actual_request->trigger_type());
   EXPECT_EQ(1, actual_request->frames_size());
   EXPECT_EQ(kTargetUrl, actual_request->frames(0).url());
+  EXPECT_TRUE(actual_request->frames(0).has_password_field());
   ASSERT_TRUE(actual_request->has_password_reuse_event());
   ASSERT_TRUE(
       actual_request->password_reuse_event().is_chrome_signin_password());

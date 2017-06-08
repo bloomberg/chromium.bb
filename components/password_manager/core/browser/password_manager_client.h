@@ -211,7 +211,8 @@ class PasswordManagerClient {
   // Checks the safe browsing reputation of the webpage where password reuse
   // happens.
   virtual void CheckProtectedPasswordEntry(
-      const std::string& password_saved_domain) = 0;
+      const std::string& password_saved_domain,
+      bool password_field_exists) = 0;
 #endif
 
  private:

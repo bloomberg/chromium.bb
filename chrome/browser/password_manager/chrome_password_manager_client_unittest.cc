@@ -87,8 +87,8 @@ class MockPasswordProtectionService
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
   MOCK_METHOD4(MaybeStartPasswordFieldOnFocusRequest,
                void(WebContents*, const GURL&, const GURL&, const GURL&));
-  MOCK_METHOD3(MaybeStartProtectedPasswordEntryRequest,
-               void(WebContents*, const GURL&, const std::string&));
+  MOCK_METHOD4(MaybeStartProtectedPasswordEntryRequest,
+               void(WebContents*, const GURL&, const std::string&, bool));
   MOCK_METHOD3(ShowPhishingInterstitial,
                void(const GURL&, const std::string&, content::WebContents*));
 
@@ -635,9 +635,9 @@ TEST_F(ChromePasswordManagerClientTest,
   std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(test_web_contents.get()));
   EXPECT_CALL(*client->password_protection_service(),
-              MaybeStartProtectedPasswordEntryRequest(_, _, _))
+              MaybeStartProtectedPasswordEntryRequest(_, _, _, true))
       .Times(1);
-  client->CheckProtectedPasswordEntry(std::string("saved_domain.com"));
+  client->CheckProtectedPasswordEntry(std::string("saved_domain.com"), true);
 }
 
 #endif

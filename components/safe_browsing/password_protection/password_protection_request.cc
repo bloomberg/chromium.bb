@@ -28,6 +28,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& password_form_frame_url,
     const std::string& saved_domain,
     LoginReputationClientRequest::TriggerType type,
+    bool password_field_exists,
     PasswordProtectionService* pps,
     int request_timeout_in_ms)
     : web_contents_(web_contents),
@@ -36,6 +37,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       password_form_frame_url_(password_form_frame_url),
       saved_domain_(saved_domain),
       request_type_(type),
+      password_field_exists_(password_field_exists),
       password_protection_service_(pps),
       request_timeout_in_ms_(request_timeout_in_ms),
       weakptr_factory_(this) {
@@ -126,6 +128,7 @@ void PasswordProtectionRequest::FillRequestProto() {
       break;
     }
     case LoginReputationClientRequest::PASSWORD_REUSE_EVENT: {
+      main_frame->set_has_password_field(password_field_exists_);
       LoginReputationClientRequest::PasswordReuseEvent* reuse_event =
           request_proto_->mutable_password_reuse_event();
       reuse_event->set_is_chrome_signin_password(
