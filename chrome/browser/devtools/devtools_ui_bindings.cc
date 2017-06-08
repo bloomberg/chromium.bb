@@ -1354,6 +1354,8 @@ void DevToolsUIBindings::AttachTo(
 
 void DevToolsUIBindings::Reload() {
   reloading_ = true;
+  if (agent_host_)
+    agent_host_->DetachClient(this);
   web_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
 }
 
@@ -1397,10 +1399,8 @@ void DevToolsUIBindings::DocumentAvailableInMainFrame() {
   if (!reloading_)
     return;
   reloading_ = false;
-  if (agent_host_.get()) {
-    agent_host_->DetachClient(this);
+  if (agent_host_.get())
     agent_host_->AttachClient(this);
-  }
 }
 
 void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {
