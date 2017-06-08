@@ -890,6 +890,11 @@ crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/gesture-scroll-amount.
 crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
 crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.html [ Skip ]
 
+crbug.com/567837 fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
+crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
+crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
+crbug.com/567837 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
+
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
@@ -2695,6 +2700,9 @@ crbug.com/701445 external/wpt/dom/events/EventListener-invoke-legacy.html [ Time
 
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
+crbug.com/681468 [ Win ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
+crbug.com/681468 [ Win ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
+crbug.com/681468 [ Win ] virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
 
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 
