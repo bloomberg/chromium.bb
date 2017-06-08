@@ -419,10 +419,10 @@ class CORE_EXPORT ContainerNode : public Node {
                                                   const Node* next,
                                                   const Node* old_child,
                                                   ExceptionState&) const;
-  inline bool CheckAcceptChild(const Node* new_child,
-                               const Node* next,
-                               const Node* old_child,
-                               ExceptionState&) const;
+  inline bool EnsurePreInsertionValidity(const Node* new_child,
+                                         const Node* next,
+                                         const Node* old_child,
+                                         ExceptionState&) const;
   inline bool CheckParserAcceptChild(const Node& new_child) const;
   inline bool ContainsConsideringHostElements(const Node&) const;
   inline bool IsChildTypeAllowed(const Node& child) const;
