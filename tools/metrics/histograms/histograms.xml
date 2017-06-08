@@ -76571,6 +76571,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.Discarding.DiscardedTabCouldFastShutdown"
+    enum="BooleanTabDiscardFastShutdown">
+  <owner>oysteine@chromium.org</owner>
+  <summary>
+    Recorded for each discarding, allowing us to know whether the discarded tab
+    succeeded in doing a render process fast shutdown.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler"
     enum="Boolean">
   <owner>georgesak@chromium.org</owner>

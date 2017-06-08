@@ -5,6 +5,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -579,6 +580,50 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, PurgeBackgroundRenderer) {
   ASSERT_FALSE(tab3_contents_data->is_purged());
 
   tsm->CloseAllTabs();
+}
+
+IN_PROC_BROWSER_TEST_F(TabManagerTest, FastShutdownSingleTabProcess) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+
+  // Disable the protection of recent tabs.
+  tab_manager->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromMinutes(0));
+
+  // Open two tabs. Wait for both of them to load.
+  content::WindowedNotificationObserver load1(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
+                      WindowOpenDisposition::CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
+  browser()->OpenURL(open1);
+  load1.Wait();
+
+  content::WindowedNotificationObserver load2(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
+                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
+  browser()->OpenURL(open2);
+  load2.Wait();
+
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+
+  // The Tab Manager should be able to fast-kill a process for the discarded
+  // tab, as each tab will be running in separate processes by themselves.
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      content::NotificationService::AllSources());
+
+  base::HistogramTester tester;
+
+  EXPECT_TRUE(tab_manager->DiscardTabImpl());
+
+  tester.ExpectUniqueSample(
+      "TabManager.Discarding.DiscardedTabCouldFastShutdown", true, 1);
+
+  observer.Wait();
 }
 
 }  // namespace resource_coordinator
