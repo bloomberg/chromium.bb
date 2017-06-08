@@ -59,8 +59,8 @@ class OpenVRDevice : public VRDevice {
    private:
     void Run() override;
 
-    void GetVSync(const device::mojom::VRVSyncProvider::GetVSyncCallback&
-                      callback) override;
+    void GetVSync(
+        device::mojom::VRVSyncProvider::GetVSyncCallback callback) override;
 
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
     base::Callback<void()> on_polling_events_;

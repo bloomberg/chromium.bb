@@ -296,7 +296,7 @@ void OpenVRDevice::OpenVRRenderLoop::UnregisterPollingEventCallback() {
 }
 
 void OpenVRDevice::OpenVRRenderLoop::GetVSync(
-    const mojom::VRVSyncProvider::GetVSyncCallback& callback) {
+    mojom::VRVSyncProvider::GetVSyncCallback callback) {
   static int16_t next_frame = 0;
   int16_t frame = next_frame++;
 
@@ -313,8 +313,8 @@ void OpenVRDevice::OpenVRRenderLoop::GetVSync(
   device::mojom::VRPosePtr pose = getPose();
   Sleep(11);  // TODO (billorr): Use real vsync timing instead of a sleep (this
               // sleep just throttles vsyncs so we don't fill message queues).
-  callback.Run(std::move(pose), time, frame,
-               device::mojom::VRVSyncProvider::Status::SUCCESS);
+  std::move(callback).Run(std::move(pose), time, frame,
+                          device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
 }  // namespace device
