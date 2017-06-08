@@ -9,7 +9,8 @@
         ]
       },
       "requires": {
-        "preferences": [ "pref_client", "pref_control" ]
+        "preferences": [ "pref_client", "pref_control" ],
+        "prefs_unittest_helper": [ "test" ]
       }
     }
   }

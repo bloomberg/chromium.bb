@@ -114,6 +114,7 @@ interface PrefStoreConnector {
           array<PrefStoreType> already_connected_types) =>
       (PersistentPrefStoreConnection connection,
        PersistentPrefStoreConnection? underlay,
+       array<PrefRegistration> remote_defaults,
        map<PrefStoreType, PrefStoreConnection> connections);
 
   // Connect to the user pref store. Used for incognito.
@@ -166,10 +167,22 @@ interface PersistentPrefStore {
 
 // A registry of all prefs registered by a single client.
 struct PrefRegistry {
-  array<string> registrations;
+  // A list of pref keys that are private to this client. This client claims
+  // exclusive access to these prefs.
+  array<string> private_registrations;
+
+  // A list of pref keys that are public, but owned by another client.
+  array<string> foreign_registrations;
+
+  // A list of prefs that are publicly owned by this client. Each registration
+  // contains the key, the default value and flags. These are shared with
+  // clients that list the same pref in |foreign_registrations|.
+  array<PrefRegistration> public_registrations;
 };
 
 struct PrefRegistration {
+  string key;
+
   mojo.common.mojom.Value default_value;
 
   // A bitfield of flags. Flag values are defined in

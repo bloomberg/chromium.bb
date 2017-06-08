@@ -11,7 +11,7 @@ class PrefRegistry;
 
 namespace prefs {
 
-mojom::PrefRegistryPtr SerializePrefRegistry(PrefRegistry& pref_registry);
+mojom::PrefRegistryPtr SerializePrefRegistry(const PrefRegistry& pref_registry);
 
 }  // namespace prefs
 

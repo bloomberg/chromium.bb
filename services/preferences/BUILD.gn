@@ -33,6 +33,8 @@ source_set("preferences") {
     "pref_store_manager_impl.h",
     "scoped_pref_connection_builder.cc",
     "scoped_pref_connection_builder.h",
+    "shared_pref_registry.cc",
+    "shared_pref_registry.h",
   ]
 }
 
@@ -66,7 +68,15 @@ source_set("tests") {
 service_manifest("unittest_manifest") {
   name = "prefs_unittests"
   source = "unittest_manifest.json"
-  packaged_services = [ ":manifest" ]
+  packaged_services = [
+    ":manifest",
+    ":unittest_helper_manifest",
+  ]
+}
+
+service_manifest("unittest_helper_manifest") {
+  name = "prefs_unittest_helper"
+  source = "unittest_helper_manifest.json"
 }
 
 catalog("tests_catalog") {

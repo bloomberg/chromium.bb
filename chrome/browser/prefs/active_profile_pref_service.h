@@ -48,6 +48,8 @@ class ActiveProfilePrefService : public prefs::mojom::PrefStoreConnector,
   // instance failed.
   void OnConnectError();
 
+  prefs::mojom::PrefStoreConnector& GetPrefStoreConnector();
+
   prefs::mojom::PrefStoreConnectorPtr connector_ptr_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<prefs::mojom::PrefStoreConnector> connector_bindings_;

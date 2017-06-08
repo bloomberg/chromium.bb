@@ -15,19 +15,18 @@
 #include "base/memory/ref_counted.h"
 #include "components/prefs/pref_value_store.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-
-class DefaultPrefStore;
 
 namespace base {
 class SequencedWorkerPool;
 }
 
 namespace prefs {
+class SharedPrefRegistry;
 class PersistentPrefStoreImpl;
-class PrefStoreImpl;
 class ScopedPrefConnectionBuilder;
 
 // This class mediates the connection of clients who wants to read preferences
@@ -35,7 +34,6 @@ class ScopedPrefConnectionBuilder;
 // |PrefStoreRegistry| interface to register themselves with the manager and
 // clients use the |PrefStoreConnector| interface to connect to these stores.
 class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
-                             public mojom::PrefStoreConnector,
                              public mojom::PrefServiceControl,
                              public service_manager::Service {
  public:
@@ -50,22 +48,11 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
   ~PrefStoreManagerImpl() override;
 
  private:
+  class ConnectorConnection;
+
   // mojom::PrefStoreRegistry:
   void Register(PrefValueStore::PrefStoreType type,
                 mojom::PrefStorePtr pref_store_ptr) override;
-
-  // mojom::PrefStoreConnector:
-  // |already_connected_types| must not include PrefValueStore::DEFAULT_STORE
-  // and PrefValueStore::USER_STORE as these must always be accessed through the
-  // service.
-  void Connect(
-      mojom::PrefRegistryPtr pref_registry,
-      const std::vector<PrefValueStore::PrefStoreType>& already_connected_types,
-      ConnectCallback callback) override;
-  void ConnectToUserPrefStore(
-      const std::vector<std::string>& observed_prefs,
-      mojom::PrefStoreConnector::ConnectToUserPrefStoreCallback callback)
-      override;
 
   void BindPrefStoreConnectorRequest(
       const service_manager::BindSourceInfo& source_info,
@@ -102,15 +89,14 @@ class PrefStoreManagerImpl : public mojom::PrefStoreRegistry,
   std::unordered_map<PrefValueStore::PrefStoreType, mojom::PrefStorePtr>
       pref_store_ptrs_;
 
-  mojo::BindingSet<mojom::PrefStoreConnector> connector_bindings_;
+  mojo::StrongBindingSet<mojom::PrefStoreConnector> connector_bindings_;
   mojo::BindingSet<mojom::PrefStoreRegistry> registry_bindings_;
   std::unique_ptr<PersistentPrefStoreImpl> persistent_pref_store_;
   mojo::Binding<mojom::PrefServiceControl> init_binding_;
 
   mojom::PrefStoreConnectorPtr incognito_connector_;
 
-  const scoped_refptr<DefaultPrefStore> defaults_;
-  const std::unique_ptr<PrefStoreImpl> defaults_wrapper_;
+  const std::unique_ptr<SharedPrefRegistry> shared_pref_registry_;
 
   // The same |ScopedPrefConnectionBuilder| instance may appear multiple times
   // in |pending_connections_|, once per type of pref store it's waiting for,

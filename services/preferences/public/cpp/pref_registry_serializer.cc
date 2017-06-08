@@ -8,10 +8,20 @@
 
 namespace prefs {
 
-mojom::PrefRegistryPtr SerializePrefRegistry(PrefRegistry& pref_registry) {
+mojom::PrefRegistryPtr SerializePrefRegistry(
+    const PrefRegistry& pref_registry) {
   auto registry = mojom::PrefRegistry::New();
   for (auto& pref : pref_registry) {
-    registry->registrations.push_back(pref.first);
+    auto flags = pref_registry.GetRegistrationFlags(pref.first);
+    if (flags & PrefRegistry::PUBLIC) {
+      registry->public_registrations.emplace_back(mojom::PrefRegistration::New(
+          pref.first, pref.second->CreateDeepCopy(), flags));
+    } else {
+      registry->private_registrations.push_back(pref.first);
+    }
+  }
+  for (auto& pref : pref_registry.foreign_pref_keys()) {
+    registry->foreign_registrations.push_back(pref);
   }
   return registry;
 }

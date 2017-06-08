@@ -53,10 +53,15 @@ void ScopedPrefConnectionBuilder::ProvideIncognitoConnector(
       base::Bind(&ScopedPrefConnectionBuilder::OnIncognitoConnect, this));
 }
 
+void ScopedPrefConnectionBuilder::ProvideDefaults(
+    std::vector<mojom::PrefRegistrationPtr> defaults) {
+  defaults_ = std::move(defaults);
+}
+
 ScopedPrefConnectionBuilder::~ScopedPrefConnectionBuilder() {
   std::move(callback_).Run(std::move(persistent_pref_store_connection_),
                            std::move(incognito_connection_),
-                           std::move(connections_));
+                           std::move(defaults_), std::move(connections_));
 }
 
 void ScopedPrefConnectionBuilder::OnConnect(
