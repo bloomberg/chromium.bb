@@ -81,7 +81,13 @@ Polymer({
    */
   enginesChanged_: function(searchEnginesInfo) {
     this.defaultEngines = searchEnginesInfo['defaults'];
-    this.otherEngines = searchEnginesInfo['others'];
+
+    // Sort |otherEngines| in alphabetical order.
+    this.otherEngines = searchEnginesInfo['others'].sort(function(a, b) {
+      return a.name.toLocaleLowerCase().localeCompare(
+          b.name.toLocaleLowerCase());
+    });
+
     this.extensions = searchEnginesInfo['extensions'];
   },
 
