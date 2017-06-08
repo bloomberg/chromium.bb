@@ -22,8 +22,6 @@ AudioIPCFactory::AudioIPCFactory(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : audio_message_filter_(std::move(audio_message_filter)),
       io_task_runner_(std::move(io_task_runner)) {
-  // TODO(maxmorin): In the future, use a feature to control whether
-  // audio_message_filter should be used.
   DCHECK(!instance_);
   instance_ = this;
 }
