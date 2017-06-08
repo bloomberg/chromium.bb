@@ -118,9 +118,6 @@ typedef BOOL (^openURLBlockType)(const GURL&, BOOL);
 
 namespace {
 
-const web::LoadPhase kPageLoading = web::PAGE_LOADING;
-const web::LoadPhase kPageLoaded = web::PAGE_LOADED;
-
 // Observer of a QueryHistory request.
 class HistoryQueryResultsObserver
     : public base::RefCountedThreadSafe<HistoryQueryResultsObserver> {
@@ -258,8 +255,7 @@ class TabTest : public BlockCleanupTest {
     [tab_ navigationManager]->GetLastCommittedItem()->SetTitle(new_title);
 
     web_state_impl_->OnTitleChanged();
-    [[[(id)mock_web_controller_ expect]
-        andReturnValue:OCMOCK_VALUE(kPageLoaded)] loadPhase];
+    web_state_impl_->SetIsLoading(false);
     web_state_impl_->OnPageLoaded(redirectUrl, true);
   }
 
@@ -271,10 +267,8 @@ class TabTest : public BlockCleanupTest {
     web::NavigationManager::WebLoadParams params(url);
     params.transition_type = ui::PAGE_TRANSITION_TYPED;
     [tab_ navigationManager]->LoadURLWithParams(params);
-    [[[(id)mock_web_controller_ expect]
-        andReturnValue:OCMOCK_VALUE(kPageLoading)] loadPhase];
-    [[[(id)mock_web_controller_ expect]
-        andReturnValue:OCMOCK_VALUE(kPageLoaded)] loadPhase];
+    web_state_impl_->SetIsLoading(true);
+    web_state_impl_->SetIsLoading(false);
     web_state_impl_->OnPageLoaded(url, true);
     web_state_impl_->OnTitleChanged();
   }
