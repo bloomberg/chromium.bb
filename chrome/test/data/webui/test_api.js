@@ -53,16 +53,15 @@ var testing = {};
    * will break. animationend events should still work.
    */
   Test.disableAnimationsAndTransitions = function() {
-    var noAnimationStyle = document.createElement('style');
-    noAnimationStyle.id = 'no-animation';
-    noAnimationStyle.textContent =
-      '*, * /deep/ * {' +
-      '  -webkit-transition-duration: 0ms !important;' +
-      '  -webkit-transition-delay: 0ms !important;' +
-      '  animation-duration: 0ms !important;' +
-      '  animation-delay: 0ms !important;' +
-      '}';
-    document.querySelector('head').appendChild(noAnimationStyle);
+    let all = document.body.querySelectorAll('*, * /deep/ *');
+    const ZERO_MS_IMPORTANT = '0ms !important';
+    for (let i = 0, l = all.length; i < l; ++i) {
+      let style = all[i].style;
+      style.animationDelay = ZERO_MS_IMPORTANT;
+      style.animationDuration = ZERO_MS_IMPORTANT;
+      style.transitionDelay = ZERO_MS_IMPORTANT;
+      style.transitionDuration = ZERO_MS_IMPORTANT;
+    }
 
     var realElementAnimate = Element.prototype.animate;
     Element.prototype.animate = function(keyframes, opt_options) {
