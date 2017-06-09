@@ -8,6 +8,7 @@ import("//headless/headless.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//printing/features/features.gni")
 import("//testing/test.gni")
+import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
@@ -157,7 +158,10 @@ devtools_domains = [
 ]
 
 generated_devtools_api = []
+generated_devtools_api_js = []
 foreach(domain, devtools_domains) {
+  generated_devtools_api_js +=
+      [ "$target_gen_dir/public/devtools_js/" + domain + ".js" ]
   generated_devtools_api += [
     "$target_gen_dir/public/devtools/domains/" + domain + ".cc",
     "$target_gen_dir/public/devtools/domains/" + domain + ".h",
@@ -179,11 +183,12 @@ action("gen_devtools_client_api") {
     "$root_gen_dir/blink/core/inspector/protocol.json",
   ]
 
-  outputs = generated_devtools_api
+  outputs = generated_devtools_api + generated_devtools_api_js
 
   sources = [
     "lib/browser/devtools_api/domain_cc.template",
     "lib/browser/devtools_api/domain_h.template",
+    "lib/browser/devtools_api/domain_js.template",
     "lib/browser/devtools_api/domain_type_conversions_h.template",
     "lib/browser/devtools_api/domain_types_cc.template",
     "lib/browser/devtools_api/domain_types_forward_declarations_h.template",
@@ -196,6 +201,13 @@ action("gen_devtools_client_api") {
     "--output_dir",
     rebase_path(target_gen_dir, root_build_dir) + "/public",
   ]
+}
+
+js_library("js_devtools_bindings_lib") {
+  sources = [ "lib/browser/devtools_api/devtools_connection.js" ] +
+            generated_devtools_api_js
+  deps = []
+  extra_deps = [ ":gen_devtools_client_api" ]
 }
 
 if (headless_fontconfig_utils) {
@@ -503,6 +515,61 @@ if (is_mac) {
   }
 }
 
+if (!is_win) {
+  js_binary("js_devtools_bindings_test") {
+    sources = [
+      "test/bindings_test.js",
+    ]
+    deps = [
+      ":js_devtools_bindings_lib",
+    ]
+    externs_list = [ "lib/tab_socket_externs.js" ]
+    outputs = [
+      "$target_gen_dir/devtools_bindings_test.js",
+    ]
+    config_files = []
+    closure_flags = [
+      "jscomp_error=checkTypes",
+      "dependency_mode=STRICT",
+
+      # Currently the bindings do not support property renaming so we can't use
+      # ADVANCED_OPTIMIZATIONS here.  We could add support via either moving all
+      # the types to externs, or via applying the same renaming to the json
+      # dictionaries sent between C++ and JS.  The closure compiler can produce
+      # files which contain those mappings with the appropriate flag.
+      "compilation_level=SIMPLE",
+      "language_out=ES5_STRICT",
+      "entry_point=chromium.BindingsTest",
+    ]
+  }
+
+  grit("headless_browsertest_resources_grit") {
+    source = "headless_browsertest_resources.grd"
+    outputs = [
+      "grit/headless_browsertest_resources.h",
+      "$root_gen_dir/headless/headless_browsertest_resources.pak",
+    ]
+    grit_flags = [
+      "-E",
+      "gen_root=" + rebase_path(root_gen_dir),
+    ]
+    deps = [
+      ":js_devtools_bindings_test",
+    ]
+    resource_ids = "lib/headless_browsertest_resource_ids"
+  }
+
+  repack("headless_browser_tests_pak") {
+    sources = [
+      "$root_gen_dir/headless/headless_browsertest_resources.pak",
+    ]
+    output = "$root_out_dir/headless_browser_tests.pak"
+    deps = [
+      ":headless_browsertest_resources_grit",
+    ]
+  }
+}
+
 test("headless_browsertests") {
   sources = [
     "lib/frame_id_browsertest.cc",
@@ -556,6 +623,13 @@ test("headless_browsertests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  # The js_binary rule doesn't currently work on windows.
+  if (!is_win) {
+    data += [ "$root_out_dir/headless_browser_tests.pak" ]
+    sources += [ "test/headless_js_bindings_browsertest.cc" ]
+    deps += [ ":headless_browser_tests_pak" ]
+  }
 
   if (enable_basic_printing) {
     deps += [
