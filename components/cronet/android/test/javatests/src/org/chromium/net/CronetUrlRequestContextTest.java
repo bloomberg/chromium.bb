@@ -19,7 +19,6 @@ import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_IN_MEMORY;
 import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetEngineBuilderImpl;
@@ -487,11 +486,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertTrue(file2.delete());
     }
 
-    //@SmallTest
-    //@Feature({"Cronet"})
-    //@OnlyRunNativeCronet
-    // Frequently crashes on Cronet builders - see crbug.com/729257
-    @DisabledTest
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     // Tests that NetLog contains events emitted by all live CronetEngines.
     public void testBoundedFileNetLogContainEventsFromAllLiveEngines() throws Exception {
         Context context = getContext();
