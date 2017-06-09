@@ -12,7 +12,16 @@ about how to migrate callers of existing APIs to TaskScheduler.
 Much of the migration has already been automated but the callers that remain
 require manual intervention from the OWNERS.
 
+Here's [a list](https://docs.google.com/spreadsheets/d/18x9PGMlfgWcBr4fDz2SEEtIwTpSjcBFT2Puib47ZF1w/edit)
+of everything that's left. Please pick items in this list, assign them to self
+and tick the boxes when done.
+
+And some [slides](https://docs.google.com/presentation/d/191H9hBO0r5pH2JVMeYYV-yrP1175JoSlrZyK5QEeUlE/edit?usp=sharing)
+with a migration example.
+
 ## BlockingPool (and other SequencedWorkerPools)
+
+Tag migration CLs with BUG=[667892](https://crbug.com/667892).
 
 The remaining callers of BrowserThread::GetBlockingPool() require manual
 intervention because they're plumbing the SequencedWorkerPool multiple layers
@@ -39,10 +48,19 @@ TaskScheduler::RunsTasksInCurrentSequence() equivalent as ultimately everything
 will run in TaskScheduler and that'd be meaningless... As such prefer asserting
 the properties your task needs as documentation rather than where it runs.
 
+You can of course still use
+```cpp
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+```
+if you have access to the TaskRunner instance (generic asserts discussed above
+are meant for anonymous methods that require static checks).
+
 ## BrowserThreads
 
 All BrowserThreads but UI/IO are being migrated to TaskScheduler
 (i.e. FILE/FILE_USER_BLOCKING/DB/PROCESS_LAUNCHER/CACHE).
+
+Tag migration CLs with BUG=[689520](https://crbug.com/689520).
 
 This migration requires manual intervention because:
  1. Everything on BrowserThread::FOO has to be assumed to depend on being
@@ -51,11 +69,16 @@ This migration requires manual intervention because:
  2. Everything on BrowserThread::FOO has to be assumed to be thread-affine until
     decided otherwise by a developer.
 
-As a developer your goal is to get rid of all uses of BrowserThread::FOO in your assigned files by:
+As a developer your goal is to get rid of all uses of BrowserThread::FOO in your
+assigned files by:
  1. Splitting things into their own execution sequence (i.e. post to a TaskRunner
     obtained from post_task.h -- see [Threading and Tasks in
     Chrome](threading_and_tasks.md) for details).
- 2. Ideally migrating from a single-threaded context to a [much preferred]
+ 2. Removing the plumbing: if GetTaskRunnerForThread(BrowserThread::FOO) is
+    passed down into a component the prefered paradigm is to remove all of that
+    plumbing and simply have the leaf layers requiring a TaskRunner get it from
+    base::CreateSequenceTaskRunnerWithTraits() directly.
+ 3. Ideally migrating from a single-threaded context to a [much preferred]
     (threading_and_tasks.md#Prefer-Sequences-to-Threads) sequenced context.
     * Note: if your tasks use COM APIs (Component Object Model on Windows),
       you'll need to use CreateCOMSTATaskRunnerWithTraits() and sequencing will
