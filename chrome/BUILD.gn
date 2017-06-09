@@ -1680,7 +1680,7 @@ if (is_android) {
 
   java_cpp_enum("sad_tab_event_enum_javagen") {
     sources = [
-      "browser/ui/sad_tab.cc",
+      "//components/ui_metrics/sadtab_metrics_types.h",
     ]
   }
 

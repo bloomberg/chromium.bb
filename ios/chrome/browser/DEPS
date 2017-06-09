@@ -79,6 +79,7 @@ include_rules = [
   "+components/toolbar",
   "+components/translate/core",
   "+components/translate/ios",
+  "+components/ui_metrics",
   "+components/ukm",
   "+components/undo",
   "+components/update_client",

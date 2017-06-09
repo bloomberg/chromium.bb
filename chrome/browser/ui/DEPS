@@ -5,6 +5,7 @@ include_rules = [
   "+components/favicon/core",
   "+components/flags_ui",
   "+components/toolbar",
+  "+components/ui_metrics",
   "+components/url_formatter",
   "+components/version_ui",
   "+components/webapks_ui",
