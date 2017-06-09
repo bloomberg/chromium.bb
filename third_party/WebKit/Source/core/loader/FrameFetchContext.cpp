@@ -296,6 +296,8 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
 
 void FrameFetchContext::PrepareRequest(ResourceRequest& request,
                                        RedirectType redirect_type) {
+  SetFirstPartyCookieAndRequestorOrigin(request);
+
   GetFrame()->Loader().ApplyUserAgent(request);
   GetLocalFrameClient()->DispatchWillSendRequest(request);
 
@@ -687,8 +689,6 @@ void FrameFetchContext::PopulateResourceRequest(
     const ResourceLoaderOptions& options,
     SecurityViolationReportingPolicy reporting_policy,
     ResourceRequest& request) {
-  SetFirstPartyCookieAndRequestorOrigin(request);
-
   // Before modifying the request for CSP, evaluate report-only headers. This
   // allows site owners to learn about requests that are being modified
   // (e.g. mixed content that is being upgraded by upgrade-insecure-requests).
@@ -703,27 +703,37 @@ void FrameFetchContext::PopulateResourceRequest(
 
 void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
     ResourceRequest& request) {
-  if (!GetDocument())
-    return;
-
+  // Set the first party for cookies url if it has not been set yet (new
+  // requests). This value will be updated during redirects, consistent with
+  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00#section-2.1.1?
   if (request.FirstPartyForCookies().IsNull()) {
-    request.SetFirstPartyForCookies(
-        GetDocument() ? GetDocument()->FirstPartyForCookies()
-                      : SecurityOrigin::UrlWithUniqueSecurityOrigin());
+    if (request.GetFrameType() == WebURLRequest::kFrameTypeTopLevel) {
+      request.SetFirstPartyForCookies(request.Url());
+    } else {
+      // Use GetDocument() for subresource or nested frame cases,
+      // GetFrame()->GetDocument() otherwise.
+      Document* document =
+          GetDocument() ? GetDocument() : GetFrame()->GetDocument();
+      request.SetFirstPartyForCookies(document->FirstPartyForCookies());
+    }
   }
 
-  // Subresource requests inherit their requestor origin from |m_document|
-  // directly. Top-level and nested frame types are taken care of in
-  // 'FrameLoadRequest()'. Auxiliary frame types in 'createWindow()' and
-  // 'FrameLoader::load'.
-  // TODO(mkwst): It would be cleaner to adjust blink::ResourceRequest to
-  // initialize itself with a `nullptr` initiator so that this can be a simple
-  // `isNull()` check. https://crbug.com/625969
-  if (request.GetFrameType() == WebURLRequest::kFrameTypeNone &&
-      request.RequestorOrigin()->IsUnique()) {
-    request.SetRequestorOrigin(GetDocument()->IsSandboxed(kSandboxOrigin)
-                                   ? SecurityOrigin::Create(document_->Url())
-                                   : document_->GetSecurityOrigin());
+  // Subresource requests inherit their requestor origin from |document_|
+  // directly.  Top-level frame types are taken care of in 'FrameLoadRequest()'.
+  // Auxiliary frame types in 'CreateWindow()' and 'FrameLoader::Load'.
+  if (!request.RequestorOrigin()) {
+    if (request.GetFrameType() == WebURLRequest::kFrameTypeNone) {
+      Document* document = GetDocument();
+      request.SetRequestorOrigin(document->IsSandboxed(kSandboxOrigin)
+                                     ? SecurityOrigin::Create(document->Url())
+                                     : document->GetSecurityOrigin());
+    } else {
+      // Set the requestor origin to the same origin as the frame's document
+      // if it hasn't yet been set. (We may hit here for nested frames and
+      // redirect cases)
+      request.SetRequestorOrigin(
+          GetFrame()->GetDocument()->GetSecurityOrigin());
+    }
   }
 }
 

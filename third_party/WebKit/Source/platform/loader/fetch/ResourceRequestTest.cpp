@@ -15,12 +15,6 @@
 
 namespace blink {
 
-TEST(ResourceRequestTest, RequestorOriginNonNull) {
-  ResourceRequest req;
-  EXPECT_NE(nullptr, req.RequestorOrigin().Get());
-  EXPECT_TRUE(req.RequestorOrigin()->IsUnique());
-}
-
 TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   ResourceRequest original;
   original.SetURL(KURL(kParsedURLString, "http://www.example.com/test.htm"));
