@@ -10,7 +10,7 @@
 #include "base/macros.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace gin {
@@ -21,7 +21,7 @@ namespace content {
 
 class WebUIExtension {
  public:
-  static void Install(blink::WebFrame* frame);
+  static void Install(blink::WebLocalFrame* frame);
 
  private:
   static void Send(gin::Arguments* args);

@@ -94,7 +94,7 @@ void RuntimeCustomBindings::GetExtensionViews(
     // main views, not any subframes. (Returning subframes can cause broken
     // behavior by treating an app window's iframe as its main frame, and maybe
     // other nastiness).
-    blink::WebFrame* web_frame = frame->GetWebFrame();
+    blink::WebLocalFrame* web_frame = frame->GetWebFrame();
     if (web_frame->Top() != web_frame)
       continue;
 

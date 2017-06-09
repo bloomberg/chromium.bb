@@ -9,7 +9,7 @@
 #include "gin/wrappable.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace gin {
@@ -21,7 +21,7 @@ namespace content {
 class SkiaBenchmarking : public gin::Wrappable<SkiaBenchmarking> {
  public:
   static gin::WrapperInfo kWrapperInfo;
-  static void Install(blink::WebFrame* frame);
+  static void Install(blink::WebLocalFrame* frame);
 
   // Wrapper around SkGraphics::Init that can be invoked multiple times.
   static void Initialize();

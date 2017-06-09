@@ -342,14 +342,7 @@ void GuestViewInternalCustomBindings::GetContentWindow(
     return;
 
   blink::WebFrame* frame = view->GetWebView()->MainFrame();
-  // TODO(lazyboy,nasko): The WebLocalFrame branch is not used when running
-  // on top of out-of-process iframes. Remove it once the code is converted.
-  v8::Local<v8::Value> window;
-  if (frame->IsWebLocalFrame()) {
-    window = frame->MainWorldScriptContext()->Global();
-  } else {
-    window = frame->ToWebRemoteFrame()->GlobalProxy();
-  }
+  v8::Local<v8::Value> window = frame->GlobalProxy();
   args.GetReturnValue().Set(window);
 }
 

@@ -14,6 +14,7 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/site_engagement.mojom-shared.h"
+#include "v8/include/v8.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -295,6 +296,13 @@ class WebLocalFrame : public WebFrame {
 
   // Executes script in the context of the current page.
   virtual void ExecuteScript(const WebScriptSource&) = 0;
+
+  // Returns the V8 context for associated with the main world and this
+  // frame. There can be many V8 contexts associated with this frame, one for
+  // each isolated world and one for the main world. If you don't know what
+  // the "main world" or an "isolated world" is, then you probably shouldn't
+  // be calling this API.
+  virtual v8::Local<v8::Context> MainWorldScriptContext() const = 0;
 
   // Executes script in the context of the current page and returns the value
   // that the script evaluated to with callback. Script execution can be

@@ -215,6 +215,11 @@ class TestRunnerForSpecificView {
   std::string SelectionAsMarkup();
   void SetViewSourceForFrame(const std::string& name, bool enabled);
 
+  // Many parts of the layout test harness assume that the main frame is local.
+  // Having all of them go through the helper below makes it easier to catch
+  // scenarios that require breaking this assumption.
+  blink::WebLocalFrame* GetLocalMainFrame();
+
   // Helpers for accessing pointers exposed by |web_view_test_proxy_base_|.
   blink::WebView* web_view();
   WebTestDelegate* delegate();

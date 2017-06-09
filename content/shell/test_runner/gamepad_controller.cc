@@ -13,11 +13,10 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "third_party/WebKit/public/platform/WebGamepadListener.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
-using blink::WebFrame;
 using device::Gamepad;
 using device::Gamepads;
 
@@ -29,7 +28,7 @@ class GamepadControllerBindings
   static gin::WrapperInfo kWrapperInfo;
 
   static void Install(base::WeakPtr<GamepadController> controller,
-                      blink::WebFrame* frame);
+                      blink::WebLocalFrame* frame);
 
  private:
   explicit GamepadControllerBindings(
@@ -60,7 +59,7 @@ gin::WrapperInfo GamepadControllerBindings::kWrapperInfo = {
 // static
 void GamepadControllerBindings::Install(
     base::WeakPtr<GamepadController> controller,
-    WebFrame* frame) {
+    blink::WebLocalFrame* frame) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();
@@ -161,7 +160,7 @@ void GamepadController::Reset() {
   memset(&gamepads_, 0, sizeof(gamepads_));
 }
 
-void GamepadController::Install(WebFrame* frame) {
+void GamepadController::Install(blink::WebLocalFrame* frame) {
   GamepadControllerBindings::Install(weak_factory_.GetWeakPtr(), frame);
 }
 

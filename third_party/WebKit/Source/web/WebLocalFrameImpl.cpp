@@ -843,6 +843,10 @@ v8::Local<v8::Context> WebLocalFrameImpl::MainWorldScriptContext() const {
   return script_state->GetContext();
 }
 
+v8::Local<v8::Object> WebLocalFrameImpl::GlobalProxy() const {
+  return MainWorldScriptContext()->Global();
+}
+
 bool WebFrame::ScriptCanAccess(WebFrame* target) {
   return BindingSecurity::ShouldAllowAccessToFrame(
       CurrentDOMWindow(MainThreadIsolate()), ToCoreFrame(*target),

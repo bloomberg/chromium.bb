@@ -236,14 +236,7 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
   v8::Context::Scope context_scope(
       render_frame()->GetWebFrame()->MainWorldScriptContext());
 
-  // TODO(lazyboy,nasko): The WebLocalFrame branch is not used when running
-  // on top of out-of-process iframes. Remove it once the code is converted.
-  v8::Local<v8::Object> guest_proxy_window;
-  if (guest_proxy_frame->IsWebLocalFrame()) {
-    guest_proxy_window = guest_proxy_frame->MainWorldScriptContext()->Global();
-  } else {
-    guest_proxy_window = guest_proxy_frame->ToWebRemoteFrame()->GlobalProxy();
-  }
+  v8::Local<v8::Object> guest_proxy_window = guest_proxy_frame->GlobalProxy();
   gin::Dictionary window_object(isolate, guest_proxy_window);
   v8::Local<v8::Function> post_message;
   if (!window_object.Get(std::string(kPostMessageName), &post_message))
@@ -261,7 +254,7 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
 
 void MimeHandlerViewContainer::PostMessageFromValue(
     const base::Value& message) {
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame)
     return;
 
@@ -302,7 +295,7 @@ void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
     return;
 
   // Now that the guest has loaded, flush any unsent messages.
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame)
     return;
 

@@ -13,8 +13,8 @@
 #include "content/shell/test_runner/mock_grammar_check.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_test_delegate.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
@@ -148,14 +148,15 @@ void SpellCheckClient::RequestResolved() {
   blink::WebFrame* frame = test_runner_->mainFrame();
   if (!frame || frame->IsWebRemoteFrame())
     return;
+  blink::WebLocalFrame* local_frame = frame->ToWebLocalFrame();
 
-  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
+  v8::Local<v8::Context> context = local_frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
   v8::Context::Scope context_scope(context);
 
-  frame->CallFunctionEvenIfScriptDisabled(
+  local_frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, resolved_callback_),
       context->Global(), 0, nullptr);
 }
