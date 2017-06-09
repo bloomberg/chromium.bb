@@ -25,6 +25,20 @@ and hoping for the right traits. This often allows cleaning up multiple layers
 of plumbing without otherwise hurting testing as documented
 [here](threading_and_tasks.md#TaskRunner-ownership-encourage-no-dependency-injection).
 
+Replace methods that used to
+```cpp
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksInCurrentSequence());
+```
+and make them use
+```cpp
+  base::ThreadsRestrictions::AssertIOAllowed();
+```
+
+The TaskScheduler API intentionally doesn't provide a
+TaskScheduler::RunsTasksInCurrentSequence() equivalent as ultimately everything
+will run in TaskScheduler and that'd be meaningless... As such prefer asserting
+the properties your task needs as documentation rather than where it runs.
+
 ## BrowserThreads
 
 All BrowserThreads but UI/IO are being migrated to TaskScheduler
@@ -45,13 +59,15 @@ As a developer your goal is to get rid of all uses of BrowserThread::FOO in your
     (threading_and_tasks.md#Prefer-Sequences-to-Threads) sequenced context.
     * Note: if your tasks use COM APIs (Component Object Model on Windows),
       you'll need to use CreateCOMSTATaskRunnerWithTraits() and sequencing will
-      not be an option.
+      not be an option (there are DCHECKs in place that will fire if your task
+      uses COM without being on a COM initialized TaskRunner).
 
 ## Relevant single-thread -> sequence mappings
 
 * base::SingleThreadTaskRunner -> base::SequencedTaskRunner
 * base::ThreadTaskRunnerHandle -> base::SequencedTaskRunnerHandle
 * base::ThreadChecker -> base::SequenceChecker
+* base::ThreadLocalStorage::Slot -> base::SequenceLocalStorageSlot (coming [very soon](https://chromium-review.googlesource.com/c/527322/))
 * BrowserThread::DeleteOnThread -> base::DeleteOnTaskRunner / base::RefCountedDeleteOnSequence
 * CreateSingleThreadTaskRunnerWithTraits() -> CreateSequencedTaskRunnerWithTraits()
    * Every CreateSingleThreadTaskRunnerWithTraits() usage should be accompanied
@@ -75,3 +91,11 @@ As a developer your goal is to get rid of all uses of BrowserThread::FOO in your
      TaskScheduler::FlushForTesting()
    * If you need the TaskScheduler to not run anything until explicitly asked to
      use ScopedTaskEnvironment::ExecutionMode::QUEUED.
+
+## Other known migration hurdles and recommended paradigms
+* Everything in a file/component needs to run on the same sequence but there
+  isn't a clear place to own/access the common SequencedTaskRunner =>
+  [base::Lazy*TaskRunner](https://chromium-review.googlesource.com/c/524141/).
+* For anything else, ping [base/task_scheduler/OWNERS](https://cs.chromium.org/chromium/src/base/task_scheduler/OWNERS)
+  or [scheduler-dev@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/scheduler-dev),
+  thanks!
