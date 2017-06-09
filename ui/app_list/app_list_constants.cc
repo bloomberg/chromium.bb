@@ -91,6 +91,7 @@ const SkColor kIconColor = gfx::kChromeIconGrey;
 
 // The number of apps shown in the start page app grid.
 const size_t kNumStartPageTiles = 9;
+const size_t kNumStartPageTilesFullscreen = 5;
 
 // Maximum number of results to show in the launcher Search UI.
 const size_t kMaxSearchResults = 6;

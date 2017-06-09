@@ -11,12 +11,13 @@
 
 namespace app_list {
 
+class AppListView;
 class ContentsView;
 
 // A tile item for the "All apps" button on the start page.
 class AllAppsTileItemView : public TileItemView {
  public:
-  explicit AllAppsTileItemView(ContentsView* contents_view);
+  AllAppsTileItemView(ContentsView* contents_view, AppListView* app_list_view);
 
   ~AllAppsTileItemView() override;
 
@@ -27,6 +28,7 @@ class AllAppsTileItemView : public TileItemView {
 
  private:
   ContentsView* contents_view_;
+  AppListView* const app_list_view_;  // Owned by the views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AllAppsTileItemView);
 };

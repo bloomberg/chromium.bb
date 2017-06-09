@@ -21,6 +21,7 @@ namespace app_list {
 
 class AppListItem;
 class AppListModel;
+class AppListView;
 class AppListViewDelegate;
 class ApplicationDragAndDropHost;
 class ContentsView;
@@ -35,7 +36,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
                                         public SearchBoxViewDelegate,
                                         public SearchResultListViewDelegate {
  public:
-  explicit AppListMainView(AppListViewDelegate* delegate);
+  AppListMainView(AppListViewDelegate* delegate, AppListView* app_list_view);
   ~AppListMainView() override;
 
   void Init(gfx::NativeView parent,
@@ -99,6 +100,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   // Created by AppListView. Owned by views hierarchy.
   SearchBoxView* search_box_view_;
   ContentsView* contents_view_;  // Owned by views hierarchy.
+  AppListView* const app_list_view_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AppListMainView);
 };

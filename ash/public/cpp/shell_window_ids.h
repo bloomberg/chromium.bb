@@ -56,6 +56,9 @@ enum ShellWindowId {
   // The container for top-level windows with the 'always-on-top' flag set.
   kShellWindowId_AlwaysOnTopContainer,
 
+  // The container for the app list.
+  kShellWindowId_AppListContainer,
+
   // The container for the shelf.
   kShellWindowId_ShelfContainer,
 
@@ -64,9 +67,6 @@ enum ShellWindowId {
 
   // The container for panel windows.
   kShellWindowId_PanelContainer,
-
-  // The container for the app list.
-  kShellWindowId_AppListContainer,
 
   // The container for user-specific modal windows.
   kShellWindowId_SystemModalContainer,
@@ -137,10 +137,10 @@ const int32_t kAllShellContainerIds[] = {
     kShellWindowId_VirtualKeyboardContainer,
     kShellWindowId_DefaultContainer,
     kShellWindowId_AlwaysOnTopContainer,
+    kShellWindowId_AppListContainer,
     kShellWindowId_ShelfContainer,
     kShellWindowId_ShelfBubbleContainer,
     kShellWindowId_PanelContainer,
-    kShellWindowId_AppListContainer,
     kShellWindowId_SystemModalContainer,
     kShellWindowId_LockScreenWallpaperContainer,
     kShellWindowId_LockScreenContainer,

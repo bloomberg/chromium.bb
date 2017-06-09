@@ -64,7 +64,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Clears internal data for shutdown process.
   void PrepareForShutdown();
-
   // Returns whether the shelf and its contents (shelf, status) are visible
   // on the screen.
   bool IsVisible() const;
@@ -138,6 +137,8 @@ class ASH_EXPORT ShelfLayoutManager
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
   void OnVirtualKeyboardStateChanged(bool activated,
                                      aura::Window* root_window) override;
+  void OnAppListVisibilityChanged(bool shown,
+                                  aura::Window* root_window) override;
 
   // Overridden from wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
@@ -316,6 +317,10 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
   bool window_overlaps_shelf_;
+
+  // Is the AppList visible? This is maintained by
+  // OnAppListVisibilityChanged.
+  bool is_app_list_visible_ = false;
 
   base::OneShotTimer auto_hide_timer_;
 

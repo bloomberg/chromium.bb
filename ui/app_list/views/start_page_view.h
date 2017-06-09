@@ -16,6 +16,7 @@
 namespace app_list {
 
 class AppListMainView;
+class AppListView;
 class AppListViewDelegate;
 class CustomLauncherPageBackgroundView;
 class SearchResultTileItemView;
@@ -25,7 +26,8 @@ class TileItemView;
 class APP_LIST_EXPORT StartPageView : public AppListPage {
  public:
   StartPageView(AppListMainView* app_list_main_view,
-                AppListViewDelegate* view_delegate);
+                AppListViewDelegate* view_delegate,
+                AppListView* app_list_view);
   ~StartPageView() override;
 
   void Reset();
@@ -50,11 +52,11 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
-
  private:
   class StartPageTilesContainer;
 
   void InitInstantContainer();
+
   void MaybeOpenCustomLauncherPage();
 
   void SetCustomLauncherPageSelected(bool selected);
