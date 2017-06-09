@@ -471,17 +471,6 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
   return ticket;
 }
 
-bool IsPrinterRPCSOnly(const wchar_t* name, const wchar_t* port) {
-  int num_languages =
-      DeviceCapabilities(name, port, DC_PERSONALITY, NULL, NULL);
-  if (num_languages != 1)
-    return false;
-  std::vector<wchar_t> buf(33, 0);
-  DeviceCapabilities(name, port, DC_PERSONALITY, buf.data(), NULL);
-  static constexpr wchar_t kRPCSLanguage[] = L"RPCS";
-  return wcscmp(buf.data(), kRPCSLanguage) == 0;
-}
-
 bool PrinterHasValidPaperSize(const wchar_t* name, const wchar_t* port) {
   return DeviceCapabilities(name, port, DC_PAPERSIZE, nullptr, nullptr) > 0;
 }
@@ -507,14 +496,10 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
   const wchar_t* name = info_5.get()->pPrinterName;
   const wchar_t* port = info_5.get()->pPortName;
 
-  // Check for RPCS drivers on Windows 8+ as DocumentProperties will crash if
-  // called on one of these printers. See crbug.com/679160.
-  // Also check that valid paper sizes exist; some old drivers return no paper
-  // sizes and crash in DocumentProperties if used with Win10. See
+  // Check that valid paper sizes exist; some old drivers return no paper sizes
+  // and crash in DocumentProperties if used with Win10. See crbug.com/679160,
   // crbug.com/724595
-  if ((base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-       IsPrinterRPCSOnly(name, port)) ||
-      !PrinterHasValidPaperSize(name, port)) {
+  if (!PrinterHasValidPaperSize(name, port)) {
     return nullptr;
   }
 
