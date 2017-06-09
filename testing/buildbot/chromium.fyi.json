@@ -10680,6 +10680,35 @@
         },
         "test": "mus_browser_tests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--browser=exact",
+          "--browser-executable=./test_chrome",
+          "--xvfb"
+        ],
+        "isolate_name": "telemetry_perf_unittests",
+        "name": "telemetry_perf_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 960,
+          "shards": 12
+        }
+      },
+      {
+        "args": [
+          "--browser=exact",
+          "--browser-executable=./test_chrome",
+          "--jobs=1"
+        ],
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 4
+        }
+      }
     ]
   },
   "Mojo Linux": {

@@ -1008,6 +1008,13 @@ if (!is_android) {
       "//testing/xvfb.py",
       "//testing/scripts/run_telemetry_as_googletest.py",
     ]
+
+    if (enable_package_mash_services) {
+      deps += [ "//chrome:chrome_test" ]
+      data_deps = [
+        "//chrome:chrome_test",
+      ]
+    }
   }
 
   group("telemetry_gpu_unittests_run") {
@@ -2886,6 +2893,13 @@ group("telemetry_perf_unittests") {
     "//testing/xvfb.py",
     "//testing/scripts/run_telemetry_as_googletest.py",
   ]
+
+  if (enable_package_mash_services) {
+    deps += [ "//chrome:chrome_test" ]
+    data_deps = [
+      "//chrome:chrome_test",
+    ]
+  }
 }
 
 group("telemetry_perf_tests") {

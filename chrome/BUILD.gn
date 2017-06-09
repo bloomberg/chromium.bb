@@ -135,6 +135,11 @@ if (!is_android && !is_mac) {
       } else {
         deps = []
       }
+      if (defined(invoker.data)) {
+        data = invoker.data
+      } else {
+        data = []
+      }
 
       if (!is_win || is_clang) {
         # Normally, we need to pass specific flags to the linker to
@@ -157,9 +162,7 @@ if (!is_android && !is_mac) {
         "//printing/features",
       ]
 
-      data = [
-        "$root_out_dir/resources.pak",
-      ]
+      data += [ "$root_out_dir/resources.pak" ]
       if (is_linux || is_win) {
         data += [
           "$root_out_dir/chrome_100_percent.pak",
@@ -335,6 +338,9 @@ if (!is_android && !is_mac) {
       sources = []
       deps = [
         "//chrome/app/mash:chrome_test_catalog",
+      ]
+      data = [
+        "$root_out_dir/chrome_200_percent.pak",
       ]
       if (!is_win && use_aura) {
         sources += [ "app/chrome_test_exe_main_aura.cc" ]
