@@ -32,10 +32,9 @@ namespace content {
 
 namespace {
 
-bool ShouldRespondToRequest(
-    blink::WebFrame** frame_ptr,
-    RenderView** render_view_ptr) {
-  blink::WebFrame* frame = blink::WebLocalFrame::FrameForCurrentContext();
+bool ShouldRespondToRequest(blink::WebLocalFrame** frame_ptr,
+                            RenderView** render_view_ptr) {
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::FrameForCurrentContext();
   if (!frame || !frame->View())
     return false;
 
@@ -70,7 +69,7 @@ bool ShouldRespondToRequest(
 //      should be an array.
 //  - chrome.getVariableValue: Returns value for the input variable name if such
 //      a value was set by the browser. Else will return an empty string.
-void WebUIExtension::Install(blink::WebFrame* frame) {
+void WebUIExtension::Install(blink::WebLocalFrame* frame) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();
@@ -92,7 +91,7 @@ void WebUIExtension::Install(blink::WebFrame* frame) {
 
 // static
 void WebUIExtension::Send(gin::Arguments* args) {
-  blink::WebFrame* frame;
+  blink::WebLocalFrame* frame;
   RenderView* render_view;
   if (!ShouldRespondToRequest(&frame, &render_view))
     return;
@@ -136,7 +135,7 @@ void WebUIExtension::Send(gin::Arguments* args) {
 
 // static
 std::string WebUIExtension::GetVariableValue(const std::string& name) {
-  blink::WebFrame* frame;
+  blink::WebLocalFrame* frame;
   RenderView* render_view;
   if (!ShouldRespondToRequest(&frame, &render_view))
     return std::string();

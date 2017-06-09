@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 class WebThemeEngine;
 class WebURL;
 class WebView;
@@ -34,7 +34,7 @@ class TestInterfaces {
 
   void SetMainView(blink::WebView* web_view);
   void SetDelegate(WebTestDelegate* delegate);
-  void BindTo(blink::WebFrame* frame);
+  void BindTo(blink::WebLocalFrame* frame);
   void ResetTestHelperControllers();
   void ResetAll();
   bool TestIsRunning();

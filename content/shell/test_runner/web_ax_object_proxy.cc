@@ -13,8 +13,8 @@
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -742,7 +742,7 @@ bool WebAXObjectProxy::IsEqualToObject(const blink::WebAXObject& other) {
 }
 
 void WebAXObjectProxy::NotificationReceived(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const std::string& notification_name) {
   if (notification_callback_.IsEmpty())
     return;

@@ -12,8 +12,8 @@
 #include "content/renderer/render_view_impl.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
@@ -22,7 +22,7 @@ gin::WrapperInfo DomAutomationController::kWrapperInfo = {
 
 // static
 void DomAutomationController::Install(RenderFrame* render_frame,
-                                      blink::WebFrame* frame) {
+                                      blink::WebLocalFrame* frame) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();

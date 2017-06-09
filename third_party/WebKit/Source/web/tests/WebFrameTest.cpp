@@ -403,14 +403,15 @@ TEST_P(ParameterizedWebFrameTest, FrameForEnteredContext) {
   web_view_helper.InitializeAndLoad(base_url_ + "iframes_test.html", true);
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  EXPECT_EQ(
-      web_view_helper.WebView()->MainFrame(),
-      WebLocalFrame::FrameForContext(
-          web_view_helper.WebView()->MainFrame()->MainWorldScriptContext()));
+  EXPECT_EQ(web_view_helper.WebView()->MainFrame(),
+            WebLocalFrame::FrameForContext(web_view_helper.WebView()
+                                               ->MainFrameImpl()
+                                               ->MainWorldScriptContext()));
   EXPECT_EQ(web_view_helper.WebView()->MainFrame()->FirstChild(),
             WebLocalFrame::FrameForContext(web_view_helper.WebView()
                                                ->MainFrame()
                                                ->FirstChild()
+                                               ->ToWebLocalFrame()
                                                ->MainWorldScriptContext()));
 }
 
@@ -451,7 +452,7 @@ TEST_P(ParameterizedWebFrameTest, RequestExecuteScript) {
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.WebView()->MainFrame()->MainWorldScriptContext());
+      web_view_helper.WebView()->MainFrameImpl()->MainWorldScriptContext());
   web_view_helper.WebView()
       ->MainFrameImpl()
       ->RequestExecuteScriptAndReturnValue(
@@ -470,7 +471,7 @@ TEST_P(ParameterizedWebFrameTest, SuspendedRequestExecuteScript) {
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.WebView()->MainFrame()->MainWorldScriptContext());
+      web_view_helper.WebView()->MainFrameImpl()->MainWorldScriptContext());
 
   // Suspend scheduled tasks so the script doesn't run.
   web_view_helper.WebView()
@@ -505,7 +506,7 @@ TEST_P(ParameterizedWebFrameTest, RequestExecuteV8Function) {
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Context> context =
-      web_view_helper.WebView()->MainFrame()->MainWorldScriptContext();
+      web_view_helper.WebView()->MainFrameImpl()->MainWorldScriptContext();
   ScriptExecutionCallbackHelper callback_helper(context);
   v8::Local<v8::Function> function =
       v8::Function::New(context, callback).ToLocalChecked();
@@ -532,7 +533,7 @@ TEST_P(ParameterizedWebFrameTest, RequestExecuteV8FunctionWhileSuspended) {
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Context> context =
-      web_view_helper.WebView()->MainFrame()->MainWorldScriptContext();
+      web_view_helper.WebView()->MainFrameImpl()->MainWorldScriptContext();
 
   // Suspend scheduled tasks so the script doesn't run.
   WebLocalFrameBase* main_frame = web_view_helper.WebView()->MainFrameImpl();
@@ -572,7 +573,7 @@ TEST_P(ParameterizedWebFrameTest,
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Context> context =
-      web_view_helper.WebView()->MainFrame()->MainWorldScriptContext();
+      web_view_helper.WebView()->MainFrameImpl()->MainWorldScriptContext();
 
   std::unique_ptr<UserGestureIndicator> indicator =
       WTF::WrapUnique(new UserGestureIndicator(
@@ -602,7 +603,7 @@ TEST_P(ParameterizedWebFrameTest, IframeScriptRemovesSelf) {
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   ScriptExecutionCallbackHelper callback_helper(
-      web_view_helper.WebView()->MainFrame()->MainWorldScriptContext());
+      web_view_helper.WebView()->MainFrameImpl()->MainWorldScriptContext());
   web_view_helper.WebView()
       ->MainFrame()
       ->FirstChild()
@@ -4574,7 +4575,7 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsLoadUnload) {
   web_view_helper.InitializeAndLoad(
       base_url_ + "context_notifications_test.html", true, &web_frame_client);
 
-  WebFrame* main_frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrameBase* main_frame = web_view_helper.WebView()->MainFrameImpl();
   WebFrame* child_frame = main_frame->FirstChild();
 
   ASSERT_EQ(2u, create_notifications.size());
@@ -4589,7 +4590,7 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsLoadUnload) {
   EXPECT_EQ(0, first_create_notification->world_id);
 
   EXPECT_EQ(child_frame, second_create_notification->frame);
-  EXPECT_EQ(child_frame->MainWorldScriptContext(),
+  EXPECT_EQ(child_frame->ToWebLocalFrame()->MainWorldScriptContext(),
             second_create_notification->context);
   EXPECT_EQ(0, second_create_notification->world_id);
 
@@ -4638,7 +4639,7 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsReload) {
 
   // The last two create notifications should be for the current frames and
   // context.
-  WebFrame* main_frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrameBase* main_frame = web_view_helper.WebView()->MainFrameImpl();
   WebFrame* child_frame = main_frame->FirstChild();
   auto& first_refresh_notification = create_notifications[2];
   auto& second_refresh_notification = create_notifications[3];
@@ -4649,7 +4650,7 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsReload) {
   EXPECT_EQ(0, first_refresh_notification->world_id);
 
   EXPECT_EQ(child_frame, second_refresh_notification->frame);
-  EXPECT_EQ(child_frame->MainWorldScriptContext(),
+  EXPECT_EQ(child_frame->ToWebLocalFrame()->MainWorldScriptContext(),
             second_refresh_notification->context);
   EXPECT_EQ(0, second_refresh_notification->world_id);
 }
@@ -4688,8 +4689,9 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds) {
 
   // We don't have an API to enumarate isolated worlds for a frame, but we can
   // at least assert that the context we got is *not* the main world's context.
-  ASSERT_NE(web_view_helper.WebView()->MainFrame()->MainWorldScriptContext(),
-            v8::Local<v8::Context>::New(isolate, notification->context));
+  ASSERT_NE(
+      web_view_helper.WebView()->MainFrameImpl()->MainWorldScriptContext(),
+      v8::Local<v8::Context>::New(isolate, notification->context));
 
   web_view_helper.Reset();
 
@@ -9942,7 +9944,7 @@ class DeviceEmulationTest : public ParameterizedWebFrameTest {
     String code = "dumpSize('" + id + "')";
     v8::HandleScope scope(v8::Isolate::GetCurrent());
     ScriptExecutionCallbackHelper callback_helper(
-        web_view_helper_.WebView()->MainFrame()->MainWorldScriptContext());
+        web_view_helper_.WebView()->MainFrameImpl()->MainWorldScriptContext());
     web_view_helper_.WebView()
         ->MainFrameImpl()
         ->RequestExecuteScriptAndReturnValue(WebScriptSource(WebString(code)),

@@ -185,7 +185,7 @@ void TestRunnerForSpecificView::InvokeV8CallbackWithArgs(
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
-  WebFrame* frame = web_view()->MainFrame();
+  blink::WebLocalFrame* frame = GetLocalMainFrame();
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
@@ -249,7 +249,7 @@ void TestRunnerForSpecificView::CapturePixelsCallback(
   v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Context> context =
-      web_view()->MainFrame()->MainWorldScriptContext();
+      GetLocalMainFrame()->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -331,7 +331,7 @@ void TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback(
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
-      web_view()->MainFrame()->MainWorldScriptContext();
+      GetLocalMainFrame()->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
   v8::Context::Scope context_scope(context);
@@ -408,7 +408,7 @@ void TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback(
   v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Context> context =
-      web_view()->MainFrame()->MainWorldScriptContext();
+      GetLocalMainFrame()->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -572,13 +572,7 @@ void TestRunnerForSpecificView::DidLosePointerLockInternal() {
 }
 
 bool TestRunnerForSpecificView::CallShouldCloseOnWebView() {
-  if (!web_view()->MainFrame()->ToWebLocalFrame()) {
-    CHECK(false) << "This function cannot be called if the main frame is not a "
-                    "local frame.";
-  }
-
-  return web_view()->MainFrame()->ToWebLocalFrame()->DispatchBeforeUnloadEvent(
-      false);
+  return GetLocalMainFrame()->DispatchBeforeUnloadEvent(false);
 }
 
 void TestRunnerForSpecificView::SetDomainRelaxationForbiddenForURLScheme(
@@ -662,7 +656,7 @@ bool TestRunnerForSpecificView::FindString(
       wrap_around = true;
   }
 
-  WebLocalFrame* frame = web_view()->MainFrame()->ToWebLocalFrame();
+  WebLocalFrame* frame = GetLocalMainFrame();
   const bool find_result = frame->Find(0, WebString::FromUTF8(search_text),
                                        find_options, wrap_around, 0);
   frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
@@ -670,25 +664,25 @@ bool TestRunnerForSpecificView::FindString(
 }
 
 std::string TestRunnerForSpecificView::SelectionAsMarkup() {
-  if (!web_view()->MainFrame()->ToWebLocalFrame()) {
-    CHECK(false) << "This function cannot be called if the main frame is not a "
-                    "local frame.";
-  }
-  return web_view()->MainFrame()->ToWebLocalFrame()->SelectionAsMarkup().Utf8();
+  return GetLocalMainFrame()->SelectionAsMarkup().Utf8();
 }
 
 void TestRunnerForSpecificView::SetViewSourceForFrame(const std::string& name,
                                                       bool enabled) {
+  WebFrame* target_frame =
+      GetLocalMainFrame()->FindFrameByName(WebString::FromUTF8(name));
+  if (target_frame)
+    target_frame->EnableViewSourceMode(enabled);
+}
+
+blink::WebLocalFrame* TestRunnerForSpecificView::GetLocalMainFrame() {
   if (!web_view()->MainFrame()->IsWebLocalFrame()) {
+    // Hitting the check below uncovers a new scenario that requires OOPIF
+    // support in the layout tests harness.
     CHECK(false) << "This function cannot be called if the main frame is not a "
                     "local frame.";
   }
-
-  WebFrame* target_frame =
-      web_view()->MainFrame()->ToWebLocalFrame()->FindFrameByName(
-          WebString::FromUTF8(name));
-  if (target_frame)
-    target_frame->EnableViewSourceMode(enabled);
+  return web_view()->MainFrame()->ToWebLocalFrame();
 }
 
 blink::WebView* TestRunnerForSpecificView::web_view() {

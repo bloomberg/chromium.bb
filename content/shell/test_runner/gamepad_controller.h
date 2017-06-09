@@ -13,8 +13,8 @@
 #include "device/gamepad/public/cpp/gamepads.h"
 
 namespace blink {
-class WebFrame;
 class WebGamepadListener;
+class WebLocalFrame;
 }
 
 namespace test_runner {
@@ -28,7 +28,7 @@ class TEST_RUNNER_EXPORT GamepadController
   ~GamepadController();
 
   void Reset();
-  void Install(blink::WebFrame* frame);
+  void Install(blink::WebLocalFrame* frame);
 
   void SampleGamepads(device::Gamepads& gamepads);
   void SetListener(blink::WebGamepadListener* listener);

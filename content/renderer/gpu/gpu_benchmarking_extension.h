@@ -9,7 +9,7 @@
 #include "gin/wrappable.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace gin {
@@ -27,7 +27,7 @@ namespace content {
 class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
  public:
   static gin::WrapperInfo kWrapperInfo;
-  static void Install(blink::WebFrame* frame);
+  static void Install(blink::WebLocalFrame* frame);
 
  private:
   GpuBenchmarking();

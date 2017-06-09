@@ -65,7 +65,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
       v8::Local<v8::Value>,
       int argc,
       v8::Local<v8::Value> argv[]) override;
-  v8::Local<v8::Context> MainWorldScriptContext() const override;
   void Reload(WebFrameLoadType) override;
   void ReloadWithOverrideURL(const WebURL& override_url,
                              WebFrameLoadType) override;

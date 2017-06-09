@@ -193,11 +193,6 @@ v8::Local<v8::Value> WebRemoteFrameImpl::CallFunctionEvenIfScriptDisabled(
   return v8::Local<v8::Value>();
 }
 
-v8::Local<v8::Context> WebRemoteFrameImpl::MainWorldScriptContext() const {
-  NOTREACHED();
-  return v8::Local<v8::Context>();
-}
-
 void WebRemoteFrameImpl::Reload(WebFrameLoadType) {
   NOTREACHED();
 }

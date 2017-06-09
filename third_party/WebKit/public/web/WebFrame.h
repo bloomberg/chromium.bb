@@ -40,14 +40,7 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebFrameLoadType.h"
 #include "public/web/WebTreeScopeType.h"
-
-namespace v8 {
-class Context;
-class Function;
-class Value;
-template <class T>
-class Local;
-}
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -219,6 +212,9 @@ class BLINK_EXPORT WebFrame {
 
   // Scripting ----------------------------------------------------------
 
+  // Returns the global proxy object.
+  virtual v8::Local<v8::Object> GlobalProxy() const = 0;
+
   // Executes JavaScript in a new world associated with the web frame.
   // The script gets its own global scope and its own prototypes for
   // intrinsic JavaScript objects (String, Array, and so-on). It also
@@ -271,13 +267,6 @@ class BLINK_EXPORT WebFrame {
       v8::Local<v8::Value>,
       int argc,
       v8::Local<v8::Value> argv[]) = 0;
-
-  // Returns the V8 context for associated with the main world and this
-  // frame. There can be many V8 contexts associated with this frame, one for
-  // each isolated world and one for the main world. If you don't know what
-  // the "main world" or an "isolated world" is, then you probably shouldn't
-  // be calling this API.
-  virtual v8::Local<v8::Context> MainWorldScriptContext() const = 0;
 
   // Returns true if the WebFrame currently executing JavaScript has access
   // to the given WebFrame, or false otherwise.

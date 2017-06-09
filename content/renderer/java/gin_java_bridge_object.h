@@ -17,7 +17,7 @@
 #include "v8/include/v8-util.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace content {
@@ -40,7 +40,7 @@ class GinJavaBridgeObject : public gin::Wrappable<GinJavaBridgeObject>,
       v8::Isolate* isolate) override;
 
   static GinJavaBridgeObject* InjectNamed(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const base::WeakPtr<GinJavaBridgeDispatcher>& dispatcher,
       const std::string& object_name,
       GinJavaBridgeDispatcher::ObjectID object_id);

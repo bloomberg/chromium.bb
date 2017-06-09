@@ -165,8 +165,9 @@ void AccessibilityController::NotificationReceived(
   blink::WebFrame* frame = web_view()->MainFrame();
   if (!frame || frame->IsWebRemoteFrame())
     return;
+  blink::WebLocalFrame* local_frame = frame->ToWebLocalFrame();
 
-  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
+  v8::Local<v8::Context> context = local_frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -180,7 +181,7 @@ void AccessibilityController::NotificationReceived(
   WebAXObjectProxy* element;
   bool result = gin::ConvertFromV8(isolate, element_handle, &element);
   DCHECK(result);
-  element->NotificationReceived(frame, notification_name);
+  element->NotificationReceived(local_frame, notification_name);
 
   if (notification_callback_.IsEmpty())
     return;
@@ -191,7 +192,7 @@ void AccessibilityController::NotificationReceived(
                                               v8::String::kNormalString,
                                               notification_name.size()),
   };
-  frame->CallFunctionEvenIfScriptDisabled(
+  local_frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, notification_callback_),
       context->Global(), arraysize(argv), argv);
 }

@@ -91,14 +91,7 @@ void GuestViewAttachRequest::HandleResponse(const IPC::Message& message) {
 
   v8::HandleScope handle_scope(isolate());
   blink::WebFrame* frame = guest_proxy_render_view->GetWebView()->MainFrame();
-  // TODO(lazyboy,nasko): The WebLocalFrame branch is not used when running
-  // on top of out-of-process iframes. Remove it once the code is converted.
-  v8::Local<v8::Value> window;
-  if (frame->IsWebLocalFrame()) {
-    window = frame->MainWorldScriptContext()->Global();
-  } else {
-    window = frame->ToWebRemoteFrame()->GlobalProxy();
-  }
+  v8::Local<v8::Value> window = frame->GlobalProxy();
 
   const int argc = 1;
   std::unique_ptr<v8::Local<v8::Value>[]> argv(new v8::Local<v8::Value>[argc]);

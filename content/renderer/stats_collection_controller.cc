@@ -78,7 +78,7 @@ gin::WrapperInfo StatsCollectionController::kWrapperInfo = {
 };
 
 // static
-void StatsCollectionController::Install(blink::WebFrame* frame) {
+void StatsCollectionController::Install(blink::WebLocalFrame* frame) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();

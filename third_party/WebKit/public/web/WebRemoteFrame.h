@@ -100,8 +100,6 @@ class WebRemoteFrame : public WebFrame {
 
   virtual void SetHasReceivedUserGesture() = 0;
 
-  virtual v8::Local<v8::Object> GlobalProxy() const = 0;
-
  protected:
   explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 

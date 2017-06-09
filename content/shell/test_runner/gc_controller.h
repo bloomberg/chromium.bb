@@ -9,7 +9,7 @@
 #include "gin/wrappable.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace gin {
@@ -21,7 +21,7 @@ namespace test_runner {
 class GCController : public gin::Wrappable<GCController> {
  public:
   static gin::WrapperInfo kWrapperInfo;
-  static void Install(blink::WebFrame* frame);
+  static void Install(blink::WebLocalFrame* frame);
 
  private:
   GCController();

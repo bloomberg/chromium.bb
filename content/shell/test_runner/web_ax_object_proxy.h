@@ -17,7 +17,7 @@
 #include "v8/include/v8.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace test_runner {
@@ -44,7 +44,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   virtual bool IsRoot() const;
   bool IsEqualToObject(const blink::WebAXObject& object);
 
-  void NotificationReceived(blink::WebFrame* frame,
+  void NotificationReceived(blink::WebLocalFrame* frame,
                             const std::string& notification_name);
   void Reset();
 

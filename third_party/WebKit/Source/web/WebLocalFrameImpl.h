@@ -146,6 +146,7 @@ class WEB_EXPORT WebLocalFrameImpl final
       int argc,
       v8::Local<v8::Value> argv[]) override;
   v8::Local<v8::Context> MainWorldScriptContext() const override;
+  v8::Local<v8::Object> GlobalProxy() const override;
   void Reload(WebFrameLoadType) override;
   void ReloadWithOverrideURL(const WebURL& override_url,
                              WebFrameLoadType) override;
