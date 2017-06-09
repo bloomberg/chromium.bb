@@ -168,7 +168,13 @@ class PaymentRequestBrowserTestBase
   // to be observed.
   void ClickOnDialogViewAndWait(DialogViewID view_id,
                                 bool wait_for_animation = true);
+  void ClickOnDialogViewAndWait(DialogViewID view_id,
+                                PaymentRequestDialogView* dialog_view,
+                                bool wait_for_animation = true);
   void ClickOnDialogViewAndWait(views::View* view,
+                                bool wait_for_animation = true);
+  void ClickOnDialogViewAndWait(views::View* view,
+                                PaymentRequestDialogView* dialog_view,
                                 bool wait_for_animation = true);
   void ClickOnChildInListViewAndWait(int child_index,
                                      int total_num_children,
@@ -182,7 +188,11 @@ class PaymentRequestBrowserTestBase
       DialogViewID parent_view_id);
 
   void OpenCVCPromptWithCVC(const base::string16& cvc);
+  void OpenCVCPromptWithCVC(const base::string16& cvc,
+                            PaymentRequestDialogView* dialog_view);
   void PayWithCreditCardAndWait(const base::string16& cvc);
+  void PayWithCreditCardAndWait(const base::string16& cvc,
+                                PaymentRequestDialogView* dialog_view);
 
   // Getting/setting the |value| in the textfield of a given |type|.
   base::string16 GetEditorTextfieldValue(autofill::ServerFieldType type);
@@ -205,6 +215,7 @@ class PaymentRequestBrowserTestBase
 
   // Sets proper animation delegates and waits for animation to finish.
   void WaitForAnimation();
+  void WaitForAnimation(PaymentRequestDialogView* dialog_view);
 
   // Returns the text of the Label or StyledLabel with the specific |view_id|
   // that is a child of the Payment Request dialog view.

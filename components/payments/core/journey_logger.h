@@ -127,7 +127,6 @@ class JourneyLogger {
     ABORT_REASON_MAX,
   };
 
-#ifdef OS_ANDROID
   // The reason why the Payment Request was not shown to the user.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: NotShownReason
@@ -138,7 +137,6 @@ class JourneyLogger {
     NOT_SHOWN_REASON_OTHER = 3,
     NOT_SHOWN_REASON_MAX = 4,
   };
-#endif
 
   JourneyLogger(bool is_incognito,
                 const GURL& url,
@@ -184,11 +182,9 @@ class JourneyLogger {
   // starts the logging of all the journey metrics.
   void SetAborted(AbortReason reason);
 
-#ifdef OS_ANDROID
   // Records that the Payment Request was not shown to the user, along with the
   // reason.
   void SetNotShown(NotShownReason reason);
-#endif
 
  private:
   static const int NUMBER_OF_SECTIONS = 3;

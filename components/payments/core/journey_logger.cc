@@ -123,7 +123,6 @@ void JourneyLogger::SetAborted(AbortReason reason) {
     RecordJourneyStatsHistograms(COMPLETION_STATUS_OTHER_ABORTED);
 }
 
-#ifdef OS_ANDROID
 void JourneyLogger::SetNotShown(NotShownReason reason) {
   base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.NoShow", reason,
                                 NOT_SHOWN_REASON_MAX);
@@ -132,7 +131,6 @@ void JourneyLogger::SetNotShown(NotShownReason reason) {
   // will be recorded for a Payment Request that was not shown to the user.
   UMA_HISTOGRAM_BOOLEAN("PaymentRequest.CheckoutFunnel.Initiated", true);
 }
-#endif
 
 void JourneyLogger::SetEventOccurred(Event event) {
   events_ |= event;

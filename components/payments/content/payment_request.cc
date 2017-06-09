@@ -120,12 +120,18 @@ void PaymentRequest::Show() {
   // A tab can display only one PaymentRequest UI at a time.
   if (!manager_->CanShow(this)) {
     LOG(ERROR) << "A PaymentRequest UI is already showing";
+    journey_logger_.SetNotShown(
+        JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
+    has_recorded_completion_ = true;
     client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
     OnConnectionTerminated();
     return;
   }
 
   if (!state_->AreRequestedMethodsSupported()) {
+    journey_logger_.SetNotShown(
+        JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
+    has_recorded_completion_ = true;
     client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED);
     if (observer_for_testing_)
       observer_for_testing_->OnNotSupportedError();
