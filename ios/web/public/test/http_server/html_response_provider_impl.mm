@@ -9,6 +9,10 @@
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 std::map<GURL, HtmlResponseProviderImpl::Response> BuildResponseMap(
     const std::map<GURL, std::string>& responses_body,
