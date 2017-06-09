@@ -74,6 +74,9 @@ class CastBrowserProcess {
   ConnectivityChecker* connectivity_checker() const {
     return connectivity_checker_.get();
   }
+  RemoteDebuggingServer* remote_debugging_server() const {
+    return remote_debugging_server_.get();
+  }
   net::NetLog* net_log() const { return net_log_; }
 
  private:

@@ -29,6 +29,7 @@ class CastDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
 
   void EnableWebContentsForDebugging(content::WebContents* web_contents);
   void DisableWebContentsForDebugging(content::WebContents* web_contents);
+  bool HasEnabledWebContents() const;
 
   // content::DevToolsManagerDelegate implementation.
   content::DevToolsAgentHost::List RemoteDebuggingTargets() override;

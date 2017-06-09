@@ -10,7 +10,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/prefs/pref_member.h"
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace chromecast {
 namespace shell {
@@ -20,10 +23,13 @@ class RemoteDebuggingServer {
   explicit RemoteDebuggingServer(bool start_immediately);
   ~RemoteDebuggingServer();
 
+  // Allows this WebContents to be debugged.
+  void EnableWebContentsForDebugging(content::WebContents* web_contents);
+
+  // Disables remote debugging for this web contents.
+  void DisableWebContentsForDebugging(content::WebContents* web_contents);
+
  private:
-  // Called when pref_enabled_ is changed.
-  void OnEnabledChanged();
-  BooleanPrefMember pref_enabled_;
   uint16_t port_;
   bool is_started_;
 

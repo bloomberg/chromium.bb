@@ -54,6 +54,10 @@ void CastDevToolsManagerDelegate::DisableWebContentsForDebugging(
   enabled_webcontents_.erase(web_contents);
 }
 
+bool CastDevToolsManagerDelegate::HasEnabledWebContents() const {
+  return !enabled_webcontents_.empty();
+}
+
 std::string CastDevToolsManagerDelegate::GetDiscoveryPageHTML() {
 #if defined(OS_ANDROID)
   return std::string();
