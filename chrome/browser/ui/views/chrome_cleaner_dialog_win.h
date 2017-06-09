@@ -38,9 +38,6 @@ class ChromeCleanerDialog : public views::DialogDelegateView,
 
   void Show(Browser* browser);
 
-  // ui::DialogModel overrides.
-  bool ShouldDefaultButtonBeBlue() const override;
-
   // views::WidgetDelegate overrides.
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;

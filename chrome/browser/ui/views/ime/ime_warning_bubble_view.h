@@ -41,7 +41,6 @@ class ImeWarningBubbleView : public views::BubbleDialogDelegateView,
   // views::DialogDelegate:
   bool Accept() override;
   bool Cancel() override;
-  bool ShouldDefaultButtonBeBlue() const override;
 
   // ToolbarActionsBarObserver:
   void OnToolbarActionsBarAnimationEnded() override;

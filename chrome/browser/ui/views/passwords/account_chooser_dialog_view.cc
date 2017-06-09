@@ -164,10 +164,6 @@ int AccountChooserDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_CANCEL;
 }
 
-bool AccountChooserDialogView::ShouldDefaultButtonBeBlue() const {
-  return show_signin_button_;
-}
-
 base::string16 AccountChooserDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   int message_id = 0;

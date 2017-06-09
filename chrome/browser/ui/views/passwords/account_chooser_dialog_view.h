@@ -41,7 +41,6 @@ class AccountChooserDialogView : public views::DialogDelegateView,
   // DialogDelegate:
   bool Accept() override;
   int GetDialogButtons() const override;
-  bool ShouldDefaultButtonBeBlue() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // views::View

@@ -157,10 +157,6 @@ bool GlobalErrorBubbleView::ShouldShowCloseButton() const {
   return error_ && error_->ShouldShowCloseButton();
 }
 
-bool GlobalErrorBubbleView::ShouldDefaultButtonBeBlue() const {
-  return true;
-}
-
 base::string16 GlobalErrorBubbleView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (!error_)

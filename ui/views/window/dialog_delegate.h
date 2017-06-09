@@ -95,7 +95,6 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // Overridden from ui::DialogModel:
   int GetDialogButtons() const override;
   int GetDefaultDialogButton() const override;
-  bool ShouldDefaultButtonBeBlue() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 

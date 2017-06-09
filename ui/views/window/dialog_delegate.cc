@@ -147,10 +147,6 @@ int DialogDelegate::GetDefaultDialogButton() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-bool DialogDelegate::ShouldDefaultButtonBeBlue() const {
-  return false;
-}
-
 base::string16 DialogDelegate::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
