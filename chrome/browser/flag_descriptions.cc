@@ -6,6 +6,11 @@
 
 namespace flag_descriptions {
 
+const char kBrowserSideNavigationName[] = "Enable browser side navigation";
+
+const char kBrowserSideNavigationDescription[] =
+    "Enable browser side navigation (aka PlzNaviate).";
+
 //  Material Design version of chrome://bookmarks
 
 const char kEnableMaterialDesignBookmarksName[] =
