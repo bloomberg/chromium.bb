@@ -396,10 +396,10 @@ public class UrlBarTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                urlBar.beginBatchEdit();
+                urlBar.getInputConnection().beginBatchEdit();
                 urlBar.setText(textToBeEntered);
                 urlBar.setSelection(textToBeEntered.length());
-                urlBar.endBatchEdit();
+                urlBar.getInputConnection().endBatchEdit();
             }
         });
         autocompleteHelper.waitForCallback(0);
@@ -477,7 +477,7 @@ public class UrlBarTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                urlBar.beginBatchEdit();
+                urlBar.getInputConnection().beginBatchEdit();
             }
         });
         // Ensure the autocomplete is not modified if in batch mode.
@@ -488,7 +488,7 @@ public class UrlBarTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                urlBar.endBatchEdit();
+                urlBar.getInputConnection().endBatchEdit();
             }
         });
 
@@ -527,7 +527,7 @@ public class UrlBarTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                urlBar.beginBatchEdit();
+                urlBar.getInputConnection().beginBatchEdit();
             }
         });
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -539,7 +539,7 @@ public class UrlBarTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                urlBar.endBatchEdit();
+                urlBar.getInputConnection().endBatchEdit();
             }
         });
 
@@ -570,10 +570,10 @@ public class UrlBarTest {
             // TODO(crbug.com/635567): Fix this properly.
             @SuppressLint("SetTextI18n")
             public void run() {
-                urlBar.beginBatchEdit();
+                urlBar.getInputConnection().beginBatchEdit();
                 urlBar.setText("go");
                 urlBar.setSelection(2);
-                urlBar.endBatchEdit();
+                urlBar.getInputConnection().endBatchEdit();
             }
         });
         Assert.assertTrue(state.hasAutocomplete);
@@ -587,10 +587,10 @@ public class UrlBarTest {
             // TODO(crbug.com/635567): Fix this properly.
             @SuppressLint("SetTextI18n")
             public void run() {
-                urlBar.beginBatchEdit();
+                urlBar.getInputConnection().beginBatchEdit();
                 urlBar.setText("go");
                 urlBar.setSelection(0);
-                urlBar.endBatchEdit();
+                urlBar.getInputConnection().endBatchEdit();
             }
         });
         Assert.assertFalse(state.hasAutocomplete);
@@ -602,10 +602,10 @@ public class UrlBarTest {
             // TODO(crbug.com/635567): Fix this properly.
             @SuppressLint("SetTextI18n")
             public void run() {
-                urlBar.beginBatchEdit();
+                urlBar.getInputConnection().beginBatchEdit();
                 urlBar.setText("ga");
                 urlBar.setSelection(2);
-                urlBar.endBatchEdit();
+                urlBar.getInputConnection().endBatchEdit();
             }
         });
         Assert.assertFalse(state.hasAutocomplete);
@@ -617,10 +617,10 @@ public class UrlBarTest {
             // TODO(crbug.com/635567): Fix this properly.
             @SuppressLint("SetTextI18n")
             public void run() {
-                urlBar.beginBatchEdit();
+                urlBar.getInputConnection().beginBatchEdit();
                 urlBar.setText("googl");
                 urlBar.setSelection(5);
-                urlBar.endBatchEdit();
+                urlBar.getInputConnection().endBatchEdit();
             }
         });
         Assert.assertFalse(state.hasAutocomplete);

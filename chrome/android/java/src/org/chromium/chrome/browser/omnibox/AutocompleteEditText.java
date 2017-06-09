@@ -43,7 +43,7 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
      */
     private boolean mDisableTextScrollingFromAutocomplete;
 
-    private boolean mInBatchEditMode;
+    private int mBatchEditNestCount;
     private int mBeforeBatchEditAutocompleteIndex = -1;
     private String mBeforeBatchEditFullText;
     private boolean mSelectionChangedInBatchMode;
@@ -98,16 +98,6 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
     }
 
     /**
-     * @return Whether the URL is currently in batch edit mode triggered by an IME.  No external
-     *         text changes should be triggered while this is true.
-     */
-    // isInBatchEditMode is a package protected method on TextView, so we intentionally chose
-    // a different name.
-    private boolean isHandlingBatchInput() {
-        return mInBatchEditMode;
-    }
-
-    /**
      * @return The user text without the autocomplete text.
      */
     public String getTextWithoutAutocomplete() {
@@ -137,27 +127,12 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
         if (mLastEditWasDelete) return false;
         Editable text = getText();
 
-        return isCursorAtEndOfTypedText() && !isHandlingBatchInput()
+        return isCursorAtEndOfTypedText() && mBatchEditNestCount == 0
                 && BaseInputConnection.getComposingSpanEnd(text)
                 == BaseInputConnection.getComposingSpanStart(text);
     }
 
-    @Override
-    public void onBeginBatchEdit() {
-        if (DEBUG) Log.i(TAG, "onBeginBatchEdit");
-        mBeforeBatchEditAutocompleteIndex = getText().getSpanStart(mAutocompleteSpan);
-        mBeforeBatchEditFullText = getText().toString();
-
-        super.onBeginBatchEdit();
-        mInBatchEditMode = true;
-        mTextDeletedInBatchMode = false;
-    }
-
-    @Override
-    public void onEndBatchEdit() {
-        if (DEBUG) Log.i(TAG, "onEndBatchEdit");
-        super.onEndBatchEdit();
-        mInBatchEditMode = false;
+    private void onPostEndBatchEdit() {
         if (mSelectionChangedInBatchMode) {
             validateSelection(getSelectionStart(), getSelectionEnd());
             mSelectionChangedInBatchMode = false;
@@ -187,7 +162,7 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
     @Override
     protected void onSelectionChanged(int selStart, int selEnd) {
         if (DEBUG) Log.i(TAG, "onSelectionChanged -- selStart: %d, selEnd: %d", selStart, selEnd);
-        if (!mInBatchEditMode) {
+        if (mBatchEditNestCount == 0) {
             int beforeTextLength = getText().length();
             if (validateSelection(selStart, selEnd)) {
                 boolean textDeleted = getText().length() < beforeTextLength;
@@ -267,8 +242,8 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
     }
 
     /**
-     * Autocompletes the text on the url bar and selects the text that was not entered by the
-     * user. Using append() instead of setText() to preserve the soft-keyboard layout.
+     * Autocompletes the text and selects the text that was not entered by the user. Using append()
+     * instead of setText() to preserve the soft-keyboard layout.
      * @param userText user The text entered by the user.
      * @param inlineAutocompleteText The suggested autocompletion for the user's text.
      */
@@ -338,7 +313,7 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
 
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         boolean textDeleted = lengthAfter == 0;
-        if (!mInBatchEditMode) {
+        if (mBatchEditNestCount == 0) {
             notifyAutocompleteTextStateChanged(textDeleted, true);
         } else {
             mTextDeletedInBatchMode = textDeleted;
@@ -351,11 +326,10 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
 
         mDisableTextScrollingFromAutocomplete = false;
 
-        // Avoid setting the same text to the URL bar as it will mess up the scroll/cursor
-        // position.
+        // Avoid setting the same text as it will mess up the scroll/cursor position.
         // Setting the text is also quite expensive, so only do it when the text has changed
-        // (since we apply spans when the URL is not focused, we only optimize this when the
-        // URL is being edited).
+        // (since we apply spans when the view is not focused, we only optimize this when the
+        // text is being edited).
         if (!TextUtils.equals(getEditableText(), text)) {
             // Certain OEM implementations of setText trigger disk reads. crbug.com/633298
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
@@ -430,6 +404,33 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
         private final char[] mTempSelectionChar = new char[1];
 
         @Override
+        public boolean beginBatchEdit() {
+            ++mBatchEditNestCount;
+            if (mBatchEditNestCount == 1) {
+                if (DEBUG) Log.i(TAG, "beginBatchEdit");
+                mBeforeBatchEditAutocompleteIndex = getText().getSpanStart(mAutocompleteSpan);
+                mBeforeBatchEditFullText = getText().toString();
+
+                boolean retVal = super.beginBatchEdit();
+                mTextDeletedInBatchMode = false;
+                return retVal;
+            }
+            return super.beginBatchEdit();
+        }
+
+        @Override
+        public boolean endBatchEdit() {
+            mBatchEditNestCount = Math.max(mBatchEditNestCount - 1, 0);
+            if (mBatchEditNestCount == 0) {
+                if (DEBUG) Log.i(TAG, "endBatchEdit");
+                boolean retVal = super.endBatchEdit();
+                onPostEndBatchEdit();
+                return retVal;
+            }
+            return super.endBatchEdit();
+        }
+
+        @Override
         public boolean commitText(CharSequence text, int newCursorPosition) {
             if (DEBUG) Log.i(TAG, "commitText: [%s]", text);
             Editable currentText = getText();
@@ -465,7 +466,7 @@ public class AutocompleteEditText extends VerticallyFixedEditText {
 
                     setAutocompleteText(currentText.subSequence(0, selectionStart + 1),
                             currentText.subSequence(selectionStart + 1, selectionEnd));
-                    if (!mInBatchEditMode) {
+                    if (mBatchEditNestCount == 0) {
                         notifyAutocompleteTextStateChanged(false, false);
                     }
                     return true;
