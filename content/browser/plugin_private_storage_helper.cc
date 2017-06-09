@@ -43,7 +43,7 @@ std::string StringTypeToString(const base::FilePath::StringType& value) {
 }
 
 // Helper for checking the plugin private data for a specified origin and
-// plugin for the existance of any file that matches the time range specified.
+// plugin for the existence of any file that matches the time range specified.
 // All of the operations in this class are done on the IO thread.
 //
 // This class keeps track of outstanding async requests it generates, and does

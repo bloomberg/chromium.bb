@@ -204,7 +204,7 @@ bool IsGeneratedResourceAvailable(const std::string& resource_path) {
   // files. If the bindings file doesn't exist assume we're on such a bot and
   // pass.
   // TODO(sky): remove this conditional when isolates support copying from gen.
-  base::ThreadRestrictions::ScopedAllowIO allow_io_for_file_existance_check;
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_file_existence_check;
   const base::FilePath test_file_path(GetFilePathForJSResource(resource_path));
   if (base::PathExists(test_file_path))
     return true;

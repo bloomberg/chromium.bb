@@ -27,7 +27,7 @@ class WebUIResourceBrowserTest : public ContentBrowserTest {
   // Runs all test functions in |file|, waiting for them to complete.
   void RunTest(const base::FilePath& file) {
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io_for_file_existance_check;
+      base::ThreadRestrictions::ScopedAllowIO allow_io_for_file_existence_check;
       ASSERT_TRUE(PathExists(file));
     }
 
