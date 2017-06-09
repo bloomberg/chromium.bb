@@ -33,7 +33,7 @@
         "chrome_rev": null,
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": true,
-        "chrome_sdk_goma": false,
+        "chrome_sdk_goma": true,
         "chromeos_official": false,
         "chroot_replace": true,
         "compilecheck": false,
