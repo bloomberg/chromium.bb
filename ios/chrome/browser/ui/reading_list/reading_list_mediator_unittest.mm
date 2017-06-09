@@ -14,10 +14,12 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -79,20 +81,29 @@ class ReadingListMediatorTest : public PlatformTest {
 
 TEST_F(ReadingListMediatorTest, fillItems) {
   // Setup.
-  NSMutableArray<ReadingListCollectionViewItem*>* readArray =
-      [NSMutableArray array];
-  NSMutableArray<ReadingListCollectionViewItem*>* unreadArray =
-      [NSMutableArray array];
+  NSMutableArray<CollectionViewItem*>* readArray = [NSMutableArray array];
+  NSMutableArray<CollectionViewItem*>* unreadArray = [NSMutableArray array];
+  id mockDelegate = OCMProtocolMock(
+      @protocol(ReadingListCollectionViewItemAccessibilityDelegate));
 
   // Action.
-  [mediator_ fillReadItems:readArray unreadItems:unreadArray];
+  [mediator_ fillReadItems:readArray
+               unreadItems:unreadArray
+              withDelegate:mockDelegate];
 
   // Tests.
   EXPECT_EQ(3U, [unreadArray count]);
   EXPECT_EQ(2U, [readArray count]);
-  EXPECT_TRUE([unreadArray[0].title
+  NSArray<ReadingListCollectionViewItem*>* rlReadArray = [readArray copy];
+  NSArray<ReadingListCollectionViewItem*>* rlUneadArray = [unreadArray copy];
+  EXPECT_TRUE([rlUneadArray[0].title
       isEqualToString:base::SysUTF16ToNSString(url_formatter::FormatUrl(
                           no_title_entry_url_.GetOrigin()))]);
-  EXPECT_TRUE([readArray[0].title isEqualToString:@"read2"]);
-  EXPECT_TRUE([readArray[1].title isEqualToString:@"read1"]);
+  EXPECT_TRUE([rlReadArray[0].title isEqualToString:@"read2"]);
+  EXPECT_TRUE([rlReadArray[1].title isEqualToString:@"read1"]);
+  EXPECT_EQ(mockDelegate, rlReadArray[0].accessibilityDelegate);
+  EXPECT_EQ(mockDelegate, rlReadArray[1].accessibilityDelegate);
+  EXPECT_EQ(mockDelegate, rlUneadArray[0].accessibilityDelegate);
+  EXPECT_EQ(mockDelegate, rlUneadArray[1].accessibilityDelegate);
+  EXPECT_EQ(mockDelegate, rlUneadArray[2].accessibilityDelegate);
 }

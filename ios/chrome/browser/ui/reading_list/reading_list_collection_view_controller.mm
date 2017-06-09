@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
@@ -65,7 +64,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 // Loads all the items in all sections.
 - (void)loadItems;
 // Fills section |sectionIdentifier| with the items from |array|.
-- (void)loadItemsFromArray:(NSArray<ReadingListCollectionViewItem*>*)array
+- (void)loadItemsFromArray:(NSArray<CollectionViewItem*>*)array
                  toSection:(SectionIdentifier)sectionIdentifier;
 // Reloads the data if a changed occured during editing
 - (void)applyPendingUpdates;
@@ -387,7 +386,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   }
 }
 
-- (void)loadItemsFromArray:(NSArray<ReadingListCollectionViewItem*>*)items
+- (void)loadItemsFromArray:(NSArray<CollectionViewItem*>*)items
                  toSection:(SectionIdentifier)sectionIdentifier {
   if (items.count == 0) {
     return;
@@ -396,20 +395,19 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   [model addSectionWithIdentifier:sectionIdentifier];
   [model setHeader:[self headerForSection:sectionIdentifier]
       forSectionWithIdentifier:sectionIdentifier];
-  for (ReadingListCollectionViewItem* item in items) {
+  for (CollectionViewItem* item in items) {
     item.type = ItemTypeItem;
     [self.dataSource fetchFaviconForItem:item];
-    item.accessibilityDelegate = self;
     [model addItem:item toSectionWithIdentifier:sectionIdentifier];
   }
 }
 
 - (void)loadItems {
-  NSMutableArray<ReadingListCollectionViewItem*>* readArray =
-      [NSMutableArray array];
-  NSMutableArray<ReadingListCollectionViewItem*>* unreadArray =
-      [NSMutableArray array];
-  [self.dataSource fillReadItems:readArray unreadItems:unreadArray];
+  NSMutableArray<CollectionViewItem*>* readArray = [NSMutableArray array];
+  NSMutableArray<CollectionViewItem*>* unreadArray = [NSMutableArray array];
+  [self.dataSource fillReadItems:readArray
+                     unreadItems:unreadArray
+                    withDelegate:self];
   [self loadItemsFromArray:unreadArray toSection:SectionIdentifierUnread];
   [self loadItemsFromArray:readArray toSection:SectionIdentifierRead];
 

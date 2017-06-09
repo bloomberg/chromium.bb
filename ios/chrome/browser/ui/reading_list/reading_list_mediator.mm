@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 
@@ -119,9 +120,10 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   self.model->RemoveEntryByURL(readingListItem.url);
 }
 
-- (void)fillReadItems:(NSMutableArray<ReadingListCollectionViewItem*>*)readArray
-          unreadItems:
-              (NSMutableArray<ReadingListCollectionViewItem*>*)unreadArray {
+- (void)fillReadItems:(NSMutableArray<CollectionViewItem*>*)readArray
+          unreadItems:(NSMutableArray<CollectionViewItem*>*)unreadArray
+         withDelegate:
+             (id<ReadingListCollectionViewItemAccessibilityDelegate>)delegate {
   std::vector<const ReadingListEntry*> readEntries;
   std::vector<const ReadingListEntry*> unreadEntries;
 
@@ -139,18 +141,22 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   std::sort(unreadEntries.begin(), unreadEntries.end(), EntrySorter);
 
   for (const ReadingListEntry* entry : readEntries) {
-    [readArray addObject:[self cellItemForReadingListEntry:entry]];
+    [readArray addObject:[self cellItemForReadingListEntry:entry
+                                              withDelegate:delegate]];
   }
 
   for (const ReadingListEntry* entry : unreadEntries) {
-    [unreadArray addObject:[self cellItemForReadingListEntry:entry]];
+    [unreadArray addObject:[self cellItemForReadingListEntry:entry
+                                                withDelegate:delegate]];
   }
 
   DCHECK(self.model->Keys().size() == [readArray count] + [unreadArray count]);
 }
 
-- (void)fetchFaviconForItem:(ReadingListCollectionViewItem*)item {
-  __weak ReadingListCollectionViewItem* weakItem = item;
+- (void)fetchFaviconForItem:(CollectionViewItem*)item {
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
+  __weak ReadingListCollectionViewItem* weakItem = readingListItem;
   __weak ReadingListMediator* weakSelf = self;
   void (^completionBlock)(FaviconAttributes* attributes) =
       ^(FaviconAttributes* attributes) {
@@ -165,8 +171,9 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
         [strongSelf.dataSink itemHasChangedAfterDelay:strongItem];
       };
 
-  [self.attributesProvider fetchFaviconAttributesForURL:item.faviconPageURL
-                                             completion:completionBlock];
+  [self.attributesProvider
+      fetchFaviconAttributesForURL:readingListItem.faviconPageURL
+                        completion:completionBlock];
 }
 
 - (void)beginBatchUpdates {
@@ -250,8 +257,11 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
 #pragma mark - Private
 
 // Creates a ReadingListCollectionViewItem from a ReadingListEntry |entry|.
-- (ReadingListCollectionViewItem*)cellItemForReadingListEntry:
-    (const ReadingListEntry*)entry {
+- (ReadingListCollectionViewItem*)
+cellItemForReadingListEntry:(const ReadingListEntry*)entry
+               withDelegate:
+                   (id<ReadingListCollectionViewItemAccessibilityDelegate>)
+                       delegate {
   const GURL& url = entry->URL();
   ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
            initWithType:0
@@ -278,16 +288,15 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
       has_distillation_details ? entry->DistillationTime() : 0;
   item.distillationSize =
       has_distillation_details ? entry->DistillationSize() : 0;
+  item.accessibilityDelegate = delegate;
   return item;
 }
 
 // Whether the data source has changed.
 - (BOOL)hasDataSourceChanged {
-  NSMutableArray<ReadingListCollectionViewItem*>* readArray =
-      [NSMutableArray array];
-  NSMutableArray<ReadingListCollectionViewItem*>* unreadArray =
-      [NSMutableArray array];
-  [self fillReadItems:readArray unreadItems:unreadArray];
+  NSMutableArray<CollectionViewItem*>* readArray = [NSMutableArray array];
+  NSMutableArray<CollectionViewItem*>* unreadArray = [NSMutableArray array];
+  [self fillReadItems:readArray unreadItems:unreadArray withDelegate:nil];
 
   return [self currentSection:[self.dataSink readItems]
              isDifferentOfArray:readArray] ||
@@ -300,7 +309,7 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
 // URL of the elements. If an element exist in both, the one in |currentSection|
 // will be overwriten with the informations contained in the one from|array|.
 - (BOOL)currentSection:(NSArray<CollectionViewItem*>*)currentSection
-    isDifferentOfArray:(NSArray<ReadingListCollectionViewItem*>*)array {
+    isDifferentOfArray:(NSArray<CollectionViewItem*>*)array {
   if (currentSection.count != array.count)
     return YES;
 
