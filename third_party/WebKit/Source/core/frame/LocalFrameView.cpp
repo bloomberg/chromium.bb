@@ -3278,6 +3278,15 @@ void LocalFrameView::PaintTree() {
       GraphicsContext graphics_context(*paint_controller_);
       if (RuntimeEnabledFeatures::PrintBrowserEnabled())
         graphics_context.SetPrinting(true);
+
+      if (Settings* settings = frame_->GetSettings()) {
+        HighContrastSettings high_contrast_settings;
+        high_contrast_settings.mode = settings->GetHighContrastMode();
+        high_contrast_settings.grayscale = settings->GetHighContrastGrayscale();
+        high_contrast_settings.contrast = settings->GetHighContrastContrast();
+        graphics_context.SetHighContrast(high_contrast_settings);
+      }
+
       Paint(graphics_context, CullRect(LayoutRect::InfiniteIntRect()));
       paint_controller_->CommitNewDisplayItems();
     }

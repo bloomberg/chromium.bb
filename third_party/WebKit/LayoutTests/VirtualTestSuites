@@ -498,5 +498,10 @@
     "prefix": "new-remote-playback-pipeline",
     "base": "external/wpt/remote-playback",
     "args": ["--enable-features=NewRemotePlaybackPipeline"]
+  },
+  {
+    "prefix": "high-contrast-mode",
+    "base": "paint/high-contrast-mode",
+    "args": ["--blink-settings=highContrastMode=3"]
   }
 ]

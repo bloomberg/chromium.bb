@@ -37,8 +37,13 @@ PaintRecordBuilder::PaintRecordBuilder(const FloatRect& bounds,
   paint_controller_->SetUsage(PaintController::kForPaintRecordBuilder);
 #endif
 
+  const HighContrastSettings* high_contrast_settings =
+      containing_context ? &containing_context->high_contrast_settings()
+                         : nullptr;
   context_ = WTF::WrapUnique(
       new GraphicsContext(*paint_controller_, disabled_mode, meta_data));
+  if (high_contrast_settings)
+    context_->SetHighContrast(*high_contrast_settings);
 
   if (containing_context) {
     context_->SetDeviceScaleFactor(containing_context->DeviceScaleFactor());

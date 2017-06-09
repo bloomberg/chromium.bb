@@ -43,6 +43,7 @@
 #include "platform/Timer.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/HighContrastSettings.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/PointerProperties.h"
