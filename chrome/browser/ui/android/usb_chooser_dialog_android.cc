@@ -29,9 +29,14 @@
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/webusb_descriptors.h"
+#include "device/vr/features/features.h"
 #include "jni/UsbChooserDialog_jni.h"
 #include "ui/android/window_android.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
+#endif  // BUILDFLAG(ENABLE_VR)
 
 using device::UsbDevice;
 using device::UsbDeviceFilter;
@@ -59,6 +64,16 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
       usb_service_observer_(this),
       filters_(filters),
       weak_factory_(this) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host_);
+#if BUILDFLAG(ENABLE_VR)
+  if (vr_shell::VrTabHelper::IsInVr(web_contents)) {
+    DCHECK(!callback_.is_null());
+    callback_.Run(nullptr);
+    callback_.Reset();  // Reset |callback_| so that it is only run once.
+    return;
+  }
+#endif
   device::UsbService* usb_service =
       device::DeviceClient::Get()->GetUsbService();
   if (!usb_service)
@@ -68,8 +83,6 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
     usb_service_observer_.Add(usb_service);
 
   // Create (and show) the UsbChooser dialog.
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host_);
   base::android::ScopedJavaLocalRef<jobject> window_android =
       content::ContentViewCore::FromWebContents(web_contents)
           ->GetWindowAndroid()
