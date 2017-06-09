@@ -88,7 +88,6 @@ source_set("browser_sources") {
     "cookie_store_factory.h",
     "desktop_media_id.cc",
     "desktop_media_id.h",
-    "desktop_notification_delegate.h",
     "devtools_agent_host.h",
     "devtools_agent_host_client.h",
     "devtools_agent_host_observer.cc",

@@ -21,7 +21,6 @@ class GURL;
 namespace content {
 
 class BrowserContext;
-class DesktopNotificationDelegate;
 struct NotificationResources;
 struct PlatformNotificationData;
 class ResourceContext;
@@ -63,7 +62,6 @@ class CONTENT_EXPORT PlatformNotificationService {
       const GURL& origin,
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources,
-      std::unique_ptr<DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) = 0;
 
   // Displays the persistent notification described in |notification_data| to

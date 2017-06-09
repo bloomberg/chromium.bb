@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -22,7 +23,6 @@ namespace base {
 
 namespace content {
 
-class DesktopNotificationDelegate;
 struct NotificationResources;
 struct PlatformNotificationData;
 
@@ -60,7 +60,6 @@ class MockPlatformNotificationService : public PlatformNotificationService {
       const GURL& origin,
       const PlatformNotificationData& notification_data,
       const NotificationResources& notification_resources,
-      std::unique_ptr<DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       BrowserContext* browser_context,
@@ -96,8 +95,7 @@ class MockPlatformNotificationService : public PlatformNotificationService {
 
   std::unordered_map<std::string, PersistentNotification>
       persistent_notifications_;
-  std::unordered_map<std::string, std::unique_ptr<DesktopNotificationDelegate>>
-      non_persistent_notifications_;
+  std::unordered_set<std::string> non_persistent_notifications_;
 
   // Mapping of titles to notification ids giving test a usable identifier.
   std::unordered_map<std::string, std::string> notification_id_map_;

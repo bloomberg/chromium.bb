@@ -12,14 +12,12 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/notifications/notification_event_dispatcher_impl.h"
 #include "content/browser/notifications/notification_id_generator.h"
-#include "content/browser/notifications/page_notification_delegate.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/platform_notification_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -168,22 +166,16 @@ void NotificationMessageFilter::OnShowPlatformNotification(
       GetNotificationIdGenerator()->GenerateForNonPersistentNotification(
           origin, notification_data.tag, non_persistent_notification_id,
           process_id_);
-
   NotificationEventDispatcherImpl* event_dispatcher =
       content::NotificationEventDispatcherImpl::GetInstance();
   non_persistent__notification_shown_ = true;
   event_dispatcher->RegisterNonPersistentNotification(
       notification_id, process_id_, non_persistent_notification_id);
 
-  std::unique_ptr<DesktopNotificationDelegate> delegate(
-      new PageNotificationDelegate(process_id_, non_persistent_notification_id,
-                                   notification_id));
-
   base::Closure close_closure;
   service->DisplayNotification(browser_context_, notification_id, origin,
                                SanitizeNotificationData(notification_data),
-                               notification_resources, std::move(delegate),
-                               &close_closure);
+                               notification_resources, &close_closure);
 
   if (!close_closure.is_null())
     close_closures_[notification_id] = close_closure;
