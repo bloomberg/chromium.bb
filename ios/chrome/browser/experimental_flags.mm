@@ -272,4 +272,9 @@ bool IsNativeAppLauncherEnabled() {
       boolForKey:@"NativeAppLauncherEnabled"];
 }
 
+bool IsNewFeedbackKitEnabled() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:@"NewFeedbackKitEnabled"];
+}
+
 }  // namespace experimental_flags

@@ -103,6 +103,9 @@ bool IsSigninPromoEnabled();
 // Whether Google Native App Launcher is enabled.
 bool IsNativeAppLauncherEnabled();
 
+// Whether a new version of FeedbackKit is the preferred feedback UI provider.
+bool IsNewFeedbackKitEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
