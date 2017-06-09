@@ -1469,12 +1469,6 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   TakeObjectSnapshot();
 }
 
-void FrameLoader::ApplyUserAgent(ResourceRequest& request) {
-  String user_agent = this->UserAgent();
-  DCHECK(!user_agent.IsNull());
-  request.SetHTTPUserAgent(AtomicString(user_agent));
-}
-
 bool FrameLoader::ShouldTreatURLAsSameAsCurrent(const KURL& url) const {
   return document_loader_->GetHistoryItem() &&
          url == document_loader_->GetHistoryItem()->Url();

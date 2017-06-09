@@ -73,7 +73,12 @@ class LocalFrameClientImplTest : public ::testing::Test {
     web_view_->SetMainFrame(main_frame_);
   }
 
-  void TearDown() override { web_view_->Close(); }
+  void TearDown() override {
+    // web_view_->Close() will call UserAgentOverride() in order to store
+    // the information for detached requests.
+    EXPECT_CALL(WebFrameClient(), UserAgentOverride());
+    web_view_->Close();
+  }
 
   WebString UserAgent() {
     // The test always returns the same user agent .

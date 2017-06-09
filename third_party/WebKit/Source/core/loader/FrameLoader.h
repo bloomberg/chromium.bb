@@ -163,8 +163,6 @@ class CORE_EXPORT FrameLoader final {
 
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 
-  void ApplyUserAgent(ResourceRequest&);
-
   bool AllAncestorsAreComplete() const;  // including this
 
   bool ShouldClose(bool is_reload = false);
