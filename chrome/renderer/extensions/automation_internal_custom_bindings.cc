@@ -742,6 +742,34 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
         std::string name_from_str = ui::ToString(name_from);
         result.Set(v8::String::NewFromUtf8(isolate, name_from_str.c_str()));
       });
+  RouteNodeIDFunction(
+      "GetBold", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+                    TreeCache* cache, ui::AXNode* node) {
+        bool value = (node->data().GetIntAttribute(ui::AX_ATTR_TEXT_STYLE) &
+                      ui::AX_TEXT_STYLE_BOLD) != 0;
+        result.Set(v8::Boolean::New(isolate, value));
+      });
+  RouteNodeIDFunction(
+      "GetItalic", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+                      TreeCache* cache, ui::AXNode* node) {
+        bool value = (node->data().GetIntAttribute(ui::AX_ATTR_TEXT_STYLE) &
+                      ui::AX_TEXT_STYLE_ITALIC) != 0;
+        result.Set(v8::Boolean::New(isolate, value));
+      });
+  RouteNodeIDFunction("GetUnderline", [](v8::Isolate* isolate,
+                                         v8::ReturnValue<v8::Value> result,
+                                         TreeCache* cache, ui::AXNode* node) {
+    bool value = (node->data().GetIntAttribute(ui::AX_ATTR_TEXT_STYLE) &
+                  ui::AX_TEXT_STYLE_UNDERLINE) != 0;
+    result.Set(v8::Boolean::New(isolate, value));
+  });
+  RouteNodeIDFunction("GetLineThrough", [](v8::Isolate* isolate,
+                                           v8::ReturnValue<v8::Value> result,
+                                           TreeCache* cache, ui::AXNode* node) {
+    bool value = (node->data().GetIntAttribute(ui::AX_ATTR_TEXT_STYLE) &
+                  ui::AX_TEXT_STYLE_LINE_THROUGH) != 0;
+    result.Set(v8::Boolean::New(isolate, value));
+  });
   RouteNodeIDFunction("GetChecked", [](v8::Isolate* isolate,
                                        v8::ReturnValue<v8::Value> result,
                                        TreeCache* cache, ui::AXNode* node) {

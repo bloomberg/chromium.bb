@@ -337,7 +337,6 @@ MockFeedback.prototype = {
    * @private
    */
   addUtterance_: function(textString, queueMode, properties) {
-    console.log('speak!'+textString);
     var callback;
     if (properties && (properties.startCallback || properties.endCallback)) {
       var startCallback = properties.startCallback;

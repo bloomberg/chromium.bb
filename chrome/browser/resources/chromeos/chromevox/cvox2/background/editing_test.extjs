@@ -212,8 +212,7 @@ TEST_F('EditingTest', 'SingleCharacterLine', function() {
     ]);
 });
 
-// Fails flakily, see https://crbug.com/724847.
-TEST_F('EditingTest', 'DISABLED_RichTextMoveByLine', function() {
+TEST_F('EditingTest', 'RichTextMoveByLine', function() {
   editing.useRichText = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
@@ -243,18 +242,132 @@ TEST_F('EditingTest', 'DISABLED_RichTextMoveByLine', function() {
     var input = root.find({role: RoleType.TEXT_FIELD});
     var moveByLine = input.doDefault.bind(input);
     mockFeedback.call(input.focus.bind(input))
+        .expectSpeech('Text area')
         .call(moveByLine)
-        .expectSpeech('blank')
-        .expectBraille('')
+        .expectSpeech('\n')
+        .expectBraille('\n')
         .call(moveByLine)
         .expectSpeech('This is a ', 'test', 'Link', ' of rich text')
         .expectBraille('This is a test lnk of rich text')
         .call(moveByLine)
-        .expectSpeech('blank')
-        .expectBraille('')
+        .expectSpeech('\n')
+        .expectBraille('\n')
         .call(moveByLine)
         .expectSpeech('hello', 'Heading 2')
         .expectBraille('hello h2')
+        .replay();
+  });
+});
+
+TEST_F('EditingTest', 'RichTextMoveByCharacter', function() {
+  editing.useRichText = true;
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div id="go" role="textbox" contenteditable>This <b>is</b> a test.</div>
+
+    <script>
+      var dir = 'forward';
+      var char = 0;
+      document.getElementById('go').addEventListener('click', function() {
+        var sel = getSelection();
+        sel.modify('move', dir, 'character');
+        if (dir == 'forward')
+          char++;
+        else
+          char--;
+
+        if (char == 0)
+          dir = 'forward';
+        if (line == 16)
+          dir = 'backward';
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var moveByChar = input.doDefault.bind(input)
+    var lineText = 'This is a test.';
+
+    mockFeedback.call(input.focus.bind(input))
+        .expectSpeech(lineText)
+        .expectSpeech('Text area')
+        .call(moveByChar)
+        .expectSpeech('h')
+        .expectBraille(lineText, { startIndex: 1, endIndex: 1 })
+        .call(moveByChar)
+        .expectSpeech('i')
+        .expectBraille(lineText, { startIndex: 2, endIndex: 2 })
+        .call(moveByChar)
+        .expectSpeech('s')
+        .expectBraille(lineText, { startIndex: 3, endIndex: 3 })
+        .call(moveByChar)
+        .expectSpeech(' ')
+        .expectBraille(lineText, { startIndex: 4, endIndex: 4 })
+
+        .call(moveByChar)
+        .expectSpeech('i')
+        .expectSpeech('Bold start')
+        .expectBraille(lineText, { startIndex: 5, endIndex: 5 })
+
+        .call(moveByChar)
+        .expectSpeech('s')
+        .expectSpeech('Bold end')
+        .expectBraille(lineText, { startIndex: 6, endIndex: 6 })
+
+        .call(moveByChar)
+        .expectSpeech(' ')
+        .expectBraille(lineText, { startIndex: 7, endIndex: 7 })
+
+        .call(moveByChar)
+        .expectSpeech('a')
+        .expectBraille(lineText, { startIndex: 8, endIndex: 8 })
+
+        .call(moveByChar)
+        .expectSpeech(' ')
+        .expectBraille(lineText, { startIndex: 9, endIndex: 9 })
+
+        .replay();
+  });
+});
+
+// Tests specifically for cursor workarounds.
+TEST_F('EditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
+  editing.useRichText = true;
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div id="go" role="textbox" contenteditable>hello <b>world</b></div>
+
+    <script>
+      document.getElementById('go').addEventListener('click', function() {
+        var sel = getSelection();
+        sel.modify('move', 'forward', 'character');
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var moveByChar = input.doDefault.bind(input)
+    var lineText = 'hello world';
+
+    mockFeedback.call(input.focus.bind(input))
+        .expectSpeech(lineText)
+        .expectSpeech('Text area')
+        .call(moveByChar)
+        .expectSpeech('e')
+        .expectBraille(lineText, { startIndex: 1, endIndex: 1 })
+        .call(moveByChar)
+        .expectSpeech('l')
+        .expectBraille(lineText, { startIndex: 2, endIndex: 2 })
+        .call(moveByChar)
+        .expectSpeech('l')
+        .expectBraille(lineText, { startIndex: 3, endIndex: 3 })
+        .call(moveByChar)
+        .expectSpeech('o')
+        .expectBraille(lineText, { startIndex: 4, endIndex: 4 })
+        .call(moveByChar)
+        .expectSpeech(' ')
+        .expectBraille(lineText, { startIndex: 5, endIndex: 5 })
+        .call(moveByChar)
+        .expectSpeech('w')
+        .expectBraille(lineText, { startIndex: 6, endIndex: 6 })
         .replay();
   });
 });

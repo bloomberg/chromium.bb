@@ -238,6 +238,34 @@ var GetHtmlAttribute = requireNative('automationInternal').GetHtmlAttribute;
  */
 var GetNameFrom = requireNative('automationInternal').GetNameFrom;
 
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {boolean}
+ */
+var GetBold = requireNative('automationInternal').GetBold;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {boolean}
+ */
+var GetItalic = requireNative('automationInternal').GetItalic;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {boolean}
+ */
+var GetUnderline = requireNative('automationInternal').GetUnderline;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {boolean}
+ */
+var GetLineThrough = requireNative('automationInternal').GetLineThrough;
+
 var lastError = require('lastError');
 var logging = requireNative('logging');
 var utils = require('utils');
@@ -378,6 +406,22 @@ AutomationNodeImpl.prototype = {
 
   get nameFrom() {
     return GetNameFrom(this.treeID, this.id);
+  },
+
+  get bold() {
+    return GetBold(this.treeID, this.id);
+  },
+
+  get italic() {
+    return GetItalic(this.treeID, this.id);
+  },
+
+  get underline() {
+    return GetUnderline(this.treeID, this.id);
+  },
+
+  get lineThrough() {
+    return GetLineThrough(this.treeID, this.id);
   },
 
   doDefault: function() {
@@ -1137,6 +1181,10 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
       'root',
       'htmlAttributes',
       'nameFrom',
+      'bold',
+      'italic',
+      'underline',
+      'lineThrough',
   ]),
 });
 
