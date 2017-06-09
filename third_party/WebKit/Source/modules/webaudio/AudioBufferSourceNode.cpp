@@ -514,23 +514,20 @@ void AudioBufferSourceHandler::StartSource(double when,
   }
 
   if (when < 0) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
+    exception_state.ThrowRangeError(
         ExceptionMessages::IndexExceedsMinimumBound("start time", when, 0.0));
     return;
   }
 
   if (grain_offset < 0) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError, ExceptionMessages::IndexExceedsMinimumBound(
-                                "offset", grain_offset, 0.0));
+    exception_state.ThrowRangeError(ExceptionMessages::IndexExceedsMinimumBound(
+        "offset", grain_offset, 0.0));
     return;
   }
 
   if (grain_duration < 0) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError, ExceptionMessages::IndexExceedsMinimumBound(
-                                "duration", grain_duration, 0.0));
+    exception_state.ThrowRangeError(ExceptionMessages::IndexExceedsMinimumBound(
+        "duration", grain_duration, 0.0));
     return;
   }
 

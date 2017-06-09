@@ -168,8 +168,7 @@ void AudioScheduledSourceHandler::Start(double when,
   }
 
   if (when < 0) {
-    exception_state.ThrowDOMException(
-        kInvalidAccessError,
+    exception_state.ThrowRangeError(
         ExceptionMessages::IndexExceedsMinimumBound("start time", when, 0.0));
     return;
   }
@@ -201,8 +200,7 @@ void AudioScheduledSourceHandler::Stop(double when,
   }
 
   if (when < 0) {
-    exception_state.ThrowDOMException(
-        kInvalidAccessError,
+    exception_state.ThrowRangeError(
         ExceptionMessages::IndexExceedsMinimumBound("stop time", when, 0.0));
     return;
   }
