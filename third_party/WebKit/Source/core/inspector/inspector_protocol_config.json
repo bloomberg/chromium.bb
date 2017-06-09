@@ -95,7 +95,7 @@
             },
             {
                 "domain": "Target",
-                "include": ["setAutoAttach", "sendMessageToTarget"],
+                "include": ["setAutoAttach", "sendMessageToTarget", "setAttachToFrames"],
                 "include_events": ["attachedToTarget", "detachedFromTarget", "receivedMessageFromTarget"]
             }
         ]

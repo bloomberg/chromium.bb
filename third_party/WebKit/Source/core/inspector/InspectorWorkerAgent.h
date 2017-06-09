@@ -64,6 +64,7 @@ class CORE_EXPORT InspectorWorkerAgent final
   // Called from Dispatcher
   protocol::Response setAutoAttach(bool auto_attach,
                                    bool wait_for_debugger_on_start) override;
+  protocol::Response setAttachToFrames(bool attach) override;
   protocol::Response sendMessageToTarget(const String& target_id,
                                          const String& message) override;
 

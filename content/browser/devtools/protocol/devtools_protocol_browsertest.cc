@@ -1669,14 +1669,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   command_params.reset(new base::DictionaryValue());
   command_params->SetBoolean("discover", false);
   SendCommand("Target.setDiscoverTargets", std::move(command_params), true);
-  params = WaitForNotification("Target.targetDestroyed", true);
-  EXPECT_TRUE(params->GetString("targetId", &temp));
-  EXPECT_TRUE(ids.find(temp) != ids.end());
-  ids.erase(temp);
-  params = WaitForNotification("Target.targetDestroyed", true);
-  EXPECT_TRUE(params->GetString("targetId", &temp));
-  EXPECT_TRUE(ids.find(temp) != ids.end());
-  ids.erase(temp);
   EXPECT_TRUE(notifications_.empty());
 
   command_params.reset(new base::DictionaryValue());

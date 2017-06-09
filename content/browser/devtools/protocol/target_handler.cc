@@ -218,7 +218,8 @@ void TargetHandler::TargetDestroyedInternal(
   auto it = reported_hosts_.find(host->GetId());
   if (it == reported_hosts_.end())
     return;
-  frontend_->TargetDestroyed(host->GetId());
+  if (discover_)
+    frontend_->TargetDestroyed(host->GetId());
   reported_hosts_.erase(it);
 }
 

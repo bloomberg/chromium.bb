@@ -91,6 +91,10 @@ Response InspectorWorkerAgent::setAutoAttach(bool auto_attach,
   return Response::OK();
 }
 
+Response InspectorWorkerAgent::setAttachToFrames(bool attach) {
+  return Response::OK();
+}
+
 bool InspectorWorkerAgent::AutoAttachEnabled() {
   return state_->booleanProperty(WorkerAgentState::kAutoAttach, false);
 }
