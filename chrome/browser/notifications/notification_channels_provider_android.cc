@@ -7,10 +7,12 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
+#include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -56,6 +58,62 @@ class NotificationChannelsBridgeImpl
     Java_NotificationSettingsBridge_deleteChannel(
         env, ConvertUTF8ToJavaString(env, origin));
   }
+
+  std::vector<NotificationChannel> GetChannels() override {
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jobjectArray> raw_channels =
+        Java_NotificationSettingsBridge_getSiteChannels(env);
+    jsize num_channels = env->GetArrayLength(raw_channels.obj());
+    std::vector<NotificationChannel> channels;
+    for (jsize i = 0; i < num_channels; ++i) {
+      jobject jchannel = env->GetObjectArrayElement(raw_channels.obj(), i);
+      channels.emplace_back(
+          ConvertJavaStringToUTF8(Java_SiteChannel_getOrigin(env, jchannel)),
+          static_cast<NotificationChannelStatus>(
+              Java_SiteChannel_getStatus(env, jchannel)));
+    }
+    return channels;
+  }
+};
+
+ContentSetting ChannelStatusToContentSetting(NotificationChannelStatus status) {
+  switch (status) {
+    case NotificationChannelStatus::ENABLED:
+      return CONTENT_SETTING_ALLOW;
+    case NotificationChannelStatus::BLOCKED:
+      return CONTENT_SETTING_BLOCK;
+    case NotificationChannelStatus::UNAVAILABLE:
+      NOTREACHED();
+  }
+  return CONTENT_SETTING_DEFAULT;
+}
+
+class ChannelsRuleIterator : public content_settings::RuleIterator {
+ public:
+  explicit ChannelsRuleIterator(std::vector<NotificationChannel> channels)
+      : channels_(std::move(channels)), index_(0) {}
+
+  ~ChannelsRuleIterator() override = default;
+
+  bool HasNext() const override { return index_ < channels_.size(); }
+
+  content_settings::Rule Next() override {
+    DCHECK(HasNext());
+    DCHECK_NE(channels_[index_].status_,
+              NotificationChannelStatus::UNAVAILABLE);
+    content_settings::Rule rule = content_settings::Rule(
+        ContentSettingsPattern::FromString(channels_[index_].origin_),
+        ContentSettingsPattern::Wildcard(),
+        new base::Value(
+            ChannelStatusToContentSetting(channels_[index_].status_)));
+    index_++;
+    return rule;
+  }
+
+ private:
+  std::vector<NotificationChannel> channels_;
+  size_t index_;
+  DISALLOW_COPY_AND_ASSIGN(ChannelsRuleIterator);
 };
 
 }  // anonymous namespace
@@ -77,8 +135,14 @@ NotificationChannelsProviderAndroid::GetRuleIterator(
     ContentSettingsType content_type,
     const content_settings::ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  // TODO(crbug.com/700377) return rule iterator over all channels
-  return nullptr;
+  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS || incognito ||
+      !should_use_channels_) {
+    return nullptr;
+  }
+  std::vector<NotificationChannel> channels = bridge_->GetChannels();
+  return channels.empty()
+             ? nullptr
+             : base::MakeUnique<ChannelsRuleIterator>(std::move(channels));
 }
 
 bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
@@ -134,6 +198,8 @@ void NotificationChannelsProviderAndroid::ShutdownOnUIThread() {
 void NotificationChannelsProviderAndroid::CreateChannelIfRequired(
     const std::string& origin_string,
     NotificationChannelStatus new_channel_status) {
+  // TODO(awdf): Maybe check cached incognito status here to make sure
+  // channels are never created in incognito mode.
   auto old_channel_status = bridge_->GetChannelStatus(origin_string);
   if (old_channel_status == NotificationChannelStatus::UNAVAILABLE) {
     bridge_->CreateChannel(

@@ -15,13 +15,16 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace {
-
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.notifications
 enum NotificationChannelStatus { ENABLED, BLOCKED, UNAVAILABLE };
 
-}  // anonymous namespace
+struct NotificationChannel {
+  NotificationChannel(std::string origin, NotificationChannelStatus status)
+      : origin_(origin), status_(status) {}
+  std::string origin_;
+  NotificationChannelStatus status_ = NotificationChannelStatus::UNAVAILABLE;
+};
 
 // This class provides notification content settings from system notification
 // channels on Android O+. This provider takes precedence over pref-provided
@@ -39,6 +42,7 @@ class NotificationChannelsProviderAndroid
     virtual NotificationChannelStatus GetChannelStatus(
         const std::string& origin) = 0;
     virtual void DeleteChannel(const std::string& origin) = 0;
+    virtual std::vector<NotificationChannel> GetChannels() = 0;
   };
 
   NotificationChannelsProviderAndroid();

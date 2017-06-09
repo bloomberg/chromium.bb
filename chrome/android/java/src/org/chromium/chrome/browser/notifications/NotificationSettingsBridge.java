@@ -38,7 +38,33 @@ public class NotificationSettingsBridge {
     }
 
     @CalledByNative
+    static SiteChannel[] getSiteChannels() {
+        // TODO(crbug.com/700377) Actually get site channels.
+        return new SiteChannel[] {};
+    }
+
+    @CalledByNative
     static void deleteChannel(String origin) {
         // TODO(crbug.com/700377) Actually delete channel.
+    }
+
+    static class SiteChannel {
+        private final String mOrigin;
+        private final @NotificationChannelStatus int mStatus;
+
+        private SiteChannel(String origin, @NotificationChannelStatus int status) {
+            mOrigin = origin;
+            mStatus = status;
+        }
+
+        @CalledByNative("SiteChannel")
+        private String getOrigin() {
+            return mOrigin;
+        }
+
+        @CalledByNative("SiteChannel")
+        private @NotificationChannelStatus int getStatus() {
+            return mStatus;
+        }
     }
 }
