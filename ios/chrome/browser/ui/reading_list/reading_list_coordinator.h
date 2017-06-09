@@ -12,11 +12,15 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+@class ReadingListMediator;
 @protocol UrlLoader;
 
 // Coordinator for Reading List, displaying the Reading List when starting.
 @interface ReadingListCoordinator
     : ChromeCoordinator<ReadingListCollectionViewControllerDelegate>
+
+// Mediator used by this coordinator. Reset when |-start| is called.
+@property(nonatomic, strong, nullable) ReadingListMediator* mediator;
 
 - (nullable instancetype)
 initWithBaseViewController:(nullable UIViewController*)viewController

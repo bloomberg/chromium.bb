@@ -12,6 +12,7 @@
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
@@ -43,13 +44,14 @@ using testing::_;
 @property(nonatomic, readonly) const web::Referrer& referrer;
 @property(nonatomic, assign) ui::PageTransition transition;
 @property(nonatomic, assign) BOOL rendererInitiated;
-
+@property(nonatomic, assign) BOOL inIncognito;
 @end
 
 @implementation UrlLoaderStub
 
 @synthesize transition = _transition;
 @synthesize rendererInitiated = _rendererInitiated;
+@synthesize inIncognito = _inIncognito;
 
 - (void)loadURL:(const GURL&)url
              referrer:(const web::Referrer&)referrer
@@ -72,6 +74,9 @@ using testing::_;
                inIncognito:(BOOL)inIncognito
               inBackground:(BOOL)inBackground
                   appendTo:(OpenPosition)appendTo {
+  _url = url;
+  _referrer = referrer;
+  self.inIncognito = inIncognito;
 }
 
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
@@ -112,6 +117,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
         initWithBaseViewController:nil
                       browserState:browser_state_.get()
                             loader:loader_mock_];
+    coordinator_.mediator = mediator_;
 
     EXPECT_CALL(mock_favicon_service_,
                 GetLargestRawFaviconForPageURL(_, _, _, _, _))
@@ -148,8 +154,6 @@ TEST_F(ReadingListCoordinatorTest, OpenItem) {
   // Setup.
   GURL url("https://chromium.org");
   std::string title("Chromium");
-  std::unique_ptr<ReadingListEntry> entry =
-      base::MakeUnique<ReadingListEntry>(url, title, base::Time::FromTimeT(10));
   ReadingListModel* model = GetReadingListModel();
   model->AddEntry(url, title, reading_list::ADDED_VIA_CURRENT_APP);
 
@@ -169,4 +173,59 @@ TEST_F(ReadingListCoordinatorTest, OpenItem) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                                            loader.transition));
   EXPECT_EQ(NO, loader.rendererInitiated);
+}
+
+TEST_F(ReadingListCoordinatorTest, OpenItemOffline) {
+  // Setup.
+  GURL url("https://chromium.org");
+  std::string title("Chromium");
+  ReadingListModel* model = GetReadingListModel();
+  model->AddEntry(url, title, reading_list::ADDED_VIA_CURRENT_APP);
+  base::FilePath distilled_path("test");
+  GURL distilled_url("https://distilled.com");
+  model->SetEntryDistilledInfo(url, distilled_path, distilled_url, 123,
+                               base::Time::FromTimeT(10));
+
+  ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
+           initWithType:0
+                    url:url
+      distillationState:ReadingListUIDistillationStatusSuccess];
+  GURL offlineURL =
+      reading_list::OfflineURLForPath(distilled_path, url, distilled_url);
+  ASSERT_FALSE(model->GetEntryByURL(url)->IsRead());
+
+  // Action.
+  [GetCoordinator() readingListCollectionViewController:
+                        GetAReadingListCollectionViewController()
+                                openItemOfflineInNewTab:item];
+
+  // Tests.
+  UrlLoaderStub* loader = GetLoaderStub();
+  EXPECT_EQ(offlineURL, loader.url);
+  EXPECT_FALSE(loader.inIncognito);
+  EXPECT_TRUE(model->GetEntryByURL(url)->IsRead());
+}
+
+TEST_F(ReadingListCoordinatorTest, OpenItemInNewTab) {
+  // Setup.
+  GURL url("https://chromium.org");
+  std::string title("Chromium");
+  ReadingListModel* model = GetReadingListModel();
+  model->AddEntry(url, title, reading_list::ADDED_VIA_CURRENT_APP);
+
+  ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
+           initWithType:0
+                    url:url
+      distillationState:ReadingListUIDistillationStatusSuccess];
+
+  // Action.
+  [GetCoordinator() readingListCollectionViewController:
+                        GetAReadingListCollectionViewController()
+                                       openItemInNewTab:item
+                                              incognito:YES];
+
+  // Tests.
+  UrlLoaderStub* loader = GetLoaderStub();
+  EXPECT_EQ(url, loader.url);
+  EXPECT_TRUE(loader.inIncognito);
 }

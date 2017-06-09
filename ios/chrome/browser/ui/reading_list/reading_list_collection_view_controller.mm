@@ -228,12 +228,10 @@ typedef void (^EntryUpdater)(const GURL&);
   if (self.editor.editing) {
     [self updateToolbarState];
   } else {
-    ReadingListCollectionViewItem* readingListItem =
-        base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(
-            [self.collectionViewModel itemAtIndexPath:indexPath]);
-
-    [self.delegate readingListCollectionViewController:self
-                                              openItem:readingListItem];
+    [self.delegate
+        readingListCollectionViewController:self
+                                   openItem:[self.collectionViewModel
+                                                itemAtIndexPath:indexPath]];
   }
 }
 
@@ -485,18 +483,13 @@ typedef void (^EntryUpdater)(const GURL&);
   CollectionViewItem* touchedItem =
       [self.collectionViewModel itemAtIndexPath:touchedItemIndexPath];
 
-  if (touchedItem == [self.collectionViewModel
-                         headerForSection:touchedItemIndexPath.section] ||
-      ![touchedItem isKindOfClass:[ReadingListCollectionViewItem class]]) {
+  if (touchedItem.type != ItemTypeItem) {
     // Do not trigger context menu on headers.
     return;
   }
 
-  ReadingListCollectionViewItem* readingListItem =
-      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(touchedItem);
-
   [self.delegate readingListCollectionViewController:self
-                           displayContextMenuForItem:readingListItem
+                           displayContextMenuForItem:touchedItem
                                              atPoint:touchLocation];
 }
 

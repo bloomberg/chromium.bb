@@ -25,6 +25,12 @@ class ReadingListModel;
                           (nonnull favicon::LargeIconService*)largeIconService
     NS_DESIGNATED_INITIALIZER;
 
+// Returns the entry corresponding to the |item|. The item should be of type
+// ReadingListCollectionViewItem. Returns nullptr if there is no corresponding
+// entry.
+- (nullable const ReadingListEntry*)entryFromItem:
+    (nonnull CollectionViewItem*)item;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_MEDIATOR_H_

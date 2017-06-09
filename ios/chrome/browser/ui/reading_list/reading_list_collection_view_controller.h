@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 
 @class ReadingListCollectionViewController;
-@class ReadingListCollectionViewItem;
 @protocol ReadingListDataSource;
 
 // Audience for the ReadingListCollectionViewController
@@ -35,16 +34,14 @@
 - (void)readingListCollectionViewController:
             (ReadingListCollectionViewController*)
                 readingListCollectionViewController
-                  displayContextMenuForItem:
-                      (ReadingListCollectionViewItem*)readingListItem
+                  displayContextMenuForItem:(CollectionViewItem*)readingListItem
                                     atPoint:(CGPoint)menuLocation;
 
 // Opens the entry corresponding to the |readingListItem|.
 - (void)
 readingListCollectionViewController:
     (ReadingListCollectionViewController*)readingListCollectionViewController
-                           openItem:
-                               (ReadingListCollectionViewItem*)readingListItem;
+                           openItem:(CollectionViewItem*)readingListItem;
 
 // Opens the entry corresponding to the |item| in a new tab, |incognito| or not.
 - (void)readingListCollectionViewController:
