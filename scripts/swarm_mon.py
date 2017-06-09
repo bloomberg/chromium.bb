@@ -25,17 +25,19 @@ def main(argv):
                       help='Swarming server to send no-op requests to.')
   options = parser.parse_args(argv)
 
-  m = 'chromeos/autotest/swarming_proxy/no_op_durations'
+  m_timer = 'chromeos/autotest/swarming_proxy/no_op_durations'
+  m_count = 'chromeos/autotest/swarming_proxy/no_op_attempts'
   command = commands.RUN_SUITE_PATH
   fields = {'success': False, 'swarming_server': options.swarming_server}
   with ts_mon_config.SetupTsMonGlobalState('swarm_mon', indirect=True):
     while True:
-      with metrics.SecondsTimer(m, fields=fields) as f:
+      with metrics.SecondsTimer(m_timer, fields=fields) as f:
         try:
-          swarming_lib.RunSwarmingCommand([command, '--do_nothing'],
-                                          options.swarming_server,
-                                          dimensions=[('pool', 'default')],
-                                          timeout_secs=120)
+          with metrics.SuccessCounter(m_count):
+            swarming_lib.RunSwarmingCommand([command, '--do_nothing'],
+                                            options.swarming_server,
+                                            dimensions=[('pool', 'default')],
+                                            timeout_secs=120)
           f['success'] = True
         except (cros_build_lib.RunCommandError, timeout_util.TimeoutError):
           pass
