@@ -25,12 +25,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
@@ -87,9 +85,13 @@ void ConnectAsyncWithBackoff(
 }  // namespace
 
 // ServiceProcessControl implementation.
-ServiceProcessControl::ServiceProcessControl() : weak_factory_(this) {}
+ServiceProcessControl::ServiceProcessControl()
+    : apply_changes_from_upgrade_observer_(false), weak_factory_(this) {
+  UpgradeDetector::GetInstance()->AddObserver(this);
+}
 
 ServiceProcessControl::~ServiceProcessControl() {
+  UpgradeDetector::GetInstance()->RemoveObserver(this);
 }
 
 void ServiceProcessControl::ConnectInternal() {
@@ -242,13 +244,11 @@ void ServiceProcessControl::OnChannelConnected(int32_t peer_pid) {
 
   // We just established a channel with the service process. Notify it if an
   // upgrade is available.
-  if (UpgradeDetector::GetInstance()->notify_upgrade()) {
+  if (UpgradeDetector::GetInstance()->notify_upgrade())
     Send(new ServiceMsg_UpdateAvailable);
-  } else {
-    if (registrar_.IsEmpty())
-      registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                     content::NotificationService::AllSources());
-  }
+  else
+    apply_changes_from_upgrade_observer_ = true;
+
   RunConnectDoneTasks();
 }
 
@@ -270,13 +270,9 @@ bool ServiceProcessControl::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
-// content::NotificationObserver implementation.
-void ServiceProcessControl::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED, type);
-  Send(new ServiceMsg_UpdateAvailable);
+void ServiceProcessControl::OnUpgradeRecommended() {
+  if (apply_changes_from_upgrade_observer_)
+    Send(new ServiceMsg_UpdateAvailable);
 }
 
 void ServiceProcessControl::OnCloudPrintProxyInfo(

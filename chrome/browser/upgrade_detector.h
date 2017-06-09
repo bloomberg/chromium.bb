@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/upgrade_observer.h"
 #include "ui/base/idle/idle.h"
 #include "ui/gfx/image/image.h"
@@ -86,6 +85,13 @@ class UpgradeDetector {
 
   void RemoveObserver(UpgradeObserver* observer);
 
+  // Notifies that the current install is outdated. No details are expected.
+  void NotifyOutdatedInstall();
+
+  // Notifies that the current install is outdated and auto-update (AU) is
+  // disabled. No details are expected.
+  void NotifyOutdatedInstallNoAutoUpdate();
+
  protected:
   enum UpgradeAvailable {
     // If no update is available and current install is recent enough.
@@ -105,8 +111,16 @@ class UpgradeDetector {
 
   UpgradeDetector();
 
-  // Sends out UPGRADE_RECOMMENDED notification and set notify_upgrade_.
+  // Notifies that update is recommended and triggers different actions based
+  // on the update availability.
+  void NotifyUpgrade();
+
+  // Notifies that update is recommended.
   void NotifyUpgradeRecommended();
+
+  // Notifies that a critical update has been installed. No details are
+  // expected.
+  void NotifyCriticalUpgradeInstalled();
 
   // The function that sends out a notification that lets the rest of the UI
   // know we should notify the user that a new update is available to download
@@ -155,9 +169,6 @@ class UpgradeDetector {
   // The callback for the IdleCheck. Tells us whether Chrome has received any
   // input events since the specified time.
   void IdleCallback(ui::IdleState state);
-
-  // Triggers a global notification of the specified |type|.
-  void TriggerNotification(chrome::NotificationType type);
 
   // Whether any software updates are available (experiment updates are tracked
   // separately via additional member variables below).

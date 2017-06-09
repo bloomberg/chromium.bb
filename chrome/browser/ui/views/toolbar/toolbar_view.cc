@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,6 +44,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -53,7 +53,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_accessibility_state.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -135,19 +134,12 @@ ToolbarView::ToolbarView(Browser* browser)
   chrome::AddCommandObserver(browser_, IDC_HOME, this);
   chrome::AddCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 
-  if (OutdatedUpgradeBubbleView::IsAvailable()) {
-    registrar_.Add(this, chrome::NOTIFICATION_OUTDATED_INSTALL,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_OUTDATED_INSTALL_NO_AU,
-                   content::NotificationService::AllSources());
-  }
-#if defined(OS_WIN)
-  registrar_.Add(this, chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
-                 content::NotificationService::AllSources());
-#endif
+  UpgradeDetector::GetInstance()->AddObserver(this);
 }
 
 ToolbarView::~ToolbarView() {
+  UpgradeDetector::GetInstance()->RemoveObserver(this);
+
   // NOTE: Don't remove the command observers here.  This object gets destroyed
   // after the Browser (which owns the CommandUpdater), so the CommandUpdater is
   // already gone.
@@ -451,26 +443,21 @@ void ToolbarView::ButtonPressed(views::Button* sender,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, content::NotificationObserver implementation:
+// ToolbarView, UpgradeObserver implementation:
+void ToolbarView::OnOutdatedInstall() {
+  if (OutdatedUpgradeBubbleView::IsAvailable())
+    ShowOutdatedInstallNotification(true);
+}
 
-void ToolbarView::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_OUTDATED_INSTALL:
-      ShowOutdatedInstallNotification(true);
-      break;
-    case chrome::NOTIFICATION_OUTDATED_INSTALL_NO_AU:
-      ShowOutdatedInstallNotification(false);
-      break;
+void ToolbarView::OnOutdatedInstallNoAutoUpdate() {
+  if (OutdatedUpgradeBubbleView::IsAvailable())
+    ShowOutdatedInstallNotification(false);
+}
+
+void ToolbarView::OnCriticalUpgradeInstalled() {
 #if defined(OS_WIN)
-    case chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED:
-      ShowCriticalNotification();
-      break;
+  ShowCriticalNotification();
 #endif
-    default:
-      NOTREACHED();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

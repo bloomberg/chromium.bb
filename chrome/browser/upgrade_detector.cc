@@ -7,13 +7,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "content/public/browser/notification_service.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -73,18 +71,38 @@ UpgradeDetector::UpgradeDetector()
 UpgradeDetector::~UpgradeDetector() {
 }
 
-void UpgradeDetector::NotifyUpgradeRecommended() {
+void UpgradeDetector::NotifyOutdatedInstall() {
+  for (auto& observer : observer_list_)
+    observer.OnOutdatedInstall();
+}
+
+void UpgradeDetector::NotifyOutdatedInstallNoAutoUpdate() {
+  for (auto& observer : observer_list_)
+    observer.OnOutdatedInstallNoAutoUpdate();
+}
+
+void UpgradeDetector::NotifyUpgrade() {
   notify_upgrade_ = true;
 
-  TriggerNotification(chrome::NOTIFICATION_UPGRADE_RECOMMENDED);
+  NotifyUpgradeRecommended();
   if (upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL) {
-    TriggerNotification(chrome::NOTIFICATION_OUTDATED_INSTALL);
+    NotifyOutdatedInstall();
   } else if (upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU) {
-    TriggerNotification(chrome::NOTIFICATION_OUTDATED_INSTALL_NO_AU);
+    NotifyOutdatedInstallNoAutoUpdate();
   } else if (upgrade_available_ == UPGRADE_AVAILABLE_CRITICAL ||
              critical_experiment_updates_available_) {
     TriggerCriticalUpdate();
   }
+}
+
+void UpgradeDetector::NotifyUpgradeRecommended() {
+  for (auto& observer : observer_list_)
+    observer.OnUpgradeRecommended();
+}
+
+void UpgradeDetector::NotifyCriticalUpgradeInstalled() {
+  for (auto& observer : observer_list_)
+    observer.OnCriticalUpgradeInstalled();
 }
 
 void UpgradeDetector::NotifyUpdateOverCellularAvailable() {
@@ -110,13 +128,6 @@ void UpgradeDetector::CheckIdle() {
                                     base::Unretained(this)));
 }
 
-void UpgradeDetector::TriggerNotification(chrome::NotificationType type) {
-  content::NotificationService::current()->Notify(
-      type,
-      content::Source<UpgradeDetector>(this),
-      content::NotificationService::NoDetails());
-}
-
 void UpgradeDetector::IdleCallback(ui::IdleState state) {
   // Don't proceed while an incognito window is open. The timer will still
   // keep firing, so this function will get a chance to re-evaluate this.
@@ -132,7 +143,7 @@ void UpgradeDetector::IdleCallback(ui::IdleState state) {
     case ui::IDLE_STATE_IDLE:
       // Computer has been idle for long enough, show warning.
       idle_check_timer_.Stop();
-      TriggerNotification(chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED);
+      NotifyCriticalUpgradeInstalled();
       break;
     case ui::IDLE_STATE_ACTIVE:
     case ui::IDLE_STATE_UNKNOWN:

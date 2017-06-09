@@ -7,11 +7,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/upgrade_observer.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,31 +39,28 @@ class TestUpgradeDetectorImpl : public UpgradeDetectorImpl {
   DISALLOW_COPY_AND_ASSIGN(TestUpgradeDetectorImpl);
 };
 
-class TestUpgradeNotificationListener : public content::NotificationObserver {
+class TestUpgradeNotificationListener : public UpgradeObserver {
  public:
-  TestUpgradeNotificationListener() {
-    registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                   content::NotificationService::AllSources());
+  explicit TestUpgradeNotificationListener(UpgradeDetector* detector)
+      : notifications_count_(0), detector_(detector) {
+    detector_->AddObserver(this);
   }
-  ~TestUpgradeNotificationListener() override {}
+  ~TestUpgradeNotificationListener() override {
+    if (detector_)
+      detector_->RemoveObserver(this);
+  }
 
-  const std::vector<int>& notifications_received() const {
-    return notifications_received_;
-  }
+  int get_notifications_count() const { return notifications_count_; }
 
  private:
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    notifications_received_.push_back(type);
-  }
+  // UpgradeObserver implementation.
+  void OnUpgradeRecommended() override { notifications_count_ += 1; }
 
-  // Registrar for listening to notifications.
-  content::NotificationRegistrar registrar_;
+  // Keeps track of the number of upgrade recommended notifications that were
+  // received.
+  int notifications_count_;
 
-  // Keeps track of the number and types of notifications that were received.
-  std::vector<int> notifications_received_;
+  UpgradeDetector* detector_;
 
   DISALLOW_COPY_AND_ASSIGN(TestUpgradeNotificationListener);
 };
@@ -74,21 +68,19 @@ class TestUpgradeNotificationListener : public content::NotificationObserver {
 TEST(UpgradeDetectorImplTest, VariationsChanges) {
   content::TestBrowserThreadBundle bundle;
 
-  TestUpgradeNotificationListener notifications_listener;
   TestUpgradeDetectorImpl detector;
+  TestUpgradeNotificationListener notifications_listener(&detector);
   EXPECT_FALSE(detector.notify_upgrade());
-  EXPECT_TRUE(notifications_listener.notifications_received().empty());
+  EXPECT_EQ(0, notifications_listener.get_notifications_count());
 
   detector.OnExperimentChangesDetected(
       variations::VariationsService::Observer::BEST_EFFORT);
   EXPECT_FALSE(detector.notify_upgrade());
-  EXPECT_TRUE(notifications_listener.notifications_received().empty());
+  EXPECT_EQ(0, notifications_listener.get_notifications_count());
 
   detector.NotifyOnUpgradeWithTimePassed(base::TimeDelta::FromDays(30));
   EXPECT_TRUE(detector.notify_upgrade());
-  ASSERT_EQ(1U, notifications_listener.notifications_received().size());
-  EXPECT_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-            notifications_listener.notifications_received().front());
+  EXPECT_EQ(1, notifications_listener.get_notifications_count());
   EXPECT_EQ(0, detector.trigger_critical_update_call_count());
 
   // Execute tasks sent to FILE thread by |detector| referencing it
@@ -99,21 +91,19 @@ TEST(UpgradeDetectorImplTest, VariationsChanges) {
 TEST(UpgradeDetectorImplTest, VariationsCriticalChanges) {
   content::TestBrowserThreadBundle bundle;
 
-  TestUpgradeNotificationListener notifications_listener;
   TestUpgradeDetectorImpl detector;
+  TestUpgradeNotificationListener notifications_listener(&detector);
   EXPECT_FALSE(detector.notify_upgrade());
-  EXPECT_TRUE(notifications_listener.notifications_received().empty());
+  EXPECT_EQ(0, notifications_listener.get_notifications_count());
 
   detector.OnExperimentChangesDetected(
       variations::VariationsService::Observer::CRITICAL);
   EXPECT_FALSE(detector.notify_upgrade());
-  EXPECT_TRUE(notifications_listener.notifications_received().empty());
+  EXPECT_EQ(0, notifications_listener.get_notifications_count());
 
   detector.NotifyOnUpgradeWithTimePassed(base::TimeDelta::FromDays(30));
   EXPECT_TRUE(detector.notify_upgrade());
-  ASSERT_EQ(1U, notifications_listener.notifications_received().size());
-  EXPECT_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-            notifications_listener.notifications_received().front());
+  EXPECT_EQ(1, notifications_listener.get_notifications_count());
   EXPECT_EQ(1, detector.trigger_critical_update_call_count());
 
   // Execute tasks sent to FILE thread by |detector| referencing it

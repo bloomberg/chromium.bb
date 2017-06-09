@@ -132,7 +132,7 @@ void UpgradeDetectorChromeos::NotifyOnUpgrade() {
     return;  // Not ready to recommend upgrade.
   }
 
-  NotifyUpgradeRecommended();
+  NotifyUpgrade();
 }
 
 void UpgradeDetectorChromeos::OnChannelsReceived(

@@ -494,7 +494,7 @@ void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
     }
   }
 
-  NotifyUpgradeRecommended();
+  NotifyUpgrade();
 }
 
 void UpgradeDetectorImpl::NotifyOnUpgrade() {

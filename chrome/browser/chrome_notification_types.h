@@ -265,24 +265,6 @@ enum NotificationType {
   // Source is the WebContents that holds the print job.
   NOTIFICATION_PRINT_JOB_RELEASED,
 
-  // Upgrade notifications ---------------------------------------------------
-
-  // Sent when Chrome believes an update has been installed and available for
-  // long enough with the user shutting down to let it take effect. See
-  // upgrade_detector.cc for details on how long it waits. No details are
-  // expected.
-  NOTIFICATION_UPGRADE_RECOMMENDED,
-
-  // Sent when a critical update has been installed. No details are expected.
-  NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
-
-  // Sent when the current install is outdated. No details are expected.
-  NOTIFICATION_OUTDATED_INSTALL,
-
-  // Sent when the current install is outdated and auto-update (AU) is disabled.
-  // No details are expected.
-  NOTIFICATION_OUTDATED_INSTALL_NO_AU,
-
   // Content Settings --------------------------------------------------------
 
   // Sent when the collect cookies dialog is shown. The source is a

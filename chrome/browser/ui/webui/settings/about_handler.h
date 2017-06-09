@@ -15,9 +15,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chrome/browser/upgrade_observer.h"
 #include "components/policy/core/common/policy_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 #if defined(OS_CHROMEOS)
@@ -41,7 +40,7 @@ namespace settings {
 
 // WebUI message handler for the help page.
 class AboutHandler : public settings::SettingsPageUIHandler,
-                     public content::NotificationObserver {
+                     public UpgradeObserver {
  public:
   AboutHandler();
   ~AboutHandler() override;
@@ -54,10 +53,8 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // UpgradeObserver implementation.
+  void OnUpgradeRecommended() override;
 
   // Returns the browser version as a string.
   static base::string16 BuildBrowserVersionString();
@@ -151,11 +148,11 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   // Specialized instance of the VersionUpdater used to update the browser.
   std::unique_ptr<VersionUpdater> version_updater_;
 
-  // Used to observe notifications.
-  content::NotificationRegistrar registrar_;
-
   // Used to observe changes in the |kDeviceAutoUpdateDisabled| policy.
   std::unique_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
+
+  // If true changes to UpgradeObserver are applied, if false they are ignored.
+  bool apply_changes_from_upgrade_observer_;
 
   // Used for callbacks.
   base::WeakPtrFactory<AboutHandler> weak_factory_;
