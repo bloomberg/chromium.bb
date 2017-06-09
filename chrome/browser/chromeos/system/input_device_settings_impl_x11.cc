@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -122,16 +123,15 @@ void DeviceExistsBlockingPool(const char* device_type,
   DVLOG(1) << "DeviceExistsBlockingPool:" << device_type << "=" << exists->data;
 }
 
-void RunCallbackUIThread(
-    scoped_refptr<RefCountedBool> exists,
-    const InputDeviceSettings::DeviceExistsCallback& callback) {
+void RunCallbackUIThread(scoped_refptr<RefCountedBool> exists,
+                         InputDeviceSettings::DeviceExistsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "RunCallbackUIThread " << exists->data;
-  callback.Run(exists->data);
+  std::move(callback).Run(exists->data);
 }
 
 void DeviceExists(const char* script,
-                  const InputDeviceSettings::DeviceExistsCallback& callback) {
+                  InputDeviceSettings::DeviceExistsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // One or both of the control scripts can apparently hang during shutdown
@@ -144,7 +144,7 @@ void DeviceExists(const char* script,
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   runner->PostTaskAndReply(
       FROM_HERE, base::Bind(&DeviceExistsBlockingPool, script, exists),
-      base::Bind(&RunCallbackUIThread, exists, callback));
+      base::BindOnce(&RunCallbackUIThread, exists, std::move(callback)));
 }
 
 // InputDeviceSettings for Linux with X11.
@@ -157,14 +157,14 @@ class InputDeviceSettingsImplX11 : public InputDeviceSettings {
 
  private:
   // Overridden from InputDeviceSettings.
-  void TouchpadExists(const DeviceExistsCallback& callback) override;
+  void TouchpadExists(DeviceExistsCallback callback) override;
   void UpdateTouchpadSettings(const TouchpadSettings& settings) override;
   void SetTouchpadSensitivity(int value) override;
   void SetTapToClick(bool enabled) override;
   void SetThreeFingerClick(bool enabled) override;
   void SetTapDragging(bool enabled) override;
   void SetNaturalScroll(bool enabled) override;
-  void MouseExists(const DeviceExistsCallback& callback) override;
+  void MouseExists(DeviceExistsCallback callback) override;
   void UpdateMouseSettings(const MouseSettings& settings) override;
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
@@ -190,9 +190,8 @@ class InputDeviceSettingsImplX11 : public InputDeviceSettings {
 InputDeviceSettingsImplX11::InputDeviceSettingsImplX11() {
 }
 
-void InputDeviceSettingsImplX11::TouchpadExists(
-    const DeviceExistsCallback& callback) {
-  DeviceExists(kDeviceTypeTouchpad, callback);
+void InputDeviceSettingsImplX11::TouchpadExists(DeviceExistsCallback callback) {
+  DeviceExists(kDeviceTypeTouchpad, std::move(callback));
 }
 
 void InputDeviceSettingsImplX11::UpdateTouchpadSettings(
@@ -235,10 +234,9 @@ void InputDeviceSettingsImplX11::SetTapDragging(bool enabled) {
   UpdateTouchpadSettings(settings);
 }
 
-void InputDeviceSettingsImplX11::MouseExists(
-    const DeviceExistsCallback& callback) {
+void InputDeviceSettingsImplX11::MouseExists(DeviceExistsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DeviceExists(kDeviceTypeMouse, callback);
+  DeviceExists(kDeviceTypeMouse, std::move(callback));
 }
 
 void InputDeviceSettingsImplX11::UpdateMouseSettings(

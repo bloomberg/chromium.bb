@@ -234,6 +234,7 @@
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#include "chrome/browser/chromeos/chrome_service_name.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
@@ -244,11 +245,13 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
@@ -258,16 +261,30 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
 #include "chrome/browser/android/app_hooks.h"
+#include "chrome/browser/android/chrome_context_util.h"
+#include "chrome/browser/android/devtools_manager_delegate_android.h"
+#include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
+#include "chrome/browser/android/service_tab_launcher.h"
+#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/common/descriptors_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/payments/mojom/payment_request.mojom.h"
+#include "content/public/browser/android/java_interfaces.h"
 #include "ui/base/resource/resource_bundle_android.h"
+#include "ui/base/ui_base_paths.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
 
+#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#include "services/ui/public/cpp/input_devices/input_device_controller.h"
+#endif
+
 #if !defined(OS_ANDROID)
+#include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/payments/payment_request_factory.h"
 #endif
 
@@ -279,20 +296,6 @@
 #include "base/debug/leak_annotations.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_context_util.h"
-#include "chrome/browser/android/devtools_manager_delegate_android.h"
-#include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
-#include "chrome/browser/android/service_tab_launcher.h"
-#include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
-#include "components/payments/mojom/payment_request.mojom.h"
-#include "content/public/browser/android/java_interfaces.h"
-#include "ui/base/ui_base_paths.h"
-#else
-#include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -308,10 +311,6 @@
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/views/mus/mus_client.h"
-#endif
-
-#if defined(USE_ASH)
-#include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 #endif
 
 #if defined(USE_X11)
@@ -399,10 +398,6 @@
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -506,10 +501,6 @@ enum AppLoadedInTabSource {
 
 #if defined(OS_CHROMEOS)
 
-// The name of the packaged service used to expose miscellaneous application
-// control features such as the mash Launchable interface.
-const char kChromeServiceName[] = "chrome";
-
 // Packaged service implementation used to expose miscellaneous application
 // control features. This is a singleton service which runs on the main thread
 // and never stops.
@@ -517,6 +508,9 @@ class ChromeServiceChromeOS : public service_manager::Service,
                               public mash::mojom::Launchable {
  public:
   ChromeServiceChromeOS() {
+#if defined(USE_OZONE)
+    input_device_controller_.AddInterface(&interfaces_);
+#endif
     interfaces_.AddInterface<mash::mojom::Launchable>(
         base::Bind(&ChromeServiceChromeOS::Create, base::Unretained(this)));
   }
@@ -575,6 +569,9 @@ class ChromeServiceChromeOS : public service_manager::Service,
 
   service_manager::BinderRegistry interfaces_;
   mojo::BindingSet<mash::mojom::Launchable> bindings_;
+#if defined(USE_OZONE)
+  ui::InputDeviceController input_device_controller_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceChromeOS);
 };
@@ -3154,7 +3151,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
     content::ServiceInfo info;
     info.factory = base::Bind(&ChromeServiceChromeOS::CreateService);
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(std::make_pair(kChromeServiceName, info));
+    services->insert(std::make_pair(chromeos::kChromeServiceName, info));
   }
 
   if (features::PrefServiceEnabled()) {

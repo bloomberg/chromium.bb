@@ -9,6 +9,8 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/ash_config.h"
+#include "chrome/browser/chromeos/chrome_service_name.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
@@ -28,6 +30,14 @@
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
+
+#if defined(USE_OZONE)
+#include "ash/public/interfaces/constants.mojom.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/runner/common/client_util.h"
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#endif
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false) {}
@@ -165,6 +175,23 @@ bool BrowserProcessPlatformPart::IsCompatibleCrOSComponent(
     const std::string& name) {
   return compatible_cros_components_.count(name) > 0;
 }
+
+#if defined(USE_OZONE)
+ui::InputDeviceControllerClient*
+BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
+  if (!input_device_controller_client_) {
+    const std::string service_name =
+        chromeos::GetAshConfig() == ash::Config::CLASSIC
+            ? chromeos::kChromeServiceName
+            : ui::mojom::kServiceName;
+    input_device_controller_client_ =
+        base::MakeUnique<ui::InputDeviceControllerClient>(
+            content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+            service_name);
+  }
+  return input_device_controller_client_.get();
+}
+#endif
 
 void BrowserProcessPlatformPart::CreateProfileHelper() {
   DCHECK(!created_profile_helper_ && !profile_helper_);

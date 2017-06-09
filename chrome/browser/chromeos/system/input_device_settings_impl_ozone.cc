@@ -5,25 +5,21 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 
 #include "base/macros.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chromeos/system/devicemode.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/service_manager/runner/common/client_util.h"
-#include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/ozone_platform.h"
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 
 namespace chromeos {
 namespace system {
-
 namespace {
 
 InputDeviceSettings* g_instance = nullptr;
 
-std::unique_ptr<ui::InputController> CreateStubInputControllerIfNecessary() {
-  return service_manager::ServiceManagerIsRemote()
-             ? ui::CreateStubInputController()
-             : nullptr;
-}
+// Callback from SetInternalTouchpadEnabled().
+void OnSetInternalTouchpadEnabled(bool result) {}
 
 // InputDeviceSettings for Linux without X11 (a.k.a. Ozone).
 class InputDeviceSettingsImplOzone : public InputDeviceSettings {
@@ -35,14 +31,14 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
 
  private:
   // Overridden from InputDeviceSettings.
-  void TouchpadExists(const DeviceExistsCallback& callback) override;
+  void TouchpadExists(DeviceExistsCallback callback) override;
   void UpdateTouchpadSettings(const TouchpadSettings& settings) override;
   void SetTouchpadSensitivity(int value) override;
   void SetTapToClick(bool enabled) override;
   void SetThreeFingerClick(bool enabled) override;
   void SetTapDragging(bool enabled) override;
   void SetNaturalScroll(bool enabled) override;
-  void MouseExists(const DeviceExistsCallback& callback) override;
+  void MouseExists(DeviceExistsCallback callback) override;
   void UpdateMouseSettings(const MouseSettings& settings) override;
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
@@ -52,13 +48,8 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   void SetInternalTouchpadEnabled(bool enabled) override;
   void SetTouchscreensEnabled(bool enabled) override;
 
-  // TODO(sad): A stub input controller is used when running inside mus.
-  // http://crbug.com/601981
-  std::unique_ptr<ui::InputController> stub_controller_;
-
-  // Cached InputController pointer. It should be fixed throughout the browser
-  // session.
-  ui::InputController* input_controller_;
+  // Cached InputDeviceControllerClient. It is owned by BrowserProcess.
+  ui::InputDeviceControllerClient* input_device_controller_client_;
 
   // Respective device setting objects.
   TouchpadSettings current_touchpad_settings_;
@@ -68,19 +59,16 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
 };
 
 InputDeviceSettingsImplOzone::InputDeviceSettingsImplOzone()
-    : stub_controller_(CreateStubInputControllerIfNecessary()),
-      input_controller_(
-          stub_controller_
-              ? stub_controller_.get()
-              : ui::OzonePlatform::GetInstance()->GetInputController()) {
+    : input_device_controller_client_(g_browser_process->platform_part()
+                                          ->GetInputDeviceControllerClient()) {
   // Make sure the input controller does exist.
-  DCHECK(input_controller_);
+  DCHECK(input_device_controller_client_);
 }
 
 void InputDeviceSettingsImplOzone::TouchpadExists(
-    const DeviceExistsCallback& callback) {
+    DeviceExistsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  callback.Run(input_controller_->HasTouchpad());
+  input_device_controller_client_->GetHasTouchpad(std::move(callback));
 }
 
 void InputDeviceSettingsImplOzone::UpdateTouchpadSettings(
@@ -92,34 +80,33 @@ void InputDeviceSettingsImplOzone::UpdateTouchpadSettings(
 void InputDeviceSettingsImplOzone::SetTouchpadSensitivity(int value) {
   DCHECK(value >= kMinPointerSensitivity && value <= kMaxPointerSensitivity);
   current_touchpad_settings_.SetSensitivity(value);
-  input_controller_->SetTouchpadSensitivity(value);
+  input_device_controller_client_->SetTouchpadSensitivity(value);
 }
 
 void InputDeviceSettingsImplOzone::SetNaturalScroll(bool enabled) {
   current_touchpad_settings_.SetNaturalScroll(enabled);
-  input_controller_->SetNaturalScroll(enabled);
+  input_device_controller_client_->SetNaturalScroll(enabled);
 }
 
 void InputDeviceSettingsImplOzone::SetTapToClick(bool enabled) {
   current_touchpad_settings_.SetTapToClick(enabled);
-  input_controller_->SetTapToClick(enabled);
+  input_device_controller_client_->SetTapToClick(enabled);
 }
 
 void InputDeviceSettingsImplOzone::SetThreeFingerClick(bool enabled) {
   // For Alex/ZGB.
   current_touchpad_settings_.SetThreeFingerClick(enabled);
-  input_controller_->SetThreeFingerClick(enabled);
+  input_device_controller_client_->SetThreeFingerClick(enabled);
 }
 
 void InputDeviceSettingsImplOzone::SetTapDragging(bool enabled) {
   current_touchpad_settings_.SetTapDragging(enabled);
-  input_controller_->SetTapDragging(enabled);
+  input_device_controller_client_->SetTapDragging(enabled);
 }
 
-void InputDeviceSettingsImplOzone::MouseExists(
-    const DeviceExistsCallback& callback) {
+void InputDeviceSettingsImplOzone::MouseExists(DeviceExistsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  callback.Run(input_controller_->HasMouse());
+  input_device_controller_client_->GetHasMouse(std::move(callback));
 }
 
 void InputDeviceSettingsImplOzone::UpdateMouseSettings(
@@ -131,12 +118,12 @@ void InputDeviceSettingsImplOzone::UpdateMouseSettings(
 void InputDeviceSettingsImplOzone::SetMouseSensitivity(int value) {
   DCHECK(value >= kMinPointerSensitivity && value <= kMaxPointerSensitivity);
   current_mouse_settings_.SetSensitivity(value);
-  input_controller_->SetMouseSensitivity(value);
+  input_device_controller_client_->SetMouseSensitivity(value);
 }
 
 void InputDeviceSettingsImplOzone::SetPrimaryButtonRight(bool right) {
   current_mouse_settings_.SetPrimaryButtonRight(right);
-  input_controller_->SetPrimaryButtonRight(right);
+  input_device_controller_client_->SetPrimaryButtonRight(right);
 }
 
 void InputDeviceSettingsImplOzone::ReapplyTouchpadSettings() {
@@ -153,11 +140,12 @@ InputDeviceSettingsImplOzone::GetFakeInterface() {
 }
 
 void InputDeviceSettingsImplOzone::SetInternalTouchpadEnabled(bool enabled) {
-  input_controller_->SetInternalTouchpadEnabled(enabled);
+  input_device_controller_client_->SetInternalTouchpadEnabled(
+      enabled, base::BindOnce(&OnSetInternalTouchpadEnabled));
 }
 
 void InputDeviceSettingsImplOzone::SetTouchscreensEnabled(bool enabled) {
-  input_controller_->SetTouchscreensEnabled(enabled);
+  input_device_controller_client_->SetTouchscreensEnabled(enabled);
 }
 
 }  // namespace

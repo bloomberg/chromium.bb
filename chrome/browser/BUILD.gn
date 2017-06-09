@@ -2485,6 +2485,13 @@ split_static_library("browser") {
       "//components/metrics/leak_detector:interfaces",
       "//components/metrics/leak_detector:leak_detector",
     ]
+    if (use_ozone) {
+      deps += [
+        "//services/ui/public/cpp/input_devices",
+        "//services/ui/public/cpp/input_devices:input_device_controller",
+        "//ui/ozone",
+      ]
+    }
   } else {  # Non-ChromeOS.
     sources += [
       "policy/cloud/user_cloud_policy_manager_factory.cc",
