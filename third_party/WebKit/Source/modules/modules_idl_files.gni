@@ -579,6 +579,7 @@ modules_dictionary_idl_files =
 modules_dependency_idl_files =
     get_path_info(
         [
+          "app_banner/WindowInstallation.idl",
           "audio_output_devices/HTMLMediaElementAudioOutputDevice.idl",
           "background_fetch/ServiceWorkerGlobalScopeBackgroundFetch.idl",
           "background_fetch/ServiceWorkerRegistrationBackgroundFetch.idl",

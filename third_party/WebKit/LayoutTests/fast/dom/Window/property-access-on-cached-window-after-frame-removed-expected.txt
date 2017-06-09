@@ -40,7 +40,9 @@ PASS childWindow.onabort is null
 PASS childWindow.onanimationend is null
 PASS childWindow.onanimationiteration is null
 PASS childWindow.onanimationstart is null
+PASS childWindow.onappinstalled is null
 PASS childWindow.onauxclick is null
+PASS childWindow.onbeforeinstallprompt is null
 PASS childWindow.onbeforeunload is null
 PASS childWindow.onblur is null
 PASS childWindow.oncancel is null

@@ -8913,7 +8913,9 @@ interface webkitURL
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
+    getter onappinstalled
     getter onauxclick
+    getter onbeforeinstallprompt
     getter onbeforeunload
     getter onblur
     getter oncancel
@@ -9094,7 +9096,9 @@ interface webkitURL
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
+    setter onappinstalled
     setter onauxclick
+    setter onbeforeinstallprompt
     setter onbeforeunload
     setter onblur
     setter oncancel

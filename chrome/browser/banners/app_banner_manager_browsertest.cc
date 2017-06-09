@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -149,6 +151,18 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
                      const std::vector<double>& engagement_scores,
                      InstallableStatusCode expected_code_for_histogram,
                      bool expected_to_show) {
+    RunBannerTest(browser, manager, url, engagement_scores,
+                  expected_code_for_histogram, expected_to_show,
+                  base::string16());
+  }
+
+  void RunBannerTest(Browser* browser,
+                     AppBannerManagerTest* manager,
+                     const std::string& url,
+                     const std::vector<double>& engagement_scores,
+                     InstallableStatusCode expected_code_for_histogram,
+                     bool expected_to_show,
+                     const base::string16 expected_tab_title) {
     base::HistogramTester histograms;
     GURL test_url = embedded_test_server()->GetURL(url);
 
@@ -186,6 +200,14 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
 
     EXPECT_EQ(expected_to_show, manager->will_show());
     EXPECT_FALSE(manager->is_active());
+
+    // Check the tab title; this allows the test page to send data back out to
+    // be inspected by the test case.
+    if (!expected_tab_title.empty()) {
+      base::string16 title;
+      EXPECT_TRUE(ui_test_utils::GetCurrentTabTitle(browser, &title));
+      EXPECT_EQ(expected_tab_title, title);
+    }
 
     // If in incognito, ensure that nothing is recorded.
     // If showing the banner, ensure that the minutes histogram is recorded.
@@ -293,6 +315,20 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, MissingManifest) {
                 GetURLOfPageWithServiceWorkerAndManifest(
                     "/banners/manifest_missing.json"),
                 engagement_scores, MANIFEST_EMPTY, false);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, BeforeInstallPrompt) {
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  std::vector<double> engagement_scores{0, 5, 10};
+
+  // Expect that the page sets the tab title to indicate that it got the event
+  // twice: once for addEventListener('beforeinstallprompt'), and once for the
+  // onbeforeinstallprompt attribute.
+  RunBannerTest(browser(), manager.get(),
+                "/banners/beforeinstallprompt_test_page.html",
+                engagement_scores, SHOWING_WEB_APP_BANNER, true,
+                base::ASCIIToUTF16("Got beforeinstallprompt: listener, attr"));
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CancelBannerDirect) {

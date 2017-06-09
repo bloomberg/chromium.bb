@@ -12,5 +12,6 @@ blink_modules_sources("app_banner") {
     "AppBannerPromptResult.h",
     "BeforeInstallPromptEvent.cpp",
     "BeforeInstallPromptEvent.h",
+    "DOMWindowInstallation.h",
   ]
 }
