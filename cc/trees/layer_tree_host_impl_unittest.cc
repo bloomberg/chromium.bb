@@ -8785,12 +8785,36 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   }
 }
 
-TEST_F(LayerTreeHostImplTest, RequireHighResWhenVisible) {
+namespace {
+void ExpectFullDamageAndDraw(LayerTreeHostImpl* host_impl) {
+  gfx::Rect full_frame_damage(host_impl->DeviceViewport().size());
+  TestFrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl->PrepareToDraw(&frame));
+  ASSERT_EQ(1u, frame.render_passes.size());
+  const RenderPass* root_render_pass = frame.render_passes.back().get();
+  EXPECT_EQ(full_frame_damage, root_render_pass->damage_rect);
+  EXPECT_TRUE(host_impl->DrawLayers(&frame));
+  host_impl->DidDrawAllLayers(frame);
+}
+}  // namespace
+
+TEST_F(LayerTreeHostImplTestDrawAndTestDamage,
+       RequireHighResAndRedrawWhenVisible) {
   ASSERT_TRUE(host_impl_->active_tree());
+
+  std::unique_ptr<SolidColorLayerImpl> root =
+      SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
+  root->SetBackgroundColor(SK_ColorRED);
+  SetupRootLayerImpl(std::move(root));
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   // RequiresHighResToDraw is set when new output surface is used.
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 
+  // Expect full frame damage for first frame.
+  EXPECT_SCOPED(ExpectFullDamageAndDraw(host_impl_.get()));
+
   host_impl_->ResetRequiresHighResToDraw();
 
   host_impl_->SetVisible(false);
@@ -8803,8 +8827,12 @@ TEST_F(LayerTreeHostImplTest, RequireHighResWhenVisible) {
   host_impl_->ResetRequiresHighResToDraw();
 
   EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
+  did_request_redraw_ = false;
   host_impl_->SetVisible(true);
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
+  // Expect redraw and full frame damage when becoming visible.
+  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_SCOPED(ExpectFullDamageAndDraw(host_impl_.get()));
 }
 
 TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
