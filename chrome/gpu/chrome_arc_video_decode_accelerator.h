@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_ARC_GPU_VIDEO_DECODE_ACCELERATOR_H_
-#define CHROME_GPU_ARC_GPU_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef CHROME_GPU_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#define CHROME_GPU_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <list>
 #include <memory>
@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/gpu/arc_video_accelerator.h"
+#include "chrome/gpu/arc_video_decode_accelerator.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -23,19 +23,19 @@ namespace arc {
 // ARC via IPC channels and translates and sends those requests to an
 // implementation of media::VideoDecodeAccelerator. It also returns the decoded
 // frames back to the ARC side.
-class ArcGpuVideoDecodeAccelerator
-    : public ArcVideoAccelerator,
+class ChromeArcVideoDecodeAccelerator
+    : public ArcVideoDecodeAccelerator,
       public media::VideoDecodeAccelerator::Client,
-      public base::SupportsWeakPtr<ArcGpuVideoDecodeAccelerator> {
+      public base::SupportsWeakPtr<ChromeArcVideoDecodeAccelerator> {
  public:
-  explicit ArcGpuVideoDecodeAccelerator(
+  explicit ChromeArcVideoDecodeAccelerator(
       const gpu::GpuPreferences& gpu_preferences);
-  ~ArcGpuVideoDecodeAccelerator() override;
+  ~ChromeArcVideoDecodeAccelerator() override;
 
-  // Implementation of the ArcVideoAccelerator interface.
-  ArcVideoAccelerator::Result Initialize(
+  // Implementation of the ArcVideoDecodeAccelerator interface.
+  ArcVideoDecodeAccelerator::Result Initialize(
       const Config& config,
-      ArcVideoAccelerator::Client* client) override;
+      ArcVideoDecodeAccelerator::Client* client) override;
   void SetNumberOfOutputBuffers(size_t number) override;
   void BindSharedMemory(PortType port,
                         uint32_t index,
@@ -107,9 +107,9 @@ class ArcGpuVideoDecodeAccelerator
   };
 
   // The helper method to simplify reporting of the status returned to UMA.
-  ArcVideoAccelerator::Result InitializeTask(
+  ArcVideoDecodeAccelerator::Result InitializeTask(
       const Config& config,
-      ArcVideoAccelerator::Client* client);
+      ArcVideoDecodeAccelerator::Client* client);
 
   // Helper function to validate |port| and |index|.
   bool ValidatePortAndIndex(PortType port, uint32_t index) const;
@@ -142,8 +142,8 @@ class ArcGpuVideoDecodeAccelerator
   std::unique_ptr<media::VideoDecodeAccelerator> vda_;
 
   // It's safe to use the pointer here, the life cycle of the |arc_client_|
-  // is longer than this ArcGpuVideoDecodeAccelerator.
-  ArcVideoAccelerator::Client* arc_client_;
+  // is longer than this ChromeArcVideoDecodeAccelerator.
+  ArcVideoDecodeAccelerator::Client* arc_client_;
 
   // The next ID for the bitstream buffer, started from 0.
   int32_t next_bitstream_buffer_id_;
@@ -164,7 +164,7 @@ class ArcGpuVideoDecodeAccelerator
   // when those buffers are used for the first time.
   std::vector<OutputBufferInfo> buffers_pending_import_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   size_t output_buffer_size_;
 
   // The minimal number of requested output buffers.
@@ -172,10 +172,10 @@ class ArcGpuVideoDecodeAccelerator
 
   gpu::GpuPreferences gpu_preferences_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcGpuVideoDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(ChromeArcVideoDecodeAccelerator);
 };
 
 }  // namespace arc
 }  // namespace chromeos
 
-#endif  // CHROME_GPU_ARC_GPU_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // CHROME_GPU_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_

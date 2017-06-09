@@ -161,7 +161,7 @@ mojom("arc_bindings") {
     "common/tracing.mojom",
     "common/tts.mojom",
     "common/video.mojom",
-    "common/video_accelerator.mojom",
+    "common/video_decode_accelerator.mojom",
     "common/voice_interaction_arc_home.mojom",
     "common/voice_interaction_framework.mojom",
     "common/wallpaper.mojom",

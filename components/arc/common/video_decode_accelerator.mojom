@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file defined the mojo interface between Android and Chromium for video
-// decoding and encoding. See comments of ArcVideoAccelerator for more info.
+// decoding. See comments of VideoDecodeAccelerator for more info.
 
 module arc.mojom;
 
@@ -38,13 +38,15 @@ struct VideoFormat {
   uint32 crop_height;
 };
 
-struct ArcVideoAcceleratorConfig {
-  enum DeviceType {
+struct VideoDecodeAcceleratorConfig {
+  // Deprecated. This config struct is used for decoder only.
+  enum DeviceTypeDeprecated {
     DEVICE_ENCODER = 0,
     DEVICE_DECODER = 1,
   };
 
-  DeviceType device_type;
+  // Deprecated. Only decoder will be supported.
+  DeviceTypeDeprecated device_type_deprecated;
   uint32 num_input_buffers;
   uint32 input_pixel_format;
 };
@@ -57,7 +59,7 @@ struct ArcVideoAcceleratorDmabufPlane {
 // Next MinVersion: 4
 // Deprecated method IDs: 2, 7
 // Next method ID: 10
-interface VideoAcceleratorService {
+interface VideoDecodeAccelerator {
   enum Result {
     SUCCESS = 0,
     ILLEGAL_STATE = 1,
@@ -68,8 +70,8 @@ interface VideoAcceleratorService {
   };
 
   [MinVersion=2]
-  Initialize@8(ArcVideoAcceleratorConfig config,
-               VideoAcceleratorServiceClient client) => (Result result);
+  Initialize@8(VideoDecodeAcceleratorConfig config,
+               VideoDecodeClient client) => (Result result);
 
   BindSharedMemory@1(PortType port, uint32 index, handle ashmem_fd,
                      uint32 offset, uint32 length);
@@ -89,8 +91,8 @@ interface VideoAcceleratorService {
 
 // Deprecated method IDs: 0
 // Next method ID: 6
-interface VideoAcceleratorServiceClient {
-  OnError@1(VideoAcceleratorService.Result error);
+interface VideoDecodeClient {
+  OnError@1(VideoDecodeAccelerator.Result error);
 
   OnBufferDone@2(PortType port, uint32 index, BufferMetadata metadata);
 

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_
 #define COMPONENTS_ARC_VIDEO_ACCELERATOR_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_
 
-#include "components/arc/common/video_accelerator.mojom.h"
+#include "components/arc/common/video_decode_accelerator.mojom.h"
 #include "components/arc/video_accelerator/video_accelerator.h"
 
 namespace mojo {

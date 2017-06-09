@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/gpu/arc_gpu_video_decode_accelerator.h"
+#include "chrome/gpu/chrome_arc_video_decode_accelerator.h"
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -29,9 +29,9 @@ const int kMaxConcurrentClients = 8;
 
 }  // anonymous namespace
 
-int ArcGpuVideoDecodeAccelerator::client_count_ = 0;
+int ChromeArcVideoDecodeAccelerator::client_count_ = 0;
 
-ArcGpuVideoDecodeAccelerator::InputRecord::InputRecord(
+ChromeArcVideoDecodeAccelerator::InputRecord::InputRecord(
     int32_t bitstream_buffer_id,
     uint32_t buffer_index,
     int64_t timestamp)
@@ -39,21 +39,22 @@ ArcGpuVideoDecodeAccelerator::InputRecord::InputRecord(
       buffer_index(buffer_index),
       timestamp(timestamp) {}
 
-ArcGpuVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo() = default;
+ChromeArcVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo() = default;
 
-ArcGpuVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo(
+ChromeArcVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo(
     InputBufferInfo&& other) = default;
 
-ArcGpuVideoDecodeAccelerator::InputBufferInfo::~InputBufferInfo() = default;
+ChromeArcVideoDecodeAccelerator::InputBufferInfo::~InputBufferInfo() = default;
 
-ArcGpuVideoDecodeAccelerator::OutputBufferInfo::OutputBufferInfo() = default;
+ChromeArcVideoDecodeAccelerator::OutputBufferInfo::OutputBufferInfo() = default;
 
-ArcGpuVideoDecodeAccelerator::OutputBufferInfo::OutputBufferInfo(
+ChromeArcVideoDecodeAccelerator::OutputBufferInfo::OutputBufferInfo(
     OutputBufferInfo&& other) = default;
 
-ArcGpuVideoDecodeAccelerator::OutputBufferInfo::~OutputBufferInfo() = default;
+ChromeArcVideoDecodeAccelerator::OutputBufferInfo::~OutputBufferInfo() =
+    default;
 
-ArcGpuVideoDecodeAccelerator::ArcGpuVideoDecodeAccelerator(
+ChromeArcVideoDecodeAccelerator::ChromeArcVideoDecodeAccelerator(
     const gpu::GpuPreferences& gpu_preferences)
     : arc_client_(nullptr),
       next_bitstream_buffer_id_(0),
@@ -62,33 +63,31 @@ ArcGpuVideoDecodeAccelerator::ArcGpuVideoDecodeAccelerator(
       requested_num_of_output_buffers_(0),
       gpu_preferences_(gpu_preferences) {}
 
-ArcGpuVideoDecodeAccelerator::~ArcGpuVideoDecodeAccelerator() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+ChromeArcVideoDecodeAccelerator::~ChromeArcVideoDecodeAccelerator() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (vda_) {
     client_count_--;
   }
 }
 
-ArcVideoAccelerator::Result ArcGpuVideoDecodeAccelerator::Initialize(
+ArcVideoDecodeAccelerator::Result ChromeArcVideoDecodeAccelerator::Initialize(
     const Config& config,
-    ArcVideoAccelerator::Client* client) {
+    ArcVideoDecodeAccelerator::Client* client) {
   auto result = InitializeTask(config, client);
   // Report initialization status to UMA.
   UMA_HISTOGRAM_ENUMERATION(
-      "Media.ArcGpuVideoDecodeAccelerator.InitializeResult", result,
+      "Media.ChromeArcVideoDecodeAccelerator.InitializeResult", result,
       RESULT_MAX);
   return result;
 }
 
-ArcVideoAccelerator::Result ArcGpuVideoDecodeAccelerator::InitializeTask(
+ArcVideoDecodeAccelerator::Result
+ChromeArcVideoDecodeAccelerator::InitializeTask(
     const Config& config,
-    ArcVideoAccelerator::Client* client) {
-  DVLOG(5) << "Initialize(device=" << config.device_type
-           << ", input_pixel_format=" << config.input_pixel_format
+    ArcVideoDecodeAccelerator::Client* client) {
+  DVLOG(5) << "Initialize(input_pixel_format=" << config.input_pixel_format
            << ", num_input_buffers=" << config.num_input_buffers << ")";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (config.device_type != Config::DEVICE_DECODER)
-    return INVALID_ARGUMENT;
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client);
 
   if (arc_client_) {
@@ -137,15 +136,15 @@ ArcVideoAccelerator::Result ArcGpuVideoDecodeAccelerator::InitializeTask(
   }
 
   client_count_++;
-  DVLOG(5) << "Number of concurrent ArcVideoAccelerator clients: "
+  DVLOG(5) << "Number of concurrent ArcVideoDecodeAccelerator clients: "
            << client_count_;
 
   return SUCCESS;
 }
 
-void ArcGpuVideoDecodeAccelerator::SetNumberOfOutputBuffers(size_t number) {
+void ChromeArcVideoDecodeAccelerator::SetNumberOfOutputBuffers(size_t number) {
   DVLOG(5) << "SetNumberOfOutputBuffers(" << number << ")";
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!vda_) {
     DLOG(ERROR) << "VDA not initialized";
     return;
@@ -169,14 +168,14 @@ void ArcGpuVideoDecodeAccelerator::SetNumberOfOutputBuffers(size_t number) {
   buffers_pending_import_.resize(number);
 }
 
-void ArcGpuVideoDecodeAccelerator::BindSharedMemory(PortType port,
-                                                    uint32_t index,
-                                                    base::ScopedFD ashmem_fd,
-                                                    off_t offset,
-                                                    size_t length) {
+void ChromeArcVideoDecodeAccelerator::BindSharedMemory(PortType port,
+                                                       uint32_t index,
+                                                       base::ScopedFD ashmem_fd,
+                                                       off_t offset,
+                                                       size_t length) {
   DVLOG(5) << "ArcGVDA::BindSharedMemory, offset: " << offset
            << ", length: " << length;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!vda_) {
     DLOG(ERROR) << "VDA not initialized";
     return;
@@ -197,7 +196,7 @@ void ArcGpuVideoDecodeAccelerator::BindSharedMemory(PortType port,
   input_info->length = length;
 }
 
-bool ArcGpuVideoDecodeAccelerator::VerifyDmabuf(
+bool ChromeArcVideoDecodeAccelerator::VerifyDmabuf(
     const base::ScopedFD& dmabuf_fd,
     const std::vector<::arc::ArcVideoAcceleratorDmabufPlane>& dmabuf_planes)
     const {
@@ -236,12 +235,12 @@ bool ArcGpuVideoDecodeAccelerator::VerifyDmabuf(
   return true;
 }
 
-void ArcGpuVideoDecodeAccelerator::BindDmabuf(
+void ChromeArcVideoDecodeAccelerator::BindDmabuf(
     PortType port,
     uint32_t index,
     base::ScopedFD dmabuf_fd,
     const std::vector<::arc::ArcVideoAcceleratorDmabufPlane>& dmabuf_planes) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!vda_) {
     DLOG(ERROR) << "VDA not initialized";
@@ -267,13 +266,14 @@ void ArcGpuVideoDecodeAccelerator::BindDmabuf(
   info.planes = dmabuf_planes;
 }
 
-void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
-                                             uint32_t index,
-                                             const BufferMetadata& metadata) {
+void ChromeArcVideoDecodeAccelerator::UseBuffer(
+    PortType port,
+    uint32_t index,
+    const BufferMetadata& metadata) {
   DVLOG(5) << "UseBuffer(port=" << port << ", index=" << index
            << ", metadata=(bytes_used=" << metadata.bytes_used
            << ", timestamp=" << metadata.timestamp << ")";
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!vda_) {
     DLOG(ERROR) << "VDA not initialized";
     return;
@@ -334,8 +334,8 @@ void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
   }
 }
 
-void ArcGpuVideoDecodeAccelerator::Reset() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void ChromeArcVideoDecodeAccelerator::Reset() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!vda_) {
     DLOG(ERROR) << "VDA not initialized";
     return;
@@ -343,8 +343,8 @@ void ArcGpuVideoDecodeAccelerator::Reset() {
   vda_->Reset();
 }
 
-void ArcGpuVideoDecodeAccelerator::Flush() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void ChromeArcVideoDecodeAccelerator::Flush() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!vda_) {
     DLOG(ERROR) << "VDA not initialized";
     return;
@@ -352,7 +352,7 @@ void ArcGpuVideoDecodeAccelerator::Flush() {
   vda_->Flush();
 }
 
-void ArcGpuVideoDecodeAccelerator::ProvidePictureBuffers(
+void ChromeArcVideoDecodeAccelerator::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
     media::VideoPixelFormat output_pixel_format,
     uint32_t textures_per_buffer,
@@ -361,7 +361,7 @@ void ArcGpuVideoDecodeAccelerator::ProvidePictureBuffers(
   DVLOG(5) << "ProvidePictureBuffers("
            << "requested_num_of_buffers=" << requested_num_of_buffers
            << ", dimensions=" << dimensions.ToString() << ")";
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   coded_size_ = dimensions;
 
   // By default, use an empty rect to indicate the visible rectangle is not
@@ -380,7 +380,7 @@ void ArcGpuVideoDecodeAccelerator::ProvidePictureBuffers(
   NotifyOutputFormatChanged();
 }
 
-void ArcGpuVideoDecodeAccelerator::NotifyOutputFormatChanged() {
+void ChromeArcVideoDecodeAccelerator::NotifyOutputFormatChanged() {
   VideoFormat video_format;
   switch (output_pixel_format_) {
     case media::PIXEL_FORMAT_I420:
@@ -411,15 +411,16 @@ void ArcGpuVideoDecodeAccelerator::NotifyOutputFormatChanged() {
   arc_client_->OnOutputFormatChanged(video_format);
 }
 
-void ArcGpuVideoDecodeAccelerator::DismissPictureBuffer(
+void ChromeArcVideoDecodeAccelerator::DismissPictureBuffer(
     int32_t picture_buffer) {
   // no-op
 }
 
-void ArcGpuVideoDecodeAccelerator::PictureReady(const media::Picture& picture) {
+void ChromeArcVideoDecodeAccelerator::PictureReady(
+    const media::Picture& picture) {
   DVLOG(5) << "PictureReady(picture_buffer_id=" << picture.picture_buffer_id()
            << ", bitstream_buffer_id=" << picture.bitstream_buffer_id();
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Handle visible size change.
   if (visible_rect_ != picture.visible_rect()) {
@@ -442,10 +443,10 @@ void ArcGpuVideoDecodeAccelerator::PictureReady(const media::Picture& picture) {
   arc_client_->OnBufferDone(PORT_OUTPUT, picture.picture_buffer_id(), metadata);
 }
 
-void ArcGpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
+void ChromeArcVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
     int32_t bitstream_buffer_id) {
   DVLOG(5) << "NotifyEndOfBitstreamBuffer(" << bitstream_buffer_id << ")";
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   InputRecord* input_record = FindInputRecord(bitstream_buffer_id);
   if (input_record == nullptr) {
     arc_client_->OnError(PLATFORM_FAILURE);
@@ -455,41 +456,41 @@ void ArcGpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
                             BufferMetadata());
 }
 
-void ArcGpuVideoDecodeAccelerator::NotifyFlushDone() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void ChromeArcVideoDecodeAccelerator::NotifyFlushDone() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   arc_client_->OnFlushDone();
 }
 
-void ArcGpuVideoDecodeAccelerator::NotifyResetDone() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void ChromeArcVideoDecodeAccelerator::NotifyResetDone() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   arc_client_->OnResetDone();
 }
 
-static ArcVideoAccelerator::Result ConvertErrorCode(
+static ArcVideoDecodeAccelerator::Result ConvertErrorCode(
     media::VideoDecodeAccelerator::Error error) {
   switch (error) {
     case media::VideoDecodeAccelerator::ILLEGAL_STATE:
-      return ArcVideoAccelerator::ILLEGAL_STATE;
+      return ArcVideoDecodeAccelerator::ILLEGAL_STATE;
     case media::VideoDecodeAccelerator::INVALID_ARGUMENT:
-      return ArcVideoAccelerator::INVALID_ARGUMENT;
+      return ArcVideoDecodeAccelerator::INVALID_ARGUMENT;
     case media::VideoDecodeAccelerator::UNREADABLE_INPUT:
-      return ArcVideoAccelerator::UNREADABLE_INPUT;
+      return ArcVideoDecodeAccelerator::UNREADABLE_INPUT;
     case media::VideoDecodeAccelerator::PLATFORM_FAILURE:
-      return ArcVideoAccelerator::PLATFORM_FAILURE;
+      return ArcVideoDecodeAccelerator::PLATFORM_FAILURE;
     default:
       DLOG(ERROR) << "Unknown error: " << error;
-      return ArcVideoAccelerator::PLATFORM_FAILURE;
+      return ArcVideoDecodeAccelerator::PLATFORM_FAILURE;
   }
 }
 
-void ArcGpuVideoDecodeAccelerator::NotifyError(
+void ChromeArcVideoDecodeAccelerator::NotifyError(
     media::VideoDecodeAccelerator::Error error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DLOG(ERROR) << "Error notified: " << error;
   arc_client_->OnError(ConvertErrorCode(error));
 }
 
-void ArcGpuVideoDecodeAccelerator::CreateInputRecord(
+void ChromeArcVideoDecodeAccelerator::CreateInputRecord(
     int32_t bitstream_buffer_id,
     uint32_t buffer_index,
     int64_t timestamp) {
@@ -506,8 +507,8 @@ void ArcGpuVideoDecodeAccelerator::CreateInputRecord(
     input_records_.pop_back();
 }
 
-ArcGpuVideoDecodeAccelerator::InputRecord*
-ArcGpuVideoDecodeAccelerator::FindInputRecord(int32_t bitstream_buffer_id) {
+ChromeArcVideoDecodeAccelerator::InputRecord*
+ChromeArcVideoDecodeAccelerator::FindInputRecord(int32_t bitstream_buffer_id) {
   for (auto& record : input_records_) {
     if (record.bitstream_buffer_id == bitstream_buffer_id)
       return &record;
@@ -515,8 +516,9 @@ ArcGpuVideoDecodeAccelerator::FindInputRecord(int32_t bitstream_buffer_id) {
   return nullptr;
 }
 
-bool ArcGpuVideoDecodeAccelerator::ValidatePortAndIndex(PortType port,
-                                                        uint32_t index) const {
+bool ChromeArcVideoDecodeAccelerator::ValidatePortAndIndex(
+    PortType port,
+    uint32_t index) const {
   switch (port) {
     case PORT_INPUT:
       if (index >= input_buffer_info_.size()) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_ARC_VIDEO_ACCELERATOR_H_
-#define CHROME_GPU_ARC_VIDEO_ACCELERATOR_H_
+#ifndef CHROME_GPU_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#define CHROME_GPU_ARC_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <vector>
 
@@ -20,7 +20,7 @@ enum HalPixelFormatExtension {
   HAL_PIXEL_FORMAT_YCbCr_420_888 = 0x23,
 
   // The following formats are not defined in Android, but used in
-  // ArcVideoAccelerator to identify the input format.
+  // ArcVideoDecodeAccelerator to identify the input format.
   HAL_PIXEL_FORMAT_H264 = 0x34363248,
   HAL_PIXEL_FORMAT_VP8 = 0x00385056,
   HAL_PIXEL_FORMAT_VP9 = 0x00395056,
@@ -51,10 +51,10 @@ struct VideoFormat {
   uint32_t crop_height = 0;
 };
 
-// The IPC interface between Android and Chromium for video decoding and
-// encoding. Input buffers are sent from Android side and get processed in
-// Chromium and the output buffers are returned back to Android side.
-class ArcVideoAccelerator {
+// The IPC interface between Android and Chromium for video decoding. Input
+// buffers are sent from Android side and get processed in Chromium and the
+// output buffers are returned back to Android side.
+class ArcVideoDecodeAccelerator {
  public:
   enum Result {
     // Note: this enum is used for UMA reporting. The existing values should not
@@ -70,20 +70,14 @@ class ArcVideoAccelerator {
   };
 
   struct Config {
-    enum DeviceType {
-      DEVICE_ENCODER = 0,
-      DEVICE_DECODER = 1,
-    };
-
-    DeviceType device_type = DEVICE_DECODER;
     size_t num_input_buffers = 0;
     uint32_t input_pixel_format = 0;
     // TODO(owenlin): Add output_pixel_format. For now only the native pixel
     //                format of each VDA on Chromium is supported.
   };
 
-  // The callbacks of the ArcVideoAccelerator. The user of this class should
-  // implement this interface.
+  // The callbacks of the ArcVideoDecodeAccelerator. The user of this class
+  // should implement this interface.
   class Client {
    public:
     virtual ~Client() {}
@@ -112,7 +106,7 @@ class ArcVideoAccelerator {
     virtual void OnFlushDone() = 0;
   };
 
-  // Initializes the ArcVideoAccelerator with specific configuration. This
+  // Initializes the ArcVideoDecodeAccelerator with specific configuration. This
   // must be called before any other methods. This call is synchronous and
   // returns SUCCESS iff initialization is successful.
   virtual Result Initialize(const Config& config, Client* client) = 0;
@@ -159,10 +153,10 @@ class ArcVideoAccelerator {
   // called.
   virtual void Flush() = 0;
 
-  virtual ~ArcVideoAccelerator() {}
+  virtual ~ArcVideoDecodeAccelerator() {}
 };
 
 }  // namespace arc
 }  // namespace chromeos
 
-#endif  // CHROME_GPU_ARC_VIDEO_ACCELERATOR_H_
+#endif  // CHROME_GPU_ARC_VIDEO_DECODE_ACCELERATOR_H_

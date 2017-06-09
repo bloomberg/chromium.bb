@@ -20,7 +20,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/gpu/gpu_arc_video_service.h"
+#include "chrome/gpu/gpu_arc_video_decode_accelerator.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #endif
@@ -65,7 +65,7 @@ void ChromeContentGpuClient::Initialize(
 
 #if defined(OS_CHROMEOS)
   registry->AddInterface(
-      base::Bind(&ChromeContentGpuClient::CreateArcVideoAcceleratorService,
+      base::Bind(&ChromeContentGpuClient::CreateArcVideoDecodeAccelerator,
                  base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
 #endif
@@ -86,11 +86,12 @@ void ChromeContentGpuClient::GpuServiceInitialized(
 
 #if defined(OS_CHROMEOS)
 
-void ChromeContentGpuClient::CreateArcVideoAcceleratorService(
+void ChromeContentGpuClient::CreateArcVideoDecodeAccelerator(
     const service_manager::BindSourceInfo& source_info,
-    ::arc::mojom::VideoAcceleratorServiceRequest request) {
+    ::arc::mojom::VideoDecodeAcceleratorRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<chromeos::arc::GpuArcVideoService>(gpu_preferences_),
+      base::MakeUnique<chromeos::arc::GpuArcVideoDecodeAccelerator>(
+          gpu_preferences_),
       std::move(request));
 }
 
