@@ -617,7 +617,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeWithData) {
               *bridge()->GetDeviceInfo(unique_remote.cache_guid()).get());
   VerifyEqual(conflict_remote, *bridge()->GetDeviceInfo(conflict_guid).get());
 
-  // bridge should have told the processor about the existance of unique_local.
+  // bridge should have told the processor about the existence of unique_local.
   EXPECT_TRUE(processor().delete_set().empty());
   EXPECT_EQ(3u, processor().put_multimap().size());
   EXPECT_EQ(1u, processor().put_multimap().count(unique_local.cache_guid()));

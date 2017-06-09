@@ -43,7 +43,7 @@ class MEDIA_EXPORT AudioSystem {
   virtual ~AudioSystem();
 
   // Callback may receive invalid parameters, it means the specified device is
-  // not found. This is best-effort: valid parameters do not guarantee existance
+  // not found. This is best-effort: valid parameters do not guarantee existence
   // of the device.
   // TODO(olka,tommi): fix all AudioManager implementations to return invalid
   // parameters if the device is not found.
@@ -54,7 +54,7 @@ class MEDIA_EXPORT AudioSystem {
   // If media::AudioDeviceDescription::IsDefaultDevice(device_id) is true,
   // callback will receive the parameters of the default output device.
   // Callback may receive invalid parameters, it means the specified device is
-  // not found. This is best-effort: valid parameters do not guarantee existance
+  // not found. This is best-effort: valid parameters do not guarantee existence
   // of the device.
   // TODO(olka,tommi): fix all AudioManager implementations to return invalid
   // parameters if the device is not found.

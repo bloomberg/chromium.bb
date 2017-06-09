@@ -118,7 +118,7 @@ MaximizeModeController::MaximizeModeController()
 
   // TODO(jonross): Do not create MaximizeModeController if the flag is
   // unavailable. This will require refactoring
-  // IsMaximizeModeWindowManagerEnabled to check for the existance of the
+  // IsMaximizeModeWindowManagerEnabled to check for the existence of the
   // controller.
   if (IsEnabled()) {
     ShellPort::Get()->AddDisplayObserver(this);

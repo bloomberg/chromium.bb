@@ -98,7 +98,7 @@ class CHROMEOS_EXPORT StatisticsProvider {
       bool load_oem_manifest) = 0;
 
   // Returns true if the named machine statistic (e.g. "hardware_class") is
-  // found and stores it in |result| (if provided). Probing for the existance of
+  // found and stores it in |result| (if provided). Probing for the existence of
   // a statistic by setting |result| to nullptr supresses the usual warning in
   // case the statistic is not found. Safe to call from any thread except the
   // task runner passed to Initialize() (e.g. FILE). This may block if called

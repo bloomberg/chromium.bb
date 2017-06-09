@@ -66,7 +66,7 @@ namespace password_manager {
 //
 // This is a very light-weight wrapper around an std::string containing the text
 // of the URI, and can be passed around as a value. The main rationale for the
-// existance of this class is to make it clearer in the code when a certain URI
+// existence of this class is to make it clearer in the code when a certain URI
 // is known to be a valid facet URI in canonical form, and to allow verifying
 // and converting URIs to such canonical form.
 //
