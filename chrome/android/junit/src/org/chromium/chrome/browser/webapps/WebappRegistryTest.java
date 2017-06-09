@@ -17,6 +17,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
@@ -126,8 +127,8 @@ public class WebappRegistryTest {
         long after = System.currentTimeMillis();
         SharedPreferences webAppPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "test", Context.MODE_PRIVATE);
-        long actual = webAppPrefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
+        long actual = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
+                WebappDataStorage.LAST_USED_INVALID);
         assertTrue("Timestamp is out of range", actual <= after);
     }
 
@@ -246,8 +247,8 @@ public class WebappRegistryTest {
         Set<String> actual = getRegisteredWebapps();
         assertEquals(new HashSet<>(Arrays.asList("oldWebapp")), actual);
 
-        long actualLastUsed = webAppPrefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
+        long actualLastUsed = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
+                WebappDataStorage.LAST_USED_INVALID);
         assertEquals(Long.MIN_VALUE, actualLastUsed);
 
         // The last cleanup time was set to 0 in setUp() so check that this hasn't changed.
@@ -279,8 +280,8 @@ public class WebappRegistryTest {
         Set<String> actual = getRegisteredWebapps();
         assertEquals(new HashSet<>(Arrays.asList("recentWebapp")), actual);
 
-        long actualLastUsed = webAppPrefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
+        long actualLastUsed = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
+                WebappDataStorage.LAST_USED_INVALID);
         assertEquals(lastUsed, actualLastUsed);
 
         long lastCleanup = mSharedPreferences.getLong(WebappRegistry.KEY_LAST_CLEANUP, -1);
@@ -310,9 +311,9 @@ public class WebappRegistryTest {
         Set<String> actual = getRegisteredWebapps();
         assertTrue(actual.isEmpty());
 
-        long actualLastUsed = webAppPrefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
-        assertEquals(WebappDataStorage.TIMESTAMP_INVALID, actualLastUsed);
+        long actualLastUsed = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
+                WebappDataStorage.LAST_USED_INVALID);
+        assertEquals(WebappDataStorage.LAST_USED_INVALID, actualLastUsed);
 
         long lastCleanup = mSharedPreferences.getLong(WebappRegistry.KEY_LAST_CLEANUP, -1);
         assertEquals(currentTime, lastCleanup);
@@ -420,11 +421,11 @@ public class WebappRegistryTest {
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp2", Context.MODE_PRIVATE);
 
         long webapp1OriginalLastUsed = webapp2Prefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
         long webapp2OriginalLastUsed = webapp2Prefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
-        assertTrue(webapp1OriginalLastUsed != WebappDataStorage.TIMESTAMP_INVALID);
-        assertTrue(webapp2OriginalLastUsed != WebappDataStorage.TIMESTAMP_INVALID);
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
+        assertTrue(webapp1OriginalLastUsed != WebappDataStorage.LAST_USED_UNSET);
+        assertTrue(webapp2OriginalLastUsed != WebappDataStorage.LAST_USED_UNSET);
 
         // Clear data for |webapp1Url|.
         WebappRegistry.getInstance().clearWebappHistoryForUrlsImpl(
@@ -436,12 +437,12 @@ public class WebappRegistryTest {
         assertTrue(actual.contains("webapp2"));
 
         // Verify that the last used time for the first web app is
-        // WebappDataStorage.TIMESTAMP_INVALID, while for the second one it's unchanged.
+        // WebappDataStorage.LAST_USED_UNSET, while for the second one it's unchanged.
         long actualLastUsed = webapp1Prefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
-        assertEquals(WebappDataStorage.TIMESTAMP_INVALID, actualLastUsed);
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
+        assertEquals(WebappDataStorage.LAST_USED_UNSET, actualLastUsed);
         actualLastUsed = webapp2Prefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
         assertEquals(webapp2OriginalLastUsed, actualLastUsed);
 
         // Verify that the URL and scope for the first web app is WebappDataStorage.URL_INVALID,
@@ -462,13 +463,13 @@ public class WebappRegistryTest {
         // Clear data for all urls.
         WebappRegistry.getInstance().clearWebappHistoryForUrlsImpl(new UrlFilters.AllUrls());
 
-        // Verify that the last used time for both web apps is WebappDataStorage.TIMESTAMP_INVALID.
+        // Verify that the last used time for both web apps is WebappDataStorage.LAST_USED_UNSET.
         actualLastUsed = webapp1Prefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
-        assertEquals(WebappDataStorage.TIMESTAMP_INVALID, actualLastUsed);
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
+        assertEquals(WebappDataStorage.LAST_USED_UNSET, actualLastUsed);
         actualLastUsed = webapp2Prefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
-        assertEquals(WebappDataStorage.TIMESTAMP_INVALID, actualLastUsed);
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_UNSET);
+        assertEquals(WebappDataStorage.LAST_USED_UNSET, actualLastUsed);
 
         // Verify that the URL and scope for both web apps is WebappDataStorage.URL_INVALID.
         actualScope = webapp1Prefs.getString(
@@ -499,8 +500,9 @@ public class WebappRegistryTest {
 
         // Verify that the last used time is valid.
         long actualLastUsed = webappPrefs.getLong(
-                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
-        assertTrue(WebappDataStorage.TIMESTAMP_INVALID != actualLastUsed);
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.LAST_USED_INVALID);
+        assertTrue(WebappDataStorage.LAST_USED_INVALID != actualLastUsed);
+        assertTrue(WebappDataStorage.LAST_USED_UNSET != actualLastUsed);
     }
 
     @Test
