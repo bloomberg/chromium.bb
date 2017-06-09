@@ -29,13 +29,15 @@
 
 namespace app_list {
 
-ContentsView::ContentsView(AppListMainView* app_list_main_view)
+ContentsView::ContentsView(AppListMainView* app_list_main_view,
+                           AppListView* app_list_view)
     : model_(nullptr),
       apps_container_view_(nullptr),
       search_results_page_view_(nullptr),
       start_page_view_(nullptr),
       custom_page_view_(nullptr),
       app_list_main_view_(app_list_main_view),
+      app_list_view_(app_list_view),
       page_before_search_(0) {
   pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
                                            kOverscrollPageTransitionDurationMs);
@@ -64,7 +66,8 @@ void ContentsView::Init(AppListModel* model) {
   }
 
   // Start page.
-  start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
+  start_page_view_ =
+      new StartPageView(app_list_main_view_, view_delegate, app_list_view_);
   AddLauncherPage(start_page_view_, AppListModel::STATE_START);
 
   // Search results UI.
