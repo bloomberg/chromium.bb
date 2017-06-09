@@ -1377,13 +1377,6 @@ const char kTranslateLanguageByUlpDescription[] =
     "Improved translate target language and triggering logic by considering "
     "information from User Language Profile (ULP).";
 
-const char kViewsRectBasedTargetingName[] = "Rect-based targeting in views";
-
-const char kViewsRectBasedTargetingDescription[] =
-    "Rect-based targeting uses a heuristic to determine the most probable "
-    "target of a gesture, where the touch region is represented by a "
-    "rectangle.";
-
 const char kPermissionActionReportingName[] = "Permission Action Reporting";
 
 const char kPermissionActionReportingDescription[] =

@@ -1772,14 +1772,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNotificationsNativeFlagDescription, kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(features::kNativeNotifications)},
 #endif  // ENABLE_NATIVE_NOTIFICATIONS
-#if defined(TOOLKIT_VIEWS)
-    {"disable-views-rect-based-targeting",
-     flag_descriptions::kViewsRectBasedTargetingName,
-     flag_descriptions::kViewsRectBasedTargetingDescription,
-     kOsCrOS | kOsWin | kOsLinux,
-     SINGLE_DISABLE_VALUE_TYPE(
-         views::switches::kDisableViewsRectBasedTargeting)},
-#endif  // TOOLKIT_VIEWS
 #if defined(OS_ANDROID)
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,

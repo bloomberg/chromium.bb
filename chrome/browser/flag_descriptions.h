@@ -764,9 +764,6 @@ extern const char kVideoFullscreenOrientationLockDescription[];
 extern const char kVideoRotateToFullscreenName[];
 extern const char kVideoRotateToFullscreenDescription[];
 
-extern const char kViewsRectBasedTargetingName[];
-extern const char kViewsRectBasedTargetingDescription[];
-
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
 
