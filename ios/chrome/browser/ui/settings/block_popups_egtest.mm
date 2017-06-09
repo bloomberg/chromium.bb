@@ -35,7 +35,9 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::ContentSettingsButton;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsMenuBackButton;
 
 namespace {
 
@@ -53,45 +55,9 @@ NSString* kBlockPopupsResponseTemplate =
 NSString* kOpenPopupScript = @"document.getElementById('open-window').click()";
 const std::string kOpenedWindowResponse = "Opened window";
 
-// Opens the block popups settings page.  Must be called from the NTP.
-void OpenBlockPopupsSettings() {
-  const CGFloat scroll_displacement = 50.0;
-  id<GREYMatcher> content_settings_button_matcher =
-      chrome_test_util::ButtonWithAccessibilityLabelId(
-          IDS_IOS_CONTENT_SETTINGS_TITLE);
-  id<GREYMatcher> settings_collection_view_matcher =
-      grey_accessibilityID(kSettingsCollectionViewId);
-  id<GREYMatcher> block_popups_button_matcher =
-      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_IOS_BLOCK_POPUPS);
-
-  [ChromeEarlGreyUI openSettingsMenu];
-
-  [[[EarlGrey selectElementWithMatcher:content_settings_button_matcher]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:settings_collection_view_matcher]
-      performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:block_popups_button_matcher]
-      performAction:grey_tap()];
-}
-
-// Exits out of settings.  Must be called from the block popups settings page.
-void CloseSettings() {
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"ic_arrow_back"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"ic_arrow_back"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
-      performAction:grey_tap()];
+// Returns matcher for the block popups settings menu button.
+id<GREYMatcher> BlockPopupsSettingsButton() {
+  return chrome_test_util::ButtonWithAccessibilityLabelId(IDS_IOS_BLOCK_POPUPS);
 }
 
 // ScopedBlockPopupsPref modifies the block popups preference and resets the
@@ -173,13 +139,23 @@ class ScopedBlockPopupsException {
 // Opens the block popups settings page and verifies that accessibility is set
 // up properly.
 - (void)testAccessibilityOfBlockPopupSettings {
-  OpenBlockPopupsSettings();
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
+  [[EarlGrey selectElementWithMatcher:BlockPopupsSettingsButton()]
+      performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
                                    @"block_popups_settings_view_controller")]
       assertWithMatcher:grey_notNil()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  CloseSettings();
+
+  // Close the settings menu.
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that popups are opened in new tabs when the preference is set to ALLOW.
@@ -257,7 +233,10 @@ class ScopedBlockPopupsException {
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_BLOCK);
   ScopedBlockPopupsException exceptionSetter(allowedPattern);
 
-  OpenBlockPopupsSettings();
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
+  [[EarlGrey selectElementWithMatcher:BlockPopupsSettingsButton()]
+      performAction:grey_tap()];
 
   // Make sure that the "example.com" exception is listed.
   [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
@@ -294,7 +273,13 @@ class ScopedBlockPopupsException {
                                    IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON))]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  CloseSettings();
+  // Close the settings menu.
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 @end

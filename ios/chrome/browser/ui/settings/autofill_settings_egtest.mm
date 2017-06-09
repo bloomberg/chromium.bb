@@ -24,6 +24,7 @@
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsMenuBackButton;
 
 namespace {
 
@@ -145,19 +146,10 @@ void ClearCountryValue() {
 
 // Close the settings.
 - (void)exitSettingsMenu {
-  NSString* backButtonA11yId = @"ic_arrow_back";
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(backButtonA11yId),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(backButtonA11yId),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
   // Wait for UI components to finish loading.

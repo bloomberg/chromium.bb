@@ -58,7 +58,9 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::ContentSettingsButton;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsMenuBackButton;
 
 namespace {
 
@@ -163,10 +165,6 @@ id<GREYMatcher> TranslateSettingsButton() {
 id<GREYMatcher> SavePasswordButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON);
 }
-// Matcher for the Content Settings button on the main Settings screen.
-id<GREYMatcher> ContentSettingsButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_SETTINGS_TITLE);
-}
 // Matcher for the Bandwidth Settings button on the main Settings screen.
 id<GREYMatcher> BandwidthSettingsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS);
@@ -255,12 +253,8 @@ bool IsCertificateCleared() {
 
 // Closes a sub-settings menu, and then the general Settings menu.
 - (void)closeSubSettingsMenu {
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"ic_arrow_back"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }
@@ -922,16 +916,7 @@ bool IsCertificateCleared() {
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
-  // Exit settings.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"ic_arrow_back"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
-      performAction:grey_tap()];
+  [self closeSubSettingsMenu];
 }
 
 // Verifies that the Settings UI registers keyboard commands when presented, but
