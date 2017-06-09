@@ -3203,6 +3203,11 @@ const char kDisableNewVirtualKeyboardBehaviorDescription[] =
     "Disable new window behavior for the accessibility keyboard "
     "in non-sticky mode (do not change work area in non-sticky mode).";
 
+const char kUiDevToolsName[] = "Enable native UI inspection";
+const char kUiDevToolsDescription[] =
+    "Enables inspection of native UI elements. For local inspection use "
+    "chrome://inspect#other";
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace flag_descriptions
