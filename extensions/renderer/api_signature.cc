@@ -317,10 +317,13 @@ bool APISignature::ConvertArgumentsIgnoringSchema(
   // the arguments in the signature. This is very broken.
   if (HasCallback(signature_)) {
     CHECK(!arguments.empty());
-    if (arguments[size - 1]->IsFunction()) {
-      callback = arguments[size - 1].As<v8::Function>();
-      --size;
-    }
+    v8::Local<v8::Value> value = arguments.back();
+    --size;
+    // Bindings should ensure that the value here is appropriate, but see the
+    // comment above for limitations.
+    DCHECK(value->IsFunction() || value->IsUndefined() || value->IsNull());
+    if (value->IsFunction())
+      callback = value.As<v8::Function>();
   }
 
   auto json = base::MakeUnique<base::ListValue>();
