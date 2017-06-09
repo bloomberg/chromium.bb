@@ -32,7 +32,12 @@ class PrefStoreObserverMock : public PrefStore::Observer {
 
 class PersistentPrefStoreMock : public InMemoryPrefStore {
  public:
-  MOCK_METHOD0(CommitPendingWrite, void());
+  void CommitPendingWrite(base::OnceClosure callback) override {
+    CommitPendingWriteMock();
+    InMemoryPrefStore::CommitPendingWrite(std::move(callback));
+  }
+
+  MOCK_METHOD0(CommitPendingWriteMock, void());
   MOCK_METHOD0(SchedulePendingLossyWrites, void());
   MOCK_METHOD0(ClearMutableValues, void());
 
@@ -303,10 +308,8 @@ TEST_F(PersistentPrefStoreImplTest, CommitPendingWrite) {
   auto backing_store = make_scoped_refptr(new PersistentPrefStoreMock);
   CreateImpl(backing_store);
   base::RunLoop run_loop;
-  EXPECT_CALL(*backing_store, CommitPendingWrite())
-      .Times(2)
-      .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
-  pref_store()->CommitPendingWrite();
+  EXPECT_CALL(*backing_store, CommitPendingWriteMock()).Times(2);
+  pref_store()->CommitPendingWrite(run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -316,7 +319,7 @@ TEST_F(PersistentPrefStoreImplTest, SchedulePendingLossyWrites) {
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, SchedulePendingLossyWrites())
       .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
-  EXPECT_CALL(*backing_store, CommitPendingWrite()).Times(1);
+  EXPECT_CALL(*backing_store, CommitPendingWriteMock()).Times(1);
   pref_store()->SchedulePendingLossyWrites();
   run_loop.Run();
 }
@@ -327,7 +330,7 @@ TEST_F(PersistentPrefStoreImplTest, ClearMutableValues) {
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, ClearMutableValues())
       .WillOnce(WithoutArgs(Invoke([&run_loop]() { run_loop.Quit(); })));
-  EXPECT_CALL(*backing_store, CommitPendingWrite()).Times(1);
+  EXPECT_CALL(*backing_store, CommitPendingWriteMock()).Times(1);
   pref_store()->ClearMutableValues();
   run_loop.Run();
 }

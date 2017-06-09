@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -143,13 +144,13 @@ scoped_refptr<base::SequencedTaskRunner> JsonPrefStore::GetTaskRunnerForFile(
 
 JsonPrefStore::JsonPrefStore(
     const base::FilePath& pref_filename,
-    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     std::unique_ptr<PrefFilter> pref_filter)
     : path_(pref_filename),
-      sequenced_task_runner_(std::move(sequenced_task_runner)),
+      file_task_runner_(std::move(file_task_runner)),
       prefs_(new base::DictionaryValue()),
       read_only_(false),
-      writer_(pref_filename, sequenced_task_runner_),
+      writer_(pref_filename, file_task_runner_),
       pref_filter_(std::move(pref_filter)),
       initialized_(false),
       filtering_in_progress_(false),
@@ -279,12 +280,11 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
 
   // Weakly binds the read task so that it doesn't kick in during shutdown.
   base::PostTaskAndReplyWithResult(
-      sequenced_task_runner_.get(), FROM_HERE,
-      base::Bind(&ReadPrefsFromDisk, path_),
+      file_task_runner_.get(), FROM_HERE, base::Bind(&ReadPrefsFromDisk, path_),
       base::Bind(&JsonPrefStore::OnFileRead, AsWeakPtr()));
 }
 
-void JsonPrefStore::CommitPendingWrite() {
+void JsonPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Schedule a write for any lossy writes that are outstanding to ensure that
@@ -293,6 +293,15 @@ void JsonPrefStore::CommitPendingWrite() {
 
   if (writer_.HasPendingWrite() && !read_only_)
     writer_.DoScheduledWrite();
+
+  if (done_callback) {
+    // Since disk operations occur on |file_task_runner_|, the reply of a task
+    // posted to |file_task_runner_| will run after currently pending disk
+    // operations. Also, by definition of PostTaskAndReply(), the reply will run
+    // on the current sequence.
+    file_task_runner_->PostTaskAndReply(
+        FROM_HERE, base::BindOnce(&base::DoNothing), std::move(done_callback));
+  }
 }
 
 void JsonPrefStore::SchedulePendingLossyWrites() {
@@ -442,7 +451,7 @@ void JsonPrefStore::OnFileRead(std::unique_ptr<ReadResult> read_result) {
 
 JsonPrefStore::~JsonPrefStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CommitPendingWrite();
+  CommitPendingWrite(base::OnceClosure());
 }
 
 bool JsonPrefStore::SerializeData(std::string* output) {

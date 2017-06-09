@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -160,9 +161,12 @@ void SegregatedPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
   selected_pref_store_->ReadPrefsAsync(NULL);
 }
 
-void SegregatedPrefStore::CommitPendingWrite() {
-  default_pref_store_->CommitPendingWrite();
-  selected_pref_store_->CommitPendingWrite();
+void SegregatedPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
+  base::RepeatingClosure done_callback_wrapper =
+      done_callback ? base::BarrierClosure(2, std::move(done_callback))
+                    : base::RepeatingClosure();
+  default_pref_store_->CommitPendingWrite(done_callback_wrapper);
+  selected_pref_store_->CommitPendingWrite(done_callback_wrapper);
 }
 
 void SegregatedPrefStore::SchedulePendingLossyWrites() {

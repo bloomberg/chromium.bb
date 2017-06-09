@@ -153,7 +153,7 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
       std::move(stop_).Run();
     }
   }
-  void CommitPendingWrite() override {}
+  void CommitPendingWrite(base::OnceClosure) override {}
   void SchedulePendingLossyWrites() override {}
   void ClearMutableValues() override {}
 

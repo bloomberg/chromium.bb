@@ -24,7 +24,7 @@ void ServiceProcessPrefs::ReadPrefs() {
 }
 
 void ServiceProcessPrefs::WritePrefs() {
-  prefs_->CommitPendingWrite();
+  prefs_->CommitPendingWrite(base::OnceClosure());
 }
 
 std::string ServiceProcessPrefs::GetString(

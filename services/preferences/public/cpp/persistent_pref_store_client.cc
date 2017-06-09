@@ -249,11 +249,12 @@ void PersistentPrefStoreClient::ReadPrefsAsync(
   pref_registry_ = nullptr;
 }
 
-void PersistentPrefStoreClient::CommitPendingWrite() {
+void PersistentPrefStoreClient::CommitPendingWrite(
+    base::OnceClosure done_callback) {
   DCHECK(pref_store_);
   if (!pending_writes_.empty())
     FlushPendingWrites();
-  pref_store_->CommitPendingWrite();
+  pref_store_->CommitPendingWrite(std::move(done_callback));
 }
 
 void PersistentPrefStoreClient::SchedulePendingLossyWrites() {
@@ -270,7 +271,7 @@ PersistentPrefStoreClient::~PersistentPrefStoreClient() {
   if (!pref_store_)
     return;
 
-  CommitPendingWrite();
+  CommitPendingWrite(base::OnceClosure());
 }
 
 void PersistentPrefStoreClient::OnConnect(

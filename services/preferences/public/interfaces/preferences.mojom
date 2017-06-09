@@ -160,7 +160,7 @@ interface PersistentPrefStore {
   RequestValue(string key, array<string> sub_pref_path);
 
   // These mirror the C++ PersistentPrefStore methods.
-  CommitPendingWrite();
+  CommitPendingWrite() => ();
   SchedulePendingLossyWrites();
   ClearMutableValues();
 };

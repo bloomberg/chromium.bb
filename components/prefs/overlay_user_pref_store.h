@@ -56,7 +56,7 @@ class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore
   PrefReadError GetReadError() const override;
   PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* delegate) override;
-  void CommitPendingWrite() override;
+  void CommitPendingWrite(base::OnceClosure done_callback) override;
   void SchedulePendingLossyWrites() override;
   void ReportValueChanged(const std::string& key, uint32_t flags) override;
 
