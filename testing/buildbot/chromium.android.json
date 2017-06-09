@@ -2709,7 +2709,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -7673,7 +7673,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 60,
+          "hard_timeout": 120,
           "output_links": [
             {
               "link": [
@@ -7714,7 +7714,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 180,
+          "hard_timeout": 360,
           "output_links": [
             {
               "link": [
@@ -7919,7 +7919,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 60,
+          "hard_timeout": 120,
           "output_links": [
             {
               "link": [
