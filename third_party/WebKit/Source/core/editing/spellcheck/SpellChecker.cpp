@@ -43,6 +43,7 @@
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/markers/SpellCheckMarker.h"
 #include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
 #include "core/editing/spellcheck/SpellCheckerClient.h"
@@ -89,6 +90,45 @@ SelectionInDOMTree SelectWord(const VisiblePosition& position) {
       .SetBaseAndExtentDeprecated(start.DeepEquivalent(), end.DeepEquivalent())
       .SetAffinity(start.Affinity())
       .Build();
+}
+
+EphemeralRange ExpandSelectionRangeIfNecessary(
+    const VisibleSelection& selection) {
+  DCHECK(!selection.IsNone());
+
+  // If some text is actually selected, we can use the selection range as-is to
+  // check for a marker. If no text is selected (we just have a caret
+  // somewhere), we need to expand one character on either side so we can find
+  // a spelling marker immediately before or after the caret.
+
+  // (The spelling markers on these words may be anchored to a different node
+  // than the collapsed selection's Position is, but once we expand the
+  // selection, if we're next to a marker, either the start or end point should
+  // now be anchored relative to the same text node as that marker.)
+
+  // Some text is actually selected
+  if (selection.IsRange())
+    return EphemeralRange(selection.Start(), selection.End());
+
+  // No text is actually selected, need to expand the selection range. This is
+  // to make sure we can find a marker touching the caret. E.g. if we have:
+  // <span>word1 <b>word2</b></span>
+  // with a caret selection immediately before "word2", there's one text node
+  // immediately before the caret ("word1 ") and one immediately after
+  // ("word2"). Expanding the selection by one character on either side ensures
+  // we get a range that intersects both neighboring text nodes (if they exist).
+  const VisiblePosition& caret_position = selection.VisibleStart();
+
+  const Position& previous_position =
+      PreviousPositionOf(caret_position).DeepEquivalent();
+
+  const Position& next_position =
+      NextPositionOf(caret_position).DeepEquivalent();
+
+  return EphemeralRange(
+      previous_position.IsNull() ? caret_position.DeepEquivalent()
+                                 : previous_position,
+      next_position.IsNull() ? caret_position.DeepEquivalent() : next_position);
 }
 
 }  // namespace
@@ -811,51 +851,57 @@ void SpellChecker::RemoveSpellingAndGrammarMarkers(const HTMLElement& element,
   }
 }
 
+Optional<std::pair<Node*, SpellCheckMarker*>>
+SpellChecker::GetSpellCheckMarkerTouchingSelection() {
+  const VisibleSelection& selection =
+      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
+  if (selection.IsNone())
+    return Optional<std::pair<Node*, SpellCheckMarker*>>();
+
+  const EphemeralRange& range_to_check =
+      ExpandSelectionRangeIfNecessary(selection);
+
+  Node* const start_container =
+      range_to_check.StartPosition().ComputeContainerNode();
+  const unsigned start_offset =
+      range_to_check.StartPosition().ComputeOffsetInContainerNode();
+  Node* const end_container =
+      range_to_check.EndPosition().ComputeContainerNode();
+  const unsigned end_offset =
+      range_to_check.EndPosition().ComputeOffsetInContainerNode();
+
+  for (Node& node : range_to_check.Nodes()) {
+    const DocumentMarkerVector& markers_in_node =
+        GetFrame().GetDocument()->Markers().MarkersFor(
+            &node, DocumentMarker::MisspellingMarkers());
+    for (DocumentMarker* marker : markers_in_node) {
+      if (node == start_container && marker->EndOffset() <= start_offset)
+        continue;
+      if (node == end_container && marker->StartOffset() >= end_offset)
+        continue;
+
+      return std::make_pair(&node, &ToSpellCheckMarker(*marker));
+    }
+  }
+
+  // No marker found
+  return Optional<std::pair<Node*, SpellCheckMarker*>>();
+}
+
 void SpellChecker::ReplaceMisspelledRange(const String& text) {
-  EphemeralRange caret_range = GetFrame()
-                                   .Selection()
-                                   .ComputeVisibleSelectionInDOMTree()
-                                   .ToNormalizedEphemeralRange();
-  if (caret_range.IsNull())
+  const Optional<std::pair<Node*, SpellCheckMarker*>>& node_and_marker =
+      GetSpellCheckMarkerTouchingSelection();
+  if (!node_and_marker)
     return;
 
-  Node* const caret_start_container =
-      caret_range.StartPosition().ComputeContainerNode();
-  Node* const caret_end_container =
-      caret_range.EndPosition().ComputeContainerNode();
-
-  // We don't currently support the case where a misspelling spans multiple
-  // nodes
-  if (caret_start_container != caret_end_container)
-    return;
-
-  const unsigned caret_start_offset =
-      caret_range.StartPosition().ComputeOffsetInContainerNode();
-  const unsigned caret_end_offset =
-      caret_range.EndPosition().ComputeOffsetInContainerNode();
-
-  const DocumentMarkerVector& markers_in_node =
-      GetFrame().GetDocument()->Markers().MarkersFor(
-          caret_start_container, DocumentMarker::MisspellingMarkers());
-
-  const auto marker_it =
-      std::find_if(markers_in_node.begin(), markers_in_node.end(),
-                   [=](const DocumentMarker* marker) {
-                     return marker->StartOffset() < caret_end_offset &&
-                            marker->EndOffset() > caret_start_offset;
-                   });
-  if (marker_it == markers_in_node.end())
-    return;
-
-  const DocumentMarker* found_marker = *marker_it;
-  EphemeralRange marker_range = EphemeralRange(
-      Position(caret_start_container, found_marker->StartOffset()),
-      Position(caret_start_container, found_marker->EndOffset()));
-  if (marker_range.IsNull())
-    return;
+  Node* const container_node = node_and_marker.value().first;
+  const SpellCheckMarker* const marker = node_and_marker.value().second;
 
   GetFrame().Selection().SetSelection(
-      SelectionInDOMTree::Builder().SetBaseAndExtent(marker_range).Build());
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(container_node, marker->StartOffset()))
+          .Extend(Position(container_node, marker->EndOffset()))
+          .Build());
 
   Document& current_document = *GetFrame().GetDocument();
 
