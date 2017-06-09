@@ -153,7 +153,7 @@ double IIRFilter::TailTime(double sample_rate) {
   // The maximum tail time.  This is somewhat arbitrary, but we're assuming that
   // no one is going to expect the IIRFilter to produce an output after this
   // much time after the inputs have stopped.
-  const double kMaxTailTime = 60;
+  const double kMaxTailTime = 10;
 
   // If the maximum amplitude of the impulse response is less than this, we
   // assume that we've reached the tail of the response.  Currently, this means
