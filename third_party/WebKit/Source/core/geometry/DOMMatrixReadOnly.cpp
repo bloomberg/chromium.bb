@@ -276,7 +276,7 @@ DOMMatrix* DOMMatrixReadOnly::inverse() {
 
 DOMPoint* DOMMatrixReadOnly::transformPoint(const DOMPointInit& point) {
   if (is2D() && point.z() == 0 && point.w() == 1) {
-    double x = point.x() * m11() + point.y() * m12() + m41();
+    double x = point.x() * m11() + point.y() * m21() + m41();
     double y = point.x() * m12() + point.y() * m22() + m42();
     return DOMPoint::Create(x, y, 0, 1);
   }
