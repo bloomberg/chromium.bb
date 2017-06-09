@@ -7,11 +7,13 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/url_loader_factory.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 
 namespace content {
-class ChromeAppCacheService;
+
+class AppCacheJob;
+class AppCacheServiceImpl;
 class URLLoaderFactoryGetter;
 
 // Implements the URLLoaderFactory mojom for AppCache requests.
@@ -20,13 +22,12 @@ class AppCacheURLLoaderFactory : public mojom::URLLoaderFactory {
   ~AppCacheURLLoaderFactory() override;
 
   // Factory function to create an instance of the factory.
-  // The |appcache_service| parameter is used to query the underlying
-  // AppCacheStorage instance to check if we can service requests from the
-  // AppCache. We pass unhandled requests to the network service retrieved from
-  // the |factory_getter|.
-  static void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
-                                     ChromeAppCacheService* appcache_service,
-                                     URLLoaderFactoryGetter* factory_getter);
+  // 1. The |factory_getter| parameter is used to query the network service
+  //    to pass network requests to.
+  // Returns a URLLoaderFactoryPtr instance which controls the lifetime of the
+  // factory.
+  static mojom::URLLoaderFactoryPtr CreateURLLoaderFactory(
+      URLLoaderFactoryGetter* factory_getter);
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(
@@ -42,18 +43,17 @@ class AppCacheURLLoaderFactory : public mojom::URLLoaderFactory {
                 SyncLoadCallback callback) override;
 
  private:
-  AppCacheURLLoaderFactory(ChromeAppCacheService* appcache_service,
+  AppCacheURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
                            URLLoaderFactoryGetter* factory_getter);
 
-  // Used to query AppCacheStorage to see if a request can be served out of the
-  /// AppCache.
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
+  void OnConnectionError();
+
+  // Mojo binding.
+  mojo::Binding<mojom::URLLoaderFactory> binding_;
 
   // Used to retrieve the network service factory to pass unhandled requests to
   // the network service.
   scoped_refptr<URLLoaderFactoryGetter> factory_getter_;
-
-  mojo::StrongBindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderFactory);
 };

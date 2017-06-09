@@ -201,6 +201,10 @@ void MockAppCacheStorage::DeleteResponses(
   }
 }
 
+bool MockAppCacheStorage::IsInitialized() {
+  return false;
+}
+
 void MockAppCacheStorage::ProcessGetAllInfo(
     scoped_refptr<DelegateReference> delegate_ref) {
   if (delegate_ref->delegate)

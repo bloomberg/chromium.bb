@@ -73,6 +73,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
                      const std::vector<int64_t>& response_ids) override;
   void DeleteResponses(const GURL& manifest_url,
                        const std::vector<int64_t>& response_ids) override;
+  bool IsInitialized() override;
 
  private:
   // The AppCacheStorageImpl class methods and datamembers may only be

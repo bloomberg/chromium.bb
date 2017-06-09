@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
+#include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request_info.h"
@@ -166,7 +167,11 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
     }
 
     if (appcache_handle_core) {
-      // TODO: add appcache code here.
+      std::unique_ptr<URLLoaderRequestHandler> appcache_handler =
+          AppCacheRequestHandler::InitializeForNavigationNetworkService(
+              *resource_request_, appcache_handle_core);
+      if (appcache_handler)
+        handlers_.push_back(std::move(appcache_handler));
     }
 
     Restart(std::move(url_loader_request), std::move(url_loader_client_ptr_));

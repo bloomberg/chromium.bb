@@ -44,11 +44,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   // AppCacheJob overrides.
   void Kill() override;
   bool IsStarted() const override;
-  bool IsWaiting() const override;
-  bool IsDeliveringAppCacheResponse() const override;
-  bool IsDeliveringNetworkResponse() const override;
-  bool IsDeliveringErrorResponse() const override;
-  bool IsCacheEntryNotFound() const override;
   void DeliverAppCachedResponse(const GURL& manifest_url,
                                 int64_t cache_id,
                                 const AppCacheEntry& entry,
@@ -82,13 +77,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
                         AppCacheHost* host,
                         bool is_main_resource,
                         const OnPrepareToRestartCallback& restart_callback_);
-
-  enum DeliveryType {
-    AWAITING_DELIVERY_ORDERS,
-    APPCACHED_DELIVERY,
-    NETWORK_DELIVERY,
-    ERROR_DELIVERY
-  };
 
   // Returns true if one of the Deliver methods has been called.
   bool has_delivery_orders() const { return !IsWaiting(); }
@@ -140,13 +128,11 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   base::TimeTicks start_time_tick_;
   bool has_been_started_;
   bool has_been_killed_;
-  DeliveryType delivery_type_;
   GURL manifest_url_;
   int64_t cache_id_;
   AppCacheEntry entry_;
   bool is_fallback_;
   bool is_main_resource_;  // Used for histogram logging.
-  bool cache_entry_not_found_;
   scoped_refptr<AppCacheResponseInfo> info_;
   scoped_refptr<net::GrowableIOBuffer> handler_source_buffer_;
   std::unique_ptr<AppCacheResponseReader> handler_source_reader_;

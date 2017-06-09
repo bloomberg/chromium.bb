@@ -60,26 +60,6 @@ bool AppCacheURLRequestJob::IsStarted() const {
   return has_been_started_;
 }
 
-bool AppCacheURLRequestJob::IsWaiting() const {
-  return delivery_type_ == AWAITING_DELIVERY_ORDERS;
-}
-
-bool AppCacheURLRequestJob::IsDeliveringAppCacheResponse() const {
-  return delivery_type_ == APPCACHED_DELIVERY;
-}
-
-bool AppCacheURLRequestJob::IsDeliveringNetworkResponse() const {
-  return delivery_type_ == NETWORK_DELIVERY;
-}
-
-bool AppCacheURLRequestJob::IsDeliveringErrorResponse() const {
-  return delivery_type_ == ERROR_DELIVERY;
-}
-
-bool AppCacheURLRequestJob::IsCacheEntryNotFound() const {
-  return cache_entry_not_found_;
-}
-
 void AppCacheURLRequestJob::DeliverAppCachedResponse(const GURL& manifest_url,
                                                      int64_t cache_id,
                                                      const AppCacheEntry& entry,
@@ -128,11 +108,9 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       storage_(storage),
       has_been_started_(false),
       has_been_killed_(false),
-      delivery_type_(AWAITING_DELIVERY_ORDERS),
       cache_id_(kAppCacheNoCacheId),
       is_fallback_(false),
       is_main_resource_(is_main_resource),
-      cache_entry_not_found_(false),
       on_prepare_to_restart_callback_(restart_callback) {
   DCHECK(storage_);
 }

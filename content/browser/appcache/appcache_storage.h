@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache_working_set.h"
 #include "content/common/content_export.h"
 #include "net/base/completion_callback.h"
@@ -194,6 +195,9 @@ class CONTENT_EXPORT AppCacheStorage {
   virtual void DeleteResponses(const GURL& manifest_url,
                                const std::vector<int64_t>& response_ids) = 0;
 
+  // Returns true if the AppCacheStorage instance is initialized.
+  virtual bool IsInitialized() = 0;
+
   // Generates unique storage ids for different object types.
   int64_t NewCacheId() { return ++last_cache_id_; }
   int64_t NewGroupId() { return ++last_group_id_; }
@@ -206,6 +210,9 @@ class CONTENT_EXPORT AppCacheStorage {
 
   // Simple ptr back to the service object that owns us.
   AppCacheServiceImpl* service() { return service_; }
+
+  // Returns a weak pointer reference to the AppCacheStorage instance.
+  base::WeakPtr<AppCacheStorage> GetWeakPtr();
 
  protected:
   friend class content::AppCacheQuotaClientTest;
@@ -325,6 +332,10 @@ class CONTENT_EXPORT AppCacheStorage {
 
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheStorageTest, DelegateReferences);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheStorageTest, UsageMap);
+
+  // The WeakPtrFactory below must occur last in the class definition so they
+  // get destroyed last.
+  base::WeakPtrFactory<AppCacheStorage> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheStorage);
 };
