@@ -173,6 +173,13 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
                   TECHNOLOGY_AVAILABLE);
   }
 
+  void SetCellularTechnologyStateEnabled(bool enabled) {
+    network_state_handler()->SetTechnologyEnabled(
+        chromeos::NetworkTypePattern::Cellular(), enabled,
+        chromeos::network_handler::ErrorCallback());
+    base::RunLoop().RunUntilIdle();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<TestingProfile> profile_;
@@ -283,6 +290,72 @@ TEST_F(TetherServiceTest, TestBluetoothIsNotPowered) {
           chromeos::NetworkTypePattern::Tether()));
 }
 
+TEST_F(TetherServiceTest, TestCellularIsUnavailable) {
+  test_manager_client()->RemoveTechnology(shill::kTypeCellular);
+  ASSERT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Cellular()));
+
+  CreateTetherService();
+
+  SetTetherTechnologyStateEnabled(false);
+  EXPECT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Tether()));
+
+  SetTetherTechnologyStateEnabled(true);
+  EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
+            network_state_handler()->GetTechnologyState(
+                chromeos::NetworkTypePattern::Tether()));
+}
+
+TEST_F(TetherServiceTest, TestCellularIsAvailable) {
+  // TODO (lesliewatkins): Investigate why cellular needs to be removed and
+  // re-added for NetworkStateHandler to return the correct TechnologyState.
+  test_manager_client()->RemoveTechnology(shill::kTypeCellular);
+  test_manager_client()->AddTechnology(shill::kTypeCellular, false);
+
+  CreateTetherService();
+
+  // Cellular disabled
+  SetCellularTechnologyStateEnabled(false);
+  ASSERT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Cellular()));
+
+  SetTetherTechnologyStateEnabled(false);
+  EXPECT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Tether()));
+
+  SetTetherTechnologyStateEnabled(true);
+  EXPECT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Tether()));
+
+  // Cellular enabled
+  SetCellularTechnologyStateEnabled(true);
+  ASSERT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
+            network_state_handler()->GetTechnologyState(
+                chromeos::NetworkTypePattern::Cellular()));
+
+  SetTetherTechnologyStateEnabled(false);
+  EXPECT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Tether()));
+
+  SetTetherTechnologyStateEnabled(true);
+  EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
+            network_state_handler()->GetTechnologyState(
+                chromeos::NetworkTypePattern::Tether()));
+}
+
 TEST_F(TetherServiceTest, TestEnabled) {
   CreateTetherService();
 
@@ -312,19 +385,24 @@ TEST_F(TetherServiceTest, TestEnabled) {
 // state than the user preference.
 TEST_F(TetherServiceTest, TestEnabledMultipleChanges) {
   CreateTetherService();
-  // CreateTetherService calls RunUntilIdle() so OnBluetoothAdapterFetched()
-  // will have been called which calls UpdateTetherTechnologyState().
-  EXPECT_EQ(1, tether_service_->updated_technology_state_count());
+  // CreateTetherService calls RunUntilIdle() so  UpdateTetherTechnologyState()
+  // may be called multiple times in the initialization process.
+  int updated_technology_state_count =
+      tether_service_->updated_technology_state_count();
 
   SetTetherTechnologyStateEnabled(false);
   SetTetherTechnologyStateEnabled(false);
   SetTetherTechnologyStateEnabled(false);
 
-  EXPECT_EQ(2, tether_service_->updated_technology_state_count());
+  updated_technology_state_count++;
+  EXPECT_EQ(updated_technology_state_count,
+            tether_service_->updated_technology_state_count());
 
   SetTetherTechnologyStateEnabled(true);
   SetTetherTechnologyStateEnabled(true);
   SetTetherTechnologyStateEnabled(true);
 
-  EXPECT_EQ(3, tether_service_->updated_technology_state_count());
+  updated_technology_state_count++;
+  EXPECT_EQ(updated_technology_state_count,
+            tether_service_->updated_technology_state_count());
 }

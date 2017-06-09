@@ -19,7 +19,7 @@ namespace ash {
 // Includes information necessary about a network for displaying the appropriate
 // UI to the user.
 struct NetworkInfo {
-  enum class Type { UNKNOWN, WIFI, TETHER, CELLULAR };
+  enum class Type { UNKNOWN, WIFI, MOBILE };
 
   NetworkInfo();
   NetworkInfo(const std::string& guid);

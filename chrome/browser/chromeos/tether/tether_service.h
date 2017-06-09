@@ -103,6 +103,8 @@ class TetherService : public KeyedService,
 
   bool IsBluetoothAvailable() const;
 
+  bool IsCellularAvailableButNotEnabled() const;
+
   // Whether Tether is allowed to be used. If the controlling preference
   // is set (from policy), this returns the preference value. Otherwise, it is
   // permitted if the flag is enabled.
