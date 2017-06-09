@@ -636,7 +636,8 @@ NSAttributedString* CreateClassifiedAttributedString(
       cellFrame, NSOffsetRect(cellFrame, origin.x, origin.y));
   renderRect.size.width =
       std::min(NSWidth(renderRect), static_cast<CGFloat>(maxWidth));
-  renderRect.size.height = std::min(NSWidth(renderRect), kDefaultTextHeight);
+  renderRect.size.height =
+      std::min(NSHeight(renderRect), [attributedString size].height);
   if (!NSIsEmptyRect(renderRect)) {
     [attributedString drawWithRect:FlipIfRTL(renderRect, cellFrame)
                            options:NSStringDrawingUsesLineFragmentOrigin |
