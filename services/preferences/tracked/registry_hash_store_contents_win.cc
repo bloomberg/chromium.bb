@@ -105,7 +105,9 @@ void RegistryHashStoreContentsWin::Reset() {
   if (key.Open(HKEY_CURRENT_USER, preference_key_name_.c_str(),
                KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
     LONG result = key.DeleteKey(L"");
-    DCHECK(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND) << result;
+    DCHECK(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND ||
+           result == ERROR_ACCESS_DENIED)
+        << result;
   }
 }
 

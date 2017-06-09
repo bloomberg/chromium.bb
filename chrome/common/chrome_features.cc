@@ -269,7 +269,7 @@ const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
 
 // Enables the pref service. See https://crbug.com/654988.
 const base::Feature kPrefService{"PrefService",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // The lock screen will be preloaded so it is instantly available when the user
