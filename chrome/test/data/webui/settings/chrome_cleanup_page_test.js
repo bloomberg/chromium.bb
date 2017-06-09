@@ -10,8 +10,7 @@
 var TestChromeCleanupProxy = function() {
   TestBrowserProxy.call(this, [
     'dismissCleanupPage',
-    'getChromeCleanupVisibility',
-    'registerChromeCleanupObserver',
+    'registerChromeCleanerObserver',
     'restartComputer',
     'startCleanup',
   ]);
@@ -25,22 +24,17 @@ TestChromeCleanupProxy.prototype = {
     this.methodCalled('dismissCleanupPage');
   },
 
-    /** @override */
-  getChromeCleanupVisibility: function() {
-    this.methodCalled('getChromeCleanupVisibility');
+  /** @override */
+  registerChromeCleanerObserver: function() {
+    this.methodCalled('registerChromeCleanerObserver');
   },
 
-    /** @override */
-  registerChromeCleanupObserver: function() {
-    this.methodCalled('registerChromeCleanupObserver');
-  },
-
-    /** @override */
+  /** @override */
   restartComputer: function() {
     this.methodCalled('restartComputer');
   },
 
-    /** @override */
+  /** @override */
   startCleanup: function() {
     this.methodCalled('startCleanup');
   },

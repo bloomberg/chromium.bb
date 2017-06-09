@@ -35,6 +35,9 @@ using ::chrome_cleaner::mojom::ChromePrompt;
 using ::chrome_cleaner::mojom::PromptAcceptance;
 using ::content::BrowserThread;
 
+// Keeps track of whether GetInstance() has been called.
+bool g_instance_exists = false;
+
 // TODO(alito): Move these shared exit codes to the chrome_cleaner component.
 // https://crbug.com/727956
 constexpr int kRebootRequiredExitCode = 15;
@@ -113,7 +116,15 @@ bool ChromeCleanerControllerDelegate::IsMetricsAndCrashReportingEnabled() {
 // static
 ChromeCleanerController* ChromeCleanerController::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  g_instance_exists = true;
   return base::Singleton<ChromeCleanerController>::get();
+}
+
+// static
+bool ChromeCleanerController::ShouldShowCleanupInSettingsUI() {
+  // Short-circuit if the instance doesn't exist to avoid creating it during
+  // navigation to chrome://settings.
+  return g_instance_exists && GetInstance()->state() == State::kInfected;
 }
 
 void ChromeCleanerController::SetDelegateForTesting(

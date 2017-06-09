@@ -5,15 +5,16 @@
 /**
  * The reason why the controller is in state kIdle.
  * Must be kept in sync with ChromeCleanerController::IdleReason.
- * @enum {number}
+ * @enum {string}
  */
 settings.ChromeCleanupIdleReason = {
-  INITIAL: 0,
-  SCANNING_FOUND_NOTHING: 1,
-  SCANNING_FAILED: 2,
-  CONNECTION_LOST: 3,
-  CLEANING_FAILED: 4,
-  CLEANING_SUCCEEDED: 5,
+  INITIAL: 'initial',
+  SCANNING_FOUND_NOTHING: 'scanning_found_nothing',
+  SCANNING_FAILED: 'scanning_failed',
+  CONNECTION_LOST: 'connection_lost',
+  USER_DECLINED_CLEANUP: 'user_declined_cleanup',
+  CLEANING_FAILED: 'cleaning_failed',
+  CLEANING_SUCCEEDED: 'cleaning_succeeded',
 };
 
 /**
@@ -111,17 +112,19 @@ Polymer({
   attached: function() {
     this.browserProxy_ = settings.ChromeCleanupProxyImpl.getInstance();
 
-    this.addWebUIListener('chrome-cleanup-on-idle', this.OnIdle_.bind(this));
+    this.addWebUIListener('chrome-cleanup-on-idle', this.onIdle_.bind(this));
     this.addWebUIListener(
-        'chrome-cleanup-on-scanning', this.OnScanning_.bind(this));
+        'chrome-cleanup-on-scanning', this.onScanning_.bind(this));
     this.addWebUIListener(
-        'chrome-cleanup-on-infected', this.OnInfected_.bind(this));
+        'chrome-cleanup-on-infected', this.onInfected_.bind(this));
     this.addWebUIListener(
-        'chrome-cleanup-on-cleaning', this.OnCleaning_.bind(this));
+        'chrome-cleanup-on-cleaning', this.onCleaning_.bind(this));
     this.addWebUIListener(
-        'chrome-cleanup-on-reboot-required', this.OnRebootRequired_.bind(this));
+        'chrome-cleanup-on-reboot-required', this.onRebootRequired_.bind(this));
+    this.addWebUIListener(
+        'chrome-cleanup-on-dismiss', this.onDismiss_.bind(this));
 
-    this.browserProxy_.registerChromeCleanupObserver();
+    this.browserProxy_.registerChromeCleanerObserver();
   },
 
   /**
@@ -146,16 +149,13 @@ Polymer({
    * @param {number} idleReason
    * @private
    */
-  OnIdle_: function(idleReason) {
-    if (this.waitingForCleanupResults_ &&
-        idleReason == settings.ChromeCleanupIdleReason.CLEANING_SUCCEEDED) {
+  onIdle_: function(idleReason) {
+    if (idleReason == settings.ChromeCleanupIdleReason.CLEANING_SUCCEEDED) {
       this.title_ = this.i18n('chromeCleanupTitleRemoved');
       this.enableActionButton_(
           this.i18n('chromeCleanupDoneButtonLabel'), this.dismiss_.bind(this));
       this.setIconDone_();
-    } else if (
-        this.waitingForCleanupResults_ &&
-        idleReason == settings.ChromeCleanupIdleReason.CLEANING_FAILED) {
+    } else if (idleReason == settings.ChromeCleanupIdleReason.CLEANING_FAILED) {
       this.title_ = this.i18n('chromeCleanupTitleErrorCantRemove');
       this.enableActionButton_(
           this.i18n('chromeCleanupDoneButtonLabel'), this.dismiss_.bind(this));
@@ -177,7 +177,7 @@ Polymer({
    * the card and cleanup this element's fields.
    * @private
    */
-  OnScanning_: function() {
+  onScanning_: function() {
     this.title_ = '';
     this.isRemoving_ = false;
     this.disableActionButton_();
@@ -190,7 +190,7 @@ Polymer({
    * @param {!Array<!string>} files The list of files to present to the user.
    * @private
    */
-  OnInfected_: function(files) {
+  onInfected_: function(files) {
     this.title_ = this.i18n('chromeCleanupTitleRemove');
     this.isRemoving_ = false;
     this.setIconRemove_();
@@ -207,7 +207,7 @@ Polymer({
    * @param {!Array<!string>} files The list of files to present to the user.
    * @private
    */
-  OnCleaning_: function(files) {
+  onCleaning_: function(files) {
     this.waitingForCleanupResults_ = true;
     this.title_ = this.i18n('chromeCleanupTitleRemoving');
     this.isRemoving_ = true;
@@ -222,7 +222,7 @@ Polymer({
    * the card and cleanup this element's fields.
    * @private
    */
-  OnRebootRequired_: function() {
+  onRebootRequired_: function() {
     this.title_ = this.i18n('chromeCleanupTitleRestart');
     this.isRemoving_ = false;
     this.setIconWarning_();
@@ -233,12 +233,20 @@ Polymer({
   },
 
   /**
-   * Dismiss the card and unregister it from the controller.
+   * Listener of event 'chrome-cleanup-dismiss'.
+   * Hides the Cleanup card.
+   * @private
+   */
+   onDismiss_: function() {
+     this.fire('chrome-cleanup-dismissed');
+   },
+
+  /**
+   * Dismiss the card.
    * @private
    */
   dismiss_: function() {
     this.browserProxy_.dismissCleanupPage();
-    // TODO(proberge): unregister from the controller.
   },
 
   /**
@@ -324,6 +332,7 @@ Polymer({
 
   /**
    * Sets the card's icon as a completed indication.
+   * @private
    */
   setIconDone_: function() {
     this.statusIcon_ = 'settings:check-circle';
@@ -332,6 +341,7 @@ Polymer({
 
   /**
    * Resets the card's icon.
+   * @private
    */
   resetIcon_: function() {
     this.statusIcon_ = '';
