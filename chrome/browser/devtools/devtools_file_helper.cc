@@ -212,6 +212,12 @@ DevToolsFileHelper::DevToolsFileHelper(WebContents* web_contents,
       delegate_(delegate),
       weak_factory_(this) {
   pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(prefs::kDevToolsFileSystemPaths,
+      base::Bind(&DevToolsFileHelper::FileSystemPathsSettingChanged,
+                 base::Unretained(this)));
+  file_watcher_.reset(new DevToolsFileWatcher(
+      base::Bind(&DevToolsFileHelper::FilePathsChanged,
+                 weak_factory_.GetWeakPtr())));
 }
 
 DevToolsFileHelper::~DevToolsFileHelper() {
@@ -386,14 +392,6 @@ std::vector<DevToolsFileHelper::FileSystem>
 DevToolsFileHelper::GetFileSystems() {
   file_system_paths_ = GetAddedFileSystemPaths(profile_);
   std::vector<FileSystem> file_systems;
-  if (!file_watcher_) {
-    file_watcher_.reset(new DevToolsFileWatcher(base::Bind(
-        &DevToolsFileHelper::FilePathsChanged, weak_factory_.GetWeakPtr())));
-    pref_change_registrar_.Add(
-        prefs::kDevToolsFileSystemPaths,
-        base::Bind(&DevToolsFileHelper::FileSystemPathsSettingChanged,
-                   base::Unretained(this)));
-  }
   for (auto file_system_path : file_system_paths_) {
     base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
     std::string file_system_id = RegisterFileSystem(web_contents_, path);
@@ -430,7 +428,6 @@ bool DevToolsFileHelper::IsFileSystemAdded(
 void DevToolsFileHelper::FileSystemPathsSettingChanged() {
   std::set<std::string> remaining;
   remaining.swap(file_system_paths_);
-  DCHECK(file_watcher_.get());
 
   for (auto file_system_path : GetAddedFileSystemPaths(profile_)) {
     if (remaining.find(file_system_path) == remaining.end()) {
