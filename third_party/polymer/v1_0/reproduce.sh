@@ -20,7 +20,6 @@ check_dep() {
 
 check_dep "which npm" "npm" "visiting https://nodejs.org/en/"
 check_dep "which bower" "bower" "npm install -g bower"
-check_dep "which crisper" "crisper" "npm install -g crisper"
 check_dep "which rsync" "rsync" "apt-get install rsync"
 check_dep "python -c 'import bs4'" "bs4" "apt-get install python-bs4"
 check_dep "sed --version | grep GNU" \
@@ -70,7 +69,16 @@ find components -type f \( -name \*.html -o -name \*.css -o -name \*.js\
 NBSP=$(python -c 'print u"\u00A0".encode("utf-8")')
 sed -i 's/['"$NBSP"']/\\u00A0/g' components/polymer/polymer-mini.html
 
-./extract_inline_scripts.sh components components-chromium
+rsync -c --delete -r -v --exclude-from="rsync_exclude.txt" \
+    --prune-empty-dirs "components/" "components-chromium/"
+
+find "components-chromium/" -name "*.html" | \
+xargs grep -l "<script>" | \
+while read original_html_name
+do
+  echo "Crisping $original_html_name"
+  python extract_inline_scripts.py $original_html_name
+done
 
 # Remove import of external resource in font-roboto (fonts.googleapis.com)
 # and apply additional chrome specific patches. NOTE: Where possible create
