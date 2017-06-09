@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_INPUT_DEVICE_SETTINGS_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_INPUT_DEVICE_SETTINGS_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/optional.h"
 #include "chromeos/chromeos_export.h"
 
@@ -104,7 +104,7 @@ class MouseSettings {
 // Interface for configuring input device settings.
 class CHROMEOS_EXPORT InputDeviceSettings {
  public:
-  typedef base::Callback<void(bool)> DeviceExistsCallback;
+  using DeviceExistsCallback = base::OnceCallback<void(bool)>;
 
   // Interface for faking touchpad and mouse. Accessed through
   // GetFakeInterface(), implemented only in FakeInputDeviceSettings.
@@ -152,7 +152,7 @@ class CHROMEOS_EXPORT InputDeviceSettings {
 
   // Calls |callback|, possibly asynchronously, after determining if a touchpad
   // is connected.
-  virtual void TouchpadExists(const DeviceExistsCallback& callback) = 0;
+  virtual void TouchpadExists(DeviceExistsCallback callback) = 0;
 
   // Updates several touchpad settings at a time. Updates only settings that
   // are set in |settings| object. It is more efficient to use this method to
@@ -177,7 +177,7 @@ class CHROMEOS_EXPORT InputDeviceSettings {
 
   // Calls |callback|, possibly asynchronously, after determining if a mouse is
   // connected.
-  virtual void MouseExists(const DeviceExistsCallback& callback) = 0;
+  virtual void MouseExists(DeviceExistsCallback callback) = 0;
 
   // Updates several mouse settings at a time. Updates only settings that
   // are set in |settings| object. It is more efficient to use this method to

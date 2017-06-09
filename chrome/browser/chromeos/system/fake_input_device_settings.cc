@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 
+#include <utility>
+
+#include "base/callback.h"
+
 namespace chromeos {
 namespace system {
 
@@ -12,9 +16,8 @@ FakeInputDeviceSettings::FakeInputDeviceSettings() {}
 FakeInputDeviceSettings::~FakeInputDeviceSettings() {}
 
 // Overriden from InputDeviceSettings.
-void FakeInputDeviceSettings::TouchpadExists(
-    const DeviceExistsCallback& callback) {
-  callback.Run(touchpad_exists_);
+void FakeInputDeviceSettings::TouchpadExists(DeviceExistsCallback callback) {
+  std::move(callback).Run(touchpad_exists_);
 }
 
 void FakeInputDeviceSettings::UpdateTouchpadSettings(
@@ -52,9 +55,8 @@ void FakeInputDeviceSettings::SetNaturalScroll(bool enabled) {
   UpdateTouchpadSettings(settings);
 }
 
-void FakeInputDeviceSettings::MouseExists(
-    const DeviceExistsCallback& callback) {
-  callback.Run(mouse_exists_);
+void FakeInputDeviceSettings::MouseExists(DeviceExistsCallback callback) {
+  std::move(callback).Run(mouse_exists_);
 }
 
 void FakeInputDeviceSettings::UpdateMouseSettings(

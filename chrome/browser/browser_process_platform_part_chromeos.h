@@ -36,6 +36,10 @@ class BrowserPolicyConnector;
 class BrowserPolicyConnectorChromeOS;
 }
 
+namespace ui {
+class InputDeviceControllerClient;
+}
+
 class ScopedKeepAlive;
 
 class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
@@ -103,6 +107,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   bool IsCompatibleCrOSComponent(const std::string& name);
 
+#if defined(USE_OZONE)
+  ui::InputDeviceControllerClient* GetInputDeviceControllerClient();
+#endif
+
  private:
   void CreateProfileHelper();
 
@@ -130,6 +138,11 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   base::flat_set<std::string> compatible_cros_components_;
+
+#if defined(USE_OZONE)
+  std::unique_ptr<ui::InputDeviceControllerClient>
+      input_device_controller_client_;
+#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 
