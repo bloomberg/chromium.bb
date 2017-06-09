@@ -63,6 +63,8 @@ bool ClientCompositorFrameSink::BindToClient(
     return false;
 
   compositor_frame_sink_.Bind(std::move(compositor_frame_sink_info_));
+  compositor_frame_sink_.set_connection_error_with_reason_handler(
+      base::Bind(ClientCompositorFrameSink::OnMojoConnectionError));
   client_binding_.Bind(std::move(client_request_));
 
   if (synthetic_begin_frame_source_) {
@@ -103,6 +105,7 @@ void ClientCompositorFrameSink::SubmitCompositorFrame(
     local_surface_id_ =
         local_surface_id_provider_->GetLocalSurfaceIdForFrame(frame);
   }
+
   compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
                                                 std::move(frame));
 }
@@ -135,6 +138,14 @@ void ClientCompositorFrameSink::ReclaimResources(
 
 void ClientCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
+}
+
+// static
+void ClientCompositorFrameSink::OnMojoConnectionError(
+    uint32_t custom_reason,
+    const std::string& description) {
+  if (custom_reason)
+    DLOG(FATAL) << description;
 }
 
 }  // namespace viz

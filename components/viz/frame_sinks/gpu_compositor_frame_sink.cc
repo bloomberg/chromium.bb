@@ -44,7 +44,8 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame))) {
-    compositor_frame_sink_binding_.Close();
+    compositor_frame_sink_binding_.CloseWithReason(
+        1, "Surface invariants violation");
     OnClientConnectionLost();
   }
 }
