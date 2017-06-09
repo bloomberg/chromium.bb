@@ -75,4 +75,14 @@ inline NGExclusions& NGExclusions::operator=(const NGExclusions& other) {
   return *this;
 }
 
+bool NGExclusions::operator==(const NGExclusions& other) const {
+  if (storage.size() != other.storage.size())
+    return false;
+  for (size_t i = 0; i < storage.size(); ++i) {
+    if (*storage[i] != *other.storage[i])
+      return false;
+  }
+  return true;
+}
+
 }  // namespace blink

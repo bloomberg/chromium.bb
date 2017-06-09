@@ -133,6 +133,9 @@ class CORE_EXPORT NGConstraintSpace final
     return clearance_offset_;
   }
 
+  bool operator==(const NGConstraintSpace&) const;
+  bool operator!=(const NGConstraintSpace&) const;
+
   String ToString() const;
 
  private:

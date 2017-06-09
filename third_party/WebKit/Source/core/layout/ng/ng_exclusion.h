@@ -31,6 +31,7 @@ struct CORE_EXPORT NGExclusion {
   Type type = kExclusionTypeUndefined;
 
   bool operator==(const NGExclusion& other) const;
+  bool operator!=(const NGExclusion& other) const { return !(*this == other); }
 
   String ToString() const;
 
@@ -66,6 +67,8 @@ struct CORE_EXPORT NGExclusions {
   const NGExclusion* last_right_float;  // Owned by storage.
 
   NGExclusions& operator=(const NGExclusions& other);
+  bool operator==(const NGExclusions& other) const;
+  bool operator!=(const NGExclusions& other) const { return !(*this == other); }
 
   void Add(const NGExclusion& exclusion);
 };
