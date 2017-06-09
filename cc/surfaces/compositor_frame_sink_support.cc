@@ -181,9 +181,6 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
 void CompositorFrameSinkSupport::UpdateSurfaceReferences(
     const LocalSurfaceId& local_surface_id,
     const std::vector<SurfaceId>& active_referenced_surfaces) {
-  if (!surface_manager_->using_surface_references())
-    return;
-
   SurfaceId surface_id(frame_sink_id_, local_surface_id);
 
   const base::flat_set<SurfaceId>& existing_referenced_surfaces =
