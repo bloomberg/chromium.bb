@@ -502,8 +502,13 @@ void MediaStreamAudioProcessor::OnAec3Enable(bool enable) {
 
   apm_config.echo_canceller3.enabled = enable;
   audio_processing_->ApplyConfig(apm_config);
-  DCHECK(echo_information_);
-  echo_information_.reset(new EchoInformation());
+  if (apm_config.echo_canceller3.enabled) {
+    // Do not log any echo information when AEC3 is active, as the echo
+    // information then will not be properly updated.
+    echo_information_.reset();
+  } else {
+    echo_information_ = base::MakeUnique<EchoInformation>();
+  }
 }
 
 void MediaStreamAudioProcessor::OnIpcClosing() {
@@ -694,12 +699,18 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (echo_cancellation) {
     EnableEchoCancellation(audio_processing_.get());
 
-    // Prepare for logging echo information. If there are data remaining in
-    // |echo_information_| we simply discard it.
-    echo_information_.reset(new EchoInformation());
-
     apm_config.echo_canceller3.enabled = override_aec3_.value_or(
         base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3));
+
+    if (!apm_config.echo_canceller3.enabled) {
+      // Prepare for logging echo information. If there are data remaining in
+      // |echo_information_| we simply discard it.
+      echo_information_ = base::MakeUnique<EchoInformation>();
+    } else {
+      // Do not log any echo information when AEC3 is active, as the echo
+      // information then will not be properly updated.
+      echo_information_.reset();
+    }
   } else {
     apm_config.echo_canceller3.enabled = false;
   }
