@@ -200,7 +200,7 @@ public class EditorDialog
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dismissDialog();
+                animateOutDialog();
             }
         });
 
@@ -270,17 +270,17 @@ public class EditorDialog
             if (validateForm()) {
                 if (mEditorModel != null) mEditorModel.done();
                 mEditorModel = null;
-                dismissDialog();
+                animateOutDialog();
                 return;
             }
 
             if (mObserverForTest != null) mObserverForTest.onPaymentRequestEditorValidationError();
         } else if (view.getId() == R.id.payments_edit_cancel_button) {
-            dismissDialog();
+            animateOutDialog();
         }
     }
 
-    private void dismissDialog() {
+    private void animateOutDialog() {
         if (mDialogInOutAnimator != null || !isShowing()) return;
 
         Animator dropDown =
