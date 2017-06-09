@@ -156,7 +156,7 @@ namespace safe_browsing {
 const char kSwitchForceScoutGroup[] = "force-scout-group";
 
 const base::Feature kCanShowScoutOptIn{"CanShowScoutOptIn",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOnlyShowScoutOptIn{"OnlyShowScoutOptIn",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

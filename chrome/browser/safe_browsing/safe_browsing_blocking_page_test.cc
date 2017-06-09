@@ -1251,8 +1251,12 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   if (expect_threat_details)
     SetReportSentCallback(threat_report_sent_runner->QuitClosure());
 
+  // Turn on both SBER and Scout prefs so we're independent of the Scout
+  // rollout.
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSafeBrowsingExtendedReportingEnabled, true);  // set up SBER
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingScoutReportingEnabled, true);
   GURL url = SetupWarningAndNavigate(browser());            // not incognito
   EXPECT_TRUE(hit_report_sent());
 }
