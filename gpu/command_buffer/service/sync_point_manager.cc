@@ -216,12 +216,8 @@ bool SyncPointClientState::Wait(const SyncToken& sync_token,
   // Validate that this Wait call is between BeginProcessingOrderNumber() and
   // FinishProcessingOrderNumber(), or else we may deadlock.
   DCHECK(order_data_->IsProcessingOrderNumber());
-  if (sync_token.namespace_id() == namespace_id_ &&
-      sync_token.command_buffer_id() == command_buffer_id_) {
-    return false;
-  }
-  uint32_t wait_order_number = order_data_->current_order_num();
-  return sync_point_manager_->Wait(sync_token, wait_order_number, callback);
+  return sync_point_manager_->Wait(sync_token, order_data_->sequence_id(),
+                                   order_data_->current_order_num(), callback);
 }
 
 bool SyncPointClientState::WaitNonThreadSafe(
@@ -418,8 +414,13 @@ uint32_t SyncPointManager::GetUnprocessedOrderNum() const {
 }
 
 bool SyncPointManager::Wait(const SyncToken& sync_token,
+                            SequenceId sequence_id,
                             uint32_t wait_order_num,
                             const base::Closure& callback) {
+  // Waits on the same sequence can cause deadlocks.
+  if (sequence_id == GetSyncTokenReleaseSequenceId(sync_token))
+    return false;
+
   scoped_refptr<SyncPointClientState> release_state = GetSyncPointClientState(
       sync_token.namespace_id(), sync_token.command_buffer_id());
   if (release_state &&
@@ -427,16 +428,18 @@ bool SyncPointManager::Wait(const SyncToken& sync_token,
                                     callback)) {
     return true;
   }
+
   // Do not run callback if wait is invalid.
   return false;
 }
 
 bool SyncPointManager::WaitNonThreadSafe(
     const SyncToken& sync_token,
+    SequenceId sequence_id,
     uint32_t wait_order_num,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::Closure& callback) {
-  return Wait(sync_token, wait_order_num,
+  return Wait(sync_token, sequence_id, wait_order_num,
               base::Bind(&RunOnThread, task_runner, callback));
 }
 
@@ -444,8 +447,9 @@ bool SyncPointManager::WaitOutOfOrder(const SyncToken& trusted_sync_token,
                                       const base::Closure& callback) {
   // No order number associated with the current execution context, using
   // UINT32_MAX will just assume the release is in the SyncPointClientState's
-  // order numbers to be executed.
-  return Wait(trusted_sync_token, UINT32_MAX, callback);
+  // order numbers to be executed. Null sequence id will be ignored for the
+  // deadlock early out check.
+  return Wait(trusted_sync_token, SequenceId(), UINT32_MAX, callback);
 }
 
 bool SyncPointManager::WaitOutOfOrderNonThreadSafe(

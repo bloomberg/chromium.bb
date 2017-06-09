@@ -340,7 +340,7 @@ void Scheduler::ScheduleTask(SequenceId sequence_id,
     if (!release_sequence)
       continue;
     if (sync_point_manager_->Wait(
-            sync_token, order_num,
+            sync_token, sequence_id, order_num,
             base::Bind(&Scheduler::SyncTokenFenceReleased,
                        weak_factory_.GetWeakPtr(), sync_token, order_num,
                        release_id, sequence_id))) {

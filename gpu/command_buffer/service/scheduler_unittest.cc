@@ -385,5 +385,32 @@ TEST_F(SchedulerTest, ReentrantEnableSequenceShouldNotDeadlock) {
   release_state2->Destroy();
 }
 
+TEST_F(SchedulerTest, WaitOnSelfShouldNotBlockSequence) {
+  SequenceId sequence_id =
+      scheduler()->CreateSequence(SchedulingPriority::kHigh);
+  CommandBufferNamespace namespace_id = CommandBufferNamespace::GPU_IO;
+
+  CommandBufferId command_buffer_id = CommandBufferId::FromUnsafeValue(1);
+  scoped_refptr<SyncPointClientState> release_state =
+      sync_point_manager()->CreateSyncPointClientState(
+          namespace_id, command_buffer_id, sequence_id);
+
+  // Dummy order number to avoid the wait_order_num <= processed_order_num + 1
+  // check in SyncPointOrderData::ValidateReleaseOrderNum.
+  sync_point_manager()->GenerateOrderNumber();
+
+  uint64_t release = 1;
+  SyncToken sync_token(namespace_id, 0 /* extra_data_field */,
+                       command_buffer_id, release);
+  bool ran = false;
+  scheduler()->ScheduleTask(sequence_id, GetClosure([&]() { ran = true; }),
+                            {sync_token});
+  task_runner()->RunPendingTasks();
+  EXPECT_TRUE(ran);
+  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(sync_token));
+
+  release_state->Destroy();
+}
+
 }  // namespace
 }  // namespace gpu
