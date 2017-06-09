@@ -77,6 +77,10 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   return self.model->GetEntryByURL(readingListItem.url);
 }
 
+- (void)markEntryRead:(const GURL&)URL {
+  self.model->SetReadStatus(URL, true);
+}
+
 #pragma mark - ReadingListDataSource
 
 - (BOOL)isEntryRead:(CollectionViewItem*)item {
@@ -98,16 +102,21 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   self.dataSink = nil;
 }
 
-- (void)setReadStatus:(BOOL)read forURL:(const GURL&)URL {
-  self.model->SetReadStatus(URL, read);
+- (void)setReadStatus:(BOOL)read forItem:(CollectionViewItem*)item {
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
+  self.model->SetReadStatus(readingListItem.url, read);
 }
 
 - (const ReadingListEntry*)entryWithURL:(const GURL&)URL {
   return self.model->GetEntryByURL(URL);
 }
 
-- (void)removeEntryWithURL:(const GURL&)URL {
-  self.model->RemoveEntryByURL(URL);
+- (void)removeEntryFromItem:(CollectionViewItem*)item {
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
+  [self logDeletionOfItem:readingListItem];
+  self.model->RemoveEntryByURL(readingListItem.url);
 }
 
 - (void)fillReadItems:(NSMutableArray<ReadingListCollectionViewItem*>*)readArray
@@ -324,6 +333,33 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   }
   [self.dataSink itemsHaveChanged:itemsToReconfigure];
   return NO;
+}
+
+// Logs the deletions histograms for the entry associated with |item|.
+- (void)logDeletionOfItem:(CollectionViewItem*)item {
+  const ReadingListEntry* entry = [self entryFromItem:item];
+
+  if (!entry)
+    return;
+
+  int64_t firstRead = entry->FirstReadTime();
+  if (firstRead > 0) {
+    // Log 0 if the entry has never been read.
+    firstRead = (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds() -
+                firstRead;
+    // Convert it to hours.
+    firstRead = firstRead / base::Time::kMicrosecondsPerHour;
+  }
+  UMA_HISTOGRAM_COUNTS_10000("ReadingList.FirstReadAgeOnDeletion", firstRead);
+
+  int64_t age = (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds() -
+                entry->CreationTime();
+  // Convert it to hours.
+  age = age / base::Time::kMicrosecondsPerHour;
+  if (entry->IsRead())
+    UMA_HISTOGRAM_COUNTS_10000("ReadingList.Read.AgeOnDeletion", age);
+  else
+    UMA_HISTOGRAM_COUNTS_10000("ReadingList.Unread.AgeOnDeletion", age);
 }
 
 @end

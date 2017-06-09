@@ -7,8 +7,6 @@
 
 #include <memory>
 
-class GURL;
-class ReadingListEntry;
 @class CollectionViewItem;
 @class ReadingListCollectionViewItem;
 @protocol ReadingListDataSink;
@@ -31,11 +29,11 @@ class ReadingListEntry;
 // Mark all entries as seen and stop sending updates to the data sink.
 - (void)dataSinkWillBeDismissed;
 
-// Set the read status of the entry identified with |URL|.
-- (void)setReadStatus:(BOOL)read forURL:(const GURL&)URL;
+// Set the read status of the entry associated with |item|.
+- (void)setReadStatus:(BOOL)read forItem:(nonnull CollectionViewItem*)item;
 
-// Removes the entry associated with |URL|.
-- (void)removeEntryWithURL:(const GURL&)URL;
+// Removes the entry associated with |item| and logs the deletion.
+- (void)removeEntryFromItem:(nonnull CollectionViewItem*)item;
 
 // Fills the |readArray| and |unreadArray| with the corresponding items from the
 // model. The items are sorted most recent first.
@@ -43,9 +41,6 @@ class ReadingListEntry;
             (nullable NSMutableArray<ReadingListCollectionViewItem*>*)readArray
           unreadItems:(nullable NSMutableArray<ReadingListCollectionViewItem*>*)
                           unreadArray;
-
-// TODO(crbug.com/721758): Return ReadingListItem directly.
-- (const ReadingListEntry* _Nullable)entryWithURL:(const GURL&)URL;
 
 // Fetches the |faviconURL| of this |item|, notifies the data sink when
 // receiving the favicon.
