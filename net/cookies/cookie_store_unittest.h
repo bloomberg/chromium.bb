@@ -587,12 +587,21 @@ TYPED_TEST_P(CookieStoreTest, DomainTest) {
 // IE and Safari do not. Assert the expected policy here.
 TYPED_TEST_P(CookieStoreTest, DomainWithTrailingDotTest) {
   CookieStore* cs = this->GetCookieStore();
-  EXPECT_FALSE(this->SetCookie(cs, this->http_www_google_.url(),
-                               "a=1; domain=.www.google.com."));
-  EXPECT_FALSE(this->SetCookie(cs, this->http_www_google_.url(),
-                               "b=2; domain=.www.google.com.."));
-  this->MatchCookieLines(std::string(),
-                         this->GetCookies(cs, this->http_www_google_.url()));
+  if (TypeParam::preserves_trailing_dots) {
+    EXPECT_FALSE(this->SetCookie(cs, this->http_www_google_.url(),
+                                 "a=1; domain=.www.google.izzle."));
+    EXPECT_FALSE(this->SetCookie(cs, this->http_www_google_.url(),
+                                 "b=2; domain=.www.google.izzle.."));
+    this->MatchCookieLines(std::string(),
+                           this->GetCookies(cs, this->http_www_google_.url()));
+  } else {
+    EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(),
+                                "a=1; domain=.www.google.izzle."));
+    EXPECT_FALSE(this->SetCookie(cs, this->http_www_google_.url(),
+                                 "b=2; domain=.www.google.izzle.."));
+    this->MatchCookieLines("a=1",
+                           this->GetCookies(cs, this->http_www_google_.url()));
+  }
 }
 
 // Test that cookies can bet set on higher level domains.
