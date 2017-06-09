@@ -84,9 +84,13 @@ public class LocationProviderGmsCore implements ConnectionCallbacks, OnConnectio
             // Request updates on UI Thread replicating LocationProviderAndroid's behaviour.
             mLocationProviderApi.requestLocationUpdates(
                     mGoogleApiClient, mLocationRequest, this, ThreadUtils.getUiThreadLooper());
-        } catch (IllegalStateException e) {
-            // Happens "If this method is executed in a thread that has not called Looper.prepare()"
-            Log.e(TAG, "Unexpected exception " + e);
+        } catch (IllegalStateException | SecurityException e) {
+            // IllegalStateException is thrown "If this method is executed in a thread that has not
+            // called Looper.prepare()". SecurityException is thrown if there is no permission, see
+            // https://crbug.com/731271.
+            Log.e(TAG, " mLocationProviderApi.requestLocationUpdates() " + e);
+            LocationProviderAdapter.newErrorAvailable(
+                    "Failed to request location updates: " + e.toString());
             assert false;
         }
     }
