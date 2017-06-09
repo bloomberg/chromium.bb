@@ -564,14 +564,6 @@ VisiblePosition EndOfBlock(const VisiblePosition& visible_position,
                    : VisiblePosition();
 }
 
-bool InSameBlock(const VisiblePosition& a, const VisiblePosition& b) {
-  DCHECK(a.IsValid()) << a;
-  DCHECK(b.IsValid()) << b;
-  return !a.IsNull() &&
-         EnclosingBlock(a.DeepEquivalent().ComputeContainerNode()) ==
-             EnclosingBlock(b.DeepEquivalent().ComputeContainerNode());
-}
-
 bool IsStartOfBlock(const VisiblePosition& pos) {
   DCHECK(pos.IsValid()) << pos;
   return pos.IsNotNull() &&

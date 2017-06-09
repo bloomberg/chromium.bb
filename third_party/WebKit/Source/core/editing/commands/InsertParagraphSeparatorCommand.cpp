@@ -61,6 +61,14 @@ static Element* HighestVisuallyEquivalentDivBelowRoot(Element* start_block) {
   return cur_block;
 }
 
+static bool InSameBlock(const VisiblePosition& a, const VisiblePosition& b) {
+  DCHECK(a.IsValid()) << a;
+  DCHECK(b.IsValid()) << b;
+  return !a.IsNull() &&
+         EnclosingBlock(a.DeepEquivalent().ComputeContainerNode()) ==
+             EnclosingBlock(b.DeepEquivalent().ComputeContainerNode());
+}
+
 InsertParagraphSeparatorCommand::InsertParagraphSeparatorCommand(
     Document& document,
     bool must_use_default_paragraph_element,
