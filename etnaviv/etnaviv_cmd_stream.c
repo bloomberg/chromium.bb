@@ -203,14 +203,8 @@ static void flush(struct etna_cmd_stream *stream, int in_fence_fd,
 	if (out_fence_fd)
 		req.flags |= ETNA_SUBMIT_FENCE_FD_OUT;
 
-	/*
-	 * Pass the complete submit structure only if flags are set. Otherwise,
-	 * only pass the fields up to, but not including the flags field for
-	 * backwards compatiblity with older kernels.
-	 */
 	ret = drmCommandWriteRead(gpu->dev->fd, DRM_ETNAVIV_GEM_SUBMIT,
-			&req, req.flags ? sizeof(req) :
-			offsetof(struct drm_etnaviv_gem_submit, flags));
+			&req, sizeof(req));
 
 	if (ret)
 		ERROR_MSG("submit failed: %d (%s)", ret, strerror(errno));
