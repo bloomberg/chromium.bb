@@ -20,6 +20,7 @@ class Label;
 }  // namespace views
 
 namespace ash {
+class ImeController;
 class ImeListView;
 
 // A button in the tray which displays the short name of the currently-activated
@@ -94,6 +95,8 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
 
   // Disables the virtual keyboard.
   void DisableVirtualKeyboard();
+
+  ImeController* ime_controller_;
 
   // Bubble for default and detailed views.
   std::unique_ptr<TrayBubbleWrapper> bubble_;

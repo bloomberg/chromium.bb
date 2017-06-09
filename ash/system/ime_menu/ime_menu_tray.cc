@@ -6,6 +6,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_constants.h"
+#include "ash/ime/ime_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -15,7 +16,6 @@
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
@@ -279,12 +279,14 @@ class ImeMenuListView : public ImeListView {
 
 ImeMenuTray::ImeMenuTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
+      ime_controller_(Shell::Get()->ime_controller()),
       label_(new ImeMenuLabel()),
       show_keyboard_(false),
       force_show_keyboard_(false),
       keyboard_suppressed_(false),
       show_bubble_after_keyboard_hidden_(false),
       weak_ptr_factory_(this) {
+  DCHECK(ime_controller_);
   SetInkDropMode(InkDropMode::ON);
   SetupLabelForTray(label_);
   label_->SetElideBehavior(gfx::TRUNCATE);
@@ -443,11 +445,9 @@ bool ImeMenuTray::PerformAction(const ui::Event& event) {
 void ImeMenuTray::OnIMERefresh() {
   UpdateTrayLabel();
   if (bubble_ && ime_list_view_) {
-    SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
-    IMEInfoList list;
-    delegate->GetAvailableIMEList(&list);
-    IMEPropertyInfoList property_list;
-    delegate->GetCurrentIMEProperties(&property_list);
+    std::vector<IMEInfo> list = ime_controller_->GetAvailableImes();
+    IMEPropertyInfoList property_list =
+        ime_controller_->GetCurrentImeProperties();
     ime_list_view_->Update(list, property_list, false,
                            ImeListView::SHOW_SINGLE_IME);
   }
@@ -534,7 +534,7 @@ void ImeMenuTray::OnKeyboardSuppressionChanged(bool suppressed) {
 }
 
 void ImeMenuTray::UpdateTrayLabel() {
-  Shell::Get()->system_tray_delegate()->GetCurrentIME(&current_ime_);
+  current_ime_ = ime_controller_->GetCurrentIme();
 
   // Updates the tray label based on the current input method.
   if (current_ime_.third_party)

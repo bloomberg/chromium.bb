@@ -6,6 +6,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
+#include "ash/ime/ime_controller.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"
@@ -16,6 +17,31 @@
 #include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
+namespace {
+
+class TestImeController : public ImeController {
+ public:
+  TestImeController() = default;
+  ~TestImeController() override = default;
+
+  // ImeController:
+  std::vector<IMEPropertyInfo> GetCurrentImeProperties() const override {
+    return current_ime_properties_;
+  }
+  std::vector<IMEInfo> GetAvailableImes() const override {
+    return available_imes_;
+  }
+  bool IsImeManaged() const override { return is_ime_managed_; }
+
+  std::vector<IMEPropertyInfo> current_ime_properties_;
+  std::vector<IMEInfo> available_imes_;
+  bool is_ime_managed_ = false;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestImeController);
+};
+
+}  // namespace
 
 class TrayIMETest : public test::AshTestBase {
  public:
@@ -30,15 +56,18 @@ class TrayIMETest : public test::AshTestBase {
   // is not created in ash tests.
   void SetAccessibilityKeyboardEnabled(bool enabled);
 
-  // Sets the current number of active IMEs.
-  void SetIMELength(int length);
+  // Creates |count| simulated active IMEs.
+  void SetActiveImeCount(int count);
 
   // Returns the view responsible for toggling virtual keyboard.
   views::View* GetToggleView() const;
 
-  // Sets the managed IMEs tooltip message (and thus also if IMEs are managed =
-  // non-empty or not = empty)
-  void SetManagedMessage(base::string16 managed_message);
+  // Simulates IME being managed by policy.
+  void SetImeManaged(bool managed);
+
+  views::View* GetImeManagedIcon();
+
+  void AddPropertyToCurrentIme(IMEPropertyInfo property);
 
   void SuppressKeyboard();
   void RestoreKeyboard();
@@ -48,6 +77,7 @@ class TrayIMETest : public test::AshTestBase {
   void TearDown() override;
 
  private:
+  TestImeController test_ime_controller_;
   std::unique_ptr<TrayIME> tray_;
   std::unique_ptr<views::View> default_view_;
   std::unique_ptr<views::View> detailed_view_;
@@ -68,13 +98,13 @@ void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
       notification);
 }
 
-void TrayIMETest::SetIMELength(int length) {
-  tray_->ime_list_.clear();
+void TrayIMETest::SetActiveImeCount(int count) {
+  test_ime_controller_.available_imes_.clear();
   IMEInfo ime;
-  for (int i = 0; i < length; i++) {
-    tray_->ime_list_.push_back(ime);
+  for (int i = 0; i < count; i++) {
+    test_ime_controller_.available_imes_.push_back(ime);
   }
-  tray_->Update();
+  tray_->OnIMERefresh();
 }
 
 views::View* TrayIMETest::GetToggleView() const {
@@ -82,9 +112,18 @@ views::View* TrayIMETest::GetToggleView() const {
   return test_api.GetToggleView();
 }
 
-void TrayIMETest::SetManagedMessage(base::string16 managed_message) {
-  tray_->ime_managed_message_ = managed_message;
-  tray_->Update();
+void TrayIMETest::SetImeManaged(bool managed) {
+  test_ime_controller_.is_ime_managed_ = true;
+  tray_->OnIMERefresh();
+}
+
+views::View* TrayIMETest::GetImeManagedIcon() {
+  return tray_->GetControlledSettingIconForTesting();
+}
+
+void TrayIMETest::AddPropertyToCurrentIme(IMEPropertyInfo property) {
+  test_ime_controller_.current_ime_properties_.push_back(property);
+  tray_->OnIMERefresh();
 }
 
 void TrayIMETest::SuppressKeyboard() {
@@ -120,6 +159,7 @@ void TrayIMETest::RestoreKeyboard() {
 void TrayIMETest::SetUp() {
   test::AshTestBase::SetUp();
   tray_.reset(new TrayIME(GetPrimarySystemTray()));
+  tray_->ime_controller_ = &test_ime_controller_;
   default_view_.reset(tray_->CreateDefaultView(LoginStatus::USER));
   detailed_view_.reset(tray_->CreateDetailedView(LoginStatus::USER));
 }
@@ -137,24 +177,55 @@ void TrayIMETest::TearDown() {
 // Tests that if the keyboard is not suppressed the default view is hidden
 // if less than 2 IMEs are present.
 TEST_F(TrayIMETest, HiddenWithNoIMEs) {
-  SetIMELength(0);
+  SetActiveImeCount(0);
   EXPECT_FALSE(default_view()->visible());
-  SetIMELength(1);
+  SetActiveImeCount(1);
   EXPECT_FALSE(default_view()->visible());
-  SetIMELength(2);
+  SetActiveImeCount(2);
   EXPECT_TRUE(default_view()->visible());
 }
 
 // Tests that if IMEs are managed, the default view is displayed even for a
 // single IME.
 TEST_F(TrayIMETest, ShownWithSingleIMEWhenManaged) {
-  SetManagedMessage(base::ASCIIToUTF16("managed"));
-  SetIMELength(0);
+  SetImeManaged(true);
+  SetActiveImeCount(0);
   EXPECT_FALSE(default_view()->visible());
-  SetIMELength(1);
+  SetActiveImeCount(1);
   EXPECT_TRUE(default_view()->visible());
-  SetIMELength(2);
+  SetActiveImeCount(2);
   EXPECT_TRUE(default_view()->visible());
+}
+
+// Tests that if an IME has multiple properties the default view is
+// displayed even for a single IME.
+TEST_F(TrayIMETest, ShownWithSingleImeWithProperties) {
+  SetActiveImeCount(1);
+  EXPECT_FALSE(default_view()->visible());
+
+  IMEPropertyInfo property1;
+  AddPropertyToCurrentIme(property1);
+  EXPECT_FALSE(default_view()->visible());
+
+  IMEPropertyInfo property2;
+  AddPropertyToCurrentIme(property2);
+  EXPECT_TRUE(default_view()->visible());
+}
+
+// Tests that when IMEs are managed an icon appears in the tray with an
+// appropriate tooltip.
+TEST_F(TrayIMETest, ImeManagedIcon) {
+  SetActiveImeCount(1);
+  EXPECT_FALSE(GetImeManagedIcon());
+
+  SetImeManaged(true);
+  views::View* icon = GetImeManagedIcon();
+  ASSERT_TRUE(icon);
+  base::string16 tooltip;
+  icon->GetTooltipText(gfx::Point(), &tooltip);
+  EXPECT_EQ(
+      base::ASCIIToUTF16("Input methods are configured by your administrator."),
+      tooltip);
 }
 
 // Tests that if no IMEs are present the default view is hidden when a11y is
@@ -164,7 +235,7 @@ TEST_F(TrayIMETest, HidesOnA11yEnabled) {
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
-  SetIMELength(0);
+  SetActiveImeCount(0);
   SuppressKeyboard();
   EXPECT_TRUE(default_view()->visible());
   // Enable a11y keyboard.
@@ -182,7 +253,7 @@ TEST_F(TrayIMETest, PerformActionOnDetailedView) {
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
-  SetIMELength(0);
+  SetActiveImeCount(0);
   SuppressKeyboard();
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
   views::View* toggle = GetToggleView();

@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility_delegate.h"
+#include "ash/ime/ime_controller.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/status_area_widget.h"
@@ -13,7 +14,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -27,15 +27,42 @@
 using base::UTF8ToUTF16;
 
 namespace ash {
+namespace {
+
+class TestImeController : public ImeController {
+ public:
+  TestImeController() = default;
+  ~TestImeController() override = default;
+
+  // ImeController:
+  IMEInfo GetCurrentIme() const override { return current_ime_; }
+  std::vector<IMEInfo> GetAvailableImes() const override {
+    return available_imes_;
+  }
+
+  IMEInfo current_ime_;
+  std::vector<IMEInfo> available_imes_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestImeController);
+};
 
 ImeMenuTray* GetTray() {
   return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->ime_menu_tray();
 }
 
+}  // namespace
+
 class ImeMenuTrayTest : public test::AshTestBase {
  public:
   ImeMenuTrayTest() {}
   ~ImeMenuTrayTest() override {}
+
+  // test::AshTestBase:
+  void SetUp() override {
+    test::AshTestBase::SetUp();
+    GetTray()->ime_controller_ = &test_ime_controller_;
+  }
 
  protected:
   // Returns true if the IME menu tray is visible.
@@ -50,13 +77,12 @@ class ImeMenuTrayTest : public test::AshTestBase {
   // Returns true if the IME menu bubble has been shown.
   bool IsBubbleShown() { return GetTray()->IsImeMenuBubbleShown(); }
 
-  // Returns true if the IME menu list has been updated with the right IME list.
-  bool IsTrayImeListValid(const std::vector<IMEInfo>& expected_imes,
+  // Verifies the IME menu list has been updated with the right IME list.
+  void ExpectValidImeList(const std::vector<IMEInfo>& expected_imes,
                           const IMEInfo& expected_current_ime) {
     const std::map<views::View*, std::string>& ime_map =
         ImeListViewTestApi(GetTray()->ime_list_view_).ime_map();
-    if (ime_map.size() != expected_imes.size())
-      return false;
+    EXPECT_EQ(expected_imes.size(), ime_map.size());
 
     std::vector<std::string> expected_ime_ids;
     for (const auto& ime : expected_imes) {
@@ -64,22 +90,16 @@ class ImeMenuTrayTest : public test::AshTestBase {
     }
     for (const auto& ime : ime_map) {
       // Tests that all the IMEs on the view is in the list of selected IMEs.
-      if (std::find(expected_ime_ids.begin(), expected_ime_ids.end(),
-                    ime.second) == expected_ime_ids.end()) {
-        return false;
-      }
+      EXPECT_TRUE(base::ContainsValue(expected_ime_ids, ime.second));
 
       // Tests that the checked IME is the current IME.
       ui::AXNodeData node_data;
       ime.first->GetAccessibleNodeData(&node_data);
       const auto checked_state = static_cast<ui::AXCheckedState>(
           node_data.GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
-      if (checked_state == ui::AX_CHECKED_STATE_TRUE) {
-        if (ime.second != expected_current_ime.id)
-          return false;
-      }
+      if (checked_state == ui::AX_CHECKED_STATE_TRUE)
+        EXPECT_EQ(expected_current_ime.id, ime.second);
     }
-    return true;
   }
 
   // Focuses in the given type of input context.
@@ -89,7 +109,15 @@ class ImeMenuTrayTest : public test::AshTestBase {
     ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
 
+  void SetCurrentIme(IMEInfo ime) { test_ime_controller_.current_ime_ = ime; }
+
+  void SetAvailableImes(const std::vector<IMEInfo>& imes) {
+    test_ime_controller_.available_imes_ = imes;
+  }
+
  private:
+  TestImeController test_ime_controller_;
+
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTrayTest);
 };
 
@@ -118,7 +146,7 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
   info1.short_name = UTF8ToUTF16("US");
   info1.third_party = false;
   info1.selected = true;
-  GetSystemTrayDelegate()->SetCurrentIME(info1);
+  SetCurrentIme(info1);
   Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
   EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
 
@@ -130,7 +158,7 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
   info2.short_name = UTF8ToUTF16("UK");
   info2.third_party = true;
   info2.selected = true;
-  GetSystemTrayDelegate()->SetCurrentIME(info2);
+  SetCurrentIme(info2);
   Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
   EXPECT_EQ(UTF8ToUTF16("UK*"), GetTrayText());
 }
@@ -206,19 +234,19 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
 
   std::vector<IMEInfo> ime_info_list{info1, info2, info3};
 
-  GetSystemTrayDelegate()->SetAvailableIMEList(ime_info_list);
-  GetSystemTrayDelegate()->SetCurrentIME(info1);
+  SetAvailableImes(ime_info_list);
+  SetCurrentIme(info1);
   Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
   EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
-  EXPECT_TRUE(IsTrayImeListValid(ime_info_list, info1));
+  ExpectValidImeList(ime_info_list, info1);
 
   ime_info_list[0].selected = false;
   ime_info_list[2].selected = true;
-  GetSystemTrayDelegate()->SetAvailableIMEList(ime_info_list);
-  GetSystemTrayDelegate()->SetCurrentIME(info3);
+  SetAvailableImes(ime_info_list);
+  SetCurrentIme(info3);
   Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
   EXPECT_EQ(UTF8ToUTF16("拼"), GetTrayText());
-  EXPECT_TRUE(IsTrayImeListValid(ime_info_list, info3));
+  ExpectValidImeList(ime_info_list, info3);
 
   // Closes the menu before quitting.
   GetTray()->PerformAction(tap);

@@ -19,7 +19,6 @@
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"

@@ -4,8 +4,6 @@
 
 #include "ash/system/tray/system_tray_delegate.h"
 
-#include "ash/system/tray/ime_info.h"
-
 namespace ash {
 
 SystemTrayDelegate::SystemTrayDelegate() = default;
@@ -15,16 +13,6 @@ SystemTrayDelegate::~SystemTrayDelegate() = default;
 void SystemTrayDelegate::Initialize() {}
 
 void SystemTrayDelegate::ShowUserLogin() {}
-
-void SystemTrayDelegate::GetCurrentIME(IMEInfo* info) {}
-
-void SystemTrayDelegate::GetAvailableIMEList(IMEInfoList* list) {}
-
-void SystemTrayDelegate::GetCurrentIMEProperties(IMEPropertyInfoList* list) {}
-
-base::string16 SystemTrayDelegate::GetIMEManagedMessage() {
-  return base::string16();
-}
 
 NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
     const {

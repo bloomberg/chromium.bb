@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/background/ash_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -611,6 +612,10 @@ ChromeShellDelegate::CreatePaletteDelegate() {
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
   return chromeos::CreateSystemTrayDelegate();
+}
+
+ash::ImeController* ChromeShellDelegate::GetImeController() {
+  return chromeos::input_method::InputMethodManagerImpl::Get();
 }
 
 std::unique_ptr<ash::WallpaperDelegate>

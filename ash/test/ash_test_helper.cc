@@ -24,7 +24,6 @@
 #include "ash/test/display_configuration_controller_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"

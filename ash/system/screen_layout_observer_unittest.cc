@@ -9,7 +9,6 @@
 #include "ash/system/devicetype_utils.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
