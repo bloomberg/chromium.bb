@@ -29,6 +29,7 @@ class SharedResourcesDataSource : public URLDataSource {
       const std::string& path) const override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) const override;
+  bool IsGzipped(const std::string& path) const override;
 
  private:
   ~SharedResourcesDataSource() override;

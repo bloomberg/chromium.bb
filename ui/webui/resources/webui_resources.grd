@@ -18,7 +18,7 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_ANALYTICS_JS" file="js/analytics.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_MOJO_BINDINGS_JS"
                file="${root_gen_dir}\mojo\public\js\mojo_bindings.js"
-               flattenhtml="true" type="BINDATA" use_base_dir="false" />
+               flattenhtml="true" type="BINDATA" use_base_dir="false" compress="gzip" />
       <!-- Roboto Font. Roboto-Regular and Roboto-Light is already available on
            Android, and Roboto-Medium is not used on Android. All 6 weights of
            Roboto are available on Chrome OS.-->
