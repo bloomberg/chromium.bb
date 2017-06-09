@@ -1442,19 +1442,35 @@ static void get_filter_level_and_masks_non420(
 #endif
 
 #if CONFIG_VAR_TX
-    TX_SIZE tx_size_r, tx_size_c;
+    TX_SIZE tx_size_horz_edge, tx_size_vert_edge;
 
-    const int tx_wide =
-        AOMMIN(tx_size_wide[tx_size],
-               tx_size_wide[cm->top_txfm_context[pl][(mi_col + idx_c)
-                                                     << TX_UNIT_WIDE_LOG2]]);
-    const int tx_high = AOMMIN(
-        tx_size_high[tx_size],
-        tx_size_high[cm->left_txfm_context[pl][((mi_row + idx_r) & MAX_MIB_MASK)
+    // filt_len_vert_edge is the length of deblocking filter for a vertical edge
+    // The filter direction of a vertical edge is horizontal.
+    // Thus, filt_len_vert_edge is determined as the minimum width of the two
+    // transform block sizes on the left and right (current block) side of edge
+    const int filt_len_vert_edge = AOMMIN(
+        tx_size_wide[tx_size],
+        tx_size_wide[cm->left_txfm_context[pl][((mi_row + idx_r) & MAX_MIB_MASK)
                                                << TX_UNIT_HIGH_LOG2]]);
 
-    tx_size_c = get_sqr_tx_size(tx_wide);
-    tx_size_r = get_sqr_tx_size(tx_high);
+    // filt_len_horz_edge is the len of deblocking filter for a horizontal edge
+    // The filter direction of a horizontal edge is vertical.
+    // Thus, filt_len_horz_edge is determined as the minimum height of the two
+    // transform block sizes on the top and bottom (current block) side of edge
+    const int filt_len_horz_edge =
+        AOMMIN(tx_size_high[tx_size],
+               tx_size_high[cm->top_txfm_context[pl][(mi_col + idx_c)
+                                                     << TX_UNIT_WIDE_LOG2]]);
+
+    // transform width/height of current block
+    const int tx_wide_cur = tx_size_wide[tx_size];
+    const int tx_high_cur = tx_size_high[tx_size];
+
+    // tx_size_vert_edge is square transform size for a vertical deblocking edge
+    // It determines the type of filter applied to the vertical edge
+    // Similarly, tx_size_horz_edge is for a horizontal deblocking edge
+    tx_size_vert_edge = get_sqr_tx_size(filt_len_vert_edge);
+    tx_size_horz_edge = get_sqr_tx_size(filt_len_horz_edge);
 
     memset(cm->top_txfm_context[pl] + ((mi_col + idx_c) << TX_UNIT_WIDE_LOG2),
            tx_size, mi_size_wide[BLOCK_8X8] << TX_UNIT_WIDE_LOG2);
@@ -1462,28 +1478,32 @@ static void get_filter_level_and_masks_non420(
                (((mi_row + idx_r) & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2),
            tx_size, mi_size_high[BLOCK_8X8] << TX_UNIT_HIGH_LOG2);
 #else
-    TX_SIZE tx_size_c = txsize_horz_map[tx_size];
-    TX_SIZE tx_size_r = txsize_vert_map[tx_size];
+    // The length (or equally the square tx size) of deblocking filter is only
+    // determined by
+    // a) current block's width for a vertical deblocking edge
+    // b) current block's height for a horizontal deblocking edge
+    TX_SIZE tx_size_vert_edge = txsize_horz_map[tx_size];
+    TX_SIZE tx_size_horz_edge = txsize_vert_map[tx_size];
     (void)pl;
 #endif  // CONFIG_VAR_TX
 
-    if (tx_size_c == TX_32X32)
+    if (tx_size_vert_edge == TX_32X32)
       tx_size_mask = 3;
-    else if (tx_size_c == TX_16X16)
+    else if (tx_size_vert_edge == TX_16X16)
       tx_size_mask = 1;
     else
       tx_size_mask = 0;
 
     // Build masks based on the transform size of each block
     // handle vertical mask
-    if (tx_size_c == TX_32X32) {
+    if (tx_size_vert_edge == TX_32X32) {
       if (!skip_this_c && (c_step & tx_size_mask) == 0) {
         if (!skip_border_4x4_c)
           col_masks.m16x16 |= col_mask;
         else
           col_masks.m8x8 |= col_mask;
       }
-    } else if (tx_size_c == TX_16X16) {
+    } else if (tx_size_vert_edge == TX_16X16) {
       if (!skip_this_c && (c_step & tx_size_mask) == 0) {
         if (!skip_border_4x4_c)
           col_masks.m16x16 |= col_mask;
@@ -1493,33 +1513,38 @@ static void get_filter_level_and_masks_non420(
     } else {
       // force 8x8 filtering on 32x32 boundaries
       if (!skip_this_c && (c_step & tx_size_mask) == 0) {
-        if (tx_size_c == TX_8X8 || ((c >> ss_x) & 3) == 0)
+        if (tx_size_vert_edge == TX_8X8 || (c_step & 3) == 0)
           col_masks.m8x8 |= col_mask;
         else
           col_masks.m4x4 |= col_mask;
       }
 
-      if (!skip_this && tx_size_c < TX_8X8 && !skip_border_4x4_c &&
+#if CONFIG_VAR_TX
+      if (!skip_this && tx_wide_cur < 8 && !skip_border_4x4_c &&
           (c_step & tx_size_mask) == 0)
+#else
+      if (!skip_this && tx_size_vert_edge < TX_8X8 && !skip_border_4x4_c &&
+          (c_step & tx_size_mask) == 0)
+#endif  // CONFIG_VAR_TX
         mask_4x4_int_c |= col_mask;
     }
 
-    if (tx_size_r == TX_32X32)
+    if (tx_size_horz_edge == TX_32X32)
       tx_size_mask = 3;
-    else if (tx_size_r == TX_16X16)
+    else if (tx_size_horz_edge == TX_16X16)
       tx_size_mask = 1;
     else
       tx_size_mask = 0;
 
     // set horizontal mask
-    if (tx_size_r == TX_32X32) {
+    if (tx_size_horz_edge == TX_32X32) {
       if (!skip_this_r && (r_step & tx_size_mask) == 0) {
         if (!skip_border_4x4_r)
           row_masks.m16x16 |= col_mask;
         else
           row_masks.m8x8 |= col_mask;
       }
-    } else if (tx_size_r == TX_16X16) {
+    } else if (tx_size_horz_edge == TX_16X16) {
       if (!skip_this_r && (r_step & tx_size_mask) == 0) {
         if (!skip_border_4x4_r)
           row_masks.m16x16 |= col_mask;
@@ -1529,14 +1554,19 @@ static void get_filter_level_and_masks_non420(
     } else {
       // force 8x8 filtering on 32x32 boundaries
       if (!skip_this_r && (r_step & tx_size_mask) == 0) {
-        if (tx_size_r == TX_8X8 || (r_step & 3) == 0)
+        if (tx_size_horz_edge == TX_8X8 || (r_step & 3) == 0)
           row_masks.m8x8 |= col_mask;
         else
           row_masks.m4x4 |= col_mask;
       }
 
-      if (!skip_this && tx_size_r < TX_8X8 && !skip_border_4x4_r &&
-          ((r >> ss_y) & tx_size_mask) == 0)
+#if CONFIG_VAR_TX
+      if (!skip_this && tx_high_cur < 8 && !skip_border_4x4_r &&
+          (r_step & tx_size_mask) == 0)
+#else
+      if (!skip_this && tx_size_horz_edge < TX_8X8 && !skip_border_4x4_r &&
+          (r_step & tx_size_mask) == 0)
+#endif  // CONFIG_VAR_TX
         mask_4x4_int_r |= col_mask;
     }
   }
@@ -2356,7 +2386,7 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
 #if CONFIG_VAR_TX
     for (int i = 0; i < MAX_MB_PLANE; ++i)
       memset(cm->left_txfm_context[i], TX_32X32, MAX_MIB_SIZE
-                                                     << TX_UNIT_WIDE_LOG2);
+                                                     << TX_UNIT_HIGH_LOG2);
 #endif  // CONFIG_VAR_TX
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += cm->mib_size) {
       int plane;
