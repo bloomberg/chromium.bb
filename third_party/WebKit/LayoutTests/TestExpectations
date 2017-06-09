@@ -1378,7 +1378,7 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
-crbug.com/700795 [ Mac ] inspector/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
+crbug.com/700795 inspector/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
 
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
@@ -1717,9 +1717,12 @@ crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.ht
 
 crbug.com/600248 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 crbug.com/600248 external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure ]
+crbug.com/600248 external/wpt/web-animations/interfaces/Animation/finish.html [ Pass Failure ]
 crbug.com/600248 external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Timeout ]
 crbug.com/600248 external/wpt/web-animations/animation-model/animation-types/interpolation-per-property.html [ Timeout ]
 crbug.com/600248 external/wpt/web-animations/animation-model/animation-types/addition-per-property.html [ Timeout ]
+crbug.com/600248 external/wpt/web-animations/timing-model/animations/current-time.html [ Failure ]
+crbug.com/600248 external/wpt/web-animations/timing-model/animations/set-the-animation-start-time.html [ Failure ]
 
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]

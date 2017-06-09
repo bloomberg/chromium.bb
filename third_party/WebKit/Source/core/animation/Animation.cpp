@@ -32,6 +32,7 @@
 
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorPendingAnimations.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/dom/DOMNodeIds.h"
@@ -70,6 +71,7 @@ Animation* Animation::Create(AnimationEffectReadOnly* effect,
                              AnimationTimeline* timeline) {
   if (!timeline) {
     // FIXME: Support creating animations without a timeline.
+    NOTREACHED();
     return nullptr;
   }
 
@@ -82,6 +84,28 @@ Animation* Animation::Create(AnimationEffectReadOnly* effect,
   }
 
   return animation;
+}
+
+Animation* Animation::Create(ExecutionContext* execution_context,
+                             AnimationEffectReadOnly* effect,
+                             ExceptionState& exception_state) {
+  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
+
+  Document* document = ToDocument(execution_context);
+  return Create(effect, &document->Timeline());
+}
+
+Animation* Animation::Create(ExecutionContext* execution_context,
+                             AnimationEffectReadOnly* effect,
+                             AnimationTimeline* timeline,
+                             ExceptionState& exception_state) {
+  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
+
+  if (!timeline) {
+    return Create(execution_context, effect, exception_state);
+  }
+
+  return Create(effect, timeline);
 }
 
 Animation::Animation(ExecutionContext* execution_context,

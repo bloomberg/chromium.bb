@@ -75,6 +75,16 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   };
 
   static Animation* Create(AnimationEffectReadOnly*, AnimationTimeline*);
+
+  // Web Animations API IDL constructors.
+  static Animation* Create(ExecutionContext*,
+                           AnimationEffectReadOnly*,
+                           ExceptionState&);
+  static Animation* Create(ExecutionContext*,
+                           AnimationEffectReadOnly*,
+                           AnimationTimeline*,
+                           ExceptionState&);
+
   ~Animation();
   void Dispose();
 

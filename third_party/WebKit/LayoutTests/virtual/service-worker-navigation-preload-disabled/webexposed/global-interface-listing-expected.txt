@@ -113,6 +113,32 @@ interface AnalyserNode : AudioNode
     setter maxDecibels
     setter minDecibels
     setter smoothingTimeConstant
+interface Animation : EventTarget
+    attribute @@toStringTag
+    getter currentTime
+    getter effect
+    getter finished
+    getter id
+    getter oncancel
+    getter onfinish
+    getter playState
+    getter playbackRate
+    getter ready
+    getter startTime
+    getter timeline
+    method cancel
+    method constructor
+    method finish
+    method pause
+    method play
+    method reverse
+    setter currentTime
+    setter effect
+    setter id
+    setter oncancel
+    setter onfinish
+    setter playbackRate
+    setter startTime
 interface AnimationEffectReadOnly
     attribute @@toStringTag
     getter timing

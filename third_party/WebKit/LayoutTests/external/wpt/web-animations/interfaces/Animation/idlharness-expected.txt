@@ -1,41 +1,41 @@
 This is a testharness.js-based test.
 PASS Animation interface automated IDL tests 
-FAIL Animation interface: existence and properties of interface object assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface object length assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface object name assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: existence and properties of interface prototype object assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute id assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute effect assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute timeline assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute startTime assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute currentTime assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute playbackRate assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute playState assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute ready assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute finished assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute onfinish assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: attribute oncancel assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: operation cancel() assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: operation finish() assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: operation play() assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: operation pause() assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: operation reverse() assert_own_property: self does not have own property "Animation" expected property "Animation" missing
-FAIL Animation interface: new Animation() must inherit property "id" with the proper type (0) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "effect" with the proper type (1) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "timeline" with the proper type (2) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "startTime" with the proper type (3) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "currentTime" with the proper type (4) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "playbackRate" with the proper type (5) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "playState" with the proper type (6) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "ready" with the proper type (7) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "finished" with the proper type (8) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "onfinish" with the proper type (9) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "oncancel" with the proper type (10) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "cancel" with the proper type (11) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "finish" with the proper type (12) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "play" with the proper type (13) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "pause" with the proper type (14) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
-FAIL Animation interface: new Animation() must inherit property "reverse" with the proper type (15) assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: Animation is not defined"
+PASS Animation interface: existence and properties of interface object 
+PASS Animation interface object length 
+PASS Animation interface object name 
+PASS Animation interface: existence and properties of interface prototype object 
+PASS Animation interface: existence and properties of interface prototype object's "constructor" property 
+PASS Animation interface: attribute id 
+PASS Animation interface: attribute effect 
+FAIL Animation interface: attribute timeline assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
+PASS Animation interface: attribute startTime 
+PASS Animation interface: attribute currentTime 
+PASS Animation interface: attribute playbackRate 
+PASS Animation interface: attribute playState 
+FAIL Animation interface: attribute ready Illegal invocation
+FAIL Animation interface: attribute finished Illegal invocation
+PASS Animation interface: attribute onfinish 
+PASS Animation interface: attribute oncancel 
+PASS Animation interface: operation cancel() 
+PASS Animation interface: operation finish() 
+PASS Animation interface: operation play() 
+PASS Animation interface: operation pause() 
+PASS Animation interface: operation reverse() 
+PASS Animation interface: new Animation() must inherit property "id" with the proper type (0) 
+PASS Animation interface: new Animation() must inherit property "effect" with the proper type (1) 
+PASS Animation interface: new Animation() must inherit property "timeline" with the proper type (2) 
+PASS Animation interface: new Animation() must inherit property "startTime" with the proper type (3) 
+PASS Animation interface: new Animation() must inherit property "currentTime" with the proper type (4) 
+PASS Animation interface: new Animation() must inherit property "playbackRate" with the proper type (5) 
+PASS Animation interface: new Animation() must inherit property "playState" with the proper type (6) 
+PASS Animation interface: new Animation() must inherit property "ready" with the proper type (7) 
+PASS Animation interface: new Animation() must inherit property "finished" with the proper type (8) 
+PASS Animation interface: new Animation() must inherit property "onfinish" with the proper type (9) 
+PASS Animation interface: new Animation() must inherit property "oncancel" with the proper type (10) 
+PASS Animation interface: new Animation() must inherit property "cancel" with the proper type (11) 
+PASS Animation interface: new Animation() must inherit property "finish" with the proper type (12) 
+PASS Animation interface: new Animation() must inherit property "play" with the proper type (13) 
+PASS Animation interface: new Animation() must inherit property "pause" with the proper type (14) 
+PASS Animation interface: new Animation() must inherit property "reverse" with the proper type (15) 
 Harness: the test ran to completion.
 
