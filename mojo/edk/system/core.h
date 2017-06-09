@@ -299,7 +299,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // but cannot be associated with a specific process.
   ProcessErrorCallback default_process_error_callback_;
 
-  HandleTable handles_;
+  std::unique_ptr<HandleTable> handles_;
 
   base::Lock mapping_table_lock_;  // Protects |mapping_table_|.
   MappingTable mapping_table_;

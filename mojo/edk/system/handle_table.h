@@ -10,16 +10,19 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "mojo/edk/system/dispatcher.h"
+#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
 
 namespace mojo {
 namespace edk {
 
-class HandleTable : public base::trace_event::MemoryDumpProvider {
+class MOJO_SYSTEM_IMPL_EXPORT HandleTable
+    : public base::trace_event::MemoryDumpProvider {
  public:
   HandleTable();
   ~HandleTable() override;
@@ -55,6 +58,8 @@ class HandleTable : public base::trace_event::MemoryDumpProvider {
   void GetActiveHandlesForTest(std::vector<MojoHandle> *handles);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(HandleTableTest, OnMemoryDump);
+
   // MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
