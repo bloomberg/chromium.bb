@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 112: InspectorTest.IndexedDB_callback1
+CONSOLE MESSAGE: line 124: InspectorTest.IndexedDB_callback1
 Tests Application Panel response to a main frame navigation.
 
 Initial state:
