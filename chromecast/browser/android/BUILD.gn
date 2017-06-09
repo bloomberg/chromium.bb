@@ -60,6 +60,7 @@ android_library("cast_shell_java") {
     ":cast_shell_manifest",
     "//base:base_java",
     "//chromecast/base:base_java",
+    "//components/crash/android:java",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
     "//media/base/android:media_java",
