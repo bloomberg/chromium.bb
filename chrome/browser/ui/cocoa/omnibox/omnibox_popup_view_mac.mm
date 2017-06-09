@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/feature_list.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/stl_util.h"
@@ -18,6 +19,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/toolbar/vector_icons.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -216,11 +218,27 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
 
   // Calculate the popup's position on the screen.
   NSRect popup_frame = anchor_rect_base;
+
+  bool match_omnibox_width =
+      base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown);
+
+  CGFloat table_width = match_omnibox_width
+                            ? NSWidth([field_ bounds])
+                            : NSWidth([[[field_ window] contentView] bounds]);
+  DCHECK_GT(table_width, 0.0);
+
+  NSPoint field_origin_base =
+      [field_ convertPoint:[field_ bounds].origin toView:nil];
+
   // Size to fit the matrix and shift down by the size.
   popup_frame.size.height = matrixHeight + PopupPaddingVertical() * 2.0;
   popup_frame.size.height += [OmniboxPopupTopSeparatorView preferredHeight];
   popup_frame.size.height += [OmniboxPopupBottomSeparatorView preferredHeight];
+  popup_frame.origin.x = match_omnibox_width ? field_origin_base.x : 0;
   popup_frame.origin.y -= NSHeight(popup_frame);
+
+  if (match_omnibox_width)
+    popup_frame.size.width = table_width;
 
   // Shift to screen coordinates.
   if ([controller window]) {
@@ -251,18 +269,10 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   background_rect.origin.y = NSMaxY(top_separator_frame);
   [background_view_ setFrame:background_rect];
 
-  // In Material Design, the table is the width of the window. In non-MD,
-  // calculate the width of the table based on backing out the popup's border
-  // from the width of the field.
-  CGFloat table_width = NSWidth([[[field_ window] contentView] bounds]);
-  DCHECK_GT(table_width, 0.0);
-
   // Matrix.
-  NSPoint field_origin_base =
-      [field_ convertPoint:[field_ bounds].origin toView:nil];
   NSRect matrix_frame = NSZeroRect;
   matrix_frame.origin.x = 0;
-  [matrix_ setContentLeftPadding:field_origin_base.x];
+  [matrix_ setContentLeftPadding:match_omnibox_width ? 0 : field_origin_base.x];
   matrix_frame.origin.y = PopupPaddingVertical();
   matrix_frame.size.width = table_width;
   matrix_frame.size.height = matrixHeight;
