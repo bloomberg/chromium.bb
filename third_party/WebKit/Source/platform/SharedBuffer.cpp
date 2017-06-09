@@ -140,21 +140,17 @@ void SharedBuffer::Clear() {
   buffer_.clear();
 }
 
-PassRefPtr<SharedBuffer> SharedBuffer::Copy() const {
-  RefPtr<SharedBuffer> clone(AdoptRef(new SharedBuffer));
-  clone->size_ = size_;
-  clone->buffer_.ReserveInitialCapacity(size_);
-  clone->buffer_.Append(buffer_.data(), buffer_.size());
-  if (!segments_.IsEmpty()) {
-    const char* segment = 0;
-    size_t position = buffer_.size();
-    while (size_t segment_size = GetSomeDataInternal(segment, position)) {
-      clone->buffer_.Append(segment, segment_size);
-      position += segment_size;
-    }
-    DCHECK_EQ(position, clone->size());
-  }
-  return clone.Release();
+Vector<char> SharedBuffer::Copy() const {
+  Vector<char> buffer;
+  buffer.ReserveInitialCapacity(size_);
+
+  ForEachSegment([&buffer](const char* segment, size_t segment_size,
+                           size_t segment_offset) {
+    buffer.Append(segment, segment_size);
+  });
+
+  DCHECK_EQ(buffer.size(), size_);
+  return buffer;
 }
 
 void SharedBuffer::MergeSegmentsIntoBuffer() const {

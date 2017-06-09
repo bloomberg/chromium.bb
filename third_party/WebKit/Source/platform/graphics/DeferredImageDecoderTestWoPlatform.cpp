@@ -35,11 +35,10 @@ namespace blink {
 static void MixImages(const char* file_name,
                       size_t bytes_for_first_frame,
                       size_t later_frame) {
-  RefPtr<SharedBuffer> file = ReadFile(file_name);
-  ASSERT_NE(file, nullptr);
+  const Vector<char> file = ReadFile(file_name)->Copy();
 
   RefPtr<SharedBuffer> partial_file =
-      SharedBuffer::Create(file->Data(), bytes_for_first_frame);
+      SharedBuffer::Create(file.data(), bytes_for_first_frame);
   std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::Create(
       partial_file, false, ImageDecoder::kAlphaPremultiplied,
       ColorBehavior::Ignore());
@@ -47,7 +46,7 @@ static void MixImages(const char* file_name,
   sk_sp<SkImage> partial_image = decoder->CreateFrameAtIndex(0);
 
   RefPtr<SharedBuffer> almost_complete_file =
-      SharedBuffer::Create(file->Data(), file->size() - 1);
+      SharedBuffer::Create(file.data(), file.size() - 1);
   decoder->SetData(almost_complete_file, false);
   sk_sp<SkImage> image_with_more_data =
       decoder->CreateFrameAtIndex(later_frame);

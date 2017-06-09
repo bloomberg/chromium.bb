@@ -22,12 +22,12 @@ std::unique_ptr<ImageDecoder> CreateDecoder() {
 }
 
 TEST(ICOImageDecoderTests, trunctedIco) {
-  RefPtr<SharedBuffer> data =
-      ReadFile("/LayoutTests/images/resources/png-in-ico.ico");
-  ASSERT_FALSE(data->IsEmpty());
+  const Vector<char> data =
+      ReadFile("/LayoutTests/images/resources/png-in-ico.ico")->Copy();
+  ASSERT_FALSE(data.IsEmpty());
 
   RefPtr<SharedBuffer> truncated_data =
-      SharedBuffer::Create(data->Data(), data->size() / 2);
+      SharedBuffer::Create(data.data(), data.size() / 2);
   auto decoder = CreateDecoder();
 
   decoder->SetData(truncated_data.Get(), false);
@@ -40,19 +40,19 @@ TEST(ICOImageDecoderTests, trunctedIco) {
 }
 
 TEST(ICOImageDecoderTests, errorInPngInIco) {
-  RefPtr<SharedBuffer> data =
-      ReadFile("/LayoutTests/images/resources/png-in-ico.ico");
-  ASSERT_FALSE(data->IsEmpty());
+  const Vector<char> data =
+      ReadFile("/LayoutTests/images/resources/png-in-ico.ico")->Copy();
+  ASSERT_FALSE(data.IsEmpty());
 
   // Modify the file to have a broken CRC in IHDR.
   constexpr size_t kCrcOffset = 22 + 29;
   constexpr size_t kCrcSize = 4;
   RefPtr<SharedBuffer> modified_data =
-      SharedBuffer::Create(data->Data(), kCrcOffset);
+      SharedBuffer::Create(data.data(), kCrcOffset);
   Vector<char> bad_crc(kCrcSize, 0);
   modified_data->Append(bad_crc);
-  modified_data->Append(data->Data() + kCrcOffset + kCrcSize,
-                        data->size() - kCrcOffset - kCrcSize);
+  modified_data->Append(data.data() + kCrcOffset + kCrcSize,
+                        data.size() - kCrcOffset - kCrcSize);
 
   auto decoder = CreateDecoder();
   decoder->SetData(modified_data.Get(), true);

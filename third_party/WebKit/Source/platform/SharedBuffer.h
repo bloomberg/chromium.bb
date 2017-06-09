@@ -70,6 +70,8 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 
   ~SharedBuffer();
 
+  // DEPRECATED: use a segment iterator or Copy() instead.
+  //
   // Calling this function will force internal segmented buffers to be merged
   // into a flat buffer. Use getSomeData() whenever possible for better
   // performance.
@@ -90,7 +92,9 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 
   void Clear();
 
-  PassRefPtr<SharedBuffer> Copy() const;
+  // Copies the segmented data into a contiguous buffer.  Use GetSomeData() or
+  // ForEachSegment() whenever possible, as they are cheaper.
+  Vector<char> Copy() const;
 
   // Return the number of consecutive bytes after "position". "data"
   // points to the first byte.

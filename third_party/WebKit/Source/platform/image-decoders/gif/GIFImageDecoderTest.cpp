@@ -124,15 +124,15 @@ TEST(GIFImageDecoderTest, parseAndDecode) {
 TEST(GIFImageDecoderTest, parseByteByByte) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
-  RefPtr<SharedBuffer> data = ReadFile(kLayoutTestResourcesDir, "animated.gif");
-  ASSERT_TRUE(data.Get());
+  const Vector<char> data =
+      ReadFile(kLayoutTestResourcesDir, "animated.gif")->Copy();
 
   size_t frame_count = 0;
 
   // Pass data to decoder byte by byte.
-  for (size_t length = 1; length <= data->size(); ++length) {
-    RefPtr<SharedBuffer> temp_data = SharedBuffer::Create(data->Data(), length);
-    decoder->SetData(temp_data.Get(), length == data->size());
+  for (size_t length = 1; length <= data.size(); ++length) {
+    RefPtr<SharedBuffer> temp_data = SharedBuffer::Create(data.data(), length);
+    decoder->SetData(temp_data.Get(), length == data.size());
 
     EXPECT_LE(frame_count, decoder->FrameCount());
     frame_count = decoder->FrameCount();
@@ -171,12 +171,12 @@ TEST(GIFImageDecoderTest, progressiveDecode) {
 TEST(GIFImageDecoderTest, allDataReceivedTruncation) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
-  RefPtr<SharedBuffer> data = ReadFile(kLayoutTestResourcesDir, "animated.gif");
-  ASSERT_TRUE(data.Get());
+  const Vector<char> data =
+      ReadFile(kLayoutTestResourcesDir, "animated.gif")->Copy();
 
-  ASSERT_GE(data->size(), 10u);
+  ASSERT_GE(data.size(), 10u);
   RefPtr<SharedBuffer> temp_data =
-      SharedBuffer::Create(data->Data(), data->size() - 10);
+      SharedBuffer::Create(data.data(), data.size() - 10);
   decoder->SetData(temp_data.Get(), true);
 
   EXPECT_EQ(2u, decoder->FrameCount());
@@ -205,12 +205,14 @@ TEST(GIFImageDecoderTest, frameIsComplete) {
 TEST(GIFImageDecoderTest, frameIsCompleteLoading) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
-  RefPtr<SharedBuffer> data = ReadFile(kLayoutTestResourcesDir, "animated.gif");
-  ASSERT_TRUE(data.Get());
+  RefPtr<SharedBuffer> data_buffer =
+      ReadFile(kLayoutTestResourcesDir, "animated.gif");
+  ASSERT_TRUE(data_buffer.Get());
+  const Vector<char> data = data_buffer->Copy();
 
-  ASSERT_GE(data->size(), 10u);
+  ASSERT_GE(data.size(), 10u);
   RefPtr<SharedBuffer> temp_data =
-      SharedBuffer::Create(data->Data(), data->size() - 10);
+      SharedBuffer::Create(data.data(), data.size() - 10);
   decoder->SetData(temp_data.Get(), false);
 
   EXPECT_EQ(2u, decoder->FrameCount());
@@ -218,7 +220,7 @@ TEST(GIFImageDecoderTest, frameIsCompleteLoading) {
   EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
   EXPECT_FALSE(decoder->FrameIsCompleteAtIndex(1));
 
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data_buffer.Get(), true);
   EXPECT_EQ(2u, decoder->FrameCount());
   EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(0));
   EXPECT_TRUE(decoder->FrameIsCompleteAtIndex(1));
@@ -327,18 +329,19 @@ TEST(GIFImageDecoderTest, invalidDisposalMethod) {
 }
 
 TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize) {
-  RefPtr<SharedBuffer> full_data = ReadFile(
-      kDecodersTestingDir, "first-frame-has-greater-size-than-screen-size.gif");
-  ASSERT_TRUE(full_data.Get());
+  const Vector<char> full_data =
+      ReadFile(kDecodersTestingDir,
+               "first-frame-has-greater-size-than-screen-size.gif")
+          ->Copy();
 
   std::unique_ptr<ImageDecoder> decoder;
   IntSize frame_size;
 
   // Compute hashes when the file is truncated.
-  for (size_t i = 1; i <= full_data->size(); ++i) {
+  for (size_t i = 1; i <= full_data.size(); ++i) {
     decoder = CreateDecoder();
-    RefPtr<SharedBuffer> data = SharedBuffer::Create(full_data->Data(), i);
-    decoder->SetData(data.Get(), i == full_data->size());
+    RefPtr<SharedBuffer> data = SharedBuffer::Create(full_data.data(), i);
+    decoder->SetData(data.Get(), i == full_data.size());
 
     if (decoder->IsSizeAvailable() && !frame_size.Width() &&
         !frame_size.Height()) {
@@ -357,16 +360,18 @@ TEST(GIFImageDecoderTest, verifyRepetitionCount) {
 }
 
 TEST(GIFImageDecoderTest, bitmapAlphaType) {
-  RefPtr<SharedBuffer> full_data = ReadFile(kDecodersTestingDir, "radient.gif");
-  ASSERT_TRUE(full_data.Get());
+  RefPtr<SharedBuffer> full_data_buffer =
+      ReadFile(kDecodersTestingDir, "radient.gif");
+  ASSERT_TRUE(full_data_buffer.Get());
+  const Vector<char> full_data = full_data_buffer->Copy();
 
   // Empirically chosen truncation size:
   //   a) large enough to produce a partial frame &&
   //   b) small enough to not fully decode the frame
   const size_t kTruncateSize = 800;
-  ASSERT_TRUE(kTruncateSize < full_data->size());
+  ASSERT_TRUE(kTruncateSize < full_data.size());
   RefPtr<SharedBuffer> partial_data =
-      SharedBuffer::Create(full_data->Data(), kTruncateSize);
+      SharedBuffer::Create(full_data.data(), kTruncateSize);
 
   std::unique_ptr<ImageDecoder> premul_decoder = WTF::WrapUnique(
       new GIFImageDecoder(ImageDecoder::kAlphaPremultiplied,
@@ -393,9 +398,9 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
   EXPECT_EQ(unpremul_frame->Bitmap().alphaType(), kUnpremul_SkAlphaType);
 
   // Fully decoded frame => the frame alpha type is known (opaque).
-  premul_decoder->SetData(full_data.Get(), true);
+  premul_decoder->SetData(full_data_buffer.Get(), true);
   ASSERT_TRUE(premul_decoder->FrameCount());
-  unpremul_decoder->SetData(full_data.Get(), true);
+  unpremul_decoder->SetData(full_data_buffer.Get(), true);
   ASSERT_TRUE(unpremul_decoder->FrameCount());
   premul_frame = premul_decoder->FrameBufferAtIndex(0);
   EXPECT_TRUE(premul_frame &&

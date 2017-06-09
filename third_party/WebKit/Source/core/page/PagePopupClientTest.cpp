@@ -14,9 +14,10 @@ TEST(PagePopupClientTest, AddJavaScriptString) {
   PagePopupClient::AddJavaScriptString(
       String::FromUTF8("abc\r\n'\"</script>\t\f\v\xE2\x80\xA8\xE2\x80\xA9"),
       buffer.Get());
+  const Vector<char> contiguous = buffer->Copy();
   EXPECT_EQ(
       "\"abc\\r\\n'\\\"\\x3C/script>\\u0009\\u000C\\u000B\\u2028\\u2029\"",
-      std::string(buffer->Data(), buffer->size()));
+      std::string(contiguous.data(), contiguous.size()));
 }
 
 }  // namespace blink
