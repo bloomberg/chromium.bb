@@ -284,7 +284,6 @@ VisiblePosition StartOfBlock(
 VisiblePosition EndOfBlock(
     const VisiblePosition&,
     EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
-bool InSameBlock(const VisiblePosition&, const VisiblePosition&);
 bool IsStartOfBlock(const VisiblePosition&);
 bool IsEndOfBlock(const VisiblePosition&);
 
