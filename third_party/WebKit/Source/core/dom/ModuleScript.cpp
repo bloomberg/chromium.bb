@@ -27,15 +27,40 @@ ModuleScript* ModuleScript::Create(
   // provided.
   // Note: "script's settings object" will be "modulator".
 
-  // Delegate to Modulator::compileModule to process Steps 3-6.
-  ScriptModule result = modulator->CompileModule(
-      source_text, base_url.GetString(), access_control_status, start_position);
-  // Step 6: "...return null, and abort these steps."
-  if (result.IsNull())
-    return nullptr;
+  v8::HandleScope scope(modulator->GetScriptState()->GetIsolate());
+  ExceptionState exception_state(modulator->GetScriptState()->GetIsolate(),
+                                 ExceptionState::kExecutionContext,
+                                 "ModuleScript", "Create");
 
-  return CreateInternal(source_text, modulator, result, base_url, nonce,
-                        parser_state, credentials_mode, start_position);
+  // Delegate to Modulator::CompileModule to process Steps 3-5.
+  ScriptModule result = modulator->CompileModule(
+      source_text, base_url.GetString(), access_control_status, start_position,
+      exception_state);
+
+  // CreateInternal processes Steps 7-13.
+  // [nospec] We initialize the other ModuleScript members anyway by running
+  // Steps 7-13 before Step 6. In a case that compile failed, we will
+  // immediately turn the script into errored state. Thus the members will not
+  // be used for the speced algorithms, but may be used from inspector.
+  ModuleScript* script =
+      CreateInternal(source_text, modulator, result, base_url, nonce,
+                     parser_state, credentials_mode, start_position);
+
+  // Step 6. If result is a List of errors, then:
+  if (exception_state.HadException()) {
+    DCHECK(result.IsNull());
+
+    // Step 6.1. Error script with errors[0].
+    v8::Local<v8::Value> error = exception_state.GetException();
+    exception_state.ClearException();
+    script->SetErrorAndClearRecord(
+        ScriptValue(modulator->GetScriptState(), error));
+
+    // Step 6.2. Return script.
+    return script;
+  }
+
+  return script;
 }
 
 ModuleScript* ModuleScript::CreateForTest(
@@ -61,13 +86,14 @@ ModuleScript* ModuleScript::CreateInternal(
     WebURLRequest::FetchCredentialsMode credentials_mode,
     const TextPosition& start_position) {
   // https://html.spec.whatwg.org/#creating-a-module-script
-  // Step 7. Set script's module record to result.
-  // Step 8. Set script's base URL to the script base URL provided.
-  // Step 9. Set script's cryptographic nonce to the cryptographic nonce
+  // Step 7. Set script's state to "uninstantiated".
+  // Step 8. Set script's module record to result.
+  // Step 9. Set script's base URL to the script base URL provided.
+  // Step 10. Set script's cryptographic nonce to the cryptographic nonce
   // provided.
-  // Step 10. Set script's parser state to the parser state.
-  // Step 11. Set script's credentials mode to the credentials mode provided.
-  // Step 12. Return script.
+  // Step 11. Set script's parser state to the parser state.
+  // Step 12. Set script's credentials mode to the credentials mode provided.
+  // Step 13. Return script.
   // [not specced] |source_text| is saved for CSP checks.
   ModuleScript* module_script =
       new ModuleScript(modulator, result, base_url, nonce, parser_state,

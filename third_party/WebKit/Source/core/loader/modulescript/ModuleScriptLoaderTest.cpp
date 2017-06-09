@@ -69,11 +69,13 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
                              AccessControlStatus access_control_status,
-                             const TextPosition& position) override {
+                             const TextPosition& position,
+                             ExceptionState& exception_state) override {
     ScriptState::Scope scope(script_state_.Get());
-    return ScriptModule::Compile(script_state_->GetIsolate(),
-                                 "export default 'foo';", "",
-                                 access_control_status);
+    return ScriptModule::Compile(
+        script_state_->GetIsolate(), "export default 'foo';", "",
+        access_control_status, TextPosition::MinimumPosition(),
+        exception_state);
   }
 
   DECLARE_TRACE();

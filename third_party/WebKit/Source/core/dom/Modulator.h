@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoaderClient;
@@ -107,7 +108,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual ScriptModule CompileModule(const String& script,
                                      const String& url_str,
                                      AccessControlStatus,
-                                     const TextPosition&) = 0;
+                                     const TextPosition&,
+                                     ExceptionState&) = 0;
 
   virtual ScriptValue InstantiateModule(ScriptModule) = 0;
 

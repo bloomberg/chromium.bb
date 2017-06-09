@@ -17,6 +17,8 @@
 
 namespace blink {
 
+class ExceptionState;
+
 // ScriptModule wraps a handle to a v8::Module for use in core.
 //
 // Using ScriptModules needs a ScriptState and its scope to operate in. You
@@ -28,12 +30,12 @@ class CORE_EXPORT ScriptModule final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  static ScriptModule Compile(
-      v8::Isolate*,
-      const String& source,
-      const String& file_name,
-      AccessControlStatus,
-      const TextPosition& start_position = TextPosition::MinimumPosition());
+  static ScriptModule Compile(v8::Isolate*,
+                              const String& source,
+                              const String& file_name,
+                              AccessControlStatus,
+                              const TextPosition& start_position,
+                              ExceptionState&);
 
   // TODO(kouhei): Remove copy ctor
   ScriptModule();
