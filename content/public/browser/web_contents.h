@@ -23,6 +23,7 @@
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
 #include "ipc/ipc_sender.h"
@@ -774,6 +775,11 @@ class WebContents : public PageNavigator,
   virtual void SetIsOverlayContent(bool is_overlay_content) = 0;
 
   virtual int GetCurrentlyPlayingVideoCount() = 0;
+
+  // Returns a map containing the sizes of all currently playing videos.
+  using VideoSizeMap =
+      base::flat_map<WebContentsObserver::MediaPlayerId, gfx::Size>;
+  virtual const VideoSizeMap& GetCurrentlyPlayingVideoSizes() = 0;
   virtual bool IsFullscreen() = 0;
 
   // Tells the renderer to clear the focused element (if any).

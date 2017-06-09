@@ -823,8 +823,13 @@ class CONTENT_EXPORT WebContentsImpl
   void MediaStoppedPlaying(
       const WebContentsObserver::MediaPlayerInfo& media_info,
       const WebContentsObserver::MediaPlayerId& id);
-  int GetCurrentlyPlayingVideoCount() override;
+  // This will be called before playback is started, check
+  // GetCurrentlyPlayingVideoCount if you need this when playback starts.
+  void MediaResized(const gfx::Size& size,
+                    const WebContentsObserver::MediaPlayerId& id);
 
+  int GetCurrentlyPlayingVideoCount() override;
+  const VideoSizeMap& GetCurrentlyPlayingVideoSizes() override;
   bool IsFullscreen() override;
 
   MediaWebContentsObserver* media_web_contents_observer() {
@@ -1613,6 +1618,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool showing_context_menu_;
 
   int currently_playing_video_count_ = 0;
+  VideoSizeMap cached_video_sizes_;
 
   bool has_persistent_video_ = false;
 

@@ -582,6 +582,11 @@ import java.util.UUID;
         return nativeHasActiveEffectivelyFullscreenVideo(mNativeWebContentsAndroid);
     }
 
+    @Override
+    public List<Rect> getCurrentlyPlayingVideoSizes() {
+        return nativeGetCurrentlyPlayingVideoSizes(mNativeWebContentsAndroid);
+    }
+
     @CalledByNative
     private final void setMediaSession(MediaSessionImpl mediaSession) {
         mMediaSession = mediaSession;
@@ -675,5 +680,6 @@ import java.util.UUID;
             long nativeWebContentsAndroid, int x, int y);
     private native void nativeSetHasPersistentVideo(long nativeWebContentsAndroid, boolean value);
     private native boolean nativeHasActiveEffectivelyFullscreenVideo(long nativeWebContentsAndroid);
+    private native List<Rect> nativeGetCurrentlyPlayingVideoSizes(long nativeWebContentsAndroid);
     private native EventForwarder nativeGetOrCreateEventForwarder(long nativeWebContentsAndroid);
 }
