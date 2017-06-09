@@ -61324,8 +61324,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>alexilin@chromium.org</owner>
   <summary>
     Records stats about requests, redirects, and responses observed by the
-    ResourcePrefetchPredictorObserver. These stats are useful as a baseline for
-    other stats.
+    LoadingPredictorObserver. These stats are useful as a baseline for other
+    stats.
   </summary>
 </histogram>
 

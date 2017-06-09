@@ -1,15 +1,21 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TEST_UTIL_H_
-#define CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TEST_UTIL_H_
+#ifndef CHROME_BROWSER_PREDICTORS_LOADING_TEST_UTIL_H_
+#define CHROME_BROWSER_PREDICTORS_LOADING_TEST_UTIL_H_
 
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "components/sessions/core/session_id.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace predictors {
@@ -100,6 +106,69 @@ ResourcePrefetchPredictor::Prediction CreatePrediction(
 
 void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db = true);
 
+scoped_refptr<net::HttpResponseHeaders> MakeResponseHeaders(
+    const char* headers);
+
+class MockURLRequestJob : public net::URLRequestJob {
+ public:
+  MockURLRequestJob(net::URLRequest* request,
+                    const net::HttpResponseInfo& response_info,
+                    const std::string& mime_type);
+
+  bool GetMimeType(std::string* mime_type) const override;
+
+ protected:
+  void Start() override;
+  void GetResponseInfo(net::HttpResponseInfo* info) override;
+
+ private:
+  net::HttpResponseInfo response_info_;
+  std::string mime_type_;
+};
+
+class MockURLRequestJobFactory : public net::URLRequestJobFactory {
+ public:
+  MockURLRequestJobFactory();
+  ~MockURLRequestJobFactory() override;
+
+  void Reset();
+
+  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+      const std::string& scheme,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override;
+
+  net::URLRequestJob* MaybeInterceptRedirect(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const GURL& location) const override;
+
+  net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override;
+
+  bool IsHandledProtocol(const std::string& scheme) const override;
+
+  bool IsSafeRedirectTarget(const GURL& location) const override;
+
+  void set_response_info(const net::HttpResponseInfo& response_info) {
+    response_info_ = response_info;
+  }
+
+  void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
+
+ private:
+  net::HttpResponseInfo response_info_;
+  std::string mime_type_;
+};
+
+std::unique_ptr<net::URLRequest> CreateURLRequest(
+    const net::TestURLRequestContext& url_request_context,
+    const GURL& url,
+    net::RequestPriority priority,
+    content::ResourceType resource_type,
+    bool is_main_frame);
+
 // For printing failures nicely.
 std::ostream& operator<<(std::ostream& stream, const PrefetchData& data);
 std::ostream& operator<<(std::ostream& stream, const ResourceData& resource);
@@ -141,4 +210,4 @@ bool operator==(const PrecacheResource& lhs, const PrecacheResource& rhs);
 
 }  // namespace precache
 
-#endif  // CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_PREDICTOR_TEST_UTIL_H_
+#endif  // CHROME_BROWSER_PREDICTORS_LOADING_TEST_UTIL_H_

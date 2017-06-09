@@ -2,11 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
+#include "chrome/browser/predictors/loading_test_util.h"
 
 #include <cmath>
+#include <memory>
+
+#include "content/public/browser/resource_request_info.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/url_request_test_util.h"
 
 namespace {
+
+class EmptyURLRequestDelegate : public net::URLRequest::Delegate {
+  void OnResponseStarted(net::URLRequest* request, int net_error) override {}
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
+};
+
+EmptyURLRequestDelegate g_empty_url_request_delegate;
 
 bool AlmostEqual(const double x, const double y) {
   return std::fabs(x - y) <= 1e-6;  // Arbitrary but close enough.
@@ -209,6 +221,86 @@ void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
   config->is_manifests_enabled = true;
   config->is_origin_learning_enabled = true;
   config->mode = LoadingPredictorConfig::LEARNING;
+}
+
+scoped_refptr<net::HttpResponseHeaders> MakeResponseHeaders(
+    const char* headers) {
+  return make_scoped_refptr(new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers, strlen(headers))));
+}
+
+MockURLRequestJob::MockURLRequestJob(net::URLRequest* request,
+                                     const net::HttpResponseInfo& response_info,
+                                     const std::string& mime_type)
+    : net::URLRequestJob(request, nullptr),
+      response_info_(response_info),
+      mime_type_(mime_type) {}
+
+bool MockURLRequestJob::GetMimeType(std::string* mime_type) const {
+  *mime_type = mime_type_;
+  return true;
+}
+
+void MockURLRequestJob::Start() {
+  NotifyHeadersComplete();
+}
+
+void MockURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
+  *info = response_info_;
+}
+
+MockURLRequestJobFactory::MockURLRequestJobFactory() {}
+MockURLRequestJobFactory::~MockURLRequestJobFactory() {}
+
+void MockURLRequestJobFactory::Reset() {
+  response_info_ = net::HttpResponseInfo();
+  mime_type_ = std::string();
+}
+
+net::URLRequestJob* MockURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
+    const std::string& scheme,
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return new MockURLRequestJob(request, response_info_, mime_type_);
+}
+
+net::URLRequestJob* MockURLRequestJobFactory::MaybeInterceptRedirect(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const GURL& location) const {
+  return nullptr;
+}
+
+net::URLRequestJob* MockURLRequestJobFactory::MaybeInterceptResponse(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return nullptr;
+}
+
+bool MockURLRequestJobFactory::IsHandledProtocol(
+    const std::string& scheme) const {
+  return true;
+}
+
+bool MockURLRequestJobFactory::IsSafeRedirectTarget(
+    const GURL& location) const {
+  return true;
+}
+
+std::unique_ptr<net::URLRequest> CreateURLRequest(
+    const net::TestURLRequestContext& url_request_context,
+    const GURL& url,
+    net::RequestPriority priority,
+    content::ResourceType resource_type,
+    bool is_main_frame) {
+  std::unique_ptr<net::URLRequest> request = url_request_context.CreateRequest(
+      url, priority, &g_empty_url_request_delegate);
+  request->set_first_party_for_cookies(url);
+  content::ResourceRequestInfo::AllocateForTesting(
+      request.get(), resource_type, nullptr, -1, -1, -1, is_main_frame, false,
+      false, true, content::PREVIEWS_OFF);
+  request->Start();
+  return request;
 }
 
 std::ostream& operator<<(std::ostream& os, const PrefetchData& data) {

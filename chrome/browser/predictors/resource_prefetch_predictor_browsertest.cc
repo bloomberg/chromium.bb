@@ -11,10 +11,11 @@
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_stats_collector.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
+#include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -367,13 +368,13 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(predictor_);
     resource_prefetch_predictor_ = predictor_->resource_prefetch_predictor();
     // URLs from the test server contain a port number.
-    ResourcePrefetchPredictor::SetAllowPortInUrlsForTesting(true);
+    LoadingDataCollector::SetAllowPortInUrlsForTesting(true);
     EnsurePredictorInitialized();
     histogram_tester_.reset(new base::HistogramTester());
   }
 
   void TearDownOnMainThread() override {
-    ResourcePrefetchPredictor::SetAllowPortInUrlsForTesting(false);
+    LoadingDataCollector::SetAllowPortInUrlsForTesting(false);
   }
 
   void TestLearningAndPrefetching(

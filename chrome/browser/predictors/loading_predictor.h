@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -52,7 +53,8 @@ class LoadingPredictor : public KeyedService,
   void StartInitialization();
 
   // Don't use, internal only.
-  ResourcePrefetchPredictor* resource_prefetch_predictor() const;
+  ResourcePrefetchPredictor* resource_prefetch_predictor();
+  LoadingDataCollector* loading_data_collector();
 
   // KeyedService:
   void Shutdown() override;
@@ -82,6 +84,7 @@ class LoadingPredictor : public KeyedService,
   Profile* profile_;
   std::unique_ptr<ResourcePrefetchPredictor> resource_prefetch_predictor_;
   std::unique_ptr<LoadingStatsCollector> stats_collector_;
+  std::unique_ptr<LoadingDataCollector> loading_data_collector_;
   std::map<GURL, base::TimeTicks> active_hints_;
   // Initial URL.
   std::map<NavigationID, GURL> active_navigations_;

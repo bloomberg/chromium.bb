@@ -4,6 +4,9 @@
 
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
@@ -22,6 +25,7 @@
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/loading_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/lofi_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/media_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
@@ -29,7 +33,6 @@
 #include "chrome/browser/page_load_metrics/observers/prerender_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/resource_prefetch_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/subresource_filter_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer.h"
@@ -121,11 +124,11 @@ void PageLoadMetricsEmbedder::RegisterObservers(
         base::MakeUnique<AndroidPageLoadMetricsObserver>(web_contents_));
 #endif  // OS_ANDROID
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
-        resource_prefetch_predictor_observer =
-            ResourcePrefetchPredictorPageLoadMetricsObserver::CreateIfNeeded(
+        loading_predictor_observer =
+            LoadingPredictorPageLoadMetricsObserver::CreateIfNeeded(
                 web_contents_);
-    if (resource_prefetch_predictor_observer)
-      tracker->AddObserver(std::move(resource_prefetch_predictor_observer));
+    if (loading_predictor_observer)
+      tracker->AddObserver(std::move(loading_predictor_observer));
   } else {
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         prerender_observer =
