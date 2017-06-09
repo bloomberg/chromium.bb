@@ -50,8 +50,8 @@ class NetworkHintsInterface;
 class PrerenderHandle;
 struct ViewportDescriptionWrapper;
 
-// The LinkLoader can load link rel types icon, dns-prefetch, subresource,
-// prefetch and prerender.
+// The LinkLoader can load link rel types icon, dns-prefetch, prefetch, and
+// prerender.
 class CORE_EXPORT LinkLoader final
     : public GarbageCollectedFinalized<LinkLoader>,
       public ResourceOwner<Resource, ResourceClient>,
