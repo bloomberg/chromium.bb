@@ -56,6 +56,7 @@
 #include "components/user_manager/user_type.h"
 #include "components/wallpaper/wallpaper_files_id.h"
 #include "components/wallpaper/wallpaper_layout.h"
+#include "components/wallpaper/wallpaper_resizer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -290,6 +291,10 @@ class WallpaperManager::PendingWallpaper :
     SetMode(gfx::ImageSkia(), WallpaperInfo(), base::FilePath(), true);
   }
 
+  uint32_t GetImageId() const {
+    return wallpaper::WallpaperResizer::GetImageId(user_wallpaper_);
+  }
+
  private:
   friend class base::RefCountedThreadSafe<PendingWallpaper>;
 
@@ -411,6 +416,15 @@ void WallpaperManager::Shutdown() {
   CHECK(wallpaper_manager);
   delete wallpaper_manager;
   wallpaper_manager = nullptr;
+}
+
+bool WallpaperManager::IsPendingWallpaper(uint32_t image_id) {
+  for (size_t i = 0; i < loading_.size(); ++i) {
+    if (loading_[i]->GetImageId() == image_id) {
+      return true;
+    }
+  }
+  return false;
 }
 
 WallpaperManager::WallpaperResolution

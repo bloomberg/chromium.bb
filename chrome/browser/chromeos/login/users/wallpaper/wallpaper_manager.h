@@ -54,6 +54,10 @@ class WallpaperManager
   // WallpaperManager to remove any observers it has registered.
   static void Shutdown();
 
+  // Returns if the image is in the pending list. |image_id| can be obtained
+  // from gfx::ImageSkia by using WallpaperResizer::GetImageId().
+  bool IsPendingWallpaper(uint32_t image_id);
+
   // wallpaper::WallpaperManagerBase:
   WallpaperResolution GetAppropriateResolution() override;
   void AddObservers() override;

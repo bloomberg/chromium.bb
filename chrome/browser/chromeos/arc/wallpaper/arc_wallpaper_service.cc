@@ -63,46 +63,12 @@ ash::WallpaperController* GetWallpaperController() {
 
 }  // namespace
 
-// Store for mapping between ImageSkia ID and Android wallpaper ID.
-// Skia image ID is used to keep track of the wallpaper on the Chrome side, and
-// we need to map it to the Android's wallpaper ID in ARC++. Because setting
-// wallpaper is async operation, the caller stores the pair of ImageSkia ID and
-// wallpaper ID when it requests setting a wallpaper, then it obtains the
-// corresponding Andorid ID when the completion of setting a wallpaper is
-// notified.
-class ArcWallpaperService::AndroidIdStore {
- public:
-  AndroidIdStore() = default;
-
-  // Remembers a pair of image and Android ID.
-  void Push(const gfx::ImageSkia& image, int32_t android_id) {
-    pairs_.push_back(
-        {wallpaper::WallpaperResizer::GetImageId(image), android_id});
-  }
-
-  // Gets Android ID for |image_id|. Returns -1 if it does not found Android ID
-  // corresponding to |image_id|. Sometimes the corresonpding |Pop| is not
-  // called after |Push| is invoked, thus |Pop| removes older pairs in addition
-  // to the pair of given |image_id| when the pair is found.
-  int32_t Pop(uint32_t image_id) {
-    for (size_t i = 0; i < pairs_.size(); ++i) {
-      if (pairs_[i].image_id == image_id) {
-        const int32_t result = pairs_[i].android_id;
-        pairs_.erase(pairs_.begin(), pairs_.begin() + i + 1);
-        return result;
-      }
-    }
-    return -1;
-  }
-
- private:
-  struct Pair {
-    uint32_t image_id;
-    int32_t android_id;
-  };
-  std::deque<Pair> pairs_;
-
-  DISALLOW_COPY_AND_ASSIGN(AndroidIdStore);
+struct ArcWallpaperService::WallpaperIdPair {
+  // ID of wallpaper image which can be obtaind by
+  // WallpaperResizer::GetImageId().
+  uint32_t image_id;
+  // ID of wallpaper generated in the container side.
+  int32_t android_id;
 };
 
 class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
@@ -121,7 +87,12 @@ class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
     immutable_bitmap.setImmutable();
     gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(immutable_bitmap);
     image.MakeThreadSafe();
-    service_->android_id_store()->Push(image, android_id_);
+
+    WallpaperIdPair pair;
+    pair.image_id = wallpaper::WallpaperResizer::GetImageId(image);
+    pair.android_id = android_id_;
+    DCHECK_NE(pair.image_id, 0u)
+        << "image_id should not be 0 as we succeeded to decode image here.";
 
     chromeos::WallpaperManager* const wallpaper_manager =
         chromeos::WallpaperManager::Get();
@@ -134,6 +105,13 @@ class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
         wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
         user_manager::User::CUSTOMIZED, image,
         account.is_active /*update_wallpaper*/);
+    // When kiosk app is running, or wallpaper cannot be changed due to policy,
+    // or we are running child profile, WallpaperManager don't submit wallpaper
+    // change requests.
+    if (wallpaper_manager->IsPendingWallpaper(pair.image_id))
+      service_->id_pairs_.push_back(pair);
+    else
+      service_->NotifyWallpaperChangedAndReset(android_id_);
 
     // TODO(crbug.com/618922): Register the wallpaper to Chrome OS wallpaper
     // picker. Currently the new wallpaper does not appear there. The best way
@@ -144,12 +122,7 @@ class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
   void OnDecodeImageFailed() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DLOG(ERROR) << "Failed to decode wallpaper image.";
-
-    // Android regards the new wallpaper was set to Chrome. Invoke
-    // OnWallpaperDataChanged to notify that the previous wallpaper is still
-    // used in chrome. Note that |wallpaper_id| is not passed back to ARC in
-    // this case.
-    service_->OnWallpaperDataChanged();
+    service_->NotifyWallpaperChangedAndReset(android_id_);
   }
 
  private:
@@ -161,9 +134,7 @@ class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
 };
 
 ArcWallpaperService::ArcWallpaperService(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service),
-      binding_(this),
-      android_id_store_(new AndroidIdStore()) {
+    : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->wallpaper()->AddObserver(this);
 }
 
@@ -230,14 +201,55 @@ void ArcWallpaperService::GetWallpaper(const GetWallpaperCallback& callback) {
 void ArcWallpaperService::OnWallpaperDataChanged() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  auto* const wallpaper_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->wallpaper(), OnWallpaperChanged);
-  const ash::WallpaperController* const wc = GetWallpaperController();
-  const int32_t android_id =
-      wc ? android_id_store_->Pop(wc->GetWallpaperOriginalImageId()) : -1;
-  if (!wallpaper_instance)
+  // OnWallpaperDataChanged is invoked from WallpaperController so
+  // we should be able to get the pointer.
+  ash::WallpaperController* const wallpaper_controller =
+      ash::Shell::Get()->wallpaper_controller();
+  CHECK(wallpaper_controller);
+  const uint32_t current_image_id =
+      wallpaper_controller->GetWallpaperOriginalImageId();
+
+  chromeos::WallpaperManager* const wallpaper_manager =
+      chromeos::WallpaperManager::Get();
+  bool current_wallppaer_notified = false;
+  for (auto it = id_pairs_.begin(); it != id_pairs_.end();) {
+    int32_t const android_id = it->android_id;
+    bool should_notify = false;
+    if (it->image_id == current_image_id) {
+      should_notify = true;
+      current_wallppaer_notified = true;
+      it = id_pairs_.erase(it);
+    } else if (!wallpaper_manager->IsPendingWallpaper(it->image_id)) {
+      should_notify = true;
+      it = id_pairs_.erase(it);
+    } else {
+      ++it;
+    }
+
+    if (should_notify)
+      NotifyWallpaperChanged(android_id);
+  }
+
+  if (!current_wallppaer_notified)
+    NotifyWallpaperChanged(-1);
+}
+
+void ArcWallpaperService::NotifyWallpaperChanged(int android_id) {
+  mojom::WallpaperInstance* const wallpaper_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->wallpaper(),
+                                  OnWallpaperChanged);
+  if (wallpaper_instance == nullptr)
     return;
   wallpaper_instance->OnWallpaperChanged(android_id);
+}
+
+void ArcWallpaperService::NotifyWallpaperChangedAndReset(int32_t android_id) {
+  // Invoke NotifyWallpaperChanged so that setWallpaper completes in Android
+  // side.
+  NotifyWallpaperChanged(android_id);
+  // Invoke NotifyWallpaperChanged with -1 so that Android side regards the
+  // wallpaper of |android_id_| is no longer used at Chrome side.
+  NotifyWallpaperChanged(-1);
 }
 
 }  // namespace arc
