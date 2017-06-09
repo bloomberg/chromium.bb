@@ -564,7 +564,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitTabBeforeNode(Node* node) {
   // Want a tab before every cell other than the first one
   LayoutTableCell* rc = ToLayoutTableCell(r);
   LayoutTable* t = rc->Table();
-  return t && (t->CellBefore(rc) || t->CellAbove(rc));
+  return t && (t->CellPreceding(*rc) || t->CellAbove(*rc));
 }
 
 template <typename Strategy>

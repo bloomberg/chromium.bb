@@ -1257,19 +1257,19 @@ LayoutTableSection* LayoutTable::BottomSection() const {
   return nullptr;
 }
 
-LayoutTableCell* LayoutTable::CellAbove(const LayoutTableCell* cell) const {
+LayoutTableCell* LayoutTable::CellAbove(const LayoutTableCell& cell) const {
   RecalcSectionsIfNeeded();
 
   // Find the section and row to look in
-  unsigned r = cell->RowIndex();
+  unsigned r = cell.RowIndex();
   LayoutTableSection* section = nullptr;
   unsigned r_above = 0;
   if (r > 0) {
     // cell is not in the first row, so use the above row in its own section
-    section = cell->Section();
+    section = cell.Section();
     r_above = r - 1;
   } else {
-    section = SectionAbove(cell->Section(), kSkipEmptySections);
+    section = SectionAbove(cell.Section(), kSkipEmptySections);
     if (section) {
       DCHECK(section->NumRows());
       r_above = section->NumRows() - 1;
@@ -1279,25 +1279,25 @@ LayoutTableCell* LayoutTable::CellAbove(const LayoutTableCell* cell) const {
   // Look up the cell in the section's grid, which requires effective col index
   if (section) {
     unsigned eff_col =
-        AbsoluteColumnToEffectiveColumn(cell->AbsoluteColumnIndex());
+        AbsoluteColumnToEffectiveColumn(cell.AbsoluteColumnIndex());
     return section->PrimaryCellAt(r_above, eff_col);
   }
   return nullptr;
 }
 
-LayoutTableCell* LayoutTable::CellBelow(const LayoutTableCell* cell) const {
+LayoutTableCell* LayoutTable::CellBelow(const LayoutTableCell& cell) const {
   RecalcSectionsIfNeeded();
 
   // Find the section and row to look in
-  unsigned r = cell->RowIndex() + cell->RowSpan() - 1;
+  unsigned r = cell.RowIndex() + cell.RowSpan() - 1;
   LayoutTableSection* section = nullptr;
   unsigned r_below = 0;
-  if (r < cell->Section()->NumRows() - 1) {
+  if (r < cell.Section()->NumRows() - 1) {
     // The cell is not in the last row, so use the next row in the section.
-    section = cell->Section();
+    section = cell.Section();
     r_below = r + 1;
   } else {
-    section = SectionBelow(cell->Section(), kSkipEmptySections);
+    section = SectionBelow(cell.Section(), kSkipEmptySections);
     if (section)
       r_below = 0;
   }
@@ -1305,31 +1305,31 @@ LayoutTableCell* LayoutTable::CellBelow(const LayoutTableCell* cell) const {
   // Look up the cell in the section's grid, which requires effective col index
   if (section) {
     unsigned eff_col =
-        AbsoluteColumnToEffectiveColumn(cell->AbsoluteColumnIndex());
+        AbsoluteColumnToEffectiveColumn(cell.AbsoluteColumnIndex());
     return section->PrimaryCellAt(r_below, eff_col);
   }
   return nullptr;
 }
 
-LayoutTableCell* LayoutTable::CellBefore(const LayoutTableCell* cell) const {
+LayoutTableCell* LayoutTable::CellPreceding(const LayoutTableCell& cell) const {
   RecalcSectionsIfNeeded();
 
-  LayoutTableSection* section = cell->Section();
+  LayoutTableSection* section = cell.Section();
   unsigned eff_col =
-      AbsoluteColumnToEffectiveColumn(cell->AbsoluteColumnIndex());
+      AbsoluteColumnToEffectiveColumn(cell.AbsoluteColumnIndex());
   if (!eff_col)
     return nullptr;
 
   // If we hit a colspan back up to a real cell.
-  return section->PrimaryCellAt(cell->RowIndex(), eff_col - 1);
+  return section->PrimaryCellAt(cell.RowIndex(), eff_col - 1);
 }
 
-LayoutTableCell* LayoutTable::CellAfter(const LayoutTableCell* cell) const {
+LayoutTableCell* LayoutTable::CellFollowing(const LayoutTableCell& cell) const {
   RecalcSectionsIfNeeded();
 
   unsigned eff_col = AbsoluteColumnToEffectiveColumn(
-      cell->AbsoluteColumnIndex() + cell->ColSpan());
-  return cell->Section()->PrimaryCellAt(cell->RowIndex(), eff_col);
+      cell.AbsoluteColumnIndex() + cell.ColSpan());
+  return cell.Section()->PrimaryCellAt(cell.RowIndex(), eff_col);
 }
 
 int LayoutTable::BaselinePosition(FontBaseline baseline_type,
