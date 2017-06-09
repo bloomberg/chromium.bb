@@ -262,10 +262,7 @@ void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
     ResourceRequest& out_request) {
   if (out_request.FirstPartyForCookies().IsNull())
     out_request.SetFirstPartyForCookies(FirstPartyForCookies());
-  // TODO(mkwst): It would be cleaner to adjust blink::ResourceRequest to
-  // initialize itself with a `nullptr` initiator so that this can be a simple
-  // `isNull()` check. https://crbug.com/625969
-  if (out_request.RequestorOrigin()->IsUnique())
+  if (!out_request.RequestorOrigin())
     out_request.SetRequestorOrigin(GetSecurityOrigin());
 }
 

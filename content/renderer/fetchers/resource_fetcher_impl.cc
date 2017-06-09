@@ -183,6 +183,7 @@ void ResourceFetcherImpl::Start(
 
   request_.SetRequestContext(request_context);
   request_.SetFirstPartyForCookies(frame->GetDocument().FirstPartyForCookies());
+  request_.SetRequestorOrigin(frame->GetDocument().GetSecurityOrigin());
   request_.AddHTTPOriginIfNeeded(blink::WebSecurityOrigin::CreateUnique());
 
   client_.reset(new ClientImpl(this, callback));

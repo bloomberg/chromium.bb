@@ -768,9 +768,9 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
   struct TestCase {
     const char* document_url;
     bool document_sandboxed;
-    const char* requestor_origin;  // "" => unique origin
+    const char* requestor_origin;  // "" => null
     WebURLRequest::FrameType frame_type;
-    const char* serialized_origin;  // "" => unique origin
+    const char* serialized_origin;  // "" => null
   } cases[] = {
       // No document origin => unique request origin
       {"", false, "", WebURLRequest::kFrameTypeNone, "null"},
@@ -783,24 +783,17 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
        "http://example.test"},
 
       // If the request already has a requestor origin, then
-      // 'setFirstPartyCookieAndRequestorOrigin' leaves it alone:
+      // 'SetFirstPartyCookieAndRequestorOrigin' leaves it alone:
       {"http://example.test", false, "http://not-example.test",
        WebURLRequest::kFrameTypeNone, "http://not-example.test"},
       {"http://example.test", true, "http://not-example.test",
        WebURLRequest::kFrameTypeNone, "http://not-example.test"},
-
-      // If the request's frame type is not 'none', then
-      // 'setFirstPartyCookieAndRequestorOrigin'
-      // leaves it alone:
-      {"http://example.test", false, "", WebURLRequest::kFrameTypeTopLevel, ""},
-      {"http://example.test", false, "", WebURLRequest::kFrameTypeAuxiliary,
-       ""},
-      {"http://example.test", false, "", WebURLRequest::kFrameTypeNested, ""},
   };
 
+  int index = 0;
   for (const auto& test : cases) {
-    SCOPED_TRACE(::testing::Message()
-                 << test.document_url << " => " << test.serialized_origin);
+    SCOPED_TRACE(::testing::Message() << index++ << " " << test.document_url
+                                      << " => " << test.serialized_origin);
     // Set up a new document to ensure sandbox flags are cleared:
     dummy_page_holder = DummyPageHolder::Create(IntSize(500, 500));
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
@@ -824,7 +817,7 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
     // Compare the populated |requestorOrigin| against |test.serializedOrigin|
     fetch_context->SetFirstPartyCookieAndRequestorOrigin(request);
     if (strlen(test.serialized_origin) == 0) {
-      EXPECT_TRUE(request.RequestorOrigin()->IsUnique());
+      EXPECT_TRUE(!request.RequestorOrigin());
     } else {
       EXPECT_EQ(String(test.serialized_origin),
                 request.RequestorOrigin()->ToString());

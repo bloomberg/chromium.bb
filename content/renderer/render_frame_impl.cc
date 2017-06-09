@@ -4216,29 +4216,6 @@ void RenderFrameImpl::SaveImageFromDataURL(const blink::WebString& data_url) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
-  // Set the first party for cookies url if it has not been set yet (new
-  // requests). This value will be updated during redirects, consistent with
-  // https://tools.ietf.org/html/draft-west-first-party-cookies-04#section-2.1.1
-  if (request.FirstPartyForCookies().IsEmpty()) {
-    if (request.GetFrameType() == blink::WebURLRequest::kFrameTypeTopLevel)
-      request.SetFirstPartyForCookies(request.Url());
-    else
-      request.SetFirstPartyForCookies(
-          frame_->GetDocument().FirstPartyForCookies());
-  }
-
-  // Set the requestor origin to the same origin as the frame's document if it
-  // hasn't yet been set.
-  //
-  // TODO(mkwst): It would be cleaner to adjust blink::ResourceRequest to
-  // initialize itself with a `nullptr` initiator so that this can be a simple
-  // `isNull()` check. https://crbug.com/625969
-  WebDocument frame_document = frame_->GetDocument();
-  if (request.RequestorOrigin().IsUnique() &&
-      !frame_document.GetSecurityOrigin().IsUnique()) {
-    request.SetRequestorOrigin(frame_document.GetSecurityOrigin());
-  }
-
   WebDataSource* provisional_data_source = frame_->ProvisionalDataSource();
   WebDataSource* data_source =
       provisional_data_source ? provisional_data_source : frame_->DataSource();
@@ -4309,6 +4286,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   int parent_routing_id =
       parent ? RenderFrame::GetRoutingIdForWebFrame(parent) : -1;
 
+  WebDocument frame_document = frame_->GetDocument();
   RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(request.GetExtraData());
   if (!extra_data)
@@ -6291,6 +6269,8 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   CHECK(IsBrowserSideNavigationEnabled());
   browser_side_navigation_pending_ = true;
 
+  blink::WebURLRequest& request = info.url_request;
+
   // Note: At this stage, the goal is to apply all the modifications the
   // renderer wants to make to the request, and then send it to the browser, so
   // that the actual network request can be started. Ideally, all such
@@ -6301,7 +6281,15 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   // TODO(clamy): Apply devtools override.
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
-  WillSendRequest(info.url_request);
+  WillSendRequest(request);
+
+  // Set RequestorOrigin and FirstPartyForCookies.
+  WebDocument frame_document = frame_->GetDocument();
+  if (request.GetFrameType() == blink::WebURLRequest::kFrameTypeTopLevel)
+    request.SetFirstPartyForCookies(request.Url());
+  else
+    request.SetFirstPartyForCookies(frame_document.FirstPartyForCookies());
+  request.SetRequestorOrigin(frame_document.GetSecurityOrigin());
 
   // Update the transition type of the request for client side redirects.
   if (!info.url_request.GetExtraData())
@@ -6331,10 +6319,9 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
          GetRequestContextFrameTypeForWebURLRequest(info.url_request) ==
              REQUEST_CONTEXT_FRAME_TYPE_NESTED);
 
+  DCHECK(!info.url_request.RequestorOrigin().IsNull());
   base::Optional<url::Origin> initiator_origin =
-      info.url_request.RequestorOrigin().IsNull()
-          ? base::Optional<url::Origin>()
-          : base::Optional<url::Origin>(info.url_request.RequestorOrigin());
+      base::Optional<url::Origin>(info.url_request.RequestorOrigin());
 
   int load_flags = GetLoadFlagsForWebURLRequest(info.url_request);
 

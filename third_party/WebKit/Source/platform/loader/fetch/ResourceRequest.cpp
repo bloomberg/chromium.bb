@@ -49,7 +49,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
     : url_(url),
       cache_policy_(WebCachePolicy::kUseProtocolCachePolicy),
       timeout_interval_(default_timeout_interval_),
-      requestor_origin_(SecurityOrigin::CreateUnique()),
+      requestor_origin_(nullptr),
       http_method_(HTTPNames::GET),
       allow_stored_credentials_(true),
       report_upload_progress_(false),
