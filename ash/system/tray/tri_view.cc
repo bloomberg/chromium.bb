@@ -124,7 +124,10 @@ void TriView::SetContainerBorder(Container container,
 }
 
 void TriView::SetContainerVisible(Container container, bool visible) {
+  if (GetContainer(container)->visible() == visible)
+    return;
   GetContainer(container)->SetVisible(visible);
+  Layout();
 }
 
 void TriView::SetFlexForContainer(Container container, int flex) {

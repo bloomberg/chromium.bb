@@ -174,9 +174,6 @@ void VolumeView::UpdateDeviceTypeAndMore() {
   if (is_default_view_ && !audio_handler->has_alternative_output() &&
       !audio_handler->has_alternative_input()) {
     tri_view_->SetContainerVisible(TriView::Container::END, false);
-    // TODO(tdanderson): TriView itself should trigger a relayout when the
-    // visibility of one of its containers is changed.
-    tri_view_->InvalidateLayout();
     return;
   }
 
