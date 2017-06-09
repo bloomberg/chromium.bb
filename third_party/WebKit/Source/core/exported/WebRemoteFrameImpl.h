@@ -45,26 +45,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   WebDocument GetDocument() const override;
   WebPerformance Performance() const override;
   void DispatchUnloadEvent() override;
-  void ExecuteScriptInIsolatedWorld(int world_id,
-                                    const WebScriptSource* sources,
-                                    unsigned num_sources) override;
-  void SetIsolatedWorldSecurityOrigin(int world_id,
-                                      const WebSecurityOrigin&) override;
-  void SetIsolatedWorldContentSecurityPolicy(int world_id,
-                                             const WebString&) override;
-  void CollectGarbage() override;
-  v8::Local<v8::Value> ExecuteScriptAndReturnValue(
-      const WebScriptSource&) override;
-  void ExecuteScriptInIsolatedWorld(
-      int world_id,
-      const WebScriptSource* sources_in,
-      unsigned num_sources,
-      WebVector<v8::Local<v8::Value>>* results) override;
-  v8::Local<v8::Value> CallFunctionEvenIfScriptDisabled(
-      v8::Local<v8::Function>,
-      v8::Local<v8::Value>,
-      int argc,
-      v8::Local<v8::Value> argv[]) override;
   void Reload(WebFrameLoadType) override;
   void ReloadWithOverrideURL(const WebURL& override_url,
                              WebFrameLoadType) override;
