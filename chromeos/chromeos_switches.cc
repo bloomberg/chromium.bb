@@ -62,10 +62,6 @@ const char kAppAutoLaunched[] = "app-auto-launched";
 // Path for app's OEM manifest file.
 const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 
-// Always starts ARC after login screen without Play Store in almost all cases.
-// Secondary profile is an exception where ARC will not start.
-const char kArcAlwaysStart[] = "arc-always-start";
-
 // Signals ARC support status on this device. This can take one of the
 // following three values.
 // - none: ARC is not installed on this device. (default)
@@ -78,6 +74,14 @@ const char kArcAvailability[] = "arc-availability";
 // DEPRECATED: Please use --arc-availability=installed.
 // Signals the availability of the ARC instance on this device.
 const char kArcAvailable[] = "arc-available";
+
+// Defines how to start ARC. This can take one of the following values:
+// - always-start automatically start with Play Store UI support.
+// - always-start-with-no-play-store automatically start without Play Store UI.
+// In both cases ARC starts after login screen in almost all cases. Secondary
+// profile is an exception where ARC won't start.
+// If it is not set, then ARC is started in default mode.
+const char kArcStartMode[] = "arc-start-mode";
 
 // Screenshot testing: specifies the directoru where artifacts will be stored.
 const char kArtifactsDir[] = "artifacts-dir";

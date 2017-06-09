@@ -204,9 +204,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
       chromeos::quick_unlock::IsPinEnabled(profile->GetPrefs()));
   html_source->AddBoolean("fingerprintUnlockEnabled",
                           chromeos::quick_unlock::IsFingerprintEnabled());
-  html_source->AddBoolean("androidAppsAllowed",
+  html_source->AddBoolean("androidAppsVisible",
                           arc::IsArcAllowedForProfile(profile) &&
-                              !arc::IsArcOptInVerificationDisabled());
+                              !arc::IsArcOptInVerificationDisabled() &&
+                              arc::IsPlayStoreAvailable());
 
   // TODO(mash): Support Chrome power settings in Mash. crbug.com/644348
   bool enable_power_settings =

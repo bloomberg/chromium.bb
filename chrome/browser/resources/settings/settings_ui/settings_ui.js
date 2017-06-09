@@ -156,8 +156,8 @@ Polymer({
       };
     }
 
-    this.showAndroidApps_ = loadTimeData.valueExists('androidAppsAllowed') &&
-        loadTimeData.getBoolean('androidAppsAllowed');
+    this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
+        loadTimeData.getBoolean('androidAppsVisible');
 
     this.addEventListener('show-container', function() {
       this.$.container.style.visibility = 'visible';

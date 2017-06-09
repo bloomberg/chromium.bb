@@ -134,7 +134,8 @@ void ArcPlayStoreEnabledPreferenceHandler::OnIsSyncingChanged() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableArcOOBEOptIn) &&
       profile_->IsNewProfile() &&
-      !profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled)) {
+      !profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled) &&
+      arc::IsPlayStoreAvailable()) {
     ArcAuthNotification::Show(profile_);
   }
 }

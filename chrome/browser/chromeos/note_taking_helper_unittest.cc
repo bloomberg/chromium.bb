@@ -139,7 +139,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
 
   void SetUp() override {
     if (GetParam())
-      arc::SetArcAlwaysStartForTesting();
+      arc::SetArcAlwaysStartForTesting(true);
 
     // This is needed to avoid log spam due to ArcSessionManager's
     // RemoveArcData() calls failing.
