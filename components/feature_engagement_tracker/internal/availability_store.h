@@ -17,7 +17,6 @@
 #include "components/leveldb_proto/proto_database.h"
 
 namespace base {
-struct Feature;
 class FilePath;
 }  // namespace base
 
@@ -32,9 +31,8 @@ class AvailabilityStore {
   // empty. The value for each entry in the map is the day number since epoch
   // (1970-01-01) in the local timezone for when the particular feature was made
   // available.
-  using OnLoadedCallback = base::OnceCallback<void(
-      bool success,
-      std::unique_ptr<std::map<const base::Feature*, uint32_t>>)>;
+  using OnLoadedCallback = base::OnceCallback<
+      void(bool success, std::unique_ptr<std::map<std::string, uint32_t>>)>;
 
   // Loads the availability data, updates the DB with newly enabled features,
   // deletes features that are not enabled anymore, and asynchronously invokes

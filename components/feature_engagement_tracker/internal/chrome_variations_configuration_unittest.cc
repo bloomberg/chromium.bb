@@ -44,9 +44,9 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
         base::FieldTrialList::CreateFieldTrial(kBarTrialName, kGroupName);
     base::FieldTrial* qux_trial =
         base::FieldTrialList::CreateFieldTrial(kQuxTrialName, kGroupName);
-    trials_[&kTestFeatureFoo] = foo_trial;
-    trials_[&kTestFeatureBar] = bar_trial;
-    trials_[&kTestFeatureQux] = qux_trial;
+    trials_[kTestFeatureFoo.name] = foo_trial;
+    trials_[kTestFeatureBar.name] = bar_trial;
+    trials_[kTestFeatureQux.name] = qux_trial;
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->RegisterFieldTrialOverride(
@@ -73,9 +73,10 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
  protected:
   void SetFeatureParams(const base::Feature& feature,
                         std::map<std::string, std::string> params) {
-    ASSERT_TRUE(base::FieldTrialParamAssociator::GetInstance()
-                    ->AssociateFieldTrialParams(trials_[&feature]->trial_name(),
-                                                kGroupName, params));
+    ASSERT_TRUE(
+        base::FieldTrialParamAssociator::GetInstance()
+            ->AssociateFieldTrialParams(trials_[feature.name]->trial_name(),
+                                        kGroupName, params));
 
     std::map<std::string, std::string> actualParams;
     EXPECT_TRUE(base::GetFieldTrialParamsByFeature(feature, &actualParams));
@@ -100,7 +101,7 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
 
  private:
   base::FieldTrialList field_trials_;
-  std::map<const base::Feature*, base::FieldTrial*> trials_;
+  std::map<std::string, base::FieldTrial*> trials_;
   base::test::ScopedFeatureList scoped_feature_list;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeVariationsConfigurationTest);

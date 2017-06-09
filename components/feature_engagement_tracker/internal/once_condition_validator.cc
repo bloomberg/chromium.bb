@@ -9,8 +9,7 @@
 
 namespace feature_engagement_tracker {
 
-OnceConditionValidator::OnceConditionValidator()
-    : currently_showing_feature_(nullptr) {}
+OnceConditionValidator::OnceConditionValidator() = default;
 
 OnceConditionValidator::~OnceConditionValidator() = default;
 
@@ -23,26 +22,26 @@ ConditionValidator::Result OnceConditionValidator::MeetsConditions(
   ConditionValidator::Result result(true);
   result.event_model_ready_ok = model.IsReady();
 
-  result.currently_showing_ok = currently_showing_feature_ == nullptr;
+  result.currently_showing_ok = currently_showing_feature_.empty();
 
   result.config_ok = config.valid;
 
   result.session_rate_ok =
-      shown_features_.find(&feature) == shown_features_.end();
+      shown_features_.find(feature.name) == shown_features_.end();
 
   return result;
 }
 
 void OnceConditionValidator::NotifyIsShowing(const base::Feature& feature) {
-  DCHECK(currently_showing_feature_ == nullptr);
-  DCHECK(shown_features_.find(&feature) == shown_features_.end());
-  shown_features_.insert(&feature);
-  currently_showing_feature_ = &feature;
+  DCHECK(currently_showing_feature_.empty());
+  DCHECK(shown_features_.find(feature.name) == shown_features_.end());
+  shown_features_.insert(feature.name);
+  currently_showing_feature_ = feature.name;
 }
 
 void OnceConditionValidator::NotifyDismissed(const base::Feature& feature) {
-  DCHECK(&feature == currently_showing_feature_);
-  currently_showing_feature_ = nullptr;
+  DCHECK(feature.name == currently_showing_feature_);
+  currently_showing_feature_.clear();
 }
 
 }  // namespace feature_engagement_tracker

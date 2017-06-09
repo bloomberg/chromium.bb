@@ -203,10 +203,10 @@ void ChromeVariationsConfiguration::ParseFeatureConfigs(
 void ChromeVariationsConfiguration::ParseFeatureConfig(
     const base::Feature* feature) {
   DCHECK(feature);
-  DCHECK(configs_.find(feature) == configs_.end());
+  DCHECK(configs_.find(feature->name) == configs_.end());
 
   // Initially all new configurations are considered invalid.
-  FeatureConfig& config = configs_[feature];
+  FeatureConfig& config = configs_[feature->name];
   config.valid = false;
   uint32_t parse_errors = 0;
 
@@ -302,7 +302,14 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
 
 const FeatureConfig& ChromeVariationsConfiguration::GetFeatureConfig(
     const base::Feature& feature) const {
-  auto it = configs_.find(&feature);
+  auto it = configs_.find(feature.name);
+  DCHECK(it != configs_.end());
+  return it->second;
+}
+
+const FeatureConfig& ChromeVariationsConfiguration::GetFeatureConfigByName(
+    const std::string& feature_name) const {
+  auto it = configs_.find(feature_name);
   DCHECK(it != configs_.end());
   return it->second;
 }

@@ -37,7 +37,7 @@ bool AvailabilityModelImpl::IsReady() const {
 
 base::Optional<uint32_t> AvailabilityModelImpl::GetAvailability(
     const base::Feature& feature) const {
-  auto search = feature_availabilities_.find(&feature);
+  auto search = feature_availabilities_.find(feature.name);
   if (search == feature_availabilities_.end())
     return base::nullopt;
 
@@ -47,8 +47,7 @@ base::Optional<uint32_t> AvailabilityModelImpl::GetAvailability(
 void AvailabilityModelImpl::OnStoreLoadComplete(
     OnInitializedCallback on_initialized_callback,
     bool success,
-    std::unique_ptr<std::map<const base::Feature*, uint32_t>>
-        feature_availabilities) {
+    std::unique_ptr<std::map<std::string, uint32_t>> feature_availabilities) {
   if (!success) {
     std::move(on_initialized_callback).Run(false);
     return;

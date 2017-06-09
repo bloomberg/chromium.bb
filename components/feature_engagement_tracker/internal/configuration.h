@@ -115,7 +115,7 @@ bool operator==(const FeatureConfig& lhs, const FeatureConfig& rhs);
 class Configuration {
  public:
   // Convenience alias for typical implementations of Configuration.
-  using ConfigMap = std::map<const base::Feature*, FeatureConfig>;
+  using ConfigMap = std::map<std::string, FeatureConfig>;
 
   virtual ~Configuration() = default;
 
@@ -123,6 +123,11 @@ class Configuration {
   // be registered with the Configuration instance.
   virtual const FeatureConfig& GetFeatureConfig(
       const base::Feature& feature) const = 0;
+
+  // Returns the FeatureConfig for the given |feature|. The |feature_name| must
+  // be registered with the Configuration instance.
+  virtual const FeatureConfig& GetFeatureConfigByName(
+      const std::string& feature_name) const = 0;
 
   // Returns the immutable ConfigMap that contains all registered features.
   virtual const ConfigMap& GetRegisteredFeatures() const = 0;

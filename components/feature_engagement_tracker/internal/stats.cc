@@ -51,12 +51,12 @@ void RecordNotifyEvent(const std::string& event_name,
   const Configuration::ConfigMap& features = config->GetRegisteredFeatures();
   std::string feature_name;
   for (const auto& element : features) {
-    const base::Feature* feature = element.first;
+    const std::string fname = element.first;
     const FeatureConfig& feature_config = element.second;
 
     // Track used event separately.
     if (feature_config.used.name == event_name) {
-      feature_name = feature->name;
+      feature_name = fname;
       DCHECK(!feature_name.empty());
       std::string used_event_action = "InProductHelp.NotifyUsedEvent.";
       used_event_action.append(feature_name);
@@ -67,12 +67,12 @@ void RecordNotifyEvent(const std::string& event_name,
     // Find if the |event_name| matches any configuration.
     for (const auto& event : feature_config.event_configs) {
       if (event.name == event_name) {
-        feature_name = feature->name;
+        feature_name = fname;
         break;
       }
     }
     if (feature_config.trigger.name == event_name) {
-      feature_name = feature->name;
+      feature_name = fname;
       break;
     }
   }
