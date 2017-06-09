@@ -1,0 +1,133 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview Generated DevTools bindings for the {{domain.domain}} Domain.
+ * Note bindings are not generated for experimental commands and events, if you
+ * need to use one of those you must use the
+ * <code>chromium.DevTools.Connection</code> class directly.
+ *
+ * TODO(alexclarke): Consider generating bindings for experimental stuff too.
+ */
+'use strict';
+
+goog.module('chromium.DevTools.{{domain.domain}}');
+const Connection = goog.require('chromium.DevTools.Connection');
+{% for domain_name in domain.js_dependencies %}
+const {{domain_name}} = goog.require('chromium.DevTools.{{domain_name}}');
+{% endfor %}
+{% for forward_declaration in domain.js_forward_declarations %}
+goog.forwardDeclare('chromium.DevTools.{{forward_declaration}}');
+{% endfor %}
+
+/**
+ * Bindings for the {{domain.domain}} DevTools Domain.
+ */
+class {{domain.domain}} {
+  /**
+   * @param {!Connection} connection The DevTools connection.
+   */
+  constructor(connection) {
+    /** @private {!Connection} */
+    this.connection_ = connection;
+  };
+{# Generate non-experimental commands. #}
+{% for command in domain.commands %}
+  {% if command.experimental %}{% continue %}{% endif %}
+  {% set method_name = command.name | sanitize_literal | to_title_case %}
+  {% if command.parameters|length > 0 %}
+    {% set param_name = 'params' %}
+    {% set param_type = '{' + domain.domain + '.' + method_name + 'Params}' %}
+  {% else %}
+    {% set param_name = 'opt_params' %}
+    {% set param_type = '{' + domain.domain + '.' + method_name + 'Params=}' %}
+  {% endif %}
+  {% set result_type = '{!Promise<' + domain.domain + '.' + method_name + 'Result>}' %}
+
+  /**
+    {% if command.description %}
+    * {{ command.description }}
+    {% endif %}
+    * @param {{param_type}} {{param_name}} 
+    * @return {{result_type}}
+    */
+  {{method_name}}({{param_name}}) {
+    return /** @type {{result_type}} **/(
+        this.connection_.sendDevToolsMessage('{{domain.domain}}.{{command.name}}',
+                                             {{param_name}}));
+  }
+{% endfor %}
+
+{# Generate non-experimental events. #}
+{% for event in domain.events %}
+  {% if event.experimental %}{% continue %}{% endif %}
+  {% set param_type = '{!function(!' + domain.domain + '.' + event.name | to_title_case + 'Params)}' %}
+
+  /**
+    {% if event.description %}
+    * {{ event.description }}
+    {% endif %}
+    * @param {{param_type}} listener
+    */
+  On{{event.name | to_title_case}}(listener) {
+    this.connection_.addEventListener(
+        '{{domain.domain}}.{{event.name}}', /** @type {!function(!Object): undefined} */ (listener));
+  }
+{% endfor %}
+}
+
+{# Generate enums. #}
+{% for type in domain.types %}
+  {% if not "enum" in type %}{% continue %}{% endif %}
+/**
+  {% if type.description %}
+ * {{type.description}}
+ *
+  {% endif %}
+ * @enum {string}
+ */
+{{domain.domain}}.{{type.id}} = {
+  {% for literal in type.enum %}
+    {{ literal | sanitize_literal | dash_to_camelcase | camelcase_to_hacker_style | upper }}: "{{ literal }}"{{',' if not loop.last}}
+  {% endfor %}
+};
+
+{% endfor %}
+
+{# Generate types. #}
+{% for type in domain.types %}
+  {% if not (type.type == "object") or not ("properties" in type) %}{% continue %}{% endif %}
+/**
+  {% if type.description %}
+ * {{type.description}}
+ *
+  {% endif %}
+  {% for property in type.properties %}
+    {% if property.description %}
+ * {{property.name}}: {{property.description}}
+    {% endif %}
+  {% endfor %}
+ *
+  {% if type.properties %}
+ * @typedef {{ '{{' }}
+  {% for property in type.properties %}
+    {% if property.optional %}
+ *   {{property.name}}: ({{ short_form(resolve_type(property).js_type) }}|undefined){% if not loop.last %},{% endif %}
+ 
+    {% else %}
+ *   {{property.name}}: {{ short_form(resolve_type(property).js_type) }}{% if not loop.last %}, {% endif %}
+
+    {% endif %}
+  {% endfor %}
+ * {{ '}}' }}
+  {% else %}
+ * @typedef {undefined}
+  {% endif %}
+ */
+{{domain.domain}}.{{type.id}};
+
+
+{% endfor %}
+
+exports = {{domain.domain}};

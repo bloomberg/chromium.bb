@@ -4,9 +4,11 @@
 
 import argparse
 import collections
+import functools
 import os.path
 import re
 import sys
+
 try:
   import json
 except ImportError:
@@ -60,6 +62,22 @@ def CamelCaseToHackerStyle(name):
   name = re.sub(r'([^_])([A-Z][a-z]+?)', r'\1_\2', name)
   return name.lower()
 
+
+def Shorten(js_name, domain_name):
+  short_name = domain_name + '.'
+  long_name = 'chromium.DevTools.' + short_name
+  return js_name.replace(long_name, short_name)
+
+
+def ShortForm(domain, js_name):
+  if not 'js_dependencies' in domain:
+    return js_name
+
+  for dependency in domain['js_dependencies']:
+    js_name = Shorten(js_name, dependency)
+  js_name = Shorten(js_name, domain['domain'])
+  return js_name
+  
 
 def SanitizeLiteral(literal):
   return {
@@ -120,6 +138,7 @@ def PatchFullQualifiedRefs(json_api):
 def CreateUserTypeDefinition(domain, type):
   namespace = CamelCaseToHackerStyle(domain['domain'])
   return {
+      'js_type': '!chromium.DevTools.%s.%s' % (domain['domain'], type['id']),
       'return_type': 'std::unique_ptr<headless::%s::%s>' % (
           namespace, type['id']),
       'pass_type': 'std::unique_ptr<headless::%s::%s>' % (
@@ -137,6 +156,7 @@ def CreateUserTypeDefinition(domain, type):
 def CreateEnumTypeDefinition(domain_name, type):
   namespace = CamelCaseToHackerStyle(domain_name)
   return {
+      'js_type': '!chromium.DevTools.%s.%s' % (domain_name, type['id']),
       'return_type': 'headless::%s::%s' % (namespace, type['id']),
       'pass_type': 'headless::%s::%s' % (namespace, type['id']),
       'to_raw_type': '%s',
@@ -151,6 +171,7 @@ def CreateEnumTypeDefinition(domain_name, type):
 
 def CreateObjectTypeDefinition():
   return {
+      'js_type': 'Object',
       'return_type': 'std::unique_ptr<base::DictionaryValue>',
       'pass_type': 'std::unique_ptr<base::DictionaryValue>',
       'to_raw_type': '*%s',
@@ -166,6 +187,7 @@ def CreateObjectTypeDefinition():
 def WrapObjectTypeDefinition(type):
   id = type.get('id', 'base::Value')
   return {
+      'js_type': '!Object',
       'return_type': 'std::unique_ptr<%s>' % id,
       'pass_type': 'std::unique_ptr<%s>' % id,
       'to_raw_type': '*%s',
@@ -180,6 +202,7 @@ def WrapObjectTypeDefinition(type):
 
 def CreateAnyTypeDefinition():
   return {
+      'js_type': '*',
       'return_type': 'std::unique_ptr<base::Value>',
       'pass_type': 'std::unique_ptr<base::Value>',
       'to_raw_type': '*%s',
@@ -194,6 +217,7 @@ def CreateAnyTypeDefinition():
 
 def CreateStringTypeDefinition():
   return {
+      'js_type': 'string',
       'return_type': 'std::string',
       'pass_type': 'const std::string&',
       'to_pass_type': '%s',
@@ -212,7 +236,13 @@ def CreatePrimitiveTypeDefinition(type):
       'integer': 'int',
       'boolean': 'bool',
   }
+  js_typedefs = {
+      'number': 'number',
+      'integer': 'number',
+      'boolean': 'boolean',
+  }
   return {
+      'js_type': js_typedefs[type],
       'return_type': typedefs[type],
       'pass_type': typedefs[type],
       'to_pass_type': '%s',
@@ -236,6 +266,7 @@ type_definitions['any'] = CreateAnyTypeDefinition()
 
 def WrapArrayDefinition(type):
   return {
+      'js_type': '!Array.<%s>' % type['js_type'],
       'return_type': 'std::vector<%s>' % type['type'],
       'pass_type': 'std::vector<%s>' % type['type'],
       'to_raw_type': '%s',
@@ -377,6 +408,7 @@ def InitializeDomainDependencies(json_api):
   including itself."""
 
   direct_deps = collections.defaultdict(set)
+  types_required = collections.defaultdict(set)
 
   def GetDomainDepsFromRefs(domain_name, json):
     if isinstance(json, list):
@@ -393,9 +425,11 @@ def InitializeDomainDependencies(json_api):
       if '.' in json['$ref']:
         dep = json['$ref'].split('.')[0]
         direct_deps[domain_name].add(dep)
+        types_required[domain_name].add(json['$ref'])
 
   for domain in json_api['domains']:
     direct_deps[domain['domain']] = set(domain.get('dependencies', []))
+    types_required[domain['domain']] = set(domain.get('types_required', []))
     GetDomainDepsFromRefs(domain['domain'], domain)
 
   def TraverseDependencies(domain, deps):
@@ -409,6 +443,15 @@ def InitializeDomainDependencies(json_api):
   for domain in json_api['domains']:
     domain_deps = set()
     TraverseDependencies(domain['domain'], domain_deps)
+    if 'dependencies' in domain:
+      domain['js_dependencies'] = domain['dependencies']
+    else:
+      domain['js_dependencies'] = []
+
+    domain['js_forward_declarations'] = []
+    for type in types_required[domain['domain']]:
+      if not type.split('.')[0] in domain['js_dependencies']:
+        domain['js_forward_declarations'].append(type)
     domain['dependencies'] = sorted(domain_deps)
 
 
@@ -456,6 +499,7 @@ def GeneratePerDomain(jinja_env, output_dirname, json_api, class_name,
       template_context = {
           'domain': domain,
           'resolve_type': ResolveType,
+          'short_form': functools.partial(ShortForm, domain),
       }
       domain_name = CamelCaseToHackerStyle(domain['domain'])
       output_file = '%s/%s.%s' % (output_dirname,
@@ -469,6 +513,10 @@ def GenerateDomains(jinja_env, output_dirname, json_api):
   GeneratePerDomain(
       jinja_env, os.path.join(output_dirname, 'devtools', 'domains'), json_api,
       'domain', ['cc', 'h'],
+      lambda domain_name: domain_name)
+  GeneratePerDomain(
+      jinja_env, os.path.join(output_dirname, 'devtools_js'), json_api,
+      'domain', ['js'],
       lambda domain_name: domain_name)
 
 
