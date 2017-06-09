@@ -16312,6 +16312,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="7" label="File contents internally deleted."/>
 </enum>
 
+<enum name="FileMetricsProviderEmbeddedProfileResult" type="int">
+  <int value="0" label="File was accessed."/>
+  <int value="1" label="File had embedded profile."/>
+  <int value="2"
+      label="File used fallback because no embedded profile was found."/>
+  <int value="3"
+      label="File was dropped because no embedded profile was found."/>
+</enum>
+
 <enum name="FileReaderSyncWorkerType" type="int">
   <int value="0" label="Other"/>
   <int value="1" label="Dedicated Worker"/>

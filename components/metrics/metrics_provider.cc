@@ -27,6 +27,12 @@ void MetricsProvider::OnRecordingDisabled() {
 void MetricsProvider::OnAppEnterBackground() {
 }
 
+bool MetricsProvider::ProvideIndependentMetrics(
+    SystemProfileProto* system_profile_proto,
+    base::HistogramSnapshotManager* snapshot_manager) {
+  return false;
+}
+
 void MetricsProvider::ProvideSystemProfileMetrics(
     SystemProfileProto* system_profile_proto) {
 }

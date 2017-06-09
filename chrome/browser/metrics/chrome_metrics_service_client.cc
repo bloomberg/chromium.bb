@@ -177,6 +177,7 @@ void RegisterOrRemovePreviousRunMetricsFile(
     bool metrics_reporting_enabled,
     const base::FilePath& dir,
     base::StringPiece metrics_name,
+    metrics::FileMetricsProvider::SourceAssociation association,
     scoped_refptr<base::TaskRunner> task_runner,
     metrics::FileMetricsProvider* file_metrics_provider) {
   base::FilePath metrics_file;
@@ -188,7 +189,7 @@ void RegisterOrRemovePreviousRunMetricsFile(
     file_metrics_provider->RegisterSource(
         metrics_file,
         metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_FILE,
-        metrics::FileMetricsProvider::ASSOCIATE_PREVIOUS_RUN, metrics_name);
+        association, metrics_name);
   } else {
     // When metrics reporting is not enabled, any existing file should be
     // deleted in order to preserve user privacy.
@@ -223,7 +224,8 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
         metrics_reporting_enabled && (send_unreported == "yes");
     RegisterOrRemovePreviousRunMetricsFile(
         report_previous_persistent_histograms, user_data_dir,
-        ChromeMetricsServiceClient::kBrowserMetricsName, task_runner,
+        ChromeMetricsServiceClient::kBrowserMetricsName,
+        metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE, task_runner,
         file_metrics_provider.get());
 
     // Register the Crashpad metrics files.
@@ -231,8 +233,10 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
     // cleanly.
     RegisterOrRemovePreviousRunMetricsFile(
         metrics_reporting_enabled, user_data_dir,
-        kCrashpadHistogramAllocatorName, task_runner,
-        file_metrics_provider.get());
+        kCrashpadHistogramAllocatorName,
+        metrics::FileMetricsProvider::
+            ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN,
+        task_runner, file_metrics_provider.get());
     if (metrics_reporting_enabled) {
       base::FilePath active_path;
       base::GlobalHistogramAllocator::ConstructFilePaths(

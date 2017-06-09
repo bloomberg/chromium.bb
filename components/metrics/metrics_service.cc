@@ -625,6 +625,12 @@ void MetricsService::OpenNewLog() {
         FROM_HERE, base::Bind(&MetricsService::StartInitTask,
                               self_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kInitializationDelaySeconds));
+
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&MetricsService::PrepareProviderMetricsTask,
+                   self_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(2 * kInitializationDelaySeconds));
   }
 }
 
@@ -969,6 +975,37 @@ void MetricsService::RecordCurrentStabilityHistograms() {
       base::Histogram::kNoFlags, base::Histogram::kUmaStabilityHistogramFlag);
   for (auto& provider : metrics_providers_)
     provider->RecordInitialHistogramSnapshots(&histogram_snapshot_manager_);
+}
+
+bool MetricsService::PrepareProviderMetricsLog() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Create a new log. This will have some defaut values injected in it but
+  // those will be overwritten when an embedded profile is extracted.
+  std::unique_ptr<MetricsLog> log = CreateLog(MetricsLog::INDEPENDENT_LOG);
+
+  for (auto& provider : metrics_providers_) {
+    if (log->LoadIndependentMetrics(provider.get())) {
+      log_manager_.PauseCurrentLog();
+      log_manager_.BeginLoggingWithLog(std::move(log));
+      log_manager_.FinishCurrentLog(log_store());
+      log_manager_.ResumePausedLog();
+      return true;
+    }
+  }
+  return false;
+}
+
+void MetricsService::PrepareProviderMetricsTask() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool found = PrepareProviderMetricsLog();
+  base::TimeDelta next_check = found ? base::TimeDelta::FromSeconds(5)
+                                     : base::TimeDelta::FromMinutes(15);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&MetricsService::PrepareProviderMetricsTask,
+                 self_ptr_factory_.GetWeakPtr()),
+      next_check);
 }
 
 void MetricsService::LogCleanShutdown(bool end_completed) {

@@ -91,11 +91,10 @@ TEST_F(PersistentSystemProfileTest, ProfileStorage) {
   trial->set_name_id(123);
   trial->set_group_id(456);
 
-  std::string serialized_proto;
-  ASSERT_TRUE(proto1.SerializeToString(&serialized_proto));
-  persistent_profile()->SetSystemProfile(serialized_proto);
+  persistent_profile()->SetSystemProfile(proto1);
 
   SystemProfileProto proto2;
+  ASSERT_TRUE(PersistentSystemProfile::HasSystemProfile(*memory_allocator()));
   ASSERT_TRUE(
       PersistentSystemProfile::GetSystemProfile(*memory_allocator(), &proto2));
   ASSERT_EQ(1, proto2.field_trial_size());
@@ -108,8 +107,7 @@ TEST_F(PersistentSystemProfileTest, ProfileStorage) {
   trial->set_name_id(78);
   trial->set_group_id(90);
 
-  ASSERT_TRUE(proto1.SerializeToString(&serialized_proto));
-  persistent_profile()->SetSystemProfile(serialized_proto);
+  persistent_profile()->SetSystemProfile(proto1);
 
   ASSERT_TRUE(
       PersistentSystemProfile::GetSystemProfile(*memory_allocator(), &proto2));

@@ -80,6 +80,19 @@ class FileMetricsProvider : public MetricsProvider,
     // This is important when metrics are dumped as part of a crash of the
     // previous run. This can only be used with FILE_HISTOGRAMS_ATOMIC.
     ASSOCIATE_PREVIOUS_RUN,
+
+    // Associates the metrics in the file with the a profile embedded in the
+    // same file. The reporting will take place at a convenient time after
+    // startup when the browser is otherwise idle. If there is no embedded
+    // system profile, these metrics will be lost.
+    ASSOCIATE_INTERNAL_PROFILE,
+
+    // Like above but fall back to ASSOCIATE_PREVIOUS_RUN if there is no
+    // embedded profile. This has a small cost during startup as that is
+    // when previous-run metrics are sent so the file has be checked at
+    // that time even though actual transfer will be delayed if an
+    // embedded profile is found.
+    ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN,
   };
 
   FileMetricsProvider(const scoped_refptr<base::TaskRunner>& task_runner,
@@ -147,6 +160,9 @@ class FileMetricsProvider : public MetricsProvider,
   // be internally updated to indicate the next file to be read.
   static bool LocateNextFileInDirectory(SourceInfo* source);
 
+  // Handles the completion of a source.
+  static void FinishedWithSource(SourceInfo* source, AccessResult result);
+
   // Checks a list of sources (on a task-runner allowed to do I/O) and merge
   // any data found within them.
   static void CheckAndMergeMetricSourcesOnTaskRunner(SourceInfoList* sources);
@@ -175,8 +191,11 @@ class FileMetricsProvider : public MetricsProvider,
   // Updates the persistent state information to show a source as being read.
   void RecordSourceAsRead(SourceInfo* source);
 
-  // metrics::MetricsDataProvider:
+  // metrics::MetricsProvider:
   void OnDidCreateMetricsLog() override;
+  bool ProvideIndependentMetrics(
+      SystemProfileProto* system_profile_proto,
+      base::HistogramSnapshotManager* snapshot_manager) override;
   bool HasInitialStabilityMetrics() override;
   void RecordInitialHistogramSnapshots(
       base::HistogramSnapshotManager* snapshot_manager) override;
@@ -192,6 +211,9 @@ class FileMetricsProvider : public MetricsProvider,
 
   // A list of currently active sources to be merged when required.
   SourceInfoList sources_mapped_;
+
+  // A list of currently active sources to be merged when required.
+  SourceInfoList sources_with_profile_;
 
   // A list of sources for a previous run. These are held separately because
   // they are not subject to the periodic background checking that handles
