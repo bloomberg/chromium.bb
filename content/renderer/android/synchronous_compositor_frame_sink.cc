@@ -198,8 +198,7 @@ bool SynchronousCompositorFrameSink::BindToClient(
   // process so there is no reason for it to use a SharedBitmapManager.
   display_.reset(new cc::Display(
       shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
-      software_renderer_settings, kRootFrameSinkId,
-      nullptr /* begin_frame_source */, std::move(output_surface),
+      software_renderer_settings, kRootFrameSinkId, std::move(output_surface),
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
   display_->Initialize(&display_client_, surface_manager_.get());
   display_->SetVisible(true);

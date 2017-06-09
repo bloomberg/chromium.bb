@@ -563,6 +563,10 @@ void CompositorImpl::SetVisible(bool visible) {
     host_->ReleaseCompositorFrameSink();
     has_compositor_frame_sink_ = false;
     pending_frames_ = 0;
+    if (display_) {
+      GetSurfaceManager()->UnregisterBeginFrameSource(
+          root_window_->GetBeginFrameSource());
+    }
     display_.reset();
   } else {
     host_->SetVisible(true);
@@ -775,14 +779,14 @@ void CompositorImpl::InitializeDisplay(
   cc::SurfaceManager* manager = GetSurfaceManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      task_runner, display_output_surface->capabilities().max_frames_pending));
+      root_window_->GetBeginFrameSource(), task_runner,
+      display_output_surface->capabilities().max_frames_pending));
 
   display_.reset(new cc::Display(
       viz::HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
       host_->GetSettings().renderer_settings, frame_sink_id_,
-      root_window_->GetBeginFrameSource(), std::move(display_output_surface),
-      std::move(scheduler),
+      std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
   auto compositor_frame_sink =
@@ -797,6 +801,8 @@ void CompositorImpl::InitializeDisplay(
 
   display_->SetVisible(true);
   display_->Resize(size_);
+  GetSurfaceManager()->RegisterBeginFrameSource(
+      root_window_->GetBeginFrameSource(), frame_sink_id_);
   host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 

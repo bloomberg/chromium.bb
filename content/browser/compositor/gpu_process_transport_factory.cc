@@ -591,18 +591,27 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   gfx::RenderingWindowManager::GetInstance()->DoSetParentOnChild(
       compositor->widget());
 #endif
+  if (data->synthetic_begin_frame_source) {
+    GetSurfaceManager()->UnregisterBeginFrameSource(
+        data->synthetic_begin_frame_source.get());
+  } else if (data->gpu_vsync_begin_frame_source) {
+    GetSurfaceManager()->UnregisterBeginFrameSource(
+        data->gpu_vsync_begin_frame_source.get());
+  }
 
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      compositor->task_runner().get(),
+      begin_frame_source, compositor->task_runner().get(),
       display_output_surface->capabilities().max_frames_pending));
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = base::MakeUnique<cc::Display>(
       viz::HostSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
-      renderer_settings_, compositor->frame_sink_id(), begin_frame_source,
+      renderer_settings_, compositor->frame_sink_id(),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(
           compositor->task_runner().get()));
+  GetSurfaceManager()->RegisterBeginFrameSource(begin_frame_source,
+                                                compositor->frame_sink_id());
   // Note that we are careful not to destroy prior BeginFrameSource objects
   // until we have reset |data->display|.
   data->synthetic_begin_frame_source = std::move(synthetic_begin_frame_source);
@@ -662,7 +671,13 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   if (data->surface_handle)
     gpu::GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle);
 #endif
-
+  if (data->synthetic_begin_frame_source) {
+    GetSurfaceManager()->UnregisterBeginFrameSource(
+        data->synthetic_begin_frame_source.get());
+  } else if (data->gpu_vsync_begin_frame_source) {
+    GetSurfaceManager()->UnregisterBeginFrameSource(
+        data->gpu_vsync_begin_frame_source.get());
+  }
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
     // Destroying the GLHelper may cause some async actions to be cancelled,
