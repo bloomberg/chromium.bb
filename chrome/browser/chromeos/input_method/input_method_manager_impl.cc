@@ -19,12 +19,14 @@
 #include "base/feature_list.h"
 #include "base/hash.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
@@ -49,6 +51,10 @@
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
+
+#if defined(USE_OZONE)
+#include "ui/base/ime/chromeos/ime_keyboard_mus.h"
+#endif
 
 namespace chromeos {
 namespace input_method {
@@ -938,11 +944,13 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       enable_extension_loading_(enable_extension_loading),
       is_ime_menu_activated_(false) {
-  // TODO(crbug.com/642863): Revisit using FakeImeKeyboard with mash when
-  // InputController work is ready.
-  if (IsRunningAsSystemCompositor() &&
-      chromeos::GetAshConfig() == ash::Config::CLASSIC) {
+  if (IsRunningAsSystemCompositor()) {
+#if defined(USE_OZONE)
+    keyboard_ = base::MakeUnique<ImeKeyboardMus>(
+        g_browser_process->platform_part()->GetInputDeviceControllerClient());
+#else
     keyboard_.reset(ImeKeyboard::Create());
+#endif
   } else {
     keyboard_.reset(new FakeImeKeyboard());
   }
