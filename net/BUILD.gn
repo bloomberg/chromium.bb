@@ -154,8 +154,6 @@ component("net") {
     "base/sys_addrinfo.h",
     "base/url_util.cc",
     "base/url_util.h",
-    "base/zap.cc",
-    "base/zap.h",
     "cert/asn1_util.cc",
     "cert/asn1_util.h",
     "cert/cert_database.cc",
