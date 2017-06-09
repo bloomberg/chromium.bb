@@ -721,12 +721,14 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
       NetworkStateHandler::TECHNOLOGY_ENABLED);
 
   EXPECT_EQ(0u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
       kTetherSignalStrength1, false /* has_connected_to_network */);
 
   EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
 
   const NetworkState* tether_network =
       network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
@@ -743,7 +745,8 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
       kTetherGuid1, "NewCarrier", 5 /* battery_percentage */,
       10 /* signal_strength */));
 
-  EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
 
   tether_network =
       network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
@@ -759,18 +762,21 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   EXPECT_TRUE(
       network_state_handler_->SetTetherNetworkHasConnectedToHost(kTetherGuid1));
 
-  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(kTetherGuid1));
 
   // Try calling that function again. It should return false and should not
   // trigger a NetworkListChanged() callback for observers.
   EXPECT_FALSE(
       network_state_handler_->SetTetherNetworkHasConnectedToHost(kTetherGuid1));
 
-  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(kTetherGuid1));
 
   network_state_handler_->RemoveTetherNetworkState(kTetherGuid1);
 
-  EXPECT_EQ(4u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(kTetherGuid1));
 
   ASSERT_FALSE(network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1));
 
@@ -784,8 +790,6 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation) {
   network_state_handler_->SetTetherTechnologyState(
       NetworkStateHandler::TECHNOLOGY_ENABLED);
 
-  EXPECT_EQ(0u, test_observer_->network_list_changed_count());
-
   const std::string profile = "/profile/profile1";
   const std::string wifi_path = "/service/wifi_with_guid";
   AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
@@ -793,20 +797,27 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation) {
   profile_test_->AddProfile(profile, "" /* userhash */);
   EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
   UpdateManagerProperties();
+  test_observer_->reset_updates();
 
   EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(wifi_path));
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
       kTetherSignalStrength1, kTetherHasConnectedToHost1);
 
   EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(wifi_path));
 
   EXPECT_TRUE(
       network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
           kTetherGuid1, kWifiGuid1));
 
-  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(wifi_path));
 
   const NetworkState* wifi_network =
       network_state_handler_->GetNetworkStateFromGuid(kWifiGuid1);
@@ -816,12 +827,28 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation) {
       network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
   EXPECT_EQ(kWifiGuid1, tether_network->tether_guid());
 
+  // Try associating again. The function call should return true since the
+  // association was successful, but no new observer updates should occur since
+  // no changes happened.
+  EXPECT_TRUE(
+      network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+          kTetherGuid1, kWifiGuid1));
+
+  EXPECT_EQ(kTetherGuid1, wifi_network->tether_guid());
+  EXPECT_EQ(kWifiGuid1, tether_network->tether_guid());
+
+  EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(wifi_path));
+
   network_state_handler_->RemoveTetherNetworkState(kTetherGuid1);
 
-  EXPECT_EQ(4u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(wifi_path));
 
   wifi_network = network_state_handler_->GetNetworkStateFromGuid(kWifiGuid1);
-  ASSERT_TRUE(wifi_network->tether_guid().empty());
+  EXPECT_TRUE(wifi_network->tether_guid().empty());
 }
 
 TEST_F(NetworkStateHandlerTest, TetherNetworkStateDisassociation) {
@@ -835,20 +862,27 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateDisassociation) {
   profile_test_->AddProfile(profile, "" /* userhash */);
   EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
   UpdateManagerProperties();
+  test_observer_->reset_updates();
 
   EXPECT_EQ(1u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(wifi_path));
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
       kTetherSignalStrength1, kTetherHasConnectedToHost1);
 
   EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(wifi_path));
 
   EXPECT_TRUE(
       network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
           kTetherGuid1, kWifiGuid1));
 
-  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(wifi_path));
 
   const NetworkState* wifi_network =
       network_state_handler_->GetNetworkStateFromGuid(kWifiGuid1);
@@ -858,13 +892,16 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateDisassociation) {
       network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
   EXPECT_EQ(kWifiGuid1, tether_network->tether_guid());
 
-  network_state_handler_->DisassociateTetherNetworkStateFromWifiNetwork(
-      kTetherGuid1);
+  EXPECT_TRUE(
+      network_state_handler_->DisassociateTetherNetworkStateFromWifiNetwork(
+          kTetherGuid1));
 
-  ASSERT_TRUE(wifi_network->tether_guid().empty());
-  ASSERT_TRUE(tether_network->tether_guid().empty());
+  EXPECT_TRUE(wifi_network->tether_guid().empty());
+  EXPECT_TRUE(tether_network->tether_guid().empty());
 
-  EXPECT_EQ(4u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(2u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(wifi_path));
 }
 
 TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociationWifiRemoved) {
@@ -953,6 +990,9 @@ TEST_F(NetworkStateHandlerTest, SetTetherNetworkStateConnectionState) {
   network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
       kTetherGuid1, kWifiGuid1);
 
+  EXPECT_EQ(0, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
   const NetworkState* tether_network =
       network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
 
@@ -962,15 +1002,27 @@ TEST_F(NetworkStateHandlerTest, SetTetherNetworkStateConnectionState) {
   network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
   EXPECT_TRUE(tether_network->IsConnectingState());
 
+  EXPECT_EQ(1, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
   network_state_handler_->SetTetherNetworkStateConnected(kTetherGuid1);
   EXPECT_TRUE(tether_network->IsConnectedState());
+
+  EXPECT_EQ(2, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(3, test_observer_->PropertyUpdatesForService(kTetherGuid1));
 
   network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
   EXPECT_TRUE(tether_network->IsReconnecting());
 
+  EXPECT_EQ(3, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(4, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
   network_state_handler_->SetTetherNetworkStateDisconnected(kTetherGuid1);
   EXPECT_FALSE(tether_network->IsConnectingState());
   EXPECT_FALSE(tether_network->IsConnectedState());
+
+  EXPECT_EQ(4, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(5, test_observer_->PropertyUpdatesForService(kTetherGuid1));
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
