@@ -377,26 +377,28 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     committed = true;
   } else {
     base::TimeDelta active_time = base::Time::Now() - diagnostics_.start_time;
-    uint64_t size = transaction_->GetTransactionSize() / 1024;
+    uint64_t size_kb = transaction_->GetTransactionSize() / 1024;
+    // All histograms record 1KB to 1GB.
     switch (mode_) {
       case blink::kWebIDBTransactionModeReadOnly:
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "WebCore.IndexedDB.Transaction.ReadOnly.TimeActive", active_time);
-        UMA_HISTOGRAM_MEMORY_KB(
-            "WebCore.IndexedDB.Transaction.ReadOnly.SizeOnCommit", size);
+        UMA_HISTOGRAM_COUNTS_1M(
+            "WebCore.IndexedDB.Transaction.ReadOnly.SizeOnCommit2", size_kb);
         break;
       case blink::kWebIDBTransactionModeReadWrite:
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "WebCore.IndexedDB.Transaction.ReadWrite.TimeActive", active_time);
-        UMA_HISTOGRAM_MEMORY_KB(
-            "WebCore.IndexedDB.Transaction.ReadWrite.SizeOnCommit", size);
+        UMA_HISTOGRAM_COUNTS_1M(
+            "WebCore.IndexedDB.Transaction.ReadWrite.SizeOnCommit2", size_kb);
         break;
       case blink::kWebIDBTransactionModeVersionChange:
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "WebCore.IndexedDB.Transaction.VersionChange.TimeActive",
             active_time);
-        UMA_HISTOGRAM_MEMORY_KB(
-            "WebCore.IndexedDB.Transaction.VersionChange.SizeOnCommit", size);
+        UMA_HISTOGRAM_COUNTS_1M(
+            "WebCore.IndexedDB.Transaction.VersionChange.SizeOnCommit2",
+            size_kb);
         break;
       default:
         NOTREACHED();
