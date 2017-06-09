@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ICON_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "chrome/browser/upgrade_observer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -23,7 +24,8 @@ class AppMenuIconController :
 #if defined(OS_WIN)
     public EnumerateModulesModel::Observer,
 #endif
-    public content::NotificationObserver {
+    public content::NotificationObserver,
+    public UpgradeObserver {
  public:
   enum class IconType {
     NONE,
@@ -68,6 +70,9 @@ class AppMenuIconController :
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // UpgradeObserver implementation.
+  void OnUpgradeRecommended() override;
 
 #if defined(OS_WIN)
   // EnumerateModulesModel:

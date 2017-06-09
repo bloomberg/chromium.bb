@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -351,11 +352,11 @@ ExtensionService::ExtensionService(Profile* profile,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
                  content::Source<Profile>(profile_));
+
+  UpgradeDetector::GetInstance()->AddObserver(this);
 
   extensions::ExtensionManagementFactory::GetForBrowserContext(profile_)
       ->AddObserver(this);
@@ -413,6 +414,7 @@ extensions::PendingExtensionManager*
 }
 
 ExtensionService::~ExtensionService() {
+  UpgradeDetector::GetInstance()->RemoveObserver(this);
   // No need to unload extensions here because they are profile-scoped, and the
   // profile is in the process of being deleted.
   for (const auto& provider : external_extension_providers_)
@@ -2248,12 +2250,6 @@ void ExtensionService::Observe(int type,
                          system_->info_map(), process->GetID()));
       break;
     }
-    case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
-      // Notify observers that chrome update is available.
-      for (auto& observer : update_observers_)
-        observer.OnChromeUpdateAvailable();
-      break;
-    }
     case chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED: {
       OnProfileDestructionStarted();
       break;
@@ -2357,6 +2353,12 @@ void ExtensionService::OnBlacklistUpdated() {
   blacklist_->GetBlacklistedIDs(
       registry_->GenerateInstalledExtensionsSet()->GetIDs(),
       base::Bind(&ExtensionService::ManageBlacklist, AsWeakPtr()));
+}
+
+void ExtensionService::OnUpgradeRecommended() {
+  // Notify observers that chrome update is available.
+  for (auto& observer : update_observers_)
+    observer.OnChromeUpdateAvailable();
 }
 
 void ExtensionService::ManageBlacklist(

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/upgrade_observer.h"
 #include "components/prefs/pref_member.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -43,10 +44,10 @@ class ToolbarView : public views::AccessiblePaneView,
                     public views::MenuButtonListener,
                     public ui::AcceleratorProvider,
                     public LocationBarView::Delegate,
-                    public content::NotificationObserver,
                     public CommandObserver,
                     public views::ButtonListener,
-                    public AppMenuIconController::Delegate {
+                    public AppMenuIconController::Delegate,
+                    public UpgradeObserver {
  public:
   // The view class name.
   static const char kViewClassName[];
@@ -130,10 +131,10 @@ class ToolbarView : public views::AccessiblePaneView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // UpgradeObserver implementation.
+  void OnOutdatedInstall() override;
+  void OnOutdatedInstallNoAutoUpdate() override;
+  void OnCriticalUpgradeInstalled() override;
 
   // ui::AcceleratorProvider:
   bool GetAcceleratorForCommandId(int command_id,
@@ -209,8 +210,6 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // The display mode used when laying out the toolbar.
   const DisplayMode display_mode_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarView);
 };

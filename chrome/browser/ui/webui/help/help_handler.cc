@@ -26,13 +26,13 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -46,7 +46,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -207,12 +206,15 @@ std::string ReadRegulatoryLabelText(const base::FilePath& path) {
 
 HelpHandler::HelpHandler()
     : policy_registrar_(
-        g_browser_process->policy_service(),
-        policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())),
+          g_browser_process->policy_service(),
+          policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())),
+      apply_changes_from_upgrade_observer_(false),
       weak_factory_(this) {
+  UpgradeDetector::GetInstance()->AddObserver(this);
 }
 
 HelpHandler::~HelpHandler() {
+  UpgradeDetector::GetInstance()->RemoveObserver(this);
 }
 
 void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
@@ -374,8 +376,7 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
 
 void HelpHandler::RegisterMessages() {
   version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
-  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                 content::NotificationService::AllSources());
+  apply_changes_from_upgrade_observer_ = true;
   policy_registrar_.Observe(
       policy::key::kDeviceAutoUpdateDisabled,
       base::Bind(&HelpHandler::OnDeviceAutoUpdatePolicyChanged,
@@ -409,13 +410,12 @@ void HelpHandler::RegisterMessages() {
 #endif
 }
 
-void HelpHandler::Observe(int type, const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED, type);
-
-  // A version update is installed and ready to go. Refresh the UI so the
-  // correct state will be shown.
-  RequestUpdate(nullptr);
+void HelpHandler::OnUpgradeRecommended() {
+  if (apply_changes_from_upgrade_observer_) {
+    // A version update is installed and ready to go. Refresh the UI so the
+    // correct state will be shown.
+    RequestUpdate(nullptr);
+  }
 }
 
 // static

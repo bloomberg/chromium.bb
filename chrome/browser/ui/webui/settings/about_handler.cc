@@ -27,12 +27,12 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -46,7 +46,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -265,9 +264,14 @@ std::string UpdateStatusToString(VersionUpdater::Status status) {
 
 namespace settings {
 
-AboutHandler::AboutHandler() : weak_factory_(this) {}
+AboutHandler::AboutHandler()
+    : apply_changes_from_upgrade_observer_(false), weak_factory_(this) {
+  UpgradeDetector::GetInstance()->AddObserver(this);
+}
 
-AboutHandler::~AboutHandler() {}
+AboutHandler::~AboutHandler() {
+  UpgradeDetector::GetInstance()->RemoveObserver(this);
+}
 
 AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
                                    Profile* profile) {
@@ -385,9 +389,8 @@ void AboutHandler::RegisterMessages() {
 }
 
 void AboutHandler::OnJavascriptAllowed() {
+  apply_changes_from_upgrade_observer_ = true;
   version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
-  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                 content::NotificationService::AllSources());
   policy_registrar_.reset(new policy::PolicyChangeRegistrar(
       g_browser_process->policy_service(),
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())));
@@ -398,20 +401,17 @@ void AboutHandler::OnJavascriptAllowed() {
 }
 
 void AboutHandler::OnJavascriptDisallowed() {
+  apply_changes_from_upgrade_observer_ = false;
   version_updater_.reset();
   policy_registrar_.reset();
-  registrar_.Remove(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                    content::NotificationService::AllSources());
 }
 
-void AboutHandler::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED, type);
-
-  // A version update is installed and ready to go. Refresh the UI so the
-  // correct state will be shown.
-  RequestUpdate();
+void AboutHandler::OnUpgradeRecommended() {
+  if (apply_changes_from_upgrade_observer_) {
+    // A version update is installed and ready to go. Refresh the UI so the
+    // correct state will be shown.
+    RequestUpdate();
+  }
 }
 
 void AboutHandler::OnDeviceAutoUpdatePolicyChanged(

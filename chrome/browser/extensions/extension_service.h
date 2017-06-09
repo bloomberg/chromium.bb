@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/install_gate.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
+#include "chrome/browser/upgrade_observer.h"
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -180,7 +181,8 @@ class ExtensionService
       public extensions::ExternalProviderInterface::VisitorInterface,
       public content::NotificationObserver,
       public extensions::Blacklist::Observer,
-      public extensions::ExtensionManagement::Observer {
+      public extensions::ExtensionManagement::Observer,
+      public UpgradeObserver {
  public:
   // Attempts to uninstall an extension from a given ExtensionService. Returns
   // true iff the target extension exists.
@@ -461,6 +463,9 @@ class ExtensionService
 
   // extensions::Blacklist::Observer implementation.
   void OnBlacklistUpdated() override;
+
+  // UpgradeObserver implementation.
+  void OnUpgradeRecommended() override;
 
   // Similar to FinishInstallation, but first checks if there still is an update
   // pending for the extension, and makes sure the extension is still idle.

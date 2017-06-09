@@ -20,8 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/upgrade_observer.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -52,7 +51,7 @@ class PeerConnection;
 // talks to the IPC channel on the IO thread.
 class ServiceProcessControl : public IPC::Sender,
                               public IPC::Listener,
-                              public content::NotificationObserver {
+                              public UpgradeObserver {
  public:
   enum ServiceProcessEvent {
     SERVICE_EVENT_INITIALIZE,
@@ -114,10 +113,8 @@ class ServiceProcessControl : public IPC::Sender,
   // IPC::Sender implementation
   bool Send(IPC::Message* message) override;
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // UpgradeObserver implementation.
+  void OnUpgradeRecommended() override;
 
   // Send a shutdown message to the service process. IPC channel will be
   // destroyed after calling this method.
@@ -241,12 +238,15 @@ class ServiceProcessControl : public IPC::Sender,
   // the service process.
   base::Closure histograms_callback_;
 
-  content::NotificationRegistrar registrar_;
-
   // Callback that gets invoked if service didn't reply in time.
   base::CancelableClosure histograms_timeout_callback_;
 
+  // If true changes to UpgradeObserver are applied, if false they are ignored.
+  bool apply_changes_from_upgrade_observer_;
+
   base::WeakPtrFactory<ServiceProcessControl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceProcessControl);
 };
 
 #endif  // CHROME_BROWSER_SERVICE_PROCESS_SERVICE_PROCESS_CONTROL_H_

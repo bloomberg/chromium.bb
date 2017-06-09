@@ -71,10 +71,10 @@ AppMenuIconController::AppMenuIconController(Profile* profile,
   DCHECK(profile_);
   DCHECK(delegate_);
 
-  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(profile_));
+
+  UpgradeDetector::GetInstance()->AddObserver(this);
 
 #if defined(OS_WIN)
   auto* modules = EnumerateModulesModel::GetInstance();
@@ -84,6 +84,8 @@ AppMenuIconController::AppMenuIconController(Profile* profile,
 }
 
 AppMenuIconController::~AppMenuIconController() {
+  UpgradeDetector::GetInstance()->RemoveObserver(this);
+
 #if defined(OS_WIN)
   EnumerateModulesModel::GetInstance()->RemoveObserver(this);
 #endif
@@ -131,5 +133,10 @@ void AppMenuIconController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED, type);
+  UpdateDelegate();
+}
+
+void AppMenuIconController::OnUpgradeRecommended() {
   UpdateDelegate();
 }
