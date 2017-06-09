@@ -68,7 +68,9 @@ std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
     std::unique_ptr<net::URLRequest> request,
     const Referrer& referrer,
     bool is_parallel_request) {
-  Referrer::SetReferrerForRequest(request.get(), referrer);
+  Referrer sanitized_referrer =
+      Referrer::SanitizeForRequest(request->url(), referrer);
+  Referrer::SetReferrerForRequest(request.get(), sanitized_referrer);
 
   if (request->url().SchemeIs(url::kBlobScheme))
     return nullptr;
