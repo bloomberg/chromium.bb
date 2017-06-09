@@ -90,7 +90,6 @@ class AURA_EXPORT WindowMus {
       const cc::FrameSinkId& frame_sink_id) = 0;
   virtual const cc::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& new_size) = 0;
-  virtual void SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) = 0;
   virtual void SetFallbackSurfaceInfo(const cc::SurfaceInfo& surface_info) = 0;
   // The window was deleted on the server side. DestroyFromServer() should
   // result in deleting |this|.
@@ -127,6 +126,8 @@ class AURA_EXPORT WindowMus {
   virtual void OnTransientRestackDone(WindowMus* window) = 0;
 
   virtual void NotifyEmbeddedAppDisconnected() = 0;
+
+  virtual bool HasLocalCompositorFrameSink() = 0;
 
  private:
   // Just for set_server_id(), which other places should not call.
