@@ -51,7 +51,7 @@ public enum ChromeContextMenuItem implements ContextMenuItem {
             R.id.contextmenu_open_image),
     OPEN_IMAGE_IN_NEW_TAB(R.drawable.context_menu_new_tab,
             R.string.contextmenu_open_image_in_new_tab, R.id.contextmenu_open_image_in_new_tab),
-    SEARCH_BY_IMAGE(R.drawable.googleg, R.string.contextmenu_search_web_for_image,
+    SEARCH_BY_IMAGE(R.drawable.context_menu_search, R.string.contextmenu_search_web_for_image,
             R.id.contextmenu_search_by_image),
     SHARE_IMAGE(R.drawable.ic_share_white_24dp, R.string.contextmenu_share_image,
             R.id.contextmenu_share_image),
