@@ -300,6 +300,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_IME_SETTINGS" desc="The label used for IME settings entry.">
         Customize languages and input...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_IME_MANAGED" desc="Tooltip for the icon displayed when input methods are managed by enterprise policy">
+        Input methods are configured by your administrator.
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_EMOJI" desc="The label used for IME emoji entry.">
         Emoji palette
       </message>

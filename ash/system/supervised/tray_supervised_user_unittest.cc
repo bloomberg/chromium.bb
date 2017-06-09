@@ -12,7 +12,6 @@
 #include "ash/system/tray/system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_controller_client.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/message_center/message_center.h"

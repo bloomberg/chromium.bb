@@ -19,7 +19,6 @@
 #include "ash/test/content/test_shell_content_state.h"
 #include "ash/test/screen_orientation_controller_test_api.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"

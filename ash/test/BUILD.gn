@@ -113,8 +113,6 @@ static_library("test_support_common") {
     "test_session_state_animator.h",
     "test_shell_delegate.cc",
     "test_shell_delegate.h",
-    "test_system_tray_delegate.cc",
-    "test_system_tray_delegate.h",
     "test_system_tray_item.cc",
     "test_system_tray_item.h",
     "test_wallpaper_delegate.cc",

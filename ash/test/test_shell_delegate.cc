@@ -13,10 +13,10 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/test_accessibility_delegate.h"
 #include "ash/test/test_keyboard_ui.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_wallpaper_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -102,7 +102,11 @@ void TestShellDelegate::ShelfInit() {
 void TestShellDelegate::ShelfShutdown() {}
 
 SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
-  return new TestSystemTrayDelegate;
+  return new SystemTrayDelegate;
+}
+
+ImeController* TestShellDelegate::GetImeController() {
+  return &stub_ime_controller_;
 }
 
 std::unique_ptr<WallpaperDelegate>

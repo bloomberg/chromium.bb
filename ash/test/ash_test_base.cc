@@ -25,7 +25,6 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_controller_client.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_positioner.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -411,11 +410,6 @@ TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
 
 TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
   return ash_test_helper_->test_session_controller_client();
-}
-
-TestSystemTrayDelegate* AshTestBase::GetSystemTrayDelegate() {
-  return static_cast<TestSystemTrayDelegate*>(
-      Shell::Get()->system_tray_delegate());
 }
 
 void AshTestBase::SetSessionStarted(bool session_started) {

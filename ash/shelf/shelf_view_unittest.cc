@@ -34,7 +34,6 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/wallpaper_controller_test_api.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/i18n/rtl.h"

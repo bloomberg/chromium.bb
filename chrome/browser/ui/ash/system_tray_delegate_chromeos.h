@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/accessibility_types.h"
-#include "ash/system/tray/ime_info.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -48,10 +47,6 @@ class SystemTrayDelegateChromeOS
   // Overridden from ash::SystemTrayDelegate:
   void Initialize() override;
   void ShowUserLogin() override;
-  void GetCurrentIME(ash::IMEInfo* info) override;
-  void GetAvailableIMEList(ash::IMEInfoList* list) override;
-  void GetCurrentIMEProperties(ash::IMEPropertyInfoList* list) override;
-  base::string16 GetIMEManagedMessage() override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   void ActiveUserWasChanged() override;
   bool IsSearchKeyMappedToCapsLock() override;

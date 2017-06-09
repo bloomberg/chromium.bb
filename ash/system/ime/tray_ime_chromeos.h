@@ -22,6 +22,7 @@ class IMEDefaultView;
 class IMEDetailedView;
 }
 
+class ImeController;
 class TrayItemView;
 
 // Controller for IME options in the system menu. Note this is separate from
@@ -67,7 +68,7 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   void OnIMERefresh() override;
   void OnIMEMenuActivationChanged(bool is_active) override;
 
-  // Returns true input methods are managed by policy.
+  // Returns true if input methods are managed by policy.
   bool IsIMEManaged();
 
   // Whether the default view should be shown.
@@ -79,6 +80,10 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   // sub-view.
   ImeListView::SingleImeBehavior GetSingleImeBehavior();
 
+  // Returns the icon used when the IME is managed.
+  views::View* GetControlledSettingIconForTesting();
+
+  ImeController* ime_controller_;
   TrayItemView* tray_label_;
   tray::IMEDefaultView* default_;
   tray::IMEDetailedView* detailed_;
@@ -88,9 +93,6 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   IMEInfoList ime_list_;
   IMEInfo current_ime_;
   IMEPropertyInfoList property_list_;
-  // If non-empty, a controlled-setting icon should be displayed with a tooltip
-  // text defined by this string.
-  base::string16 ime_managed_message_;
 
   // Whether the IME label and tray items should be visible.
   bool is_visible_;

@@ -5,18 +5,9 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 
-#include <string>
-#include <vector>
-
 #include "ash/ash_export.h"
-#include "base/strings/string16.h"
 
 namespace ash {
-struct IMEInfo;
-struct IMEPropertyInfo;
-
-using IMEInfoList = std::vector<IMEInfo>;
-using IMEPropertyInfoList = std::vector<IMEPropertyInfo>;
 
 class NetworkingConfigDelegate;
 
@@ -37,18 +28,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Shows login UI to add other users to this session.
   virtual void ShowUserLogin();
-
-  // Returns the currently selected IME.
-  virtual void GetCurrentIME(IMEInfo* info);
-
-  // Returns a list of availble IMEs.
-  virtual void GetAvailableIMEList(IMEInfoList* list);
-
-  // Returns a list of properties for the currently selected IME.
-  virtual void GetCurrentIMEProperties(IMEPropertyInfoList* list);
-
-  // Returns a non-empty string if IMEs are managed by policy.
-  virtual base::string16 GetIMEManagedMessage();
 
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;

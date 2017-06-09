@@ -188,6 +188,8 @@ component("ash") {
     "host/root_window_transformer.h",
     "host/transformer_helper.cc",
     "host/transformer_helper.h",
+    "ime/ime_controller.cc",
+    "ime/ime_controller.h",
     "ime/ime_switch_type.h",
     "key_event_watcher.cc",
     "key_event_watcher.h",

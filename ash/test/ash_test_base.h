@@ -58,7 +58,6 @@ class AshTestEnvironment;
 class AshTestHelper;
 class TestScreenshotDelegate;
 class TestSessionControllerClient;
-class TestSystemTrayDelegate;
 
 class AshTestBase : public testing::Test {
  public:
@@ -178,8 +177,6 @@ class AshTestBase : public testing::Test {
   TestScreenshotDelegate* GetScreenshotDelegate();
 
   TestSessionControllerClient* GetSessionControllerClient();
-
-  TestSystemTrayDelegate* GetSystemTrayDelegate();
 
   // Utility methods to emulate user logged in or not, session started or not
   // and user able to lock screen or not cases.
