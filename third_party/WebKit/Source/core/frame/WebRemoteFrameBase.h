@@ -13,6 +13,7 @@ namespace blink {
 class FrameOwner;
 class Page;
 class RemoteFrame;
+class WebRemoteFrameClient;
 
 class WebRemoteFrameBase : public GarbageCollectedFinalized<WebRemoteFrameBase>,
                            public WebRemoteFrame {
@@ -23,6 +24,8 @@ class WebRemoteFrameBase : public GarbageCollectedFinalized<WebRemoteFrameBase>,
                                    FrameOwner*,
                                    const AtomicString& name) = 0;
   virtual RemoteFrame* GetFrame() const = 0;
+  virtual void SetCoreFrame(RemoteFrame*) = 0;
+  virtual WebRemoteFrameClient* Client() const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

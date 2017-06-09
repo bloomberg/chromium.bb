@@ -41,6 +41,7 @@
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebFileChooserCompletionImpl.h"
 #include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebSettingsImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
@@ -123,7 +124,6 @@
 #include "web/PopupMenuImpl.h"
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
 
@@ -184,8 +184,8 @@ ChromeClientImpl* ChromeClientImpl::Create(WebViewBase* web_view) {
   return new ChromeClientImpl(web_view);
 }
 
-void* ChromeClientImpl::WebView() const {
-  return static_cast<void*>(web_view_);
+WebViewBase* ChromeClientImpl::GetWebView() const {
+  return web_view_;
 }
 
 void ChromeClientImpl::ChromeDestroyed() {

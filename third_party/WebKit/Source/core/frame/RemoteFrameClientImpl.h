@@ -8,11 +8,11 @@
 #include "core/frame/RemoteFrameClient.h"
 
 namespace blink {
-class WebRemoteFrameImpl;
+class WebRemoteFrameBase;
 
 class RemoteFrameClientImpl final : public RemoteFrameClient {
  public:
-  static RemoteFrameClientImpl* Create(WebRemoteFrameImpl*);
+  static RemoteFrameClientImpl* Create(WebRemoteFrameBase*);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -41,12 +41,12 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void AdvanceFocus(WebFocusType, LocalFrame*) override;
   void VisibilityChanged(bool visible) override;
 
-  WebRemoteFrameImpl* GetWebFrame() const { return web_frame_; }
+  WebRemoteFrameBase* GetWebFrame() const { return web_frame_; }
 
  private:
-  explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
+  explicit RemoteFrameClientImpl(WebRemoteFrameBase*);
 
-  Member<WebRemoteFrameImpl> web_frame_;
+  Member<WebRemoteFrameBase> web_frame_;
 };
 
 }  // namespace blink

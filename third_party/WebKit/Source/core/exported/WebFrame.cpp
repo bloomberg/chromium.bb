@@ -11,7 +11,9 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/OpenedFrameTracker.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/RemoteFrameOwner.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/frame/WebRemoteFrameBase.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -22,8 +24,6 @@
 #include "public/web/WebElement.h"
 #include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebSandboxFlags.h"
-#include "web/OpenedFrameTracker.h"
-#include "web/RemoteFrameOwner.h"
 
 namespace blink {
 
@@ -199,6 +199,10 @@ void WebFrame::SetOpener(WebFrame* opener) {
   if (opener)
     opener->opened_frame_tracker_->Add(this);
   opener_ = opener;
+}
+
+void WebFrame::ClearOpener() {
+  SetOpener(nullptr);
 }
 
 void WebFrame::InsertAfter(WebFrame* new_child, WebFrame* previous_sibling) {

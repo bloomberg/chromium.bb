@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/OpenedFrameTracker.h"
+#include "core/frame/OpenedFrameTracker.h"
 
 #include "platform/heap/Handle.h"
 #include "public/web/WebFrame.h"

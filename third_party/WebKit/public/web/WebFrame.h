@@ -35,6 +35,7 @@
 #include "WebIconURL.h"
 #include "WebNode.h"
 #include "public/platform/WebCanvas.h"
+#include "public/platform/WebCommon.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebFrameLoadType.h"
@@ -82,7 +83,7 @@ class WebVector;
 // WebFrame is the base class for both WebLocalFrame and WebRemoteFrame and
 // contains methods that are valid on both local and remote frames, such as
 // getting a frame's parent or its opener.
-class WebFrame {
+class BLINK_EXPORT WebFrame {
  public:
   // FIXME: We already have blink::TextGranularity. For now we support only
   // a part of blink::TextGranularity.
@@ -97,14 +98,14 @@ class WebFrame {
   };
 
   // Returns the number of live WebFrame objects, used for leak checking.
-  BLINK_EXPORT static int InstanceCount();
+  static int InstanceCount();
 
   virtual bool IsWebLocalFrame() const = 0;
   virtual WebLocalFrame* ToWebLocalFrame() = 0;
   virtual bool IsWebRemoteFrame() const = 0;
   virtual WebRemoteFrame* ToWebRemoteFrame() = 0;
 
-  BLINK_EXPORT bool Swap(WebFrame*);
+  bool Swap(WebFrame*);
 
   // This method closes and deletes the WebFrame. This is typically called by
   // the embedder in response to a frame detached callback to the WebFrame
@@ -113,7 +114,7 @@ class WebFrame {
 
   // Called by the embedder when it needs to detach the subtree rooted at this
   // frame.
-  BLINK_EXPORT void Detach();
+  void Detach();
 
   // Basic properties ---------------------------------------------------
 
@@ -126,25 +127,25 @@ class WebFrame {
   virtual void SetName(const WebString&) = 0;
 
   // The security origin of this frame.
-  BLINK_EXPORT WebSecurityOrigin GetSecurityOrigin() const;
+  WebSecurityOrigin GetSecurityOrigin() const;
 
   // Updates the snapshotted policy attributes (sandbox flags and feature policy
   // container policy) in the frame's FrameOwner. This is used when this frame's
   // parent is in another process and it dynamically updates this frame's
   // sandbox flags or container policy. The new policy won't take effect until
   // the next navigation.
-  BLINK_EXPORT void SetFrameOwnerPolicy(WebSandboxFlags,
-                                        const blink::WebParsedFeaturePolicy&);
+  void SetFrameOwnerPolicy(WebSandboxFlags,
+                           const blink::WebParsedFeaturePolicy&);
 
   // The frame's insecure request policy.
-  BLINK_EXPORT WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
+  WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
 
   // Updates this frame's FrameOwner properties, such as scrolling, margin,
   // or allowfullscreen.  This is used when this frame's parent is in
   // another process and it dynamically updates these properties.
   // TODO(dcheng): Currently, the update only takes effect on next frame
   // navigation.  This matches the in-process frame behavior.
-  BLINK_EXPORT void SetFrameOwnerProperties(const WebFrameOwnerProperties&);
+  void SetFrameOwnerProperties(const WebFrameOwnerProperties&);
 
   // Geometry -----------------------------------------------------------
 
@@ -170,7 +171,7 @@ class WebFrame {
   // Whether to collapse the frame's owner element in the embedder document,
   // that is, to remove it from the layout as if it did not exist. Only works
   // for <iframe> owner elements.
-  BLINK_EXPORT void Collapse(bool);
+  void Collapse(bool);
 
   // Hierarchy ----------------------------------------------------------
 
@@ -178,32 +179,32 @@ class WebFrame {
   virtual WebView* View() const = 0;
 
   // Returns the frame that opened this frame or 0 if there is none.
-  BLINK_EXPORT WebFrame* Opener() const;
+  WebFrame* Opener() const;
 
   // Sets the frame that opened this one or 0 if there is none.
-  BLINK_EXPORT void SetOpener(WebFrame*);
+  void SetOpener(WebFrame*);
 
   // Reset the frame that opened this frame to 0.
   // This is executed between layout tests runs
-  void ClearOpener() { SetOpener(0); }
+  void ClearOpener();
 
   // Returns the parent frame or 0 if this is a top-most frame.
   // TODO(sashab): "Virtual" is needed here temporarily to resolve linker errors
   // in core/. Remove the "virtual" keyword once WebFrame and WebLocalFrameImpl
   // have been moved to core/.
-  BLINK_EXPORT virtual WebFrame* Parent() const;
+  virtual WebFrame* Parent() const;
 
   // Returns the top-most frame in the hierarchy containing this frame.
-  BLINK_EXPORT WebFrame* Top() const;
+  WebFrame* Top() const;
 
   // Returns the first child frame.
-  BLINK_EXPORT WebFrame* FirstChild() const;
+  WebFrame* FirstChild() const;
 
   // Returns the next sibling frame.
-  BLINK_EXPORT WebFrame* NextSibling() const;
+  WebFrame* NextSibling() const;
 
   // Returns the next frame in "frame traversal order".
-  BLINK_EXPORT WebFrame* TraverseNext() const;
+  WebFrame* TraverseNext() const;
 
   // Content ------------------------------------------------------------
 
@@ -280,7 +281,7 @@ class WebFrame {
 
   // Returns true if the WebFrame currently executing JavaScript has access
   // to the given WebFrame, or false otherwise.
-  BLINK_EXPORT static bool ScriptCanAccess(WebFrame*);
+  static bool ScriptCanAccess(WebFrame*);
 
   // Navigation ----------------------------------------------------------
   // TODO(clamy): Remove the reload, reloadWithOverrideURL, and loadRequest
@@ -373,12 +374,12 @@ class WebFrame {
 
   // Returns the frame inside a given frame or iframe element. Returns 0 if
   // the given element is not a frame, iframe or if the frame is empty.
-  BLINK_EXPORT static WebFrame* FromFrameOwnerElement(const WebElement&);
+  static WebFrame* FromFrameOwnerElement(const WebElement&);
 
 #if BLINK_IMPLEMENTATION
   // TODO(mustaq): Should be named FromCoreFrame instead.
   static WebFrame* FromFrame(Frame*);
-  BLINK_EXPORT static Frame* ToCoreFrame(const WebFrame&);
+  static Frame* ToCoreFrame(const WebFrame&);
 
   bool InShadowTree() const { return scope_ == WebTreeScopeType::kShadow; }
 

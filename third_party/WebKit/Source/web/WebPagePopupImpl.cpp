@@ -4,7 +4,6 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -154,7 +153,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
                : WebScreenInfo();
   }
 
-  void* WebView() const override { return popup_->web_view_; }
+  WebViewBase* GetWebView() const override { return popup_->web_view_; }
 
   IntSize MinimumWindowSize() const override { return IntSize(0, 0); }
 

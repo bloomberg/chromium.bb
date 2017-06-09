@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/RemoteFrameClientImpl.h"
+#include "core/frame/RemoteFrameClientImpl.h"
 
 #include <memory>
 #include "core/events/KeyboardEvent.h"
@@ -12,6 +12,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebRemoteFrameBase.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutItem.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -20,7 +21,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/web/WebRemoteFrameClient.h"
-#include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
 
@@ -38,11 +38,11 @@ Frame* ToCoreFrame(WebFrame* frame) {
 
 }  // namespace
 
-RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* web_frame)
+RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameBase* web_frame)
     : web_frame_(web_frame) {}
 
 RemoteFrameClientImpl* RemoteFrameClientImpl::Create(
-    WebRemoteFrameImpl* web_frame) {
+    WebRemoteFrameBase* web_frame) {
   return new RemoteFrameClientImpl(web_frame);
 }
 
@@ -107,19 +107,21 @@ void RemoteFrameClientImpl::FrameFocused() const {
 
 void RemoteFrameClientImpl::Navigate(const ResourceRequest& request,
                                      bool should_replace_current_entry) {
-  if (web_frame_->Client())
+  if (web_frame_->Client()) {
     web_frame_->Client()->Navigate(WrappedResourceRequest(request),
                                    should_replace_current_entry);
+  }
 }
 
 void RemoteFrameClientImpl::Reload(
     FrameLoadType load_type,
     ClientRedirectPolicy client_redirect_policy) {
   DCHECK(IsReloadLoadType(load_type));
-  if (web_frame_->Client())
+  if (web_frame_->Client()) {
     web_frame_->Client()->Reload(
         static_cast<WebFrameLoadType>(load_type),
         static_cast<WebClientRedirectPolicy>(client_redirect_policy));
+  }
 }
 
 unsigned RemoteFrameClientImpl::BackForwardLength() {
@@ -134,10 +136,11 @@ void RemoteFrameClientImpl::ForwardPostMessage(
     MessageEvent* event,
     PassRefPtr<SecurityOrigin> target,
     LocalFrame* source_frame) const {
-  if (web_frame_->Client())
+  if (web_frame_->Client()) {
     web_frame_->Client()->ForwardPostMessage(
         WebLocalFrameBase::FromFrame(source_frame), web_frame_,
         WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
+  }
 }
 
 void RemoteFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
