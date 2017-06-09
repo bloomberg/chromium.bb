@@ -546,14 +546,31 @@ void WebPluginContainerImpl::RequestTouchEventType(
 
   if (Page* page = element_->GetDocument().GetPage()) {
     EventHandlerRegistry& registry = page->GetEventHandlerRegistry();
-    if (request_type != kTouchEventRequestTypeNone &&
-        touch_event_request_type_ == kTouchEventRequestTypeNone) {
+    if (request_type == kTouchEventRequestTypeRawLowLatency) {
+      if (touch_event_request_type_ != kTouchEventRequestTypeNone) {
+        registry.DidRemoveEventHandler(
+            *element_, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+      }
       registry.DidAddEventHandler(
-          *element_, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
-    } else if (request_type == kTouchEventRequestTypeNone &&
-               touch_event_request_type_ != kTouchEventRequestTypeNone) {
+          *element_,
+          EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency);
+    } else if (request_type != kTouchEventRequestTypeNone) {
+      if (touch_event_request_type_ == kTouchEventRequestTypeRawLowLatency) {
+        registry.DidRemoveEventHandler(
+            *element_,
+            EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency);
+      }
+      if (touch_event_request_type_ == kTouchEventRequestTypeNone ||
+          touch_event_request_type_ == kTouchEventRequestTypeRawLowLatency) {
+        registry.DidAddEventHandler(
+            *element_, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+      }
+    } else if (touch_event_request_type_ != kTouchEventRequestTypeNone) {
       registry.DidRemoveEventHandler(
-          *element_, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+          *element_,
+          touch_event_request_type_ == kTouchEventRequestTypeRawLowLatency
+              ? EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency
+              : EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
     }
   }
   touch_event_request_type_ = request_type;
@@ -866,7 +883,8 @@ void WebPluginContainerImpl::HandleTouchEvent(TouchEvent* event) {
   switch (touch_event_request_type_) {
     case kTouchEventRequestTypeNone:
       return;
-    case kTouchEventRequestTypeRaw: {
+    case kTouchEventRequestTypeRaw:
+    case kTouchEventRequestTypeRawLowLatency: {
       if (!event->NativeEvent())
         return;
 

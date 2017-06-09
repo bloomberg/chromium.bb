@@ -144,6 +144,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   // Informs client about the existence of handlers for scroll events so
   // appropriate scroll optimizations can be chosen.
   void SetHasScrollEventHandlers(LocalFrame*, bool has_event_handlers) override;
+  void SetNeedsLowLatencyInput(LocalFrame*, bool needs_low_latency) override;
   void SetTouchAction(LocalFrame*, TouchAction) override;
   const WebInputEvent* GetCurrentInputEvent() const override;
 

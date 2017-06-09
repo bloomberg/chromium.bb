@@ -53,6 +53,7 @@ class WebPluginContainer {
   enum TouchEventRequestType {
     kTouchEventRequestTypeNone,
     kTouchEventRequestTypeRaw,
+    kTouchEventRequestTypeRawLowLatency,
     kTouchEventRequestTypeSynthesizedMouse,
   };
 

@@ -137,6 +137,9 @@ class WebWidgetClient {
   // Called to update if touch events should be sent.
   virtual void HasTouchEventHandlers(bool) {}
 
+  // Called to update whether low latency input mode is enabled or not.
+  virtual void SetNeedsLowLatencyInput(bool) {}
+
   // Called during WebWidget::HandleInputEvent for a TouchStart event to inform
   // the embedder of the touch actions that are permitted for this touch.
   virtual void SetTouchAction(WebTouchAction touch_action) {}

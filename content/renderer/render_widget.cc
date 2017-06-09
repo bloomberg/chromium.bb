@@ -2265,6 +2265,11 @@ void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
   Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 
+void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
+  if (input_event_queue_)
+    input_event_queue_->SetNeedsLowLatency(needs_low_latency);
+}
+
 void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
   // Ignore setTouchAction calls that result from synthetic touch events (eg.
   // when blink is emulating touch with mouse).

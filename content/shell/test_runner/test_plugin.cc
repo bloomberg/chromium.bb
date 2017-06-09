@@ -103,6 +103,8 @@ blink::WebPluginContainer::TouchEventRequestType ParseTouchEventRequestType(
     const blink::WebString& string) {
   if (string == blink::WebString::FromUTF8("raw"))
     return blink::WebPluginContainer::kTouchEventRequestTypeRaw;
+  if (string == blink::WebString::FromUTF8("raw-lowlatency"))
+    return blink::WebPluginContainer::kTouchEventRequestTypeRawLowLatency;
   if (string == blink::WebString::FromUTF8("synthetic"))
     return blink::WebPluginContainer::kTouchEventRequestTypeSynthesizedMouse;
   return blink::WebPluginContainer::kTouchEventRequestTypeNone;

@@ -1041,12 +1041,14 @@ Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
   return should_handle_scroll_gesture_on_main_thread_region;
 }
 
-static void AccumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects,
-                                                    const Document* document) {
+static void AccumulateDocumentTouchEventTargetRects(
+    LayerHitTestRects& rects,
+    EventHandlerRegistry::EventHandlerClass event_class,
+    const Document* document) {
   DCHECK(document);
   const EventTargetSet* targets =
       document->GetPage()->GetEventHandlerRegistry().EventHandlerTargets(
-          EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+          event_class);
   if (!targets)
     return;
 
@@ -1099,7 +1101,8 @@ static void AccumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects,
       continue;
 
     if (node->IsDocumentNode() && node != document) {
-      AccumulateDocumentTouchEventTargetRects(rects, ToDocument(node));
+      AccumulateDocumentTouchEventTargetRects(rects, event_class,
+                                              ToDocument(node));
     } else if (LayoutObject* layout_object = node->GetLayoutObject()) {
       // If the set also contains one of our ancestor nodes then processing
       // this node would be redundant.
@@ -1143,7 +1146,11 @@ void ScrollingCoordinator::ComputeTouchEventTargetRects(
   if (!document || !document->View())
     return;
 
-  AccumulateDocumentTouchEventTargetRects(rects, document);
+  AccumulateDocumentTouchEventTargetRects(
+      rects, EventHandlerRegistry::kTouchStartOrMoveEventBlocking, document);
+  AccumulateDocumentTouchEventTargetRects(
+      rects, EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency,
+      document);
 }
 
 void ScrollingCoordinator::

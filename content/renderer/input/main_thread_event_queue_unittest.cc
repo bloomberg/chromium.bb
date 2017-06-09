@@ -722,6 +722,73 @@ TEST_P(MainThreadEventQueueTest, RafAlignedTouchInputThrottlingMoves) {
   EXPECT_EQ(0u, additional_acked_events_.size());
 }
 
+TEST_P(MainThreadEventQueueTest, LowLatency) {
+  SyntheticWebTouchEvent kEvents[2];
+  kEvents[0].PressPoint(10, 10);
+  kEvents[1].PressPoint(10, 10);
+  kEvents[1].MovePoint(0, 50, 50);
+
+  queue_->SetNeedsLowLatency(true);
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+
+  for (SyntheticWebTouchEvent& event : kEvents)
+    HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+
+  EXPECT_EQ(2u, event_queue().size());
+  EXPECT_TRUE(main_task_runner_->HasPendingTask());
+  EXPECT_FALSE(needs_main_frame_);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+
+  WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
+      WebInputEvent::kMouseMove, 10, 10, 0);
+  WebMouseWheelEvent mouse_wheel =
+      SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, 53, 0, false);
+
+  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_wheel, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+
+  EXPECT_EQ(2u, event_queue().size());
+  EXPECT_TRUE(main_task_runner_->HasPendingTask());
+  EXPECT_FALSE(needs_main_frame_);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_EQ(0u, event_queue().size());
+
+  // Now turn off low latency mode.
+  queue_->SetNeedsLowLatency(false);
+  for (SyntheticWebTouchEvent& event : kEvents)
+    HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+
+  EXPECT_EQ(2u, event_queue().size());
+  EXPECT_TRUE(main_task_runner_->HasPendingTask());
+  if ((raf_aligned_input_setting_ & kRafAlignedEnabledTouch) == 0) {
+    EXPECT_FALSE(needs_main_frame_);
+    main_task_runner_->RunUntilIdle();
+  } else {
+    EXPECT_TRUE(needs_main_frame_);
+    RunPendingTasksWithSimulatedRaf();
+  }
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+
+  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_wheel, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+
+  EXPECT_EQ(2u, event_queue().size());
+  if ((raf_aligned_input_setting_ & kRafAlignedEnabledMouse) == 0) {
+    EXPECT_TRUE(main_task_runner_->HasPendingTask());
+    EXPECT_FALSE(needs_main_frame_);
+    main_task_runner_->RunUntilIdle();
+  } else {
+    EXPECT_FALSE(main_task_runner_->HasPendingTask());
+    EXPECT_TRUE(needs_main_frame_);
+    RunPendingTasksWithSimulatedRaf();
+  }
+  EXPECT_EQ(0u, event_queue().size());
+}
+
 TEST_P(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   SyntheticWebTouchEvent kEvents;
   kEvents.PressPoint(10, 10);
