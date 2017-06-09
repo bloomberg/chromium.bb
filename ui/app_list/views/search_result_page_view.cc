@@ -19,6 +19,8 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/shadow_border.h"
@@ -53,11 +55,23 @@ class SearchCardView : public views::View {
   ~SearchCardView() override {}
 };
 
+class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
+ public:
+  ZeroWidthVerticalScrollBar() : OverlayScrollBar(false) {}
+
+  // OverlayScrollBar overrides:
+  int GetThickness() const override { return 0; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ZeroWidthVerticalScrollBar);
+};
+
 }  // namespace
 
 SearchResultPageView::SearchResultPageView()
     : selected_index_(0),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      contents_view_(new views::View) {
   gfx::ShadowValue shadow = GetShadowForZHeight(kSearchResultZHeight);
   std::unique_ptr<views::Border> border(new views::ShadowBorder(shadow));
 
@@ -68,8 +82,19 @@ SearchResultPageView::SearchResultPageView()
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical,
                                                   gfx::Insets(), kGroupSpacing);
   layout->set_inside_border_insets(insets);
+  contents_view_->SetLayoutManager(layout);
 
-  SetLayoutManager(layout);
+  views::ScrollView* const scroller = new views::ScrollView;
+  scroller->SetContents(contents_view_);
+  // Setting clip height is necessary to make ScrollView take into account its
+  // contents' size. Using zeroes doesn't prevent it from scrolling and sizing
+  // correctly.
+  scroller->ClipHeightTo(0, 0);
+  scroller->SetVerticalScrollBar(new ZeroWidthVerticalScrollBar);
+  scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
+  AddChildView(scroller);
+
+  SetLayoutManager(new views::FillLayout);
 }
 
 SearchResultPageView::~SearchResultPageView() {
@@ -85,7 +110,7 @@ void SearchResultPageView::SetSelection(bool select) {
 void SearchResultPageView::AddSearchResultContainerView(
     AppListModel::SearchResults* results_model,
     SearchResultContainerView* result_container) {
-  AddChildView(new SearchCardView(result_container));
+  contents_view_->AddChildView(new SearchCardView(result_container));
   result_container_views_.push_back(result_container);
   result_container->SetResults(results_model);
   result_container->set_delegate(this);
@@ -188,7 +213,7 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   int result_y_index = 0;
   for (size_t i = 0; i < result_container_views_.size(); ++i) {
     SearchResultContainerView* view = result_container_views_[i];
-    ReorderChildView(view->parent(), i);
+    contents_view_->ReorderChildView(view->parent(), i);
 
     view->NotifyFirstResultYIndex(result_y_index);
 

@@ -69,6 +69,9 @@ class APP_LIST_EXPORT SearchResultPageView
   // Whether launcher is shown in fullscreen mode.
   bool const is_fullscreen_app_list_enabled_;
 
+  // View containing SearchCardView instances. Owned by view hierarchy.
+  views::View* const contents_view_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };
 

@@ -191,6 +191,7 @@ void SearchResultListView::UpdateSelectedIndex(int old_selected,
 
   if (new_selected >= 0) {
     SearchResultView* selected_view = GetResultViewAt(new_selected);
+    ScrollRectToVisible(selected_view->bounds());
     selected_view->ClearSelectedAction();
     selected_view->SchedulePaint();
     selected_view->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
