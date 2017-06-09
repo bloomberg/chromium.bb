@@ -609,6 +609,9 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
+  for (auto& observer : shell_observers_)
+    observer.OnShellDestroying();
+
   const Config config = shell_port_->GetAshConfig();
 
   if (config != Config::MASH)
