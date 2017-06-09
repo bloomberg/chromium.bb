@@ -149,8 +149,8 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     // Create a screens list.
     if (show_screens) {
 #if defined(USE_ASH)
-      screen_list =
-          base::MakeUnique<DesktopMediaListAsh>(DesktopMediaListAsh::SCREENS);
+      screen_list = base::MakeUnique<DesktopMediaListAsh>(
+          content::DesktopMediaID::TYPE_SCREEN);
 #else   // !defined(USE_ASH)
       screen_list = base::MakeUnique<NativeDesktopMediaList>(
           content::DesktopMediaID::TYPE_SCREEN,
@@ -161,8 +161,8 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     // Create a windows list.
     if (show_windows) {
 #if defined(USE_ASH)
-      window_list =
-          base::MakeUnique<DesktopMediaListAsh>(DesktopMediaListAsh::WINDOWS);
+      window_list = base::MakeUnique<DesktopMediaListAsh>(
+          content::DesktopMediaID::TYPE_WINDOW);
 #else   // !defined(USE_ASH)
       window_list = base::MakeUnique<NativeDesktopMediaList>(
           content::DesktopMediaID::TYPE_WINDOW,

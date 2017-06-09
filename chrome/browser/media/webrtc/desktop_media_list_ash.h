@@ -21,12 +21,7 @@ class Image;
 // native windows.
 class DesktopMediaListAsh : public DesktopMediaListBase {
  public:
-  enum SourceTypes {
-    SCREENS = 1,
-    WINDOWS = 2,
-  };
-
-  explicit DesktopMediaListAsh(int source_types);
+  explicit DesktopMediaListAsh(content::DesktopMediaID::Type type);
   ~DesktopMediaListAsh() override;
 
  private:
@@ -42,7 +37,7 @@ class DesktopMediaListAsh : public DesktopMediaListBase {
   void OnThumbnailCaptured(content::DesktopMediaID id,
                            const gfx::Image& image);
 
-  int source_types_;
+  const content::DesktopMediaID::Type type_;
 
   int pending_window_capture_requests_;
 
