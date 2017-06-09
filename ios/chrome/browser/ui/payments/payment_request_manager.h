@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+class ToolbarModelIOS;
+
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
@@ -24,6 +26,10 @@ class WebState;
 
 // YES if Payment Request is enabled on the current web state.
 @property(readonly) BOOL enabled;
+
+// IOS specific version of ToolbarModel that is used for grabbing security
+// info.
+@property(nonatomic, assign) ToolbarModelIOS* toolbarModel;
 
 // The current web state being observed for PaymentRequest invocations.
 @property(nonatomic, assign) web::WebState* webState;

@@ -1823,6 +1823,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 // both browser state and tab model are valid.
 - (void)addUIFunctionalityForModelAndBrowserState {
   DCHECK(_browserState);
+  DCHECK(_toolbarModelIOS);
   DCHECK(_model);
   DCHECK([self isViewLoaded]);
 
@@ -1852,6 +1853,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     _paymentRequestManager = [[PaymentRequestManager alloc]
         initWithBaseViewController:self
                       browserState:_browserState];
+    [_paymentRequestManager setToolbarModel:_toolbarModelIOS.get()];
     [_paymentRequestManager setWebState:[_model currentTab].webState];
   }
 }

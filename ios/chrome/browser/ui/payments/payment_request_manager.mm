@@ -34,9 +34,11 @@
 #import "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/payments/js_payment_request_manager.h"
 #import "ios/chrome/browser/ui/payments/payment_request_coordinator.h"
+#include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
+#include "ios/web/public/origin_util.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/url_scheme_util.h"
@@ -47,6 +49,7 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -201,6 +204,7 @@ struct PendingPaymentResponse {
 @implementation PaymentRequestManager
 
 @synthesize enabled = _enabled;
+@synthesize toolbarModel = _toolbarModel;
 @synthesize webState = _webState;
 @synthesize browserState = _browserState;
 @synthesize paymentRequestJsManager = _paymentRequestJsManager;
@@ -433,8 +437,8 @@ struct PendingPaymentResponse {
   NSString* pageTitle = base::SysUTF16ToNSString([self webState]->GetTitle());
   NSString* pageHost =
       base::SysUTF8ToNSString([self webState]->GetLastCommittedURL().host());
-  // TODO(crbug.com/728639): Determine when connection is secure.
-  BOOL connectionSecure = false;
+  BOOL connectionSecure =
+      [self webState]->GetLastCommittedURL().SchemeIs(url::kHttpsScheme);
   autofill::AutofillManager* autofillManager =
       autofill::AutofillDriverIOS::FromWebState(_webState)->autofill_manager();
   _paymentRequestCoordinator = [[PaymentRequestCoordinator alloc]
@@ -603,15 +607,31 @@ struct PendingPaymentResponse {
     return NO;
   }
 
-  if (!web::UrlHasWebScheme([self webState]->GetLastCommittedURL()) ||
+  if (![self toolbarModel]) {
+    return NO;
+  }
+
+  // Checks if the current page is a web view with HTML and that the
+  // origin is localhost, file://, or cryptographic.
+  if (!web::IsOriginSecure([self webState]->GetLastCommittedURL()) ||
       ![self webState]->ContentIsHTML()) {
     return NO;
   }
 
-  const web::NavigationItem* navigationItem =
-      [self webState]->GetNavigationManager()->GetLastCommittedItem();
-  return navigationItem && navigationItem->GetSSL().security_style ==
-                               web::SECURITY_STYLE_AUTHENTICATED;
+  if (![self webState]->GetLastCommittedURL().SchemeIsCryptographic()) {
+    // The URL has a secure origin, but is not https, so it must be local.
+    // Return YES at this point, because localhost and filesystem URLS are
+    // considered secure regardless of scheme.
+    return YES;
+  }
+
+  // The following security level checks ensure that if the scheme is
+  // cryptographic then the SSL certificate is valid.
+  security_state::SecurityLevel securityLevel =
+      _toolbarModel->GetToolbarModel()->GetSecurityLevel(true);
+  return securityLevel == security_state::EV_SECURE ||
+         securityLevel == security_state::SECURE ||
+         securityLevel == security_state::SECURE_WITH_POLICY_INSTALLED_CERT;
 }
 
 #pragma mark - PaymentRequestCoordinatorDelegate methods

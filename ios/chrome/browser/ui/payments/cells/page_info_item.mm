@@ -127,12 +127,18 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
     _pageHostLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _pageHostLabel.font = [[MDCTypography fontLoader] regularFontOfSize:12];
     _pageHostLabel.textColor = [[MDCPalette greyPalette] tint600];
-    // Allow the label to break to multiple lines. This should be very rare but
-    // will prevent malicious domains from suppling very long host names and
-    // having the domain name truncated.
-    _pageHostLabel.numberOfLines = 0;
+    // Truncate host name from the leading side if it is too long. This is
+    // according to Eliding Origin Names and Hostnames guideline found here:
+    // https://www.chromium.org/Home/chromium-security/enamel#TOC-Presenting-Origins
+    _pageHostLabel.lineBreakMode = NSLineBreakByTruncatingHead;
     _pageHostLabel.backgroundColor = [UIColor clearColor];
     _pageHostLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    // Prevents host label from bleeding into lock indicator view when host text
+    // is very long.
+    [_pageHostLabel
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
     [self.contentView addSubview:_pageHostLabel];
 
     // Lock indicator
@@ -171,7 +177,8 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
           constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
                                    constant:-kHorizontalPadding],
       [_pageHostLabel.trailingAnchor
-          constraintEqualToAnchor:_pageTitleLabel.trailingAnchor],
+          constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
+                                   constant:-kHorizontalPadding],
 
       // UILabel leaves some empty space above the height of capital letters. In
       // order to align the tops of the letters with the top of the favicon,
