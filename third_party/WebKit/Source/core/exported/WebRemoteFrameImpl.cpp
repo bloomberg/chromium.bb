@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/WebRemoteFrameImpl.h"
+#include "core/exported/WebRemoteFrameImpl.h"
 
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
+#include "core/exported/WebFactory.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/RemoteFrameClientImpl.h"
+#include "core/frame/RemoteFrameOwner.h"
 #include "core/frame/Settings.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutObject.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/feature_policy/FeaturePolicy.h"
@@ -27,8 +32,6 @@
 #include "public/web/WebRange.h"
 #include "public/web/WebTreeScopeType.h"
 #include "v8/include/v8.h"
-#include "web/RemoteFrameOwner.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -122,9 +125,11 @@ bool WebRemoteFrameImpl::HasVerticalScrollbar() const {
 }
 
 WebView* WebRemoteFrameImpl::View() const {
-  if (!GetFrame())
+  if (!GetFrame()) {
     return nullptr;
-  return WebViewBase::FromPage(GetFrame()->GetPage());
+  }
+  DCHECK(GetFrame()->GetPage());
+  return GetFrame()->GetPage()->GetChromeClient().GetWebView();
 }
 
 WebDocument WebRemoteFrameImpl::GetDocument() const {
@@ -281,7 +286,7 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     const WebParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     WebFrame* opener) {
-  WebLocalFrameImpl* child = WebLocalFrameImpl::Create(
+  WebLocalFrameBase* child = WebFactory::GetInstance().CreateWebLocalFrameBase(
       scope, client, interface_provider, interface_registry, opener);
   InsertAfter(child, previous_sibling);
   RemoteFrameOwner* owner =
@@ -330,7 +335,9 @@ void WebRemoteFrameImpl::SetCoreFrame(RemoteFrame* frame) {
 WebRemoteFrameImpl* WebRemoteFrameImpl::FromFrame(RemoteFrame& frame) {
   if (!frame.Client())
     return nullptr;
-  return static_cast<RemoteFrameClientImpl*>(frame.Client())->GetWebFrame();
+  RemoteFrameClientImpl* client =
+      static_cast<RemoteFrameClientImpl*>(frame.Client());
+  return ToWebRemoteFrameImpl(client->GetWebFrame());
 }
 
 void WebRemoteFrameImpl::SetReplicatedOrigin(const WebSecurityOrigin& origin) {
@@ -428,8 +435,8 @@ void WebRemoteFrameImpl::DidStartLoading() {
 void WebRemoteFrameImpl::DidStopLoading() {
   GetFrame()->SetIsLoading(false);
   if (Parent() && Parent()->IsWebLocalFrame()) {
-    WebLocalFrameImpl* parent_frame =
-        ToWebLocalFrameImpl(Parent()->ToWebLocalFrame());
+    WebLocalFrameBase* parent_frame =
+        ToWebLocalFrameBase(Parent()->ToWebLocalFrame());
     parent_frame->GetFrame()->GetDocument()->CheckCompleted();
   }
 }

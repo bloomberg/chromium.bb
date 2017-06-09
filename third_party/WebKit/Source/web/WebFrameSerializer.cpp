@@ -34,6 +34,7 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameSerializer.h"
 #include "core/frame/LocalFrame.h"
@@ -73,7 +74,6 @@
 #include "public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "public/web/WebFrameSerializerClient.h"
 #include "web/WebFrameSerializerImpl.h"
-#include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
 

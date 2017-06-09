@@ -66,7 +66,6 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   virtual Page* GetPage() const = 0;
   virtual Frame* FocusedCoreFrame() const = 0;
 
-  static WebViewBase* FromPage(Page*);
   static HashSet<WebViewBase*>& AllInstances();
 
   // Returns the main frame associated with this view. This may be null when

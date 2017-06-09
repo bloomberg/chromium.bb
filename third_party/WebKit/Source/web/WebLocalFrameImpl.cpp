@@ -124,11 +124,13 @@
 #include "core/exported/WebAssociatedURLLoaderImpl.h"
 #include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/RemoteFrameOwner.h"
 #include "core/frame/ScreenOrientationController.h"
 #include "core/frame/Settings.h"
 #include "core/frame/SmartClip.h"
@@ -227,11 +229,9 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebTreeScopeType.h"
 #include "skia/ext/platform_canvas.h"
-#include "web/RemoteFrameOwner.h"
 #include "web/TextFinder.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebFrameWidgetImpl.h"
-#include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
 
@@ -1809,7 +1809,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {
 WebViewBase* WebLocalFrameImpl::ViewImpl() const {
   if (!GetFrame())
     return nullptr;
-  return WebViewBase::FromPage(GetFrame()->GetPage());
+  return GetFrame()->GetPage()->GetChromeClient().GetWebView();
 }
 
 WebDataSourceImpl* WebLocalFrameImpl::DataSourceImpl() const {

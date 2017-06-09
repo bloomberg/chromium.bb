@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
 
-#include "web/RemoteFrameOwner.h"
+#include "core/frame/RemoteFrameOwner.h"
 
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameBase.h"

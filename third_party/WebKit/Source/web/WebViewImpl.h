@@ -286,8 +286,6 @@ class WEB_EXPORT WebViewImpl final
   // Returns the currently focused Element or null if no element has focus.
   Element* FocusedElement() const override;
 
-  static WebViewBase* FromPage(Page*);
-
   WebViewClient* Client() override { return client_; }
 
   WebSpellCheckClient* SpellCheckClient() override {

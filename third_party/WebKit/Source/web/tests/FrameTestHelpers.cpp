@@ -30,6 +30,7 @@
 
 #include "web/tests/FrameTestHelpers.h"
 
+#include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -49,7 +50,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebTreeScopeType.h"
 #include "public/web/WebViewClient.h"
-#include "web/WebRemoteFrameImpl.h"
 
 namespace blink {
 namespace FrameTestHelpers {

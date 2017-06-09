@@ -5,6 +5,7 @@
 #ifndef RemoteFrameOwner_h
 #define RemoteFrameOwner_h
 
+#include "core/CoreExport.h"
 #include "core/frame/FrameOwner.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/web/WebFrameOwnerProperties.h"
@@ -16,7 +17,7 @@ namespace blink {
 // 1. Allows the local frame's loader to retrieve sandbox flags associated with
 //    its owner element in another process.
 // 2. Trigger a load event on its owner element once it finishes a load.
-class RemoteFrameOwner final
+class CORE_EXPORT RemoteFrameOwner final
     : public GarbageCollectedFinalized<RemoteFrameOwner>,
       public FrameOwner {
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameOwner);

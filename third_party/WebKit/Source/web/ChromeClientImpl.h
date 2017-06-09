@@ -52,7 +52,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   static ChromeClientImpl* Create(WebViewBase*);
   ~ChromeClientImpl() override;
 
-  void* WebView() const override;
+  WebViewBase* GetWebView() const override;
 
   // ChromeClient methods:
   void ChromeDestroyed() override;

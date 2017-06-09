@@ -5,24 +5,24 @@
 #ifndef WebRemoteFrameImpl_h
 #define WebRemoteFrameImpl_h
 
+#include "core/CoreExport.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/WebRemoteFrameBase.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebRemoteFrameClient.h"
-#include "web/RemoteFrameClientImpl.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
 class FrameOwner;
 class RemoteFrame;
+class RemoteFrameClientImpl;
 enum class WebFrameLoadType;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 
-class WEB_EXPORT WebRemoteFrameImpl final
+class CORE_EXPORT WebRemoteFrameImpl final
     : NON_EXPORTED_BASE(public WebRemoteFrameBase) {
  public:
   static WebRemoteFrameImpl* Create(WebTreeScopeType,
@@ -130,9 +130,9 @@ class WEB_EXPORT WebRemoteFrameImpl final
                            const AtomicString& name) override;
   RemoteFrame* GetFrame() const override { return frame_.Get(); }
 
-  void SetCoreFrame(RemoteFrame*);
+  void SetCoreFrame(RemoteFrame*) override;
 
-  WebRemoteFrameClient* Client() const { return client_; }
+  WebRemoteFrameClient* Client() const override { return client_; }
 
   static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
 
