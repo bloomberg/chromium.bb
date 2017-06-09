@@ -74,9 +74,10 @@ void injectInternalsObject(v8::Local<v8::Context> context) {
     return;
 
   global
-      ->Set(scriptState->GetContext(),
-            blink::V8AtomicString(scriptState->GetIsolate(), "internals"),
-            internals)
+      ->CreateDataProperty(
+          scriptState->GetContext(),
+          blink::V8AtomicString(scriptState->GetIsolate(), "internals"),
+          internals)
       .ToChecked();
 }
 
