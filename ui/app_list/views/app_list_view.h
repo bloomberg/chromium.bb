@@ -9,17 +9,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/speech_ui_model_observer.h"
-#include "ui/display/display_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/widget/widget.h"
-
-namespace display {
-class Screen;
-}
 
 namespace app_list {
 class ApplicationDragAndDropHost;
@@ -38,28 +32,15 @@ class AppListViewTestApi;
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
-                                    public SpeechUIModelObserver,
-                                    public display::DisplayObserver {
+                                    public SpeechUIModelObserver {
  public:
-  enum AppListState {
-    // If set, closes |app_list_main_view_| and dismisses the delegate.
-    CLOSED = 0,
-
-    // The initial state for the app list. If set, the widget will peek over
-    // the shelf by kPeekingAppListHeight DIPs.
-    PEEKING,
-
-    // If set, the widget will be repositioned to take up the whole screen.
-    FULLSCREEN,
-  };
-
   // Does not take ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
 
-  // Initializes the widget as a bubble or fullscreen view depending on if the
-  // fullscreen app list feature is set. |parent| and |initial_apps_page| are
-  // used for both the bubble and fullscreen initialization.
+  // Initializes the widget as a bubble or fullscreen view depending on the
+  // presence of a cmd line switch. parent and initial_apps_page are used for
+  // both the bubble and fullscreen initialization.
   void Initialize(gfx::NativeView parent, int initial_apps_page);
 
   void SetBubbleArrow(views::BubbleBorder::Arrow arrow);
@@ -76,6 +57,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Shows the UI when there are no pending icon loads. Otherwise, starts a
   // timer to show the UI when a maximum allowed wait time has expired.
   void ShowWhenReady();
+
+  void CloseAppList();
 
   void UpdateBounds();
 
@@ -106,12 +89,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void Layout() override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
 
-  // Changes the app list state.
-  void SetState(AppListState new_state);
-
-  bool is_fullscreen() const { return app_list_state_ == FULLSCREEN; }
-  AppListState app_list_state() const { return app_list_state_; }
-
  private:
   friend class test::AppListViewTestApi;
 
@@ -125,17 +102,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Initializes the widget as a bubble.
   void InitializeBubble(gfx::NativeView parent, int initial_apps_page);
 
-  // Initializes |initial_drag_point_|.
-  void StartDrag(const gfx::Point& location);
-
-  // Updates the bounds of the widget while maintaining the relative position
-  // of the top of the widget and the gesture.
-  void UpdateDrag(const gfx::Point& location);
-
-  // Handles app list state transfers. If the drag was fast enough, ignore the
-  // release position and snap to the next state.
-  void EndDrag(const gfx::Point& location);
-
   // Overridden from views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
@@ -146,10 +112,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(gfx::Path* mask) const override;
 
-  // Overridden from ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-
   // Overridden from views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
@@ -158,31 +120,14 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void OnSpeechRecognitionStateChanged(
       SpeechRecognitionState new_state) override;
 
-  // Overridden from DisplayObserver:
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
-
   AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
 
   AppListMainView* app_list_main_view_;
   SpeechView* speech_view_;
-  views::Widget* fullscreen_widget_ = nullptr;  // Owned by AppListView.
 
   views::View* search_box_focus_host_;  // Owned by the views hierarchy.
   views::Widget* search_box_widget_;    // Owned by the app list's widget.
   SearchBoxView* search_box_view_;      // Owned by |search_box_widget_|.
-  // Owned by the app list's widget. Null if the fullscreen app list is not
-  // enabled.
-  views::View* app_list_background_shield_ = nullptr;
-  // The gap between the initial gesture event and the top of the window.
-  gfx::Point initial_drag_point_;
-  // The velocity of the gesture event.
-  float last_fling_velocity_ = 0;
-  // The state of the app list, controlled via SetState().
-  AppListState app_list_state_;
-
-  // An observer that notifies AppListView when the display has changed.
-  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
 
   // A semi-transparent white overlay that covers the app list while dialogs are
   // open.

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/image_button.h"
@@ -19,8 +18,7 @@ class Shelf;
 class ShelfView;
 
 // Button used for the AppList icon on the shelf.
-class ASH_EXPORT AppListButton : public views::ImageButton,
-                                 public ShellObserver {
+class ASH_EXPORT AppListButton : public views::ImageButton {
  public:
   AppListButton(InkDropButtonListener* listener,
                 ShelfView* shelf_view,
@@ -56,10 +54,6 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   // Get the center point of the app list button used to draw its background and
   // ink drops.
   gfx::Point GetCenterPoint() const;
-
-  // ShellObserver overrides:
-  void OnAppListVisibilityChanged(bool shown,
-                                  aura::Window* root_window) override;
 
   // True if the app list is currently showing for this display.
   // This is useful because other IsApplistVisible functions aren't per-display.

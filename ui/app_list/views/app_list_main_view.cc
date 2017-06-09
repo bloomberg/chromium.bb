@@ -44,13 +44,11 @@ namespace app_list {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListMainView:
 
-AppListMainView::AppListMainView(AppListViewDelegate* delegate,
-                                 AppListView* app_list_view)
+AppListMainView::AppListMainView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       model_(delegate->GetModel()),
       search_box_view_(nullptr),
-      contents_view_(nullptr),
-      app_list_view_(app_list_view) {
+      contents_view_(nullptr) {
   SetLayoutManager(
       features::IsAnswerCardEnabled()
           ? static_cast<views::LayoutManager*>(new views::FillLayout)
@@ -79,7 +77,8 @@ void AppListMainView::Init(gfx::NativeView parent,
 
 void AppListMainView::AddContentsViews() {
   DCHECK(search_box_view_);
-  contents_view_ = new ContentsView(this, app_list_view_);
+
+  contents_view_ = new ContentsView(this);
   contents_view_->Init(model_);
   AddChildView(contents_view_);
 

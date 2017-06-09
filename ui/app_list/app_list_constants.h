@@ -71,7 +71,6 @@ APP_LIST_EXPORT extern const int kTileIconSize;
 APP_LIST_EXPORT extern const SkColor kIconColor;
 
 APP_LIST_EXPORT extern const size_t kNumStartPageTiles;
-APP_LIST_EXPORT extern const size_t kNumStartPageTilesFullscreen;
 APP_LIST_EXPORT extern const size_t kMaxSearchResults;
 
 APP_LIST_EXPORT extern const int kReorderDroppingCircleRadius;

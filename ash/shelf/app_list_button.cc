@@ -44,7 +44,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   DCHECK(listener_);
   DCHECK(shelf_view_);
   DCHECK(shelf_);
-  Shell::Get()->AddShellObserver(this);
+
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
@@ -55,9 +55,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   set_notify_action(CustomButton::NOTIFY_ON_PRESS);
 }
 
-AppListButton::~AppListButton() {
-  Shell::Get()->RemoveShellObserver(this);
-}
+AppListButton::~AppListButton() {}
 
 void AppListButton::OnAppListShown() {
   AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
@@ -239,17 +237,6 @@ gfx::Point AppListButton::GetCenterPoint() const {
     DCHECK_EQ(alignment, SHELF_ALIGNMENT_LEFT);
     return gfx::Point(width() - y_mid, y_mid);
   }
-}
-
-void AppListButton::OnAppListVisibilityChanged(bool shown,
-                                               aura::Window* root_window) {
-  if (shelf_ != Shelf::ForWindow(root_window))
-    return;
-
-  if (shown)
-    OnAppListShown();
-  else
-    OnAppListDismissed();
 }
 
 }  // namespace ash
