@@ -41,7 +41,7 @@ class AvailabilityModelImplTest : public testing::Test {
   // SetUpModel exists so that the filter can be changed for any test.
   void SetUpModel(
       bool success,
-      std::unique_ptr<std::map<const base::Feature*, uint32_t>> store_content) {
+      std::unique_ptr<std::map<std::string, uint32_t>> store_content) {
     auto store_loader = base::BindOnce(&AvailabilityModelImplTest::StoreLoader,
                                        base::Unretained(this), success,
                                        std::move(store_content));
@@ -53,7 +53,7 @@ class AvailabilityModelImplTest : public testing::Test {
 
   void StoreLoader(
       bool success,
-      std::unique_ptr<std::map<const base::Feature*, uint32_t>> store_content,
+      std::unique_ptr<std::map<std::string, uint32_t>> store_content,
       AvailabilityStore::OnLoadedCallback callback,
       uint32_t current_day) {
     current_day_ = current_day;
@@ -74,8 +74,7 @@ class AvailabilityModelImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(AvailabilityModelImplTest, InitializationSuccess) {
-  SetUpModel(true,
-             base::MakeUnique<std::map<const base::Feature*, uint32_t>>());
+  SetUpModel(true, base::MakeUnique<std::map<std::string, uint32_t>>());
   EXPECT_FALSE(availability_model_->IsReady());
   availability_model_->Initialize(std::move(initialized_callback_), 14u);
   EXPECT_TRUE(availability_model_->IsReady());
@@ -85,8 +84,7 @@ TEST_F(AvailabilityModelImplTest, InitializationSuccess) {
 }
 
 TEST_F(AvailabilityModelImplTest, InitializationFailed) {
-  SetUpModel(false,
-             base::MakeUnique<std::map<const base::Feature*, uint32_t>>());
+  SetUpModel(false, base::MakeUnique<std::map<std::string, uint32_t>>());
   EXPECT_FALSE(availability_model_->IsReady());
   availability_model_->Initialize(std::move(initialized_callback_), 14u);
   EXPECT_FALSE(availability_model_->IsReady());
@@ -96,11 +94,10 @@ TEST_F(AvailabilityModelImplTest, InitializationFailed) {
 }
 
 TEST_F(AvailabilityModelImplTest, SuccessfullyLoadThreeFeatures) {
-  auto availabilities =
-      base::MakeUnique<std::map<const base::Feature*, uint32_t>>();
-  availabilities->insert(std::make_pair(&kTestFeatureFoo, 100u));
-  availabilities->insert(std::make_pair(&kTestFeatureBar, 200u));
-  availabilities->insert(std::make_pair(&kTestFeatureNop, 300u));
+  auto availabilities = base::MakeUnique<std::map<std::string, uint32_t>>();
+  availabilities->insert(std::make_pair(kTestFeatureFoo.name, 100u));
+  availabilities->insert(std::make_pair(kTestFeatureBar.name, 200u));
+  availabilities->insert(std::make_pair(kTestFeatureNop.name, 300u));
 
   SetUpModel(true, std::move(availabilities));
   availability_model_->Initialize(std::move(initialized_callback_), 14u);
@@ -114,11 +111,10 @@ TEST_F(AvailabilityModelImplTest, SuccessfullyLoadThreeFeatures) {
 }
 
 TEST_F(AvailabilityModelImplTest, FailToLoadThreeFeatures) {
-  auto availabilities =
-      base::MakeUnique<std::map<const base::Feature*, uint32_t>>();
-  availabilities->insert(std::make_pair(&kTestFeatureFoo, 100u));
-  availabilities->insert(std::make_pair(&kTestFeatureBar, 200u));
-  availabilities->insert(std::make_pair(&kTestFeatureNop, 300u));
+  auto availabilities = base::MakeUnique<std::map<std::string, uint32_t>>();
+  availabilities->insert(std::make_pair(kTestFeatureFoo.name, 100u));
+  availabilities->insert(std::make_pair(kTestFeatureBar.name, 200u));
+  availabilities->insert(std::make_pair(kTestFeatureNop.name, 300u));
 
   SetUpModel(false, std::move(availabilities));
   availability_model_->Initialize(std::move(initialized_callback_), 14u);

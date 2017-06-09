@@ -62,9 +62,9 @@ class AvailabilityStoreTest : public testing::Test {
     return db;
   }
 
-  void LoadCallback(bool success,
-                    std::unique_ptr<std::map<const base::Feature*, uint32_t>>
-                        availabilities) {
+  void LoadCallback(
+      bool success,
+      std::unique_ptr<std::map<std::string, uint32_t>> availabilities) {
     load_successful_ = success;
     load_results_ = std::move(availabilities);
   }
@@ -77,7 +77,7 @@ class AvailabilityStoreTest : public testing::Test {
 
   // Callback results.
   base::Optional<bool> load_successful_;
-  std::unique_ptr<std::map<const base::Feature*, uint32_t>> load_results_;
+  std::unique_ptr<std::map<std::string, uint32_t>> load_results_;
 
   // |db_availabilities_| is used during creation of the FakeDB in CreateDB(),
   // to simplify what the DB has stored.
@@ -198,14 +198,16 @@ TEST_F(AvailabilityStoreTest, AllNewFeatures) {
   ASSERT_EQ(2u, load_results_->size());
   ASSERT_EQ(2u, db_availabilities_.size());
 
-  ASSERT_TRUE(load_results_->find(&kTestFeatureFoo) != load_results_->end());
-  EXPECT_EQ(14u, (*load_results_)[&kTestFeatureFoo]);
+  ASSERT_TRUE(load_results_->find(kTestFeatureFoo.name) !=
+              load_results_->end());
+  EXPECT_EQ(14u, (*load_results_)[kTestFeatureFoo.name]);
   ASSERT_TRUE(db_availabilities_.find(kTestFeatureFoo.name) !=
               db_availabilities_.end());
   EXPECT_EQ(14u, db_availabilities_[kTestFeatureFoo.name].day());
 
-  ASSERT_TRUE(load_results_->find(&kTestFeatureBar) != load_results_->end());
-  EXPECT_EQ(14u, (*load_results_)[&kTestFeatureBar]);
+  ASSERT_TRUE(load_results_->find(kTestFeatureBar.name) !=
+              load_results_->end());
+  EXPECT_EQ(14u, (*load_results_)[kTestFeatureBar.name]);
   ASSERT_TRUE(db_availabilities_.find(kTestFeatureBar.name) !=
               db_availabilities_.end());
   EXPECT_EQ(14u, db_availabilities_[kTestFeatureBar.name].day());
@@ -242,14 +244,16 @@ TEST_F(AvailabilityStoreTest, TestAllFilterCombinations) {
   ASSERT_EQ(2u, load_results_->size());
   ASSERT_EQ(2u, db_availabilities_.size());
 
-  ASSERT_TRUE(load_results_->find(&kTestFeatureFoo) != load_results_->end());
-  EXPECT_EQ(14u, (*load_results_)[&kTestFeatureFoo]);
+  ASSERT_TRUE(load_results_->find(kTestFeatureFoo.name) !=
+              load_results_->end());
+  EXPECT_EQ(14u, (*load_results_)[kTestFeatureFoo.name]);
   ASSERT_TRUE(db_availabilities_.find(kTestFeatureFoo.name) !=
               db_availabilities_.end());
   EXPECT_EQ(14u, db_availabilities_[kTestFeatureFoo.name].day());
 
-  ASSERT_TRUE(load_results_->find(&kTestFeatureBar) != load_results_->end());
-  EXPECT_EQ(10u, (*load_results_)[&kTestFeatureBar]);
+  ASSERT_TRUE(load_results_->find(kTestFeatureBar.name) !=
+              load_results_->end());
+  EXPECT_EQ(10u, (*load_results_)[kTestFeatureBar.name]);
   ASSERT_TRUE(db_availabilities_.find(kTestFeatureBar.name) !=
               db_availabilities_.end());
   EXPECT_EQ(10u, db_availabilities_[kTestFeatureBar.name].day());

@@ -26,6 +26,8 @@ class ChromeVariationsConfiguration : public Configuration {
   // Configuration implementation.
   const FeatureConfig& GetFeatureConfig(
       const base::Feature& feature) const override;
+  const FeatureConfig& GetFeatureConfigByName(
+      const std::string& feature_name) const override;
   const Configuration::ConfigMap& GetRegisteredFeatures() const override;
 
   // Parses the variations configuration for all of the given |features| and

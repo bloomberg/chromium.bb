@@ -11,12 +11,17 @@ namespace feature_engagement_tracker {
 SingleInvalidConfiguration::SingleInvalidConfiguration() {
   invalid_feature_config_.valid = false;
   invalid_feature_config_.used.name = "nothing_to_see_here";
-};
+}
 
 SingleInvalidConfiguration::~SingleInvalidConfiguration() = default;
 
 const FeatureConfig& SingleInvalidConfiguration::GetFeatureConfig(
     const base::Feature& feature) const {
+  return invalid_feature_config_;
+}
+
+const FeatureConfig& SingleInvalidConfiguration::GetFeatureConfigByName(
+    const std::string& feature_name) const {
   return invalid_feature_config_;
 }
 

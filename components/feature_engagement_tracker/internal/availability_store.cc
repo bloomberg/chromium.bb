@@ -32,8 +32,7 @@ const char kDatabaseUMAName[] = "FeatureEngagementTrackerAvailabilityStore";
 void OnDBUpdateComplete(
     std::unique_ptr<leveldb_proto::ProtoDatabase<Availability>> db,
     AvailabilityStore::OnLoadedCallback on_loaded_callback,
-    std::unique_ptr<std::map<const base::Feature*, uint32_t>>
-        feature_availabilities,
+    std::unique_ptr<std::map<std::string, uint32_t>> feature_availabilities,
     bool success) {
   stats::RecordDbUpdate(success, stats::StoreType::AVAILABILITY_STORE);
   std::move(on_loaded_callback).Run(success, std::move(feature_availabilities));
@@ -49,8 +48,7 @@ void OnDBLoadComplete(
   stats::RecordAvailabilityDbLoadEvent(success);
   if (!success) {
     std::move(on_loaded_callback)
-        .Run(false,
-             base::MakeUnique<std::map<const base::Feature*, uint32_t>>());
+        .Run(false, base::MakeUnique<std::map<std::string, uint32_t>>());
     return;
   }
 
@@ -63,7 +61,7 @@ void OnDBLoadComplete(
 
   // Find all availabilities from DB and find out what should be deleted.
   auto feature_availabilities =
-      base::MakeUnique<std::map<const base::Feature*, uint32_t>>();
+      base::MakeUnique<std::map<std::string, uint32_t>>();
   auto deletes = base::MakeUnique<std::vector<std::string>>();
   for (auto& availability : *availabilities) {
     // Check if in |feature_filter|.
@@ -81,14 +79,16 @@ void OnDBLoadComplete(
     }
 
     // Both in |feature_filter| and is enabled, so keep around.
-    feature_availabilities->insert(std::make_pair(feature, availability.day()));
+    feature_availabilities->insert(
+        std::make_pair(feature->name, availability.day()));
   }
 
   // Find features from |feature_filter| that are enabled, but not in DB yet.
   auto additions = base::MakeUnique<KeyAvailabilityList>();
   for (const base::Feature* feature : feature_filter) {
     // Check if already in DB.
-    if (feature_availabilities->find(feature) != feature_availabilities->end())
+    if (feature_availabilities->find(feature->name) !=
+        feature_availabilities->end())
       continue;
 
     // Check if enabled.
@@ -103,7 +103,8 @@ void OnDBLoadComplete(
         std::make_pair(availability.feature_name(), std::move(availability)));
 
     // Since it will be written to the DB, also add to the callback result.
-    feature_availabilities->insert(std::make_pair(feature, availability.day()));
+    feature_availabilities->insert(
+        std::make_pair(feature->name, availability.day()));
   }
 
   // Write all changes to the DB.
@@ -124,8 +125,7 @@ void OnDBInitComplete(
 
   if (!success) {
     std::move(on_loaded_callback)
-        .Run(false,
-             base::MakeUnique<std::map<const base::Feature*, uint32_t>>());
+        .Run(false, base::MakeUnique<std::map<std::string, uint32_t>>());
     return;
   }
 

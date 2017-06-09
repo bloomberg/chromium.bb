@@ -84,7 +84,7 @@ class TestAvailabilityModel : public AvailabilityModel {
 
   base::Optional<uint32_t> GetAvailability(
       const base::Feature& feature) const override {
-    auto search = availabilities_.find(&feature);
+    auto search = availabilities_.find(feature.name);
     if (search == availabilities_.end())
       return base::nullopt;
 
@@ -93,13 +93,13 @@ class TestAvailabilityModel : public AvailabilityModel {
 
   void SetAvailability(const base::Feature* feature,
                        base::Optional<uint32_t> availability) {
-    availabilities_[feature] = availability;
+    availabilities_[feature->name] = availability;
   }
 
  private:
   bool ready_;
 
-  std::map<const base::Feature*, base::Optional<uint32_t>> availabilities_;
+  std::map<std::string, base::Optional<uint32_t>> availabilities_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAvailabilityModel);
 };

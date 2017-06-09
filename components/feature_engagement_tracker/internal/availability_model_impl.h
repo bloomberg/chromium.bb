@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -45,12 +46,12 @@ class AvailabilityModelImpl : public AvailabilityModel {
   void OnStoreLoadComplete(
       OnInitializedCallback on_initialized_callback,
       bool success,
-      std::unique_ptr<std::map<const base::Feature*, uint32_t>>
-          feature_availabilities);
+      std::unique_ptr<std::map<std::string, uint32_t>> feature_availabilities);
 
   // Stores the day number since epoch (1970-01-01) in the local timezone for
-  // when the particular |feature| was made available.
-  std::map<const base::Feature*, uint32_t> feature_availabilities_;
+  // when the particular feature was made available. The key is the feature
+  // name.
+  std::map<std::string, uint32_t> feature_availabilities_;
 
   // Whether the model has successfully initialied.
   bool ready_;

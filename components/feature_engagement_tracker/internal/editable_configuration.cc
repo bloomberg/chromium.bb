@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/feature_engagement_tracker/internal/configuration.h"
 
@@ -18,12 +19,19 @@ EditableConfiguration::~EditableConfiguration() = default;
 void EditableConfiguration::SetConfiguration(
     const base::Feature* feature,
     const FeatureConfig& feature_config) {
-  configs_[feature] = feature_config;
+  configs_[feature->name] = feature_config;
 }
 
 const FeatureConfig& EditableConfiguration::GetFeatureConfig(
     const base::Feature& feature) const {
-  auto it = configs_.find(&feature);
+  auto it = configs_.find(feature.name);
+  DCHECK(it != configs_.end());
+  return it->second;
+}
+
+const FeatureConfig& EditableConfiguration::GetFeatureConfigByName(
+    const std::string& feature_name) const {
+  auto it = configs_.find(feature_name);
   DCHECK(it != configs_.end());
   return it->second;
 }

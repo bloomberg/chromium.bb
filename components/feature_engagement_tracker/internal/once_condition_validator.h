@@ -49,11 +49,11 @@ class OnceConditionValidator : public ConditionValidator {
 
  private:
   // Contains all features that have met conditions within the current session.
-  std::unordered_set<const base::Feature*> shown_features_;
+  std::unordered_set<std::string> shown_features_;
 
   // Which feature that is currently being shown, or nullptr if nothing is
   // currently showing.
-  const base::Feature* currently_showing_feature_;
+  std::string currently_showing_feature_;
 
   DISALLOW_COPY_AND_ASSIGN(OnceConditionValidator);
 };

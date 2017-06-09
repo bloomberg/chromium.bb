@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_SINGLE_INVALID_CONFIGURATION_H_
 #define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_SINGLE_INVALID_CONFIGURATION_H_
 
+#include <string>
 #include <unordered_set>
 
 #include "base/macros.h"
@@ -26,6 +27,8 @@ class SingleInvalidConfiguration : public Configuration {
   // Configuration implementation.
   const FeatureConfig& GetFeatureConfig(
       const base::Feature& feature) const override;
+  const FeatureConfig& GetFeatureConfigByName(
+      const std::string& feature_name) const override;
   const Configuration::ConfigMap& GetRegisteredFeatures() const override;
 
  private:
