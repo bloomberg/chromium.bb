@@ -91,13 +91,7 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
                                  bool available) {
     FocusField(element_id);
     base::RunLoop().RunUntilIdle();
-    fake_pw_client_.Flush();
-    bool called = fake_pw_client_.called_show_pw_generation_popup();
-    if (available)
-      ASSERT_TRUE(called);
-    else
-      ASSERT_FALSE(called);
-
+    ASSERT_EQ(available, GetCalledShowPasswordGenerationPopup());
     fake_pw_client_.reset_called_show_pw_generation_popup();
   }
 
@@ -245,6 +239,18 @@ const char kNewPasswordAutocompleteAttributeFormHTML[] =
     "  <INPUT type = 'password' id = 'first_password' "
     "         autocomplete='new-password' size = 5/>"
     "  <INPUT type = 'password' id = 'second_password' size = 5/> "
+    "  <INPUT type = 'button' id = 'dummy'/> "
+    "  <INPUT type = 'submit' value = 'LOGIN' />"
+    "</FORM>";
+
+const char kCurrentAndNewPasswordAutocompleteAttributeFormHTML[] =
+    "<FORM name = 'blah' action = 'http://www.random.com/'> "
+    "  <INPUT type = 'password' id = 'old_password' "
+    "         autocomplete='current-password'/>"
+    "  <INPUT type = 'password' id = 'new_password' "
+    "         autocomplete='new-password'/>"
+    "  <INPUT type = 'password' id = 'confirm_password' "
+    "         autocomplete='new-password'/>"
     "  <INPUT type = 'button' id = 'dummy'/> "
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
@@ -605,21 +611,27 @@ TEST_F(PasswordGenerationAgentTest, AutocompleteAttributesTest) {
   LoadHTMLWithUserGesture(kBothAutocompleteAttributesFormHTML);
   SetNotBlacklistedMessage(password_generation_,
                            kBothAutocompleteAttributesFormHTML);
-
   ExpectGenerationAvailable("first_password", true);
 
-  // Only setting one of the two attributes doesn't trigger generation.
+  // Only username autocomplete attribute enabled doesn't trigger generation.
   LoadHTMLWithUserGesture(kUsernameAutocompleteAttributeFormHTML);
   SetNotBlacklistedMessage(password_generation_,
                            kUsernameAutocompleteAttributeFormHTML);
-
   ExpectGenerationAvailable("first_password", false);
 
+  // Only new-password autocomplete attribute enabled does trigger generation.
   LoadHTMLWithUserGesture(kNewPasswordAutocompleteAttributeFormHTML);
   SetNotBlacklistedMessage(password_generation_,
                            kNewPasswordAutocompleteAttributeFormHTML);
+  ExpectGenerationAvailable("first_password", true);
 
-  ExpectGenerationAvailable("first_password", false);
+  // Generation is triggered if the form has only password fields.
+  LoadHTMLWithUserGesture(kCurrentAndNewPasswordAutocompleteAttributeFormHTML);
+  SetNotBlacklistedMessage(password_generation_,
+                           kCurrentAndNewPasswordAutocompleteAttributeFormHTML);
+  ExpectGenerationAvailable("old_password", false);
+  ExpectGenerationAvailable("new_password", true);
+  ExpectGenerationAvailable("confirm_password", false);
 }
 
 TEST_F(PasswordGenerationAgentTest, ChangePasswordFormDetectionTest) {

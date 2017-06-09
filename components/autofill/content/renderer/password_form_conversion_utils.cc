@@ -740,31 +740,37 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
 }
 
 bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
-                                   const char* value_in_lowercase) {
-  std::string autocomplete_value_lowercase = base::ToLowerASCII(
-      base::UTF16ToUTF8(element.GetAttribute("autocomplete").Utf16()));
+                                   base::StringPiece value_in_lowercase) {
+  CR_DEFINE_STATIC_LOCAL(WebString, kAutocomplete, ("autocomplete"));
+  const std::string autocomplete_value =
+      element.GetAttribute(kAutocomplete)
+          .Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
 
-  std::vector<base::StringPiece> tokens = base::SplitStringPiece(
-      autocomplete_value_lowercase, base::kWhitespaceASCII,
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  return base::ContainsValue(tokens, value_in_lowercase);
+  std::vector<base::StringPiece> tokens =
+      base::SplitStringPiece(autocomplete_value, base::kWhitespaceASCII,
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return std::find_if(tokens.begin(), tokens.end(),
+                      [value_in_lowercase](base::StringPiece token) {
+                        return base::LowerCaseEqualsASCII(token,
+                                                          value_in_lowercase);
+                      }) != tokens.end();
 }
 
 bool HasCreditCardAutocompleteAttributes(
     const blink::WebInputElement& element) {
-  std::string autocomplete_value_lowercase = base::ToLowerASCII(
-      base::UTF16ToUTF8(element.GetAttribute("autocomplete").Utf16()));
+  CR_DEFINE_STATIC_LOCAL(WebString, kAutocomplete, ("autocomplete"));
+  const std::string autocomplete_value =
+      element.GetAttribute(kAutocomplete)
+          .Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
 
-  for (const auto& token : base::SplitStringPiece(
-           autocomplete_value_lowercase, base::kWhitespaceASCII,
-           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    if (base::StartsWith(token, kAutocompleteCreditCardPrefix,
-                         base::CompareCase::SENSITIVE)) {
-      return true;
-    }
-  }
-  return false;
+  std::vector<base::StringPiece> tokens =
+      base::SplitStringPiece(autocomplete_value, base::kWhitespaceASCII,
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return std::find_if(
+             tokens.begin(), tokens.end(), [](base::StringPiece token) {
+               return base::StartsWith(token, kAutocompleteCreditCardPrefix,
+                                       base::CompareCase::INSENSITIVE_ASCII);
+             }) != tokens.end();
 }
 
 bool IsCreditCardVerificationPasswordField(

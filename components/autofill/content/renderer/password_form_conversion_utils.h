@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -62,7 +63,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
 // Checks in a case-insensitive way if the autocomplete attribute for the given
 // |element| is present and has the specified |value_in_lowercase|.
 bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
-                                   const char* value_in_lowercase);
+                                   base::StringPiece value_in_lowercase);
 
 // Checks in a case-insensitive way if credit card autocomplete attributes for
 // the given |element| are present.
