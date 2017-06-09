@@ -1517,6 +1517,8 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
 
   if (observer_)
     observer_->OnMetadataChanged(pipeline_metadata_);
+
+  delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
 }
 
 void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
@@ -2042,6 +2044,8 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
       delegate_->PlayerGone(delegate_id_);
       break;
     case DelegateState::PLAYING: {
+      if (HasVideo())
+        delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
       delegate_->DidPlay(
           delegate_id_, HasVideo(), has_audio,
           media::DurationToMediaContentType(GetPipelineMediaDuration()));

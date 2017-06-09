@@ -15,6 +15,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "ui/gfx/geometry/size.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -165,8 +166,15 @@ bool RendererWebMediaPlayerDelegate::IsStale(int player_id) {
 void RendererWebMediaPlayerDelegate::SetIsEffectivelyFullscreen(
     int player_id,
     bool is_fullscreen) {
-  Send(new MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChange(
+  Send(new MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChanged(
       routing_id(), player_id, is_fullscreen));
+}
+
+void RendererWebMediaPlayerDelegate::DidPlayerSizeChange(
+    int delegate_id,
+    const gfx::Size& size) {
+  Send(new MediaPlayerDelegateHostMsg_OnMediaSizeChanged(routing_id(),
+                                                         delegate_id, size));
 }
 
 void RendererWebMediaPlayerDelegate::WasHidden() {

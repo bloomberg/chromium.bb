@@ -158,6 +158,10 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
     DCHECK_EQ(player_id_, player_id);
   }
 
+  void DidPlayerSizeChange(int player_id, const gfx::Size& size) override {
+    DCHECK_EQ(player_id_, player_id);
+  }
+
   bool IsFrameHidden() override { return is_hidden_; }
 
   bool IsFrameClosed() override { return is_closed_; }

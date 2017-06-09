@@ -23,6 +23,10 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 namespace content {
 
 class NavigationEntry;
@@ -414,6 +418,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                    const MediaPlayerId& id) {}
   virtual void MediaStoppedPlaying(const MediaPlayerInfo& video_type,
                                    const MediaPlayerId& id) {}
+  virtual void MediaResized(const gfx::Size& size, const MediaPlayerId& id) {}
 
   // Invoked when the renderer process changes the page scale factor.
   virtual void OnPageScaleFactorChanged(float page_scale_factor) {}

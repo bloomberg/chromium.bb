@@ -670,6 +670,25 @@ bool WebContentsAndroid::HasActiveEffectivelyFullscreenVideo(
   return web_contents_->HasActiveEffectivelyFullscreenVideo();
 }
 
+base::android::ScopedJavaLocalRef<jobject>
+WebContentsAndroid::GetCurrentlyPlayingVideoSizes(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  const WebContents::VideoSizeMap& sizes =
+      web_contents_->GetCurrentlyPlayingVideoSizes();
+  DCHECK_GT(sizes.size(), 0u);
+
+  ScopedJavaLocalRef<jobject> jsizes = Java_WebContentsImpl_createSizeList(env);
+
+  using MapEntry = std::pair<WebContentsObserver::MediaPlayerId, gfx::Size>;
+  for (const MapEntry& entry : sizes) {
+    Java_WebContentsImpl_createSizeAndAddToList(
+        env, jsizes, entry.second.width(), entry.second.height());
+  }
+
+  return jsizes;
+}
+
 ScopedJavaLocalRef<jobject> WebContentsAndroid::GetOrCreateEventForwarder(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {

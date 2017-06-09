@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/media_content_type.h"
+#include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -57,6 +58,10 @@ IPC_MESSAGE_ROUTED5(MediaPlayerDelegateHostMsg_OnMediaPlaying,
                     media::MediaContentType /* media_content_type */)
 
 IPC_MESSAGE_ROUTED2(
-    MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChange,
-    int /* delegate_id */,
+    MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChanged,
+    int /* delegate_id, distinguishes instances */,
     bool /* is_fullscreen */)
+
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
+                    int /* delegate_id, distinguishes instances */,
+                    gfx::Size /* new size of video */)

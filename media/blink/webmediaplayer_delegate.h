@@ -8,6 +8,9 @@
 namespace blink {
 class WebMediaPlayer;
 }
+namespace gfx {
+class Size;
+}
 namespace media {
 
 enum class MediaContentType;
@@ -87,6 +90,9 @@ class WebMediaPlayerDelegate {
   // TODO(sandersd): It may be helpful to get |has_audio| and |has_video| here,
   // so that we can do the right thing with media that starts paused.
   virtual void DidPause(int player_id) = 0;
+
+  // Notify that the size of the media player is changed.
+  virtual void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) = 0;
 
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.

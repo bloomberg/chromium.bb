@@ -290,6 +290,8 @@ void WebMediaPlayerMS::Play() {
   if (audio_renderer_)
     audio_renderer_->Play();
 
+  if (HasVideo())
+    delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
   // TODO(perkj, magjed): We use OneShot focus type here so that it takes
   // audio focus once it starts, and then will not respond to further audio
   // focus changes. See http://crbug.com/596516 for more details.
@@ -719,6 +721,8 @@ void WebMediaPlayerMS::ResetCanvasCache() {
 
 void WebMediaPlayerMS::TriggerResize() {
   get_client()->SizeChanged();
+
+  delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
 }
 
 }  // namespace content
