@@ -7,10 +7,6 @@
 
 #include "base/macros.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace chrome {
 namespace android {
 
@@ -21,9 +17,6 @@ class PreferencesLauncher {
 
   // Opens the password settings page.
   static void ShowPasswordSettings();
-
-  // Open the clear browsing data UI.
-  static void OpenClearBrowsingData(content::WebContents* web_contents);
 
  private:
   PreferencesLauncher() {}
