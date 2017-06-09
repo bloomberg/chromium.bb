@@ -66,6 +66,8 @@ class TreeWalker final : public GarbageCollected<TreeWalker>,
   TreeWalker(Node*, unsigned what_to_show, V8NodeFilterCondition*);
 
   Node* SetCurrent(Node*);
+  template <typename Strategy>
+  Node* TraverseSiblings(ExceptionState&);
 
   Member<Node> current_;
 };

@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/NodeTraversalStrategy.h"
 
 namespace blink {
 
@@ -126,12 +127,14 @@ Node* TreeWalker::lastChild(ExceptionState& exception_state) {
   return 0;
 }
 
-Node* TreeWalker::previousSibling(ExceptionState& exception_state) {
+// https://dom.spec.whatwg.org/#concept-traverse-siblings
+template <typename Strategy>
+Node* TreeWalker::TraverseSiblings(ExceptionState& exception_state) {
   Node* node = current_;
   if (node == root())
     return 0;
   while (1) {
-    for (Node* sibling = node->previousSibling(); sibling;) {
+    for (Node* sibling = Strategy::NextNode(*node); sibling;) {
       unsigned accept_node_result = AcceptNode(sibling, exception_state);
       if (exception_state.HadException())
         return 0;
@@ -140,8 +143,8 @@ Node* TreeWalker::previousSibling(ExceptionState& exception_state) {
           current_ = sibling;
           return current_.Get();
         case NodeFilter::kFilterSkip:
-          if (sibling->lastChild()) {
-            sibling = sibling->lastChild();
+          if (sibling->hasChildren()) {
+            sibling = Strategy::StartNode(*sibling);
             node = sibling;
             continue;
           }
@@ -149,7 +152,7 @@ Node* TreeWalker::previousSibling(ExceptionState& exception_state) {
         case NodeFilter::kFilterReject:
           break;
       }
-      sibling = sibling->previousSibling();
+      sibling = Strategy::NextNode(*sibling);
     }
     node = node->parentNode();
     if (!node || node == root())
@@ -162,40 +165,12 @@ Node* TreeWalker::previousSibling(ExceptionState& exception_state) {
   }
 }
 
+Node* TreeWalker::previousSibling(ExceptionState& exception_state) {
+  return TraverseSiblings<PreviousNodeTraversalStrategy>(exception_state);
+}
+
 Node* TreeWalker::nextSibling(ExceptionState& exception_state) {
-  Node* node = current_;
-  if (node == root())
-    return 0;
-  while (1) {
-    for (Node* sibling = node->nextSibling(); sibling;) {
-      unsigned accept_node_result = AcceptNode(sibling, exception_state);
-      if (exception_state.HadException())
-        return 0;
-      switch (accept_node_result) {
-        case NodeFilter::kFilterAccept:
-          current_ = sibling;
-          return current_.Get();
-        case NodeFilter::kFilterSkip:
-          if (sibling->hasChildren()) {
-            sibling = sibling->firstChild();
-            node = sibling;
-            continue;
-          }
-          break;
-        case NodeFilter::kFilterReject:
-          break;
-      }
-      sibling = sibling->nextSibling();
-    }
-    node = node->parentNode();
-    if (!node || node == root())
-      return 0;
-    unsigned accept_node_result = AcceptNode(node, exception_state);
-    if (exception_state.HadException())
-      return 0;
-    if (accept_node_result == NodeFilter::kFilterAccept)
-      return 0;
-  }
+  return TraverseSiblings<NextNodeTraversalStrategy>(exception_state);
 }
 
 Node* TreeWalker::previousNode(ExceptionState& exception_state) {

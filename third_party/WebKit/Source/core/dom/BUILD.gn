@@ -240,6 +240,7 @@ blink_core_sources("dom") {
     "NodeRareData.h",
     "NodeTraversal.cpp",
     "NodeTraversal.h",
+    "NodeTraversalStrategy.h",
     "NodeWithIndex.h",
     "NonDocumentTypeChildNode.h",
     "NonElementParentNode.h",
