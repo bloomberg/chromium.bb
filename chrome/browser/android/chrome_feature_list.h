@@ -43,6 +43,7 @@ extern const base::Feature kNTPCondensedTileLayoutFeature;
 extern const base::Feature kNTPLaunchAfterInactivity;
 extern const base::Feature kNTPOfflinePagesFeature;
 extern const base::Feature NTPShowGoogleGInOmniboxFeature;
+extern const base::Feature kPayWithGoogleV1;
 extern const base::Feature kPhysicalWebFeature;
 extern const base::Feature kPhysicalWebSharing;
 extern const base::Feature kSpecialLocaleFeature;
