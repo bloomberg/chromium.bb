@@ -31,12 +31,10 @@ View* RootViewTargeter::FindTargetForGestureEvent(
     return root_view_->gesture_handler_;
   }
 
-  // If rect-based targeting is enabled, use the gesture's bounding box to
-  // determine the target. Otherwise use the center point of the gesture's
-  // bounding box to determine the target.
+  // If non-empty, use the gesture's bounding box to determine the target.
+  // Otherwise use the center point of the gesture's bounding box.
   gfx::Rect rect(gesture.location(), gfx::Size(1, 1));
-  if (views::switches::IsRectBasedTargetingEnabled() &&
-      !gesture.details().bounding_box().IsEmpty()) {
+  if (!gesture.details().bounding_box().IsEmpty()) {
     // TODO(tdanderson): Pass in the bounding box to GetEventHandlerForRect()
     // once crbug.com/313392 is resolved.
     rect.set_size(gesture.details().bounding_box().size());
