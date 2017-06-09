@@ -338,6 +338,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Accessors.
   ui::AXTreeIDRegistry::AXTreeID ax_tree_id() const { return ax_tree_id_; }
   float device_scale_factor() const { return device_scale_factor_; }
+  const ui::AXTree* ax_tree() const { return tree_.get(); }
 
   // AXTreeDelegate implementation.
   void OnNodeDataWillChange(ui::AXTree* tree,

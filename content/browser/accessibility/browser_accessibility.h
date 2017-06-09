@@ -422,12 +422,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // text, depending on the platform.
   base::string16 GetInnerText() const;
 
-  // If a bounding rectangle is empty, compute it based on the union of its
-  // children, since most accessibility APIs don't like elements with no
-  // bounds, but "virtual" elements in the accessibility tree that don't
-  // correspond to a layed-out element sometimes don't have bounds.
-  void FixEmptyBounds(gfx::RectF* bounds) const;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
 };
 

@@ -88,61 +88,21 @@ v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
   return result;
 }
 
-// Compute the bounding box of a node, fixing nodes with empty bounds by
-// unioning the bounds of their children.
-static gfx::RectF ComputeLocalNodeBounds(TreeCache* cache, ui::AXNode* node) {
-  gfx::RectF bounds = node->data().location;
-  if (bounds.width() > 0 && bounds.height() > 0)
-    return bounds;
-
-  // Compute the bounds of each child.
-  for (size_t i = 0; i < node->children().size(); i++) {
-    ui::AXNode* child = node->children()[i];
-    gfx::RectF child_bounds = ComputeLocalNodeBounds(cache, child);
-
-    // Ignore children that don't have valid bounds themselves.
-    if (child_bounds.width() == 0 || child_bounds.height() == 0)
-      continue;
-
-    // For the first valid child, just set the bounds to that child's bounds.
-    if (bounds.width() == 0 || bounds.height() == 0) {
-      bounds = child_bounds;
-      continue;
-    }
-
-    // Union each additional child's bounds.
-    bounds.Union(child_bounds);
-  }
-
-  return bounds;
-}
-
 // Adjust the bounding box of a node from local to global coordinates,
 // walking up the parent hierarchy to offset by frame offsets and
 // scroll offsets.
-static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache,
-                                         ui::AXNode* node,
-                                         gfx::RectF local_bounds) {
+static gfx::Rect ComputeGlobalNodeBounds(
+    TreeCache* cache,
+    ui::AXNode* node,
+    gfx::RectF local_bounds = gfx::RectF()) {
   gfx::RectF bounds = local_bounds;
+
   while (node) {
-    if (node->data().transform)
-      node->data().transform->TransformRect(&bounds);
+    bounds = cache->tree.RelativeToTreeBounds(node, bounds);
 
-    // Walk up to this node's container. This may cross a tree
-    // boundary, in which case GetParent() modifies |cache|, so we
-    // save the old cache temporarily.
     TreeCache* previous_cache = cache;
-    ui::AXNode* container =
-        cache->tree.GetFromId(node->data().offset_container_id);
-    if (!container) {
-      if (node == cache->tree.root()) {
-        container = cache->owner->GetParent(node, &cache);
-      } else {
-        container = cache->tree.root();
-      }
-    }
-
-    if (!container || container == node)
+    ui::AXNode* parent = cache->owner->GetParent(cache->tree.root(), &cache);
+    if (parent == node)
       break;
 
     // All trees other than the desktop tree are scaled by the device
@@ -155,17 +115,7 @@ static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache,
         bounds.Scale(1.0 / scale_factor);
     }
 
-    gfx::RectF container_bounds = container->data().location;
-    bounds.Offset(container_bounds.x(), container_bounds.y());
-
-    int scroll_x = 0;
-    int scroll_y = 0;
-    if (container->data().GetIntAttribute(ui::AX_ATTR_SCROLL_X, &scroll_x) &&
-        container->data().GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &scroll_y)) {
-      bounds.Offset(-scroll_x, -scroll_y);
-    }
-
-    node = container;
+    node = parent;
   }
 
   return gfx::ToEnclosingRect(bounds);
@@ -569,9 +519,7 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
   RouteNodeIDFunction(
       "GetLocation", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                         TreeCache* cache, ui::AXNode* node) {
-        gfx::RectF local_bounds = ComputeLocalNodeBounds(cache, node);
-        gfx::Rect global_bounds =
-            ComputeGlobalNodeBounds(cache, node, local_bounds);
+        gfx::Rect global_bounds = ComputeGlobalNodeBounds(cache, node);
         result.Set(RectToV8Object(isolate, global_bounds));
       });
   RouteNodeIDFunction(
@@ -607,14 +555,14 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
       "GetBoundsForRange",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          TreeCache* cache, ui::AXNode* node, int start, int end) {
-        gfx::RectF local_bounds = ComputeLocalNodeBounds(cache, node);
         if (node->data().role != ui::AX_ROLE_INLINE_TEXT_BOX) {
-          gfx::Rect global_bounds =
-              ComputeGlobalNodeBounds(cache, node, local_bounds);
+          gfx::Rect global_bounds = ComputeGlobalNodeBounds(cache, node);
           result.Set(RectToV8Object(isolate, global_bounds));
         }
 
         // Use character offsets to compute the local bounds of this subrange.
+        gfx::RectF local_bounds(0, 0, node->data().location.width(),
+                                node->data().location.height());
         std::string name = node->data().GetStringAttribute(ui::AX_ATTR_NAME);
         std::vector<int> character_offsets =
             node->data().GetIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS);

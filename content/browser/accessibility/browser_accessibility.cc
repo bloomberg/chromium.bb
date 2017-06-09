@@ -355,15 +355,11 @@ BrowserAccessibility::GetHtmlAttributes() const {
 }
 
 gfx::Rect BrowserAccessibility::GetFrameBoundsRect() const {
-  gfx::RectF bounds = GetLocation();
-  FixEmptyBounds(&bounds);
-  return RelativeToAbsoluteBounds(bounds, true);
+  return RelativeToAbsoluteBounds(gfx::RectF(), true);
 }
 
 gfx::Rect BrowserAccessibility::GetPageBoundsRect() const {
-  gfx::RectF bounds = GetLocation();
-  FixEmptyBounds(&bounds);
-  return RelativeToAbsoluteBounds(bounds, false);
+  return RelativeToAbsoluteBounds(gfx::RectF(), false);
 }
 
 gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
@@ -1044,66 +1040,27 @@ base::string16 BrowserAccessibility::GetInnerText() const {
   return text;
 }
 
-void BrowserAccessibility::FixEmptyBounds(gfx::RectF* bounds) const {
-  if (bounds->width() > 0 && bounds->height() > 0)
-    return;
-
-  for (size_t i = 0; i < InternalChildCount(); ++i) {
-    // Compute the bounds of each child - this calls FixEmptyBounds
-    // recursively if necessary.
-    BrowserAccessibility* child = InternalGetChild(i);
-    gfx::Rect child_bounds = child->GetPageBoundsRect();
-
-    // Ignore children that don't have valid bounds themselves.
-    if (child_bounds.width() == 0 || child_bounds.height() == 0)
-      continue;
-
-    // For the first valid child, just set the bounds to that child's bounds.
-    if (bounds->width() == 0 || bounds->height() == 0) {
-      *bounds = gfx::RectF(child_bounds);
-      continue;
-    }
-
-    // Union each additional child's bounds.
-    bounds->Union(gfx::RectF(child_bounds));
-  }
-}
-
 gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
     gfx::RectF bounds,
     bool frame_only) const {
   const BrowserAccessibility* node = this;
   while (node) {
-    if (node->GetData().transform)
-      node->GetData().transform->TransformRect(&bounds);
+    bounds =
+        node->manager()->ax_tree()->RelativeToTreeBounds(node->node(), bounds);
 
-    const BrowserAccessibility* container =
-        node->manager()->GetFromID(node->GetData().offset_container_id);
-    if (!container) {
-      if (node == node->manager()->GetRoot() && !frame_only) {
-        container = node->PlatformGetParent();
-      } else {
-        container = node->manager()->GetRoot();
-      }
-    }
-
-    if (!container || container == node)
-      break;
-
-    gfx::RectF container_bounds = container->GetLocation();
-    bounds.Offset(container_bounds.x(), container_bounds.y());
-
-    if (container->manager()->UseRootScrollOffsetsWhenComputingBounds() ||
-        container->PlatformGetParent()) {
+    // On some platforms we need to unapply root scroll offsets.
+    const BrowserAccessibility* root = node->manager()->GetRoot();
+    if (!node->manager()->UseRootScrollOffsetsWhenComputingBounds() &&
+        !root->PlatformGetParent()) {
       int sx = 0;
       int sy = 0;
-      if (container->GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
-          container->GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
-        bounds.Offset(-sx, -sy);
+      if (root->GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
+          root->GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
+        bounds.Offset(sx, sy);
       }
     }
 
-    node = container;
+    node = root->PlatformGetParent();
   }
 
   return gfx::ToEnclosingRect(bounds);

@@ -9,12 +9,14 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
+#include "ui/gfx/transform.h"
 
 using base::DoubleToString;
 using base::IntToString;
@@ -32,6 +34,13 @@ std::string IntVectorToString(const std::vector<int>& items) {
     str += IntToString(items[i]);
   }
   return str;
+}
+
+std::string GetBoundsAsString(const AXTree& tree, int32_t id) {
+  AXNode* node = tree.GetFromId(id);
+  gfx::RectF bounds = tree.GetTreeBounds(node);
+  return base::StringPrintf("(%.0f, %.0f) size (%.0f x %.0f)", bounds.x(),
+                            bounds.y(), bounds.width(), bounds.height());
 }
 
 class FakeAXTreeDelegate : public AXTreeDelegate {
@@ -782,6 +791,115 @@ TEST(AXTreeTest, IntListChangeCallbacks) {
   EXPECT_EQ("flowtoIds changed from  to 3", change_log2[2]);
 
   tree.SetDelegate(NULL);
+}
+
+// Create a very simple tree and make sure that we can get the bounds of
+// any node.
+TEST(AXTreeTest, GetBoundsBasic) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(2);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF(100, 10, 400, 300);
+  AXTree tree(tree_update);
+
+  EXPECT_EQ("(0, 0) size (800 x 600)", GetBoundsAsString(tree, 1));
+  EXPECT_EQ("(100, 10) size (400 x 300)", GetBoundsAsString(tree, 2));
+}
+
+// If a node doesn't specify its location but at least one child does have
+// a location, its computed bounds should be the union of all child bounds.
+TEST(AXTreeTest, EmptyNodeBoundsIsUnionOfChildren) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(4);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF();  // Deliberately empty.
+  tree_update.nodes[1].child_ids.push_back(3);
+  tree_update.nodes[1].child_ids.push_back(4);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].location = gfx::RectF(100, 10, 400, 20);
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].location = gfx::RectF(200, 30, 400, 20);
+
+  AXTree tree(tree_update);
+  EXPECT_EQ("(100, 10) size (500 x 40)", GetBoundsAsString(tree, 2));
+}
+
+// Test that getting the bounds of a node works when there's a transform.
+TEST(AXTreeTest, GetBoundsWithTransform) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(3);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 400, 300);
+  tree_update.nodes[0].transform.reset(new gfx::Transform());
+  tree_update.nodes[0].transform->Scale(2.0, 2.0);
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[0].child_ids.push_back(3);
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF(20, 10, 50, 5);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].location = gfx::RectF(20, 30, 50, 5);
+  tree_update.nodes[2].transform.reset(new gfx::Transform());
+  tree_update.nodes[2].transform->Scale(2.0, 2.0);
+
+  AXTree tree(tree_update);
+  EXPECT_EQ("(0, 0) size (800 x 600)", GetBoundsAsString(tree, 1));
+  EXPECT_EQ("(40, 20) size (100 x 10)", GetBoundsAsString(tree, 2));
+  EXPECT_EQ("(80, 120) size (200 x 20)", GetBoundsAsString(tree, 3));
+}
+
+// Test that getting the bounds of a node that's inside a container
+// works correctly.
+TEST(AXTreeTest, GetBoundsWithContainerId) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(4);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF(100, 50, 600, 500);
+  tree_update.nodes[1].child_ids.push_back(3);
+  tree_update.nodes[1].child_ids.push_back(4);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].offset_container_id = 2;
+  tree_update.nodes[2].location = gfx::RectF(20, 30, 50, 5);
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].location = gfx::RectF(20, 30, 50, 5);
+
+  AXTree tree(tree_update);
+  EXPECT_EQ("(120, 80) size (50 x 5)", GetBoundsAsString(tree, 3));
+  EXPECT_EQ("(20, 30) size (50 x 5)", GetBoundsAsString(tree, 4));
+}
+
+// Test that getting the bounds of a node that's inside a scrolling container
+// works correctly.
+TEST(AXTreeTest, GetBoundsWithScrolling) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(3);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF(100, 50, 600, 500);
+  tree_update.nodes[1].AddIntAttribute(ui::AX_ATTR_SCROLL_X, 5);
+  tree_update.nodes[1].AddIntAttribute(ui::AX_ATTR_SCROLL_Y, 10);
+  tree_update.nodes[1].child_ids.push_back(3);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].offset_container_id = 2;
+  tree_update.nodes[2].location = gfx::RectF(20, 30, 50, 5);
+
+  AXTree tree(tree_update);
+  EXPECT_EQ("(115, 70) size (50 x 5)", GetBoundsAsString(tree, 3));
 }
 
 }  // namespace ui
