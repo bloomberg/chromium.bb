@@ -2414,14 +2414,17 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if gerrit_auth and git_auth:
       if gerrit_auth == git_auth:
         return
+      all_gsrc = cookie_auth.get_auth_header('d0esN0tEx1st.googlesource.com')
       print((
           'WARNING: You have different credentials for Gerrit and git hosts:\n'
           '           %s\n'
           '           %s\n'
           '        Consider running the following command:\n'
           '          git cl creds-check\n'
+          '        %s\n'
           '        %s') %
           (git_host, self._gerrit_host,
+           ('Hint: delete creds for .googlesource.com' if all_gsrc else ''),
            cookie_auth.get_new_password_message(git_host)))
       if not force:
         confirm_or_exit('If you know what you are doing', action='continue')
