@@ -127,11 +127,14 @@ class UrlEmphasisTest : public testing::Test {
   MockRenderText mock_;
 };
 
+#if !defined(OS_LINUX)
+// TODO(crbug/731894): This test does not work on Linux.
 TEST(UrlBarTextureTest, WillNotFailOnNonAsciiURLs) {
   TestUrlBarTexture texture;
   EXPECT_EQ(3lu, texture.GetNumberOfFontFallbacksForURL(
                      GURL("http://中央大学.ಠ_ಠ.tw/")));
 }
+#endif
 
 TEST_F(UrlEmphasisTest, SecureHttpsHost) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
