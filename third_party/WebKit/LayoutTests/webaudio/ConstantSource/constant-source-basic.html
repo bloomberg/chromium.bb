@@ -8,6 +8,7 @@
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
+    <script src="../resources/start-stop-exceptions.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -47,6 +48,13 @@
 
         verifyNodeDefaults(should, node, prefix);
 
+        task.done();
+      });
+
+      audit.define('start/stop exceptions', (task, should) => {
+        let node = new ConstantSourceNode(context);
+
+        testStartStop(should, node);
         task.done();
       });
 

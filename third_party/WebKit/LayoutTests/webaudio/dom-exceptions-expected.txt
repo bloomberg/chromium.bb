@@ -141,22 +141,22 @@ PASS > [audio-buffer-source] AudioBufferSource start/stop
 PASS   source = context.createBufferSource() did not throw an exception. 
 PASS   source.buffer = buffer did not throw an exception. 
 PASS   source.buffer = context.createBuffer(1, 10, context.sampleRate) threw InvalidStateError: "Failed to set the 'buffer' property on 'AudioBufferSourceNode': Cannot set buffer after it has been already been set". 
-PASS   source.start(-1) threw InvalidAccessError: "Failed to execute 'start' on 'AudioBufferSourceNode': The start time provided (-1) is less than the minimum bound (0).". 
+PASS   source.start(-1) threw RangeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The start time provided (-1) is less than the minimum bound (0).". 
 PASS   source.start(Infinity) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
 PASS   source.start(-Infinity) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
 PASS   source.start(NaN) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
 PASS   source.start(1, Infinity) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
 PASS   source.start(1, -Infinity) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
 PASS   source.start(1, NaN) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
-PASS   source.start(1, -1) threw InvalidStateError: "Failed to execute 'start' on 'AudioBufferSourceNode': The offset provided (-1) is less than the minimum bound (0).". 
-PASS   source.start(1, -Number.MIN_VALUE) threw InvalidStateError: "Failed to execute 'start' on 'AudioBufferSourceNode': The offset provided (-4.94066e-324) is less than the minimum bound (0).". 
+PASS   source.start(1, -1) threw RangeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The offset provided (-1) is less than the minimum bound (0).". 
+PASS   source.start(1, -Number.MIN_VALUE) threw RangeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The offset provided (-4.94066e-324) is less than the minimum bound (0).". 
 PASS   source.start(1, 1, Infinity) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
 PASS   source.start(1, 1, -Infinity) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
 PASS   source.start(1, 1, NaN) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
-PASS   source.start(1, 1, -1) threw InvalidStateError: "Failed to execute 'start' on 'AudioBufferSourceNode': The duration provided (-1) is less than the minimum bound (0).". 
-PASS   source.start(1, 1, -Number.MIN_VALUE) threw InvalidStateError: "Failed to execute 'start' on 'AudioBufferSourceNode': The duration provided (-4.94066e-324) is less than the minimum bound (0).". 
+PASS   source.start(1, 1, -1) threw RangeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The duration provided (-1) is less than the minimum bound (0).". 
+PASS   source.start(1, 1, -Number.MIN_VALUE) threw RangeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The duration provided (-4.94066e-324) is less than the minimum bound (0).". 
 PASS   source.start() did not throw an exception. 
-PASS   source.stop(-Number.MIN_VALUE) threw InvalidAccessError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0).". 
+PASS   source.stop(-Number.MIN_VALUE) threw RangeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0).". 
 PASS   source.stop(Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
 PASS   source.stop(-Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
 PASS   source.stop(NaN) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
@@ -183,12 +183,12 @@ PASS   source7.stop() did not throw an exception.
 PASS < [audio-buffer-source] All assertions passed. (total 42 assertions) 
 PASS > [oscillator] start/stop 
 PASS   source8 = context.createOscillator() did not throw an exception. 
-PASS   source8.start(-Number.MIN_VALUE) threw InvalidAccessError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The start time provided (-4.94066e-324) is less than the minimum bound (0).". 
+PASS   source8.start(-Number.MIN_VALUE) threw RangeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The start time provided (-4.94066e-324) is less than the minimum bound (0).". 
 PASS   source8.start(Infinity) threw TypeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
 PASS   source8.start(-Infinity) threw TypeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
 PASS   source8.start(NaN) threw TypeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
 PASS   source8.start() did not throw an exception. 
-PASS   source8.stop(-Number.MIN_VALUE) threw InvalidAccessError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0).". 
+PASS   source8.stop(-Number.MIN_VALUE) threw RangeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0).". 
 PASS   source8.stop(Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
 PASS   source8.stop(-Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
 PASS   source8.stop(NaN) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 

@@ -11,6 +11,7 @@ Create an oscillator of each type and verify that the type is set correctly.
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
+    <script src="../resources/start-stop-exceptions.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -60,6 +61,15 @@ Create an oscillator of each type and verify that the type is set correctly.
         should(osc.type, 'osc.type = 0').notBeEqualTo(0);
         should(osc.type, 'osc.type').beEqualTo(oldType);
 
+        task.done();
+      });
+
+      audit.define('start/stop exceptions', (task, should) => {
+        // We're not going to render anything, so make it simple
+        let context = new OfflineAudioContext(1, 1, sampleRate);
+        let node = new OscillatorNode(context);
+
+        testStartStop(should, node);
         task.done();
       });
 
