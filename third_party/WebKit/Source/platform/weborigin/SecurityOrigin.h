@@ -207,6 +207,11 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   const Suborigin* GetSuborigin() const { return &suborigin_; }
   void AddSuborigin(const Suborigin&);
 
+  // Returns true when this SecurityOrigin has a suborigin, its policy
+  // allows sending credentials to the same physical origin, and the specified
+  // origin is the same physical origin.
+  bool HasSuboriginAndShouldAllowCredentialsFor(const KURL&) const;
+
   // By default 'file:' URLs may access other 'file:' URLs. This method
   // denies access. If either SecurityOrigin sets this flag, the access
   // check will fail.
@@ -285,6 +290,8 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
                                                      String&,
                                                      String&,
                                                      String&);
+
+  bool HasSameSuboriginAs(const SecurityOrigin* other) const;
 
   String protocol_;
   String host_;

@@ -72,7 +72,7 @@ async_test(
   'physical origin');
 
 async_test(
-  xhr_test(same_physical_origin_with_redirect_url, 'result1', 'cookieisset'),
+  xhr_test(same_physical_origin_with_redirect_url, 'result1', ''),
   '\'unsafe-credentials\' forces credentials across redirect with XHR to ' +
   'same physical origin');
 
@@ -100,7 +100,7 @@ promise_test(
   'Fetch to same physical origin');
 
 promise_test(
-  fetch_test(same_physical_origin_with_redirect_url, 'result1', 'cookieisset'),
+  fetch_test(same_physical_origin_with_redirect_url, 'result1', ''),
   '\'unsafe-credentials\' forces credentials across redirect with ' +
   'same-origin Fetch to same physical origin');
 
