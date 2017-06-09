@@ -544,7 +544,7 @@ IntRect PaintLayerScrollableArea::VisibleContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   int vertical_scrollbar_width = 0;
   int horizontal_scrollbar_height = 0;
-  if (scrollbar_inclusion == kIncludeScrollbars) {
+  if (scrollbar_inclusion == kExcludeScrollbars) {
     vertical_scrollbar_width =
         (VerticalScrollbar() && !VerticalScrollbar()->IsOverlayScrollbar())
             ? VerticalScrollbar()->ScrollbarThickness()

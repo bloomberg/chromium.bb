@@ -171,8 +171,9 @@ void ScrollableAreaPainter::PaintOverflowControls(
   if (painting_overlay_controls && !GetScrollableArea().HasOverlayScrollbars())
     return;
 
-  IntRect clip_rect(adjusted_paint_offset,
-                    GetScrollableArea().VisibleContentRect().Size());
+  IntRect clip_rect(
+      adjusted_paint_offset,
+      GetScrollableArea().VisibleContentRect(kIncludeScrollbars).Size());
   ClipRecorder clip_recorder(context, GetScrollableArea().Box(),
                              DisplayItem::kClipLayerOverflowControls,
                              clip_rect);
