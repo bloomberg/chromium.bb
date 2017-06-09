@@ -2187,78 +2187,46 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
 
   // Establish the second client at 1,100.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondClientWithRoot(window_1_100));
-  changes2()->clear();
 
   // 1,100 is the id in the wt_client1's id space. The new client should see
   // 2,1 (the server id).
   const Id window_1_100_in_ws2 = BuildWindowId(client_id_1(), 1);
   EXPECT_EQ(window_1_100_in_ws2, wt_client2()->root_window_id());
 
-  // Submit a CompositorFrame to window_1_100_in_ws2 (the embedded window in
-  // wt2) and make sure the server gets it.
-  {
-    cc::mojom::MojoCompositorFrameSinkPtr surface_ptr;
-    cc::mojom::MojoCompositorFrameSinkClientRequest client_request;
-    cc::mojom::MojoCompositorFrameSinkClientPtr surface_client_ptr;
-    client_request = mojo::MakeRequest(&surface_client_ptr);
-    wt2()->AttachCompositorFrameSink(window_1_100_in_ws2,
-                                     mojo::MakeRequest(&surface_ptr),
-                                     std::move(surface_client_ptr));
-    cc::CompositorFrame compositor_frame;
-    std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-    gfx::Rect frame_rect(0, 0, 100, 100);
-    render_pass->SetNew(1, frame_rect, frame_rect, gfx::Transform());
-    compositor_frame.render_pass_list.push_back(std::move(render_pass));
-    compositor_frame.metadata.device_scale_factor = 1.f;
-    compositor_frame.metadata.begin_frame_ack =
-        cc::BeginFrameAck(0, 1, 1, true);
-    cc::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
-    surface_ptr->SubmitCompositorFrame(local_surface_id,
-                                       std::move(compositor_frame));
-  }
-  // Make sure the parent connection gets the surface ID.
-  wt_client1()->WaitForChangeCount(1);
-  // Verify that the submitted frame is for |window_2_101|.
-  EXPECT_EQ(window_1_100_in_ws2,
-            changes1()->back().surface_id.frame_sink_id().client_id());
-  changes1()->clear();
-
   // The first window created in the second client gets a server id of 2,1
   // regardless of the id the client uses.
   const Id window_2_101 = wt_client2()->NewWindow(101);
   ASSERT_TRUE(wt_client2()->AddWindow(window_1_100_in_ws2, window_2_101));
-  const Id window_2_101_in_ws2 = BuildWindowId(client_id_2(), 1);
+  const Id window_2_101_in_ws1 = BuildWindowId(client_id_2(), 1);
   wt_client1()->WaitForChangeCount(1);
-  EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_101_in_ws2) +
+  EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_101_in_ws1) +
                 " old_parent=null new_parent=" + IdToString(window_1_100),
             SingleChangeToDescription(*changes1()));
-  // Submit a CompositorFrame to window_2_101_in_ws2 (a regular window in
-  // wt2) and make sure client gets it.
-  {
-    cc::mojom::MojoCompositorFrameSinkPtr surface_ptr;
-    cc::mojom::MojoCompositorFrameSinkClientRequest client_request;
-    cc::mojom::MojoCompositorFrameSinkClientPtr surface_client_ptr;
-    client_request = mojo::MakeRequest(&surface_client_ptr);
-    wt2()->AttachCompositorFrameSink(window_2_101,
-                                     mojo::MakeRequest(&surface_ptr),
-                                     std::move(surface_client_ptr));
-    cc::CompositorFrame compositor_frame;
-    std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-    gfx::Rect frame_rect(0, 0, 100, 100);
-    render_pass->SetNew(1, frame_rect, frame_rect, gfx::Transform());
-    compositor_frame.render_pass_list.push_back(std::move(render_pass));
-    compositor_frame.metadata.device_scale_factor = 1.f;
-    compositor_frame.metadata.begin_frame_ack =
-        cc::BeginFrameAck(0, 1, 1, true);
-    cc::LocalSurfaceId local_surface_id(2, base::UnguessableToken::Create());
-    surface_ptr->SubmitCompositorFrame(local_surface_id,
-                                       std::move(compositor_frame));
-  }
+  changes1()->clear();
+
+  // Submit a CompositorFrame to window_2_101 and make sure server gets it.
+  cc::mojom::MojoCompositorFrameSinkPtr surface_ptr;
+  cc::mojom::MojoCompositorFrameSinkClientRequest client_request;
+  cc::mojom::MojoCompositorFrameSinkClientPtr surface_client_ptr;
+  client_request = mojo::MakeRequest(&surface_client_ptr);
+  wt2()->AttachCompositorFrameSink(window_2_101,
+                                   mojo::MakeRequest(&surface_ptr),
+                                   std::move(surface_client_ptr));
+  cc::CompositorFrame compositor_frame;
+  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  gfx::Rect frame_rect(0, 0, 100, 100);
+  render_pass->SetNew(1, frame_rect, frame_rect, gfx::Transform());
+  compositor_frame.render_pass_list.push_back(std::move(render_pass));
+  compositor_frame.metadata.device_scale_factor = 1.f;
+  compositor_frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, true);
+  cc::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
+  surface_ptr->SubmitCompositorFrame(local_surface_id,
+                                     std::move(compositor_frame));
   // Make sure the parent connection gets the surface ID.
-  wt_client2()->WaitForChangeCount(1);
+  wt_client1()->WaitForChangeCount(1);
   // Verify that the submitted frame is for |window_2_101|.
-  EXPECT_EQ(window_2_101_in_ws2,
-            changes2()->back().surface_id.frame_sink_id().client_id());
+  EXPECT_EQ(window_2_101_in_ws1,
+            changes1()->back().surface_id.frame_sink_id().client_id());
 }
 
 // Verifies when an unknown window with a known child is added to a hierarchy

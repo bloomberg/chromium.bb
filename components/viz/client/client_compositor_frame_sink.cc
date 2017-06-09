@@ -32,8 +32,7 @@ ClientCompositorFrameSink::ClientCompositorFrameSink(
       compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
       client_request_(std::move(client_request)),
       client_binding_(this),
-      enable_surface_synchronization_(enable_surface_synchronization),
-      weak_factory_(this) {
+      enable_surface_synchronization_(enable_surface_synchronization) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -50,18 +49,11 @@ ClientCompositorFrameSink::ClientCompositorFrameSink(
       compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
       client_request_(std::move(client_request)),
       client_binding_(this),
-      enable_surface_synchronization_(enable_surface_synchronization),
-      weak_factory_(this) {
+      enable_surface_synchronization_(enable_surface_synchronization) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
 ClientCompositorFrameSink::~ClientCompositorFrameSink() {}
-
-base::WeakPtr<ClientCompositorFrameSink>
-ClientCompositorFrameSink::GetWeakPtr() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return weak_factory_.GetWeakPtr();
-}
 
 bool ClientCompositorFrameSink::BindToClient(
     cc::CompositorFrameSinkClient* client) {
@@ -95,7 +87,6 @@ void ClientCompositorFrameSink::DetachFromClient() {
 
 void ClientCompositorFrameSink::SetLocalSurfaceId(
     const cc::LocalSurfaceId& local_surface_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(local_surface_id.is_valid());
   DCHECK(enable_surface_synchronization_);
   local_surface_id_ = local_surface_id;
