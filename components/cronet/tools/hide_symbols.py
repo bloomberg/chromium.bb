@@ -51,8 +51,14 @@ def main():
       '--current_cpu',
       help='The current processor architecture in the format of the target_cpu '
            'attribute in GN.')
+  parser.add_option(
+      '--developer_dir',
+      help='Path to Xcode.')
   (options, args) = parser.parse_args()
   assert not args
+
+  if options.developer_dir:
+    os.environ['DEVELOPER_DIR'] = options.developer_dir
 
   # ld -r concatenates multiple .o files and .a files into a single .o file,
   # while "hiding" symbols not marked as visible.
