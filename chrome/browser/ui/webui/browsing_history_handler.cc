@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -49,12 +50,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/preferences/preferences_launcher.h"
-#else
-#include "chrome/common/chrome_features.h"
 #endif
 
 using bookmarks::BookmarkModel;
@@ -148,12 +143,10 @@ void SetHistoryEntryUrlAndTitle(BrowsingHistoryService::HistoryEntry* entry,
       base::i18n::AdjustStringForLocaleDirection(&title_to_set);
   }
 
-#if !defined(OS_ANDROID)
   // Number of chars to truncate titles when making them "short".
   static const size_t kShortTitleLength = 300;
   if (title_to_set.size() > kShortTitleLength)
     title_to_set.resize(kShortTitleLength);
-#endif
 
   result->SetString("title", title_to_set);
 }
@@ -387,16 +380,11 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
-#if defined(OS_ANDROID)
-  chrome::android::PreferencesLauncher::OpenClearBrowsingData(
-      web_ui()->GetWebContents());
-#else
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   chrome::ShowClearBrowsingDataDialog(browser);
-#endif
 }
 
 void BrowsingHistoryHandler::HandleRemoveBookmark(const base::ListValue* args) {
@@ -502,8 +490,6 @@ void BrowsingHistoryHandler::OnQueryComplete(
       "queryEndTime",
       GetRelativeDateLocalized(clock_.get(), query_results_info->end_time));
 
-// Not used in mobile UI, and cause ~16kb of code bloat (crbug/683386).
-#ifndef OS_ANDROID
   // TODO(calamity): Clean up grouped-specific fields once grouped history is
   // removed.
   results_info.SetString(
@@ -514,7 +500,6 @@ void BrowsingHistoryHandler::OnQueryComplete(
       base::DateIntervalFormat(query_results_info->start_time,
                                query_results_info->end_time,
                                base::DATE_FORMAT_MONTH_WEEKDAY_DAY));
-#endif
 
   web_ui()->CallJavascriptFunctionUnsafe("historyResult", results_info,
                                          results_value);

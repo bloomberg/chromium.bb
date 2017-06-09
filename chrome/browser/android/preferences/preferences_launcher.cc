@@ -22,13 +22,5 @@ void PreferencesLauncher::ShowPasswordSettings() {
       base::android::AttachCurrentThread());
 }
 
-void PreferencesLauncher::OpenClearBrowsingData(
-    content::WebContents* web_contents) {
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  DCHECK(tab);
-  Java_PreferencesLauncher_openClearBrowsingData(
-      base::android::AttachCurrentThread(), tab->GetJavaObject());
-}
-
 }  // namespace android
 }  // namespace chrome
