@@ -122,6 +122,9 @@ class InputInjectorX11 : public InputInjector {
     // Enables or disables keyboard auto-repeat globally.
     void SetAutoRepeatEnabled(bool enabled);
 
+    // Check if the given scan code is caps lock or num lock.
+    bool IsLockKey(KeyCode keycode);
+
     // Sets the keyboard lock states to those provided.
     void SetLockStates(uint32_t states);
 
@@ -280,7 +283,7 @@ void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
       XTestFakeKeyEvent(display_, keycode, False, CurrentTime);
     }
 
-    if (event.has_lock_states()) {
+    if (event.has_lock_states() && !IsLockKey(keycode)) {
       SetLockStates(event.lock_states());
     }
 
@@ -353,6 +356,18 @@ void InputInjectorX11::Core::SetAutoRepeatEnabled(bool mode) {
   XKeyboardControl control;
   control.auto_repeat_mode = mode ? AutoRepeatModeOn : AutoRepeatModeOff;
   XChangeKeyboardControl(display_, KBAutoRepeatMode, &control);
+}
+
+bool InputInjectorX11::Core::IsLockKey(KeyCode keycode) {
+  XkbStateRec state;
+  KeySym keysym;
+  if (XkbGetState(display_, XkbUseCoreKbd, &state) == Success &&
+      XkbLookupKeySym(display_, keycode, XkbStateMods(&state), nullptr,
+                      &keysym) == True) {
+    return keysym == XK_Caps_Lock || keysym == XK_Num_Lock;
+  } else {
+    return false;
+  }
 }
 
 void InputInjectorX11::Core::SetLockStates(uint32_t states) {

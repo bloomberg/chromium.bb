@@ -354,7 +354,7 @@ void InputInjectorWin::Core::HandleKey(const KeyEvent& event) {
   if (scancode == ui::KeycodeConverter::InvalidNativeKeycode())
     return;
 
-  if (event.has_lock_states() && !IsLockKey(scancode)) {
+  if (event.has_lock_states() && event.pressed() && !IsLockKey(scancode)) {
     SetLockStates(event.lock_states());
   }
 
