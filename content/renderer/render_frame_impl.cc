@@ -3404,9 +3404,6 @@ void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
     datasource->UpdateNavigation(
         redirect_start, redirect_end, fetch_start,
         !navigation_state->request_params().redirects.empty());
-    // TODO(clamy) We need to provide additional timing values for the
-    // Navigation Timing API to work with browser-side navigations.
-    // UnloadEventStart and UnloadEventEnd are still missing.
   }
 
   // PlzNavigate: update the source location before processing the navigation
