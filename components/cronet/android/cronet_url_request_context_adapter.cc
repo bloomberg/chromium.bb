@@ -690,10 +690,6 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         std::unique_ptr<net::ExternalEstimateProvider>(),
         base::MakeUnique<net::NetworkQualityEstimatorParams>(variation_params),
         g_net_log.Get().net_log());
-    // Set the socket performance watcher factory so that network quality
-    // estimator is notified of socket performance metrics from TCP and QUIC.
-    context_builder.set_socket_performance_watcher_factory(
-        network_quality_estimator_->GetSocketPerformanceWatcherFactory());
     network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
     network_quality_estimator_->AddRTTAndThroughputEstimatesObserver(this);
 
@@ -707,15 +703,14 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
       network_qualities_prefs_manager_->InitializeOnNetworkThread(
           network_quality_estimator_.get());
     }
+    context_builder.set_network_quality_estimator(
+        network_quality_estimator_.get());
   }
 
   context_ = context_builder.Build();
 
   context_->set_check_cleartext_permitted(true);
   context_->set_enable_brotli(config->enable_brotli);
-
-  if (network_quality_estimator_)
-    context_->set_network_quality_estimator(network_quality_estimator_.get());
 
   if (config->load_disable_cache)
     default_load_flags_ |= net::LOAD_DISABLE_CACHE;
