@@ -882,9 +882,10 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
 
   HandleTemporaryReferenceForNewSurface(surface_info.id(), window);
 
-  // We always use the owner of the window's id (even for an embedded window),
-  // because an embedded window's id is allocated by the parent's window tree.
-  WindowTree* window_tree = GetTreeWithId(window->id().client_id);
+  if (!window->parent())
+    return;
+
+  WindowTree* window_tree = GetTreeWithId(window->parent()->id().client_id);
   if (window_tree)
     window_tree->ProcessWindowSurfaceChanged(window, surface_info);
 }
