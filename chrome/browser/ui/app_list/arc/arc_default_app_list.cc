@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/arc/arc_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 
@@ -147,7 +148,7 @@ void ArcDefaultAppList::OnAppsReady(std::unique_ptr<AppInfoMap> apps) {
       extensions::ExtensionSystem::Get(context_)->extension_service();
   const extensions::Extension* arc_host =
       service ? service->GetInstalledExtension(arc::kPlayStoreAppId) : nullptr;
-  if (arc_host) {
+  if (arc_host && arc::IsPlayStoreAvailable()) {
     std::unique_ptr<ArcDefaultAppList::AppInfo> play_store_app(
         new ArcDefaultAppList::AppInfo(arc_host->name(),
                                        arc::kPlayStorePackage,

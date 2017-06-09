@@ -307,7 +307,8 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     //   the whole OptIn flow should happen as seamless as possible for the
     //   user.
     const bool suppress_play_store_app =
-        IsArcOptInVerificationDisabled() || IsArcKioskMode() ||
+        !IsPlayStoreAvailable() || IsArcOptInVerificationDisabled() ||
+        IsArcKioskMode() ||
         (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
          AreArcAllOptInPreferencesManagedForProfile(profile_));
     if (!suppress_play_store_app) {

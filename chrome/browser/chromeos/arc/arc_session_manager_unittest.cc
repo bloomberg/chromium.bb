@@ -469,7 +469,7 @@ class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {
   ArcSessionManagerArcAlwaysStartTest() = default;
 
   void SetUp() override {
-    SetArcAlwaysStartForTesting();
+    SetArcAlwaysStartForTesting(true);
     ArcSessionManagerTest::SetUp();
   }
 

@@ -23,7 +23,7 @@
 namespace arc {
 namespace {
 
-// If an instance is created, based on the value passed to the consturctor,
+// If an instance is created, based on the value passed to the constructor,
 // EnableARC feature is enabled/disabled in the scope.
 class ScopedArcFeature {
  public:
@@ -237,6 +237,22 @@ TEST_F(ArcUtilTest, IsArcAllowedForUser) {
 
   // Ephemeral user is not allowed for ARC.
   EXPECT_FALSE(IsArcAllowedForUser(ephemeral_user));
+}
+
+TEST_F(ArcUtilTest, ArcStartModeDefault) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({"", "--arc-availability=installed"});
+  EXPECT_FALSE(ShouldArcAlwaysStart());
+  EXPECT_TRUE(IsPlayStoreAvailable());
+}
+
+TEST_F(ArcUtilTest, ArcStartModeWithoutPlayStore) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv(
+      {"", "--arc-availability=installed",
+       "--arc-start-mode=always-start-with-no-play-store"});
+  EXPECT_TRUE(ShouldArcAlwaysStart());
+  EXPECT_FALSE(IsPlayStoreAvailable());
 }
 
 }  // namespace

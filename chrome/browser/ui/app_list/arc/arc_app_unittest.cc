@@ -136,6 +136,8 @@ enum class ArcState {
   ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED,
   // ARC is persistent and Play Store is managed and disabled.
   ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED,
+  // ARC is persistent but without Play Store UI support.
+  ARC_PERSISTENT_WITHOUT_PLAY_STORE,
 };
 
 constexpr ArcState kManagedArcStates[] = {
@@ -148,6 +150,7 @@ constexpr ArcState kManagedArcStates[] = {
 constexpr ArcState kUnmanagedArcStates[] = {
     ArcState::ARC_PLAY_STORE_UNMANAGED,
     ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED,
+    ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE,
 };
 
 }  // namespace
@@ -166,7 +169,10 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
       case ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED:
       case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_ENABLED:
       case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED:
-        arc::SetArcAlwaysStartForTesting();
+        arc::SetArcAlwaysStartForTesting(true);
+        break;
+      case ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE:
+        arc::SetArcAlwaysStartForTesting(false);
         break;
       default:
         break;
@@ -553,6 +559,7 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
         return true;
       case ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED:
       case ArcState::ARC_PERSISTENT_PLAY_STORE_MANAGED_AND_DISABLED:
+      case ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE:
         return false;
       default:
         NOTREACHED();
@@ -1121,7 +1128,6 @@ TEST_P(ArcAppModelBuilderRecreate, AppModelRestart) {
 }
 
 TEST_P(ArcPlayStoreAppTest, PlayStore) {
-  // Make sure PlayStore is available.
   ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
@@ -1129,15 +1135,22 @@ TEST_P(ArcPlayStoreAppTest, PlayStore) {
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(
       arc::kPlayStoreAppId);
-  ASSERT_TRUE(app_info);
-  EXPECT_FALSE(app_info->ready);
+  if (GetParam() != ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+    // Make sure PlayStore is available.
+    ASSERT_TRUE(app_info);
+    EXPECT_FALSE(app_info->ready);
+  } else {
+    // By default Play Store is not available in case no Play Store mode. But
+    // explicitly adding it makes it appear as an ordinal app.
+    EXPECT_FALSE(app_info);
+  }
 
   arc::mojom::AppInfo app;
   std::vector<arc::mojom::AppInfo> apps;
   app.name = "Play Store";
   app.package_name = arc::kPlayStorePackage;
   app.activity = arc::kPlayStoreActivity;
-  app.sticky = false;
+  app.sticky = GetParam() != ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE;
   apps.push_back(app);
 
   app_instance()->RefreshAppList();

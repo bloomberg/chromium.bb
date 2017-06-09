@@ -34,13 +34,18 @@ namespace arc {
 // check, so it is ok to access them directly.
 bool IsArcAvailable();
 
+// Returns true if ARC image has Play Store package.
+bool IsPlayStoreAvailable();
+
 // Returns true if ARC should always start within the primary user session
 // (opted in user or not), and other supported mode such as guest and Kiosk
 // mode.
 bool ShouldArcAlwaysStart();
 
 // Enables to always start ARC for testing, by appending the command line flag.
-void SetArcAlwaysStartForTesting();
+// If |bool play_store_available| is not set then flag that disables ARC Play
+// Store UI is added.
+void SetArcAlwaysStartForTesting(bool play_store_available);
 
 // Returns true if ARC is installed and running ARC kiosk apps on the current
 // device is officially supported.
