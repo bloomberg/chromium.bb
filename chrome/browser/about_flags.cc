@@ -857,34 +857,34 @@ const FeatureEntry::FeatureVariation kPauseBackgroundTabsVariations[] = {
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
-kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart[] = {
-  {"is_credit_card_icon_at_start", "true"}};
+    kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart[] = {
+        {"is_credit_card_icon_at_start", "true"}};
 
 const FeatureEntry::FeatureParam
-kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight[] = {
-  {"dropdown_item_height", "56"}};
+    kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight[] = {
+        {"dropdown_item_height", "56"}};
 
 const FeatureEntry::FeatureParam
-kAutofillCreditCardPopupLayoutFeatureVariationExpanded[] = {
-  {"is_credit_card_icon_at_start", "true"},
-  {"dropdown_item_height", "56"},
-  {"margin", "18"}};
+    kAutofillCreditCardPopupLayoutFeatureVariationExpanded[] = {
+        {"is_credit_card_icon_at_start", "true"},
+        {"dropdown_item_height", "56"},
+        {"margin", "18"}};
 
 const FeatureEntry::FeatureVariation
-kAutofillCreditCardPopupLayoutFeatureVariations[] = {
-    {"Display credit card icon at start",
-     kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart,
-     arraysize(kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart),
-     nullptr},
-    {"Increase dropdown item height",
-     kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight,
-     arraysize(
-         kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight),
-     nullptr},
-    {"Display credit card icon at start and increase dropdown item height",
-     kAutofillCreditCardPopupLayoutFeatureVariationExpanded,
-     arraysize(kAutofillCreditCardPopupLayoutFeatureVariationExpanded),
-     nullptr}};
+    kAutofillCreditCardPopupLayoutFeatureVariations[] = {
+        {"Display credit card icon at start",
+         kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart,
+         arraysize(kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart),
+         nullptr},
+        {"Increase dropdown item height",
+         kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight,
+         arraysize(
+             kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight),
+         nullptr},
+        {"Display credit card icon at start and increase dropdown item height",
+         kAutofillCreditCardPopupLayoutFeatureVariationExpanded,
+         arraysize(kAutofillCreditCardPopupLayoutFeatureVariationExpanded),
+         nullptr}};
 
 const FeatureEntry::FeatureParam
     kAutofillKeyboardAccessoryFeatureVariationAnimationDuration[] = {
@@ -2572,6 +2572,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"android-payment-apps", flag_descriptions::kAndroidPaymentAppsName,
      flag_descriptions::kAndroidPaymentAppsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidPaymentApps)},
+    {"pay-with-google-v1", flag_descriptions::kPayWithGoogleV1Name,
+     flag_descriptions::kPayWithGoogleV1Description, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kPayWithGoogleV1)},
     {"service-worker-payment-apps",
      flag_descriptions::kServiceWorkerPaymentAppsName,
      flag_descriptions::kServiceWorkerPaymentAppsDescription, kOsAndroid,
@@ -2775,7 +2778,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTouchscreenCalibrationName,
      flag_descriptions::kTouchscreenCalibrationDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchCalibrationSetting)},
-#endif // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
     {"team-drives", flag_descriptions::kTeamDrivesName,
      flag_descriptions::kTeamDrivesDescription, kOsCrOS,
@@ -2796,7 +2799,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceEnableStylusToolsName,
      flag_descriptions::kForceEnableStylusToolsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshForceEnableStylusTools)},
-#endif // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
     {"enable-midi-manager-dynamic-instantiation",
      flag_descriptions::kEnableMidiManagerDynamicInstantiationName,
@@ -3142,8 +3145,7 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   // data-reduction-proxy-lo-fi and enable-data-reduction-proxy-lite-page
   // are only available for Chromium builds and the Canary/Dev/Beta channels.
   if ((!strcmp("data-reduction-proxy-lo-fi", entry.internal_name) ||
-       !strcmp("enable-data-reduction-proxy-lite-page",
-               entry.internal_name)) &&
+       !strcmp("enable-data-reduction-proxy-lite-page", entry.internal_name)) &&
       channel != version_info::Channel::BETA &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
@@ -3193,7 +3195,7 @@ void ReportAboutFlagsHistogramSwitches(const std::string& uma_histogram_name,
 // Records a set of FEATURE_VALUE_TYPE features (suffixed with ":enabled" or
 // "disabled", depending on their state).
 void ReportAboutFlagsHistogramFeatures(const std::string& uma_histogram_name,
-                                       const std::set<std::string>&features) {
+                                       const std::set<std::string>& features) {
   for (const std::string& feature : features) {
     int uma_id = GetSwitchUMAId(feature);
     DVLOG(1) << "ReportAboutFlagsHistogram(): histogram='" << uma_histogram_name
@@ -3285,10 +3287,9 @@ base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name) {
       base::HashMetricName(switch_name));
 }
 
-void ReportAboutFlagsHistogram(
-    const std::string& uma_histogram_name,
-    const std::set<std::string>& switches,
-    const std::set<std::string>& features) {
+void ReportAboutFlagsHistogram(const std::string& uma_histogram_name,
+                               const std::set<std::string>& switches,
+                               const std::set<std::string>& features) {
   ReportAboutFlagsHistogramSwitches(uma_histogram_name, switches);
   ReportAboutFlagsHistogramFeatures(uma_histogram_name, features);
 }

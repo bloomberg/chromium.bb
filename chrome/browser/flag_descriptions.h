@@ -1054,6 +1054,9 @@ extern const char kOfflinePagesSvelteConcurrentLoadingDescription[];
 extern const char kOffliningRecentPagesName[];
 extern const char kOffliningRecentPagesDescription[];
 
+extern const char kPayWithGoogleV1Name[];
+extern const char kPayWithGoogleV1Description[];
+
 extern const char kProgressBarAnimationName[];
 extern const char kProgressBarAnimationDescription[];
 extern const char kProgressBarAnimationLinear[];

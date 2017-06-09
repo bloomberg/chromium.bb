@@ -1527,6 +1527,12 @@ const char kExperimentalKeyboardLockUiDescription[] =
 
 #if defined(OS_ANDROID)
 
+extern const char kPayWithGoogleV1Name[] = "Pay with Google v1";
+
+extern const char kPayWithGoogleV1Description[] =
+    "Enable Pay with Google integration into Web Payments with API version "
+    "'1'.";
+
 const char kProgressBarAnimationName[] =
     "Android phone page loading progress bar animation";
 
@@ -2305,8 +2311,7 @@ const char kEnableTouchSupportForScreenMagnifierName[] =
 const char kEnableTouchSupportForScreenMagnifierDescription[] =
     "Enables touch support for screen magnifier";
 
-const char kEnableZipArchiverOnFileManagerName[] =
-    "ZIP archiver for Drive";
+const char kEnableZipArchiverOnFileManagerName[] = "ZIP archiver for Drive";
 
 const char kEnableZipArchiverOnFileManagerDescription[] =
     "Enable the ability to archive and unpack files on Drive in the Files app";

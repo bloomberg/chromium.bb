@@ -75,6 +75,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPLaunchAfterInactivity,
     &kNTPOfflinePagesFeature,
     &NTPShowGoogleGInOmniboxFeature,
+    &kPayWithGoogleV1,
     &kPhysicalWebFeature,
     &kPhysicalWebSharing,
     &kSearchEnginePromoExistingDevice,
@@ -206,6 +207,9 @@ const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
 const base::Feature NTPShowGoogleGInOmniboxFeature{
     "NTPShowGoogleGInOmnibox", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPhysicalWebFeature{"PhysicalWeb",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -245,8 +249,8 @@ const base::Feature kWebPaymentsSingleAppUiSkip{
 const base::Feature kWebVrAutopresent{"WebVrAutopresent",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kWebVRCardboardSupport{
-    "WebVRCardboardSupport", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kWebVRCardboardSupport{"WebVRCardboardSupport",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kXGEOVisibleNetworks{"XGEOVisibleNetworks",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
