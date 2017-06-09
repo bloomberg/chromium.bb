@@ -65,8 +65,8 @@ test(() => {
 
 test(() => {
   var point = new DOMPointReadOnly(5, 4);
-  var transformed_point = point.matrixTransform(new DOMMatrixReadOnly([2, 0, 0, 2, 10, 10]));
-  assert_dom_point_equals(transformed_point, new DOMPoint(20, 18));
+  var transformed_point = point.matrixTransform(new DOMMatrixReadOnly([1, 2, 3, 4, 5, 6]));
+  assert_dom_point_equals(transformed_point, new DOMPoint(22, 32));
 }, 'DOMMatrixReadOnly.matrixTransform() - 2d matrixTransform');
 
 test(() => {
