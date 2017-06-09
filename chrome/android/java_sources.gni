@@ -598,6 +598,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridge.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationJobService.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationService.java",
+  "java/src/org/chromium/chrome/browser/notifications/NotificationSettingsBridge.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationSystemStatusUtil.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationUmaTracker.java",
   "java/src/org/chromium/chrome/browser/notifications/StandardNotificationBuilder.java",

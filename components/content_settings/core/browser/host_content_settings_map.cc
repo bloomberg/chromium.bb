@@ -55,6 +55,7 @@ const ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
     {"policy", content_settings::SETTING_SOURCE_POLICY},
     {"supervised_user", content_settings::SETTING_SOURCE_SUPERVISED},
     {"extension", content_settings::SETTING_SOURCE_EXTENSION},
+    {"notification_android", content_settings::SETTING_SOURCE_USER},
     {"preference", content_settings::SETTING_SOURCE_USER},
     {"default", content_settings::SETTING_SOURCE_USER},
 };
@@ -384,6 +385,8 @@ void HostContentSettingsMap::SetWebsiteSettingCustomScope(
     std::unique_ptr<base::Value> value) {
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
+  // TODO(crbug.com/731126): Verify that assumptions for notification content
+  // settings are met.
   UsedContentSettingsProviders();
 
   for (const auto& provider_pair : content_settings_providers_) {

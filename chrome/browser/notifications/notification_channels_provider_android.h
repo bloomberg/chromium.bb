@@ -1,0 +1,75 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_CHANNELS_PROVIDER_ANDROID_H_
+#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_CHANNELS_PROVIDER_ANDROID_H_
+
+#include <string>
+
+#include "base/macros.h"
+#include "components/content_settings/core/browser/content_settings_observable_provider.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/content_settings_rule.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
+#include "components/keyed_service/core/keyed_service.h"
+
+namespace {
+
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.notifications
+enum NotificationChannelStatus { ENABLED, BLOCKED, UNAVAILABLE };
+
+}  // anonymous namespace
+
+// This class provides notification content settings from system notification
+// channels on Android O+. This provider takes precedence over pref-provided
+// content settings, but defers to supervised user and policy settings - see
+// ordering of the ProviderType enum values in HostContentSettingsMap.
+class NotificationChannelsProviderAndroid
+    : public content_settings::ObservableProvider {
+ public:
+  // Helper class to make the JNI calls.
+  class NotificationChannelsBridge {
+   public:
+    virtual ~NotificationChannelsBridge() = default;
+    virtual bool ShouldUseChannelSettings() = 0;
+    virtual void CreateChannel(const std::string& origin, bool enabled) = 0;
+    virtual NotificationChannelStatus GetChannelStatus(
+        const std::string& origin) = 0;
+    virtual void DeleteChannel(const std::string& origin) = 0;
+  };
+
+  NotificationChannelsProviderAndroid();
+  ~NotificationChannelsProviderAndroid() override;
+
+  // ProviderInterface methods:
+  std::unique_ptr<content_settings::RuleIterator> GetRuleIterator(
+      ContentSettingsType content_type,
+      const content_settings::ResourceIdentifier& resource_identifier,
+      bool incognito) const override;
+  bool SetWebsiteSetting(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const content_settings::ResourceIdentifier& resource_identifier,
+      base::Value* value) override;
+  void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
+  void ShutdownOnUIThread() override;
+
+ private:
+  explicit NotificationChannelsProviderAndroid(
+      std::unique_ptr<NotificationChannelsBridge> bridge);
+  friend class NotificationChannelsProviderAndroidTest;
+
+  void CreateChannelIfRequired(const std::string& origin_string,
+                               NotificationChannelStatus new_channel_status);
+
+  std::unique_ptr<NotificationChannelsBridge> bridge_;
+  bool should_use_channels_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationChannelsProviderAndroid);
+};
+
+#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_CHANNELS_PROVIDER_ANDROID_H_
