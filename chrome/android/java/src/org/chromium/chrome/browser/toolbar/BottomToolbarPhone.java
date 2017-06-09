@@ -375,14 +375,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
     }
 
     @Override
-    public void updateButtonVisibility() {
-        super.updateButtonVisibility();
-        if (!mUseToolbarHandle) {
-            mExpandButton.setVisibility(urlHasFocus() ? INVISIBLE : VISIBLE);
-        }
-    }
-
-    @Override
     protected boolean isChildLeft(View child) {
         return (child == mNewTabButton || child == mExpandButton) ^ LocalizationUtils.isLayoutRtl();
     }
