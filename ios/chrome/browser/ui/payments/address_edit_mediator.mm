@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_combobox_model.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -127,10 +128,21 @@
 - (void)regionDataLoaderDidSucceedWithRegions:
     (NSMutableArray<NSString*>*)regions {
   self.regions = regions;
-  // Enable the previously disabled field and reset its value to the first
-  // region or nil, if there are no regions.
+  // Enable the previously disabled field.
   self.regionField.enabled = YES;
-  self.regionField.value = regions.count ? regions[0] : nil;
+
+  // If an address is being edited and it has a valid region, the field value is
+  // set to that region. Otherwise, set the field value to nil. If creating an
+  // address, set the first available region as the field value, if possible.
+  if (self.address) {
+    NSString* region =
+        [self fieldValueFromProfile:self.address
+                          fieldType:autofill::ADDRESS_HOME_STATE];
+    self.regionField.value =
+        [self.regions containsObject:region] ? region : nil;
+  } else {
+    self.regionField.value = regions.count ? regions[0] : nil;
+  }
 
   // Notify the view controller asynchronously to allow for the view to update.
   __weak AddressEditMediator* weakSelf = self;
@@ -162,8 +174,17 @@
     }
   }
   _countries = countries;
+
+  // If an address is being edited and it has a valid country code, the selected
+  // country code is set to that value. Otherwise, it is set to the default
+  // country code.
+  NSString* countryCode =
+      [self fieldValueFromProfile:_address
+                        fieldType:autofill::ADDRESS_HOME_COUNTRY];
   _selectedCountryCode =
-      base::SysUTF8ToNSString(countryModel.GetDefaultCountryCode());
+      countryCode && [_countries objectForKey:countryCode]
+          ? countryCode
+          : base::SysUTF8ToNSString(countryModel.GetDefaultCountryCode());
 }
 
 // Queries the region names based on the selected country code.
@@ -214,12 +235,16 @@
       NSNumber* fieldKey = [NSNumber numberWithInt:autofillUIType];
       EditorField* field = self.fieldsMap[fieldKey];
       if (!field) {
+        NSString* value =
+            [self fieldValueFromProfile:self.address
+                              fieldType:autofill::GetFieldTypeFromString(
+                                            autofillType)];
         BOOL required = autofillUIType != AutofillUITypeProfileCompanyName;
         field =
             [[EditorField alloc] initWithAutofillUIType:autofillUIType
                                               fieldType:EditorFieldTypeTextField
                                                   label:nil
-                                                  value:nil
+                                                  value:value
                                                required:required];
         [self.fieldsMap setObject:field forKey:fieldKey];
       }
@@ -269,17 +294,30 @@
       [NSNumber numberWithInt:AutofillUITypeProfileHomePhoneWholeNumber];
   EditorField* field = self.fieldsMap[phoneNumberFieldKey];
   if (!field) {
+    NSString* value =
+        [self fieldValueFromProfile:self.address
+                          fieldType:autofill::PHONE_HOME_WHOLE_NUMBER];
     field = [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
                      fieldType:EditorFieldTypeTextField
                          label:l10n_util::GetNSString(IDS_IOS_AUTOFILL_PHONE)
-                         value:nil
+                         value:value
                       required:YES];
     [self.fieldsMap setObject:field forKey:phoneNumberFieldKey];
   }
   [self.fields addObject:field];
 
   return self.fields;
+}
+
+// Takes in an autofill profile and an autofill field type and returns the
+// corresponding field value. Returns nil if |profile| is nullptr.
+- (NSString*)fieldValueFromProfile:(autofill::AutofillProfile*)profile
+                         fieldType:(autofill::ServerFieldType)fieldType {
+  return profile ? base::SysUTF16ToNSString(profile->GetInfo(
+                       autofill::AutofillType(fieldType),
+                       GetApplicationContext()->GetApplicationLocale()))
+                 : nil;
 }
 
 @end

@@ -85,11 +85,8 @@
   self.fields = [[NSMutableArray alloc] init];
 
   if (_paymentRequest->request_payer_name()) {
-    NSString* name = self.profile
-                         ? base::SysUTF16ToNSString(self.profile->GetInfo(
-                               autofill::AutofillType(autofill::NAME_FULL),
-                               GetApplicationContext()->GetApplicationLocale()))
-                         : nil;
+    NSString* name =
+        [self fieldValueFromProfile:self.profile fieldType:autofill::NAME_FULL];
     EditorField* nameField = [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeProfileFullName
                      fieldType:EditorFieldTypeTextField
@@ -102,11 +99,8 @@
 
   if (_paymentRequest->request_payer_phone()) {
     NSString* phone =
-        self.profile
-            ? base::SysUTF16ToNSString(self.profile->GetInfo(
-                  autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
-                  GetApplicationContext()->GetApplicationLocale()))
-            : nil;
+        [self fieldValueFromProfile:self.profile
+                          fieldType:autofill::PHONE_HOME_WHOLE_NUMBER];
     EditorField* phoneField = [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
                      fieldType:EditorFieldTypeTextField
@@ -118,11 +112,8 @@
   }
 
   if (_paymentRequest->request_payer_email()) {
-    NSString* email =
-        self.profile ? base::SysUTF16ToNSString(self.profile->GetInfo(
-                           autofill::AutofillType(autofill::EMAIL_ADDRESS),
-                           GetApplicationContext()->GetApplicationLocale()))
-                     : nil;
+    NSString* email = [self fieldValueFromProfile:self.profile
+                                        fieldType:autofill::EMAIL_ADDRESS];
     EditorField* emailField = [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeProfileEmailAddress
                      fieldType:EditorFieldTypeTextField
@@ -137,6 +128,16 @@
                                    "reachable if no contact information is "
                                    "requested.";
   return self.fields;
+}
+
+// Takes in an autofill profile and an autofill field type and returns the
+// corresponding field value. Returns nil if |profile| is nullptr.
+- (NSString*)fieldValueFromProfile:(autofill::AutofillProfile*)profile
+                         fieldType:(autofill::ServerFieldType)fieldType {
+  return profile ? base::SysUTF16ToNSString(profile->GetInfo(
+                       autofill::AutofillType(fieldType),
+                       GetApplicationContext()->GetApplicationLocale()))
+                 : nil;
 }
 
 @end

@@ -327,11 +327,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self.pickerViews setObject:pickerView forKey:key];
     item.inputView = pickerView;
 
-    // Set UIPickerView's default selected row.
+    // Set UIPickerView's default selected row, if possible.
     [pickerView reloadAllComponents];
-    [pickerView selectRow:[options indexOfObject:field.value]
-              inComponent:0
-                 animated:NO];
+    NSUInteger indexOfRow = [options indexOfObject:field.value];
+    if (indexOfRow != NSNotFound) {
+      [pickerView selectRow:indexOfRow inComponent:0 animated:NO];
+    }
   }
 
   // Reload the item.
