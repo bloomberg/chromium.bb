@@ -61,28 +61,30 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   AppendRainbowDebugBorder(render_pass);
+  if (!primary_surface_info_.is_valid())
+    return;
+
   SharedQuadState* common_shared_quad_state = nullptr;
   auto* primary =
       CreateSurfaceDrawQuad(render_pass, SurfaceDrawQuadType::PRIMARY,
                             primary_surface_info_, &common_shared_quad_state);
   // Emitting a fallback SurfaceDrawQuad is unnecessary if the primary and
   // fallback surface Ids match.
-  bool needs_fallback =
-      fallback_surface_info_.is_valid() &&
-      (fallback_surface_info_.id() != primary_surface_info_.id());
-  if (primary && needs_fallback) {
+  if (primary && fallback_surface_info_.id() != primary_surface_info_.id()) {
     // Add the primary surface ID as a dependency.
     append_quads_data->activation_dependencies.push_back(
         primary_surface_info_.id());
-    // We can use the same SharedQuadState as the primary SurfaceDrawQuad if
-    // we don't need a different transform on the fallback.
-    bool use_common_shared_quad_state =
-        !stretch_content_to_fill_bounds_ &&
-        primary_surface_info_.device_scale_factor() ==
-            fallback_surface_info_.device_scale_factor();
-    primary->fallback_quad = CreateSurfaceDrawQuad(
-        render_pass, SurfaceDrawQuadType::FALLBACK, fallback_surface_info_,
-        use_common_shared_quad_state ? &common_shared_quad_state : nullptr);
+    if (fallback_surface_info_.is_valid()) {
+      // We can use the same SharedQuadState as the primary SurfaceDrawQuad if
+      // we don't need a different transform on the fallback.
+      bool use_common_shared_quad_state =
+          !stretch_content_to_fill_bounds_ &&
+          primary_surface_info_.device_scale_factor() ==
+              fallback_surface_info_.device_scale_factor();
+      primary->fallback_quad = CreateSurfaceDrawQuad(
+          render_pass, SurfaceDrawQuadType::FALLBACK, fallback_surface_info_,
+          use_common_shared_quad_state ? &common_shared_quad_state : nullptr);
+    }
   }
 }
 
@@ -91,8 +93,7 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     SurfaceDrawQuadType surface_draw_quad_type,
     const SurfaceInfo& surface_info,
     SharedQuadState** common_shared_quad_state) {
-  if (!surface_info.is_valid())
-    return nullptr;
+  DCHECK(surface_info.is_valid());
 
   gfx::Rect quad_rect(surface_info.size_in_pixels());
   gfx::Rect visible_quad_rect =

@@ -253,6 +253,18 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
                 UnorderedElementsAre(surface_id1));
   }
 
+  // Update the fallback to an invalid SurfaceInfo. The
+  // |activation_dependencies| should still contain the primary SurfaceInfo.
+  {
+    AppendQuadsData data;
+    surface_layer_impl->SetFallbackSurfaceInfo(SurfaceInfo());
+    surface_layer_impl->AppendQuads(render_pass.get(), &data);
+    // The primary SurfaceInfo should not be added to
+    // activation_dependencies.
+    EXPECT_THAT(data.activation_dependencies,
+                UnorderedElementsAre(surface_id1));
+  }
+
   // Update the fallback SurfaceInfo and re-emit DrawQuads.
   {
     AppendQuadsData data;
@@ -263,7 +275,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
                 UnorderedElementsAre(surface_id1));
   }
 
-  ASSERT_EQ(4u, render_pass->quad_list.size());
+  ASSERT_EQ(5u, render_pass->quad_list.size());
   const SurfaceDrawQuad* surface_draw_quad1 =
       SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(0));
   ASSERT_TRUE(surface_draw_quad1);
@@ -276,6 +288,9 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   const SurfaceDrawQuad* surface_draw_quad4 =
       SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(3));
   ASSERT_TRUE(surface_draw_quad4);
+  const SurfaceDrawQuad* surface_draw_quad5 =
+      SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(4));
+  ASSERT_TRUE(surface_draw_quad5);
 
   EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad1->surface_draw_quad_type);
@@ -292,14 +307,19 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad3->surface_draw_quad_type);
   EXPECT_EQ(surface_id1, surface_draw_quad3->surface_id);
-  EXPECT_EQ(surface_draw_quad4, surface_draw_quad3->fallback_quad);
-  EXPECT_EQ(SurfaceDrawQuadType::FALLBACK,
+  EXPECT_EQ(nullptr, surface_draw_quad3->fallback_quad);
+
+  EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad4->surface_draw_quad_type);
-  EXPECT_EQ(surface_id2, surface_draw_quad4->surface_id);
+  EXPECT_EQ(surface_id1, surface_draw_quad4->surface_id);
+  EXPECT_EQ(surface_draw_quad5, surface_draw_quad4->fallback_quad);
+  EXPECT_EQ(SurfaceDrawQuadType::FALLBACK,
+            surface_draw_quad5->surface_draw_quad_type);
+  EXPECT_EQ(surface_id2, surface_draw_quad5->surface_id);
   // If the device scale factor of the primary and fallback are the same then
   // they share a SharedQuadState.
-  EXPECT_EQ(surface_draw_quad3->shared_quad_state,
-            surface_draw_quad4->shared_quad_state);
+  EXPECT_EQ(surface_draw_quad4->shared_quad_state,
+            surface_draw_quad5->shared_quad_state);
 }
 
 // This test verifies that one SurfaceDrawQuad is emitted if a
