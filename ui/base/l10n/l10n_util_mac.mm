@@ -159,6 +159,16 @@ NSString* GetNSStringF(int message_id,
 NSString* GetNSStringF(int message_id,
                        const base::string16& a,
                        const base::string16& b,
+                       const base::string16& c,
+                       const base::string16& d,
+                       const base::string16& e) {
+  return base::SysUTF16ToNSString(
+      l10n_util::GetStringFUTF16(message_id, a, b, c, d, e));
+}
+
+NSString* GetNSStringF(int message_id,
+                       const base::string16& a,
+                       const base::string16& b,
                        std::vector<size_t>* offsets) {
   return base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(message_id,
                                                              a, b, offsets));
