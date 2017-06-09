@@ -61,7 +61,7 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
       return kHarmonyLayoutUnit;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE:
       return kHarmonyLayoutUnit;
-    case DISTANCE_UNRELATED_CONTROL_VERTICAL:
+    case views::DISTANCE_UNRELATED_CONTROL_VERTICAL:
       return kHarmonyLayoutUnit;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
       return kHarmonyLayoutUnit;

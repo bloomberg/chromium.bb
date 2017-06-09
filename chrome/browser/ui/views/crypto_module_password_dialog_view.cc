@@ -144,8 +144,8 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
 
   layout->StartRow(0, 0);
   layout->AddView(reason_label_);
-  layout->AddPaddingRow(
-      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
+  layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(0, 1);
   layout->AddView(password_label_);

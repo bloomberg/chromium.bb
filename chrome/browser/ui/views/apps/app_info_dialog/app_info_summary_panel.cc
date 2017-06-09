@@ -254,7 +254,7 @@ void AppInfoSummaryPanel::AddSubviews() {
 
   views::View* vertical_stack =
       CreateVerticalStack(ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_UNRELATED_CONTROL_VERTICAL));
+          views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
   AddChildView(vertical_stack);
 
   AddDescriptionAndLinksControl(vertical_stack);

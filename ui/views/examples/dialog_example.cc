@@ -131,9 +131,9 @@ void DialogExample::CreateExampleView(View* container) {
   const float kFixed = 0.f;
   const float kStretchy = 1.f;
 
+  views::LayoutProvider* provider = views::LayoutProvider::Get();
   const int horizontal_spacing =
-      views::LayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
   GridLayout* layout = GridLayout::CreatePanel(container);
   container->SetLayoutManager(layout);
   ColumnSet* column_set = layout->AddColumnSet(kFieldsColumnId);
@@ -172,8 +172,9 @@ void DialogExample::CreateExampleView(View* container) {
   column_set = layout->AddColumnSet(kButtonsColumnId);
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, kStretchy,
                         GridLayout::USE_PREF, 0, 0);
-  layout->StartRowWithPadding(kFixed, kButtonsColumnId, kFixed,
-                              kUnrelatedControlVerticalSpacing);
+  layout->StartRowWithPadding(
+      kFixed, kButtonsColumnId, kFixed,
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
   show_ =
       MdTextButton::CreateSecondaryUiButton(this, base::ASCIIToUTF16("Show"));
   layout->AddView(show_);

@@ -78,6 +78,8 @@ enum DistanceMetric {
   // The spacing between a pair of related vertical controls, used for
   // dialog layout.
   DISTANCE_RELATED_CONTROL_VERTICAL,
+  // Vertical spacing between controls that are logically unrelated.
+  DISTANCE_UNRELATED_CONTROL_VERTICAL,
 
   // Embedders must start DistanceMetric enum values from here.
   VIEWS_DISTANCE_END

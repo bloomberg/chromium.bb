@@ -213,7 +213,7 @@ void ContentSettingBubbleContents::Init() {
   const int related_control_vertical_spacing =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
   const int unrelated_control_vertical_spacing =
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL);
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   const int kSingleColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kSingleColumnSetId);

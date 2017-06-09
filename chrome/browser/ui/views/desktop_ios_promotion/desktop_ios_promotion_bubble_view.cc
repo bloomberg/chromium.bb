@@ -74,8 +74,8 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
   promotion_text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->StartRow(0, kLabelColumnSet);
   layout->AddView(promotion_text_label_);
-  layout->AddPaddingRow(
-      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
+  layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
   layout->StartRow(0, kDoubleButtonColumnSet);
   layout->AddView(send_sms_button_);
   layout->AddView(no_button_);

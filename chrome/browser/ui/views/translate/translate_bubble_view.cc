@@ -627,7 +627,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   }
 
   layout->AddPaddingRow(0, provider->GetDistanceMetric(
-      DISTANCE_UNRELATED_CONTROL_VERTICAL));
+                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
   views::LabelButton* accept_button =
@@ -706,8 +706,8 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
     AddIconToLayout(layout);
   layout->AddView(label);
 
-  layout->AddPaddingRow(
-      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
+  layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
   views::LabelButton* revert_button =
@@ -759,8 +759,8 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   layout->AddView(
       CreateLink(this, IDS_TRANSLATE_BUBBLE_ADVANCED, LINK_ID_ADVANCED));
 
-  layout->AddPaddingRow(
-      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
+  layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
@@ -810,8 +810,8 @@ views::View* TranslateBubbleView::CreateViewError() {
   layout->AddView(
       CreateLink(this, IDS_TRANSLATE_BUBBLE_ADVANCED, LINK_ID_ADVANCED));
 
-  layout->AddPaddingRow(
-      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
+  layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
   views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
@@ -909,8 +909,8 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
     layout->AddView(advanced_always_translate_checkbox_);
   }
 
-  layout->AddPaddingRow(
-      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
+  layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(0, COLUMN_SET_ID_BUTTONS);
   // TODO(estade): this should use CreateExtraView().

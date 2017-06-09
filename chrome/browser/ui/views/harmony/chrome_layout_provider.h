@@ -34,8 +34,6 @@ enum ChromeDistanceMetric {
   DISTANCE_UNRELATED_CONTROL_HORIZONTAL,
   // Larger horizontal spacing between unrelated controls.
   DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE,
-  // Vertical spacing between controls that are logically unrelated.
-  DISTANCE_UNRELATED_CONTROL_VERTICAL,
   // Larger vertical spacing between unrelated controls.
   DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE,
 };

@@ -34,7 +34,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
   views::MessageBoxView::InitParams init_params(delegate->GetDialogMessage());
   init_params.inter_row_vertical_spacing =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_UNRELATED_CONTROL_VERTICAL);
+          views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
   message_box_view_ = new views::MessageBoxView(init_params);
 
   base::string16 link_text(delegate->GetLinkText());

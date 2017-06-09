@@ -189,7 +189,8 @@ void EnrollmentDialogView::InitDialog() {
   grid_layout->StartRow(0, 0);
   grid_layout->AddView(label);
   grid_layout->AddPaddingRow(
-      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
+      0,
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
   grid_layout->Layout(this);
 }
 
