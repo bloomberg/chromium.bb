@@ -290,8 +290,10 @@ void LayerImpl::SetScrollable(bool scrollable) {
   if (scrollable_ == scrollable)
     return;
   scrollable_ = scrollable;
-  if (scrollable)
-    layer_tree_impl()->RegisterScrollLayer(this);
+  if (scrollable && layer_tree_impl()->settings().scrollbar_animator ==
+                        LayerTreeSettings::AURA_OVERLAY) {
+    set_needs_show_scrollbars(true);
+  }
 }
 
 std::unique_ptr<LayerImpl> LayerImpl::CreateLayerImpl(
