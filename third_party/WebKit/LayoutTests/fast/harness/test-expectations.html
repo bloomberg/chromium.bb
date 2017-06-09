@@ -1,9 +1,13 @@
 <!doctype html>
 <meta charset="UTF-8">
 <title>Layout Tests</title>
+<!--
+Displays LayoutTests results.
+-->
 <style>
 body {
   font-family: monospace;
+  min-height: 200vh;
 }
 button {
   margin-top: 4px;
@@ -230,16 +234,43 @@ Total      : <span id="summary_total"></span>
 </div>
 </template>
 <script>
+"use strict";
 
-var fullResults = {};
+let fullResults = {};
+
+let TestResultInformation = {
+  "CRASH":      { index: 1, text: "Crash", isFailure: true, isSuccess: false },
+  "FAIL":       { index: 2, text: "Failure", isFailure: true, isSuccess: false },
+  "TEXT":       { index: 3, text: "Failure", isFailure: true, isSuccess: false },
+  "IMAGE":      { index: 4, text: "Failure", isFailure: true, isSuccess: false },
+  "IMAGE+TEXT": { index: 5, text: "Failure", isFailure: true, isSuccess: false },
+  "TIMEOUT":    { index: 6, text: "Timeout", isFailure: true, isSuccess: false },
+  "SLOW":       { index: 7, text: "Slow", isFailure: false, isSuccess: true },
+  "SKIP":       { index: 8, text: "Skip", isFailure: false, isSuccess: false },
+  "MISSING":    { index: 9, text: "Missing", isFailure: false, isSuccess: false },
+  "WONTFIX":    { index: 10, text: "Wontfix", isFailure: false, isSuccess: false },
+  "NEEDSMANUALREBASELINE": { index: 11, text: "NeedsManualRebaseline", isFailure: false, isSuccess: false },
+  "NEEDSREBASELINE": { index: 11, text: "NeedsRebaseline", isFailure: false, isSuccess: false },
+  "PASS":       { index: 12, text: "Pass", isFailure: false, isSuccess: true },
+}
+
+// Sorted from worst to best
+let TestResultComparator = function (a, b) {
+  if (TestResultInformation[a].index > TestResultInformation[b].index)
+    return 1;
+  else if (TestResultInformation[a].index == TestResultInformation[b].index)
+    return 0;
+  else
+    return -1;
+}
 
 function printSummary(r) {
-  document.querySelector('#summary_total').innerText = r.num_passes + r.num_regressions;
-  document.querySelector('#summary_passed').innerText = r.num_passes;
-  document.querySelector('#summary_regressions').innerText = r.num_regressions;
+  document.querySelector("#summary_total").innerText = r.num_passes + r.num_regressions;
+  document.querySelector("#summary_passed").innerText = r.num_passes;
+  document.querySelector("#summary_regressions").innerText = r.num_regressions;
   let failures = r["num_failures_by_type"];
   var totalFailures = 0;
-  for (p in failures) {
+  for (let p in failures) {
     if (failures[p]) {
       try {
         document.querySelector("#count_" + p.replace("+", "_")).innerText = failures[p];
@@ -296,7 +327,7 @@ Traversal.prototype = {
     else {
       // TODO(atotic) we need name + type sort, tests go before dirs.
       var keys = Object.keys(node).sort();
-      for (p of keys)
+      for (let p of keys)
         this._helper(node[p], path + "/" + p, filter, action);
     }
   }
@@ -304,9 +335,10 @@ Traversal.prototype = {
 
 let PathParser = function(path) {
   this.path = path;
-  [href, dir, file] = path.match("/(.*)/(.*)");
+  let [href, dir, file] = path.match("/(.*)/(.*)");
   this.dir = dir;
   this.file = file;
+  let tmp;
   [tmp, this.basename, this.extension] = file.match(/(.*)\.(\w+)/);
   this.testHref = "../../../third_party/WebKit/LayoutTests" + href.replace(/\/virtual\/[^\/]*/, "");
 }
@@ -332,7 +364,7 @@ let Printers = {
 
   printPlainTest: (test, path, traversal) => {
     let pathParser = new PathParser(path);
-    html = " " + pathParser.dir + "/"
+    let html = " " + pathParser.dir + "/"
       + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
       + pathParser.file + "</a>";
     html = "<div class='expect' tabindex='0' data-id='"+ test.expect_id +"'><div class='details'></div>" + html + "</div>";
@@ -351,37 +383,30 @@ let Printers = {
       traversal.lastDir = pathParser.dir;
     }
 
+    let statusMap = new Map(test.expectedMap);
+    for (let s of test.actualMap.keys()) {
+      let result = s;
+      if (result == "TEXT" || result == "IMAGE" || result == "IMAGE+TEXT")
+        result = "FAIL";
+      if (result == "SKIP" && test.expectedMap.has("WONTFIX"))
+        result = "WONTFIX";
+      statusMap.set(result, "bold");
+    }
     let status = "";
-    let actual = test.actual;
-    let expected = test.expected;
-    if (actual == "TEXT" || actual == "IMAGE" || actual == "IMAGE+TEXT")
-      actual = "FAIL";
-    if (actual == "SKIP" && expected.indexOf("WONTFIX") != -1)
-      actual = "WONTFIX";
-    if (expected.indexOf(actual) == -1)
-      expected = actual;
-    if (expected.indexOf(" ") != -1) {  // make actual result bold
-      var regex = new RegExp("(" + actual + ")")
-      var substitute = "<b>$&</b>";
-      expected = expected.replace(regex, substitute);
+    for (let key of statusMap.keys()) {
+      if (statusMap.get(key) == "bold")
+        status += " <b>" + TestResultInformation[key].text + "</b>";
+      else
+        status += " " + TestResultInformation[key].text;
     }
-    expected = expected
-      .replace("CRASH", "Crash")
-      .replace("MISSING", "Skip")
-      .replace("PASS", "Pass")
-      .replace("FAIL", "Failure")
-      .replace("SKIP", "Skip")
-      .replace("TIMEOUT", "Timeout")
-      .replace("SLOW", "Slow")
-      .replace("WONTFIX", "Wontfix")
-      .replace("NEEDSMANUALREBASELINE", "NeedsManualRebaseline");
-    status = expected;
-    let bug = test.actual == "PASS" ? "" : "<span class='warn'>NEEDBUG</span>";
-    if ("bugs" in test && test.bugs.length > 0) {
-      bug = test.bugs.join(" ");
-      bug = "<a target='crbug' tabindex='-1' href='https://" + test.bugs[0] + "'>" + bug + "</a>";
+    let bug = test.actualMap.has("PASS") ? "" : "<span class='warn'>NEEDBUG</span>";
+    if (test.bugs && test.bugs.length > 0) {
+      bug = "";
+      for (let b of test.bugs) {
+        bug += "<a target='crbug' tabindex='-1' href='https://" + b + "'>" + b + "</a> ";
+      }
     }
-    html = "";
+    let html = "";
     html += bug;
     html += " " + pathParser.dir + "/"
       + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
@@ -392,67 +417,88 @@ let Printers = {
   }
 }
 
-var lastReport;
+let lastReport;
+let lastRAF;
 function generateReport(name, filter, report) {
+  if (lastRAF)
+    window.cancelAnimationFrame(lastRAF);
   report = report || Printers.getDefaultPrinter();
   filter = filter || lastReport.filter;
   name = name || lastReport.name;
   lastReport = { name: name, filter: filter };
   document.querySelector("#report").innerHTML = "";
   document.querySelector("#report_title").innerHTML = name;
+  let t;
 
-  setTimeout( _ => {
-    var t = new Traversal(fullResults.tests);
+  let chunkSize = 500;
+  let index = 0;
+  let callback = function() {
+    lastRAF = null;
+    let pre = document.createElement("div");
+    pre.innerHTML = t.html.slice(index, index + chunkSize).join("\n");
+    document.querySelector("#report").appendChild(pre);
+    index += chunkSize;
+    console.log("added pre");
+    if (index < t.html.length)
+      lastRAF = window.requestAnimationFrame(callback);
+  }
+  window.setTimeout( _ => {
+    t = new Traversal(fullResults.tests);
     t.traverse(filter, report);
-    document.querySelector("#report").innerHTML = t.html.join("\n");
+    lastRAF = window.requestAnimationFrame(callback)
   }, 0);
 }
 
-function containsPass(str) {
-  return ["PASS", "SLOW"].some( v => str.indexOf(v) != -1);
+function containsPass(map) {
+  return map.has("PASS") || map.has("SLOW");
 }
 
-function containsNoPass(str) {
-  return ["NEEDSMANUALREBASELINE", "WONTFIX", "FAIL", "SKIP", "CRASH"].some(
-    v => str.indexOf(v) != -1);
+function containsNoPass(map) {
+  return map.has("FAIL")
+        || map.has("NEEDSMANUALREBASELINE")
+        || map.has("WONTFIX")
+        || map.has("SKIP")
+        || map.has("CRASH");
 }
 
 let Filters = {
   unexpectedPass: test => {
-    return !containsPass(test.expected) && containsPass(test.actual);
+    return !containsPass(test.expectedMap) && containsPass(test.actualMap);
   },
   unexpectedFailure: test => {
-    if (containsPass(test.actual))
+    if (containsPass(test.actualMap))
       return false;
-    if (test.expected.match(/NEEDSMANUALREBASELINE|WONTFIX/))
+    if (test.expectedMap.has("NEEDSMANUALREBASELINE")
+        || test.expectedMap.has("NEEDSREBASELINE")
+        || test.expectedMap.has("WONTFIX"))
       return false;
-    switch (test.actual) {
+    switch (test.actualFinal) {
       case "SKIP":
       case "CRASH":
       case "TIMEOUT":
-        if (test.expected.indexOf(test.actual) != -1)
+        if (test.expected.indexOf(test.actualFinal) != -1)
           return false;
         break;
       case "TEXT":
       case "IMAGE":
       case "IMAGE+TEXT":
-        if (containsNoPass(test.expected))
+        if (containsNoPass(test.expectedMap))
           return false;
         break;
       case "MISSING":
         return false;
       default:
-        console.error("Unexpected test result", test.actual);
+        console.error("Unexpected test result", est.actualMap.keys().next().value);
       }
     return true;
   },
-  notpass: test => test.actual != "PASS",
-  actual: tag => {
+  notpass: test => test.actualFinal != "PASS",
+  actual: tag => {  // Returns comparator for tag.
     return function(test) {
-      return test.actual == tag;
+      return test.actualMap.has(tag);
     }
   },
-  wontfix: test => test.expected == 'WONTFIX',
+  wontfix: test => test.expected == "WONTFIX",
   all: _ => true
 }
 
@@ -460,49 +506,53 @@ function getResultLinks(test) {
   let links = [];
   let pathParser = new PathParser(test.expect_path);
   links.push({text: test.actual});
-  switch(test.actual) {
-    case "PASS":
-    case "SLOW":
-      if (!test.has_stderr)
-        links.push({text: "Test passed without errors"});
-      break;
-    case "SKIP":
-      links.push({text: "Test did not run."});
-      break;
-    case "CRASH":
-      links.push({text: "crash log", link: pathParser.resultLink("-crash-log.txt")});
-      break;
-    case "TIMEOUT":
-      links.push({text: "Test timed out. "
-        + ("time" in test ? `(${test.time}s)` : "")});
-      break;
-    case "TEXT":
-      links.push({text: "actual text", link: pathParser.resultLink('-actual.txt')});
-      if (!test.is_testharness_test) {
-        links.push({text: "expected text", link: pathParser.resultLink('-expected.txt')});
-        links.push({text: "diff", link: pathParser.resultLink('-diff.txt')});
-      }
-      break;
-    case "IMAGE":
-      links.push({text: "actual image", link: pathParser.resultLink("-actual.png")});
-      links.push({text: "expected image ", link: pathParser.resultLink("-expected.png")});
-      links.push({text: "diff", link: pathParser.resultLink("-diff.png")});
-      break;
-    case "IMAGE+TEXT":
-      links.push({text: "actual image", link: pathParser.resultLink("-actual.png")});
-      links.push({text: "expected image ", link: pathParser.resultLink("-expected.png")});
-      links.push({text: "diff", link: pathParser.resultLink("-diff.png")});
-      links.push({text: "actual text", link: pathParser.resultLink('-actual.txt')});
-      if (!test.is_testharness_test) {
-        links.push({text: "expected text", link: pathParser.resultLink('-expected.txt')});
-        links.push({text: "diff", link: pathParser.resultLink('-diff.txt')});
-      }
-      break;
-    case "MISSING":
-      links.push({text: "Test is missing."});
-      break;
-    default:
-      console.error("unexpected actual", test.actual);
+  for (let result of test.actualMap.keys()) {
+    switch(result) {
+      case "PASS":
+      case "SLOW":
+        if (Filters.unexpectedPass(test))
+          links.push({text: "Expected: " + test.expected});
+        if (!test.has_stderr)
+          links.push({text: "No errors"});
+        break;
+      case "SKIP":
+        links.push({text: "Test did not run."});
+        break;
+      case "CRASH":
+        links.push({text: "crash log", link: pathParser.resultLink("-crash-log.txt")});
+        break;
+      case "TIMEOUT":
+        links.push({text: "Test timed out. "
+          + ("time" in test ? `(${test.time}s)` : "")});
+        break;
+      case "TEXT":
+        links.push({text: "actual text", link: pathParser.resultLink('-actual.txt')});
+        if (!test.is_testharness_test) {
+          links.push({text: "expected text", link: pathParser.resultLink('-expected.txt')});
+          links.push({text: "diff", link: pathParser.resultLink('-diff.txt')});
+        }
+        break;
+      case "IMAGE":
+        links.push({text: "actual image", link: pathParser.resultLink("-actual.png")});
+        links.push({text: "expected image ", link: pathParser.resultLink("-expected.png")});
+        links.push({text: "diff", link: pathParser.resultLink("-diff.png")});
+        break;
+      case "IMAGE+TEXT":
+        links.push({text: "actual image", link: pathParser.resultLink("-actual.png")});
+        links.push({text: "expected image ", link: pathParser.resultLink("-expected.png")});
+        links.push({text: "diff", link: pathParser.resultLink("-diff.png")});
+        links.push({text: "actual text", link: pathParser.resultLink('-actual.txt')});
+        if (!test.is_testharness_test) {
+          links.push({text: "expected text", link: pathParser.resultLink('-expected.txt')});
+          links.push({text: "diff", link: pathParser.resultLink('-diff.txt')});
+        }
+        break;
+      case "MISSING":
+        links.push({text: "Test is missing."});
+        break;
+      default:
+        console.error("unexpected actual", test.actual);
+    }
   }
   if (test.has_stderr) {
     links.push({text: "stderr", link: pathParser.resultLink("-stderr.txt")});
@@ -517,7 +567,7 @@ function getResultsDiv(test) {
   // Initialize the results
   let menu = div.querySelector(".result-menu");
   menu.innerHTML = "";
-  for (link of getResultLinks(test)) {
+  for (let link of getResultLinks(test)) {
     let li = document.createElement("li");
     if (link.link) {
       let anchor = document.createElement("a");
@@ -616,7 +666,7 @@ function toggleResults(expectation, event) {
     }
   }
   if (closeOthers) {
-    for (el of Array.from(document.querySelectorAll(".details.open")))
+    for (let el of Array.from(document.querySelectorAll(".details.open")))
       hideResults(el.parentNode);
   }
   if (isOpen) {
@@ -640,6 +690,15 @@ function initPage() {
     (test, path) => {
       test.expect_id = nextId++;
       test.expect_path = path;
+      test.actualMap = new Map();
+      for (let result of test.actual.split(" ")) {
+        test.actualFinal = result;  // last result count as definite.
+        test.actualMap.set(result, true);
+      }
+      test.expectedMap = new Map();
+      for (let result of test.expected.split(" ")) {
+        test.expectedMap.set(result, true);
+      }
     }
   );
   printSummary(fullResults);
