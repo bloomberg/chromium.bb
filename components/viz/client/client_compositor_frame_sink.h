@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_CLIENT_CLIENT_COMPOSITOR_FRAME_SINK_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/output/context_provider.h"
@@ -46,6 +47,8 @@ class ClientCompositorFrameSink
 
   ~ClientCompositorFrameSink() override;
 
+  base::WeakPtr<ClientCompositorFrameSink> GetWeakPtr();
+
   // cc::CompositorFrameSink implementation.
   bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
@@ -73,6 +76,8 @@ class ClientCompositorFrameSink
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> client_binding_;
   THREAD_CHECKER(thread_checker_);
   const bool enable_surface_synchronization_;
+
+  base::WeakPtrFactory<ClientCompositorFrameSink> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCompositorFrameSink);
 };

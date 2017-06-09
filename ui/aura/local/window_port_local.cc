@@ -129,11 +129,6 @@ void WindowPortLocal::OnSurfaceChanged(const cc::SurfaceId& surface_id,
                                        const gfx::Size& surface_size) {
   DCHECK_EQ(surface_id.frame_sink_id(), frame_sink_id_);
   local_surface_id_ = surface_id.local_surface_id();
-  // The bounds must be updated before switching to the new surface, because
-  // the layer may be mirrored, in which case a surface change causes the
-  // mirror layer to update its surface using the latest bounds.
-  window_->layer()->SetBounds(
-      gfx::Rect(window_->layer()->bounds().origin(), surface_size));
   cc::SurfaceInfo surface_info(surface_id, 1.0f, surface_size);
   scoped_refptr<cc::SurfaceReferenceFactory> reference_factory =
       aura::Env::GetInstance()

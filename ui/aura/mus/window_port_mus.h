@@ -24,6 +24,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
 
+namespace viz {
+class ClientCompositorFrameSink;
+}
+
 namespace aura {
 
 class ClientSurfaceEmbedder;
@@ -76,7 +80,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
              uint32_t flags,
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
-  std::unique_ptr<cc::CompositorFrameSink> RequestCompositorFrameSink(
+  std::unique_ptr<viz::ClientCompositorFrameSink> RequestCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
@@ -223,7 +227,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetFrameSinkIdFromServer(const cc::FrameSinkId& frame_sink_id) override;
   const cc::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& surface_size_in_pixels) override;
-  void SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) override;
   void SetFallbackSurfaceInfo(const cc::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
@@ -239,6 +242,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void PrepareForTransientRestack(WindowMus* window) override;
   void OnTransientRestackDone(WindowMus* window) override;
   void NotifyEmbeddedAppDisconnected() override;
+  bool HasLocalCompositorFrameSink() override;
 
   // WindowPort:
   void OnPreInit(Window* window) override;
@@ -284,6 +288,11 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   gfx::Size last_surface_size_in_pixels_;
 
   ui::CursorData cursor_;
+
+  // When a frame sink is created
+  // for a local aura::Window, we need keep a weak ptr of it, so we can update
+  // the local surface id when necessary.
+  base::WeakPtr<viz::ClientCompositorFrameSink> local_compositor_frame_sink_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPortMus);
 };
