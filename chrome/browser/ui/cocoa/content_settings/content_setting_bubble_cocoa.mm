@@ -110,6 +110,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [label setStringValue:text];
   [label setSelectable:NO];
   [label setBezeled:NO];
+  [label setAlignment:NSNaturalTextAlignment];
   return [label autorelease];
 }
 
@@ -390,6 +391,7 @@ const ContentTypeToNibPath kNibPaths[] = {
   NSRect titleFrame = [titleLabel_ frame];
   titleFrame.origin.y -= deltaY;
   [titleLabel_ setFrame:titleFrame];
+  [titleLabel_ setAlignment:NSNaturalTextAlignment];
 }
 
 - (void)initializeMessage {
@@ -408,6 +410,7 @@ const ContentTypeToNibPath kNibPaths[] = {
   NSRect messageFrame = [messageLabel_ frame];
   messageFrame.origin.y -= deltaY;
   [messageLabel_ setFrame:messageFrame];
+  [messageLabel_ setAlignment:NSNaturalTextAlignment];
 }
 
 - (void)initializeRadioGroup {
@@ -450,6 +453,19 @@ const ContentTypeToNibPath kNibPaths[] = {
   NSRect windowFrame = [[self window] frame];
   windowFrame.size.height += radioDeltaY;
   [[self window] setFrame:windowFrame display:NO];
+
+  // NSMatrix-based radio buttons don't get automatically flipped for
+  // RTL. Setting the user interface layout direction explicitly
+  // doesn't affect rendering, so set image position and text alignment
+  // manually.
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    for (NSButtonCell* cell in [allowBlockRadioGroup_ cells]) {
+      [cell setAlignment:NSNaturalTextAlignment];
+      [cell setImagePosition:cocoa_l10n_util::LeadingCellImagePosition()];
+      // Why not?
+      [cell setUserInterfaceLayoutDirection:
+                NSUserInterfaceLayoutDirectionRightToLeft];
+    }
 }
 
 - (NSButton*)hyperlinkButtonWithFrame:(NSRect)frame
@@ -982,6 +998,20 @@ const ContentTypeToNibPath kNibPaths[] = {
 
   if (contentSettingBubbleModel_->AsMediaStreamBubbleModel())
     [self initializeMediaMenus];
+
+  // RTL-ize NIBS:
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+    cocoa_l10n_util::FlipAllSubviewsIfNecessary([self bubble]);
+
+    // Some NIBs have the manage/done buttons outside of the bubble.
+    cocoa_l10n_util::FlipAllSubviewsIfNecessary([[self bubble] superview]);
+    cocoa_l10n_util::FlipAllSubviewsIfNecessary(contentsContainer_);
+
+    // These buttons are inside |GTMWidthBasedTweaker|s, so fix margins.
+    cocoa_l10n_util::FlipAllSubviewsIfNecessary([infoButton_ superview]);
+    cocoa_l10n_util::FlipAllSubviewsIfNecessary([doneButton_ superview]);
+    cocoa_l10n_util::FlipAllSubviewsIfNecessary([manageButton_ superview]);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

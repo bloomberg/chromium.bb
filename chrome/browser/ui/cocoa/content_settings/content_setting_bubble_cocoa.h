@@ -65,6 +65,7 @@ using MediaMenuPartsMap =
   IBOutlet NSButton* manageButton_;
   IBOutlet NSButton* doneButton_;
   IBOutlet NSButton* loadButton_;
+  IBOutlet NSButton* infoButton_;
 
   std::unique_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
 
