@@ -294,13 +294,22 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
     UNKNOWN_ERROR,
     LOW_FREE_DISK_SPACE,
   };
+  // When ArcStartupMode is LOGIN_SCREEN, StartArcInstance starts a container
+  // with only a handful of ARC processes for Chrome OS login screen.
+  // |cryptohome_id|, |skip_boot_completed_broadcast|, and
+  // |scan_vendor_priv_app| are ignored when the mode is LOGIN_SCREEN.
+  enum class ArcStartupMode {
+    FULL,
+    LOGIN_SCREEN,
+  };
   // In case of success, |container_instance_id| will be passed as its second
   // param. The ID is passed to ArcInstanceStopped() to identify which instance
   // is stopped.
   using StartArcInstanceCallback =
       base::Callback<void(StartArcInstanceResult result,
                           const std::string& container_instance_id)>;
-  virtual void StartArcInstance(const cryptohome::Identification& cryptohome_id,
+  virtual void StartArcInstance(ArcStartupMode startup_mode,
+                                const cryptohome::Identification& cryptohome_id,
                                 bool skip_boot_completed_broadcast,
                                 bool scan_vendor_priv_app,
                                 const StartArcInstanceCallback& callback) = 0;

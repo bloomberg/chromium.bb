@@ -73,7 +73,8 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void GetServerBackedStateKeys(const StateKeysCallback& callback) override;
 
   void CheckArcAvailability(const ArcCallback& callback) override;
-  void StartArcInstance(const cryptohome::Identification& cryptohome_id,
+  void StartArcInstance(ArcStartupMode startup_mode,
+                        const cryptohome::Identification& cryptohome_id,
                         bool disable_boot_completed_broadcast,
                         bool enable_vendor_privileged,
                         const StartArcInstanceCallback& callback) override;

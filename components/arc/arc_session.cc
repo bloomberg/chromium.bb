@@ -380,7 +380,8 @@ void ArcSessionImpl::OnSocketCreated(
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->StartArcInstance(
-      cryptohome_id, skip_boot_completed_broadcast, scan_vendor_priv_app,
+      chromeos::SessionManagerClient::ArcStartupMode::FULL, cryptohome_id,
+      skip_boot_completed_broadcast, scan_vendor_priv_app,
       base::Bind(&ArcSessionImpl::OnInstanceStarted, weak_factory_.GetWeakPtr(),
                  base::Passed(&socket_fd)));
 }

@@ -402,7 +402,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void StartArcInstance(const cryptohome::Identification& cryptohome_id,
+  void StartArcInstance(ArcStartupMode startup_mode,
+                        const cryptohome::Identification& cryptohome_id,
                         bool skip_boot_completed_broadcast,
                         bool scan_vendor_priv_app,
                         const StartArcInstanceCallback& callback) override {
@@ -412,9 +413,17 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
 
     login_manager::StartArcInstanceRequest request;
-    request.set_account_id(cryptohome_id.id());
-    request.set_skip_boot_completed_broadcast(skip_boot_completed_broadcast);
-    request.set_scan_vendor_priv_app(scan_vendor_priv_app);
+    switch (startup_mode) {
+      case ArcStartupMode::FULL:
+        request.set_account_id(cryptohome_id.id());
+        request.set_skip_boot_completed_broadcast(
+            skip_boot_completed_broadcast);
+        request.set_scan_vendor_priv_app(scan_vendor_priv_app);
+        break;
+      case ArcStartupMode::LOGIN_SCREEN:
+        request.set_for_login_screen(true);
+        break;
+    }
     writer.AppendProtoAsArrayOfBytes(request);
 
     session_manager_proxy_->CallMethodWithErrorCallback(
@@ -1049,7 +1058,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     callback.Run(false);
   }
 
-  void StartArcInstance(const cryptohome::Identification& cryptohome_id,
+  void StartArcInstance(ArcStartupMode startup_mode,
+                        const cryptohome::Identification& cryptohome_id,
                         bool disable_boot_completed_broadcast,
                         bool enable_vendor_privileged,
                         const StartArcInstanceCallback& callback) override {
