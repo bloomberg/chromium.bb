@@ -1,0 +1,5 @@
+rootWebArea htmlTag='#document'
+++heading htmlTag='h1' name='Image'
+++++staticText name='Image'
+++++++inlineTextBox name='Image'
+++image htmlTag='img' name='ImageAlt'
