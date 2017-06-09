@@ -218,8 +218,8 @@ public class InfoBarContainerLayout extends FrameLayout {
             Animator.AnimatorListener listener = new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mAnimation = null;
                     InfoBarAnimation.this.onAnimationEnd();
+                    mAnimation = null;
                     for (InfoBarAnimationListener listener : mAnimationListeners) {
                         listener.notifyAnimationFinished(getAnimationType());
                     }
@@ -448,19 +448,19 @@ public class InfoBarContainerLayout extends FrameLayout {
                 public void onAnimationStart(Animator animation) {
                     setHierarchyClipsChildren(false);
                 }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mAppearingWrapper.setRestrictHeightForAnimation(false);
-                    mAppearingWrapper.removeView(mAppearingWrapper.getItem().getView());
-                    setHierarchyClipsChildren(true);
-                }
             });
 
             set.playSequentially(animators);
             set.setDuration(DURATION_PEEK_MS);
 
             return set;
+        }
+
+        @Override
+        public void onAnimationEnd() {
+            mAppearingWrapper.setRestrictHeightForAnimation(false);
+            mAppearingWrapper.removeView(mAppearingWrapper.getItem().getView());
+            setHierarchyClipsChildren(true);
         }
 
         @Override
