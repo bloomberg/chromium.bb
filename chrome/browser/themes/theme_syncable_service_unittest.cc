@@ -61,19 +61,16 @@ const base::FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/oo");
 
 class FakeThemeService : public ThemeService {
  public:
-  FakeThemeService() :
-    using_system_theme_(false),
-    using_default_theme_(false),
-    distinct_from_default_theme_(false),
-    theme_extension_(NULL),
-    is_dirty_(false) {}
+  FakeThemeService() {}
 
   // ThemeService implementation
-  void SetTheme(const extensions::Extension* extension) override {
+  void DoSetTheme(const extensions::Extension* extension,
+                  bool suppress_infobar) override {
     is_dirty_ = true;
     theme_extension_ = extension;
     using_system_theme_ = false;
     using_default_theme_ = false;
+    might_show_infobar_ = !suppress_infobar;
   }
 
   void UseDefaultTheme() override {
@@ -113,20 +110,19 @@ class FakeThemeService : public ThemeService {
     return theme_extension_.get();
   }
 
-  bool is_dirty() const {
-    return is_dirty_;
-  }
+  bool is_dirty() const { return is_dirty_; }
 
-  void MarkClean() {
-    is_dirty_ = false;
-  }
+  void MarkClean() { is_dirty_ = false; }
+
+  bool might_show_infobar() const { return might_show_infobar_; }
 
  private:
-  bool using_system_theme_;
-  bool using_default_theme_;
-  bool distinct_from_default_theme_;
+  bool using_system_theme_ = false;
+  bool using_default_theme_ = false;
+  bool distinct_from_default_theme_ = false;
   scoped_refptr<const extensions::Extension> theme_extension_;
-  bool is_dirty_;
+  bool is_dirty_ = false;
+  bool might_show_infobar_ = false;
 };
 
 std::unique_ptr<KeyedService> BuildMockThemeService(
@@ -473,6 +469,9 @@ TEST_F(ThemeSyncableServiceTest, ProcessSyncThemeChange) {
   error = theme_sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_EQ(fake_theme_service_->theme_extension(), theme_extension_.get());
+  // Don't show an infobar for theme installation. Regression test for
+  // crbug.com/731688
+  EXPECT_FALSE(fake_theme_service_->might_show_infobar());
 }
 
 TEST_F(ThemeSyncableServiceTest, OnThemeChangeByUser) {

@@ -83,7 +83,7 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
   // Set the current theme to the theme defined in |extension|.
   // |extension| must already be added to this profile's
   // ExtensionService.
-  virtual void SetTheme(const extensions::Extension* extension);
+  void SetTheme(const extensions::Extension* extension);
 
   // Similar to SetTheme, but doesn't show an undo infobar.
   void RevertToTheme(const extensions::Extension* extension);
@@ -236,8 +236,9 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
   // and contrasting with the foreground tab is the most important).
   static SkColor GetSeparatorColor(SkColor tab_color, SkColor frame_color);
 
-  void DoSetTheme(const extensions::Extension* extension,
-                  bool suppress_infobar);
+  // virtual for testing.
+  virtual void DoSetTheme(const extensions::Extension* extension,
+                          bool suppress_infobar);
 
   // These methods provide the implementation for ui::ThemeProvider (exposed
   // via BrowserThemeProvider).

@@ -284,7 +284,7 @@ void ThemeService::Observe(int type,
 }
 
 void ThemeService::SetTheme(const Extension* extension) {
-  DoSetTheme(extension, false);
+  DoSetTheme(extension, true);
 }
 
 void ThemeService::RevertToTheme(const Extension* extension) {
