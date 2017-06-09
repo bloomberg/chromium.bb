@@ -13,6 +13,8 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_store_observer_mock.h"
@@ -54,9 +56,13 @@ class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
   Data* data_;
 };
 
-}  // namespace
+enum class CommitPendingWriteMode {
+  WITHOUT_CALLBACK,
+  WITH_CALLBACK,
+};
 
-class SegregatedPrefStoreTest : public testing::Test {
+class SegregatedPrefStoreTest
+    : public testing::TestWithParam<CommitPendingWriteMode> {
  public:
   SegregatedPrefStoreTest()
       : read_error_delegate_data_(false,
@@ -87,6 +93,8 @@ class SegregatedPrefStoreTest : public testing::Test {
     return std::move(read_error_delegate_);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   PrefStoreObserverMock observer_;
 
   scoped_refptr<TestingPrefStore> default_store_;
@@ -99,7 +107,9 @@ class SegregatedPrefStoreTest : public testing::Test {
   std::unique_ptr<MockReadErrorDelegate> read_error_delegate_;
 };
 
-TEST_F(SegregatedPrefStoreTest, StoreValues) {
+}  // namespace
+
+TEST_P(SegregatedPrefStoreTest, StoreValues) {
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
             segregated_store_->ReadPrefs());
 
@@ -122,7 +132,14 @@ TEST_F(SegregatedPrefStoreTest, StoreValues) {
   ASSERT_FALSE(selected_store_->committed());
   ASSERT_FALSE(default_store_->committed());
 
-  segregated_store_->CommitPendingWrite();
+  if (GetParam() == CommitPendingWriteMode::WITHOUT_CALLBACK) {
+    segregated_store_->CommitPendingWrite(base::OnceClosure());
+    base::RunLoop().RunUntilIdle();
+  } else {
+    base::RunLoop run_loop;
+    segregated_store_->CommitPendingWrite(run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   ASSERT_TRUE(selected_store_->committed());
   ASSERT_TRUE(default_store_->committed());
@@ -302,3 +319,12 @@ TEST_F(SegregatedPrefStoreTest, GetValues) {
   ASSERT_TRUE(values->Get(kSharedPref, &value));
   EXPECT_TRUE(base::Value(kValue1).Equals(value));
 }
+
+INSTANTIATE_TEST_CASE_P(
+    WithoutCallback,
+    SegregatedPrefStoreTest,
+    ::testing::Values(CommitPendingWriteMode::WITHOUT_CALLBACK));
+INSTANTIATE_TEST_CASE_P(
+    WithCallback,
+    SegregatedPrefStoreTest,
+    ::testing::Values(CommitPendingWriteMode::WITH_CALLBACK));

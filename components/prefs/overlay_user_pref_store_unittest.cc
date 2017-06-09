@@ -5,7 +5,9 @@
 #include "components/prefs/overlay_user_pref_store.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
+#include "components/prefs/persistent_pref_store_unittest.h"
 #include "components/prefs/pref_store_observer_mock.h"
 #include "components/prefs/testing_pref_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,6 +40,7 @@ class OverlayUserPrefStoreTest : public testing::Test {
 
   ~OverlayUserPrefStoreTest() override {}
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<TestingPrefStore> underlay_;
   scoped_refptr<OverlayUserPrefStore> overlay_;
 };
@@ -269,6 +272,10 @@ TEST_F(OverlayUserPrefStoreTest, GetValues) {
   // Check that the overlay is preferred.
   ASSERT_TRUE(values->Get(shared_key, &value));
   EXPECT_TRUE(base::Value(43).Equals(value));
+}
+
+TEST_F(OverlayUserPrefStoreTest, CommitPendingWriteWithCallback) {
+  TestCommitPendingWriteWithCallback(overlay_.get());
 }
 
 }  // namespace base

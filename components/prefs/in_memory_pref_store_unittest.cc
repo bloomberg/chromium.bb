@@ -5,10 +5,13 @@
 #include "components/prefs/in_memory_pref_store.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
+#include "components/prefs/persistent_pref_store_unittest.h"
 #include "components/prefs/pref_store_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 namespace {
 const char kTestPref[] = "test.pref";
 
@@ -18,6 +21,7 @@ class InMemoryPrefStoreTest : public testing::Test {
 
   void SetUp() override { store_ = new InMemoryPrefStore(); }
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<InMemoryPrefStore> store_;
   PrefStoreObserverMock observer_;
 };
@@ -99,6 +103,10 @@ TEST_F(InMemoryPrefStoreTest, GetReadError) {
 
 TEST_F(InMemoryPrefStoreTest, ReadPrefs) {
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, store_->ReadPrefs());
+}
+
+TEST_F(InMemoryPrefStoreTest, CommitPendingWriteWithCallback) {
+  TestCommitPendingWriteWithCallback(store_.get());
 }
 
 }  // namespace

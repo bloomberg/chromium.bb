@@ -169,8 +169,8 @@ void OverlayUserPrefStore::ReadPrefsAsync(
   OnInitializationCompleted(/* overlay */ false, true);
 }
 
-void OverlayUserPrefStore::CommitPendingWrite() {
-  underlay_->CommitPendingWrite();
+void OverlayUserPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
+  underlay_->CommitPendingWrite(std::move(done_callback));
   // We do not write our content intentionally.
 }
 

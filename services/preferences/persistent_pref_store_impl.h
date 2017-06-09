@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
@@ -39,7 +40,7 @@ class PersistentPrefStoreImpl : public PrefStore::Observer {
   void SetValues(std::vector<mojom::PrefUpdatePtr> updates);
   bool GetValue(const std::string& key, const base::Value** value) const;
 
-  void CommitPendingWrite();
+  void CommitPendingWrite(base::OnceClosure done_callback);
   void SchedulePendingLossyWrites();
   void ClearMutableValues();
 

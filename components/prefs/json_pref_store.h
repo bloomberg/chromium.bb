@@ -65,12 +65,12 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
 
   // |pref_filename| is the path to the file to read prefs from. It is incorrect
   // to create multiple JsonPrefStore with the same |pref_filename|.
-  // |sequenced_task_runner| is used for asynchronous reads and writes. It must
+  // |file_task_runner| is used for asynchronous reads and writes. It must
   // have the base::TaskShutdownBehavior::BLOCK_SHUTDOWN and base::MayBlock()
   // traits. Unless external tasks need to run on the same sequence as
   // JsonPrefStore tasks, keep the default value.
   JsonPrefStore(const base::FilePath& pref_filename,
-                scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner =
+                scoped_refptr<base::SequencedTaskRunner> file_task_runner =
                     base::CreateSequencedTaskRunnerWithTraits(
                         {base::MayBlock(),
                          base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
@@ -101,7 +101,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // See details in pref_filter.h.
   PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
-  void CommitPendingWrite() override;
+  void CommitPendingWrite(base::OnceClosure done_callback) override;
   void SchedulePendingLossyWrites() override;
   void ReportValueChanged(const std::string& key, uint32_t flags) override;
 
@@ -226,7 +226,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   void ScheduleWrite(uint32_t flags);
 
   const base::FilePath path_;
-  const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   std::unique_ptr<base::DictionaryValue> prefs_;
 
