@@ -1160,9 +1160,6 @@
                   '|ios/chrome/app/strings/ios(_.+)*_strings.grd'\
                   '|ui/strings/ui_strings.grd',
     },
-    'use_counter_features': {
-      'filepath': 'third_party/WebKit/public/platform/UseCounterFeature.def',
-    },
     'valgrind': {
       'filepath': 'valgrind',
     },
@@ -2278,7 +2275,6 @@
     'ui_display_win': ['robliao+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
     'ui_strings': ['srahim+watch@chromium.org'],
-    'use_counter_features': ['lunalu@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
                  'glider+watch@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
