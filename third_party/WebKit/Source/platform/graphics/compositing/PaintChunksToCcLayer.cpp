@@ -13,6 +13,7 @@
 #include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/graphics/paint/RasterInvalidationTracking.h"
 
 namespace blink {
 
@@ -228,7 +229,8 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     const Vector<const PaintChunk*>& paint_chunks,
     const PropertyTreeState& layer_state,
     const gfx::Vector2dF& layer_offset,
-    const DisplayItemList& display_items) {
+    const DisplayItemList& display_items,
+    RasterUnderInvalidationCheckingParams* under_invalidation_checking_params) {
   auto cc_list = make_scoped_refptr(new cc::DisplayItemList);
 
   bool need_translate = !layer_offset.IsZero();
@@ -268,6 +270,25 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     cc::PaintOpBuffer* buffer = cc_list->StartPaint();
     buffer->push<cc::RestoreOp>();
     cc_list->EndPaintOfPairedEnd();
+  }
+
+  if (under_invalidation_checking_params) {
+    auto& params = *under_invalidation_checking_params;
+    PaintRecorder recorder;
+    recorder.beginRecording(params.interest_rect);
+    // Create a complete cloned list for under-invalidation checking. We can't
+    // use cc_list because it is not finalized yet.
+    auto list_clone =
+        Convert(paint_chunks, layer_state, layer_offset, display_items);
+    recorder.getRecordingCanvas()->drawDisplayItemList(list_clone);
+    params.tracking.CheckUnderInvalidations(params.debug_name,
+                                            recorder.finishRecordingAsPicture(),
+                                            params.interest_rect);
+    if (auto record = params.tracking.under_invalidation_record) {
+      cc::PaintOpBuffer* buffer = cc_list->StartPaint();
+      buffer->push<cc::DrawRecordOp>(record);
+      cc_list->EndPaintOfUnpaired(g_large_rect);
+    }
   }
 
   cc_list->Finalize();

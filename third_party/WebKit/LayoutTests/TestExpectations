@@ -38,7 +38,6 @@ crbug.com/537409 virtual/spv2/ [ Skip ]
 # End whitlelisted paint invalidation tests
 crbug.com/596780 virtual/spv2/compositing/framesets/composited-frame-alignment.html [ Pass ]
 crbug.com/596780 virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/object-current-scale.html [ Pass ]
 
 # Re-add this once it rebaselines.
 # crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ Pass ]

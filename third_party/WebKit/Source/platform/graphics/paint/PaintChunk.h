@@ -9,6 +9,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
+#include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Vector.h"
@@ -99,6 +100,8 @@ struct PaintChunk {
   // SPv2 only. Rectangles that need to be re-rasterized in this chunk, in the
   // coordinate space of the containing transform node.
   Vector<FloatRect> raster_invalidation_rects;
+
+  Vector<RasterInvalidationInfo> raster_invalidation_tracking;
 };
 
 inline bool operator==(const PaintChunk& a, const PaintChunk& b) {

@@ -43,5 +43,11 @@
   <script>var zoomCount = 3; window.shouldZoomOut = true;</script>
   <script src="../../../resources/run-after-layout-and-paint.js"></script>
   <script src="../resources/testPageZoom.js"></script>
+  <script>
+    // There are some invisible pixel changes which exceed the threshold of our
+    // raster-under-invalidation checking, but seems acceptable.
+    if (window.internals)
+      internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = false;
+  </script>
  </body>
 </html>
