@@ -5654,7 +5654,7 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrame) {
   ASSERT_EQ(1u, altsvc_info_vector.size());
   AlternativeService alternative_service(kProtoQUIC, "alternative.example.org",
                                          443u);
-  EXPECT_EQ(alternative_service, altsvc_info_vector[0].alternative_service);
+  EXPECT_EQ(alternative_service, altsvc_info_vector[0].alternative_service());
 }
 
 TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnInsecureSession) {
@@ -5797,10 +5797,10 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrameOnActiveStream) {
       spdy_session_pool_->http_server_properties()->GetAlternativeServiceInfos(
           url::SchemeHostPort(GURL(request_origin)));
   ASSERT_EQ(1u, altsvc_info_vector.size());
-  EXPECT_EQ(kProtoQUIC, altsvc_info_vector[0].alternative_service.protocol);
+  EXPECT_EQ(kProtoQUIC, altsvc_info_vector[0].alternative_service().protocol);
   EXPECT_EQ("alternative.example.org",
-            altsvc_info_vector[0].alternative_service.host);
-  EXPECT_EQ(443u, altsvc_info_vector[0].alternative_service.port);
+            altsvc_info_vector[0].alternative_service().host);
+  EXPECT_EQ(443u, altsvc_info_vector[0].alternative_service().port);
 }
 
 TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnStreamWithInsecureOrigin) {

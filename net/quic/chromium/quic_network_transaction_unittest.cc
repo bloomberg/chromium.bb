@@ -633,7 +633,7 @@ class QuicNetworkTransactionTest
         http_server_properties_.GetAlternativeServiceInfos(server);
     EXPECT_EQ(1u, alternative_service_info_vector.size());
     EXPECT_TRUE(http_server_properties_.IsAlternativeServiceBroken(
-        alternative_service_info_vector[0].alternative_service));
+        alternative_service_info_vector[0].alternative_service()));
   }
 
   void ExpectQuicAlternateProtocolMapping() {
@@ -641,10 +641,11 @@ class QuicNetworkTransactionTest
     const AlternativeServiceInfoVector alternative_service_info_vector =
         http_server_properties_.GetAlternativeServiceInfos(server);
     EXPECT_EQ(1u, alternative_service_info_vector.size());
-    EXPECT_EQ(kProtoQUIC,
-              alternative_service_info_vector[0].alternative_service.protocol);
+    EXPECT_EQ(
+        kProtoQUIC,
+        alternative_service_info_vector[0].alternative_service().protocol);
     EXPECT_FALSE(http_server_properties_.IsAlternativeServiceBroken(
-        alternative_service_info_vector[0].alternative_service));
+        alternative_service_info_vector[0].alternative_service()));
   }
 
   void AddHangingNonAlternateProtocolSocketData() {
@@ -2997,7 +2998,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServiceDifferentPort) {
       http_server_properties_.GetAlternativeServiceInfos(http_server);
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   const AlternativeService alternative_service =
-      alternative_service_info_vector[0].alternative_service;
+      alternative_service_info_vector[0].alternative_service();
   EXPECT_EQ(kProtoQUIC, alternative_service.protocol);
   EXPECT_EQ(kDefaultServerHostName, alternative_service.host);
   EXPECT_EQ(137, alternative_service.port);
