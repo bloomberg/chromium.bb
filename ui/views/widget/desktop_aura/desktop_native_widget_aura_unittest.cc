@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -101,6 +102,21 @@ TEST_F(DesktopNativeWidgetAuraTest, NativeViewInitiallyHidden) {
   init_params.native_widget = new DesktopNativeWidgetAura(&widget);
   widget.Init(init_params);
   EXPECT_FALSE(widget.GetNativeView()->IsVisible());
+}
+
+// Verifies that the native view isn't activated if Widget requires that.
+TEST_F(DesktopNativeWidgetAuraTest, NativeViewNoActivate) {
+  // Widget of TYPE_POPUP can't be activated.
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  DesktopNativeWidgetAura* widget_aura = new DesktopNativeWidgetAura(&widget);
+  init_params.native_widget = widget_aura;
+  widget.Init(init_params);
+
+  EXPECT_FALSE(widget.CanActivate());
+  EXPECT_EQ(nullptr, aura::client::GetFocusClient(widget_aura->content_window())
+                         ->GetFocusedWindow());
 }
 
 // Verifies that if the DesktopWindowTreeHost is already shown, the native view
