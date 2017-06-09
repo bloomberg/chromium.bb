@@ -17,6 +17,7 @@ base::Time GetTime(int year, int month, int day) {
   exploded_time.year = year;
   exploded_time.month = month;
   exploded_time.day_of_month = day;
+  exploded_time.day_of_week = 0;
   exploded_time.hour = 0;
   exploded_time.minute = 0;
   exploded_time.second = 0;
