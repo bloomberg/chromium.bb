@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/ui_metrics/sadtab_metrics_types.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
@@ -556,9 +558,15 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 - (void)handleActionButtonTapped:(id)sender {
   switch (self.mode) {
     case SadTabViewMode::RELOAD:
+      UMA_HISTOGRAM_ENUMERATION(ui_metrics::kSadTabReloadHistogramKey,
+                                ui_metrics::SadTabEvent::BUTTON_CLICKED,
+                                ui_metrics::SadTabEvent::MAX_SAD_TAB_EVENT);
       self.navigationManager->Reload(web::ReloadType::NORMAL, true);
       break;
     case SadTabViewMode::FEEDBACK: {
+      UMA_HISTOGRAM_ENUMERATION(ui_metrics::kSadTabFeedbackHistogramKey,
+                                ui_metrics::SadTabEvent::BUTTON_CLICKED,
+                                ui_metrics::SadTabEvent::MAX_SAD_TAB_EVENT);
       GenericChromeCommand* command =
           [[GenericChromeCommand alloc] initWithTag:IDC_REPORT_AN_ISSUE];
       [self chromeExecuteCommand:command];

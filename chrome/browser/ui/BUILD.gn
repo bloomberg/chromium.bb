@@ -1201,6 +1201,7 @@ split_static_library("ui") {
       "//chrome/common:features",
       "//components/feedback/proto",
       "//components/proximity_auth/webui",
+      "//components/ui_metrics",
       "//components/web_modal",
       "//components/zoom",
       "//device/bluetooth",

@@ -12,6 +12,7 @@ source_set("sad_tab") {
     "//base",
     "//components/resources",
     "//components/strings",
+    "//components/ui_metrics",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
