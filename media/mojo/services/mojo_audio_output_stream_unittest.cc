@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "media/audio/audio_output_controller.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,7 +59,6 @@ class MockDelegate : NON_EXPORTED_BASE(public AudioOutputDelegate) {
   MockDelegate() {}
   ~MockDelegate() {}
 
-  MOCK_CONST_METHOD0(GetController, scoped_refptr<AudioOutputController>());
   MOCK_CONST_METHOD0(GetStreamId, int());
   MOCK_METHOD0(OnPlayStream, void());
   MOCK_METHOD0(OnPauseStream, void());
