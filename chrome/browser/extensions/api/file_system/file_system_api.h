@@ -19,18 +19,14 @@
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "extensions/browser/extension_function.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_CHROMEOS)
-namespace file_manager {
-class Volume;
-}  // namespace file_manager
+#include "chrome/browser/extensions/api/file_system/consent_provider.h"
 #endif
 
 namespace extensions {
 class ExtensionPrefs;
-class ScopedSkipRequestFileSystemDialog;
 
 namespace file_system_api {
 
@@ -50,90 +46,6 @@ void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
 // Dispatches an event about a mounted on unmounted volume in the system to
 // each extension which can request it.
 void DispatchVolumeListChangeEvent(Profile* profile);
-
-// Requests consent for the chrome.fileSystem.requestFileSystem() method.
-// Interaction with UI and environmental checks (kiosk mode, whitelist) are
-// provided by a delegate: ConsentProviderDelegate. For testing, it is
-// TestingConsentProviderDelegate.
-class ConsentProvider {
- public:
-  enum Consent { CONSENT_GRANTED, CONSENT_REJECTED, CONSENT_IMPOSSIBLE };
-  typedef base::Callback<void(Consent)> ConsentCallback;
-  typedef base::Callback<void(ui::DialogButton)> ShowDialogCallback;
-
-  // Interface for delegating user interaction for granting permissions.
-  class DelegateInterface {
-   public:
-    // Shows a dialog for granting permissions.
-    virtual void ShowDialog(const Extension& extension,
-                            const base::WeakPtr<file_manager::Volume>& volume,
-                            bool writable,
-                            const ShowDialogCallback& callback) = 0;
-
-    // Shows a notification about permissions automatically granted access.
-    virtual void ShowNotification(
-        const Extension& extension,
-        const base::WeakPtr<file_manager::Volume>& volume,
-        bool writable) = 0;
-
-    // Checks if the extension was launched in auto-launch kiosk mode.
-    virtual bool IsAutoLaunched(const Extension& extension) = 0;
-
-    // Checks if the extension is a whitelisted component extension or app.
-    virtual bool IsWhitelistedComponent(const Extension& extension) = 0;
-  };
-
-  explicit ConsentProvider(DelegateInterface* delegate);
-  ~ConsentProvider();
-
-  // Requests consent for granting |writable| permissions to the |volume|
-  // volume by the |extension|. Must be called only if the extension is
-  // grantable, which can be checked with IsGrantable().
-  void RequestConsent(const Extension& extension,
-                      const base::WeakPtr<file_manager::Volume>& volume,
-                      bool writable,
-                      const ConsentCallback& callback);
-
-  // Checks whether the |extension| can be granted access.
-  bool IsGrantable(const Extension& extension);
-
- private:
-  DelegateInterface* const delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConsentProvider);
-};
-
-// Handles interaction with user as well as environment checks (whitelists,
-// context of running extensions) for ConsentProvider.
-class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
- public:
-  ConsentProviderDelegate(Profile* profile, content::RenderFrameHost* host);
-  ~ConsentProviderDelegate();
-
- private:
-  friend ScopedSkipRequestFileSystemDialog;
-
-  // Sets a fake result for the user consent dialog. If ui::DIALOG_BUTTON_NONE
-  // then disabled.
-  static void SetAutoDialogButtonForTest(ui::DialogButton button);
-
-  // ConsentProvider::DelegateInterface overrides:
-  void ShowDialog(const Extension& extension,
-                  const base::WeakPtr<file_manager::Volume>& volume,
-                  bool writable,
-                  const file_system_api::ConsentProvider::ShowDialogCallback&
-                      callback) override;
-  void ShowNotification(const Extension& extension,
-                        const base::WeakPtr<file_manager::Volume>& volume,
-                        bool writable) override;
-  bool IsAutoLaunched(const Extension& extension) override;
-  bool IsWhitelistedComponent(const Extension& extension) override;
-
-  Profile* const profile_;
-  content::RenderFrameHost* const host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConsentProviderDelegate);
-};
 #endif
 
 }  // namespace file_system_api
