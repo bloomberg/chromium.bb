@@ -124,7 +124,7 @@ void ThrottlingURLLoader::Start(
   }
 
   mojom::URLLoaderClientPtr client;
-  client_binding_.Bind(mojo::MakeRequest(&client, std::move(task_runner)));
+  client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
   factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader_), routing_id,
                                 request_id, options, *url_request,
                                 std::move(client));
@@ -257,7 +257,7 @@ void ThrottlingURLLoader::Resume() {
     case DEFERRED_START: {
       mojom::URLLoaderClientPtr client;
       client_binding_.Bind(
-          mojo::MakeRequest(&client, std::move(start_info_->task_runner)));
+          mojo::MakeRequest(&client), std::move(start_info_->task_runner));
       start_info_->url_loader_factory->CreateLoaderAndStart(
           mojo::MakeRequest(&url_loader_), start_info_->routing_id,
           start_info_->request_id, start_info_->options,
