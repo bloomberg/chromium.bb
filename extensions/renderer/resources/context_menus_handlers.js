@@ -187,7 +187,7 @@ function createContextMenusHandlers(isWebview) {
         'chromeWebViewInternal.contextMenusRemoveAll' :
         'contextMenus.removeAll';
     sendRequest(name, $Array.from(arguments),
-                this.definition.parameters, optArgs);
+                bindingUtil ? undefined : this.definition.parameters, optArgs);
   };
 
   return {

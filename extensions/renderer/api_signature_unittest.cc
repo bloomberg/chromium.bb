@@ -66,6 +66,15 @@ std::unique_ptr<APISignature> IntAndCallback() {
   return base::MakeUnique<APISignature>(std::move(specs));
 }
 
+std::unique_ptr<APISignature> IntAndOptionalCallback() {
+  SpecVector specs;
+  specs.push_back(ArgumentSpecBuilder(ArgumentType::INTEGER, "int").Build());
+  specs.push_back(ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback")
+                      .MakeOptional()
+                      .Build());
+  return base::MakeUnique<APISignature>(std::move(specs));
+}
+
 std::unique_ptr<APISignature> OptionalIntAndCallback() {
   SpecVector specs;
   specs.push_back(
@@ -339,6 +348,64 @@ TEST_F(APISignatureTest, ExpectedSignature) {
       IntAnyOptionalObjectOptionalCallback()->GetExpectedSignature());
   EXPECT_EQ("refObj obj", RefObj()->GetExpectedSignature());
   EXPECT_EQ("refEnum enum", RefEnum()->GetExpectedSignature());
+}
+
+TEST_F(APISignatureTest, ParseIgnoringSchema) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  auto string_to_v8_vector = [context](base::StringPiece args) {
+    v8::Local<v8::Value> v8_args = V8ValueFromScriptSource(context, args);
+    EXPECT_FALSE(v8_args.IsEmpty());
+    EXPECT_TRUE(v8_args->IsArray());
+    std::vector<v8::Local<v8::Value>> vector_args;
+    EXPECT_TRUE(
+        gin::ConvertFromV8(context->GetIsolate(), v8_args, &vector_args));
+    return vector_args;
+  };
+
+  {
+    // Test with providing an optional callback.
+    auto signature = IntAndOptionalCallback();
+    std::vector<v8::Local<v8::Value>> v8_args =
+        string_to_v8_vector("[1, function() {}]");
+    v8::Local<v8::Function> callback;
+    std::unique_ptr<base::ListValue> parsed;
+    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
+                                                          &parsed, &callback));
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("[1]", ValueToString(*parsed));
+    EXPECT_FALSE(callback.IsEmpty());
+  }
+
+  {
+    // Test with omitting the optional callback.
+    auto signature = IntAndOptionalCallback();
+    std::vector<v8::Local<v8::Value>> v8_args =
+        string_to_v8_vector("[1, null]");
+    v8::Local<v8::Function> callback;
+    std::unique_ptr<base::ListValue> parsed;
+    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
+                                                          &parsed, &callback));
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("[1]", ValueToString(*parsed));
+    EXPECT_TRUE(callback.IsEmpty());
+  }
+
+  {
+    // Test with providing something completely different than the spec, which
+    // is (unfortunately) allowed and used.
+    auto signature = OneString();
+    std::vector<v8::Local<v8::Value>> v8_args =
+        string_to_v8_vector("[{not: 'a string'}]");
+    v8::Local<v8::Function> callback;
+    std::unique_ptr<base::ListValue> parsed;
+    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
+                                                          &parsed, &callback));
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ(R"([{"not":"a string"}])", ValueToString(*parsed));
+    EXPECT_TRUE(callback.IsEmpty());
+  }
 }
 
 }  // namespace extensions
