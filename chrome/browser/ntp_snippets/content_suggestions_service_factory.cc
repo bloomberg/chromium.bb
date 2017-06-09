@@ -16,6 +16,9 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
+#include "chrome/browser/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/gcm/instance_id/instance_id_profile_service.h"
+#include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
@@ -394,6 +397,10 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
+#if defined(OS_ANDROID)
+  DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
+  DependsOn(instance_id::InstanceIDProfileServiceFactory::GetInstance());
+#endif  // defined(OS_ANDROID)
 }
 
 ContentSuggestionsServiceFactory::~ContentSuggestionsServiceFactory() = default;

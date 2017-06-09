@@ -84,5 +84,8 @@ const char kClickBasedCategoryRankerLastDecayTime[] =
 const char kContentSuggestionsSubscriptionDataToken[] =
     "ntp_suggestions.content_suggestions_subscription_data.token";
 
+const char kContentSuggestionsGCMSubscriptionTokenCache[] =
+    "ntp_suggestions.content_suggestions_gcm_subscription_token_cache";
+
 }  // namespace prefs
 }  // namespace ntp_snippets
