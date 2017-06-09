@@ -25,7 +25,7 @@ class CompletedByteStreamReader : public ByteStreamReader {
     return ByteStreamReader::STREAM_COMPLETE;
   }
   int GetStatus() const override { return status_; }
-  void RegisterCallback(const base::Closure& sink_callback) override {};
+  void RegisterCallback(const base::Closure& sink_callback) override {}
 
  private:
   int status_;

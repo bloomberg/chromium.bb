@@ -33,7 +33,7 @@ namespace {
 class DeletingTestViewsDelegate : public views::TestViewsDelegate {
  public:
   DeletingTestViewsDelegate() : menu_runner_(nullptr) {}
-  ~DeletingTestViewsDelegate() override{};
+  ~DeletingTestViewsDelegate() override {}
 
   void set_menu_runner(views::internal::MenuRunnerImpl* menu_runner) {
     menu_runner_ = menu_runner;

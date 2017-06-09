@@ -55,7 +55,7 @@ class OffscreenBrowserCompositorOutputSurface
   // BrowserCompositorOutputSurface implementation.
   void OnReflectorChanged() override;
 #if defined(OS_MACOSX)
-  void SetSurfaceSuspendedForRecycle(bool suspended) override {};
+  void SetSurfaceSuspendedForRecycle(bool suspended) override {}
 #endif
 
   void OnSwapBuffersComplete(const std::vector<ui::LatencyInfo>& latency_info);

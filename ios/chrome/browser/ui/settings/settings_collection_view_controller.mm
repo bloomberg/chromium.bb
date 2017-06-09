@@ -137,7 +137,7 @@ class SigninObserverBridge : public SigninManagerBase::Observer {
  public:
   SigninObserverBridge(ios::ChromeBrowserState* browserState,
                        SettingsCollectionViewController* owner);
-  ~SigninObserverBridge() override{};
+  ~SigninObserverBridge() override {}
 
   // SigninManagerBase::Observer implementation:
   void GoogleSigninSucceeded(const std::string& account_id,

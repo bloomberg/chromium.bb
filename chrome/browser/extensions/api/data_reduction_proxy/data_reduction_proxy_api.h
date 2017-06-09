@@ -18,7 +18,7 @@ namespace extensions {
 class DataReductionProxyClearDataSavingsFunction
     : public UIThreadExtensionFunction {
  private:
-  ~DataReductionProxyClearDataSavingsFunction() override {};
+  ~DataReductionProxyClearDataSavingsFunction() override {}
 
   DECLARE_EXTENSION_FUNCTION("dataReductionProxy.clearDataSavings",
                              DATAREDUCTIONPROXY_CLEARDATASAVINGS)
@@ -29,7 +29,7 @@ class DataReductionProxyClearDataSavingsFunction
 class DataReductionProxyGetDataUsageFunction
     : public UIThreadExtensionFunction {
  private:
-  ~DataReductionProxyGetDataUsageFunction() override{};
+  ~DataReductionProxyGetDataUsageFunction() override {}
 
   DECLARE_EXTENSION_FUNCTION("dataReductionProxy.getDataUsage",
                              DATAREDUCTIONPROXY_GETDATAUSAGE)

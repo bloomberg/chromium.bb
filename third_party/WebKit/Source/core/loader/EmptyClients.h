@@ -152,7 +152,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   bool HasOpenedPopup() const override { return false; }
   PopupMenu* OpenPopupMenu(LocalFrame&, HTMLSelectElement&) override;
   PagePopup* OpenPagePopup(PagePopupClient*) override { return nullptr; }
-  void ClosePagePopup(PagePopup*) override{};
+  void ClosePagePopup(PagePopup*) override {}
   DOMWindow* PagePopupWindowForTesting() const override { return nullptr; }
 
   bool TabsToLinks() override { return false; }

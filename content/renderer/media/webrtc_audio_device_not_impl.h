@@ -114,7 +114,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
 #endif  // OS_IOS
 
  protected:
-  ~WebRtcAudioDeviceNotImpl() override{};
+  ~WebRtcAudioDeviceNotImpl() override {}
 
  private:
   base::TimeTicks last_process_time_;

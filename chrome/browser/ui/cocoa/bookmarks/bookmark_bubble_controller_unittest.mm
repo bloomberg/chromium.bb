@@ -56,7 +56,7 @@ NSString* const kDoneTouchBarId = @"DONE";
 class TestBookmarkBubbleObserver : public BookmarkBubbleObserver {
  public:
   TestBookmarkBubbleObserver() {}
-  ~TestBookmarkBubbleObserver() override{};
+  ~TestBookmarkBubbleObserver() override {}
 
   // bookmarks::BookmarkBubbleObserver.
   void OnBookmarkBubbleShown(const BookmarkNode* node) override {

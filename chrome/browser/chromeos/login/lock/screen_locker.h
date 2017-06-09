@@ -206,10 +206,10 @@ class ScreenLocker : public AuthStatusConsumer,
       const std::unordered_map<std::string, std::vector<std::string>>& matches)
       override;
   void OnSessionFailed() override;
-  void OnRestarted() override{};
+  void OnRestarted() override {}
   void OnEnrollScanDone(uint32_t scan_result,
                         bool enroll_session_complete,
-                        int percent_complete) override{};
+                        int percent_complete) override {}
 
   void OnFingerprintAuthFailure(const user_manager::User& user);
 

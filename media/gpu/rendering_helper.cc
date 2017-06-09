@@ -131,7 +131,7 @@ class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
 
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override {}
 
-  void OnLostCapture() override{};
+  void OnLostCapture() override {}
 
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
                                     float device_pixel_ratio) override {
@@ -140,7 +140,7 @@ class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
 
   void OnAcceleratedWidgetDestroyed() override { NOTREACHED(); }
 
-  void OnActivationChanged(bool active) override{};
+  void OnActivationChanged(bool active) override {}
 
   gfx::AcceleratedWidget accelerated_widget() const {
     return accelerated_widget_;

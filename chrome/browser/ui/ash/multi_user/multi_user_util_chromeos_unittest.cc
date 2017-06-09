@@ -53,7 +53,7 @@ class MultiUserTestingProfile : public TestingProfile {
 class MultiUserUtilTest : public AshTestBase {
  public:
   MultiUserUtilTest() {}
-  ~MultiUserUtilTest() override{};
+  ~MultiUserUtilTest() override {}
 
   void SetUp() override {
     AshTestBase::SetUp();

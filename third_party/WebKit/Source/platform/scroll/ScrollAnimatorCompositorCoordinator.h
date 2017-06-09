@@ -148,7 +148,7 @@ class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
   void NotifyAnimationAborted(double monotonic_time, int group) override;
   void NotifyAnimationTakeover(double monotonic_time,
                                double animation_start_time,
-                               std::unique_ptr<cc::AnimationCurve>) override{};
+                               std::unique_ptr<cc::AnimationCurve>) override {}
 
   // CompositorAnimationPlayerClient implementation.
   CompositorAnimationPlayer* CompositorPlayer() const override;

@@ -34,7 +34,7 @@ using browsing_data::HistoryCounter;
 class HistoryCounterTest : public InProcessBrowserTest {
  public:
   HistoryCounterTest() {}
-  ~HistoryCounterTest() override {};
+  ~HistoryCounterTest() override {}
 
   void SetUpOnMainThread() override {
     time_ = base::Time::Now();

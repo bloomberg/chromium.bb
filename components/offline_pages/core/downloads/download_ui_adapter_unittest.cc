@@ -60,7 +60,7 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
   bool IsTemporarilyHiddenInUI(const ClientId& client_id) override {
     return is_temporarily_hidden;
   }
-  void SetUIAdapter(DownloadUIAdapter* ui_adapter) override{};
+  void SetUIAdapter(DownloadUIAdapter* ui_adapter) override {}
 
   bool is_visible = true;
   bool is_temporarily_hidden = false;

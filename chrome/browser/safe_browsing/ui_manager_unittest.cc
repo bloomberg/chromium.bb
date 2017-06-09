@@ -70,7 +70,7 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   SafeBrowsingUIManagerTest() : ui_manager_(new SafeBrowsingUIManager(NULL)) {}
 
-  ~SafeBrowsingUIManagerTest() override{};
+  ~SafeBrowsingUIManagerTest() override {}
 
   void SetUp() override {
     SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);

@@ -54,9 +54,9 @@ class NativeAppInfoBarControllerTest : public PlatformTest {
 
   class MockInfobarViewDelegate : public InfoBarViewDelegate {
    public:
-    void SetInfoBarTargetHeight(int height) override{};
-    void InfoBarDidCancel() override{};
-    void InfoBarButtonDidPress(NSUInteger button_id) override{};
+    void SetInfoBarTargetHeight(int height) override {}
+    void InfoBarDidCancel() override {}
+    void InfoBarButtonDidPress(NSUInteger button_id) override {}
   };
 
  protected:

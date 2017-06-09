@@ -1608,8 +1608,8 @@ namespace {
 
 class TestObserver : public wm::WindowStateObserver {
  public:
-  TestObserver(){};
-  ~TestObserver() override{};
+  TestObserver() {}
+  ~TestObserver() override {}
 
   // wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,

@@ -14,7 +14,7 @@ class FakeTaskImpl : public Task {
   FakeTaskImpl() {}
 
   // Overridden from Task:
-  void RunOnWorkerThread() override{};
+  void RunOnWorkerThread() override {}
 
  private:
   ~FakeTaskImpl() override {}

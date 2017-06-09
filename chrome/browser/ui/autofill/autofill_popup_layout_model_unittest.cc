@@ -35,7 +35,7 @@ class TestAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
         container_view_(web_contents->GetNativeView()) {}
 
   void Hide() override {}
-  void ViewDestroyed() override{};
+  void ViewDestroyed() override {}
   void SetSelectionAtPoint(const gfx::Point& point) override {}
   bool AcceptSelectedLine() override { return true; }
   void SelectionCleared() override {}

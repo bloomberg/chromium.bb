@@ -79,7 +79,7 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   explicit SpotlightBookmarkModelBridge(BookmarksSpotlightManager* owner)
       : owner_(owner){};
 
-  ~SpotlightBookmarkModelBridge() override{};
+  ~SpotlightBookmarkModelBridge() override {}
 
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* parent,
@@ -133,7 +133,7 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   void BookmarkNodeChildrenReordered(
       bookmarks::BookmarkModel* model,
-      const bookmarks::BookmarkNode* node) override{};
+      const bookmarks::BookmarkNode* node) override {}
 
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* old_parent,

@@ -921,7 +921,7 @@ void InstallLoadingInterceptor(const std::string& host) {
 class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
  public:
   SecurityStateLoadingTest() : SecurityStateTabHelperTest() {}
-  ~SecurityStateLoadingTest() override{};
+  ~SecurityStateLoadingTest() override {}
 
  protected:
   void SetUpOnMainThread() override {

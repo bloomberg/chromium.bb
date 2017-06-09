@@ -2960,7 +2960,7 @@ class DisplayManagerOrientationTest : public DisplayManagerTest {
 class TestObserver : public ScreenOrientationController::Observer {
  public:
   TestObserver() {}
-  ~TestObserver() override{};
+  ~TestObserver() override {}
 
   void OnUserRotationLockChanged() override { count_++; }
 

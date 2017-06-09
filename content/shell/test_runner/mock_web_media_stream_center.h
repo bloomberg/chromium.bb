@@ -17,7 +17,7 @@ namespace test_runner {
 class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
  public:
   MockWebMediaStreamCenter() = default;
-  ~MockWebMediaStreamCenter() override{};
+  ~MockWebMediaStreamCenter() override {}
 
   void DidEnableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;

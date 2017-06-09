@@ -73,7 +73,7 @@ class TestWebResourceService : public WebResourceService {
                            parse_json_callback,
                            TRAFFIC_ANNOTATION_FOR_TESTS){};
 
-  void Unpack(const base::DictionaryValue& parsed_json) override{};
+  void Unpack(const base::DictionaryValue& parsed_json) override {}
 };
 
 class WebResourceServiceTest : public testing::Test {
