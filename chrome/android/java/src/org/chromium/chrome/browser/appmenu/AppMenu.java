@@ -159,7 +159,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     void show(Context context, final View anchorView, boolean isByPermanentButton,
             int screenRotation, Rect visibleDisplayFrame, int screenHeight,
             @IdRes int footerResourceId, Integer highlightedItemId) {
-        mPopup = new PopupWindow(context, null, android.R.attr.popupMenuStyle);
+        mPopup = new PopupWindow(context);
         mPopup.setFocusable(true);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
 
