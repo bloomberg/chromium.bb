@@ -188,6 +188,10 @@ const char kHistogramFailedProvisionalLoad[] =
 
 const char kHistogramForegroundToFirstPaint[] =
     "PageLoad.PaintTiming.ForegroundToFirstPaint";
+const char kHistogramForegroundToFirstContentfulPaint[] =
+    "PageLoad.PaintTiming.ForegroundToFirstContentfulPaint";
+const char kHistogramForegroundToFirstMeaningfulPaint[] =
+    "PageLoad.Experimental.PaintTiming.ForegroundToFirstMeaningfulPaint";
 
 const char kHistogramCacheRequestPercentParseStop[] =
     "PageLoad.Experimental.Cache.RequestPercent.ParseStop";
@@ -338,16 +342,8 @@ void CorePageLoadMetricsObserver::OnFirstPaintInPage(
                         timing.paint_timing->first_paint.value());
   }
 
-  // Record the time to first paint for pages which were:
-  // - Opened in the background.
-  // - Moved to the foreground prior to the first paint.
-  // - Not moved back to the background prior to the first paint.
-  if (!info.started_in_foreground && info.first_foreground_time &&
-      info.first_foreground_time.value() <=
-          timing.paint_timing->first_paint.value() &&
-      (!info.first_background_time ||
-       timing.paint_timing->first_paint.value() <=
-           info.first_background_time.value())) {
+  if (WasStartedInBackgroundOptionalEventInForeground(
+          timing.paint_timing->first_paint, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramForegroundToFirstPaint,
                         timing.paint_timing->first_paint.value() -
                             info.first_foreground_time.value());
@@ -470,6 +466,13 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         timing.paint_timing->first_contentful_paint.value() -
             timing.parse_timing->parse_start.value());
   }
+
+  if (WasStartedInBackgroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramForegroundToFirstContentfulPaint,
+                        timing.paint_timing->first_contentful_paint.value() -
+                            info.first_foreground_time.value());
+  }
 }
 
 void CorePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
@@ -494,6 +497,13 @@ void CorePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
     } else {
       RecordFirstMeaningfulPaintStatus(
           internal::FIRST_MEANINGFUL_PAINT_BACKGROUNDED);
+    }
+
+    if (WasStartedInBackgroundOptionalEventInForeground(
+            timing.paint_timing->first_meaningful_paint, info)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramForegroundToFirstMeaningfulPaint,
+                          timing.paint_timing->first_meaningful_paint.value() -
+                              info.first_foreground_time.value());
     }
   } else {
     RecordFirstMeaningfulPaintStatus(

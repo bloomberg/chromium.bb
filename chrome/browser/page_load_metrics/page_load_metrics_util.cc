@@ -51,6 +51,15 @@ bool WasStartedInForegroundOptionalEventInForeground(
           event.value() <= info.first_background_time.value());
 }
 
+bool WasStartedInBackgroundOptionalEventInForeground(
+    const base::Optional<base::TimeDelta>& event,
+    const PageLoadExtraInfo& info) {
+  return !info.started_in_foreground && event && info.first_foreground_time &&
+         info.first_foreground_time.value() <= event.value() &&
+         (!info.first_background_time ||
+          event.value() <= info.first_background_time.value());
+}
+
 PageAbortInfo GetPageAbortInfo(const PageLoadExtraInfo& info) {
   if (IsBackgroundAbort(info)) {
     // Though most cases where a tab is backgrounded are user initiated, we

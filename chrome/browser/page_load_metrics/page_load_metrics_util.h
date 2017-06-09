@@ -105,6 +105,15 @@ bool WasStartedInForegroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
     const PageLoadExtraInfo& info);
 
+// Returns true if:
+// - We have timing information for the event.
+// - The page load started in the background.
+// - Moved to the foreground prior to the event.
+// - Not moved back to the background prior to the event.
+bool WasStartedInBackgroundOptionalEventInForeground(
+    const base::Optional<base::TimeDelta>& event,
+    const PageLoadExtraInfo& info);
+
 PageAbortInfo GetPageAbortInfo(const PageLoadExtraInfo& info);
 
 // Get the duration of time that the page spent in the foreground, from
