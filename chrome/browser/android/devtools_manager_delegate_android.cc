@@ -188,9 +188,7 @@ base::DictionaryValue* DevToolsManagerDelegateAndroid::HandleCommand(
 }
 
 std::string DevToolsManagerDelegateAndroid::GetTargetType(
-    content::RenderFrameHost* host) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(host);
+    content::WebContents* web_contents) {
   TabAndroid* tab = web_contents ? TabAndroid::FromWebContents(web_contents)
       : nullptr;
   return tab ? DevToolsAgentHost::kTypePage :

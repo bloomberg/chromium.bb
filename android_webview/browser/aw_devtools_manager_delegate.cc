@@ -14,7 +14,6 @@
 #include "content/public/browser/web_contents.h"
 
 using content::DevToolsAgentHost;
-using content::RenderFrameHost;
 
 namespace android_webview {
 
@@ -25,9 +24,7 @@ AwDevToolsManagerDelegate::~AwDevToolsManagerDelegate() {
 }
 
 std::string AwDevToolsManagerDelegate::GetTargetDescription(
-    RenderFrameHost* host) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(host);
+    content::WebContents* web_contents) {
   android_webview::BrowserViewRenderer* bvr =
       android_webview::BrowserViewRenderer::FromWebContents(web_contents);
   if (!bvr)

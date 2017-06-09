@@ -25,7 +25,6 @@ class ChromeDevToolsManagerDelegate :
  public:
   static char kTypeApp[];
   static char kTypeBackgroundPage[];
-  static char kTypeWebView[];
 
   ChromeDevToolsManagerDelegate();
   ~ChromeDevToolsManagerDelegate() override;
@@ -40,8 +39,8 @@ class ChromeDevToolsManagerDelegate :
   base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
       base::DictionaryValue* command_dict) override;
-  std::string GetTargetType(content::RenderFrameHost* host) override;
-  std::string GetTargetTitle(content::RenderFrameHost* host) override;
+  std::string GetTargetType(content::WebContents* web_contents) override;
+  std::string GetTargetTitle(content::WebContents* web_contents) override;
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
       const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;

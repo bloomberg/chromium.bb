@@ -23,7 +23,7 @@ class AwDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   ~AwDevToolsManagerDelegate() override;
 
   // content::DevToolsManagerDelegate implementation.
-  std::string GetTargetDescription(content::RenderFrameHost* host) override;
+  std::string GetTargetDescription(content::WebContents* web_contents) override;
   std::string GetDiscoveryPageHTML() override;
 
  private:

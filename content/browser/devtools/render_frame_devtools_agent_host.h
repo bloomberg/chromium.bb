@@ -44,6 +44,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       private WebContentsObserver {
  public:
   static void AddAllAgentHosts(DevToolsAgentHost::List* result);
+  static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
+      FrameTreeNode* frame_tree_node);
 
   static void OnCancelPendingNavigation(RenderFrameHost* pending,
                                         RenderFrameHost* current);
@@ -64,8 +66,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static void SignalSynchronousSwapCompositorFrame(
       RenderFrameHost* frame_host,
       cc::CompositorFrameMetadata frame_metadata);
-
-  bool HasRenderFrameHost(RenderFrameHost* host);
 
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
@@ -88,14 +88,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
  private:
   friend class DevToolsAgentHost;
-  explicit RenderFrameDevToolsAgentHost(RenderFrameHostImpl*);
+  explicit RenderFrameDevToolsAgentHost(FrameTreeNode*);
   ~RenderFrameDevToolsAgentHost() override;
-
-  static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
-      RenderFrameHostImpl* host);
-  static void AppendAgentHostForFrameIfApplicable(
-      DevToolsAgentHost::List* result,
-      RenderFrameHost* host);
 
   // DevToolsAgentHostImpl overrides.
   void AttachSession(DevToolsSession* session) override;
@@ -150,8 +144,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   bool CheckConsistency();
 
-  void UpdateTypeAndTitle(RenderFrameHost* host);
-
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
 #endif
@@ -173,8 +165,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 #endif
   RenderFrameHostImpl* handlers_frame_host_;
   bool current_frame_crashed_;
-  std::string type_;
-  std::string title_;
 
   // PlzNavigate
 

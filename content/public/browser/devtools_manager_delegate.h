@@ -19,21 +19,21 @@ class DictionaryValue;
 
 namespace content {
 
-class RenderFrameHost;
+class WebContents;
 
 class CONTENT_EXPORT DevToolsManagerDelegate {
  public:
   // Opens the inspector for |agent_host|.
   virtual void Inspect(DevToolsAgentHost* agent_host);
 
-  // Returns DevToolsAgentHost type to use for given |host| target.
-  virtual std::string GetTargetType(RenderFrameHost* host);
+  // Returns DevToolsAgentHost type to use for given |web_contents| target.
+  virtual std::string GetTargetType(WebContents* web_contents);
 
-  // Returns DevToolsAgentHost title to use for given |host| target.
-  virtual std::string GetTargetTitle(RenderFrameHost* host);
+  // Returns DevToolsAgentHost title to use for given |web_contents| target.
+  virtual std::string GetTargetTitle(WebContents* web_contents);
 
-  // Returns DevToolsAgentHost title to use for given |host| target.
-  virtual std::string GetTargetDescription(RenderFrameHost* host);
+  // Returns DevToolsAgentHost title to use for given |web_contents| target.
+  virtual std::string GetTargetDescription(WebContents* web_contents);
 
   // Returns all targets embedder would like to report as debuggable
   // remotely.

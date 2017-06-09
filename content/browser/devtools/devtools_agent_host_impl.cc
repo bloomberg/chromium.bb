@@ -43,6 +43,7 @@ char DevToolsAgentHost::kTypeSharedWorker[] = "shared_worker";
 char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
 char DevToolsAgentHost::kTypeExternal[] = "external";
 char DevToolsAgentHost::kTypeBrowser[] = "browser";
+char DevToolsAgentHost::kTypeGuest[] = "webview";
 char DevToolsAgentHost::kTypeOther[] = "other";
 int DevToolsAgentHostImpl::s_attached_count_ = 0;
 int DevToolsAgentHostImpl::s_force_creation_count_ = 0;

@@ -37,7 +37,6 @@ using content::DevToolsAgentHost;
 
 char ChromeDevToolsManagerDelegate::kTypeApp[] = "app";
 char ChromeDevToolsManagerDelegate::kTypeBackgroundPage[] = "background_page";
-char ChromeDevToolsManagerDelegate::kTypeWebView[] = "webview";
 
 namespace {
 
@@ -82,18 +81,14 @@ std::unique_ptr<base::DictionaryValue> GetBounds(BrowserWindow* window) {
   return bounds_object;
 }
 
-bool GetExtensionInfo(content::RenderFrameHost* host,
+bool GetExtensionInfo(content::WebContents* wc,
                       std::string* name,
                       std::string* type) {
-  content::WebContents* wc = content::WebContents::FromRenderFrameHost(host);
-  if (!wc)
-    return false;
   Profile* profile = Profile::FromBrowserContext(wc->GetBrowserContext());
   if (!profile)
     return false;
   const extensions::Extension* extension =
-      extensions::ProcessManager::Get(profile)->GetExtensionForRenderFrameHost(
-          host);
+      extensions::ProcessManager::Get(profile)->GetExtensionForWebContents(wc);
   if (!extension)
     return false;
   extensions::ExtensionHost* extension_host =
@@ -343,20 +338,7 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(
-    content::RenderFrameHost* host) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(host);
-
-  guest_view::GuestViewBase* guest =
-      guest_view::GuestViewBase::FromWebContents(web_contents);
-  content::WebContents* guest_contents =
-      guest ? guest->embedder_web_contents() : nullptr;
-  if (guest_contents)
-    return kTypeWebView;
-
-  if (host->GetParent())
-    return DevToolsAgentHost::kTypeFrame;
-
+    content::WebContents* web_contents) {
   for (TabContentsIterator it; !it.done(); it.Next()) {
     if (*it == web_contents)
       return DevToolsAgentHost::kTypePage;
@@ -364,16 +346,16 @@ std::string ChromeDevToolsManagerDelegate::GetTargetType(
 
   std::string extension_name;
   std::string extension_type;
-  if (!GetExtensionInfo(host, &extension_name, &extension_type))
+  if (!GetExtensionInfo(web_contents, &extension_name, &extension_type))
     return DevToolsAgentHost::kTypeOther;
   return extension_type;
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetTitle(
-    content::RenderFrameHost* host) {
+    content::WebContents* web_contents) {
   std::string extension_name;
   std::string extension_type;
-  if (!GetExtensionInfo(host, &extension_name, &extension_type))
+  if (!GetExtensionInfo(web_contents, &extension_name, &extension_type))
     return std::string();
   return extension_name;
 }
