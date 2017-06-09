@@ -26,6 +26,8 @@ def _CreatePageClassWithSmoothInteractions(page_cls):
 class TopSmoothPage(page_module.Page):
 
   def __init__(self, url, page_set, name='', credentials=None):
+    if name == '':
+      name = url
     super(TopSmoothPage, self).__init__(
         url=url, page_set=page_set, name=name,
         shared_page_state_class=shared_page_state.SharedDesktopPageState,
@@ -112,7 +114,8 @@ class Top25SmoothPageSet(story.StorySet):
   def __init__(self, techcrunch=True):
     super(Top25SmoothPageSet, self).__init__(
         archive_data_file='data/top_25_smooth.json',
-        cloud_storage_bucket=story.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET,
+        verify_names=True)
 
     desktop_state_class = shared_page_state.SharedDesktopPageState
 

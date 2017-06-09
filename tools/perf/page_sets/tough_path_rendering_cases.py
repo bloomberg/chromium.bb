@@ -28,7 +28,8 @@ class ToughPathRenderingCasesPageSet(story.StorySet):
   def __init__(self):
     super(ToughPathRenderingCasesPageSet, self).__init__(
       archive_data_file='data/tough_path_rendering_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET,
+      verify_names=True)
 
     page_list = [
       ('GUIMark Vector Chart Test',
@@ -45,5 +46,7 @@ class ToughPathRenderingCasesPageSet(story.StorySet):
 
     # Chalkboard content linked from
     # http://ie.microsoft.com/testdrive/Performance/Chalkboard/.
-    self.AddStory(ChalkboardPage(
-        'https://testdrive-archive.azurewebsites.net/performance/chalkboard/', self))
+    chalkboard_url = ('https://testdrive-archive.azurewebsites.net'
+                      '/performance/chalkboard/')
+    name = 'IE Chalkboard'
+    self.AddStory(ChalkboardPage(chalkboard_url, self, name=name))

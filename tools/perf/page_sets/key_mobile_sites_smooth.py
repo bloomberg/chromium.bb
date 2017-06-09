@@ -25,6 +25,8 @@ class KeyMobileSitesSmoothPage(page_module.Page):
 
   def __init__(self, url, page_set, name='', tags=None,
                action_on_load_complete=False):
+    if name == '':
+      name = url
     super(KeyMobileSitesSmoothPage, self).__init__(
         url=url, page_set=page_set, name=name,
         credentials_path='data/credentials.json', tags=tags,
@@ -141,7 +143,8 @@ class KeyMobileSitesSmoothPageSet(story.StorySet):
   def __init__(self):
     super(KeyMobileSitesSmoothPageSet, self).__init__(
       archive_data_file='data/key_mobile_sites_smooth.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET,
+      verify_names=True)
 
 
     # Add pages with predefined classes that contain custom navigation logic.
