@@ -28,6 +28,14 @@ namespace content {
 #define MAYBE_GetTrackCapabilities DISABLED_GetTrackCapabilities
 #define MAYBE_GetTrackSettings DISABLED_GetTrackSettings
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
+#elif defined(OS_ANDROID)
+#define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
+#define MAYBE_TakePhoto TakePhoto
+#define MAYBE_GrabFrame GrabFrame
+// TODO(mcasas): these fail on Android devices: https://crbug.com/731904.
+#define MAYBE_GetTrackCapabilities DISABLED_GetTrackCapabilities
+#define MAYBE_GetTrackSettings DISABLED_GetTrackSettings
+#define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
 #else
 #define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
 #define MAYBE_TakePhoto TakePhoto
