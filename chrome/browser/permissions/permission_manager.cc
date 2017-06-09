@@ -34,9 +34,9 @@
 #include "device/vr/features/features.h"
 #include "ppapi/features/features.h"
 
-#if BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 #include "chrome/browser/android/vr_shell/vr_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_VR)
+#endif  // BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/flash_permission_context.h"
@@ -288,13 +288,13 @@ int PermissionManager::RequestPermissions(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
 
-#if BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
   if (vr_shell::VrTabHelper::IsInVr(web_contents)) {
     callback.Run(
         std::vector<ContentSetting>(permissions.size(), CONTENT_SETTING_BLOCK));
     return kNoPendingOperation;
   }
-#endif  // BUILDFLAG(ENABLE_VR)
+#endif  // BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
