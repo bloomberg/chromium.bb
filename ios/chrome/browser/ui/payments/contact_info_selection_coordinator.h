@@ -9,6 +9,7 @@
 #include <vector>
 
 #import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/payments/contact_info_edit_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
 
 class PaymentRequest;
@@ -38,7 +39,8 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
 // selection view controller. This view controller will be presented by the view
 // controller provided in the initializer.
 @interface ContactInfoSelectionCoordinator
-    : ChromeCoordinator<PaymentRequestSelectorViewControllerDelegate>
+    : ChromeCoordinator<PaymentRequestSelectorViewControllerDelegate,
+                        ContactInfoEditCoordinatorDelegate>
 
 // The PaymentRequest object having a copy of web::PaymentRequest as provided by
 // the page invoking the Payment Request API. This pointer is not owned by this

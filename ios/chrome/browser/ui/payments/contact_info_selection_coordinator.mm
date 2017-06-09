@@ -28,6 +28,9 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 @interface ContactInfoSelectionCoordinator ()
 
 @property(nonatomic, strong)
+    ContactInfoEditCoordinator* contactInfoEditCoordinator;
+
+@property(nonatomic, strong)
     PaymentRequestSelectorViewController* viewController;
 
 @property(nonatomic, strong) ContactInfoSelectionMediator* mediator;
@@ -44,6 +47,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 @synthesize paymentRequest = _paymentRequest;
 @synthesize delegate = _delegate;
+@synthesize contactInfoEditCoordinator = _contactInfoEditCoordinator;
 @synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
 
@@ -66,6 +70,8 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 - (void)stop {
   [self.baseViewController.navigationController popViewControllerAnimated:YES];
+  [self.contactInfoEditCoordinator stop];
+  self.contactInfoEditCoordinator = nil;
   self.viewController = nil;
   self.mediator = nil;
 }
@@ -90,7 +96,29 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 - (void)paymentRequestSelectorViewControllerDidSelectAddItem:
     (PaymentRequestSelectorViewController*)controller {
-  // TODO(crbug.com/602666): Display contact info editor.
+  self.contactInfoEditCoordinator = [[ContactInfoEditCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+  self.contactInfoEditCoordinator.paymentRequest = self.paymentRequest;
+  self.contactInfoEditCoordinator.delegate = self;
+  [self.contactInfoEditCoordinator start];
+}
+
+#pragma mark - ContactInfoEditCoordinatorDelegate
+
+- (void)contactInfoEditCoordinator:(ContactInfoEditCoordinator*)coordinator
+           didFinishEditingProfile:(autofill::AutofillProfile*)profile {
+  [self.contactInfoEditCoordinator stop];
+  self.contactInfoEditCoordinator = nil;
+
+  // Inform |self.delegate| that |profile| has been selected.
+  [self.delegate contactInfoSelectionCoordinator:self
+                         didSelectContactProfile:profile];
+}
+
+- (void)contactInfoEditCoordinatorDidCancel:
+    (ContactInfoEditCoordinator*)coordinator {
+  [self.contactInfoEditCoordinator stop];
+  self.contactInfoEditCoordinator = nil;
 }
 
 #pragma mark - Helper methods

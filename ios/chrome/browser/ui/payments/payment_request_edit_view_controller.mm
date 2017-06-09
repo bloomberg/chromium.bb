@@ -548,7 +548,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (field.fieldType == EditorFieldTypeSelector)
     [[_currentEditingCell textField] resignFirstResponder];
 
-  [_delegate paymentRequestEditViewController:self didSelectField:field];
+  if ([self.delegate respondsToSelector:@selector
+                     (paymentRequestEditViewController:didSelectField:)]) {
+    [_delegate paymentRequestEditViewController:self didSelectField:field];
+  }
 }
 
 #pragma mark MDCCollectionViewStylingDelegate
