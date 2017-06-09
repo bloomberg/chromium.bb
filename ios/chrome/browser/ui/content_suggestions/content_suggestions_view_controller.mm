@@ -204,8 +204,12 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 // is fixed. For now hidding the ink prevent cell interaction.
 - (UIColor*)collectionView:(UICollectionView*)collectionView
        inkColorAtIndexPath:(NSIndexPath*)indexPath {
+  ContentSuggestionType itemType = [self.collectionUpdater
+      contentSuggestionTypeForItem:[self.collectionViewModel
+                                       itemAtIndexPath:indexPath]];
   if ([self.collectionUpdater
-          shouldUseCustomStyleForSection:indexPath.section]) {
+          shouldUseCustomStyleForSection:indexPath.section] ||
+      itemType == ContentSuggestionTypeEmpty) {
     return [UIColor clearColor];
   }
   return nil;
