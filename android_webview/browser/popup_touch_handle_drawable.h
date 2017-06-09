@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_POPUP_TOUCH_HANDLE_DRAWABLE_H_
-#define CONTENT_BROWSER_ANDROID_POPUP_TOUCH_HANDLE_DRAWABLE_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_POPUP_TOUCH_HANDLE_DRAWABLE_H_
+#define ANDROID_WEBVIEW_BROWSER_POPUP_TOUCH_HANDLE_DRAWABLE_H_
 
 #include "ui/touch_selection/touch_handle.h"
 
@@ -43,6 +43,6 @@ class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
   DISALLOW_COPY_AND_ASSIGN(PopupTouchHandleDrawable);
 };
 
-}  // namespace content
+}  // namespace android_webview
 
-#endif  // CONTENT_BROWSER_ANDROID_POPUP_TOUCH_HANDLE_DRAWABLE_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_POPUP_TOUCH_HANDLE_DRAWABLE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_CRASH_REPORTER_AW_MICRODUMP_CRASH_REPORTER_H_
-#define ANDROID_WEBVIEW_CRASH_REPORTER_AW_MICRODUMP_CRASH_REPORTER_H_
+#ifndef ANDROID_WEBVIEW_COMMON_CRASH_REPORTER_AW_MICRODUMP_CRASH_REPORTER_H_
+#define ANDROID_WEBVIEW_COMMON_CRASH_REPORTER_AW_MICRODUMP_CRASH_REPORTER_H_
 
 #include <string>
 
@@ -24,4 +24,4 @@ void SuppressDumpGeneration();
 }  // namespace crash_reporter
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_CRASH_REPORTER_AW_MICRODUMP_CRASH_REPORTER_H_
+#endif  // ANDROID_WEBVIEW_COMMON_CRASH_REPORTER_AW_MICRODUMP_CRASH_REPORTER_H_

@@ -629,4 +629,4 @@ bool RegisterCookieManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // android_webview namespace
+}  // namespace android_webview

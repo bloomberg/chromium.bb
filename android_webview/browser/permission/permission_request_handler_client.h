@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_PERMISSION_REQUEST_HANDLER_CLIENT_H
-#define ANDROID_WEBVIEW_NATIVE_PERMISSION_PERMISSION_REQUEST_HANDLER_CLIENT_H
+#ifndef ANDROID_WEBVIEW_BROWSER_PERMISSION_PERMISSION_REQUEST_HANDLER_CLIENT_H_
+#define ANDROID_WEBVIEW_BROWSER_PERMISSION_PERMISSION_REQUEST_HANDLER_CLIENT_H_
 
 #include "base/android/scoped_java_ref.h"
 
@@ -22,6 +22,6 @@ class PermissionRequestHandlerClient {
   virtual void OnPermissionRequestCanceled(AwPermissionRequest* request) = 0;
 };
 
-}  // namespace android_webivew
+}  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_PERMISSION_PERMISSION_REQUEST_HANDLER_CLIENT_H
+#endif  // ANDROID_WEBVIEW_BROWSER_PERMISSION_PERMISSION_REQUEST_HANDLER_CLIENT_H_

@@ -45,7 +45,7 @@ class TestBrowserViewRenderer : public BrowserViewRenderer {
  private:
   RenderingTest* const rendering_test_;
 };
-}
+}  // namespace
 
 RenderingTest::RenderingTest() : message_loop_(new base::MessageLoop) {
   // TODO(boliu): Update unit tests to async code path.

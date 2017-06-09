@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_DUMP_BROWSER_TERMINATOR_H_
-#define COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_DUMP_BROWSER_TERMINATOR_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_AW_BROWSER_TERMINATOR_H_
+#define ANDROID_WEBVIEW_BROWSER_AW_BROWSER_TERMINATOR_H_
 
 #include <map>
 
@@ -51,6 +51,6 @@ class AwBrowserTerminator : public breakpad::CrashDumpObserver::Client {
   DISALLOW_COPY_AND_ASSIGN(AwBrowserTerminator);
 };
 
-}  // namespace breakpad
+}  // namespace android_webview
 
-#endif  // COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_DUMP_BROWSER_TERMINATOR_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_BROWSER_TERMINATOR_H_

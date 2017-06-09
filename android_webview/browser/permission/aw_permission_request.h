@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_AW_PERMISSION_REQUEST_H
-#define ANDROID_WEBVIEW_NATIVE_PERMISSION_AW_PERMISSION_REQUEST_H
+#ifndef ANDROID_WEBVIEW_BROWSER_PERMISSION_AW_PERMISSION_REQUEST_H_
+#define ANDROID_WEBVIEW_BROWSER_PERMISSION_AW_PERMISSION_REQUEST_H_
 
 #include <stdint.h>
 
@@ -82,6 +82,6 @@ class AwPermissionRequest {
 
 bool RegisterAwPermissionRequest(JNIEnv* env);
 
-}  // namespace android_webivew
+}  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_PERMISSION_AW_PERMISSION_REQUEST_H
+#endif  // ANDROID_WEBVIEW_BROWSER_PERMISSION_AW_PERMISSION_REQUEST_H_

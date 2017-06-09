@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_COMMON_CRASH_KEYS_H_
-#define ANDROID_WEBVIEW_COMMON_CRASH_KEYS_H_
+#ifndef ANDROID_WEBVIEW_COMMON_CRASH_REPORTER_CRASH_KEYS_H_
+#define ANDROID_WEBVIEW_COMMON_CRASH_REPORTER_CRASH_KEYS_H_
 
 #include <stddef.h>
 #include <string>
@@ -37,4 +37,4 @@ extern const char kAndroidSdkInt[];
 }  // namespace crash_keys
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_COMMON_CRASH_KEYS_H_
+#endif  // ANDROID_WEBVIEW_COMMON_CRASH_REPORTER_CRASH_KEYS_H_

@@ -13,4 +13,4 @@ bool RegisterAwContentsStatics(JNIEnv* env);
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_AW_CONTENTS_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_STATICS_H_

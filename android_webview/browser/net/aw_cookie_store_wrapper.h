@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_COOKIE_STORE_WRAPPER_H_
+#define ANDROID_WEBVIEW_BROWSER_NET_AW_COOKIE_STORE_WRAPPER_H_
+
 #include <string>
 
 #include "base/bind.h"
@@ -127,4 +130,6 @@ class AwCookieStoreWrapper : public net::CookieStore {
   base::WeakPtrFactory<AwCookieStoreWrapper> weak_factory_;
 };
 
-}  // namesspace android_webview
+}  // namespace android_webview
+
+#endif  // ANDROID_WEBVIEW_BROWSER_NET_AW_COOKIE_STORE_WRAPPER_H_

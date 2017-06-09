@@ -158,4 +158,4 @@ TEST_F(AwContentsClientBridgeTest,
   EXPECT_EQ(1, cert_selected_callbacks_);
 }
 
-}  // android_webview
+}  // namespace android_webview

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_PRINTING_MESSAGE_FILTER_H_
-#define ANDROID_WEBVIEW_BROWSER_PRINTING_MESSAGE_FILTER_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_AW_PRINTING_MESSAGE_FILTER_H_
+#define ANDROID_WEBVIEW_BROWSER_AW_PRINTING_MESSAGE_FILTER_H_
 
 #include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -42,4 +42,4 @@ class AwPrintingMessageFilter : public content::BrowserMessageFilter {
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_PRINTING_MESSAGE_FILTER_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_PRINTING_MESSAGE_FILTER_H_

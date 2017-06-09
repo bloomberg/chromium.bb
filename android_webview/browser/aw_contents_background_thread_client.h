@@ -21,6 +21,6 @@ class AwContentsBackgroundThreadClient {
       const base::android::JavaRef<jobjectArray>& requestHeaderNames,
       const base::android::JavaRef<jobjectArray>& requestHeaderValues);
 };
-}
+}  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_BACKGROUND_THREAD_CLIENT_H_

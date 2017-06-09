@@ -63,7 +63,7 @@ bool RestoreNavigationEntryFromPickle(uint32_t state_version,
                                       content::NavigationEntry* entry)
     WARN_UNUSED_RESULT;
 
-}  // namespace interanl
+}  // namespace internal
 
 }  // namespace android_webview
 

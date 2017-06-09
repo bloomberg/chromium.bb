@@ -42,4 +42,4 @@ bool RegisterAwPicture(JNIEnv* env);
 
 }  // android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_AW_PICTURE_
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_PICTURE_H_

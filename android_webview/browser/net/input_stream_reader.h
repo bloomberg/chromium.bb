@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_INPUT_STREAM_READER_H_
-#define ANDROID_WEBVIEW_NATIVE_INPUT_STREAM_READER_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_NET_INPUT_STREAM_READER_H_
+#define ANDROID_WEBVIEW_BROWSER_NET_INPUT_STREAM_READER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -59,4 +59,4 @@ class InputStreamReader {
 
 } // namespace android_webview
 
-#endif //  ANDROID_WEBVIEW_NATIVE_INPUT_STREAM_READER_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_NET_INPUT_STREAM_READER_H_

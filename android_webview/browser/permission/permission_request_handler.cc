@@ -139,4 +139,4 @@ bool PermissionRequestHandler::Preauthorized(const GURL& origin,
          (resources & i->second) == resources;
 }
 
-}  // namespace android_webivew
+}  // namespace android_webview
