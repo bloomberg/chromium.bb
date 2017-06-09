@@ -73,9 +73,6 @@ typedef void (^EntryUpdater)(const GURL&);
   BOOL _dataSourceHasBeenModified;
 }
 
-// Lazily instantiated.
-@property(nonatomic, strong, readonly)
-    FaviconAttributesProvider* attributesProvider;
 // Whether the data source modifications should be taken into account.
 @property(nonatomic, assign) BOOL shouldMonitorDataSource;
 
@@ -86,16 +83,8 @@ typedef void (^EntryUpdater)(const GURL&);
 // Fills section |sectionIdentifier| with the items from |array|.
 - (void)loadItemsFromArray:(NSArray<ReadingListCollectionViewItem*>*)array
                  toSection:(SectionIdentifier)sectionIdentifier;
-// Whether the data source has changed.
-- (BOOL)hasDataSourceChanged;
-// Returns whether there is a difference between the elements contained in the
-// |sectionIdentifier| and those in the |array|.
-- (BOOL)section:(SectionIdentifier)sectionIdentifier
-    isDifferentOfArray:(NSArray<ReadingListCollectionViewItem*>*)array;
 // Reloads the data if a changed occured during editing
 - (void)applyPendingUpdates;
-// Fetches the |faviconURL| of this |item|, then reconfigures the item.
-- (void)fetchFaviconForItem:(ReadingListCollectionViewItem*)item;
 // Returns whether there are elements in the section identified by
 // |sectionIdentifier|.
 - (BOOL)hasItemInSection:(SectionIdentifier)sectionIdentifier;
@@ -168,21 +157,17 @@ typedef void (^EntryUpdater)(const GURL&);
 @synthesize delegate = _delegate;
 @synthesize dataSource = _dataSource;
 
-@synthesize largeIconService = _largeIconService;
-@synthesize attributesProvider = _attributesProvider;
 @synthesize shouldMonitorDataSource = _shouldMonitorDataSource;
 
 #pragma mark lifecycle
 
 - (instancetype)initWithDataSource:(id<ReadingListDataSource>)dataSource
-                  largeIconService:(favicon::LargeIconService*)largeIconService
                            toolbar:(ReadingListToolbar*)toolbar {
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
     _toolbar = toolbar;
 
     _dataSource = dataSource;
-    _largeIconService = largeIconService;
     _emptyCollectionBackground =
         [[ReadingListEmptyCollectionBackground alloc] init];
 
@@ -195,21 +180,6 @@ typedef void (^EntryUpdater)(const GURL&);
 }
 
 #pragma mark - properties
-
-- (FaviconAttributesProvider*)attributesProvider {
-  if (_attributesProvider) {
-    return _attributesProvider;
-  }
-
-  // Accept any favicon even the smallest ones (16x16) as it is better than the
-  // fallback icon.
-  // Pass 1 as minimum size to avoid empty favicons.
-  _attributesProvider = [[FaviconAttributesProvider alloc]
-      initWithFaviconSize:kFaviconPreferredSize
-           minFaviconSize:1
-         largeIconService:self.largeIconService];
-  return _attributesProvider;
-}
 
 - (void)setToolbarState:(ReadingListToolbarState)toolbarState {
   [_toolbar setState:toolbarState];
@@ -312,34 +282,42 @@ typedef void (^EntryUpdater)(const GURL&);
   }
 }
 
-- (void)readingListModelDidApplyChanges {
-  if (!self.shouldMonitorDataSource) {
-    return;
-  }
-
+- (void)dataSourceChanged {
   // If we are editing and monitoring the model updates, set a flag to reload
   // the data at the end of the editing.
-  if ([self.editor isEditing]) {
+  if (self.editor.editing) {
     _dataSourceHasBeenModified = YES;
-    return;
-  }
-
-  // Ignore single element updates when the data source is doing batch updates.
-  if ([self.dataSource isPerformingBatchUpdates]) {
-    return;
-  }
-
-  if ([self hasDataSourceChanged])
+  } else {
     [self reloadData];
+  }
 }
 
-- (void)readingListModelCompletedBatchUpdates {
-  if (!self.shouldMonitorDataSource) {
-    return;
+- (NSArray<CollectionViewItem*>*)readItems {
+  if (![self.collectionViewModel
+          hasSectionForSectionIdentifier:SectionIdentifierRead]) {
+    return nil;
   }
+  return [self.collectionViewModel
+      itemsInSectionWithIdentifier:SectionIdentifierRead];
+}
 
-  if ([self hasDataSourceChanged])
-    [self reloadData];
+- (NSArray<CollectionViewItem*>*)unreadItems {
+  if (![self.collectionViewModel
+          hasSectionForSectionIdentifier:SectionIdentifierUnread]) {
+    return nil;
+  }
+  return [self.collectionViewModel
+      itemsInSectionWithIdentifier:SectionIdentifierUnread];
+}
+
+- (void)itemHasChangedAfterDelay:(CollectionViewItem*)item {
+  if ([self.collectionViewModel hasItem:item]) {
+    [self reconfigureCellsForItems:@[ item ]];
+  }
+}
+
+- (void)itemsHaveChanged:(NSArray<CollectionViewItem*>*)items {
+  [self reconfigureCellsForItems:items];
 }
 
 #pragma mark - Public methods
@@ -417,6 +395,7 @@ typedef void (^EntryUpdater)(const GURL&);
 
 - (void)loadModel {
   [super loadModel];
+  _dataSourceHasBeenModified = NO;
 
   if (!self.dataSource.hasElements) {
     [self collectionIsEmpty];
@@ -439,7 +418,7 @@ typedef void (^EntryUpdater)(const GURL&);
       forSectionWithIdentifier:sectionIdentifier];
   for (ReadingListCollectionViewItem* item in items) {
     item.type = ItemTypeItem;
-    [self fetchFaviconForItem:item];
+    [self.dataSource fetchFaviconForItem:item];
     item.accessibilityDelegate = self;
     [model addItem:item toSectionWithIdentifier:sectionIdentifier];
   }
@@ -462,85 +441,6 @@ typedef void (^EntryUpdater)(const GURL&);
   if (_dataSourceHasBeenModified) {
     [self reloadData];
   }
-}
-
-- (BOOL)hasDataSourceChanged {
-  NSMutableArray<ReadingListCollectionViewItem*>* readArray =
-      [NSMutableArray array];
-  NSMutableArray<ReadingListCollectionViewItem*>* unreadArray =
-      [NSMutableArray array];
-  [self.dataSource fillReadItems:readArray unreadItems:unreadArray];
-
-  if ([self section:SectionIdentifierRead isDifferentOfArray:readArray])
-    return YES;
-  if ([self section:SectionIdentifierUnread isDifferentOfArray:unreadArray])
-    return YES;
-
-  return NO;
-}
-
-- (BOOL)section:(SectionIdentifier)sectionIdentifier
-    isDifferentOfArray:(NSArray<ReadingListCollectionViewItem*>*)array {
-  if (![self.collectionViewModel
-          hasSectionForSectionIdentifier:sectionIdentifier]) {
-    return array.count > 0;
-  }
-
-  NSArray* items =
-      [self.collectionViewModel itemsInSectionWithIdentifier:sectionIdentifier];
-  if (items.count != array.count)
-    return YES;
-
-  NSMutableArray<ReadingListCollectionViewItem*>* itemsToReconfigure =
-      [NSMutableArray array];
-
-  NSInteger index = 0;
-  for (ReadingListCollectionViewItem* newItem in array) {
-    ReadingListCollectionViewItem* oldItem =
-        base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(items[index]);
-    if (oldItem.url == newItem.url) {
-      if (![oldItem isEqual:newItem]) {
-        oldItem.title = newItem.title;
-        oldItem.subtitle = newItem.subtitle;
-        oldItem.distillationState = newItem.distillationState;
-        oldItem.distillationDate = newItem.distillationDate;
-        oldItem.distillationSize = newItem.distillationSize;
-        [itemsToReconfigure addObject:oldItem];
-      }
-      if (oldItem.faviconPageURL != newItem.faviconPageURL) {
-        oldItem.faviconPageURL = newItem.faviconPageURL;
-        [self fetchFaviconForItem:oldItem];
-      }
-    }
-    if (![oldItem isEqual:newItem]) {
-      return YES;
-    }
-    index++;
-  }
-  [self reconfigureCellsForItems:itemsToReconfigure];
-  return NO;
-}
-
-- (void)fetchFaviconForItem:(ReadingListCollectionViewItem*)item {
-  __weak ReadingListCollectionViewItem* weakItem = item;
-  __weak ReadingListCollectionViewController* weakSelf = self;
-  void (^completionBlock)(FaviconAttributes* attributes) =
-      ^(FaviconAttributes* attributes) {
-        ReadingListCollectionViewItem* strongItem = weakItem;
-        ReadingListCollectionViewController* strongSelf = weakSelf;
-        if (!strongSelf || !strongItem) {
-          return;
-        }
-
-        strongItem.attributes = attributes;
-
-        if ([strongSelf.collectionViewModel hasItem:strongItem]) {
-          [strongSelf reconfigureCellsForItems:@[ strongItem ]];
-        }
-      };
-
-  [self.attributesProvider fetchFaviconAttributesForURL:item.faviconPageURL
-                                             completion:completionBlock];
 }
 
 - (BOOL)hasItemInSection:(SectionIdentifier)sectionIdentifier {
@@ -870,8 +770,7 @@ typedef void (^EntryUpdater)(const GURL&);
 
 - (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
                      usingEntryUpdater:(EntryUpdater)updater {
-  self.shouldMonitorDataSource = NO;
-  auto token = [self.dataSource beginBatchUpdates];
+  [self.dataSource beginBatchUpdates];
   NSArray* readItems =
       [self.collectionViewModel itemsInSectionWithIdentifier:identifier];
   // Read the objects in reverse order to keep the order (last modified first).
@@ -881,14 +780,12 @@ typedef void (^EntryUpdater)(const GURL&);
     if (updater)
       updater(readingListItem.url);
   }
-  token.reset();
-  self.shouldMonitorDataSource = YES;
+  [self.dataSource endBatchUpdates];
 }
 
 - (void)updateIndexPaths:(NSArray<NSIndexPath*>*)indexPaths
        usingEntryUpdater:(EntryUpdater)updater {
-  self.shouldMonitorDataSource = NO;
-  auto token = [self.dataSource beginBatchUpdates];
+  [self.dataSource beginBatchUpdates];
   // Read the objects in reverse order to keep the order (last modified first).
   for (NSIndexPath* index in [indexPaths reverseObjectEnumerator]) {
     CollectionViewItem* cell = [self.collectionViewModel itemAtIndexPath:index];
@@ -897,9 +794,7 @@ typedef void (^EntryUpdater)(const GURL&);
     if (updater)
       updater(readingListItem.url);
   }
-  // Leave the batch update while it is not monitored.
-  token.reset();
-  self.shouldMonitorDataSource = YES;
+  [self.dataSource endBatchUpdates];
 }
 
 - (void)logDeletionHistogramsForEntry:(const GURL&)url {

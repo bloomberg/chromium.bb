@@ -50,10 +50,16 @@ class ReadingListEntry;
 // TODO(crbug.com/721758): Return ReadingListItem directly.
 - (const ReadingListEntry* _Nullable)entryWithURL:(const GURL&)URL;
 
-// TODO(crbug.com/721758): Batch updates should be done in the mediator.
-- (std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>)
-    beginBatchUpdates;
-- (BOOL)isPerformingBatchUpdates;
+// Fetches the |faviconURL| of this |item|, notifies the data sink when
+// receiving the favicon.
+- (void)fetchFaviconForItem:(nonnull ReadingListCollectionViewItem*)item;
+
+// Prepares the data source for batch updates. The UI is not notified for the
+// updates happenning between |-beginBatchUpdates| and |-endBatchUpdates|.
+- (void)beginBatchUpdates;
+// Notifies the data source that the batch updates are over. After calling this
+// function the UI is notified when the model changes.
+- (void)endBatchUpdates;
 
 @end
 

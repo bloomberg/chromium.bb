@@ -9,9 +9,12 @@
 #import "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/favicon/core/large_icon_service.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "components/url_formatter/url_formatter.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
+#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
@@ -28,9 +31,19 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
 
 @interface ReadingListMediator ()<ReadingListModelBridgeObserver> {
   std::unique_ptr<ReadingListModelBridge> _modelBridge;
+  std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate> _batchToken;
 }
 
 @property(nonatomic, assign) ReadingListModel* model;
+
+@property(nonatomic, assign) BOOL shouldMonitorModel;
+
+// Lazily instantiated.
+@property(nonatomic, strong, readonly)
+    FaviconAttributesProvider* attributesProvider;
+
+@property(nonatomic, assign, readonly)
+    favicon::LargeIconService* largeIconService;
 
 @end
 
@@ -38,13 +51,19 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
 
 @synthesize model = _model;
 @synthesize dataSink = _dataSink;
+@synthesize shouldMonitorModel = _shouldMonitorModel;
+@synthesize attributesProvider = _attributesProvider;
+@synthesize largeIconService = _largeIconService;
 
 #pragma mark - Public
 
-- (instancetype)initWithModel:(ReadingListModel*)model {
+- (instancetype)initWithModel:(ReadingListModel*)model
+             largeIconService:(favicon::LargeIconService*)largeIconService {
   self = [super init];
   if (self) {
     _model = model;
+    _largeIconService = largeIconService;
+    _shouldMonitorModel = YES;
 
     // This triggers the callback method. Should be created last.
     _modelBridge.reset(new ReadingListModelBridge(self, model));
@@ -115,16 +134,52 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   DCHECK(self.model->Keys().size() == [readArray count] + [unreadArray count]);
 }
 
-- (std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>)
-    beginBatchUpdates {
-  return self.model->BeginBatchUpdates();
+- (void)fetchFaviconForItem:(ReadingListCollectionViewItem*)item {
+  __weak ReadingListCollectionViewItem* weakItem = item;
+  __weak ReadingListMediator* weakSelf = self;
+  void (^completionBlock)(FaviconAttributes* attributes) =
+      ^(FaviconAttributes* attributes) {
+        ReadingListCollectionViewItem* strongItem = weakItem;
+        ReadingListMediator* strongSelf = weakSelf;
+        if (!strongSelf || !strongItem) {
+          return;
+        }
+
+        strongItem.attributes = attributes;
+
+        [strongSelf.dataSink itemHasChangedAfterDelay:strongItem];
+      };
+
+  [self.attributesProvider fetchFaviconAttributesForURL:item.faviconPageURL
+                                             completion:completionBlock];
 }
 
-- (BOOL)isPerformingBatchUpdates {
-  return self.model->IsPerformingBatchUpdates();
+- (void)beginBatchUpdates {
+  self.shouldMonitorModel = NO;
+  _batchToken = self.model->BeginBatchUpdates();
+}
+
+- (void)endBatchUpdates {
+  _batchToken.reset();
+  self.shouldMonitorModel = YES;
 }
 
 #pragma mark - Properties
+
+- (FaviconAttributesProvider*)attributesProvider {
+  if (_attributesProvider) {
+    return _attributesProvider;
+  }
+
+  // Accept any favicon even the smallest ones (16x16) as it is better than the
+  // fallback icon.
+  // Pass 1 as minimum size to avoid empty favicons.
+  _attributesProvider = [[FaviconAttributesProvider alloc]
+      initWithFaviconSize:kFaviconPreferredSize
+           minFaviconSize:1
+         largeIconService:self.largeIconService];
+  return _attributesProvider;
+}
 
 - (void)setDataSink:(id<ReadingListDataSink>)dataSink {
   _dataSink = dataSink;
@@ -155,11 +210,26 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
 }
 
 - (void)readingListModelDidApplyChanges:(const ReadingListModel*)model {
-  [self.dataSink readingListModelDidApplyChanges];
+  if (!self.shouldMonitorModel) {
+    return;
+  }
+
+  // Ignore single element updates when the data source is doing batch updates.
+  if (self.model->IsPerformingBatchUpdates()) {
+    return;
+  }
+
+  if ([self hasDataSourceChanged])
+    [self.dataSink dataSourceChanged];
 }
 
 - (void)readingListModelCompletedBatchUpdates:(const ReadingListModel*)model {
-  [self.dataSink readingListModelCompletedBatchUpdates];
+  if (!self.shouldMonitorModel) {
+    return;
+  }
+
+  if ([self hasDataSourceChanged])
+    [self.dataSink dataSourceChanged];
 }
 
 #pragma mark - Private
@@ -194,6 +264,60 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   item.distillationSize =
       has_distillation_details ? entry->DistillationSize() : 0;
   return item;
+}
+
+// Whether the data source has changed.
+- (BOOL)hasDataSourceChanged {
+  NSMutableArray<ReadingListCollectionViewItem*>* readArray =
+      [NSMutableArray array];
+  NSMutableArray<ReadingListCollectionViewItem*>* unreadArray =
+      [NSMutableArray array];
+  [self fillReadItems:readArray unreadItems:unreadArray];
+
+  return [self currentSection:[self.dataSink readItems]
+             isDifferentOfArray:readArray] ||
+         [self currentSection:[self.dataSink unreadItems]
+             isDifferentOfArray:unreadArray];
+}
+
+// Returns whether there is a difference between the elements contained in the
+// |sectionIdentifier| and those in the |array|. The comparison is done with the
+// URL of the elements. If an element exist in both, the one in |currentSection|
+// will be overwriten with the informations contained in the one from|array|.
+- (BOOL)currentSection:(NSArray<CollectionViewItem*>*)currentSection
+    isDifferentOfArray:(NSArray<ReadingListCollectionViewItem*>*)array {
+  if (currentSection.count != array.count)
+    return YES;
+
+  NSMutableArray<ReadingListCollectionViewItem*>* itemsToReconfigure =
+      [NSMutableArray array];
+
+  NSInteger index = 0;
+  for (ReadingListCollectionViewItem* newItem in array) {
+    ReadingListCollectionViewItem* oldItem =
+        base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(
+            currentSection[index]);
+    if (oldItem.url == newItem.url) {
+      if (![oldItem isEqual:newItem]) {
+        oldItem.title = newItem.title;
+        oldItem.subtitle = newItem.subtitle;
+        oldItem.distillationState = newItem.distillationState;
+        oldItem.distillationDate = newItem.distillationDate;
+        oldItem.distillationSize = newItem.distillationSize;
+        [itemsToReconfigure addObject:oldItem];
+      }
+      if (oldItem.faviconPageURL != newItem.faviconPageURL) {
+        oldItem.faviconPageURL = newItem.faviconPageURL;
+        [self fetchFaviconForItem:oldItem];
+      }
+    }
+    if (![oldItem isEqual:newItem]) {
+      return YES;
+    }
+    index++;
+  }
+  [self.dataSink itemsHaveChanged:itemsToReconfigure];
+  return NO;
 }
 
 @end

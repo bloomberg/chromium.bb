@@ -37,6 +37,7 @@ source_set("reading_list") {
   deps = [
     ":resources",
     "//base",
+    "//components/favicon/core",
     "//components/prefs",
     "//components/reading_list/core",
     "//components/reading_list/ios",
