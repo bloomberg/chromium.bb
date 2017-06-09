@@ -1771,18 +1771,6 @@ class WindowObserverTest : public WindowTest,
     return result;
   }
 
-  std::string TransformNotificationsAndClear() {
-    std::string result;
-    for (std::vector<std::pair<int, int> >::iterator it =
-            transform_notifications_.begin();
-        it != transform_notifications_.end();
-        ++it) {
-      base::StringAppendF(&result, "(%d,%d)", it->first, it->second);
-    }
-    transform_notifications_.clear();
-    return result;
-  }
-
  private:
   void OnWindowAdded(Window* new_window) override { added_count_++; }
 
@@ -1808,11 +1796,6 @@ class WindowObserverTest : public WindowTest,
                                intptr_t old) override {
     property_key_ = key;
     old_property_value_ = old;
-  }
-
-  void OnAncestorWindowTransformed(Window* source, Window* window) override {
-    transform_notifications_.push_back(
-        std::make_pair(source->id(), window->id()));
   }
 
   int added_count_;
@@ -1947,33 +1930,6 @@ TEST_P(WindowObserverTest, PropertyChanged) {
   // Sanity check to see if |PropertyChangeInfoAndClear| really clears.
   EXPECT_EQ(PropertyChangeInfo(
       reinterpret_cast<const void*>(NULL), -3), PropertyChangeInfoAndClear());
-}
-
-TEST_P(WindowObserverTest, AncestorTransformed) {
-  // Create following window hierarchy:
-  //   root_window
-  //   +-- w1
-  //       +-- w2
-  //       +-- w3
-  //           +-- w4
-  // Then, apply a transform to |w1| and ensure all its descendants are
-  // notified.
-  std::unique_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
-  w1->AddObserver(this);
-  std::unique_ptr<Window> w2(CreateTestWindowWithId(2, w1.get()));
-  w2->AddObserver(this);
-  std::unique_ptr<Window> w3(CreateTestWindowWithId(3, w1.get()));
-  w3->AddObserver(this);
-  std::unique_ptr<Window> w4(CreateTestWindowWithId(4, w3.get()));
-  w4->AddObserver(this);
-
-  EXPECT_EQ(std::string(), TransformNotificationsAndClear());
-
-  gfx::Transform transform;
-  transform.Translate(10, 10);
-  w1->SetTransform(transform);
-
-  EXPECT_EQ("(1,1)(1,2)(1,3)(1,4)", TransformNotificationsAndClear());
 }
 
 TEST_P(WindowTest, AcquireLayer) {

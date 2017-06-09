@@ -418,10 +418,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Notifies this window and its parent hierarchy.
   void NotifyWindowVisibilityChangedUp(aura::Window* target, bool visible);
 
-  // Notifies this window and its child hierarchy of a transform applied to
-  // |source|.
-  void NotifyAncestorWindowTransformed(Window* source);
-
   // Overridden from ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;

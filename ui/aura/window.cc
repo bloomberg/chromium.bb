@@ -266,7 +266,6 @@ void Window::SetTransform(const gfx::Transform& transform) {
   port_->OnDidChangeTransform(old_transform, transform);
   for (WindowObserver& observer : observers_)
     observer.OnWindowTransformed(this);
-  NotifyAncestorWindowTransformed(this);
 }
 
 void Window::SetLayoutManager(LayoutManager* layout_manager) {
@@ -968,15 +967,6 @@ void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
   for (Window* window = parent(); window; window = window->parent()) {
     bool ret = window->NotifyWindowVisibilityChangedAtReceiver(target, visible);
     DCHECK(ret);
-  }
-}
-
-void Window::NotifyAncestorWindowTransformed(Window* source) {
-  for (WindowObserver& observer : observers_)
-    observer.OnAncestorWindowTransformed(source, this);
-  for (Window::Windows::const_iterator it = children_.begin();
-       it != children_.end(); ++it) {
-    (*it)->NotifyAncestorWindowTransformed(source);
   }
 }
 
