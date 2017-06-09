@@ -3008,6 +3008,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIVerticalLayoutDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentVerticalLayout)},
 
+    {"omnibox-ui-narrow-dropdown",
+     flag_descriptions::kOmniboxUINarrowDropdownName,
+     flag_descriptions::kOmniboxUINarrowDropdownDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentNarrowDropdown)},
+
     {"omnibox-ui-vertical-margin",
      flag_descriptions::kOmniboxUIVerticalMarginName,
      flag_descriptions::kOmniboxUIVerticalMarginDescription, kOsDesktop,
