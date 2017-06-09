@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.vr_shell.util;
 
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -14,10 +16,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * Utility class to simulate a Daydream View NFC tag being scanned. In its own
- * class so that both instrumentation tests and the standalone APK for use with
- * Telemetry can share code without the APK including instrumentation-test-only
- * code.
+ * Utility class to simulate a Daydream View NFC tag being scanned.
  */
 public class NfcSimUtils {
     private static final String DETECTION_ACTIVITY = ".nfc.ViewerDetectionActivity";
@@ -49,6 +48,19 @@ public class NfcSimUtils {
         nfcIntent.setComponent(new ComponentName(
                 APPLICATION_RECORD_STRING, APPLICATION_RECORD_STRING + DETECTION_ACTIVITY));
         return nfcIntent;
+    }
+
+    /**
+     * Simulates the NFC tag of the Daydream headset being scanned.
+     * @param context The Context that the activity will be started from.
+     */
+    public static void simNfcScan(Context context) {
+        Intent nfcIntent = NfcSimUtils.makeNfcIntent();
+        try {
+            context.startActivity(nfcIntent);
+        } catch (ActivityNotFoundException e) {
+            // On unsupported devices, won't find VrCore -> Do nothing
+        }
     }
 
     private static byte[] intToByteArray(int i) {
