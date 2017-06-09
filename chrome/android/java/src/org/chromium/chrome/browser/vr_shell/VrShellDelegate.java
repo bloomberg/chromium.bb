@@ -1099,10 +1099,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private static boolean isVrCoreCompatible(
             final VrCoreVersionChecker versionChecker, final Tab tabToShowInfobarIn) {
         final int vrCoreCompatibility = versionChecker.getVrCoreInfo().compatibility;
-
-        if (vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE
-                || vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+        boolean needsUpdate = vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE
+                || vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE;
+        if (tabToShowInfobarIn != null && needsUpdate) {
+            ThreadUtils.assertOnUiThread();
+            new Handler().post(new Runnable() {
                 @Override
                 public void run() {
                     promptToUpdateVrServices(vrCoreCompatibility, tabToShowInfobarIn);
@@ -1114,9 +1115,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     private static void promptToUpdateVrServices(int vrCoreCompatibility, Tab tab) {
-        if (tab == null) {
-            return;
-        }
         final Activity activity = tab.getActivity();
         String infobarText;
         String buttonText;
