@@ -211,6 +211,11 @@ GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
     url = net::AppendOrReplaceQueryParameter(url, kSupportsTeamDrives, "true");
     url =
         net::AppendOrReplaceQueryParameter(url, kIncludeTeamDriveItems, "true");
+    // This is a workaound as currently the server returns HTTP_NOT_FOUND when
+    // "default,allTeamDrives" corpora is combined with certain queries.
+    // TODO(yamaguchi): Remove this hack once "allTeamDrives" works correctly.
+    if (corpora == FilesListCorpora::ALL_TEAM_DRIVES)
+      corpora = FilesListCorpora::DEFAULT;
     url = net::AppendOrReplaceQueryParameter(url, kCorpora,
                                              GetCorporaString(corpora));
     if (!team_drive_id.empty())

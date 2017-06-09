@@ -203,9 +203,16 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
   };
   const std::string kV2FilesUrlPrefix =
       "https://www.example.com/drive/v2/files";
+
+  // "corpora=default" for this case is a workaound as currently the server
+  // returns HTTP_NOT_FOUND when "default,allTeamDrives" corpora is combined
+  // with certain queries. We use "default" corpora intead, so that we can
+  // still get some files under Team Drive which the user is subscribed.
+  // TODO(yamaguchi): Remove this workaround. The 3rd line should be
+  // "includeTeamDriveItems=true&corpora=default%2CallTeamDrives";
   const std::string kV2FilesUrlPrefixWithTeamDrives =
       "https://www.example.com/drive/v2/files?supportsTeamDrives=true&"
-      "includeTeamDriveItems=true&corpora=default%2CallTeamDrives";
+      "includeTeamDriveItems=true&corpora=default";
 
   for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
     EXPECT_EQ(kV2FilesUrlPrefix +
