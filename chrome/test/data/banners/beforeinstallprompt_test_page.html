@@ -1,30 +1,31 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>appinstalled event test page</title>
+        <title>beforeinstallprompt event test page</title>
+        <link rel="manifest" href="manifest.json" />
+        <script src="main.js"></script>
         <script>
             // These blanks will get filled in when each event comes through.
             var gotEventsFrom = ['________', '____'];
 
             function setTitle() {
-              window.document.title = 'Got appinstalled: ' +
+              window.document.title = 'Got beforeinstallprompt: ' +
                 gotEventsFrom.join(', ');
             }
 
             window.addEventListener('load', () => {
               // Test both the addEventListener and onX attribute versions.
-              // When an app is installed, each should fire once.
-              window.addEventListener('appinstalled', () => {
+              // When a prompt is shown, each should fire once.
+              window.addEventListener('beforeinstallprompt', () => {
                 gotEventsFrom[0] = 'listener';
                 setTitle();
               });
-              window.onappinstalled = () => {
+              window.onbeforeinstallprompt = () => {
                 gotEventsFrom[1] = 'attr';
                 setTitle();
               };
             });
         </script>
     </head>
-    <body>
-    </body>
+    <body onload="initialize()"></body>
 </html>

@@ -306,8 +306,9 @@ public class AddToHomescreenManagerTest {
             addShortcutToTab(mTab, "");
 
             // Wait for the tab title to change. This will happen (due to the JavaScript that runs
-            // in the page) once the appinstalled event has been fired.
-            new TabTitleObserver(mTab, "Got appinstalled").waitForTitleUpdate(3);
+            // in the page) once the appinstalled event has been fired twice: once to test
+            // addEventListener('appinstalled'), once to test onappinstalled attribute.
+            new TabTitleObserver(mTab, "Got appinstalled: listener, attr").waitForTitleUpdate(3);
         } finally {
             mTestServer.stopAndDestroyServer();
         }
