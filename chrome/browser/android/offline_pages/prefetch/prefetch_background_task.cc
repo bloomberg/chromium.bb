@@ -53,7 +53,7 @@ static jboolean StartPrefetchTask(JNIEnv* env,
   prefetch_service->GetPrefetchDispatcher()->BeginBackgroundTask(
       base::MakeUnique<PrefetchBackgroundTask>(env, jcaller, prefetch_service,
                                                profile));
-  return false;  // true;
+  return true;
 }
 
 }  // namespace prefetch
