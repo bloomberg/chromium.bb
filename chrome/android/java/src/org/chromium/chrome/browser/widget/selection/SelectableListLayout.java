@@ -279,6 +279,7 @@ public class SelectableListLayout<E>
         mAdapter.unregisterAdapterDataObserver(mAdapterObserver);
         mToolbar.getSelectionDelegate().removeObserver(this);
         mToolbar.destroy();
+        mRecyclerView.setAdapter(null);
     }
 
     /**
