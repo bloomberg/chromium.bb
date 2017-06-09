@@ -3065,6 +3065,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePictureInPictureDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnablePictureInPicture)},
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+    {"browser-side-navigation", flag_descriptions::kBrowserSideNavigationName,
+     flag_descriptions::kBrowserSideNavigationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBrowserSideNavigation)},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in

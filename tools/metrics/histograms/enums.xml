@@ -22327,6 +22327,7 @@ from previous Chrome versions.
   <int value="-743103250" label="enable-linkable-ephemeral-apps"/>
   <int value="-741806604" label="DownloadsUi:disabled"/>
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
+  <int value="-722474177" label="browser-side-navigation:disabled"/>
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
   <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-714710496" label="VideoFullscreenOrientationLock:disabled"/>
@@ -22897,6 +22898,7 @@ from previous Chrome versions.
   <int value="1372680885" label="enable-mtp-write-support"/>
   <int value="1373777956" label="disable-threaded-gpu-rasterization"/>
   <int value="1376437124" label="show-cert-link"/>
+  <int value="1377056573" label="browser-side-navigation:enabled"/>
   <int value="1378310092" label="disable-suggestions-service"/>
   <int value="1381746642" label="enable-automatic-password-saving"/>
   <int value="1382500494" label="disable-drive-apps-in-app-list"/>

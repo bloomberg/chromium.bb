@@ -60,6 +60,9 @@ extern const char kBackgroundVideoTrackOptimizationDescription[];
 extern const char kBleAdvertisingInExtensionsName[];
 extern const char kBleAdvertisingInExtensionsDescription[];
 
+extern const char kBrowserSideNavigationName[];
+extern const char kBrowserSideNavigationDescription[];
+
 extern const char kBrowserTaskSchedulerName[];
 extern const char kBrowserTaskSchedulerDescription[];
 
