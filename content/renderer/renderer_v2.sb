@@ -1,0 +1,144 @@
+; Copyright 2017 The Chromium Authors. All rights reserved.
+; Use of this source code is governed by a BSD-style license that can be
+; found in the LICENSE file.
+(version 1)
+
+; The top of this will be the V2 common profile.
+
+; Helper function to check if a param is set to true.
+(define (param-true? str) (string=? (param str) "TRUE"))
+
+; Helper function to determine if a parameter is defined or not.
+(define (param-defined? str) (string? (param str)))
+
+; Define constants for all of the parameter strings passed in.
+(define disable-sandbox-denial-logging "DISABLE_SANDBOX_DENIAL_LOGGING")
+(define enable-logging "ENABLE_LOGGING")
+(define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")
+(define elcap-or-later "ELCAP_OR_LATER")
+(define bundle-path "BUNDLE_PATH")
+(define executable-path "EXECUTABLE_PATH")
+(define chromium-pid "CHROMIUM_PID")
+(define log-file-path "LOG_FILE_PATH")
+(define bundle-id "BUNDLE_ID")
+(define component-path "COMPONENT_PATH")
+
+; Backwards compatibility for 10.9
+(define (path x) (literal x))
+
+; --enable-sandbox-logging causes the sandbox to log failures to the syslog.
+(if (param-true? disable-sandbox-denial-logging)
+   (deny default (with no-log))
+   (deny default))
+
+(if (param-true? enable-logging) (debug deny))
+
+; Allow sending signals to self - https://crbug.com/20370
+(allow signal (target self))
+
+; Consumes a subpath and appends it to the user's homedir path.
+(define (user-homedir-path subpath) 
+  (string-append (param homedir-as-literal) subpath))
+
+; Allow logging for all processes.
+(allow file-write* (path (param log-file-path)))
+
+; Allow component builds to work.
+(if (param-defined? component-path)
+  (allow file-read* (subpath (param component-path))))
+
+(allow process-exec* (path (param executable-path)))
+(allow file-read* (path (param executable-path)))
+
+(allow mach-lookup (global-name (string-append (param bundle-id)
+                                               ".rohitfork."
+                                               (param chromium-pid))))
+; Allow realpath() to work.
+(allow file-read-metadata (subpath "/"))
+
+; Allow cf prefs to work.
+(allow user-preference-read)
+
+; All processes can read the bundle contents.
+(allow file-read* (subpath (param bundle-path)))
+
+; End of common.sb?
+(allow file-ioctl file-read-data file-write-data (path "/dev/dtracehelper"))
+
+; File reads.
+; Reads from the home directory.
+(allow file-read-data (path (user-homedir-path "/.CFUserTextEncoding")))
+
+; Reads of /dev devices.
+(allow file-read-data 
+  (path "/dev/autofs_nowait")
+  (path "/dev/fd")
+  (path "/dev/null")
+  (path "/dev/urandom"))
+
+(allow file-write-data (path "/dev/null"))
+
+; Reads from /usr.
+(allow file-read-data
+  (path "/usr/lib/libexpat.1.dylib")
+  (subpath "/usr/share/locale")
+  (subpath "/usr/share/zoneinfo"))
+
+(allow file-read* (path "/usr/share/icu/icudt57l.dat"))
+
+; Reads from /Library.
+(allow file-read-data (subpath "/Library/Fonts"))
+
+; Reads from /System.
+(allow file-read-data 
+  (path "/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/AppExceptions.bundle/Exceptions.plist")
+  (path "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/Exceptions.plist")
+  (path "/System/Library/CoreServices/SystemVersion.plist")
+  (path "/System/Library/Preferences/Logging/Subsystems/com.apple.SkyLight.plist")
+  (subpath "/System/Library/ColorSync/Profiles")
+  (subpath "/System/Library/CoreServices/SystemAppearance.bundle")
+  (subpath "/System/Library/CoreServices/SystemVersion.bundle")
+  (subpath "/System/Library/Fonts")
+  (subpath "/System/Library/Frameworks"))
+
+; IOKit
+(allow iokit-open
+  (iokit-registry-entry-class "IOSurfaceRootUserClient")
+  (iokit-registry-entry-class "RootDomainUserClient"))
+
+; POSIX IPC
+(allow ipc-posix-shm-read-data 
+  (ipc-posix-name "apple.cfprefs.317580v1")
+  (ipc-posix-name "apple.cfprefs.daemonv1")
+  (ipc-posix-name "apple.shm.notification_center"))
+
+; mach IPC
+(allow mach-lookup 
+  (global-name "com.apple.distributed_notifications@Uv3")
+  (global-name "com.apple.fonts")
+  (global-name "com.apple.logd")
+  (global-name "com.apple.system.logger")
+  (global-name "com.apple.system.notification_center")
+  (global-name "com.apple.system.opendirectoryd.libinfo")
+  (global-name "com.apple.windowserver.active"))
+
+; sysctl
+(allow sysctl-read
+  (sysctl-name "hw.activecpu")
+  (sysctl-name "hw.busfrequency_compat")
+  (sysctl-name "hw.byteorder")
+  (sysctl-name "hw.cachelinesize_compat")
+  (sysctl-name "hw.cpufrequency_compat")
+  (sysctl-name "hw.cputype")
+  (sysctl-name "hw.machine")
+  (sysctl-name "hw.ncpu")
+  (sysctl-name "hw.pagesize_compat")
+  (sysctl-name "hw.physicalcpu_max")
+  (sysctl-name "hw.tbfrequency_compat")
+  (sysctl-name "hw.vectorunit")
+  (sysctl-name "kern.hostname")
+  (sysctl-name "kern.maxfilesperproc")
+  (sysctl-name "kern.osrelease")
+  (sysctl-name "kern.ostype")
+  (sysctl-name "kern.osversion")
+  (sysctl-name "kern.version"))
