@@ -5,13 +5,6 @@ per-file devtools_ui*=pfeldman@chromium.org
 per-file inspect_ui*=dgozman@chromium.org
 per-file inspect_ui*=pfeldman@chromium.org
 
-# chrome://history is going through a lot of changes right now; make sure to
-# talk to one of the listed OWNERS before changing the pre-Material Design UI.
-per-file *history*=set noparent
-per-file *history*=calamity@chromium.org
-per-file *history*=dbeam@chromium.org
-per-file *history*=tsergeant@chromium.org
-
 per-file md_history_ui*=calamity@chromium.org
 per-file md_history_ui*=tsergeant@chromium.org
 
