@@ -35,6 +35,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/BaseFetchContext.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -160,6 +161,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  struct FrozenState;
+
   FrameFetchContext(DocumentLoader*, Document*);
 
   // m_documentLoader is null when loading resources from an HTML import
@@ -168,7 +171,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // relevant document loader or frame in either cases without null-checks.
   // TODO(kinuko): Remove constness, these return non-const members.
   DocumentLoader* MasterDocumentLoader() const;
-  Document* GetDocument() const;
   LocalFrame* GetFrame() const;
   LocalFrameClient* GetLocalFrameClient() const;
   LocalFrame* FrameOfImportsController() const;
@@ -198,8 +200,20 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   const ContentSecurityPolicy* GetContentSecurityPolicy() const override;
   void AddConsoleMessage(ConsoleMessage*) const override;
 
+  String GetUserAgent() const;
+  KURL GetFirstPartyForCookies() const;
+  RefPtr<SecurityOrigin> GetRequestorOrigin();
+  RefPtr<SecurityOrigin> GetRequestorOriginForFrameLoading();
+  ClientHintsPreferences GetClientHintsPreferences() const;
+  float GetDevicePixelRatio() const;
+
+  bool IsDetached() const { return frozen_state_; }
+
   Member<DocumentLoader> document_loader_;
   Member<Document> document_;
+
+  // Non-null only when detached.
+  Member<const FrozenState> frozen_state_;
 };
 
 }  // namespace blink

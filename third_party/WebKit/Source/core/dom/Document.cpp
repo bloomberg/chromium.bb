@@ -1019,9 +1019,9 @@ V0CustomElementMicrotaskRunQueue* Document::CustomElementMicrotaskRunQueue() {
 }
 
 void Document::ClearImportsController() {
-  imports_controller_ = nullptr;
   if (!Loader())
     fetcher_->ClearContext();
+  imports_controller_ = nullptr;
 }
 
 void Document::CreateImportsController() {
@@ -4999,11 +4999,18 @@ const KURL Document::FirstPartyForCookies() const {
   // TODO(mkwst): This doesn't correctly handle sandboxed documents; we want to
   // look at their URL, but we can't because we don't know what it is.
   Frame& top = GetFrame()->Tree().Top();
-  KURL top_document_url =
-      top.IsLocalFrame()
-          ? ToLocalFrame(top).GetDocument()->Url()
-          : KURL(KURL(),
-                 top.GetSecurityContext()->GetSecurityOrigin()->ToString());
+  KURL top_document_url;
+  if (top.IsLocalFrame()) {
+    top_document_url = ToLocalFrame(top).GetDocument()->Url();
+  } else {
+    SecurityOrigin* origin = top.GetSecurityContext()->GetSecurityOrigin();
+    // TODO(yhirano): Ideally |origin| should not be null here.
+    if (origin)
+      top_document_url = KURL(KURL(), origin->ToString());
+    else
+      top_document_url = SecurityOrigin::UrlWithUniqueSecurityOrigin();
+  }
+
   if (SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
           top_document_url.Protocol()))
     return top_document_url;
