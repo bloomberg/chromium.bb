@@ -465,14 +465,28 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
 void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
     DialogViewID view_id,
     bool wait_for_animation) {
-  views::View* view =
-      delegate_->dialog_view()->GetViewByID(static_cast<int>(view_id));
+  ClickOnDialogViewAndWait(view_id, delegate_->dialog_view(),
+                           wait_for_animation);
+}
+
+void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
+    DialogViewID view_id,
+    PaymentRequestDialogView* dialog_view,
+    bool wait_for_animation) {
+  views::View* view = dialog_view->GetViewByID(static_cast<int>(view_id));
   DCHECK(view);
-  ClickOnDialogViewAndWait(view, wait_for_animation);
+  ClickOnDialogViewAndWait(view, dialog_view, wait_for_animation);
 }
 
 void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
     views::View* view,
+    bool wait_for_animation) {
+  ClickOnDialogViewAndWait(view, delegate_->dialog_view(), wait_for_animation);
+}
+
+void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
+    views::View* view,
+    PaymentRequestDialogView* dialog_view,
     bool wait_for_animation) {
   DCHECK(view);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -485,7 +499,7 @@ void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
   view->OnMouseReleased(released_event);
 
   if (wait_for_animation)
-    WaitForAnimation();
+    WaitForAnimation(dialog_view);
 
   WaitForObservedEvent();
 }
@@ -552,21 +566,34 @@ PaymentRequestBrowserTestBase::GetShippingOptionLabelValues(
 
 void PaymentRequestBrowserTestBase::OpenCVCPromptWithCVC(
     const base::string16& cvc) {
+  OpenCVCPromptWithCVC(cvc, delegate_->dialog_view());
+}
+
+void PaymentRequestBrowserTestBase::OpenCVCPromptWithCVC(
+    const base::string16& cvc,
+    PaymentRequestDialogView* dialog_view) {
   ResetEventObserver(DialogEvent::CVC_PROMPT_SHOWN);
-  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view);
 
   views::Textfield* cvc_field =
-      static_cast<views::Textfield*>(delegate_->dialog_view()->GetViewByID(
+      static_cast<views::Textfield*>(dialog_view->GetViewByID(
           static_cast<int>(DialogViewID::CVC_PROMPT_TEXT_FIELD)));
   cvc_field->InsertOrReplaceText(cvc);
 }
 
 void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
     const base::string16& cvc) {
-  OpenCVCPromptWithCVC(cvc);
+  PayWithCreditCardAndWait(cvc, delegate_->dialog_view());
+}
+
+void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
+    const base::string16& cvc,
+    PaymentRequestDialogView* dialog_view) {
+  OpenCVCPromptWithCVC(cvc, dialog_view);
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
-  ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON);
+  ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON,
+                           dialog_view);
 }
 
 base::string16 PaymentRequestBrowserTestBase::GetEditorTextfieldValue(
@@ -650,7 +677,12 @@ bool PaymentRequestBrowserTestBase::IsPayButtonEnabled() {
 }
 
 void PaymentRequestBrowserTestBase::WaitForAnimation() {
-  ViewStack* view_stack = dialog_view()->view_stack_for_testing();
+  WaitForAnimation(delegate_->dialog_view());
+}
+
+void PaymentRequestBrowserTestBase::WaitForAnimation(
+    PaymentRequestDialogView* dialog_view) {
+  ViewStack* view_stack = dialog_view->view_stack_for_testing();
   if (view_stack->slide_in_animator_->IsAnimating()) {
     view_stack->slide_in_animator_->SetAnimationDuration(1);
     view_stack->slide_in_animator_->SetAnimationDelegate(
