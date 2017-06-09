@@ -166,11 +166,25 @@ bool ContainerNode::IsChildTypeAllowed(const Node& child) const {
   return true;
 }
 
+// Returns true if |new_child| contains this node. In that case,
+// |exception_state| has an exception.
 bool ContainerNode::ContainsConsideringHostElements(
-    const Node& new_child) const {
+    const Node& new_child,
+    ExceptionState& exception_state) const {
+  // Non-ContainerNode can contain nothing.
+  if (!new_child.IsContainerNode())
+    return false;
+
+  bool child_contains_parent = false;
   if (IsInShadowTree() || GetDocument().IsTemplateDocument())
-    return new_child.ContainsIncludingHostElements(*this);
-  return new_child.contains(this);
+    child_contains_parent = new_child.ContainsIncludingHostElements(*this);
+  else
+    child_contains_parent = new_child.contains(this);
+  if (child_contains_parent) {
+    exception_state.ThrowDOMException(
+        kHierarchyRequestError, "The new child element contains the parent.");
+  }
+  return child_contains_parent;
 }
 
 // EnsurePreInsertionValidity() is an implementation of step 2 to 6 of
@@ -190,11 +204,8 @@ bool ContainerNode::EnsurePreInsertionValidity(
     DCHECK(IsChildTypeAllowed(new_child));
     // 2. If node is a host-including inclusive ancestor of parent, throw a
     // HierarchyRequestError.
-    if (ContainsConsideringHostElements(new_child)) {
-      exception_state.ThrowDOMException(
-          kHierarchyRequestError, "The new child element contains the parent.");
+    if (ContainsConsideringHostElements(new_child, exception_state))
       return false;
-    }
     // 3. If child is not null and its parent is not parent, then throw a
     // NotFoundError.
     return CheckReferenceChildParent(*this, next, old_child, exception_state);
@@ -230,19 +241,8 @@ bool ContainerNode::CheckAcceptChildGuaranteedNodeTypes(
 
   // 2. If node is a host-including inclusive ancestor of parent, throw a
   // HierarchyRequestError.
-  //
-  // Skip containsIncludingHostElements() if !newChild.parentNode() &&
-  // isConnected(). |newChild| typically has no parentNode(), and it means
-  // it's !isConnected(). In such case, the contains check for connected
-  // |this| is unnecessary.
-  if (new_child.IsContainerNode() &&
-      (new_child.IsDocumentNode() || new_child.parentNode() ||
-       !isConnected()) &&
-      new_child.ContainsIncludingHostElements(*this)) {
-    exception_state.ThrowDOMException(
-        kHierarchyRequestError, "The new child element contains the parent.");
+  if (ContainsConsideringHostElements(new_child, exception_state))
     return false;
-  }
 
   // 3. If child is not null and its parent is not parent, then throw a
   // NotFoundError.
