@@ -1040,44 +1040,6 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithDocument) {
   EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(&GetDocument(), 0)));
 }
 
-TEST_F(VisibleUnitsTest, leftPositionOf) {
-  const char* body_content =
-      "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b "
-      "id=three>333</b>";
-  const char* shadow_content =
-      "<b id=four>4444</b><content select=#two></content><content "
-      "select=#one></content><b id=five>55555</b>";
-  SetBodyContent(body_content);
-  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
-
-  Element* one = GetDocument().getElementById("one");
-  Element* two = GetDocument().getElementById("two");
-  Element* three = GetDocument().getElementById("three");
-  Element* four = shadow_root->getElementById("four");
-  Element* five = shadow_root->getElementById("five");
-
-  EXPECT_EQ(
-      Position(two->firstChild(), 1),
-      LeftPositionOf(CreateVisiblePosition(Position(one, 0))).DeepEquivalent());
-  EXPECT_EQ(PositionInFlatTree(two->firstChild(), 1),
-            LeftPositionOf(CreateVisiblePosition(PositionInFlatTree(one, 0)))
-                .DeepEquivalent());
-
-  EXPECT_EQ(
-      Position(one->firstChild(), 0),
-      LeftPositionOf(CreateVisiblePosition(Position(two, 0))).DeepEquivalent());
-  EXPECT_EQ(PositionInFlatTree(four->firstChild(), 3),
-            LeftPositionOf(CreateVisiblePosition(PositionInFlatTree(two, 0)))
-                .DeepEquivalent());
-
-  EXPECT_EQ(Position(two->firstChild(), 2),
-            LeftPositionOf(CreateVisiblePosition(Position(three, 0)))
-                .DeepEquivalent());
-  EXPECT_EQ(PositionInFlatTree(five->firstChild(), 5),
-            LeftPositionOf(CreateVisiblePosition(PositionInFlatTree(three, 0)))
-                .DeepEquivalent());
-}
-
 TEST_F(VisibleUnitsTest, localCaretRectOfPosition) {
   const char* body_content =
       "<p id='host'><b id='one'>1</b></p><b id='two'>22</b>";
@@ -1613,50 +1575,6 @@ TEST_F(VisibleUnitsTest, renderedOffset) {
   EXPECT_FALSE(RendersInDifferentPosition(
       Position::LastPositionInNode(sample1->firstChild()),
       Position(sample2->firstChild(), 0)));
-}
-
-TEST_F(VisibleUnitsTest, rightPositionOf) {
-  const char* body_content =
-      "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b "
-      "id=three>333</b>";
-  const char* shadow_content =
-      "<p id=four>4444</p><content select=#two></content><content "
-      "select=#one></content><p id=five>55555</p>";
-  SetBodyContent(body_content);
-  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
-
-  Node* one = GetDocument().getElementById("one")->firstChild();
-  Node* two = GetDocument().getElementById("two")->firstChild();
-  Node* three = GetDocument().getElementById("three")->firstChild();
-  Node* four = shadow_root->getElementById("four")->firstChild();
-  Node* five = shadow_root->getElementById("five")->firstChild();
-
-  EXPECT_EQ(Position(), RightPositionOf(CreateVisiblePosition(Position(one, 1)))
-                            .DeepEquivalent());
-  EXPECT_EQ(PositionInFlatTree(five, 0),
-            RightPositionOf(CreateVisiblePosition(PositionInFlatTree(one, 1)))
-                .DeepEquivalent());
-
-  EXPECT_EQ(Position(one, 1),
-            RightPositionOf(CreateVisiblePosition(Position(two, 2)))
-                .DeepEquivalent());
-  EXPECT_EQ(PositionInFlatTree(one, 1),
-            RightPositionOf(CreateVisiblePosition(PositionInFlatTree(two, 2)))
-                .DeepEquivalent());
-
-  EXPECT_EQ(Position(five, 0),
-            RightPositionOf(CreateVisiblePosition(Position(four, 4)))
-                .DeepEquivalent());
-  EXPECT_EQ(PositionInFlatTree(two, 0),
-            RightPositionOf(CreateVisiblePosition(PositionInFlatTree(four, 4)))
-                .DeepEquivalent());
-
-  EXPECT_EQ(Position(),
-            RightPositionOf(CreateVisiblePosition(Position(five, 5)))
-                .DeepEquivalent());
-  EXPECT_EQ(PositionInFlatTree(three, 0),
-            RightPositionOf(CreateVisiblePosition(PositionInFlatTree(five, 5)))
-                .DeepEquivalent());
 }
 
 TEST_F(VisibleUnitsTest, startOfDocument) {
