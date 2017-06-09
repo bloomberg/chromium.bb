@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "media/audio/audio_output_controller.h"
 #include "media/base/audio_parameters.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -72,8 +71,6 @@ class MockAudioOutputDelegate : public media::AudioOutputDelegate {
       std::move(on_destruction_).Run();
   }
 
-  MOCK_CONST_METHOD0(GetController,
-                     scoped_refptr<media::AudioOutputController>());
   MOCK_CONST_METHOD0(GetStreamId, int());
   MOCK_METHOD0(OnPlayStream, void());
   MOCK_METHOD0(OnPauseStream, void());
