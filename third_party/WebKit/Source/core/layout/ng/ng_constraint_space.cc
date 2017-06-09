@@ -150,6 +150,44 @@ NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunityIterator(
   return layout_opp_iter_.get();
 }
 
+bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
+  // TODO(cbiesinger): For simplicity and performance, for now, we only
+  // consider two constraint spaces equal if neither one has unpositioned
+  // floats. We should consider changing this in the future.
+  if (unpositioned_floats_.size() || other.unpositioned_floats_.size())
+    return false;
+
+  if (exclusions_ && other.exclusions_ && *exclusions_ != *other.exclusions_)
+    return false;
+
+  return available_size_ == other.available_size_ &&
+         percentage_resolution_size_ == other.percentage_resolution_size_ &&
+         initial_containing_block_size_ ==
+             other.initial_containing_block_size_ &&
+         fragmentainer_space_available_ ==
+             other.fragmentainer_space_available_ &&
+         is_fixed_size_inline_ == other.is_fixed_size_inline_ &&
+         is_fixed_size_block_ == other.is_fixed_size_block_ &&
+         is_shrink_to_fit_ == other.is_shrink_to_fit_ &&
+         is_inline_direction_triggers_scrollbar_ ==
+             other.is_inline_direction_triggers_scrollbar_ &&
+         is_block_direction_triggers_scrollbar_ ==
+             other.is_block_direction_triggers_scrollbar_ &&
+         block_direction_fragmentation_type_ ==
+             other.block_direction_fragmentation_type_ &&
+         is_new_fc_ == other.is_new_fc_ &&
+         is_anonymous_ == other.is_anonymous_ &&
+         writing_mode_ == other.writing_mode_ &&
+         direction_ == other.direction_ &&
+         margin_strut_ == other.margin_strut_ &&
+         bfc_offset_ == other.bfc_offset_ &&
+         clearance_offset_ == other.clearance_offset_;
+}
+
+bool NGConstraintSpace::operator!=(const NGConstraintSpace& other) const {
+  return !(*this == other);
+}
+
 String NGConstraintSpace::ToString() const {
   return String::Format(
       "Offset: %s,%s Size: %sx%s MarginStrut: %s"
