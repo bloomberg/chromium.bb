@@ -234,14 +234,6 @@ void OnInstanceQuit(MainDelegate* delegate,
 int RunServiceManager(MainDelegate* delegate) {
   NonEmbedderProcessInit();
 
-#if defined(OS_WIN)
-  // Route stdio to parent console (if any) or create one.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLogging)) {
-    base::RouteStdioToConsole(true);
-  }
-#endif
-
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
 
   base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
@@ -440,6 +432,14 @@ int Main(const MainParams& params) {
     }
     return exit_code;
   }
+
+#if defined(OS_WIN)
+  // Route stdio to parent console (if any) or create one.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLogging)) {
+    base::RouteStdioToConsole(true);
+  }
+#endif
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kTraceToConsole)) {
