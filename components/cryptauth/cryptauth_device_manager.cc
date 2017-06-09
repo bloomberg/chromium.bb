@@ -419,10 +419,22 @@ void CryptAuthDeviceManager::OnGetMyDevicesSuccess(
     const GetMyDevicesResponse& response) {
   // Update the synced devices stored in the user's prefs.
   std::unique_ptr<base::ListValue> devices_as_list(new base::ListValue());
+
+  if (!response.devices().empty())
+    PA_LOG(INFO) << "Devices were successfully synced.";
+
   for (const auto& device : response.devices()) {
-    devices_as_list->Append(UnlockKeyToDictionary(device));
+    std::unique_ptr<base::DictionaryValue> device_dictionary =
+        UnlockKeyToDictionary(device);
+
+    const std::string& device_name = device.has_friendly_device_name()
+                                         ? device.friendly_device_name()
+                                         : "[unknown]";
+    PA_LOG(INFO) << "Synced device '" << device_name
+                 << "': " << *device_dictionary;
+
+    devices_as_list->Append(std::move(device_dictionary));
   }
-  PA_LOG(INFO) << "Devices Synced:\n" << *devices_as_list;
 
   bool unlock_keys_changed = !devices_as_list->Equals(
       pref_service_->GetList(prefs::kCryptAuthDeviceSyncUnlockKeys));
