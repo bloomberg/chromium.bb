@@ -539,6 +539,8 @@ source_set("browser") {
     "devtools/protocol/io_handler.h",
     "devtools/protocol/memory_handler.cc",
     "devtools/protocol/memory_handler.h",
+    "devtools/protocol/native_input_event_builder.h",
+    "devtools/protocol/native_input_event_builder_mac.mm",
     "devtools/protocol/network_handler.cc",
     "devtools/protocol/network_handler.h",
     "devtools/protocol/page_handler.cc",
