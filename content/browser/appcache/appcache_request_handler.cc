@@ -9,8 +9,13 @@
 #include "base/bind.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
+#include "content/browser/appcache/appcache_host.h"
+#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_request.h"
+#include "content/browser/appcache/appcache_url_loader_factory.h"
+#include "content/browser/appcache/appcache_url_loader_job.h"
+#include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "net/url_request/url_request.h"
@@ -223,6 +228,18 @@ void AppCacheRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
   CompleteCrossSiteTransfer(old_process_id_, old_host_id_);
 }
 
+// static
+std::unique_ptr<AppCacheRequestHandler>
+AppCacheRequestHandler::InitializeForNavigationNetworkService(
+    const ResourceRequest& request,
+    AppCacheNavigationHandleCore* appcache_handle_core) {
+  std::unique_ptr<AppCacheRequestHandler> handler =
+      appcache_handle_core->host()->CreateRequestHandler(
+          AppCacheURLLoaderRequest::Create(request), request.resource_type,
+          request.should_reset_appcache);
+  return handler;
+}
+
 void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {
   storage()->CancelDelegateCallbacks(this);
   host_ = NULL;  // no need to RemoveObserver, the host is being deleted
@@ -316,9 +333,19 @@ std::unique_ptr<AppCacheJob> AppCacheRequestHandler::MaybeLoadMainResource(
   // If a page falls into the scope of a ServiceWorker, any matching AppCaches
   // should be ignored. This depends on the ServiceWorker handler being invoked
   // prior to the AppCache handler.
-  if (ServiceWorkerRequestHandler::IsControlledByServiceWorker(
+  // TODO(ananta)
+  // We need to handle this for AppCache requests initiated for the network
+  // service
+  if (request_->GetURLRequest() &&
+      ServiceWorkerRequestHandler::IsControlledByServiceWorker(
           request_->GetURLRequest())) {
     host_->enable_cache_selection(false);
+    return nullptr;
+  }
+
+  if (storage()->IsInitialized() &&
+      service_->storage()->usage_map()->find(request_->GetURL().GetOrigin()) ==
+          service_->storage()->usage_map()->end()) {
     return nullptr;
   }
 
@@ -501,6 +528,21 @@ void AppCacheRequestHandler::OnCacheSelectionComplete(AppCacheHost* host) {
   }
 
   ContinueMaybeLoadSubResource();
+}
+
+void AppCacheRequestHandler::MaybeCreateLoader(
+    const ResourceRequest& resource_request,
+    ResourceContext* resource_context,
+    LoaderCallback callback) {
+  // MaybeLoadMainResource will invoke navigation_request_job's methods
+  // asynchronously via AppCacheStorage::Delegate.
+  navigation_request_job_ = MaybeLoadMainResource(nullptr);
+  if (!navigation_request_job_.get()) {
+    std::move(callback).Run(StartLoaderCallback());
+    return;
+  }
+  navigation_request_job_->AsURLLoaderJob()->set_loader_callback(
+      std::move(callback));
 }
 
 }  // namespace content

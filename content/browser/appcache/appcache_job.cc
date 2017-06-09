@@ -23,7 +23,8 @@ std::unique_ptr<AppCacheJob> AppCacheJob::Create(
   std::unique_ptr<AppCacheJob> job;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNetworkService)) {
-    job.reset(new AppCacheURLLoaderJob);
+    job.reset(
+        new AppCacheURLLoaderJob(*(request->GetResourceRequest()), storage));
   } else {
     job.reset(new AppCacheURLRequestJob(request->GetURLRequest(),
                                         network_delegate, storage, host,
@@ -34,6 +35,26 @@ std::unique_ptr<AppCacheJob> AppCacheJob::Create(
 
 AppCacheJob::~AppCacheJob() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+bool AppCacheJob::IsWaiting() const {
+  return delivery_type_ == AWAITING_DELIVERY_ORDERS;
+}
+
+bool AppCacheJob::IsDeliveringAppCacheResponse() const {
+  return delivery_type_ == APPCACHED_DELIVERY;
+}
+
+bool AppCacheJob::IsDeliveringNetworkResponse() const {
+  return delivery_type_ == NETWORK_DELIVERY;
+}
+
+bool AppCacheJob::IsDeliveringErrorResponse() const {
+  return delivery_type_ == ERROR_DELIVERY;
+}
+
+bool AppCacheJob::IsCacheEntryNotFound() const {
+  return cache_entry_not_found_;
 }
 
 base::WeakPtr<AppCacheJob> AppCacheJob::GetWeakPtr() {
@@ -48,6 +69,9 @@ AppCacheURLLoaderJob* AppCacheJob::AsURLLoaderJob() {
   return nullptr;
 }
 
-AppCacheJob::AppCacheJob() : weak_factory_(this) {}
+AppCacheJob::AppCacheJob()
+    : cache_entry_not_found_(false),
+      delivery_type_(AWAITING_DELIVERY_ORDERS),
+      weak_factory_(this) {}
 
 }  // namespace content

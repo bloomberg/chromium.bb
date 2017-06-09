@@ -35,6 +35,13 @@ class URLRequestJob;
 // of the AppCache code.
 class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
  public:
+  enum DeliveryType {
+    AWAITING_DELIVERY_ORDERS,
+    APPCACHED_DELIVERY,
+    NETWORK_DELIVERY,
+    ERROR_DELIVERY
+  };
+
   // Callback that will be invoked before the request is restarted. The caller
   // can use this opportunity to grab state from the job to determine how it
   // should behave when the request is restarted.
@@ -63,19 +70,19 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
   virtual bool IsStarted() const = 0;
 
   // Returns true if the job is waiting for instructions.
-  virtual bool IsWaiting() const = 0;
+  virtual bool IsWaiting() const;
 
   // Returns true if the job is delivering a response from the cache.
-  virtual bool IsDeliveringAppCacheResponse() const = 0;
+  virtual bool IsDeliveringAppCacheResponse() const;
 
   // Returns true if the job is delivering a response from the network.
-  virtual bool IsDeliveringNetworkResponse() const = 0;
+  virtual bool IsDeliveringNetworkResponse() const;
 
   // Returns true if the job is delivering an error response.
-  virtual bool IsDeliveringErrorResponse() const = 0;
+  virtual bool IsDeliveringErrorResponse() const;
 
   // Returns true if the cache entry was not found in the cache.
-  virtual bool IsCacheEntryNotFound() const = 0;
+  virtual bool IsCacheEntryNotFound() const;
 
   // Informs the job of what response it should deliver. Only one of these
   // methods should be called, and only once per job. A job will sit idle and
@@ -110,6 +117,12 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
   AppCacheJob();
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Set to true if the AppCache entry is not found.
+  bool cache_entry_not_found_;
+
+  // The jobs delivery status.
+  DeliveryType delivery_type_;
 
   base::WeakPtrFactory<AppCacheJob> weak_factory_;
 

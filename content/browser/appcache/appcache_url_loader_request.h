@@ -17,7 +17,7 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   // Factory function to create an instance of the AppCacheResourceRequest
   // class.
   static std::unique_ptr<AppCacheURLLoaderRequest> Create(
-      std::unique_ptr<ResourceRequest> request);
+      const ResourceRequest& request);
 
   ~AppCacheURLLoaderRequest() override;
 
@@ -38,14 +38,13 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   bool IsError() const override;
   int GetResponseCode() const override;
   std::string GetResponseHeaderByName(const std::string& name) const override;
-
   ResourceRequest* GetResourceRequest() override;
 
  protected:
-  explicit AppCacheURLLoaderRequest(std::unique_ptr<ResourceRequest> request);
+  explicit AppCacheURLLoaderRequest(const ResourceRequest& request);
 
  private:
-  std::unique_ptr<ResourceRequest> request_;
+  ResourceRequest request_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderRequest);
 };

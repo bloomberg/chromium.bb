@@ -16,6 +16,7 @@
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_service_impl.h"
+#include "content/browser/loader/url_loader_request_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 
@@ -26,9 +27,11 @@ class URLRequest;
 
 namespace content {
 class AppCacheJob;
+class AppCacheNavigationHandleCore;
 class AppCacheRequest;
 class AppCacheRequestHandlerTest;
 class AppCacheURLRequestJob;
+struct ResourceRequest;
 
 // An instance is created for each net::URLRequest. The instance survives all
 // http transactions involved in the processing of its net::URLRequest, and is
@@ -39,7 +42,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
     : public base::SupportsUserData::Data,
       public AppCacheHost::Observer,
       public AppCacheServiceImpl::Observer,
-      public AppCacheStorage::Delegate {
+      public AppCacheStorage::Delegate,
+      public URLLoaderRequestHandler {
  public:
   ~AppCacheRequestHandler() override;
 
@@ -68,6 +72,11 @@ class CONTENT_EXPORT AppCacheRequestHandler
     return IsResourceTypeFrame(type) ||
            type == RESOURCE_TYPE_SHARED_WORKER;
   }
+
+  static std::unique_ptr<AppCacheRequestHandler>
+  InitializeForNavigationNetworkService(
+      const ResourceRequest& request,
+      AppCacheNavigationHandleCore* appcache_handle_core);
 
  private:
   friend class AppCacheHost;
@@ -135,6 +144,11 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // AppCacheHost::Observer override
   void OnCacheSelectionComplete(AppCacheHost* host) override;
 
+  // URLLoaderRequestHandler override
+  void MaybeCreateLoader(const ResourceRequest& resource_request,
+                         ResourceContext* resource_context,
+                         LoaderCallback callback) override;
+
   // Data members -----------------------------------------------
 
   // What host we're servicing a request for.
@@ -194,6 +208,13 @@ class CONTENT_EXPORT AppCacheRequestHandler
   AppCacheServiceImpl* service_;
 
   std::unique_ptr<AppCacheRequest> request_;
+
+  // In the network service world we are queried via the URLLoaderRequestHandler
+  // interface to see if the navigation request can be handled via the
+  // AppCache. We hold onto the AppCache job created here until the client
+  // binds to it (Serviced via AppCache). If the request cannot be handled via
+  // the AppCache, we delete the job.
+  std::unique_ptr<AppCacheJob> navigation_request_job_;
 
   friend class content::AppCacheRequestHandlerTest;
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequestHandler);

@@ -13,7 +13,6 @@
 
 namespace content {
 
-class ChromeAppCacheService;
 class StoragePartitionImpl;
 
 // Holds on to URLLoaderFactory for a given StoragePartition and allows code
@@ -43,25 +42,18 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT void SetNetworkFactoryForTesting(
       mojom::URLLoaderFactoryPtr test_factory);
 
-  // Called on the IO thread to get the URLLoaderFactory for AppCache. The
-  // pointer should not be cached.
-  mojom::URLLoaderFactoryPtr* GetAppCacheFactory();
-
  private:
   friend class base::DeleteHelper<URLLoaderFactoryGetter>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
   CONTENT_EXPORT ~URLLoaderFactoryGetter();
-  void InitializeOnIOThread(
-      mojom::URLLoaderFactoryPtrInfo network_factory,
-      mojom::URLLoaderFactoryPtrInfo blob_factory,
-      scoped_refptr<ChromeAppCacheService> appcache_service);
+  void InitializeOnIOThread(mojom::URLLoaderFactoryPtrInfo network_factory,
+                            mojom::URLLoaderFactoryPtrInfo blob_factory);
   void SetTestNetworkFactoryOnIOThread(
       mojom::URLLoaderFactoryPtrInfo test_factory);
 
   // Only accessed on IO thread.
   mojom::URLLoaderFactoryPtr network_factory_;
-  mojom::URLLoaderFactoryPtr appcache_factory_;
   mojom::URLLoaderFactoryPtr blob_factory_;
   mojom::URLLoaderFactoryPtr test_factory_;
 

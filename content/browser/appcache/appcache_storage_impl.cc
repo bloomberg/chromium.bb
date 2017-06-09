@@ -1779,6 +1779,10 @@ void AppCacheStorageImpl::DeleteResponses(
   StartDeletingResponses(response_ids);
 }
 
+bool AppCacheStorageImpl::IsInitialized() {
+  return IsInitTaskComplete();
+}
+
 void AppCacheStorageImpl::DelayedStartDeletingUnusedResponses() {
   // Only if we haven't already begun.
   if (!did_start_deleting_responses_) {
