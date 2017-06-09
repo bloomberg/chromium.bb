@@ -13,6 +13,8 @@ namespace favicon {
 class LargeIconService;
 }
 
+class GURL;
+class ReadingListEntry;
 class ReadingListModel;
 
 // Mediator between the Model and the UI.
@@ -30,6 +32,9 @@ class ReadingListModel;
 // entry.
 - (nullable const ReadingListEntry*)entryFromItem:
     (nonnull CollectionViewItem*)item;
+
+// Marks the entry with |URL| as read.
+- (void)markEntryRead:(const GURL&)URL;
 
 @end
 

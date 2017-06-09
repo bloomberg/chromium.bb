@@ -4,38 +4,24 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
-#import "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/time/time.h"
-#include "components/reading_list/core/reading_list_entry.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
-#import "ios/chrome/browser/ui/favicon/favicon_view.h"
-#import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#include "ios/web/public/referrer.h"
-#include "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/window_open_disposition.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -53,13 +39,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeItem,
 };
 
-// Typedef for a block taking a GURL as parameter and returning nothing.
-typedef void (^EntryUpdater)(const GURL&);
-
+// Typedef for a block taking a CollectionViewItem as parameter and returning
+// nothing.
+typedef void (^EntryUpdater)(CollectionViewItem* item);
 }
 
 @interface ReadingListCollectionViewController ()<
-
     ReadingListCollectionViewItemAccessibilityDelegate,
     ReadingListDataSink> {
   // Toolbar with the actions.
@@ -127,8 +112,6 @@ typedef void (^EntryUpdater)(const GURL&);
 // the data source updates are suspended during this time.
 - (void)updateIndexPaths:(NSArray<NSIndexPath*>*)indexPaths
        usingEntryUpdater:(EntryUpdater)updater;
-// Logs the deletions histograms for the entry with |url|.
-- (void)logDeletionHistogramsForEntry:(const GURL&)url;
 // Move all the items from |sourceSectionIdentifier| to
 // |destinationSectionIdentifier| and removes the empty section from the
 // collection.
@@ -654,8 +637,8 @@ typedef void (^EntryUpdater)(const GURL&);
   }
 
   [self updateItemsInSectionIdentifier:SectionIdentifierUnread
-                     usingEntryUpdater:^(const GURL& url) {
-                       [self.dataSource setReadStatus:YES forURL:url];
+                     usingEntryUpdater:^(CollectionViewItem* item) {
+                       [self.dataSource setReadStatus:YES forItem:item];
                      }];
 
   [self exitEditingModeAnimated:YES];
@@ -670,8 +653,8 @@ typedef void (^EntryUpdater)(const GURL&);
   }
 
   [self updateItemsInSectionIdentifier:SectionIdentifierRead
-                     usingEntryUpdater:^(const GURL& url) {
-                       [self.dataSource setReadStatus:NO forURL:url];
+                     usingEntryUpdater:^(CollectionViewItem* item) {
+                       [self.dataSource setReadStatus:NO forItem:item];
                      }];
 
   [self exitEditingModeAnimated:YES];
@@ -684,8 +667,8 @@ typedef void (^EntryUpdater)(const GURL&);
   NSArray* sortedIndexPaths =
       [indexPaths sortedArrayUsingSelector:@selector(compare:)];
   [self updateIndexPaths:sortedIndexPaths
-       usingEntryUpdater:^(const GURL& url) {
-         [self.dataSource setReadStatus:YES forURL:url];
+       usingEntryUpdater:^(CollectionViewItem* item) {
+         [self.dataSource setReadStatus:YES forItem:item];
        }];
 
   [self exitEditingModeAnimated:YES];
@@ -697,8 +680,8 @@ typedef void (^EntryUpdater)(const GURL&);
   NSArray* sortedIndexPaths =
       [indexPaths sortedArrayUsingSelector:@selector(compare:)];
   [self updateIndexPaths:sortedIndexPaths
-       usingEntryUpdater:^(const GURL& url) {
-         [self.dataSource setReadStatus:NO forURL:url];
+       usingEntryUpdater:^(CollectionViewItem* item) {
+         [self.dataSource setReadStatus:NO forItem:item];
        }];
 
   [self exitEditingModeAnimated:YES];
@@ -713,9 +696,8 @@ typedef void (^EntryUpdater)(const GURL&);
   }
 
   [self updateItemsInSectionIdentifier:SectionIdentifierRead
-                     usingEntryUpdater:^(const GURL& url) {
-                       [self logDeletionHistogramsForEntry:url];
-                       [self.dataSource removeEntryWithURL:url];
+                     usingEntryUpdater:^(CollectionViewItem* item) {
+                       [self.dataSource removeEntryFromItem:item];
                      }];
 
   [self exitEditingModeAnimated:YES];
@@ -738,9 +720,8 @@ typedef void (^EntryUpdater)(const GURL&);
 
 - (void)deleteItemsAtIndexPaths:(NSArray*)indexPaths {
   [self updateIndexPaths:indexPaths
-       usingEntryUpdater:^(const GURL& url) {
-         [self logDeletionHistogramsForEntry:url];
-         [self.dataSource removeEntryWithURL:url];
+       usingEntryUpdater:^(CollectionViewItem* item) {
+         [self.dataSource removeEntryFromItem:item];
        }];
 
   [self exitEditingModeAnimated:YES];
@@ -767,10 +748,8 @@ typedef void (^EntryUpdater)(const GURL&);
       [self.collectionViewModel itemsInSectionWithIdentifier:identifier];
   // Read the objects in reverse order to keep the order (last modified first).
   for (id item in [readItems reverseObjectEnumerator]) {
-    ReadingListCollectionViewItem* readingListItem =
-        base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
     if (updater)
-      updater(readingListItem.url);
+      updater(item);
   }
   [self.dataSource endBatchUpdates];
 }
@@ -780,39 +759,11 @@ typedef void (^EntryUpdater)(const GURL&);
   [self.dataSource beginBatchUpdates];
   // Read the objects in reverse order to keep the order (last modified first).
   for (NSIndexPath* index in [indexPaths reverseObjectEnumerator]) {
-    CollectionViewItem* cell = [self.collectionViewModel itemAtIndexPath:index];
-    ReadingListCollectionViewItem* readingListItem =
-        base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(cell);
+    CollectionViewItem* item = [self.collectionViewModel itemAtIndexPath:index];
     if (updater)
-      updater(readingListItem.url);
+      updater(item);
   }
   [self.dataSource endBatchUpdates];
-}
-
-- (void)logDeletionHistogramsForEntry:(const GURL&)url {
-  const ReadingListEntry* entry = [self.dataSource entryWithURL:url];
-
-  if (!entry)
-    return;
-
-  int64_t firstRead = entry->FirstReadTime();
-  if (firstRead > 0) {
-    // Log 0 if the entry has never been read.
-    firstRead = (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds() -
-                firstRead;
-    // Convert it to hours.
-    firstRead = firstRead / base::Time::kMicrosecondsPerHour;
-  }
-  UMA_HISTOGRAM_COUNTS_10000("ReadingList.FirstReadAgeOnDeletion", firstRead);
-
-  int64_t age = (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds() -
-                entry->CreationTime();
-  // Convert it to hours.
-  age = age / base::Time::kMicrosecondsPerHour;
-  if (entry->IsRead())
-    UMA_HISTOGRAM_COUNTS_10000("ReadingList.Read.AgeOnDeletion", age);
-  else
-    UMA_HISTOGRAM_COUNTS_10000("ReadingList.Unread.AgeOnDeletion", age);
 }
 
 - (void)moveItemsFromSection:(SectionIdentifier)sourceSectionIdentifier
