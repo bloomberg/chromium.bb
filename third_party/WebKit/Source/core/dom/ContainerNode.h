@@ -424,7 +424,8 @@ class CORE_EXPORT ContainerNode : public Node {
                                          const Node* old_child,
                                          ExceptionState&) const;
   inline bool CheckParserAcceptChild(const Node& new_child) const;
-  inline bool ContainsConsideringHostElements(const Node&) const;
+  inline bool ContainsConsideringHostElements(const Node&,
+                                              ExceptionState&) const;
   inline bool IsChildTypeAllowed(const Node& child) const;
 
   bool GetUpperLeftCorner(FloatPoint&) const;
