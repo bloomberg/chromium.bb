@@ -110,6 +110,12 @@ subdirectories in
 It is important to use --bootstrap as there appear to be [bugs](https://crbug.com/580745)
 in the clang library this script produces if you build it with gcc, which is the default.
 
+Once clang is bootsrapped, incremental builds can be done by invoking `ninja` in
+the `third_party/llvm-build/Release+Asserts` directory. In particular,
+recompiling solely the tool you are writing can be accomplished by executing
+`ninja rewrite_to_chrome_style` (replace `rewrite_to_chrome_style` with your
+tool's name).
+
 ## Running
 First, build all Chromium targets to avoid failures due to missing dependencies
 that are generated as part of the build:
