@@ -1113,3 +1113,20 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
 }  // namespace internals
 
 }  // namespace web_app
+
+namespace chrome {
+
+void ShowCreateChromeAppShortcutsDialog(
+    gfx::NativeWindow /*parent_window*/,
+    Profile* profile,
+    const extensions::Extension* app,
+    const base::Callback<void(bool)>& close_callback) {
+  // On Mac, the Applications folder is the only option, so don't bother asking
+  // the user anything. Just create shortcuts.
+  CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
+                  web_app::ShortcutLocations(), profile, app);
+  if (!close_callback.is_null())
+    close_callback.Run(true);
+}
+
+}  // namespace chrome

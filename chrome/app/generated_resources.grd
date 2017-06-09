@@ -1991,9 +1991,16 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="In Title Case: Text displayed before the app or extension's version in the details section of the dialog.">
           Version:
         </message>
-        <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="In Title Case: Text for the button that opens the dialog to create shortcuts for the app.">
+        <if expr="is_macosx">
+          <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="In Title Case: Text for the button that creates a shortcut for the app.">
+            Create Shortcut
+          </message>
+        </if>
+        <if expr="not is_macosx">
+          <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="In Title Case: Text for the button that opens the dialog to create shortcuts for the app.">
           Create Shortcuts...
-        </message>
+          </message>
+        </if>
       </if>
       <message name="IDS_APPLICATION_INFO_SIZE_LOADING_LABEL" desc="Text displayed instead of the app or extension's size on disk in the details section of the dialog while the size is being calculated.">
         Calculating...
@@ -2024,28 +2031,28 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </message>
 
       <!-- "Create application shortcuts" dialog -->
-      <if expr="not use_titlecase">
-        <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
-          Create application shortcuts
+      <if expr="not is_macosx">
+        <if expr="not use_titlecase">
+          <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
+            Create application shortcuts
+          </message>
+        </if>
+        <if expr="use_titlecase">
+          <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="In Title Case: title of the dialog to create application shortcuts for current page.">
+            Create Application Shortcuts
+          </message>
+        </if>
+        <message name="IDS_CREATE_SHORTCUTS_LABEL" desc="Contents of the main label in the create application shortcuts dialog explaining the dialog.">
+          Add shortcuts to the following places:
         </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="In Title Case: title of the dialog to create application shortcuts for current page.">
-          Create Application Shortcuts
+        <message name="IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX" desc="Label of the checkbox to create an application shortcut on the desktop.">
+          Desktop
         </message>
-      </if>
-      <message name="IDS_CREATE_SHORTCUTS_LABEL" desc="Contents of the main label in the create application shortcuts dialog explaining the dialog.">
-        Add shortcuts to the following places:
-      </message>
-      <message name="IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX" desc="Label of the checkbox to create an application shortcut on the desktop.">
-        Desktop
-      </message>
-      <message name="IDS_CREATE_SHORTCUTS_MENU_CHKBOX" desc="Label of the checkbox to create an application shortcut in the system's applications menu.">
-        Applications menu
-      </message>
-      <if expr="is_macosx">
-        <message name="IDS_CREATE_SHORTCUTS_APP_FOLDER_CHKBOX" desc="Label of the checkbox to create an application shortcut in the system's applications folder.">
-          Applications folder
+        <message name="IDS_CREATE_SHORTCUTS_MENU_CHKBOX" desc="Label of the checkbox to create an application shortcut in the system's applications menu.">
+          Applications menu
+        </message>
+        <message name="IDS_CREATE_SHORTCUTS_COMMIT" desc="Title of the button to actually create the shortcuts.">
+          Create
         </message>
       </if>
       <if expr="is_win">
@@ -2059,9 +2066,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           Pin to Taskbar
         </message>
       </if>
-      <message name="IDS_CREATE_SHORTCUTS_COMMIT" desc="Title of the button to actually create the shortcuts.">
-        Create
-      </message>
 
       <!-- Web Share Target picker dialog -->
       <if expr="not use_titlecase">
@@ -8406,18 +8410,10 @@ I don't think this site should be blocked!
                  desc="Text for the context menu item that takes the user to the app in Web Store. (In sentence case.)">
           View in Web Store
         </message>
-        <if expr="is_macosx">
-          <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
-                   desc="Text for the context menu item that creates an app shortcut. (In sentence case.)">
-            Create shortcut...
-          </message>
-        </if>
-        <if expr="not is_macosx">
-          <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
-                   desc="Text for the context menu item that creates an app shortcut. (In sentence case.)">
-            Create shortcuts...
-          </message>
-        </if>
+        <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
+                 desc="Text for the context menu item that creates an app shortcut. (In sentence case.)">
+          Create shortcuts...
+        </message>
         <message name="IDS_APP_CONTEXT_MENU_SHOW_INFO"
                  desc="Text for the context menu item that shows the application information. (In sentence case.)">
           App info
@@ -8466,7 +8462,7 @@ I don't think this site should be blocked!
         <if expr="is_macosx">
           <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
                    desc="Text for the context menu item that creates an app shortcut. (In title case.)">
-            Create Shortcut...
+            Create Shortcut
           </message>
         </if>
         <if expr="not is_macosx">
