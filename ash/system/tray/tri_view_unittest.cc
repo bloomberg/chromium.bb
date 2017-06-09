@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
 #include "ash/system/tray/tri_view.h"
 #include "base/memory/ptr_util.h"
@@ -375,6 +376,36 @@ TEST_F(TriViewTest, SetMinHeight) {
   EXPECT_EQ(kMinHeight, GetMinHeight(TriView::Container::START));
   EXPECT_EQ(kMinHeight, GetMinHeight(TriView::Container::CENTER));
   EXPECT_EQ(kMinHeight, GetMinHeight(TriView::Container::END));
+}
+
+TEST_F(TriViewTest, ChangingContainersVisibilityPerformsLayout) {
+  const int kViewWidth = 10;
+  const int kViewHeight = 10;
+  const gfx::Size kEndViewSize(kViewWidth, kViewHeight);
+
+  tri_view_->SetBounds(0, 0, 3 * kViewWidth, kViewHeight);
+  tri_view_->SetFlexForContainer(TriView::Container::CENTER, 1.f);
+
+  views::View* start_child = new views::View();
+  start_child->SetPreferredSize(kEndViewSize);
+
+  views::View* center_child = new views::View();
+  center_child->SetPreferredSize(gfx::Size(2 * kViewWidth, kViewHeight));
+
+  views::View* end_child = new views::View();
+  end_child->SetPreferredSize(kEndViewSize);
+
+  tri_view_->AddView(TriView::Container::START, start_child);
+  tri_view_->AddView(TriView::Container::CENTER, center_child);
+  tri_view_->AddView(TriView::Container::END, end_child);
+
+  tri_view_->Layout();
+
+  EXPECT_EQ(gfx::Size(kViewWidth, kViewHeight), center_child->size());
+
+  tri_view_->SetContainerVisible(TriView::Container::END, false);
+
+  EXPECT_EQ(gfx::Size(2 * kViewWidth, kViewHeight), center_child->size());
 }
 
 }  // namespace ash

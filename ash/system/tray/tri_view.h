@@ -101,6 +101,7 @@ class ASH_EXPORT TriView : public views::View {
   // Sets whether the |container| is visible. During a layout the space will be
   // allocated to the visible containers only. i.e. non-visible containers will
   // not be allocated any space.
+  // Note: This will cause a relayout.
   void SetContainerVisible(Container container, bool visible);
 
   // Sets the flex weight for the given |container|. Using the preferred size as
