@@ -73,12 +73,11 @@ ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* script_state) {
 ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
   // |m_bannerService| must be bound to allow us to inform the AppBannerService
   // to display the banner now.
-  if (!defaultPrevented() || prompt_called_ || !banner_service_.is_bound()) {
+  if (prompt_called_ || !banner_service_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(kInvalidStateError,
-                             "The prompt() method may only be called once, "
-                             "following preventDefault()."));
+                             "The prompt() method may only be called once."));
   }
 
   UseCounter::Count(ExecutionContext::From(script_state),
