@@ -172,6 +172,14 @@ class AX_EXPORT AXTree {
 
   virtual void UpdateData(const AXTreeData& data);
 
+  // Convert any rectangle from the local coordinate space of one node in
+  // the tree, to bounds in the coordinate space of the tree.
+  gfx::RectF RelativeToTreeBounds(const AXNode* node,
+                                  gfx::RectF node_bounds) const;
+
+  // Get the bounds of a node in the coordinate space of the tree.
+  gfx::RectF GetTreeBounds(const AXNode* node) const;
+
   // Return a multi-line indented string representation, for logging.
   std::string ToString() const;
 
