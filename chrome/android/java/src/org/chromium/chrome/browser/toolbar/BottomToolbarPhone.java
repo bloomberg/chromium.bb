@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -306,7 +307,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (mProgressBar == null) return;
 
         ViewGroup coordinator = (ViewGroup) getRootView().findViewById(R.id.coordinator);
-        coordinator.addView(mProgressBar);
+        UiUtils.insertBefore(coordinator, mProgressBar, mBottomSheet);
+
         mProgressBar.setProgressBarContainer(coordinator);
     }
 
