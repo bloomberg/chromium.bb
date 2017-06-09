@@ -11,6 +11,14 @@ struct PresentationInfo {
   string id;
 };
 
+enum ScreenAvailability {
+  UNKNOWN,
+  UNAVAILABLE,
+  SOURCE_NOT_SUPPORTED,
+  DISABLED,
+  AVAILABLE
+};
+
 enum PresentationConnectionState {
   CONNECTING,
   CONNECTED,
@@ -111,7 +119,7 @@ interface PresentationService {
   // This is called after a connection has been established to the presentation
   // from the frame.
   ListenForConnectionMessages(PresentationInfo presentation_info);
-};      
+};
 
 interface PresentationServiceClient {
   //////////  This API is implemented by a controlling frame.  /////////////////
@@ -126,7 +134,8 @@ interface PresentationServiceClient {
   // presentation of |url| and the state changes. When the client starts to
   // listen for screen availability, this method will always be called to give
   // the current known state. It will then be called to notify of state updates.
-  OnScreenAvailabilityUpdated(url.mojom.Url url, bool available);
+  OnScreenAvailabilityUpdated(url.mojom.Url url,
+                              ScreenAvailability availability);
 
   // See PresentationService::SetDefaultPresentationURL.
   OnDefaultPresentationStarted(PresentationInfo presentation_info);
@@ -156,6 +165,4 @@ interface PresentationServiceClient {
   // See PresentationService::ListenForConnectionMessages.
   OnConnectionMessagesReceived(PresentationInfo presentation_info,
                                array<PresentationConnectionMessage> messages);
-
-
 };

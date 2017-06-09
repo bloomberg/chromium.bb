@@ -196,7 +196,8 @@ class MockPresentationServiceClient
     : public blink::mojom::PresentationServiceClient {
  public:
   MOCK_METHOD2(OnScreenAvailabilityUpdated,
-               void(const GURL& url, bool available));
+               void(const GURL& url,
+                    blink::mojom::ScreenAvailability availability));
   MOCK_METHOD2(OnConnectionStateChanged,
                void(const PresentationInfo& connection,
                     PresentationConnectionState new_state));
@@ -317,7 +318,11 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     ASSERT_TRUE(listener_it->second);
 
     base::RunLoop run_loop;
-    EXPECT_CALL(mock_client_, OnScreenAvailabilityUpdated(url, available))
+    blink::mojom::ScreenAvailability expected_availability =
+        available ? blink::mojom::ScreenAvailability::AVAILABLE
+                  : blink::mojom::ScreenAvailability::UNAVAILABLE;
+    EXPECT_CALL(mock_client_,
+                OnScreenAvailabilityUpdated(url, expected_availability))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     listener_it->second->OnScreenAvailabilityChanged(available);
     run_loop.Run();

@@ -21,6 +21,7 @@
 #include "platform/MemoryCoordinator.h"
 #include "platform/json/JSONValues.h"
 #include "platform/wtf/text/Base64.h"
+#include "public/platform/modules/presentation/WebPresentationClient.h"
 
 namespace blink {
 
@@ -202,7 +203,6 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
     return promise;
   }
 
-  // TODO(avayvod): this state is not propagated with the new pipeline.
   if (availability_ == WebRemotePlaybackAvailability::kSourceNotCompatible) {
     resolver->Reject(DOMException::Create(
         kNotSupportedError,
@@ -394,12 +394,35 @@ void RemotePlayback::RemotePlaybackDisabled() {
     media_element_->RequestRemotePlaybackStop();
 }
 
-void RemotePlayback::AvailabilityChanged(bool availability) {
+void RemotePlayback::AvailabilityChanged(
+    mojom::ScreenAvailability availability) {
   DCHECK(RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled());
   DCHECK(is_listening_);
-  AvailabilityChanged(availability
-                          ? WebRemotePlaybackAvailability::kDeviceAvailable
-                          : WebRemotePlaybackAvailability::kDeviceNotAvailable);
+
+  // TODO(avayvod): Use mojom::ScreenAvailability directly once
+  // WebRemotePlaybackAvailability is gone with the old pipeline.
+  WebRemotePlaybackAvailability remote_playback_availability =
+      WebRemotePlaybackAvailability::kUnknown;
+  switch (availability) {
+    case mojom::ScreenAvailability::UNKNOWN:
+    case mojom::ScreenAvailability::DISABLED:
+      NOTREACHED();
+      remote_playback_availability = WebRemotePlaybackAvailability::kUnknown;
+      break;
+    case mojom::ScreenAvailability::UNAVAILABLE:
+      remote_playback_availability =
+          WebRemotePlaybackAvailability::kDeviceNotAvailable;
+      break;
+    case mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED:
+      remote_playback_availability =
+          WebRemotePlaybackAvailability::kSourceNotCompatible;
+      break;
+    case mojom::ScreenAvailability::AVAILABLE:
+      remote_playback_availability =
+          WebRemotePlaybackAvailability::kDeviceAvailable;
+      break;
+  }
+  AvailabilityChanged(remote_playback_availability);
 }
 
 const WebVector<WebURL>& RemotePlayback::Urls() const {

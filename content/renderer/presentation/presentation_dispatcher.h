@@ -159,7 +159,9 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // blink::mojom::PresentationServiceClient
   void OnScreenAvailabilityNotSupported(const GURL& url) override;
-  void OnScreenAvailabilityUpdated(const GURL& url, bool available) override;
+  void OnScreenAvailabilityUpdated(
+      const GURL& url,
+      blink::mojom::ScreenAvailability availability) override;
   void OnConnectionStateChanged(const PresentationInfo& presentation_info,
                                 PresentationConnectionState state) override;
   void OnConnectionClosed(const PresentationInfo& presentation_info,
@@ -219,15 +221,6 @@ class CONTENT_EXPORT PresentationDispatcher
     ACTIVE,
   };
 
-  // Do not change order or add new enum values. |GetScreenAvailability| impl
-  // depends on the order of the enum values.
-  enum class ScreenAvailability {
-    UNKNOWN = 0,
-    UNAVAILABLE,
-    UNSUPPORTED,
-    AVAILABLE
-  };
-
   using AvailabilityCallbacksMap =
       IDMap<std::unique_ptr<blink::WebPresentationAvailabilityCallbacks>>;
   using AvailabilityObserversSet =
@@ -250,7 +243,7 @@ class CONTENT_EXPORT PresentationDispatcher
     ~ListeningStatus();
 
     const GURL url;
-    ScreenAvailability last_known_availability;
+    blink::mojom::ScreenAvailability last_known_availability;
     ListeningState listening_state;
   };
 
@@ -279,13 +272,15 @@ class CONTENT_EXPORT PresentationDispatcher
   void TryRemoveAvailabilityListener(AvailabilityListener* listener);
 
   // Returns AVAILABLE if any url in |urls| has screen availability AVAILABLE;
-  // Returns UNSUPPORTED if any url in |urls| have screen availability
-  // UNSUPPORTED, and no url has screen availability AVAILABLE;
-  // Returns UNAVAILABLE if at least one url in |urls| has screen availability
-  // UNAVAILABLE, and no url has screen availability AVAILABLE or UNSUPPORTED;
-  // Returns UNKNOWN if all urls in |urls| have screen availability
-  // UNKNOWN.
-  ScreenAvailability GetScreenAvailability(const std::vector<GURL>& urls) const;
+  // otherwise returns DISABLED if at least one url in |urls| has screen
+  // availability DISABLED;
+  // otherwise, returns SOURCE_NOT_SUPPORTED if any url in |urls| has screen
+  // availability SOURCE_NOT_SUPPORTED;
+  // otherwise, returns UNAVAILABLE if any url in |urls| has screen
+  // availability UNAVAILABLE;
+  // otherwise returns UNKNOWN.
+  blink::mojom::ScreenAvailability GetScreenAvailability(
+      const std::vector<GURL>& urls) const;
 
   DISALLOW_COPY_AND_ASSIGN(PresentationDispatcher);
 };

@@ -302,7 +302,7 @@ void PresentationDispatcher::GetAvailability(
 
   auto screen_availability = GetScreenAvailability(urls);
   // Reject Promise if screen availability is unsupported for all URLs.
-  if (screen_availability == ScreenAvailability::UNSUPPORTED) {
+  if (screen_availability == blink::mojom::ScreenAvailability::DISABLED) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(
@@ -321,12 +321,13 @@ void PresentationDispatcher::GetAvailability(
     availability_set_.insert(base::WrapUnique(listener));
   }
 
-  if (screen_availability != ScreenAvailability::UNKNOWN) {
+  if (screen_availability != blink::mojom::ScreenAvailability::UNKNOWN) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&blink::WebPresentationAvailabilityCallbacks::OnSuccess,
                    base::Passed(&callback),
-                   screen_availability == ScreenAvailability::AVAILABLE));
+                   screen_availability ==
+                       blink::mojom::ScreenAvailability::AVAILABLE));
   } else {
     listener->availability_callbacks.Add(std::move(callback));
   }
@@ -423,8 +424,9 @@ void PresentationDispatcher::WidgetWillClose() {
       blink::WebPresentationConnectionState::kTerminated);
 }
 
-void PresentationDispatcher::OnScreenAvailabilityUpdated(const GURL& url,
-                                                         bool available) {
+void PresentationDispatcher::OnScreenAvailabilityUpdated(
+    const GURL& url,
+    blink::mojom::ScreenAvailability availability) {
   auto* listening_status = GetListeningStatus(url);
   if (!listening_status)
     return;
@@ -432,12 +434,10 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(const GURL& url,
   if (listening_status->listening_state == ListeningState::WAITING)
     listening_status->listening_state = ListeningState::ACTIVE;
 
-  auto new_screen_availability = available ? ScreenAvailability::AVAILABLE
-                                           : ScreenAvailability::UNAVAILABLE;
-  if (listening_status->last_known_availability == new_screen_availability)
+  if (listening_status->last_known_availability == availability)
     return;
 
-  listening_status->last_known_availability = new_screen_availability;
+  listening_status->last_known_availability = availability;
 
   std::set<AvailabilityListener*> modified_listeners;
   for (auto& listener : availability_set_) {
@@ -445,17 +445,16 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(const GURL& url,
       continue;
 
     auto screen_availability = GetScreenAvailability(listener->urls);
-    DCHECK(screen_availability == ScreenAvailability::AVAILABLE ||
-           screen_availability == ScreenAvailability::UNAVAILABLE);
-    bool is_available = (screen_availability == ScreenAvailability::AVAILABLE);
-
+    DCHECK(screen_availability != blink::mojom::ScreenAvailability::UNKNOWN &&
+           screen_availability != blink::mojom::ScreenAvailability::DISABLED);
     for (auto* observer : listener->availability_observers)
-      observer->AvailabilityChanged(is_available);
+      observer->AvailabilityChanged(screen_availability);
 
     for (AvailabilityCallbacksMap::iterator iter(
              &listener->availability_callbacks);
          !iter.IsAtEnd(); iter.Advance()) {
-      iter.GetCurrentValue()->OnSuccess(is_available);
+      iter.GetCurrentValue()->OnSuccess(
+          screen_availability == blink::mojom::ScreenAvailability::AVAILABLE);
     }
     listener->availability_callbacks.Clear();
 
@@ -478,11 +477,12 @@ void PresentationDispatcher::OnScreenAvailabilityNotSupported(const GURL& url) {
     listening_status->listening_state = ListeningState::ACTIVE;
 
   if (listening_status->last_known_availability ==
-      ScreenAvailability::UNSUPPORTED) {
+      blink::mojom::ScreenAvailability::DISABLED) {
     return;
   }
 
-  listening_status->last_known_availability = ScreenAvailability::UNSUPPORTED;
+  listening_status->last_known_availability =
+      blink::mojom::ScreenAvailability::DISABLED;
 
   const blink::WebString& not_supported_error = blink::WebString::FromUTF8(
       "getAvailability() isn't supported at the moment. It can be due to "
@@ -496,10 +496,15 @@ void PresentationDispatcher::OnScreenAvailabilityNotSupported(const GURL& url) {
 
     // ScreenAvailabilityNotSupported should be a browser side setting, which
     // means all urls in PresentationAvailability should report NotSupported.
-    // It is not possible to change listening status from Available or
-    // Unavailable to NotSupported. No need to update observer.
+    // It is not possible to change listening status from AVAILABLE or
+    // UNAVAILABLE to DISABLED.
     auto screen_availability = GetScreenAvailability(listener->urls);
-    DCHECK_EQ(screen_availability, ScreenAvailability::UNSUPPORTED);
+    DCHECK_EQ(screen_availability, blink::mojom::ScreenAvailability::DISABLED);
+
+    // RemotePlayback is using a listener but doesn't use callbacks.
+    // So update observers even though it's not necessary for Presentation API.
+    for (auto* observer : listener->availability_observers)
+      observer->AvailabilityChanged(screen_availability);
 
     for (AvailabilityCallbacksMap::iterator iter(
              &listener->availability_callbacks);
@@ -730,23 +735,38 @@ void PresentationDispatcher::TryRemoveAvailabilityListener(
   }
 }
 
-// Given a screen availability vector and integer value for each availability:
-// UNKNOWN = 0, UNAVAILABLE = 1, UNSUPPORTED = 2, and AVAILABLE = 3, the max
-// value of the vector is the overall availability.
-PresentationDispatcher::ScreenAvailability
-PresentationDispatcher::GetScreenAvailability(
+blink::mojom::ScreenAvailability PresentationDispatcher::GetScreenAvailability(
     const std::vector<GURL>& urls) const {
-  int current_availability = 0;  // UNKNOWN;
+  bool has_disabled = false;
+  bool has_source_not_supported = false;
+  bool has_unavailable = false;
 
   for (const auto& url : urls) {
     auto* status = GetListeningStatus(url);
-    auto screen_availability =
-        status ? status->last_known_availability : ScreenAvailability::UNKNOWN;
-    current_availability =
-        std::max(current_availability, static_cast<int>(screen_availability));
+    auto screen_availability = status
+                                   ? status->last_known_availability
+                                   : blink::mojom::ScreenAvailability::UNKNOWN;
+    if (screen_availability == blink::mojom::ScreenAvailability::AVAILABLE) {
+      return blink::mojom::ScreenAvailability::AVAILABLE;
+    } else if (screen_availability ==
+               blink::mojom::ScreenAvailability::DISABLED) {
+      has_disabled = true;
+    } else if (screen_availability ==
+               blink::mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED) {
+      has_source_not_supported = true;
+    } else if (screen_availability ==
+               blink::mojom::ScreenAvailability::UNAVAILABLE) {
+      has_unavailable = true;
+    }
   }
 
-  return static_cast<ScreenAvailability>(current_availability);
+  if (has_disabled)
+    return blink::mojom::ScreenAvailability::DISABLED;
+  if (has_source_not_supported)
+    return blink::mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED;
+  if (has_unavailable)
+    return blink::mojom::ScreenAvailability::UNAVAILABLE;
+  return blink::mojom::ScreenAvailability::UNKNOWN;
 }
 
 PresentationDispatcher::SendMessageRequest::SendMessageRequest(
@@ -799,7 +819,7 @@ PresentationDispatcher::AvailabilityListener::~AvailabilityListener() {}
 PresentationDispatcher::ListeningStatus::ListeningStatus(
     const GURL& availability_url)
     : url(availability_url),
-      last_known_availability(ScreenAvailability::UNKNOWN),
+      last_known_availability(blink::mojom::ScreenAvailability::UNKNOWN),
       listening_state(ListeningState::INACTIVE) {}
 
 PresentationDispatcher::ListeningStatus::~ListeningStatus() {}
