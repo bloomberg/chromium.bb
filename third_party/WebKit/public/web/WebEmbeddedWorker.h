@@ -35,9 +35,9 @@
 
 namespace blink {
 
+class WebContentSettingsClient;
 class WebServiceWorkerContextClient;
 class WebString;
-class WebWorkerContentSettingsClientProxy;
 struct WebConsoleMessage;
 struct WebEmbeddedWorkerStartData;
 
@@ -46,12 +46,11 @@ struct WebEmbeddedWorkerStartData;
 class WebEmbeddedWorker {
  public:
   // Invoked on the main thread to instantiate a WebEmbeddedWorker.
-  // The given WebWorkerContextClient and WebWorkerContentSettingsClientProxy
-  // are going to be passed on to the worker thread and is held by a newly
-  // created WorkerGlobalScope.
-  BLINK_EXPORT static WebEmbeddedWorker* Create(
-      WebServiceWorkerContextClient*,
-      WebWorkerContentSettingsClientProxy*);
+  // The given WebWorkerContextClient and WebContentSettingsClient are going to
+  // be passed on to the worker thread and is held by a newly created
+  // WorkerGlobalScope.
+  BLINK_EXPORT static WebEmbeddedWorker* Create(WebServiceWorkerContextClient*,
+                                                WebContentSettingsClient*);
 
   virtual ~WebEmbeddedWorker() {}
 

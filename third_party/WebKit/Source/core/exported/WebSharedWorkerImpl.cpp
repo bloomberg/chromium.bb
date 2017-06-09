@@ -64,6 +64,7 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -74,7 +75,6 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
-#include "public/web/WebWorkerContentSettingsClientProxy.h"
 
 namespace blink {
 
@@ -346,8 +346,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   WebSecurityOrigin web_security_origin(loading_document_->GetSecurityOrigin());
   ProvideContentSettingsClientToWorker(
       worker_clients,
-      WTF::WrapUnique(client_->CreateWorkerContentSettingsClientProxy(
-          web_security_origin)));
+      client_->CreateWorkerContentSettingsClient(web_security_origin));
 
   if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =

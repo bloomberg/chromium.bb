@@ -31,6 +31,7 @@
 #ifndef WebSharedWorkerClient_h
 #define WebSharedWorkerClient_h
 
+#include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/web/WebDevToolsAgentClient.h"
@@ -43,7 +44,6 @@ class WebNotificationPresenter;
 class WebSecurityOrigin;
 class WebServiceWorkerNetworkProvider;
 class WebString;
-class WebWorkerContentSettingsClientProxy;
 
 // Provides an interface back to the in-page script object for a worker.
 // All functions are expected to be called back on the thread that created
@@ -70,12 +70,11 @@ class WebSharedWorkerClient {
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) = 0;
 
-  // Called on the main thread during initialization.
-  // WebWorkerContentSettingsClientProxy should not retain the given
-  // WebSecurityOrigin, as the proxy instance is passed to worker thread
-  // while WebSecurityOrigin is not thread safe.
-  virtual WebWorkerContentSettingsClientProxy*
-  CreateWorkerContentSettingsClientProxy(const WebSecurityOrigin& origin) {
+  // Called on the main thread during initialization. WebContentSettingsClient
+  // should not retain the given WebSecurityOrigin, as the client instance is
+  // passed to worker thread while WebSecurityOrigin is not thread safe.
+  virtual std::unique_ptr<WebContentSettingsClient>
+  CreateWorkerContentSettingsClient(const WebSecurityOrigin& origin) {
     return nullptr;
   }
 

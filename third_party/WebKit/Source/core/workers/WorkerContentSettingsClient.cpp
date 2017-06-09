@@ -33,27 +33,26 @@
 #include <memory>
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebWorkerContentSettingsClientProxy.h"
 
 namespace blink {
 
 WorkerContentSettingsClient* WorkerContentSettingsClient::Create(
-    std::unique_ptr<WebWorkerContentSettingsClientProxy> proxy) {
-  return new WorkerContentSettingsClient(std::move(proxy));
+    std::unique_ptr<WebContentSettingsClient> client) {
+  return new WorkerContentSettingsClient(std::move(client));
 }
 
 WorkerContentSettingsClient::~WorkerContentSettingsClient() {}
 
 bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
-  if (!proxy_)
+  if (!client_)
     return true;
-  return proxy_->RequestFileSystemAccessSync();
+  return client_->RequestFileSystemAccessSync();
 }
 
 bool WorkerContentSettingsClient::AllowIndexedDB(const WebString& name) {
-  if (!proxy_)
+  if (!client_)
     return true;
-  return proxy_->AllowIndexedDB(name);
+  return client_->AllowIndexedDB(name, WebSecurityOrigin());
 }
 
 const char* WorkerContentSettingsClient::SupplementName() {
@@ -69,16 +68,16 @@ WorkerContentSettingsClient* WorkerContentSettingsClient::From(
 }
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
-    std::unique_ptr<WebWorkerContentSettingsClientProxy> proxy)
-    : proxy_(std::move(proxy)) {}
+    std::unique_ptr<WebContentSettingsClient> client)
+    : client_(std::move(client)) {}
 
 void ProvideContentSettingsClientToWorker(
     WorkerClients* clients,
-    std::unique_ptr<WebWorkerContentSettingsClientProxy> proxy) {
+    std::unique_ptr<WebContentSettingsClient> client) {
   DCHECK(clients);
   WorkerContentSettingsClient::ProvideTo(
       *clients, WorkerContentSettingsClient::SupplementName(),
-      WorkerContentSettingsClient::Create(std::move(proxy)));
+      WorkerContentSettingsClient::Create(std::move(client)));
 }
 
 }  // namespace blink

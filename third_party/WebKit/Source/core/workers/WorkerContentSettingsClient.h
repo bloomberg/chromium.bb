@@ -35,12 +35,12 @@
 #include "core/CoreExport.h"
 #include "core/workers/WorkerClients.h"
 #include "platform/wtf/Forward.h"
+#include "public/platform/WebContentSettingsClient.h"
 
 namespace blink {
 
 class ExecutionContext;
 class WebString;
-class WebWorkerContentSettingsClientProxy;
 
 class CORE_EXPORT WorkerContentSettingsClient final
     : public GarbageCollectedFinalized<WorkerContentSettingsClient>,
@@ -49,7 +49,7 @@ class CORE_EXPORT WorkerContentSettingsClient final
 
  public:
   static WorkerContentSettingsClient* Create(
-      std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+      std::unique_ptr<WebContentSettingsClient>);
   virtual ~WorkerContentSettingsClient();
 
   bool RequestFileSystemAccessSync();
@@ -62,14 +62,14 @@ class CORE_EXPORT WorkerContentSettingsClient final
 
  private:
   explicit WorkerContentSettingsClient(
-      std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+      std::unique_ptr<WebContentSettingsClient>);
 
-  std::unique_ptr<WebWorkerContentSettingsClientProxy> proxy_;
+  std::unique_ptr<WebContentSettingsClient> client_;
 };
 
-void CORE_EXPORT ProvideContentSettingsClientToWorker(
-    WorkerClients*,
-    std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+void CORE_EXPORT
+ProvideContentSettingsClientToWorker(WorkerClients*,
+                                     std::unique_ptr<WebContentSettingsClient>);
 
 }  // namespace blink
 

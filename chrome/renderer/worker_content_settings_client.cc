@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/worker_content_settings_client_proxy.h"
+#include "chrome/renderer/worker_content_settings_client.h"
 
 #include "chrome/common/render_messages.h"
 #include "content/public/renderer/render_frame.h"
@@ -14,11 +14,10 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "url/origin.h"
 
-WorkerContentSettingsClientProxy::WorkerContentSettingsClientProxy(
+WorkerContentSettingsClient::WorkerContentSettingsClient(
     content::RenderFrame* render_frame,
     blink::WebFrame* frame)
-    : routing_id_(render_frame->GetRoutingID()),
-      is_unique_origin_(false) {
+    : routing_id_(render_frame->GetRoutingID()), is_unique_origin_(false) {
   if (frame->GetDocument().GetSecurityOrigin().IsUnique() ||
       frame->Top()->GetSecurityOrigin().IsUnique())
     is_unique_origin_ = true;
@@ -29,9 +28,9 @@ WorkerContentSettingsClientProxy::WorkerContentSettingsClientProxy(
       url::Origin(frame->Top()->GetSecurityOrigin()).GetURL();
 }
 
-WorkerContentSettingsClientProxy::~WorkerContentSettingsClientProxy() {}
+WorkerContentSettingsClient::~WorkerContentSettingsClient() {}
 
-bool WorkerContentSettingsClientProxy::RequestFileSystemAccessSync() {
+bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
   if (is_unique_origin_)
     return false;
 
@@ -41,8 +40,9 @@ bool WorkerContentSettingsClientProxy::RequestFileSystemAccessSync() {
   return result;
 }
 
-bool WorkerContentSettingsClientProxy::AllowIndexedDB(
-    const blink::WebString& name) {
+bool WorkerContentSettingsClient::AllowIndexedDB(
+    const blink::WebString& name,
+    const blink::WebSecurityOrigin&) {
   if (is_unique_origin_)
     return false;
 

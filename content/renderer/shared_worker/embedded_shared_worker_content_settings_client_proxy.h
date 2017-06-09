@@ -7,7 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/web/WebWorkerContentSettingsClientProxy.h"
+#include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -17,7 +18,7 @@ class ThreadSafeSender;
 // This proxy is created on the main renderer thread then passed onto
 // the blink's worker thread.
 class EmbeddedSharedWorkerContentSettingsClientProxy
-    : public blink::WebWorkerContentSettingsClientProxy {
+    : public blink::WebContentSettingsClient {
  public:
   EmbeddedSharedWorkerContentSettingsClientProxy(
       const GURL& origin_url,
@@ -26,9 +27,10 @@ class EmbeddedSharedWorkerContentSettingsClientProxy
       ThreadSafeSender* thread_safe_sender);
   ~EmbeddedSharedWorkerContentSettingsClientProxy() override;
 
-  // WebWorkerContentSettingsClientProxy overrides.
+  // WebContentSettingsClient overrides.
   bool RequestFileSystemAccessSync() override;
-  bool AllowIndexedDB(const blink::WebString& name) override;
+  bool AllowIndexedDB(const blink::WebString& name,
+                      const blink::WebSecurityOrigin&) override;
 
  private:
   const GURL origin_url_;

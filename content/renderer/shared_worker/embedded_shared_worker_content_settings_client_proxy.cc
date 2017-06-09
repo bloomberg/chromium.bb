@@ -39,7 +39,8 @@ bool EmbeddedSharedWorkerContentSettingsClientProxy::
 }
 
 bool EmbeddedSharedWorkerContentSettingsClientProxy::AllowIndexedDB(
-    const blink::WebString& name) {
+    const blink::WebString& name,
+    const blink::WebSecurityOrigin&) {
   if (is_unique_origin_)
     return false;
   bool result = false;
