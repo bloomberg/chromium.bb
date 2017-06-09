@@ -41,13 +41,11 @@ SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
 SurfaceManager::~SurfaceManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (using_surface_references()) {
-    // Remove all temporary references on shutdown.
-    temporary_references_.clear();
-    temporary_reference_ranges_.clear();
+  // Remove all temporary references on shutdown.
+  temporary_references_.clear();
+  temporary_reference_ranges_.clear();
 
-    GarbageCollectSurfaces();
-  }
+  GarbageCollectSurfaces();
 
   for (SurfaceDestroyList::iterator it = surfaces_to_destroy_.begin();
        it != surfaces_to_destroy_.end();
@@ -153,18 +151,16 @@ void SurfaceManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id) {
 void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
   framesink_manager_.InvalidateFrameSinkId(frame_sink_id);
 
-  if (using_surface_references()) {
-    // Remove any temporary references owned by |frame_sink_id|.
-    std::vector<SurfaceId> temp_refs_to_clear;
-    for (auto& map_entry : temporary_references_) {
-      base::Optional<FrameSinkId>& owner = map_entry.second;
-      if (owner.has_value() && owner.value() == frame_sink_id)
-        temp_refs_to_clear.push_back(map_entry.first);
-    }
-
-    for (auto& surface_id : temp_refs_to_clear)
-      RemoveTemporaryReference(surface_id, false);
+  // Remove any temporary references owned by |frame_sink_id|.
+  std::vector<SurfaceId> temp_refs_to_clear;
+  for (auto& map_entry : temporary_references_) {
+    base::Optional<FrameSinkId>& owner = map_entry.second;
+    if (owner.has_value() && owner.value() == frame_sink_id)
+      temp_refs_to_clear.push_back(map_entry.first);
   }
+
+  for (auto& surface_id : temp_refs_to_clear)
+    RemoveTemporaryReference(surface_id, false);
 
   GarbageCollectSurfaces();
 }
@@ -176,7 +172,6 @@ const SurfaceId& SurfaceManager::GetRootSurfaceId() const {
 void SurfaceManager::AddSurfaceReferences(
     const std::vector<SurfaceReference>& references) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(using_surface_references());
 
   for (const auto& reference : references)
     AddSurfaceReferenceImpl(reference.parent_id(), reference.child_id());
@@ -185,7 +180,6 @@ void SurfaceManager::AddSurfaceReferences(
 void SurfaceManager::RemoveSurfaceReferences(
     const std::vector<SurfaceReference>& references) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(using_surface_references());
 
   for (const auto& reference : references)
     RemoveSurfaceReferenceImpl(reference.parent_id(), reference.child_id());
@@ -314,12 +308,8 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForSequences() {
     Surface* surf = surface_map_[live_surfaces[i]];
     DCHECK(surf);
 
-    // TODO(fsamuel): We should probably keep alive pending referenced surfaces
-    // too.
-    if (!surf->active_referenced_surfaces())
-      continue;
-
-    for (const SurfaceId& id : *surf->active_referenced_surfaces()) {
+    const auto& children = GetSurfacesReferencedByParent(surf->surface_id());
+    for (const SurfaceId& id : children) {
       if (live_surfaces_set.count(id))
         continue;
 

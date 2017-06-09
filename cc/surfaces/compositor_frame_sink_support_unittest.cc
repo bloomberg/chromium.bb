@@ -663,6 +663,12 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
           &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
           kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
   manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+  // Give local_surface_id_ an initial frame so another client can refer to
+  // that surface.
+  {
+    CompositorFrame frame = MakeCompositorFrame();
+    support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+  }
   // Give id2 a frame that references local_surface_id_.
   {
     CompositorFrame frame = MakeCompositorFrame();
