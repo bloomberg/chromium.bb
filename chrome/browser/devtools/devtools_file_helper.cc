@@ -211,6 +211,7 @@ DevToolsFileHelper::DevToolsFileHelper(WebContents* web_contents,
       profile_(profile),
       delegate_(delegate),
       weak_factory_(this) {
+  pref_change_registrar_.Init(profile_->GetPrefs());
 }
 
 DevToolsFileHelper::~DevToolsFileHelper() {
@@ -388,7 +389,6 @@ DevToolsFileHelper::GetFileSystems() {
   if (!file_watcher_) {
     file_watcher_.reset(new DevToolsFileWatcher(base::Bind(
         &DevToolsFileHelper::FilePathsChanged, weak_factory_.GetWeakPtr())));
-    pref_change_registrar_.Init(profile_->GetPrefs());
     pref_change_registrar_.Add(
         prefs::kDevToolsFileSystemPaths,
         base::Bind(&DevToolsFileHelper::FileSystemPathsSettingChanged,
