@@ -94,8 +94,10 @@ void SearchResultTileItemListView::UpdateSelectedIndex(int old_selected,
   if (old_selected >= 0)
     tile_views_[old_selected]->SetSelected(false);
 
-  if (new_selected >= 0)
+  if (new_selected >= 0) {
     tile_views_[new_selected]->SetSelected(true);
+    ScrollRectToVisible(GetLocalBounds());
+  }
 }
 
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {

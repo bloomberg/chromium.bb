@@ -42,6 +42,8 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
       return;
     selected_ = selected;
     UpdateBackgroundColor();
+    if (selected)
+      ScrollRectToVisible(GetLocalBounds());
   }
 
   void SetSearchResult(SearchResult* search_result) {
