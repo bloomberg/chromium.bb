@@ -102,10 +102,10 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void GetClients(
       const blink::WebServiceWorkerClientQueryOptions&,
       std::unique_ptr<blink::WebServiceWorkerClientsCallbacks>) override;
-  void OpenWindowForClients(
+  void OpenNewTab(
       const blink::WebURL&,
       std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void OpenWindowForPaymentHandler(
+  void OpenNewPopup(
       const blink::WebURL&,
       std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
   void SetCachedMetadata(const blink::WebURL&,
