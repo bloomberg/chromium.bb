@@ -37,6 +37,7 @@
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
 #include "net/net_features.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/quic/chromium/quic_stream_factory.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
@@ -233,6 +234,8 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       request_context->http_server_properties();
   session_context->net_log = request_context->net_log();
   session_context->channel_id_service = request_context->channel_id_service();
+  session_context->network_quality_provider =
+      request_context->network_quality_estimator();
 }
 
 void URLRequestContextBuilder::EnableHttpCache(const HttpCacheParams& params) {
@@ -424,6 +427,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (socket_performance_watcher_factory_) {
     network_session_context.socket_performance_watcher_factory =
         socket_performance_watcher_factory_;
+    DCHECK(network_session_context.network_quality_provider);
   }
 
   storage->set_http_network_session(base::MakeUnique<HttpNetworkSession>(

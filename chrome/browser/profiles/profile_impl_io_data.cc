@@ -487,6 +487,8 @@ void ProfileImplIOData::InitializeInternal(
       io_thread_globals->system_request_context->http_auth_handler_factory());
 
   main_context->set_proxy_service(proxy_service());
+  main_context->set_network_quality_estimator(
+      io_thread_globals->network_quality_estimator.get());
 
   // Create a single task runner to use with the CookieStore and ChannelIDStore.
   scoped_refptr<base::SequencedTaskRunner> cookie_background_task_runner =
