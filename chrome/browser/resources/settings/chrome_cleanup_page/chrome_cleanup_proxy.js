@@ -9,9 +9,9 @@ cr.define('settings', function() {
   ChromeCleanupProxy.prototype = {
     /**
      * Registers the current ChromeCleanupHandler as an observer of
-     * ChromeCleanupController events.
+     * ChromeCleanerController events.
      */
-    registerChromeCleanupObserver: assertNotReached,
+    registerChromeCleanerObserver: assertNotReached,
 
     /**
      * Starts a cleanup on the user's computer.
@@ -27,12 +27,6 @@ cr.define('settings', function() {
      * Hides the Cleanup page from the settings menu.
      */
     dismissCleanupPage: assertNotReached,
-
-    /**
-     * Retrieves if there is cleanup information to present to the user.
-     * @return {!Promise<boolean>}
-     */
-    getChromeCleanupVisibility: assertNotReached,
   };
 
   /**
@@ -45,33 +39,23 @@ cr.define('settings', function() {
 
   ChromeCleanupProxyImpl.prototype = {
     /** @override */
-    registerChromeCleanupObserver: function() {
-      // TODO(proberge): Uncomment once this is implemented.
-      // chrome.send('registerChromeCleanupObserver');
+    registerChromeCleanerObserver: function() {
+      chrome.send('registerChromeCleanerObserver');
     },
 
     /** @override */
     startCleanup: function() {
-      // TODO(proberge): Uncomment once this is implemented.
-      // chrome.send('startCleanup');
+      chrome.send('startCleanup');
     },
 
     /** @override */
     restartComputer: function() {
-      // TODO(proberge): Uncomment once this is implemented.
-      // chrome.send('restartComputer');
+      chrome.send('restartComputer');
     },
 
     /** @override */
     dismissCleanupPage: function() {
-      // TODO(proberge): Uncomment once this is implemented.
-    },
-
-    /** @override */
-    getChromeCleanupVisibility: function() {
-      // TODO(proberge): Uncomment once this is implemented.
-      // return cr.sendWithPromise('getChromeCleanupVisibility');
-      return Promise.resolve(false);
+      chrome.send('dismissCleanupPage');
     },
   };
 

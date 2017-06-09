@@ -14,28 +14,14 @@
 <dom-module id="settings-chrome-cleanup-page">
   <template>
     <style include="settings-shared">
-      #details-container {
-        display: block;
-        padding-bottom: 10px;
-        padding-top: 10px;
-      }
-
       #files-to-remove-list {
         -webkit-user-select: text;
-      }
-
-      .powered-by {
-        padding-top: 10px;
       }
 
       #show-files-button {
         color: var(--google-blue-700);
         --paper-button-ink-color: white;
         text-transform: inherit;
-      }
-
-      .show-files-container {
-        padding-top: 10px;
       }
 
       #status-icon {
@@ -79,8 +65,10 @@
       </template>
     </div>
     <div id="details-container"
-         class="settings-box" hidden="[[!showDetails_]]">
+         class="settings-box two-line" hidden="[[!showDetails_]]">
       <div>[[detailsDescription]]</div>
+    </div>
+    <div class="settings-box continuation" hidden="[[!showDetails_]]">
       <div class="show-files-container start" hidden="[[showFilesToRemove_]]">
         <paper-button id="show-files-button" on-tap="showFiles_">
           $i18n{chromeCleanupLinkShowFiles}

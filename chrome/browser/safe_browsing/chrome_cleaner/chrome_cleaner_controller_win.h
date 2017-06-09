@@ -112,6 +112,10 @@ class ChromeCleanerController {
   // Returns the singleton controller object.
   static ChromeCleanerController* GetInstance();
 
+  // Returns whether the Cleanup card in settings should be displayed.
+  // Static to prevent instantiation of the singleton.
+  static bool ShouldShowCleanupInSettingsUI();
+
   State state() const { return state_; }
 
   // |AddObserver()| immediately notifies |observer| of the controller's state

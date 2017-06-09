@@ -44,6 +44,12 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+#include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
+#endif  // defined(OS_WIN)
+
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
@@ -172,6 +178,14 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
   html_source->AddString("hostname", url.host());
+
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature) &&
+      safe_browsing::ChromeCleanerController::ShouldShowCleanupInSettingsUI()) {
+    AddSettingsPageUIHandler(base::MakeUnique<ChromeCleanupHandler>());
+    html_source->AddBoolean("chromeCleanupEnabled", true);
+  }
+#endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
   chromeos::settings::EasyUnlockSettingsHandler* easy_unlock_handler =

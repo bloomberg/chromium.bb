@@ -20,16 +20,13 @@ Polymer({
 
     showAndroidApps: Boolean,
 
-    // <if expr="is_win">
-    /**
-     * Whether there is cleanup information to present to the user.
-     * @private {boolean}
-     */
-    chromeCleanupVisible_: {
+    showChromeCleanup: {
       type: Boolean,
-      value: false,
+      value: function() {
+        return loadTimeData.valueExists('chromeCleanupEnabled') &&
+            loadTimeData.getBoolean('chromeCleanupEnabled');
+      },
     },
-    // </if>
 
     /**
      * Dictionary defining page visibility.
@@ -93,20 +90,9 @@ Polymer({
   attached: function() {
     this.currentRoute_ = settings.getCurrentRoute();
 
-    // <if expr="is_win">
-    this.addWebUIListener(
-        'basic-page-set-chrome-cleanup-visibility',
-        function(visibility) {
-          this.chromeCleanupVisible_ = visibility;
-        }.bind(this));
-
-    var cleanupBrowserProxy =
-        settings.ChromeCleanupProxyImpl.getInstance();
-    cleanupBrowserProxy.getChromeCleanupVisibility().then(
-      function(visibility) {
-        this.chromeCleanupVisible_ = visibility;
-      }.bind(this));
-    // </if>
+    this.addEventListener('chrome-cleanup-dismissed', function(e) {
+      this.showChromeCleanup = false;
+    }.bind(this));
   },
 
   /**
