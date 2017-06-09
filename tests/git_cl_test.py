@@ -2128,7 +2128,7 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
-      ((['git', 'merge-base', '--ancestor', 'HEAD', 'origin/master'],), ''),
+      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],), ''),
       ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
@@ -2147,7 +2147,7 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://host.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
-      ((['git', 'merge-base', '--ancestor', 'HEAD', 'origin/master'],), ''),
+      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],), ''),
       ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
@@ -2168,7 +2168,7 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
-      ((['git', 'merge-base', '--ancestor', 'HEAD', 'origin/master'],), ''),
+      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],), ''),
       ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
@@ -2191,7 +2191,7 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
-      ((['git', 'merge-base', '--ancestor', 'HEAD', 'origin/master'],), ''),
+      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],), ''),
       ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
@@ -2212,9 +2212,9 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
-      ((['git', 'merge-base', '--ancestor', 'HEAD', 'origin/master'],),
+      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],),
        CERR1),
-      ((['git', 'merge-base', '--ancestor', 'HEAD', 'FETCH_HEAD'],),
+      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'FETCH_HEAD'],),
        CERR1),
       (('ask_for_data',
         'It looks like you\'re on a branch with some local commits.\n'
@@ -2232,9 +2232,9 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
-      ((['git', 'merge-base', '--ancestor', 'HEAD', 'origin/master'],),
+      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],),
        CERR1),
-      ((['git', 'merge-base', '--ancestor', 'HEAD', 'FETCH_HEAD'],),
+      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'FETCH_HEAD'],),
        CERR1),
       (('ask_for_data',
         'It looks like you\'re on a branch with some local commits.\n'

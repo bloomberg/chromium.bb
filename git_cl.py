@@ -2796,10 +2796,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     RunGit(['fetch', fetch_info['url'], fetch_info['ref']])
 
     clean, _ = RunGitWithCode(
-        ['merge-base', '--ancestor', 'HEAD', 'origin/master'])
+        ['merge-base', '--is-ancestor', 'HEAD', 'origin/master'])
     if clean != 0:
       clean, _ = RunGitWithCode(
-          ['merge-base', '--ancestor', 'HEAD', 'FETCH_HEAD'])
+          ['merge-base', '--is-ancestor', 'HEAD', 'FETCH_HEAD'])
     if clean != 0:
       confirm_or_exit(
           'It looks like you\'re on a branch with some local commits.\n'
