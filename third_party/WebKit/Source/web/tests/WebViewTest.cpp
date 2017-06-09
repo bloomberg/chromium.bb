@@ -3809,7 +3809,7 @@ TEST_P(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult) {
   FrameTestHelpers::WebViewHelper main_web_view;
   main_web_view.InitializeAndLoad("about:blank", true, 0, &client);
 
-  WebFrame* frame = main_web_view.WebView()->MainFrame();
+  WebLocalFrame* frame = main_web_view.WebView()->MainFrameImpl();
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> v8_value =
       frame->ExecuteScriptAndReturnValue(WebScriptSource(

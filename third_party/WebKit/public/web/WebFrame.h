@@ -64,11 +64,7 @@ enum class WebSandboxFlags;
 struct WebFrameOwnerProperties;
 struct WebPrintParams;
 struct WebRect;
-struct WebScriptSource;
 struct WebSize;
-
-template <typename T>
-class WebVector;
 
 // Frames may be rendered in process ('local') or out of process ('remote').
 // A remote frame is always cross-site; a local frame may be either same-site or
@@ -214,59 +210,6 @@ class BLINK_EXPORT WebFrame {
 
   // Returns the global proxy object.
   virtual v8::Local<v8::Object> GlobalProxy() const = 0;
-
-  // Executes JavaScript in a new world associated with the web frame.
-  // The script gets its own global scope and its own prototypes for
-  // intrinsic JavaScript objects (String, Array, and so-on). It also
-  // gets its own wrappers for all DOM nodes and DOM constructors.
-  //
-  // worldID must be > 0 (as 0 represents the main world).
-  // worldID must be < EmbedderWorldIdLimit, high number used internally.
-  virtual void ExecuteScriptInIsolatedWorld(int world_id,
-                                            const WebScriptSource* sources,
-                                            unsigned num_sources) = 0;
-
-  // Associates an isolated world (see above for description) with a security
-  // origin. XMLHttpRequest instances used in that world will be considered
-  // to come from that origin, not the frame's.
-  virtual void SetIsolatedWorldSecurityOrigin(int world_id,
-                                              const WebSecurityOrigin&) = 0;
-
-  // Associates a content security policy with an isolated world. This policy
-  // should be used when evaluating script in the isolated world, and should
-  // also replace a protected resource's CSP when evaluating resources
-  // injected into the DOM.
-  //
-  // FIXME: Setting this simply bypasses the protected resource's CSP. It
-  //     doesn't yet restrict the isolated world to the provided policy.
-  virtual void SetIsolatedWorldContentSecurityPolicy(int world_id,
-                                                     const WebString&) = 0;
-
-  // Calls window.gc() if it is defined.
-  virtual void CollectGarbage() = 0;
-
-  // Executes script in the context of the current page and returns the value
-  // that the script evaluated to.
-  // DEPRECATED: Use WebLocalFrame::requestExecuteScriptAndReturnValue.
-  virtual v8::Local<v8::Value> ExecuteScriptAndReturnValue(
-      const WebScriptSource&) = 0;
-
-  // worldID must be > 0 (as 0 represents the main world).
-  // worldID must be < EmbedderWorldIdLimit, high number used internally.
-  // DEPRECATED: Use WebLocalFrame::requestExecuteScriptInIsolatedWorld.
-  virtual void ExecuteScriptInIsolatedWorld(
-      int world_id,
-      const WebScriptSource* sources_in,
-      unsigned num_sources,
-      WebVector<v8::Local<v8::Value>>* results) = 0;
-
-  // Call the function with the given receiver and arguments, bypassing
-  // canExecute().
-  virtual v8::Local<v8::Value> CallFunctionEvenIfScriptDisabled(
-      v8::Local<v8::Function>,
-      v8::Local<v8::Value>,
-      int argc,
-      v8::Local<v8::Value> argv[]) = 0;
 
   // Returns true if the WebFrame currently executing JavaScript has access
   // to the given WebFrame, or false otherwise.

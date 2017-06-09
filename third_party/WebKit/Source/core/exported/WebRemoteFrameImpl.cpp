@@ -147,52 +147,6 @@ void WebRemoteFrameImpl::DispatchUnloadEvent() {
   NOTREACHED();
 }
 
-void WebRemoteFrameImpl::ExecuteScriptInIsolatedWorld(
-    int world_id,
-    const WebScriptSource* sources,
-    unsigned num_sources) {
-  NOTREACHED();
-}
-
-void WebRemoteFrameImpl::SetIsolatedWorldSecurityOrigin(
-    int world_id,
-    const WebSecurityOrigin&) {
-  NOTREACHED();
-}
-
-void WebRemoteFrameImpl::SetIsolatedWorldContentSecurityPolicy(
-    int world_id,
-    const WebString&) {
-  NOTREACHED();
-}
-
-void WebRemoteFrameImpl::CollectGarbage() {
-  NOTREACHED();
-}
-
-v8::Local<v8::Value> WebRemoteFrameImpl::ExecuteScriptAndReturnValue(
-    const WebScriptSource&) {
-  NOTREACHED();
-  return v8::Local<v8::Value>();
-}
-
-void WebRemoteFrameImpl::ExecuteScriptInIsolatedWorld(
-    int world_id,
-    const WebScriptSource* sources_in,
-    unsigned num_sources,
-    WebVector<v8::Local<v8::Value>>* results) {
-  NOTREACHED();
-}
-
-v8::Local<v8::Value> WebRemoteFrameImpl::CallFunctionEvenIfScriptDisabled(
-    v8::Local<v8::Function>,
-    v8::Local<v8::Value>,
-    int argc,
-    v8::Local<v8::Value> argv[]) {
-  NOTREACHED();
-  return v8::Local<v8::Value>();
-}
-
 void WebRemoteFrameImpl::Reload(WebFrameLoadType) {
   NOTREACHED();
 }

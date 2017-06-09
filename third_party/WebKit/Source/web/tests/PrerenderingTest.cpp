@@ -182,7 +182,7 @@ class PrerenderingTest : public ::testing::Test {
   }
 
   void Close() {
-    web_view_helper_.WebView()->MainFrame()->CollectGarbage();
+    web_view_helper_.WebView()->MainFrameImpl()->CollectGarbage();
     web_view_helper_.Reset();
 
     WebCache::Clear();
