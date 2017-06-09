@@ -6,7 +6,9 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/notifications/notification_common.h"
+#include "base/strings/nullable_string16.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -27,12 +29,13 @@ const base::Feature kAllowFullscreenWebNotificationsFeature{
 
 } // namespace features
 
-
 WebNotificationDelegate::WebNotificationDelegate(
-    content::BrowserContext* browser_context,
+    NotificationCommon::Type notification_type,
+    Profile* profile,
     const std::string& notification_id,
     const GURL& origin)
-    : browser_context_(browser_context),
+    : notification_type_(notification_type),
+      profile_(profile),
       notification_id_(notification_id),
       origin_(origin) {}
 
@@ -44,7 +47,7 @@ std::string WebNotificationDelegate::id() const {
 
 bool WebNotificationDelegate::SettingsClick() {
 #if !defined(OS_CHROMEOS)
-  NotificationCommon::OpenNotificationSettings(browser_context_);
+  NotificationCommon::OpenNotificationSettings(profile_);
   return true;
 #else
   return false;
@@ -57,13 +60,11 @@ bool WebNotificationDelegate::ShouldDisplaySettingsButton() {
 
 bool WebNotificationDelegate::ShouldDisplayOverFullscreen() const {
 #if !defined(OS_ANDROID)
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
-  DCHECK(profile);
   // Check to see if this notification comes from a webpage that is displaying
   // fullscreen content.
   for (auto* browser : *BrowserList::GetInstance()) {
     // Only consider the browsers for the profile that created the notification
-    if (browser->profile() != profile)
+    if (browser->profile() != profile_)
       continue;
 
     const content::WebContents* active_contents =
@@ -97,4 +98,42 @@ bool WebNotificationDelegate::ShouldDisplayOverFullscreen() const {
 #endif
 
   return false;
+}
+
+void WebNotificationDelegate::Display() {}
+
+void WebNotificationDelegate::Close(bool by_user) {
+  auto* display_service =
+      NotificationDisplayServiceFactory::GetForProfile(profile_);
+  display_service->ProcessNotificationOperation(
+      NotificationCommon::CLOSE, notification_type_, origin().spec(),
+      notification_id_, -1, base::NullableString16());
+}
+
+void WebNotificationDelegate::Click() {
+  auto* display_service =
+      NotificationDisplayServiceFactory::GetForProfile(profile_);
+  display_service->ProcessNotificationOperation(
+      NotificationCommon::CLICK, notification_type_, origin().spec(),
+      notification_id_, -1, base::NullableString16());
+}
+
+void WebNotificationDelegate::ButtonClick(int button_index) {
+  DCHECK(button_index >= 0);
+  auto* display_service =
+      NotificationDisplayServiceFactory::GetForProfile(profile_);
+  display_service->ProcessNotificationOperation(
+      NotificationCommon::CLICK, notification_type_, origin().spec(),
+      notification_id_, button_index, base::NullableString16());
+}
+
+void WebNotificationDelegate::ButtonClickWithReply(
+    int button_index,
+    const base::string16& reply) {
+  auto* display_service =
+      NotificationDisplayServiceFactory::GetForProfile(profile_);
+  display_service->ProcessNotificationOperation(
+      NotificationCommon::CLICK, notification_type_, origin().spec(),
+      notification_id_, button_index,
+      base::NullableString16(reply, false /* is_null */));
 }

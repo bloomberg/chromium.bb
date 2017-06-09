@@ -19,8 +19,7 @@
 #include "chrome/browser/notifications/native_notification_delegate.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
-#include "chrome/browser/notifications/notification_object_proxy.h"
-#include "chrome/browser/notifications/persistent_notification_delegate.h"
+#include "chrome/browser/notifications/web_notification_delegate.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -40,7 +39,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
@@ -315,7 +313,6 @@ void PlatformNotificationServiceImpl::DisplayNotification(
     const GURL& origin,
     const content::PlatformNotificationData& notification_data,
     const content::NotificationResources& notification_resources,
-    std::unique_ptr<content::DesktopNotificationDelegate> delegate,
     base::Closure* cancel_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -330,20 +327,8 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   DCHECK_EQ(0u, notification_data.actions.size());
   DCHECK_EQ(0u, notification_resources.action_icons.size());
 
-  // Temporary change while the delegates are merged.
-  NotificationDelegate* notification_delegate;
-#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-  if (base::FeatureList::IsEnabled(features::kNativeNotifications) &&
-      g_browser_process->notification_platform_bridge()) {
-    notification_delegate = new NativeNotificationDelegate(notification_id);
-  } else {
-    notification_delegate = new NotificationObjectProxy(
-        browser_context, notification_id, origin, std::move(delegate));
-  }
-#else
-  notification_delegate = new NotificationObjectProxy(
-      browser_context, notification_id, origin, std::move(delegate));
-#endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+  NotificationDelegate* notification_delegate = new WebNotificationDelegate(
+      NotificationCommon::NON_PERSISTENT, profile, notification_id, origin);
 
   Notification notification = CreateNotificationFromData(
       profile, GURL() /* service_worker_scope */, origin, notification_data,
@@ -381,12 +366,8 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DCHECK(profile);
 
-  // The notification settings button will be appended after the developer-
-  // supplied buttons, available in |notification_data.actions|.
-  int settings_button_index = notification_data.actions.size();
-
-  PersistentNotificationDelegate* delegate = new PersistentNotificationDelegate(
-      browser_context, notification_id, origin, settings_button_index);
+  NotificationDelegate* delegate = new WebNotificationDelegate(
+      NotificationCommon::PERSISTENT, profile, notification_id, origin);
 
   Notification notification = CreateNotificationFromData(
       profile, service_worker_scope, origin, notification_data,

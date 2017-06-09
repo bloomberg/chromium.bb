@@ -17,7 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/message_center_display_service.h"
-#include "chrome/browser/notifications/notification_delegate.h"
+#include "chrome/browser/notifications/native_notification_delegate.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -27,7 +27,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -55,26 +54,6 @@ namespace {
 
 const char kNotificationId[] = "my-notification-id";
 const int kNotificationVibrationPattern[] = { 100, 200, 300 };
-
-class MockDesktopNotificationDelegate
-    : public content::DesktopNotificationDelegate {
- public:
-  MockDesktopNotificationDelegate() : displayed_(false) {}
-
-  ~MockDesktopNotificationDelegate() override {}
-
-  // content::DesktopNotificationDelegate implementation.
-  void NotificationDisplayed() override { displayed_ = true; }
-  void NotificationClosed() override {}
-  void NotificationClick() override {}
-
-  bool displayed() const { return displayed_; }
-
- private:
-  bool displayed_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDesktopNotificationDelegate);
-};
 
 }  // namespace
 
@@ -110,30 +89,22 @@ class PlatformNotificationServiceTest : public testing::Test {
   }
 
  protected:
-  // Displays a simple, fake notifications and returns a weak pointer to the
-  // delegate receiving events for it (ownership is transferred to the service).
-  MockDesktopNotificationDelegate* CreateSimplePageNotification() const {
-    return CreateSimplePageNotificationWithCloseClosure(nullptr);
+  // Displays a simple, fake notifications.
+  void CreateSimplePageNotification() const {
+    CreateSimplePageNotificationWithCloseClosure(nullptr);
   }
 
-  // Displays a simple, fake notification and returns a weak pointer to the
-  // delegate receiving events for it (ownership is transferred to the service).
-  // The close closure may be specified if so desired.
-  MockDesktopNotificationDelegate* CreateSimplePageNotificationWithCloseClosure(
+  // Displays a simple, fake notification.
+  // The close closure may be specified if desired.
+  void CreateSimplePageNotificationWithCloseClosure(
       base::Closure* close_closure) const {
     PlatformNotificationData notification_data;
     notification_data.title = base::ASCIIToUTF16("My Notification");
     notification_data.body = base::ASCIIToUTF16("Hello, world!");
 
-    MockDesktopNotificationDelegate* delegate =
-        new MockDesktopNotificationDelegate();
-
-    service()->DisplayNotification(profile(), kNotificationId,
-                                   GURL("https://chrome.com/"),
-                                   notification_data, NotificationResources(),
-                                   base::WrapUnique(delegate), close_closure);
-
-    return delegate;
+    service()->DisplayNotification(
+        profile(), kNotificationId, GURL("https://chrome.com/"),
+        notification_data, NotificationResources(), close_closure);
   }
 
   // Returns the Platform Notification Service these unit tests are for.
@@ -183,19 +154,6 @@ class PlatformNotificationServiceTest : public testing::Test {
   std::unique_ptr<std::set<std::string>> displayed_notifications_;
 };
 
-// Native, non persistent notifications don't have delegates any more
-#if !defined(OS_MACOSX)
-#if defined(OS_ANDROID)
-// http://crbug.com/729247
-#define DisplayPageDisplayedEvent DISABLED_DisplayPageDisplayedEvent
-#endif
-TEST_F(PlatformNotificationServiceTest, DisplayPageDisplayedEvent) {
-  auto* delegate = CreateSimplePageNotification();
-
-  EXPECT_EQ(1u, GetNotificationCount());
-  EXPECT_TRUE(delegate->displayed());
-}
-#endif  // !defined(OS_MACOSX)
 
 TEST_F(PlatformNotificationServiceTest, DisplayPageCloseClosure) {
   base::Closure close_closure;
@@ -244,12 +202,9 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
   notification_data.vibration_pattern = vibration_pattern;
   notification_data.silent = true;
 
-  MockDesktopNotificationDelegate* delegate
-      = new MockDesktopNotificationDelegate();
   service()->DisplayNotification(profile(), kNotificationId,
                                  GURL("https://chrome.com/"), notification_data,
-                                 NotificationResources(),
-                                 base::WrapUnique(delegate), nullptr);
+                                 NotificationResources(), nullptr);
 
   ASSERT_EQ(1u, GetNotificationCount());
 
@@ -400,7 +355,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   Notification notification = service()->CreateNotificationFromData(
       profile(), GURL() /* service_worker_scope */, GURL("https://chrome.com/"),
       notification_data, NotificationResources(),
-      new MockNotificationDelegate("hello"));
+      new NativeNotificationDelegate("hello"));
   EXPECT_TRUE(notification.context_message().empty());
 
   // Create a mocked extension.
@@ -420,11 +375,10 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   EXPECT_TRUE(registry->AddEnabled(extension));
 
   notification = service()->CreateNotificationFromData(
-      profile(),
-      GURL() /* service_worker_scope */,
+      profile(), GURL() /* service_worker_scope */,
       GURL("chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"),
       notification_data, NotificationResources(),
-      new MockNotificationDelegate("hello"));
+      new NativeNotificationDelegate("hello"));
   EXPECT_EQ("NotificationTest",
             base::UTF16ToUTF8(notification.context_message()));
 }

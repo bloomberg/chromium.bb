@@ -1057,8 +1057,6 @@ source_set("browser") {
     "notifications/notification_id_generator.h",
     "notifications/notification_message_filter.cc",
     "notifications/notification_message_filter.h",
-    "notifications/page_notification_delegate.cc",
-    "notifications/page_notification_delegate.h",
     "notifications/platform_notification_context_impl.cc",
     "notifications/platform_notification_context_impl.h",
     "notifications/type_converters.cc",

@@ -9,12 +9,11 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "url/gurl.h"
 
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 namespace features {
 
@@ -22,31 +21,33 @@ extern const base::Feature kAllowFullscreenWebNotificationsFeature;
 
 } // namespace features
 
-// Base class for the PersistentNotificationDelegate and the
-// NotificationObjectProxy. All common functionality for displaying web
-// notifications is found here.
-// TODO(peter, crbug.com/596161): Migrate this functionality offered by the
-// delegate to the NotificationDisplayService.
+// Delegate class for Web Notifications.
 class WebNotificationDelegate : public NotificationDelegate {
  public:
+  WebNotificationDelegate(NotificationCommon::Type notification_type,
+                          Profile* profile,
+                          const std::string& notification_id,
+                          const GURL& origin);
+
   // NotificationDelegate implementation.
   std::string id() const override;
   bool SettingsClick() override;
   bool ShouldDisplaySettingsButton() override;
   bool ShouldDisplayOverFullscreen() const override;
+  void Display() override;
+  void Close(bool by_user) override;
+  void Click() override;
+  void ButtonClick(int button_index) override;
+  void ButtonClickWithReply(int button_index,
+                            const base::string16& reply) override;
 
  protected:
-  WebNotificationDelegate(content::BrowserContext* browser_context,
-                          const std::string& notification_id,
-                          const GURL& origin);
-
   ~WebNotificationDelegate() override;
-
-  content::BrowserContext* browser_context() { return browser_context_; }
   const GURL& origin() { return origin_; }
 
  private:
-  content::BrowserContext* browser_context_;
+  NotificationCommon::Type notification_type_;
+  Profile* profile_;
   std::string notification_id_;
   GURL origin_;
 

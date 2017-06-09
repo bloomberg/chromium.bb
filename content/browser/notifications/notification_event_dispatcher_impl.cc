@@ -394,6 +394,15 @@ void NotificationEventDispatcherImpl::RegisterNonPersistentNotification(
     const std::string& notification_id,
     int renderer_id,
     int non_persistent_id) {
+  if (non_persistent_ids_.count(notification_id) &&
+      non_persistent_ids_[notification_id] != non_persistent_id) {
+    // Notify close for a previously displayed notification with the same id,
+    // this can happen when replacing a non-persistent notification with the
+    // same tag since from the JS point of view there will be two notification
+    // objects and the old one needs to receive the close event.
+    // TODO(miguelg) this is probably not the right layer to do this.
+    DispatchNonPersistentCloseEvent(notification_id);
+  }
   renderer_ids_[notification_id] = renderer_id;
   non_persistent_ids_[notification_id] = non_persistent_id;
 }
