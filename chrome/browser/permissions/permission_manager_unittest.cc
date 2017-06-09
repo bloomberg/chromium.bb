@@ -17,18 +17,18 @@
 #include "device/vr/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 #include "chrome/browser/android/vr_shell/vr_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_VR)
+#endif  // BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 
 using blink::mojom::PermissionStatus;
 using content::PermissionType;
 
 namespace {
 
-#if BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 int kNoPendingOperation = -1;
-#endif  // BUILDFLAG(ENABLE_VR)
+#endif  // BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 
 class PermissionManagerTestingProfile final : public TestingProfile {
  public:
@@ -400,7 +400,7 @@ TEST_F(PermissionManagerTest, SubscribeMIDIPermission) {
   GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
 }
 
-#if BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
   content::WebContents* contents = web_contents();
   vr_shell::VrTabHelper::CreateForWebContents(contents);
@@ -434,4 +434,4 @@ TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
 }
-#endif  // BUILDFLAG(ENABLE_VR)
+#endif  // BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)

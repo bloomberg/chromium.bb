@@ -195,10 +195,10 @@ void OpenVRGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
       gfx::DecomposeTransform(&decomposed_transform, transform);
 
       pad.pose.orientation.not_null = true;
-      pad.pose.orientation.x = decomposed_transform.quaternion[0];
-      pad.pose.orientation.y = decomposed_transform.quaternion[1];
-      pad.pose.orientation.z = decomposed_transform.quaternion[2];
-      pad.pose.orientation.w = decomposed_transform.quaternion[3];
+      pad.pose.orientation.x = decomposed_transform.quaternion.x();
+      pad.pose.orientation.y = decomposed_transform.quaternion.y();
+      pad.pose.orientation.z = decomposed_transform.quaternion.z();
+      pad.pose.orientation.w = decomposed_transform.quaternion.w();
 
       pad.pose.position.not_null = true;
       pad.pose.position.x = decomposed_transform.translate[0];
