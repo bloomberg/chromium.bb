@@ -2,6 +2,7 @@ include_rules = [
   "+components/data_use_measurement/core",
   "+components/favicon/core",
   "+components/favicon_base",
+  "+components/gcm_driver",
   "+components/history/core",
   "+components/image_fetcher",
   "+components/keyed_service/core",
