@@ -210,8 +210,7 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       cookie_store_set_by_client_(false),
       net_log_(nullptr),
       pac_quick_check_enabled_(true),
-      pac_sanitize_url_policy_(ProxyService::SanitizeUrlPolicy::SAFE),
-      socket_performance_watcher_factory_(nullptr) {
+      pac_sanitize_url_policy_(ProxyService::SanitizeUrlPolicy::SAFE) {
 }
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
@@ -236,6 +235,11 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
   session_context->channel_id_service = request_context->channel_id_service();
   session_context->network_quality_provider =
       request_context->network_quality_estimator();
+  if (request_context->network_quality_estimator()) {
+    session_context->socket_performance_watcher_factory =
+        request_context->network_quality_estimator()
+            ->GetSocketPerformanceWatcherFactory();
+  }
 }
 
 void URLRequestContextBuilder::EnableHttpCache(const HttpCacheParams& params) {
@@ -423,11 +427,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (proxy_delegate_) {
     network_session_context.proxy_delegate = proxy_delegate_.get();
     storage->set_proxy_delegate(std::move(proxy_delegate_));
-  }
-  if (socket_performance_watcher_factory_) {
-    network_session_context.socket_performance_watcher_factory =
-        socket_performance_watcher_factory_;
-    DCHECK(network_session_context.network_quality_provider);
   }
 
   storage->set_http_network_session(base::MakeUnique<HttpNetworkSession>(

@@ -1313,11 +1313,6 @@ ProfileIOData::CreateHttpNetworkSession(
   net::HttpNetworkSession::Context session_context;
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       context, &session_context);
-  if (!IsOffTheRecord()) {
-    session_context.socket_performance_watcher_factory =
-        io_thread->globals()
-            ->network_quality_estimator->GetSocketPerformanceWatcherFactory();
-  }
   if (data_reduction_proxy_io_data_.get()) {
     session_context.proxy_delegate =
         data_reduction_proxy_io_data_->proxy_delegate();
