@@ -41,16 +41,16 @@ class UsbDeviceHandleTest : public ::testing::Test {
 
 class TestOpenCallback {
  public:
-  TestOpenCallback()
-      : callback_(
-            base::Bind(&TestOpenCallback::SetResult, base::Unretained(this))) {}
+  TestOpenCallback() {}
 
   scoped_refptr<UsbDeviceHandle> WaitForResult() {
     run_loop_.Run();
     return device_handle_;
   }
 
-  const UsbDevice::OpenCallback& callback() const { return callback_; }
+  UsbDevice::OpenCallback GetCallback() {
+    return base::Bind(&TestOpenCallback::SetResult, base::Unretained(this));
+  }
 
  private:
   void SetResult(scoped_refptr<UsbDeviceHandle> device_handle) {
@@ -58,23 +58,22 @@ class TestOpenCallback {
     run_loop_.Quit();
   }
 
-  const UsbDevice::OpenCallback callback_;
   base::RunLoop run_loop_;
   scoped_refptr<UsbDeviceHandle> device_handle_;
 };
 
 class TestResultCallback {
  public:
-  TestResultCallback()
-      : callback_(base::Bind(&TestResultCallback::SetResult,
-                             base::Unretained(this))) {}
+  TestResultCallback() {}
 
   bool WaitForResult() {
     run_loop_.Run();
     return success_;
   }
 
-  const UsbDeviceHandle::ResultCallback& callback() const { return callback_; }
+  UsbDeviceHandle::ResultCallback GetCallback() {
+    return base::Bind(&TestResultCallback::SetResult, base::Unretained(this));
+  }
 
  private:
   void SetResult(bool success) {
@@ -82,21 +81,19 @@ class TestResultCallback {
     run_loop_.Quit();
   }
 
-  const UsbDeviceHandle::ResultCallback callback_;
   base::RunLoop run_loop_;
   bool success_;
 };
 
 class TestCompletionCallback {
  public:
-  TestCompletionCallback()
-      : callback_(base::Bind(&TestCompletionCallback::SetResult,
-                             base::Unretained(this))) {}
+  TestCompletionCallback() {}
 
   void WaitForResult() { run_loop_.Run(); }
 
-  const UsbDeviceHandle::TransferCallback& callback() const {
-    return callback_;
+  UsbDeviceHandle::TransferCallback GetCallback() {
+    return base::Bind(&TestCompletionCallback::SetResult,
+                      base::Unretained(this));
   }
   UsbTransferStatus status() const { return status_; }
   size_t transferred() const { return transferred_; }
@@ -110,7 +107,6 @@ class TestCompletionCallback {
     run_loop_.Quit();
   }
 
-  const UsbDeviceHandle::TransferCallback callback_;
   base::RunLoop run_loop_;
   UsbTransferStatus status_;
   size_t transferred_;
@@ -137,12 +133,12 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
   TestOpenCallback open_device;
-  gadget->GetDevice()->Open(open_device.callback());
+  gadget->GetDevice()->Open(open_device.GetCallback());
   scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
   ASSERT_TRUE(handle.get());
 
   TestResultCallback claim_interface;
-  handle->ClaimInterface(0, claim_interface.callback());
+  handle->ClaimInterface(0, claim_interface.GetCallback());
   ASSERT_TRUE(claim_interface.WaitForResult());
 
   const UsbInterfaceDescriptor* interface =
@@ -160,7 +156,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
   handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x81, in_buffer.get(),
                           in_buffer->size(),
                           5000,  // 5 second timeout
-                          in_completion.callback());
+                          in_completion.GetCallback());
 
   scoped_refptr<net::IOBufferWithSize> out_buffer(
       new net::IOBufferWithSize(in_buffer->size()));
@@ -172,7 +168,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
   handle->GenericTransfer(UsbTransferDirection::OUTBOUND, 0x01,
                           out_buffer.get(), out_buffer->size(),
                           5000,  // 5 second timeout
-                          out_completion.callback());
+                          out_completion.GetCallback());
   out_completion.WaitForResult();
   ASSERT_EQ(UsbTransferStatus::COMPLETED, out_completion.status());
   EXPECT_EQ(static_cast<size_t>(out_buffer->size()),
@@ -188,7 +184,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
   }
 
   TestResultCallback release_interface;
-  handle->ReleaseInterface(0, release_interface.callback());
+  handle->ReleaseInterface(0, release_interface.GetCallback());
   ASSERT_TRUE(release_interface.WaitForResult());
 
   handle->Close();
@@ -205,12 +201,12 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
   TestOpenCallback open_device;
-  gadget->GetDevice()->Open(open_device.callback());
+  gadget->GetDevice()->Open(open_device.GetCallback());
   scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
   ASSERT_TRUE(handle.get());
 
   TestResultCallback claim_interface;
-  handle->ClaimInterface(1, claim_interface.callback());
+  handle->ClaimInterface(1, claim_interface.GetCallback());
   ASSERT_TRUE(claim_interface.WaitForResult());
 
   EXPECT_FALSE(handle->FindInterfaceByEndpoint(0x81));
@@ -229,7 +225,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
   handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, in_buffer.get(),
                           in_buffer->size(),
                           5000,  // 5 second timeout
-                          in_completion.callback());
+                          in_completion.GetCallback());
 
   scoped_refptr<net::IOBufferWithSize> out_buffer(
       new net::IOBufferWithSize(in_buffer->size()));
@@ -241,7 +237,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
   handle->GenericTransfer(UsbTransferDirection::OUTBOUND, 0x02,
                           out_buffer.get(), out_buffer->size(),
                           5000,  // 5 second timeout
-                          out_completion.callback());
+                          out_completion.GetCallback());
   out_completion.WaitForResult();
   ASSERT_EQ(UsbTransferStatus::COMPLETED, out_completion.status());
   EXPECT_EQ(static_cast<size_t>(out_buffer->size()),
@@ -257,7 +253,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
   }
 
   TestResultCallback release_interface;
-  handle->ReleaseInterface(1, release_interface.callback());
+  handle->ReleaseInterface(1, release_interface.GetCallback());
   ASSERT_TRUE(release_interface.WaitForResult());
 
   handle->Close();
@@ -272,7 +268,7 @@ TEST_F(UsbDeviceHandleTest, ControlTransfer) {
   ASSERT_TRUE(gadget.get());
 
   TestOpenCallback open_device;
-  gadget->GetDevice()->Open(open_device.callback());
+  gadget->GetDevice()->Open(open_device.GetCallback());
   scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
   ASSERT_TRUE(handle.get());
 
@@ -281,7 +277,7 @@ TEST_F(UsbDeviceHandleTest, ControlTransfer) {
   handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, 0x06, 0x0301, 0x0409, buffer,
-      buffer->size(), 0, completion.callback());
+      buffer->size(), 0, completion.GetCallback());
   completion.WaitForResult();
   ASSERT_EQ(UsbTransferStatus::COMPLETED, completion.status());
   const char expected_str[] = "\x18\x03G\0o\0o\0g\0l\0e\0 \0I\0n\0c\0.\0";
@@ -305,20 +301,20 @@ TEST_F(UsbDeviceHandleTest, SetInterfaceAlternateSetting) {
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
   TestOpenCallback open_device;
-  gadget->GetDevice()->Open(open_device.callback());
+  gadget->GetDevice()->Open(open_device.GetCallback());
   scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
   ASSERT_TRUE(handle.get());
 
   TestResultCallback claim_interface;
-  handle->ClaimInterface(2, claim_interface.callback());
+  handle->ClaimInterface(2, claim_interface.GetCallback());
   ASSERT_TRUE(claim_interface.WaitForResult());
 
   TestResultCallback set_interface;
-  handle->SetInterfaceAlternateSetting(2, 1, set_interface.callback());
+  handle->SetInterfaceAlternateSetting(2, 1, set_interface.GetCallback());
   ASSERT_TRUE(set_interface.WaitForResult());
 
   TestResultCallback release_interface;
-  handle->ReleaseInterface(2, release_interface.callback());
+  handle->ReleaseInterface(2, release_interface.GetCallback());
   ASSERT_TRUE(release_interface.WaitForResult());
 
   handle->Close();
@@ -335,12 +331,12 @@ TEST_F(UsbDeviceHandleTest, CancelOnClose) {
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
   TestOpenCallback open_device;
-  gadget->GetDevice()->Open(open_device.callback());
+  gadget->GetDevice()->Open(open_device.GetCallback());
   scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
   ASSERT_TRUE(handle.get());
 
   TestResultCallback claim_interface;
-  handle->ClaimInterface(1, claim_interface.callback());
+  handle->ClaimInterface(1, claim_interface.GetCallback());
   ASSERT_TRUE(claim_interface.WaitForResult());
 
   scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(512));
@@ -348,7 +344,7 @@ TEST_F(UsbDeviceHandleTest, CancelOnClose) {
   handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, buffer.get(),
                           buffer->size(),
                           5000,  // 5 second timeout
-                          completion.callback());
+                          completion.GetCallback());
 
   handle->Close();
   completion.WaitForResult();
@@ -366,12 +362,12 @@ TEST_F(UsbDeviceHandleTest, CancelOnDisconnect) {
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
   TestOpenCallback open_device;
-  gadget->GetDevice()->Open(open_device.callback());
+  gadget->GetDevice()->Open(open_device.GetCallback());
   scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
   ASSERT_TRUE(handle.get());
 
   TestResultCallback claim_interface;
-  handle->ClaimInterface(1, claim_interface.callback());
+  handle->ClaimInterface(1, claim_interface.GetCallback());
   ASSERT_TRUE(claim_interface.WaitForResult());
 
   scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(512));
@@ -379,7 +375,7 @@ TEST_F(UsbDeviceHandleTest, CancelOnDisconnect) {
   handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, buffer.get(),
                           buffer->size(),
                           5000,  // 5 second timeout
-                          completion.callback());
+                          completion.GetCallback());
 
   ASSERT_TRUE(gadget->Disconnect());
   completion.WaitForResult();
@@ -399,12 +395,12 @@ TEST_F(UsbDeviceHandleTest, Timeout) {
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
   TestOpenCallback open_device;
-  gadget->GetDevice()->Open(open_device.callback());
+  gadget->GetDevice()->Open(open_device.GetCallback());
   scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
   ASSERT_TRUE(handle.get());
 
   TestResultCallback claim_interface;
-  handle->ClaimInterface(1, claim_interface.callback());
+  handle->ClaimInterface(1, claim_interface.GetCallback());
   ASSERT_TRUE(claim_interface.WaitForResult());
 
   scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(512));
@@ -412,7 +408,7 @@ TEST_F(UsbDeviceHandleTest, Timeout) {
   handle->GenericTransfer(UsbTransferDirection::INBOUND, 0x82, buffer.get(),
                           buffer->size(),
                           10,  // 10 millisecond timeout
-                          completion.callback());
+                          completion.GetCallback());
 
   completion.WaitForResult();
   ASSERT_EQ(UsbTransferStatus::TIMEOUT, completion.status());
@@ -430,12 +426,12 @@ TEST_F(UsbDeviceHandleTest, CloseReentrancy) {
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
   TestOpenCallback open_device;
-  gadget->GetDevice()->Open(open_device.callback());
+  gadget->GetDevice()->Open(open_device.GetCallback());
   scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
   ASSERT_TRUE(handle.get());
 
   TestResultCallback claim_interface;
-  handle->ClaimInterface(1, claim_interface.callback());
+  handle->ClaimInterface(1, claim_interface.GetCallback());
   ASSERT_TRUE(claim_interface.WaitForResult());
 
   base::RunLoop run_loop;
