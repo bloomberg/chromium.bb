@@ -46,13 +46,18 @@ class ArcWallpaperService
   // WallpaperControllerObserver implementation.
   void OnWallpaperDataChanged() override;
 
-  AndroidIdStore* android_id_store() { return android_id_store_.get(); }
-
  private:
   class DecodeRequest;
+  struct WallpaperIdPair;
+
+  // Notifies wallpaper change if we have wallpaper instance.
+  void NotifyWallpaperChanged(int android_id);
+  // Notifies wallpaper change of |android_id|, then notify wallpaper change of
+  // -1 to reset wallpaper cache at Android side.
+  void NotifyWallpaperChangedAndReset(int android_id);
   mojo::Binding<mojom::WallpaperHost> binding_;
   std::unique_ptr<DecodeRequest> decode_request_;
-  std::unique_ptr<AndroidIdStore> android_id_store_;
+  std::vector<WallpaperIdPair> id_pairs_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcWallpaperService);
 };

@@ -32,6 +32,7 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "components/wallpaper/wallpaper_files_id.h"
+#include "components/wallpaper/wallpaper_resizer.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
 #include "ui/display/manager/display_manager.h"
@@ -834,4 +835,27 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
       wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
 }
 
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, IsPendingWallpaper) {
+  // Start loading the default wallpaper.
+  UpdateDisplay("640x480");
+  CreateCmdlineWallpapers();
+  SessionManager::Get()->CreateSession(user_manager::StubAccountId(),
+                                       "test_hash");
+
+  WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
+
+  gfx::ImageSkia image = wallpaper_manager_test_utils::CreateTestImage(
+      640, 480, wallpaper_manager_test_utils::kCustomWallpaperColor);
+  EXPECT_FALSE(WallpaperManager::Get()->IsPendingWallpaper(
+      wallpaper::WallpaperResizer::GetImageId(image)));
+  WallpaperManager::Get()->SetCustomWallpaper(
+      user_manager::StubAccountId(),
+      wallpaper::WallpaperFilesId::FromString("test_hash"), "test-nofile.jpeg",
+      WALLPAPER_LAYOUT_STRETCH, user_manager::User::CUSTOMIZED, image, true);
+  EXPECT_TRUE(WallpaperManager::Get()->IsPendingWallpaper(
+      wallpaper::WallpaperResizer::GetImageId(image)));
+  wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
+  EXPECT_FALSE(WallpaperManager::Get()->IsPendingWallpaper(
+      wallpaper::WallpaperResizer::GetImageId(image)));
+}
 }  // namespace chromeos
