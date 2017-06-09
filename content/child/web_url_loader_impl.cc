@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -614,17 +613,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     } else {
       resource_request->resource_body_stream_url = stream_override_->stream_url;
     }
-  }
-
-  // PlzNavigate: Invalid renderer main resource requests are rejected by the
-  // browser. This should not happen.
-  // TODO(arthursonzogni): Remove this when the root cause for
-  // https://crbug.com/705508 is found.
-  if (IsBrowserSideNavigationEnabled() &&
-      IsResourceTypeFrame(resource_request->resource_type) &&
-      !resource_request->resource_body_stream_url.SchemeIs(url::kBlobScheme) &&
-      !consumer_handle.is_valid()) {
-    base::debug::DumpWithoutCrashing();
   }
 
   RequestExtraData empty_extra_data;
