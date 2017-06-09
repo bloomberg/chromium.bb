@@ -12,7 +12,8 @@ class ToughTextureUploadCasesPage(page_module.Page):
       ToughTextureUploadCasesPage,
       self).__init__(
         url=url,
-        page_set=page_set)
+        page_set=page_set,
+        name=url.split('/')[-1])
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('Animation'):
@@ -26,7 +27,7 @@ class ToughTextureUploadCasesPageSet(story.StorySet):
   """
 
   def __init__(self):
-    super(ToughTextureUploadCasesPageSet, self).__init__()
+    super(ToughTextureUploadCasesPageSet, self).__init__(verify_names=True)
 
     urls_list = [
       'file://tough_texture_upload_cases/background_color_animation.html',

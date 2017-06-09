@@ -11,7 +11,8 @@ class PathologicalMobileSitesPage(page_module.Page):
   def __init__(self, url, page_set):
     super(PathologicalMobileSitesPage, self).__init__(
         url=url, page_set=page_set, credentials_path='data/credentials.json',
-        shared_page_state_class=shared_page_state.SharedMobilePageState)
+        shared_page_state_class=shared_page_state.SharedMobilePageState,
+        name=url)
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateGestureInteraction('ScrollAction'):
@@ -25,7 +26,8 @@ class PathologicalMobileSitesPageSet(story.StorySet):
   def __init__(self):
     super(PathologicalMobileSitesPageSet, self).__init__(
         archive_data_file='data/pathological_mobile_sites.json',
-        cloud_storage_bucket=story.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET,
+        verify_names=True)
 
     sites = ['http://edition.cnn.com',
              'http://m.espn.go.com/nhl/rankings',

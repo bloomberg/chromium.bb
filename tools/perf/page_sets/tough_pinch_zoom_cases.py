@@ -9,6 +9,8 @@ from telemetry import story
 class ToughPinchZoomCasesPage(page_module.Page):
 
   def __init__(self, url, page_set, name=''):
+    if name == '':
+      name = url
     super(ToughPinchZoomCasesPage, self).__init__(
         url=url, page_set=page_set, name=name,
         shared_page_state_class=shared_page_state.SharedDesktopPageState,
@@ -216,7 +218,8 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
   def __init__(self, target_scale_factor):
     super(ToughPinchZoomCasesPageSet, self).__init__(
       archive_data_file='data/tough_pinch_zoom_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET,
+      verify_names=True)
 
     self.target_scale_factor = target_scale_factor
 

@@ -9,6 +9,8 @@ from telemetry import story
 class KeyDesktopMoveCasesPage(page_module.Page):
 
   def __init__(self, url, page_set, name='', credentials=None):
+    if name == '':
+      name = url
     super(KeyDesktopMoveCasesPage, self).__init__(
         url=url, page_set=page_set, name=name,
         credentials_path='data/credentials.json',
@@ -116,7 +118,8 @@ class KeyDesktopMoveCasesPageSet(story.StorySet):
   def __init__(self):
     super(KeyDesktopMoveCasesPageSet, self).__init__(
       archive_data_file='data/key_desktop_move_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET,
+      verify_names=True)
 
     self.AddStory(GmailMouseScrollPage(self))
     self.AddStory(GoogleMapsPage(self))

@@ -15,7 +15,8 @@ class ToughWebglCasesPage(page_module.Page):
         url=url, page_set=page_set,
         shared_page_state_class=(
             webgl_supported_shared_state.WebGLSupportedSharedState),
-        make_javascript_deterministic=False)
+        make_javascript_deterministic=False,
+        name=url)
     self.archive_data_file = 'data/tough_webgl_cases.json'
 
 
@@ -45,7 +46,8 @@ class ToughWebglCasesPageSet(story.StorySet):
   def __init__(self):
     super(ToughWebglCasesPageSet, self).__init__(
       archive_data_file='data/tough_webgl_cases.json',
-      cloud_storage_bucket=story.PUBLIC_BUCKET)
+      cloud_storage_bucket=story.PUBLIC_BUCKET,
+      verify_names=True)
 
     urls_list = [
       # pylint: disable=line-too-long

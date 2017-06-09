@@ -6,8 +6,9 @@ from telemetry import story
 
 class ImageDecodingCasesPage(page_module.Page):
 
-  def __init__(self, url, page_set):
-    super(ImageDecodingCasesPage, self).__init__(url=url, page_set=page_set)
+  def __init__(self, url, page_set, name):
+    super(ImageDecodingCasesPage, self).__init__(
+        url=url, page_set=page_set, name=name)
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('DecodeImage'):
@@ -18,11 +19,11 @@ class ImageDecodingCasesPageSet(story.StorySet):
   """ A directed benchmark of accelerated jpeg image decoding performance """
 
   def __init__(self):
-    super(ImageDecodingCasesPageSet, self).__init__()
+    super(ImageDecodingCasesPageSet, self).__init__(verify_names=True)
 
     urls_list = [
-      'file://image_decoding_cases/yuv_decoding.html'
+      ('file://image_decoding_cases/yuv_decoding.html', 'yuv_decoding.html')
     ]
 
-    for url in urls_list:
-      self.AddStory(ImageDecodingCasesPage(url, self))
+    for url, name in urls_list:
+      self.AddStory(ImageDecodingCasesPage(url, self, name))

@@ -8,7 +8,11 @@ from telemetry import story
 class ToughCanvasCasesPage(page_module.Page):
 
   def __init__(self, url, page_set):
-    super(ToughCanvasCasesPage, self).__init__(url=url, page_set=page_set)
+    name = url
+    if not url.startswith('http'):
+      name = url[7:]
+    super(ToughCanvasCasesPage, self).__init__(url=url, page_set=page_set,
+                                               name=name)
     self.archive_data_file = 'data/tough_canvas_cases.json'
 
   def RunNavigateSteps(self, action_runner):
@@ -39,7 +43,8 @@ class ToughCanvasCasesPageSet(story.StorySet):
   def __init__(self):
     super(ToughCanvasCasesPageSet, self).__init__(
       archive_data_file='data/tough_canvas_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET,
+      verify_names=True)
 
     # Crashes on Galaxy Nexus. crbug.com/314131
     # self.AddStory(MicrosofFirefliesPage(self))
