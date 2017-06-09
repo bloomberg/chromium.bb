@@ -244,6 +244,25 @@ cr.define('media_router_container_cast_mode_list', function() {
         });
       });
 
+      // Tests that pseudo sinks are ignored for the purpose of computing
+      // which cast mode to show.
+      test('cast modes not affected by pseudo sink', function(done) {
+        assertEquals(media_router.CastModeType.AUTO,
+            container.shownCastModeValue_);
+        container.castModeList = fakeCastModeList;
+        var sink = new media_router.Sink('pseudo-sink-id',
+            'Pseudo sink', null, null, media_router.SinkIconType.GENERIC,
+            media_router.SinkStatus.ACTIVE, /* DESKTOP */ 0x4);
+        sink.isPseudoSink = true;
+        container.allSinks = [sink];
+
+        setTimeout(function() {
+          assertEquals(media_router.CastModeType.AUTO,
+              container.shownCastModeValue_);
+          done();
+        });
+      });
+
       // Tests for expected visible UI when the view is CAST_MODE_LIST.
       test('cast mode list state visibility', function(done) {
         container.showCastModeList_();

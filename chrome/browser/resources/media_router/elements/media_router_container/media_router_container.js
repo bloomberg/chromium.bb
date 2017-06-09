@@ -642,7 +642,8 @@ Polymer({
       return forcedMode;
 
     var allCastModes = this.allSinks.reduce(function(castModesSoFar, sink) {
-      return castModesSoFar | sink.castModes;
+      // Ignore pseudo sinks in the cast mode computation.
+      return castModesSoFar | (sink.isPseudoSink ? 0 : sink.castModes);
     }, 0);
 
     // This checks whether |castModes| does not consist of exactly 1 cast mode.
