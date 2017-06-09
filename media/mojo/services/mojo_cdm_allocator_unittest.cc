@@ -85,16 +85,16 @@ TEST_F(MojoCdmAllocatorTest, MaxFreeBuffers) {
 }
 
 TEST_F(MojoCdmAllocatorTest, CreateCdmVideoFrame) {
-  const int kHeight = 16;
-  const int kWidth = 9;
+  const int kWidth = 16;
+  const int kHeight = 9;
   const VideoPixelFormat kFormat = PIXEL_FORMAT_I420;
-  const gfx::Size kSize(kHeight, kWidth);
+  const gfx::Size kSize(kWidth, kHeight);
   const size_t kBufferSize = VideoFrame::AllocationSize(kFormat, kSize);
 
   // Create a VideoFrameImpl and initialize it.
   std::unique_ptr<VideoFrameImpl> video_frame = CreateCdmVideoFrame();
   video_frame->SetFormat(cdm::kI420);
-  video_frame->SetSize(cdm::Size(kHeight, kWidth));
+  video_frame->SetSize(cdm::Size(kWidth, kHeight));
   video_frame->SetStride(VideoFrameImpl::kYPlane,
                          static_cast<uint32_t>(VideoFrame::RowBytes(
                              VideoFrame::kYPlane, kFormat, kWidth)));

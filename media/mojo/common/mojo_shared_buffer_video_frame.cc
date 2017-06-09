@@ -8,6 +8,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math.h"
 
 namespace media {
 
@@ -69,6 +71,52 @@ scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
     LOG(DFATAL) << __func__ << " Invalid config. "
                 << ConfigToString(format, STORAGE_MOJO_SHARED_BUFFER,
                                   coded_size, visible_rect, natural_size);
+    return nullptr;
+  }
+
+  // Validate that the offsets and strides fit in the buffer.
+  //
+  // We can rely on coded_size.GetArea() being relatively small (compared to the
+  // range of an int) due to the IsValidConfig() check above.
+  //
+  // TODO(sandersd): Allow non-sequential formats.
+  if (NumPlanes(format) != 3) {
+    DLOG(ERROR) << __func__ << " " << VideoPixelFormatToString(format)
+                << " is not supported; only YUV formats are allowed";
+    return nullptr;
+  }
+
+  if (y_stride < 0 || u_stride < 0 || v_stride < 0) {
+    DLOG(ERROR) << __func__ << " Invalid stride";
+    return nullptr;
+  }
+
+  // Safe given sizeof(size_t) >= sizeof(int32_t).
+  size_t y_stride_size_t = y_stride;
+  size_t u_stride_size_t = u_stride;
+  size_t v_stride_size_t = v_stride;
+  if (y_stride_size_t < RowBytes(kYPlane, format, coded_size.width()) ||
+      u_stride_size_t < RowBytes(kUPlane, format, coded_size.width()) ||
+      v_stride_size_t < RowBytes(kVPlane, format, coded_size.width())) {
+    DLOG(ERROR) << __func__ << " Invalid stride";
+    return nullptr;
+  }
+
+  base::CheckedNumeric<size_t> y_rows =
+      Rows(kYPlane, format, coded_size.height());
+  base::CheckedNumeric<size_t> u_rows =
+      Rows(kUPlane, format, coded_size.height());
+  base::CheckedNumeric<size_t> v_rows =
+      Rows(kVPlane, format, coded_size.height());
+
+  base::CheckedNumeric<size_t> y_bound = y_rows * y_stride + y_offset;
+  base::CheckedNumeric<size_t> u_bound = u_rows * u_stride + u_offset;
+  base::CheckedNumeric<size_t> v_bound = v_rows * v_stride + v_offset;
+
+  if (!y_bound.IsValid() || !u_bound.IsValid() || !v_bound.IsValid() ||
+      y_bound.ValueOrDie() > data_size || u_bound.ValueOrDie() > data_size ||
+      v_bound.ValueOrDie() > data_size) {
+    DLOG(ERROR) << __func__ << " Invalid offset";
     return nullptr;
   }
 

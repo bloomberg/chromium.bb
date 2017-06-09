@@ -238,15 +238,13 @@ void MojoDecryptorService::OnVideoDecoded(
 
   // If |frame| has shared memory that will be passed back, keep the reference
   // to it until the other side is done with the memory.
-  mojom::VideoFramePtr mojo_frame = mojom::VideoFrame::From(frame);
   mojom::FrameResourceReleaserPtr releaser;
   if (frame->storage_type() == VideoFrame::STORAGE_MOJO_SHARED_BUFFER) {
-    mojo::MakeStrongBinding(
-        base::MakeUnique<FrameResourceReleaserImpl>(std::move(frame)),
-        mojo::MakeRequest(&releaser));
+    mojo::MakeStrongBinding(base::MakeUnique<FrameResourceReleaserImpl>(frame),
+                            mojo::MakeRequest(&releaser));
   }
 
-  callback.Run(status, std::move(mojo_frame), std::move(releaser));
+  callback.Run(status, std::move(frame), std::move(releaser));
 }
 
 }  // namespace media

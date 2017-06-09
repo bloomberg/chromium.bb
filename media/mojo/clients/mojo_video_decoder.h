@@ -49,7 +49,7 @@ class MojoVideoDecoder final : public VideoDecoder,
 
   // mojom::VideoDecoderClient implementation.
   void OnVideoFrameDecoded(
-      mojom::VideoFramePtr frame,
+      const scoped_refptr<VideoFrame>& frame,
       const base::Optional<base::UnguessableToken>& release_token) final;
 
  private:

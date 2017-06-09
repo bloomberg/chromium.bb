@@ -63,7 +63,7 @@ class MojoDecryptor : public Decryptor {
                       std::vector<mojom::AudioBufferPtr> audio_buffers);
   void OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
                       Status status,
-                      mojom::VideoFramePtr video_frame,
+                      const scoped_refptr<VideoFrame>& video_frame,
                       mojom::FrameResourceReleaserPtr releaser);
 
   base::ThreadChecker thread_checker_;
