@@ -15,20 +15,18 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
 #include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_id.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,86 +41,6 @@ using PrefetchDataMap = std::map<std::string, PrefetchData>;
 using RedirectDataMap = std::map<std::string, RedirectData>;
 using OriginDataMap = std::map<std::string, OriginData>;
 using ManifestDataMap = std::map<std::string, precache::PrecacheManifest>;
-
-scoped_refptr<net::HttpResponseHeaders> MakeResponseHeaders(
-    const char* headers) {
-  return make_scoped_refptr(new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers, strlen(headers))));
-}
-
-class EmptyURLRequestDelegate : public net::URLRequest::Delegate {
-  void OnResponseStarted(net::URLRequest* request, int net_error) override {}
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
-};
-
-class MockURLRequestJob : public net::URLRequestJob {
- public:
-  MockURLRequestJob(net::URLRequest* request,
-                    const net::HttpResponseInfo& response_info,
-                    const std::string& mime_type)
-      : net::URLRequestJob(request, nullptr),
-        response_info_(response_info),
-        mime_type_(mime_type) {}
-
-  bool GetMimeType(std::string* mime_type) const override {
-    *mime_type = mime_type_;
-    return true;
-  }
-
- protected:
-  void Start() override { NotifyHeadersComplete(); }
-  void GetResponseInfo(net::HttpResponseInfo* info) override {
-    *info = response_info_;
-  }
-
- private:
-  net::HttpResponseInfo response_info_;
-  std::string mime_type_;
-};
-
-class MockURLRequestJobFactory : public net::URLRequestJobFactory {
- public:
-  MockURLRequestJobFactory() {}
-  ~MockURLRequestJobFactory() override {}
-
-  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
-      const std::string& scheme,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new MockURLRequestJob(request, response_info_, mime_type_);
-  }
-
-  net::URLRequestJob* MaybeInterceptRedirect(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const GURL& location) const override {
-    return nullptr;
-  }
-
-  net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return nullptr;
-  }
-
-  bool IsHandledProtocol(const std::string& scheme) const override {
-    return true;
-  }
-
-  bool IsSafeRedirectTarget(const GURL& location) const override {
-    return true;
-  }
-
-  void set_response_info(const net::HttpResponseInfo& response_info) {
-    response_info_ = response_info;
-  }
-
-  void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
-
- private:
-  net::HttpResponseInfo response_info_;
-  std::string mime_type_;
-};
 
 template <typename T>
 class FakeGlowplugKeyValueTable : public GlowplugKeyValueTable<T> {
@@ -240,23 +158,6 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     return summary;
   }
 
-  std::unique_ptr<net::URLRequest> CreateURLRequest(
-      const GURL& url,
-      net::RequestPriority priority,
-      content::ResourceType resource_type,
-      bool is_main_frame) {
-    std::unique_ptr<net::URLRequest> request =
-        url_request_context_.CreateRequest(url, priority,
-                                           &url_request_delegate_,
-                                           TRAFFIC_ANNOTATION_FOR_TESTS);
-    request->set_first_party_for_cookies(url);
-    content::ResourceRequestInfo::AllocateForTesting(
-        request.get(), resource_type, nullptr, -1, -1, -1, is_main_frame, false,
-        false, true, content::PREVIEWS_OFF);
-    request->Start();
-    return request;
-  }
-
   void InitializePredictor() {
     loading_predictor_->StartInitialization();
     base::RunLoop loop;
@@ -291,7 +192,6 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   OriginDataMap test_origin_data_;
 
   MockURLRequestJobFactory url_request_job_factory_;
-  EmptyURLRequestDelegate url_request_delegate_;
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
@@ -321,6 +221,7 @@ void ResourcePrefetchPredictorTest::SetUp() {
   EXPECT_EQ(predictor_->initialization_state_,
             ResourcePrefetchPredictor::INITIALIZED);
 
+  url_request_job_factory_.Reset();
   url_request_context_.set_job_factory(&url_request_job_factory_);
 
   histogram_tester_.reset(new base::HistogramTester());
@@ -1413,197 +1314,6 @@ TEST_F(ResourcePrefetchPredictorTest, OnSubresourceResponse) {
                 ->subresource_requests[2]);
 }
 
-TEST_F(ResourcePrefetchPredictorTest, HandledResourceTypes) {
-  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_STYLESHEET, "bogus/mime-type"));
-  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_STYLESHEET, ""));
-  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_WORKER, "text/css"));
-  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_WORKER, ""));
-  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_PREFETCH, "text/css"));
-  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_PREFETCH, "bogus/mime-type"));
-  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_PREFETCH, ""));
-  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_PREFETCH, "application/font-woff"));
-  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_PREFETCH, "font/woff2"));
-  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_XHR, ""));
-  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_XHR, "bogus/mime-type"));
-  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
-      content::RESOURCE_TYPE_XHR, "application/javascript"));
-}
-
-TEST_F(ResourcePrefetchPredictorTest, ShouldRecordRequestMainFrame) {
-  std::unique_ptr<net::URLRequest> http_request =
-      CreateURLRequest(GURL("http://www.google.com"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, true);
-  EXPECT_TRUE(ResourcePrefetchPredictor::ShouldRecordRequest(
-      http_request.get(), content::RESOURCE_TYPE_MAIN_FRAME));
-
-  std::unique_ptr<net::URLRequest> https_request =
-      CreateURLRequest(GURL("https://www.google.com"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, true);
-  EXPECT_TRUE(ResourcePrefetchPredictor::ShouldRecordRequest(
-      https_request.get(), content::RESOURCE_TYPE_MAIN_FRAME));
-
-  std::unique_ptr<net::URLRequest> file_request =
-      CreateURLRequest(GURL("file://www.google.com"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, true);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
-      file_request.get(), content::RESOURCE_TYPE_MAIN_FRAME));
-
-  std::unique_ptr<net::URLRequest> https_request_with_port =
-      CreateURLRequest(GURL("https://www.google.com:666"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, true);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
-      https_request_with_port.get(), content::RESOURCE_TYPE_MAIN_FRAME));
-}
-
-TEST_F(ResourcePrefetchPredictorTest, ShouldRecordRequestSubResource) {
-  std::unique_ptr<net::URLRequest> http_request =
-      CreateURLRequest(GURL("http://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, false);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
-      http_request.get(), content::RESOURCE_TYPE_IMAGE));
-
-  std::unique_ptr<net::URLRequest> https_request =
-      CreateURLRequest(GURL("https://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, false);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
-      https_request.get(), content::RESOURCE_TYPE_IMAGE));
-
-  std::unique_ptr<net::URLRequest> file_request =
-      CreateURLRequest(GURL("file://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, false);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
-      file_request.get(), content::RESOURCE_TYPE_IMAGE));
-
-  std::unique_ptr<net::URLRequest> https_request_with_port =
-      CreateURLRequest(GURL("https://www.google.com:666/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, false);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
-      https_request_with_port.get(), content::RESOURCE_TYPE_IMAGE));
-}
-
-TEST_F(ResourcePrefetchPredictorTest, ShouldRecordResponseMainFrame) {
-  net::HttpResponseInfo response_info;
-  response_info.headers = MakeResponseHeaders("");
-  url_request_job_factory_.set_response_info(response_info);
-
-  std::unique_ptr<net::URLRequest> http_request =
-      CreateURLRequest(GURL("http://www.google.com"), net::MEDIUM,
-                       content::RESOURCE_TYPE_MAIN_FRAME, true);
-  EXPECT_TRUE(
-      ResourcePrefetchPredictor::ShouldRecordResponse(http_request.get()));
-
-  std::unique_ptr<net::URLRequest> https_request =
-      CreateURLRequest(GURL("https://www.google.com"), net::MEDIUM,
-                       content::RESOURCE_TYPE_MAIN_FRAME, true);
-  EXPECT_TRUE(
-      ResourcePrefetchPredictor::ShouldRecordResponse(https_request.get()));
-
-  std::unique_ptr<net::URLRequest> file_request =
-      CreateURLRequest(GURL("file://www.google.com"), net::MEDIUM,
-                       content::RESOURCE_TYPE_MAIN_FRAME, true);
-  EXPECT_FALSE(
-      ResourcePrefetchPredictor::ShouldRecordResponse(file_request.get()));
-
-  std::unique_ptr<net::URLRequest> https_request_with_port =
-      CreateURLRequest(GURL("https://www.google.com:666"), net::MEDIUM,
-                       content::RESOURCE_TYPE_MAIN_FRAME, true);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      https_request_with_port.get()));
-}
-
-TEST_F(ResourcePrefetchPredictorTest, ShouldRecordResponseSubresource) {
-  net::HttpResponseInfo response_info;
-  response_info.headers =
-      MakeResponseHeaders("HTTP/1.1 200 OK\n\nSome: Headers\n");
-  response_info.was_cached = true;
-  url_request_job_factory_.set_response_info(response_info);
-
-  // Protocol.
-  std::unique_ptr<net::URLRequest> http_image_request =
-      CreateURLRequest(GURL("http://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, true);
-  EXPECT_TRUE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      http_image_request.get()));
-
-  std::unique_ptr<net::URLRequest> https_image_request =
-      CreateURLRequest(GURL("https://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, true);
-  EXPECT_TRUE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      https_image_request.get()));
-
-  std::unique_ptr<net::URLRequest> https_image_request_with_port =
-      CreateURLRequest(GURL("https://www.google.com:666/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, true);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      https_image_request_with_port.get()));
-
-  std::unique_ptr<net::URLRequest> file_image_request =
-      CreateURLRequest(GURL("file://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_IMAGE, true);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      file_image_request.get()));
-
-  // ResourceType.
-  std::unique_ptr<net::URLRequest> sub_frame_request =
-      CreateURLRequest(GURL("http://www.google.com/frame.html"), net::MEDIUM,
-                       content::RESOURCE_TYPE_SUB_FRAME, true);
-  EXPECT_FALSE(
-      ResourcePrefetchPredictor::ShouldRecordResponse(sub_frame_request.get()));
-
-  std::unique_ptr<net::URLRequest> font_request =
-      CreateURLRequest(GURL("http://www.google.com/comic-sans-ms.woff"),
-                       net::MEDIUM, content::RESOURCE_TYPE_FONT_RESOURCE, true);
-  EXPECT_TRUE(
-      ResourcePrefetchPredictor::ShouldRecordResponse(font_request.get()));
-
-  // From MIME Type.
-  url_request_job_factory_.set_mime_type("image/png");
-  std::unique_ptr<net::URLRequest> prefetch_image_request =
-      CreateURLRequest(GURL("http://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_PREFETCH, true);
-  EXPECT_TRUE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      prefetch_image_request.get()));
-
-  url_request_job_factory_.set_mime_type("image/my-wonderful-format");
-  std::unique_ptr<net::URLRequest> prefetch_unknown_image_request =
-      CreateURLRequest(GURL("http://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_PREFETCH, true);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      prefetch_unknown_image_request.get()));
-
-  url_request_job_factory_.set_mime_type("font/woff");
-  std::unique_ptr<net::URLRequest> prefetch_font_request =
-      CreateURLRequest(GURL("http://www.google.com/comic-sans-ms.woff"),
-                       net::MEDIUM, content::RESOURCE_TYPE_PREFETCH, true);
-  EXPECT_TRUE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      prefetch_font_request.get()));
-
-  url_request_job_factory_.set_mime_type("font/woff-woff");
-  std::unique_ptr<net::URLRequest> prefetch_unknown_font_request =
-      CreateURLRequest(GURL("http://www.google.com/comic-sans-ms.woff"),
-                       net::MEDIUM, content::RESOURCE_TYPE_PREFETCH, true);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      prefetch_unknown_font_request.get()));
-
-  // Not main frame.
-  std::unique_ptr<net::URLRequest> font_request_sub_frame = CreateURLRequest(
-      GURL("http://www.google.com/comic-sans-ms.woff"), net::MEDIUM,
-      content::RESOURCE_TYPE_FONT_RESOURCE, false);
-  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordResponse(
-      font_request_sub_frame.get()));
-}
-
 TEST_F(ResourcePrefetchPredictorTest, SummarizeResponse) {
   net::HttpResponseInfo response_info;
   response_info.headers =
@@ -1613,7 +1323,8 @@ TEST_F(ResourcePrefetchPredictorTest, SummarizeResponse) {
 
   GURL url("http://www.google.com/cat.png");
   std::unique_ptr<net::URLRequest> request =
-      CreateURLRequest(url, net::MEDIUM, content::RESOURCE_TYPE_IMAGE, true);
+      CreateURLRequest(url_request_context_, url, net::MEDIUM,
+                       content::RESOURCE_TYPE_IMAGE, true);
   URLRequestSummary summary;
   EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request, &summary));
   EXPECT_EQ(url, summary.resource_url);
@@ -1636,9 +1347,9 @@ TEST_F(ResourcePrefetchPredictorTest, SummarizeResponseContentType) {
   url_request_job_factory_.set_response_info(response_info);
   url_request_job_factory_.set_mime_type("image/png");
 
-  std::unique_ptr<net::URLRequest> request =
-      CreateURLRequest(GURL("http://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_PREFETCH, true);
+  std::unique_ptr<net::URLRequest> request = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_PREFETCH, true);
   URLRequestSummary summary;
   EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request, &summary));
   EXPECT_EQ(content::RESOURCE_TYPE_IMAGE, summary.resource_type);
@@ -1651,9 +1362,9 @@ TEST_F(ResourcePrefetchPredictorTest, SummarizeResponseCachePolicy) {
       "Some: Headers\n");
   url_request_job_factory_.set_response_info(response_info);
 
-  std::unique_ptr<net::URLRequest> request_no_validators =
-      CreateURLRequest(GURL("http://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_PREFETCH, true);
+  std::unique_ptr<net::URLRequest> request_no_validators = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_PREFETCH, true);
 
   URLRequestSummary summary;
   EXPECT_TRUE(
@@ -1665,9 +1376,9 @@ TEST_F(ResourcePrefetchPredictorTest, SummarizeResponseCachePolicy) {
       "ETag: \"Cr66\"\n"
       "Cache-Control: no-cache\n");
   url_request_job_factory_.set_response_info(response_info);
-  std::unique_ptr<net::URLRequest> request_etag =
-      CreateURLRequest(GURL("http://www.google.com/cat.png"), net::MEDIUM,
-                       content::RESOURCE_TYPE_PREFETCH, true);
+  std::unique_ptr<net::URLRequest> request_etag = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_PREFETCH, true);
   EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request_etag, &summary));
   EXPECT_TRUE(summary.has_validators);
   EXPECT_TRUE(summary.always_revalidate);

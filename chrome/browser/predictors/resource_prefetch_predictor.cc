@@ -55,8 +55,6 @@ const size_t kMaxManifestByteSize = 16 * 1024;
 const size_t kNumSampleHosts = 50;
 const size_t kReportReadinessThreshold = 50;
 
-bool g_allow_port_in_urls = false;
-
 // For reporting events of interest that are not tied to any navigation.
 enum ReportingEvent {
   REPORTING_EVENT_ALL_HISTORY_CLEARED = 0,
@@ -172,94 +170,6 @@ bool ManifestCompare::operator()(const precache::PrecacheManifest& lhs,
 // ResourcePrefetchPredictor static functions.
 
 // static
-bool ResourcePrefetchPredictor::ShouldRecordRequest(
-    net::URLRequest* request,
-    content::ResourceType resource_type) {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!request_info)
-    return false;
-
-  if (!request_info->IsMainFrame())
-    return false;
-
-  return resource_type == content::RESOURCE_TYPE_MAIN_FRAME &&
-      IsHandledMainPage(request);
-}
-
-// static
-bool ResourcePrefetchPredictor::ShouldRecordResponse(
-    net::URLRequest* response) {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(response);
-  if (!request_info)
-    return false;
-
-  if (!request_info->IsMainFrame())
-    return false;
-
-  content::ResourceType resource_type = request_info->GetResourceType();
-  return resource_type == content::RESOURCE_TYPE_MAIN_FRAME
-             ? IsHandledMainPage(response)
-             : IsHandledSubresource(response, resource_type);
-}
-
-// static
-bool ResourcePrefetchPredictor::ShouldRecordRedirect(
-    net::URLRequest* response) {
-  return ShouldRecordResponse(response);
-}
-
-// static
-bool ResourcePrefetchPredictor::IsHandledMainPage(net::URLRequest* request) {
-  const GURL& url = request->url();
-  bool bad_port = !g_allow_port_in_urls && url.has_port();
-  return url.SchemeIsHTTPOrHTTPS() && !bad_port;
-}
-
-// static
-bool ResourcePrefetchPredictor::IsHandledSubresource(
-    net::URLRequest* response,
-    content::ResourceType resource_type) {
-  const GURL& url = response->url();
-  bool bad_port = !g_allow_port_in_urls && url.has_port();
-  if (!response->first_party_for_cookies().SchemeIsHTTPOrHTTPS() ||
-      !url.SchemeIsHTTPOrHTTPS() || bad_port) {
-    return false;
-  }
-
-  std::string mime_type;
-  response->GetMimeType(&mime_type);
-  if (!IsHandledResourceType(resource_type, mime_type))
-    return false;
-
-  if (response->method() != "GET")
-    return false;
-
-  if (response->original_url().spec().length() >
-      ResourcePrefetchPredictorTables::kMaxStringLength) {
-    return false;
-  }
-
-  if (!response->response_info().headers.get())
-    return false;
-
-  return true;
-}
-
-// static
-bool ResourcePrefetchPredictor::IsHandledResourceType(
-    content::ResourceType resource_type,
-    const std::string& mime_type) {
-  content::ResourceType actual_resource_type =
-      GetResourceType(resource_type, mime_type);
-  return actual_resource_type == content::RESOURCE_TYPE_STYLESHEET ||
-         actual_resource_type == content::RESOURCE_TYPE_SCRIPT ||
-         actual_resource_type == content::RESOURCE_TYPE_IMAGE ||
-         actual_resource_type == content::RESOURCE_TYPE_FONT_RESOURCE;
-}
-
-// static
 content::ResourceType ResourcePrefetchPredictor::GetResourceType(
     content::ResourceType resource_type,
     const std::string& mime_type) {
@@ -351,11 +261,6 @@ bool ResourcePrefetchPredictor::GetRedirectEndpoint(
 
   *redirect_endpoint = redirect.url();
   return true;
-}
-
-// static
-void ResourcePrefetchPredictor::SetAllowPortInUrlsForTesting(bool state) {
-  g_allow_port_in_urls = state;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

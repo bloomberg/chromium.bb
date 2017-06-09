@@ -76,16 +76,16 @@ class LoadingStatsCollector;
 //
 // The overall flow of the resource prefetching algorithm is as follows:
 //
-// * ResourcePrefetchPredictorObserver - Listens for URL requests, responses and
+// * LoadingPredictorObserver - Listens for URL requests, responses and
 //   redirects (client-side redirects are not supported) on the IO thread (via
 //   ResourceDispatcherHostDelegate) and posts tasks to the
-//   ResourcePrefetchPredictor on the UI thread. This is owned by the
-//   ProfileIOData for the profile.
+//   LoadingDataCollector on the UI thread. This is owned by the ProfileIOData
+//   for the profile.
 // * ResourcePrefetchPredictorTables - Persists ResourcePrefetchPredictor data
 //   to a sql database. Runs entirely on the DB thread. Owned by the
 //   PredictorDatabase.
 // * ResourcePrefetchPredictor - Learns about resource requirements per URL in
-//   the UI thread through the ResourcePrefetchPredictorObserver and persists
+//   the UI thread through the LoadingPredictorObserver and persists
 //   it to disk in the DB thread through the ResourcePrefetchPredictorTables. It
 //   initiates resource prefetching using the ResourcePrefetcherManager. Owned
 //   by profile.
@@ -200,12 +200,6 @@ class ResourcePrefetchPredictor
   virtual void StartInitialization();
   virtual void Shutdown();
 
-  // Thread safe.
-  static bool ShouldRecordRequest(net::URLRequest* request,
-                                  content::ResourceType resource_type);
-  static bool ShouldRecordResponse(net::URLRequest* response);
-  static bool ShouldRecordRedirect(net::URLRequest* response);
-
   // Determines the resource type from the declared one, falling back to MIME
   // type detection when it is not explicit.
   static content::ResourceType GetResourceType(
@@ -217,21 +211,6 @@ class ResourcePrefetchPredictor
   static content::ResourceType GetResourceTypeFromMimeType(
       const std::string& mime_type,
       content::ResourceType fallback);
-
-  // 'ResourcePrefetchPredictorObserver' calls the below functions to inform the
-  // predictor of main frame and resource requests. Should only be called if the
-  // corresponding Should* functions return true.
-  void RecordURLRequest(const URLRequestSummary& request);
-  void RecordURLResponse(const URLRequestSummary& response);
-  void RecordURLRedirect(const URLRequestSummary& response);
-
-  // Called when the main frame of a page completes loading.
-  void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
-
-  // Called after the main frame's first contentful paint.
-  void RecordFirstContentfulPaint(
-      const NavigationID& navigation_id,
-      const base::TimeTicks& first_contentful_paint);
 
   // Called when ResourcePrefetcher is finished, i.e. there is nothing pending
   // in flight.
@@ -265,6 +244,21 @@ class ResourcePrefetchPredictor
                                Prediction* prediction) const;
 
  private:
+  // 'LoadingPredictorObserver' calls the below functions to inform the
+  // predictor of main frame and resource requests. Should only be called if the
+  // corresponding Should* functions return true.
+  void RecordURLRequest(const URLRequestSummary& request);
+  void RecordURLResponse(const URLRequestSummary& response);
+  void RecordURLRedirect(const URLRequestSummary& response);
+
+  // Called when the main frame of a page completes loading.
+  void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
+
+  // Called after the main frame's first contentful paint.
+  void RecordFirstContentfulPaint(
+      const NavigationID& navigation_id,
+      const base::TimeTicks& first_contentful_paint);
+
   // Starts prefetching for |main_frame_url| from a |prediction|.
   void StartPrefetching(const GURL& main_frame_url,
                         const Prediction& prediction);
@@ -275,6 +269,7 @@ class ResourcePrefetchPredictor
 
   friend class LoadingPredictor;
   friend class ::PredictorsHandler;
+  friend class LoadingDataCollector;
   friend class ResourcePrefetchPredictorTest;
   friend class ResourcePrefetchPredictorBrowserTest;
 
@@ -302,7 +297,6 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            OnSubresourceResponse);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetCorrectPLT);
-  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, HandledResourceTypes);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            PopulatePrefetcherRequest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, PopulateFromManifest);
@@ -332,21 +326,8 @@ class ResourcePrefetchPredictor
   typedef std::map<NavigationID, std::unique_ptr<PageRequestSummary>>
       NavigationMap;
 
-  // Returns true if the main page request is supported for prediction.
-  static bool IsHandledMainPage(net::URLRequest* request);
-
-  // Returns true if the subresource request is supported for prediction.
-  static bool IsHandledSubresource(net::URLRequest* request,
-                                   content::ResourceType resource_type);
-
-  // Returns true if the subresource has a supported type.
-  static bool IsHandledResourceType(content::ResourceType resource_type,
-                                    const std::string& mime_type);
-
   // Returns true if the request (should have a response in it) is "no-store".
   static bool IsNoStore(const net::URLRequest& request);
-
-  static void SetAllowPortInUrlsForTesting(bool state);
 
   // Functions called on different network events pertaining to the loading of
   // main frame resource or sub resources.

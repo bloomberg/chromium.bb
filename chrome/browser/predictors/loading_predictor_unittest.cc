@@ -12,7 +12,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
+#include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"

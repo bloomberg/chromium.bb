@@ -21,7 +21,7 @@ class WebContents;
 
 using content::BrowserThread;
 using predictors::LoadingPredictor;
-using predictors::ResourcePrefetchPredictor;
+using predictors::LoadingDataCollector;
 using URLRequestSummary =
     predictors::ResourcePrefetchPredictor::URLRequestSummary;
 
@@ -98,7 +98,7 @@ void LoadingPredictorObserver::OnRequestStarted(
   if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
     ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_TOTAL_REQUESTS);
 
-  if (!ResourcePrefetchPredictor::ShouldRecordRequest(request, resource_type))
+  if (!LoadingDataCollector::ShouldRecordRequest(request, resource_type))
     return;
 
   auto summary = base::MakeUnique<URLRequestSummary>();
@@ -130,12 +130,11 @@ void LoadingPredictorObserver::OnRequestRedirected(
     ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_TOTAL_REDIRECTS);
   }
 
-  if (!ResourcePrefetchPredictor::ShouldRecordRedirect(request))
+  if (!LoadingDataCollector::ShouldRecordRedirect(request))
     return;
 
   auto summary = base::MakeUnique<URLRequestSummary>();
-  if (!ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
-          *request, summary.get())) {
+  if (!URLRequestSummary::SummarizeResponse(*request, summary.get())) {
     return;
   }
   summary->redirect_url = redirect_url;
@@ -168,11 +167,10 @@ void LoadingPredictorObserver::OnResponseStarted(
     ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_TOTAL_RESPONSES);
   }
 
-  if (!ResourcePrefetchPredictor::ShouldRecordResponse(request))
+  if (!LoadingDataCollector::ShouldRecordResponse(request))
     return;
   auto summary = base::MakeUnique<URLRequestSummary>();
-  if (!ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
-          *request, summary.get())) {
+  if (!URLRequestSummary::SummarizeResponse(*request, summary.get())) {
     return;
   }
 
@@ -202,7 +200,7 @@ void LoadingPredictorObserver::OnRequestStartedOnUIThread(
   }
   if (summary->resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
     predictor_->OnMainFrameRequest(*summary);
-  predictor_->resource_prefetch_predictor()->RecordURLRequest(*summary);
+  predictor_->loading_data_collector()->RecordURLRequest(*summary);
 }
 
 void LoadingPredictorObserver::OnRequestRedirectedOnUIThread(
@@ -217,7 +215,7 @@ void LoadingPredictorObserver::OnRequestRedirectedOnUIThread(
   }
   if (summary->resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
     predictor_->OnMainFrameRedirect(*summary);
-  predictor_->resource_prefetch_predictor()->RecordURLRedirect(*summary);
+  predictor_->loading_data_collector()->RecordURLRedirect(*summary);
 }
 
 void LoadingPredictorObserver::OnResponseStartedOnUIThread(
@@ -232,7 +230,7 @@ void LoadingPredictorObserver::OnResponseStartedOnUIThread(
   }
   if (summary->resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
     predictor_->OnMainFrameResponse(*summary);
-  predictor_->resource_prefetch_predictor()->RecordURLResponse(*summary);
+  predictor_->loading_data_collector()->RecordURLResponse(*summary);
 }
 
 }  // namespace chrome_browser_net
