@@ -16,18 +16,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace mojo {
-template <typename T, typename U>
-struct TypeConverter;
-template <typename T>
-class StructPtr;
-};
-
 namespace media {
-
-namespace mojom {
-class VideoFrame;
-}
 
 // A derived class of media::VideoFrame holding a mojo::SharedBufferHandle
 // which is mapped on constructor and remains so for the lifetime of the
@@ -72,16 +61,19 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   // |plane| specified.
   size_t PlaneOffset(size_t plane) const;
 
+  // Returns a reference to the mojo shared memory handle. Caller should
+  // duplicate the handle if they want to extend the lifetime of the buffer.
+  const mojo::SharedBufferHandle& Handle() const;
+
+  // Returns the size of the shared memory.
+  size_t MappedSize() const;
+
   // Sets the callback to be called to free the shared buffer. If not null,
   // it is called on destruction, and is passed ownership of |handle|.
   void SetMojoSharedBufferDoneCB(
       const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb);
 
  private:
-  // mojo::TypeConverter added as a friend so that MojoSharedBufferVideoFrame
-  // can be transferred across a mojo connection.
-  friend struct mojo::TypeConverter<mojo::StructPtr<mojom::VideoFrame>,
-                                    scoped_refptr<VideoFrame>>;
   friend class MojoDecryptorService;
 
   MojoSharedBufferVideoFrame(VideoPixelFormat format,
@@ -101,14 +93,6 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
             size_t y_offset,
             size_t u_offset,
             size_t v_offset);
-
-  // Returns the mojo shared memory handle. This object continues to own the
-  // handle. Caller should call duplicate the handle if they want to keep a
-  // copy of the shared memory.
-  const mojo::SharedBufferHandle& Handle() const;
-
-  // Returns the size of the shared memory.
-  size_t MappedSize() const;
 
   uint8_t* shared_buffer_data() {
     return reinterpret_cast<uint8_t*>(shared_buffer_mapping_.get());

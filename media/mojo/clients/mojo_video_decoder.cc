@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "media/base/bind_to_current_loop.h"
@@ -108,18 +109,17 @@ void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 }
 
 void MojoVideoDecoder::OnVideoFrameDecoded(
-    mojom::VideoFramePtr frame,
+    const scoped_refptr<VideoFrame>& frame,
     const base::Optional<base::UnguessableToken>& release_token) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  scoped_refptr<VideoFrame> video_frame = frame.To<scoped_refptr<VideoFrame>>();
   if (release_token) {
-    video_frame->SetReleaseMailboxCB(
+    frame->SetReleaseMailboxCB(
         BindToCurrentLoop(base::Bind(&MojoVideoDecoder::OnReleaseMailbox,
                                      weak_this_, release_token.value())));
   }
-  output_cb_.Run(std::move(video_frame));
+  output_cb_.Run(frame);
 }
 
 void MojoVideoDecoder::OnReleaseMailbox(

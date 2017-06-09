@@ -247,7 +247,8 @@ struct SharedBufferVideoFrameData {
 
 // This defines video frame data stored in texture mailboxes.
 struct MailboxVideoFrameData {
-  array<gpu.mojom.MailboxHolder> mailbox_holder;
+  // Size must be kept in sync with media::VideoFrame::kMaxPlanes.
+  array<gpu.mojom.MailboxHolder, 4> mailbox_holder;
 };
 
 struct PipelineStatistics {

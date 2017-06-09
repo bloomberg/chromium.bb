@@ -134,7 +134,7 @@ void MojoVideoDecoderService::OnDecoderOutput(
     const scoped_refptr<VideoFrame>& frame) {
   DVLOG(2) << __func__;
   DCHECK(client_);
-  client_->OnVideoFrameDecoded(mojom::VideoFrame::From(frame), base::nullopt);
+  client_->OnVideoFrameDecoded(frame, base::nullopt);
 }
 
 void MojoVideoDecoderService::OnReleaseMailbox(
