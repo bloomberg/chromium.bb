@@ -189,9 +189,6 @@ bool FFmpegGlue::OpenContext() {
     container_ = container_names::CONTAINER_AMR;
   else if (strcmp(format_context_->iformat->name, "avi") == 0)
     container_ = container_names::CONTAINER_AVI;
-  // TODO(jrummell): Remove GSM detection. http://crbug.com/711774
-  else if (strcmp(format_context_->iformat->name, "gsm") == 0)
-    container_ = container_names::CONTAINER_GSM;
 
   DCHECK_NE(container_, container_names::CONTAINER_UNKNOWN);
   UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container_);
