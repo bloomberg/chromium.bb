@@ -383,14 +383,16 @@ TEST_F(DeferredImageDecoderTest, respectActualDecoderSizeOnCreate) {
 }
 
 TEST_F(DeferredImageDecoderTest, data) {
-  RefPtr<SharedBuffer> original_data =
+  RefPtr<SharedBuffer> original_buffer =
       SharedBuffer::Create(data_->Data(), data_->size());
-  EXPECT_EQ(original_data->size(), data_->size());
-  lazy_decoder_->SetData(original_data, false);
-  RefPtr<SharedBuffer> new_data = lazy_decoder_->Data();
-  EXPECT_EQ(original_data->size(), new_data->size());
-  EXPECT_EQ(0, std::memcmp(original_data->Data(), new_data->Data(),
-                           new_data->size()));
+  EXPECT_EQ(original_buffer->size(), data_->size());
+  lazy_decoder_->SetData(original_buffer, false);
+  RefPtr<SharedBuffer> new_buffer = lazy_decoder_->Data();
+  EXPECT_EQ(original_buffer->size(), new_buffer->size());
+  const Vector<char> original_data = original_buffer->Copy();
+  const Vector<char> new_data = new_buffer->Copy();
+  EXPECT_EQ(0, std::memcmp(original_data.data(), new_data.data(),
+                           new_buffer->size()));
 }
 
 }  // namespace blink

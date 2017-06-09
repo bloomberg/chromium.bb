@@ -55,13 +55,13 @@ void CreateDecodingBaseline(DecoderCreator create_decoder,
 }
 
 void TestByteByByteDecode(DecoderCreator create_decoder,
-                          SharedBuffer* data,
+                          SharedBuffer* shared_data,
                           size_t expected_frame_count,
                           int expected_repetition_count) {
-  ASSERT_TRUE(data->Data());
+  const Vector<char> data = shared_data->Copy();
 
   Vector<unsigned> baseline_hashes;
-  CreateDecodingBaseline(create_decoder, data, &baseline_hashes);
+  CreateDecodingBaseline(create_decoder, shared_data, &baseline_hashes);
 
   std::unique_ptr<ImageDecoder> decoder = create_decoder();
 
@@ -71,15 +71,15 @@ void TestByteByByteDecode(DecoderCreator create_decoder,
   // Pass data to decoder byte by byte.
   RefPtr<SharedBuffer> source_data[2] = {SharedBuffer::Create(),
                                          SharedBuffer::Create()};
-  const char* source = data->Data();
+  const char* source = data.data();
 
-  for (size_t length = 1; length <= data->size() && !decoder->Failed();
+  for (size_t length = 1; length <= data.size() && !decoder->Failed();
        ++length) {
     source_data[0]->Append(source, 1u);
     source_data[1]->Append(source++, 1u);
     // Alternate the buffers to cover the JPEGImageDecoder::OnSetData restart
     // code.
-    decoder->SetData(source_data[length & 1].Get(), length == data->size());
+    decoder->SetData(source_data[length & 1].Get(), length == data.size());
 
     EXPECT_LE(frame_count, decoder->FrameCount());
     frame_count = decoder->FrameCount();
@@ -115,8 +115,10 @@ void TestByteByByteDecode(DecoderCreator create_decoder,
 // not break decoding at a critical point: in between a call to decode the size
 // (when the decoder stops while it may still have input data to read) and a
 // call to do a full decode.
-static void TestMergeBuffer(DecoderCreator create_decoder, SharedBuffer* data) {
-  const unsigned hash = CreateDecodingBaseline(create_decoder, data);
+static void TestMergeBuffer(DecoderCreator create_decoder,
+                            SharedBuffer* shared_data) {
+  const unsigned hash = CreateDecodingBaseline(create_decoder, shared_data);
+  const Vector<char> data = shared_data->Copy();
 
   // In order to do any verification, this test needs to move the data owned
   // by the SharedBuffer. A way to guarantee that is to create a new one, and
@@ -124,7 +126,7 @@ static void TestMergeBuffer(DecoderCreator create_decoder, SharedBuffer* data) {
   // results in writing the data into a segment, skipping the internal
   // contiguous buffer.
   RefPtr<SharedBuffer> segmented_data = SharedBuffer::Create();
-  segmented_data->Append(data->Data(), data->size());
+  segmented_data->Append(data.data(), data.size());
 
   std::unique_ptr<ImageDecoder> decoder = create_decoder();
   decoder->SetData(segmented_data.Get(), true);
@@ -202,7 +204,8 @@ static void TestDecodeAfterReallocatingData(DecoderCreator create_decoder,
   size_t frame_count = decoder->FrameCount();
 
   // ... and then decode frames from 'reallocated_data'.
-  RefPtr<SharedBuffer> reallocated_data = data->Copy();
+  Vector<char> copy = data->Copy();
+  RefPtr<SharedBuffer> reallocated_data = SharedBuffer::AdoptVector(copy);
   ASSERT_TRUE(reallocated_data.Get());
   data->Clear();
   decoder->SetData(reallocated_data.Get(), true);
@@ -225,7 +228,8 @@ static void TestByteByByteSizeAvailable(DecoderCreator create_decoder,
   // the data to check that IsSizeAvailable() changes state only when that
   // offset is reached. Also check other decoder state.
   RefPtr<SharedBuffer> temp_data = SharedBuffer::Create();
-  const char* source = data->Data();
+  const Vector<char> source_buffer = data->Copy();
+  const char* source = source_buffer.data();
   for (size_t length = 1; length <= frame_offset; ++length) {
     temp_data->Append(source++, 1u);
     decoder->SetData(temp_data.Get(), false);
@@ -250,9 +254,10 @@ static void TestByteByByteSizeAvailable(DecoderCreator create_decoder,
 }
 
 static void TestProgressiveDecoding(DecoderCreator create_decoder,
-                                    SharedBuffer* full_data,
+                                    SharedBuffer* full_buffer,
                                     size_t increment) {
-  const size_t full_length = full_data->size();
+  const Vector<char> full_data = full_buffer->Copy();
+  const size_t full_length = full_data.size();
 
   std::unique_ptr<ImageDecoder> decoder;
 
@@ -261,7 +266,7 @@ static void TestProgressiveDecoding(DecoderCreator create_decoder,
 
   // Compute hashes when the file is truncated.
   RefPtr<SharedBuffer> data = SharedBuffer::Create();
-  const char* source = full_data->Data();
+  const char* source = full_data.data();
   for (size_t i = 1; i <= full_length; i += increment) {
     decoder = create_decoder();
     data->Append(source++, 1u);
@@ -277,7 +282,7 @@ static void TestProgressiveDecoding(DecoderCreator create_decoder,
   // Compute hashes when the file is progressively decoded.
   decoder = create_decoder();
   data = SharedBuffer::Create();
-  source = full_data->Data();
+  source = full_data.data();
   for (size_t i = 1; i <= full_length; i += increment) {
     data->Append(source++, 1u);
     decoder->SetData(data.Get(), i == full_length);
@@ -295,13 +300,14 @@ static void TestProgressiveDecoding(DecoderCreator create_decoder,
 
 void TestUpdateRequiredPreviousFrameAfterFirstDecode(
     DecoderCreator create_decoder,
-    SharedBuffer* full_data) {
+    SharedBuffer* full_buffer) {
+  const Vector<char> full_data = full_buffer->Copy();
   std::unique_ptr<ImageDecoder> decoder = create_decoder();
 
   // Give it data that is enough to parse but not decode in order to check the
   // status of RequiredPreviousFrameIndex before decoding.
   RefPtr<SharedBuffer> data = SharedBuffer::Create();
-  const char* source = full_data->Data();
+  const char* source = full_data.data();
   do {
     data->Append(source++, 1u);
     decoder->SetData(data.Get(), false);
@@ -317,7 +323,7 @@ void TestUpdateRequiredPreviousFrameAfterFirstDecode(
               decoder->FrameBufferAtIndex(i)->RequiredPreviousFrameIndex());
   }
 
-  decoder->SetData(full_data, true);
+  decoder->SetData(full_buffer, true);
   for (size_t i = 0; i < frame_count; ++i) {
     EXPECT_EQ(kNotFound,
               decoder->FrameBufferAtIndex(i)->RequiredPreviousFrameIndex());
@@ -326,16 +332,17 @@ void TestUpdateRequiredPreviousFrameAfterFirstDecode(
 
 void TestResumePartialDecodeAfterClearFrameBufferCache(
     DecoderCreator create_decoder,
-    SharedBuffer* full_data) {
+    SharedBuffer* full_buffer) {
+  const Vector<char> full_data = full_buffer->Copy();
   Vector<unsigned> baseline_hashes;
-  CreateDecodingBaseline(create_decoder, full_data, &baseline_hashes);
+  CreateDecodingBaseline(create_decoder, full_buffer, &baseline_hashes);
   size_t frame_count = baseline_hashes.size();
 
   std::unique_ptr<ImageDecoder> decoder = create_decoder();
 
   // Let frame 0 be partially decoded.
   RefPtr<SharedBuffer> data = SharedBuffer::Create();
-  const char* source = full_data->Data();
+  const char* source = full_data.data();
   do {
     data->Append(source++, 1u);
     decoder->SetData(data.Get(), false);
@@ -344,7 +351,7 @@ void TestResumePartialDecodeAfterClearFrameBufferCache(
                ImageFrame::kFrameEmpty);
 
   // Skip to the last frame and clear.
-  decoder->SetData(full_data, true);
+  decoder->SetData(full_buffer, true);
   EXPECT_EQ(frame_count, decoder->FrameCount());
   ImageFrame* last_frame = decoder->FrameBufferAtIndex(frame_count - 1);
   EXPECT_EQ(baseline_hashes[frame_count - 1], HashBitmap(last_frame->Bitmap()));

@@ -132,12 +132,14 @@ TEST(SharedBufferTest, copy) {
   // copy().
   ASSERT_EQ(length * 4, shared_buffer->size());
 
-  RefPtr<SharedBuffer> clone = shared_buffer->Copy();
-  ASSERT_EQ(length * 4, clone->size());
-  ASSERT_EQ(0, memcmp(clone->Data(), shared_buffer->Data(), clone->size()));
+  Vector<char> clone = shared_buffer->Copy();
+  ASSERT_EQ(length * 4, clone.size());
+  const Vector<char> contiguous = shared_buffer->Copy();
+  ASSERT_EQ(contiguous.size(), shared_buffer->size());
+  ASSERT_EQ(0, memcmp(clone.data(), contiguous.data(), clone.size()));
 
-  clone->Append(test_data.data(), length);
-  ASSERT_EQ(length * 5, clone->size());
+  clone.Append(test_data.data(), length);
+  ASSERT_EQ(length * 5, clone.size());
 }
 
 TEST(SharedBufferTest, constructorWithSizeOnly) {

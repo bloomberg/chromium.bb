@@ -151,8 +151,10 @@ class FrameSerializerTest : public ::testing::Test,
 
   String GetSerializedData(const char* url, const char* mime_type = 0) {
     const SerializedResource* resource = GetResource(url, mime_type);
-    if (resource)
-      return String(resource->data->Data(), resource->data->size());
+    if (resource) {
+      const Vector<char> data = resource->data->Copy();
+      return String(data.data(), data.size());
+    }
     return String();
   }
 
