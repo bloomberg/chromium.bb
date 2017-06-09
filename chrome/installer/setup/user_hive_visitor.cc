@@ -18,7 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/util/scoped_token_privilege.h"
 #include "components/base32/base32.h"
 
 namespace installer {
