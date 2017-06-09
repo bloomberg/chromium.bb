@@ -61,6 +61,7 @@ namespace http://www.w3.org/1999/xhtml
     property focus
     property getAttribute
     property getAttributeNS
+    property getAttributeNames
     property getAttributeNode
     property getAttributeNodeNS
     property getBoundingClientRect
@@ -1134,6 +1135,7 @@ namespace http://www.w3.org/2000/svg
     property focus
     property getAttribute
     property getAttributeNS
+    property getAttributeNames
     property getAttributeNode
     property getAttributeNodeNS
     property getBoundingClientRect

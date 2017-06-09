@@ -372,6 +372,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   // For exposing to DOM only.
   NamedNodeMap* attributesForBindings() const;
+  Vector<AtomicString> getAttributeNames() const;
 
   enum class AttributeModificationReason { kDirectly, kByParser, kByCloning };
   struct AttributeModificationParams {

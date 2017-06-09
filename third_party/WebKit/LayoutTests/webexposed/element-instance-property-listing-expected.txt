@@ -65,6 +65,7 @@ namespace http://www.w3.org/1999/xhtml
     property getAnimations
     property getAttribute
     property getAttributeNS
+    property getAttributeNames
     property getAttributeNode
     property getAttributeNodeNS
     property getBoundingClientRect
@@ -1161,6 +1162,7 @@ namespace http://www.w3.org/2000/svg
     property getAnimations
     property getAttribute
     property getAttributeNS
+    property getAttributeNames
     property getAttributeNode
     property getAttributeNodeNS
     property getBoundingClientRect

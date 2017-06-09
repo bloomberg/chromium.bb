@@ -1140,6 +1140,7 @@ interface Element : Node
     method createShadowRoot
     method getAttribute
     method getAttributeNS
+    method getAttributeNames
     method getAttributeNode
     method getAttributeNodeNS
     method getBoundingClientRect
