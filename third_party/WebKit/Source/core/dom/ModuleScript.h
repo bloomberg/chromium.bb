@@ -27,6 +27,8 @@ enum class ModuleInstantiationState {
   kInstantiated,
 };
 
+const char* ModuleInstantiationStateToString(ModuleInstantiationState);
+
 // ModuleScript is a model object for the "module script" spec concept.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-script
 class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
@@ -54,6 +56,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   ~ModuleScript() override = default;
 
   ScriptModule Record() const;
+  bool HasEmptyRecord() const;
   const KURL& BaseURL() const { return base_url_; }
 
   ModuleInstantiationState State() const { return state_; }
