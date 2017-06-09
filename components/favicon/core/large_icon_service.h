@@ -39,15 +39,19 @@ class LargeIconService : public KeyedService {
   ~LargeIconService() override;
 
   // Requests the best large icon for the page at |page_url|.
-  // Case 1. An icon exists whose size is >= |min_source_size_in_pixel|:
+  // Case 1. An icon exists whose size is >= MAX(|min_source_size_in_pixel|,
+  // |desired_size_in_pixel|):
   // - If |desired_size_in_pixel| == 0: returns icon as is.
   // - Else: returns the icon resized to |desired_size_in_pixel|.
-  // Case 2. An icon exists whose size is < |min_source_size_in_pixel|:
+  // Case 2. An icon exists whose size is >= |min_source_size_in_pixel| and <
+  // |desired_size_in_pixel|:
+  // - Same as 1 with the biggest icon.
+  // Case 4. An icon exists whose size is < |min_source_size_in_pixel|:
   // - Extracts dominant color of smaller image, returns a fallback icon style
   //   that has a matching background.
-  // Case 3. No icon exists.
+  // Case 5. No icon exists.
   // - Returns the default fallback icon style.
-  // For cases 2 and 3, this function returns the style of the fallback icon
+  // For cases 4 and 5, this function returns the style of the fallback icon
   // instead of rendering an icon so clients can render the icon themselves.
   // TODO(jkrcal): Rename to GetLargeIconRawBitmapOrFallbackStyle.
   base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyle(
