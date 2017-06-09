@@ -60,4 +60,4 @@ class CompositorFrameConsumer {
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_COMPOSITOR_FRAME_PRODUCER_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_COMPOSITOR_FRAME_CONSUMER_H_

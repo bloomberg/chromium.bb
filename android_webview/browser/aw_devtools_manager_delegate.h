@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_AW_DEVTOOLS_MANAGER_DELEGATE_H_
-#define ANDROID_WEBVIEW_NATIVE_AW_DEVTOOLS_MANAGER_DELEGATE_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_AW_DEVTOOLS_MANAGER_DELEGATE_H_
+#define ANDROID_WEBVIEW_BROWSER_AW_DEVTOOLS_MANAGER_DELEGATE_H_
 
 #include <jni.h>
 
@@ -32,4 +32,4 @@ class AwDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
 
 } //  namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_AW_DEVTOOLS_MANAGER_DELEGATE_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_DEVTOOLS_MANAGER_DELEGATE_H_

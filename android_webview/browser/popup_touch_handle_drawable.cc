@@ -94,4 +94,4 @@ static jlong Init(JNIEnv* env,
       new PopupTouchHandleDrawable(env, obj, horizontal_padding_ratio));
 }
 
-}  // namespace content
+}  // namespace android_webview

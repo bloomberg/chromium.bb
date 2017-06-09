@@ -60,7 +60,7 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
   DISALLOW_COPY_AND_ASSIGN(AwRenderFrameExt);
 };
 
-}
+}  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_RENDERER_AW_RENDER_FRAME_EXT_H_
 

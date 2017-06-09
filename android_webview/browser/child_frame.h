@@ -56,6 +56,6 @@ class ChildFrame {
 
 using ChildFrameQueue = std::deque<std::unique_ptr<ChildFrame>>;
 
-}  // namespace webview
+}  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_BROWSER_CHILD_FRAME_H_

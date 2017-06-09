@@ -55,4 +55,4 @@ bool OnJNIOnLoadInit() {
   return true;
 }
 
-}  // android_webview
+}  // namespace android_webview

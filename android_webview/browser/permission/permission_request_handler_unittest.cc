@@ -324,4 +324,4 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizeMultiplePermission) {
   EXPECT_EQ(NULL, client()->request());
 }
 
-}  // android_webview
+}  // namespace android_webview

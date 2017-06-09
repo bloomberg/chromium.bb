@@ -47,4 +47,4 @@ void ChildFrame::WaitOnFutureIfNeeded() {
   frame_future = nullptr;
 }
 
-}  // namespace webview
+}  // namespace android_webview

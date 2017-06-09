@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_AW_RENDERER_PRIORITY_USER_DATA_H_
-#define ANDROID_WEBVIEW_NATIVE_AW_RENDERER_PRIORITY_USER_DATA_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_AW_RENDERER_PRIORITY_MANAGER_H_
+#define ANDROID_WEBVIEW_BROWSER_AW_RENDERER_PRIORITY_MANAGER_H_
 
 #include "base/supports_user_data.h"
 
@@ -39,4 +39,4 @@ class AwRendererPriorityManager : public base::SupportsUserData::Data {
 
 }  // namespace android_webview
 
-#endif  //  ANDROID_WEBVIEW_NATIVE_AW_RENDERER_PRIORITY_USER_DATA_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_AW_RENDERER_PRIORITY_MANAGER_H_

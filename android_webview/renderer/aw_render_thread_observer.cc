@@ -42,4 +42,4 @@ void AwRenderThreadObserver::OnSetJsOnlineProperty(bool network_up) {
   blink::WebNetworkStateNotifier::SetOnLine(network_up);
 }
 
-}  // nanemspace android_webview
+}  // namespace android_webview

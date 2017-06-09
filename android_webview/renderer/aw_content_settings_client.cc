@@ -22,7 +22,7 @@ bool AllowMixedContent(const blink::WebURL& url) {
   return !gurl.IsStandard();
 }
 
-}
+}  // namespace
 
 AwContentSettingsClient::AwContentSettingsClient(
     content::RenderFrame* render_frame)

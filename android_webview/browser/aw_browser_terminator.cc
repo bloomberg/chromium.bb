@@ -168,4 +168,4 @@ void AwBrowserTerminator::OnChildExit(
                  child_process_id, pid, base::Passed(std::move(pipe))));
 }
 
-}  // namespace breakpad
+}  // namespace android_webview
