@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.browser.vr_shell.VrTestRule.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_CHECK_INTERVAL_LONG_MS;
-import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_CHECK_INTERVAL_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
@@ -31,7 +31,9 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrDaydreamApi;
-import org.chromium.chrome.browser.vr_shell.util.VrUtils;
+import org.chromium.chrome.browser.vr_shell.util.NfcSimUtils;
+import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
+import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -61,7 +63,7 @@ public class VrShellTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mDelegate = VrUtils.getVrShellDelegateInstance();
+        mDelegate = VrShellDelegateUtils.getDelegateInstance();
     }
 
     private void enterExitVrMode(boolean supported) {
@@ -69,28 +71,28 @@ public class VrShellTest {
         if (!supported) {
             mDelegate.overrideDaydreamApiForTesting(mockApi);
         }
-        VrUtils.forceEnterVr();
+        VrTransitionUtils.forceEnterVr();
         if (supported) {
-            VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
+            VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
             Assert.assertTrue(VrShellDelegate.isInVr());
         } else {
             Assert.assertFalse(mockApi.getLaunchInVrCalled());
             Assert.assertFalse(VrShellDelegate.isInVr());
         }
-        VrUtils.forceExitVr(mDelegate);
+        VrTransitionUtils.forceExitVr();
         Assert.assertFalse(VrShellDelegate.isInVr());
     }
 
     private void enterVrModeNfc(boolean supported) {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        VrUtils.simNfcScan(mActivityTestRule.getActivity());
+        NfcSimUtils.simNfcScan(mActivityTestRule.getActivity());
         if (supported) {
-            VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
+            VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
             Assert.assertTrue(VrShellDelegate.isInVr());
         } else {
             Assert.assertFalse(VrShellDelegate.isInVr());
         }
-        VrUtils.forceExitVr(mDelegate);
+        VrTransitionUtils.forceExitVr();
         // TODO(bsheedy): Figure out why NFC tests cause the next test to fail
         // to enter VR unless we sleep for some amount of time after exiting VR
         // in the NFC test
@@ -150,8 +152,8 @@ public class VrShellTest {
     public void testControllerScrolling() throws InterruptedException {
         // Load page in VR and make sure the controller is pointed at the content quad
         mActivityTestRule.loadUrl("chrome://credits", PAGE_LOAD_TIMEOUT_S);
-        VrUtils.forceEnterVr();
-        VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
+        VrTransitionUtils.forceEnterVr();
+        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         EmulatedVrController controller = new EmulatedVrController(mActivityTestRule.getActivity());
         final ContentViewCore cvc =
                 mActivityTestRule.getActivity().getActivityTab().getActiveContentViewCore();

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.browser.vr_shell.VrTestRule.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 
@@ -30,7 +30,11 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrCoreVersionCheckerImpl;
-import org.chromium.chrome.browser.vr_shell.util.VrUtils;
+import org.chromium.chrome.browser.vr_shell.util.CardboardUtils;
+import org.chromium.chrome.browser.vr_shell.util.NfcSimUtils;
+import org.chromium.chrome.browser.vr_shell.util.VrInfoBarUtils;
+import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
+import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -61,7 +65,7 @@ public class WebVrTest {
     public void testRequestPresentEntersVr() throws InterruptedException {
         mVrTestRule.loadUrlAndAwaitInitialization(
                 VrTestRule.getHtmlTestFile("test_requestPresent_enters_vr"), PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.enterPresentationAndWait(
+        VrTransitionUtils.enterPresentationAndWait(
                 mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         Assert.assertTrue("VrShellDelegate is in VR", VrShellDelegate.isInVr());
         mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
@@ -78,8 +82,8 @@ public class WebVrTest {
         mVrTestRule.loadUrlAndAwaitInitialization(
                 VrTestRule.getHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.simNfcScanAndWait(
-                mVrTestRule.getActivity(), mVrTestRule.getFirstTabWebContents());
+        NfcSimUtils.simNfcScan(mVrTestRule.getActivity());
+        mVrTestRule.waitOnJavaScriptStep(mVrTestRule.getFirstTabWebContents());
         mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
     }
 
@@ -95,7 +99,7 @@ public class WebVrTest {
                 PAGE_LOAD_TIMEOUT_S);
         mVrTestRule.executeStepAndWait(
                 "stepVerifyNoInitialTaps()", mVrTestRule.getFirstTabWebContents());
-        mVrTestRule.enterPresentationAndWait(
+        VrTransitionUtils.enterPresentationAndWait(
                 mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         // Wait on VrShellImpl to say that its parent consumed the touch event
         // Set to 2 because there's an ACTION_DOWN followed by ACTION_UP
@@ -108,7 +112,7 @@ public class WebVrTest {
                         touchRegisteredLatch.countDown();
                     }
                 });
-        mVrTestRule.sendCardboardClick(mVrTestRule.getActivity());
+        CardboardUtils.sendCardboardClick(mVrTestRule.getActivity());
         Assert.assertTrue("VrShellImpl dispatched touches",
                 touchRegisteredLatch.await(POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS));
         mVrTestRule.executeStepAndWait(
@@ -130,7 +134,7 @@ public class WebVrTest {
         mVrTestRule.executeStepAndWait(
                 "stepVerifyNoInitialTaps()", mVrTestRule.getFirstTabWebContents());
         // Wait to enter VR
-        mVrTestRule.enterPresentationAndWait(
+        VrTransitionUtils.enterPresentationAndWait(
                 mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         // Send a controller click and wait for JavaScript to receive it
         controller.pressReleaseTouchpadButton();
@@ -153,10 +157,10 @@ public class WebVrTest {
         mVrTestRule.executeStepAndWait(
                 "stepVerifyNoInitialTaps()", mVrTestRule.getFirstTabWebContents());
         // Wait to enter VR
-        mVrTestRule.enterPresentationAndWait(
+        VrTransitionUtils.enterPresentationAndWait(
                 mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         // Tap and wait for JavaScript to receive it
-        mVrTestRule.sendCardboardClickAndWait(
+        CardboardUtils.sendCardboardClickAndWait(
                 mVrTestRule.getActivity(), mVrTestRule.getFirstTabWebContents());
         mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
     }
@@ -191,7 +195,7 @@ public class WebVrTest {
             public void run() {
                 MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();
                 mockChecker.setMockReturnValue(new VrCoreInfo(null, checkerReturnCompatibility));
-                VrShellDelegate.getInstanceForTesting().overrideVrCoreVersionCheckerForTesting(
+                VrShellDelegateUtils.getDelegateInstance().overrideVrCoreVersionCheckerForTesting(
                         mockChecker);
                 Assert.assertEquals(
                         checkerReturnCompatibility, mockChecker.getLastReturnValue().compatibility);
@@ -199,7 +203,7 @@ public class WebVrTest {
         });
         View decorView = mVrTestRule.getActivity().getWindow().getDecorView();
         if (checkerReturnCompatibility == VrCoreCompatibility.VR_READY) {
-            VrUtils.expectInfoBarPresent(decorView, false);
+            VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, false);
         } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE
                 || checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
             // Out of date and missing cases are the same, but with different text
@@ -215,16 +219,13 @@ public class WebVrTest {
                 expectedButton = mVrTestRule.getActivity().getString(
                         R.string.vr_services_check_infobar_install_button);
             }
-            VrUtils.expectInfoBarPresent(decorView, true);
-            TextView tempView =
-                    (TextView) mVrTestRule.getActivity().getWindow().getDecorView().findViewById(
-                            R.id.infobar_message);
+            VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, true);
+            TextView tempView = (TextView) decorView.findViewById(R.id.infobar_message);
             Assert.assertEquals(expectedMessage, tempView.getText().toString());
-            tempView = (TextView) mVrTestRule.getActivity().getWindow().getDecorView().findViewById(
-                    R.id.button_primary);
+            tempView = (TextView) decorView.findViewById(R.id.button_primary);
             Assert.assertEquals(expectedButton, tempView.getText().toString());
         } else if (checkerReturnCompatibility == VrCoreCompatibility.VR_NOT_SUPPORTED) {
-            VrUtils.expectInfoBarPresent(decorView, false);
+            VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, false);
         } else {
             Assert.fail("Invalid VrCoreVersionChecker compatibility: "
                     + String.valueOf(checkerReturnCompatibility));
@@ -292,7 +293,7 @@ public class WebVrTest {
     public void testPresentationLocksFocus() throws InterruptedException {
         mVrTestRule.loadUrlAndAwaitInitialization(
                 VrTestRule.getHtmlTestFile("test_presentation_locks_focus"), PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.enterPresentationAndWait(
+        VrTransitionUtils.enterPresentationAndWait(
                 mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
     }

@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.browser.vr_shell.VrTestRule.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.support.test.filters.MediumTest;
@@ -20,7 +20,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr_shell.util.VrUtils;
+import org.chromium.chrome.browser.vr_shell.util.VrInfoBarUtils;
+import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -55,8 +56,8 @@ public class VrShellNavigationTest {
 
     @Before
     public void setUp() throws Exception {
-        VrUtils.forceEnterVr();
-        VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
+        VrTransitionUtils.forceEnterVr();
+        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
     }
 
     private String getUrl(Page page) {
@@ -96,7 +97,7 @@ public class VrShellNavigationTest {
 
     private void enterPresentationOrFail(ContentViewCore cvc)
             throws InterruptedException, TimeoutException {
-        mVrTestRule.enterPresentation(cvc);
+        VrTransitionUtils.enterPresentation(cvc);
         mVrTestRule.pollJavaScriptBoolean("vrDisplay.isPresenting", POLL_TIMEOUT_SHORT_MS,
                 mVrTestRule.getFirstTabWebContents());
         Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
@@ -112,7 +113,7 @@ public class VrShellNavigationTest {
         Assert.assertEquals("Browser is in fullscreen",
                 fullscreenMode == FullscreenMode.FULLSCREENED, DOMUtils.isFullscreen(wc));
         // Feedback infobar should never show up during navigations.
-        VrUtils.expectInfoBarPresent(mVrTestRule.getActivity().getWindow().getDecorView(), false);
+        VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, false);
     }
 
     /**

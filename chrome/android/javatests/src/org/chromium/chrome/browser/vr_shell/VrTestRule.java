@@ -4,28 +4,16 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_CHECK_INTERVAL_LONG_MS;
-import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_CHECK_INTERVAL_SHORT_MS;
-import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.browser.vr_shell.util.VrUtils.POLL_TIMEOUT_SHORT_MS;
-
-import android.app.Activity;
-import android.support.test.InstrumentationRegistry;
-
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.vr_shell.util.VrUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -54,9 +42,14 @@ import java.util.concurrent.TimeoutException;
  * which can then grab the results and pass/fail the instrumentation test.
  */
 public class VrTestRule extends ChromeTabbedActivityTestRule {
+    public static final int PAGE_LOAD_TIMEOUT_S = 10;
+    public static final int POLL_CHECK_INTERVAL_SHORT_MS = 50;
+    public static final int POLL_CHECK_INTERVAL_LONG_MS = 100;
+    public static final int POLL_TIMEOUT_SHORT_MS = 1000;
+    public static final int POLL_TIMEOUT_LONG_MS = 10000;
+
     private static final String TAG = "VrTestRule";
     static final String TEST_DIR = "chrome/test/data/android/webvr_instrumentation";
-    static final int PAGE_LOAD_TIMEOUT_S = 10;
 
     private WebContents mFirstTabWebContents;
     private ContentViewCore mFirstTabCvc;
@@ -113,63 +106,8 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
      * @param webContents The WebContents to run the JavaScript through.
      * @return Whether a VRDisplay was found.
      */
-    public boolean vrDisplayFound(WebContents webContents) {
+    public static boolean vrDisplayFound(WebContents webContents) {
         return !runJavaScriptOrFail("vrDisplay", POLL_TIMEOUT_SHORT_MS, webContents).equals("null");
-    }
-
-    /**
-     * Use to simulate a cardboard click by sending a touch event to the device.
-     * @param activity The activity to send the cardboard click to.
-     */
-    public void sendCardboardClick(Activity activity) {
-        ClickUtils.mouseSingleClickView(InstrumentationRegistry.getInstrumentation(),
-                activity.getWindow().getDecorView().getRootView());
-    }
-
-    /**
-     * Sends a cardboard click then waits for the JavaScript step to finish.
-     * @param activity The activity to send the cardboard click to.
-     * @param webContents The WebContents for the tab the JavaScript step is in.
-     */
-    public void sendCardboardClickAndWait(Activity activity, WebContents webContents) {
-        sendCardboardClick(activity);
-        waitOnJavaScriptStep(webContents);
-    }
-
-    /**
-     * Sends a click event directly to the WebGL canvas, triggering its onclick
-     * that by default calls WebVR's requestPresent. Will have a similar result to
-     * sendCardboardClick if not already presenting, but less prone to errors, e.g.
-     * if there's dialog in the center of the screen blocking the canvas.
-     * @param cvc The ContentViewCore for the tab the canvas is in.
-     */
-    public void enterPresentation(ContentViewCore cvc) {
-        try {
-            DOMUtils.clickNode(cvc, "webgl-canvas");
-        } catch (InterruptedException | TimeoutException e) {
-            Assert.fail("Failed to click canvas to enter presentation: " + e.toString());
-        }
-    }
-
-    /**
-     * Sends a click event directly to the WebGL canvas then waits for the
-     * JavaScript step to finish.
-     * @param cvc The ContentViewCore for the tab the canvas is in.
-     * @param webContents The WebContents for the tab the JavaScript step is in.
-     */
-    public void enterPresentationAndWait(ContentViewCore cvc, WebContents webContents) {
-        enterPresentation(cvc);
-        waitOnJavaScriptStep(webContents);
-    }
-
-    /**
-     * Simulate an NFC scan and wait for the JavaScript code in the given
-     * WebContents to signal that it is done with the step.
-     * @param webContents The WebContents for the JavaScript that will be polled.
-     */
-    public void simNfcScanAndWait(ChromeTabbedActivity activity, WebContents webContents) {
-        VrUtils.simNfcScan(activity);
-        waitOnJavaScriptStep(webContents);
     }
 
     /**
@@ -181,7 +119,7 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
      * @param webContents The WebContents object to run the JavaScript in.
      * @return The return value of the JavaScript.
      */
-    public String runJavaScriptOrFail(String js, int timeout, WebContents webContents) {
+    public static String runJavaScriptOrFail(String js, int timeout, WebContents webContents) {
         try {
             return JavaScriptUtils.executeJavaScriptAndWaitForResult(
                     webContents, js, timeout, TimeUnit.MILLISECONDS);
@@ -196,7 +134,7 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
      * @param webContents The WebContents for the tab to check results in.
      * @return "Passed" if test passed, String with failure reason otherwise.
      */
-    public String checkResults(WebContents webContents) {
+    public static String checkResults(WebContents webContents) {
         if (runJavaScriptOrFail("testPassed", POLL_TIMEOUT_SHORT_MS, webContents).equals("true")) {
             return "Passed";
         }
@@ -208,7 +146,7 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
      * setting the failure reason as the description if it didn't.
      * @param webContents The WebContents for the tab to check test results in.
      */
-    public void endTest(WebContents webContents) {
+    public static void endTest(WebContents webContents) {
         Assert.assertEquals("Passed", checkResults(webContents));
     }
 
@@ -220,7 +158,7 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
      * @param webContents The WebContents to run the JavaScript through.
      * @return True if the boolean evaluated to true, false if timed out.
      */
-    public boolean pollJavaScriptBoolean(
+    public static boolean pollJavaScriptBoolean(
             final String boolName, int timeoutMs, final WebContents webContents) {
         try {
             CriteriaHelper.pollInstrumentationThread(Criteria.equals(true, new Callable<Boolean>() {
@@ -248,7 +186,7 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
      * instead of timing out.
      * @param webContents The WebContents for the tab the JavaScript step is in.
      */
-    public void waitOnJavaScriptStep(WebContents webContents) {
+    public static void waitOnJavaScriptStep(WebContents webContents) {
         Assert.assertTrue("Polling JavaScript boolean javascriptDone timed out",
                 pollJavaScriptBoolean("javascriptDone", POLL_TIMEOUT_LONG_MS, webContents));
         // Reset the synchronization boolean
@@ -260,7 +198,7 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
      * @param stepFunction The JavaScript step function to call.
      * @param webContents The WebContents for the tab the JavaScript is in.
      */
-    public void executeStepAndWait(String stepFunction, WebContents webContents) {
+    public static void executeStepAndWait(String stepFunction, WebContents webContents) {
         // Run the step and block
         JavaScriptUtils.executeJavaScript(webContents, stepFunction);
         waitOnJavaScriptStep(webContents);
