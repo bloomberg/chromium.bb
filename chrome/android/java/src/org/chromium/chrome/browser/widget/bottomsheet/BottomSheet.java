@@ -596,8 +596,8 @@ public class BottomSheet
 
         // Listen to height changes on the root.
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            /** The height of the screen minus the keyboard height. */
-            private float mHeightMinusKeyboard;
+            /** Whether or not the keyboard is currently showing. */
+            private boolean mIsKeyboardShowing;
 
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
@@ -609,7 +609,10 @@ public class BottomSheet
                         mVisibleViewportRect);
                 int heightMinusKeyboard = Math.min(decorHeight, mVisibleViewportRect.height());
 
-                boolean keyboardHeightChanged = heightMinusKeyboard != mHeightMinusKeyboard;
+                boolean isKeyboardShowing =
+                        UiUtils.isKeyboardShowing(getContext(), BottomSheet.this);
+
+                boolean keyboardHeightChanged = isKeyboardShowing != mIsKeyboardShowing;
 
                 // Make sure the size of the layout actually changed.
                 if (!keyboardHeightChanged && bottom - top == oldBottom - oldTop
@@ -619,12 +622,13 @@ public class BottomSheet
 
                 mContainerWidth = right - left;
                 mContainerHeight = bottom - top;
-                mHeightMinusKeyboard = heightMinusKeyboard;
-                int keyboardHeight = (int) (mContainerHeight - mHeightMinusKeyboard);
+                mIsKeyboardShowing = isKeyboardShowing;
+                int keyboardHeight =
+                        mIsKeyboardShowing ? (int) (mContainerHeight - heightMinusKeyboard) : 0;
                 updateSheetDimensions();
 
                 for (BottomSheetObserver o : mObservers) {
-                    o.onSheetLayout((int) mContainerHeight, (int) mHeightMinusKeyboard);
+                    o.onSheetLayout((int) mContainerHeight, heightMinusKeyboard);
                 }
 
                 // If the keyboard height changed, recompute the padding for the content area. This
