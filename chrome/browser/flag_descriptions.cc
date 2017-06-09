@@ -3105,6 +3105,11 @@ const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
 
+const char kOmniboxUINarrowDropdownName[] = "Omnibox UI Narrow Dropdown";
+
+const char kOmniboxUINarrowDropdownDescription[] =
+    "Makes the suggestions dropdown width match the omnibox width.";
+
 const char kOmniboxUIVerticalLayoutName[] = "Omnibox UI Vertical Layout";
 
 const char kOmniboxUIVerticalLayoutDescription[] =

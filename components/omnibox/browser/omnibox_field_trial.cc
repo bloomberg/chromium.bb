@@ -91,6 +91,10 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
     "OmniboxUIExperimentMaxAutocompleteMatches",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used for the omnibox narrow suggestions dropdown UI experiment.
+const base::Feature kUIExperimentNarrowDropdown{
+    "OmniboxUIExperimentNarrowDropdown", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used for the vertical margin UI experiment.
 const base::Feature kUIExperimentVerticalLayout{
     "OmniboxUIExperimentVerticalLayout", base::FEATURE_DISABLED_BY_DEFAULT};

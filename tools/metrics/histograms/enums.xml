@@ -22577,6 +22577,7 @@ from previous Chrome versions.
   <int value="274103741" label="enable-ntp-popular-sites"/>
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280644887" label="mash"/>
+  <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="304901781" label="NewUsbBackend:enabled"/>
   <int value="313303258" label="WebPaymentsModifiers:disabled"/>
@@ -22700,6 +22701,7 @@ from previous Chrome versions.
   <int value="690185633" label="NonValidatingReloadOnNormalReload:disabled"/>
   <int value="691020108" label="NTPCondensedTileLayout:disabled"/>
   <int value="693012666" label="QuickUnlockPin:disabled"/>
+  <int value="694985670" label="OmniboxUIExperimentNarrowDropdown:disabled"/>
   <int value="696600628" label="VibrateRequiresUserGesture:disabled"/>
   <int value="698809951" label="WebRtcHWVP8Encoding:enabled"/>
   <int value="709850261" label="disable-touch-editing"/>
