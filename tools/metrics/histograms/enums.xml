@@ -13375,7 +13375,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="FeatureObserver" type="int">
-<!-- Generated from third_party/WebKit/public/platform/UseCounterFeature.def -->
+<!-- Generated from third_party/WebKit/public/platform/WebFeature.h -->
 
   <int value="0" label="OBSOLETE_PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>

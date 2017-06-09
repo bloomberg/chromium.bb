@@ -23,13 +23,13 @@ def _RunUmaHistogramChecks(input_api, output_api):  # pylint: disable=C0103
 
     source_path = ''
     for f in input_api.AffectedFiles():
-        if f.LocalPath().endswith('UseCounterFeature.def'):
+        if f.LocalPath().endswith('WebFeature.h'):
             source_path = f.LocalPath()
             break
     else:
         return []
 
-    start_marker = '^'
+    start_marker = '^enum class WebFeature : uint32_t {'
     end_marker = '^kNumberOfFeatures'
     presubmit_error = update_histogram_enum.CheckPresubmitErrors(
         histogram_enum_name='FeatureObserver',
