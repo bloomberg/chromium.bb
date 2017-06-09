@@ -25652,6 +25652,26 @@
         }
       },
       {
+        "args": [],
+        "isolate_name": "load_library_perf_tests",
+        "name": "load_library_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "102b:0534",
+              "id": "build150-m1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
         "args": [
           "loading.desktop",
           "-v",
