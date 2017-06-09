@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
-import org.chromium.chrome.browser.download.ui.ThumbnailProviderImpl;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
@@ -122,6 +121,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
         mUiDelegate = uiDelegate;
         mUiConfig = uiConfig;
+        mThumbnailProvider = uiDelegate.getThumbnailProvider();
 
         mThumbnailView = (TintedImageView) itemView.findViewById(R.id.article_thumbnail);
         mThumbnailSize =
@@ -140,9 +140,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
         mIconBackgroundColor = DownloadUtils.getIconBackgroundColor(parent.getContext());
         mIconForegroundColorList = DownloadUtils.getIconForegroundColorList(parent.getContext());
-
-        // TODO(bauerb): Share ThumbnailProvider between instances
-        mThumbnailProvider = new ThumbnailProviderImpl(mThumbnailSize);
 
         new ImpressionTracker(itemView, this);
         new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
@@ -372,16 +369,9 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             // For image downloads, attempt to fetch a thumbnail.
             cancelImageFetch();
             mImageCallback = new FetchImageCallback(this, mArticle, THUMBNAIL_SOURCE_DOWNLOAD);
-            mDownloadThumbnailCallback = new ThumbnailCallback(mImageCallback, mArticle);
-            Bitmap thumbnail = mThumbnailProvider.getThumbnail(mDownloadThumbnailCallback);
-            if (thumbnail != null) {
-                // If there is already a thumbnail available, use it immediately, otherwise fall
-                // through to using the default icon for the type. Once the thumbnail is fetched
-                // it will be faded in.
-                mArticle.setThumbnailBitmap(mUiDelegate.getReferencePool().put(thumbnail));
-                setThumbnailFromBitmap(thumbnail);
-                return;
-            }
+            mDownloadThumbnailCallback =
+                    new ThumbnailCallback(mImageCallback, mArticle, mThumbnailSize);
+            mThumbnailProvider.getThumbnail(mDownloadThumbnailCallback);
         }
         setThumbnailFromFileType(fileType);
     }
@@ -605,13 +595,16 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private static class ThumbnailCallback implements ThumbnailProvider.ThumbnailRequest {
         private final SnippetArticle mSnippet;
         private final FetchImageCallback mCallback;
+        private final int mIconSize;
 
-        public ThumbnailCallback(FetchImageCallback callback, SnippetArticle snippet) {
+        public ThumbnailCallback(
+                FetchImageCallback callback, SnippetArticle snippet, int iconSize) {
             assert snippet != null;
             assert callback != null;
 
             mSnippet = snippet;
             mCallback = callback;
+            mIconSize = iconSize;
         }
 
         @Override
@@ -627,6 +620,11 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             if (thumbnail.getWidth() <= 0 || thumbnail.getHeight() <= 0) return;
 
             mCallback.onResult(thumbnail);
+        }
+
+        @Override
+        public int getIconSize() {
+            return mIconSize;
         }
     }
 
