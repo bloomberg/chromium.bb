@@ -171,7 +171,8 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 }  // namespace
 
 // Flaky on Windows: http://crbug.com/301887
-#if defined(OS_WIN)
+// Fails on Ozone Chrome OS: http://crbug.com/718512
+#if defined(OS_WIN) || (defined(OS_CHROMEOS) && defined(USE_OZONE))
 #define MAYBE_ChooseDesktopMedia DISABLED_ChooseDesktopMedia
 #else
 #define MAYBE_ChooseDesktopMedia ChooseDesktopMedia
