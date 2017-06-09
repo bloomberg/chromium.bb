@@ -88,12 +88,6 @@ base::string16 SettingsResetPromptDialog::GetWindowTitle() const {
   return controller_->GetWindowTitle();
 }
 
-// DialogModel overrides.
-
-bool SettingsResetPromptDialog::ShouldDefaultButtonBeBlue() const {
-  return true;
-}
-
 // DialogDelegate overrides.
 
 base::string16 SettingsResetPromptDialog::GetDialogButtonLabel(

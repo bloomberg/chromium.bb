@@ -139,10 +139,6 @@ base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
                                        : IDS_NO_THANKS);
 }
 
-bool SaveCardBubbleViews::ShouldDefaultButtonBeBlue() const {
-  return true;
-}
-
 gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
   return gfx::Size(kBubbleWidth, GetHeightForWidth(kBubbleWidth));
 }

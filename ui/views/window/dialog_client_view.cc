@@ -282,13 +282,8 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
                             (type != ui::DIALOG_BUTTON_CANCEL ||
                              PlatformStyle::kDialogDefaultButtonCanBeCancel);
 
-    // The default button is always blue in Harmony.
-    if (is_default && (ui::MaterialDesignController::IsSecondaryUiMaterial() ||
-                       delegate->ShouldDefaultButtonBeBlue())) {
-      button = MdTextButton::CreateSecondaryUiBlueButton(this, title);
-    } else {
-      button = MdTextButton::CreateSecondaryUiButton(this, title);
-    }
+    button = is_default ? MdTextButton::CreateSecondaryUiBlueButton(this, title)
+                        : MdTextButton::CreateSecondaryUiButton(this, title);
 
     const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
         views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH);

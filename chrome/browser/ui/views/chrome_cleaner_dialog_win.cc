@@ -72,12 +72,6 @@ void ChromeCleanerDialog::Show(Browser* browser) {
   controller_->DialogShown();
 }
 
-// DialogModel overrides.
-
-bool ChromeCleanerDialog::ShouldDefaultButtonBeBlue() const {
-  return true;
-}
-
 // WidgetDelegate overrides.
 
 ui::ModalType ChromeCleanerDialog::GetModalType() const {

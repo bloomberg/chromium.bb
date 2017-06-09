@@ -67,10 +67,6 @@ bool ImeWarningBubbleView::Cancel() {
   return true;
 }
 
-bool ImeWarningBubbleView::ShouldDefaultButtonBeBlue() const {
-  return true;
-}
-
 void ImeWarningBubbleView::OnToolbarActionsBarAnimationEnded() {
   if (!bubble_has_shown_) {
     views::BubbleDialogDelegateView::CreateBubble(this)->Show();

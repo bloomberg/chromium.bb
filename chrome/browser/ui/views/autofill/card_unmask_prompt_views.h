@@ -65,7 +65,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  bool ShouldDefaultButtonBeBlue() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   View* GetInitiallyFocusedView() override;
   bool Cancel() override;

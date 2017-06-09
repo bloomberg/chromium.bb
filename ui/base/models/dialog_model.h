@@ -30,10 +30,6 @@ class UI_BASE_EXPORT DialogModel {
   // present, ui::DIALOG_BUTTON_NONE otherwise.
   virtual int GetDefaultDialogButton() const = 0;
 
-  // Returns whether the default dialog button should be colored blue as a call
-  // to action.
-  virtual bool ShouldDefaultButtonBeBlue() const = 0;
-
   // Returns the label of the specified dialog button.
   virtual base::string16 GetDialogButtonLabel(DialogButton button) const = 0;
 

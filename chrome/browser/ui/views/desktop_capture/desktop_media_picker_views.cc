@@ -298,10 +298,6 @@ base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
                                        : IDS_CANCEL);
 }
 
-bool DesktopMediaPickerDialogView::ShouldDefaultButtonBeBlue() const {
-  return true;
-}
-
 views::View* DesktopMediaPickerDialogView::CreateExtraView() {
   return audio_share_checkbox_;
 }

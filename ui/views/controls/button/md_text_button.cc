@@ -28,6 +28,14 @@ namespace views {
 
 namespace {
 
+bool UseMaterialSecondaryButtons() {
+#if defined(OS_MACOSX)
+  return true;
+#else
+  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+#endif  // defined(OS_MACOSX)
+}
+
 LabelButton* CreateButton(ButtonListener* listener,
                           const base::string16& text,
                           bool md) {
@@ -44,15 +52,14 @@ LabelButton* CreateButton(ButtonListener* listener,
 // static
 LabelButton* MdTextButton::CreateSecondaryUiButton(ButtonListener* listener,
                                                    const base::string16& text) {
-  return CreateButton(listener, text,
-                      ui::MaterialDesignController::IsSecondaryUiMaterial());
+  return CreateButton(listener, text, UseMaterialSecondaryButtons());
 }
 
 // static
 LabelButton* MdTextButton::CreateSecondaryUiBlueButton(
     ButtonListener* listener,
     const base::string16& text) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (UseMaterialSecondaryButtons()) {
     MdTextButton* md_button =
         MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
     md_button->SetProminent(true);

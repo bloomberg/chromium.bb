@@ -302,10 +302,6 @@ base::string16 CardUnmaskPromptViews::GetDialogButtonLabel(
   return DialogDelegateView::GetDialogButtonLabel(button);
 }
 
-bool CardUnmaskPromptViews::ShouldDefaultButtonBeBlue() const {
-  return true;
-}
-
 bool CardUnmaskPromptViews::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_CANCEL)
