@@ -183,19 +183,6 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
         this._debuggerWorkspaceBinding._reset(this);
     }
 
-    pushSourceMapping(sourceMapping)
-    {
-        for (var scriptId in this._scripts)
-            this._debuggerWorkspaceBinding.pushSourceMapping(this._scripts[scriptId], sourceMapping);
-    }
-
-    disableSourceMapping(sourceMapping)
-    {
-        sourceMapping._disabled = true;
-        for (var scriptId in this._scripts)
-            this._debuggerWorkspaceBinding.updateLocations(this._scripts[scriptId]);
-    }
-
     addBreakpointListener(breakpointId, listener, thisObject)
     {
         this._breakpointResolvedEventTarget.addEventListener(breakpointId, listener, thisObject)
@@ -232,7 +219,6 @@ InspectorTest.addScript = function(target, breakpointManager, url)
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         var uiSourceCode = uiSourceCodes[i];
         if (uiSourceCode.url() === url) {
-            breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target.debuggerModel, uiSourceCode, breakpointManager.defaultMapping);
             InspectorTest.uiSourceCodes[url] = uiSourceCode;
             return uiSourceCode;
         }
@@ -253,11 +239,8 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
     InspectorTest.testNetworkProject._addResource(resource);
     uiSourceCode = InspectorTest.testWorkspace.uiSourceCodeForURL(url);
 
-    //var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-    //var uiSourceCode = InspectorTest.testNetworkProject.addFile(contentProvider, null);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
     if (!doNotSetSourceMapping) {
-        breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target.debuggerModel, uiSourceCode, breakpointManager.defaultMapping);
         breakpointManager._debuggerWorkspaceBinding.updateLocations(target.debuggerModel.scriptForId(url));
     }
     return uiSourceCode;

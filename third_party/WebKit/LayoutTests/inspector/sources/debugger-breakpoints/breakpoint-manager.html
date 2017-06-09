@@ -173,54 +173,6 @@ function test()
             }
         },
 
-        function testSourceMapping(next)
-        {
-            var shiftingMapping = {
-                rawLocationToUILocation: function(rawLocation)
-                {
-                    if (this._disabled)
-                        return null;
-                    return InspectorTest.uiSourceCodes[rawLocation.scriptId].uiLocation(rawLocation.lineNumber + 10, 0);
-                },
-
-                uiLocationToRawLocation: function(uiSourceCode, lineNumber)
-                {
-                    return new SDK.DebuggerModel.Location(mockTarget.debuggerModel, uiSourceCode.url(), lineNumber - 10, 0);
-                },
-
-                isIdentity: function()
-                {
-                    return false;
-                }
-            };
-
-            // Source mapping will shift everything 10 lines ahead so that breakpoint 1 clashes with breakpoint 2.
-            var serializedBreakpoints = [];
-            serializedBreakpoints.push(createBreakpoint("a.js", 10, "foo == bar", true));
-            serializedBreakpoints.push(createBreakpoint("a.js", 20, "", true));
-
-            var breakpointManager = createBreakpointManager(serializedBreakpoints);
-            var uiSourceCodeA = addUISourceCode(breakpointManager, "a.js");
-            window.setBreakpointCallback = step2.bind(this);
-
-            function step2()
-            {
-                window.setBreakpointCallback = step3.bind(this);
-            }
-
-            function step3()
-            {
-                InspectorTest.dumpBreakpointLocations(breakpointManager);
-                InspectorTest.addResult("\n  Toggling source mapping.");
-                mockTarget.debuggerModel.pushSourceMapping(shiftingMapping);
-                InspectorTest.dumpBreakpointLocations(breakpointManager);
-                InspectorTest.addResult("\n  Toggling source mapping back.");
-                mockTarget.debuggerModel.disableSourceMapping(shiftingMapping);
-                InspectorTest.finishBreakpointTest(breakpointManager, next);
-            }
-
-        },
-
         function testProvisionalBreakpointsResolve(next)
         {
             var serializedBreakpoints = [];
@@ -239,69 +191,6 @@ function test()
                 mockTarget.debuggerModel._breakpointResolved("a.js:10", new SDK.DebuggerModel.Location(mockTarget.debuggerModel, "a.js", 11, 0));
                 var breakpoints = breakpointManager._allBreakpoints();
                 InspectorTest.assertEquals(1, breakpoints.length, "Exactly one provisional breakpoint should be registered in breakpoint manager.");
-                InspectorTest.finishBreakpointTest(breakpointManager, next);
-            }
-        },
-
-        function testSourceMappingReload(next)
-        {
-            function createSourceMapping(uiSourceCodeA, uiSourceCodeB)
-            {
-                var mapping = {
-                    rawLocationToUILocation: function(rawLocation)
-                    {
-                        if (this._disabled)
-                            return null;
-                        return uiSourceCodeB.uiLocation(rawLocation.lineNumber + 10, 0);
-                    },
-
-                    uiLocationToRawLocation: function(uiSourceCode, lineNumber)
-                    {
-                        return new SDK.DebuggerModel.Location(mockTarget.debuggerModel, uiSourceCodeA.url(), lineNumber - 10, 0);
-                    },
-
-                    isIdentity: function()
-                    {
-                        return false;
-                    }
-                };
-
-                return mapping;
-            }
-            // Source mapping will shift everything 10 lines ahead.
-            var serializedBreakpoints = [createBreakpoint("b.js", 20, "foo == bar", true)];
-            var breakpointManager = createBreakpointManager(serializedBreakpoints);
-            InspectorTest.addResult("\n  Adding files:");
-            var uiSourceCodeA = addUISourceCode(breakpointManager, "a.js");
-            var uiSourceCodeB = addUISourceCode(breakpointManager, "b.js", true, true);
-
-            InspectorTest.addResult("\n  Toggling source mapping.");
-            var sourceMapping = createSourceMapping(uiSourceCodeA, uiSourceCodeB);
-            mockTarget.debuggerModel.pushSourceMapping(sourceMapping);
-            breakpointManager._debuggerWorkspaceBinding.setSourceMapping(mockTarget.debuggerModel, uiSourceCodeB, sourceMapping);
-            InspectorTest.runAfterPendingBreakpointUpdates(breakpointManager, breakpointActionsPerformedBeforeReload.bind(this));
-
-            function breakpointActionsPerformedBeforeReload()
-            {
-                InspectorTest.dumpBreakpointLocations(breakpointManager);
-                InspectorTest.addResult("\n  Reloading:");
-                resetWorkspace(breakpointManager);
-
-                InspectorTest.addResult("\n  Adding files:");
-                InspectorTest.addScript(mockTarget, breakpointManager, "a.js");
-                mockTarget.debuggerModel._breakpointResolved("a.js:10", new SDK.DebuggerModel.Location(mockTarget.debuggerModel, "a.js", 10, 0));
-                uiSourceCodeA = addUISourceCode(breakpointManager, "a.js", false, true);
-                uiSourceCodeB = addUISourceCode(breakpointManager, "b.js", true, true);
-
-                InspectorTest.addResult("\n  Toggling source mapping.");
-                var sourceMapping = createSourceMapping(uiSourceCodeA, uiSourceCodeB);
-                mockTarget.debuggerModel.pushSourceMapping(sourceMapping);
-                breakpointManager._debuggerWorkspaceBinding.setSourceMapping(mockTarget.debuggerModel, uiSourceCodeB, sourceMapping);
-                InspectorTest.runAfterPendingBreakpointUpdates(breakpointManager, breakpointActionsPerformed.bind(this));
-            }
-
-            function breakpointActionsPerformed()
-            {
                 InspectorTest.finishBreakpointTest(breakpointManager, next);
             }
         },
