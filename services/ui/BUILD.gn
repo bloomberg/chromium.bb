@@ -81,6 +81,10 @@ source_set("lib") {
   if (use_ozone) {
     deps += [ "//ui/ozone:ozone" ]
   }
+
+  if (use_ozone && is_chromeos) {
+    deps += [ "//services/ui/public/cpp/input_devices:input_device_controller" ]
+  }
 }
 
 repack("resources_strings") {

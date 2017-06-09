@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 source_set("input_devices") {
   sources = [
     "input_device_client.cc",
@@ -17,4 +19,31 @@ source_set("input_devices") {
   public_deps = [
     "//services/ui/public/interfaces/input_devices",
   ]
+}
+
+if (is_chromeos && use_ozone) {
+  source_set("input_device_controller") {
+    sources = [
+      "input_device_controller.cc",
+      "input_device_controller.h",
+    ]
+
+    deps = [
+      "//base",
+      "//services/service_manager/public/cpp",
+      "//ui/events:dom_keycode_converter",
+      "//ui/ozone",
+    ]
+
+    public_deps = [
+      "//services/ui/public/interfaces/input_devices",
+    ]
+
+    # This target is really an implementation detail of the ui service, but
+    # until Chrome is switched over to mus it needs to be visible to Chrome too.
+    visibility = [
+      "//chrome/browser",
+      "//services/ui:lib",
+    ]
+  }
 }

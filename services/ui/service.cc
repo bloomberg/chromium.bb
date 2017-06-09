@@ -60,6 +60,10 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
+#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#include "services/ui/public/cpp/input_devices/input_device_controller.h"
+#endif
+
 using mojo::InterfaceRequest;
 using ui::mojom::WindowServerTest;
 using ui::mojom::WindowTreeHostFactory;
@@ -98,6 +102,11 @@ Service::~Service() {
   window_server_.reset();
 
 #if defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
+  // InputDeviceController uses ozone.
+  input_device_controller_.reset();
+#endif
+
   OzonePlatform::Shutdown();
 #endif
 }
@@ -178,7 +187,7 @@ void Service::OnStart() {
   params.single_process = false;
   ui::OzonePlatform::InitializeForUI(params);
 
-  // TODO(kylechar): We might not always want a US keyboard layout.
+  // Assume a client will change the layout to an appropriate configuration.
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
   client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
@@ -186,6 +195,11 @@ void Service::OnStart() {
       client_native_pixmap_factory_.get());
 
   DCHECK(gfx::ClientNativePixmapFactory::GetInstance());
+
+#if defined(OS_CHROMEOS)
+  input_device_controller_ = base::MakeUnique<InputDeviceController>();
+  input_device_controller_->AddInterface(&registry_);
+#endif
 #endif
 
 // TODO(rjkroege): Enter sandbox here before we start threads in GpuState
