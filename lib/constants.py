@@ -765,7 +765,9 @@ MESSAGE_TYPE_IGNORED_REASON = 'ignored_reason'
 MESSAGE_SUBTYPE_SELF_DESTRUCTION = 'self_destruction'
 
 # Define HWTEST job_keyvals
-DATASTORE_PARENT_KEY = 'datastore_parent_key'
+JOB_KEYVAL_DATASTORE_PARENT_KEY = 'datastore_parent_key'
+JOB_KEYVAL_CIDB_BUILD_ID = 'cidb_build_id'
+JOB_KEYVAL_CIDB_BUILD_STAGE_ID = 'cidb_build_stage_id'
 
 # Defines VM Test types.
 FULL_AU_TEST_TYPE = 'full_suite'
