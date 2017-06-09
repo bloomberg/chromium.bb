@@ -129,8 +129,13 @@ public class AutofillPaymentApp implements PaymentApp {
 
     @Override
     public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodDataMap) {
-        assert methodDataMap != null;
+        return merchantSupportsAutofillPaymentInstruments(methodDataMap);
+    }
 
+    /** @return True if the merchant methodDataMap supports autofill payment instruments. */
+    public static boolean merchantSupportsAutofillPaymentInstruments(
+            Map<String, PaymentMethodData> methodDataMap) {
+        assert methodDataMap != null;
         PaymentMethodData basicCardData = methodDataMap.get(BASIC_CARD_METHOD_NAME);
         if (basicCardData != null) {
             Set<String> basicCardNetworks = convertBasicCardToNetworks(basicCardData);
