@@ -2866,3 +2866,6 @@ crbug.com/731111 [ Mac ] http/tests/media/progress-events-generated-correctly.ht
 crbug.com/731111 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Failure Pass Timeout ]
 crbug.com/731111 [ Mac ] virtual/mojo-loading/http/tests/media/progress-events-generated-correctly.html [ Failure Pass Timeout ]
 crbug.com/731111 [ Mac ] virtual/mojo-loading/http/tests/media/video-load-metadata-decode-error.html [ Failure Pass Timeout ]
+
+# Sheriff failures 2017-06-09
+crbug.com/731518 [ Win Linux ] webaudio/DynamicsCompressor/dynamicscompressor-clear-internal-state.html [ Failure Pass ]
