@@ -598,10 +598,6 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
     LayoutGeometryMap& geometry_map,
     HashSet<const PaintLayer*>& layers_with_rects,
     LayerFrameMap& layer_child_frame_map) {
-  // If this layer is throttled, ignore it.
-  if (cur_layer->GetLayoutObject().GetFrameView() &&
-      cur_layer->GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
-    return;
   // Project any rects for the current layer
   LayerHitTestRects::const_iterator layer_iter = layer_rects.find(cur_layer);
   if (layer_iter != layer_rects.end()) {
@@ -664,6 +660,9 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
   if (map_iter != layer_child_frame_map.end()) {
     for (size_t i = 0; i < map_iter->value.size(); i++) {
       const LocalFrame* child_frame = map_iter->value[i];
+      if (child_frame->ShouldThrottleRendering())
+        continue;
+
       const PaintLayer* child_layer =
           child_frame->View()->GetLayoutViewItem().Layer();
       if (layers_with_rects.Contains(child_layer)) {
@@ -685,6 +684,10 @@ static void ProjectRectsToGraphicsLayerSpace(
     GraphicsLayerHitTestRects& graphics_rects) {
   TRACE_EVENT0("input",
                "ScrollingCoordinator::projectRectsToGraphicsLayerSpace");
+
+  if (main_frame->ShouldThrottleRendering())
+    return;
+
   bool touch_handler_in_child_frame = false;
 
   // We have a set of rects per Layer, we need to map them to their bounding
