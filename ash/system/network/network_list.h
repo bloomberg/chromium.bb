@@ -121,12 +121,10 @@ class NetworkListView : public NetworkStateListDetailedView,
   bool needs_relayout_;
 
   InfoLabel* no_wifi_networks_view_;
-  InfoLabel* no_cellular_networks_view_;
-  SectionHeaderRowView* cellular_header_view_;
-  SectionHeaderRowView* tether_header_view_;
+  InfoLabel* no_mobile_networks_view_;
+  SectionHeaderRowView* mobile_header_view_;
   SectionHeaderRowView* wifi_header_view_;
-  views::Separator* cellular_separator_view_;
-  views::Separator* tether_separator_view_;
+  views::Separator* mobile_separator_view_;
   views::Separator* wifi_separator_view_;
   TriView* connection_warning_;
 

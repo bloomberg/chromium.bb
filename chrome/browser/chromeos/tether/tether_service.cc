@@ -183,8 +183,8 @@ void TetherService::DeviceListChanged() {
   if (is_enabled != was_pref_enabled) {
     profile_->GetPrefs()->SetBoolean(prefs::kInstantTetheringEnabled,
                                      is_enabled);
-    UpdateTetherTechnologyState();
   }
+  UpdateTetherTechnologyState();
 }
 
 void TetherService::OnPrefsChanged() {
@@ -220,11 +220,14 @@ TetherService::GetTetherTechnologyState() {
   } else if (!IsAllowedByPolicy()) {
     return chromeos::NetworkStateHandler::TechnologyState::
         TECHNOLOGY_PROHIBITED;
-  } else if (!IsBluetoothAvailable()) {
-    // TODO (hansberry): This unfortunately results in a weird UI state for
-    // Settings where the toggle is clickable but immediately becomes disabled
-    // after enabling it. Possible solution: grey out the toggle and tell the
-    // user to turn Bluetooth on?
+  } else if (!IsBluetoothAvailable() || IsCellularAvailableButNotEnabled()) {
+    // If Cellular technology is available, then Tether technology is treated
+    // as a subset of Cellular, and it should only be enabled when Cellular
+    // technology is enabled.
+    // TODO (hansberry): When !IsBluetoothAvailable(), this results in a weird
+    // UI state for Settings where the toggle is clickable but immediately
+    // becomes disabled after enabling it.  Possible solution: grey out the
+    // toggle and tell the user to turn Bluetooth on?
     return chromeos::NetworkStateHandler::TechnologyState::
         TECHNOLOGY_UNINITIALIZED;
   } else if (!IsEnabledbyPreference()) {
@@ -245,6 +248,13 @@ void TetherService::OnBluetoothAdapterFetched(
 
 bool TetherService::IsBluetoothAvailable() const {
   return adapter_.get() && adapter_->IsPresent() && adapter_->IsPowered();
+}
+
+bool TetherService::IsCellularAvailableButNotEnabled() const {
+  return (network_state_handler_->IsTechnologyAvailable(
+              chromeos::NetworkTypePattern::Cellular()) &&
+          !network_state_handler_->IsTechnologyEnabled(
+              chromeos::NetworkTypePattern::Cellular()));
 }
 
 bool TetherService::IsAllowedByPolicy() const {

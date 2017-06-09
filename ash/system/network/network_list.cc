@@ -178,44 +178,42 @@ class NetworkListView::SectionHeaderRowView : public views::View,
 
 namespace {
 
-class CellularHeaderRowView : public NetworkListView::SectionHeaderRowView {
+class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView {
  public:
-  CellularHeaderRowView()
+  MobileHeaderRowView()
       : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_MOBILE) {}
 
-  ~CellularHeaderRowView() override {}
+  ~MobileHeaderRowView() override {}
 
-  const char* GetClassName() const override { return "CellularHeaderRowView"; }
+  const char* GetClassName() const override { return "MobileHeaderRowView"; }
 
  protected:
   void OnToggleToggled(bool is_on) override {
     NetworkStateHandler* handler =
         NetworkHandler::Get()->network_state_handler();
-    handler->SetTechnologyEnabled(NetworkTypePattern::Cellular(), is_on,
-                                  chromeos::network_handler::ErrorCallback());
+    // The Mobile network type contains both Cellular and Tether technologies,
+    // though one or both of these may be unavailable. When Cellular technology
+    // is available, the enabled value of Tether depends on the enabled value of
+    // Cellular, so the toggle should only explicitly change the enabled value
+    // of Cellular.
+    // However, if Cellular technology is not available but Tether technology is
+    // available, the toggle should explicitly change the enabled value of
+    // Tether.
+    if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular())) {
+      handler->SetTechnologyEnabled(NetworkTypePattern::Cellular(), is_on,
+                                    chromeos::network_handler::ErrorCallback());
+    } else {
+      DCHECK(handler->IsTechnologyAvailable(NetworkTypePattern::Tether()));
+
+      handler->SetTechnologyEnabled(NetworkTypePattern::Tether(), is_on,
+                                    chromeos::network_handler::ErrorCallback());
+    }
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CellularHeaderRowView);
+  DISALLOW_COPY_AND_ASSIGN(MobileHeaderRowView);
 };
 
-class TetherHeaderRowView : public NetworkListView::SectionHeaderRowView {
- public:
-  TetherHeaderRowView()
-      : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_TETHER) {}
-
-  ~TetherHeaderRowView() override {}
-
-  const char* GetClassName() const override { return "TetherHeaderRowView"; }
-
- protected:
-  void OnToggleToggled(bool is_on) override {
-    // TODO (hansberry): Persist toggle to settings/preferences.
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TetherHeaderRowView);
-};
 
 class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
  public:
@@ -296,12 +294,10 @@ NetworkListView::NetworkListView(SystemTrayItem* owner, LoginStatus login)
     : NetworkStateListDetailedView(owner, LIST_TYPE_NETWORK, login),
       needs_relayout_(false),
       no_wifi_networks_view_(nullptr),
-      no_cellular_networks_view_(nullptr),
-      cellular_header_view_(nullptr),
-      tether_header_view_(nullptr),
+      no_mobile_networks_view_(nullptr),
+      mobile_header_view_(nullptr),
       wifi_header_view_(nullptr),
-      cellular_separator_view_(nullptr),
-      tether_separator_view_(nullptr),
+      mobile_separator_view_(nullptr),
       wifi_separator_view_(nullptr),
       connection_warning_(nullptr) {}
 
@@ -431,10 +427,8 @@ void NetworkListView::UpdateNetworkIcons() {
     info->connecting = network->IsConnectingState();
     if (network->Matches(NetworkTypePattern::WiFi()))
       info->type = NetworkInfo::Type::WIFI;
-    else if (network->Matches(NetworkTypePattern::Cellular()))
-      info->type = NetworkInfo::Type::CELLULAR;
-    else if (network->Matches(NetworkTypePattern::Tether()))
-      info->type = NetworkInfo::Type::TETHER;
+    else if (network->Matches(NetworkTypePattern::Mobile()))
+      info->type = NetworkInfo::Type::MOBILE;
     if (prohibited_by_policy) {
       info->tooltip =
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED);
@@ -510,16 +504,20 @@ NetworkListView::UpdateNetworkListEntries() {
     PlaceViewAtIndex(connection_warning_, index++);
   }
 
-  // First add high-priority networks (not Wi-Fi nor cellular).
+  // First add high-priority networks (neither Wi-Fi nor Mobile).
   std::unique_ptr<std::set<std::string>> new_guids =
       UpdateNetworkChildren(NetworkInfo::Type::UNKNOWN, index);
   index += new_guids->size();
 
-  if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular())) {
-    index = UpdateSectionHeaderRow(
-        NetworkTypePattern::Cellular(),
-        handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()), index,
-        &cellular_header_view_, &cellular_separator_view_);
+  if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular()) ||
+      handler->IsTechnologyAvailable(NetworkTypePattern::Tether())) {
+    bool is_enabled =
+        handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()) ||
+        handler->IsTechnologyEnabled(NetworkTypePattern::Tether());
+
+    index = UpdateSectionHeaderRow(NetworkTypePattern::Cellular(), is_enabled,
+                                   index, &mobile_header_view_,
+                                   &mobile_separator_view_);
   }
 
   // Cellular initializing.
@@ -529,34 +527,15 @@ NetworkListView::UpdateNetworkListEntries() {
       !handler->FirstNetworkByType(NetworkTypePattern::Mobile())) {
     cellular_message_id = IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS;
   }
-  UpdateInfoLabel(cellular_message_id, index, &no_cellular_networks_view_);
+  UpdateInfoLabel(cellular_message_id, index, &no_mobile_networks_view_);
   if (cellular_message_id)
     ++index;
 
-  // Add cellular networks.
+  // Add cellular and Tether networks.
   std::unique_ptr<std::set<std::string>> new_cellular_guids =
-      UpdateNetworkChildren(NetworkInfo::Type::CELLULAR, index);
+      UpdateNetworkChildren(NetworkInfo::Type::MOBILE, index);
   index += new_cellular_guids->size();
   new_guids->insert(new_cellular_guids->begin(), new_cellular_guids->end());
-
-  // TODO (hansberry): Audit existing usage of NonVirtual and consider changing
-  // it to include Tether. See crbug.com/693647.
-  if (handler->IsTechnologyAvailable(NetworkTypePattern::Tether())) {
-    index = UpdateSectionHeaderRow(
-        NetworkTypePattern::Tether(),
-        handler->IsTechnologyEnabled(NetworkTypePattern::Tether()), index,
-        &tether_header_view_, &tether_separator_view_);
-
-    // TODO (hansberry): Should a message similar to
-    // IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS be shown if Tether technology is
-    // enabled but no networks are around?
-
-    // Add Tether networks.
-    std::unique_ptr<std::set<std::string>> new_tether_guids =
-        UpdateNetworkChildren(NetworkInfo::Type::TETHER, index);
-    index += new_tether_guids->size();
-    new_guids->insert(new_tether_guids->begin(), new_tether_guids->end());
-  }
 
   index = UpdateSectionHeaderRow(
       NetworkTypePattern::WiFi(),
@@ -693,10 +672,8 @@ int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
                                             SectionHeaderRowView** view,
                                             views::Separator** separator_view) {
   if (!*view) {
-    if (pattern.Equals(NetworkTypePattern::Cellular()))
-      *view = new CellularHeaderRowView();
-    else if (pattern.Equals(NetworkTypePattern::Tether()))
-      *view = new TetherHeaderRowView();
+    if (pattern.MatchesPattern(NetworkTypePattern::Mobile()))
+      *view = new MobileHeaderRowView();
     else if (pattern.Equals(NetworkTypePattern::WiFi()))
       *view = new WifiHeaderRowView();
     else

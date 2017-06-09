@@ -423,9 +423,8 @@ void NetworkStateHandler::GetNetworkListByType(const NetworkTypePattern& type,
   if (!network_list_sorted_)
     SortNetworkList();
 
-  if (type.MatchesPattern(NetworkTypePattern::Tether())) {
+  if (type.MatchesPattern(NetworkTypePattern::Tether()))
     GetTetherNetworkList(limit, list);
-  }
 
   int count = list->size();
 
@@ -461,8 +460,11 @@ void NetworkStateHandler::GetTetherNetworkList(int limit,
                                                NetworkStateList* list) {
   DCHECK(list);
   list->clear();
-  int count = 0;
 
+  if (!IsTechnologyEnabled(NetworkTypePattern::Tether()))
+    return;
+
+  int count = 0;
   for (auto iter = tether_network_list_.begin();
        iter != tether_network_list_.end(); ++iter) {
     list->push_back((*iter)->AsNetworkState());
