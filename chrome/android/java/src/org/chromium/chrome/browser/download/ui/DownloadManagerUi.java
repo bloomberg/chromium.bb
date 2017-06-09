@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.ui;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -17,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
@@ -73,12 +71,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         private ThumbnailProvider mThumbnailProvider;
 
         DownloadBackendProvider() {
-            Resources resources = ContextUtils.getApplicationContext().getResources();
-            int iconSize = resources.getDimensionPixelSize(R.dimen.downloads_item_icon_size);
-
             mOfflinePageBridge = new OfflinePageDownloadBridge(Profile.getLastUsedProfile());
             mSelectionDelegate = new DownloadItemSelectionDelegate();
-            mThumbnailProvider = new ThumbnailProviderImpl(iconSize);
+            mThumbnailProvider = new ThumbnailProviderImpl();
         }
 
         @Override

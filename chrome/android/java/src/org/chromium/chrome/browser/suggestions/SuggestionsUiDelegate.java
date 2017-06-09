@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -29,6 +30,9 @@ public interface SuggestionsUiDelegate {
 
     /** Convenience method to access the {@link SuggestionsNavigationDelegate}. */
     SuggestionsNavigationDelegate getNavigationDelegate();
+
+    /** Convenience method to access the {@link ThumbnailProvider} */
+    ThumbnailProvider getThumbnailProvider();
 
     /**
      * @return The reference pool to use for large objects that should be dropped under

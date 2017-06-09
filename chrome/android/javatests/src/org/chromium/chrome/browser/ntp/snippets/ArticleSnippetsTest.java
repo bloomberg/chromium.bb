@@ -26,6 +26,8 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
+import org.chromium.chrome.browser.download.ui.ThumbnailProviderImpl;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -212,6 +214,7 @@ public class ArticleSnippetsTest {
                 new DummySuggestionsEventReporter();
         private SuggestionsRanker mSuggestionsRanker = new SuggestionsRanker();
         private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
+        private final ThumbnailProvider mThumbnailProvider = new ThumbnailProviderImpl();
 
         @Override
         public void getLocalFaviconImageForURL(
@@ -272,6 +275,11 @@ public class ArticleSnippetsTest {
         @Override
         public SuggestionsNavigationDelegate getNavigationDelegate() {
             return null;
+        }
+
+        @Override
+        public ThumbnailProvider getThumbnailProvider() {
+            return mThumbnailProvider;
         }
     }
 
