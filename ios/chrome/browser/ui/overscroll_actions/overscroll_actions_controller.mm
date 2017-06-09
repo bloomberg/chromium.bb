@@ -479,12 +479,18 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 #pragma mark - Pan gesture recognizer handling
 
 - (void)panGesture:(UIPanGestureRecognizer*)gesture {
-  if (gesture.state == UIGestureRecognizerStateBegan) {
-    [self setWebViewInteractionEnabled:NO];
-  } else if (gesture.state == UIGestureRecognizerStateEnded ||
-             gesture.state == UIGestureRecognizerStateCancelled) {
+  if (gesture.state == UIGestureRecognizerStateEnded ||
+      gesture.state == UIGestureRecognizerStateCancelled) {
     [self setWebViewInteractionEnabled:YES];
   }
+  if (self.overscrollState == OverscrollState::NO_PULL_STARTED) {
+    return;
+  }
+
+  if (gesture.state == UIGestureRecognizerStateBegan) {
+    [self setWebViewInteractionEnabled:NO];
+  }
+
   const CGPoint panPointScreen = [gesture locationInView:nil];
   if (self.overscrollState == OverscrollState::ACTION_READY) {
     const CGFloat direction = UseRTLLayout() ? -1 : 1;
