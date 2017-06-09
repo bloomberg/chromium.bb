@@ -7698,6 +7698,7 @@
     },
     "eve-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "eve"
         ],
@@ -14144,6 +14145,7 @@
             "daisy_skate-paladin",
             "daisy_spring-paladin",
             "elm-paladin",
+            "eve-paladin",
             "falco-full-compile-paladin",
             "falco-paladin",
             "fizz-paladin",

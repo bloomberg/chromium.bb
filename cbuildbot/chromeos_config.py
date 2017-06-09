@@ -2221,6 +2221,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # pass the last ~20 build attempts, e.g. the builder page shows all green.
   _paladin_new_boards = frozenset([
       'cyan',
+      'eve',
       'veyron_jaq',
       'veyron_tiger',
   ])
