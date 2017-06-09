@@ -72,15 +72,32 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'draw-with-integer-texture-base-level.html',
         ['win', 'nvidia', 'd3d11'], bug=679639)
 
-    # Win10 / NVIDIA Quadro P400 / D3D11 failures
+    # Win10 / NVIDIA Quadro P400 / D3D11 flaky failures
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_interleaved_lines.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_interleaved_triangles.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_separate_lines.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_separate_triangles.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'random_interleaved_lines.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
         'random_interleaved_triangles.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'random_separate_lines.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/' +
+        'random_separate_triangles.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
+    self.Fail('deqp/functional/gles3/transformfeedback/interpolation_flat.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
