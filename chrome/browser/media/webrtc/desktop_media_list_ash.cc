@@ -15,6 +15,7 @@
 #include "ui/snapshot/snapshot.h"
 
 using content::BrowserThread;
+using content::DesktopMediaID;
 
 namespace {
 
@@ -23,12 +24,15 @@ const int kDefaultUpdatePeriod = 500;
 
 }  // namespace
 
-DesktopMediaListAsh::DesktopMediaListAsh(int source_types)
+DesktopMediaListAsh::DesktopMediaListAsh(content::DesktopMediaID::Type type)
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
-      source_types_(source_types),
+      type_(type),
       pending_window_capture_requests_(0),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(type == content::DesktopMediaID::TYPE_SCREEN ||
+         type == content::DesktopMediaID::TYPE_WINDOW);
+}
 
 DesktopMediaListAsh::~DesktopMediaListAsh() {}
 
@@ -70,7 +74,7 @@ void DesktopMediaListAsh::EnumerateSources(
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
   for (size_t i = 0; i < root_windows.size(); ++i) {
-    if (source_types_ & SCREENS) {
+    if (type_ == content::DesktopMediaID::TYPE_SCREEN) {
       SourceDescription screen_source(
           content::DesktopMediaID::RegisterAuraWindow(
               content::DesktopMediaID::TYPE_SCREEN, root_windows[i]),
@@ -98,9 +102,7 @@ void DesktopMediaListAsh::EnumerateSources(
       }
 
       CaptureThumbnail(screen_source.id, root_windows[i]);
-    }
-
-    if (source_types_ & WINDOWS) {
+    } else {
       EnumerateWindowsForRoot(
           sources, root_windows[i], ash::kShellWindowId_DefaultContainer);
       EnumerateWindowsForRoot(
