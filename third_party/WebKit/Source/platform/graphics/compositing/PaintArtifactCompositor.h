@@ -57,8 +57,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   // the layers that will be output as part of a call to layersAsJSON
   // (if LayerTreeIncludesDebugInfo is specified).
   void Update(const PaintArtifact&,
-              RasterInvalidationTrackingMap<const PaintChunk>*
-                  paint_chunk_invalidations,
               bool store_debug_info,
               CompositorElementIdSet& composited_element_ids);
 
@@ -166,7 +164,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
       gfx::Vector2dF& layer_offset,
       Vector<std::unique_ptr<ContentLayerClientImpl>>&
           new_content_layer_clients,
-      RasterInvalidationTrackingMap<const PaintChunk>*,
       bool store_debug_info);
 
   // Finds a client among the current vector of clients that matches the paint

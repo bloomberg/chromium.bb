@@ -199,12 +199,7 @@ class PLATFORM_EXPORT PaintController {
 #endif
 
   void SetTracksRasterInvalidations(bool value);
-  RasterInvalidationTrackingMap<const PaintChunk>*
-  PaintChunksRasterInvalidationTrackingMap() {
-    return raster_invalidation_tracking_info_
-               ? &raster_invalidation_tracking_info_->map
-               : nullptr;
-  }
+  void SetupRasterUnderInvalidationChecking();
 
   bool LastDisplayItemIsSubsequenceEnd() const;
 
@@ -228,9 +223,6 @@ class PLATFORM_EXPORT PaintController {
         under_invalidation_checking_end_(0),
         last_cached_subsequence_end_(0) {
     ResetCurrentListIndices();
-    SetTracksRasterInvalidations(
-        RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
-
     // frame_first_paints_ should have one null frame since the beginning, so
     // that PaintController is robust even if it paints outside of BeginFrame
     // and EndFrame cycles. It will also enable us to combine the first paint
@@ -424,7 +416,6 @@ class PLATFORM_EXPORT PaintController {
   String under_invalidation_message_prefix_;
 
   struct RasterInvalidationTrackingInfo {
-    RasterInvalidationTrackingMap<const PaintChunk> map;
     using ClientDebugNamesMap = HashMap<const DisplayItemClient*, String>;
     ClientDebugNamesMap new_client_debug_names;
     ClientDebugNamesMap old_client_debug_names;

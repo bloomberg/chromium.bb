@@ -3276,6 +3276,7 @@ void LocalFrameView::PaintTree() {
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     if (GetLayoutView()->Layer()->NeedsRepaint()) {
+      paint_controller_->SetupRasterUnderInvalidationChecking();
       GraphicsContext graphics_context(*paint_controller_);
       if (RuntimeEnabledFeatures::PrintBrowserEnabled())
         graphics_context.SetPrinting(true);
@@ -3355,7 +3356,6 @@ void LocalFrameView::PushPaintArtifactToCompositor(
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifact(),
-      paint_controller_->PaintChunksRasterInvalidationTrackingMap(),
       is_storing_composited_layer_debug_info_, composited_element_ids);
 }
 

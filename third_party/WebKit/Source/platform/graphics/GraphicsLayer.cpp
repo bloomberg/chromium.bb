@@ -29,7 +29,6 @@
 #include <cmath>
 #include <memory>
 #include <utility>
-#include "SkImageFilter.h"
 #include "SkMatrix44.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer.h"
@@ -44,7 +43,6 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -278,14 +276,15 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
                           GraphicsContext::DisabledMode disabled_mode) {
   if (PaintWithoutCommit(interest_rect, disabled_mode)) {
     GetPaintController().CommitNewDisplayItems();
-    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-      sk_sp<PaintRecord> record = CaptureRecord();
-      CheckPaintUnderInvalidations(record);
-      RasterInvalidationTracking& tracking =
-          GetRasterInvalidationTrackingMap().Add(this);
-      tracking.last_painted_record = std::move(record);
-      tracking.last_interest_rect = previous_interest_rect_;
-      tracking.invalidation_region_since_last_paint = Region();
+    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
+        DrawsContent()) {
+      auto& tracking = GetRasterInvalidationTrackingMap().Add(this);
+      tracking.CheckUnderInvalidations(DebugName(), CaptureRecord(),
+                                       InterestRect());
+      if (tracking.under_invalidation_record) {
+        GetPaintController().AppendDebugDrawingAfterCommit(
+            *this, tracking.under_invalidation_record, InterestRect());
+      }
     }
   }
 }
@@ -1189,104 +1188,6 @@ sk_sp<PaintRecord> GraphicsLayer::CaptureRecord() {
   graphics_context.BeginRecording(bounds);
   GetPaintController().GetPaintArtifact().Replay(bounds, graphics_context);
   return graphics_context.EndRecording();
-}
-
-static bool PixelComponentsDiffer(int c1, int c2) {
-  // Compare strictly for saturated values.
-  if (c1 == 0 || c1 == 255 || c2 == 0 || c2 == 255)
-    return c1 != c2;
-  // Tolerate invisible differences that may occur in gradients etc.
-  return abs(c1 - c2) > 2;
-}
-
-static bool PixelsDiffer(SkColor p1, SkColor p2) {
-  return PixelComponentsDiffer(SkColorGetA(p1), SkColorGetA(p2)) ||
-         PixelComponentsDiffer(SkColorGetR(p1), SkColorGetR(p2)) ||
-         PixelComponentsDiffer(SkColorGetG(p1), SkColorGetG(p2)) ||
-         PixelComponentsDiffer(SkColorGetB(p1), SkColorGetB(p2));
-}
-
-// This method is used to graphically verify any under invalidation when
-// RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled is being
-// used. It compares the last recording made by GraphicsLayer::Paint against
-// |new_record|, by rastering both into bitmaps. Any differences are colored
-// as dark red.
-void GraphicsLayer::CheckPaintUnderInvalidations(
-    sk_sp<PaintRecord> new_record) {
-  if (!DrawsContent())
-    return;
-
-  RasterInvalidationTracking* tracking =
-      GetRasterInvalidationTrackingMap().Find(this);
-  if (!tracking)
-    return;
-
-  if (!tracking->last_painted_record)
-    return;
-
-  IntRect rect = Intersection(tracking->last_interest_rect, InterestRect());
-  if (rect.IsEmpty())
-    return;
-
-  SkBitmap old_bitmap;
-  old_bitmap.allocPixels(
-      SkImageInfo::MakeN32Premul(rect.Width(), rect.Height()));
-  {
-    SkiaPaintCanvas canvas(old_bitmap);
-    canvas.clear(SK_ColorTRANSPARENT);
-    canvas.translate(-rect.X(), -rect.Y());
-    canvas.drawPicture(tracking->last_painted_record);
-  }
-
-  SkBitmap new_bitmap;
-  new_bitmap.allocPixels(
-      SkImageInfo::MakeN32Premul(rect.Width(), rect.Height()));
-  {
-    SkiaPaintCanvas canvas(new_bitmap);
-    canvas.clear(SK_ColorTRANSPARENT);
-    canvas.translate(-rect.X(), -rect.Y());
-    canvas.drawPicture(std::move(new_record));
-  }
-
-  int mismatching_pixels = 0;
-  static const int kMaxMismatchesToReport = 50;
-  for (int bitmap_y = 0; bitmap_y < rect.Height(); ++bitmap_y) {
-    int layer_y = bitmap_y + rect.Y();
-    for (int bitmap_x = 0; bitmap_x < rect.Width(); ++bitmap_x) {
-      int layer_x = bitmap_x + rect.X();
-      SkColor old_pixel = old_bitmap.getColor(bitmap_x, bitmap_y);
-      SkColor new_pixel = new_bitmap.getColor(bitmap_x, bitmap_y);
-      if (PixelsDiffer(old_pixel, new_pixel) &&
-          !tracking->invalidation_region_since_last_paint.Contains(
-              IntPoint(layer_x, layer_y))) {
-        if (mismatching_pixels < kMaxMismatchesToReport) {
-          UnderRasterInvalidation under_invalidation = {layer_x, layer_y,
-                                                        old_pixel, new_pixel};
-          tracking->under_invalidations.push_back(under_invalidation);
-          LOG(ERROR) << DebugName()
-                     << " Uninvalidated old/new pixels mismatch at " << layer_x
-                     << "," << layer_y << " old:" << std::hex << old_pixel
-                     << " new:" << new_pixel;
-        } else if (mismatching_pixels == kMaxMismatchesToReport) {
-          LOG(ERROR) << "and more...";
-        }
-        ++mismatching_pixels;
-        *new_bitmap.getAddr32(bitmap_x, bitmap_y) =
-            SkColorSetARGB(0xFF, 0xA0, 0, 0);  // Dark red.
-      } else {
-        *new_bitmap.getAddr32(bitmap_x, bitmap_y) = SK_ColorTRANSPARENT;
-      }
-    }
-  }
-
-  // Visualize under-invalidations by overlaying the new bitmap (containing red
-  // pixels indicating under-invalidations, and transparent pixels otherwise)
-  // onto the painting.
-  PaintRecorder recorder;
-  recorder.beginRecording(rect);
-  recorder.getRecordingCanvas()->drawBitmap(new_bitmap, rect.X(), rect.Y());
-  sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
-  GetPaintController().AppendDebugDrawingAfterCommit(*this, record, rect);
 }
 
 }  // namespace blink
