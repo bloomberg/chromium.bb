@@ -18,8 +18,8 @@ namespace media {
 namespace mp4 {
 
 struct SampleInfo {
-  int size;
-  int duration;
+  uint32_t size;
+  uint32_t duration;
   int cts_offset;
   bool is_keyframe;
   uint32_t cenc_group_description_index;
