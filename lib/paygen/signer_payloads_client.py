@@ -66,7 +66,7 @@ class SignerPayloadsClientGoogleStorage(object):
     self.archive_uri = os.path.join(self.signing_base_dir,
                                     'payload.hash.tar.bz2')
 
-  def _CleanSignerFilesByKeyset(self, hashes, keyset, timeout=1200):
+  def _CleanSignerFilesByKeyset(self, hashes, keyset, timeout=600):
     """Helper method that cleans up GS files associated with a single keyset.
 
     Args:
