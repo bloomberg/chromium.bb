@@ -44,10 +44,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
-    # canvas.commit() promise synchronization isn't fully reliable yet.
-    self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
-        bug=709484)
-
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',
@@ -68,7 +64,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'd3d11'], bug=644740)
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['win', 'd3d11'], bug=705865)
-    self.Fail('deqp/functional/gles3/sync.html', ['win', 'd3d11'], bug=676848)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -82,27 +77,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'basic_types_interleaved_lines.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
-        'basic_types_interleaved_triangles.html',
-        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
-    self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_separate_lines.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
-        'basic_types_separate_triangles.html',
-        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
-    self.Fail('deqp/functional/gles3/transformfeedback/' +
-        'random_interleaved_lines.html',
-        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
-    self.Fail('deqp/functional/gles3/transformfeedback/' +
         'random_interleaved_triangles.html',
-        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
-    self.Fail('deqp/functional/gles3/transformfeedback/' +
-        'random_separate_lines.html',
-        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
-    self.Fail('deqp/functional/gles3/transformfeedback/' +
-        'random_separate_triangles.html',
-        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
-    self.Fail('deqp/functional/gles3/transformfeedback/interpolation_flat.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
@@ -118,11 +96,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
 
     # Win / NVIDIA / OpenGL
-    self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
-        ['win', 'nvidia', 'opengl'], bug=693090)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
-        ['win', 'nvidia', 'opengl'], bug=693090)
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
         ['win', 'nvidia', 'opengl'], bug=693090)
     self.Fail('conformance2/glsl3/' +
         'vector-dynamic-indexing-swizzled-lvalue.html',
@@ -131,19 +105,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
         ['win', 'amd', 'd3d11'], bug=483282) # owner:jmadill
-
-    # Failing on old R5 230 configuration.
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texelfetchoffset.html',
-        ['win', ('amd', 0x6779), 'd3d11'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/transformfeedback/*',
-        ['win', ('amd', 0x6779, 'd3d11')], bug=626068)
-
-    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
-        ['win', ('amd', 0x6779), 'd3d11'], bug=483282)
-    self.Fail('deqp/functional/gles3/multisample.html',
-        ['win', ('amd', 0x6779), 'd3d11'], bug=617290)
 
     # Keep a separate set of failures for the R7 240, since it can use a new
     # and updated driver. The older drivers won't ever get fixes from AMD.
@@ -155,18 +116,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/multisample.html',
         ['win', ('amd', 0x6613)], bug=687374)
 
-    # It's unfortunate that these suppressions need to be so broad, but
-    # basically any test that uses readPixels is potentially flaky, and
-    # it's infeasible to suppress individual failures one by one.
-    self.Flaky('conformance/*', ['win', ('amd', 0x6779), 'd3d11'], bug=491419)
-    self.Flaky('conformance2/*', ['win', ('amd', 0x6779), 'd3d11'], bug=491419)
-    self.Flaky('deqp/*', ['win', ('amd', 0x6779), 'd3d11'], bug=491419)
-
     # Win / Intel
     self.Fail('conformance2/glsl3/' +
         'texture-offset-uniform-texture-coordinate.html',
-        ['win', 'intel', 'd3d11'], bug=662644) # WebGL 2.0.1
-    self.Fail('conformance2/glsl3/unary-minus-operator-in-dynamic-loop.html',
         ['win', 'intel', 'd3d11'], bug=662644) # WebGL 2.0.1
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel', 'd3d11'], bug=617449)
@@ -178,21 +130,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/texturespecification/' +
         'teximage3d_depth_pbo.html',
         ['win', 'intel', 'd3d11'], bug=617449)
-    self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_00.html',
-        ['win', 'intel', 'd3d11'], bug=614418)
-    self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_01.html',
-        ['win', 'intel', 'd3d11'], bug=614418)
-    self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_02.html',
-        ['win', 'intel', 'd3d11'], bug=614418)
-    self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_03.html',
-        ['win', 'intel', 'd3d11'], bug=614418)
-    self.Fail('deqp/functional/gles3/textureformat/sized_depth_stencil.html',
-        ['win', 'intel', 'd3d11'], bug=614418)
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
         ['win', 'intel', 'd3d11'], bug=614418)
-
-    self.Fail('deqp/functional/gles3/fbomultisample*',
-        ['win', 'intel', 'd3d11'], bug=483282)
 
     # These tests seem to crash flakily. It's best to leave them as skip
     # until we can run them without GPU hangs and crashes.
