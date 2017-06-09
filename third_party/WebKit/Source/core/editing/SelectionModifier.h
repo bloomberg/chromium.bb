@@ -98,6 +98,22 @@ class SelectionModifier {
 
 LayoutUnit NoXPosForVerticalArrowNavigation();
 
+// Following functions are exported for using in SelectionModifier and
+// testing only.
+
+// TODO(yosin) Since return value of |leftPositionOf()| with |VisiblePosition|
+// isn't defined well on flat tree, we should not use it for a position in
+// flat tree.
+CORE_EXPORT VisiblePosition LeftPositionOf(const VisiblePosition&);
+CORE_EXPORT VisiblePositionInFlatTree
+LeftPositionOf(const VisiblePositionInFlatTree&);
+// TODO(yosin) Since return value of |rightPositionOf()| with |VisiblePosition|
+// isn't defined well on flat tree, we should not use it for a position in
+// flat tree.
+CORE_EXPORT VisiblePosition RightPositionOf(const VisiblePosition&);
+CORE_EXPORT VisiblePositionInFlatTree
+RightPositionOf(const VisiblePositionInFlatTree&);
+
 }  // namespace blink
 
 #endif  // SelectionModifier_h

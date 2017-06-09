@@ -130,19 +130,6 @@ CORE_EXPORT UChar32 CharacterAfter(const VisiblePositionInFlatTree&);
 CORE_EXPORT UChar32 CharacterBefore(const VisiblePosition&);
 CORE_EXPORT UChar32 CharacterBefore(const VisiblePositionInFlatTree&);
 
-// TODO(yosin) Since return value of |leftPositionOf()| with |VisiblePosition|
-// isn't defined well on flat tree, we should not use it for a position in
-// flat tree.
-CORE_EXPORT VisiblePosition LeftPositionOf(const VisiblePosition&);
-CORE_EXPORT VisiblePositionInFlatTree
-LeftPositionOf(const VisiblePositionInFlatTree&);
-// TODO(yosin) Since return value of |rightPositionOf()| with |VisiblePosition|
-// isn't defined well on flat tree, we should not use it for a position in
-// flat tree.
-CORE_EXPORT VisiblePosition RightPositionOf(const VisiblePosition&);
-CORE_EXPORT VisiblePositionInFlatTree
-RightPositionOf(const VisiblePositionInFlatTree&);
-
 CORE_EXPORT VisiblePosition
 NextPositionOf(const VisiblePosition&,
                EditingBoundaryCrossingRule = kCanCrossEditingBoundary);
@@ -375,6 +362,10 @@ VisiblePositionInFlatTree HonorEditingBoundaryAtOrAfter(
 // Export below functions only for |SelectionModifier|.
 VisiblePosition HonorEditingBoundaryAtOrBefore(const VisiblePosition&,
                                                const Position&);
+
+VisiblePositionInFlatTree HonorEditingBoundaryAtOrBefore(
+    const VisiblePositionInFlatTree&,
+    const PositionInFlatTree&);
 
 Position NextRootInlineBoxCandidatePosition(Node*,
                                             const VisiblePosition&,
