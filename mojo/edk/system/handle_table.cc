@@ -32,21 +32,16 @@ const char* GetNameForDispatcherType(Dispatcher::Type type) {
     case Dispatcher::Type::PLATFORM_HANDLE:
       return "platform_handle";
   }
+  NOTREACHED();
   return "unknown";
 }
-
-const char* kDumpProviderName = "MojoHandleTable";
 
 }  // namespace
 
 HandleTable::HandleTable() {
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, kDumpProviderName, nullptr);
 }
 
 HandleTable::~HandleTable() {
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, kDumpProviderName, nullptr);
 }
 
 base::Lock& HandleTable::GetLock() {
@@ -181,7 +176,6 @@ bool HandleTable::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     }
   }
 
-  pmd->CreateAllocatorDump("mojo");
   for (const auto& entry : handle_count) {
     base::trace_event::MemoryAllocatorDump* inner_dump =
         pmd->CreateAllocatorDump(std::string("mojo/") +

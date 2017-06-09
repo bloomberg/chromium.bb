@@ -150,6 +150,7 @@ test("mojo_system_unittests") {
     "core_test_base.cc",
     "core_test_base.h",
     "core_unittest.cc",
+    "handle_table_unittest.cc",
     "message_pipe_unittest.cc",
     "options_validation_unittest.cc",
     "platform_handle_dispatcher_unittest.cc",
