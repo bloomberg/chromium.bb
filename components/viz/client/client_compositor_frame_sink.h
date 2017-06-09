@@ -63,6 +63,9 @@ class ClientCompositorFrameSink
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
+  static void OnMojoConnectionError(uint32_t custom_reason,
+                                    const std::string& description);
+
   cc::LocalSurfaceId local_surface_id_;
   std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
