@@ -552,11 +552,9 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int audio_delay_milliseconds) {
   DCHECK(render_thread_checker_.CalledOnValidThread());
 #if defined(OS_ANDROID)
-  DCHECK(audio_processing_->echo_control_mobile()->is_enabled());
   DCHECK(!audio_processing_->echo_cancellation()->is_enabled());
 #else
   DCHECK(!audio_processing_->echo_control_mobile()->is_enabled());
-  DCHECK(audio_processing_->echo_cancellation()->is_enabled());
 #endif
 
   TRACE_EVENT0("audio", "MediaStreamAudioProcessor::OnPlayoutData");
