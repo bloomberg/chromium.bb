@@ -5170,14 +5170,6 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int refs[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
   int_mv ref_mv[2];
   int ite, ref;
-#if CONFIG_DUAL_FILTER
-  InterpFilter interp_filter[4] = {
-    mbmi->interp_filter[0], mbmi->interp_filter[1], mbmi->interp_filter[2],
-    mbmi->interp_filter[3],
-  };
-#else
-  const InterpFilter interp_filter = mbmi->interp_filter;
-#endif  // CONFIG_DUAL_FILTER
   struct scale_factors sf;
   struct macroblockd_plane *const pd = &xd->plane[0];
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -5260,7 +5252,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                        // odd iterations search in the second. The predictor
                        // found for the 'other' reference frame is factored in.
     const int plane = 0;
-    ConvolveParams conv_params = get_conv_params(0, plane);
+    ConvolveParams conv_params = get_conv_params(!id, 0, plane);
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
     WarpTypesAllowed warp_types;
 #if CONFIG_GLOBAL_MOTION
@@ -5275,21 +5267,13 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     ref_yv12[0] = xd->plane[plane].pre[0];
     ref_yv12[1] = xd->plane[plane].pre[1];
 
-#if CONFIG_DUAL_FILTER
-    // reload the filter types
-    interp_filter[0] =
-        (id == 0) ? mbmi->interp_filter[2] : mbmi->interp_filter[0];
-    interp_filter[1] =
-        (id == 0) ? mbmi->interp_filter[3] : mbmi->interp_filter[1];
-#endif  // CONFIG_DUAL_FILTER
-
 // Get the prediction block from the 'other' reference frame.
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       second_pred = CONVERT_TO_BYTEPTR(second_pred_alloc_16);
       av1_highbd_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
-          &frame_mv[refs[!id]].as_mv, &sf, pw, ph, 0, interp_filter,
+          &frame_mv[refs[!id]].as_mv, &sf, pw, ph, 0, mbmi->interp_filter,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
           &warp_types, p_col, p_row,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -5297,13 +5281,14 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     } else {
       second_pred = (uint8_t *)second_pred_alloc_16;
 #endif  // CONFIG_HIGHBITDEPTH
-      av1_build_inter_predictor(
-          ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
-          &frame_mv[refs[!id]].as_mv, &sf, pw, ph, &conv_params, interp_filter,
+      av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
+                                second_pred, pw, &frame_mv[refs[!id]].as_mv,
+                                &sf, pw, ph, &conv_params, mbmi->interp_filter,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-          &warp_types, p_col, p_row, plane, !id,
+                                &warp_types, p_col, p_row, plane, !id,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-          MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
+                                MV_PRECISION_Q3, mi_col * MI_SIZE,
+                                mi_row * MI_SIZE, xd);
 #if CONFIG_HIGHBITDEPTH
     }
 #endif  // CONFIG_HIGHBITDEPTH
@@ -5889,14 +5874,6 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int other_ref = mbmi->ref_frame[!ref_idx];
-#if CONFIG_DUAL_FILTER
-  InterpFilter interp_filter[2] = {
-    (ref_idx == 0) ? mbmi->interp_filter[2] : mbmi->interp_filter[0],
-    (ref_idx == 0) ? mbmi->interp_filter[3] : mbmi->interp_filter[1]
-  };
-#else
-  const InterpFilter interp_filter = mbmi->interp_filter;
-#endif  // CONFIG_DUAL_FILTER
   struct scale_factors sf;
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
   struct macroblockd_plane *const pd = &xd->plane[0];
@@ -5943,7 +5920,7 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
   struct buf_2d ref_yv12;
 
   const int plane = 0;
-  ConvolveParams conv_params = get_conv_params(0, plane);
+  ConvolveParams conv_params = get_conv_params(!ref_idx, 0, plane);
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
   WarpTypesAllowed warp_types;
 #if CONFIG_GLOBAL_MOTION
@@ -5962,7 +5939,7 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     av1_highbd_build_inter_predictor(
         ref_yv12.buf, ref_yv12.stride, second_pred, pw, other_mv, &sf, pw, ph,
-        0, interp_filter,
+        0, mbmi->interp_filter,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
         &warp_types, p_col, p_row,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -5971,7 +5948,7 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif  // CONFIG_HIGHBITDEPTH
     av1_build_inter_predictor(
         ref_yv12.buf, ref_yv12.stride, second_pred, pw, other_mv, &sf, pw, ph,
-        &conv_params, interp_filter,
+        &conv_params, mbmi->interp_filter,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
         &warp_types, p_col, p_row, plane, !ref_idx,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION

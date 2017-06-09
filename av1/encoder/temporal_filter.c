@@ -41,7 +41,7 @@ static void temporal_filter_predictors_mb_c(
   enum mv_precision mv_precision_uv;
   int uv_stride;
   // TODO(angiebird): change plane setting accordingly
-  ConvolveParams conv_params = get_conv_params(which_mv, 0);
+  ConvolveParams conv_params = get_conv_params(which_mv, which_mv, 0);
 
 #if USE_TEMPORALFILTER_12TAP
 #if CONFIG_DUAL_FILTER

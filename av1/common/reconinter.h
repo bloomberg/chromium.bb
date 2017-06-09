@@ -59,6 +59,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
   const InterpFilterParams interp_filter_params_y = interp_filter_params_x;
 #endif
 
+  assert(conv_params->do_average == 0 || conv_params->do_average == 1);
   assert(sf);
   if (has_scale(xs, ys)) {
     av1_convolve_c(src, src_stride, dst, dst_stride, w, h, interp_filter,
@@ -87,7 +88,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
           av1_get_interp_filter_subpel_kernel(interp_filter_params_x, subpel_x);
       const int16_t *kernel_y =
           av1_get_interp_filter_subpel_kernel(interp_filter_params_y, subpel_y);
-      sf->predict[subpel_x != 0][subpel_y != 0][conv_params->ref](
+      sf->predict[subpel_x != 0][subpel_y != 0][conv_params->do_average](
           src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h);
     } else {
       av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
@@ -110,10 +111,8 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
 #endif
                                           int xs, int ys, int bd) {
   const int ref = conv_params->ref;
-  // ref > 0 means this is the second reference frame
-  // first reference frame's prediction result is already in dst
-  // therefore we need to average the first and second results
-  const int avg = ref > 0;
+  const int avg = conv_params->do_average;
+  assert(avg == 0 || avg == 1);
 #if CONFIG_DUAL_FILTER
   const InterpFilterParams interp_filter_params_x =
       av1_get_interp_filter_params(interp_filter[1 + 2 * ref]);
@@ -148,7 +147,7 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
           av1_get_interp_filter_subpel_kernel(interp_filter_params_x, subpel_x);
       const int16_t *kernel_y =
           av1_get_interp_filter_subpel_kernel(interp_filter_params_y, subpel_y);
-      sf->highbd_predict[subpel_x != 0][subpel_y != 0][ref](
+      sf->highbd_predict[subpel_x != 0][subpel_y != 0][avg](
           src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h,
           bd);
     } else {
@@ -419,19 +418,14 @@ static INLINE void av1_make_inter_predictor(
   if (do_warp) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const struct buf_2d *const pre_buf = &pd->pre[ref];
-#if CONFIG_EXT_INTER
-    int compute_avg =
-        ref && mi->mbmi.interinter_compound_type == COMPOUND_AVERAGE;
-#else
-    int compute_avg = ref;
-#endif  // CONFIG_EXT_INTER
     av1_warp_plane(&final_warp_params,
 #if CONFIG_HIGHBITDEPTH
                    xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_HIGHBITDEPTH
                    pre_buf->buf0, pre_buf->width, pre_buf->height,
                    pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
-                   pd->subsampling_x, pd->subsampling_y, xs, ys, compute_avg);
+                   pd->subsampling_x, pd->subsampling_y, xs, ys,
+                   conv_params->do_average);
     return;
   }
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION

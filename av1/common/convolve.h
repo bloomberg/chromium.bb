@@ -27,6 +27,7 @@ typedef int32_t CONV_BUF_TYPE;
 
 typedef struct ConvolveParams {
   int ref;
+  int do_average;
   CONVOLVE_OPT round;
   CONV_BUF_TYPE *dst;
   int dst_stride;
@@ -36,9 +37,11 @@ typedef struct ConvolveParams {
   int do_post_rounding;
 } ConvolveParams;
 
-static INLINE ConvolveParams get_conv_params(int ref, int plane) {
+static INLINE ConvolveParams get_conv_params(int ref, int do_average,
+                                             int plane) {
   ConvolveParams conv_params;
   conv_params.ref = ref;
+  conv_params.do_average = do_average;
   conv_params.round = CONVOLVE_OPT_ROUND;
   conv_params.plane = plane;
   conv_params.do_post_rounding = 0;
@@ -60,11 +63,12 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             const int subpel_y_q4, int y_step_q4,
                             ConvolveParams *conv_params);
 
-static INLINE ConvolveParams get_conv_params_no_round(int ref, int plane,
-                                                      int32_t *dst,
+static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
+                                                      int plane, int32_t *dst,
                                                       int dst_stride) {
   ConvolveParams conv_params;
   conv_params.ref = ref;
+  conv_params.do_average = do_average;
   conv_params.round = CONVOLVE_OPT_NO_ROUND;
 #if CONFIG_COMPOUND_ROUND
   conv_params.round_0 = FILTER_BITS;
