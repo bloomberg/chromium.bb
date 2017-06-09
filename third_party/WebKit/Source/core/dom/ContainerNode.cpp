@@ -224,6 +224,8 @@ bool ContainerNode::EnsurePreInsertionValidity(
                                              exception_state);
 }
 
+// TODO(tkent): Fold CheckAcceptChildGuaranteedNodeTypes() into
+// EnsurePreInsertionValidity().
 bool ContainerNode::CheckAcceptChildGuaranteedNodeTypes(
     const Node& new_child,
     const Node* next,
@@ -253,9 +255,6 @@ bool ContainerNode::CheckAcceptChildGuaranteedNodeTypes(
   // ProcessingInstruction, or Comment node, throw a HierarchyRequestError.
   // 5. If either node is a Text node and parent is a document, or node is a
   // doctype and parent is not a document, throw a HierarchyRequestError.
-  //
-  // TODO(tkent): IsChildTypeAllowed() is unnecessary for
-  // RecheckNodeInsertionStructuralPrereq().
   if (!IsChildTypeAllowed(new_child)) {
     exception_state.ThrowDOMException(
         kHierarchyRequestError,
@@ -280,9 +279,18 @@ bool ContainerNode::RecheckNodeInsertionStructuralPrereq(
       // node.  Firefox and Edge don't throw in this case.
       return false;
     }
-    if (!CheckAcceptChildGuaranteedNodeTypes(*child, next, nullptr,
-                                             exception_state))
-      return false;
+    if (IsDocumentNode()) {
+      // For Document, no need to check ContainsConsideringHostElements()
+      // because a Document node can't be a child of other nodes.
+      // However, status of existing doctype or root element might be changed
+      // and we need to check it again.
+      if (!ToDocument(this)->CanAcceptChild(*child, next, nullptr,
+                                            exception_state))
+        return false;
+    } else {
+      if (ContainsConsideringHostElements(*child, exception_state))
+        return false;
+    }
   }
   return CheckReferenceChildParent(*this, next, nullptr, exception_state);
 }
