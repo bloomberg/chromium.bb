@@ -100,10 +100,9 @@ class Manager(object):
         self._printer.write_update('Collecting tests ...')
         running_all_tests = False
 
-        try:
+        if not args or any('external' in path for path in args):
             self._printer.write_update('Generating MANIFEST.json for web-platform-tests ...')
             WPTManifest.ensure_manifest(self._port.host)
-        finally:
             self._printer.write_update('Completed generating manifest.')
 
         self._printer.write_update('Collecting tests ...')
