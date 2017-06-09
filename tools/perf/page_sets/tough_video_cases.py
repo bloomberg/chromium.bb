@@ -372,20 +372,6 @@ class Page34(ToughVideoCasesPage):
     self.PlayAction(action_runner)
 
 
-class Page35(ToughVideoCasesPage):
-
-  def __init__(self, page_set):
-    super(Page35, self).__init__(
-      url='file://tough_video_cases/video.html?src=crowd720_vp9.webm&seek',
-      page_set=page_set,
-      tags=['vp9', 'video_only', 'seek'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
-
-
 class Page36(ToughVideoCasesPage):
 
   def __init__(self, page_set):
@@ -439,5 +425,4 @@ class ToughVideoCasesPageSet(story.StorySet):
     self.AddStory(Page26(self))
     self.AddStory(Page31(self))
     self.AddStory(Page33(self))
-    self.AddStory(Page35(self))
     self.AddStory(Page36(self))
