@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL The current time returns the hold time when set Animation is not defined
-FAIL The current time is unresolved when there is no associated timeline (and no hold time is set) Animation is not defined
-FAIL The current time is unresolved when the start time is unresolved (and no hold time is set) Animation is not defined
-FAIL The current time is calculated from the timeline time, start time and playback rate Animation is not defined
-PASS The current time does not progress if playback rate is 0 
-Harness: the test ran to completion.
-

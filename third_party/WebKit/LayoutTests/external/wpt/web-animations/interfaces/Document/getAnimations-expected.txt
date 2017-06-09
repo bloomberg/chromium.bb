@@ -2,6 +2,6 @@ This is a testharness.js-based test.
 FAIL Test document.getAnimations for non-animated content document.getAnimations is not a function
 FAIL Test document.getAnimations for script-generated animations document.getAnimations is not a function
 FAIL Test the order of document.getAnimations with script generated animations document.getAnimations is not a function
-FAIL Test document.getAnimations with null target Animation is not defined
+FAIL Test document.getAnimations with null target document.getAnimations is not a function
 Harness: the test ran to completion.
 

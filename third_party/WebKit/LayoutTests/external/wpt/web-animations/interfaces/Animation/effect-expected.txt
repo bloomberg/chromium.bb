@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL effect is set correctly. Animation is not defined
-PASS Clearing and setting Animation.effect should update the computed style of the target element 
-Harness: the test ran to completion.
-
