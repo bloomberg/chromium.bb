@@ -63,7 +63,6 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
-#include "platform/text/TextBreakIterator.h"
 
 namespace blink {
 
@@ -537,131 +536,6 @@ PositionInFlatTree PreviousBoundary(
     const VisiblePositionInFlatTree& visible_position,
     BoundarySearchFunction search_function) {
   return PreviousBoundaryAlgorithm(visible_position, search_function);
-}
-
-// ---------
-
-static unsigned StartSentenceBoundary(const UChar* characters,
-                                      unsigned length,
-                                      unsigned,
-                                      BoundarySearchContextAvailability,
-                                      bool&) {
-  TextBreakIterator* iterator = SentenceBreakIterator(characters, length);
-  // FIXME: The following function can return -1; we don't handle that.
-  return iterator->preceding(length);
-}
-
-template <typename Strategy>
-static VisiblePositionTemplate<Strategy> StartOfSentenceAlgorithm(
-    const VisiblePositionTemplate<Strategy>& c) {
-  DCHECK(c.IsValid()) << c;
-  return CreateVisiblePosition(PreviousBoundary(c, StartSentenceBoundary));
-}
-
-VisiblePosition StartOfSentence(const VisiblePosition& c) {
-  return StartOfSentenceAlgorithm<EditingStrategy>(c);
-}
-
-VisiblePositionInFlatTree StartOfSentence(const VisiblePositionInFlatTree& c) {
-  return StartOfSentenceAlgorithm<EditingInFlatTreeStrategy>(c);
-}
-
-static unsigned EndSentenceBoundary(const UChar* characters,
-                                    unsigned length,
-                                    unsigned,
-                                    BoundarySearchContextAvailability,
-                                    bool&) {
-  TextBreakIterator* iterator = SentenceBreakIterator(characters, length);
-  return iterator->next();
-}
-
-// TODO(yosin) This includes the space after the punctuation that marks the end
-// of the sentence.
-template <typename Strategy>
-static VisiblePositionTemplate<Strategy> EndOfSentenceAlgorithm(
-    const VisiblePositionTemplate<Strategy>& c) {
-  DCHECK(c.IsValid()) << c;
-  return CreateVisiblePosition(NextBoundary(c, EndSentenceBoundary),
-                               VP_UPSTREAM_IF_POSSIBLE);
-}
-
-VisiblePosition EndOfSentence(const VisiblePosition& c) {
-  return EndOfSentenceAlgorithm<EditingStrategy>(c);
-}
-
-VisiblePositionInFlatTree EndOfSentence(const VisiblePositionInFlatTree& c) {
-  return EndOfSentenceAlgorithm<EditingInFlatTreeStrategy>(c);
-}
-
-static unsigned PreviousSentencePositionBoundary(
-    const UChar* characters,
-    unsigned length,
-    unsigned,
-    BoundarySearchContextAvailability,
-    bool&) {
-  // FIXME: This is identical to startSentenceBoundary. I'm pretty sure that's
-  // not right.
-  TextBreakIterator* iterator = SentenceBreakIterator(characters, length);
-  // FIXME: The following function can return -1; we don't handle that.
-  return iterator->preceding(length);
-}
-
-VisiblePosition PreviousSentencePosition(const VisiblePosition& c) {
-  DCHECK(c.IsValid()) << c;
-  VisiblePosition prev = CreateVisiblePosition(
-      PreviousBoundary(c, PreviousSentencePositionBoundary));
-  return HonorEditingBoundaryAtOrBefore(prev, c.DeepEquivalent());
-}
-
-static unsigned NextSentencePositionBoundary(const UChar* characters,
-                                             unsigned length,
-                                             unsigned,
-                                             BoundarySearchContextAvailability,
-                                             bool&) {
-  // FIXME: This is identical to endSentenceBoundary. This isn't right, it needs
-  // to move to the equivlant position in the following sentence.
-  TextBreakIterator* iterator = SentenceBreakIterator(characters, length);
-  return iterator->following(0);
-}
-
-VisiblePosition NextSentencePosition(const VisiblePosition& c) {
-  DCHECK(c.IsValid()) << c;
-  VisiblePosition next = CreateVisiblePosition(
-      NextBoundary(c, NextSentencePositionBoundary), VP_UPSTREAM_IF_POSSIBLE);
-  return HonorEditingBoundaryAtOrAfter(next, c.DeepEquivalent());
-}
-
-EphemeralRange ExpandEndToSentenceBoundary(const EphemeralRange& range) {
-  DCHECK(range.IsNotNull());
-  const VisiblePosition& visible_end =
-      CreateVisiblePosition(range.EndPosition());
-  DCHECK(visible_end.IsNotNull());
-  const Position& sentence_end = EndOfSentence(visible_end).DeepEquivalent();
-  // TODO(xiaochengh): |sentenceEnd < range.endPosition()| is possible,
-  // which would trigger a DCHECK in EphemeralRange's constructor if we return
-  // it directly. However, this shouldn't happen and needs to be fixed.
-  return EphemeralRange(
-      range.StartPosition(),
-      sentence_end.IsNotNull() && sentence_end > range.EndPosition()
-          ? sentence_end
-          : range.EndPosition());
-}
-
-EphemeralRange ExpandRangeToSentenceBoundary(const EphemeralRange& range) {
-  DCHECK(range.IsNotNull());
-  const VisiblePosition& visible_start =
-      CreateVisiblePosition(range.StartPosition());
-  DCHECK(visible_start.IsNotNull());
-  const Position& sentence_start =
-      StartOfSentence(visible_start).DeepEquivalent();
-  // TODO(xiaochengh): |sentenceStart > range.startPosition()| is possible,
-  // which would trigger a DCHECK in EphemeralRange's constructor if we return
-  // it directly. However, this shouldn't happen and needs to be fixed.
-  return ExpandEndToSentenceBoundary(EphemeralRange(
-      sentence_start.IsNotNull() && sentence_start < range.StartPosition()
-          ? sentence_start
-          : range.StartPosition(),
-      range.EndPosition()));
 }
 
 // ---------
