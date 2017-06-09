@@ -89,10 +89,11 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
     // Make a request to fetch policy for this component. If another fetch
     // request is already pending for the component, it will be canceled.
     external_policy_data_updater_.FetchExternalData(
-        key, ExternalPolicyDataUpdater::Request(
-                 data.download_url(), data.secure_hash(), kPolicyDataMaxSize),
+        key,
+        ExternalPolicyDataUpdater::Request(
+            data.download_url(), data.secure_hash(), kPolicyDataMaxSize),
         base::Bind(&ComponentCloudPolicyStore::Store, base::Unretained(store_),
-                   ns, serialized_response, base::Passed(&policy_data),
+                   ns, serialized_response, base::Owned(policy_data.release()),
                    data.secure_hash()));
   }
 }

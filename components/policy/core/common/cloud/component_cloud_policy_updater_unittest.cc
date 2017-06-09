@@ -13,7 +13,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_store.h"
@@ -79,22 +80,23 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
 
   std::unique_ptr<em::PolicyFetchResponse> CreateResponse();
 
-  const PolicyNamespace kTestPolicyNS;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ScopedTempDir temp_dir_;
-  std::unique_ptr<ResourceCache> cache_;
+  const PolicyNamespace kTestPolicyNS{POLICY_DOMAIN_EXTENSIONS, kTestExtension};
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   std::unique_ptr<ComponentCloudPolicyStore> store_;
   MockComponentCloudPolicyStoreDelegate store_delegate_;
   net::TestURLFetcherFactory fetcher_factory_;
-  std::unique_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
   std::unique_ptr<ComponentCloudPolicyUpdater> updater_;
   ComponentPolicyBuilder builder_;
   PolicyBundle expected_bundle_;
+
+ private:
+  base::ScopedTempDir temp_dir_;
+  std::unique_ptr<ResourceCache> cache_;
+  std::unique_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
   std::string public_key_;
 };
 
-ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest()
-    : kTestPolicyNS(POLICY_DOMAIN_EXTENSIONS, kTestExtension) {
+ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest() {
   builder_.SetDefaultSigningKey();
   builder_.policy_data().set_policy_type(
       dm_protocol::kChromeExtensionPolicyType);
@@ -115,7 +117,7 @@ ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest()
 
 void ComponentCloudPolicyUpdaterTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  task_runner_ = new base::TestSimpleTaskRunner();
+  task_runner_ = new base::TestMockTimeTaskRunner();
   cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_));
   store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
   store_->SetCredentials(ComponentPolicyBuilder::kFakeUsername,
@@ -320,8 +322,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, AlreadyCached) {
   builder_.Build();
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
   EXPECT_TRUE(
-      store_->Store(kTestPolicyNS, builder_.GetBlob(),
-                    base::MakeUnique<em::PolicyData>(builder_.policy_data()),
+      store_->Store(kTestPolicyNS, builder_.GetBlob(), &builder_.policy_data(),
                     crypto::SHA256HashString(kTestPolicy), kTestPolicy));
   Mock::VerifyAndClearExpectations(&store_delegate_);
 
@@ -334,7 +335,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, AlreadyCached) {
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
 }
 
-TEST_F(ComponentCloudPolicyUpdaterTest, PolicyDataInvalid) {
+TEST_F(ComponentCloudPolicyUpdaterTest, DataTooLarge) {
   // Submit three policy fetch responses.
   updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   builder_.payload().set_download_url(kTestDownload2);
@@ -429,8 +430,8 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedDataWithoutPolicy) {
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(1));
 
   // Verify that the policy is no longer being served.
-  const PolicyBundle empty_bundle;
-  EXPECT_TRUE(store_->policy().Equals(empty_bundle));
+  const PolicyBundle kEmptyBundle;
+  EXPECT_TRUE(store_->policy().Equals(kEmptyBundle));
 }
 
 TEST_F(ComponentCloudPolicyUpdaterTest, NoPolicy) {
@@ -465,6 +466,100 @@ TEST_F(ComponentCloudPolicyUpdaterTest, CancelUpdate) {
   task_runner_->RunUntilIdle();
   Mock::VerifyAndClearExpectations(&store_delegate_);
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+}
+
+TEST_F(ComponentCloudPolicyUpdaterTest, RetryAfterDataTooLarge) {
+  // Submit a policy fetch response.
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
+  task_runner_->RunUntilIdle();
+
+  // Verify that the first download has been started.
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(GURL(kTestDownload), fetcher->GetOriginalURL());
+
+  // Indicate that the policy data size will exceed allowed maximum.
+  fetcher->delegate()->OnURLFetchDownloadProgress(fetcher, 6 * 1024 * 1024, -1,
+                                                  6 * 1024 * 1024);
+  task_runner_->RunUntilIdle();
+
+  // After 12 hours (minus some random jitter), the next download attempt
+  // happens.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(1));
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(12));
+  fetcher = fetcher_factory_.GetFetcherByID(1);
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(GURL(kTestDownload), fetcher->GetOriginalURL());
+
+  // Complete the download.
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(kTestPolicy);
+  EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  task_runner_->RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&store_delegate_);
+
+  // Verify that the downloaded policy is being served.
+  EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
+}
+
+TEST_F(ComponentCloudPolicyUpdaterTest, RetryAfterDataValidationFails) {
+  // Submit a policy fetch response that is calculated for an empty (that is,
+  // invalid) JSON.
+  builder_.payload().set_secure_hash(crypto::SHA256HashString(std::string()));
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
+  task_runner_->RunUntilIdle();
+
+  // Verify that the first download has been started.
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(GURL(kTestDownload), fetcher->GetOriginalURL());
+
+  // Complete the download with an invalid (empty) JSON.
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(std::string());
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  task_runner_->RunUntilIdle();
+
+  // Verify that no policy is being served.
+  const PolicyBundle kEmptyBundle;
+  EXPECT_TRUE(store_->policy().Equals(kEmptyBundle));
+
+  // After 12 hours (minus some random jitter), the next download attempt
+  // happens.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(1));
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(12));
+  fetcher = fetcher_factory_.GetFetcherByID(1);
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(GURL(kTestDownload), fetcher->GetOriginalURL());
+
+  // Complete the download with an invalid (empty) JSON. This tests against the
+  // regression that was tracked at https://crbug.com/706781.
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(std::string());
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  task_runner_->RunUntilIdle();
+
+  // Submit a policy fetch response that is calculated for the correct JSON.
+  builder_.payload().set_secure_hash(crypto::SHA256HashString(kTestPolicy));
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
+  task_runner_->RunUntilIdle();
+
+  // The next download attempt has been started.
+  fetcher = fetcher_factory_.GetFetcherByID(2);
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(GURL(kTestDownload), fetcher->GetOriginalURL());
+
+  // Complete the download.
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(kTestPolicy);
+  EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  task_runner_->RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&store_delegate_);
+
+  // Verify that the downloaded policy is being served.
+  EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
 }
 
 }  // namespace policy

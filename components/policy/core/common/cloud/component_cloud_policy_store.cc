@@ -177,12 +177,11 @@ void ComponentCloudPolicyStore::Load() {
   }
 }
 
-bool ComponentCloudPolicyStore::Store(
-    const PolicyNamespace& ns,
-    const std::string& serialized_policy,
-    std::unique_ptr<em::PolicyData> policy_data,
-    const std::string& secure_hash,
-    const std::string& data) {
+bool ComponentCloudPolicyStore::Store(const PolicyNamespace& ns,
+                                      const std::string& serialized_policy,
+                                      const em::PolicyData* policy_data,
+                                      const std::string& secure_hash,
+                                      const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const DomainConstants* constants = GetDomainConstants(ns.domain);
   PolicyMap policy;

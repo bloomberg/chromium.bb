@@ -134,7 +134,7 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
                                       nullptr /* payload */));
     EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
     EXPECT_TRUE(store->Store(kTestPolicyNS, CreateSerializedResponse(),
-                             CreatePolicyData(), TestPolicyHash(),
+                             CreatePolicyData().get(), TestPolicyHash(),
                              kTestPolicy));
     Mock::VerifyAndClearExpectations(&store_delegate_);
     EXPECT_TRUE(store->policy().Equals(expected_bundle_));
@@ -173,7 +173,8 @@ TEST_F(ComponentCloudPolicyStoreTest, ValidatePolicy) {
 TEST_F(ComponentCloudPolicyStoreTest, ValidatePolicyWrongTimestamp) {
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
   EXPECT_TRUE(store_->Store(kTestPolicyNS, CreateSerializedResponse(),
-                            CreatePolicyData(), TestPolicyHash(), kTestPolicy));
+                            CreatePolicyData().get(), TestPolicyHash(),
+                            kTestPolicy));
 
   const int64_t kPastTimestamp =
       (base::Time() + base::TimeDelta::FromDays(1)).ToJavaTime();
@@ -432,7 +433,7 @@ TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoad) {
   builder_.policy_data().set_policy_type(dm_protocol::kChromeUserPolicyType);
   EXPECT_FALSE(
       store_->Store(PolicyNamespace(POLICY_DOMAIN_CHROME, kTestExtension),
-                    CreateSerializedResponse(), CreatePolicyData(),
+                    CreateSerializedResponse(), CreatePolicyData().get(),
                     TestPolicyHash(), kTestPolicy));
 
   // Store policy with the wrong hash.
@@ -440,19 +441,20 @@ TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoad) {
       dm_protocol::kChromeExtensionPolicyType);
   builder_.payload().set_secure_hash("badash");
   EXPECT_FALSE(store_->Store(kTestPolicyNS, CreateSerializedResponse(),
-                             CreatePolicyData(), "badash", kTestPolicy));
+                             CreatePolicyData().get(), "badash", kTestPolicy));
 
   // Store policy without a hash.
   builder_.payload().clear_secure_hash();
   EXPECT_FALSE(store_->Store(kTestPolicyNS, CreateSerializedResponse(),
-                             CreatePolicyData(), std::string(), kTestPolicy));
+                             CreatePolicyData().get(), std::string(),
+                             kTestPolicy));
 
   // Store policy with invalid JSON data.
   static const char kInvalidData[] = "{ not json }";
   const std::string invalid_data_hash = crypto::SHA256HashString(kInvalidData);
   builder_.payload().set_secure_hash(invalid_data_hash);
   EXPECT_FALSE(store_->Store(kTestPolicyNS, CreateSerializedResponse(),
-                             CreatePolicyData(), invalid_data_hash,
+                             CreatePolicyData().get(), invalid_data_hash,
                              kInvalidData));
 
   // All of those failed.
@@ -463,7 +465,8 @@ TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoad) {
   builder_.payload().set_secure_hash(TestPolicyHash());
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
   EXPECT_TRUE(store_->Store(kTestPolicyNS, CreateSerializedResponse(),
-                            CreatePolicyData(), TestPolicyHash(), kTestPolicy));
+                            CreatePolicyData().get(), TestPolicyHash(),
+                            kTestPolicy));
   Mock::VerifyAndClearExpectations(&store_delegate_);
   EXPECT_FALSE(IsStoreEmpty(*store_));
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
@@ -485,7 +488,8 @@ TEST_F(ComponentCloudPolicyStoreTest, Updates) {
   // Store some policies.
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
   EXPECT_TRUE(store_->Store(kTestPolicyNS, CreateSerializedResponse(),
-                            CreatePolicyData(), TestPolicyHash(), kTestPolicy));
+                            CreatePolicyData().get(), TestPolicyHash(),
+                            kTestPolicy));
   Mock::VerifyAndClearExpectations(&store_delegate_);
   EXPECT_FALSE(IsStoreEmpty(*store_));
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
@@ -505,7 +509,8 @@ TEST_F(ComponentCloudPolicyStoreTest, Purge) {
   // Store a valid policy.
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
   EXPECT_TRUE(store_->Store(kTestPolicyNS, CreateSerializedResponse(),
-                            CreatePolicyData(), TestPolicyHash(), kTestPolicy));
+                            CreatePolicyData().get(), TestPolicyHash(),
+                            kTestPolicy));
   Mock::VerifyAndClearExpectations(&store_delegate_);
   EXPECT_FALSE(IsStoreEmpty(*store_));
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
