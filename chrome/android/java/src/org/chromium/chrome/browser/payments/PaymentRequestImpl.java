@@ -471,6 +471,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
         mId = details.id;
 
+        // Checks whether the merchant supports autofill payment instrument before show is called.
+        mMerchantSupportsAutofillPaymentInstruments =
+                AutofillPaymentApp.merchantSupportsAutofillPaymentInstruments(mMethodData);
         PaymentAppFactory.getInstance().create(mWebContents,
                 Collections.unmodifiableSet(mMethodData.keySet()), this /* callback */);
 
@@ -700,7 +703,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mPendingApps.remove(app);
             } else {
                 mArePaymentMethodsSupported = true;
-                mMerchantSupportsAutofillPaymentInstruments |= app instanceof AutofillPaymentApp;
                 queryApps.put(app, appMethods);
             }
         }
@@ -714,9 +716,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
-        // Query instruments after mMerchantSupportsAutofillPaymentInstruments has been initialized,
-        // so a fast response from a non-autofill payment app at the front of the app list does not
-        // cause NOT_SUPPORTED payment rejection.
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
             q.getKey().getInstruments(q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin,
                     mCertificateChain, mRawTotal, this);
