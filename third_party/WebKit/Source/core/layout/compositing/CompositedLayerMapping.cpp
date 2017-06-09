@@ -3066,6 +3066,13 @@ void CompositedLayerMapping::DoPaintTask(
       paint_info.paint_layer->GetLayoutObject().GetFrame());
   context.SetDeviceScaleFactor(device_scale_factor);
 
+  Settings* settings = GetLayoutObject().GetFrame()->GetSettings();
+  HighContrastSettings high_contrast_settings;
+  high_contrast_settings.mode = settings->GetHighContrastMode();
+  high_contrast_settings.grayscale = settings->GetHighContrastGrayscale();
+  high_contrast_settings.contrast = settings->GetHighContrastContrast();
+  context.SetHighContrast(high_contrast_settings);
+
   if (paint_info.paint_layer->GetCompositingState() !=
       kPaintsIntoGroupedBacking) {
     // FIXME: GraphicsLayers need a way to split for multicol.

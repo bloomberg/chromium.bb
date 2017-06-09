@@ -25,6 +25,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 
+#include <memory>
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Path.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -32,11 +33,11 @@
 #include "platform/testing/FontTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/text/TextRun.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include <memory>
 
 namespace blink {
 
@@ -139,6 +140,142 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
 
   canvas.drawPicture(context.EndRecording());
   EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, IntRect(20, 10, 30, 40));
+}
+
+class GraphicsContextHighConstrastTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    bitmap_.allocN32Pixels(4, 1);
+    bitmap_.eraseColor(0);
+    canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(bitmap_));
+    paint_controller_ = PaintController::Create();
+    context_ = WTF::WrapUnique(new GraphicsContext(*paint_controller_));
+    context_->BeginRecording(FloatRect(0, 0, 4, 1));
+  }
+
+  void DrawColorsToContext() {
+    Color black(0.0f, 0.0f, 0.0f, 1.0f);
+    Color white(1.0f, 1.0f, 1.0f, 1.0f);
+    Color red(1.0f, 0.0f, 0.0f, 1.0f);
+    Color gray(0.5f, 0.5f, 0.5f, 1.0f);
+    context_->FillRect(FloatRect(0, 0, 1, 1), black);
+    context_->FillRect(FloatRect(1, 0, 1, 1), white);
+    context_->FillRect(FloatRect(2, 0, 1, 1), red);
+    context_->FillRect(FloatRect(3, 0, 1, 1), gray);
+    // Capture the result in the bitmap.
+    canvas_->drawPicture(context_->EndRecording());
+  }
+
+  SkBitmap bitmap_;
+  std::unique_ptr<SkiaPaintCanvas> canvas_;
+  std::unique_ptr<PaintController> paint_controller_;
+  std::unique_ptr<GraphicsContext> context_;
+};
+
+// This is just a baseline test, compare against the other variants
+// of the test below, where high contrast mode is enabled.
+TEST_F(GraphicsContextHighConstrastTest, NoHighContrast) {
+  DrawColorsToContext();
+
+  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(0, 0));
+  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(1, 0));
+  EXPECT_EQ(0xffff0000, *bitmap_.getAddr32(2, 0));
+  EXPECT_EQ(0xff808080, *bitmap_.getAddr32(3, 0));
+}
+
+TEST_F(GraphicsContextHighConstrastTest, HighContrastOff) {
+  HighContrastSettings settings;
+  settings.mode = HighContrastMode::kOff;
+  settings.grayscale = false;
+  settings.contrast = 0;
+  context_->SetHighContrast(settings);
+
+  DrawColorsToContext();
+
+  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(0, 0));
+  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(1, 0));
+  EXPECT_EQ(0xffff0000, *bitmap_.getAddr32(2, 0));
+  EXPECT_EQ(0xff808080, *bitmap_.getAddr32(3, 0));
+}
+
+// Simple invert for testing. Each color component |c|
+// is replaced with |255 - c| for easy testing.
+TEST_F(GraphicsContextHighConstrastTest, SimpleInvertForTesting) {
+  HighContrastSettings settings;
+  settings.mode = HighContrastMode::kSimpleInvertForTesting;
+  settings.grayscale = false;
+  settings.contrast = 0;
+  context_->SetHighContrast(settings);
+
+  DrawColorsToContext();
+
+  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
+  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
+  EXPECT_EQ(0xff00ffff, *bitmap_.getAddr32(2, 0));
+  EXPECT_EQ(0xff7f7f7f, *bitmap_.getAddr32(3, 0));
+}
+
+// Invert brightness (with gamma correction).
+TEST_F(GraphicsContextHighConstrastTest, InvertBrightness) {
+  HighContrastSettings settings;
+  settings.mode = HighContrastMode::kInvertBrightness;
+  settings.grayscale = false;
+  settings.contrast = 0;
+  context_->SetHighContrast(settings);
+
+  DrawColorsToContext();
+
+  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
+  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
+  EXPECT_EQ(0xff00ffff, *bitmap_.getAddr32(2, 0));
+  EXPECT_EQ(0xffdddddd, *bitmap_.getAddr32(3, 0));
+}
+
+// Invert lightness (in HSL space).
+TEST_F(GraphicsContextHighConstrastTest, InvertLightness) {
+  HighContrastSettings settings;
+  settings.mode = HighContrastMode::kInvertLightness;
+  settings.grayscale = false;
+  settings.contrast = 0;
+  context_->SetHighContrast(settings);
+
+  DrawColorsToContext();
+
+  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
+  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
+  EXPECT_EQ(0xffff0000, *bitmap_.getAddr32(2, 0));
+  EXPECT_EQ(0xffdddddd, *bitmap_.getAddr32(3, 0));
+}
+
+// Invert lightness plus grayscale.
+TEST_F(GraphicsContextHighConstrastTest, InvertLightnessPlusGrayscale) {
+  HighContrastSettings settings;
+  settings.mode = HighContrastMode::kInvertLightness;
+  settings.grayscale = true;
+  settings.contrast = 0;
+  context_->SetHighContrast(settings);
+
+  DrawColorsToContext();
+
+  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
+  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
+  EXPECT_EQ(0xffe2e2e2, *bitmap_.getAddr32(2, 0));
+  EXPECT_EQ(0xffdddddd, *bitmap_.getAddr32(3, 0));
+}
+
+TEST_F(GraphicsContextHighConstrastTest, InvertLightnessPlusContrast) {
+  HighContrastSettings settings;
+  settings.mode = HighContrastMode::kInvertLightness;
+  settings.grayscale = false;
+  settings.contrast = 0.2;
+  context_->SetHighContrast(settings);
+
+  DrawColorsToContext();
+
+  EXPECT_EQ(0xffffffff, *bitmap_.getAddr32(0, 0));
+  EXPECT_EQ(0xff000000, *bitmap_.getAddr32(1, 0));
+  EXPECT_EQ(0xffff0000, *bitmap_.getAddr32(2, 0));
+  EXPECT_EQ(0xffeeeeee, *bitmap_.getAddr32(3, 0));
 }
 
 }  // namespace blink

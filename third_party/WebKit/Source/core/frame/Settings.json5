@@ -931,5 +931,23 @@
       type: "AutoplayPolicy::Type",
       initial: "AutoplayPolicy::Type::kNoUserGestureRequired",
     },
+
+    //
+    // High contrast mode
+    //
+    {
+      name: "highContrastMode",
+      initial: "HighContrastMode::kOff",
+      type: "HighContrastMode",
+    },
+    {
+      name: "highContrastGrayscale",
+      initial: false,
+    },
+    {
+      name: "highContrastContrast",
+      initial: 0,
+      type: "double",
+    }
   ],
 }
