@@ -49,7 +49,7 @@ var I18nBehavior = {
     var htmlStr =
         parseHtmlSubset('<b>' + rawString + '</b>').firstChild.innerHTML;
     // TODO(dschuyler): use textContent rather than innerHTML; remove replace().
-    return htmlStr.replace('&nbsp;', '\u00a0');
+    return htmlStr.replace(/&nbsp;/g, '\u00a0');
   },
 
   /**

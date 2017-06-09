@@ -7,7 +7,7 @@
 
 var allowedByDefault = '<a href="https://google.com">Google!</a>';
 var text = 'I\'m just text, nobody should have a problem with me!';
-var nonBreakingSpace = 'A\u00a0B';  // 0xa0 is a unicode nbsp.
+var nonBreakingSpace = 'A\u00a0B\u00a0C';  // \u00a0 is a unicode nbsp.
 
 function setUpPage() {
   loadTimeData.data = {
