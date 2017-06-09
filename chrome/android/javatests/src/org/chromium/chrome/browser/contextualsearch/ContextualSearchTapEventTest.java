@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.test.filters.SmallTest;
 import android.widget.LinearLayout;
 
@@ -35,8 +34,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
-import javax.annotation.Nullable;
-
 /**
  * Mock touch events with Contextual Search to test behavior of its panel and manager.
  */
@@ -54,21 +51,6 @@ public class ContextualSearchTapEventTest {
     private ContextualSearchPanel mPanel;
     private OverlayPanelManagerWrapper mPanelManager;
     private SelectionClient mContextualSearchClient;
-
-    /**
-     * A ContextualSearchRequest that foregoes URI template lookup.
-     */
-    private static class MockContextualSearchRequest extends ContextualSearchRequest {
-        public MockContextualSearchRequest(String term, String altTerm, boolean prefetch) {
-            super(term, altTerm, "", prefetch);
-        }
-
-        @Override
-        protected Uri getUriTemplate(
-                String query, @Nullable String alternateTerm, String mid, boolean shouldPrefetch) {
-            return Uri.parse("");
-        }
-    }
 
     // --------------------------------------------------------------------------------------------
 
@@ -116,12 +98,6 @@ public class ContextualSearchTapEventTest {
             onSearchTermResolutionResponse(
                     true, 200, selection, selection, "", "", false, 0, 10, "", "", "", "",
                     QuickActionCategory.NONE);
-        }
-
-        @Override
-        protected ContextualSearchRequest createContextualSearchRequest(
-                String query, String altTerm, String mid, boolean shouldPrefetch) {
-            return new MockContextualSearchRequest(query, altTerm, shouldPrefetch);
         }
 
         @Override
@@ -347,6 +323,33 @@ public class ContextualSearchTapEventTest {
         // to prod it forward by generating an ACK:
         generateSelectWordAroundCaretAck();
         Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 1);
+        Assert.assertEquals(mPanelManager.getPanelHideCount(), 0);
+    }
+
+    /**
+     * Tests that a Tap gesture processing is robust even when the selection somehow gets cleared
+     * during that process.  This tests a failure-case found in crbug.com/728644.
+     */
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testTapProcessIsRobustWhenSelectionGetsCleared() throws InterruptedException {
+        Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
+
+        // Fake a Tap event.
+        mockTapText("text");
+        // Generate the surrounding-text-available callback.
+        generateTextSurroundingSelectionAvailable();
+
+        // Now clear the selection!
+        mContextualSearchManager.getSelectionController().clearSelection();
+
+        // Continue processing the Tap by acknowledging the SelectWordAroundCaret has selected the
+        // word.  However we just simulated a condition that clears the selection above, so we're
+        // testing for robustness in completion of the processing even when there's no selection.
+        generateSelectWordAroundCaretAck();
+        Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
         Assert.assertEquals(mPanelManager.getPanelHideCount(), 0);
     }
 }

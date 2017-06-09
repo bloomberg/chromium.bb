@@ -431,9 +431,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         if (isTap && mPolicy.shouldPreviousTapResolve()) {
             // Cache the native translate data, so JNI calls won't be made when time-critical.
             mTranslateController.cacheNativeTranslateData();
-        } else {
+        } else if (!TextUtils.isEmpty(selection)) {
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult();
-            mSearchRequest = createContextualSearchRequest(selection, null, null, shouldPrefetch);
+            mSearchRequest = new ContextualSearchRequest(selection, null, null, shouldPrefetch);
             mTranslateController.forceAutoDetectTranslateUnlessDisabled(mSearchRequest);
             mDidStartLoadingResolvedSearchRequest = false;
             mSearchPanel.setSearchTerm(selection);
@@ -447,6 +447,10 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 RecordUserAction.record(isSingleWord ? "ContextualSearch.ManualRefineSingleWord"
                                                      : "ContextualSearch.ManualRefineMultiWord");
             }
+        } else {
+            // The selection is no longer valid, so we can't build a request.  Don't show the UX.
+            hideContextualSearch(StateChangeReason.UNKNOWN);
+            return;
         }
         mWereSearchResultsSeen = false;
 
@@ -501,18 +505,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         } catch (MalformedURLException e) {
             return null;
         }
-    }
-
-    /**
-     * A method that can override the creation of a standard search request. This should only be
-     * used for testing.
-     * @param term The search term to create the request with.
-     * @param altTerm An alternate search term.
-     * @param isLowPriorityEnabled Whether the request can be made at low priority.
-     */
-    protected ContextualSearchRequest createContextualSearchRequest(
-            String term, String altTerm, String mid, boolean isLowPriorityEnabled) {
-        return new ContextualSearchRequest(term, altTerm, mid, isLowPriorityEnabled);
     }
 
     /** Accessor for the {@code InfoBarContainer} currently attached to the {@code Tab}. */
@@ -710,7 +702,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             // appear in the user's history until the user views it).  See crbug.com/406446.
             boolean shouldPreload = !doPreventPreload && mPolicy.shouldPrefetchSearchResult();
             mSearchRequest =
-                    createContextualSearchRequest(searchTerm, alternateTerm, mid, shouldPreload);
+                    new ContextualSearchRequest(searchTerm, alternateTerm, mid, shouldPreload);
             // Trigger translation, if enabled.
             mTranslateController.forceTranslateIfNeeded(mSearchRequest, contextLanguage);
             mDidStartLoadingResolvedSearchRequest = false;
@@ -948,8 +940,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 mWereSearchResultsSeen = true;
                 // If there's no current request, then either a search term resolution
                 // is in progress or we should do a verbatim search now.
-                if (mSearchRequest == null && mPolicy.shouldCreateVerbatimRequest()) {
-                    mSearchRequest = createContextualSearchRequest(
+                if (mSearchRequest == null && mPolicy.shouldCreateVerbatimRequest()
+                        && !TextUtils.isEmpty(mSelectionController.getSelectedText())) {
+                    mSearchRequest = new ContextualSearchRequest(
                             mSelectionController.getSelectedText(), null, null, false);
                     mDidStartLoadingResolvedSearchRequest = false;
                 }
