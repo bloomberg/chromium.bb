@@ -2,36 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_GPU_ARC_VIDEO_SERVICE_H_
-#define CHROME_GPU_GPU_ARC_VIDEO_SERVICE_H_
+#ifndef CHROME_GPU_GPU_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#define CHROME_GPU_GPU_ARC_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "chrome/gpu/arc_video_accelerator.h"
-#include "components/arc/common/video_accelerator.mojom.h"
+#include "chrome/gpu/arc_video_decode_accelerator.h"
+#include "components/arc/common/video_decode_accelerator.mojom.h"
 #include "components/arc/video_accelerator/video_accelerator.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 
 namespace chromeos {
 namespace arc {
 
-// GpuArcVideoService manages life-cycle and IPC message translation for
-// ArcVideoAccelerator.
+// GpuArcVideoDecodeAccelerator manages life-cycle and IPC message translation
+// for ArcVideoDecodeAccelerator.
 //
-// For each creation request from GpuArcVideoServiceHost, GpuArcVideoService
-// will create a new IPC channel.
-class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
-                           public ArcVideoAccelerator::Client {
+// For each creation request from GpuArcVideoDecodeAcceleratorHost,
+// GpuArcVideoDecodeAccelerator will create a new IPC channel.
+class GpuArcVideoDecodeAccelerator
+    : public ::arc::mojom::VideoDecodeAccelerator,
+      public ArcVideoDecodeAccelerator::Client {
  public:
-  explicit GpuArcVideoService(const gpu::GpuPreferences& gpu_preferences);
-  ~GpuArcVideoService() override;
+  explicit GpuArcVideoDecodeAccelerator(
+      const gpu::GpuPreferences& gpu_preferences);
+  ~GpuArcVideoDecodeAccelerator() override;
 
  private:
-  // ArcVideoAccelerator::Client implementation.
-  void OnError(ArcVideoAccelerator::Result error) override;
+  // ArcVideoDecodeAccelerator::Client implementation.
+  void OnError(ArcVideoDecodeAccelerator::Result error) override;
   void OnBufferDone(PortType port,
                     uint32_t index,
                     const BufferMetadata& metadata) override;
@@ -39,9 +41,9 @@ class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
   void OnResetDone() override;
   void OnOutputFormatChanged(const VideoFormat& format) override;
 
-  // ::arc::mojom::VideoAcceleratorService implementation.
-  void Initialize(::arc::mojom::ArcVideoAcceleratorConfigPtr config,
-                  ::arc::mojom::VideoAcceleratorServiceClientPtr client,
+  // ::arc::mojom::VideoDecodeAccelerator implementation.
+  void Initialize(::arc::mojom::VideoDecodeAcceleratorConfigPtr config,
+                  ::arc::mojom::VideoDecodeClientPtr client,
                   const InitializeCallback& callback) override;
   void BindSharedMemory(::arc::mojom::PortType port,
                         uint32_t index,
@@ -62,16 +64,16 @@ class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
 
   base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle);
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   gpu::GpuPreferences gpu_preferences_;
-  std::unique_ptr<ArcVideoAccelerator> accelerator_;
-  ::arc::mojom::VideoAcceleratorServiceClientPtr client_;
+  std::unique_ptr<ArcVideoDecodeAccelerator> accelerator_;
+  ::arc::mojom::VideoDecodeClientPtr client_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuArcVideoService);
+  DISALLOW_COPY_AND_ASSIGN(GpuArcVideoDecodeAccelerator);
 };
 
 }  // namespace arc
 }  // namespace chromeos
 
-#endif  // CHROME_GPU_GPU_ARC_VIDEO_SERVICE_H_
+#endif  // CHROME_GPU_GPU_ARC_VIDEO_DECODE_ACCELERATOR_H_

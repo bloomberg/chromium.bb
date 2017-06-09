@@ -4,8 +4,8 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
-          "arc::mojom::VideoAcceleratorService",
-          "arc::mojom::VideoAcceleratorServiceClient",
+          "arc::mojom::VideoDecodeAccelerator",
+          "arc::mojom::VideoDecodeClient",
           "chrome::mojom::ResourceUsageReporter"
         ]
       }

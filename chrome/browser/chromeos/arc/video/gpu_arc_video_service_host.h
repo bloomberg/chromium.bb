@@ -15,12 +15,11 @@ namespace arc {
 
 class ArcBridgeService;
 
-// This class takes requests for creating channels of video accelerators from
-// arc::VideoInstance and forwards these requests to GpuArcVideoServce. It also
-// returns the created channels back to the arc::VideoInstance.
+// This class takes requests for accessing the VideoAcceleratorFactory, from
+// which video decode (or encode) accelerators could be created.
 //
-// This class is the proxy end of GpuArcVideoService and runs in the browser
-// process. The corresponding end "GpuArcVideoService" runs in the GPU process.
+// This class runs in the browser process, while the created instances of
+// VideoDecodeAccelerator or VideoEncodeAccelerator run in the GPU process.
 //
 // Lives on the UI thread.
 class GpuArcVideoServiceHost
