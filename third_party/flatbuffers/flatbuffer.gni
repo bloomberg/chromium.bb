@@ -16,14 +16,14 @@
 #
 #   flatc_include_dirs (optional)
 #       Specifies the directories which FlatBuffers compiler uses to find
-#       included .fbs files in.
+#       included .fbs files in. Almost always should be empty.
 #
-#       The directories will be tried in the order given, and if all fail (or,
-#       as by default, none are specified) it will try to load relative to the
-#       directory of the schema file being parsed.
+#       The list always has an implicit first item corresponding to the root of
+#       the source tree. This enables including .fbs files by absolute path.
 #
-#       TODO(pkalinnikov): Add repository root to this list, to allow including
-#       by absolute path.
+#       The compiler will try the directories in the order given, and if all
+#       fail it will try to load relative to the directory of the schema file
+#       being parsed.
 #
 #   deps (optional)
 #       Additional dependencies.
@@ -79,22 +79,25 @@ template("flatbuffer") {
       "$out_dir/{{source_name_part}}_generated.h",
     ]
 
-    args = [ "-c" ]
+    args = [
+      "-c",
+      "--keep-prefix",
+      "-o",
+      "$out_dir",
+      "-I",
+      rebase_path("//", root_build_dir),
+    ]
 
     if (defined(invoker.flatc_include_dirs)) {
       foreach(include_dir, invoker.flatc_include_dirs) {
         args += [
           "-I",
-          rebase_path(include_dir, "$root_build_dir"),
+          rebase_path(include_dir, root_build_dir),
         ]
       }
     }
 
-    args += [
-      "-o",
-      "$out_dir",
-      "{{source}}",
-    ]
+    args += [ "{{source}}" ]
 
     # The deps may have steps that have to run before running flatc.
     if (defined(invoker.deps)) {
