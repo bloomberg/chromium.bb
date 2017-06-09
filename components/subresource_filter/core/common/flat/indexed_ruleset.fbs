@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(pkalinnikov): Make including by absolute path work.
-include "url_pattern_index.fbs";
+include "components/subresource_filter/core/common/flat/url_pattern_index.fbs";
 
 namespace subresource_filter.flat;
 
