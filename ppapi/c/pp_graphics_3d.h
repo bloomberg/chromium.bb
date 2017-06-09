@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_graphics_3d.idl modified Wed Oct  3 15:55:01 2012. */
+/* From pp_graphics_3d.idl modified Fri Jun  9 15:44:15 2017. */
 
 #ifndef PPAPI_C_PP_GRAPHICS_3D_H_
 #define PPAPI_C_PP_GRAPHICS_3D_H_
@@ -92,7 +92,12 @@ typedef enum {
   /**
    * The context may be high-power and may be created on a discrete gpu.
    */
-  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE = 0x11002
+  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE = 0x11002,
+  /**
+   * Whether or not offscreen color buffers exist in front/back pairs that
+   * can be swapped.
+   */
+  PP_GRAPHICS3DATTRIB_SINGLE_BUFFER = 0x3085
 } PP_Graphics3DAttrib;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Graphics3DAttrib, 4);
 /**

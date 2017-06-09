@@ -79,5 +79,10 @@
   /**
    * The context may be high-power and may be created on a discrete gpu.
    */
-  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE = 0x11002
+  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE = 0x11002,
+  /**
+   * Whether or not offscreen color buffers exist in front/back pairs that
+   * can be swapped.
+   */
+  PP_GRAPHICS3DATTRIB_SINGLE_BUFFER = 0x3085
 };
