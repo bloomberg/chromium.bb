@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
@@ -18,9 +17,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
+import org.chromium.base.DiscardableReferencePool.DiscardableReference;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -50,8 +51,8 @@ public class PickerCategoryView extends RelativeLayout
     // The view containing the RecyclerView and the toolbar, etc.
     private SelectableListLayout<PickerBitmap> mSelectableListLayout;
 
-    // Our context.
-    private Context mContext;
+    // Our activity.
+    private ChromeActivity mActivity;
 
     // The list of images on disk, sorted by last-modified first.
     private List<PickerBitmap> mPickerBitmaps;
@@ -80,13 +81,19 @@ public class PickerCategoryView extends RelativeLayout
     // The {@link SelectionDelegate} keeping track of which images are selected.
     private SelectionDelegate<PickerBitmap> mSelectionDelegate;
 
-    // A low-resolution cache for images. Helpful for cache misses from the high-resolution cache
-    // to avoid showing gray squares (we show pixelated versions instead until image can be loaded
-    // off disk, which is much less jarring).
-    private LruCache<String, Bitmap> mLowResBitmaps;
+    // A low-resolution cache for images, lazily created. Helpful for cache misses from the
+    // high-resolution cache to avoid showing gray squares (we show pixelated versions instead until
+    // image can be loaded off disk, which is much less jarring).
+    private DiscardableReference<LruCache<String, Bitmap>> mLowResBitmaps;
 
-    // A high-resolution cache for images.
-    private LruCache<String, Bitmap> mHighResBitmaps;
+    // A high-resolution cache for images, lazily created.
+    private DiscardableReference<LruCache<String, Bitmap>> mHighResBitmaps;
+
+    // The size of the low-res cache.
+    private int mCacheSizeLarge;
+
+    // The size of the high-res cache.
+    private int mCacheSizeSmall;
 
     /**
      * The number of columns to show. Note: mColumns and mPadding (see below) should both be even
@@ -113,21 +120,13 @@ public class PickerCategoryView extends RelativeLayout
     // A list of files to use for testing (instead of reading files on disk).
     private static List<PickerBitmap> sTestFiles;
 
+    @SuppressWarnings("unchecked") // mSelectableListLayout
     public PickerCategoryView(Context context) {
         super(context);
-        postConstruction(context);
-    }
-
-    /**
-     * A helper function for initializing the PickerCategoryView.
-     * @param context The context to use.
-     */
-    @SuppressWarnings("unchecked") // mSelectableListLayout
-    private void postConstruction(Context context) {
-        mContext = context;
+        mActivity = (ChromeActivity) context;
 
         mDecoderServiceHost = new DecoderServiceHost(this);
-        mDecoderServiceHost.bind(mContext);
+        mDecoderServiceHost.bind(mActivity);
 
         mSelectionDelegate = new SelectionDelegate<PickerBitmap>();
 
@@ -147,17 +146,15 @@ public class PickerCategoryView extends RelativeLayout
 
         calculateGridMetrics();
 
-        mLayoutManager = new GridLayoutManager(mContext, mColumns);
+        mLayoutManager = new GridLayoutManager(mActivity, mColumns);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mSpacingDecoration = new GridSpacingItemDecoration(mColumns, mPadding);
         mRecyclerView.addItemDecoration(mSpacingDecoration);
 
         final long maxMemory = ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
-        final long cacheSizeLarge = maxMemory / 2; // 1/2 of the available memory.
-        final long cacheSizeSmall = maxMemory / 8; // 1/8th of the available memory.
-        mLowResBitmaps = new LruCache<String, Bitmap>((int) (cacheSizeSmall));
-        mHighResBitmaps = new LruCache<String, Bitmap>((int) (cacheSizeLarge));
+        mCacheSizeLarge = (int) (maxMemory / 2); // 1/2 of the available memory.
+        mCacheSizeSmall = (int) (maxMemory / 8); // 1/8th of the available memory.
     }
 
     @Override
@@ -181,7 +178,7 @@ public class PickerCategoryView extends RelativeLayout
         }
 
         if (mDecoderServiceHost != null) {
-            mDecoderServiceHost.unbind(mContext);
+            mDecoderServiceHost.unbind(mActivity);
             mDecoderServiceHost = null;
         }
     }
@@ -284,11 +281,19 @@ public class PickerCategoryView extends RelativeLayout
     }
 
     public LruCache<String, Bitmap> getLowResBitmaps() {
-        return mLowResBitmaps;
+        if (mLowResBitmaps == null || mLowResBitmaps.get() == null) {
+            mLowResBitmaps =
+                    mActivity.getReferencePool().put(new LruCache<String, Bitmap>(mCacheSizeSmall));
+        }
+        return mLowResBitmaps.get();
     }
 
     public LruCache<String, Bitmap> getHighResBitmaps() {
-        return mHighResBitmaps;
+        if (mHighResBitmaps == null || mHighResBitmaps.get() == null) {
+            mHighResBitmaps =
+                    mActivity.getReferencePool().put(new LruCache<String, Bitmap>(mCacheSizeLarge));
+        }
+        return mHighResBitmaps.get();
     }
 
     public boolean isMultiSelectAllowed() {
@@ -316,12 +321,12 @@ public class PickerCategoryView extends RelativeLayout
      */
     private void calculateGridMetrics() {
         Rect appRect = new Rect();
-        ((Activity) mContext).getWindow().getDecorView().getWindowVisibleDisplayFrame(appRect);
+        mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(appRect);
 
         int width = appRect.width();
         int minSize =
-                mContext.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_min_size);
-        mPadding = mContext.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_gap);
+                mActivity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_min_size);
+        mPadding = mActivity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_gap);
         mColumns = Math.max(1, (width - mPadding) / (minSize + mPadding));
         mImageSize = (width - mPadding * (mColumns + 1)) / (mColumns);
 
