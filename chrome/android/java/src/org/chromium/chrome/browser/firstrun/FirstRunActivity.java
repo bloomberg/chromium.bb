@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -286,6 +287,23 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     @Override
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
+
+        final TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        if (templateUrlService.isLoaded()) {
+            onNativeDependenciesFullyInitialized();
+        } else {
+            templateUrlService.registerLoadListener(new TemplateUrlService.LoadListener() {
+                @Override
+                public void onTemplateUrlServiceLoaded() {
+                    templateUrlService.unregisterLoadListener(this);
+                    onNativeDependenciesFullyInitialized();
+                }
+            });
+            templateUrlService.load();
+        }
+    }
+
+    private void onNativeDependenciesFullyInitialized() {
         mNativeSideIsInitialized = true;
         if (mDeferredCompleteFRE) {
             completeFirstRunExperience();

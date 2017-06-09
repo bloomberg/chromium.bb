@@ -20,10 +20,9 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.widget.RadioButtonLayout;
 
 /** A {@link Fragment} that presents a set of search engines for the user to choose from. */
-public class DefaultSearchEngineFirstRunFragment
-        extends FirstRunPage implements TemplateUrlService.LoadListener {
+public class DefaultSearchEngineFirstRunFragment extends FirstRunPage {
     @SearchEnginePromoType
-    private Integer mSearchEnginePromoDialoType;
+    private int mSearchEnginePromoDialoType;
     private boolean mShownRecorded;
 
     /** Layout that displays the available search engines to the user. */
@@ -42,16 +41,7 @@ public class DefaultSearchEngineFirstRunFragment
         mButton = (Button) rootView.findViewById(R.id.button_primary);
         mButton.setEnabled(false);
 
-        TemplateUrlService.getInstance().registerLoadListener(this);
-        if (!TemplateUrlService.getInstance().isLoaded()) TemplateUrlService.getInstance().load();
-
-        return rootView;
-    }
-
-    @Override
-    public void onTemplateUrlServiceLoaded() {
-        TemplateUrlService.getInstance().unregisterLoadListener(this);
-
+        assert TemplateUrlService.getInstance().isLoaded();
         mSearchEnginePromoDialoType = LocaleManager.getInstance().getSearchEnginePromoShowType();
         Runnable dismissRunnable = new Runnable() {
             @Override
@@ -61,7 +51,8 @@ public class DefaultSearchEngineFirstRunFragment
         };
         new DefaultSearchEngineDialogHelper(
                 mSearchEnginePromoDialoType, mEngineLayout, mButton, dismissRunnable);
-        if (getUserVisibleHint()) recordShown();
+
+        return rootView;
     }
 
     @Override
@@ -71,8 +62,6 @@ public class DefaultSearchEngineFirstRunFragment
     }
 
     private void recordShown() {
-        if (mSearchEnginePromoDialoType == null) return;
-
         if (mShownRecorded) return;
 
         if (mSearchEnginePromoDialoType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_NEW) {
