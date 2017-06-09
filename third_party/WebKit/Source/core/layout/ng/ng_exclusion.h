@@ -28,7 +28,7 @@ struct CORE_EXPORT NGExclusion {
   NGLogicalRect rect;
 
   // Type of this exclusion.
-  Type type;
+  Type type = kExclusionTypeUndefined;
 
   bool operator==(const NGExclusion& other) const;
 
