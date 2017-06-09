@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -663,6 +664,21 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
                     editText.setText(values[i]);
                     editText.getOnFocusChangeListener().onFocusChange(null, false);
                 }
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
+    /* package */ void hitSoftwareKeyboardSubmitButtonAndWait(final int resourceId,
+            CallbackHelper helper) throws InterruptedException, TimeoutException {
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                EditText editText =
+                        (EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceId);
+                editText.requestFocus();
+                editText.onEditorAction(EditorInfo.IME_ACTION_DONE);
             }
         });
         helper.waitForCallback(callCount);

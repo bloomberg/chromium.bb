@@ -397,6 +397,12 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mTestCommon.setTextInExpiredCardUnmaskDialogAndWait(resourceIds, values, helper);
     }
 
+    /** Focues a view and hits the "submit" button on the software keyboard. */
+    /* package */ void hitSoftwareKeyboardSubmitButtonAndWait(int resourceId, CallbackHelper helper)
+            throws InterruptedException, TimeoutException {
+        mTestCommon.hitSoftwareKeyboardSubmitButtonAndWait(resourceId, helper);
+    }
+
     /** Verifies the contents of the test webpage. */
     protected void expectResultContains(final String[] contents) {
         mTestCommon.expectResultContains(contents);
@@ -556,7 +562,9 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         }, description);
     }
 
+    /** The interface for being notified of the main activity startup. */
     public interface MainActivityStartCallback {
+        /** Called when the main activity has started up. */
         void onMainActivityStarted() throws
                 InterruptedException, ExecutionException, TimeoutException;
     }
