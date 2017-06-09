@@ -356,6 +356,8 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->SetBoolean("do_not_fragment", params_.quic_do_not_fragment);
   dict->SetBoolean("estimate_initial_rtt", params_.quic_estimate_initial_rtt);
   dict->SetBoolean("force_hol_blocking", params_.quic_force_hol_blocking);
+  dict->SetBoolean("server_push_cancellation",
+                   params_.enable_server_push_cancellation);
 
   return std::move(dict);
 }
