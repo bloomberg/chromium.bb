@@ -26,7 +26,6 @@ namespace app_list {
 
 class AppsGridView;
 class AppListPage;
-class AppListView;
 class ApplicationDragAndDropHost;
 class AppListFolderItem;
 class AppListMainView;
@@ -45,7 +44,7 @@ class StartPageView;
 class APP_LIST_EXPORT ContentsView : public views::View,
                                      public PaginationModelObserver {
  public:
-  ContentsView(AppListMainView* app_list_main_view, AppListView* app_list_view);
+  explicit ContentsView(AppListMainView* app_list_main_view);
   ~ContentsView() override;
 
   // Initialize the pages of the launcher. Should be called after
@@ -191,9 +190,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Parent view. Owned by the views hierarchy.
   AppListMainView* app_list_main_view_;
-
-  // Owned by the views hierarchy.
-  AppListView* const app_list_view_;
 
   // Maps State onto |view_model_| indices.
   std::map<AppListModel::State, int> state_to_view_;

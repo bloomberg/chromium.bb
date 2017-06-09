@@ -553,12 +553,6 @@ void Shell::SetIsBrowserProcessWithMash() {
   g_is_browser_process_with_mash = true;
 }
 
-void Shell::OnAppListVisibilityChanged(bool visible,
-                                       aura::Window* root_window) {
-  for (auto& observer : shell_observers_)
-    observer.OnAppListVisibilityChanged(visible, root_window);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
@@ -922,9 +916,11 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();
 
-  if (config == Config::CLASSIC) {
+  // TODO(sky): move this to chrome for mash. http://crbug.com/729824.
+  if (ShouldEnableSimplifiedDisplayManagement())
     display_manager_->RefreshFontParams();
 
+  if (config == Config::CLASSIC) {
     aura::Env::GetInstance()->set_context_factory(init_params.context_factory);
     aura::Env::GetInstance()->set_context_factory_private(
         init_params.context_factory_private);

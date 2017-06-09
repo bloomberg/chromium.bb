@@ -13,10 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/all_apps_tile_item_view.h"
@@ -54,7 +52,6 @@ constexpr int kWebViewHeight = 224;
 constexpr int kTileSpacing = 7;
 constexpr int kNumStartPageTilesCols = 5;
 constexpr int kTilesHorizontalMarginLeft = 145;
-constexpr int kCenterColumnOfStartPageAppGrid = 3;
 
 constexpr int kLauncherPageBackgroundWidth = 400;
 
@@ -140,10 +137,7 @@ StartPageView::StartPageTilesContainer::StartPageTilesContainer(
   SetBackground(views::CreateSolidBackground(kLabelBackgroundColor));
   all_apps_button_->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
   all_apps_button_->SetParentBackgroundColor(kLabelBackgroundColor);
-
-  CreateAppsGrid(features::IsFullscreenAppListEnabled()
-                     ? kNumStartPageTilesFullscreen
-                     : kNumStartPageTiles);
+  CreateAppsGrid(kNumStartPageTiles);
 }
 
 StartPageView::StartPageTilesContainer::~StartPageTilesContainer() {
@@ -177,10 +171,7 @@ int StartPageView::StartPageTilesContainer::DoUpdate() {
       delete search_result_tile_views_[i];
     search_result_tile_views_.clear();
     RemoveChildView(all_apps_button_);
-
-    CreateAppsGrid(features::IsFullscreenAppListEnabled()
-                       ? kNumStartPageTilesFullscreen
-                       : std::min(kNumStartPageTiles, display_results.size()));
+    CreateAppsGrid(std::min(kNumStartPageTiles, display_results.size()));
   }
 
   // Update the tile item results.
@@ -251,19 +242,10 @@ void StartPageView::StartPageTilesContainer::CreateAppsGrid(int apps_num) {
     search_result_tile_views_.emplace_back(tile_item);
   }
 
+  // Also add a special "all apps" button to the end of the container.
   all_apps_button_->UpdateIcon();
-  if (features::IsFullscreenAppListEnabled()) {
-    // Also add a special "all apps" button to the middle of the next row of the
-    // container.
+  if (i % kNumStartPageTilesCols == 0)
     tiles_layout_manager->StartRow(0, 0);
-    tiles_layout_manager->SkipColumns(kCenterColumnOfStartPageAppGrid);
-  } else {
-    // Also add a special "all apps" button to the end of the next row of the
-    // container.
-    if (i % kNumStartPageTilesCols == 0)
-      tiles_layout_manager->StartRow(0, 0);
-  }
-
   tiles_layout_manager->AddView(all_apps_button_);
   AddChildView(all_apps_button_);
 }
@@ -271,8 +253,7 @@ void StartPageView::StartPageTilesContainer::CreateAppsGrid(int apps_num) {
 ////////////////////////////////////////////////////////////////////////////////
 // StartPageView implementation:
 StartPageView::StartPageView(AppListMainView* app_list_main_view,
-                             AppListViewDelegate* view_delegate,
-                             AppListView* app_list_view)
+                             AppListViewDelegate* view_delegate)
     : app_list_main_view_(app_list_main_view),
       view_delegate_(view_delegate),
       search_box_spacer_view_(new View()),
@@ -281,8 +262,7 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
           view_delegate_->GetModel()->custom_launcher_page_name())),
       tiles_container_(new StartPageTilesContainer(
           app_list_main_view->contents_view(),
-          new AllAppsTileItemView(app_list_main_view_->contents_view(),
-                                  app_list_view),
+          new AllAppsTileItemView(app_list_main_view_->contents_view()),
           view_delegate)) {
   search_box_spacer_view_->SetPreferredSize(gfx::Size(
       kStartPageSearchBoxWidth,
@@ -294,6 +274,7 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
 
   // The view containing the start page tiles.
   AddChildView(tiles_container_);
+
   AddChildView(custom_launcher_page_background_);
 
   tiles_container_->SetResults(view_delegate_->GetModel()->results());
@@ -313,16 +294,11 @@ void StartPageView::InitInstantContainer() {
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   instant_container_->SetLayoutManager(instant_layout_manager);
 
-  // Create the view for the Google Doodle if the fullscreen launcher is not
-  // enabled.
-  if (!features::IsFullscreenAppListEnabled()) {
-    views::View* web_view = view_delegate_->CreateStartPageWebView(
-        gfx::Size(kWebViewWidth, kWebViewHeight));
-
-    if (web_view) {
-      web_view->SetFocusBehavior(FocusBehavior::NEVER);
-      instant_container_->AddChildView(web_view);
-    }
+  views::View* web_view = view_delegate_->CreateStartPageWebView(
+      gfx::Size(kWebViewWidth, kWebViewHeight));
+  if (web_view) {
+    web_view->SetFocusBehavior(FocusBehavior::NEVER);
+    instant_container_->AddChildView(web_view);
   }
 
   instant_container_->AddChildView(search_box_spacer_view_);

@@ -119,9 +119,13 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
 
 void AppListPresenterDelegate::OnShown(int64_t display_id) {
   is_visible_ = true;
+  // Update applist button status when app list visibility is changed.
   aura::Window* root_window =
       ShellPort::Get()->GetRootWindowForDisplayId(display_id);
-  Shell::Get()->OnAppListVisibilityChanged(is_visible_, root_window);
+  AppListButton* app_list_button =
+      Shelf::ForWindow(root_window)->shelf_widget()->GetAppListButton();
+  if (app_list_button)
+    app_list_button->OnAppListShown();
 }
 
 void AppListPresenterDelegate::OnDismissed() {
@@ -129,9 +133,12 @@ void AppListPresenterDelegate::OnDismissed() {
   DCHECK(view_);
 
   is_visible_ = false;
-  aura::Window* root_window =
-      RootWindowController::ForTargetRootWindow()->GetRootWindow();
-  Shell::Get()->OnAppListVisibilityChanged(is_visible_, root_window);
+
+  // Update applist button status when app list visibility is changed.
+  Shelf* shelf = Shelf::ForWindow(view_->GetWidget()->GetNativeWindow());
+  AppListButton* app_list_button = shelf->shelf_widget()->GetAppListButton();
+  if (app_list_button)
+    app_list_button->OnAppListDismissed();
 }
 
 void AppListPresenterDelegate::UpdateBounds() {

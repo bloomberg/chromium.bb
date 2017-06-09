@@ -59,10 +59,8 @@ void AppListPresenterImpl::Show(int64_t display_id) {
     return;
 
   is_visible_ = true;
-  if (app_list_) {
+  if (app_list_)
     app_list_->OnTargetVisibilityChanged(GetTargetVisibility());
-    app_list_->OnVisibilityChanged(GetTargetVisibility(), display_id);
-  }
 
   if (view_) {
     ScheduleAnimation();
@@ -88,10 +86,9 @@ void AppListPresenterImpl::Dismiss() {
   DCHECK(view_);
 
   is_visible_ = false;
-  if (app_list_) {
+  if (app_list_)
     app_list_->OnTargetVisibilityChanged(GetTargetVisibility());
-    app_list_->OnVisibilityChanged(GetTargetVisibility(), GetDisplayId());
-  }
+
   // The dismissal may have occurred in response to the app list losing
   // activation. Otherwise, our widget is currently active. When the animation
   // completes we'll hide the widget, changing activation. If a menu is shown
