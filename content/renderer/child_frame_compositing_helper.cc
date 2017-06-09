@@ -49,14 +49,32 @@ class IframeSurfaceReferenceFactory
                                 int routing_id)
       : sender_(std::move(sender)), routing_id_(routing_id) {}
 
+  void AddPendingSequence(const cc::SurfaceSequence& sequence) {
+    ReleasePendingSequenceIfNecessary();
+    pending_sequence_ = sequence;
+  }
+
  private:
-  ~IframeSurfaceReferenceFactory() override = default;
+  ~IframeSurfaceReferenceFactory() override {
+    ReleasePendingSequenceIfNecessary();
+  }
+
+  void ReleasePendingSequenceIfNecessary() const {
+    if (pending_sequence_.is_valid()) {
+      sender_->Send(
+          new FrameHostMsg_SatisfySequence(routing_id_, pending_sequence_));
+      pending_sequence_ = cc::SurfaceSequence();
+    }
+  }
 
   // cc::SequenceSurfaceReferenceFactory implementation:
   void RequireSequence(const cc::SurfaceId& surface_id,
                        const cc::SurfaceSequence& sequence) const override {
     sender_->Send(
         new FrameHostMsg_RequireSequence(routing_id_, surface_id, sequence));
+    // If there is a temporary reference that was waiting on a new one to be
+    // created, it is now safe to release it.
+    ReleasePendingSequenceIfNecessary();
   }
 
   void SatisfySequence(const cc::SurfaceSequence& sequence) const override {
@@ -64,6 +82,7 @@ class IframeSurfaceReferenceFactory
   }
 
   const scoped_refptr<ThreadSafeSender> sender_;
+  mutable cc::SurfaceSequence pending_sequence_;
   const int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(IframeSurfaceReferenceFactory);
@@ -79,8 +98,23 @@ class BrowserPluginSurfaceReferenceFactory
         routing_id_(routing_id),
         browser_plugin_instance_id_(browser_plugin_instance_id) {}
 
+  void AddPendingSequence(const cc::SurfaceSequence& sequence) {
+    ReleasePendingSequenceIfNecessary();
+    pending_sequence_ = sequence;
+  }
+
  private:
-  ~BrowserPluginSurfaceReferenceFactory() override = default;
+  ~BrowserPluginSurfaceReferenceFactory() override {
+    ReleasePendingSequenceIfNecessary();
+  }
+
+  void ReleasePendingSequenceIfNecessary() const {
+    if (pending_sequence_.is_valid()) {
+      sender_->Send(new BrowserPluginHostMsg_SatisfySequence(
+          routing_id_, browser_plugin_instance_id_, pending_sequence_));
+      pending_sequence_ = cc::SurfaceSequence();
+    }
+  }
 
   // cc::SequenceSurfaceRefrenceFactory implementation:
   void SatisfySequence(const cc::SurfaceSequence& seq) const override {
@@ -92,9 +126,13 @@ class BrowserPluginSurfaceReferenceFactory
                        const cc::SurfaceSequence& sequence) const override {
     sender_->Send(new BrowserPluginHostMsg_RequireSequence(
         routing_id_, browser_plugin_instance_id_, surface_id, sequence));
+    // If there is a temporary reference that was waiting on a new one to be
+    // created, it is now safe to release it.
+    ReleasePendingSequenceIfNecessary();
   }
 
   const scoped_refptr<ThreadSafeSender> sender_;
+  mutable cc::SurfaceSequence pending_sequence_;
   const int routing_id_;
   const int browser_plugin_instance_id_;
 
@@ -223,6 +261,19 @@ void ChildFrameCompositingHelper::OnSetSurface(
   if (IsUseZoomForDSFEnabled())
     scale_factor = 1.0f;
 
+  // The RWHV creates a destruction dependency on the surface that needs to be
+  // satisfied. The reference factory will satisfy it when a new reference has
+  // been created.
+  if (render_frame_proxy_) {
+    static_cast<IframeSurfaceReferenceFactory*>(
+        surface_reference_factory_.get())
+        ->AddPendingSequence(sequence);
+  } else {
+    static_cast<BrowserPluginSurfaceReferenceFactory*>(
+        surface_reference_factory_.get())
+        ->AddPendingSequence(sequence);
+  }
+
   cc::SurfaceInfo modified_surface_info(surface_info.id(), scale_factor,
                                         surface_info.size_in_pixels());
   surface_layer->SetPrimarySurfaceInfo(modified_surface_info);
@@ -237,17 +288,6 @@ void ChildFrameCompositingHelper::OnSetSurface(
   UpdateWebLayer(std::move(layer));
 
   UpdateVisibility(true);
-
-  // The RWHV creates a destruction dependency on the surface that needs to be
-  // satisfied. Note: render_frame_proxy_ is null in the case our client is a
-  // BrowserPlugin; in this case the BrowserPlugin sends its own SatisfySequence
-  // message.
-  if (render_frame_proxy_) {
-    render_frame_proxy_->Send(
-        new FrameHostMsg_SatisfySequence(host_routing_id_, sequence));
-  } else if (browser_plugin_.get()) {
-    browser_plugin_->SendSatisfySequence(sequence);
-  }
 
   CheckSizeAndAdjustLayerProperties(
       surface_info.size_in_pixels(), surface_info.device_scale_factor(),
