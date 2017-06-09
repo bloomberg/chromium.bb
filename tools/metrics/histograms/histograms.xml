@@ -92123,6 +92123,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="PageLoad.Experimental.Bytes.Total"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadMetricsClientsNoServiceWorkerSpecialApps"
+    separator=".">
+  <suffix name="search"
+      label="Custom histogram for the Google Search results page."/>
+  <affected-histogram
+      name="PageLoad.Clients.NoServiceWorker.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram
+      name="PageLoad.Clients.NoServiceWorker.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram
+      name="PageLoad.Clients.NoServiceWorker.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.NoServiceWorker.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.NoServiceWorker.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.NoServiceWorker.PaintTiming.ParseStartToFirstContentfulPaint"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadMetricsClientsOfflinePages" separator="."
     ordering="prefix">
   <suffix name="Clients.Previews.OfflinePages"
@@ -92210,6 +92228,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Clients.ServiceWorker"
       label="PageLoadMetrics from a page that is controlled by a Service
              Worker"/>
+  <suffix name="Clients.NoServiceWorker"
+      label="PageLoadMetrics from a page that is not controlled by a Service
+             Worker. This is intended to understand the performance impact of
+             service workers on special apps using Clients.ServiceWorker"/>
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram
@@ -92233,7 +92255,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="PageLoadMetricsClientsServiceWorkerSpecialApps"
     separator=".">
   <suffix name="inbox" label="Custom histogram for Inbox"/>
-  <suffix name="search" label="Custom histogram for Search"/>
+  <suffix name="search"
+      label="Custom histogram for the Google Search results page"/>
   <affected-histogram
       name="PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram
