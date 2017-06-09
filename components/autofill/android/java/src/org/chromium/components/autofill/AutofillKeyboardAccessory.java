@@ -230,6 +230,7 @@ public class AutofillKeyboardAccessory extends LinearLayout
                 }
             }
         });
+        announceForAccessibility(container.getContentDescription());
     }
 
     /**
