@@ -34,6 +34,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions",
     "//ios/chrome/browser/ui/content_suggestions/cells",

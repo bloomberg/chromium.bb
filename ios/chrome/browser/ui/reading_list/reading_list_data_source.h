@@ -8,8 +8,8 @@
 #include <memory>
 
 @class CollectionViewItem;
-@class ReadingListCollectionViewItem;
 @protocol ReadingListDataSink;
+@protocol ReadingListCollectionViewItemAccessibilityDelegate;
 
 // Data Source for the Reading List UI, providing the data sink with the data to
 // be displayed. Handle the interactions with the model.
@@ -37,14 +37,15 @@
 
 // Fills the |readArray| and |unreadArray| with the corresponding items from the
 // model. The items are sorted most recent first.
-- (void)fillReadItems:
-            (nullable NSMutableArray<ReadingListCollectionViewItem*>*)readArray
-          unreadItems:(nullable NSMutableArray<ReadingListCollectionViewItem*>*)
-                          unreadArray;
+- (void)fillReadItems:(nullable NSMutableArray<CollectionViewItem*>*)readArray
+          unreadItems:(nullable NSMutableArray<CollectionViewItem*>*)unreadArray
+         withDelegate:
+             (nullable id<ReadingListCollectionViewItemAccessibilityDelegate>)
+                 delegate;
 
 // Fetches the |faviconURL| of this |item|, notifies the data sink when
 // receiving the favicon.
-- (void)fetchFaviconForItem:(nonnull ReadingListCollectionViewItem*)item;
+- (void)fetchFaviconForItem:(nonnull CollectionViewItem*)item;
 
 // Prepares the data source for batch updates. The UI is not notified for the
 // updates happenning between |-beginBatchUpdates| and |-endBatchUpdates|.

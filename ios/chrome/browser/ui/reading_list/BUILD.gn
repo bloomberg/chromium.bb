@@ -6,11 +6,8 @@ source_set("reading_list") {
   sources = [
     "offline_page_native_content.h",
     "offline_page_native_content.mm",
-    "reading_list_collection_view_controller.h",
-    "reading_list_collection_view_controller.mm",
     "reading_list_collection_view_item.h",
     "reading_list_collection_view_item.mm",
-    "reading_list_collection_view_item_accessibility_delegate.h",
     "reading_list_coordinator.h",
     "reading_list_coordinator.mm",
     "reading_list_mediator.h",
@@ -22,17 +19,13 @@ source_set("reading_list") {
     "reading_list_side_swipe_provider.mm",
     "reading_list_utils.h",
     "reading_list_utils.mm",
-    "reading_list_view_controller.h",
-    "reading_list_view_controller.mm",
   ]
   deps = [
     ":reading_list_ui",
-    ":resources",
     "//base",
     "//components/favicon/core",
     "//components/reading_list/core",
     "//components/reading_list/ios",
-    "//components/strings",
     "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
@@ -43,8 +36,6 @@ source_set("reading_list") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/favicon",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
-    "//ios/chrome/browser/ui/keyboard",
-    "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/side_swipe",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/util",
@@ -53,9 +44,6 @@ source_set("reading_list") {
     "//ui/base",
     "//ui/strings",
     "//url",
-  ]
-  public_deps = [
-    "//ios/chrome/browser/ui/collection_view",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/side_swipe" ]
   libs = [ "UIKit.framework" ]
@@ -69,12 +57,17 @@ source_set("reading_list_ui") {
     "number_badge_view.mm",
     "reading_list_collection_view_cell.h",
     "reading_list_collection_view_cell.mm",
+    "reading_list_collection_view_controller.h",
+    "reading_list_collection_view_controller.mm",
+    "reading_list_collection_view_item_accessibility_delegate.h",
     "reading_list_data_sink.h",
     "reading_list_data_source.h",
     "reading_list_empty_collection_background.h",
     "reading_list_empty_collection_background.mm",
     "reading_list_toolbar.h",
     "reading_list_toolbar.mm",
+    "reading_list_view_controller.h",
+    "reading_list_view_controller.mm",
   ]
   deps = [
     ":resources",
@@ -88,11 +81,15 @@ source_set("reading_list_ui") {
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
+    "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",
+  ]
+  public_deps = [
+    "//ios/chrome/browser/ui/collection_view",
   ]
   libs = [ "UIKit.framework" ]
 }
