@@ -115,6 +115,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_features.h"
+#include "components/ui_devtools/switches.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif  // OS_CHROMEOS
 
@@ -2734,6 +2735,13 @@ const FeatureEntry kFeatureEntries[] = {
          // when the flag is manually enabled in a local build.
          "AutofillCreditCardDropdownVariations")},
 #endif  // OS_ANDROID
+
+#if defined(OS_CHROMEOS)
+    {ui::devtools::kEnableUiDevTools, flag_descriptions::kUiDevToolsName,
+     flag_descriptions::kUiDevToolsDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ui::devtools::kEnableUiDevTools)},
+#endif  // defined(OS_CHROMEOS)
+
     {"enable-autofill-credit-card-last-used-date-display",
      flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayName,
      flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayDescription,
@@ -3113,6 +3121,12 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   if (!strcmp("mus", entry.internal_name) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::UNKNOWN) {
+    return true;
+  }
+
+  // enable-ui-devtools is only available on for non Stable channels.
+  if (!strcmp(ui::devtools::kEnableUiDevTools, entry.internal_name) &&
+      channel == version_info::Channel::STABLE) {
     return true;
   }
 #endif  // defined(OS_CHROMEOS)

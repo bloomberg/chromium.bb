@@ -34,6 +34,7 @@ bool IsUiDevToolsEnabled() {
 
 int GetUiDevToolsPort() {
   DCHECK(IsUiDevToolsEnabled());
+  // This value is duplicated in the chrome://flags description.
   constexpr int kDefaultPort = 9223;
   int port;
   if (!base::StringToInt(
