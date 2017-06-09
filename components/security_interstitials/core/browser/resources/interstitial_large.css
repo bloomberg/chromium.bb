@@ -118,7 +118,7 @@ input[type=checkbox]:focus ~ .checkbox {
   box-sizing: border-box;
   font-size: 1em;
   line-height: 1.6em;
-  margin: 100px auto 0;
+  margin: 14vh auto 0;
   max-width: 600px;
   width: 100%;
 }
