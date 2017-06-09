@@ -52,8 +52,6 @@ namespace {
 // Variation parameter for disabling the retry.
 const char kBackground5xxRetriesName[] = "background_5xx_retries_count";
 
-const int kMaxExcludedIds = 100;
-
 // Variation parameter for sending LanguageModel info to the server.
 const char kSendTopLanguagesName[] = "send_top_languages";
 
@@ -321,9 +319,6 @@ std::string JsonRequest::Builder::BuildBody() const {
   auto excluded = base::MakeUnique<base::ListValue>();
   for (const auto& id : params_.excluded_ids) {
     excluded->AppendString(id);
-    if (excluded->GetSize() >= kMaxExcludedIds) {
-      break;
-    }
   }
   request->Set("excludedSuggestionIds", std::move(excluded));
 
