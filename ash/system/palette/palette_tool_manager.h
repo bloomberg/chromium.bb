@@ -82,8 +82,8 @@ class ASH_EXPORT PaletteToolManager : public PaletteTool::Delegate {
   // Returns the active tool for the given group.
   PaletteToolId GetActiveTool(PaletteGroup group);
 
-  // Fetch the active tray icon for the given tool. Returns
-  // gfx::VectorIconId::VECTOR_ICON_NONE if not available.
+  // Fetch the active tray icon for the given tool. Returns an empty icon if
+  // not available.
   const gfx::VectorIcon& GetActiveTrayIcon(PaletteToolId tool_id) const;
 
   // Create views for all of the registered tools.

@@ -13,8 +13,6 @@
 
 namespace gfx {
 
-enum class VectorIconId;
-
 // The size of a single side of the square canvas to which path coordinates
 // are relative, in device independent pixels.
 const int kReferenceSizeDip = 48;
@@ -86,13 +84,6 @@ struct VectorIcon {
   const gfx::PathElement* path;
   const gfx::PathElement* path_1x;
 };
-
-// Returns an array of path commands and arguments, terminated by END.
-const PathElement* GetPathForVectorIcon(VectorIconId id);
-// As above, but returns an icon specifically adjusted for 1x scale factors.
-// This draws from icon files that end with .1x.icon. If no such file exists,
-// it will fall back to GetPathForVectorIcon.
-const PathElement* GetPathForVectorIconAt1xScale(VectorIconId id);
 
 }  // namespace gfx
 
