@@ -193,6 +193,9 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
                   ? gl::PreferIntegratedGpu
                   : gl::PreferDiscreteGpu;
           break;
+        case PP_GRAPHICS3DATTRIB_SINGLE_BUFFER:
+          attrib_helper.single_buffer = !!attr[1];
+          break;
         default:
           attribs.push_back(attr[0]);
           attribs.push_back(attr[1]);
