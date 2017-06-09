@@ -963,14 +963,9 @@ void WindowTree::ProcessTransientWindowRemoved(
 void WindowTree::ProcessWindowSurfaceChanged(
     ServerWindow* window,
     const cc::SurfaceInfo& surface_info) {
-  ServerWindow* parent_window = window->parent();
-  ClientWindowId client_window_id, parent_client_window_id;
-  if (!IsWindowKnown(window, &client_window_id) ||
-      !IsWindowKnown(parent_window, &parent_client_window_id) ||
-      !created_window_map_.count(parent_window->id())) {
+  ClientWindowId client_window_id;
+  if (!IsWindowKnown(window, &client_window_id))
     return;
-  }
-
   client()->OnWindowSurfaceChanged(client_window_id.id, surface_info);
 }
 

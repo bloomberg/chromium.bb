@@ -185,10 +185,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 ////////////////////////////////////////////////////////////////////////////////
 // Surface, public:
 
-// TODO(fsamuel): exo should not use context_factory_private. Instead, we should
-// request a CompositorFrameSink from the aura::Window. Setting up the
-// BeginFrame hierarchy should be an internal implementation detail of aura or
-// mus in aura-mus.
 Surface::Surface() : window_(new aura::Window(new CustomWindowDelegate(this))) {
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetName("ExoSurface");
@@ -808,6 +804,10 @@ void Surface::UpdateSurface(bool full_damage) {
   }
 
   content_size_ = layer_size;
+  // We need update window_'s bounds with content size, because the
+  // CompositorFrameSink may not update the window's size base the size of
+  // the lastest submitted CompositorFrame.
+  window_->SetBounds(gfx::Rect(window_->bounds().origin(), content_size_));
   // TODO(jbauman): Figure out how this interacts with the pixel size of
   // CopyOutputRequests on the layer.
   gfx::Size contents_surface_size = layer_size;

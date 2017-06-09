@@ -8,6 +8,7 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -95,7 +96,7 @@ void WindowPortMus::Embed(
   window_tree_client_->Embed(window_, std::move(client), flags, callback);
 }
 
-std::unique_ptr<cc::CompositorFrameSink>
+std::unique_ptr<viz::ClientCompositorFrameSink>
 WindowPortMus::RequestCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
@@ -115,7 +116,7 @@ WindowPortMus::RequestCompositorFrameSink(
       enable_surface_synchronization);
   window_tree_client_->AttachCompositorFrameSink(
       server_id(), std::move(sink_request), std::move(client));
-  return std::move(compositor_frame_sink);
+  return compositor_frame_sink;
 }
 
 WindowPortMus::ServerChangeIdType WindowPortMus::ScheduleChange(
@@ -306,18 +307,25 @@ const cc::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
   if (frame_sink_id_.is_valid())
     UpdatePrimarySurfaceInfo();
 
-  return local_surface_id_;
-}
+  if (local_compositor_frame_sink_)
+    local_compositor_frame_sink_->SetLocalSurfaceId(local_surface_id_);
 
-void WindowPortMus::SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) {
-  primary_surface_info_ = surface_info;
-  UpdateClientSurfaceEmbedder();
-  if (window_->delegate())
-    window_->delegate()->OnWindowSurfaceChanged(surface_info);
+  return local_surface_id_;
 }
 
 void WindowPortMus::SetFallbackSurfaceInfo(
     const cc::SurfaceInfo& surface_info) {
+  if (!frame_sink_id_.is_valid()) {
+    // |primary_surface_info_| shold not be valid, since we didn't know the
+    // |frame_sink_id_|.
+    DCHECK(!primary_surface_info_.is_valid());
+    frame_sink_id_ = surface_info.id().frame_sink_id();
+    UpdatePrimarySurfaceInfo();
+  }
+
+  // The frame sink id should never be changed.
+  DCHECK_EQ(surface_info.id().frame_sink_id(), frame_sink_id_);
+
   fallback_surface_info_ = surface_info;
   UpdateClientSurfaceEmbedder();
 }
@@ -426,6 +434,10 @@ void WindowPortMus::NotifyEmbeddedAppDisconnected() {
     observer.OnEmbeddedAppDisconnected(window_);
 }
 
+bool WindowPortMus::HasLocalCompositorFrameSink() {
+  return !!local_compositor_frame_sink_;
+}
+
 void WindowPortMus::OnPreInit(Window* window) {
   window_ = window;
   window_tree_client_->OnWindowMusCreated(this);
@@ -521,38 +533,46 @@ void WindowPortMus::OnPropertyChanged(const void* key,
 
 std::unique_ptr<cc::CompositorFrameSink>
 WindowPortMus::CreateCompositorFrameSink() {
-  // TODO(penghuang): Implement it for Mus.
-  return nullptr;
+  DCHECK_EQ(window_mus_type(), WindowMusType::LOCAL);
+  DCHECK(!local_compositor_frame_sink_);
+  auto frame_sink = RequestCompositorFrameSink(
+      nullptr,
+      aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager());
+  local_compositor_frame_sink_ = frame_sink->GetWeakPtr();
+  return frame_sink;
 }
 
 cc::SurfaceId WindowPortMus::GetSurfaceId() const {
-  // TODO(penghuang): Implement it for Mus.
+  // This is only used by WindowPortLocal in unit tests.
   return cc::SurfaceId();
 }
 
 void WindowPortMus::UpdatePrimarySurfaceInfo() {
-  bool embeds_surface =
-      window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
-      window_mus_type() == WindowMusType::EMBED_IN_OWNER ||
-      window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED;
-  if (!embeds_surface)
+  if (window_mus_type() != WindowMusType::TOP_LEVEL_IN_WM &&
+      window_mus_type() != WindowMusType::EMBED_IN_OWNER &&
+      window_mus_type() != WindowMusType::DISPLAY_MANUALLY_CREATED &&
+      window_mus_type() != WindowMusType::LOCAL) {
     return;
+  }
 
   if (!frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
     return;
 
-  SetPrimarySurfaceInfo(cc::SurfaceInfo(
+  primary_surface_info_ = cc::SurfaceInfo(
       cc::SurfaceId(frame_sink_id_, local_surface_id_),
-      ScaleFactorForDisplay(window_), last_surface_size_in_pixels_));
+      ScaleFactorForDisplay(window_), last_surface_size_in_pixels_);
+  UpdateClientSurfaceEmbedder();
+  if (window_->delegate())
+    window_->delegate()->OnWindowSurfaceChanged(primary_surface_info_);
 }
 
 void WindowPortMus::UpdateClientSurfaceEmbedder() {
-  bool embeds_surface =
-      window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
-      window_mus_type() == WindowMusType::EMBED_IN_OWNER ||
-      window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED;
-  if (!embeds_surface)
+  if (window_mus_type() != WindowMusType::TOP_LEVEL_IN_WM &&
+      window_mus_type() != WindowMusType::EMBED_IN_OWNER &&
+      window_mus_type() != WindowMusType::DISPLAY_MANUALLY_CREATED &&
+      window_mus_type() != WindowMusType::LOCAL) {
     return;
+  }
 
   if (!client_surface_embedder_) {
     client_surface_embedder_ = base::MakeUnique<ClientSurfaceEmbedder>(
