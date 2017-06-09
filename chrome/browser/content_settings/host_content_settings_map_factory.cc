@@ -30,6 +30,10 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/notifications/notification_channels_provider_android.h"
+#endif  // OS_ANDROID
+
 HostContentSettingsMapFactory::HostContentSettingsMapFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
         "HostContentSettingsMap",
@@ -109,6 +113,15 @@ scoped_refptr<RefcountedKeyedService>
   }
 #endif // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kSiteNotificationChannels)) {
+    auto channels_provider =
+        base::MakeUnique<NotificationChannelsProviderAndroid>();
+    settings_map->RegisterProvider(
+        HostContentSettingsMap::NOTIFICATION_ANDROID_PROVIDER,
+        std::move(channels_provider));
+  }
+#endif  // defined (OS_ANDROID)
   return settings_map;
 }
 

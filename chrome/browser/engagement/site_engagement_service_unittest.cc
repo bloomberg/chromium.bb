@@ -557,7 +557,7 @@ TEST_F(SiteEngagementServiceTest, NotificationPermission) {
 
   settings_map->SetContentSettingDefaultScope(
       url3, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), CONTENT_SETTING_ASK);
+      content_settings::ResourceIdentifier(), CONTENT_SETTING_DEFAULT);
 
   EXPECT_EQ(5, service_->GetScore(url1));
   EXPECT_EQ(0, service_->GetScore(url2));

@@ -305,6 +305,13 @@ const base::Feature kRunAllFlashInAllowMode{"RunAllFlashInAllowMode",
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+// Enables separate notification channels in Android O for notifications from
+// different origins, instead of sending them all to a single 'Sites' channel.
+const base::Feature kSiteNotificationChannels{
+    "SiteNotificationChannels", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined (OS_ANDROID)
+
 // A new user experience for transitioning into fullscreen and mouse pointer
 // lock states.
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
