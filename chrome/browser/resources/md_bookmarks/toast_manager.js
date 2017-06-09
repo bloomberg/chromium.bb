@@ -51,9 +51,39 @@ cr.define('bookmarks', function() {
      * @param {boolean} showUndo Whether the undo button should be shown.
      */
     show: function(label, showUndo) {
-      this.open_ = true;
-      // TODO(calamity): Support collapsing of long bookmark names in label.
       this.$.content.textContent = label;
+      this.showInternal_(showUndo);
+    },
+
+    /**
+     * Shows the toast, making certain text fragments collapsible.
+     * @param {!Array<!{value: string, collapsible: boolean}>} pieces
+     * @param {boolean} showUndo Whether the undo button should be shown.
+     */
+    showForStringPieces: function(pieces, showUndo) {
+      var content = this.$.content;
+      content.textContent = '';
+      pieces.forEach(function(p) {
+        if (p.value.length == 0)
+          return;
+
+        var span = document.createElement('span');
+        span.textContent = p.value;
+        if (p.collapsible)
+          span.classList.add('collapsible');
+
+        content.appendChild(span);
+      });
+
+      this.showInternal_(showUndo);
+    },
+
+    /**
+     * @param {boolean} showUndo Whether the undo button should be shown.
+     * @private
+     */
+    showInternal_: function(showUndo) {
+      this.open_ = true;
       this.showUndo_ = showUndo;
 
       if (!this.duration)

@@ -56,7 +56,10 @@
     },
     {
       'target_name': 'load_time_data',
-      'dependencies': ['<(DEPTH)/third_party/jstemplate/compiled_resources2.gyp:jstemplate'],
+      'dependencies': [
+        '<(DEPTH)/third_party/jstemplate/compiled_resources2.gyp:jstemplate',
+        'assert'
+      ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

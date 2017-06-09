@@ -55,6 +55,7 @@ js2gtest("browser_tests_js_webui") {
     "cr_elements/cr_elements_browsertest.js",
     "engagement/site_engagement_browsertest.js",
     "extensions/cr_extensions_browsertest.js",
+    "load_time_data_browsertest.js",
     "md_bookmarks/md_bookmarks_browsertest.js",
     "md_downloads/downloads_browsertest.js",
     "md_history/md_history_browsertest.js",
