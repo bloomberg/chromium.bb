@@ -87,11 +87,6 @@
 #include "media/gpu/vaapi_wrapper.h"
 #endif
 
-#if defined(SANITIZER_COVERAGE)
-#include <sanitizer/common_interface_defs.h>
-#include <sanitizer/coverage_interface.h>
-#endif
-
 namespace content {
 
 namespace {
@@ -312,16 +307,6 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread) {
     // has really been stopped.
     LinuxSandbox::StopThread(watchdog_thread);
   }
-
-#if defined(SANITIZER_COVERAGE)
-  const std::string sancov_file_name =
-      "gpu." + base::Uint64ToString(base::RandUint64());
-  LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
-  linux_sandbox->sanitizer_args()->coverage_sandboxed = 1;
-  linux_sandbox->sanitizer_args()->coverage_fd =
-      __sanitizer_maybe_open_cov_file(sancov_file_name.c_str());
-  linux_sandbox->sanitizer_args()->coverage_max_block_size = 0;
-#endif
 
   // LinuxSandbox::InitializeSandbox() must always be called
   // with only one thread.

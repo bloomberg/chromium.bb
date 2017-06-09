@@ -67,11 +67,6 @@
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 #endif
 
-#if defined(SANITIZER_COVERAGE)
-#include <sanitizer/common_interface_defs.h>
-#include <sanitizer/coverage_interface.h>
-#endif
-
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "content/common/media/cdm_host_files.h"
 #endif
@@ -475,77 +470,6 @@ static void EnterNamespaceSandbox(LinuxSandbox* linux_sandbox,
   }
 }
 
-#if defined(SANITIZER_COVERAGE)
-static int g_sanitizer_message_length = 1 * 1024 * 1024;
-
-// A helper process which collects code coverage data from the renderers over a
-// socket and dumps it to a file. See http://crbug.com/336212 for discussion.
-static void SanitizerCoverageHelper(int socket_fd, int file_fd) {
-  std::unique_ptr<char[]> buffer(new char[g_sanitizer_message_length]);
-  while (true) {
-    ssize_t received_size = HANDLE_EINTR(
-        recv(socket_fd, buffer.get(), g_sanitizer_message_length, 0));
-    PCHECK(received_size >= 0);
-    if (received_size == 0)
-      // All clients have closed the socket. We should die.
-      _exit(0);
-    PCHECK(file_fd >= 0);
-    ssize_t written_size = 0;
-    while (written_size < received_size) {
-      ssize_t write_res =
-          HANDLE_EINTR(write(file_fd, buffer.get() + written_size,
-                             received_size - written_size));
-      PCHECK(write_res >= 0);
-      written_size += write_res;
-    }
-    PCHECK(0 == HANDLE_EINTR(fsync(file_fd)));
-  }
-}
-
-// fds[0] is the read end, fds[1] is the write end.
-static void CreateSanitizerCoverageSocketPair(int fds[2]) {
-  PCHECK(0 == socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
-  PCHECK(0 == shutdown(fds[0], SHUT_WR));
-  PCHECK(0 == shutdown(fds[1], SHUT_RD));
-
-  // Find the right buffer size for sending coverage data.
-  // The kernel will silently set the buffer size to the allowed maximum when
-  // the specified size is too large, so we set our desired size and read it
-  // back.
-  int* buf_size = &g_sanitizer_message_length;
-  socklen_t option_length = sizeof(*buf_size);
-  PCHECK(0 == setsockopt(fds[1], SOL_SOCKET, SO_SNDBUF,
-                         buf_size, option_length));
-  PCHECK(0 == getsockopt(fds[1], SOL_SOCKET, SO_SNDBUF,
-                         buf_size, &option_length));
-  DCHECK_EQ(sizeof(*buf_size), option_length);
-  // The kernel returns the doubled buffer size.
-  *buf_size /= 2;
-  PCHECK(*buf_size > 0);
-}
-
-static pid_t ForkSanitizerCoverageHelper(
-    int child_fd,
-    int parent_fd,
-    base::ScopedFD file_fd,
-    const std::vector<int>& extra_fds_to_close) {
-  pid_t pid = fork();
-  PCHECK(pid >= 0);
-  if (pid == 0) {
-    // In the child.
-    PCHECK(0 == IGNORE_EINTR(close(parent_fd)));
-    CloseFds(extra_fds_to_close);
-    SanitizerCoverageHelper(child_fd, file_fd.get());
-    _exit(0);
-  } else {
-    // In the parent.
-    PCHECK(0 == IGNORE_EINTR(close(child_fd)));
-    return pid;
-  }
-}
-
-#endif  // defined(SANITIZER_COVERAGE)
-
 static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
                                  const bool using_layer1_sandbox,
                                  base::Closure* post_fork_parent_callback) {
@@ -578,24 +502,6 @@ bool ZygoteMain(
   std::vector<int> fds_to_close_post_fork;
 
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
-
-#if defined(SANITIZER_COVERAGE)
-  const std::string sancov_file_name =
-      "zygote." + base::Uint64ToString(base::RandUint64());
-  base::ScopedFD sancov_file_fd(
-      __sanitizer_maybe_open_cov_file(sancov_file_name.c_str()));
-  int sancov_socket_fds[2] = {-1, -1};
-  CreateSanitizerCoverageSocketPair(sancov_socket_fds);
-  linux_sandbox->sanitizer_args()->coverage_sandboxed = 1;
-  linux_sandbox->sanitizer_args()->coverage_fd = sancov_socket_fds[1];
-  linux_sandbox->sanitizer_args()->coverage_max_block_size =
-      g_sanitizer_message_length;
-  // Zygote termination will block until the helper process exits, which will
-  // not happen until the write end of the socket is closed everywhere. Make
-  // sure the init process does not hold on to it.
-  fds_to_close_post_fork.push_back(sancov_socket_fds[0]);
-  fds_to_close_post_fork.push_back(sancov_socket_fds[1]);
-#endif  // SANITIZER_COVERAGE
 
   // Skip pre-initializing sandbox under --no-sandbox for crbug.com/444900.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -651,21 +557,6 @@ bool ZygoteMain(
   // knowledge of.
   std::vector<pid_t> extra_children;
   std::vector<int> extra_fds;
-
-#if defined(SANITIZER_COVERAGE)
-  pid_t sancov_helper_pid = ForkSanitizerCoverageHelper(
-      sancov_socket_fds[0], sancov_socket_fds[1], std::move(sancov_file_fd),
-      sandbox_fds_to_close_post_fork);
-  // It's important that the zygote reaps the helper before dying. Otherwise,
-  // the destruction of the PID namespace could kill the helper before it
-  // completes its I/O tasks. |sancov_helper_pid| will exit once the last
-  // renderer holding the write end of |sancov_socket_fds| closes it.
-  extra_children.push_back(sancov_helper_pid);
-  // Sanitizer code in the renderers will inherit the write end of the socket
-  // from the zygote. We must keep it open until the very end of the zygote's
-  // lifetime, even though we don't explicitly use it.
-  extra_fds.push_back(sancov_socket_fds[1]);
-#endif  // SANITIZER_COVERAGE
 
   const int sandbox_flags = linux_sandbox->GetStatus();
 
