@@ -10,8 +10,10 @@
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "platform/wtf/Vector.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -40,6 +42,7 @@ ModuleTreeLinker* ModuleTreeLinker::FetchDescendantsForInlineScript(
 
   // Substep 4 in "module" case in Step 22 of "prepare a script":"
   // https://html.spec.whatwg.org/#prepare-a-script
+  DCHECK(module_script);
 
   // 4. "Fetch the descendants of script (using an empty ancestor list)."
   ModuleTreeLinker* fetcher =
@@ -118,10 +121,11 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
     case State::kFetchingSelf:
       CHECK_EQ(num_incomplete_descendants_, 0u);
       CHECK(new_state == State::kFetchingDependencies ||
-            (!descendants_module_script_ && new_state == State::kFinished));
+            new_state == State::kFinished);
       break;
     case State::kFetchingDependencies:
-      CHECK_EQ(new_state, State::kInstantiating);
+      CHECK(new_state == State::kInstantiating ||
+            new_state == State::kFinished);
       DCHECK(!num_incomplete_descendants_ || !descendants_module_script_)
           << num_incomplete_descendants_
           << " outstanding descendant loads found, but the descendant module "
@@ -140,10 +144,16 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
   state_ = new_state;
 
   if (state_ == State::kFinished) {
+    RESOURCE_LOADING_DVLOG(1)
+        << "ModuleTreeLinker[" << this << "] finished with final result "
+        << descendants_module_script_;
+
     registry_->ReleaseFinishedFetcher(this);
 
     // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-    // Step 9. Asynchronously complete this algorithm with descendants result.
+    // Step 7. When the "fetch the descendants of and instantiate a module
+    // script" algorithm asynchronously completes with final result,
+    // asynchronously complete this algorithm with final result.
     client_->NotifyModuleTreeLoadFinished(descendants_module_script_);
   }
 }
@@ -163,34 +173,30 @@ void ModuleTreeLinker::FetchSelf(const ModuleScriptFetchRequest& request,
   // Step 2. Return from this algorithm, and run the following steps when
   // fetching a single module script asynchronously completes with result.
   // Note: Modulator::FetchSingle asynchronously notifies result to
-  // ModuleTreeLinker::notifyModuleLoadFinished().
+  // ModuleTreeLinker::NotifyModuleLoadFinished().
 }
 
-void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
+void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* result) {
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
 
   // Step 3. "If result is null, ..."
-  if (!module_script) {
-    // "asynchronously complete this algorithm with null and abort these steps."
-    // Note: We return null by calling AdvanceState(), which calls
-    // NotifyModuleTreeLoadFinished(descendants_module_script_), and in this
-    // case |descendants_module_script_| is always null.
-    DCHECK(!descendants_module_script_);
+  // Step 4. "If result's state is "instantiated" or "errored", ..."
+  if (!result || result->State() == ModuleInstantiationState::kInstantiated ||
+      result->State() == ModuleInstantiationState::kErrored) {
+    // "asynchronously complete this algorithm with result, and abort these
+    // steps."
+    descendants_module_script_ = result;
     AdvanceState(State::kFinished);
     return;
   }
 
-  // Step 4. Otherwise, result is a module script. Fetch the descendants of
-  // result given destination and an ancestor list obtained by appending url to
-  // ancestor list. Wait for fetching the descendants of a module script to
-  // asynchronously complete with descendants result before proceeding to the
-  // next step.
-  module_script_ = module_script;
+  // Step 5. Assert: result's state is "uninstantiated".
+  DCHECK_EQ(ModuleInstantiationState::kUninstantiated, result->State());
 
+  // Step 6. Fetch the descendants of and instantiate result given destination
+  // and an ancestor list obtained by appending url to ancestor list.
+  module_script_ = result;
   FetchDescendants();
-
-  // Note: Step 5- continues in Instantiate() method, after
-  // "fetch the descendants of a module script" procedure completes.
 }
 
 class ModuleTreeLinker::DependencyModuleClient
@@ -226,56 +232,77 @@ void ModuleTreeLinker::FetchDescendants() {
   CHECK(module_script_);
   AdvanceState(State::kFetchingDependencies);
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-a-module-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-and-instantiate-a-module-script
+  // Step 1. If ancestor list was not given, let it be the empty list.
+  // Note: The "ancestor list" in spec corresponds to |ancestor_list_with_url_|.
 
-  // Step 1. Let record be module script's module record.
+  // Step 2. If module script's state is "instantiated" or "errored",
+  // asynchronously complete this algorithm with module script, and abort these
+  // steps.
+  if (module_script_->State() == ModuleInstantiationState::kInstantiated ||
+      module_script_->State() == ModuleInstantiationState::kErrored) {
+    descendants_module_script_ = module_script_;
+    AdvanceState(State::kFinished);
+    return;
+  }
+
+  // Step 3. Assert: module script's state is "uninstantiated"
+  DCHECK_EQ(ModuleInstantiationState::kUninstantiated, module_script_->State());
+
+  // Step 4. Let record be module script's module record.
   ScriptModule record = module_script_->Record();
+  DCHECK(!record.IsNull());
 
-  // Step 2. If record.[[RequestedModules]] is empty, asynchronously complete
+  // Step 5. If record.[[RequestedModules]] is empty, asynchronously complete
   // this algorithm with module script.
-  // Note: We defer this bail-out until Step 5. Step 4 will be no-op anyway if
+  // Note: We defer this bail-out until Step 9. Step 6-9 will be no-op anyway if
   //       record.[[RequestedModules]] is empty.
 
-  // Step 3. Let urls be a new empty list.
+  // Step 6. Let urls be a new empty list.
   Vector<KURL> urls;
 
-  // Step 4. For each string requested of record.[[RequestedModules]],
+  // Step 7. For each string requested of record.[[RequestedModules]],
   Vector<String> module_requests =
       modulator_->ModuleRequestsFromScriptModule(record);
   for (const auto& module_request : module_requests) {
-    // Step 4.1. Let url be the result of resolving a module specifier given
+    // Step 7.1. Let url be the result of resolving a module specifier given
     // module script and requested.
     KURL url = Modulator::ResolveModuleSpecifier(module_request,
                                                  module_script_->BaseURL());
 
-    // Step 4.2. If the result is error: ...
+    // Step 7.2. If url is failure: ...
     if (url.IsNull()) {
-      // Let error be a new TypeError exception.
-      // Report the exception error for module script.
-      // TODO(kouhei): Implement the exception.
+      // Step 7.2.1. Let error be a new TypeError exception.
+      ScriptState::Scope scope(modulator_->GetScriptState());
+      v8::Isolate* isolate = modulator_->GetScriptState()->GetIsolate();
+      v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
+          isolate,
+          "Failed to resolve module specifier \'" + module_request + "'");
 
-      // Abort this algorithm, and asynchronously complete it with null.
-      // Note: The return variable for "internal module script graph fetching
-      // procedure" is descendants_module_script_ per Step 9.
-      DCHECK(!descendants_module_script_);
-      // Note: while we complete "fetch the descendants of a module script"
-      //       algorithm here, we still need to continue to the rest of the
-      //       steps in "internal module script graph fetching procedure"
-      Instantiate();
+      // Step 7.2.2. Error module script with error.
+      module_script_->SetErrorAndClearRecord(
+          ScriptValue(modulator_->GetScriptState(), error));
+
+      // Step 7.2.3. Abort this algorithm, and asynchronously complete it with
+      // module_sript_. Note: The return variable for "internal module script
+      // graph fetching procedure" is descendants_module_script_ per Step 7.
+      descendants_module_script_ = module_script_;
+      AdvanceState(State::kFinished);
       return;
     }
 
-    // Step 4.3. Otherwise, if ancestor list does not contain url, append url to
+    // Step 7.3. Otherwise, if ancestor list does not contain url, append url to
     // urls.
-
-    // Modulator::resolveModuleSpecifier() impl must return either a valid url
-    // or null.
-    CHECK(url.IsValid());
+    CHECK(url.IsValid()) << "Modulator::resolveModuleSpecifier() impl must "
+                            "return either a valid url or null.";
     if (!ancestor_list_with_url_.Contains(url))
       urls.push_back(url);
   }
 
-  // Step 5. For each url in urls, perform the internal module script graph
+  // Step 8. Let descendants result be null.
+  DCHECK(!descendants_module_script_);
+
+  // Step 9. For each url in urls, perform the internal module script graph
   // fetching procedure given url, module script's credentials mode, module
   // script's cryptographic nonce, module script's parser state, destination,
   // module script's settings object, module script's settings object, ancestor
@@ -285,20 +312,21 @@ void ModuleTreeLinker::FetchDescendants() {
   // fetching procedure.
 
   if (urls.IsEmpty()) {
-    // Step 2. If record.[[RequestedModules]] is empty, asynchronously
+    // Step 5. If record.[[RequestedModules]] is empty, asynchronously
     // complete this algorithm with module script. [spec text]
-    // Also, if record.[[RequestedModules]] is not empty but |urls| is
-    // empty here, we can immediately complete this algorithm, as
-    // we don't have to process or wait for anything in Step 5. [non-spec text]
+    // Note: We actually proceed to Step 10 here. [nospec, but a pending PR
+    // fixes this.]
 
-    // Proceed to Instantiate() to continue
-    // "internal module script graph fetching procedure".
+    // Also, if record.[[RequestedModules]] is not empty but |urls| is
+    // empty here, we can proceed to Step 10.
     descendants_module_script_ = module_script_;
     Instantiate();
     return;
   }
 
-  // Step 5, when "urls" is non-empty.
+  // Step 9, when "urls" is non-empty.
+  // These invocations of the internal module script graph fetching procedure
+  // should be performed in parallel to each other. [spec text]
   CHECK_EQ(num_incomplete_descendants_, 0u);
   num_incomplete_descendants_ = urls.size();
   for (const KURL& url : urls) {
@@ -315,56 +343,79 @@ void ModuleTreeLinker::FetchDescendants() {
                                   dependency_client);
   }
 
-  // Asynchronously continue processing after notifyOneDescendantFinished() is
-  // called m_numIncompleteDescendants times.
+  // Asynchronously continue processing after NotifyOneDescendantFinished() is
+  // called num_incomplete_descendants_ times.
   CHECK_GT(num_incomplete_descendants_, 0u);
 }
 
 void ModuleTreeLinker::DependencyModuleClient::NotifyModuleTreeLoadFinished(
     ModuleScript* module_script) {
-  DescendantLoad was_success =
-      module_script ? DescendantLoad::kSuccess : DescendantLoad::kFailed;
-  module_tree_linker_->NotifyOneDescendantFinished(was_success);
+  module_tree_linker_->NotifyOneDescendantFinished(module_script);
 }
 
-void ModuleTreeLinker::NotifyOneDescendantFinished(DescendantLoad was_success) {
-  CHECK(!descendants_module_script_);
-
+void ModuleTreeLinker::NotifyOneDescendantFinished(
+    ModuleScript* module_script) {
   if (state_ == State::kFinished) {
     // We may reach here if one of the descendant failed to load, and the other
     // descendants fetches were in flight.
     return;
   }
-  CHECK_EQ(state_, State::kFetchingDependencies);
+  DCHECK_EQ(state_, State::kFetchingDependencies);
+  DCHECK(module_script_);
 
   CHECK_GT(num_incomplete_descendants_, 0u);
   --num_incomplete_descendants_;
 
-  // TODO(kouhei): Potential room for optimization. Cancel inflight descendants
-  // fetch if a descendant load failed.
+  // Step 9 of
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-and-instantiate-a-module-script
+  // "If any invocation of the internal module script graph fetching procedure
+  // asynchronously completes with null, then ..." [spec text]
+  if (!module_script) {
+    RESOURCE_LOADING_DVLOG(1)
+        << "ModuleTreeLinker[" << this
+        << "]::NotifyOneDescendantFinished with null. "
+        << num_incomplete_descendants_ << " remaining descendants.";
 
-  CHECK(module_script_);
-  RESOURCE_LOADING_DVLOG(1)
-      << "ModuleTreeLinker[" << this << "]::NotifyOneDescendantFinished with "
-      << (was_success == DescendantLoad::kSuccess ? "success. " : "failure. ")
-      << num_incomplete_descendants_ << " remaining descendants.";
+    // "optionally abort all other invocations, " [spec text]
+    // TODO(kouhei) Implement this.
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-a-module-script
-  // Step 5. "... If any of them asynchronously complete with null, then
-  // asynchronously complete this algorithm with null ..."
-  if (was_success == DescendantLoad::kFailed) {
+    // "set descendants result to null, and ... " [spec text]
     DCHECK(!descendants_module_script_);
-    // Note: while we complete "fetch the descendants of a module script"
-    //       algorithm here, we still need to continue to the rest of the steps
-    //       in "internal module script graph fetching procedure"
+
+    // "proceed to the next step. (The un-fetched descendant will cause errors
+    // during instantiation.)" [spec text]
     Instantiate();
     return;
   }
 
-  // Step 5. "Wait for all of the internal module script graph fetching
-  // procedure invocations to asynchronously complete. ... Otherwise,
-  // asynchronously complete this algorithm with module script."
+  RESOURCE_LOADING_DVLOG(1)
+      << "ModuleTreeLinker[" << this
+      << "]::NotifyOneDescendantFinished with a module script of state \""
+      << ModuleInstantiationStateToString(module_script->State()) << "\". "
+      << num_incomplete_descendants_ << " remaining descendants.";
+
+  // "If any invocation of the internal module script graph fetching procedure
+  // asynchronously completes with a module script whose state is "errored",
+  // then ..." [spec text]
+  if (module_script->State() == ModuleInstantiationState::kErrored) {
+    // "optionally abort all other invocations, ..." [spec text]
+    // TODO(kouhei) Implement this.
+
+    // "set descendants result to module script, ..." [spec text]
+    descendants_module_script_ = module_script_;
+
+    // "and proceed to the next step. (The errored descendant will cause errors
+    // during instantiation.)" [spec text]
+    Instantiate();
+    return;
+  }
+
+  // "Otherwise, wait for all of the internal module script graph fetching
+  // procedure invocations to asynchronously complete, with module scripts whose
+  // states are not "errored"." [spec text]
   if (!num_incomplete_descendants_) {
+    // "Then, set descendants result to module script, and proceed to the next
+    // step." [spec text]
     descendants_module_script_ = module_script_;
     Instantiate();
   }
@@ -374,7 +425,7 @@ void ModuleTreeLinker::Instantiate() {
   CHECK(module_script_);
   AdvanceState(State::kInstantiating);
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-and-instantiate-a-module-script
 
   // [nospec] Abort the steps if the browsing context is discarded.
   if (!modulator_->HasValidContext()) {
@@ -383,98 +434,93 @@ void ModuleTreeLinker::Instantiate() {
     return;
   }
 
-  // Step 5. Let instantiationStatus be null.
+  // Contrary to the spec, we don't store the "record" in Step 4 for its use in
+  // Step 10. If Instantiate() was called on descendant ModuleTreeLinker and
+  // failed, module_script_->Record() may be already cleared.
+  if (module_script_->State() == ModuleInstantiationState::kErrored) {
+    DCHECK(module_script_->HasEmptyRecord());
+    AdvanceState(State::kFinished);
+    return;
+  }
+
+  // Step 4. Let record be result's module record.
+  ScriptModule record = module_script_->Record();
+
+  // Step 10. Let instantiationStatus be record.ModuleDeclarationInstantiation.
   // Note: The |error| variable corresponds to spec variable
   // "instantiationStatus". If |error| is empty, it indicates successful
   // completion.
-  ScriptValue error;
+  ScriptValue error = modulator_->InstantiateModule(record);
 
-  // Step 6. If result's instantiation state is "errored",...
-  if (module_script_->State() == ModuleInstantiationState::kErrored) {
-    // ... Set instantiationStatus to record.ModuleDeclarationInstantiation().
-    error = modulator_->GetError(module_script_);
-    DCHECK(!error.IsEmpty());
-  } else {
-    // Step 7. Otherwise:
-    // Step 7.1. Let record be result's module record.
-    ScriptModule record = module_script_->Record();
-    // Step 7.2. Set instantiationStatus to
-    // record.ModuleDeclarationInstantiation().
-    error = modulator_->InstantiateModule(record);
-  }
-
-  // Step 8. For each module script script in result's uninstantiated inclusive
+  // Step 11. For each script in module script's uninstantiated inclusive
   // descendant module scripts, perform the following steps:
   HeapHashSet<Member<ModuleScript>> uninstantiated_set =
       UninstantiatedInclusiveDescendants();
   for (const auto& descendant : uninstantiated_set) {
     if (!error.IsEmpty()) {
-      // Step 8.1. If instantiationStatus is an abrupt completion, then
-      // Step 8.1.1. Set script module record's [[HostDefined]] field to
-      // undefined.
-      // TODO(kouhei): Implement this.
-
-      // Step 8.1.2. Set script's module record to null.
-      // Step 8.1.3. Set script's instantiation state to "errored".
-      // Step 8.1.4. Set script's instantiation error to
-      // instantiationStatus.[[Value]].
+      // Step 11.1. If instantiationStatus is an abrupt completion, then
+      // error script with instantiationStatus.[[Value]]
       descendant->SetErrorAndClearRecord(error);
     } else {
-      // Step 8.2. Otherwise, set script's instantiation state to
+      // Step 11.2. Otherwise, set script's instantiation state to
       // "instantiated".
       descendant->SetInstantiationSuccess();
     }
   }
 
-  // Step 9. Asynchronously complete this algorithm with descendants result.
+  // Step 12. Asynchronously complete this algorithm with descendants result.
   AdvanceState(State::kFinished);
 }
 
 HeapHashSet<Member<ModuleScript>>
 ModuleTreeLinker::UninstantiatedInclusiveDescendants() {
   // https://html.spec.whatwg.org/multipage/webappapis.html#uninstantiated-inclusive-descendant-module-scripts
-  // Step 1. Let moduleMap be script's settings object's module map.
+  // Step 1. If script's module record is null, return the empty set.
+  if (module_script_->HasEmptyRecord())
+    return HeapHashSet<Member<ModuleScript>>();
+
+  // Step 2. Let moduleMap be script's settings object's module map.
   // Note: Modulator is our "settings object".
   // Note: We won't reference the ModuleMap directly here to aid testing.
 
-  // Step 2. Let stack be the stack << script >>.
+  // Step 3. Let stack be the stack << script >>.
   // TODO(kouhei): Make stack a HeapLinkedHashSet for O(1) lookups.
   HeapDeque<Member<ModuleScript>> stack;
   stack.push_front(module_script_);
 
-  // Step 3. Let inclusive descendants be an empty set.
+  // Step 4. Let inclusive descendants be an empty set.
   // Note: We use unordered set here as the order is not observable from web
   // platform.
   // This is allowed per spec: https://infra.spec.whatwg.org/#sets
   HeapHashSet<Member<ModuleScript>> inclusive_descendants;
 
-  // Step 4. While stack is not empty:
+  // Step 5. While stack is not empty:
   while (!stack.IsEmpty()) {
-    // Step 4.1. Let current the result of popping from stack.
+    // Step 5.1. Let current the result of popping from stack.
     ModuleScript* current = stack.TakeFirst();
 
-    // Step 4.2. Assert: current is a module script (i.e., it is not "fetching"
+    // Step 5.2. Assert: current is a module script (i.e., it is not "fetching"
     // or null).
     DCHECK(current);
 
-    // Step 4.3. If inclusive descendants and stack both do not contain current,
+    // Step 5.3. If inclusive descendants and stack both do not contain current,
     // then:
     if (inclusive_descendants.Contains(current))
       continue;
     if (std::find(stack.begin(), stack.end(), current) != stack.end())
       continue;
 
-    // Step 4.3.1. Append current to inclusive descendants.
+    // Step 5.3.1. Append current to inclusive descendants.
     inclusive_descendants.insert(current);
 
     // TODO(kouhei): This implementation is a direct transliteration of the
     // spec. Omit intermediate vectors at the least.
 
-    // Step 4.3.2. Let child specifiers be the value of current's module
+    // Step 5.3.2. Let child specifiers be the value of current's module
     // record's [[RequestedModules]] internal slot.
     Vector<String> child_specifiers =
         modulator_->ModuleRequestsFromScriptModule(current->Record());
-    // Step 4.3.3. Let child URLs be the list obtained by calling resolve a
+    // Step 5.3.3. Let child URLs be the list obtained by calling resolve a
     // module specifier once for each item of child specifiers, given current
     // and that item. Omit any failures.
     Vector<KURL> child_urls;
@@ -484,7 +530,7 @@ ModuleTreeLinker::UninstantiatedInclusiveDescendants() {
       if (child_url.IsValid())
         child_urls.push_back(child_url);
     }
-    // Step 4.3.4. Let child modules be the list obtained by getting each value
+    // Step 5.3.4. Let child modules be the list obtained by getting each value
     // in moduleMap whose key is given by an item of child URLs.
     HeapVector<Member<ModuleScript>> child_modules;
     for (const auto& child_url : child_urls) {
@@ -493,27 +539,27 @@ ModuleTreeLinker::UninstantiatedInclusiveDescendants() {
 
       child_modules.push_back(module_script);
     }
-    // Step 4.3.5. For each s of child modules:
+    // Step 5.3.5. For each s of child modules:
     for (const auto& s : child_modules) {
-      // Step 4.3.5.2. If s is null, continue.
+      // Step 5.3.5.2. If s is null, continue.
       // Note: We do null check first, as Blink HashSet can't contain nullptr.
 
-      // Step 4.3.5.3. Assert: s is a module script (i.e., it is not "fetching",
+      // Step 5.3.5.3. Assert: s is a module script (i.e., it is not "fetching",
       // since by this point all child modules must have been fetched). Note:
       // GetFetchedModuleScript returns nullptr if "fetching"
       if (!s)
         continue;
 
-      // Step 4.3.5.1. If inclusive descendants already contains s, continue.
+      // Step 5.3.5.1. If inclusive descendants already contains s, continue.
       if (inclusive_descendants.Contains(s))
         continue;
 
-      // Step 4.3.5.4. Push s onto stack.
+      // Step 5.3.5.4. Push s onto stack.
       stack.push_front(s);
     }
   }
 
-  // Step 5. Return a set containing all items of inclusive descendants whose
+  // Step 6. Return a set containing all items of inclusive descendants whose
   // instantiation state is "uninstantiated".
   HeapHashSet<Member<ModuleScript>> uninstantiated_set;
   for (const auto& script : inclusive_descendants) {

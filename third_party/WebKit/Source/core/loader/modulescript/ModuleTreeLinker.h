@@ -71,8 +71,7 @@ class CORE_EXPORT ModuleTreeLinker final
   void NotifyModuleLoadFinished(ModuleScript*) override;
 
   void FetchDescendants();
-  enum class DescendantLoad { kFailed, kSuccess };
-  void NotifyOneDescendantFinished(DescendantLoad was_success);
+  void NotifyOneDescendantFinished(ModuleScript*);
 
   void Instantiate();
   HeapHashSet<Member<ModuleScript>> UninstantiatedInclusiveDescendants();

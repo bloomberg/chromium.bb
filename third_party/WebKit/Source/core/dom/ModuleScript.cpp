@@ -11,6 +11,19 @@
 
 namespace blink {
 
+const char* ModuleInstantiationStateToString(ModuleInstantiationState state) {
+  switch (state) {
+    case ModuleInstantiationState::kUninstantiated:
+      return "uninstantiated";
+    case ModuleInstantiationState::kInstantiated:
+      return "instantiated";
+    case ModuleInstantiationState::kErrored:
+      return "errored";
+  }
+  NOTREACHED();
+  return "";
+}
+
 ModuleScript* ModuleScript::Create(
     const String& source_text,
     Modulator* modulator,
@@ -144,7 +157,13 @@ ScriptModule ModuleScript::Record() const {
   return ScriptModule(isolate, record_.NewLocal(isolate));
 }
 
+bool ModuleScript::HasEmptyRecord() const {
+  return record_.IsEmpty();
+}
+
 void ModuleScript::SetErrorAndClearRecord(ScriptValue error) {
+  DVLOG(1) << "ModuleScript[" << this << "]::SetErrorAndClearRecord()";
+
   // https://html.spec.whatwg.org/multipage/webappapis.html#error-a-module-script
   // Step 1. Assert: script's state is not "errored".
   DCHECK_NE(state_, ModuleInstantiationState::kErrored);

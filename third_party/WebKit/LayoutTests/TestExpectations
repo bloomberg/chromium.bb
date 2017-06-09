@@ -1804,7 +1804,6 @@ crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-2.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-3.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-4.html [ Failure ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/specifier-error.html [ Failure ]
 
 # This test has a failure console message with specific performance
 # numbers so a consistent baseline cannot be added. This test could be
