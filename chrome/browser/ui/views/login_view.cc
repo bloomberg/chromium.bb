@@ -93,8 +93,8 @@ LoginView::LoginView(const base::string16& authority,
   layout->AddView(password_field_);
 
   if (provider->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(
-        0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
+    layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                                 views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
   }
 
   if (login_model_data) {

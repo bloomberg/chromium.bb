@@ -1508,7 +1508,7 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
   bool is_primary_account = primary_account == account_id_to_remove_;
 
   const int unrelated_vertical_spacing =
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL);
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   // Adds main text.
   layout->StartRowWithPadding(1, 0, 0, unrelated_vertical_spacing);
@@ -1575,7 +1575,7 @@ views::View* ProfileChooserView::CreateSwitchUserView() {
   columns->AddPaddingColumn(0, dialog_insets.right());
 
   const int unrelated_vertical_spacing =
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL);
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   // Adds main text.
   layout->StartRowWithPadding(1, 1, 0, unrelated_vertical_spacing);

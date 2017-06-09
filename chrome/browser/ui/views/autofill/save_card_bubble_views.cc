@@ -191,7 +191,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 
   view->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, gfx::Insets(),
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL)));
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   // Add the card type icon, last four digits and expiration date.
   views::View* description_view = new views::View();

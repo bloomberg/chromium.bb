@@ -43,7 +43,7 @@ views::Label* CreateFormattedLabel(const base::string16& message) {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetLineHeight(ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_UNRELATED_CONTROL_VERTICAL));
+      views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
   return label;
 }
 
@@ -143,7 +143,7 @@ SadTabView::SadTabView(content::WebContents* web_contents,
                   views::GridLayout::LEADING);
 
   layout->AddPaddingRow(2, provider->GetDistanceMetric(
-      DISTANCE_UNRELATED_CONTROL_VERTICAL));
+                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   views::Widget::InitParams sad_tab_params(
       views::Widget::InitParams::TYPE_CONTROL);

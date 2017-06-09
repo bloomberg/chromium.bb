@@ -138,7 +138,7 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   dialog_body_contents->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical,
       provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS),
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL)));
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   dialog_body_contents->AddChildView(new AppInfoSummaryPanel(profile, app));
   dialog_body_contents->AddChildView(new AppInfoPermissionsPanel(profile, app));
 

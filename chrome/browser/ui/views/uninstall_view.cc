@@ -62,8 +62,8 @@ void UninstallView::SetupControls() {
 
   const int checkbox_indent = provider->GetDistanceMetric(
       DISTANCE_SUBSECTION_HORIZONTAL_INDENT);
-  const int unrelated_vertical_spacing = provider->GetDistanceMetric(
-      DISTANCE_UNRELATED_CONTROL_VERTICAL);
+  const int unrelated_vertical_spacing =
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
   const int related_vertical_spacing = provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
   const int related_horizontal_spacing = provider->GetDistanceMetric(

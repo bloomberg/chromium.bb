@@ -111,7 +111,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowDialog(
   const int unrelated_space_horiz =
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
   const int unrelated_space_vert =
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL);
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
   const int button_spacing_horiz =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
 

@@ -389,7 +389,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   GridLayout* layout = GridLayout::CreatePanel(pane);
   int unrelated_vertical_distance =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_UNRELATED_CONTROL_VERTICAL);
+          views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
@@ -453,7 +453,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   GridLayout* layout = GridLayout::CreatePanel(pane);
   int unrelated_vertical_distance =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_UNRELATED_CONTROL_VERTICAL);
+          views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);

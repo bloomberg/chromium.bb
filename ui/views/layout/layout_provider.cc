@@ -94,6 +94,8 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return kDialogMinimumButtonWidth;
     case DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN:
       return kButtonHEdgeMarginNew;
+    case DISTANCE_UNRELATED_CONTROL_VERTICAL:
+      return kUnrelatedControlVerticalSpacing;
   }
   NOTREACHED();
   return 0;

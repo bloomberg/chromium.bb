@@ -78,8 +78,8 @@ views::ClientView* ChooserDialogView::CreateClientView(views::Widget* widget) {
       new views::DialogClientView(widget, GetContentsView());
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   client->SetButtonRowInsets(gfx::Insets(
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL), 0, 0,
-      0));
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
+      0, 0, 0));
   return client;
 }
 
