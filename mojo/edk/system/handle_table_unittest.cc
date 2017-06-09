@@ -64,7 +64,8 @@ TEST(HandleTableTest, OnMemoryDump) {
     ht.AddDispatcher(dispatcher);
   }
 
-  base::trace_event::MemoryDumpArgs args;
+  base::trace_event::MemoryDumpArgs args = {
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
   base::trace_event::ProcessMemoryDump pmd(nullptr, args);
   ht.OnMemoryDump(args, &pmd);
 
