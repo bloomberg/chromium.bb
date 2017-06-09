@@ -104,7 +104,7 @@ function verify_prompt_reject(e, t) {
             );
             assert_equals(
                 error.message,
-                "The prompt() method may only be called once, following preventDefault().",
+                "The prompt() method may only be called once.",
                 "Rejected promise does not provide expected message."
             );
         })
@@ -154,27 +154,17 @@ function prompt_test(index) {
                     assert_false(event == null, "event is null outside handler");
 
                     // Test that firing prompt() outside of the handler resolves or rejects correctly.
-                    if (test_case.cancel) {
-                        verify_prompt_resolve(event, t);
-                    } else {
-                        verify_prompt_reject(event, t);
-                    }
+                    verify_prompt_resolve(event, t);
                     // Check userChoice and call the next test.
                     verify_userChoice(event, t, test_case, index);
                 }, 0);
                 return;
             }
 
-            if (test_case.cancel) {
-                // Call prompt() to restart the pipeline.
-                verify_prompt_resolve(e, t);
-            } else {
-                // A call to prompt() before preventDefault should reject.
-                verify_prompt_reject(e, t);
-            }
+            // Call prompt() to restart the pipeline.
+            verify_prompt_resolve(e, t);
 
-            // prompt() has been fired or the event has not been canceled, so check
-            // the userChoice promise and call the next test.
+            // prompt() has been fired, so check the userChoice promise and call the next test.
             verify_userChoice(e, t, test_case, index);
         });
         window.addEventListener('beforeinstallprompt', event_handler);
