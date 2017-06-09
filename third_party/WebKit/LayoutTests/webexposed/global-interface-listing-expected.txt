@@ -1811,6 +1811,7 @@ interface Element : Node
     method getAnimations
     method getAttribute
     method getAttributeNS
+    method getAttributeNames
     method getAttributeNode
     method getAttributeNodeNS
     method getBoundingClientRect

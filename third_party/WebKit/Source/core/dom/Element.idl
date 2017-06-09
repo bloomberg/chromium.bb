@@ -44,6 +44,7 @@ interface Element : Node {
 
     boolean hasAttributes();
     [SameObject, PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap attributes;
+    sequence<DOMString> getAttributeNames();
     DOMString? getAttribute(DOMString name);
     DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
     [RaisesException, CEReactions, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
