@@ -16,6 +16,7 @@
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/frame_sink_manager_client_binding.h"
+#include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/window_manager_access_policy.h"
 #include "services/ui/ws/window_manager_window_tree_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -553,6 +554,11 @@ WindowServerTestHelper::WindowServerTestHelper()
     message_loop_ = base::MakeUnique<base::MessageLoop>();
   PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
   window_server_ = base::MakeUnique<WindowServer>(&window_server_delegate_);
+  // TODO(staraz): Replace DefaultGpuHost and FrameSinkManagerClientBinding with
+  // test implementations.
+  std::unique_ptr<GpuHost> gpu_host =
+      base::MakeUnique<DefaultGpuHost>(window_server_.get());
+  window_server_->SetGpuHost(std::move(gpu_host));
   std::unique_ptr<FrameSinkManagerClientBinding> frame_sink_manager =
       base::MakeUnique<FrameSinkManagerClientBinding>(
           window_server_.get(), window_server_->gpu_host());

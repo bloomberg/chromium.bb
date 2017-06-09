@@ -32,27 +32,41 @@ class GpuHostTest;
 
 class GpuHostDelegate;
 
-// Sets up connection from clients to the real service implementation in the GPU
-// process.
-class GpuHost : public mojom::GpuHost {
+// GpuHost sets up connection from clients to the real service implementation in
+// the GPU process.
+class GpuHost {
  public:
-  explicit GpuHost(GpuHostDelegate* delegate);
-  ~GpuHost() override;
+  GpuHost() = default;
+  virtual ~GpuHost() = default;
 
-  void Add(mojom::GpuRequest request);
-
-  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget);
-  void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget);
+  virtual void Add(mojom::GpuRequest request) = 0;
+  virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
+  virtual void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) = 0;
 
   // Requests a cc::mojom::FrameSinkManager interface from mus-gpu.
-  void CreateFrameSinkManager(cc::mojom::FrameSinkManagerRequest request,
-                              cc::mojom::FrameSinkManagerClientPtr client);
+  virtual void CreateFrameSinkManager(
+      cc::mojom::FrameSinkManagerRequest request,
+      cc::mojom::FrameSinkManagerClientPtr client) = 0;
+};
+
+class DefaultGpuHost : public GpuHost, public mojom::GpuHost {
+ public:
+  explicit DefaultGpuHost(GpuHostDelegate* delegate);
+  ~DefaultGpuHost() override;
 
  private:
   friend class test::GpuHostTest;
 
   GpuClient* AddInternal(mojom::GpuRequest request);
   void OnBadMessageFromGpu();
+
+  // GpuHost:
+  void Add(mojom::GpuRequest request) override;
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
+  void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) override;
+  void CreateFrameSinkManager(
+      cc::mojom::FrameSinkManagerRequest request,
+      cc::mojom::FrameSinkManagerClientPtr client) override;
 
   // mojom::GpuHost:
   void DidInitialize(const gpu::GPUInfo& gpu_info,
@@ -89,7 +103,7 @@ class GpuHost : public mojom::GpuHost {
 
   mojo::StrongBindingSet<mojom::Gpu> gpu_bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuHost);
+  DISALLOW_COPY_AND_ASSIGN(DefaultGpuHost);
 };
 
 }  // namespace ws

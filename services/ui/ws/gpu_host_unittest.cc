@@ -87,7 +87,7 @@ class GpuHostTest : public testing::Test {
   TestGpuHostDelegate gpu_host_delegate_;
   std::unique_ptr<TestGpuService> gpu_service_;
   ui::mojom::GpuServicePtr gpu_service_ptr_;
-  std::unique_ptr<GpuHost> gpu_host_;
+  std::unique_ptr<DefaultGpuHost> gpu_host_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuHostTest);
 };
@@ -103,7 +103,7 @@ void GpuHostTest::DestroyHost() {
 
 void GpuHostTest::SetUp() {
   testing::Test::SetUp();
-  gpu_host_ = base::MakeUnique<GpuHost>(&gpu_host_delegate_);
+  gpu_host_ = base::MakeUnique<DefaultGpuHost>(&gpu_host_delegate_);
   gpu_service_->Bind(mojo::MakeRequest(&gpu_service_ptr_));
   gpu_host_->gpu_service_ = std::move(gpu_service_ptr_);
 }

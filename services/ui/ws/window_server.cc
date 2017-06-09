@@ -67,7 +67,6 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
-      gpu_host_(new GpuHost(this)),
       window_manager_window_tree_factory_set_(this, &user_id_tracker_),
       display_creation_config_(DisplayCreationConfig::UNKNOWN) {
   user_id_tracker_.AddObserver(this);
@@ -101,6 +100,10 @@ void WindowServer::SetDisplayCreationConfig(DisplayCreationConfig config) {
 void WindowServer::SetFrameSinkManager(
     std::unique_ptr<cc::mojom::FrameSinkManager> frame_sink_manager) {
   frame_sink_manager_ = std::move(frame_sink_manager);
+}
+
+void WindowServer::SetGpuHost(std::unique_ptr<GpuHost> gpu_host) {
+  gpu_host_ = std::move(gpu_host);
 }
 
 ServerWindow* WindowServer::CreateServerWindow(
