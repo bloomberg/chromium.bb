@@ -26,23 +26,21 @@ function xorigin_anon_event_source(acao_value) {
 function xorigin_creds_event_source(acao_value) {
   return gen_cors_src(xorigin_creds_event_source_string, acao_value);
 }
-function xorigin_ineligible_event_source(acao_value) {
+function xorigin_ineligible_event_source() {
   return gen_cors_src(xorigin_ineligible_event_source_string);
 }
 
 // EventSource tests
-var SuboriginEventSourceTest = function(pass, name, src, crossorigin_value) {
+var SuboriginEventSourceTest = function(pass, name, src, withCredentials) {
   SuboriginTest.call(
-    this, pass, 'EventSource: ' + name, src, crossorigin_value);
+    this, pass, 'EventSource: ' + name, src, withCredentials);
 }
 
 SuboriginEventSourceTest.prototype.execute = function() {
   var test = async_test(this.name);
   var pass = this.pass;
-  var options = {};
-
-  if (this.crossorigin_value === 'use-credentials') {
-    options.withCredentials = 'include';
+  var options = {
+    withCredentials: this.withCredentials
   }
 
   var es = new EventSource(this.src, options);
@@ -67,25 +65,25 @@ new SuboriginEventSourceTest(
   false,
   'anonymous, ACAO: ' + server,
   xorigin_anon_event_source(),
-  'anonymous').execute();
+  false).execute();
 
 new SuboriginEventSourceTest(
   true,
   'anonymous, ACAO: *',
   xorigin_anon_event_source('*'),
-  'anonymous').execute();
+  true).execute();
 
 new SuboriginEventSourceTest(
   false,
   'use-credentials, ACAO: ' + server,
   xorigin_creds_event_source(),
-  'use-credentials').execute();
+  true).execute();
 
 new SuboriginEventSourceTest(
   false,
   'anonymous, CORS-ineligible resource',
   xorigin_ineligible_event_source(),
-  'anonymous').execute();
+  false).execute();
 </script>
 </body>
 </html>
