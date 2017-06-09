@@ -1672,12 +1672,18 @@ void PepperPluginInstanceImpl::UpdateTouchEventRequest() {
         blink::WebPluginContainer::kTouchEventRequestTypeNone);
     return;
   }
-  bool raw_touch = (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH) ||
-                   (input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH);
-  container_->RequestTouchEventType(
-      raw_touch
-          ? blink::WebPluginContainer::kTouchEventRequestTypeRaw
-          : blink::WebPluginContainer::kTouchEventRequestTypeSynthesizedMouse);
+  blink::WebPluginContainer::TouchEventRequestType request_type =
+      blink::WebPluginContainer::kTouchEventRequestTypeSynthesizedMouse;
+  if ((filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_COALESCED_TOUCH) ||
+      (input_event_mask_ & PP_INPUTEVENT_CLASS_COALESCED_TOUCH)) {
+    request_type =
+        blink::WebPluginContainer::kTouchEventRequestTypeRawLowLatency;
+  } else if ((filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH) ||
+             (input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH)) {
+    request_type = blink::WebPluginContainer::kTouchEventRequestTypeRaw;
+  }
+
+  container_->RequestTouchEventType(request_type);
 }
 
 void PepperPluginInstanceImpl::UpdateWheelEventRequest() {

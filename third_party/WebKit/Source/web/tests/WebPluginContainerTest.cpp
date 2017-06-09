@@ -638,7 +638,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
       web_view->MainFrame()->GetDocument().GetElementById(
           WebString::FromUTF8("scrolled-plugin"));
   plugin_container_one_element.PluginContainer()->RequestTouchEventType(
-      WebPluginContainer::kTouchEventRequestTypeRaw);
+      WebPluginContainer::kTouchEventRequestTypeRawLowLatency);
   WebPlugin* plugin = static_cast<WebPluginContainerBase*>(
                           plugin_container_one_element.PluginContainer())
                           ->Plugin();

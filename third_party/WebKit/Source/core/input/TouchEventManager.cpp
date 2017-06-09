@@ -30,6 +30,8 @@ bool HasTouchHandlers(const EventHandlerRegistry& registry) {
   return registry.HasEventHandlers(
              EventHandlerRegistry::kTouchStartOrMoveEventBlocking) ||
          registry.HasEventHandlers(
+             EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency) ||
+         registry.HasEventHandlers(
              EventHandlerRegistry::kTouchStartOrMoveEventPassive) ||
          registry.HasEventHandlers(
              EventHandlerRegistry::kTouchEndOrCancelEventBlocking) ||

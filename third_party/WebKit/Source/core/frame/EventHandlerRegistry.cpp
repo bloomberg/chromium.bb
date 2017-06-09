@@ -243,13 +243,18 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
           GetWebEventListenerProperties(HasEventHandlers(kWheelEventBlocking),
                                         HasEventHandlers(kWheelEventPassive)));
       break;
+    case kTouchStartOrMoveEventBlockingLowLatency:
+      page_->GetChromeClient().SetNeedsLowLatencyInput(frame,
+                                                       has_active_handlers);
+    // Fall through.
     case kTouchStartOrMoveEventBlocking:
     case kTouchStartOrMoveEventPassive:
     case kPointerEvent:
       page_->GetChromeClient().SetEventListenerProperties(
           frame, WebEventListenerClass::kTouchStartOrMove,
           GetWebEventListenerProperties(
-              HasEventHandlers(kTouchStartOrMoveEventBlocking),
+              HasEventHandlers(kTouchStartOrMoveEventBlocking) ||
+                  HasEventHandlers(kTouchStartOrMoveEventBlockingLowLatency),
               HasEventHandlers(kTouchStartOrMoveEventPassive) ||
                   HasEventHandlers(kPointerEvent)));
       break;
@@ -275,8 +280,11 @@ void EventHandlerRegistry::NotifyDidAddOrRemoveEventHandlerTarget(
     EventHandlerClass handler_class) {
   ScrollingCoordinator* scrolling_coordinator =
       page_->GetScrollingCoordinator();
-  if (scrolling_coordinator && handler_class == kTouchStartOrMoveEventBlocking)
+  if (scrolling_coordinator &&
+      (handler_class == kTouchStartOrMoveEventBlocking ||
+       handler_class == kTouchStartOrMoveEventBlockingLowLatency)) {
     scrolling_coordinator->TouchEventTargetRectsDidChange();
+  }
 }
 
 DEFINE_TRACE(EventHandlerRegistry) {

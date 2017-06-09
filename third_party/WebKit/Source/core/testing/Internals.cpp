@@ -1658,6 +1658,9 @@ unsigned Internals::touchStartOrMoveEventHandlerCount(
   DCHECK(document);
   return EventHandlerCount(
              *document, EventHandlerRegistry::kTouchStartOrMoveEventBlocking) +
+         EventHandlerCount(
+             *document,
+             EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency) +
          EventHandlerCount(*document,
                            EventHandlerRegistry::kTouchStartOrMoveEventPassive);
 }

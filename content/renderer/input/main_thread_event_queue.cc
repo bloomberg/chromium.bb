@@ -218,6 +218,7 @@ MainThreadEventQueue::MainThreadEventQueue(
       handle_raf_aligned_mouse_input_(
           allow_raf_aligned_input &&
           base::FeatureList::IsEnabled(features::kRafAlignedMouseInputEvents)),
+      needs_low_latency_(false),
       main_task_runner_(main_task_runner),
       renderer_scheduler_(renderer_scheduler),
       use_raf_fallback_timer_(true) {
@@ -506,9 +507,9 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
   switch (event->event().GetType()) {
     case blink::WebInputEvent::kMouseMove:
     case blink::WebInputEvent::kMouseWheel:
-      return handle_raf_aligned_mouse_input_;
+      return handle_raf_aligned_mouse_input_ && !needs_low_latency_;
     case blink::WebInputEvent::kTouchMove:
-      return handle_raf_aligned_touch_input_;
+      return handle_raf_aligned_touch_input_ && !needs_low_latency_;
     default:
       return false;
   }
@@ -557,6 +558,10 @@ void MainThreadEventQueue::SetNeedsMainFrame() {
 void MainThreadEventQueue::ClearClient() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   client_ = nullptr;
+}
+
+void MainThreadEventQueue::SetNeedsLowLatency(bool low_latency) {
+  needs_low_latency_ = low_latency;
 }
 
 }  // namespace content

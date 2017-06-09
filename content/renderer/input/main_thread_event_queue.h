@@ -95,6 +95,7 @@ class CONTENT_EXPORT MainThreadEventQueue
   void QueueClosure(const base::Closure& closure);
 
   void ClearClient();
+  void SetNeedsLowLatency(bool low_latency);
 
  protected:
   friend class base::RefCountedThreadSafe<MainThreadEventQueue>;
@@ -135,6 +136,7 @@ class CONTENT_EXPORT MainThreadEventQueue
   base::TimeDelta main_thread_responsiveness_threshold_;
   bool handle_raf_aligned_touch_input_;
   bool handle_raf_aligned_mouse_input_;
+  bool needs_low_latency_;
 
   // Contains data to be shared between main thread and compositor thread.
   struct SharedState {
