@@ -33,6 +33,7 @@
         </activity>
         <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{{shell_apk_version}}}" />
         {{#runtime_host}}<meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{{runtime_host}}}" />{{/runtime_host}}
+        {{#runtime_host_application_name}}<meta-data android:name="org.chromium.webapk.shell_apk.runtimeHostApplicationName" android:value="{{{runtime_host_application_name}}}" />{{/runtime_host_application_name}}
         <meta-data android:name="org.chromium.webapk.shell_apk.startUrl" android:value="{{{start_url}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.name" android:value="{{{name}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.shortName" android:value="{{{short_name}}}" />
