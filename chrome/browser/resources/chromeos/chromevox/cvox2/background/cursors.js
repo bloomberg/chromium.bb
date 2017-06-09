@@ -75,6 +75,27 @@ var Unit = cursors.Unit;
  * is pointed to and covers the case where the accessible text is empty.
  */
 cursors.Cursor = function(node, index) {
+  // Compensate for specific issues in Blink.
+  // TODO(dtseng): Pass through affinity; if upstream, skip below.
+  if (node.role == RoleType.STATIC_TEXT && node.name.length == index) {
+    // Re-interpret this case as the beginning of the next node.
+    var nextNode = AutomationUtil.findNextNode(
+        node, Dir.FORWARD, AutomationPredicate.leafOrStaticText);
+
+    // The exception is when a user types at the end of a line. In that case,
+    // staying on the current node is appropriate.
+    if (node && node.nextOnLine && nextNode) {
+      node = nextNode;
+      index = 0;
+    }
+  } else if (node.role == RoleType.GENERIC_CONTAINER &&
+      node.state.richlyEditable &&
+      (node.firstChild && (node.firstChild.role == RoleType.LINE_BREAK ||
+          node.firstChild.role == RoleType.STATIC_TEXT))) {
+    // Re-interpret this case as pointing to the text under the div.
+    node = node.find({ role: RoleType.INLINE_TEXT_BOX }) || node;
+  }
+
   /** @type {number} @private */
   this.index_ = index;
   /** @type {Array<AutomationNode>} @private */

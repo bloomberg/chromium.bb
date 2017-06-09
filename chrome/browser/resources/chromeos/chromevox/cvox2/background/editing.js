@@ -227,9 +227,8 @@ function AutomationRichEditableText(node) {
   if (!root || !root.anchorObject || !root.focusObject)
     return;
 
-  this.range = new cursors.Range(
-      new cursors.Cursor(root.anchorObject, root.anchorOffset || 0),
-      new cursors.Cursor(root.focusObject, root.focusOffset || 0));
+  this.line_ = new editing.EditableLine(
+      root.anchorObject, root.anchorOffset, root.focusObject, root.focusOffset);
 }
 
 AutomationRichEditableText.prototype = {
@@ -241,64 +240,130 @@ AutomationRichEditableText.prototype = {
     if (!root.anchorObject || !root.focusObject)
       return;
 
-    var cur = new cursors.Range(
-        new cursors.Cursor(root.anchorObject, root.anchorOffset || 0),
-        new cursors.Cursor(root.focusObject, root.focusOffset || 0));
-    var prev = this.range;
+    var cur = new editing.EditableLine(
+        root.anchorObject, root.anchorOffset || 0,
+        root.focusObject, root.focusOffset || 0);
+    var prev = this.line_;
+    this.line_ = cur;
 
-    this.range = cur;
-
-    if (prev.start.node == cur.start.node &&
-        prev.end.node == cur.end.node &&
-        cur.start.node == cur.end.node) {
-      // Plain text: diff the two positions.
+    if (prev.equals(cur)) {
+      // Collapsed cursor.
       this.changed(new cvox.TextChangeEvent(
-          root.anchorObject.name || '',
-          root.anchorOffset || 0,
-          root.focusOffset || 0,
+          cur.text || '',
+          cur.startOffset || 0,
+          cur.endOffset || 0,
           true));
 
-      var lineIndex = this.getLineIndex(this.start);
-      var brailleLineStart = this.getLineStart(lineIndex);
-      var brailleLineEnd = this.getLineEnd(lineIndex);
-      var buff = new Spannable(this.value);
-      buff.setSpan(new cvox.ValueSpan(0), brailleLineStart, brailleLineEnd);
+      var value = cur.value_;
+      value.setSpan(new cvox.ValueSpan(0), 0, cur.value_.length);
+      value.setSpan(
+          new cvox.ValueSelectionSpan(), cur.startOffset, cur.endOffset);
+      cvox.ChromeVox.braille.write(new cvox.NavBraille({text: value,
+          startIndex: cur.startOffset,
+          endIndex: cur.endOffset}));
 
-      var selStart = this.start - brailleLineStart;
-      var selEnd = this.end - brailleLineStart;
-      buff.setSpan(new cvox.ValueSelectionSpan(), selStart, selEnd);
-      cvox.ChromeVox.braille.write(new cvox.NavBraille({text: buff,
-          startIndex: selStart,
-          endIndex: selEnd}));
+      // Finally, queue up any text markers/styles at bounds.
+      var container = cur.lineContainer_;
+      if (!container)
+        return;
+
+      if (container.markerTypes) {
+        // Only consider markers that start or end at the selection bounds.
+        var markerStartIndex = -1, markerEndIndex = -1;
+        var localStartOffset = cur.localStartOffset;
+        for (var i = 0; i < container.markerStarts.length; i++) {
+          if (container.markerStarts[i] == localStartOffset) {
+            markerStartIndex = i;
+            break;
+          }
+        }
+
+        var localEndOffset = cur.localEndOffset;
+        for (var i = 0; i < container.markerEnds.length; i++) {
+          if (container.markerEnds[i] == localEndOffset) {
+            markerEndIndex = i;
+            break;
+          }
+        }
+
+        if (markerStartIndex > -1)
+          this.speakTextMarker_(container.markerTypes[markerStartIndex]);
+
+        if (markerEndIndex > -1)
+          this.speakTextMarker_(container.markerTypes[markerEndIndex], true);
+      }
+
+      // Start of the container.
+      if (cur.containerStartOffset == cur.startOffset)
+        this.speakTextStyle_(container);
+      else if (cur.containerEndOffset == cur.endOffset)
+        this.speakTextStyle_(container, true);
+
       return;
-    } else {
-      // Rich text:
-      // If the position is collapsed, expand to the current line.
-      var start = cur.start;
-      var end = cur.end;
-      if (start.equals(end)) {
-        start = start.move(Unit.LINE, Movement.BOUND, Dir.BACKWARD);
-        end = end.move(Unit.LINE, Movement.BOUND, Dir.FORWARD);
-      }
-      var range = new cursors.Range(start, end);
-      var output = new Output().withRichSpeechAndBraille(
-          range, prev, Output.EventType.NAVIGATE);
-
-      // This position is not describable.
-      if (!output.hasSpeech) {
-        cvox.ChromeVox.tts.speak('blank', cvox.QueueMode.CATEGORY_FLUSH);
-        cvox.ChromeVox.braille.write(
-            new cvox.NavBraille({text: '', startIndex: 0, endIndex: 0}));
-      } else {
-        output.go();
-      }
     }
 
-    // Keep the other members in sync for any future editable text base state
-    // machine changes.
-    this.value = cur.start.node.name || '';
-    this.start = cur.start.index;
-    this.end = cur.start.index;
+    // Just output the current line.
+    if (!cur.lineStart_ || !cur.lineEnd_)
+      return;
+    var prevRange = null;
+    if (prev.lineStart_ && prev.lineEnd_) {
+      prevRange = new Range(
+          Cursor.fromNode(prev.lineStart_), Cursor.fromNode(prev.lineEnd_));
+    }
+
+    new Output().withRichSpeechAndBraille(new Range(
+            Cursor.fromNode(cur.lineStart_), Cursor.fromNode(cur.lineEnd_)),
+        prevRange,
+        Output.EventType.NAVIGATE).go();
+  },
+
+  /**
+   * @param {number} markerType
+   * @param {boolean=} opt_end
+   * @private
+   */
+  speakTextMarker_: function(markerType, opt_end) {
+    // TODO(dtseng): Plumb through constants to automation.
+    var msgs = [];
+    if (markerType & 1)
+      msgs.push(opt_end ? 'misspelling_end' : 'misspelling_start');
+    if (markerType & 2)
+      msgs.push(opt_end ? 'grammar_end' : 'grammar_start');
+    if (markerType & 4)
+      msgs.push(opt_end ? 'text_match_end' : 'text_match_start');
+
+    if (msgs.length) {
+      msgs.forEach(function(msg) {
+        cvox.ChromeVox.tts.speak(Msgs.getMsg(msg),
+                                 cvox.QueueMode.QUEUE,
+                                 cvox.AbstractTts.PERSONALITY_ANNOTATION);
+      });
+    }
+  },
+
+  /**
+   * @param {!AutomationNode} style
+   * @param {boolean=} opt_end
+   * @private
+   */
+  speakTextStyle_: function(style, opt_end) {
+    var msgs = [];
+    if (style.bold)
+      msgs.push(opt_end ? 'bold_end' : 'bold_start');
+    if (style.italic)
+      msgs.push(opt_end ? 'italic_end' : 'italic_start');
+    if (style.underline)
+      msgs.push(opt_end ? 'underline_end' : 'underline_start');
+    if (style.lineThrough)
+      msgs.push(opt_end ? 'line_through_end' : 'line_through_start');
+
+    if (msgs.length) {
+      msgs.forEach(function(msg) {
+        cvox.ChromeVox.tts.speak(Msgs.getMsg(msg),
+                                 cvox.QueueMode.QUEUE,
+                                 cvox.AbstractTts.PERSONALITY_ANNOTATION);
+      });
+    }
   },
 
   /** @override */
@@ -313,34 +378,22 @@ AutomationRichEditableText.prototype = {
 
   /** @override */
   getLineIndex: function(charIndex) {
-    var breaks = this.getLineBreaks_();
-    var index = 0;
-    while (index < breaks.length && breaks[index] <= charIndex)
-      ++index;
-    return index;
+    return 0;
   },
 
   /** @override */
   getLineStart: function(lineIndex) {
-    if (lineIndex == 0)
-      return 0;
-    var breaks = this.getLineBreaks_();
-    return breaks[lineIndex - 1] ||
-        this.node_.root.focusObject.value.length;
+    return 0;
   },
 
   /** @override */
   getLineEnd: function(lineIndex) {
-    var breaks = this.getLineBreaks_();
-    var value = this.node_.root.focusObject.name;
-    if (lineIndex >= breaks.length)
-      return value.length;
-    return breaks[lineIndex];
+    return this.value.length;
   },
 
   /** @override */
   getLineBreaks_: function() {
-    return this.node_.root.focusObject.lineStartOffsets || [];
+    return [];
   }
 };
 
@@ -395,5 +448,150 @@ editing.EditingChromeVoxStateObserver.prototype = {
  * @private {ChromeVoxStateObserver}
  */
 editing.observer_ = new editing.EditingChromeVoxStateObserver();
+
+/**
+ * An EditableLine encapsulates all data concerning a line in the automation
+ * tree necessary to provide output.
+ * @constructor
+  */
+editing.EditableLine = function(startNode, startIndex, endNode, endIndex) {
+  /** @private {!Cursor} */
+  this.start_ = new Cursor(startNode, startIndex);
+  this.start_ = this.start_.deepEquivalent || this.start_;
+
+  /** @private {!Cursor} */
+  this.end_ = new Cursor(endNode, endIndex);
+  this.end_ = this.end_.deepEquivalent || this.end_;
+  /** @private {number} */
+  this.localContainerStartOffset_ = startIndex;
+
+  // Computed members.
+  /** @private {Spannable} */
+  this.value_;
+  /** @private {AutomationNode} */
+  this.lineStart_;
+  /** @private {AutomationNode} */
+  this.lineEnd_;
+  /** @private {AutomationNode|undefined} */
+  this.lineContainer_;
+
+  this.computeLineData_();
+};
+
+editing.EditableLine.prototype = {
+  /** @private */
+  computeLineData_: function() {
+    this.value_ = new Spannable(this.start_.node.name, this.start_);
+    if (this.start_.node == this.end_.node)
+      this.value_.setSpan(this.end_, 0, this.start_.node.name.length);
+
+    this.lineStart_ = this.start_.node;
+    this.lineEnd_ = this.lineStart_;
+    this.lineContainer_ = this.lineStart_.parent;
+
+    // Annotate each chunk with its associated node.
+    this.value_.setSpan(this.lineStart_, 0, this.lineStart_.name.length);
+
+    while (this.lineStart_.previousOnLine) {
+      this.lineStart_ = this.lineStart_.previousOnLine;
+      var prepend = new Spannable(this.lineStart_.name, this.lineStart_);
+      prepend.append(this.value_);
+      this.value_ = prepend;
+    }
+
+    while (this.lineEnd_.nextOnLine) {
+      this.lineEnd_ = this.lineEnd_.nextOnLine;
+
+      var annotation = this.lineEnd_;
+      if (this.lineEnd_ == this.end_.node)
+        annotation = this.end_;
+
+      this.value_.append(new Spannable(this.lineEnd_.name, annotation));
+    }
+  },
+
+  /**
+   * Gets the selection offset based on the text content of this line.
+   * @return {number}
+   */
+  get startOffset() {
+    return this.value_.getSpanStart(this.start_) + this.start_.index;
+  },
+
+  /**
+   * Gets the selection offset based on the text content of this line.
+   * @return {number}
+   */
+  get endOffset() {
+    return this.value_.getSpanStart(this.end_) + this.end_.index;
+  },
+
+  /**
+   * Gets the selection offset based on the parent's text.
+   * @return {number}
+   */
+  get localStartOffset() {
+    return this.startOffset - this.containerStartOffset;
+  },
+
+  /**
+   * Gets the selection offset based on the parent's text.
+   * @return {number}
+   */
+  get localEndOffset() {
+    return this.endOffset - this.containerStartOffset;
+  },
+
+  /**
+   * Gets the start offset of the line, relative to the container's text.
+   * @return {number}
+   */
+  get containerLineStartOffset() {
+    // When the container start offset is larger, the start offset is usually
+    // part of a line wrap, so the two offsets differ.
+    // When the container start offset is smaller, there is usually more line
+    // content before the container accounted for in start offset.
+    // Taking the difference either way will give us the offset at which the
+    // line begins.
+    return Math.abs(this.localContainerStartOffset_ - this.startOffset);
+  },
+
+  /**
+   * Gets the start offset of the container, relative to the line text content.
+   * @return {number}
+   */
+  get containerStartOffset() {
+    return this.value_.getSpanStart(this.lineContainer_.firstChild);
+  },
+
+  /**
+   * Gets the end offset of the container, relative to the line text content.
+   * @return {number}
+   */
+  get containerEndOffset() {
+    return this.value_.getSpanEnd(this.lineContainer_.lastChild) - 1;
+  },
+
+  /**
+   * @return {string} The text of this line.
+   */
+  get text() {
+    return this.value_.toString();
+  },
+
+  /**
+   * Returns true if |otherLine| surrounds the same line as |this|. Note that
+   * the contents of the line might be different.
+   * @return {boolean}
+   */
+  equals: function(otherLine) {
+    // Equality is intentionally loose here as any of the state nodes can be
+    // invalidated at any time.
+    return (otherLine.lineStart_ == this.lineStart_ &&
+            otherLine.lineEnd_ == this.lineEnd_) ||
+        (otherLine.lineContainer_ == this.lineContainer_ &&
+        otherLine.containerLineStartOffset == this.containerLineStartOffset);
+  }
+};
 
 });

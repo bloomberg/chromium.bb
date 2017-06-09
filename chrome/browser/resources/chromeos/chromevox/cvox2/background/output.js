@@ -769,7 +769,7 @@ Output.prototype = {
    */
   get hasSpeech() {
     for (var i = 0; i < this.speechBuffer_.length; i++) {
-      if (this.speechBuffer_[i].trim().length)
+      if (this.speechBuffer_[i].length)
         return true;
     }
     return false;

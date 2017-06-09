@@ -668,6 +668,18 @@
     // The RGBA color of an input element whose value is a color.
     long? colorValue;
 
+    // Indicates node text is bold.
+    boolean bold;
+
+    // Indicates node text is italic.
+    boolean italic;
+
+    // Indicates node text is underline.
+    boolean underline;
+
+    // Indicates node text is line through.
+    boolean lineThrough;
+
     //
     // Walking the tree.
     //
