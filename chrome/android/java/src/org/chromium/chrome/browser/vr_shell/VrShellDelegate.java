@@ -1102,8 +1102,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         if (vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE
                 || vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
-            // This is somewhat slow, so do it async.
-            new Handler().post(new Runnable() {
+            ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     promptToUpdateVrServices(vrCoreCompatibility, tabToShowInfobarIn);
