@@ -10,6 +10,9 @@ declare_args() {
   # The browser that the WebAPK will be bound to.
   webapk_runtime_host = "com.google.android.apps.chrome"
 
+  # The application name of the browser that the WebAPK will be bound to.
+  webapk_runtime_host_application_name = "Chromium"
+
   # The Url of the Web Manifest file.
   webapk_web_manifest_url = "https://www.template.com/manifest.json"
 
@@ -59,6 +62,7 @@ manifest_processor_template("shell_apk_manifest") {
     "shell_apk_version=$template_shell_apk_version",
     "manifest_package=org.chromium.webapk",
     "runtime_host=$webapk_runtime_host",
+    "runtime_host_application_name=$webapk_runtime_host_application_name",
     "start_url=$webapk_start_url",
     "name=$webapk_name",
     "short_name=$webapk_short_name",
@@ -146,6 +150,7 @@ android_library("webapk_java") {
     "src/org/chromium/webapk/shell_apk/HostBrowserClassLoader.java",
     "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
     "src/org/chromium/webapk/shell_apk/MainActivity.java",
+    "src/org/chromium/webapk/shell_apk/InstallHostBrowserDialog.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService0.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService1.java",

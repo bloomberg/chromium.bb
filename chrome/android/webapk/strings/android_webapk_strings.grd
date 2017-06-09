@@ -106,6 +106,12 @@
       <message name="IDS_HOST_BROWSER_ITEM_NOT_SUPPORTING_WEBAPKS" desc="Text for the host browser item that doesn't support WebAPKs on the choose host browser dialog. ">
         <ph name="BROWSER_NAME">%1$s<ex>Chrome</ex></ph>\nUnsupported by <ph name="WEBAPK_SITE">%2$s<ex>Housing.com</ex></ph>
       </message>
+      <message name="IDS_INSTALL_HOST_BROWSER_DIALOG_TITLE" desc="Title for the dialog to install the host browser to launch the WebAPK.">
+        <ph name="WEBAPK_SITE">%1$s<ex>Housing.com</ex></ph> needs the following app to run
+      </message>
+      <message name="IDS_INSTALL_HOST_BROWSER_DIALOG_INSTALL_BUTTON" desc="Text for the install button on the dialog. ">
+        INSTALL
+      </message>
     </messages>
   </release>
 </grit>

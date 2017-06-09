@@ -6,7 +6,10 @@ package org.chromium.webapk.shell_apk;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,12 +22,14 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Set;
+import java.util.List;
 
 /**
  * WebAPK's main Activity.
  */
-public class MainActivity extends Activity implements ChooseHostBrowserDialog.DialogListener {
+public class MainActivity extends Activity {
+    private static final String LAST_RESORT_HOST_BROWSER = "com.android.chrome";
+    private static final String LAST_RESORT_HOST_BROWSER_APPLICATION_NAME = "Google Chrome";
     private static final String TAG = "cr_MainActivity";
 
     /**
@@ -62,18 +67,26 @@ public class MainActivity extends Activity implements ChooseHostBrowserDialog.Di
      * @param packageName Package to install.
      * @return The intent.
      */
-    public static Intent createInstallIntent(String packageName) {
+    private static Intent createInstallIntent(String packageName) {
         String marketUrl = "market://details?id=" + packageName;
-        return new Intent(Intent.ACTION_VIEW, Uri.parse(marketUrl));
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(marketUrl));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return intent;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Bundle metadata = WebApkUtils.readMetaData(this);
+        if (metadata == null) {
+            finish();
+            return;
+        }
+
         mOverrideUrl = getOverrideUrl();
-        mStartUrl = (mOverrideUrl != null)
-                ? mOverrideUrl
-                : WebApkUtils.readMetaDataFromManifest(this, WebApkMetaDataKeys.START_URL);
+        mStartUrl = (mOverrideUrl != null) ? mOverrideUrl
+                                           : metadata.getString(WebApkMetaDataKeys.START_URL);
         if (mStartUrl == null) {
             finish();
             return;
@@ -87,7 +100,7 @@ public class MainActivity extends Activity implements ChooseHostBrowserDialog.Di
         String runtimeHost = WebApkUtils.getHostBrowserPackageName(this);
         if (!TextUtils.isEmpty(runtimeHostInPreferences)
                 && !runtimeHostInPreferences.equals(runtimeHost)) {
-            WebApkUtils.deleteSharedPref(this);
+            deleteSharedPref(this);
             deleteInternalStorageAsync();
         }
 
@@ -106,32 +119,24 @@ public class MainActivity extends Activity implements ChooseHostBrowserDialog.Di
             return;
         }
 
-        ChooseHostBrowserDialog dialog = new ChooseHostBrowserDialog();
-        dialog.show(this, hostUrl);
-    }
-
-    @Override
-    public void onHostBrowserSelected(String selectedHostBrowser) {
-        Set<String> installedBrowsers = WebApkUtils.getInstalledBrowsers(getPackageManager());
-        if (installedBrowsers.contains(selectedHostBrowser)) {
-            launchInHostBrowser(selectedHostBrowser);
+        List<ResolveInfo> infos = WebApkUtils.getInstalledBrowserResolveInfos(getPackageManager());
+        if (hasBrowserSupportingWebApks(infos)) {
+            showChooseHostBrowserDialog(infos, hostUrl);
         } else {
-            installBrowser(selectedHostBrowser);
+            showInstallHostBrowserDialog(hostUrl, metadata);
         }
-        // It is safe to cache the selected host browser to the share pref if user didn't install
-        // the browser in {@link installBrowser}. On the next launch,
-        // {@link WebApkUtils#getHostBrowserPackageName()} will catch it, and the dialog to choose
-        // host browser will show again. If user did install the browser chosen, saving the
-        // selected host browser to the shared pref can avoid showing the dialog.
-        WebApkUtils.writeHostBrowserToSharedPref(this, selectedHostBrowser);
-        finish();
     }
 
-    @Override
-    public void onQuit() {
-        finish();
+    /** Deletes the SharedPreferences. */
+    private void deleteSharedPref(Context context) {
+        SharedPreferences sharedPref =
+                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.clear();
+        editor.apply();
     }
 
+    /** Deletes the internal storage asynchronously. */
     private void deleteInternalStorageAsync() {
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -207,5 +212,67 @@ public class MainActivity extends Activity implements ChooseHostBrowserDialog.Di
             return overrideUrl;
         }
         return null;
+    }
+
+    /** Returns whether there is any installed browser supporting WebAPKs. */
+    private static boolean hasBrowserSupportingWebApks(List<ResolveInfo> resolveInfos) {
+        List<String> browsersSupportingWebApk = WebApkUtils.getBrowsersSupportingWebApk();
+        for (ResolveInfo info : resolveInfos) {
+            if (browsersSupportingWebApk.contains(info.activityInfo.packageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Shows a dialog to choose the host browser. */
+    private void showChooseHostBrowserDialog(List<ResolveInfo> infos, String hostUrl) {
+        ChooseHostBrowserDialog.DialogListener listener =
+                new ChooseHostBrowserDialog.DialogListener() {
+                    @Override
+                    public void onHostBrowserSelected(String selectedHostBrowser) {
+                        launchInHostBrowser(selectedHostBrowser);
+                        WebApkUtils.writeHostBrowserToSharedPref(
+                                MainActivity.this, selectedHostBrowser);
+                        finish();
+                    }
+                    @Override
+                    public void onQuit() {
+                        finish();
+                    }
+                };
+        ChooseHostBrowserDialog.show(this, listener, infos, hostUrl);
+    }
+
+    /** Shows a dialog to install the host browser. */
+    private void showInstallHostBrowserDialog(String hostUrl, Bundle metadata) {
+        String lastResortHostBrowserPackageName =
+                metadata.getString(WebApkMetaDataKeys.RUNTIME_HOST);
+        String lastResortHostBrowserApplicationName =
+                metadata.getString(WebApkMetaDataKeys.RUNTIME_HOST_APPLICATION_NAME);
+
+        if (TextUtils.isEmpty(lastResortHostBrowserPackageName)) {
+            // WebAPKs without runtime host specified in the AndroidManifest.xml always install
+            // Google Chrome as the default host browser.
+            lastResortHostBrowserPackageName = LAST_RESORT_HOST_BROWSER;
+            lastResortHostBrowserApplicationName = LAST_RESORT_HOST_BROWSER_APPLICATION_NAME;
+        }
+
+        InstallHostBrowserDialog.DialogListener listener =
+                new InstallHostBrowserDialog.DialogListener() {
+                    @Override
+                    public void onConfirmInstall(String packageName) {
+                        installBrowser(packageName);
+                        WebApkUtils.writeHostBrowserToSharedPref(MainActivity.this, packageName);
+                        finish();
+                    }
+                    @Override
+                    public void onConfirmQuit() {
+                        finish();
+                    }
+                };
+
+        InstallHostBrowserDialog.show(this, listener, hostUrl, lastResortHostBrowserPackageName,
+                lastResortHostBrowserApplicationName, R.drawable.last_resort_runtime_host_logo);
     }
 }

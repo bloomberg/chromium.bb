@@ -11,8 +11,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -20,8 +20,6 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,42 +38,6 @@ public class WebApkUtils {
             Arrays.asList("com.google.android.apps.chrome", "com.android.chrome", "com.chrome.beta",
                     "com.chrome.dev", "com.chrome.canary"));
 
-    /** Stores information about a potential host browser for the WebAPK. */
-    public static class BrowserItem {
-        private String mPackageName;
-        private CharSequence mApplicationLabel;
-        private Drawable mIcon;
-        private boolean mSupportsWebApks;
-
-        public BrowserItem(String packageName, CharSequence applicationLabel, Drawable icon,
-                boolean supportsWebApks) {
-            mPackageName = packageName;
-            mApplicationLabel = applicationLabel;
-            mIcon = icon;
-            mSupportsWebApks = supportsWebApks;
-        }
-
-        /** Returns the package name of a browser. */
-        public String getPackageName() {
-            return mPackageName;
-        }
-
-        /** Returns the application name of a browser. */
-        public CharSequence getApplicationName() {
-            return mApplicationLabel;
-        }
-
-        /** Returns a drawable of the browser icon. */
-        public Drawable getApplicationIcon() {
-            return mIcon;
-        }
-
-        /** Returns whether the browser supports WebAPKs. */
-        public boolean supportsWebApks() {
-            return mSupportsWebApks;
-        }
-    }
-
     /**
      * Caches the package name of the host browser. {@link sHostPackage} might refer to a browser
      * which has been uninstalled. A notification can keep the WebAPK process alive after the host
@@ -86,6 +48,14 @@ public class WebApkUtils {
     /** For testing only. */
     public static void resetCachedHostPackageForTesting() {
         sHostPackage = null;
+    }
+
+    /**
+     * Returns a list of browsers that support WebAPKs. TODO(hanxi): Replace this function once we
+     * figure out a better way to know which browser supports WebAPKs.
+     */
+    public static List<String> getBrowsersSupportingWebApk() {
+        return sBrowsersSupportingWebApk;
     }
 
     /**
@@ -123,6 +93,14 @@ public class WebApkUtils {
 
     /** Returns the <meta-data> value in the Android Manifest for {@link key}. */
     public static String readMetaDataFromManifest(Context context, String key) {
+        Bundle metadata = readMetaData(context);
+        if (metadata == null) return null;
+
+        return metadata.getString(key);
+    }
+
+    /** Returns the <meta-data> in the Android Manifest. */
+    public static Bundle readMetaData(Context context) {
         ApplicationInfo ai = null;
         try {
             ai = context.getPackageManager().getApplicationInfo(
@@ -130,7 +108,7 @@ public class WebApkUtils {
         } catch (NameNotFoundException e) {
             return null;
         }
-        return ai.metaData.getString(key);
+        return ai.metaData;
     }
 
     /**
@@ -171,44 +149,11 @@ public class WebApkUtils {
         return null;
     }
 
-    /**
-     * Returns a list of browsers to choose host browser from. The list includes all the installed
-     * browsers, and if none of the installed browser supports WebAPKs, Chrome will be added to the
-     * list as well.
-     */
-    public static List<BrowserItem> getBrowserInfosForHostBrowserSelection(
-            PackageManager packageManager) {
+    /** Returns a list of ResolveInfo for all of the installed browsers. */
+    public static List<ResolveInfo> getInstalledBrowserResolveInfos(PackageManager packageManager) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
-        List<ResolveInfo> resolvedActivityList = packageManager.queryIntentActivities(
+        return packageManager.queryIntentActivities(
                 browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
-
-        boolean hasBrowserSupportingWebApks = false;
-        List<BrowserItem> browsers = new ArrayList<>();
-        for (ResolveInfo info : resolvedActivityList) {
-            boolean supportsWebApk = false;
-            if (sBrowsersSupportingWebApk.contains(info.activityInfo.packageName)) {
-                supportsWebApk = true;
-                hasBrowserSupportingWebApks = true;
-            }
-            browsers.add(new BrowserItem(info.activityInfo.packageName,
-                    info.loadLabel(packageManager), info.loadIcon(packageManager), supportsWebApk));
-        }
-
-        Collections.sort(browsers, new Comparator<BrowserItem>() {
-            @Override
-            public int compare(BrowserItem a, BrowserItem b) {
-                if (a.mSupportsWebApks == b.mSupportsWebApks) {
-                    return a.getPackageName().compareTo(b.getPackageName());
-                }
-                return a.mSupportsWebApks ? -1 : 1;
-            }
-        });
-
-        if (hasBrowserSupportingWebApks) return browsers;
-
-        // TODO(hanxi): add Chrome's icon to WebAPKs.
-        browsers.add(new BrowserItem("com.android.chrome", "Chrome", null, true));
-        return browsers;
     }
 
     /**
@@ -240,13 +185,11 @@ public class WebApkUtils {
     }
 
     /** Returns a set of package names of all the installed browsers on the device. */
-    public static Set<String> getInstalledBrowsers(PackageManager packageManager) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
-        List<ResolveInfo> resolvedActivityList = packageManager.queryIntentActivities(
-                browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
+    private static Set<String> getInstalledBrowsers(PackageManager packageManager) {
+        List<ResolveInfo> resolvedInfos = getInstalledBrowserResolveInfos(packageManager);
 
         Set<String> packagesSupportingWebApks = new HashSet<String>();
-        for (ResolveInfo info : resolvedActivityList) {
+        for (ResolveInfo info : resolvedInfos) {
             packagesSupportingWebApks.add(info.activityInfo.packageName);
         }
         return packagesSupportingWebApks;
@@ -274,15 +217,6 @@ public class WebApkUtils {
                 context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(SHARED_PREF_RUNTIME_HOST, hostPackage);
-        editor.apply();
-    }
-
-    /** Deletes the SharedPreferences. */
-    public static void deleteSharedPref(Context context) {
-        SharedPreferences sharedPref =
-                context.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.clear();
         editor.apply();
     }
 }
