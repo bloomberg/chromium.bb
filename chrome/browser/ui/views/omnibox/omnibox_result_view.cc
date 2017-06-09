@@ -380,6 +380,8 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
       const int kAnswerIconToTextPadding = 2;
       x += answer_icon_size + kAnswerIconToTextPadding;
     }
+    DrawRenderText(match, description, DESCRIPTION, canvas, x, y,
+                   description_max_width);
     return;
   }
 
