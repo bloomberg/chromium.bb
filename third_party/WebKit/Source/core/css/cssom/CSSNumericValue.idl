@@ -5,8 +5,7 @@
 // CSSNumericValue is the base class for numeric and length typed CSS Values.
 // https://drafts.css-houdini.org/css-typed-om/#numeric-objects
 [
-  Exposed=(Window,PaintWorklet),
-  RuntimeEnabled=CSSTypedOM
+  Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI),
 ] interface CSSNumericValue : CSSStyleValue {
   [RaisesException, NewObject] CSSNumericValue add(CSSNumericValue value);
   [RaisesException, NewObject] CSSNumericValue sub(CSSNumericValue value);
@@ -15,5 +14,6 @@
 
   [RaisesException, NewObject] CSSNumericValue to(DOMString unit);
 
-  [RaisesException, NewObject] static CSSNumericValue parse(DOMString cssText);
+  // Putting Exposed=Window in the next line makes |parse| not exposed to PaintWorklet.
+  [RaisesException, NewObject, Exposed=Window] static CSSNumericValue parse(DOMString cssText);
 };
