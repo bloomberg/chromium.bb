@@ -456,7 +456,10 @@ group("gn_all") {
     }
 
     if (enable_extensions) {
-      deps += [ "//extensions/shell:app_shell" ]
+      deps += [
+        "//extensions/shell:app_shell",
+        "//extensions/shell/installer",
+      ]
     }
 
     if (enable_nacl) {
