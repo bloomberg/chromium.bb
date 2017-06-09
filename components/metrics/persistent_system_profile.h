@@ -30,8 +30,14 @@ class PersistentSystemProfile {
   void DeregisterPersistentAllocator(
       base::PersistentMemoryAllocator* memory_allocator);
 
-  // Stores a complete system profile.
+  // Stores a complete system profile. Use the version taking the serialized
+  // version if available to avoid multiple serialization actions.
   void SetSystemProfile(const std::string& serialized_profile);
+  void SetSystemProfile(const SystemProfileProto& profile);
+
+  // Tests if a persistent memory allocator contains an system profile.
+  static bool HasSystemProfile(
+      const base::PersistentMemoryAllocator& memory_allocator);
 
   // Retrieves the system profile from a persistent memory allocator. Returns
   // true if a profile was successfully retrieved.
@@ -65,6 +71,7 @@ class PersistentSystemProfile {
 
     // Read a record from the allocator. Do not mix this with "write" calls;
     // it's one or the other.
+    bool HasMoreData() const;
     bool Read(RecordType* type, std::string* record) const;
 
     base::PersistentMemoryAllocator* allocator() { return allocator_; }

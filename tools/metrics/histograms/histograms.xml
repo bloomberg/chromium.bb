@@ -78703,6 +78703,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.FileMetricsProvider.EmbeddedProfileResult"
+    enum="FileMetricsProviderEmbeddedProfileResult">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records attempts to upload metrics from files with embedded system profiles.
+  </summary>
+</histogram>
+
 <histogram name="UMA.FileMetricsProvider.InitialAccessResult"
     enum="FileMetricsProviderAccessResult">
   <owner>asvitkine@chromium.org</owner>

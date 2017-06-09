@@ -42,6 +42,14 @@ class MetricsProvider {
   // further notification after this callback.
   virtual void OnAppEnterBackground();
 
+  // Provides a complete and independent system profile + metrics for uploading.
+  // Any histograms added to the |snapshot_manager| will also be included. A
+  // return of false indicates there are none. Will be called repeatedly until
+  // there is nothing else.
+  virtual bool ProvideIndependentMetrics(
+      SystemProfileProto* system_profile_proto,
+      base::HistogramSnapshotManager* snapshot_manager);
+
   // Provides additional metrics into the system profile.
   virtual void ProvideSystemProfileMetrics(
       SystemProfileProto* system_profile_proto);

@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics/persistent_system_profile.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -70,6 +71,19 @@ constexpr SourceOptions kSourceOptions[] = {
   }
 };
 
+enum EmbeddedProfileResult : int {
+  EMBEDDED_PROFILE_ATTEMPT,
+  EMBEDDED_PROFILE_FOUND,
+  EMBEDDED_PROFILE_FALLBACK,
+  EMBEDDED_PROFILE_DROPPED,
+  EMBEDDED_PROFILE_ACTION_MAX
+};
+
+void RecordEmbeddedProfileResult(EmbeddedProfileResult result) {
+  UMA_HISTOGRAM_ENUMERATION("UMA.FileMetricsProvider.EmbeddedProfileResult",
+                            result, EMBEDDED_PROFILE_ACTION_MAX);
+}
+
 void DeleteFileWhenPossible(const base::FilePath& path) {
   // Open (with delete) and then immediately close the file by going out of
   // scope. This is the only cross-platform safe way to delete a file that may
@@ -84,11 +98,15 @@ void DeleteFileWhenPossible(const base::FilePath& path) {
 // This structure stores all the information about the sources being monitored
 // and their current reporting state.
 struct FileMetricsProvider::SourceInfo {
-  SourceInfo(SourceType source_type) : type(source_type) {}
+  SourceInfo(SourceType source_type, SourceAssociation source_association)
+      : type(source_type), association(source_association) {}
   ~SourceInfo() {}
 
   // How to access this source (file/dir, atomic/active).
   const SourceType type;
+
+  // With what run this source is associated.
+  const SourceAssociation association;
 
   // Where on disk the directory is located. This will only be populated when
   // a directory is being monitored.
@@ -136,7 +154,7 @@ void FileMetricsProvider::RegisterSource(const base::FilePath& path,
   // Ensure that kSourceOptions has been filled for this type.
   DCHECK_GT(arraysize(kSourceOptions), static_cast<size_t>(type));
 
-  std::unique_ptr<SourceInfo> source(new SourceInfo(type));
+  std::unique_ptr<SourceInfo> source(new SourceInfo(type, source_association));
   source->prefs_key = prefs_key.as_string();
 
   switch (source->type) {
@@ -161,9 +179,11 @@ void FileMetricsProvider::RegisterSource(const base::FilePath& path,
 
   switch (source_association) {
     case ASSOCIATE_CURRENT_RUN:
+    case ASSOCIATE_INTERNAL_PROFILE:
       sources_to_check_.push_back(std::move(source));
       break;
     case ASSOCIATE_PREVIOUS_RUN:
+    case ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN:
       DCHECK_EQ(SOURCE_HISTOGRAMS_ATOMIC_FILE, source->type);
       sources_for_previous_run_.push_back(std::move(source));
       break;
@@ -250,6 +270,30 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
 }
 
 // static
+void FileMetricsProvider::FinishedWithSource(SourceInfo* source,
+                                             AccessResult result) {
+  // Different source types require different post-processing.
+  switch (source->type) {
+    case SOURCE_HISTOGRAMS_ATOMIC_FILE:
+    case SOURCE_HISTOGRAMS_ATOMIC_DIR:
+      // Done with this file so delete the allocator and its owned file.
+      source->allocator.reset();
+      // Remove the file if has been recorded. This prevents them from
+      // accumulating or also being recorded by different instances of
+      // the browser.
+      if (result == ACCESS_RESULT_SUCCESS ||
+          result == ACCESS_RESULT_NOT_MODIFIED) {
+        DeleteFileWhenPossible(source->path);
+      }
+      break;
+    case SOURCE_HISTOGRAMS_ACTIVE_FILE:
+      // Keep the allocator open so it doesn't have to be re-mapped each
+      // time. This also allows the contents to be merged on-demand.
+      break;
+  }
+}
+
+// static
 void FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
     SourceInfoList* sources) {
   // This method has all state information passed in |sources| and is intended
@@ -264,31 +308,19 @@ void FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
           "UMA.FileMetricsProvider.AccessResult", result, ACCESS_RESULT_MAX);
     }
 
+    // Metrics associated with internal profiles have to be fetched directly
+    // so just keep the mapping for use by the main thread.
+    if (source->association == ASSOCIATE_INTERNAL_PROFILE)
+      continue;
+
     // Mapping was successful. Merge it.
     if (result == ACCESS_RESULT_SUCCESS) {
       MergeHistogramDeltasFromSource(source.get());
       DCHECK(source->read_complete);
     }
 
-    // Different source types require different post-processing.
-    switch (source->type) {
-      case SOURCE_HISTOGRAMS_ATOMIC_FILE:
-      case SOURCE_HISTOGRAMS_ATOMIC_DIR:
-        // Done with this file so delete the allocator and its owned file.
-        source->allocator.reset();
-        // Remove the file if has been recorded. This prevents them from
-        // accumulating or also being recorded by different instances of
-        // the browser.
-        if (result == ACCESS_RESULT_SUCCESS ||
-            result == ACCESS_RESULT_NOT_MODIFIED) {
-          base::DeleteFile(source->path, /*recursive=*/false);
-        }
-        break;
-      case SOURCE_HISTOGRAMS_ACTIVE_FILE:
-        // Keep the allocator open so it doesn't have to be re-mapped each
-        // time. This also allows the contents to be merged on-demand.
-        break;
-    }
+    // All done with this source.
+    FinishedWithSource(source.get(), result);
   }
 }
 
@@ -297,8 +329,11 @@ void FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
 // static
 FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
     SourceInfo* source) {
-  DCHECK(!source->allocator);
+  // If source was read, clean up after it.
+  if (source->read_complete)
+    FinishedWithSource(source, ACCESS_RESULT_SUCCESS);
   source->read_complete = false;
+  DCHECK(!source->allocator);
 
   // If the source is a directory, look for files within it.
   if (!source->directory.empty() && !LocateNextFileInDirectory(source))
@@ -437,10 +472,16 @@ void FileMetricsProvider::RecordSourcesChecked(SourceInfoList* checked) {
       RecordSourceAsRead(source);
       did_read = true;
     }
-    if (source->allocator)
-      sources_mapped_.splice(sources_mapped_.end(), *checked, temp);
-    else
+    if (source->allocator) {
+      if (source->association == ASSOCIATE_INTERNAL_PROFILE) {
+        sources_with_profile_.splice(sources_with_profile_.end(), *checked,
+                                     temp);
+      } else {
+        sources_mapped_.splice(sources_mapped_.end(), *checked, temp);
+      }
+    } else {
       sources_to_check_.splice(sources_to_check_.end(), *checked, temp);
+    }
   }
 
   // If a read was done, schedule another one immediately. In the case of a
@@ -487,6 +528,39 @@ void FileMetricsProvider::OnDidCreateMetricsLog() {
   sources_for_previous_run_.clear();
 }
 
+bool FileMetricsProvider::ProvideIndependentMetrics(
+    SystemProfileProto* system_profile_proto,
+    base::HistogramSnapshotManager* snapshot_manager) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  while (!sources_with_profile_.empty()) {
+    SourceInfo* source = sources_with_profile_.begin()->get();
+    DCHECK(source->allocator);
+
+    bool success = false;
+    RecordEmbeddedProfileResult(EMBEDDED_PROFILE_ATTEMPT);
+    if (PersistentSystemProfile::GetSystemProfile(
+            *source->allocator->memory_allocator(), system_profile_proto)) {
+      RecordHistogramSnapshotsFromSource(snapshot_manager, source);
+      success = true;
+      RecordEmbeddedProfileResult(EMBEDDED_PROFILE_FOUND);
+    } else {
+      RecordEmbeddedProfileResult(EMBEDDED_PROFILE_DROPPED);
+    }
+
+    // Regardless of whether this source was successfully recorded, it is never
+    // read again.
+    source->read_complete = true;
+    RecordSourceAsRead(source);
+    sources_to_check_.splice(sources_to_check_.end(), sources_with_profile_,
+                             sources_with_profile_.begin());
+    if (success)
+      return true;
+  }
+
+  return false;
+}
+
 bool FileMetricsProvider::HasInitialStabilityMetrics() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -521,6 +595,21 @@ bool FileMetricsProvider::HasInitialStabilityMetrics() {
       RecordSourceAsRead(source);
       DeleteFileAsync(source->path);
       sources_for_previous_run_.erase(temp);
+      continue;
+    }
+
+    DCHECK(source->allocator);
+
+    // If the source should be associated with an existing internal profile,
+    // move it to |sources_with_profile_| for later upload.
+    if (source->association == ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN) {
+      if (PersistentSystemProfile::HasSystemProfile(
+              *source->allocator->memory_allocator())) {
+        RecordEmbeddedProfileResult(EMBEDDED_PROFILE_ATTEMPT);
+        RecordEmbeddedProfileResult(EMBEDDED_PROFILE_FALLBACK);
+        sources_with_profile_.splice(sources_with_profile_.end(),
+                                     sources_for_previous_run_, temp);
+      }
     }
   }
 

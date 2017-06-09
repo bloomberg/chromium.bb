@@ -101,6 +101,22 @@ bool PersistentSystemProfile::RecordAllocator::Write(
   return true;
 }
 
+bool PersistentSystemProfile::RecordAllocator::HasMoreData() const {
+  if (alloc_reference_ == 0 && !NextSegment())
+    return false;
+
+  char* block =
+      allocator_->GetAsArray<char>(alloc_reference_, kTypeIdSystemProfile,
+                                   base::PersistentMemoryAllocator::kSizeAny);
+  if (!block)
+    return false;
+
+  RecordHeader header;
+  header.as_atomic = base::subtle::Acquire_Load(
+      reinterpret_cast<base::subtle::Atomic32*>(block + end_offset_));
+  return header.as_parts.type != kUnusedSpace;
+}
+
 bool PersistentSystemProfile::RecordAllocator::Read(RecordType* type,
                                                     std::string* record) const {
   *type = kUnusedSpace;
@@ -274,6 +290,21 @@ void PersistentSystemProfile::SetSystemProfile(
     // Write out the serialized profile.
     allocator.Write(kSystemProfileProto, serialized_profile);
   }
+}
+
+void PersistentSystemProfile::SetSystemProfile(
+    const SystemProfileProto& profile) {
+  std::string serialized_profile;
+  if (!profile.SerializeToString(&serialized_profile))
+    return;
+  SetSystemProfile(serialized_profile);
+}
+
+// static
+bool PersistentSystemProfile::HasSystemProfile(
+    const base::PersistentMemoryAllocator& memory_allocator) {
+  const RecordAllocator records(&memory_allocator);
+  return records.HasMoreData();
 }
 
 // static

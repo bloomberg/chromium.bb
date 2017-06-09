@@ -11,8 +11,11 @@
 
 #include "base/build_time.h"
 #include "base/cpu.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
@@ -50,6 +53,28 @@ extern const int kUserActionEventLimit = 5000;
 }
 
 namespace {
+
+// A simple class to write histogram data to a log.
+class IndependentFlattener : public base::HistogramFlattener {
+ public:
+  explicit IndependentFlattener(MetricsLog* log) : log_(log) {}
+
+  // base::HistogramFlattener:
+  void RecordDelta(const base::HistogramBase& histogram,
+                   const base::HistogramSamples& snapshot) override {
+    log_->RecordHistogramDelta(histogram.histogram_name(), snapshot);
+  }
+  void InconsistencyDetected(
+      base::HistogramBase::Inconsistency problem) override {}
+  void UniqueInconsistencyDetected(
+      base::HistogramBase::Inconsistency problem) override {}
+  void InconsistencyDetectedInLoggedCount(int amount) override {}
+
+ private:
+  MetricsLog* const log_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndependentFlattener);
+};
 
 // Any id less than 16 bytes is considered to be a testing id.
 bool IsTestingID(const std::string& id) {
@@ -317,6 +342,15 @@ std::string MetricsLog::RecordEnvironment(
       serialized_proto);
 
   return serialized_proto;
+}
+
+bool MetricsLog::LoadIndependentMetrics(MetricsProvider* metrics_provider) {
+  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
+  IndependentFlattener flattener(this);
+  base::HistogramSnapshotManager snapshot_manager(&flattener);
+
+  return metrics_provider->ProvideIndependentMetrics(system_profile,
+                                                     &snapshot_manager);
 }
 
 bool MetricsLog::LoadSavedEnvironmentFromPrefs(std::string* app_version) {

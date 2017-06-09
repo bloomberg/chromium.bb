@@ -44,6 +44,7 @@ class MetricsLog {
   enum LogType {
     INITIAL_STABILITY_LOG,  // The initial log containing stability stats.
     ONGOING_LOG,            // Subsequent logs in a session.
+    INDEPENDENT_LOG,        // An independent log from a previous session.
   };
 
   // Creates a new metrics log of the specified type.
@@ -104,6 +105,11 @@ class MetricsLog {
       const std::vector<variations::ActiveGroupId>& synthetic_trials,
       int64_t install_date,
       int64_t metrics_reporting_enabled_date);
+
+  // Loads a saved system profile and the associated metrics into the log.
+  // Returns true on success. Keep calling it with fresh logs until it returns
+  // false.
+  bool LoadIndependentMetrics(MetricsProvider* metrics_provider);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
   // call from prefs. On success, returns true and |app_version| contains the

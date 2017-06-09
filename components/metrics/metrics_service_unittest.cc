@@ -491,45 +491,46 @@ TEST_F(MetricsServiceTest, SplitRotation) {
   service.Start();
   // Rotation loop should create a log and mark state as idle.
   // Upload loop should start upload or be restarted.
+  // The independent-metrics upload job will be started and always be a task.
   task_runner_->RunPendingTasks();
   // Rotation loop should terminated due to being idle.
   // Upload loop should start uploading if it isn't already.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
-  EXPECT_EQ(0U, task_runner_->NumPendingTasks());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   service.OnApplicationNotIdle();
   EXPECT_TRUE(client.uploader()->is_uploading());
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
   // Log generation should be suppressed due to unsent log.
   // Idle state should not be reset.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
   // Make sure idle state was not reset.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
   // Upload should not be rescheduled, since there are no other logs.
   client.uploader()->CompleteUpload(200);
   EXPECT_FALSE(client.uploader()->is_uploading());
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
   // Running should generate a log, restart upload loop, and mark idle.
   task_runner_->RunPendingTasks();
   EXPECT_FALSE(client.uploader()->is_uploading());
-  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
+  EXPECT_EQ(3U, task_runner_->NumPendingTasks());
   // Upload should start, and rotation loop should idle out.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
-  EXPECT_EQ(0U, task_runner_->NumPendingTasks());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   // Uploader should reschedule when there is another log available.
   service.PushExternalLog("Blah");
   client.uploader()->CompleteUpload(200);
   EXPECT_FALSE(client.uploader()->is_uploading());
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
   // Upload should start.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
-  EXPECT_EQ(0U, task_runner_->NumPendingTasks());
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 }
 
 TEST_F(MetricsServiceTest, GetSyntheticFieldTrialActiveGroups) {

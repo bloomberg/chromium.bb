@@ -73,6 +73,7 @@ void MetricsLogStore::StoreLog(const std::string& log_data,
       initial_log_queue_.StoreLog(log_data);
       break;
     case MetricsLog::ONGOING_LOG:
+    case MetricsLog::INDEPENDENT_LOG:
       ongoing_log_queue_.StoreLog(log_data);
       break;
   }
