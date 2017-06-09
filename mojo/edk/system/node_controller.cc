@@ -662,12 +662,21 @@ void NodeController::SendPeerEvent(const ports::NodeName& name,
   bool needs_introduction = false;
   {
     base::AutoLock lock(peers_lock_);
-    auto& queue = pending_peer_messages_[name];
-    needs_introduction = queue.empty();
-    queue.emplace(std::move(event_message));
+    // We may have been introduced on another thread by the time we get here.
+    // Double-check to be safe.
+    auto it = peers_.find(name);
+    if (it == peers_.end()) {
+      auto& queue = pending_peer_messages_[name];
+      needs_introduction = queue.empty();
+      queue.emplace(std::move(event_message));
+    } else {
+      peer = it->second;
+    }
   }
   if (needs_introduction)
     broker->RequestIntroduction(name);
+  else if (peer)
+    peer->SendChannelMessage(std::move(event_message));
 }
 
 void NodeController::DropAllPeers() {
