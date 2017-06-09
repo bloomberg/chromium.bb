@@ -71,6 +71,12 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   return self;
 }
 
+- (const ReadingListEntry*)entryFromItem:(CollectionViewItem*)item {
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
+  return self.model->GetEntryByURL(readingListItem.url);
+}
+
 #pragma mark - ReadingListDataSource
 
 - (BOOL)isEntryRead:(CollectionViewItem*)item {
