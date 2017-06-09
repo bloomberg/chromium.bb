@@ -25,4 +25,6 @@ per-file main_dll_loader_win.cc=scottmg@chromium.org
 per-file chrome_crash_reporter_client*=ananta@chromium.org
 per-file chrome_crash_reporter_client*=scottmg@chromium.org
 
+per-file *.plist=file://chrome/browser/ui/cocoa/OWNERS
+
 # COMPONENT: Internals>PlatformIntegration
