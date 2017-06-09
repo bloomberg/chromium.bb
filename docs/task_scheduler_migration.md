@@ -119,6 +119,10 @@ assigned files by:
 * Everything in a file/component needs to run on the same sequence but there
   isn't a clear place to own/access the common SequencedTaskRunner =>
   [base::Lazy*TaskRunner](https://chromium-review.googlesource.com/c/524141/).
+* Mojo isn't sequence-friendly yet ([coming soon](https://crbug.com/678155)).
+  Use base::CreateSingleThreadTaskRunnerWithTraits() instead of
+  base::CreateSequenceTaskRunnerWithTraits() for sequences that need to use mojo
+  constructs for now (tag with TODO against https://crbug.com/678155).
 * For anything else, ping [base/task_scheduler/OWNERS](https://cs.chromium.org/chromium/src/base/task_scheduler/OWNERS)
   or [scheduler-dev@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/scheduler-dev),
   thanks!
