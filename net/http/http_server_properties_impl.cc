@@ -21,11 +21,14 @@
 namespace net {
 
 HttpServerPropertiesImpl::HttpServerPropertiesImpl()
-    : HttpServerPropertiesImpl(&broken_alternative_services_clock_) {}
+    : HttpServerPropertiesImpl(nullptr) {}
 
 HttpServerPropertiesImpl::HttpServerPropertiesImpl(
     base::TickClock* broken_alternative_services_clock)
-    : broken_alternative_services_(this, broken_alternative_services_clock),
+    : broken_alternative_services_(this,
+                                   broken_alternative_services_clock
+                                       ? broken_alternative_services_clock
+                                       : &broken_alternative_services_clock_),
       spdy_servers_map_(SpdyServersMap::NO_AUTO_EVICT),
       alternative_service_map_(AlternativeServiceMap::NO_AUTO_EVICT),
       server_network_stats_map_(ServerNetworkStatsMap::NO_AUTO_EVICT),
