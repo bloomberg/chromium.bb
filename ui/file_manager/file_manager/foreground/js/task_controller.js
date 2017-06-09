@@ -90,6 +90,11 @@ function TaskController(
    */
   this.tasks_ = null;
 
+  /**
+   * @private {!Array<!Entry>}
+   */
+  this.lastSelectedEntries_ = [];
+
   ui.taskMenuButton.addEventListener(
       'select', this.onTaskItemClicked_.bind(this));
   this.selectionHandler_.addEventListener(
@@ -267,14 +272,18 @@ TaskController.prototype.onSelectionChanged_ = function() {
   // FileSelectionHandler.EventType.CHANGE
   if (this.dialogType_ === DialogType.FULL_PAGE &&
       (selection.directoryCount > 0 || selection.fileCount > 0)) {
-    // Show disabled items for position calculation of the menu. They will be
-    // overridden in this.updateFileSelectionAsync().
-    this.updateContextMenuTaskItems_(
-        [TaskController.createTemporaryDisabledTaskItem_()]);
+    // Compare entries while ignoring changes inside directories.
+    if (!util.isSameEntries(this.lastSelectedEntries_, selection.entries)) {
+      // Show disabled items for position calculation of the menu. They will be
+      // overridden in this.updateTasks_().
+      this.updateContextMenuTaskItems_(
+          [TaskController.createTemporaryDisabledTaskItem_()]);
+    }
   } else {
     // Update context menu.
     this.updateContextMenuTaskItems_([]);
   }
+  this.lastSelectedEntries_ = selection.entries;
 };
 
 /**
