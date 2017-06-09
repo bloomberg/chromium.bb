@@ -9,6 +9,10 @@ was introduced to Chrome in Q1. The API is fully documented under [Threading and
 Tasks in Chrome](threading_and_tasks.md). This page will go into more details
 about how to migrate callers of existing APIs to TaskScheduler.
 
+The SequencedWorkerPools and BrowserThreads (not UI/IO) are already being
+redirected to TaskScheduler under the hood so it's now "merely" a matter of
+updating the actual call sites.
+
 Much of the migration has already been automated but the callers that remain
 require manual intervention from the OWNERS.
 
