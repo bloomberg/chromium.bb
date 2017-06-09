@@ -121,8 +121,9 @@ ScriptModule ModulatorImpl::CompileModule(
     const String& provided_source,
     const String& url_str,
     AccessControlStatus access_control_status,
-    const TextPosition& position) {
-  // Implements Steps 3-6 of
+    const TextPosition& position,
+    ExceptionState& exception_state) {
+  // Implements Steps 3-5 of
   // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
 
   // Step 3. Let realm be the provided environment settings object's Realm.
@@ -136,12 +137,10 @@ ScriptModule ModulatorImpl::CompileModule(
     script_source = provided_source;
 
   // Step 5. Let result be ParseModule(script source, realm, script).
-  // Step 6. If result is a List of errors, report the exception given by the
-  // first element of result for script, return null, and abort these steps.
-  // Note: reporting is routed via V8Initializer::messageHandlerInMainThread.
   ScriptState::Scope scope(script_state_.Get());
   return ScriptModule::Compile(script_state_->GetIsolate(), script_source,
-                               url_str, access_control_status, position);
+                               url_str, access_control_status, position,
+                               exception_state);
 }
 
 ScriptValue ModulatorImpl::InstantiateModule(ScriptModule script_module) {

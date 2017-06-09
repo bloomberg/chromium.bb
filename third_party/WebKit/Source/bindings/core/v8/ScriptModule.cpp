@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/ScriptModule.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Modulator.h"
 #include "core/dom/ScriptModuleResolver.h"
@@ -40,22 +41,19 @@ ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
                                    const String& source,
                                    const String& file_name,
                                    AccessControlStatus access_control_status,
-                                   const TextPosition& start_position) {
+                                   const TextPosition& start_position,
+                                   ExceptionState& exception_state) {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
   CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 
   v8::TryCatch try_catch(isolate);
-  try_catch.SetVerbose(true);
   v8::Local<v8::Module> module;
   if (!V8ScriptRunner::CompileModule(isolate, source, file_name,
                                      access_control_status, start_position)
            .ToLocal(&module)) {
-    // Compilation error is not used in Blink implementaion logic.
-    // Note: Error message is delivered to user (e.g. console) by message
-    // listeners set on v8::Isolate. See V8Initializer::initalizeMainThread().
-    // TODO(nhiroki): Revisit this when supporting modules on worker threads.
     DCHECK(try_catch.HasCaught());
+    exception_state.RethrowV8Exception(try_catch.Exception());
     return ScriptModule();
   }
   DCHECK(!try_catch.HasCaught());

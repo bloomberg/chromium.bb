@@ -12,13 +12,15 @@ namespace blink {
 
 void ScriptModuleResolverImpl::RegisterModuleScript(
     ModuleScript* module_script) {
+  DCHECK(module_script);
+  if (module_script->Record().IsNull())
+    return;
+
   DVLOG(1) << "ScriptModuleResolverImpl::registerModuleScript(url=\""
            << module_script->BaseURL().GetString()
            << "\", hash=" << ScriptModuleHash::GetHash(module_script->Record())
            << ")";
 
-  DCHECK(module_script);
-  DCHECK(!module_script->Record().IsNull());
   auto result =
       record_to_module_script_map_.Set(module_script->Record(), module_script);
   DCHECK(result.is_new_entry);

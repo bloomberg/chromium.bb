@@ -1796,8 +1796,6 @@ crbug.com/694958 virtual/stable/http/tests/navigation/same-and-different-back.ht
 
 # Failing because of module-related implementation/test issues.
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/errorhandling.html [ Failure ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/compilation-error-1.html [ Failure ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/compilation-error-2.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-1.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-2.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-3.html [ Failure ]

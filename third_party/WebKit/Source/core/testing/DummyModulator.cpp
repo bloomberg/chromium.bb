@@ -103,7 +103,8 @@ bool DummyModulator::HasValidContext() {
 ScriptModule DummyModulator::CompileModule(const String& script,
                                            const String& url_str,
                                            AccessControlStatus,
-                                           const TextPosition&) {
+                                           const TextPosition&,
+                                           ExceptionState&) {
   NOTREACHED();
   return ScriptModule();
 }

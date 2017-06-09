@@ -55,7 +55,8 @@ class DummyModulator : public Modulator {
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
                              AccessControlStatus,
-                             const TextPosition&) override;
+                             const TextPosition&,
+                             ExceptionState&) override;
   ScriptValue InstantiateModule(ScriptModule) override;
   ScriptValue GetError(const ModuleScript*) override;
   Vector<String> ModuleRequestsFromScriptModule(ScriptModule) override;

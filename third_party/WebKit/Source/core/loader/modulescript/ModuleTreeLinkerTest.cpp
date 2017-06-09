@@ -78,7 +78,8 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
 
     ScriptModule script_module = ScriptModule::Compile(
         script_state_->GetIsolate(), source_text.ToString(), url.GetString(),
-        kSharableCrossOrigin);
+        kSharableCrossOrigin, TextPosition::MinimumPosition(),
+        ASSERT_NO_EXCEPTION);
     ModuleScript* module_script = ModuleScript::CreateForTest(
         this, script_module, url, "", kParserInserted,
         WebURLRequest::kFetchCredentialsModeOmit);
@@ -131,7 +132,8 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
 
     ScriptModule script_module = ScriptModule::Compile(
         script_state_->GetIsolate(), "export default 'pineapples';",
-        url.GetString(), kSharableCrossOrigin);
+        url.GetString(), kSharableCrossOrigin, TextPosition::MinimumPosition(),
+        ASSERT_NO_EXCEPTION);
     ModuleScript* module_script = ModuleScript::CreateForTest(
         this, script_module, url, "", kParserInserted,
         WebURLRequest::kFetchCredentialsModeOmit);
