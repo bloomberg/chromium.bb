@@ -5,19 +5,12 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_TEST_PATHS_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_TEST_PATHS_H_
 
+#include "base/files/file_path.h"
+
 namespace vr_shell {
 namespace test {
 
-enum {
-  PATH_START = 12000,
-
-  // Valid only in testing environments.
-  DIR_TEST_DATA,
-  PATH_END,
-};
-
-// Call once to register the provider for the path keys defined above.
-void RegisterPathProvider();
+void GetTestDataPath(base::FilePath* result);
 
 }  // namespace test
 }  // namespace vr_shell

@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/ptr_util.h"
-#include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/test/paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,9 +18,7 @@ namespace vr_shell {
 
 class DataDrivenTest : public testing::Test {
  protected:
-  static void SetUpTestCase() { test::RegisterPathProvider(); }
-
-  void SetUp() override { PathService::Get(test::DIR_TEST_DATA, &data_dir_); }
+  void SetUp() override { test::GetTestDataPath(&data_dir_); }
 
   base::FilePath data_dir_;
 };
