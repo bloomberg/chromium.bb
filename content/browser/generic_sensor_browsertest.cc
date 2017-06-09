@@ -47,7 +47,7 @@ class FakeAmbientLightSensor : public device::PlatformSensor {
     return true;
   }
 
-  void StopSensor() override {};
+  void StopSensor() override {}
 
  protected:
   ~FakeAmbientLightSensor() override = default;

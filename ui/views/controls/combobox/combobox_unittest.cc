@@ -137,7 +137,7 @@ class VectorComboboxModel : public ui::ComboboxModel {
 class EvilListener : public ComboboxListener {
  public:
   EvilListener() : deleted_(false) {}
-  ~EvilListener() override{};
+  ~EvilListener() override {}
 
   // ComboboxListener:
   void OnPerformAction(Combobox* combobox) override {

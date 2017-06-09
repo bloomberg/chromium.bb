@@ -22,7 +22,7 @@ const int kTestViewHeight = 600;
 class CursorRendererMacTest : public ui::CocoaTest {
  public:
   CursorRendererMacTest() {}
-  ~CursorRendererMacTest() override{};
+  ~CursorRendererMacTest() override {}
 
   void SetUp() override {
     ui::CocoaTest::SetUp();

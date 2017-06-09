@@ -91,7 +91,7 @@ class FakeCursorShapeStub : public protocol::CursorShapeStub {
   ~FakeCursorShapeStub() override {}
 
   // protocol::CursorShapeStub interface.
-  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override{};
+  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override {}
 };
 
 }  // namespace

@@ -76,7 +76,7 @@ class TouchInjectorWinDelegateMock : public TouchInjectorWinDelegate {
  public:
   TouchInjectorWinDelegateMock()
       : TouchInjectorWinDelegate(nullptr, nullptr, nullptr) {}
-  ~TouchInjectorWinDelegateMock() override {};
+  ~TouchInjectorWinDelegateMock() override {}
 
   MOCK_METHOD2(InitializeTouchInjection, BOOL(UINT32 max_count, DWORD dw_mode));
   MOCK_METHOD2(InjectTouchInput,

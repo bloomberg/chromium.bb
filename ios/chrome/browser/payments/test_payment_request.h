@@ -30,7 +30,7 @@ class TestPaymentRequest : public PaymentRequest {
                      autofill::PersonalDataManager* personal_data_manager)
       : PaymentRequest(web_payment_request, personal_data_manager) {}
 
-  ~TestPaymentRequest() override{};
+  ~TestPaymentRequest() override {}
 
   void SetRegionDataLoader(autofill::RegionDataLoader* region_data_loader) {
     region_data_loader_ = region_data_loader;

@@ -81,7 +81,7 @@ class TestExternalDataUseObserverBridge
  public:
   TestExternalDataUseObserverBridge() {}
   void FetchMatchingRules() const override {}
-  void ShouldRegisterAsDataUseObserver(bool should_register) const override{};
+  void ShouldRegisterAsDataUseObserver(bool should_register) const override {}
 };
 
 std::unique_ptr<content::NavigationEntry> CreateNavigationEntry(

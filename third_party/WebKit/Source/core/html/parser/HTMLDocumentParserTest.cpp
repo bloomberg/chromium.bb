@@ -25,7 +25,7 @@ class TestPrerendererClient : public GarbageCollected<TestPrerendererClient>,
       : PrerendererClient(page), is_prefetch_only_(is_prefetch_only) {}
 
  private:
-  void WillAddPrerender(Prerender*) override{};
+  void WillAddPrerender(Prerender*) override {}
   bool IsPrefetchOnly() override { return is_prefetch_only_; }
 
   bool is_prefetch_only_;

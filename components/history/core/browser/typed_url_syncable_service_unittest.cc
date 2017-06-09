@@ -154,23 +154,23 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
   void NotifyProfileError(sql::InitStatus init_status,
                           const std::string& diagnostics) override {}
   void SetInMemoryBackend(
-      std::unique_ptr<InMemoryHistoryBackend> backend) override{};
+      std::unique_ptr<InMemoryHistoryBackend> backend) override {}
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
-                             const GURL& icon_url) override{};
+                             const GURL& icon_url) override {}
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
                         const RedirectList& redirects,
-                        base::Time visit_time) override{};
-  void NotifyURLsModified(const URLRows& changed_urls) override{};
+                        base::Time visit_time) override {}
+  void NotifyURLsModified(const URLRows& changed_urls) override {}
   void NotifyURLsDeleted(bool all_history,
                          bool expired,
                          const URLRows& deleted_rows,
-                         const std::set<GURL>& favicon_urls) override{};
+                         const std::set<GURL>& favicon_urls) override {}
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
-                                      const base::string16& term) override{};
-  void NotifyKeywordSearchTermDeleted(URLID url_id) override{};
-  void DBLoaded() override{};
+                                      const base::string16& term) override {}
+  void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
+  void DBLoaded() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestHistoryBackendDelegate);

@@ -151,7 +151,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
 class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
  public:
   StalledInStartWorkerHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
-  ~StalledInStartWorkerHelper() override{};
+  ~StalledInStartWorkerHelper() override {}
 
   void OnStartWorker(int embedded_worker_id,
                      int64_t service_worker_version_id,

@@ -1294,7 +1294,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, ShowForUserSwitchesDesktop) {
 class TestWindowObserver : public aura::WindowObserver {
  public:
   TestWindowObserver(): resize_calls_(0) {}
-  ~TestWindowObserver() override{};
+  ~TestWindowObserver() override {}
 
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,

@@ -42,7 +42,7 @@ class TestImageFetcherDelegate : public ImageFetcherDelegate {
   TestImageFetcherDelegate()
     : num_delegate_valid_called_(0),
       num_delegate_null_called_(0) {}
-  ~TestImageFetcherDelegate() override{};
+  ~TestImageFetcherDelegate() override {}
 
   // Perform additional tasks when an image has been fetched.
   void OnImageFetched(const std::string& id, const gfx::Image& image) override {

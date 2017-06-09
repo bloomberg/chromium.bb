@@ -60,7 +60,7 @@ class FakeDataTypeManager : public syncer::DataTypeManager {
   explicit FakeDataTypeManager(const ConfigureCalled& configure_called)
       : configure_called_(configure_called) {}
 
-  ~FakeDataTypeManager() override{};
+  ~FakeDataTypeManager() override {}
 
   void Configure(syncer::ModelTypeSet desired_types,
                  syncer::ConfigureReason reason) override {
@@ -72,7 +72,7 @@ class FakeDataTypeManager : public syncer::DataTypeManager {
   void ResetDataTypeErrors() override {}
   void PurgeForMigration(syncer::ModelTypeSet undesired_types,
                          syncer::ConfigureReason reason) override {}
-  void Stop() override{};
+  void Stop() override {}
   ModelTypeSet GetActiveDataTypes() const override { return ModelTypeSet(); }
   bool IsNigoriEnabled() const override { return true; }
   State state() const override { return syncer::DataTypeManager::CONFIGURED; }

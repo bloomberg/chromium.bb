@@ -154,8 +154,8 @@ class LinuxInputMethodContextFactoryForTesting
 
 class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
  public:
-  InputMethodDelegateForTesting(){};
-  ~InputMethodDelegateForTesting() override{};
+  InputMethodDelegateForTesting() {}
+  ~InputMethodDelegateForTesting() override {}
 
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* key_event) override {

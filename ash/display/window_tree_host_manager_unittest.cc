@@ -390,8 +390,8 @@ class TestMouseWatcherListener : public views::MouseWatcherListener {
 
 class WindowTreeHostManagerTest : public test::AshTestBase, public TestHelper {
  public:
-  WindowTreeHostManagerTest() : TestHelper(this){};
-  ~WindowTreeHostManagerTest() override{};
+  WindowTreeHostManagerTest() : TestHelper(this) {}
+  ~WindowTreeHostManagerTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostManagerTest);

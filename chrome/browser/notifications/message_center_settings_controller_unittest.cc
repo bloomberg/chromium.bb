@@ -37,7 +37,7 @@ class MessageCenterSettingsControllerBaseTest : public testing::Test {
   MessageCenterSettingsControllerBaseTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
-  ~MessageCenterSettingsControllerBaseTest() override{};
+  ~MessageCenterSettingsControllerBaseTest() override {}
 
   base::FilePath GetProfilePath(const std::string& base_name) {
     return testing_profile_manager_.profile_manager()->user_data_dir()

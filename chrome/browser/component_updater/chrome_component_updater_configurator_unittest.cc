@@ -25,7 +25,7 @@ namespace component_updater {
 class ChromeComponentUpdaterConfiguratorTest : public testing::Test {
  public:
   ChromeComponentUpdaterConfiguratorTest() {}
-  ~ChromeComponentUpdaterConfiguratorTest() override{};
+  ~ChromeComponentUpdaterConfiguratorTest() override {}
 
   // Overrides from testing::Test.
   void SetUp() override;

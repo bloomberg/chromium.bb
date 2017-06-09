@@ -120,7 +120,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
 
  private:
   class TestSaveCardBubbleView : public SaveCardBubbleView {
-    void Hide() override{};
+    void Hide() override {}
   };
 
   class SaveCardBubbleTestBrowserWindow : public TestBrowserWindow {

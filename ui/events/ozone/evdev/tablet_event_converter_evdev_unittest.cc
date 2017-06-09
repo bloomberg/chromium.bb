@@ -115,7 +115,7 @@ class MockTabletEventConverterEvdev : public TabletEventConverterEvdev {
                                 CursorDelegateEvdev* cursor,
                                 const EventDeviceInfo& devinfo,
                                 DeviceEventDispatcherEvdev* dispatcher);
-  ~MockTabletEventConverterEvdev() override {};
+  ~MockTabletEventConverterEvdev() override {}
 
   void ConfigureReadMock(struct input_event* queue,
                          long read_this_many,

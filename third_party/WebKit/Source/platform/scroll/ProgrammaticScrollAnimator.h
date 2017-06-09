@@ -36,14 +36,14 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
   // ScrollAnimatorCompositorCoordinator implementation.
   void ResetAnimationState() override;
   void CancelAnimation() override;
-  void TakeOverCompositorAnimation() override{};
+  void TakeOverCompositorAnimation() override {}
   ScrollableArea* GetScrollableArea() const override {
     return scrollable_area_;
   }
   void TickAnimation(double monotonic_time) override;
   void UpdateCompositorAnimations() override;
   void NotifyCompositorAnimationFinished(int group_id) override;
-  void NotifyCompositorAnimationAborted(int group_id) override{};
+  void NotifyCompositorAnimationAborted(int group_id) override {}
   void LayerForCompositedScrollingDidChange(
       CompositorAnimationTimeline*) override;
 

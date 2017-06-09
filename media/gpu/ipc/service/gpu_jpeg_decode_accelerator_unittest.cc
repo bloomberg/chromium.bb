@@ -45,7 +45,7 @@ class MockJpegDecodeAccelerator : public media::JpegDecodeAccelerator {
 class GpuJpegDecodeAcceleratorTest : public ::testing::Test {
  public:
   GpuJpegDecodeAcceleratorTest() : io_thread_("io") {}
-  ~GpuJpegDecodeAcceleratorTest() override{};
+  ~GpuJpegDecodeAcceleratorTest() override {}
 
   void SetUp() override {
     output_frame_memory_.CreateAndMapAnonymous(kOutputFrameSizeInBytes);

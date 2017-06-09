@@ -74,14 +74,14 @@ class PLATFORM_EXPORT ScrollAnimatorBase
   ScrollableArea* GetScrollableArea() const override {
     return scrollable_area_;
   }
-  void TickAnimation(double monotonic_time) override{};
+  void TickAnimation(double monotonic_time) override {}
   void CancelAnimation() override {}
   void TakeOverCompositorAnimation() override {}
-  void UpdateCompositorAnimations() override{};
-  void NotifyCompositorAnimationFinished(int group_id) override{};
-  void NotifyCompositorAnimationAborted(int group_id) override{};
+  void UpdateCompositorAnimations() override {}
+  void NotifyCompositorAnimationFinished(int group_id) override {}
+  void NotifyCompositorAnimationAborted(int group_id) override {}
   void LayerForCompositedScrollingDidChange(
-      CompositorAnimationTimeline*) override{};
+      CompositorAnimationTimeline*) override {}
 
   virtual void ContentAreaWillPaint() const {}
   virtual void MouseEnteredContentArea() const {}

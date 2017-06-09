@@ -48,7 +48,7 @@ class TestSafeBrowsingDatabaseManager
   void StopOnIOThread(bool shutdown) override;
 
  protected:
-  ~TestSafeBrowsingDatabaseManager() override {};
+  ~TestSafeBrowsingDatabaseManager() override {}
 };
 
 }  // namespace safe_browsing

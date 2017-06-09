@@ -68,7 +68,7 @@ class TestSavePasswordInfobarDelegate : public SavePasswordInfoBarDelegate {
 class SavePasswordInfoBarDelegateTest : public ChromeRenderViewHostTestHarness {
  public:
   SavePasswordInfoBarDelegateTest();
-  ~SavePasswordInfoBarDelegateTest() override{};
+  ~SavePasswordInfoBarDelegateTest() override {}
 
   void SetUp() override;
   void TearDown() override;

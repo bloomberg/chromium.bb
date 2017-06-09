@@ -53,7 +53,7 @@ class ReadingListObserverBridge : public ReadingListModelObserver {
     [owner_ readingListModelCompletedBatchUpdates:model];
   }
 
-  void ReadingListModelBeingDeleted(const ReadingListModel* model) override{};
+  void ReadingListModelBeingDeleted(const ReadingListModel* model) override {}
 
   void ReadingListDidApplyChanges(ReadingListModel* model) override {
     [owner_ readingListModelCompletedBatchUpdates:model];

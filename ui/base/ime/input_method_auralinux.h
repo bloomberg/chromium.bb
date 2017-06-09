@@ -39,7 +39,7 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
   void OnCommit(const base::string16& text) override;
   void OnPreeditChanged(const CompositionText& composition_text) override;
   void OnPreeditEnd() override;
-  void OnPreeditStart() override{};
+  void OnPreeditStart() override {}
 
  protected:
   // Overridden from InputMethodBase.

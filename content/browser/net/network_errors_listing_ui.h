@@ -14,7 +14,7 @@ namespace content {
 class NetworkErrorsListingUI : public WebUIController {
  public:
   explicit NetworkErrorsListingUI(WebUI* web_ui);
-  ~NetworkErrorsListingUI() override {};
+  ~NetworkErrorsListingUI() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkErrorsListingUI);

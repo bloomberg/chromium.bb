@@ -28,7 +28,7 @@ class SessionsSyncManagerWrapper : public ForeignSessionsProvider {
  public:
   explicit SessionsSyncManagerWrapper(SessionsSyncManager* manager)
       : manager_(manager) {}
-  ~SessionsSyncManagerWrapper() override{};
+  ~SessionsSyncManagerWrapper() override {}
   bool GetAllForeignSessions(
       std::vector<const SyncedSession*>* sessions) override {
     return manager_->GetAllForeignSessions(sessions);

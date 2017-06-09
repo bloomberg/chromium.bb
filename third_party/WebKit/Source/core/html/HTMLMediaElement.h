@@ -414,7 +414,7 @@ class CORE_EXPORT HTMLMediaElement
   void DisconnectedFromRemoteDevice() final;
   void CancelledRemotePlaybackRequest() final;
   void RemotePlaybackStarted() final;
-  void OnBecamePersistentVideo(bool) override{};
+  void OnBecamePersistentVideo(bool) override {}
   bool HasSelectedVideoTrack() final;
   WebMediaPlayer::TrackId GetSelectedVideoTrackId() final;
   bool IsAutoplayingMuted() final;

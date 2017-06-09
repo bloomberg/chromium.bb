@@ -45,7 +45,7 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) override {}
   void Reload() override { reload_called_ = true; }
   void OnNavigationItemsPruned(size_t pruned_item_count) override {}
-  void OnNavigationItemChanged() override{};
+  void OnNavigationItemChanged() override {}
   void OnNavigationItemCommitted(const LoadCommittedDetails&) override {}
   WebState* GetWebState() override { return nullptr; }
 

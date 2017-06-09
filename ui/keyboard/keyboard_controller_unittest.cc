@@ -140,7 +140,7 @@ class TestKeyboardUI : public KeyboardUI {
   }
   ui::InputMethod* GetInputMethod() override { return input_method_; }
   void SetUpdateInputType(ui::TextInputType type) override {}
-  void ReloadKeyboardIfNeeded() override {};
+  void ReloadKeyboardIfNeeded() override {}
   void InitInsets(const gfx::Rect& keyboard_bounds) override {}
   void ResetInsets() override {}
 

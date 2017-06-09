@@ -22,7 +22,7 @@ class TestBeginFrameObserver : public cc::BeginFrameObserverBase {
     return true;
   }
 
-  void OnBeginFrameSourcePausedChanged(bool paused) override {};
+  void OnBeginFrameSourcePausedChanged(bool paused) override {}
 
   int begin_frame_count_ = 0;
 

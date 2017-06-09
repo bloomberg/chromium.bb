@@ -2364,7 +2364,7 @@ class ServerStreamThatDropsBodyFactory : public QuicTestServer::StreamFactory {
  public:
   ServerStreamThatDropsBodyFactory() {}
 
-  ~ServerStreamThatDropsBodyFactory() override{};
+  ~ServerStreamThatDropsBodyFactory() override {}
 
   QuicSimpleServerStream* CreateStream(
       QuicStreamId id,
@@ -2407,7 +2407,7 @@ class ServerStreamThatSendsHugeResponseFactory
   explicit ServerStreamThatSendsHugeResponseFactory(int64_t body_bytes)
       : body_bytes_(body_bytes) {}
 
-  ~ServerStreamThatSendsHugeResponseFactory() override{};
+  ~ServerStreamThatSendsHugeResponseFactory() override {}
 
   QuicSimpleServerStream* CreateStream(
       QuicStreamId id,

@@ -110,7 +110,7 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
     }
 
    protected:
-    ~State() override{};
+    ~State() override {}
 
    private:
     MyMockInputMethodManager* const manager_;
