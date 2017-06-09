@@ -69,6 +69,9 @@ class ASH_EXPORT ShellObserver {
   // Called at the end of Shell::Init.
   virtual void OnShellInitialized() {}
 
+  // Called early on in ~Shell.
+  virtual void OnShellDestroying() {}
+
  protected:
   virtual ~ShellObserver() {}
 };
