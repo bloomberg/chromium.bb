@@ -14,12 +14,15 @@ function FocusRowDelegate(listItem) {
 
 FocusRowDelegate.prototype = {
   /**
+   * This function gets called when the [focus-row-control] element receives
+   * the focus event.
    * @override
    * @param {!cr.ui.FocusRow} row
    * @param {!Event} e
    */
   onFocus: function(row, e) {
     this.listItem_.lastFocused = e.path[0];
+    this.listItem_.tabIndex = -1;
   },
 
   /**
@@ -137,7 +140,10 @@ var FocusRowBehavior = {
     }
   },
 
-  /** @private */
+  /**
+   * This function gets called when the row itself receives the focus event.
+   * @private
+   */
   onFocus_: function() {
     if (this.mouseFocused_) {
       this.mouseFocused_ = false;  // Consume and reset flag.
