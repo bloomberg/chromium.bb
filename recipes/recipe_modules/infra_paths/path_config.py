@@ -30,7 +30,6 @@ def infra_buildbot(c):
 def infra_kitchen(c):
   """Used on BuildBot by "remote_run" when NOT running Kitchen."""
   c.base_paths['root'] = c.START_DIR
-  c.base_paths['cleanup'] = c.START_DIR[:-1] + ('build.dead',)
   # TODO(phajdan.jr): have one cache dir, let clients append suffixes.
 
   b_dir = c.START_DIR
