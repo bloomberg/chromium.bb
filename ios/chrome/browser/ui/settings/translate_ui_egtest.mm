@@ -18,12 +18,10 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::ContentSettingsButton;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsMenuBackButton;
 
-namespace {
-// Displacement for scroll action.
-const CGFloat kScrollDisplacement = 50.0;
-}  // namespace
 @interface TranslateUITestCase : ChromeTestCase
 @end
 
@@ -36,13 +34,8 @@ const CGFloat kScrollDisplacement = 50.0;
   // TODO(crbug.com/606815): This and close settings is mostly shared with block
   // popups settings tests, and others. See if this can move to shared code.
   [ChromeEarlGreyUI openSettingsMenu];
-  [[[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_SETTINGS_TITLE)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  kScrollDisplacement)
-      onElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
+
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_TRANSLATE_SETTING)]
@@ -56,18 +49,10 @@ const CGFloat kScrollDisplacement = 50.0;
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 
   // Close settings.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"ic_arrow_back"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"ic_arrow_back"),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   nil)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 }

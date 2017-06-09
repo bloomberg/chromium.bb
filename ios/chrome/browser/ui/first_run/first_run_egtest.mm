@@ -40,6 +40,7 @@ using chrome_test_util::AccountConsistencySetupSigninButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsMenuBackButton;
 
 namespace {
 
@@ -155,7 +156,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
                                           IDS_IOS_FIRSTRUN_TERMS_TITLE))]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"ic_arrow_back")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
 
   // Ensure we went back to the First Run screen.

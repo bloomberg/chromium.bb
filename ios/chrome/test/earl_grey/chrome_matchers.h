@@ -120,6 +120,12 @@ id<GREYMatcher> SettingsAccountButton();
 // Returns matcher for the menu button to sync accounts.
 id<GREYMatcher> AccountsSyncButton();
 
+// Returns matcher for the Content Settings button on the main Settings screen.
+id<GREYMatcher> ContentSettingsButton();
+
+// Returns matcher for the back button on a settings menu.
+id<GREYMatcher> SettingsMenuBackButton();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
