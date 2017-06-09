@@ -89,8 +89,6 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "title", IDS_MD_BOOKMARK_MANAGER_TITLE);
   AddLocalizedString(source, "toastFolderSorted",
                      IDS_MD_BOOKMARK_MANAGER_TOAST_FOLDER_SORTED);
-  AddLocalizedString(source, "toastItemDeleted",
-                     IDS_MD_BOOKMARK_MANAGER_TOAST_ITEM_DELETED);
   AddLocalizedString(source, "toastUrlCopied",
                      IDS_MD_BOOKMARK_MANAGER_TOAST_URL_COPIED);
   AddLocalizedString(source, "undo", IDS_BOOKMARK_BAR_UNDO);

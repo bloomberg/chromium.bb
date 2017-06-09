@@ -192,20 +192,20 @@ cr.define('bookmarks', function() {
           break;
         case Command.DELETE:
           var idList = Array.from(this.minimizeDeletionSet_(itemIds));
-          var labelPromise;
-          if (idList.length == 1) {
-            // TODO(calamity): fold this separate label into
-            // 'toastItemsDeleted'.
-            labelPromise = Promise.resolve(loadTimeData.getStringF(
-                'toastItemDeleted', this.getState().nodes[idList[0]].title));
-          } else {
-            labelPromise = cr.sendWithPromise(
-                'getPluralString', 'toastItemsDeleted', idList.length);
-          }
+          var title = this.getState().nodes[idList[0]].title;
+          var labelPromise = cr.sendWithPromise(
+              'getPluralString', 'toastItemsDeleted', idList.length);
           chrome.bookmarkManagerPrivate.removeTrees(idList, function() {
             labelPromise.then(function(label) {
-              bookmarks.ToastManager.getInstance().show(label, true);
-            });
+              var pieces = loadTimeData.getSubstitutedStringPieces(label, title)
+                               .map(function(p) {
+                                 // Make the bookmark name collapsible.
+                                 p.collapsible = !!p.arg;
+                                 return p;
+                               });
+              bookmarks.ToastManager.getInstance().showForStringPieces(
+                  pieces, true);
+            }.bind(this));
           }.bind(this));
           break;
         case Command.UNDO:

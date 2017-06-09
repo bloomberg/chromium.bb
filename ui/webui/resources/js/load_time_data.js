@@ -87,10 +87,60 @@ function LoadTimeData(){}
       if (!value)
         return '';
 
+      var args = Array.prototype.slice.call(arguments);
+      args[0] = value;
+      return this.substituteString.apply(this, args);
+    },
+
+    /**
+     * Returns a formatted localized string where $1 to $9 are replaced by the
+     * second to the tenth argument. Any standalone $ signs must be escaped as
+     * $$.
+     * @param {string} label The label to substitute through.
+     *     This is not an resource ID.
+     * @param {...(string|number)} var_args The extra values to include in the
+     *     formatted output.
+     * @return {string} The formatted string.
+     */
+    substituteString: function(label, var_args) {
       var varArgs = arguments;
-      return value.replace(/\$[$1-9]/g, function(m) {
+      return label.replace(/\$(.|$|\n)/g, function(m) {
+        assert(m.match(/\$[$1-9]/), 'Unescaped $ found in localized string.');
         return m == '$$' ? '$' : varArgs[m[1]];
       });
+    },
+
+    /**
+     * Returns a formatted string where $1 to $9 are replaced by the second to
+     * tenth argument, split apart into a list of pieces describing how the
+     * substitution was performed. Any standalone $ signs must be escaped as $$.
+     * @param {string} label A localized string to substitute through.
+     *     This is not an resource ID.
+     * @param {...(string|number)} var_args The extra values to include in the
+     *     formatted output.
+     * @return {!Array<!{value: string, arg: (null|string)}>} The formatted
+     *     string pieces.
+     */
+    getSubstitutedStringPieces: function(label, var_args) {
+      var varArgs = arguments;
+      // Split the string by separately matching all occurrences of $1-9 and of
+      // non $1-9 pieces.
+      var pieces = (label.match(/(\$[1-9])|(([^$]|\$([^1-9]|$))+)/g) ||
+                    []).map(function(p) {
+        // Pieces that are not $1-9 should be returned after replacing $$
+        // with $.
+        if (!p.match(/^\$[1-9]$/)) {
+          assert(
+              (p.match(/\$/g) || []).length % 2 == 0,
+              'Unescaped $ found in localized string.');
+          return {value: p.replace(/\$\$/g, '$'), arg: null};
+        }
+
+        // Otherwise, return the substitution value.
+        return {value: varArgs[p[1]], arg: p};
+      });
+
+      return pieces;
     },
 
     /**
