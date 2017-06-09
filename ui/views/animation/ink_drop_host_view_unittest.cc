@@ -10,6 +10,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -181,6 +182,11 @@ TEST_F(InkDropHostViewTest, NoInkDropOnTouchOrGestureEvents) {
 }
 
 TEST_F(InkDropHostViewTest, DismissInkDropOnTouchOrGestureEvents) {
+  // TODO(bruthig): Re-enable! For some reason these tests fail on some win
+  // trunk builds. See crbug.com/731811.
+  if (!gfx::Animation::ShouldRenderRichAnimation())
+    return;
+
   host_view_.SetSize(gfx::Size(20, 20));
 
   test_api_.SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);

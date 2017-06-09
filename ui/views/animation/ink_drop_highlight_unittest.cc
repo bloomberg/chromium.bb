@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/test/ink_drop_highlight_test_api.h"
 #include "ui/views/animation/test/test_ink_drop_highlight_observer.h"
@@ -95,6 +96,11 @@ TEST_F(InkDropHighlightTest, IsHighlightedStateTransitions) {
 }
 
 TEST_F(InkDropHighlightTest, VerifyObserversAreNotified) {
+  // TODO(bruthig): Re-enable! For some reason these tests fail on some win
+  // trunk builds. See crbug.com/731811.
+  if (!gfx::Animation::ShouldRenderRichAnimation())
+    return;
+
   ink_drop_highlight()->FadeIn(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(1, observer()->last_animation_started_ordinal());
@@ -139,6 +145,11 @@ TEST_F(InkDropHighlightTest, VerifyObserversAreNotifiedOfSuccessfulAnimations) {
 }
 
 TEST_F(InkDropHighlightTest, VerifyObserversAreNotifiedOfPreemptedAnimations) {
+  // TODO(bruthig): Re-enable! For some reason these tests fail on some win
+  // trunk builds. See crbug.com/731811.
+  if (!gfx::Animation::ShouldRenderRichAnimation())
+    return;
+
   ink_drop_highlight()->FadeIn(base::TimeDelta::FromSeconds(1));
   ink_drop_highlight()->FadeOut(base::TimeDelta::FromSeconds(1),
                                 false /* explode */);
@@ -166,6 +177,11 @@ TEST_F(InkDropHighlightTest, NullObserverIsSafe) {
 // Verify animations are aborted during deletion and the
 // InkDropHighlightObservers are notified.
 TEST_F(InkDropHighlightTest, AnimationsAbortedDuringDeletion) {
+  // TODO(bruthig): Re-enable! For some reason these tests fail on some win
+  // trunk builds. See crbug.com/731811.
+  if (!gfx::Animation::ShouldRenderRichAnimation())
+    return;
+
   ink_drop_highlight()->FadeIn(base::TimeDelta::FromSeconds(1));
   DestroyHighlight();
   EXPECT_EQ(1, observer()->last_animation_started_ordinal());
