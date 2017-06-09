@@ -103,9 +103,6 @@ static struct av1_token ext_tx_intra_encodings[EXT_TX_SETS_INTRA][TX_TYPES];
 #else
 static struct av1_token ext_tx_encodings[TX_TYPES];
 #endif  // CONFIG_EXT_TX
-#if CONFIG_GLOBAL_MOTION
-static struct av1_token global_motion_types_encodings[GLOBAL_TRANS_TYPES];
-#endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP
 static struct av1_token intra_filter_encodings[INTRA_FILTERS];
@@ -178,10 +175,6 @@ void av1_encode_token_init(void) {
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   av1_tokens_from_tree(motion_mode_encodings, av1_motion_mode_tree);
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-#if CONFIG_GLOBAL_MOTION
-  av1_tokens_from_tree(global_motion_types_encodings,
-                       av1_global_motion_types_tree);
-#endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_LOOP_RESTORATION
   av1_tokens_from_tree(switchable_restore_encodings,
                        av1_switchable_restore_tree);
@@ -4704,13 +4697,13 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 #if CONFIG_GLOBAL_MOTION
 static void write_global_motion_params(WarpedMotionParams *params,
                                        WarpedMotionParams *ref_params,
-                                       aom_prob *probs, aom_writer *w,
-                                       int allow_hp) {
+                                       aom_writer *w, int allow_hp) {
   TransformationType type = params->wmtype;
   int trans_bits;
   int trans_prec_diff;
-  av1_write_token(w, av1_global_motion_types_tree, probs,
-                  &global_motion_types_encodings[type]);
+  aom_write_bit(w, type != IDENTITY);
+  if (type != IDENTITY) aom_write_literal(w, type - 1, GLOBAL_TYPE_BITS);
+
   switch (type) {
     case HOMOGRAPHY:
     case HORTRAPEZOID:
@@ -4776,9 +4769,9 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    write_global_motion_params(
-        &cm->global_motion[frame], &cm->prev_frame->global_motion[frame],
-        cm->fc->global_motion_types_prob, w, cm->allow_high_precision_mv);
+    write_global_motion_params(&cm->global_motion[frame],
+                               &cm->prev_frame->global_motion[frame], w,
+                               cm->allow_high_precision_mv);
     /*
     printf("Frame %d/%d: Enc Ref %d (used %d): %d %d %d %d\n",
            cm->current_video_frame, cm->show_frame, frame,

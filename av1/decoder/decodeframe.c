@@ -4790,10 +4790,9 @@ static void read_supertx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 #if CONFIG_GLOBAL_MOTION
 static void read_global_motion_params(WarpedMotionParams *params,
                                       WarpedMotionParams *ref_params,
-                                      aom_prob *probs, aom_reader *r,
-                                      int allow_hp) {
-  TransformationType type =
-      aom_read_tree(r, av1_global_motion_types_tree, probs, ACCT_STR);
+                                      aom_reader *r, int allow_hp) {
+  TransformationType type = aom_read_bit(r, ACCT_STR);
+  if (type != IDENTITY) type += aom_read_literal(r, GLOBAL_TYPE_BITS, ACCT_STR);
   int trans_bits;
   int trans_dec_factor;
   int trans_prec_diff;
@@ -4878,9 +4877,9 @@ static void read_global_motion_params(WarpedMotionParams *params,
 static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    read_global_motion_params(
-        &cm->global_motion[frame], &cm->prev_frame->global_motion[frame],
-        cm->fc->global_motion_types_prob, r, cm->allow_high_precision_mv);
+    read_global_motion_params(&cm->global_motion[frame],
+                              &cm->prev_frame->global_motion[frame], r,
+                              cm->allow_high_precision_mv);
     /*
     printf("Dec Ref %d [%d/%d]: %d %d %d %d\n",
            frame, cm->current_video_frame, cm->show_frame,

@@ -130,43 +130,6 @@ static const uint8_t log_in_base_2[] = {
   9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10
 };
 
-#if CONFIG_GLOBAL_MOTION
-#if GLOBAL_TRANS_TYPES == 7  // All models
-const aom_tree_index av1_global_motion_types_tree[TREE_SIZE(
-    GLOBAL_TRANS_TYPES)] = { -IDENTITY,   2,  -TRANSLATION,  4,
-                             -ROTZOOM,    6,  -AFFINE,       8,
-                             -HOMOGRAPHY, 10, -HORTRAPEZOID, -VERTRAPEZOID };
-
-static const aom_prob default_global_motion_types_prob[GLOBAL_TRANS_TYPES - 1] =
-    { 224, 128, 192, 192, 32, 128 };
-
-#elif GLOBAL_TRANS_TYPES == 6  // Do not allow full homography
-const aom_tree_index
-    av1_global_motion_types_tree[TREE_SIZE(GLOBAL_TRANS_TYPES)] = {
-      -IDENTITY,    2, -TRANSLATION, 4, -ROTZOOM, 6, -AFFINE, 8, -HORTRAPEZOID,
-      -VERTRAPEZOID
-    };
-
-static const aom_prob default_global_motion_types_prob[GLOBAL_TRANS_TYPES - 1] =
-    { 224, 128, 192, 192, 128 };
-
-#elif GLOBAL_TRANS_TYPES == 4  // Upto Affine
-const aom_tree_index av1_global_motion_types_tree[TREE_SIZE(
-    GLOBAL_TRANS_TYPES)] = { -IDENTITY, 2, -TRANSLATION, 4, -ROTZOOM, -AFFINE };
-
-static const aom_prob default_global_motion_types_prob[GLOBAL_TRANS_TYPES - 1] =
-    { 224, 128, 240 };
-
-#elif GLOBAL_TRANS_TYPES == 3  // Upto rotation-zoom
-
-const aom_tree_index av1_global_motion_types_tree[TREE_SIZE(
-    GLOBAL_TRANS_TYPES)] = { -IDENTITY, 2, -TRANSLATION, -ROTZOOM };
-
-static const aom_prob default_global_motion_types_prob[GLOBAL_TRANS_TYPES - 1] =
-    { 224, 128 };
-#endif                         // GLOBAL_TRANS_TYPES
-#endif                         // CONFIG_GLOBAL_MOTION
-
 static INLINE int mv_class_base(MV_CLASS_TYPE c) {
   return c ? CLASS0_SIZE << (c + 2) : 0;
 }
@@ -293,7 +256,4 @@ void av1_init_mv_probs(AV1_COMMON *cm) {
 #if CONFIG_INTRABC
   cm->fc->ndvc = default_nmv_context;
 #endif  // CONFIG_INTRABC
-#if CONFIG_GLOBAL_MOTION
-  av1_copy(cm->fc->global_motion_types_prob, default_global_motion_types_prob);
-#endif  // CONFIG_GLOBAL_MOTION
 }

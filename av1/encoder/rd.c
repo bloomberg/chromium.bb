@@ -147,8 +147,9 @@ static void fill_mode_costs(AV1_COMP *cpi) {
                   av1_switchable_restore_tree);
 #endif  // CONFIG_LOOP_RESTORATION
 #if CONFIG_GLOBAL_MOTION
-  av1_cost_tokens(cpi->gmtype_cost, fc->global_motion_types_prob,
-                  av1_global_motion_types_tree);
+  for (i = 0; i < TRANS_TYPES; ++i)
+    cpi->gmtype_cost[i] = (1 + (i > 0 ? GLOBAL_TYPE_BITS : 0))
+                          << AV1_PROB_COST_SHIFT;
 #endif  // CONFIG_GLOBAL_MOTION
 }
 
