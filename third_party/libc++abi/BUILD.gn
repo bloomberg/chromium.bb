@@ -28,8 +28,8 @@ source_set("libc++abi") {
     "trunk/src/stdlib_stdexcept.cpp",
     "trunk/src/stdlib_typeinfo.cpp",
   ]
-  if (is_linux && !is_mac) {
-    sources == [ "trunk/src/cxa_thread_atexit.cpp" ]
+  if (is_posix && !is_mac) {
+    sources += [ "trunk/src/cxa_thread_atexit.cpp" ]
   }
   configs -= [
     "//build/config/compiler:chromium_code",
