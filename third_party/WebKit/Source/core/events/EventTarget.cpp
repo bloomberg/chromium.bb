@@ -43,10 +43,12 @@
 #include "core/events/Event.h"
 #include "core/events/EventUtil.h"
 #include "core/events/PointerEvent.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Histogram.h"
@@ -241,7 +243,16 @@ void EventTarget::SetDefaultAddEventListenerOptions(
         if (executing_window) {
           UseCounter::Count(executing_window->document(),
                             WebFeature::kSmoothScrollJSInterventionActivated);
+
+          executing_window->GetFrame()->Console().AddMessage(
+              ConsoleMessage::Create(
+                  kInterventionMessageSource, kWarningMessageLevel,
+                  "Registering mousewheel event as passive due to "
+                  "smoothscroll.js usage. The smoothscroll.js library is "
+                  "buggy, no longer necessary and degrades performance. See "
+                  "https://www.chromestatus.com/feature/5749447073988608"));
         }
+
         return;
       }
     }
