@@ -7,10 +7,10 @@
 // base CSSStyleValues.
 // Spec: https://drafts.css-houdini.org/css-typed-om/#stylevalue-objects
 [
-  Exposed=(Window,PaintWorklet),
-  RuntimeEnabled=CSSTypedOM,
+  Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI),
 ] interface CSSStyleValue {
   stringifier;
   // TODO(meade): Should be (CSSStyleValue or sequence<CSSStyleValue>)? instead of object?. Fix when the code generator supports this.
-  [RaisesException, CallWith=ScriptState] static object? parse(DOMString property, DOMString cssText);
+  // Putting Exposed=Window in the next line makes |parse| not exposed to PaintWorklet.
+  [RaisesException, CallWith=ScriptState, Exposed=Window] static object? parse(DOMString property, DOMString cssText);
 };
