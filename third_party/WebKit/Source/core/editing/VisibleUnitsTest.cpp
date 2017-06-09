@@ -1050,18 +1050,16 @@ TEST_F(VisibleUnitsTest, localCaretRectOfPosition) {
 
   Element* one = GetDocument().getElementById("one");
 
-  LayoutObject* layout_object_from_dom_tree;
-  LayoutRect layout_rect_from_dom_tree = LocalCaretRectOfPosition(
-      Position(one->firstChild(), 0), layout_object_from_dom_tree);
+  const LocalCaretRect& caret_rect_from_dom_tree =
+      LocalCaretRectOfPosition(Position(one->firstChild(), 0));
 
-  LayoutObject* layout_object_from_flat_tree;
-  LayoutRect layout_rect_from_flat_tree = LocalCaretRectOfPosition(
-      PositionInFlatTree(one->firstChild(), 0), layout_object_from_flat_tree);
+  const LocalCaretRect& caret_rect_from_flat_tree =
+      LocalCaretRectOfPosition(PositionInFlatTree(one->firstChild(), 0));
 
-  EXPECT_TRUE(layout_object_from_dom_tree);
-  EXPECT_FALSE(layout_rect_from_dom_tree.IsEmpty());
-  EXPECT_EQ(layout_object_from_dom_tree, layout_object_from_flat_tree);
-  EXPECT_EQ(layout_rect_from_dom_tree, layout_rect_from_flat_tree);
+  EXPECT_FALSE(caret_rect_from_dom_tree.IsEmpty());
+  EXPECT_EQ(caret_rect_from_dom_tree.layout_object,
+            caret_rect_from_flat_tree.layout_object);
+  EXPECT_EQ(caret_rect_from_dom_tree.rect, caret_rect_from_flat_tree.rect);
 }
 
 TEST_F(VisibleUnitsTest, logicalEndOfLine) {

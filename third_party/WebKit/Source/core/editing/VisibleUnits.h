@@ -64,6 +64,18 @@ struct InlineBoxPosition {
   }
 };
 
+// This struct represents local caret rectangle in |layout_object|.
+struct LocalCaretRect {
+  LayoutObject* layout_object = nullptr;
+  LayoutRect rect;
+
+  LocalCaretRect() = default;
+  LocalCaretRect(LayoutObject* layout_object, const LayoutRect& rect)
+      : layout_object(layout_object), rect(rect) {}
+
+  bool IsEmpty() const { return !layout_object || rect.IsEmpty(); }
+};
+
 // The print for |InlineBoxPosition| is available only for testing
 // in "webkit_unit_tests", and implemented in
 // "core/editing/VisibleUnitsTest.cpp".
@@ -306,10 +318,10 @@ ComputeInlineBoxPosition(const PositionInFlatTree&,
 CORE_EXPORT InlineBoxPosition ComputeInlineBoxPosition(const VisiblePosition&);
 
 // Rect is local to the returned layoutObject
-CORE_EXPORT LayoutRect LocalCaretRectOfPosition(const PositionWithAffinity&,
-                                                LayoutObject*&);
-CORE_EXPORT LayoutRect
-LocalCaretRectOfPosition(const PositionInFlatTreeWithAffinity&, LayoutObject*&);
+CORE_EXPORT LocalCaretRect
+LocalCaretRectOfPosition(const PositionWithAffinity&);
+CORE_EXPORT LocalCaretRect
+LocalCaretRectOfPosition(const PositionInFlatTreeWithAffinity&);
 bool HasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
 
 // Returns a hit-tested VisiblePosition for the given point in contents-space

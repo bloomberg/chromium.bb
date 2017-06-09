@@ -802,26 +802,24 @@ static LayoutUnit LineDirectionPointForBlockDirectionNavigationOf(
   if (visible_position.IsNull())
     return LayoutUnit();
 
-  LayoutObject* layout_object;
-  LayoutRect local_rect = LocalCaretRectOfPosition(
-      visible_position.ToPositionWithAffinity(), layout_object);
-  if (local_rect.IsEmpty() || !layout_object)
+  const LocalCaretRect& caret_rect =
+      LocalCaretRectOfPosition(visible_position.ToPositionWithAffinity());
+  if (caret_rect.IsEmpty())
     return LayoutUnit();
 
   // This ignores transforms on purpose, for now. Vertical navigation is done
   // without consulting transforms, so that 'up' in transformed text is 'up'
   // relative to the text, not absolute 'up'.
-  FloatPoint caret_point =
-      layout_object->LocalToAbsolute(FloatPoint(local_rect.Location()));
-  LayoutObject* containing_block = layout_object->ContainingBlock();
-  if (!containing_block) {
-    // Just use ourselves to determine the writing mode if we have no containing
-    // block.
-    containing_block = layout_object;
-  }
-  return LayoutUnit(containing_block->IsHorizontalWritingMode()
-                        ? caret_point.X()
-                        : caret_point.Y());
+  const FloatPoint& caret_point = caret_rect.layout_object->LocalToAbsolute(
+      FloatPoint(caret_rect.rect.Location()));
+  LayoutObject* const containing_block =
+      caret_rect.layout_object->ContainingBlock();
+  // Just use ourselves to determine the writing mode if we have no containing
+  // block.
+  LayoutObject* const layout_object =
+      containing_block ? containing_block : caret_rect.layout_object;
+  return LayoutUnit(layout_object->IsHorizontalWritingMode() ? caret_point.X()
+                                                             : caret_point.Y());
 }
 
 LayoutUnit SelectionModifier::LineDirectionPointForBlockDirectionNavigation(

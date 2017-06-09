@@ -74,24 +74,25 @@ LayoutBlock* CaretDisplayItemClient::CaretLayoutBlock(const Node* node) {
 }
 
 static LayoutRect MapCaretRectToCaretPainter(
-    LayoutItem caret_layout_item,
-    LayoutBlockItem caret_painter_item,
-    const LayoutRect& passed_caret_rect) {
+    const LayoutBlockItem& caret_painter_item,
+    const LocalCaretRect& caret_rect) {
   // FIXME: This shouldn't be called on un-rooted subtrees.
   // FIXME: This should probably just use mapLocalToAncestor.
   // Compute an offset between the caretLayoutItem and the caretPainterItem.
 
+  LayoutItem caret_layout_item = LayoutItem(caret_rect.layout_object);
   DCHECK(caret_layout_item.IsDescendantOf(caret_painter_item));
 
-  LayoutRect caret_rect = passed_caret_rect;
+  LayoutRect result_rect = caret_rect.rect;
+  caret_painter_item.FlipForWritingMode(result_rect);
   while (caret_layout_item != caret_painter_item) {
     LayoutItem container_item = caret_layout_item.Container();
     if (container_item.IsNull())
       return LayoutRect();
-    caret_rect.Move(caret_layout_item.OffsetFromContainer(container_item));
+    result_rect.Move(caret_layout_item.OffsetFromContainer(container_item));
     caret_layout_item = container_item;
   }
-  return caret_rect;
+  return result_rect;
 }
 
 LayoutRect CaretDisplayItemClient::ComputeCaretRect(
@@ -102,19 +103,13 @@ LayoutRect CaretDisplayItemClient::ComputeCaretRect(
   DCHECK(caret_position.AnchorNode()->GetLayoutObject());
 
   // First compute a rect local to the layoutObject at the selection start.
-  LayoutObject* layout_object;
-  const LayoutRect& caret_local_rect =
-      LocalCaretRectOfPosition(caret_position, layout_object);
+  const LocalCaretRect& caret_rect = LocalCaretRectOfPosition(caret_position);
 
   // Get the layoutObject that will be responsible for painting the caret
   // (which is either the layoutObject we just found, or one of its containers).
-  LayoutBlockItem caret_painter_item =
+  const LayoutBlockItem caret_painter_item =
       LayoutBlockItem(CaretLayoutBlock(caret_position.AnchorNode()));
-  LayoutRect caret_local_rect_with_writing_mode = caret_local_rect;
-  caret_painter_item.FlipForWritingMode(caret_local_rect_with_writing_mode);
-  return MapCaretRectToCaretPainter(LayoutItem(layout_object),
-                                    caret_painter_item,
-                                    caret_local_rect_with_writing_mode);
+  return MapCaretRectToCaretPainter(caret_painter_item, caret_rect);
 }
 
 void CaretDisplayItemClient::ClearPreviousVisualRect(const LayoutBlock& block) {

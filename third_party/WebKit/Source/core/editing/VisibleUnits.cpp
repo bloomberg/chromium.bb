@@ -977,90 +977,90 @@ InlineBoxPosition ComputeInlineBoxPosition(const PositionInFlatTree& position,
       position, affinity, primary_direction);
 }
 
+// TODO(editing-dev): Once we mark |LayoutObject::LocalCaretRect()| |const|,
+// we should make this function to take |const LayoutObject&|.
+static LocalCaretRect ComputeLocalCaretRect(
+    LayoutObject* layout_object,
+    const InlineBoxPosition box_position) {
+  return LocalCaretRect(
+      layout_object, layout_object->LocalCaretRect(box_position.inline_box,
+                                                   box_position.offset_in_box));
+}
+
 template <typename Strategy>
-LayoutRect LocalCaretRectOfPositionTemplate(
-    const PositionWithAffinityTemplate<Strategy>& position,
-    LayoutObject*& layout_object) {
-  if (position.IsNull()) {
-    layout_object = nullptr;
-    return LayoutRect();
-  }
-  Node* node = position.AnchorNode();
-
-  layout_object = node->GetLayoutObject();
+LocalCaretRect LocalCaretRectOfPositionTemplate(
+    const PositionWithAffinityTemplate<Strategy>& position) {
+  if (position.IsNull())
+    return LocalCaretRect();
+  Node* const node = position.AnchorNode();
+  LayoutObject* const layout_object = node->GetLayoutObject();
   if (!layout_object)
-    return LayoutRect();
+    return LocalCaretRect();
 
-  InlineBoxPosition box_position =
+  const InlineBoxPosition& box_position =
       ComputeInlineBoxPosition(position.GetPosition(), position.Affinity());
 
-  if (box_position.inline_box)
-    layout_object = LineLayoutAPIShim::LayoutObjectFrom(
-        box_position.inline_box->GetLineLayoutItem());
-
-  return layout_object->LocalCaretRect(box_position.inline_box,
-                                       box_position.offset_in_box);
+  if (box_position.inline_box) {
+    return ComputeLocalCaretRect(
+        LineLayoutAPIShim::LayoutObjectFrom(
+            box_position.inline_box->GetLineLayoutItem()),
+        box_position);
+  }
+  return ComputeLocalCaretRect(layout_object, box_position);
 }
 
 // This function was added because the caret rect that is calculated by
 // using the line top value instead of the selection top.
 template <typename Strategy>
-LayoutRect LocalSelectionRectOfPositionTemplate(
-    const PositionWithAffinityTemplate<Strategy>& position,
-    LayoutObject*& layout_object) {
-  if (position.IsNull()) {
-    layout_object = nullptr;
-    return LayoutRect();
-  }
-  Node* node = position.AnchorNode();
-  layout_object = node->GetLayoutObject();
-  if (!layout_object)
-    return LayoutRect();
+LocalCaretRect LocalSelectionRectOfPositionTemplate(
+    const PositionWithAffinityTemplate<Strategy>& position) {
+  if (position.IsNull())
+    return LocalCaretRect();
+  Node* const node = position.AnchorNode();
+  if (!node->GetLayoutObject())
+    return LocalCaretRect();
 
-  InlineBoxPosition box_position =
+  const InlineBoxPosition& box_position =
       ComputeInlineBoxPosition(position.GetPosition(), position.Affinity());
 
   if (!box_position.inline_box)
-    return LayoutRect();
+    return LocalCaretRect();
 
-  layout_object = LineLayoutAPIShim::LayoutObjectFrom(
+  LayoutObject* const layout_object = LineLayoutAPIShim::LayoutObjectFrom(
       box_position.inline_box->GetLineLayoutItem());
 
-  LayoutRect rect = layout_object->LocalCaretRect(box_position.inline_box,
-                                                  box_position.offset_in_box);
+  const LayoutRect& rect = layout_object->LocalCaretRect(
+      box_position.inline_box, box_position.offset_in_box);
 
   if (rect.IsEmpty())
-    return rect;
+    return LocalCaretRect();
 
   InlineBox* const box = box_position.inline_box;
   if (layout_object->Style()->IsHorizontalWritingMode()) {
-    rect.SetY(box->Root().SelectionTop());
-    rect.SetHeight(box->Root().SelectionHeight());
-    return rect;
+    return LocalCaretRect(
+        layout_object,
+        LayoutRect(LayoutPoint(rect.X(), box->Root().SelectionTop()),
+                   LayoutSize(rect.Width(), box->Root().SelectionHeight())));
   }
 
-  rect.SetX(box->Root().SelectionTop());
-  rect.SetWidth(box->Root().SelectionHeight());
-  return rect;
+  return LocalCaretRect(
+      layout_object,
+      LayoutRect(LayoutPoint(box->Root().SelectionTop(), rect.Y()),
+                 LayoutSize(box->Root().SelectionHeight(), rect.Height())));
 }
 
-LayoutRect LocalCaretRectOfPosition(const PositionWithAffinity& position,
-                                    LayoutObject*& layout_object) {
-  return LocalCaretRectOfPositionTemplate<EditingStrategy>(position,
-                                                           layout_object);
+LocalCaretRect LocalCaretRectOfPosition(const PositionWithAffinity& position) {
+  return LocalCaretRectOfPositionTemplate<EditingStrategy>(position);
 }
 
-LayoutRect LocalSelectionRectOfPosition(const PositionWithAffinity& position,
-                                        LayoutObject*& layout_object) {
-  return LocalSelectionRectOfPositionTemplate<EditingStrategy>(position,
-                                                               layout_object);
+static LocalCaretRect LocalSelectionRectOfPosition(
+    const PositionWithAffinity& position) {
+  return LocalSelectionRectOfPositionTemplate<EditingStrategy>(position);
 }
 
-LayoutRect LocalCaretRectOfPosition(
-    const PositionInFlatTreeWithAffinity& position,
-    LayoutObject*& layout_object) {
-  return LocalCaretRectOfPositionTemplate<EditingInFlatTreeStrategy>(
-      position, layout_object);
+LocalCaretRect LocalCaretRectOfPosition(
+    const PositionInFlatTreeWithAffinity& position) {
+  return LocalCaretRectOfPositionTemplate<EditingInFlatTreeStrategy>(position);
 }
 
 static LayoutUnit BoundingBoxLogicalHeight(LayoutObject* o,
@@ -1200,20 +1200,23 @@ static bool InRenderedText(const PositionTemplate<Strategy>& position) {
   return false;
 }
 
+static FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
+  return caret_rect.layout_object->LocalToAbsoluteQuad(
+      FloatRect(caret_rect.rect));
+}
+
 bool RendersInDifferentPosition(const Position& position1,
                                 const Position& position2) {
   if (position1.IsNull() || position2.IsNull())
     return false;
-  LayoutObject* layout_object1;
-  const LayoutRect& rect1 =
-      LocalCaretRectOfPosition(PositionWithAffinity(position1), layout_object1);
-  LayoutObject* layout_object2;
-  const LayoutRect& rect2 =
-      LocalCaretRectOfPosition(PositionWithAffinity(position2), layout_object2);
-  if (!layout_object1 || !layout_object2)
-    return layout_object1 != layout_object2;
-  return layout_object1->LocalToAbsoluteQuad(FloatRect(rect1)) !=
-         layout_object2->LocalToAbsoluteQuad(FloatRect(rect2));
+  const LocalCaretRect& caret_rect1 =
+      LocalCaretRectOfPosition(PositionWithAffinity(position1));
+  const LocalCaretRect& caret_rect2 =
+      LocalCaretRectOfPosition(PositionWithAffinity(position2));
+  if (!caret_rect1.layout_object || !caret_rect2.layout_object)
+    return caret_rect1.layout_object != caret_rect2.layout_object;
+  return LocalToAbsoluteQuadOf(caret_rect1) !=
+         LocalToAbsoluteQuadOf(caret_rect2);
 }
 
 static bool IsVisuallyEmpty(const LayoutObject* layout) {
@@ -1725,14 +1728,11 @@ template <typename Strategy>
 static IntRect AbsoluteCaretBoundsOfAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position) {
   DCHECK(visible_position.IsValid()) << visible_position;
-  LayoutObject* layout_object;
-  LayoutRect local_rect = LocalCaretRectOfPosition(
-      visible_position.ToPositionWithAffinity(), layout_object);
-  if (local_rect.IsEmpty() || !layout_object)
+  const LocalCaretRect& caret_rect =
+      LocalCaretRectOfPosition(visible_position.ToPositionWithAffinity());
+  if (caret_rect.IsEmpty())
     return IntRect();
-
-  return layout_object->LocalToAbsoluteQuad(FloatRect(local_rect))
-      .EnclosingBoundingBox();
+  return LocalToAbsoluteQuadOf(caret_rect).EnclosingBoundingBox();
 }
 
 IntRect AbsoluteCaretBoundsOf(const VisiblePosition& visible_position) {
@@ -1743,14 +1743,11 @@ template <typename Strategy>
 static IntRect AbsoluteSelectionBoundsOfAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position) {
   DCHECK(visible_position.IsValid()) << visible_position;
-  LayoutObject* layout_object;
-  LayoutRect local_rect = LocalSelectionRectOfPosition(
-      visible_position.ToPositionWithAffinity(), layout_object);
-  if (local_rect.IsEmpty() || !layout_object)
+  const LocalCaretRect& caret_rect =
+      LocalSelectionRectOfPosition(visible_position.ToPositionWithAffinity());
+  if (caret_rect.IsEmpty())
     return IntRect();
-
-  return layout_object->LocalToAbsoluteQuad(FloatRect(local_rect))
-      .EnclosingBoundingBox();
+  return LocalToAbsoluteQuadOf(caret_rect).EnclosingBoundingBox();
 }
 
 IntRect AbsoluteSelectionBoundsOf(const VisiblePosition& visible_position) {
