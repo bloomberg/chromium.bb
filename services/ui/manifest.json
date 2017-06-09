@@ -42,6 +42,9 @@
         "ime_registrar": [
           "ui::mojom::IMERegistrar"
         ],
+        "input_device_controller": [
+          "ui::mojom::InputDeviceController"
+        ],
         "user_access_manager": [
           "ui::mojom::UserAccessManager"
         ],
