@@ -17,19 +17,16 @@ var portNumber;
 // methods, etc). If any of these stages failed, the test itself would also
 // fail.
 var tests = [
-  function idleApi() {
-    chrome.test.assertTrue(!!chrome.idle);
-    chrome.test.assertTrue(!!chrome.idle.IdleState);
-    chrome.test.assertTrue(!!chrome.idle.IdleState.IDLE);
-    chrome.test.assertTrue(!!chrome.idle.IdleState.ACTIVE);
-    chrome.test.assertTrue(!!chrome.idle.queryState);
-    chrome.idle.queryState(1000, function(state) {
-      // Depending on the machine, this could come back as either idle or
-      // active. However, all we're curious about is the bindings themselves
-      // (not the API implementation), so as long as it's a possible response,
-      // it's a success for our purposes.
-      chrome.test.assertTrue(state == chrome.idle.IdleState.IDLE ||
-                             state == chrome.idle.IdleState.ACTIVE);
+  function historyApi() {
+    chrome.test.assertTrue(!!chrome.history);
+    chrome.test.assertTrue(!!chrome.history.TransitionType);
+    chrome.test.assertTrue(!!chrome.history.TransitionType.LINK);
+    chrome.test.assertTrue(!!chrome.history.TransitionType.TYPED);
+    chrome.test.assertTrue(!!chrome.history.getVisits);
+    chrome.history.getVisits({url: 'http://example.com'}, function(visits) {
+      // We're just testing the bindings, not the history API, so we don't
+      // care about the response.
+      chrome.test.assertTrue(!!visits);
       chrome.test.succeed();
     });
   },
