@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "components/feature_engagement_tracker/public/feature_constants.h"
 #include "components/flags_ui/feature_entry.h"
 
 namespace feature_engagement_tracker {
@@ -19,15 +20,47 @@ using FeatureVector = std::vector<const base::Feature*>;
 // feature (if any) was selected by the end user.
 extern const char kIPHDemoModeFeatureChoiceParam[];
 
-// The length of kIPHDemoModeChoiceVariations. This must be updated whenever
-// new features are added to the demo mode selection.
-constexpr size_t kIPHDemoModeChoiceVariationsLen = 4;
+namespace {
+
+// Defines a const flags_ui::FeatureEntry::FeatureParam for the given
+// base::Feature. The constant name will be on the form
+// kFooFeature --> kFooFeatureVariation. This is intended to be used with
+// VARIATION_ENTRY below to be able to insert it into an array of
+// flags_ui::FeatureEntry::FeatureVariation.
+#define DEFINE_VARIATION_PARAM(base_feature)                                   \
+  constexpr flags_ui::FeatureEntry::FeatureParam base_feature##Variation[] = { \
+      {kIPHDemoModeFeatureChoiceParam, base_feature.name}}
+
+// Defines a single flags_ui::FeatureEntry::FeatureVariation entry, fully
+// enclosed. This is intended to be used with the declaration of
+// |kIPHDemoModeChoiceVariations| below.
+#define VARIATION_ENTRY(base_feature)                                \
+  {                                                                  \
+    base_feature##Variation[0].param_value, base_feature##Variation, \
+        arraysize(base_feature##Variation), nullptr                  \
+  }
+
+// Defines a flags_ui::FeatureEntry::FeatureParam for each feature.
+DEFINE_VARIATION_PARAM(kIPHDataSaverPreviewFeature);
+DEFINE_VARIATION_PARAM(kIPHDataSaverDetailFeature);
+DEFINE_VARIATION_PARAM(kIPHDownloadPageFeature);
+DEFINE_VARIATION_PARAM(kIPHDownloadHomeFeature);
+
+}  // namespace
 
 // Defines the array of which features should be listed in the chrome://flags
 // UI to be able to select them alone for demo-mode. The features listed here
 // are possible to enable on their own in demo mode.
-extern const flags_ui::FeatureEntry::FeatureVariation
-    kIPHDemoModeChoiceVariations[kIPHDemoModeChoiceVariationsLen];
+constexpr flags_ui::FeatureEntry::FeatureVariation
+    kIPHDemoModeChoiceVariations[] = {
+        VARIATION_ENTRY(kIPHDataSaverPreviewFeature),
+        VARIATION_ENTRY(kIPHDataSaverDetailFeature),
+        VARIATION_ENTRY(kIPHDownloadPageFeature),
+        VARIATION_ENTRY(kIPHDownloadHomeFeature),
+};
+
+#undef DEFINE_VARIATION_PARAM
+#undef VARIATION_ENTRY
 
 // Returns all the features that are in use for engagement tracking.
 FeatureVector GetAllFeatures();

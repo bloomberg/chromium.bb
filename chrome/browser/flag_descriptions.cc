@@ -349,6 +349,11 @@ const char kInertVisualViewportDescription[] =
     "Experiment to have all APIs reflect the layout viewport. This will "
     "make window.scroll properties relative to the layout viewport.";
 
+const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
+
+const char kInProductHelpDemoModeChoiceDescription[] =
+    "Selects the In-Product Help demo mode.";
+
 const char kColorCorrectRenderingName[] = "Color correct rendering";
 
 const char kColorCorrectRenderingDescription[] =
@@ -1964,17 +1969,6 @@ const char kChromeHomeSwipeLogicDescription[] =
     "Various swipe logic options for Chrome Home for sheet expansion.";
 
 const char kChromeHomeSwipeLogicRestrictArea[] = "Restrict swipable area";
-
-#endif  // defined(OS_ANDROID)
-
-//  In-Product Help flags
-
-#if defined(OS_ANDROID)
-
-const char kIphDemoModeChoiceName[] = "In-Product Help Demo Mode";
-
-const char kIphDemoModeChoiceDescription[] =
-    "Selects the In-Product Help demo mode.";
 
 #endif  // defined(OS_ANDROID)
 
