@@ -5,6 +5,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/site_per_process_browsertest.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -153,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
           GetFrameTree()->root();
 
   scoped_refptr<DevToolsAgentHost> main_frame_agent =
-      DevToolsAgentHost::GetOrCreateFor(root->current_frame_host());
+      RenderFrameDevToolsAgentHost::GetOrCreateFor(root);
   EXPECT_EQ(page_agent.get(), main_frame_agent.get());
 
   // Load same-site page into iframe.
@@ -162,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
   NavigateFrameToURL(child, http_url);
 
   scoped_refptr<DevToolsAgentHost> child_frame_agent =
-      DevToolsAgentHost::GetOrCreateFor(child->current_frame_host());
+      RenderFrameDevToolsAgentHost::GetOrCreateFor(child);
   EXPECT_EQ(page_agent.get(), child_frame_agent.get());
 
   // Load cross-site page into iframe.
@@ -172,8 +173,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
   cross_site_url = cross_site_url.ReplaceComponents(replace_host);
   NavigateFrameToURL(root->child_at(0), cross_site_url);
 
-  child_frame_agent =
-      DevToolsAgentHost::GetOrCreateFor(child->current_frame_host());
+  child_frame_agent = RenderFrameDevToolsAgentHost::GetOrCreateFor(child);
   EXPECT_NE(page_agent.get(), child_frame_agent.get());
   EXPECT_EQ(child_frame_agent->GetParentId(), page_agent->GetId());
   EXPECT_NE(child_frame_agent->GetId(), page_agent->GetId());
@@ -199,9 +199,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
 
   // First ask for child frame, then for main frame.
   scoped_refptr<DevToolsAgentHost> child_frame_agent =
-      DevToolsAgentHost::GetOrCreateFor(child->current_frame_host());
+      RenderFrameDevToolsAgentHost::GetOrCreateFor(child);
   scoped_refptr<DevToolsAgentHost> main_frame_agent =
-      DevToolsAgentHost::GetOrCreateFor(root->current_frame_host());
+      RenderFrameDevToolsAgentHost::GetOrCreateFor(root);
   EXPECT_NE(main_frame_agent.get(), child_frame_agent.get());
   EXPECT_EQ(child_frame_agent->GetParentId(), main_frame_agent->GetId());
   EXPECT_NE(child_frame_agent->GetId(), main_frame_agent->GetId());

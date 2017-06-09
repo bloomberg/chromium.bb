@@ -6,6 +6,7 @@
 
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -150,7 +151,7 @@ void TargetHandler::UpdateFrames() {
       bool cross_process = node->current_frame_host()->IsCrossProcessSubframe();
       if (node != root && cross_process) {
         scoped_refptr<DevToolsAgentHost> new_host =
-            DevToolsAgentHost::GetOrCreateFor(node->current_frame_host());
+            RenderFrameDevToolsAgentHost::GetOrCreateFor(node);
         new_hosts[new_host->GetId()] = new_host;
       } else {
         for (size_t i = 0; i < node->child_count(); ++i)
