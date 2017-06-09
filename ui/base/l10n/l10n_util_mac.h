@@ -54,6 +54,12 @@ UI_BASE_EXPORT NSString* GetNSStringF(int message_id,
                                       const base::string16& b,
                                       const base::string16& c,
                                       const base::string16& d);
+UI_BASE_EXPORT NSString* GetNSStringF(int message_id,
+                                      const base::string16& a,
+                                      const base::string16& b,
+                                      const base::string16& c,
+                                      const base::string16& d,
+                                      const base::string16& e);
 
 // Variants that return the offset(s) of the replaced parameters. (See
 // app/l10n_util.h for more details.)
