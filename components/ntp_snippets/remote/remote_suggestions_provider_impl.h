@@ -17,6 +17,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/image_fetcher/core/image_fetcher_delegate.h"
@@ -409,7 +410,9 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   void RestoreCategoriesFromPrefs();
   void StoreCategoriesToPrefs();
 
-  RequestParams BuildFetchParams() const;
+  // Absence of fetched category corresponds to fetching all categories.
+  RequestParams BuildFetchParams(
+      base::Optional<Category> fetched_category) const;
 
   void MarkEmptyCategoriesAsLoading();
 
