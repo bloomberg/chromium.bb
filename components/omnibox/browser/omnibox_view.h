@@ -31,10 +31,6 @@ class OmniboxEditController;
 class OmniboxViewMacTest;
 class OmniboxEditModel;
 
-namespace gfx {
-enum class VectorIconId;
-}
-
 class OmniboxView {
  public:
   // Represents the changes between two State objects.  This is used by the

@@ -50,10 +50,10 @@ class ToolbarModelDelegate {
   // Returns true if the current page fails the malware check.
   virtual bool FailsMalwareCheck() const = 0;
 
-  // Returns the id of the icon to show to the left of the address, or
-  // gfx::VectorIconId::VECTOR_ICON_NONE if the icon should be selected by the
-  // caller. This is useful for associating particular URLs with particular
-  // schemes without importing knowledge of those schemes into this component.
+  // Returns the id of the icon to show to the left of the address, or nullptr
+  // if the icon should be selected by the caller. This is useful for
+  // associating particular URLs with particular schemes without importing
+  // knowledge of those schemes into this component.
   virtual const gfx::VectorIcon* GetVectorIconOverride() const = 0;
 
  protected:
