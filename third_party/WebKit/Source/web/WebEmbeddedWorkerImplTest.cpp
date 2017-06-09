@@ -59,14 +59,12 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
                   std::unique_ptr<WebServiceWorkerClientsCallbacks>) override {
     NOTREACHED();
   }
-  void OpenWindowForClients(
-      const WebURL&,
-      std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
+  void OpenNewTab(const WebURL&,
+                  std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
     NOTREACHED();
   }
-  void OpenWindowForPaymentHandler(
-      const WebURL&,
-      std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
+  void OpenNewPopup(const WebURL&,
+                    std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
     NOTREACHED();
   }
   void PostMessageToClient(const WebString& uuid,

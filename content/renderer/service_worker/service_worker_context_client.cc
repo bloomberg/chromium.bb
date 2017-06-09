@@ -631,7 +631,7 @@ void ServiceWorkerContextClient::GetClients(
       GetRoutingID(), request_id, options));
 }
 
-void ServiceWorkerContextClient::OpenWindowForClients(
+void ServiceWorkerContextClient::OpenNewTab(
     const blink::WebURL& url,
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
@@ -639,7 +639,7 @@ void ServiceWorkerContextClient::OpenWindowForClients(
   Send(new ServiceWorkerHostMsg_OpenNewTab(GetRoutingID(), request_id, url));
 }
 
-void ServiceWorkerContextClient::OpenWindowForPaymentHandler(
+void ServiceWorkerContextClient::OpenNewPopup(
     const blink::WebURL& url,
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
