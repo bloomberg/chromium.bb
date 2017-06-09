@@ -2320,6 +2320,34 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForPartialResumption) {
   EXPECT_EQ(document_url.spec(), requests.back()->referrer);
 }
 
+// Test that the referrer header is dropped for HTTP downloads from HTTPS.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForHTTPS) {
+  net::EmbeddedTestServer https_origin(
+      net::EmbeddedTestServer::Type::TYPE_HTTPS);
+  net::EmbeddedTestServer http_origin(net::EmbeddedTestServer::Type::TYPE_HTTP);
+  https_origin.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+  http_origin.RegisterRequestHandler(CreateBasicResponseHandler(
+      "/download", base::StringPairs(), "application/octet-stream", "Hello"));
+  ASSERT_TRUE(https_origin.InitializeAndListen());
+  ASSERT_TRUE(http_origin.InitializeAndListen());
+
+  GURL download_url = http_origin.GetURL("/download");
+  GURL referrer_url = https_origin.GetURL(
+      std::string("/download-link.html?dl=") + download_url.spec());
+
+  https_origin.StartAcceptingConnections();
+  http_origin.StartAcceptingConnections();
+
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), referrer_url);
+  WaitForCompletion(download);
+
+  ASSERT_EQ(5, download->GetReceivedBytes());
+  EXPECT_EQ("", download->GetReferrerUrl().spec());
+
+  ASSERT_TRUE(https_origin.ShutdownAndWaitUntilComplete());
+  ASSERT_TRUE(http_origin.ShutdownAndWaitUntilComplete());
+}
+
 // Check that the cookie policy is correctly updated when downloading a file
 // that redirects cross origin.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
