@@ -4132,7 +4132,9 @@ test("unit_tests") {
       sources +=
           [ "../browser/extensions/external_registry_loader_win_unittest.cc" ]
     }
-    if (!is_chromeos) {
+    if (is_chromeos) {
+      sources += [ "../browser/extensions/api/file_system/consent_provider_unittest.cc" ]
+    } else {
       sources += [
         "../browser/extensions/api/messaging/native_message_process_host_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc",
