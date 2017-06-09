@@ -7,11 +7,14 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/address_edit_mediator.h"
@@ -82,7 +85,22 @@ using ::AutofillTypeFromAutofillUIType;
 - (NSString*)paymentRequestEditViewController:
                  (PaymentRequestEditViewController*)controller
                                 validateField:(EditorField*)field {
-  if (!field.value.length && field.isRequired) {
+  if (field.value.length) {
+    switch (field.autofillUIType) {
+      case AutofillUITypeProfileHomePhoneWholeNumber: {
+        const std::string selectedCountryCode =
+            base::SysNSStringToUTF8(self.mediator.selectedCountryCode);
+        if (!autofill::IsValidPhoneNumber(base::SysNSStringToUTF16(field.value),
+                                          selectedCountryCode)) {
+          return l10n_util::GetNSString(
+              IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  } else if (field.isRequired) {
     return l10n_util::GetNSString(
         IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
   }
