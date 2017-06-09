@@ -82504,6 +82504,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.PutValueSize" units="KB">
+  <obsolete>
+    Replaced with WebCore.IndexedDB.PutValueSize2 on 6/2017
+  </obsolete>
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The size of the IndexedDB value used in an IndexedDB object store 'put'
+    operation. Recorded for every 'put' operation.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.PutValueSize2" units="KB">
   <owner>dmurph@chromium.org</owner>
   <summary>
     The size of the IndexedDB value used in an IndexedDB object store 'put'
@@ -82556,6 +82567,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebCore.IndexedDB.Transaction.ReadOnly.SizeOnCommit"
     units="KB">
+  <obsolete>
+    Replaced with WebCore.IndexedDB.Transaction.ReadOnly.SizeOnCommit2 on 6/2017
+  </obsolete>
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The total temporary size of an IndexedDB ReadOnly Transaction. Since this is
+    a readonly transaction, the size should only be &gt;0 when the transaction
+    is removing tombstone index keys. Recorded on transaction commit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Transaction.ReadOnly.SizeOnCommit2"
+    units="KB">
   <owner>dmurph@chromium.org</owner>
   <summary>
     The total temporary size of an IndexedDB ReadOnly Transaction. Since this is
@@ -82575,6 +82599,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebCore.IndexedDB.Transaction.ReadWrite.SizeOnCommit"
     units="KB">
+  <obsolete>
+    Replaced with WebCore.IndexedDB.Transaction.ReadWrite.SizeOnCommit2 on
+    6/2017
+  </obsolete>
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The total temporary size of an IndexedDB ReadWrite Transaction. This is the
+    memory that is temporarily stored before writing to disk. Recorded on
+    transaction commit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Transaction.ReadWrite.SizeOnCommit2"
+    units="KB">
   <owner>dmurph@chromium.org</owner>
   <summary>
     The total temporary size of an IndexedDB ReadWrite Transaction. This is the
@@ -82593,6 +82631,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.Transaction.VersionChange.SizeOnCommit"
+    units="KB">
+  <obsolete>
+    Replaced with WebCore.IndexedDB.Transaction.VersionChange.SizeOnCommit2 on
+    6/2017
+  </obsolete>
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    The total temporary size of an IndexedDB VersionChange Transaction. This is
+    the memory that is temporarily stored before writing to disk. Version change
+    transactions happen when creating a database or updating a current database
+    schema. Recorded on transaction commit.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Transaction.VersionChange.SizeOnCommit2"
     units="KB">
   <owner>dmurph@chromium.org</owner>
   <summary>
