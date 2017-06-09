@@ -1856,6 +1856,7 @@ const int32_t kSampleBuffers = 0x3032;    // EGL_SAMPLE_BUFFERS
 const int32_t kNone = 0x3038;             // EGL_NONE
 const int32_t kSwapBehavior = 0x3093;     // EGL_SWAP_BEHAVIOR
 const int32_t kBufferPreserved = 0x3094;  // EGL_BUFFER_PRESERVED
+const int32_t kSingleBuffer = 0x3085;     // EGL_SINGLE_BUFFER
 
 // Chromium only.
 const int32_t kBindGeneratesResource = 0x10000;
@@ -1927,6 +1928,7 @@ ContextCreationAttribHelper::ContextCreationAttribHelper()
       lose_context_when_out_of_memory(false),
       should_use_native_gmb_for_backbuffer(false),
       own_offscreen_surface(false),
+      single_buffer(false),
       context_type(CONTEXT_TYPE_OPENGLES2) {}
 
 ContextCreationAttribHelper::ContextCreationAttribHelper(
@@ -1985,6 +1987,9 @@ bool ContextCreationAttribHelper::Parse(const std::vector<int32_t>& attribs) {
         break;
       case kShouldUseNativeGMBForBackbuffer:
         should_use_native_gmb_for_backbuffer = value != 0;
+        break;
+      case kSingleBuffer:
+        single_buffer = value != 0;
         break;
       case kContextType:
         context_type = static_cast<ContextType>(value);

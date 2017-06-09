@@ -334,6 +334,7 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   bool lose_context_when_out_of_memory;
   bool should_use_native_gmb_for_backbuffer;
   bool own_offscreen_surface;
+  bool single_buffer;
 
   ContextType context_type;
 };

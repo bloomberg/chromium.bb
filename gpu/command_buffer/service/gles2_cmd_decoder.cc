@@ -2287,6 +2287,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   GLsizei offscreen_target_samples_;
   GLboolean offscreen_target_buffer_preserved_;
 
+  // Whether or not offscreen color buffers exist in front/back pairs that
+  // can be swapped.
+  GLboolean offscreen_single_buffer_;
+
   // The saved copy of the backbuffer after a call to SwapBuffers.
   std::unique_ptr<BackTexture> offscreen_saved_color_texture_;
 
@@ -3081,6 +3085,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       offscreen_target_stencil_format_(0),
       offscreen_target_samples_(0),
       offscreen_target_buffer_preserved_(true),
+      offscreen_single_buffer_(false),
       offscreen_saved_color_format_(0),
       offscreen_buffer_should_have_alpha_(false),
       back_buffer_color_format_(0),
@@ -3349,6 +3354,7 @@ bool GLES2DecoderImpl::Initialize(
       offscreen_target_samples_ = 1;
     }
     offscreen_target_buffer_preserved_ = attrib_helper.buffer_preserved;
+    offscreen_single_buffer_ = attrib_helper.single_buffer;
 
     if (gl_version_info().is_es) {
       const bool rgb8_supported = context_->HasExtension("GL_OES_rgb8_rgba8");
@@ -3550,13 +3556,14 @@ bool GLES2DecoderImpl::Initialize(
     offscreen_target_stencil_render_buffer_.reset(new BackRenderbuffer(this));
     offscreen_target_stencil_render_buffer_->Create();
 
-    // Create the saved offscreen texture. The target frame buffer is copied
-    // here when SwapBuffers is called.
-    offscreen_saved_frame_buffer_.reset(new BackFramebuffer(this));
-    offscreen_saved_frame_buffer_->Create();
-    //
-    offscreen_saved_color_texture_.reset(new BackTexture(this));
-    offscreen_saved_color_texture_->Create();
+    if (!offscreen_single_buffer_) {
+      // Create the saved offscreen texture. The target frame buffer is copied
+      // here when SwapBuffers is called.
+      offscreen_saved_frame_buffer_.reset(new BackFramebuffer(this));
+      offscreen_saved_frame_buffer_->Create();
+      offscreen_saved_color_texture_.reset(new BackTexture(this));
+      offscreen_saved_color_texture_->Create();
+    }
 
     // Allocate the render buffers at their initial size and check the status
     // of the frame buffers is okay.
@@ -3566,18 +3573,20 @@ bool GLES2DecoderImpl::Initialize(
       Destroy(true);
       return false;
     }
-    // Allocate the offscreen saved color texture.
-    DCHECK(offscreen_saved_color_format_);
-    offscreen_saved_color_texture_->AllocateStorage(
-        gfx::Size(1, 1), offscreen_saved_color_format_, true);
+    if (!offscreen_single_buffer_) {
+      // Allocate the offscreen saved color texture.
+      DCHECK(offscreen_saved_color_format_);
+      offscreen_saved_color_texture_->AllocateStorage(
+          gfx::Size(1, 1), offscreen_saved_color_format_, true);
 
-    offscreen_saved_frame_buffer_->AttachRenderTexture(
-        offscreen_saved_color_texture_.get());
-    if (offscreen_saved_frame_buffer_->CheckStatus() !=
-        GL_FRAMEBUFFER_COMPLETE) {
-      LOG(ERROR) << "Offscreen saved FBO was incomplete.";
-      Destroy(true);
-      return false;
+      offscreen_saved_frame_buffer_->AttachRenderTexture(
+          offscreen_saved_color_texture_.get());
+      if (offscreen_saved_frame_buffer_->CheckStatus() !=
+          GL_FRAMEBUFFER_COMPLETE) {
+        LOG(ERROR) << "Offscreen saved FBO was incomplete.";
+        Destroy(true);
+        return false;
+      }
     }
   }
 
@@ -4918,6 +4927,12 @@ void GLES2DecoderImpl::ReleaseSurface() {
 }
 
 void GLES2DecoderImpl::TakeFrontBuffer(const Mailbox& mailbox) {
+  if (offscreen_single_buffer_) {
+    mailbox_manager()->ProduceTexture(
+        mailbox, offscreen_target_color_texture_->texture_ref()->texture());
+    return;
+  }
+
   if (!offscreen_saved_color_texture_.get()) {
     DLOG(ERROR) << "Called TakeFrontBuffer on a non-offscreen context";
     return;
@@ -4940,6 +4955,9 @@ void GLES2DecoderImpl::TakeFrontBuffer(const Mailbox& mailbox) {
 void GLES2DecoderImpl::ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) {
   Texture* texture =
       static_cast<Texture*>(group_->mailbox_manager()->ConsumeTexture(mailbox));
+
+  if (offscreen_single_buffer_)
+    return;
 
   for (auto it = saved_back_textures_.begin(); it != saved_back_textures_.end();
        ++it) {
@@ -15530,6 +15548,10 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   if (is_offscreen) {
     TRACE_EVENT2("gpu", "Offscreen",
         "width", offscreen_size_.width(), "height", offscreen_size_.height());
+
+    if (offscreen_single_buffer_)
+      return;
+
     if (offscreen_size_ != offscreen_saved_color_texture_->size()) {
       // Workaround for NVIDIA driver bug on OS X; crbug.com/89557,
       // crbug.com/94163. TODO(kbr): figure out reproduction so Apple will
