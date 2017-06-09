@@ -1778,11 +1778,14 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
 resource_coordinator::ResourceCoordinatorInterface*
 RenderProcessHostImpl::GetProcessResourceCoordinator() {
   if (!process_resource_coordinator_) {
+    base::ProcessHandle process_handle = GetHandle();
+    DCHECK(process_handle);
+
     process_resource_coordinator_ =
         base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
             ServiceManagerConnection::GetForProcess()->GetConnector(),
             resource_coordinator::CoordinationUnitType::kProcess,
-            base::Process(GetHandle()).Pid());
+            base::Process(process_handle).Pid());
   }
   return process_resource_coordinator_.get();
 }
@@ -3201,6 +3204,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   if (route_provider_binding_.is_bound())
     route_provider_binding_.Close();
   associated_interfaces_.reset();
+  process_resource_coordinator_.reset();
   ResetChannelProxy();
 
   UpdateProcessPriority();
