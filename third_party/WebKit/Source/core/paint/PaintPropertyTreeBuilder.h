@@ -96,14 +96,10 @@ struct PaintPropertyTreeBuilderContext {
   PaintPropertyTreeBuilderContext()
       : container_for_absolute_position(nullptr),
         force_subtree_update(false)
-#if DCHECK_IS_ON()
-        ,
-        is_actually_needed(true)
-#endif
   {
   }
 
-  Vector<PaintPropertyTreeBuilderFragmentContext> fragments;
+  Vector<PaintPropertyTreeBuilderFragmentContext, 1> fragments;
   const LayoutObject* container_for_absolute_position;
 
   // True if a change has forced all properties in a subtree to be updated. This
@@ -114,7 +110,7 @@ struct PaintPropertyTreeBuilderContext {
 #if DCHECK_IS_ON()
   // When DCHECK_IS_ON() we create PaintPropertyTreeBuilderContext even if not
   // needed. See FindPaintOffsetAndVisualRectNeedingUpdate.h.
-  bool is_actually_needed;
+  bool is_actually_needed = true;
 #endif
 };
 
