@@ -14,10 +14,11 @@
 
 namespace cc {
 
-DisplayScheduler::DisplayScheduler(base::SingleThreadTaskRunner* task_runner,
+DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
+                                   base::SingleThreadTaskRunner* task_runner,
                                    int max_pending_swaps)
     : client_(nullptr),
-      begin_frame_source_(nullptr),
+      begin_frame_source_(begin_frame_source),
       task_runner_(task_runner),
       inside_surface_damaged_(false),
       visible_(false),
@@ -42,11 +43,6 @@ DisplayScheduler::~DisplayScheduler() {
 
 void DisplayScheduler::SetClient(DisplaySchedulerClient* client) {
   client_ = client;
-}
-
-void DisplayScheduler::SetBeginFrameSource(
-    BeginFrameSource* begin_frame_source) {
-  begin_frame_source_ = begin_frame_source;
 }
 
 void DisplayScheduler::SetVisible(bool visible) {
@@ -91,15 +87,15 @@ void DisplayScheduler::SetNewRootSurface(const SurfaceId& root_surface_id) {
   root_surface_id_ = root_surface_id;
   BeginFrameAck ack;
   ack.has_damage = true;
-  SurfaceDamaged(root_surface_id, ack, true);
+  ProcessSurfaceDamage(root_surface_id, ack, true);
 }
 
 // Indicates that there was damage to one of the surfaces.
 // Has some logic to wait for multiple active surfaces before
 // triggering the deadline.
-void DisplayScheduler::SurfaceDamaged(const SurfaceId& surface_id,
-                                      const BeginFrameAck& ack,
-                                      bool display_damaged) {
+void DisplayScheduler::ProcessSurfaceDamage(const SurfaceId& surface_id,
+                                            const BeginFrameAck& ack,
+                                            bool display_damaged) {
   TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamaged", "surface_id",
                surface_id.ToString());
 
@@ -132,33 +128,6 @@ void DisplayScheduler::SurfaceDamaged(const SurfaceId& surface_id,
     pending_surfaces_changed = UpdateHasPendingSurfaces();
 
   if (display_damaged || pending_surfaces_changed)
-    ScheduleBeginFrameDeadline();
-}
-
-void DisplayScheduler::SurfaceCreated(const SurfaceInfo& surface_info) {
-  SurfaceId surface_id = surface_info.id();
-  DCHECK(!base::ContainsKey(surface_states_, surface_id));
-  surface_states_[surface_id] = SurfaceBeginFrameState();
-}
-
-void DisplayScheduler::SurfaceDestroyed(const SurfaceId& surface_id) {
-  auto it = surface_states_.find(surface_id);
-  if (it == surface_states_.end())
-    return;
-  surface_states_.erase(it);
-  if (UpdateHasPendingSurfaces())
-    ScheduleBeginFrameDeadline();
-}
-
-void DisplayScheduler::SurfaceDamageExpected(const SurfaceId& surface_id,
-                                             const BeginFrameArgs& args) {
-  TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamageExpected", "surface_id",
-               surface_id.ToString());
-  auto it = surface_states_.find(surface_id);
-  if (it == surface_states_.end())
-    return;
-  it->second.last_args = args;
-  if (UpdateHasPendingSurfaces())
     ScheduleBeginFrameDeadline();
 }
 
@@ -304,6 +273,45 @@ void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
   // feature.
   if (paused)
     NOTIMPLEMENTED();
+}
+
+void DisplayScheduler::OnSurfaceCreated(const SurfaceInfo& surface_info) {
+  SurfaceId surface_id = surface_info.id();
+  DCHECK(!base::ContainsKey(surface_states_, surface_id));
+  surface_states_[surface_id] = SurfaceBeginFrameState();
+}
+
+void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
+  auto it = surface_states_.find(surface_id);
+  if (it == surface_states_.end())
+    return;
+  surface_states_.erase(it);
+  if (UpdateHasPendingSurfaces())
+    ScheduleBeginFrameDeadline();
+}
+
+bool DisplayScheduler::OnSurfaceDamaged(const SurfaceId& surface_id,
+                                        const BeginFrameAck& ack) {
+  bool damaged = client_->SurfaceDamaged(surface_id, ack);
+  ProcessSurfaceDamage(surface_id, ack, damaged);
+
+  return damaged;
+}
+
+void DisplayScheduler::OnSurfaceDiscarded(const SurfaceId& surface_id) {
+  client_->SurfaceDiscarded(surface_id);
+}
+
+void DisplayScheduler::OnSurfaceDamageExpected(const SurfaceId& surface_id,
+                                               const BeginFrameArgs& args) {
+  TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamageExpected", "surface_id",
+               surface_id.ToString());
+  auto it = surface_states_.find(surface_id);
+  if (it == surface_states_.end())
+    return;
+  it->second.last_args = args;
+  if (UpdateHasPendingSurfaces())
+    ScheduleBeginFrameDeadline();
 }
 
 base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {

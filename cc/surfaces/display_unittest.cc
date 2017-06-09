@@ -47,8 +47,9 @@ class TestSoftwareOutputDevice : public SoftwareOutputDevice {
 
 class TestDisplayScheduler : public DisplayScheduler {
  public:
-  explicit TestDisplayScheduler(base::SingleThreadTaskRunner* task_runner)
-      : DisplayScheduler(task_runner, 1),
+  explicit TestDisplayScheduler(BeginFrameSource* begin_frame_source,
+                                base::SingleThreadTaskRunner* task_runner)
+      : DisplayScheduler(begin_frame_source, task_runner, 1),
         damaged(false),
         display_resized_(false),
         has_new_root_surface(false),
@@ -62,9 +63,9 @@ class TestDisplayScheduler : public DisplayScheduler {
     has_new_root_surface = true;
   }
 
-  void SurfaceDamaged(const SurfaceId& surface_id,
-                      const BeginFrameAck& ack,
-                      bool display_damaged) override {
+  void ProcessSurfaceDamage(const SurfaceId& surface_id,
+                            const BeginFrameAck& ack,
+                            bool display_damaged) override {
     if (display_damaged) {
       damaged = true;
       needs_draw_ = true;
@@ -114,26 +115,33 @@ class DisplayTest : public testing::Test {
       output_surface = FakeOutputSurface::CreateSoftware(std::move(device));
     }
     output_surface_ = output_surface.get();
-    auto scheduler = base::MakeUnique<TestDisplayScheduler>(task_runner_.get());
+    auto scheduler = base::MakeUnique<TestDisplayScheduler>(
+        begin_frame_source_.get(), task_runner_.get());
     scheduler_ = scheduler.get();
     display_ = CreateDisplay(settings, kArbitraryFrameSinkId,
-                             begin_frame_source_.get(), std::move(scheduler),
-                             std::move(output_surface));
+                             std::move(scheduler), std::move(output_surface));
+    manager_.RegisterBeginFrameSource(begin_frame_source_.get(),
+                                      kArbitraryFrameSinkId);
   }
 
   std::unique_ptr<Display> CreateDisplay(
       const RendererSettings& settings,
       const FrameSinkId& frame_sink_id,
-      BeginFrameSource* begin_frame_source,
       std::unique_ptr<DisplayScheduler> scheduler,
       std::unique_ptr<OutputSurface> output_surface) {
     auto display = base::MakeUnique<Display>(
         &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
-        settings, frame_sink_id, begin_frame_source, std::move(output_surface),
+        settings, frame_sink_id, std::move(output_surface),
         std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
     display->SetVisible(true);
     return display;
+  }
+
+  void TearDownDisplay() {
+    // Only call UnregisterBeginFrameSource if SetupDisplay has been called.
+    if (begin_frame_source_)
+      manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
   }
 
  protected:
@@ -424,6 +432,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
               software_output_device_->damage_rect());
     EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
   }
+  TearDownDisplay();
 }
 
 class MockedContext : public TestWebGraphicsContext3D {
@@ -497,6 +506,7 @@ TEST_F(DisplayTest, Finish) {
   EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM());
   display_->Resize(gfx::Size(250, 250));
   testing::Mock::VerifyAndClearExpectations(context_ptr);
+  TearDownDisplay();
 }
 
 class CountLossDisplayClient : public StubDisplayClient {
@@ -523,6 +533,7 @@ TEST_F(DisplayTest, ContextLossInformsClient) {
       GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
   output_surface_->context_provider()->ContextGL()->Flush();
   EXPECT_EQ(1, client.loss_count());
+  TearDownDisplay();
 }
 
 // Regression test for https://crbug.com/727162: Submitting a CompositorFrame to
@@ -544,14 +555,15 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
       true /* handles_frame_sink_id_invalidation */,
       true /* needs_sync_points */);
   auto begin_frame_source2 = base::MakeUnique<StubBeginFrameSource>();
-  auto scheduler_for_display2 =
-      base::MakeUnique<TestDisplayScheduler>(task_runner_.get());
+  auto scheduler_for_display2 = base::MakeUnique<TestDisplayScheduler>(
+      begin_frame_source2.get(), task_runner_.get());
   TestDisplayScheduler* scheduler2 = scheduler_for_display2.get();
-  auto display2 =
-      CreateDisplay(settings, kAnotherFrameSinkId, begin_frame_source2.get(),
-                    std::move(scheduler_for_display2),
-                    FakeOutputSurface::CreateSoftware(
-                        base::MakeUnique<TestSoftwareOutputDevice>()));
+  auto display2 = CreateDisplay(
+      settings, kAnotherFrameSinkId, std::move(scheduler_for_display2),
+      FakeOutputSurface::CreateSoftware(
+          base::MakeUnique<TestSoftwareOutputDevice>()));
+  manager_.RegisterBeginFrameSource(begin_frame_source2.get(),
+                                    kAnotherFrameSinkId);
   StubDisplayClient client2;
   display2->Initialize(&client2, &manager_);
   display2->SetLocalSurfaceId(local_surface_id, 1.f);
@@ -577,6 +589,8 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   // Should have damaged only display_ but not display2.
   EXPECT_TRUE(scheduler_->damaged);
   EXPECT_FALSE(scheduler2->damaged);
+  manager_.UnregisterBeginFrameSource(begin_frame_source2.get());
+  TearDownDisplay();
 }
 
 }  // namespace

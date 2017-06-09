@@ -74,8 +74,9 @@ std::unique_ptr<cc::Display> GpuDisplayProvider::CreateDisplay(
       display_output_surface->capabilities().max_frames_pending;
   DCHECK_GT(max_frames_pending, 0);
 
-  auto scheduler = base::MakeUnique<cc::DisplayScheduler>(task_runner_.get(),
-                                                          max_frames_pending);
+  auto scheduler = base::MakeUnique<cc::DisplayScheduler>(
+      synthetic_begin_frame_source.get(), task_runner_.get(),
+      max_frames_pending);
 
   cc::RendererSettings settings;
   settings.show_overdraw_feedback =
@@ -87,8 +88,8 @@ std::unique_ptr<cc::Display> GpuDisplayProvider::CreateDisplay(
 
   return base::MakeUnique<cc::Display>(
       HostSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
-      settings, frame_sink_id, begin_frame_source->get(),
-      std::move(display_output_surface), std::move(scheduler),
+      settings, frame_sink_id, std::move(display_output_surface),
+      std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
 }
 
