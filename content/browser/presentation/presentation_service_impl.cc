@@ -123,7 +123,8 @@ void PresentationServiceImpl::SetClient(
 void PresentationServiceImpl::ListenForScreenAvailability(const GURL& url) {
   DVLOG(2) << "ListenForScreenAvailability " << url.spec();
   if (!controller_delegate_) {
-    client_->OnScreenAvailabilityUpdated(url, false);
+    client_->OnScreenAvailabilityUpdated(
+        url, blink::mojom::ScreenAvailability::UNAVAILABLE);
     return;
   }
 
@@ -491,7 +492,10 @@ GURL PresentationServiceImpl::ScreenAvailabilityListenerImpl::
 
 void PresentationServiceImpl::ScreenAvailabilityListenerImpl
 ::OnScreenAvailabilityChanged(bool available) {
-  service_->client_->OnScreenAvailabilityUpdated(availability_url_, available);
+  service_->client_->OnScreenAvailabilityUpdated(
+      availability_url_, available
+                             ? blink::mojom::ScreenAvailability::AVAILABLE
+                             : blink::mojom::ScreenAvailability::UNAVAILABLE);
 }
 
 void PresentationServiceImpl::ScreenAvailabilityListenerImpl

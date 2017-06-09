@@ -78,7 +78,7 @@ class MODULES_EXPORT RemotePlayback final
   WebRemotePlaybackState GetState() const { return state_; }
 
   // WebPresentationAvailabilityObserver implementation.
-  void AvailabilityChanged(bool) override;
+  void AvailabilityChanged(mojom::ScreenAvailability) override;
   const WebVector<WebURL>& Urls() const override;
 
   // WebRemotePlaybackClient implementation.

@@ -45,7 +45,7 @@ class MODULES_EXPORT PresentationAvailability final
   ExecutionContext* GetExecutionContext() const override;
 
   // WebPresentationAvailabilityObserver implementation.
-  void AvailabilityChanged(bool) override;
+  void AvailabilityChanged(blink::mojom::ScreenAvailability) override;
   const WebVector<WebURL>& Urls() const override;
 
   // ScriptWrappable implementation.

@@ -419,7 +419,7 @@ TEST_F(RemotePlaybackTest, IsListening) {
       WebURL(KURL(kParsedURLString, "http://www.example.com")));
   ASSERT_EQ((size_t)1, remote_playback->Urls().size());
   ASSERT_TRUE(IsListening(remote_playback));
-  remote_playback->AvailabilityChanged(true);
+  remote_playback->AvailabilityChanged(mojom::ScreenAvailability::AVAILABLE);
 
   remote_playback->cancelWatchAvailability(scope.GetScriptState());
   ASSERT_EQ((size_t)1, remote_playback->Urls().size());
@@ -429,7 +429,7 @@ TEST_F(RemotePlaybackTest, IsListening) {
                                      availability_callback);
   ASSERT_EQ((size_t)1, remote_playback->Urls().size());
   ASSERT_TRUE(IsListening(remote_playback));
-  remote_playback->AvailabilityChanged(true);
+  remote_playback->AvailabilityChanged(mojom::ScreenAvailability::AVAILABLE);
 
   remote_playback->SourceChanged(WebURL());
   ASSERT_TRUE(remote_playback->Urls().empty());

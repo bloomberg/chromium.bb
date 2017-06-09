@@ -35,6 +35,7 @@ using blink::WebVector;
 using blink::mojom::PresentationConnection;
 using blink::mojom::PresentationService;
 using blink::mojom::PresentationServiceClientPtr;
+using blink::mojom::ScreenAvailability;
 
 // TODO(crbug.com/576808): Add test cases for the following:
 // - State changes
@@ -52,7 +53,7 @@ class MockPresentationAvailabilityObserver
       : urls_(urls) {}
   ~MockPresentationAvailabilityObserver() override {}
 
-  MOCK_METHOD1(AvailabilityChanged, void(bool is_available));
+  MOCK_METHOD1(AvailabilityChanged, void(ScreenAvailability availability));
   const WebVector<WebURL>& Urls() const override { return urls_; }
 
  private:
@@ -211,8 +212,6 @@ class PresentationDispatcherTest : public ::testing::Test {
  public:
   using OnMessageCallback = PresentationConnectionProxy::OnMessageCallback;
 
-  enum class URLState { Available, Unavailable, Unsupported, Unknown };
-
   PresentationDispatcherTest()
       : gurl1_(GURL("https://www.example.com/1.html")),
         gurl2_(GURL("https://www.example.com/2.html")),
@@ -244,18 +243,24 @@ class PresentationDispatcherTest : public ::testing::Test {
     return static_cast<uint8_t*>(array_buffer_.Data());
   }
 
-  void ChangeURLState(const GURL& url, URLState state) {
+  void ChangeURLState(const GURL& url, ScreenAvailability state) {
     switch (state) {
-      case URLState::Available:
-        dispatcher_.OnScreenAvailabilityUpdated(url, true);
+      case ScreenAvailability::AVAILABLE:
+        dispatcher_.OnScreenAvailabilityUpdated(url,
+                                                ScreenAvailability::AVAILABLE);
         break;
-      case URLState::Unavailable:
-        dispatcher_.OnScreenAvailabilityUpdated(url, false);
+      case ScreenAvailability::SOURCE_NOT_SUPPORTED:
+        dispatcher_.OnScreenAvailabilityUpdated(
+            url, ScreenAvailability::SOURCE_NOT_SUPPORTED);
         break;
-      case URLState::Unsupported:
+      case ScreenAvailability::UNAVAILABLE:
+        dispatcher_.OnScreenAvailabilityUpdated(
+            url, ScreenAvailability::UNAVAILABLE);
+        break;
+      case ScreenAvailability::DISABLED:
         dispatcher_.OnScreenAvailabilityNotSupported(url);
         break;
-      case URLState::Unknown:
+      case ScreenAvailability::UNKNOWN:
         break;
     }
   }
@@ -265,7 +270,7 @@ class PresentationDispatcherTest : public ::testing::Test {
   // |mock_callback|.
   void TestGetAvailability(
       const std::vector<GURL>& urls,
-      const std::vector<URLState>& states,
+      const std::vector<ScreenAvailability>& states,
       MockPresentationAvailabilityCallbacks* mock_callback) {
     DCHECK_EQ(urls.size(), states.size());
 
@@ -534,7 +539,7 @@ TEST_F(PresentationDispatcherTest, TestListenForScreenAvailability) {
 
   dispatcher_.GetAvailability(
       urls_, base::MakeUnique<WebPresentationAvailabilityCallbacks>());
-  dispatcher_.OnScreenAvailabilityUpdated(url1_, true);
+  dispatcher_.OnScreenAvailabilityUpdated(url1_, ScreenAvailability::AVAILABLE);
   run_loop1.RunUntilIdle();
 
   base::RunLoop run_loop2;
@@ -545,10 +550,15 @@ TEST_F(PresentationDispatcherTest, TestListenForScreenAvailability) {
   run_loop2.RunUntilIdle();
 
   base::RunLoop run_loop3;
-  EXPECT_CALL(observer_, AvailabilityChanged(false));
-  dispatcher_.OnScreenAvailabilityUpdated(url1_, false);
-  EXPECT_CALL(observer_, AvailabilityChanged(true));
-  dispatcher_.OnScreenAvailabilityUpdated(url1_, true);
+  EXPECT_CALL(observer_, AvailabilityChanged(ScreenAvailability::UNAVAILABLE));
+  dispatcher_.OnScreenAvailabilityUpdated(url1_,
+                                          ScreenAvailability::UNAVAILABLE);
+  EXPECT_CALL(observer_,
+              AvailabilityChanged(ScreenAvailability::SOURCE_NOT_SUPPORTED));
+  dispatcher_.OnScreenAvailabilityUpdated(
+      url1_, ScreenAvailability::SOURCE_NOT_SUPPORTED);
+  EXPECT_CALL(observer_, AvailabilityChanged(ScreenAvailability::AVAILABLE));
+  dispatcher_.OnScreenAvailabilityUpdated(url1_, ScreenAvailability::AVAILABLE);
   for (const auto& gurl : gurls_) {
     EXPECT_CALL(presentation_service_,
                 StopListeningForScreenAvailability(gurl));
@@ -558,8 +568,10 @@ TEST_F(PresentationDispatcherTest, TestListenForScreenAvailability) {
 
   // After stopListening(), |observer_| should no longer be notified.
   base::RunLoop run_loop4;
-  EXPECT_CALL(observer_, AvailabilityChanged(false)).Times(0);
-  dispatcher_.OnScreenAvailabilityUpdated(url1_, false);
+  EXPECT_CALL(observer_, AvailabilityChanged(ScreenAvailability::UNAVAILABLE))
+      .Times(0);
+  dispatcher_.OnScreenAvailabilityUpdated(url1_,
+                                          ScreenAvailability::UNAVAILABLE);
   run_loop4.RunUntilIdle();
 }
 
@@ -587,21 +599,30 @@ TEST_F(PresentationDispatcherTest, GetAvailabilityOneUrlBecomesAvailable) {
   auto* mock_callback = new MockPresentationAvailabilityCallbacks();
   EXPECT_CALL(*mock_callback, OnSuccess(true));
 
-  TestGetAvailability({url1_}, {URLState::Available}, mock_callback);
+  TestGetAvailability({url1_}, {ScreenAvailability::AVAILABLE}, mock_callback);
+}
+
+TEST_F(PresentationDispatcherTest, GetAvailabilityOneUrlBecomesNotCompatible) {
+  auto* mock_callback = new MockPresentationAvailabilityCallbacks();
+  EXPECT_CALL(*mock_callback, OnSuccess(false));
+
+  TestGetAvailability({url1_}, {ScreenAvailability::SOURCE_NOT_SUPPORTED},
+                      mock_callback);
 }
 
 TEST_F(PresentationDispatcherTest, GetAvailabilityOneUrlBecomesUnavailable) {
   auto* mock_callback = new MockPresentationAvailabilityCallbacks();
   EXPECT_CALL(*mock_callback, OnSuccess(false));
 
-  TestGetAvailability({url1_}, {URLState::Unavailable}, mock_callback);
+  TestGetAvailability({url1_}, {ScreenAvailability::UNAVAILABLE},
+                      mock_callback);
 }
 
-TEST_F(PresentationDispatcherTest, GetAvailabilityOneUrlBecomesNotSupported) {
+TEST_F(PresentationDispatcherTest, GetAvailabilityOneUrlBecomesUnsupported) {
   auto* mock_callback = new MockPresentationAvailabilityCallbacks();
   EXPECT_CALL(*mock_callback, OnError(_));
 
-  TestGetAvailability({url1_}, {URLState::Unsupported}, mock_callback);
+  TestGetAvailability({url1_}, {ScreenAvailability::DISABLED}, mock_callback);
 }
 
 TEST_F(PresentationDispatcherTest,
@@ -609,9 +630,10 @@ TEST_F(PresentationDispatcherTest,
   auto* mock_callback = new MockPresentationAvailabilityCallbacks();
   EXPECT_CALL(*mock_callback, OnSuccess(true)).Times(1);
 
-  TestGetAvailability({url1_, url2_},
-                      {URLState::Available, URLState::Available},
-                      mock_callback);
+  TestGetAvailability(
+      {url1_, url2_},
+      {ScreenAvailability::AVAILABLE, ScreenAvailability::AVAILABLE},
+      mock_callback);
 }
 
 TEST_F(PresentationDispatcherTest,
@@ -619,8 +641,20 @@ TEST_F(PresentationDispatcherTest,
   auto* mock_callback = new MockPresentationAvailabilityCallbacks();
   EXPECT_CALL(*mock_callback, OnSuccess(false)).Times(1);
 
+  TestGetAvailability(
+      {url1_, url2_},
+      {ScreenAvailability::UNAVAILABLE, ScreenAvailability::UNAVAILABLE},
+      mock_callback);
+}
+
+TEST_F(PresentationDispatcherTest,
+       GetAvailabilityMultipleUrlsAllBecomesNotCompatible) {
+  auto* mock_callback = new MockPresentationAvailabilityCallbacks();
+  EXPECT_CALL(*mock_callback, OnSuccess(false)).Times(1);
+
   TestGetAvailability({url1_, url2_},
-                      {URLState::Unavailable, URLState::Unavailable},
+                      {ScreenAvailability::SOURCE_NOT_SUPPORTED,
+                       ScreenAvailability::SOURCE_NOT_SUPPORTED},
                       mock_callback);
 }
 
@@ -629,9 +663,10 @@ TEST_F(PresentationDispatcherTest,
   auto* mock_callback = new MockPresentationAvailabilityCallbacks();
   EXPECT_CALL(*mock_callback, OnError(_)).Times(1);
 
-  TestGetAvailability({url1_, url2_},
-                      {URLState::Unsupported, URLState::Unsupported},
-                      mock_callback);
+  TestGetAvailability(
+      {url1_, url2_},
+      {ScreenAvailability::DISABLED, ScreenAvailability::DISABLED},
+      mock_callback);
 }
 
 TEST_F(PresentationDispatcherTest,
@@ -640,8 +675,9 @@ TEST_F(PresentationDispatcherTest,
   auto* mock_callback_1 = new MockPresentationAvailabilityCallbacks();
   EXPECT_CALL(*mock_callback_1, OnSuccess(false)).Times(1);
 
-  std::vector<URLState> state_seq = {URLState::Unavailable, URLState::Available,
-                                     URLState::Unavailable};
+  std::vector<ScreenAvailability> state_seq = {ScreenAvailability::UNAVAILABLE,
+                                               ScreenAvailability::AVAILABLE,
+                                               ScreenAvailability::UNAVAILABLE};
   TestGetAvailability({url1_, url2_, url3_}, state_seq, mock_callback_1);
 
   // Second getAvailability() call.
@@ -682,9 +718,12 @@ TEST_F(PresentationDispatcherTest, StopListeningListenToEachURLOnce) {
         .Times(1);
   }
 
-  EXPECT_CALL(mock_observer1_, AvailabilityChanged(false));
-  EXPECT_CALL(mock_observer2_, AvailabilityChanged(false));
-  EXPECT_CALL(mock_observer3_, AvailabilityChanged(false));
+  EXPECT_CALL(mock_observer1_,
+              AvailabilityChanged(ScreenAvailability::UNAVAILABLE));
+  EXPECT_CALL(mock_observer2_,
+              AvailabilityChanged(ScreenAvailability::UNAVAILABLE));
+  EXPECT_CALL(mock_observer3_,
+              AvailabilityChanged(ScreenAvailability::UNAVAILABLE));
 
   // Set up |availability_set_| and |listening_status_|
   base::RunLoop run_loop;
@@ -697,7 +736,7 @@ TEST_F(PresentationDispatcherTest, StopListeningListenToEachURLOnce) {
   }
 
   // Clean up callbacks.
-  ChangeURLState(gurl2_, URLState::Unavailable);
+  ChangeURLState(gurl2_, ScreenAvailability::UNAVAILABLE);
 
   for (auto* mock_observer : mock_observers_)
     client()->StopListening(mock_observer);
@@ -729,12 +768,15 @@ TEST_F(PresentationDispatcherTest,
   for (auto* mock_observer : mock_observers_)
     client()->StartListening(mock_observer);
 
-  EXPECT_CALL(mock_observer1_, AvailabilityChanged(false));
-  EXPECT_CALL(mock_observer2_, AvailabilityChanged(false));
-  EXPECT_CALL(mock_observer3_, AvailabilityChanged(false));
+  EXPECT_CALL(mock_observer1_,
+              AvailabilityChanged(ScreenAvailability::UNAVAILABLE));
+  EXPECT_CALL(mock_observer2_,
+              AvailabilityChanged(ScreenAvailability::UNAVAILABLE));
+  EXPECT_CALL(mock_observer3_,
+              AvailabilityChanged(ScreenAvailability::UNAVAILABLE));
 
   // Clean up callbacks.
-  ChangeURLState(gurl2_, URLState::Unavailable);
+  ChangeURLState(gurl2_, ScreenAvailability::UNAVAILABLE);
   client()->StopListening(&mock_observer1_);
   run_loop.RunUntilIdle();
 }
@@ -745,7 +787,8 @@ TEST_F(PresentationDispatcherTest,
     EXPECT_CALL(presentation_service_, ListenForScreenAvailability(gurl))
         .Times(1);
   }
-  EXPECT_CALL(mock_observer1_, AvailabilityChanged(true));
+  EXPECT_CALL(mock_observer1_,
+              AvailabilityChanged(ScreenAvailability::AVAILABLE));
 
   base::RunLoop run_loop;
   for (auto* mock_observer : mock_observers_) {
@@ -755,14 +798,22 @@ TEST_F(PresentationDispatcherTest,
     client()->StartListening(mock_observer);
   }
 
-  ChangeURLState(gurl1_, URLState::Available);
+  ChangeURLState(gurl1_, ScreenAvailability::AVAILABLE);
   run_loop.RunUntilIdle();
 
-  EXPECT_CALL(mock_observer1_, AvailabilityChanged(false));
+  EXPECT_CALL(mock_observer1_,
+              AvailabilityChanged(ScreenAvailability::UNAVAILABLE));
 
   base::RunLoop run_loop_2;
-  ChangeURLState(gurl1_, URLState::Unavailable);
+  ChangeURLState(gurl1_, ScreenAvailability::UNAVAILABLE);
   run_loop_2.RunUntilIdle();
+
+  EXPECT_CALL(mock_observer1_,
+              AvailabilityChanged(ScreenAvailability::SOURCE_NOT_SUPPORTED));
+
+  base::RunLoop run_loop_3;
+  ChangeURLState(gurl1_, ScreenAvailability::SOURCE_NOT_SUPPORTED);
+  run_loop_3.RunUntilIdle();
 }
 
 TEST_F(PresentationDispatcherTest,
@@ -771,8 +822,10 @@ TEST_F(PresentationDispatcherTest,
     EXPECT_CALL(presentation_service_, ListenForScreenAvailability(gurl))
         .Times(1);
   }
-  for (auto* mock_observer : mock_observers_)
-    EXPECT_CALL(*mock_observer, AvailabilityChanged(true));
+  for (auto* mock_observer : mock_observers_) {
+    EXPECT_CALL(*mock_observer,
+                AvailabilityChanged(ScreenAvailability::AVAILABLE));
+  }
 
   base::RunLoop run_loop;
   for (auto* mock_observer : mock_observers_) {
@@ -782,15 +835,26 @@ TEST_F(PresentationDispatcherTest,
     client()->StartListening(mock_observer);
   }
 
-  ChangeURLState(gurl2_, URLState::Available);
+  ChangeURLState(gurl2_, ScreenAvailability::AVAILABLE);
   run_loop.RunUntilIdle();
 
-  for (auto* mock_observer : mock_observers_)
-    EXPECT_CALL(*mock_observer, AvailabilityChanged(false));
+  for (auto* mock_observer : mock_observers_) {
+    EXPECT_CALL(*mock_observer,
+                AvailabilityChanged(ScreenAvailability::UNAVAILABLE));
+  }
 
   base::RunLoop run_loop_2;
-  ChangeURLState(gurl2_, URLState::Unavailable);
+  ChangeURLState(gurl2_, ScreenAvailability::UNAVAILABLE);
   run_loop_2.RunUntilIdle();
+
+  for (auto* mock_observer : mock_observers_) {
+    EXPECT_CALL(*mock_observer,
+                AvailabilityChanged(ScreenAvailability::SOURCE_NOT_SUPPORTED));
+  }
+
+  base::RunLoop run_loop_3;
+  ChangeURLState(gurl2_, ScreenAvailability::SOURCE_NOT_SUPPORTED);
+  run_loop_3.RunUntilIdle();
 }
 
 }  // namespace content

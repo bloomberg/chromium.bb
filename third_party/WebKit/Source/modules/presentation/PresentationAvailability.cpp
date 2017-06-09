@@ -67,7 +67,9 @@ void PresentationAvailability::AddedEventListener(
   }
 }
 
-void PresentationAvailability::AvailabilityChanged(bool value) {
+void PresentationAvailability::AvailabilityChanged(
+    blink::mojom::ScreenAvailability availability) {
+  bool value = availability == blink::mojom::ScreenAvailability::AVAILABLE;
   if (value_ == value)
     return;
 

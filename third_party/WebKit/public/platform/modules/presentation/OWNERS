@@ -1,2 +1,4 @@
 file://third_party/WebKit/Source/modules/presentation/OWNERS
 
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS
