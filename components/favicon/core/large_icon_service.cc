@@ -393,12 +393,14 @@ LargeIconService::GetLargeIconOrFallbackStyleImpl(
       min_source_size_in_pixel, desired_size_in_pixel, raw_bitmap_callback,
       image_callback, background_task_runner_, tracker);
 
+  int max_size_in_pixel =
+      std::max(desired_size_in_pixel, min_source_size_in_pixel);
   // TODO(beaudoin): For now this is just a wrapper around
   //   GetLargestRawFaviconForPageURL. Add the logic required to select the best
   //   possible large icon. Also add logic to fetch-on-demand when the URL of
   //   a large icon is known but its bitmap is not available.
   return favicon_service_->GetLargestRawFaviconForPageURL(
-      page_url, large_icon_types_, min_source_size_in_pixel,
+      page_url, large_icon_types_, max_size_in_pixel,
       base::Bind(&LargeIconWorker::OnIconLookupComplete, worker), tracker);
 }
 
