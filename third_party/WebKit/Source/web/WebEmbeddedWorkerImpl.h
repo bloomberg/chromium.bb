@@ -57,7 +57,7 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
 
  public:
   WebEmbeddedWorkerImpl(std::unique_ptr<WebServiceWorkerContextClient>,
-                        std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+                        std::unique_ptr<WebContentSettingsClient>);
   ~WebEmbeddedWorkerImpl() override;
 
   // WebEmbeddedWorker overrides.
@@ -107,7 +107,7 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
 
   // This is kept until startWorkerContext is called, and then passed on
   // to WorkerContext.
-  std::unique_ptr<WebWorkerContentSettingsClientProxy> content_settings_client_;
+  std::unique_ptr<WebContentSettingsClient> content_settings_client_;
 
   // Kept around only while main script loading is ongoing.
   RefPtr<WorkerScriptLoader> main_script_loader_;

@@ -607,7 +607,6 @@ source_set("blink_headers") {
     "web/WebWidget.h",
     "web/WebWidgetClient.h",
     "web/WebWindowFeatures.h",
-    "web/WebWorkerContentSettingsClientProxy.h",
     "web/linux/WebFontRendering.h",
     "web/mac/WebScrollbarTheme.h",
     "web/mac/WebSubstringUtil.h",

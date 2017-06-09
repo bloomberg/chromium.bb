@@ -227,10 +227,10 @@ EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
   return std::move(host);
 }
 
-blink::WebWorkerContentSettingsClientProxy*
-EmbeddedSharedWorkerStub::CreateWorkerContentSettingsClientProxy(
+std::unique_ptr<blink::WebContentSettingsClient>
+EmbeddedSharedWorkerStub::CreateWorkerContentSettingsClient(
     const blink::WebSecurityOrigin& origin) {
-  return new EmbeddedSharedWorkerContentSettingsClientProxy(
+  return base::MakeUnique<EmbeddedSharedWorkerContentSettingsClientProxy>(
       url::Origin(origin).GetURL(), origin.IsUnique(), route_id_,
       ChildThreadImpl::current()->thread_safe_sender());
 }

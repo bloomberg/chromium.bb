@@ -100,8 +100,8 @@ static_library("renderer") {
     "tts_dispatcher.h",
     "web_apps.cc",
     "web_apps.h",
-    "worker_content_settings_client_proxy.cc",
-    "worker_content_settings_client_proxy.h",
+    "worker_content_settings_client.cc",
+    "worker_content_settings_client.h",
   ]
 
   defines = []

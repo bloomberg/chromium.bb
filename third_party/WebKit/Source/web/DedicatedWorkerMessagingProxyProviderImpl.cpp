@@ -45,7 +45,6 @@
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebWorkerContentSettingsClientProxy.h"
 
 namespace blink {
 
@@ -67,8 +66,7 @@ DedicatedWorkerMessagingProxyProviderImpl::CreateWorkerMessagingProxy(
                                    LocalFileSystemClient::Create());
     ProvideContentSettingsClientToWorker(
         worker_clients,
-        WTF::WrapUnique(
-            web_frame->Client()->CreateWorkerContentSettingsClientProxy()));
+        web_frame->Client()->CreateWorkerContentSettingsClient());
 
     // FIXME: call provideServiceWorkerContainerClientToWorker here when we
     // support ServiceWorker in dedicated workers (http://crbug.com/371690)

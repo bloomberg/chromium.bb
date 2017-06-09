@@ -54,6 +54,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/platform/WebContentSecurityPolicyStruct.h"
+#include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebFileSystem.h"
@@ -108,7 +109,6 @@ class WebString;
 class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
-class WebWorkerContentSettingsClientProxy;
 struct WebColorSuggestion;
 struct WebConsoleMessage;
 struct WebContextMenuData;
@@ -152,8 +152,8 @@ class BLINK_EXPORT WebFrameClient {
   }
 
   // May return null.
-  virtual WebWorkerContentSettingsClientProxy*
-  CreateWorkerContentSettingsClientProxy() {
+  virtual std::unique_ptr<WebContentSettingsClient>
+  CreateWorkerContentSettingsClient() {
     return nullptr;
   }
 

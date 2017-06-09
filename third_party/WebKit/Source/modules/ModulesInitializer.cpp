@@ -39,7 +39,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/InterfaceRegistry.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "public/web/WebWorkerContentSettingsClientProxy.h"
 
 namespace blink {
 

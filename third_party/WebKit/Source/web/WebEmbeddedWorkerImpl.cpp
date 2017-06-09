@@ -65,6 +65,7 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
@@ -73,7 +74,6 @@
 #include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
-#include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "web/ServiceWorkerGlobalScopeClientImpl.h"
 #include "web/ServiceWorkerGlobalScopeProxy.h"
@@ -82,7 +82,7 @@ namespace blink {
 
 WebEmbeddedWorker* WebEmbeddedWorker::Create(
     WebServiceWorkerContextClient* client,
-    WebWorkerContentSettingsClientProxy* content_settings_client) {
+    WebContentSettingsClient* content_settings_client) {
   return new WebEmbeddedWorkerImpl(WTF::WrapUnique(client),
                                    WTF::WrapUnique(content_settings_client));
 }
@@ -94,8 +94,7 @@ static HashSet<WebEmbeddedWorkerImpl*>& RunningWorkerInstances() {
 
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerContextClient> client,
-    std::unique_ptr<WebWorkerContentSettingsClientProxy>
-        content_settings_client)
+    std::unique_ptr<WebContentSettingsClient> content_settings_client)
     : worker_context_client_(std::move(client)),
       content_settings_client_(std::move(content_settings_client)),
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
