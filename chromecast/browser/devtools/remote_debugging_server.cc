@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "chromecast/base/pref_names.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/common/cast_content_client.h"
@@ -120,43 +119,39 @@ std::string GetFrontendUrl() {
   return base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str());
 }
 
-}  // namespace
-
-RemoteDebuggingServer::RemoteDebuggingServer(bool start_immediately)
-    : port_(kDefaultRemoteDebuggingPort),
-      is_started_(false) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  pref_enabled_.Init(prefs::kEnableRemoteDebugging,
-                     CastBrowserProcess::GetInstance()->pref_service(),
-                     base::Bind(&RemoteDebuggingServer::OnEnabledChanged,
-                                base::Unretained(this)));
-
+uint16_t GetPort() {
   std::string port_str =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kRemoteDebuggingPort);
-  if (!port_str.empty()) {
-    int port = kDefaultRemoteDebuggingPort;
-    if (base::StringToInt(port_str, &port)) {
-      port_ = static_cast<uint16_t>(port);
-    } else {
-      port_ = kDefaultRemoteDebuggingPort;
-    }
-  }
 
-  // Starts new dev tools, clearing port number saved in config.
-  // Remote debugging in production must be triggered only by config server.
-  pref_enabled_.SetValue(start_immediately && port_ != 0);
-  OnEnabledChanged();
+  if (port_str.empty())
+    return kDefaultRemoteDebuggingPort;
+
+  int port;
+  if (base::StringToInt(port_str, &port))
+    return port;
+
+  return kDefaultRemoteDebuggingPort;
+}
+
+}  // namespace
+
+RemoteDebuggingServer::RemoteDebuggingServer(bool start_immediately)
+    : port_(GetPort()), is_started_(false) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {
-  pref_enabled_.SetValue(false);
-  OnEnabledChanged();
+  if (is_started_) {
+    content::DevToolsAgentHost::StopRemoteDebuggingServer();
+  }
 }
 
-void RemoteDebuggingServer::OnEnabledChanged() {
-  bool enabled = *pref_enabled_ && port_ != 0;
-  if (enabled && !is_started_) {
+void RemoteDebuggingServer::EnableWebContentsForDebugging(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+
+  if (!is_started_) {
     content::DevToolsAgentHost::StartRemoteDebuggingServer(
         CreateSocketFactory(port_),
         GetFrontendUrl(),
@@ -165,10 +160,26 @@ void RemoteDebuggingServer::OnEnabledChanged() {
         std::string(),
         GetUserAgent());
     LOG(INFO) << "Devtools started: port=" << port_;
-  } else if (!enabled && is_started_) {
-    LOG(INFO) << "Stop devtools: port=" << port_;
-    is_started_ = false;
+    is_started_ = true;
+  }
+
+  auto* dev_tools_delegate =
+      chromecast::shell::CastDevToolsManagerDelegate::GetInstance();
+  DCHECK(dev_tools_delegate);
+  dev_tools_delegate->EnableWebContentsForDebugging(web_contents);
+}
+
+void RemoteDebuggingServer::DisableWebContentsForDebugging(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  auto* dev_tools_delegate =
+      chromecast::shell::CastDevToolsManagerDelegate::GetInstance();
+  DCHECK(dev_tools_delegate);
+  dev_tools_delegate->DisableWebContentsForDebugging(web_contents);
+
+  if (is_started_ && !dev_tools_delegate->HasEnabledWebContents()) {
     content::DevToolsAgentHost::StopRemoteDebuggingServer();
+    is_started_ = false;
   }
 }
 
