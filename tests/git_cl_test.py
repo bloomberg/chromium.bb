@@ -1581,8 +1581,7 @@ class TestGitCl(TestCase):
     if tbr:
       calls += [
         (('SetReview', 'chromium-review.googlesource.com',
-          123456 if squash else None, {'Code-Review': 1},
-          'ALL' if notify else 'NONE'), ''),
+          123456 if squash else None, {'Code-Review': 1}, notify), ''),
       ]
     calls += cls._git_post_upload_calls()
     return calls
@@ -2402,7 +2401,7 @@ class TestGitCl(TestCase):
     self.assertEqual(0, git_cl.main(['set-commit', '-c']))
 
   def test_cmd_set_commit_gerrit_dry(self):
-    self._cmd_set_commit_gerrit_common(1, notify='NONE')
+    self._cmd_set_commit_gerrit_common(1, notify=False)
     self.assertEqual(0, git_cl.main(['set-commit', '-d']))
 
   def test_cmd_set_commit_gerrit(self):

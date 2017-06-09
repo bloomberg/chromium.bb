@@ -732,7 +732,7 @@ def SetReview(host, change, msg=None, labels=None, notify=None):
   if labels:
     body['labels'] = labels
   if notify:
-    body['notify'] = notify
+    body['notify'] = 'ALL' if notify else 'NONE'
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   response = ReadHttpJsonResponse(conn)
   if labels:
