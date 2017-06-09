@@ -372,6 +372,29 @@ ssl_sources = [
   "src/ssl/tls_record.c",
 ]
 
+crypto_sources_ios_aarch64 = [
+  "ios-aarch64/crypto/chacha/chacha-armv8.S",
+  "ios-aarch64/crypto/fipsmodule/aesv8-armx64.S",
+  "ios-aarch64/crypto/fipsmodule/armv8-mont.S",
+  "ios-aarch64/crypto/fipsmodule/ghashv8-armx64.S",
+  "ios-aarch64/crypto/fipsmodule/sha1-armv8.S",
+  "ios-aarch64/crypto/fipsmodule/sha256-armv8.S",
+  "ios-aarch64/crypto/fipsmodule/sha512-armv8.S",
+]
+
+crypto_sources_ios_arm = [
+  "ios-arm/crypto/chacha/chacha-armv4.S",
+  "ios-arm/crypto/fipsmodule/aes-armv4.S",
+  "ios-arm/crypto/fipsmodule/aesv8-armx32.S",
+  "ios-arm/crypto/fipsmodule/armv4-mont.S",
+  "ios-arm/crypto/fipsmodule/bsaes-armv7.S",
+  "ios-arm/crypto/fipsmodule/ghash-armv4.S",
+  "ios-arm/crypto/fipsmodule/ghashv8-armx32.S",
+  "ios-arm/crypto/fipsmodule/sha1-armv4-large.S",
+  "ios-arm/crypto/fipsmodule/sha256-armv4.S",
+  "ios-arm/crypto/fipsmodule/sha512-armv4.S",
+]
+
 crypto_sources_linux_aarch64 = [
   "linux-aarch64/crypto/chacha/chacha-armv8.S",
   "linux-aarch64/crypto/fipsmodule/aesv8-armx64.S",
