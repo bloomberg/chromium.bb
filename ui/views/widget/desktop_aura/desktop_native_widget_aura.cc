@@ -500,8 +500,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   if (drag_drop_client_)
     aura::client::SetDragDropClient(host_->window(), drag_drop_client_.get());
 
-  static_cast<aura::client::FocusClient*>(focus_client_.get())->
-      FocusWindow(content_window_);
+  wm::SetActivationDelegate(content_window_, this);
+  aura::client::GetFocusClient(content_window_)->FocusWindow(content_window_);
 
   OnHostResized(host());
 
@@ -536,10 +536,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   event_client_.reset(new DesktopEventClient);
   aura::client::SetEventClient(host_->window(), event_client_.get());
-
-  aura::client::GetFocusClient(content_window_)->FocusWindow(content_window_);
-
-  wm::SetActivationDelegate(content_window_, this);
 
   shadow_controller_.reset(
       new wm::ShadowController(wm::GetActivationClient(host_->window())));
