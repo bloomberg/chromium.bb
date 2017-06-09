@@ -663,6 +663,7 @@ cr.define('print_preview', function() {
      *     destination.
      * @param {string} extensionName Extension name associated with this
      *     destination.
+     * @return {boolean} Whether capabilities fetch was successfully started.
      * @private
      */
     fetchPreselectedDestination_: function(
@@ -702,11 +703,15 @@ cr.define('print_preview', function() {
             name,
             false /*isRecent*/,
             print_preview.DestinationConnectionStatus.ONLINE);
-        this.selectedDestination_.capabilities = capabilities;
 
-        cr.dispatchSimpleEvent(
-          this,
-          DestinationStore.EventType.CACHED_SELECTED_DESTINATION_INFO_READY);
+        if (capabilities) {
+          this.selectedDestination_.capabilities = capabilities;
+
+          cr.dispatchSimpleEvent(
+              this,
+              DestinationStore.EventType
+                  .CACHED_SELECTED_DESTINATION_INFO_READY);
+        }
         return true;
       }
 
