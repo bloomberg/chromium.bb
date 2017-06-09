@@ -49467,6 +49467,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram
+    name="PageLoad.Experimental.PaintTiming.ForegroundToFirstMeaningfulPaint"
+    units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time from a background tab being switched to the foreground to
+    the time the first meaningful paint is performed, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram
     name="PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"
     units="ms">
   <owner>ksakamoto@chromium.org</owner>
@@ -49750,6 +49760,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Measures the time from navigation timing's navigation start to the time the
     user first foregrounds an initially backgrounded tab. Only measures
     navigations that started in the background.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.PaintTiming.ForegroundToFirstContentfulPaint"
+    units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time from a background tab being switched to the foreground to
+    the time the first contentful paint is performed, for main frame documents.
   </summary>
 </histogram>
 
