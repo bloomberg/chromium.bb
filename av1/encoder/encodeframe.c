@@ -3551,6 +3551,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
             &this_rdc, best_rdc.rdcost - sum_rdc.rdcost, pc_tree->split[idx]);
 #endif  // CONFIG_SUPERTX
 
+#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+        if (bsize == BLOCK_8X8 && this_rdc.rate != INT_MAX) {
+          assert(this_rdc.dist_y < INT64_MAX);
+        }
+#endif
         if (this_rdc.rate == INT_MAX) {
           sum_rdc.rdcost = INT64_MAX;
 #if CONFIG_SUPERTX
@@ -3565,7 +3570,10 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
           sum_rate_nocoef += this_rate_nocoef;
 #endif  // CONFIG_SUPERTX
 #if CONFIG_DAALA_DIST && CONFIG_CB4X4
-          sum_rdc.dist_y += this_rdc.dist_y;
+          if (bsize == BLOCK_8X8) {
+            assert(this_rdc.dist_y < INT64_MAX);
+            sum_rdc.dist_y += this_rdc.dist_y;
+          }
 #endif
         }
       }
@@ -3581,6 +3589,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                                     src_stride, x->decoded_8x8, 8, 8, 8, 1,
                                     use_activity_masking, x->qindex)
                      << 4;
+        assert(sum_rdc.dist_y < INT64_MAX);
         sum_rdc.dist = sum_rdc.dist - sum_rdc.dist_y + daala_dist;
         sum_rdc.rdcost =
             RDCOST(x->rdmult, x->rddiv, sum_rdc.rate, sum_rdc.dist);
@@ -4068,6 +4077,12 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // checks occur in some sub function and thus are used...
   (void)best_rd;
   *rd_cost = best_rdc;
+
+#if CONFIG_DAALA_DIST && CONFIG_CB4X4
+  if (bsize <= BLOCK_8X8 && rd_cost->rate != INT_MAX) {
+    assert(rd_cost->dist_y < INT64_MAX);
+  }
+#endif  // CONFIG_DAALA_DIST && CONFIG_CB4X4
 #if CONFIG_SUPERTX
   *rate_nocoef = best_rate_nocoef;
 #endif  // CONFIG_SUPERTX
