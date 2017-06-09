@@ -92,12 +92,14 @@ enum UMAContextMenuAction {
     favicon::LargeIconService* largeIconService =
         IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState);
 
-    self.mediator = [[ReadingListMediator alloc] initWithModel:model];
+    self.mediator =
+        [[ReadingListMediator alloc] initWithModel:model
+                                  largeIconService:largeIconService];
     ReadingListToolbar* toolbar = [[ReadingListToolbar alloc] init];
     ReadingListCollectionViewController* collectionViewController =
         [[ReadingListCollectionViewController alloc]
             initWithDataSource:self.mediator
-              largeIconService:largeIconService
+
                        toolbar:toolbar];
     collectionViewController.delegate = self;
 

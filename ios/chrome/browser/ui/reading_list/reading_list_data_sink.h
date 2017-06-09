@@ -13,10 +13,21 @@
 
 // Called by the data source when it is ready.
 - (void)dataSourceReady:(id<ReadingListDataSource>)dataSource;
+// Notifies the DataSink that the DataSource has changed and the items should be
+// reloaded.
+- (void)dataSourceChanged;
 
-// TODO(crbug.com/721758): Group and rename those two methods.
-- (void)readingListModelDidApplyChanges;
-- (void)readingListModelCompletedBatchUpdates;
+// Returns the read items displayed.
+- (NSArray<CollectionViewItem*>*)readItems;
+// Returns the unread items displayed.
+- (NSArray<CollectionViewItem*>*)unreadItems;
+
+// Notifies the DataSink that the |item| has changed and it should be reloaded
+// if it is still displayed.
+- (void)itemHasChangedAfterDelay:(CollectionViewItem*)item;
+// Notifies the DataSink that the |items| have changed and must be reloaded. The
+// |items| must be presented.
+- (void)itemsHaveChanged:(NSArray<CollectionViewItem*>*)items;
 
 @end
 

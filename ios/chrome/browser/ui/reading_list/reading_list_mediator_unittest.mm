@@ -7,15 +7,23 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using testing::_;
 
 class ReadingListMediatorTest : public PlatformTest {
  public:
@@ -25,6 +33,10 @@ class ReadingListMediatorTest : public PlatformTest {
     clock_ = clock.get();
     model_ = base::MakeUnique<ReadingListModelImpl>(nullptr, nullptr,
                                                     std::move(clock));
+    EXPECT_CALL(mock_favicon_service_,
+                GetLargestRawFaviconForPageURL(_, _, _, _, _))
+        .WillRepeatedly(
+            favicon::PostReply<5>(favicon_base::FaviconRawBitmapResult()));
 
     no_title_entry_url_ = GURL("http://chromium.org/unread3");
     // The first 3 have the same update time on purpose.
@@ -43,14 +55,26 @@ class ReadingListMediatorTest : public PlatformTest {
                      reading_list::ADDED_VIA_CURRENT_APP);
     model_->SetReadStatus(GURL("http://chromium.org/read2"), true);
 
-    mediator_ = [[ReadingListMediator alloc] initWithModel:model_.get()];
+    large_icon_service_.reset(new favicon::LargeIconService(
+        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get(),
+        /*image_fetcher=*/nullptr));
+
+    mediator_ =
+        [[ReadingListMediator alloc] initWithModel:model_.get()
+                                  largeIconService:large_icon_service_.get()];
   }
 
  protected:
+  testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<ReadingListModelImpl> model_;
   ReadingListMediator* mediator_;
   base::SimpleTestClock* clock_;
   GURL no_title_entry_url_;
+  std::unique_ptr<favicon::LargeIconService> large_icon_service_;
+
+ private:
+  web::TestWebThreadBundle thread_bundle_;
+  DISALLOW_COPY_AND_ASSIGN(ReadingListMediatorTest);
 };
 
 TEST_F(ReadingListMediatorTest, fillItems) {
