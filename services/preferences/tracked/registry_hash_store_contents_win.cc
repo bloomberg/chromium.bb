@@ -106,7 +106,7 @@ void RegistryHashStoreContentsWin::Reset() {
                KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
     LONG result = key.DeleteKey(L"");
     DCHECK(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND ||
-           result == ERROR_ACCESS_DENIED)
+           result == ERROR_ACCESS_DENIED || result == ERROR_KEY_DELETED)
         << result;
   }
 }
