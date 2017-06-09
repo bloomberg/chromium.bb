@@ -10,9 +10,24 @@ import json
 
 from chromite.lib import constants
 from chromite.lib import failures_lib
+from chromite.lib import failure_message_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
+
+
+class StepFailureTests(cros_test_lib.TestCase):
+  """Tests for StepFailure."""
+
+  def testConvertToStageFailureMessage(self):
+    """Test ConvertToStageFailureMessage."""
+    failure = failures_lib.StepFailure(message='step failure message')
+    stage_failure_msg = failure.ConvertToStageFailureMessage(
+        1, 'HWTest [sanity]')
+    self.assertEqual(stage_failure_msg.stage_name, 'HWTest [sanity]')
+    self.assertEqual(stage_failure_msg.stage_prefix_name, 'HWTest')
+    self.assertEqual(stage_failure_msg.exception_type, 'StepFailure')
+    self.assertEqual(stage_failure_msg.exception_category, 'unknown')
 
 
 class CompoundFailureTest(cros_test_lib.TestCase):
@@ -78,6 +93,22 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     self.assertTrue('foo1' in str(exc))
     self.assertTrue('foo2' in str(exc))
 
+  def testConvertToStageFailureMessage(self):
+    """Test ConvertToStageFailureMessage."""
+    exc_infos = self._CreateExceptInfos(KeyError, message='bar1',
+                                        traceback='foo1')
+    exc_infos.extend(self._CreateExceptInfos(failures_lib.StepFailure,
+                                             message='bar2',
+                                             traceback='foo2'))
+    exc = failures_lib.CompoundFailure(message='compound failure',
+                                       exc_infos=exc_infos)
+    stage_failure_msg = exc.ConvertToStageFailureMessage(1, 'HWTest [sanity]')
+
+    self.assertEqual(len(stage_failure_msg.inner_failures), 2)
+    self.assertEqual(stage_failure_msg.stage_name, 'HWTest [sanity]')
+    self.assertEqual(stage_failure_msg.stage_prefix_name, 'HWTest')
+    self.assertEqual(stage_failure_msg.exception_type, 'CompoundFailure')
+    self.assertEqual(stage_failure_msg.exception_category, 'unknown')
 
 class ReportStageFailureToCIDBTest(cros_test_lib.TestCase):
   """Tests for ReportStageFailureToCIDB."""
@@ -286,6 +317,32 @@ class FailureTypeListTests(cros_test_lib.TestCase):
   def testFailureTypeList(self):
     """Test the current failure names are already added to the type lists."""
     self.assertTrue(failures_lib.BuildScriptFailure.__name__ in
-                    failures_lib.BUILD_SCRIPT_FAILURE_TYPES)
+                    failure_message_lib.BUILD_SCRIPT_FAILURE_TYPES)
     self.assertTrue(failures_lib.PackageBuildFailure.__name__ in
-                    failures_lib.PACKAGE_BUILD_FAILURE_TYPES)
+                    failure_message_lib.PACKAGE_BUILD_FAILURE_TYPES)
+
+
+class GetStageFailureMessageFromExceptionTests(cros_test_lib.TestCase):
+  """Tests for GetStageFailureMessageFromException"""
+
+  def testGetStageFailureMessageFromExceptionOnStepFailure(self):
+    """Test GetStageFailureMessageFromException on StepFailure."""
+    exc = failures_lib.StepFailure(message='step failure message')
+    msg = failures_lib.GetStageFailureMessageFromException(
+        'CommitQueueSync', 1, exc)
+    self.assertEqual(msg.build_stage_id, 1)
+    self.assertEqual(msg.stage_name, 'CommitQueueSync')
+    self.assertEqual(msg.stage_prefix_name, 'CommitQueueSync')
+    self.assertEqual(msg.exception_type, 'StepFailure')
+    self.assertEqual(msg.exception_category, 'unknown')
+
+  def testGetStageFailureMessageFromExceptionOnException(self):
+    """Test GetStageFailureMessageFromException on regular exception."""
+    exc = ValueError('Invalid valure.')
+    msg = failures_lib.GetStageFailureMessageFromException(
+        'CommitQueueSync', 1, exc)
+    self.assertEqual(msg.build_stage_id, 1)
+    self.assertEqual(msg.stage_name, 'CommitQueueSync')
+    self.assertEqual(msg.stage_prefix_name, 'CommitQueueSync')
+    self.assertEqual(msg.exception_type, 'ValueError')
+    self.assertEqual(msg.exception_category, 'unknown')

@@ -75,6 +75,10 @@ class _Results(object):
     #  the form ('name', SUCCESS | FORGIVEN | Exception, None | description)
     self._results_log = []
 
+    # A list of instances of failure_message_lib.StageFailureMessage to present
+    # the exceptions threw by failed stages.
+    self._failure_message_results = []
+
     # Stages run in a previous run and restored. Stored as a dictionary of
     # names to previous records.
     self._previous = {}
@@ -140,8 +144,14 @@ class _Results(object):
     """Return true if stage has posted results."""
     return name in [entry.name for entry in self._results_log]
 
+  def _RecordStageFailureMessage(self, name, exception, prefix=None,
+                                 build_stage_id=None):
+    self._failure_message_results.append(
+        failures_lib.GetStageFailureMessageFromException(
+            name, build_stage_id, exception, stage_prefix_name=prefix))
+
   def Record(self, name, result, description=None, prefix=None, board='',
-             time=0):
+             time=0, build_stage_id=None):
     """Store off an additional stage result.
 
     Args:
@@ -158,11 +168,22 @@ class _Results(object):
         the value of name.
       board: The board associated with the stage, if any. Defaults to ''.
       time: How long the result took to complete.
+      build_stage_id: The id of the failed build stage to record, default to
+        None.
     """
     if prefix is None:
       prefix = name
+
+    # Convert exception to stage_failure_message and record it.
+    if isinstance(result, BaseException):
+      self._RecordStageFailureMessage(name, result, prefix=prefix,
+                                      build_stage_id=build_stage_id)
+
     result = Result(name, result, description, prefix, board, time)
     self._results_log.append(result)
+
+  def GetStageFailureMessage(self):
+    return self._failure_message_results
 
   def Get(self):
     """Fetch stage results.

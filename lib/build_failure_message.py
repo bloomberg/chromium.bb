@@ -8,7 +8,6 @@ from __future__ import print_function
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
-from chromite.lib import failures_lib
 from chromite.lib import failure_message_lib
 from chromite.lib import hwtest_results
 from chromite.lib import patch as cros_patch
@@ -184,7 +183,8 @@ class BuildFailureMessage(object):
     suspect_changes = triage_lib.SuspectChanges()
     blame_everything = False
     for failure in self.failure_messages:
-      if failure.exception_type in failures_lib.PACKAGE_BUILD_FAILURE_TYPES:
+      if (failure.exception_type in
+          failure_message_lib.PACKAGE_BUILD_FAILURE_TYPES):
         # Find suspects for PackageBuildFailure
         build_suspects, no_assignee_packages = (
             self.FindPackageBuildFailureSuspects(changes, failure))

@@ -13,20 +13,7 @@ import traceback
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
-
-
-# Currently, an exception is reported to CIDB failureTabe using the exception
-# class name as the exception_type. failure_message_lib.FailureMessageManager
-# uses the exception_type to decide which StageFailureMessage class to use
-# to rebuild the failure message. Whenever you need to change the names of these
-# classes, please add the new class names to their corresponding type lists,
-# and DO NOT remove the old class names from the type lists.
-# TODO (nxia): instead of using the class name as the exception type when
-# reporting an exception to CIDB, we need to have an attribute like
-# EXCEPTION_CATEGORY (say EXCEPTION_TYPE) and this type cannot be changed or
-# removed from EXCEPTION_TYPE_LIST. But we can add new types to the list.
-BUILD_SCRIPT_FAILURE_TYPES = ('BuildScriptFailure',)
-PACKAGE_BUILD_FAILURE_TYPES = ('PackageBuildFailure',)
+from chromite.lib import failure_message_lib
 
 
 class StepFailure(Exception):
@@ -61,6 +48,26 @@ class StepFailure(Exception):
 
   def EncodeExtraInfo(self):
     """Encode extra_info into a json string, can be overwritten by subclasses"""
+
+  def ConvertToStageFailureMessage(self, build_stage_id, stage_name,
+                                   stage_prefix_name=None):
+    """Convert StepFailure to StageFailureMessage.
+
+    Args:
+      build_stage_id: The id of the build stage.
+      stage_name: The name (string) of the failed stage.
+      stage_prefix_name: The prefix name (string) of the failed stage,
+          default to None.
+
+    Returns:
+      An instance of failure_message_lib.StageFailureMessage.
+    """
+    stage_failure = failure_message_lib.StageFailure(
+        None, build_stage_id, None, self.__class__.__name__, self.message,
+        self.EXCEPTION_CATEGORY, self.EncodeExtraInfo(), None, stage_name,
+        None, None, None, None, None, None, None, None, None, None, None)
+    return failure_message_lib.StageFailureMessage(
+        stage_failure, stage_prefix_name=stage_prefix_name)
 
 
 # A namedtuple to hold information of an exception.
@@ -152,6 +159,37 @@ class CompoundFailure(StepFailure):
 
     return False
 
+  def ConvertToStageFailureMessage(self, build_stage_id, stage_name,
+                                   stage_prefix_name=None):
+    """Convert CompoundFailure to StageFailureMessage.
+
+    Args:
+      build_stage_id: The id of the build stage.
+      stage_name: The name (string) of the failed stage.
+      stage_prefix_name: The prefix name (string) of the failed stage,
+          default to None.
+
+    Returns:
+      An instance of failure_message_lib.StageFailureMessage.
+    """
+    stage_failure = failure_message_lib.StageFailure(
+        None, build_stage_id, None, self.__class__.__name__, self.message,
+        self.EXCEPTION_CATEGORY, self.EncodeExtraInfo(), None, stage_name,
+        None, None, None, None, None, None, None, None, None, None, None)
+    compound_failure_message = failure_message_lib.CompoundFailureMessage(
+        stage_failure, stage_prefix_name=stage_prefix_name)
+
+    for exc_class, exc_str, _ in self.exc_infos:
+      inner_failure = failure_message_lib.StageFailure(
+          None, build_stage_id, None, exc_class.__name__, exc_str,
+          _GetExceptionCategory(exc_class), None, None, stage_name,
+          None, None, None, None, None, None, None, None, None, None, None)
+      innner_failure_message = failure_message_lib.StageFailureMessage(
+          inner_failure, stage_prefix_name=stage_prefix_name)
+      compound_failure_message.inner_failures.append(innner_failure_message)
+
+    return compound_failure_message
+
 
 class ExitEarlyException(Exception):
   """Exception when a stage finishes and exits early."""
@@ -211,6 +249,8 @@ class RetriableStepFailure(StepFailure):
   """This exception is thrown when a step failed, but should be retried."""
 
 
+# TODO(nxia): Everytime the class name is changed, add the new class name to
+# BUILD_SCRIPT_FAILURE_TYPES.
 class BuildScriptFailure(StepFailure):
   """This exception is thrown when a build command failed.
 
@@ -255,6 +295,8 @@ class BuildScriptFailure(StepFailure):
     return json.dumps(extra_info_dict)
 
 
+# TODO(nxia): Everytime the class name is changed, add the new class name to
+# PACKAGE_BUILD_FAILURE_TYPES
 class PackageBuildFailure(BuildScriptFailure):
   """This exception is thrown when packages fail to build."""
 
@@ -533,6 +575,33 @@ def ReportStageFailureToCIDB(db, build_stage_id, exception):
                        outer_failure_id)
 
   return outer_failure_id
+
+
+def GetStageFailureMessageFromException(stage_name, build_stage_id,
+                                        exception, stage_prefix_name=None):
+  """Get StageFailureMessage from an exception.
+
+  Args:
+    stage_name: The name (string) of the failed stage.
+    build_stage_id: The id of the failed build stage.
+    exception: The BaseException instance to convert to StageFailureMessage.
+    stage_prefix_name: The prefix name (string) of the failed stage,
+        default to None.
+
+  Returns:
+    An instance of failure_message_lib.StageFailureMessage.
+  """
+  if isinstance(exception, StepFailure):
+    return exception.ConvertToStageFailureMessage(
+        build_stage_id, stage_name, stage_prefix_name=stage_prefix_name)
+  else:
+    stage_failure = failure_message_lib.StageFailure(
+        None, build_stage_id, None, type(exception).__name__, str(exception),
+        _GetExceptionCategory(type(exception)), None, None, stage_name,
+        None, None, None, None, None, None, None, None, None, None, None)
+
+    return failure_message_lib.StageFailureMessage(
+        stage_failure, stage_prefix_name=stage_prefix_name)
 
 
 def _GetExceptionCategory(exception_class):

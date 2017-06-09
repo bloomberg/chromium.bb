@@ -660,7 +660,8 @@ class BuilderStage(object):
         elapsed_time = time.time() - start_time
 
       self._RecordResult(self.name, result, description, prefix=self._prefix,
-                         board=board, time=elapsed_time)
+                         board=board, time=elapsed_time,
+                         build_stage_id=self._build_stage_id)
       self._FinishBuildStageInCIDBAndMonarch(cidb_result, elapsed_time)
       if isinstance(result, BaseException) and self._build_stage_id is not None:
         _, db = self._run.GetCIDBHandle()

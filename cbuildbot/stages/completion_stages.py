@@ -118,24 +118,47 @@ class ManifestVersionedSyncCompletionStage(
     # stop uploading BuilderStatus to GS.
     self.failure_message = None
 
-  def GetBuildFailureMessageFromCIDB(self):
-    """Get message summarizing failures of this build from CIDB."""
-    build_id, db = self._run.GetCIDBHandle()
+  def GetBuildFailureMessageFromCIDB(self, build_id, db):
+    """Get message summarizing failures of this build from CIDB.
 
-    if db:
-      stage_failures = db.GetBuildsFailures([build_id])
-      failure_msg_manager = failure_message_lib.FailureMessageManager()
-      failure_messages = failure_msg_manager.ConstructStageFailureMessages(
-          stage_failures)
+    Args:
+      build_id: The build id of the master build.
+      db: An instance of cidb.CIDBConnection.
 
-      return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
-          self._run.config.name,
-          self._run.config.overlays,
-          self._run.ConstructDashboardURL(),
-          failure_messages)
+    Returns:
+      An instance of build_failure_message.BuildFailureMessage.
+    """
+    stage_failures = db.GetBuildsFailures([build_id])
+    failure_msg_manager = failure_message_lib.FailureMessageManager()
+    failure_messages = failure_msg_manager.ConstructStageFailureMessages(
+        stage_failures)
 
+    return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
+        self._run.config.name,
+        self._run.config.overlays,
+        self._run.ConstructDashboardURL(),
+        failure_messages)
+
+  def GetBuildFailureMessageFromResults(self):
+    """Get message summarizing failures of this build from result_lib.Results.
+
+    Returns:
+      An instance of build_failure_message.BuildFailureMessage.
+    """
+    failure_messages = results_lib.Results.GetStageFailureMessage()
+    return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
+        self._run.config.name,
+        self._run.config.overlays,
+        self._run.ConstructDashboardURL(),
+        failure_messages)
+
+  # TODO(nxia): Remove this after eliminating BuildStatus pickles.
   def GetBuildFailureMessage(self):
-    """Returns message summarizing the failures."""
+    """Get message summarizing the failures from result_lib.Results.
+
+    Returns:
+      An instance of failures_lib.BuildFailureMessage.
+    """
     return CreateBuildFailureMessage(self._run.config.overlays,
                                      self._run.config.name,
                                      self._run.ConstructDashboardURL())
@@ -143,7 +166,12 @@ class ManifestVersionedSyncCompletionStage(
   def PerformStage(self):
     if not self.success:
       self.message = self.GetBuildFailureMessage()
-      self.failure_message = self.GetBuildFailureMessageFromCIDB()
+
+      build_id, db = self._run.GetCIDBHandle()
+      if db is not None:
+        self.failure_message = self.GetBuildFailureMessageFromCIDB(build_id, db)
+      else:
+        self.failure_message = self.GetBuildFailureMessageFromResults()
 
     if not config_lib.IsPFQType(self._run.config.build_type):
       # Update the pass/fail status in the manifest-versions
@@ -970,9 +998,8 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
     self.sync_stage = sync_stage
     self.success = success
 
-  def GetBuildFailureMessage(self):
-    """Returns message summarizing the failures."""
-    build_id, db = self._run.GetCIDBHandle()
+  def GetBuildFailureMessageFromCIDB(self, build_id, db):
+    """Returns message summarizing the failures from CIDB."""
     stage_failures = db.GetBuildsFailures([build_id])
     failure_messages = (
         failure_message_lib.FailureMessageManager.ConstructStageFailureMessages(
@@ -984,12 +1011,26 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
         self._run.ConstructDashboardURL(),
         failure_messages)
 
+  def GetBuildFailureMessageFromResults(self):
+    """Returns message summarizing the failures from result_lib.Results."""
+    failure_messages = results_lib.Results.GetStageFailureMessage()
+    return builder_status_lib.SlaveBuilderStatus.CreateBuildFailureMessage(
+        self._run.config.name,
+        self._run.config.overlays,
+        self._run.ConstructDashboardURL(),
+        failure_messages)
+
   def PerformStage(self):
     # Update Gerrit and Google Storage with the Pre-CQ status.
     if self.success:
       self.sync_stage.pool.HandlePreCQPerConfigSuccess()
     else:
-      message = self.GetBuildFailureMessage()
+      message = None
+      build_id, db = self._run.GetCIDBHandle()
+      if db is not None:
+        message = self.GetBuildFailureMessageFromCIDB(build_id, db)
+      else:
+        message = self.GetBuildFailureMessageFromResults()
       self.sync_stage.pool.HandleValidationFailure([message])
 
 

@@ -11,7 +11,19 @@ import json
 import re
 
 from chromite.lib import cros_logging as logging
-from chromite.lib import failures_lib
+
+# Currently, an exception is reported to CIDB failureTabe using the exception
+# class name as the exception_type. failure_message_lib.FailureMessageManager
+# uses the exception_type to decide which StageFailureMessage class to use
+# to rebuild the failure message. Whenever you need to change the names of these
+# classes, please add the new class names to their corresponding type lists,
+# and DO NOT remove the old class names from the type lists.
+# TODO (nxia): instead of using the class name as the exception type when
+# reporting an exception to CIDB, we need to have an attribute like
+# EXCEPTION_CATEGORY (say EXCEPTION_TYPE) and this type cannot be changed or
+# removed from EXCEPTION_TYPE_LIST. But we can add new types to the list.
+BUILD_SCRIPT_FAILURE_TYPES = ('BuildScriptFailure',)
+PACKAGE_BUILD_FAILURE_TYPES = ('PackageBuildFailure',)
 
 
 # These keys must exist as column names from failureView in cidb.
@@ -319,10 +331,9 @@ class FailureMessageManager(object):
       A failure message instance of StageFailureMessage class (or its
         sub-class)
     """
-    if stage_failure.exception_type in failures_lib.BUILD_SCRIPT_FAILURE_TYPES:
+    if stage_failure.exception_type in BUILD_SCRIPT_FAILURE_TYPES:
       return BuildScriptFailureMessage(stage_failure, **kwargs)
-    elif (stage_failure.exception_type in
-          failures_lib.PACKAGE_BUILD_FAILURE_TYPES):
+    elif stage_failure.exception_type in PACKAGE_BUILD_FAILURE_TYPES:
       return PackageBuildFailureMessage(stage_failure, **kwargs)
     else:
       return StageFailureMessage(stage_failure, **kwargs)
