@@ -52,12 +52,12 @@ class CryptohomeTokenEncryptor : public TokenEncryptor {
       const std::string& salt);
 
   // Encrypts (AES) the token given |key| and |salt|.
-  std::string EncryptTokenWithKey(crypto::SymmetricKey* key,
+  std::string EncryptTokenWithKey(const crypto::SymmetricKey* key,
                                   const std::string& salt,
                                   const std::string& token);
 
   // Decrypts (AES) hex encoded encrypted token given |key| and |salt|.
-  std::string DecryptTokenWithKey(crypto::SymmetricKey* key,
+  std::string DecryptTokenWithKey(const crypto::SymmetricKey* key,
                                   const std::string& salt,
                                   const std::string& encrypted_token_hex);
 

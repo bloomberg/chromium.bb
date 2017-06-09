@@ -172,8 +172,9 @@ static void CopySubsamples(const std::vector<SubsampleEntry>& subsamples,
 
 // Decrypts |input| using |key|.  Returns a DecoderBuffer with the decrypted
 // data if decryption succeeded or NULL if decryption failed.
-static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
-                                                crypto::SymmetricKey* key) {
+static scoped_refptr<DecoderBuffer> DecryptData(
+    const DecoderBuffer& input,
+    const crypto::SymmetricKey* key) {
   CHECK(input.data_size());
   CHECK(input.decrypt_config());
   CHECK(key);

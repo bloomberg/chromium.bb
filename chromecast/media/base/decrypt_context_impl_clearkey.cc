@@ -20,7 +20,7 @@ namespace chromecast {
 namespace media {
 
 DecryptContextImplClearKey::DecryptContextImplClearKey(
-    crypto::SymmetricKey* key)
+    const crypto::SymmetricKey* key)
     : DecryptContextImpl(KEY_SYSTEM_CLEAR_KEY), key_(key) {
   CHECK(key);
 }
