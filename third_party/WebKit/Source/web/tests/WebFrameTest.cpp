@@ -11804,6 +11804,26 @@ TEST_F(WebFrameTest, DISABLE_ON_TSAN(TestNonCompositedOverlayScrollbarsFade)) {
 
 class WebFrameSimTest : public SimTest {};
 
+TEST_F(WebFrameSimTest, ChangeBackgroundColor) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete("<!DOCTYPE html><body></body>");
+
+  Element* body = GetDocument().QuerySelector("body");
+  EXPECT_TRUE(!!body);
+
+  Compositor().BeginFrame();
+  // White is the default background of a web page.
+  EXPECT_EQ(SK_ColorWHITE, Compositor().background_color());
+
+  // Setting the background of the body to red will cause the background
+  // color of the WebView to switch to red.
+  body->SetInlineStyleProperty(CSSPropertyBackgroundColor, "red");
+  Compositor().BeginFrame();
+  EXPECT_EQ(SK_ColorRED, Compositor().background_color());
+}
+
 TEST_F(WebFrameSimTest, DisplayNoneIFrameHasNoLayoutObjects) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/frame.html", "text/html");

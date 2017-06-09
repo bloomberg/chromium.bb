@@ -2033,10 +2033,10 @@ void WebViewImpl::UpdateAllLifecyclePhases() {
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
-  UpdateLayerTreeBackgroundColor();
 
   PageWidgetDelegate::UpdateAllLifecyclePhases(*page_,
                                                *MainFrameImpl()->GetFrame());
+  UpdateLayerTreeBackgroundColor();
 
   if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
     devtools->PaintOverlay();
