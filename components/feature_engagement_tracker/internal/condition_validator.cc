@@ -4,6 +4,8 @@
 
 #include "components/feature_engagement_tracker/internal/condition_validator.h"
 
+#include <ostream>
+
 namespace feature_engagement_tracker {
 
 ConditionValidator::Result::Result(bool initial_values)
@@ -35,6 +37,21 @@ bool ConditionValidator::Result::NoErrors() const {
   return event_model_ready_ok && currently_showing_ok && feature_enabled_ok &&
          config_ok && used_ok && trigger_ok && preconditions_ok &&
          session_rate_ok && availability_model_ready_ok && availability_ok;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const ConditionValidator::Result& result) {
+  return os << "{ event_model_ready_ok=" << result.event_model_ready_ok
+            << ", currently_showing_ok=" << result.currently_showing_ok
+            << ", feature_enabled_ok=" << result.feature_enabled_ok
+            << ", config_ok=" << result.config_ok
+            << ", used_ok=" << result.used_ok
+            << ", trigger_ok=" << result.trigger_ok
+            << ", preconditions_ok=" << result.preconditions_ok
+            << ", session_rate_ok=" << result.session_rate_ok
+            << ", availability_model_ready_ok="
+            << result.availability_model_ready_ok
+            << ", availability_ok=" << result.availability_ok << " }";
 }
 
 }  // namespace feature_engagement_tracker

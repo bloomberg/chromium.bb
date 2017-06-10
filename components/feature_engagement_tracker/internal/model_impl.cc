@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -52,8 +53,12 @@ void ModelImpl::IncrementEvent(const std::string& event_name,
                                uint32_t current_day) {
   DCHECK(ready_);
 
-  if (!storage_validator_->ShouldStore(event_name))
+  if (!storage_validator_->ShouldStore(event_name)) {
+    DVLOG(2) << "Not incrementing event " << event_name << " @ " << current_day;
     return;
+  }
+
+  DVLOG(2) << "Incrementing event " << event_name << " @ " << current_day;
 
   Event& event = GetNonConstEvent(event_name);
   for (int i = 0; i < event.events_size(); ++i) {

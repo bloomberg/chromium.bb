@@ -81,6 +81,8 @@ void OnDBLoadComplete(
     // Both in |feature_filter| and is enabled, so keep around.
     feature_availabilities->insert(
         std::make_pair(feature->name, availability.day()));
+    DVLOG(2) << "Keeping availability for " << feature->name << " @ "
+             << availability.day();
   }
 
   // Find features from |feature_filter| that are enabled, but not in DB yet.
@@ -105,6 +107,8 @@ void OnDBLoadComplete(
     // Since it will be written to the DB, also add to the callback result.
     feature_availabilities->insert(
         std::make_pair(feature->name, availability.day()));
+    DVLOG(2) << "Adding availability for " << feature->name << " @ "
+             << availability.day();
   }
 
   // Write all changes to the DB.
