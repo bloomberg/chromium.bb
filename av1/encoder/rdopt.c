@@ -3946,7 +3946,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
               src + ((idy * src_stride + idx) << tx_size_wide_log2[0]);
           uint8_t *const r =
               rec_buffer + ((idy * MAX_TX_SIZE + idx) << tx_size_wide_log2[0]);
-          cpi->fn_ptr[0].vf(s, src_stride, r, MAX_TX_SIZE, &this_dist);
+          cpi->fn_ptr[txsize_to_bsize[0]].vf(s, src_stride, r, MAX_TX_SIZE,
+                                             &this_dist);
           tmp += this_dist;
         }
       }
