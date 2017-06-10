@@ -75,7 +75,6 @@ class MockChromePasswordProtectionService
   }
 
   void CacheVerdict(const GURL& url,
-                    LoginReputationClientRequest::TriggerType trigger_type,
                     LoginReputationClientResponse* verdict,
                     const base::Time& receive_time) override {}
 

@@ -5636,7 +5636,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="31" label="Permission autoblocker data setting"/>
   <int value="32" label="Subresource filter setting"/>
   <int value="33" label="Subresource filter metadata"/>
-  <int value="34" label="Password protection setting"/>
 </enum>
 
 <enum name="ContentTypeParseableResult" type="int">
