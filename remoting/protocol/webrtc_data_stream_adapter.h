@@ -39,6 +39,10 @@ class WebrtcDataStreamAdapter : public MessagePipe,
   void OnStateChange() override;
   void OnMessage(const webrtc::DataBuffer& buffer) override;
 
+  void OnConnected();
+
+  void OnClosed();
+
   rtc::scoped_refptr<webrtc::DataChannelInterface> channel_;
 
   EventHandler* event_handler_ = nullptr;
