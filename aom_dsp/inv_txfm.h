@@ -51,9 +51,7 @@ static INLINE tran_high_t check_range(tran_high_t input, int bd) {
 }
 
 #define WRAPLOW(x) ((int32_t)check_range(x, 8))
-#if CONFIG_HIGHBITDEPTH
 #define HIGHBD_WRAPLOW(x, bd) ((int32_t)check_range((x), bd))
-#endif  // CONFIG_HIGHBITDEPTH
 
 void aom_idct4_c(const tran_low_t *input, tran_low_t *output);
 void aom_idct8_c(const tran_low_t *input, tran_low_t *output);
@@ -72,13 +70,13 @@ void aom_highbd_idct32_c(const tran_low_t *input, tran_low_t *output, int bd);
 void aom_highbd_iadst4_c(const tran_low_t *input, tran_low_t *output, int bd);
 void aom_highbd_iadst8_c(const tran_low_t *input, tran_low_t *output, int bd);
 void aom_highbd_iadst16_c(const tran_low_t *input, tran_low_t *output, int bd);
+#endif  // CONFIG_HIGHBITDEPTH
 
 static INLINE uint16_t highbd_clip_pixel_add(uint16_t dest, tran_high_t trans,
                                              int bd) {
   trans = HIGHBD_WRAPLOW(trans, bd);
   return clip_pixel_highbd(dest + (int)trans, bd);
 }
-#endif
 
 static INLINE uint8_t clip_pixel_add(uint8_t dest, tran_high_t trans) {
   trans = WRAPLOW(trans);
