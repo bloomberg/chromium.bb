@@ -722,6 +722,9 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #endif  // CONFIG_COMPOUND_SEGMENT
     mi->mbmi.interinter_compound_type
   };
+#if !CONFIG_GLOBAL_MOTION && !CONFIG_WARPED_MOTION
+  int ref = 0;
+#endif  // !CONFIG_GLOBAL_MOTION && !CONFIG_WARPED_MOTION
   ConvolveParams conv_params = get_conv_params(ref, 0, plane);
 
 #if CONFIG_HIGHBITDEPTH
