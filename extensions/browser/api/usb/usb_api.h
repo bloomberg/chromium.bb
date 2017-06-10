@@ -14,8 +14,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_device_handle.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/extension_function.h"
@@ -102,7 +102,7 @@ class UsbGetDevicesFunction : public UsbPermissionCheckingFunction {
   void OnGetDevicesComplete(
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
-  std::vector<device::UsbDeviceFilter> filters_;
+  std::vector<device::mojom::UsbDeviceFilterPtr> filters_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbGetDevicesFunction);
 };

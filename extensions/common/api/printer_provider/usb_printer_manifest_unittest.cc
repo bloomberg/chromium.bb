@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/usb/usb_device_filter.h"
 #include "extensions/common/api/printer_provider/usb_printer_manifest_data.h"
 #include "extensions/common/manifest_test.h"
 #include "extensions/common/value_builder.h"
@@ -21,19 +20,27 @@ TEST_F(UsbPrinterManifestTest, Filters) {
   const UsbPrinterManifestData* manifest_data =
       UsbPrinterManifestData::Get(extension.get());
   ASSERT_TRUE(manifest_data);
-  EXPECT_EQ(2u, manifest_data->filters().size());
-  EXPECT_TRUE(DictionaryBuilder()
-                  .Set("vendorId", 1)
-                  .Set("productId", 2)
-                  .Build()
-                  ->Equals(manifest_data->filters()[0].ToValue().get()));
-  EXPECT_TRUE(DictionaryBuilder()
-                  .Set("vendorId", 1)
-                  .Set("interfaceClass", 2)
-                  .Set("interfaceSubclass", 3)
-                  .Set("interfaceProtocol", 4)
-                  .Build()
-                  ->Equals(manifest_data->filters()[1].ToValue().get()));
+  ASSERT_EQ(2u, manifest_data->filters_.size());
+
+  {
+    const device::mojom::UsbDeviceFilter& filter = *manifest_data->filters_[0];
+    EXPECT_TRUE(filter.has_vendor_id);
+    EXPECT_EQ(1, filter.vendor_id);
+    EXPECT_TRUE(filter.has_product_id);
+    EXPECT_EQ(2, filter.product_id);
+  }
+
+  {
+    const device::mojom::UsbDeviceFilter& filter = *manifest_data->filters_[1];
+    EXPECT_TRUE(filter.has_vendor_id);
+    EXPECT_EQ(1, filter.vendor_id);
+    EXPECT_TRUE(filter.has_class_code);
+    EXPECT_EQ(2, filter.class_code);
+    EXPECT_TRUE(filter.has_subclass_code);
+    EXPECT_EQ(3, filter.subclass_code);
+    EXPECT_TRUE(filter.has_protocol_code);
+    EXPECT_EQ(4, filter.protocol_code);
+  }
 }
 
 TEST_F(UsbPrinterManifestTest, InvalidFilter) {

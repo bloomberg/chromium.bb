@@ -17,6 +17,7 @@ source_set("mojo") {
   deps = [
     "//device/base",
     "//device/usb",
+    "//device/usb/public/cpp",
     "//device/usb/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",

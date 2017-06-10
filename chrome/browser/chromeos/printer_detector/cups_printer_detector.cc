@@ -30,7 +30,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_service.h"
 
 namespace chromeos {

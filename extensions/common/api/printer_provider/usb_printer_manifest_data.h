@@ -7,11 +7,11 @@
 
 #include <vector>
 
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "extensions/common/extension.h"
 
 namespace device {
 class UsbDevice;
-struct UsbDeviceFilter;
 }
 
 namespace extensions {
@@ -32,14 +32,12 @@ class UsbPrinterManifestData : public Extension::ManifestData {
       const base::Value& value,
       base::string16* error);
 
-  bool SupportsDevice(const scoped_refptr<device::UsbDevice>& device) const;
-
-  const std::vector<device::UsbDeviceFilter>& filters() const {
-    return filters_;
-  }
+  bool SupportsDevice(const device::UsbDevice& device) const;
 
  private:
-  std::vector<device::UsbDeviceFilter> filters_;
+  FRIEND_TEST_ALL_PREFIXES(UsbPrinterManifestTest, Filters);
+
+  std::vector<device::mojom::UsbDeviceFilterPtr> filters_;
 };
 
 }  // namespace extensions

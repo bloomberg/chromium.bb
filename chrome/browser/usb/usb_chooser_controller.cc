@@ -26,8 +26,8 @@
 #include "content/public/browser/web_contents.h"
 #include "device/base/device_client.h"
 #include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_ids.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -35,7 +35,6 @@
 using content::RenderFrameHost;
 using content::WebContents;
 using device::UsbDevice;
-using device::UsbDeviceFilter;
 
 namespace {
 
@@ -74,12 +73,12 @@ base::string16 GetDeviceName(scoped_refptr<UsbDevice> device) {
 
 UsbChooserController::UsbChooserController(
     RenderFrameHost* render_frame_host,
-    const std::vector<UsbDeviceFilter>& device_filters,
+    std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
     const device::mojom::UsbChooserService::GetPermissionCallback& callback)
     : ChooserController(render_frame_host,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
-      filters_(device_filters),
+      filters_(std::move(device_filters)),
       callback_(callback),
       usb_service_observer_(this),
       weak_factory_(this) {
@@ -223,7 +222,7 @@ void UsbChooserController::GotUsbDeviceList(
 
 bool UsbChooserController::DisplayDevice(
     scoped_refptr<UsbDevice> device) const {
-  if (!UsbDeviceFilter::MatchesAny(*device, filters_))
+  if (!UsbDeviceFilterMatchesAny(filters_, *device))
     return false;
 
   if (UsbBlocklist::Get().IsExcluded(device))

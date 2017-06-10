@@ -23,7 +23,6 @@ class RenderFrameHost;
 
 namespace device {
 class UsbDevice;
-struct UsbDeviceFilter;
 }
 
 // Represents a way to ask the user to select a USB device from a list of
@@ -31,7 +30,7 @@ struct UsbDeviceFilter;
 class UsbChooserDialogAndroid : public device::UsbService::Observer {
  public:
   UsbChooserDialogAndroid(
-      const std::vector<device::UsbDeviceFilter>& filters,
+      std::vector<device::mojom::UsbDeviceFilterPtr> filters,
       content::RenderFrameHost* render_frame_host,
       const device::mojom::UsbChooserService::GetPermissionCallback& callback);
   ~UsbChooserDialogAndroid() override;
@@ -74,7 +73,7 @@ class UsbChooserDialogAndroid : public device::UsbService::Observer {
   device::mojom::UsbChooserService::GetPermissionCallback callback_;
   ScopedObserver<device::UsbService, device::UsbService::Observer>
       usb_service_observer_;
-  std::vector<device::UsbDeviceFilter> filters_;
+  std::vector<device::mojom::UsbDeviceFilterPtr> filters_;
 
   std::vector<scoped_refptr<device::UsbDevice>> devices_;
 

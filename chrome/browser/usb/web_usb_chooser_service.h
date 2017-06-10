@@ -27,8 +27,9 @@ class WebUsbChooserService : public device::mojom::UsbChooserService {
   ~WebUsbChooserService() override;
 
   // device::usb::ChooserService:
-  void GetPermission(const std::vector<device::UsbDeviceFilter>& device_filters,
-                     const GetPermissionCallback& callback) override;
+  void GetPermission(
+      std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
+      const GetPermissionCallback& callback) override;
 
   void Bind(device::mojom::UsbChooserServiceRequest request);
 

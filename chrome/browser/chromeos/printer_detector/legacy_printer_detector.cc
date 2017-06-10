@@ -31,7 +31,6 @@
 #include "components/user_manager/user_manager.h"
 #include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_ids.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/event_router.h"
@@ -101,7 +100,7 @@ bool HasAppThatSupportsPrinter(Profile* profile,
 
     const extensions::UsbPrinterManifestData* manifest_data =
         extensions::UsbPrinterManifestData::Get(extension.get());
-    if (manifest_data && manifest_data->SupportsDevice(device)) {
+    if (manifest_data && manifest_data->SupportsDevice(*device)) {
       return true;
     }
 

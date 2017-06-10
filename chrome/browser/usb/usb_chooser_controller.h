@@ -24,7 +24,6 @@ class RenderFrameHost;
 
 namespace device {
 class UsbDevice;
-struct UsbDeviceFilter;
 }
 
 class UsbChooserContext;
@@ -36,7 +35,7 @@ class UsbChooserController : public ChooserController,
  public:
   UsbChooserController(
       content::RenderFrameHost* render_frame_host,
-      const std::vector<device::UsbDeviceFilter>& device_filters,
+      std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
       const device::mojom::UsbChooserService::GetPermissionCallback& callback);
   ~UsbChooserController() override;
 
@@ -62,7 +61,7 @@ class UsbChooserController : public ChooserController,
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
   bool DisplayDevice(scoped_refptr<device::UsbDevice> device) const;
 
-  std::vector<device::UsbDeviceFilter> filters_;
+  std::vector<device::mojom::UsbDeviceFilterPtr> filters_;
   device::mojom::UsbChooserService::GetPermissionCallback callback_;
   GURL requesting_origin_;
   GURL embedding_origin_;

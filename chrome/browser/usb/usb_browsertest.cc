@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
@@ -74,10 +75,11 @@ class FakeChooserService : public device::mojom::UsbChooserService {
   ~FakeChooserService() override {}
 
   // device::mojom::UsbChooserService:
-  void GetPermission(const std::vector<device::UsbDeviceFilter>& device_filters,
-                     const GetPermissionCallback& callback) override {
+  void GetPermission(
+      std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
+      const GetPermissionCallback& callback) override {
     auto chooser_controller = base::MakeUnique<UsbChooserController>(
-        render_frame_host_, device_filters, callback);
+        render_frame_host_, std::move(device_filters), callback);
     new FakeChooserView(std::move(chooser_controller));
   }
 

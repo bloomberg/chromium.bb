@@ -20,10 +20,10 @@ WebUsbChooserServiceAndroid::WebUsbChooserServiceAndroid(
 WebUsbChooserServiceAndroid::~WebUsbChooserServiceAndroid() {}
 
 void WebUsbChooserServiceAndroid::GetPermission(
-    const std::vector<device::UsbDeviceFilter>& device_filters,
+    std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
     const GetPermissionCallback& callback) {
   usb_chooser_dialog_android_.push_back(
-      base::MakeUnique<UsbChooserDialogAndroid>(device_filters,
+      base::MakeUnique<UsbChooserDialogAndroid>(std::move(device_filters),
                                                 render_frame_host_, callback));
 }
 

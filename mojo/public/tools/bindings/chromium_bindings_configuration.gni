@@ -20,7 +20,6 @@ _typemap_imports = [
   "//device/bluetooth/public/interfaces/typemaps.gni",
   "//device/gamepad/public/interfaces/typemaps.gni",
   "//device/generic_sensor/public/interfaces/typemaps.gni",
-  "//device/usb/public/interfaces/typemaps.gni",
   "//extensions/common/typemaps.gni",
   "//gpu/ipc/common/typemaps.gni",
   "//media/capture/mojo/typemaps.gni",

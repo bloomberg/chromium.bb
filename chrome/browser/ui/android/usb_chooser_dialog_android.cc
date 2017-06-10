@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -26,8 +27,8 @@
 #include "content/public/browser/web_contents.h"
 #include "device/base/device_client.h"
 #include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_filter.h"
 #include "device/usb/webusb_descriptors.h"
 #include "device/vr/features/features.h"
 #include "jni/UsbChooserDialog_jni.h"
@@ -39,7 +40,6 @@
 #endif  // BUILDFLAG(ENABLE_VR)
 
 using device::UsbDevice;
-using device::UsbDeviceFilter;
 
 namespace {
 
@@ -56,13 +56,13 @@ void OnDevicePermissionRequestComplete(
 }  // namespace
 
 UsbChooserDialogAndroid::UsbChooserDialogAndroid(
-    const std::vector<UsbDeviceFilter>& filters,
+    std::vector<device::mojom::UsbDeviceFilterPtr> filters,
     content::RenderFrameHost* render_frame_host,
     const device::mojom::UsbChooserService::GetPermissionCallback& callback)
     : render_frame_host_(render_frame_host),
       callback_(callback),
       usb_service_observer_(this),
-      filters_(filters),
+      filters_(std::move(filters)),
       weak_factory_(this) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
@@ -240,7 +240,7 @@ void UsbChooserDialogAndroid::OpenUrl(const std::string& url) {
 
 bool UsbChooserDialogAndroid::DisplayDevice(
     scoped_refptr<UsbDevice> device) const {
-  if (!UsbDeviceFilter::MatchesAny(*device, filters_))
+  if (!UsbDeviceFilterMatchesAny(filters_, *device))
     return false;
 
   if (UsbBlocklist::Get().IsExcluded(device))
