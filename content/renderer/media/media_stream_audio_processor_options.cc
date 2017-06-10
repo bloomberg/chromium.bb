@@ -275,6 +275,17 @@ std::string MediaAudioConstraints::GetGoogArrayGeometry() const {
   return "";
 }
 
+AudioProcessingProperties::AudioProcessingProperties() = default;
+AudioProcessingProperties::AudioProcessingProperties(
+    const AudioProcessingProperties& other) = default;
+AudioProcessingProperties& AudioProcessingProperties::operator=(
+    const AudioProcessingProperties& other) = default;
+AudioProcessingProperties::AudioProcessingProperties(
+    AudioProcessingProperties&& other) = default;
+AudioProcessingProperties& AudioProcessingProperties::operator=(
+    AudioProcessingProperties&& other) = default;
+AudioProcessingProperties::~AudioProcessingProperties() = default;
+
 EchoInformation::EchoInformation()
     : delay_stats_time_ms_(0),
       echo_frames_received_(false),
