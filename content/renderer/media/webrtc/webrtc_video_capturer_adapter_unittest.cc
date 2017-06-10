@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
+#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,12 +68,14 @@ class WebRtcVideoCapturerAdapterTest
     ASSERT_TRUE(output_frame_);
     rtc::scoped_refptr<webrtc::VideoFrameBuffer> texture_frame =
         output_frame_->video_frame_buffer();
+    EXPECT_EQ(webrtc::VideoFrameBuffer::Type::kNative, texture_frame->type());
     EXPECT_EQ(media::VideoFrame::STORAGE_OPAQUE,
-              static_cast<media::VideoFrame*>(texture_frame->native_handle())
+              static_cast<WebRtcVideoFrameAdapter*>(texture_frame.get())
+                  ->getMediaVideoFrame()
                   ->storage_type());
 
-    rtc::scoped_refptr<webrtc::VideoFrameBuffer> copied_frame =
-        texture_frame->NativeToI420Buffer();
+    rtc::scoped_refptr<webrtc::I420BufferInterface> copied_frame =
+        texture_frame->ToI420();
     EXPECT_TRUE(copied_frame);
     EXPECT_TRUE(copied_frame->DataY());
     EXPECT_TRUE(copied_frame->DataU());
