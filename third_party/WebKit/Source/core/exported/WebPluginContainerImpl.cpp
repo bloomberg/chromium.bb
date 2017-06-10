@@ -129,6 +129,10 @@ void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
   web_plugin_->UpdateAllLifecyclePhases();
 }
 
+LayoutEmbeddedContent* WebPluginContainerImpl::OwnerLayoutObject() const {
+  return element_->GetLayoutEmbeddedContent();
+}
+
 void WebPluginContainerImpl::Paint(GraphicsContext& context,
                                    const CullRect& cull_rect) const {
   // Don't paint anything if the plugin doesn't intersect.

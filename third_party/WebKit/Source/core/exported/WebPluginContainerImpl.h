@@ -51,6 +51,7 @@ class HTMLFrameOwnerElement;
 class HTMLPlugInElement;
 class IntRect;
 class KeyboardEvent;
+class LayoutEmbeddedContent;
 class LocalFrameView;
 class MouseEvent;
 class ResourceError;
@@ -94,6 +95,7 @@ class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   void EventListenersRemoved() override;
 
   // EmbeddedContentView methods
+  LayoutEmbeddedContent* OwnerLayoutObject() const override;
   void SetFrameRect(const IntRect& frame_rect) override {
     frame_rect_ = frame_rect;
   }
