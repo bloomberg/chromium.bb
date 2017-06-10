@@ -15,3 +15,24 @@ Correct mapping for <((b));>
 Correct mapping for <else>
 Correct mapping for <(c)>
 
+Running: objectDesctructuring
+====== 8< ------
+let {x, y} = getXYFromTouchOrPointer(e);
+
+------ >8 ======
+Correct mapping for <let>
+Correct mapping for <y>
+Correct mapping for <getXYFromTouchOrPointer>
+Correct mapping for <e>
+
+Running: objectDesctructuringInFunctionExpression
+====== 8< ------
+var test = function({x, y}) {
+    foo(x, y);
+}
+
+------ >8 ======
+Correct mapping for <test>
+Correct mapping for <function>
+Correct mapping for <foo>
+

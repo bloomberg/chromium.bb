@@ -15,6 +15,16 @@ function test()
             var mappingQueries = ["if", "((a))", "((b));", "else", "(c)"];
             testJSFormatter("if((a))((b));else (c);", mappingQueries, next);
         },
+
+        function objectDesctructuring(next) {
+            var mappingQueries = ['let', 'y', 'getXYFromTouchOrPointer', 'e'];
+            testJSFormatter('let{x,y}=getXYFromTouchOrPointer(e);', mappingQueries, next);
+        },
+
+        function objectDesctructuringInFunctionExpression(next) {
+            var mappingQueries = ['test', 'function', 'foo'];
+            testJSFormatter('var test = function({x,y}){foo(x,y);}', mappingQueries, next);
+        },
     ]);
 }
 
