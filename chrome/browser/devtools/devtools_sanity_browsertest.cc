@@ -50,10 +50,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
-#include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
@@ -133,8 +129,6 @@ const char kReloadSharedWorkerTestWorker[] =
     "files/workers/debug_shared_worker_initialization.js";
 const char kEmulateNetworkConditionsPage[] =
     "files/devtools/emulate_network_conditions.html";
-const char kDispatchKeyEventShowsAutoFill[] =
-    "files/devtools/dispatch_key_event_shows_auto_fill.html";
 
 template <typename... T>
 void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
@@ -1700,47 +1694,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDeviceEmulation) {
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDispatchKeyEventDoesNotCrash) {
   RunTest("testDispatchKeyEventDoesNotCrash", "about:blank");
-}
-
-class AutofillManagerTestDelegateDevtoolsImpl
-    : public autofill::AutofillManagerTestDelegate {
- public:
-  explicit AutofillManagerTestDelegateDevtoolsImpl(
-      WebContents* inspectedContents)
-      : inspected_contents_(inspectedContents) {}
-  ~AutofillManagerTestDelegateDevtoolsImpl() override {}
-
-  void DidPreviewFormData() override {}
-
-  void DidFillFormData() override {}
-
-  void DidShowSuggestions() override {
-    ASSERT_TRUE(content::ExecuteScript(inspected_contents_,
-                                       "console.log('didShowSuggestions');"));
-  }
-
-  void OnTextFieldChanged() override {}
-
- private:
-  WebContents* inspected_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateDevtoolsImpl);
-};
-
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDispatchKeyEventShowsAutoFill) {
-  OpenDevToolsWindow(kDispatchKeyEventShowsAutoFill, false);
-
-  autofill::ContentAutofillDriver* autofill_driver =
-      autofill::ContentAutofillDriverFactory::FromWebContents(GetInspectedTab())
-          ->DriverForFrame(GetInspectedTab()->GetMainFrame());
-  autofill::AutofillManager* autofill_manager =
-      autofill_driver->autofill_manager();
-  AutofillManagerTestDelegateDevtoolsImpl autoFillTestDelegate(
-      GetInspectedTab());
-  autofill_manager->SetTestDelegate(&autoFillTestDelegate);
-
-  RunTestFunction(window_, "testDispatchKeyEventShowsAutoFill");
-  CloseDevToolsWindow();
 }
 
 // Tests that settings are stored in profile correctly.
