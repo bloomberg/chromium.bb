@@ -82,8 +82,10 @@ void av1_update_boundary_info(const struct AV1Common *cm,
                               const TileInfo *const tile_info, int mi_row,
                               int mi_col) {
   int row, col;
-  for (row = mi_row; row < (mi_row + cm->mib_size); row++)
-    for (col = mi_col; col < (mi_col + cm->mib_size); col++) {
+  for (row = mi_row; ((row < (mi_row + cm->mib_size)) && (row < cm->mi_rows));
+       row++)
+    for (col = mi_col; ((col < (mi_col + cm->mib_size)) && (col < cm->mi_cols));
+         col++) {
       MODE_INFO *const mi = cm->mi + row * cm->mi_stride + col;
       mi->mbmi.boundary_info = 0;
 
