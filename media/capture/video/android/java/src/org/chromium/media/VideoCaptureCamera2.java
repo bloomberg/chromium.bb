@@ -269,7 +269,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
                         @Override
                         public void onCaptureCompleted(CameraCaptureSession session,
                                 CaptureRequest request, TotalCaptureResult result) {
-                            mLastExposureTimeNs = result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
+                            if (result.get(CaptureResult.SENSOR_EXPOSURE_TIME) != null) {
+                                mLastExposureTimeNs =
+                                        result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
+                            }
                         }
                     }, handler);
 
@@ -764,7 +767,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
             maxIso = iso_range.getUpper();
         }
         builder.setMinIso(minIso).setMaxIso(maxIso).setStepIso(1);
-        builder.setCurrentIso(mPreviewRequestBuilder.get(CaptureRequest.SENSOR_SENSITIVITY));
+        if (mPreviewRequestBuilder.get(CaptureRequest.SENSOR_SENSITIVITY) != null) {
+            builder.setCurrentIso(mPreviewRequestBuilder.get(CaptureRequest.SENSOR_SENSITIVITY));
+        }
 
         final StreamConfigurationMap streamMap =
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
