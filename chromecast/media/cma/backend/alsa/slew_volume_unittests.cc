@@ -131,7 +131,12 @@ class SlewVolumeBaseTest : public ::testing::Test {
 };
 
 TEST_F(SlewVolumeBaseTest, BadSampleRate) {
+// String arguments aren't passed to CHECK() in official builds.
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+  ASSERT_DEATH(slew_volume_->SetSampleRate(0), "");
+#else
   ASSERT_DEATH(slew_volume_->SetSampleRate(0), "sample_rate");
+#endif
 }
 
 TEST_F(SlewVolumeBaseTest, BadSlewTime) {
