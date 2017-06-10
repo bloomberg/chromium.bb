@@ -1490,12 +1490,10 @@ class Port(object):
         pass
 
     def physical_test_suites(self):
-        color_correct_rendering_flags = ['--enable-color-correct-rendering', '--force-color-profile=srgb']
         return [
             # For example, to turn on force-compositing-mode in the svg/ directory:
             # PhysicalTestSuite('svg', ['--force-compositing-mode']),
             PhysicalTestSuite('fast/text', ['--enable-direct-write', '--enable-font-antialiasing']),
-            PhysicalTestSuite('images', color_correct_rendering_flags),
         ]
 
     def virtual_test_suites(self):

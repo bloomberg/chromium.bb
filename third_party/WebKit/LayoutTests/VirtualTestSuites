@@ -2,8 +2,7 @@
   {
     "prefix": "color_space",
     "base": "fast/canvas/color-space",
-    "args": ["--enable-color-correct-rendering",
-             "--enable-blink-features=ColorCanvasExtensions"]
+    "args": ["--enable-blink-features=ColorCanvasExtensions"]
   },
   {
     "prefix": "gpu",
@@ -71,15 +70,12 @@
   {
     "prefix": "gpu-rasterization",
     "base": "images",
-    "args": ["--force-gpu-rasterization",
-             "--enable-color-correct-rendering",
-             "--force-color-profile=srgb"]
+    "args": ["--force-gpu-rasterization"]
   },
   {
     "prefix": "exotic-color-space",
     "base": "images",
-    "args": ["--enable-color-correct-rendering", 
-             "--force-color-profile=color-spin-gamma24"]
+    "args": ["--force-color-profile=color-spin-gamma24"]
   },
   {
     "prefix": "stable",
