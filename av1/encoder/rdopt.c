@@ -3874,13 +3874,6 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 }
 
 #if CONFIG_VAR_TX
-// FIXME crop these calls
-static uint64_t sum_squares_2d(const int16_t *diff, int diff_stride,
-                               TX_SIZE tx_size) {
-  return aom_sum_squares_2d_i16(diff, diff_stride, tx_size_wide[tx_size],
-                                tx_size_high[tx_size]);
-}
-
 void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                        int blk_row, int blk_col, int plane, int block,
                        int plane_bsize, const ENTROPY_CONTEXT *a,
@@ -3898,8 +3891,6 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   BLOCK_SIZE txm_bsize = txsize_to_bsize[tx_size];
   int bh = block_size_high[txm_bsize];
   int bw = block_size_wide[txm_bsize];
-  int txb_h = tx_size_high_unit[tx_size];
-  int txb_w = tx_size_wide_unit[tx_size];
 
   int src_stride = p->src.stride;
   uint8_t *src =
@@ -3913,22 +3904,12 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 #else
   DECLARE_ALIGNED(16, uint8_t, rec_buffer[MAX_TX_SQUARE]);
 #endif  // CONFIG_HIGHBITDEPTH
-  int max_blocks_high = block_size_high[plane_bsize];
-  int max_blocks_wide = block_size_wide[plane_bsize];
-  const int diff_stride = max_blocks_wide;
+  const int diff_stride = block_size_wide[plane_bsize];
   const int16_t *diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   int txb_coeff_cost;
 
   assert(tx_size < TX_SIZES_ALL);
-
-  if (xd->mb_to_bottom_edge < 0)
-    max_blocks_high += xd->mb_to_bottom_edge >> (3 + pd->subsampling_y);
-  if (xd->mb_to_right_edge < 0)
-    max_blocks_wide += xd->mb_to_right_edge >> (3 + pd->subsampling_x);
-
-  max_blocks_high >>= tx_size_wide_log2[0];
-  max_blocks_wide >>= tx_size_wide_log2[0];
 
   int coeff_ctx = get_entropy_context(tx_size, a, l);
 
@@ -3953,21 +3934,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                     0, bw, bh);
 #endif  // CONFIG_HIGHBITDEPTH
 
-  if (blk_row + txb_h > max_blocks_high || blk_col + txb_w > max_blocks_wide) {
-    int idx, idy;
-    int blocks_height = AOMMIN(txb_h, max_blocks_high - blk_row);
-    int blocks_width = AOMMIN(txb_w, max_blocks_wide - blk_col);
-    tmp = 0;
-    for (idy = 0; idy < blocks_height; ++idy) {
-      for (idx = 0; idx < blocks_width; ++idx) {
-        const int16_t *d =
-            diff + ((idy * diff_stride + idx) << tx_size_wide_log2[0]);
-        tmp += sum_squares_2d(d, diff_stride, 0);
-      }
-    }
-  } else {
-    tmp = sum_squares_2d(diff, diff_stride, tx_size);
-  }
+  tmp = sum_squares_visible(xd, plane, diff, diff_stride, blk_row, blk_col,
+                            plane_bsize, txm_bsize);
 
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
@@ -3979,30 +3947,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, rec_buffer,
                               MAX_TX_SIZE, eob);
   if (eob > 0) {
-    if (txb_w + blk_col > max_blocks_wide ||
-        txb_h + blk_row > max_blocks_high) {
-      int idx, idy;
-      unsigned int this_dist;
-      int blocks_height = AOMMIN(txb_h, max_blocks_high - blk_row);
-      int blocks_width = AOMMIN(txb_w, max_blocks_wide - blk_col);
-      tmp = 0;
-      for (idy = 0; idy < blocks_height; ++idy) {
-        for (idx = 0; idx < blocks_width; ++idx) {
-          uint8_t *const s =
-              src + ((idy * src_stride + idx) << tx_size_wide_log2[0]);
-          uint8_t *const r =
-              rec_buffer + ((idy * MAX_TX_SIZE + idx) << tx_size_wide_log2[0]);
-          cpi->fn_ptr[txsize_to_bsize[0]].vf(s, src_stride, r, MAX_TX_SIZE,
-                                             &this_dist);
-          tmp += this_dist;
-        }
-      }
-    } else {
-      uint32_t this_dist;
-      cpi->fn_ptr[txm_bsize].vf(src, src_stride, rec_buffer, MAX_TX_SIZE,
-                                &this_dist);
-      tmp = this_dist;
-    }
+    tmp = pixel_sse(cpi, xd, plane, src, src_stride, rec_buffer, MAX_TX_SIZE,
+                    blk_row, blk_col, plane_bsize, txm_bsize);
   }
   rd_stats->dist += tmp * 16;
   txb_coeff_cost =
