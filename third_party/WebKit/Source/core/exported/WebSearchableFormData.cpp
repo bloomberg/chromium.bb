@@ -121,9 +121,10 @@ bool IsInDefaultState(const HTMLFormControlElement& form_element) {
   if (isHTMLInputElement(form_element)) {
     const HTMLInputElement& input_element = toHTMLInputElement(form_element);
     if (input_element.type() == InputTypeNames::checkbox ||
-        input_element.type() == InputTypeNames::radio)
+        input_element.type() == InputTypeNames::radio) {
       return input_element.checked() ==
              input_element.FastHasAttribute(checkedAttr);
+    }
   } else if (isHTMLSelectElement(form_element)) {
     return IsSelectInDefaultState(toHTMLSelectElement(form_element));
   }
