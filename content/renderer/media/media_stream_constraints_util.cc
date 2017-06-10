@@ -104,7 +104,9 @@ bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
 VideoCaptureSettings::VideoCaptureSettings() : VideoCaptureSettings("") {}
 
 VideoCaptureSettings::VideoCaptureSettings(const char* failed_constraint_name)
-    : failed_constraint_name_(failed_constraint_name) {}
+    : failed_constraint_name_(failed_constraint_name) {
+  DCHECK(failed_constraint_name_);
+}
 
 VideoCaptureSettings::VideoCaptureSettings(
     std::string device_id,
@@ -139,6 +141,37 @@ VideoCaptureSettings& VideoCaptureSettings::operator=(
     const VideoCaptureSettings& other) = default;
 VideoCaptureSettings& VideoCaptureSettings::operator=(
     VideoCaptureSettings&& other) = default;
+
+AudioCaptureSettings::AudioCaptureSettings() : AudioCaptureSettings("") {}
+
+AudioCaptureSettings::AudioCaptureSettings(const char* failed_constraint_name)
+    : failed_constraint_name_(failed_constraint_name) {
+  DCHECK(failed_constraint_name_);
+}
+
+AudioCaptureSettings::AudioCaptureSettings(
+    std::string device_id,
+    const media::AudioParameters& audio_parameters,
+    bool enable_hotword,
+    bool disable_local_echo,
+    bool enable_automatic_output_device_selection,
+    const AudioProcessingProperties& audio_processing_properties)
+    : failed_constraint_name_(nullptr),
+      device_id_(std::move(device_id)),
+      audio_parameters_(audio_parameters),
+      hotword_enabled_(enable_hotword),
+      disable_local_echo_(disable_local_echo),
+      render_to_associated_sink_(enable_automatic_output_device_selection),
+      audio_processing_properties_(audio_processing_properties) {}
+
+AudioCaptureSettings::AudioCaptureSettings(const AudioCaptureSettings& other) =
+    default;
+AudioCaptureSettings& AudioCaptureSettings::operator=(
+    const AudioCaptureSettings& other) = default;
+AudioCaptureSettings::AudioCaptureSettings(AudioCaptureSettings&& other) =
+    default;
+AudioCaptureSettings& AudioCaptureSettings::operator=(
+    AudioCaptureSettings&& other) = default;
 
 bool GetConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
@@ -211,6 +244,25 @@ rtc::Optional<bool> ConstraintToOptional(
   return rtc::Optional<bool>();
 }
 
+std::string GetMediaStreamSource(
+    const blink::WebMediaConstraints& constraints) {
+  std::string source;
+  if (constraints.Basic().media_stream_source.HasIdeal() &&
+      constraints.Basic().media_stream_source.Exact().size() > 0) {
+    source = constraints.Basic().media_stream_source.Ideal()[0].Utf8();
+  }
+  if (constraints.Basic().media_stream_source.HasExact() &&
+      constraints.Basic().media_stream_source.Exact().size() > 0) {
+    source = constraints.Basic().media_stream_source.Exact()[0].Utf8();
+  }
+
+  return source;
+}
+
+bool IsDeviceCapture(const blink::WebMediaConstraints& constraints) {
+  return GetMediaStreamSource(constraints).empty();
+}
+
 VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
     const ResolutionSet& resolution_set,
@@ -248,6 +300,28 @@ VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
   return VideoTrackAdapterSettings(
       track_max_width, track_max_height, track_min_aspect_ratio,
       track_max_aspect_ratio, track_max_frame_rate, expected_native_size);
+}
+
+double NumericConstraintFitnessDistance(double value1, double value2) {
+  if (std::fabs(value1 - value2) <= blink::DoubleConstraint::kConstraintEpsilon)
+    return 0.0;
+
+  return std::fabs(value1 - value2) /
+         std::max(std::fabs(value1), std::fabs(value2));
+}
+
+double StringConstraintFitnessDistance(
+    const blink::WebString& value,
+    const blink::StringConstraint& constraint) {
+  if (!constraint.HasIdeal())
+    return 0.0;
+
+  for (auto& ideal_value : constraint.Ideal()) {
+    if (value == ideal_value)
+      return 0.0;
+  }
+
+  return 1.0;
 }
 
 }  // namespace content
