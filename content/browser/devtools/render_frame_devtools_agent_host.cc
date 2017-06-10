@@ -109,6 +109,8 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
   bool ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
   void Suspend();
   void Resume();
+  std::string StateCookie() const { return chunk_processor_.state_cookie(); }
+  void ReattachWithCookie(std::string cookie);
 
  private:
   void GrantPolicy();
@@ -156,24 +158,29 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Attach(
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Reattach(
     FrameHostHolder* old) {
-  if (old)
-    chunk_processor_.set_state_cookie(old->chunk_processor_.state_cookie());
-  host_->Send(new DevToolsAgentMsg_Reattach(
-      host_->GetRoutingID(), agent_->GetId(), agent_->session()->session_id(),
-      chunk_processor_.state_cookie()));
-  if (old) {
-    if (IsBrowserSideNavigationEnabled()) {
-      for (const auto& pair :
-               old->sent_messages_whose_reply_came_while_suspended_) {
-        DispatchProtocolMessage(pair.second.session_id, pair.first,
-                                pair.second.method, pair.second.message);
-      }
-    }
-    for (const auto& pair : old->sent_messages_) {
+  std::string cookie = old ? old->chunk_processor_.state_cookie() : "";
+  ReattachWithCookie(std::move(cookie));
+  if (!old)
+    return;
+  if (IsBrowserSideNavigationEnabled()) {
+    for (const auto& pair :
+         old->sent_messages_whose_reply_came_while_suspended_) {
       DispatchProtocolMessage(pair.second.session_id, pair.first,
                               pair.second.method, pair.second.message);
     }
   }
+  for (const auto& pair : old->sent_messages_) {
+    DispatchProtocolMessage(pair.second.session_id, pair.first,
+                            pair.second.method, pair.second.message);
+  }
+}
+
+void RenderFrameDevToolsAgentHost::FrameHostHolder::ReattachWithCookie(
+    std::string cookie) {
+  chunk_processor_.set_state_cookie(cookie);
+  host_->Send(
+      new DevToolsAgentMsg_Reattach(host_->GetRoutingID(), agent_->GetId(),
+                                    agent_->session()->session_id(), cookie));
   GrantPolicy();
   attached_ = true;
 }
@@ -459,7 +466,6 @@ void RenderFrameDevToolsAgentHost::SetPending(RenderFrameHostImpl* host) {
   if (IsAttached())
     pending_->Reattach(current_.get());
 
-  // Can only be null in constructor.
   if (current_)
     current_->Suspend();
   pending_->Suspend();
@@ -954,9 +960,11 @@ void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
   if (pending_)
     DiscardPending();
   UpdateProtocolHandlers(nullptr);
-  disconnected_ = std::move(current_);
-  if (session())
-    disconnected_->Detach(session()->session_id());
+  if (session()) {
+    disconnected_cookie_ = current_->StateCookie();
+    current_->Detach(session()->session_id());
+  }
+  current_.reset();
   frame_tree_node_ = nullptr;
   in_navigation_protocol_message_buffer_.clear();
   navigating_handles_.clear();
@@ -973,10 +981,14 @@ void RenderFrameDevToolsAgentHost::ConnectWebContents(WebContents* wc) {
   RenderFrameHostImpl* host =
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
   DCHECK(host);
+  current_frame_crashed_ = false;
+  current_.reset(new FrameHostHolder(this, host));
+  std::string cookie = std::move(disconnected_cookie_);
+  if (IsAttached())
+    current_->ReattachWithCookie(std::move(cookie));
+
+  UpdateProtocolHandlers(host);
   frame_tree_node_ = host->frame_tree_node();
-  current_ = std::move(disconnected_);
-  SetPending(host);
-  CommitPending();
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(host));
 }
 
