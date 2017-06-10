@@ -51,6 +51,8 @@
          disable_chromium_framebuffer_multisample)           \
   GPU_OP(DISABLE_D3D11,                                      \
          disable_d3d11)                                      \
+  GPU_OP(DISABLE_DELAYED_COPY_NV12,                          \
+         disable_delayed_copy_nv12)                          \
   GPU_OP(DISABLE_DEPTH_TEXTURE,                              \
          disable_depth_texture)                              \
   GPU_OP(DISABLE_DIRECT_COMPOSITION,                         \

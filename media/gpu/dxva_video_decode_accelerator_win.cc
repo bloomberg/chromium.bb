@@ -501,6 +501,9 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
           !workarounds.disable_dxgi_zero_copy_video),
       support_copy_nv12_textures_(gpu_preferences.enable_nv12_dxgi_video &&
                                   !workarounds.disable_nv12_dxgi_video),
+      support_delayed_copy_nv12_textures_(
+          base::FeatureList::IsEnabled(kDelayCopyNV12Textures) &&
+          !workarounds.disable_delayed_copy_nv12),
       use_dx11_(false),
       use_keyed_mutex_(false),
       using_angle_device_(false),
@@ -3053,8 +3056,7 @@ DXVAVideoDecodeAccelerator::GetPictureBufferMechanism() const {
     return PictureBufferMechanism::COPY_TO_RGB;
   if (support_share_nv12_textures_)
     return PictureBufferMechanism::BIND;
-  if (base::FeatureList::IsEnabled(kDelayCopyNV12Textures) &&
-      support_copy_nv12_textures_)
+  if (support_delayed_copy_nv12_textures_ && support_copy_nv12_textures_)
     return PictureBufferMechanism::DELAYED_COPY_TO_NV12;
   if (support_copy_nv12_textures_)
     return PictureBufferMechanism::COPY_TO_NV12;
