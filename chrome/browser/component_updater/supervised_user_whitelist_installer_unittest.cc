@@ -203,8 +203,8 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   SupervisedUserWhitelistInstallerTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
         user_data_dir_override_(chrome::DIR_USER_DATA),
-        component_update_service_(base::ThreadTaskRunnerHandle::Get()),
-        manifest_(base::MakeUnique<base::DictionaryValue>()) {}
+        manifest_(base::MakeUnique<base::DictionaryValue>()),
+        component_update_service_(base::ThreadTaskRunnerHandle::Get()) {}
 
   ~SupervisedUserWhitelistInstallerTest() override {}
 
@@ -213,12 +213,16 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
 
     ASSERT_TRUE(testing_profile_manager_.SetUp());
 
+    base::FilePath profile_path = GetProfilePath(kClientId);
+    CreateDirectory(profile_path);
     profile_attributes_storage()->AddProfile(
-        GetProfilePath(kClientId), base::ASCIIToUTF16("A Profile"),
-        std::string(), base::string16(), 0, std::string());
+        profile_path, base::ASCIIToUTF16("A Profile"), std::string(),
+        base::string16(), 0, std::string());
+    profile_path = GetProfilePath(kOtherClientId);
+    CreateDirectory(profile_path);
     profile_attributes_storage()->AddProfile(
-        GetProfilePath(kOtherClientId), base::ASCIIToUTF16("Another Profile"),
-        std::string(), base::string16(), 0, std::string());
+        profile_path, base::ASCIIToUTF16("Another Profile"), std::string(),
+        base::string16(), 0, std::string());
 
     installer_ = SupervisedUserWhitelistInstaller::Create(
         &component_update_service_,
@@ -297,11 +301,9 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     EXPECT_EQ(version, component->version.GetString());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager testing_profile_manager_;
   base::ScopedPathOverride user_data_dir_override_;
   safe_json::TestingJsonParser::ScopedFactoryOverride json_parser_override_;
-  MockComponentUpdateService component_update_service_;
   TestingPrefServiceSimple local_state_;
   std::unique_ptr<SupervisedUserWhitelistInstaller> installer_;
   base::FilePath whitelist_base_directory_;
@@ -312,6 +314,8 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   base::FilePath large_icon_path_;
   std::unique_ptr<base::DictionaryValue> manifest_;
   base::DictionaryValue pref_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  MockComponentUpdateService component_update_service_;
 };
 
 TEST_F(SupervisedUserWhitelistInstallerTest, GetHashFromCrxId) {
