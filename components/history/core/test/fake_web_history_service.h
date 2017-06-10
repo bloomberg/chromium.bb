@@ -64,7 +64,9 @@ class FakeWebHistoryService : public history::WebHistoryService {
 
   // WebHistoryService:
   Request* CreateRequest(const GURL& url,
-                         const CompletionCallback& callback) override;
+                         const CompletionCallback& callback,
+                         const net::PartialNetworkTrafficAnnotationTag&
+                             partial_traffic_annotation) override;
 
   // Parameters for the fake request.
   bool emulate_success_;

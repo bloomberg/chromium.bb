@@ -33,6 +33,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -238,8 +239,9 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
 
-    web_history_service()->ExpireHistoryBetween(std::set<GURL>(), base::Time(),
-                                                base::Time::Max(), callback);
+    web_history_service()->ExpireHistoryBetween(
+        std::set<GURL>(), base::Time(), base::Time::Max(), callback,
+        PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
     EXPECT_EQ(1U, web_ui()->call_data().size());
     EXPECT_EQ("historyDeleted", web_ui()->call_data().back()->function_name());
@@ -253,8 +255,9 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     handler.RegisterMessages();
     sync_service()->SetSyncActive(true);
 
-    web_history_service()->ExpireHistoryBetween(std::set<GURL>(), base::Time(),
-                                                base::Time::Max(), callback);
+    web_history_service()->ExpireHistoryBetween(
+        std::set<GURL>(), base::Time(), base::Time::Max(), callback,
+        PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
     EXPECT_EQ(2U, web_ui()->call_data().size());
     EXPECT_EQ("historyDeleted", web_ui()->call_data().back()->function_name());
@@ -274,7 +277,8 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
         std::set<GURL>(), base::Time(), base::Time::Max(),
         base::Bind(
             &BrowsingHistoryService::RemoveWebHistoryComplete,
-            handler.browsing_history_service_->weak_factory_.GetWeakPtr()));
+            handler.browsing_history_service_->weak_factory_.GetWeakPtr()),
+        PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
     EXPECT_EQ(3U, web_ui()->call_data().size());
     EXPECT_EQ("deleteComplete", web_ui()->call_data().back()->function_name());
@@ -288,8 +292,9 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
 
-    web_history_service()->ExpireHistoryBetween(std::set<GURL>(), base::Time(),
-                                                base::Time::Max(), callback);
+    web_history_service()->ExpireHistoryBetween(
+        std::set<GURL>(), base::Time(), base::Time::Max(), callback,
+        PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
     // No additional WebUI calls were made.
     EXPECT_EQ(3U, web_ui()->call_data().size());

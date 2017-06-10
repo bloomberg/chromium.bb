@@ -94,10 +94,34 @@ void HistoryCounter::Count() {
   options.max_count = 1;
   options.begin_time = GetPeriodStart();
   options.end_time = base::Time::Max();
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation("web_history_counter",
+                                                 "web_history_service",
+                                                 R"(
+        semantics {
+          description:
+            "If history sync is enabled, this queries history.google.com to "
+            "determine if there is any synced history. This information is "
+            "displayed in the Clear Browsing Data dialog."
+          trigger:
+            "Checking the 'Browsing history' option in the Clear Browsing Data "
+            "dialog, or enabling history sync while the dialog is open."
+          data:
+            "A version info token to resolve transaction conflicts, and an "
+            "OAuth2 token authenticating the user."
+        }
+        policy {
+          chrome_policy {
+            SyncDisabled {
+              SyncDisabled: true
+            }
+          }
+        })");
   web_history_request_ = web_history->QueryHistory(
       base::string16(), options,
       base::Bind(&HistoryCounter::OnGetWebHistoryCount,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()),
+      partial_traffic_annotation);
 
   // TODO(msramek): Include web history count when there is an API for it.
 }

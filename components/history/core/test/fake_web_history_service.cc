@@ -215,7 +215,9 @@ base::Time FakeWebHistoryService::GetTimeForKeyInQuery(
 }
 
 FakeWebHistoryService::Request* FakeWebHistoryService::CreateRequest(
-    const GURL& url, const CompletionCallback& callback) {
+    const GURL& url,
+    const CompletionCallback& callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   // Find the time range endpoints in the URL.
   base::Time begin = GetTimeForKeyInQuery(url, "min");
   base::Time end = GetTimeForKeyInQuery(url, "max");

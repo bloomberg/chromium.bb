@@ -202,13 +202,39 @@ void BrowsingHistoryService::QueryHistory(
 
   if (web_history) {
     web_history_query_results_.clear();
+    net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+        net::DefinePartialNetworkTrafficAnnotation("web_history_query",
+                                                   "web_history_service",
+                                                   R"(
+          semantics {
+            description:
+              "If history sync is enabled, this downloads the synced history "
+              "from history.google.com."
+            trigger:
+              "Synced history is downloaded when user opens the history page, "
+              "searches on the history page, or scrolls down the history page "
+              "to see more results. This is only the case if the user is "
+              "signed in and history sync is enabled."
+            data:
+              "The history query text (or empty strings if all results are to "
+              "be fetched), the begin and end timestamps, and the maximum "
+              "number of results to be fetched. The request also includes a "
+              "version info token to resolve transaction conflicts, and an "
+              "OAuth2 token authenticating the user."
+          }
+          policy {
+            chrome_policy {
+              SyncDisabled {
+                SyncDisabled: true
+              }
+            }
+          })");
     web_history_request_ = web_history->QueryHistory(
-        search_text,
-        options,
+        search_text, options,
         base::Bind(&BrowsingHistoryService::WebHistoryQueryComplete,
-                   base::Unretained(this),
-                   search_text, options,
-                   base::TimeTicks::Now()));
+                   base::Unretained(this), search_text, options,
+                   base::TimeTicks::Now()),
+        partial_traffic_annotation);
     // Start a timer so we know when to give up.
     web_history_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
@@ -298,10 +324,35 @@ void BrowsingHistoryService::RemoveVisits(
 
   if (web_history) {
     has_pending_delete_request_ = true;
+    net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+        net::DefinePartialNetworkTrafficAnnotation("web_history_expire",
+                                                   "web_history_service",
+                                                   R"(
+          semantics {
+            description:
+              "If a user who syncs their browsing history deletes one or more "
+              "history item(s), Chrome sends a request to history.google.com "
+              "to execute the corresponding deletion serverside."
+            trigger:
+              "Deleting one or more history items form the history page."
+            data:
+              "The selected items represented by a URL and timestamp. The "
+              "request also includes a version info token to resolve "
+              "transaction conflicts, and an OAuth2 token authenticating the "
+              "user."
+          }
+          policy {
+            chrome_policy {
+              AllowDeletingBrowserHistory {
+                AllowDeletingBrowserHistory: false
+              }
+            }
+          })");
     web_history->ExpireHistory(
         expire_list,
         base::Bind(&BrowsingHistoryService::RemoveWebHistoryComplete,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr()),
+        partial_traffic_annotation);
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
