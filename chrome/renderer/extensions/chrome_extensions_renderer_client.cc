@@ -132,6 +132,10 @@ int ChromeExtensionsRendererClient::GetLowestIsolatedWorldId() const {
   return chrome::ISOLATED_WORLD_ID_EXTENSIONS;
 }
 
+extensions::Dispatcher* ChromeExtensionsRendererClient::GetDispatcher() {
+  return extension_dispatcher_.get();
+}
+
 void ChromeExtensionsRendererClient::RenderThreadStarted() {
   content::RenderThread* thread = content::RenderThread::Get();
   extension_dispatcher_delegate_.reset(

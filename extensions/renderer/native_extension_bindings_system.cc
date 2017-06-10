@@ -492,6 +492,14 @@ void NativeExtensionBindingsSystem::DispatchEventInContext(
                                  filter);
 }
 
+bool NativeExtensionBindingsSystem::HasEventListenerInContext(
+    const std::string& event_name,
+    ScriptContext* context) {
+  v8::HandleScope handle_scope(context->isolate());
+  return api_system_.event_handler()->HasListenerForEvent(
+      event_name, context->v8_context());
+}
+
 void NativeExtensionBindingsSystem::HandleResponse(
     int request_id,
     bool success,

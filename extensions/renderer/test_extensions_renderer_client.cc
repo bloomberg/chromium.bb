@@ -23,4 +23,8 @@ int TestExtensionsRendererClient::GetLowestIsolatedWorldId() const {
   return 1;
 }
 
+Dispatcher* TestExtensionsRendererClient::GetDispatcher() {
+  return nullptr;
+}
+
 }  // namespace extensions

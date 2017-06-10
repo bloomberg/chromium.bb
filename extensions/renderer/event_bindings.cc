@@ -27,6 +27,7 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/service_worker_request_sender.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
+#include "gin/converter.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -41,6 +42,11 @@ typedef std::map<std::string, int> EventListenerCounts;
 // A map of extension IDs to listener counts for that extension.
 base::LazyInstance<std::map<std::string, EventListenerCounts>>::DestructorAtExit
     g_listener_counts = LAZY_INSTANCE_INITIALIZER;
+
+// A collection of the unmanaged events (i.e., those for which the browser is
+// not notified of changes) that have listeners, by context.
+base::LazyInstance<std::map<ScriptContext*, std::set<std::string>>>::Leaky
+    g_unmanaged_listeners = LAZY_INSTANCE_INITIALIZER;
 
 // A map of (extension ID, event name) pairs to the filtered listener counts
 // for that pair. The map is used to keep track of which filters are in effect
@@ -174,6 +180,12 @@ EventBindings::EventBindings(ScriptContext* context)
   RouteFunction("MatchAgainstEventFilter",
                 base::Bind(&EventBindings::MatchAgainstEventFilter,
                            base::Unretained(this)));
+  RouteFunction(
+      "AttachUnmanagedEvent",
+      base::Bind(&EventBindings::AttachUnmanagedEvent, base::Unretained(this)));
+  RouteFunction(
+      "DetachUnmanagedEvent",
+      base::Bind(&EventBindings::DetachUnmanagedEvent, base::Unretained(this)));
 
   // It's safe to use base::Unretained here because |context| will always
   // outlive us.
@@ -182,6 +194,27 @@ EventBindings::EventBindings(ScriptContext* context)
 }
 
 EventBindings::~EventBindings() {}
+
+bool EventBindings::HasListener(ScriptContext* script_context,
+                                const std::string& event_name) {
+  const auto& unmanaged_listeners = g_unmanaged_listeners.Get();
+  auto unmanaged_iter = unmanaged_listeners.find(script_context);
+  if (unmanaged_iter != unmanaged_listeners.end() &&
+      base::ContainsKey(unmanaged_iter->second, event_name)) {
+    return true;
+  }
+  const auto& managed_listeners = g_listener_counts.Get();
+  auto managed_iter =
+      managed_listeners.find(GetKeyForScriptContext(script_context));
+  if (managed_iter != managed_listeners.end()) {
+    auto event_iter = managed_iter->second.find(event_name);
+    if (event_iter != managed_iter->second.end() && event_iter->second > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 void EventBindings::AttachEventHandler(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -360,6 +393,26 @@ void EventBindings::MatchAgainstEventFilter(
   args.GetReturnValue().Set(array);
 }
 
+void EventBindings::AttachUnmanagedEvent(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  v8::Isolate* isolate = args.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  CHECK_EQ(1, args.Length());
+  CHECK(args[0]->IsString());
+  std::string event_name = gin::V8ToString(args[0]);
+  g_unmanaged_listeners.Get()[context()].insert(event_name);
+}
+
+void EventBindings::DetachUnmanagedEvent(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  v8::Isolate* isolate = args.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  CHECK_EQ(1, args.Length());
+  CHECK(args[0]->IsString());
+  std::string event_name = gin::V8ToString(args[0]);
+  g_unmanaged_listeners.Get()[context()].erase(event_name);
+}
+
 std::unique_ptr<EventMatcher> EventBindings::ParseEventMatcher(
     std::unique_ptr<base::DictionaryValue> filter) {
   return base::MakeUnique<EventMatcher>(
@@ -393,6 +446,8 @@ void EventBindings::OnInvalidated() {
   }
   DCHECK(attached_matcher_ids_.empty())
       << "Filtered events cannot be attached during invalidation";
+
+  g_unmanaged_listeners.Get().erase(context());
 }
 
 }  // namespace extensions

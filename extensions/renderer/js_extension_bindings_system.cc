@@ -17,6 +17,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/binding_generating_native_handler.h"
+#include "extensions/renderer/event_bindings.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/resource_bundle_source_map.h"
 #include "extensions/renderer/script_context.h"
@@ -270,6 +271,12 @@ void JsExtensionBindingsSystem::DispatchEventInContext(
   context->module_system()->CallModuleMethodSafe(
       kEventBindings, kEventDispatchFunction, arguments.size(),
       arguments.data());
+}
+
+bool JsExtensionBindingsSystem::HasEventListenerInContext(
+    const std::string& event_name,
+    ScriptContext* context) {
+  return EventBindings::HasListener(context, event_name);
 }
 
 void JsExtensionBindingsSystem::RegisterBinding(

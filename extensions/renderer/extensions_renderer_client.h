@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_EXTENSIONS_RENDERER_CLIENT_H_
 
 namespace extensions {
+class Dispatcher;
 
 // Interface to allow the extensions module to make render-process-specific
 // queries of the embedder. Should be Set() once in the render process.
@@ -24,6 +25,9 @@ class ExtensionsRendererClient {
   // Must be greater than 0. See blink::WebFrame::executeScriptInIsolatedWorld
   // (third_party/WebKit/public/web/WebFrame.h) for additional context.
   virtual int GetLowestIsolatedWorldId() const = 0;
+
+  // Returns the associated Dispatcher.
+  virtual Dispatcher* GetDispatcher() = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsRendererClient* Get();

@@ -70,9 +70,6 @@ class MessagingBindings : public ObjectBackedNativeHandler {
   // returned port.
   ExtensionPort* CreateNewPortWithId(const PortId& id);
 
-  // Removes the port with the given |js_id|.
-  void RemovePortWithJsId(int js_id);
-
   const base::UnguessableToken& context_id() const { return context_id_; }
 
   base::WeakPtr<MessagingBindings> GetWeakPtr();

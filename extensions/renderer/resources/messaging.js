@@ -247,6 +247,34 @@
                              targetExtensionId,
                              sourceUrl,
                              tlsChannelId) {
+    var wasPortUsed = dispatchOnConnectImpl(portId, channelName, sourceTab,
+                                            sourceFrameId, guestProcessId,
+                                            guestRenderFrameRoutingId,
+                                            sourceExtensionId,
+                                            targetExtensionId, sourceUrl,
+                                            tlsChannelId);
+    if (!wasPortUsed) {
+      // Since the JS to dispatch the connect event can (in rare cases) be
+      // executed asynchronously from when we check if there are associated
+      // listeners in the native code, it's possible that the listeners have
+      // since been removed. If that's the case (though unlikely), remove the
+      // port.
+      messagingNatives.CloseChannel(portId, false /* force_close */);
+    }
+  }
+
+  // Helper function to dispatchOnConnect that returns true if the new port
+  // was used.
+  function dispatchOnConnectImpl(portId,
+                                 channelName,
+                                 sourceTab,
+                                 sourceFrameId,
+                                 guestProcessId,
+                                 guestRenderFrameRoutingId,
+                                 sourceExtensionId,
+                                 targetExtensionId,
+                                 sourceUrl,
+                                 tlsChannelId) {
     // Only create a new Port if someone is actually listening for a connection.
     // In addition to being an optimization, this also fixes a bug where if 2
     // channels were opened to and from the same process, closing one would

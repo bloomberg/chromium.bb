@@ -77,15 +77,21 @@ class APIEventHandler {
                                 const std::string& event_name,
                                 v8::Local<v8::Function> function);
 
-  // Returns the EventListeners for a given |event_name| and |context|.
-  size_t GetNumEventListenersForTesting(const std::string& event_name,
-                                        v8::Local<v8::Context> context);
+  // Returns true if there is a listener for the given |event_name| in the
+  // given |context|.
+  bool HasListenerForEvent(const std::string& event_name,
+                           v8::Local<v8::Context> context);
 
   // Invalidates listeners for the given |context|. It's a shame we have to
   // have this separately (as opposed to hooking into e.g. a PerContextData
   // destructor), but we need to do this before the context is fully removed
   // (because the associated extension ScriptContext needs to be valid).
   void InvalidateContext(v8::Local<v8::Context> context);
+
+  // Returns the number of event listeners for a given |event_name| and
+  // |context|.
+  size_t GetNumEventListenersForTesting(const std::string& event_name,
+                                        v8::Local<v8::Context> context);
 
  private:
   // Method to run a given v8::Function. Curried in for testing.

@@ -17,8 +17,6 @@ class WebURL;
 
 namespace extensions {
 
-class Dispatcher;
-class DispatcherDelegate;
 class ExtensionsClient;
 class ExtensionsGuestViewContainerDispatcher;
 class ShellExtensionsRendererClient;
@@ -62,8 +60,6 @@ class ShellContentRendererClient : public content::ContentRendererClient {
  private:
   std::unique_ptr<ExtensionsClient> extensions_client_;
   std::unique_ptr<ShellExtensionsRendererClient> extensions_renderer_client_;
-  std::unique_ptr<DispatcherDelegate> extension_dispatcher_delegate_;
-  std::unique_ptr<Dispatcher> extension_dispatcher_;
   std::unique_ptr<ExtensionsGuestViewContainerDispatcher>
       guest_view_container_dispatcher_;
 

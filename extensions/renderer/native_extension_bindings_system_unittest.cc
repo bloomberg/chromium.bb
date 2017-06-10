@@ -600,6 +600,8 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
   v8::Local<v8::Value> argv[] = {listener};
   RunFunction(add_listener, context, arraysize(argv), argv);
   ::testing::Mock::VerifyAndClearExpectations(event_change_handler());
+  EXPECT_TRUE(bindings_system()->HasEventListenerInContext(
+      "idle.onStateChanged", script_context));
 
   // Remove the event listener. We should be notified again.
   const char kRemoveListener[] =
@@ -614,6 +616,8 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
       FunctionFromString(context, kRemoveListener);
   RunFunction(remove_listener, context, arraysize(argv), argv);
   ::testing::Mock::VerifyAndClearExpectations(event_change_handler());
+  EXPECT_FALSE(bindings_system()->HasEventListenerInContext(
+      "idle.onStateChanged", script_context));
 }
 
 TEST_F(NativeExtensionBindingsSystemUnittest,

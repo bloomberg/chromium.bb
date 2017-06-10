@@ -43,6 +43,8 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   // are added.
   void Invalidate(v8::Local<v8::Context> context);
 
+  // TODO(devlin): Consider making this a test-only method and exposing
+  // HasListeners() instead.
   size_t GetNumListeners() const;
 
  private:

@@ -257,6 +257,22 @@ void APIEventHandler::RegisterArgumentMassager(
   data->massagers[event_name].Reset(context->GetIsolate(), massager);
 }
 
+bool APIEventHandler::HasListenerForEvent(const std::string& event_name,
+                                          v8::Local<v8::Context> context) {
+  APIEventPerContextData* data = GetContextData(context, false);
+  if (!data)
+    return false;
+
+  auto iter = data->emitters.find(event_name);
+  if (iter == data->emitters.end())
+    return false;
+  EventEmitter* emitter = nullptr;
+  gin::Converter<EventEmitter*>::FromV8(
+      context->GetIsolate(), iter->second.Get(context->GetIsolate()), &emitter);
+  CHECK(emitter);
+  return emitter->GetNumListeners() > 0;
+}
+
 void APIEventHandler::InvalidateContext(v8::Local<v8::Context> context) {
   gin::PerContextData* per_context_data = gin::PerContextData::From(context);
   DCHECK(per_context_data);
