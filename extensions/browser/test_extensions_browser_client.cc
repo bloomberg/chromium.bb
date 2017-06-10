@@ -223,4 +223,9 @@ TestExtensionsBrowserClient::CreateUpdateClient(
              : make_scoped_refptr(update_client_factory_.Run());
 }
 
+bool TestExtensionsBrowserClient::IsLockScreenContext(
+    content::BrowserContext* context) {
+  return false;
+}
+
 }  // namespace extensions

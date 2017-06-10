@@ -224,6 +224,10 @@ void InfoMap::SetContentVerifier(ContentVerifier* verifier) {
   content_verifier_ = verifier;
 }
 
+void InfoMap::SetIsLockScreenContext(bool is_lock_screen_context) {
+  process_map_.set_is_lock_screen_context(is_lock_screen_context);
+}
+
 InfoMap::~InfoMap() {
   if (quota_service_) {
     BrowserThread::DeleteSoon(

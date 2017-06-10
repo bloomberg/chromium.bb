@@ -38,6 +38,7 @@ class Feature {
     BLESSED_WEB_PAGE_CONTEXT,
     WEBUI_CONTEXT,
     SERVICE_WORKER_CONTEXT,
+    LOCK_SCREEN_EXTENSION_CONTEXT,
   };
 
   // The platforms the feature is supported in.

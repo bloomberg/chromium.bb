@@ -274,4 +274,9 @@ KioskDelegate* ShellExtensionsBrowserClient::GetKioskDelegate() {
   return kiosk_delegate_.get();
 }
 
+bool ShellExtensionsBrowserClient::IsLockScreenContext(
+    content::BrowserContext* context) {
+  return false;
+}
+
 }  // namespace extensions

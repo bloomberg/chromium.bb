@@ -116,6 +116,8 @@ class ProcessMap : public KeyedService {
   //
   // Anyhow, the expected behaviour is:
   //   - For hosted app processes, this will be blessed_web_page.
+  //   - For processes of platform apps running on lock screen, this will be
+  //     lock_screen_extension.
   //   - For other extension processes, this will be blessed_extension.
   //   - For WebUI processes, this will be a webui.
   //   - For any other extension we have the choice of unblessed_extension or
@@ -128,11 +130,19 @@ class ProcessMap : public KeyedService {
   Feature::Context GetMostLikelyContextType(const Extension* extension,
                                             int process_id) const;
 
+  void set_is_lock_screen_context(bool is_lock_screen_context) {
+    is_lock_screen_context_ = is_lock_screen_context;
+  }
+
  private:
   struct Item;
 
   typedef std::set<Item> ItemSet;
   ItemSet items_;
+
+  // Whether the process map belongs to the browser context used on Chrome OS
+  // lock screen.
+  bool is_lock_screen_context_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMap);
 };

@@ -95,6 +95,7 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   ExtensionNavigationUIData* GetExtensionNavigationUIData(
       net::URLRequest* request) override;
   KioskDelegate* GetKioskDelegate() override;
+  bool IsLockScreenContext(content::BrowserContext* context) override;
 
   // Sets the API client.
   void SetAPIClientForTest(ExtensionsAPIClient* api_client);

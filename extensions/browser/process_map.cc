@@ -116,8 +116,8 @@ std::set<std::string> ProcessMap::GetExtensionsInProcess(int process_id) const {
 Feature::Context ProcessMap::GetMostLikelyContextType(
     const Extension* extension,
     int process_id) const {
-  // WARNING: This logic must match Dispatcher::ClassifyJavaScriptContext, as
-  // much as possible.
+  // WARNING: This logic must match ScriptContextSet::ClassifyJavaScriptContext,
+  // as much as possible.
 
   if (content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
           process_id)) {
@@ -140,7 +140,8 @@ Feature::Context ProcessMap::GetMostLikelyContextType(
     return Feature::BLESSED_WEB_PAGE_CONTEXT;
   }
 
-  return Feature::BLESSED_EXTENSION_CONTEXT;
+  return is_lock_screen_context_ ? Feature::LOCK_SCREEN_EXTENSION_CONTEXT
+                                 : Feature::BLESSED_EXTENSION_CONTEXT;
 }
 
 }  // namespace extensions

@@ -175,7 +175,8 @@ class Dispatcher : public content::RenderThreadObserver,
   void OnDispatchEvent(const ExtensionMsg_DispatchEvent_Params& params,
                        const base::ListValue& event_args);
   void OnSetSessionInfo(version_info::Channel channel,
-                        FeatureSessionType session_type);
+                        FeatureSessionType session_type,
+                        bool lock_screen_context);
   void OnSetScriptingWhitelist(
       const ExtensionsClient::ScriptingWhitelist& extension_ids);
   void OnSetSystemFont(const std::string& font_family,

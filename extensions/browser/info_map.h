@@ -86,6 +86,9 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   void SetContentVerifier(ContentVerifier* verifier);
   ContentVerifier* content_verifier() { return content_verifier_.get(); }
 
+  // Marks the extensions in this info map as running in lock screen context.
+  void SetIsLockScreenContext(bool is_lock_screen_context);
+
  private:
   friend class base::RefCountedThreadSafe<InfoMap>;
 
