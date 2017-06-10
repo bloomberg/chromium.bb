@@ -48,6 +48,22 @@
         overflow-y: auto;
       }
 
+      /* Neon-animated pages set the position of the content to be absolute,
+       * which is necessary for animations, but breaks sub-page layout. Apply a
+       * static position to the selected page. See
+       * https://github.com/PolymerElements/neon-animation/issues/101 for
+       * conversations.
+       * Note: Another proposed solution was
+       *   neon-animated-pages .iron-selected:not(.neon-animating) {
+       *     position: relative;
+       *   }
+       * but the below appears to work fine, and is in line with what settings
+       * does.
+       */
+      neon-animated-pages ::content > .iron-selected {
+        position: static;
+      }
+
       extensions-item {
         display: inline-block;
       }
