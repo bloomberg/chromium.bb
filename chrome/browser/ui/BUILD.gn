@@ -2356,6 +2356,7 @@ split_static_library("ui") {
     deps += [
       "//chrome/browser:jni_headers",
       "//components/web_contents_delegate_android",
+      "//device/usb/public/cpp",
     ]
     deps -= [ "//ui/events" ]
   } else {

@@ -16,8 +16,8 @@
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
+#include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_ids.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -33,7 +33,7 @@
 using device::HidDeviceFilter;
 using device::HidService;
 using device::UsbDevice;
-using device::UsbDeviceFilter;
+using device::mojom::UsbDeviceFilterPtr;
 using device::UsbService;
 
 namespace extensions {
@@ -73,10 +73,10 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
       const Extension* extension,
       content::BrowserContext* context,
       bool multiple,
-      const std::vector<UsbDeviceFilter>& filters,
+      std::vector<UsbDeviceFilterPtr> filters,
       const DevicePermissionsPrompt::UsbDevicesCallback& callback)
       : Prompt(extension, context, multiple),
-        filters_(filters),
+        filters_(std::move(filters)),
         callback_(callback),
         service_observer_(this) {}
 
@@ -120,7 +120,7 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
   // device::UsbService::Observer implementation:
   void OnDeviceAdded(scoped_refptr<UsbDevice> device) override {
-    if (!UsbDeviceFilter::MatchesAny(*device, filters_))
+    if (!UsbDeviceFilterMatchesAny(filters_, *device))
       return;
 
     std::unique_ptr<DeviceInfo> device_info(new UsbDeviceInfo(device));
@@ -151,7 +151,7 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     }
   }
 
-  std::vector<UsbDeviceFilter> filters_;
+  std::vector<UsbDeviceFilterPtr> filters_;
   DevicePermissionsPrompt::UsbDevicesCallback callback_;
   ScopedObserver<UsbService, UsbService::Observer> service_observer_;
 };
@@ -350,10 +350,10 @@ void DevicePermissionsPrompt::AskForUsbDevices(
     const Extension* extension,
     content::BrowserContext* context,
     bool multiple,
-    const std::vector<UsbDeviceFilter>& filters,
+    std::vector<UsbDeviceFilterPtr> filters,
     const UsbDevicesCallback& callback) {
   prompt_ = new UsbDevicePermissionsPrompt(extension, context, multiple,
-                                           filters, callback);
+                                           std::move(filters), callback);
   ShowDialog();
 }
 
@@ -382,7 +382,7 @@ scoped_refptr<DevicePermissionsPrompt::Prompt>
 DevicePermissionsPrompt::CreateUsbPromptForTest(const Extension* extension,
                                                 bool multiple) {
   return make_scoped_refptr(new UsbDevicePermissionsPrompt(
-      extension, nullptr, multiple, std::vector<UsbDeviceFilter>(),
+      extension, nullptr, multiple, std::vector<UsbDeviceFilterPtr>(),
       base::Bind(&NoopUsbCallback)));
 }
 

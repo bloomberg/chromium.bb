@@ -30,8 +30,9 @@ class WebUsbChooserServiceAndroid : public device::mojom::UsbChooserService {
   ~WebUsbChooserServiceAndroid() override;
 
   // device::usb::ChooserService:
-  void GetPermission(const std::vector<device::UsbDeviceFilter>& device_filters,
-                     const GetPermissionCallback& callback) override;
+  void GetPermission(
+      std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
+      const GetPermissionCallback& callback) override;
 
   void Bind(mojo::InterfaceRequest<device::mojom::UsbChooserService> request);
 

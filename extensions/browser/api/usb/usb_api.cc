@@ -16,6 +16,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "device/base/device_client.h"
+#include "device/usb/public/cpp/filter_utils.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_service.h"
@@ -50,11 +52,11 @@ namespace ResetDevice = usb::ResetDevice;
 namespace SetInterfaceAlternateSetting = usb::SetInterfaceAlternateSetting;
 
 using content::BrowserThread;
+using device::mojom::UsbDeviceFilterPtr;
 using device::UsbConfigDescriptor;
 using device::UsbControlTransferRecipient;
 using device::UsbControlTransferType;
 using device::UsbDevice;
-using device::UsbDeviceFilter;
 using device::UsbDeviceHandle;
 using device::UsbEndpointDescriptor;
 using device::UsbInterfaceDescriptor;
@@ -369,18 +371,30 @@ ConfigDescriptor ConvertConfigDescriptor(const UsbConfigDescriptor& input) {
   return output;
 }
 
-void ConvertDeviceFilter(const usb::DeviceFilter& input,
-                         UsbDeviceFilter* output) {
-  if (input.vendor_id)
+device::mojom::UsbDeviceFilterPtr ConvertDeviceFilter(
+    const usb::DeviceFilter& input) {
+  auto output = device::mojom::UsbDeviceFilter::New();
+  if (input.vendor_id) {
+    output->has_vendor_id = true;
     output->vendor_id = *input.vendor_id;
-  if (input.product_id)
+  }
+  if (input.product_id) {
+    output->has_product_id = true;
     output->product_id = *input.product_id;
-  if (input.interface_class)
-    output->interface_class = *input.interface_class;
-  if (input.interface_subclass)
-    output->interface_subclass = *input.interface_subclass;
-  if (input.interface_protocol)
-    output->interface_protocol = *input.interface_protocol;
+  }
+  if (input.interface_class) {
+    output->has_class_code = true;
+    output->class_code = *input.interface_class;
+  }
+  if (input.interface_subclass) {
+    output->has_subclass_code = true;
+    output->subclass_code = *input.interface_subclass;
+  }
+  if (input.interface_protocol) {
+    output->has_protocol_code = true;
+    output->protocol_code = *input.interface_protocol;
+  }
+  return output;
 }
 
 }  // namespace
@@ -590,16 +604,19 @@ ExtensionFunction::ResponseAction UsbGetDevicesFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   if (parameters->options.filters) {
-    filters_.resize(parameters->options.filters->size());
-    for (size_t i = 0; i < parameters->options.filters->size(); ++i) {
-      ConvertDeviceFilter(parameters->options.filters->at(i), &filters_[i]);
-    }
+    filters_.reserve(parameters->options.filters->size());
+    for (const auto& filter : *parameters->options.filters)
+      filters_.push_back(ConvertDeviceFilter(filter));
   }
   if (parameters->options.vendor_id) {
-    filters_.resize(filters_.size() + 1);
-    filters_.back().vendor_id = *parameters->options.vendor_id;
-    if (parameters->options.product_id)
-      filters_.back().product_id = *parameters->options.product_id;
+    auto filter = device::mojom::UsbDeviceFilter::New();
+    filter->has_vendor_id = true;
+    filter->vendor_id = *parameters->options.vendor_id;
+    if (parameters->options.product_id) {
+      filter->has_product_id = true;
+      filter->product_id = *parameters->options.product_id;
+    }
+    filters_.push_back(std::move(filter));
   }
 
   UsbService* service = device::DeviceClient::Get()->GetUsbService();
@@ -617,7 +634,7 @@ void UsbGetDevicesFunction::OnGetDevicesComplete(
   std::unique_ptr<base::ListValue> result(new base::ListValue());
   UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
   for (const scoped_refptr<UsbDevice>& device : devices) {
-    if (UsbDeviceFilter::MatchesAny(*device, filters_) &&
+    if (UsbDeviceFilterMatchesAny(filters_, *device) &&
         HasDevicePermission(device)) {
       Device api_device;
       guid_map->GetApiDevice(device, &api_device);
@@ -648,12 +665,11 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
     multiple = *parameters->options.multiple;
   }
 
-  std::vector<UsbDeviceFilter> filters;
+  std::vector<UsbDeviceFilterPtr> filters;
   if (parameters->options.filters) {
-    filters.resize(parameters->options.filters->size());
-    for (size_t i = 0; i < parameters->options.filters->size(); ++i) {
-      ConvertDeviceFilter(parameters->options.filters->at(i), &filters[i]);
-    }
+    filters.reserve(parameters->options.filters->size());
+    for (const auto& filter : *parameters->options.filters)
+      filters.push_back(ConvertDeviceFilter(filter));
   }
 
   prompt_ = ExtensionsAPIClient::Get()->CreateDevicePermissionsPrompt(
@@ -663,7 +679,7 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
   }
 
   prompt_->AskForUsbDevices(
-      extension(), browser_context(), multiple, filters,
+      extension(), browser_context(), multiple, std::move(filters),
       base::Bind(&UsbGetUserSelectedDevicesFunction::OnDevicesChosen, this));
   return RespondLater();
 }

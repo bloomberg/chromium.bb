@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 
 namespace content {
 class BrowserContext;
@@ -25,7 +26,6 @@ namespace device {
 class HidDeviceFilter;
 class HidDeviceInfo;
 class UsbDevice;
-struct UsbDeviceFilter;
 }
 
 namespace extensions {
@@ -129,7 +129,7 @@ class DevicePermissionsPrompt {
   void AskForUsbDevices(const Extension* extension,
                         content::BrowserContext* context,
                         bool multiple,
-                        const std::vector<device::UsbDeviceFilter>& filters,
+                        std::vector<device::mojom::UsbDeviceFilterPtr> filters,
                         const UsbDevicesCallback& callback);
 
   void AskForHidDevices(const Extension* extension,

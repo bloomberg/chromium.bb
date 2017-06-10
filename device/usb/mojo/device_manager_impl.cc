@@ -17,9 +17,9 @@
 #include "device/usb/mojo/device_impl.h"
 #include "device/usb/mojo/permission_provider.h"
 #include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_service.h"
 
 namespace device {
@@ -84,13 +84,13 @@ void DeviceManagerImpl::OnGetDevices(
     mojom::UsbEnumerationOptionsPtr options,
     const GetDevicesCallback& callback,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
-  std::vector<UsbDeviceFilter> filters;
+  std::vector<mojom::UsbDeviceFilterPtr> filters;
   if (options && options->filters)
     filters.swap(*options->filters);
 
   std::vector<mojom::UsbDeviceInfoPtr> device_infos;
   for (const auto& device : devices) {
-    if (UsbDeviceFilter::MatchesAny(*device, filters)) {
+    if (UsbDeviceFilterMatchesAny(filters, *device)) {
       if (permission_provider_ &&
           permission_provider_->HasDevicePermission(device)) {
         device_infos.push_back(mojom::UsbDeviceInfo::From(*device));

@@ -158,8 +158,8 @@ test("device_unittests") {
       "usb/mojo/device_manager_impl_unittest.cc",
       "usb/mojo/mock_permission_provider.cc",
       "usb/mojo/mock_permission_provider.h",
+      "usb/public/cpp/filter_utils_unittest.cc",
       "usb/usb_descriptors_unittest.cc",
-      "usb/usb_device_filter_unittest.cc",
       "usb/usb_device_handle_unittest.cc",
       "usb/usb_ids_unittest.cc",
       "usb/usb_service_unittest.cc",
@@ -171,6 +171,7 @@ test("device_unittests") {
       "//device/usb",
       "//device/usb:test_support",
       "//device/usb/mojo",
+      "//device/usb/public/cpp",
       "//device/usb/public/interfaces",
       "//net:test_support",
     ]

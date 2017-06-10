@@ -16,8 +16,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "device/usb/public/cpp/filter_utils.h"
+#include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_filter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -112,9 +113,10 @@ std::string UsbPrinterId(const device::UsbDevice& device) {
 }  // namespace
 
 bool UsbDeviceIsPrinter(const device::UsbDevice& usb_device) {
-  device::UsbDeviceFilter printer_filter;
-  printer_filter.interface_class = kPrinterInterfaceClass;
-  return printer_filter.Matches(usb_device);
+  auto printer_filter = device::mojom::UsbDeviceFilter::New();
+  printer_filter->has_class_code = true;
+  printer_filter->class_code = kPrinterInterfaceClass;
+  return UsbDeviceFilterMatches(*printer_filter, usb_device);
 }
 
 std::string UsbPrinterDeviceDetailsAsString(const device::UsbDevice& device) {
