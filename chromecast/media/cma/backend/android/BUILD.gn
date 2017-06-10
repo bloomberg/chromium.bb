@@ -20,6 +20,7 @@ source_set("cast_media_android") {
     "media_pipeline_backend_android.cc",
     "media_pipeline_backend_android.h",
     "volume_control_android.cc",
+    "volume_control_android.h",
   ]
 
   deps = [
