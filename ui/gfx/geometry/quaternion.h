@@ -56,6 +56,8 @@ class GFX_EXPORT Quaternion {
   // and values outside that range will extrapolate beyond in either direction.
   Quaternion Lerp(const Quaternion& q, double t) const;
 
+  Quaternion normalized() const;
+
   std::string ToString() const;
 
  private:
