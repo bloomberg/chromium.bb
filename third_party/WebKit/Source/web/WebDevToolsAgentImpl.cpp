@@ -50,6 +50,7 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
+#include "core/inspector/InspectorDOMSnapshotAgent.h"
 #include "core/inspector/InspectorEmulationAgent.h"
 #include "core/inspector/InspectorInputAgent.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
@@ -333,6 +334,8 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
       dom_agent, inspected_frames_.Get(), network_agent,
       resource_content_loader_.Get(), resource_container_.Get());
   session->Append(css_agent);
+
+  session->Append(InspectorDOMSnapshotAgent::Create(inspected_frames_.Get()));
 
   session->Append(new InspectorAnimationAgent(inspected_frames_.Get(),
                                               css_agent, session->V8Session()));

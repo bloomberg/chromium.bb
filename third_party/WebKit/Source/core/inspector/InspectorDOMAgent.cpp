@@ -476,7 +476,7 @@ Response InspectorDOMAgent::getFlattenedDocument(
     Maybe<bool> pierce,
     std::unique_ptr<protocol::Array<protocol::DOM::Node>>* nodes) {
   if (!Enabled())
-    return Response::Error("Document not enabled");
+    return Response::Error("DOM agent hasn't been enabled");
 
   if (!document_)
     return Response::Error("Document is not available");
@@ -1329,7 +1329,8 @@ String InspectorDOMAgent::DocumentURLString(Document* document) {
   return document->Url().GetString();
 }
 
-static String DocumentBaseURLString(Document* document) {
+// static
+String InspectorDOMAgent::DocumentBaseURLString(Document* document) {
   return document->BaseURLForOverride(document->BaseURL()).GetString();
 }
 

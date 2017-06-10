@@ -22,37 +22,15 @@ Response SchemaHandler::GetDomains(
     std::unique_ptr<protocol::Array<Schema::Domain>>* domains) {
   // TODO(kozyatisnkiy): get this from the target instead of hardcoding a list.
   static const char kVersion[] = "1.2";
-  static const char* kDomains[] = {"Inspector",
-                                   "Memory",
-                                   "Page",
-                                   "Emulation",
-                                   "Security",
-                                   "Network",
-                                   "Database",
-                                   "IndexedDB",
-                                   "CacheStorage",
-                                   "DOMStorage",
-                                   "CSS",
-                                   "ApplicationCache",
-                                   "DOM",
-                                   "IO",
-                                   "DOMDebugger",
-                                   "ServiceWorker",
-                                   "Input",
-                                   "LayerTree",
-                                   "DeviceOrientation",
-                                   "Tracing",
-                                   "Animation",
-                                   "Accessibility",
-                                   "Storage",
-                                   "Log",
-                                   "Runtime",
-                                   "Debugger",
-                                   "Profiler",
-                                   "HeapProfiler",
-                                   "Schema",
-                                   "Target",
-                                   "Overlay"};
+  static const char* kDomains[] = {
+      "Inspector",     "Memory",     "Page",          "Emulation",
+      "Security",      "Network",    "Database",      "IndexedDB",
+      "CacheStorage",  "DOMStorage", "CSS",           "ApplicationCache",
+      "DOM",           "IO",         "DOMDebugger",   "DOMSnapshot",
+      "ServiceWorker", "Input",      "LayerTree",     "DeviceOrientation",
+      "Tracing",       "Animation",  "Accessibility", "Storage",
+      "Log",           "Runtime",    "Debugger",      "Profiler",
+      "HeapProfiler",  "Schema",     "Target",        "Overlay"};
   *domains = protocol::Array<Schema::Domain>::create();
   for (size_t i = 0; i < arraysize(kDomains); ++i) {
     (*domains)->addItem(Schema::Domain::Create()

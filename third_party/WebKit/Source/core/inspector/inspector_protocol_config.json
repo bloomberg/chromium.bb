@@ -38,6 +38,9 @@
                 "domain": "DOMDebugger"
             },
             {
+                "domain": "DOMSnapshot"
+            },
+            {
                 "domain": "DOMStorage"
             },
             {
