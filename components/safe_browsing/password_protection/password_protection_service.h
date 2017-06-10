@@ -49,6 +49,7 @@ extern const char kPasswordEntryRequestOutcomeHistogramName[];
 // HostContentSettingsMap instance.
 class PasswordProtectionService : public history::HistoryServiceObserver {
  public:
+  using TriggerType = LoginReputationClientRequest::TriggerType;
   // The outcome of the request. These values are used for UMA.
   // DO NOT CHANGE THE ORDERING OF THESE VALUES.
   enum RequestOutcome {
@@ -87,11 +88,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // any thread.
   LoginReputationClientResponse::VerdictType GetCachedVerdict(
       const GURL& url,
+      TriggerType trigger_type,
       LoginReputationClientResponse* out_response);
 
-  // Stores |verdict| in |settings| based on |url|, |verdict| and
-  // |receive_time|.
+  // Stores |verdict| in |settings| based on its |trigger_type|, |url|,
+  // |verdict| and |receive_time|.
   virtual void CacheVerdict(const GURL& url,
+                            TriggerType trigger_type,
                             LoginReputationClientResponse* verdict,
                             const base::Time& receive_time);
 
@@ -106,7 +109,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     const GURL& password_form_action,
                     const GURL& password_form_frame_url,
                     const std::string& saved_domain,
-                    LoginReputationClientRequest::TriggerType type,
+                    TriggerType trigger_type,
                     bool password_field_exists);
 
   virtual void MaybeStartPasswordFieldOnFocusRequest(
@@ -152,9 +155,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // the requests.
   void CancelPendingRequests();
 
-  // Gets the total number of verdict (no matter expired or not) we cached for
-  // current active profile.
-  virtual int GetStoredVerdictCount();
+  // Gets the total number of verdicts of the specified |trigger_type| we cached
+  // for this profile. This counts both expired and active verdicts.
+  virtual int GetStoredVerdictCount(TriggerType trigger_type);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter() {
     return request_context_getter_;
@@ -173,9 +176,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       int event_tab_id,  // -1 if tab id is not available.
       LoginReputationClientRequest::Frame* frame) = 0;
 
-  void FillUserPopulation(
-      const LoginReputationClientRequest::TriggerType& request_type,
-      LoginReputationClientRequest* request_proto);
+  void FillUserPopulation(TriggerType trigger_type,
+                          LoginReputationClientRequest* request_proto);
 
   virtual bool IsExtendedReporting() = 0;
 
@@ -223,6 +225,15 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   void RemoveContentSettingsOnURLsDeleted(bool all_history,
                                           const history::URLRows& deleted_rows);
 
+  // Helper function called by RemoveContentSettingsOnURLsDeleted(..). It
+  // calculate the number of verdicts of |type| that associate with |url|.
+  int GetVerdictCountForURL(const GURL& url, TriggerType type);
+
+  // Remove verdict of |type| from |cache_dictionary|. Return false if no
+  // verdict removed, true otherwise.
+  bool RemoveExpiredVerdicts(TriggerType type,
+                             base::DictionaryValue* cache_dictionary);
+
   static bool ParseVerdictEntry(base::DictionaryValue* verdict_entry,
                                 int* out_verdict_received_time,
                                 LoginReputationClientResponse* out_verdict);
@@ -245,8 +256,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   static void RecordNoPingingReason(const base::Feature& feature,
                                     RequestOutcome reason);
-  // Number of verdict stored for this profile.
-  int stored_verdict_count_;
+  // Number of verdict stored for this profile for password on focus pings.
+  int stored_verdict_count_password_on_focus_;
+
+  // Number of verdict stored for this profile for protected password entry
+  // pings.
+  int stored_verdict_count_password_entry_;
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
