@@ -549,6 +549,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // ANGLE.
   bool support_copy_nv12_textures_;
 
+  // Supports copying NV12 textures on the main thread to use in ANGLE.
+  bool support_delayed_copy_nv12_textures_;
+
   // Copy video to FP16 scRGB textures.
   bool use_fp16_ = false;
 
