@@ -38,6 +38,8 @@
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/css/parser/FontVariantLigaturesParser.h"
 #include "core/css/parser/FontVariantNumericParser.h"
+#include "core/css/properties/CSSPropertyAPIOffsetAnchor.h"
+#include "core/css/properties/CSSPropertyAPIOffsetPosition.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyAnimationNameUtils.h"
 #include "core/css/properties/CSSPropertyBorderImageUtils.h"
@@ -703,23 +705,77 @@ static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
   return list;
 }
 
-// offset: <offset-path> <offset-distance> <offset-rotate>
 bool CSSPropertyParser::ConsumeOffsetShorthand(bool important) {
   DCHECK(context_);
+  const CSSValue* offset_position =
+      CSSPropertyAPIOffsetPosition::parseSingleValue(range_, *context_,
+                                                     CSSParserLocalContext());
   const CSSValue* offset_path =
       CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range_, *context_);
-  const CSSValue* offset_distance =
-      ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
-  const CSSValue* offset_rotate = ConsumeOffsetRotate(range_, *context_);
-  if (!offset_path || !offset_distance || !offset_rotate || !range_.AtEnd())
+  const CSSValue* offset_distance = nullptr;
+  const CSSValue* offset_rotate = nullptr;
+  if (offset_path) {
+    offset_distance =
+        ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
+    offset_rotate = ConsumeOffsetRotate(range_, *context_);
+    if (offset_rotate && !offset_distance) {
+      offset_distance =
+          ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
+    }
+  }
+  const CSSValue* offset_anchor = nullptr;
+  if (ConsumeSlashIncludingWhitespace(range_)) {
+    offset_anchor = CSSPropertyAPIOffsetAnchor::parseSingleValue(
+        range_, *context_, CSSParserLocalContext());
+    if (!offset_anchor)
+      return false;
+  }
+  if ((!offset_position && !offset_path) || !range_.AtEnd())
     return false;
 
-  AddParsedProperty(CSSPropertyOffsetPath, CSSPropertyOffset, *offset_path,
-                    important);
-  AddParsedProperty(CSSPropertyOffsetDistance, CSSPropertyOffset,
-                    *offset_distance, important);
-  AddParsedProperty(CSSPropertyOffsetRotate, CSSPropertyOffset, *offset_rotate,
-                    important);
+  if ((offset_position || offset_anchor) &&
+      !RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled())
+    return false;
+
+  if (offset_position) {
+    AddParsedProperty(CSSPropertyOffsetPosition, CSSPropertyOffset,
+                      *offset_position, important);
+  } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
+    AddParsedProperty(CSSPropertyOffsetPosition, CSSPropertyOffset,
+                      *CSSInitialValue::Create(), important);
+  }
+
+  if (offset_path) {
+    AddParsedProperty(CSSPropertyOffsetPath, CSSPropertyOffset, *offset_path,
+                      important);
+  } else {
+    AddParsedProperty(CSSPropertyOffsetPath, CSSPropertyOffset,
+                      *CSSInitialValue::Create(), important);
+  }
+
+  if (offset_distance) {
+    AddParsedProperty(CSSPropertyOffsetDistance, CSSPropertyOffset,
+                      *offset_distance, important);
+  } else {
+    AddParsedProperty(CSSPropertyOffsetDistance, CSSPropertyOffset,
+                      *CSSInitialValue::Create(), important);
+  }
+
+  if (offset_rotate) {
+    AddParsedProperty(CSSPropertyOffsetRotate, CSSPropertyOffset,
+                      *offset_rotate, important);
+  } else {
+    AddParsedProperty(CSSPropertyOffsetRotate, CSSPropertyOffset,
+                      *CSSInitialValue::Create(), important);
+  }
+
+  if (offset_anchor) {
+    AddParsedProperty(CSSPropertyOffsetAnchor, CSSPropertyOffset,
+                      *offset_anchor, important);
+  } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
+    AddParsedProperty(CSSPropertyOffsetAnchor, CSSPropertyOffset,
+                      *CSSInitialValue::Create(), important);
+  }
 
   return true;
 }

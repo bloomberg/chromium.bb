@@ -3349,7 +3349,7 @@
     },
     {
       name: "offset",
-      longhands: "offset-path;offset-distance;offset-rotate",
+      longhands: "offset-position;offset-path;offset-distance;offset-rotate;offset-anchor",
     },
     {
       name: "outline",

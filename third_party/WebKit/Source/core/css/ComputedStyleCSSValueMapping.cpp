@@ -1892,6 +1892,44 @@ CSSValue* ComputedStyleCSSValueMapping::ValueForFilter(
   return list;
 }
 
+CSSValue* ComputedStyleCSSValueMapping::ValueForOffset(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
+    CSSValue* position = ValueForPosition(style.OffsetPosition(), style);
+    if (!position->IsIdentifierValue())
+      list->Append(*position);
+    else
+      DCHECK(ToCSSIdentifierValue(position)->GetValueID() == CSSValueAuto);
+  }
+
+  CSSPropertyID longhands[] = {CSSPropertyOffsetPath, CSSPropertyOffsetDistance,
+                               CSSPropertyOffsetRotate};
+  for (CSSPropertyID longhand : longhands) {
+    const CSSValue* value = ComputedStyleCSSValueMapping::Get(
+        longhand, style, layout_object, styled_node, allow_visited_style);
+    DCHECK(value);
+    list->Append(*value);
+  }
+
+  if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
+    CSSValue* anchor = ValueForPosition(style.OffsetAnchor(), style);
+    if (!anchor->IsIdentifierValue()) {
+      // Add a slash before anchor.
+      CSSValueList* result = CSSValueList::CreateSlashSeparated();
+      result->Append(*list);
+      result->Append(*anchor);
+      return result;
+    } else {
+      DCHECK(ToCSSIdentifierValue(anchor)->GetValueID() == CSSValueAuto);
+    }
+  }
+  return list;
+}
+
 CSSValue* ComputedStyleCSSValueMapping::ValueForFont(
     const ComputedStyle& style) {
   // Add a slash between size and line-height.
@@ -3428,8 +3466,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return nullptr;
 
     case CSSPropertyOffset:
-      return ValuesForShorthandProperty(offsetShorthand(), style, layout_object,
-                                        styled_node, allow_visited_style);
+      return ValueForOffset(style, layout_object, styled_node,
+                            allow_visited_style);
 
     case CSSPropertyOffsetAnchor:
       return ValueForPosition(style.OffsetAnchor(), style);

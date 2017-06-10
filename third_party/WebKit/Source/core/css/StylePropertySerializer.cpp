@@ -475,7 +475,7 @@ String StylePropertySerializer::GetPropertyValue(
     case CSSPropertyMargin:
       return Get4Values(marginShorthand());
     case CSSPropertyOffset:
-      return GetShorthandValue(offsetShorthand());
+      return OffsetValue();
     case CSSPropertyWebkitMarginCollapse:
       return GetShorthandValue(webkitMarginCollapseShorthand());
     case CSSPropertyOverflow:
@@ -650,6 +650,48 @@ String StylePropertySerializer::FontVariantValue() const {
     return "normal";
   }
 
+  return result.ToString();
+}
+
+String StylePropertySerializer::OffsetValue() const {
+  StringBuilder result;
+  if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
+    const CSSValue* position =
+        property_set_.GetPropertyCSSValue(CSSPropertyOffsetPosition);
+    if (!position->IsInitialValue()) {
+      result.Append(position->CssText());
+    }
+  }
+  const CSSValue* path =
+      property_set_.GetPropertyCSSValue(CSSPropertyOffsetPath);
+  const CSSValue* distance =
+      property_set_.GetPropertyCSSValue(CSSPropertyOffsetDistance);
+  const CSSValue* rotate =
+      property_set_.GetPropertyCSSValue(CSSPropertyOffsetRotate);
+  if (!path->IsInitialValue()) {
+    if (!result.IsEmpty())
+      result.Append(" ");
+    result.Append(path->CssText());
+    if (!distance->IsInitialValue()) {
+      result.Append(" ");
+      result.Append(distance->CssText());
+    }
+    if (!rotate->IsInitialValue()) {
+      result.Append(" ");
+      result.Append(rotate->CssText());
+    }
+  } else {
+    DCHECK(distance->IsInitialValue());
+    DCHECK(rotate->IsInitialValue());
+  }
+  if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
+    const CSSValue* anchor =
+        property_set_.GetPropertyCSSValue(CSSPropertyOffsetAnchor);
+    if (!anchor->IsInitialValue()) {
+      result.Append(" / ");
+      result.Append(anchor->CssText());
+    }
+  }
   return result.ToString();
 }
 

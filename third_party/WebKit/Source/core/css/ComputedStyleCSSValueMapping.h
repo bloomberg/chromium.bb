@@ -52,6 +52,11 @@ class ComputedStyleCSSValueMapping {
   static CSSValue* ValueForFilter(const ComputedStyle&,
                                   const FilterOperations&);
   static CSSValue* ValueForFont(const ComputedStyle&);
+
+  static CSSValue* ValueForOffset(const ComputedStyle&,
+                                  const LayoutObject*,
+                                  Node* styled_node,
+                                  bool allow_visited_style);
 };
 
 }  // namespace blink
