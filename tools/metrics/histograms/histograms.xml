@@ -46372,6 +46372,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Background.OffliningPreviewStatus"
+    enum="BooleanEnabled">
+  <owner>petewil@chromium.org</owner>
+  <summary>
+    Whether any previews were selected for a page we were asked to make
+    available offline.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Background.RequestFailure.StartedAttemptCount">
   <owner>dougarnett@chromium.org</owner>
   <summary>
