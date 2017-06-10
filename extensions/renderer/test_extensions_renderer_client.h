@@ -18,6 +18,7 @@ class TestExtensionsRendererClient : public ExtensionsRendererClient {
   // ExtensionsRendererClient implementation.
   bool IsIncognitoProcess() const override;
   int GetLowestIsolatedWorldId() const override;
+  Dispatcher* GetDispatcher() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestExtensionsRendererClient);

@@ -53,6 +53,8 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
                               const base::ListValue* event_args,
                               const base::DictionaryValue* filtering_info,
                               ScriptContext* context) override;
+  bool HasEventListenerInContext(const std::string& event_name,
+                                 ScriptContext* context) override;
   void HandleResponse(int request_id,
                       bool success,
                       const base::ListValue& response,

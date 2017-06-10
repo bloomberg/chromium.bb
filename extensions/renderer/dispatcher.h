@@ -142,6 +142,8 @@ class Dispatcher : public content::RenderThreadObserver,
                                      ExtensionBindingsSystem* bindings_system,
                                      V8SchemaRegistry* v8_schema_registry);
 
+  ExtensionBindingsSystem* bindings_system() { return bindings_system_.get(); }
+
  private:
   // The RendererPermissionsPolicyDelegateTest.CannotScriptWebstore test needs
   // to call the OnActivateExtension IPCs.

@@ -11,7 +11,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/dispatcher_delegate.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
@@ -47,12 +46,7 @@ void ShellContentRendererClient::RenderThreadStarted() {
   extensions_renderer_client_.reset(new ShellExtensionsRendererClient);
   ExtensionsRendererClient::Set(extensions_renderer_client_.get());
 
-  extension_dispatcher_delegate_.reset(new DispatcherDelegate());
-
-  // Must be initialized after ExtensionsRendererClient.
-  extension_dispatcher_.reset(
-      new Dispatcher(extension_dispatcher_delegate_.get()));
-  thread->AddObserver(extension_dispatcher_.get());
+  thread->AddObserver(extensions_renderer_client_->GetDispatcher());
 
   guest_view_container_dispatcher_.reset(
       new ExtensionsGuestViewContainerDispatcher());
@@ -61,9 +55,11 @@ void ShellContentRendererClient::RenderThreadStarted() {
 
 void ShellContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
+  Dispatcher* dispatcher = extensions_renderer_client_->GetDispatcher();
   // ExtensionFrameHelper destroys itself when the RenderFrame is destroyed.
-  new ExtensionFrameHelper(render_frame, extension_dispatcher_.get());
-  extension_dispatcher_->OnRenderFrameCreated(render_frame);
+  new ExtensionFrameHelper(render_frame, dispatcher);
+
+  dispatcher->OnRenderFrameCreated(render_frame);
 
   // TODO(jamescook): Do we need to add a new PepperHelper(render_frame) here?
   // It doesn't seem necessary for either Pepper or NaCl.
@@ -75,7 +71,8 @@ void ShellContentRendererClient::RenderFrameCreated(
 
 void ShellContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
-  new ExtensionHelper(render_view, extension_dispatcher_.get());
+  new ExtensionHelper(render_view,
+                      extensions_renderer_client_->GetDispatcher());
 }
 
 bool ShellContentRendererClient::OverrideCreatePlugin(
@@ -134,12 +131,14 @@ ShellContentRendererClient::CreateBrowserPluginDelegate(
 
 void ShellContentRendererClient::RunScriptsAtDocumentStart(
     content::RenderFrame* render_frame) {
-  extension_dispatcher_->RunScriptsAtDocumentStart(render_frame);
+  extensions_renderer_client_->GetDispatcher()->RunScriptsAtDocumentStart(
+      render_frame);
 }
 
 void ShellContentRendererClient::RunScriptsAtDocumentEnd(
     content::RenderFrame* render_frame) {
-  extension_dispatcher_->RunScriptsAtDocumentEnd(render_frame);
+  extensions_renderer_client_->GetDispatcher()->RunScriptsAtDocumentEnd(
+      render_frame);
 }
 
 ExtensionsClient* ShellContentRendererClient::CreateExtensionsClient() {

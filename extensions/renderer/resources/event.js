@@ -54,12 +54,27 @@
 
   NullAttachmentStrategy.prototype.onAddedListener =
       function(listener) {
+    // For named events, we still inform the messaging bindings when a listener
+    // is registered to allow for native checking if a listener is registered.
+    if (this.event_.eventName &&
+        this.event_.listeners.length == 0) {
+      eventNatives.AttachUnmanagedEvent(this.event_.eventName);
+    }
   };
+
   NullAttachmentStrategy.prototype.onRemovedListener =
       function(listener) {
+    if (this.event_.eventName &&
+        this.event_.listeners.length == 0) {
+      this.detach(true);
+    }
   };
+
   NullAttachmentStrategy.prototype.detach = function(manual) {
+    if (this.event_.eventName)
+      eventNatives.DetachUnmanagedEvent(this.event_.eventName);
   };
+
   NullAttachmentStrategy.prototype.getListenersByIDs = function(ids) {
     // |ids| is for filtered events only.
     return this.event_.listeners;

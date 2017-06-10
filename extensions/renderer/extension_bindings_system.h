@@ -44,6 +44,11 @@ class ExtensionBindingsSystem {
       const base::DictionaryValue* filtering_info,
       ScriptContext* context) = 0;
 
+  // Returns true if there is a listener for the given |event_name| in the
+  // associated |context|.
+  virtual bool HasEventListenerInContext(const std::string& event_name,
+                                         ScriptContext* context) = 0;
+
   // Handles the response associated with the given |request_id|.
   virtual void HandleResponse(int request_id,
                               bool success,

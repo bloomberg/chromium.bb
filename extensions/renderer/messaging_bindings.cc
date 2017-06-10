@@ -26,8 +26,11 @@
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
+#include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_port.h"
+#include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/gc_callback.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
@@ -86,18 +89,36 @@ void DispatchOnConnectToScriptContext(
   if (bindings->context_id() == target_port_id.context_id)
     return;
 
+  // First, determine the event we'll use to connect.
+  std::string target_extension_id = script_context->GetExtensionID();
+  bool is_external = info.source_id != target_extension_id;
+  std::string event_name;
+  if (channel_name == "chrome.extension.sendRequest") {
+    event_name =
+        is_external ? "extension.onRequestExternal" : "extension.onRequest";
+  } else if (channel_name == "chrome.runtime.sendMessage") {
+    event_name =
+        is_external ? "runtime.onMessageExternal" : "runtime.onMessage";
+  } else {
+    event_name =
+        is_external ? "runtime.onConnectExternal" : "runtime.onConnect";
+  }
+
+  ExtensionBindingsSystem* bindings_system =
+      ExtensionsRendererClient::Get()->GetDispatcher()->bindings_system();
+  // If there are no listeners for the given event, then we know the port won't
+  // be used in this context.
+  if (!bindings_system->HasEventListenerInContext(event_name, script_context)) {
+    return;
+  }
+  *port_created = true;
+
   ExtensionPort* port = bindings->CreateNewPortWithId(target_port_id);
-  // Remove the port.
-  base::ScopedClosureRunner remove_port(
-      base::Bind(&MessagingBindings::RemovePortWithJsId, bindings->GetWeakPtr(),
-                 port->js_id()));
 
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
-
   const std::string& source_url_spec = info.source_url.spec();
-  std::string target_extension_id = script_context->GetExtensionID();
   const Extension* extension = script_context->extension();
 
   v8::Local<v8::Value> tab = v8::Null(isolate);
@@ -164,19 +185,9 @@ void DispatchOnConnectToScriptContext(
       tls_channel_id_value,
   };
 
-  v8::Local<v8::Value> retval =
-      script_context->module_system()->CallModuleMethod(
-          "messaging", "dispatchOnConnect", arraysize(arguments), arguments);
-
-  if (!retval.IsEmpty() && !retval->IsUndefined()) {
-    CHECK(retval->IsBoolean());
-    bool used = retval.As<v8::Boolean>()->Value();
-    *port_created |= used;
-    if (used)  // Port was used; don't remove it.
-      remove_port.ReplaceClosure(base::Closure());
-  } else {
-    LOG(ERROR) << "Empty return value from dispatchOnConnect.";
-  }
+  // Note: this can execute asynchronously if JS is suspended.
+  script_context->module_system()->CallModuleMethodSafe(
+      "messaging", "dispatchOnConnect", arraysize(arguments), arguments);
 }
 
 void DeliverMessageToScriptContext(const Message& message,
@@ -362,10 +373,6 @@ ExtensionPort* MessagingBindings::CreateNewPortWithId(const PortId& id) {
   auto port = base::MakeUnique<ExtensionPort>(context(), id, js_id);
   return ports_.insert(std::make_pair(js_id, std::move(port)))
       .first->second.get();
-}
-
-void MessagingBindings::RemovePortWithJsId(int js_id) {
-  ports_.erase(js_id);
 }
 
 base::WeakPtr<MessagingBindings> MessagingBindings::GetWeakPtr() {

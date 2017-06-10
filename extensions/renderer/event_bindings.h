@@ -30,6 +30,11 @@ class EventBindings : public ObjectBackedNativeHandler {
   explicit EventBindings(ScriptContext* context);
   ~EventBindings() override;
 
+  // Returns true if there is a listener for the given |event| in the given
+  // |context|.
+  static bool HasListener(ScriptContext* context,
+                          const std::string& event_name);
+
  private:
   // JavaScript handler which forwards to AttachEvent().
   // args[0] forwards to |event_name|.
@@ -73,6 +78,9 @@ class EventBindings : public ObjectBackedNativeHandler {
   void DetachFilteredEvent(int matcher_id, bool is_manual);
 
   void MatchAgainstEventFilter(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  void AttachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void DetachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   std::unique_ptr<EventMatcher> ParseEventMatcher(
       std::unique_ptr<base::DictionaryValue> filter);
