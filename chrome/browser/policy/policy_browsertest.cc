@@ -33,6 +33,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -4370,16 +4371,20 @@ class NetworkTimePolicyTest : public PolicyTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
-        switches::kEnableFeatures,
-        std::string(network_time::kNetworkTimeServiceQuerying.name) +
-            "<SSLNetworkTimeBrowserTestFieldTrial");
-    command_line->AppendSwitchASCII(
         switches::kForceFieldTrials,
         "SSLNetworkTimeBrowserTestFieldTrial/Enabled/");
     command_line->AppendSwitchASCII(
         variations::switches::kForceFieldTrialParams,
         "SSLNetworkTimeBrowserTestFieldTrial.Enabled:FetchBehavior/"
         "on-demand-only");
+  }
+
+  void SetUpOnMainThread() override {
+    PolicyTest::SetUpOnMainThread();
+    scoped_feature_list_.InitFromCommandLine(
+        std::string(network_time::kNetworkTimeServiceQuerying.name) +
+            "<SSLNetworkTimeBrowserTestFieldTrial",
+        std::string());
   }
 
   // A request handler that returns a dummy response and counts the number of
@@ -4402,6 +4407,7 @@ class NetworkTimePolicyTest : public PolicyTest {
 
  private:
   uint32_t num_requests_ = 0;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
