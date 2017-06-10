@@ -19,7 +19,7 @@
 // one parameter |Document|.
 //
 // |expectedText| is an HTML fragment indicating the expected result, where text
-// with spelling marker is surrounded by '_', and text with grammar marker is
+// with spelling marker is surrounded by '#', and text with grammar marker is
 // surrounded by '~'.
 //
 // |opt_args| is an optional object with the following optional fields:
