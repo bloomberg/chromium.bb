@@ -57,6 +57,8 @@ std::string GetContextTypeDescriptionString(Feature::Context context_type) {
       return "WEBUI";
     case Feature::SERVICE_WORKER_CONTEXT:
       return "SERVICE_WORKER";
+    case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
+      return "LOCK_SCREEN_EXTENSION";
   }
   NOTREACHED();
   return std::string();

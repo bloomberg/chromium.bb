@@ -422,6 +422,10 @@ void Dispatcher::DidCreateScriptContext(
       // Handled in DidInitializeServiceWorkerContextOnWorkerThread().
       NOTREACHED();
       break;
+    case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
+      UMA_HISTOGRAM_TIMES(
+          "Extensions.DidCreateScriptContext_LockScreenExtension", elapsed);
+      break;
   }
 
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
@@ -1108,9 +1112,11 @@ void Dispatcher::OnDispatchEvent(
 }
 
 void Dispatcher::OnSetSessionInfo(version_info::Channel channel,
-                                  FeatureSessionType session_type) {
+                                  FeatureSessionType session_type,
+                                  bool is_lock_screen_context) {
   SetCurrentChannel(channel);
   SetCurrentFeatureSessionType(session_type);
+  script_context_set_->set_is_lock_screen_context(is_lock_screen_context);
 
   if (feature_util::ExtensionServiceWorkersEnabled()) {
     // chrome-extension: resources should be allowed to register ServiceWorkers.

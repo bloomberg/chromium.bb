@@ -64,6 +64,7 @@
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #else
 #include "extensions/browser/updater/null_extension_cache.h"
@@ -439,4 +440,14 @@ KioskDelegate* ChromeExtensionsBrowserClient::GetKioskDelegate() {
   return kiosk_delegate_.get();
 }
 
+bool ChromeExtensionsBrowserClient::IsLockScreenContext(
+    content::BrowserContext* context) {
+#if defined(OS_CHROMEOS)
+  return chromeos::ProfileHelper::IsSigninProfile(
+             Profile::FromBrowserContext(context)) &&
+         session_manager::SessionManager::Get()->IsSessionStarted();
+#else
+  return false;
+#endif
+}
 }  // namespace extensions

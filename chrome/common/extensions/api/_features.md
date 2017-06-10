@@ -206,7 +206,12 @@ features can specify contexts.
 
 Accepted values are a list of strings from `blessed_extension`,
 `blessed_web_page`, `content_script`, `extension_service_worker`,
-`web_page`, `webui`, and `unblessed_extension`.
+`lock_screen_extension`, `web_page`, `webui`, and `unblessed_extension`.
+
+The `lock_screen_extension` context is used instead of `blessed_extension`
+context for extensions on the Chrome OS lock screen. Other extensions related
+contexts (`blessed_web_page`, `content_script`, `extension_service_worker`,
+`unblessed_extension`) are not expected to be present on the lock screen.
 
 ### default\_parent
 

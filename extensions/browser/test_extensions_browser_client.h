@@ -113,6 +113,7 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   KioskDelegate* GetKioskDelegate() override;
   scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context) override;
+  bool IsLockScreenContext(content::BrowserContext* context) override;
 
   ExtensionSystemProvider* extension_system_factory() {
     return extension_system_factory_;

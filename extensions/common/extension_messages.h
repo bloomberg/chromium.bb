@@ -643,9 +643,10 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
 
 // Informs the renderer what channel (dev, beta, stable, etc) and user session
 // type is running.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_SetSessionInfo,
+IPC_MESSAGE_CONTROL3(ExtensionMsg_SetSessionInfo,
                      version_info::Channel /* channel */,
-                     extensions::FeatureSessionType /* session_type */)
+                     extensions::FeatureSessionType /* session_type */,
+                     bool /* is_lock_screen_context */)
 
 // Notify the renderer that its window has closed.
 IPC_MESSAGE_ROUTED0(ExtensionMsg_AppWindowClosed)

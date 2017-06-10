@@ -104,6 +104,8 @@ std::string GetDisplayName(Feature::Context context) {
       return "webui";
     case Feature::SERVICE_WORKER_CONTEXT:
       return "service worker";
+    case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
+      return "lock screen app";
   }
   NOTREACHED();
   return "";

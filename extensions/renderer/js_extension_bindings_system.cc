@@ -196,6 +196,7 @@ void JsExtensionBindingsSystem::UpdateBindingsForContext(
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT:
+    case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
     case Feature::WEBUI_CONTEXT: {
       // Extension context; iterate through all the APIs and bind the available
       // ones.

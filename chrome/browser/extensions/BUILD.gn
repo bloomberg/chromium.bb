@@ -991,6 +991,7 @@ static_library("extensions") {
       "//components/chrome_apps",
       "//components/constrained_window",
       "//components/drive",
+      "//components/session_manager/core",
       "//components/user_manager",
       "//remoting/base",
       "//remoting/host",

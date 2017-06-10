@@ -19196,6 +19196,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.DidCreateScriptContext_LockScreenExtension"
+    units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
+    the time taken to install Extension JavaScript bindings per content script
+    context. This histogram measures the time to install Extension Javascript
+    bindings in a context for a platform app enabled on the Chrome OS lock
+    screen.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DidCreateScriptContext_Unblessed" units="ms">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
