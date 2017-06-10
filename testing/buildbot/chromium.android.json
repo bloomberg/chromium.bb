@@ -1832,8 +1832,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "chrome_sync_shell_test_apk"
       },
@@ -1855,7 +1854,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 360,
+          "hard_timeout": 600,
           "output_links": [
             {
               "link": [
@@ -1865,8 +1864,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "components_browsertests"
       },
@@ -1888,7 +1886,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 1200,
+          "hard_timeout": 1500,
           "output_links": [
             {
               "link": [
@@ -1898,8 +1896,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "components_unittests"
       },
@@ -1932,7 +1929,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 8
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -1954,7 +1951,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -1965,7 +1962,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 6
+          "shards": 2
         },
         "test": "content_shell_test_apk"
       },
@@ -1987,7 +1984,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -1997,8 +1994,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 3
+          ]
         },
         "test": "content_unittests"
       },
@@ -2430,7 +2426,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 1200,
+          "hard_timeout": 1500,
           "output_links": [
             {
               "link": [
@@ -2441,7 +2437,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "net_unittests"
       },
@@ -2720,7 +2716,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 2
         },
         "test": "unit_tests"
       },
@@ -4471,8 +4467,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "chrome_sync_shell_test_apk"
       },
@@ -4494,7 +4489,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 360,
+          "hard_timeout": 600,
           "output_links": [
             {
               "link": [
@@ -4504,8 +4499,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "components_browsertests"
       },
@@ -4537,8 +4531,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "components_unittests"
       },
@@ -4571,7 +4564,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 8
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -4593,7 +4586,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -4604,7 +4597,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 6
+          "shards": 2
         },
         "test": "content_shell_test_apk"
       },
@@ -4626,7 +4619,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -4636,8 +4629,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 3
+          ]
         },
         "test": "content_unittests"
       },
@@ -5080,7 +5072,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 3
+          "shards": 2
         },
         "test": "net_unittests"
       },
@@ -5348,7 +5340,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -5359,7 +5351,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 2
         },
         "test": "unit_tests"
       },
@@ -7435,8 +7427,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "chrome_sync_shell_test_apk"
       },
@@ -7458,7 +7449,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 360,
+          "hard_timeout": 600,
           "output_links": [
             {
               "link": [
@@ -7468,8 +7459,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "components_browsertests"
       },
@@ -7491,7 +7481,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 1200,
+          "hard_timeout": 1500,
           "output_links": [
             {
               "link": [
@@ -7501,8 +7491,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 2
+          ]
         },
         "test": "components_unittests"
       },
@@ -7535,7 +7524,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 8
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -7557,7 +7546,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 1500,
           "output_links": [
             {
               "link": [
@@ -7568,7 +7557,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 6
+          "shards": 2
         },
         "test": "content_shell_test_apk"
       },
@@ -7590,7 +7579,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 1500,
           "output_links": [
             {
               "link": [
@@ -7600,8 +7589,7 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ],
-          "shards": 3
+          ]
         },
         "test": "content_unittests"
       },
@@ -8312,7 +8300,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 600,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -8323,7 +8311,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 2
         },
         "test": "unit_tests"
       },
