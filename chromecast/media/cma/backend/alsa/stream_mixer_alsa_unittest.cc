@@ -1137,14 +1137,24 @@ TEST_F(StreamMixerAlsaTest, InvalidStreamTypeCrashes) {
 }
 )json";
 
+// String arguments aren't passed to CHECK() in official builds.
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+  EXPECT_DEATH(StreamMixerAlsa::Get()->ResetPostProcessorsForTest(json), "");
+#else
   EXPECT_DEATH(StreamMixerAlsa::Get()->ResetPostProcessorsForTest(json),
                "foobar is not a stream type");
+#endif
 }
 
 TEST_F(StreamMixerAlsaTest, BadJsonCrashes) {
   const std::string json("{{");
+// String arguments aren't passed to CHECK() in official builds.
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+  EXPECT_DEATH(StreamMixerAlsa::Get()->ResetPostProcessorsForTest(json), "");
+#else
   EXPECT_DEATH(StreamMixerAlsa::Get()->ResetPostProcessorsForTest(json),
                "Invalid JSON");
+#endif
 }
 
 TEST_F(StreamMixerAlsaTest, MultiplePostProcessorsInOneStream) {
