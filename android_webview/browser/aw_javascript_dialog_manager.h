@@ -12,7 +12,7 @@ namespace android_webview {
 
 class AwJavaScriptDialogManager : public content::JavaScriptDialogManager {
  public:
-  explicit AwJavaScriptDialogManager();
+  AwJavaScriptDialogManager();
   ~AwJavaScriptDialogManager() override;
 
   // Overridden from content::JavaScriptDialogManager:
