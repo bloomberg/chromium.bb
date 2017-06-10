@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class DictionaryValue;
@@ -112,30 +113,44 @@ class WebHistoryService : public KeyedService {
   std::unique_ptr<Request> QueryHistory(
       const base::string16& text_query,
       const QueryOptions& options,
-      const QueryWebHistoryCallback& callback);
+      const QueryWebHistoryCallback& callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation);
 
   // Removes all visits to specified URLs in specific time ranges.
   // This is the of equivalent HistoryService::ExpireHistory().
   void ExpireHistory(const std::vector<ExpireHistoryArgs>& expire_list,
-                     const ExpireWebHistoryCallback& callback);
+                     const ExpireWebHistoryCallback& callback,
+                     const net::PartialNetworkTrafficAnnotationTag&
+                         partial_traffic_annotation);
 
   // Removes all visits to specified URLs in the given time range.
   // This is the of equivalent HistoryService::ExpireHistoryBetween().
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
                             base::Time begin_time,
                             base::Time end_time,
-                            const ExpireWebHistoryCallback& callback);
+                            const ExpireWebHistoryCallback& callback,
+                            const net::PartialNetworkTrafficAnnotationTag&
+                                partial_traffic_annotation);
 
   // Requests whether audio history recording is enabled.
-  virtual void GetAudioHistoryEnabled(const AudioWebHistoryCallback& callback);
+  virtual void GetAudioHistoryEnabled(
+      const AudioWebHistoryCallback& callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation);
 
   // Sets the state of audio history recording to |new_enabled_value|.
-  virtual void SetAudioHistoryEnabled(bool new_enabled_value,
-                                      const AudioWebHistoryCallback& callback);
+  virtual void SetAudioHistoryEnabled(
+      bool new_enabled_value,
+      const AudioWebHistoryCallback& callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation);
 
   // Queries whether web and app activity is enabled on the server.
   virtual void QueryWebAndAppActivity(
-      const QueryWebAndAppActivityCallback& callback);
+      const QueryWebAndAppActivityCallback& callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation);
 
   // Used for tests.
   size_t GetNumberOfPendingAudioHistoryRequests();
@@ -143,13 +158,17 @@ class WebHistoryService : public KeyedService {
   // Whether there are other forms of browsing history stored on the server.
   void QueryOtherFormsOfBrowsingHistory(
       version_info::Channel channel,
-      const QueryOtherFormsOfBrowsingHistoryCallback& callback);
+      const QueryOtherFormsOfBrowsingHistoryCallback& callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation);
 
  protected:
   // This function is pulled out for testing purposes. Caller takes ownership of
   // the new Request.
   virtual Request* CreateRequest(const GURL& url,
-                                 const CompletionCallback& callback);
+                                 const CompletionCallback& callback,
+                                 const net::PartialNetworkTrafficAnnotationTag&
+                                     partial_traffic_annotation);
 
   // Extracts a JSON-encoded HTTP response into a DictionaryValue.
   // If |request|'s HTTP response code indicates failure, or if the response

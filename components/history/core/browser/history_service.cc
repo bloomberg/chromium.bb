@@ -1069,8 +1069,33 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
     //
     // TODO(davidben): |callback| should not run until this operation completes
     // too.
+    net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+        net::DefinePartialNetworkTrafficAnnotation(
+            "web_history_expire_between_dates", "web_history_service", R"(
+          semantics {
+            description:
+              "If a user who syncs their browsing history deletes history "
+              "items for a time range, Chrome sends a request to a google.com "
+              "host to execute the corresponding deletion serverside."
+            trigger:
+              "Deleting browsing history for a given time range, e.g. from the "
+              "Clear Browsing Data dialog, by an extension, or the "
+              "Clear-Site-Data header."
+            data:
+              "The begin and end timestamps of the selected time range, a "
+              "version info token to resolve transaction conflicts, and an "
+              "OAuth2 token authenticating the user."
+          }
+          policy {
+            chrome_policy {
+              AllowDeletingBrowserHistory {
+                AllowDeletingBrowserHistory: false
+              }
+            }
+          })");
     web_history->ExpireHistoryBetween(restrict_urls, begin_time, end_time,
-                                      base::Bind(&ExpireWebHistoryComplete));
+                                      base::Bind(&ExpireWebHistoryComplete),
+                                      partial_traffic_annotation);
   }
   ExpireHistoryBetween(restrict_urls, begin_time, end_time, callback, tracker);
 }

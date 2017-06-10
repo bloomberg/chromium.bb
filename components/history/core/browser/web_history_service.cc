@@ -90,7 +90,8 @@ class RequestImpl : public WebHistoryService::Request,
       SigninManagerBase* signin_manager,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
       const GURL& url,
-      const WebHistoryService::CompletionCallback& callback)
+      const WebHistoryService::CompletionCallback& callback,
+      const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
       : OAuth2TokenService::Consumer("web_history"),
         token_service_(token_service),
         signin_manager_(signin_manager),
@@ -100,7 +101,8 @@ class RequestImpl : public WebHistoryService::Request,
         response_code_(0),
         auth_retry_count_(0),
         callback_(callback),
-        is_pending_(false) {
+        is_pending_(false),
+        partial_traffic_annotation_(partial_traffic_annotation) {
     DCHECK(token_service_);
     DCHECK(signin_manager_);
     DCHECK(request_context_);
@@ -178,8 +180,23 @@ class RequestImpl : public WebHistoryService::Request,
       const std::string& access_token) {
     net::URLFetcher::RequestType request_type = post_data_ ?
         net::URLFetcher::POST : net::URLFetcher::GET;
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::CompleteNetworkTrafficAnnotation("web_history_service",
+                                              partial_traffic_annotation_,
+                                              R"(
+          semantics {
+            sender: "Web History"
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: false
+            setting:
+              "To disable this feature, users can either sign out or disable "
+              "history sync via unchecking 'History' setting under 'Advanced "
+              "sync settings."
+          })");
     std::unique_ptr<net::URLFetcher> fetcher =
-        net::URLFetcher::Create(url_, request_type, this);
+        net::URLFetcher::Create(url_, request_type, this, traffic_annotation);
     data_use_measurement::DataUseUserData::AttachToFetcher(
         fetcher.get(),
         data_use_measurement::DataUseUserData::WEB_HISTORY_SERVICE);
@@ -256,6 +273,10 @@ class RequestImpl : public WebHistoryService::Request,
 
   // True if the request was started and has not yet completed, otherwise false.
   bool is_pending_;
+
+  // Partial Network traffic annotation used to create URLFetcher for this
+  // request.
+  const net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation_;
 };
 
 // Converts a time into a string for use as a parameter in a request to the
@@ -357,9 +378,10 @@ void WebHistoryService::RemoveObserver(WebHistoryServiceObserver* observer) {
 
 WebHistoryService::Request* WebHistoryService::CreateRequest(
     const GURL& url,
-    const CompletionCallback& callback) {
+    const CompletionCallback& callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   return new RequestImpl(token_service_, signin_manager_, request_context_, url,
-                         callback);
+                         callback, partial_traffic_annotation);
 }
 
 // static
@@ -380,20 +402,23 @@ std::unique_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
 std::unique_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
     const base::string16& text_query,
     const QueryOptions& options,
-    const WebHistoryService::QueryWebHistoryCallback& callback) {
+    const WebHistoryService::QueryWebHistoryCallback& callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   // Wrap the original callback into a generic completion callback.
   CompletionCallback completion_callback = base::Bind(
       &WebHistoryService::QueryHistoryCompletionCallback, callback);
 
   GURL url = GetQueryUrl(text_query, options, server_version_info_);
-  std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
+  std::unique_ptr<Request> request(
+      CreateRequest(url, completion_callback, partial_traffic_annotation));
   request->Start();
   return request;
 }
 
 void WebHistoryService::ExpireHistory(
     const std::vector<ExpireHistoryArgs>& expire_list,
-    const ExpireWebHistoryCallback& callback) {
+    const ExpireWebHistoryCallback& callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   base::DictionaryValue delete_request;
   std::unique_ptr<base::ListValue> deletions(new base::ListValue);
   base::Time now = base::Time::Now();
@@ -432,7 +457,8 @@ void WebHistoryService::ExpireHistory(
                  weak_ptr_factory_.GetWeakPtr(),
                  callback);
 
-  std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
+  std::unique_ptr<Request> request(
+      CreateRequest(url, completion_callback, partial_traffic_annotation));
   request->SetPostData(post_data);
   Request* request_ptr = request.get();
   pending_expire_requests_[request_ptr] = std::move(request);
@@ -443,16 +469,18 @@ void WebHistoryService::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls,
     base::Time begin_time,
     base::Time end_time,
-    const ExpireWebHistoryCallback& callback) {
+    const ExpireWebHistoryCallback& callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   std::vector<ExpireHistoryArgs> expire_list(1);
   expire_list.back().urls = restrict_urls;
   expire_list.back().begin_time = begin_time;
   expire_list.back().end_time = end_time;
-  ExpireHistory(expire_list, callback);
+  ExpireHistory(expire_list, callback, partial_traffic_annotation);
 }
 
 void WebHistoryService::GetAudioHistoryEnabled(
-    const AudioWebHistoryCallback& callback) {
+    const AudioWebHistoryCallback& callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   // Wrap the original callback into a generic completion callback.
   CompletionCallback completion_callback =
     base::Bind(&WebHistoryService::AudioHistoryCompletionCallback,
@@ -460,15 +488,18 @@ void WebHistoryService::GetAudioHistoryEnabled(
     callback);
 
   GURL url(kHistoryAudioHistoryUrl);
-  std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
+
+  std::unique_ptr<Request> request(
+      CreateRequest(url, completion_callback, partial_traffic_annotation));
   request->Start();
   Request* request_ptr = request.get();
   pending_audio_history_requests_[request_ptr] = std::move(request);
 }
 
 void WebHistoryService::SetAudioHistoryEnabled(
-  bool new_enabled_value,
-  const AudioWebHistoryCallback& callback) {
+    bool new_enabled_value,
+    const AudioWebHistoryCallback& callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   // Wrap the original callback into a generic completion callback.
   CompletionCallback completion_callback =
       base::Bind(&WebHistoryService::AudioHistoryCompletionCallback,
@@ -476,7 +507,8 @@ void WebHistoryService::SetAudioHistoryEnabled(
                  callback);
 
   GURL url(kHistoryAudioHistoryChangeUrl);
-  std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
+  std::unique_ptr<Request> request(
+      CreateRequest(url, completion_callback, partial_traffic_annotation));
 
   base::DictionaryValue enable_audio_history;
   enable_audio_history.SetBoolean("enable_history_recording",
@@ -496,7 +528,8 @@ size_t WebHistoryService::GetNumberOfPendingAudioHistoryRequests() {
 }
 
 void WebHistoryService::QueryWebAndAppActivity(
-    const QueryWebAndAppActivityCallback& callback) {
+    const QueryWebAndAppActivityCallback& callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   // Wrap the original callback into a generic completion callback.
   CompletionCallback completion_callback =
       base::Bind(&WebHistoryService::QueryWebAndAppActivityCompletionCallback,
@@ -504,14 +537,16 @@ void WebHistoryService::QueryWebAndAppActivity(
                  callback);
 
   GURL url(kQueryWebAndAppActivityUrl);
-  Request* request = CreateRequest(url, completion_callback);
+  Request* request =
+      CreateRequest(url, completion_callback, partial_traffic_annotation);
   pending_web_and_app_activity_requests_[request] = base::WrapUnique(request);
   request->Start();
 }
 
 void WebHistoryService::QueryOtherFormsOfBrowsingHistory(
     version_info::Channel channel,
-    const QueryOtherFormsOfBrowsingHistoryCallback& callback) {
+    const QueryOtherFormsOfBrowsingHistoryCallback& callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   // Wrap the original callback into a generic completion callback.
   CompletionCallback completion_callback = base::Bind(
       &WebHistoryService::QueryOtherFormsOfBrowsingHistoryCompletionCallback,
@@ -528,7 +563,8 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistory(
   url = url.ReplaceComponents(replace_path);
   DCHECK(url.is_valid());
 
-  Request* request = CreateRequest(url, completion_callback);
+  Request* request =
+      CreateRequest(url, completion_callback, partial_traffic_annotation);
 
   // Set the Sync-specific user agent.
   std::string user_agent = syncer::MakeUserAgentForSync(

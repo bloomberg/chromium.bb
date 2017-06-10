@@ -27,6 +27,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -48,14 +49,16 @@ class MockWebHistoryService : public history::WebHistoryService {
 
   // For both of the following functions, just call the callback to simulate
   // a successful return from the url fetch.
-  void GetAudioHistoryEnabled(
-      const AudioWebHistoryCallback& callback) override {
+  void GetAudioHistoryEnabled(const AudioWebHistoryCallback& callback,
+                              const net::PartialNetworkTrafficAnnotationTag&
+                                  partial_traffic_annotation) override {
     callback.Run(expected_success_, expected_value_ && expected_success_);
   }
 
-  void SetAudioHistoryEnabled(
-      bool new_enabled_value,
-      const AudioWebHistoryCallback& callback) override {
+  void SetAudioHistoryEnabled(bool new_enabled_value,
+                              const AudioWebHistoryCallback& callback,
+                              const net::PartialNetworkTrafficAnnotationTag&
+                                  partial_traffic_annotation) override {
     callback.Run(expected_success_, new_enabled_value && expected_success_);
   }
 
