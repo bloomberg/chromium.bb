@@ -335,6 +335,9 @@ TEST_P(LayoutGeometryMapTest, ContainsFixedPositionTest) {
                              GetLayoutBox(web_view, "simple-container"));
   EXPECT_EQ(FloatRect(8.0f, 50.0f, 100.0f, 100.0f),
             AdjustForFrameScroll(web_view, rgm.AbsoluteRect(rect)));
+  EXPECT_EQ(
+      FloatQuad(FloatRect(0.0f, -50.0f, 100.0f, 100.0f)),
+      rgm.MapToAncestor(rect, GetLayoutBox(web_view, "simple-container")));
   rgm.PopMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
 
   // Transforms contain fixed position descendants.
