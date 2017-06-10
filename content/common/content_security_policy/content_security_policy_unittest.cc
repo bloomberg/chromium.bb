@@ -238,4 +238,20 @@ TEST(ContentSecurityPolicy, BlobAllowedWhenBypassingCSP) {
       false, &context, SourceLocation()));
 }
 
+TEST(ContentSecurityPolicy, ShouldUpgradeInsecureRequest) {
+  std::vector<std::string> report_end_points;  // empty
+  CSPSource source("https", "example.com", false, url::PORT_UNSPECIFIED, false,
+                   "");
+  CSPSourceList source_list(false, false, {source});
+  ContentSecurityPolicy policy(
+      EmptyCspHeader(), {CSPDirective(CSPDirective::DefaultSrc, source_list)},
+      report_end_points);
+
+  EXPECT_FALSE(ContentSecurityPolicy::ShouldUpgradeInsecureRequest(policy));
+
+  policy.directives.push_back(
+      CSPDirective(CSPDirective::UpgradeInsecureRequests, CSPSourceList()));
+  EXPECT_TRUE(ContentSecurityPolicy::ShouldUpgradeInsecureRequest(policy));
+}
+
 }  // namespace content

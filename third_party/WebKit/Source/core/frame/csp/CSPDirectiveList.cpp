@@ -1395,6 +1395,11 @@ WebContentSecurityPolicy CSPDirectiveList::ExposeForNavigationalChecks() const {
           directive->ExposeForNavigationalChecks()});
     }
   }
+  if (upgrade_insecure_requests_) {
+    directives.push_back(WebContentSecurityPolicyDirective{
+        blink::WebString("upgrade-insecure-requests"),
+        WebContentSecurityPolicySourceList()});
+  }
   policy.directives = directives;
   policy.report_endpoints = ReportEndpoints();
   policy.header = Header();

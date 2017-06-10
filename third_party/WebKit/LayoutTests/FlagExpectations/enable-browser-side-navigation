@@ -45,10 +45,6 @@ Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/nonwebby-schem
 Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
 Bug(726178) virtual/mojo-loading/http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
 
-# PlzNavigate: Navigation requests upgraded via upgrade-insecure-requests will not get reported	
-# See https://crbug.com/713388
-Bug(713388) external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Timeout ]
-
 # ------------------------------------------------------------
 # These tests are correct with PlzNavigate but not without it
 # ------------------------------------------------------------

@@ -24,6 +24,18 @@ struct CSPViolationParams;
 // is in content/browser/frame_host/render_frame_host_impl.h
 class CONTENT_EXPORT CSPContext {
  public:
+  // This enum represents what set of policies should be checked by
+  // IsAllowedByCsp().
+  enum CheckCSPDisposition {
+    // Only check report-only policies.
+    CHECK_REPORT_ONLY_CSP,
+    // Only check enforced policies. (Note that enforced policies can still
+    // trigger reports.)
+    CHECK_ENFORCED_CSP,
+    // Check all policies.
+    CHECK_ALL_CSP,
+  };
+
   CSPContext();
   virtual ~CSPContext();
 
@@ -36,7 +48,15 @@ class CONTENT_EXPORT CSPContext {
   bool IsAllowedByCsp(CSPDirective::Name directive_name,
                       const GURL& url,
                       bool is_redirect,
-                      const SourceLocation& source_location);
+                      const SourceLocation& source_location,
+                      CheckCSPDisposition check_csp_disposition);
+
+  // Returns true if the request URL needs to be modified (e.g. upgraded to
+  // HTTPS) according to the CSP. If true, |new_url| will contain the new URL
+  // that should be used instead of |url|.
+  bool ShouldModifyRequestUrlForCsp(const GURL& url,
+                                    bool is_suresource_or_form_submssion,
+                                    GURL* new_url);
 
   void SetSelf(const url::Origin origin);
   bool AllowSelf(const GURL& url);
