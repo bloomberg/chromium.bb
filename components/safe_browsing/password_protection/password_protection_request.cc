@@ -36,14 +36,12 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       password_form_action_(password_form_action),
       password_form_frame_url_(password_form_frame_url),
       saved_domain_(saved_domain),
-      trigger_type_(type),
+      request_type_(type),
       password_field_exists_(password_field_exists),
       password_protection_service_(pps),
       request_timeout_in_ms_(request_timeout_in_ms),
       weakptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
-         trigger_type_ == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 }
 
 PasswordProtectionRequest::~PasswordProtectionRequest() {
@@ -87,7 +85,7 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
   std::unique_ptr<LoginReputationClientResponse> cached_response =
       base::MakeUnique<LoginReputationClientResponse>();
   auto verdict = password_protection_service_->GetCachedVerdict(
-      main_frame_url_, trigger_type_, cached_response.get());
+      main_frame_url_, cached_response.get());
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED)
     Finish(PasswordProtectionService::RESPONSE_ALREADY_CACHED,
            std::move(cached_response));
@@ -98,11 +96,11 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
 void PasswordProtectionRequest::FillRequestProto() {
   request_proto_ = base::MakeUnique<LoginReputationClientRequest>();
   request_proto_->set_page_url(main_frame_url_.spec());
-  request_proto_->set_trigger_type(trigger_type_);
-  password_protection_service_->FillUserPopulation(trigger_type_,
+  request_proto_->set_trigger_type(request_type_);
+  password_protection_service_->FillUserPopulation(request_type_,
                                                    request_proto_.get());
   request_proto_->set_stored_verdict_cnt(
-      password_protection_service_->GetStoredVerdictCount(trigger_type_));
+      password_protection_service_->GetStoredVerdictCount());
   LoginReputationClientRequest::Frame* main_frame =
       request_proto_->add_frames();
   main_frame->set_url(main_frame_url_.spec());
@@ -110,7 +108,7 @@ void PasswordProtectionRequest::FillRequestProto() {
   password_protection_service_->FillReferrerChain(
       main_frame_url_, -1 /* tab id not available */, main_frame);
 
-  switch (trigger_type_) {
+  switch (request_type_) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE: {
       LoginReputationClientRequest::Frame::Form* password_form;
       if (password_form_frame_url_ == main_frame_url_) {
@@ -249,7 +247,7 @@ void PasswordProtectionRequest::Finish(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.TryCancelAll();
 
-  if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
+  if (request_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
     UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogramName,
                               outcome, PasswordProtectionService::MAX_OUTCOME);
   } else {
@@ -258,7 +256,7 @@ void PasswordProtectionRequest::Finish(
   }
 
   if (outcome == PasswordProtectionService::SUCCEEDED && response) {
-    switch (trigger_type_) {
+    switch (request_type_) {
       case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE:
         UMA_HISTOGRAM_ENUMERATION(
             "PasswordProtection.Verdict.PasswordFieldOnFocus",
