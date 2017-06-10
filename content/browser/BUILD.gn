@@ -1688,7 +1688,6 @@ source_set("browser") {
     deps += [
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
-      "//third_party/swiftshader",
     ]
     libs += [
       "comctl32.lib",
@@ -1835,11 +1834,6 @@ source_set("browser") {
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
-  }
-
-  if (is_linux && !is_chromeos && use_x11 &&
-      (target_cpu == "x86" || target_cpu == "x64")) {
-    deps += [ "//third_party/swiftshader" ]
   }
 
   if (use_pango) {
