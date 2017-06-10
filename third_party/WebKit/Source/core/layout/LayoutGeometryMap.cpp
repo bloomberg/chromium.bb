@@ -68,7 +68,8 @@ void LayoutGeometryMap::MapToAncestor(
       !ancestor || (mapping_.size() && mapping_[0].layout_object_ == ancestor);
 #endif
 
-  for (int i = mapping_.size() - 1; i >= 0; --i) {
+  int i = mapping_.size() - 1;
+  for (; i >= 0; --i) {
     const LayoutGeometryMapStep& current_step = mapping_[i];
 
     // If container is the root LayoutView (step 0) we want to apply its fixed
@@ -111,9 +112,24 @@ void LayoutGeometryMap::MapToAncestor(
                              current_step.offset_.Height(), accumulate);
     }
 
-    if (in_fixed && !current_step.offset_for_fixed_position_.IsZero()) {
-      DCHECK(current_step.layout_object_->IsLayoutView());
+    if (in_fixed && current_step.layout_object_->IsLayoutView()) {
       transform_state.Move(current_step.offset_for_fixed_position_);
+      in_fixed = false;
+    }
+  }
+
+  if (in_fixed) {
+    // In case we've not reached top ('ancestor' isn't top level view) either
+    // assure that 'ancestor' and object both fixed or apply fixed offset of
+    // the nearest containing view.
+    for (; i >= 0; --i) {
+      const LayoutGeometryMapStep& current_step = mapping_[i];
+      if (current_step.flags_ & (kContainsFixedPosition | kIsFixedPosition))
+        break;
+      if (current_step.layout_object_->IsLayoutView()) {
+        transform_state.Move(current_step.offset_for_fixed_position_);
+        break;
+      }
     }
   }
 
