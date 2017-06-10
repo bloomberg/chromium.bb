@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc/track_observer.h"
+#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
@@ -115,8 +116,9 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
   scoped_refptr<webrtc::VideoFrameBuffer> buffer(
       incoming_frame.video_frame_buffer());
 
-  if (buffer->native_handle() != NULL) {
-    video_frame = static_cast<media::VideoFrame*>(buffer->native_handle());
+  if (buffer->type() == webrtc::VideoFrameBuffer::Type::kNative) {
+    video_frame = static_cast<WebRtcVideoFrameAdapter*>(buffer.get())
+                      ->getMediaVideoFrame();
     video_frame->set_timestamp(elapsed_timestamp);
     if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
       video_frame->metadata()->SetRotation(

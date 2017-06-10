@@ -26,10 +26,14 @@ class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
       const scoped_refptr<media::VideoFrame>& frame,
       const CopyTextureFrameCallback& copy_texture_callback);
 
+  scoped_refptr<media::VideoFrame> getMediaVideoFrame() const { return frame_; }
+
  private:
+  Type type() const override;
   int width() const override;
   int height() const override;
 
+  // TODO(magjed): Remove Data, Stride, and native_handle() functions.
   const uint8_t* DataY() const override;
   const uint8_t* DataU() const override;
   const uint8_t* DataV() const override;
@@ -40,7 +44,7 @@ class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
 
   void* native_handle() const override;
 
-  rtc::scoped_refptr<VideoFrameBuffer> NativeToI420Buffer() override;
+  rtc::scoped_refptr<webrtc::I420BufferInterface> ToI420() override;
 
   friend class rtc::RefCountedObject<WebRtcVideoFrameAdapter>;
 

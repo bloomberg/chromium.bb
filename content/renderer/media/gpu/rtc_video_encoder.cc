@@ -22,6 +22,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_frame.h"
@@ -605,9 +606,11 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   const int index = input_buffers_free_.back();
   bool requires_copy = false;
   scoped_refptr<media::VideoFrame> frame;
-  if (next_frame->video_frame_buffer()->native_handle()) {
-    frame = static_cast<media::VideoFrame*>(
-        next_frame->video_frame_buffer()->native_handle());
+  if (next_frame->video_frame_buffer()->type() ==
+      webrtc::VideoFrameBuffer::Type::kNative) {
+    frame = static_cast<WebRtcVideoFrameAdapter*>(
+                next_frame->video_frame_buffer().get())
+                ->getMediaVideoFrame();
     requires_copy = RequiresSizeChange(frame) ||
                     frame->storage_type() != media::VideoFrame::STORAGE_SHMEM;
   } else {
