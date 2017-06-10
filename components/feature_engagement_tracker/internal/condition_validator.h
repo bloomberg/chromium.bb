@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <ostream>
 #include <string>
 
 #include "base/macros.h"
@@ -89,6 +90,9 @@ class ConditionValidator {
  private:
   DISALLOW_COPY_AND_ASSIGN(ConditionValidator);
 };
+
+std::ostream& operator<<(std::ostream& os,
+                         const ConditionValidator::Result& result);
 
 }  // namespace feature_engagement_tracker
 
