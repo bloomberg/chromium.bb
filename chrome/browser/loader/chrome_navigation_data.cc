@@ -5,13 +5,13 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "net/url_request/url_request.h"
 
 const void* const kChromeNavigationDataUserDataKey =
     &kChromeNavigationDataUserDataKey;
 
-ChromeNavigationData::ChromeNavigationData() {}
+ChromeNavigationData::ChromeNavigationData()
+    : previews_state_(content::PreviewsTypes::PREVIEWS_UNSPECIFIED) {}
 
 ChromeNavigationData::~ChromeNavigationData() {}
 
@@ -31,7 +31,9 @@ ChromeNavigationData* ChromeNavigationData::GetDataAndCreateIfNecessary(
 
 std::unique_ptr<content::NavigationData> ChromeNavigationData::Clone() const {
   std::unique_ptr<ChromeNavigationData> copy(new ChromeNavigationData());
-  if (data_reduction_proxy_data_)
+  if (data_reduction_proxy_data_) {
     copy->SetDataReductionProxyData(data_reduction_proxy_data_->DeepCopy());
+  }
+  copy->previews_state_ = previews_state_;
   return std::move(copy);
 }

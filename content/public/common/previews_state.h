@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_PREVIEWS_TYPE_H_
-#define CONTENT_PUBLIC_COMMON_PREVIEWS_TYPE_H_
+#ifndef CONTENT_PUBLIC_COMMON_PREVIEWS_STATE_H_
+#define CONTENT_PUBLIC_COMMON_PREVIEWS_STATE_H_
 
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -66,4 +66,4 @@ STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_STATE_LAST,
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_COMMON_PREVIEWS_TYPE_H_
+#endif  // CONTENT_PUBLIC_COMMON_PREVIEWS_STATE_H_

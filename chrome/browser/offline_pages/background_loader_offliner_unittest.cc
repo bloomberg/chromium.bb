@@ -11,6 +11,7 @@
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offliner_helper.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -568,6 +569,64 @@ TEST_F(BackgroundLoaderOfflinerTest, MAYBE_NoNextOnInternetDisconnected) {
 
   EXPECT_TRUE(completion_callback_called());
   EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NO_NEXT, request_status());
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOffHistogram) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+
+  // Called after calling LoadAndSave so we have web_contents to work with.
+  std::unique_ptr<content::NavigationHandle> handle(
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
+          net::Error::OK));
+  // Set up ChromeNavigationData on the handle.
+  std::unique_ptr<ChromeNavigationData> chrome_navigation_data(
+      new ChromeNavigationData());
+  chrome_navigation_data->set_previews_state(
+      content::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
+  std::unique_ptr<content::NavigationData> navigation_data(
+      chrome_navigation_data.release());
+  // Call DidFinishNavigation with handle.
+  offliner()->DidFinishNavigation(handle.get());
+
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.OffliningPreviewStatus.async_loading",
+      0,  // Previews Disabled
+      1);
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOnHistogram) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+
+  // Called after calling LoadAndSave so we have web_contents to work with.
+  std::unique_ptr<content::NavigationHandle> handle(
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
+          net::Error::OK));
+  // Set up ChromeNavigationData on the handle.
+  std::unique_ptr<ChromeNavigationData> chrome_navigation_data(
+      new ChromeNavigationData());
+  chrome_navigation_data->set_previews_state(
+      content::PreviewsTypes::CLIENT_LOFI_ON);
+  std::unique_ptr<content::NavigationData> navigation_data(
+      chrome_navigation_data.release());
+  offliner()->web_contents_tester()->SetNavigationData(
+      handle.get(), std::move(navigation_data));
+  // Call DidFinishNavigation with handle.
+  offliner()->DidFinishNavigation(handle.get());
+
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.OffliningPreviewStatus.async_loading",
+      1,  // Previews Enabled
+      1);
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, OnlySavesOnceOnMultipleLoads) {

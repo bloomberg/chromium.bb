@@ -71,6 +71,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_response.h"
 #include "extensions/features/features.h"
 #include "net/base/load_flags.h"
@@ -942,6 +943,13 @@ ChromeResourceDispatcherHostDelegate::GetNavigationData(
       ChromeNavigationData::GetDataAndCreateIfNecessary(request);
   if (!request)
     return data;
+
+  // Update the previews state from the navigation data.
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (info) {
+    data->set_previews_state(info->GetPreviewsState());
+  }
 
   data_reduction_proxy::DataReductionProxyData* data_reduction_proxy_data =
       data_reduction_proxy::DataReductionProxyData::GetData(*request);

@@ -9,11 +9,9 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/navigation_data.h"
-
-namespace data_reduction_proxy {
-class DataReductionProxyData;
-}
+#include "content/public/common/previews_state.h"
 
 namespace net {
 class URLRequest;
@@ -43,6 +41,11 @@ class ChromeNavigationData : public content::NavigationData,
     return data_reduction_proxy_data_.get();
   }
 
+  content::PreviewsState previews_state() { return previews_state_; }
+  void set_previews_state(content::PreviewsState previews_state) {
+    previews_state_ = previews_state;
+  }
+
   static ChromeNavigationData* GetDataAndCreateIfNecessary(
       net::URLRequest* request);
 
@@ -50,6 +53,7 @@ class ChromeNavigationData : public content::NavigationData,
   // Manages the lifetime of optional DataReductionProxy information.
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
       data_reduction_proxy_data_;
+  content::PreviewsState previews_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNavigationData);
 };
