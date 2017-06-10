@@ -80,17 +80,20 @@ function testCreateAndGrabFrame() {
 
 // Runs a MediaStreamTrack.getCapabilities().
 function testCreateAndGetTrackCapabilities() {
+  var imageCapturer;
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
         return new ImageCapture(stream.getVideoTracks()[0]);
       })
       .then(capturer => {
-        // TODO(mcasas): remove this extra timeout, https://crbug.com/711524.
-        return delayedResolver(capturer, 200);
+        imageCapturer = capturer;
+        // TODO(mcasas): Before accesing synchronous track APIs we need a delay,
+        // use instead a round trip of capabilities: https://crbug.com/711524.
+        return capturer.getPhotoCapabilities();
       })
-      .then(capturer => {
-        capturer.track.getCapabilities();
+      .then(capabilities => {
+        imageCapturer.track.getCapabilities();
         // There's nothing to check here since |capabilities| vary per device.
         reportTestSuccess();
       })
@@ -101,17 +104,20 @@ function testCreateAndGetTrackCapabilities() {
 
 // Runs an MediaStreamTrack.getSettings().
 function testCreateAndGetTrackSettings() {
+  var imageCapturer;
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
         return new ImageCapture(stream.getVideoTracks()[0]);
       })
       .then(capturer => {
-        // TODO(mcasas): remove this extra timeout, https://crbug.com/711524.
-        return delayedResolver(capturer, 200);
+        imageCapturer = capturer;
+        // TODO(mcasas): Before accesing synchronous track APIs we need a delay,
+        // use instead a round trip of capabilities: https://crbug.com/711524.
+        return capturer.getPhotoCapabilities();
       })
-      .then(capturer => {
-        capturer.track.getSettings();
+      .then(capabilities => {
+        imageCapturer.track.getSettings();
         // There's nothing to check here since |settings| vary per device.
         reportTestSuccess();
       })
@@ -124,34 +130,38 @@ function testCreateAndGetTrackSettings() {
 function testManipulateZoom() {
   var newZoom = -1;
   var imageCapturer;
+  var zoomTolerance;
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
         return new ImageCapture(stream.getVideoTracks()[0]);
       })
       .then(capturer => {
-        // TODO(mcasas): remove this extra timeout, https://crbug.com/711524.
-        return delayedResolver(capturer, 200);
+        imageCapturer = capturer;
+        // TODO(mcasas): Before accesing synchronous track APIs we need a delay,
+        // use instead a round trip of capabilities: https://crbug.com/711524.
+        return capturer.getPhotoCapabilities();
       })
-      .then(capturer => {
-        const trackCapabilities = capturer.track.getCapabilities();
+      .then(capabilities => {
+        const trackCapabilities = imageCapturer.track.getCapabilities();
         if (trackCapabilities.zoom === undefined) {
           console.log('zoom not supported, skipping test');
           reportTestSuccess();
           return;
         }
 
-        const currentZoom = capturer.track.getSettings().zoom;
+        const currentZoom = imageCapturer.track.getSettings().zoom;
         newZoom = currentZoom + trackCapabilities.zoom.step;
         newZoom = Math.min(newZoom, trackCapabilities.zoom.max);
         console.log("Setting zoom from " + currentZoom + " to " + newZoom);
+        zoomTolerance = trackCapabilities.zoom.step / 10;
 
-        imageCapturer = capturer;
-        return capturer.track.applyConstraints({advanced : [{zoom : newZoom}]});
+        return imageCapturer.track.applyConstraints({advanced : [{zoom : newZoom}]});
       })
       .then(appliedConstraints => {
         assertEquals(newZoom, appliedConstraints.advanced[0].zoom);
-        assertEquals(newZoom, imageCapturer.track.getSettings().zoom);
+        assertTrue(Math.abs(newZoom - imageCapturer.track.getSettings().zoom)
+            < zoomTolerance);
         reportTestSuccess();
       })
       .catch(err => {
