@@ -11,6 +11,7 @@
 #include "ui/base/resource/scale_factor.h"
 
 class GURL;
+class PrefService;
 
 namespace base {
 class RefCountedMemory;
@@ -20,6 +21,7 @@ namespace content {
 class WebContents;
 }
 
+// Chrome settings utility methods.
 namespace settings_utils {
 
 // Invoke UI for network proxy settings.
@@ -34,6 +36,23 @@ bool FixupAndValidateStartupPage(const std::string& url_string,
                                  GURL* fixed_url);
 
 base::RefCountedMemory* GetFaviconResourceBytes(ui::ScaleFactor scale_factor);
+
+#if defined(OS_MACOSX)
+void ValidateSavedFonts(PrefService* prefs);
+#endif
+
+// When |font_name_or_list| starts with ",", it is a list of font names
+// separated by "," and this function returns the first available font name.
+// Otherwise returns |font_name_or_list| as is.
+// Unlike gfx::FontList, this function picks one font, and character-level
+// fallback is handled in CSS.
+std::string ResolveFontList(const std::string& font_name_or_list);
+
+// Returns the localized name of a font so that settings can find it within
+// the list of system fonts. On Windows, the list of system fonts has names
+// only for the system locale, but the pref value may be in the English name.
+// For example, "MS Gothic" becomes "ＭＳ ゴシック" on localized Windows.
+std::string MaybeGetLocalizedFontName(const std::string& font_name_or_list);
 
 }  // namespace settings_utils
 

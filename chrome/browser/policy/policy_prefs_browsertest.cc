@@ -32,6 +32,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -57,8 +58,6 @@ using testing::_;
 namespace policy {
 
 namespace {
-
-const char kMainSettingsPage[] = "chrome://settings-frame";
 
 const char kCrosSettingsPrefix[] = "cros.";
 
@@ -375,6 +374,8 @@ class PolicyTestCases {
   DISALLOW_COPY_AND_ASSIGN(PolicyTestCases);
 };
 
+#if defined(OS_CHROMEOS)
+
 // Returns a pseudo-random integer distributed in [0, range).
 int GetRandomNumber(int range) {
   return rand() % range;
@@ -479,6 +480,8 @@ void VerifyControlledSettingIndicators(Browser* browser,
         << "indicator.";
   }
 }
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -604,6 +607,8 @@ class PolicyPrefIndicatorTest
       public testing::WithParamInterface<std::vector<std::string> > {
 };
 
+#if defined(OS_CHROMEOS)
+
 // Verifies that controlled setting indicators correctly show whether a pref's
 // value is recommended or enforced by a corresponding policy.
 IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
@@ -611,7 +616,8 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
   PrefService* local_state = g_browser_process->local_state();
   PrefService* user_prefs = browser()->profile()->GetPrefs();
 
-  ui_test_utils::NavigateToURL(browser(), GURL(kMainSettingsPage));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeUISettingsFrameURL));
 
   for (std::vector<std::string>::const_iterator policy = GetParam().begin();
        policy != GetParam().end();
@@ -763,8 +769,10 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
           prefs->ClearPref(pref_mapping->pref().c_str());
         }
 
-        if (!pref_mapping->indicator_test_url().empty())
-          ui_test_utils::NavigateToURL(browser(), GURL(kMainSettingsPage));
+        if (!pref_mapping->indicator_test_url().empty()) {
+          ui_test_utils::NavigateToURL(browser(),
+                                       GURL(chrome::kChromeUISettingsFrameURL));
+        }
       }
     }
   }
@@ -773,5 +781,7 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
 INSTANTIATE_TEST_CASE_P(PolicyPrefIndicatorTestInstance,
                         PolicyPrefIndicatorTest,
                         testing::ValuesIn(SplitPoliciesIntoChunks(10)));
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace policy

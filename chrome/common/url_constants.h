@@ -50,6 +50,7 @@ extern const char kChromeUIFeedbackURL[];
 extern const char kChromeUIFlagsURL[];
 extern const char kChromeUIFlashURL[];
 extern const char kChromeUIGCMInternalsURL[];
+// TODO(dbeam): remove help-frame.
 extern const char kChromeUIHelpFrameURL[];
 extern const char kChromeUIHelpURL[];
 extern const char kChromeUIHistoryURL[];
@@ -75,6 +76,7 @@ extern const char kChromeUIRestartURL[];
 extern const char kChromeUIMdSettingsURL[];
 extern const char kChromeUISettingsURL[];
 extern const char kChromeUIContentSettingsURL[];
+// TODO(dbeam): remove settings-frame.
 extern const char kChromeUISettingsFrameURL[];
 extern const char kChromeUISigninEmailConfirmationURL[];
 extern const char kChromeUISigninErrorURL[];
@@ -188,6 +190,7 @@ extern const char kChromeUIFeedbackHost[];
 extern const char kChromeUIFlagsHost[];
 extern const char kChromeUIFlashHost[];
 extern const char kChromeUIGCMInternalsHost[];
+// TODO(dbeam): remove help-frame.
 extern const char kChromeUIHelpFrameHost[];
 extern const char kChromeUIHelpHost[];
 extern const char kChromeUIHangHost[];

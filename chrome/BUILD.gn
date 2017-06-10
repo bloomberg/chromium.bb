@@ -1526,15 +1526,17 @@ group("extra_resources") {
   if (!is_android) {
     public_deps += [
       "//chrome/browser/resources:component_extension_resources",
-      "//chrome/browser/resources:options_resources",
       "//chrome/browser/resources:settings_resources",
     ]
   }
 
   if (is_chromeos) {
-    public_deps += [ "//chrome/browser/resources/chromeos/chromevox" ]
-    public_deps += [ "//chrome/browser/resources/chromeos/select_to_speak" ]
-    public_deps += [ "//chrome/browser/resources/chromeos/switch_access" ]
+    public_deps += [
+      "//chrome/browser/resources:options_resources",
+      "//chrome/browser/resources/chromeos/chromevox",
+      "//chrome/browser/resources/chromeos/select_to_speak",
+      "//chrome/browser/resources/chromeos/switch_access",
+    ]
   }
 
   if (enable_extensions) {

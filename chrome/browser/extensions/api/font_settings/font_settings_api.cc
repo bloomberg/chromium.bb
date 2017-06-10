@@ -27,7 +27,7 @@
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/options/font_settings_utils.h"
+#include "chrome/browser/ui/webui/settings_utils.h"
 #include "chrome/common/extensions/api/font_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
@@ -41,7 +41,6 @@
 namespace extensions {
 
 namespace fonts = api::font_settings;
-using options::FontSettingsUtilities;
 
 namespace {
 
@@ -161,7 +160,7 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
     NOTREACHED();
     return;
   }
-  font_name = FontSettingsUtilities::MaybeGetLocalizedFontName(font_name);
+  font_name = settings_utils::MaybeGetLocalizedFontName(font_name);
 
   base::ListValue args;
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -247,7 +246,7 @@ ExtensionFunction::ResponseAction FontSettingsGetFontFunction::Run() {
   std::string font_name;
   EXTENSION_FUNCTION_VALIDATE(
       pref && pref->GetValue()->GetAsString(&font_name));
-  font_name = FontSettingsUtilities::MaybeGetLocalizedFontName(font_name);
+  font_name = settings_utils::MaybeGetLocalizedFontName(font_name);
 
   // We don't support incognito-specific font prefs, so don't consider them when
   // getting level of control.
