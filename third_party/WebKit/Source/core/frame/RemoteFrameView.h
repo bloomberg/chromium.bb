@@ -35,6 +35,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
     return *remote_frame_;
   }
 
+  LayoutEmbeddedContent* OwnerLayoutObject() const override;
   void Dispose() override;
   // Override to notify remote frame that its viewport size has changed.
   void FrameRectsChanged() override;

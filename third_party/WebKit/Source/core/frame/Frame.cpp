@@ -151,16 +151,7 @@ Frame* Frame::FindUnsafeParentScrollPropagationBoundary() {
 LayoutEmbeddedContent* Frame::OwnerLayoutObject() const {
   if (!DeprecatedLocalOwner())
     return nullptr;
-  LayoutObject* object = DeprecatedLocalOwner()->GetLayoutObject();
-  if (!object)
-    return nullptr;
-  // FIXME: If <object> is ever fixed to disassociate itself from frames
-  // that it has started but canceled, then this can turn into an ASSERT
-  // since ownerElement() would be 0 when the load is canceled.
-  // https://bugs.webkit.org/show_bug.cgi?id=18585
-  if (!object->IsLayoutEmbeddedContent())
-    return nullptr;
-  return ToLayoutEmbeddedContent(object);
+  return DeprecatedLocalOwner()->GetLayoutEmbeddedContent();
 }
 
 LayoutEmbeddedContentItem Frame::OwnerLayoutItem() const {
