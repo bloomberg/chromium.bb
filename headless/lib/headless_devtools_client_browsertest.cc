@@ -5,8 +5,10 @@
 #include <memory>
 
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -14,6 +16,7 @@
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/browser.h"
 #include "headless/public/devtools/domains/dom.h"
+#include "headless/public/devtools/domains/dom_snapshot.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/inspector.h"
 #include "headless/public/devtools/domains/network.h"
@@ -1204,5 +1207,1054 @@ class DevToolsAttachAndDetachNotifications
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsAttachAndDetachNotifications);
+
+namespace {
+
+std::string NormaliseJSON(const std::string& json) {
+  std::unique_ptr<base::Value> parsed_json = base::JSONReader::Read(json);
+  DCHECK(parsed_json);
+  std::string normalized_json;
+  base::JSONWriter::WriteWithOptions(
+      *parsed_json, base::JSONWriter::OPTIONS_PRETTY_PRINT, &normalized_json);
+  return normalized_json;
+}
+
+}  // namespace
+
+class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
+                                     public page::Observer {
+ public:
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/dom_tree_test.html").spec());
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    devtools_client_->GetPage()->Disable();
+    devtools_client_->GetPage()->RemoveObserver(this);
+
+    std::vector<std::string> css_whitelist = {
+        "color",       "display",      "font-style", "font-family",
+        "margin-left", "margin-right", "margin-top", "margin-bottom"};
+    devtools_client_->GetDOMSnapshot()->GetExperimental()->GetSnapshot(
+        dom_snapshot::GetSnapshotParams::Builder()
+            .SetComputedStyleWhitelist(std::move(css_whitelist))
+            .Build(),
+        base::Bind(&DomTreeExtractionBrowserTest::OnGetSnapshotResult,
+                   base::Unretained(this)));
+  }
+
+  void OnGetSnapshotResult(
+      std::unique_ptr<dom_snapshot::GetSnapshotResult> result) {
+    GURL::Replacements replace_port;
+    replace_port.SetPortStr("");
+
+    std::vector<std::unique_ptr<base::DictionaryValue>> dom_nodes(
+        result->GetDomNodes()->size());
+
+    // For convenience, flatten the dom tree into an array of dicts.
+    for (size_t i = 0; i < result->GetDomNodes()->size(); i++) {
+      dom_snapshot::DOMNode* node = (*result->GetDomNodes())[i].get();
+
+      dom_nodes[i].reset(
+          static_cast<base::DictionaryValue*>(node->Serialize().release()));
+      base::DictionaryValue* node_dict = dom_nodes[i].get();
+
+      // Frame IDs are random.
+      if (node_dict->HasKey("frameId"))
+        node_dict->SetString("frameId", "?");
+
+      // Ports are random.
+      std::string url;
+      if (node_dict->GetString("baseURL", &url)) {
+        node_dict->SetString("baseURL",
+                             GURL(url).ReplaceComponents(replace_port).spec());
+      }
+
+      if (node_dict->GetString("documentURL", &url)) {
+        node_dict->SetString("documentURL",
+                             GURL(url).ReplaceComponents(replace_port).spec());
+      }
+
+      // Merge LayoutTreeNode data into the dictionary.
+      int layout_node_index;
+      if (node_dict->GetInteger("layoutNodeIndex", &layout_node_index)) {
+        ASSERT_LE(0, layout_node_index);
+        ASSERT_GT(result->GetLayoutTreeNodes()->size(),
+                  static_cast<size_t>(layout_node_index));
+        const std::unique_ptr<dom_snapshot::LayoutTreeNode>& layout_node =
+            (*result->GetLayoutTreeNodes())[layout_node_index];
+
+        node_dict->Set("boundingBox",
+                       layout_node->GetBoundingBox()->Serialize());
+
+        if (layout_node->HasLayoutText())
+          node_dict->SetString("layoutText", layout_node->GetLayoutText());
+
+        if (layout_node->HasStyleIndex())
+          node_dict->SetInteger("styleIndex", layout_node->GetStyleIndex());
+
+        if (layout_node->HasInlineTextNodes()) {
+          std::unique_ptr<base::ListValue> inline_text_nodes(
+              new base::ListValue());
+          for (const std::unique_ptr<css::InlineTextBox>& inline_text_box :
+               *layout_node->GetInlineTextNodes()) {
+            size_t index = inline_text_nodes->GetSize();
+            inline_text_nodes->Set(index, inline_text_box->Serialize());
+          }
+          node_dict->Set("inlineTextNodes", std::move(inline_text_nodes));
+        }
+      }
+    }
+
+    std::vector<std::unique_ptr<base::DictionaryValue>> computed_styles(
+        result->GetComputedStyles()->size());
+
+    for (size_t i = 0; i < result->GetComputedStyles()->size(); i++) {
+      std::unique_ptr<base::DictionaryValue> style(new base::DictionaryValue());
+      for (const auto& style_property :
+           *(*result->GetComputedStyles())[i]->GetProperties()) {
+        style->SetString(style_property->GetName(), style_property->GetValue());
+      }
+      computed_styles[i] = std::move(style);
+    }
+
+    // TODO(eseckler): Extract expectation strings into external files to make
+    // them easier to maintain.
+    const std::vector<std::string> expected_dom_nodes = {
+        R"raw_string({
+           "backendNodeId": 3,
+           "baseURL": "http://127.0.0.1/dom_tree_test.html",
+           "boundingBox": {
+              "height": 600.0,
+              "width": 800.0,
+              "x": 0.0,
+              "y": 0.0
+           },
+           "childNodeIndexes": [ 1 ],
+           "documentURL": "http://127.0.0.1/dom_tree_test.html",
+           "layoutNodeIndex": 0,
+           "nodeName": "#document",
+           "nodeType": 9,
+           "nodeValue": ""
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 4,
+           "boundingBox": {
+              "height": 600.0,
+              "width": 800.0,
+              "x": 0.0,
+              "y": 0.0
+           },
+           "childNodeIndexes": [ 2, 9, 10 ],
+           "frameId": "?",
+           "layoutNodeIndex": 1,
+           "nodeName": "HTML",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 5,
+           "childNodeIndexes": [ 3, 4, 6, 7, 8 ],
+           "nodeName": "HEAD",
+           "nodeType": 1,
+           "nodeValue": ""
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 6,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 7,
+           "childNodeIndexes": [ 5 ],
+           "nodeName": "TITLE",
+           "nodeType": 1,
+           "nodeValue": ""
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 8,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Hello world!"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 9,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "attributes": [ {
+              "name": "href",
+              "value": "dom_tree_test.css"
+           }, {
+              "name": "rel",
+              "value": "stylesheet"
+           }, {
+              "name": "type",
+              "value": "text/css"
+           } ],
+           "backendNodeId": 10,
+           "nodeName": "LINK",
+           "nodeType": 1,
+           "nodeValue": ""
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 11,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 12,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 13,
+           "boundingBox": {
+              "height": 584.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "childNodeIndexes": [ 11, 12 ],
+           "layoutNodeIndex": 2,
+           "nodeName": "BODY",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 1
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 14,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "attributes": [ {
+              "name": "id",
+              "value": "id1"
+           } ],
+           "backendNodeId": 15,
+           "boundingBox": {
+              "height": 354.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "childNodeIndexes": [ 13, 14, 16, 17, 26, 27, 49 ],
+           "layoutNodeIndex": 3,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 16,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "attributes": [ {
+              "name": "class",
+              "value": "red"
+           } ],
+           "backendNodeId": 17,
+           "boundingBox": {
+              "height": 32.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "childNodeIndexes": [ 15 ],
+           "layoutNodeIndex": 4,
+           "nodeName": "H1",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 2
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 18,
+           "boundingBox": {
+              "height": 32.0,
+              "width": 320.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 32.0,
+                 "width": 320.0,
+                 "x": 8.0,
+                 "y": 8.0
+              },
+              "numCharacters": 10,
+              "startCharacterIndex": 0
+           } ],
+           "layoutNodeIndex": 5,
+           "layoutText": "Some text.",
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Some text.",
+           "styleIndex": 2
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 19,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "attributes": [ {
+              "name": "src",
+              "value": "/iframe.html"
+           }, {
+              "name": "width",
+              "value": "400"
+           }, {
+              "name": "height",
+              "value": "200"
+           } ],
+           "backendNodeId": 20,
+           "boundingBox": {
+              "height": 205.0,
+              "width": 404.0,
+              "x": 8.0,
+              "y": 61.0
+           },
+           "contentDocumentIndex": 18,
+           "frameId": "?",
+           "layoutNodeIndex": 6,
+           "nodeName": "IFRAME",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 3
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 21,
+           "baseURL": "http://127.0.0.1/iframe.html",
+           "boundingBox": {
+              "height": 200.0,
+              "width": 400.0,
+              "x": 0.0,
+              "y": 0.0
+           },
+           "childNodeIndexes": [ 19 ],
+           "documentURL": "http://127.0.0.1/iframe.html",
+           "layoutNodeIndex": 7,
+           "nodeName": "#document",
+           "nodeType": 9,
+           "nodeValue": ""
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 22,
+           "boundingBox": {
+              "height": 200.0,
+              "width": 400.0,
+              "x": 10.0,
+              "y": 63.0
+           },
+           "childNodeIndexes": [ 20, 21 ],
+           "frameId": "?",
+           "layoutNodeIndex": 8,
+           "nodeName": "HTML",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 4
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 23,
+           "nodeName": "HEAD",
+           "nodeType": 1,
+           "nodeValue": ""
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 24,
+           "boundingBox": {
+              "height": 171.0,
+              "width": 384.0,
+              "x": 18.0,
+              "y": 71.0
+           },
+           "childNodeIndexes": [ 22, 23, 25 ],
+           "layoutNodeIndex": 9,
+           "nodeName": "BODY",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 5
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 25,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 26,
+           "boundingBox": {
+              "height": 37.0,
+              "width": 384.0,
+              "x": 18.0,
+              "y": 71.0
+           },
+           "childNodeIndexes": [ 24 ],
+           "layoutNodeIndex": 10,
+           "nodeName": "H1",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 6
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 27,
+           "boundingBox": {
+              "height": 36.0,
+              "width": 308.0,
+              "x": 8.0,
+              "y": 8.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 36.0,
+                 "width": 307.734375,
+                 "x": 8.0,
+                 "y": 8.0
+              },
+              "numCharacters": 22,
+              "startCharacterIndex": 0
+           } ],
+           "layoutNodeIndex": 11,
+           "layoutText": "Hello from the iframe!",
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Hello from the iframe!",
+           "styleIndex": 6
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 28,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n\n\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 29,
+           "boundingBox": {
+              "height": 0.0,
+              "width": 0.0,
+              "x": 0.0,
+              "y": 0.0
+           },
+           "layoutNodeIndex": 12,
+           "layoutText": "\n",
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n",
+           "styleIndex": 0
+        }
+        )raw_string",
+
+        R"raw_string({
+           "attributes": [ {
+              "name": "id",
+              "value": "id2"
+           } ],
+           "backendNodeId": 30,
+           "boundingBox": {
+              "height": 97.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 265.0
+           },
+           "childNodeIndexes": [ 28, 29, 48 ],
+           "layoutNodeIndex": 13,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 31,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n  "
+        }
+        )raw_string",
+
+        R"raw_string({
+           "attributes": [ {
+              "name": "id",
+              "value": "id3"
+           } ],
+           "backendNodeId": 32,
+           "boundingBox": {
+              "height": 97.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 265.0
+           },
+           "childNodeIndexes": [ 30, 31, 47 ],
+           "layoutNodeIndex": 14,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 33,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n    "
+        }
+        )raw_string",
+
+        R"raw_string({
+           "attributes": [ {
+              "name": "id",
+              "value": "id4"
+           } ],
+           "backendNodeId": 34,
+           "boundingBox": {
+              "height": 97.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 265.0
+           },
+           "childNodeIndexes": [ 32, 33, 35, 36, 38, 39, 40, 41, 46 ],
+           "layoutNodeIndex": 15,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 0
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 35,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n      "
+        }
+        )raw_string",
+
+        R"raw_string({
+           "attributes": [ {
+              "name": "href",
+              "value": "https://www.google.com"
+           } ],
+           "backendNodeId": 36,
+           "boundingBox": {
+              "height": 17.0,
+              "width": 112.0,
+              "x": 8.0,
+              "y": 265.0
+           },
+           "childNodeIndexes": [ 34 ],
+           "layoutNodeIndex": 16,
+           "nodeName": "A",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 7
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 37,
+           "boundingBox": {
+              "height": 17.0,
+              "width": 112.0,
+              "x": 8.0,
+              "y": 265.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 16.0,
+                 "width": 112.0,
+                 "x": 8.0,
+                 "y": 265.4375
+              },
+              "numCharacters": 7,
+              "startCharacterIndex": 0
+           } ],
+           "layoutNodeIndex": 17,
+           "layoutText": "Google!",
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Google!",
+           "styleIndex": 7
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 38,
+           "boundingBox": {
+              "height": 0.0,
+              "width": 0.0,
+              "x": 0.0,
+              "y": 0.0
+           },
+           "layoutNodeIndex": 18,
+           "layoutText": "\n      ",
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n      ",
+           "styleIndex": 0
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 39,
+           "boundingBox": {
+              "height": 17.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 297.0
+           },
+           "childNodeIndexes": [ 37 ],
+           "layoutNodeIndex": 19,
+           "nodeName": "P",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 8
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 40,
+           "boundingBox": {
+              "height": 17.0,
+              "width": 192.0,
+              "x": 8.0,
+              "y": 297.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 16.0,
+                 "width": 192.0,
+                 "x": 8.0,
+                 "y": 297.4375
+              },
+              "numCharacters": 12,
+              "startCharacterIndex": 0
+           } ],
+           "layoutNodeIndex": 20,
+           "layoutText": "A paragraph!",
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "A paragraph!",
+           "styleIndex": 8
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 41,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n      "
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 42,
+           "boundingBox": {
+              "height": 0.0,
+              "width": 0.0,
+              "x": 0.0,
+              "y": 0.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 16.0,
+                 "width": 0.0,
+                 "x": 8.0,
+                 "y": 329.4375
+              },
+              "numCharacters": 1,
+              "startCharacterIndex": 0
+           } ],
+           "layoutNodeIndex": 21,
+           "layoutText": "\n",
+           "nodeName": "BR",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 3
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 43,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n      "
+        }
+        )raw_string",
+
+        R"raw_string({
+           "attributes": [ {
+              "name": "class",
+              "value": "green"
+           } ],
+           "backendNodeId": 44,
+           "boundingBox": {
+              "height": 17.0,
+              "width": 784.0,
+              "x": 8.0,
+              "y": 345.0
+           },
+           "childNodeIndexes": [ 42, 43, 45 ],
+           "layoutNodeIndex": 22,
+           "nodeName": "DIV",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 9
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 45,
+           "boundingBox": {
+              "height": 17.0,
+              "width": 80.0,
+              "x": 8.0,
+              "y": 345.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 16.0,
+                 "width": 80.0,
+                 "x": 8.0,
+                 "y": 345.4375
+              },
+              "numCharacters": 5,
+              "startCharacterIndex": 0
+           } ],
+           "layoutNodeIndex": 23,
+           "layoutText": "Some ",
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "Some ",
+           "styleIndex": 9
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 46,
+           "boundingBox": {
+              "height": 17.0,
+              "width": 80.0,
+              "x": 88.0,
+              "y": 345.0
+           },
+           "childNodeIndexes": [ 44 ],
+           "layoutNodeIndex": 24,
+           "nodeName": "EM",
+           "nodeType": 1,
+           "nodeValue": "",
+           "styleIndex": 10
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 47,
+           "boundingBox": {
+              "height": 17.0,
+              "width": 80.0,
+              "x": 88.0,
+              "y": 345.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 16.0,
+                 "width": 80.0,
+                 "x": 88.0,
+                 "y": 345.4375
+              },
+              "numCharacters": 5,
+              "startCharacterIndex": 0
+           } ],
+           "layoutNodeIndex": 25,
+           "layoutText": "green",
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "green",
+           "styleIndex": 10
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 48,
+           "boundingBox": {
+              "height": 17.0,
+              "width": 128.0,
+              "x": 168.0,
+              "y": 345.0
+           },
+           "inlineTextNodes": [ {
+              "boundingBox": {
+                 "height": 16.0,
+                 "width": 128.0,
+                 "x": 168.0,
+                 "y": 345.4375
+              },
+              "numCharacters": 8,
+              "startCharacterIndex": 0
+           } ],
+           "layoutNodeIndex": 26,
+           "layoutText": " text...",
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": " text...",
+           "styleIndex": 9
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 49,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n    "
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 50,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n  "
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 51,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n"
+        }
+        )raw_string",
+
+        R"raw_string({
+           "backendNodeId": 52,
+           "nodeName": "#text",
+           "nodeType": 3,
+           "nodeValue": "\n\n\n"
+        }
+        )raw_string"};
+
+    EXPECT_EQ(expected_dom_nodes.size(), dom_nodes.size());
+
+    for (size_t i = 0; i < dom_nodes.size(); i++) {
+      std::string result_json;
+      base::JSONWriter::WriteWithOptions(
+          *dom_nodes[i], base::JSONWriter::OPTIONS_PRETTY_PRINT, &result_json);
+
+      ASSERT_LT(i, expected_dom_nodes.size());
+      EXPECT_EQ(NormaliseJSON(expected_dom_nodes[i]), result_json)
+          << " Node # " << i;
+    }
+
+    const std::vector<std::string> expected_styles = {
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-family": "ahem",
+           "font-style": "normal",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-family": "ahem",
+           "font-style": "normal",
+           "margin-bottom": "8px",
+           "margin-left": "8px",
+           "margin-right": "8px",
+           "margin-top": "8px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(255, 0, 0)",
+           "display": "block",
+           "font-family": "ahem",
+           "font-style": "normal",
+           "margin-bottom": "21.44px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "21.44px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "inline",
+           "font-family": "ahem",
+           "font-style": "normal",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-family": "\"Times New Roman\"",
+           "font-style": "normal",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-family": "\"Times New Roman\"",
+           "font-style": "normal",
+           "margin-bottom": "8px",
+           "margin-left": "8px",
+           "margin-right": "8px",
+           "margin-top": "8px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-family": "\"Times New Roman\"",
+           "font-style": "normal",
+           "margin-bottom": "21.44px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "21.44px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(0, 0, 238)",
+           "display": "inline",
+           "font-family": "ahem",
+           "font-style": "normal",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(0, 0, 0)",
+           "display": "block",
+           "font-family": "ahem",
+           "font-style": "normal",
+           "margin-bottom": "16px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "16px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(0, 128, 0)",
+           "display": "block",
+           "font-family": "ahem",
+           "font-style": "normal",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        })raw_string",
+
+        R"raw_string({
+           "color": "rgb(0, 128, 0)",
+           "display": "inline",
+           "font-family": "ahem",
+           "font-style": "italic",
+           "margin-bottom": "0px",
+           "margin-left": "0px",
+           "margin-right": "0px",
+           "margin-top": "0px"
+        }
+        )raw_string"};
+
+    EXPECT_EQ(expected_styles.size(), computed_styles.size());
+
+    for (size_t i = 0; i < computed_styles.size(); i++) {
+      std::string result_json;
+      base::JSONWriter::WriteWithOptions(*computed_styles[i],
+                                         base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                         &result_json);
+
+      ASSERT_LT(i, expected_styles.size());
+      EXPECT_EQ(NormaliseJSON(expected_styles[i]), result_json)
+          << " Style # " << i;
+    }
+
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DomTreeExtractionBrowserTest);
 
 }  // namespace headless

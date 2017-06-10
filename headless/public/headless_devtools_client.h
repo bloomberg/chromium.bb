@@ -48,6 +48,9 @@ class Domain;
 namespace dom_debugger {
 class Domain;
 }
+namespace dom_snapshot {
+class Domain;
+}
 namespace dom_storage {
 class Domain;
 }
@@ -127,6 +130,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
   virtual device_orientation::Domain* GetDeviceOrientation() = 0;
   virtual dom::Domain* GetDOM() = 0;
   virtual dom_debugger::Domain* GetDOMDebugger() = 0;
+  virtual dom_snapshot::Domain* GetDOMSnapshot() = 0;
   virtual dom_storage::Domain* GetDOMStorage() = 0;
   virtual emulation::Domain* GetEmulation() = 0;
   virtual heap_profiler::Domain* GetHeapProfiler() = 0;

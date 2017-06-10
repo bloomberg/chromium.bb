@@ -221,6 +221,7 @@ class CORE_EXPORT InspectorDOMAgent final
                                            Node*&);
 
   static String DocumentURLString(Document*);
+  static String DocumentBaseURLString(Document*);
 
   std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>
   ResolveNode(Node*, const String& object_group);

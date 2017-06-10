@@ -1,0 +1,1904 @@
+Some Text
+And More Text 
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque sit amet est sem. Aenean ut neque volutpat, posuere odio at, mollis nibh. Aenean sodales nulla et ligula efficitur sollicitudin blandit sed lectus. Duis orci enim, sodales ac lectus sed, hendrerit efficitur est. Quisque gravida facilisis viverra.
+
+Lets have a span
+Rotated text!
+
+{
+  "domNodes": [
+    {
+      "nodeType": 9,
+      "nodeName": "#document",
+      "nodeValue": "",
+      "backendNodeId": 2,
+      "childNodeIndexes": [
+        1
+      ],
+      "layoutNodeIndex": 0,
+      "documentURL": "<string>",
+      "baseURL": "<string>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "HTML",
+      "nodeValue": "",
+      "backendNodeId": 3,
+      "childNodeIndexes": [
+        2,
+        13,
+        14
+      ],
+      "layoutNodeIndex": 1,
+      "frameId": "<string>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "HEAD",
+      "nodeValue": "",
+      "backendNodeId": 4,
+      "childNodeIndexes": [
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 5
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "STYLE",
+      "nodeValue": "",
+      "backendNodeId": 6,
+      "childNodeIndexes": [
+        5
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n@font-face {\n  font-family: 'ahem';\n  src: url(../../resources/Ahem.ttf);\n}\n",
+      "backendNodeId": 7
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 8
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "SCRIPT",
+      "nodeValue": "",
+      "backendNodeId": 9,
+      "attributes": [
+        {
+          "name": "type",
+          "value": "text/javascript"
+        },
+        {
+          "name": "src",
+          "value": "../../http/tests/inspector-protocol/inspector-protocol-test.js"
+        }
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 10
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "SCRIPT",
+      "nodeValue": "",
+      "backendNodeId": 11,
+      "childNodeIndexes": [
+        10
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n\nasync function test() {\n    function stabilize(key, value) {\n        var unstableKeys = [\"documentURL\", \"baseURL\", \"frameId\"];\n        if (unstableKeys.indexOf(key) !== -1)\n            return \"<\" + typeof(value) + \">\";\n        return value;\n    }\n  \n    var whitelist = [\"transform\", \"transform-origin\", \"height\", \"width\", \"display\", \"outline-color\", \"color\"];\n    var response = await InspectorTest.sendCommandOrDie(\"DOMSnapshot.getSnapshot\", {\"computedStyleWhitelist\": whitelist});\n    InspectorTest.log(JSON.stringify(response, stabilize, 2));\n    InspectorTest.completeTest();\n}\n\n",
+      "backendNodeId": 12
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 13
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 14
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 15
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "BODY",
+      "nodeValue": "",
+      "backendNodeId": 16,
+      "childNodeIndexes": [
+        15,
+        16,
+        66
+      ],
+      "attributes": [
+        {
+          "name": "class",
+          "value": "body-class"
+        }
+      ],
+      "layoutNodeIndex": 2
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 17
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": 18,
+      "childNodeIndexes": [
+        17,
+        18,
+        20,
+        21,
+        34,
+        35,
+        37,
+        38,
+        52,
+        53,
+        62,
+        63,
+        65
+      ],
+      "attributes": [
+        {
+          "name": "style",
+          "value": "font-family: ahem;"
+        }
+      ],
+      "layoutNodeIndex": 3
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n    ",
+      "backendNodeId": 19
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": 20,
+      "childNodeIndexes": [
+        19
+      ],
+      "attributes": [
+        {
+          "name": "class",
+          "value": "class1"
+        }
+      ],
+      "layoutNodeIndex": 4
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "Some Text",
+      "backendNodeId": 21,
+      "layoutNodeIndex": 5
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": " And More Text\n    ",
+      "backendNodeId": 22,
+      "layoutNodeIndex": 6
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": 23,
+      "childNodeIndexes": [
+        22,
+        23,
+        25,
+        26,
+        33
+      ],
+      "attributes": [
+        {
+          "name": "style",
+          "value": "display:inline-block; width: 200px"
+        }
+      ],
+      "layoutNodeIndex": 7
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n        ",
+      "backendNodeId": 24
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "P",
+      "nodeValue": "",
+      "backendNodeId": 25,
+      "childNodeIndexes": [
+        24
+      ],
+      "layoutNodeIndex": 8
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque sit amet est sem.\n        Aenean ut neque volutpat, posuere odio at, mollis nibh. Aenean sodales nulla et\n        ligula efficitur sollicitudin blandit sed lectus. Duis orci enim, sodales ac lectus sed,\n        hendrerit efficitur est. Quisque gravida facilisis viverra.\n        ",
+      "backendNodeId": 26,
+      "layoutNodeIndex": 9
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n        ",
+      "backendNodeId": 27
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "UL",
+      "nodeValue": "",
+      "backendNodeId": 28,
+      "childNodeIndexes": [
+        27,
+        28,
+        29,
+        30,
+        32
+      ],
+      "attributes": [
+        {
+          "name": "class",
+          "value": "class3"
+        }
+      ],
+      "layoutNodeIndex": 10
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n            ",
+      "backendNodeId": 29
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "LI",
+      "nodeValue": "",
+      "backendNodeId": 30,
+      "attributes": [
+        {
+          "name": "class",
+          "value": "class4"
+        }
+      ],
+      "layoutNodeIndex": 11
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n            ",
+      "backendNodeId": 31
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "SPAN",
+      "nodeValue": "",
+      "backendNodeId": 32,
+      "childNodeIndexes": [
+        31
+      ],
+      "layoutNodeIndex": 12
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "Lets have a span",
+      "backendNodeId": 33,
+      "layoutNodeIndex": 13
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n        ",
+      "backendNodeId": 34,
+      "layoutNodeIndex": 14
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n    ",
+      "backendNodeId": 35
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n    ",
+      "backendNodeId": 36,
+      "layoutNodeIndex": 15
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": 37,
+      "childNodeIndexes": [
+        36
+      ],
+      "attributes": [
+        {
+          "name": "style",
+          "value": "transform: rotateZ(90deg); width: 200px"
+        }
+      ],
+      "layoutNodeIndex": 16
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "Rotated text!",
+      "backendNodeId": 38,
+      "layoutNodeIndex": 17
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n    ",
+      "backendNodeId": 39
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "IFRAME",
+      "nodeValue": "",
+      "backendNodeId": 40,
+      "attributes": [
+        {
+          "name": "src",
+          "value": "../dom/resources/simple-iframe.html"
+        },
+        {
+          "name": "width",
+          "value": "400"
+        },
+        {
+          "name": "height",
+          "value": "200"
+        }
+      ],
+      "layoutNodeIndex": 18,
+      "frameId": "<string>",
+      "contentDocumentIndex": 39
+    },
+    {
+      "nodeType": 9,
+      "nodeName": "#document",
+      "nodeValue": "",
+      "backendNodeId": 41,
+      "childNodeIndexes": [
+        40
+      ],
+      "layoutNodeIndex": 19,
+      "documentURL": "<string>",
+      "baseURL": "<string>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "HTML",
+      "nodeValue": "",
+      "backendNodeId": 42,
+      "childNodeIndexes": [
+        41,
+        46,
+        47
+      ],
+      "layoutNodeIndex": 20,
+      "frameId": "<string>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "HEAD",
+      "nodeValue": "",
+      "backendNodeId": 43,
+      "childNodeIndexes": [
+        42,
+        43,
+        45
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 44
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "STYLE",
+      "nodeValue": "",
+      "backendNodeId": 45,
+      "childNodeIndexes": [
+        44
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n@font-face {\n  font-family: 'ahem';\n  src: url(../../../resources/Ahem.ttf);\n}\n",
+      "backendNodeId": 46
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 47
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 48
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "BODY",
+      "nodeValue": "",
+      "backendNodeId": 49,
+      "childNodeIndexes": [
+        48,
+        49,
+        51
+      ],
+      "layoutNodeIndex": 21
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 50
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": 51,
+      "childNodeIndexes": [
+        50
+      ],
+      "attributes": [
+        {
+          "name": "style",
+          "value": "font-family: ahem;"
+        }
+      ],
+      "layoutNodeIndex": 22
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\nHello from the iframe.\n",
+      "backendNodeId": 52,
+      "layoutNodeIndex": 23
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n\n\n",
+      "backendNodeId": 53
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n    ",
+      "backendNodeId": 54,
+      "layoutNodeIndex": 24
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": 55,
+      "childNodeIndexes": [
+        54,
+        55,
+        57,
+        58,
+        61
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "value": "shadow-host"
+        }
+      ],
+      "layoutNodeIndex": 25
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 56
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "STYLE",
+      "nodeValue": "",
+      "backendNodeId": 57,
+      "childNodeIndexes": [
+        56
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n:host {\n    color: red;\n}\n",
+      "backendNodeId": 58
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 59
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": 60,
+      "childNodeIndexes": [
+        59
+      ],
+      "attributes": [
+        {
+          "name": "style",
+          "value": "font-family: ahem;"
+        }
+      ],
+      "layoutNodeIndex": 26
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "H1",
+      "nodeValue": "",
+      "backendNodeId": 61,
+      "childNodeIndexes": [
+        60
+      ],
+      "layoutNodeIndex": 27
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "Hi!",
+      "backendNodeId": 62,
+      "layoutNodeIndex": 28
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 63
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n    ",
+      "backendNodeId": 64
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "SCRIPT",
+      "nodeValue": "",
+      "backendNodeId": 65,
+      "childNodeIndexes": [
+        64
+      ],
+      "attributes": [
+        {
+          "name": "type",
+          "value": "text/javascript"
+        }
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n        var host = document.querySelector(\"#shadow-host\").createShadowRoot();\n        var template = document.querySelector(\"#shadow-template\");\n        host.appendChild(template.content);\n        template.remove();\n        window.onload = runTest;\n    ",
+      "backendNodeId": 66
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": 67
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n\n\n",
+      "backendNodeId": 68
+    }
+  ],
+  "layoutTreeNodes": [
+    {
+      "domNodeIndex": 0,
+      "boundingBox": {
+        "x": 0,
+        "y": 0,
+        "width": 785,
+        "height": 600
+      }
+    },
+    {
+      "domNodeIndex": 1,
+      "boundingBox": {
+        "x": 0,
+        "y": 0,
+        "width": 785,
+        "height": 911
+      },
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 14,
+      "boundingBox": {
+        "x": 8,
+        "y": 8,
+        "width": 769,
+        "height": 882
+      },
+      "styleIndex": 1
+    },
+    {
+      "domNodeIndex": 16,
+      "boundingBox": {
+        "x": 8,
+        "y": 8,
+        "width": 769,
+        "height": 882
+      },
+      "styleIndex": 1
+    },
+    {
+      "domNodeIndex": 18,
+      "boundingBox": {
+        "x": 8,
+        "y": 8,
+        "width": 769,
+        "height": 16
+      },
+      "styleIndex": 2
+    },
+    {
+      "domNodeIndex": 19,
+      "boundingBox": {
+        "x": 8,
+        "y": 8,
+        "width": 144,
+        "height": 16
+      },
+      "layoutText": "Some Text",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 8,
+            "y": 8,
+            "width": 144,
+            "height": 16
+          },
+          "startCharacterIndex": 0,
+          "numCharacters": 9
+        }
+      ],
+      "styleIndex": 3
+    },
+    {
+      "domNodeIndex": 20,
+      "boundingBox": {
+        "x": 8,
+        "y": 568,
+        "width": 224,
+        "height": 16
+      },
+      "layoutText": " And More Text\n    ",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 8,
+            "y": 568,
+            "width": 224,
+            "height": 16
+          },
+          "startCharacterIndex": 1,
+          "numCharacters": 14
+        }
+      ],
+      "styleIndex": 3
+    },
+    {
+      "domNodeIndex": 21,
+      "boundingBox": {
+        "x": 232,
+        "y": 24,
+        "width": 200,
+        "height": 576
+      },
+      "styleIndex": 4
+    },
+    {
+      "domNodeIndex": 23,
+      "boundingBox": {
+        "x": 232,
+        "y": 40,
+        "width": 200,
+        "height": 480
+      },
+      "styleIndex": 5
+    },
+    {
+      "domNodeIndex": 24,
+      "boundingBox": {
+        "x": 232,
+        "y": 40,
+        "width": 192,
+        "height": 480
+      },
+      "layoutText": "\n        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque sit amet est sem.\n        Aenean ut neque volutpat, posuere odio at, mollis nibh. Aenean sodales nulla et\n        ligula efficitur sollicitudin blandit sed lectus. Duis orci enim, sodales ac lectus sed,\n        hendrerit efficitur est. Quisque gravida facilisis viverra.\n        ",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 40,
+            "width": 176,
+            "height": 16
+          },
+          "startCharacterIndex": 9,
+          "numCharacters": 11
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 56,
+            "width": 144,
+            "height": 16
+          },
+          "startCharacterIndex": 21,
+          "numCharacters": 9
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 72,
+            "width": 80,
+            "height": 16
+          },
+          "startCharacterIndex": 31,
+          "numCharacters": 5
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 88,
+            "width": 176,
+            "height": 16
+          },
+          "startCharacterIndex": 37,
+          "numCharacters": 11
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 104,
+            "width": 160,
+            "height": 16
+          },
+          "startCharacterIndex": 49,
+          "numCharacters": 10
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 120,
+            "width": 80,
+            "height": 16
+          },
+          "startCharacterIndex": 60,
+          "numCharacters": 5
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 136,
+            "width": 192,
+            "height": 16
+          },
+          "startCharacterIndex": 66,
+          "numCharacters": 12
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 152,
+            "width": 192,
+            "height": 16
+          },
+          "startCharacterIndex": 79,
+          "numCharacters": 12
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 168,
+            "width": 80,
+            "height": 16
+          },
+          "startCharacterIndex": 92,
+          "numCharacters": 5
+        },
+        {
+          "boundingBox": {
+            "x": 312,
+            "y": 168,
+            "width": 96,
+            "height": 16
+          },
+          "startCharacterIndex": 105,
+          "numCharacters": 6
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 184,
+            "width": 128,
+            "height": 16
+          },
+          "startCharacterIndex": 112,
+          "numCharacters": 8
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 200,
+            "width": 144,
+            "height": 16
+          },
+          "startCharacterIndex": 121,
+          "numCharacters": 9
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 216,
+            "width": 192,
+            "height": 16
+          },
+          "startCharacterIndex": 131,
+          "numCharacters": 12
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 232,
+            "width": 160,
+            "height": 16
+          },
+          "startCharacterIndex": 144,
+          "numCharacters": 10
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 248,
+            "width": 192,
+            "height": 16
+          },
+          "startCharacterIndex": 155,
+          "numCharacters": 12
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 264,
+            "width": 112,
+            "height": 16
+          },
+          "startCharacterIndex": 168,
+          "numCharacters": 7
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 280,
+            "width": 128,
+            "height": 16
+          },
+          "startCharacterIndex": 176,
+          "numCharacters": 8
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 296,
+            "width": 96,
+            "height": 16
+          },
+          "startCharacterIndex": 193,
+          "numCharacters": 6
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 312,
+            "width": 144,
+            "height": 16
+          },
+          "startCharacterIndex": 200,
+          "numCharacters": 9
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 328,
+            "width": 192,
+            "height": 16
+          },
+          "startCharacterIndex": 210,
+          "numCharacters": 12
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 344,
+            "width": 176,
+            "height": 16
+          },
+          "startCharacterIndex": 223,
+          "numCharacters": 11
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 360,
+            "width": 192,
+            "height": 16
+          },
+          "startCharacterIndex": 235,
+          "numCharacters": 12
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 376,
+            "width": 160,
+            "height": 16
+          },
+          "startCharacterIndex": 248,
+          "numCharacters": 10
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 392,
+            "width": 160,
+            "height": 16
+          },
+          "startCharacterIndex": 259,
+          "numCharacters": 10
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 408,
+            "width": 176,
+            "height": 16
+          },
+          "startCharacterIndex": 270,
+          "numCharacters": 11
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 424,
+            "width": 144,
+            "height": 16
+          },
+          "startCharacterIndex": 290,
+          "numCharacters": 9
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 440,
+            "width": 144,
+            "height": 16
+          },
+          "startCharacterIndex": 300,
+          "numCharacters": 9
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 456,
+            "width": 192,
+            "height": 16
+          },
+          "startCharacterIndex": 310,
+          "numCharacters": 12
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 472,
+            "width": 112,
+            "height": 16
+          },
+          "startCharacterIndex": 323,
+          "numCharacters": 7
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 488,
+            "width": 144,
+            "height": 16
+          },
+          "startCharacterIndex": 331,
+          "numCharacters": 9
+        },
+        {
+          "boundingBox": {
+            "x": 232,
+            "y": 504,
+            "width": 128,
+            "height": 16
+          },
+          "startCharacterIndex": 341,
+          "numCharacters": 8
+        }
+      ],
+      "styleIndex": 3
+    },
+    {
+      "domNodeIndex": 26,
+      "boundingBox": {
+        "x": 232,
+        "y": 536,
+        "width": 200,
+        "height": 48
+      },
+      "styleIndex": 6
+    },
+    {
+      "domNodeIndex": 28,
+      "boundingBox": {
+        "x": 272,
+        "y": 536,
+        "width": 160,
+        "height": 16
+      },
+      "styleIndex": 7
+    },
+    {
+      "domNodeIndex": 30,
+      "boundingBox": {
+        "x": 272,
+        "y": 552,
+        "width": 144,
+        "height": 32
+      },
+      "styleIndex": 8
+    },
+    {
+      "domNodeIndex": 31,
+      "boundingBox": {
+        "x": 272,
+        "y": 552,
+        "width": 144,
+        "height": 32
+      },
+      "layoutText": "Lets have a span",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 272,
+            "y": 552,
+            "width": 144,
+            "height": 16
+          },
+          "startCharacterIndex": 0,
+          "numCharacters": 9
+        },
+        {
+          "boundingBox": {
+            "x": 272,
+            "y": 568,
+            "width": 96,
+            "height": 16
+          },
+          "startCharacterIndex": 10,
+          "numCharacters": 6
+        }
+      ],
+      "styleIndex": 8
+    },
+    {
+      "domNodeIndex": 32,
+      "boundingBox": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "layoutText": "\n        ",
+      "styleIndex": 3
+    },
+    {
+      "domNodeIndex": 34,
+      "boundingBox": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "layoutText": "\n    ",
+      "styleIndex": 3
+    },
+    {
+      "domNodeIndex": 35,
+      "boundingBox": {
+        "x": 92,
+        "y": 516,
+        "width": 32,
+        "height": 200
+      },
+      "styleIndex": 9
+    },
+    {
+      "domNodeIndex": 36,
+      "boundingBox": {
+        "x": 92,
+        "y": 516,
+        "width": 32,
+        "height": 112
+      },
+      "layoutText": "Rotated text!",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 108,
+            "y": 516,
+            "width": 16,
+            "height": 112
+          },
+          "startCharacterIndex": 0,
+          "numCharacters": 7
+        },
+        {
+          "boundingBox": {
+            "x": 92,
+            "y": 516,
+            "width": 16,
+            "height": 80
+          },
+          "startCharacterIndex": 8,
+          "numCharacters": 5
+        }
+      ],
+      "styleIndex": 10
+    },
+    {
+      "domNodeIndex": 38,
+      "boundingBox": {
+        "x": 8,
+        "y": 632,
+        "width": 404,
+        "height": 204
+      },
+      "styleIndex": 11
+    },
+    {
+      "domNodeIndex": 39,
+      "boundingBox": {
+        "x": 0,
+        "y": 0,
+        "width": 400,
+        "height": 200
+      }
+    },
+    {
+      "domNodeIndex": 40,
+      "boundingBox": {
+        "x": 10,
+        "y": 634,
+        "width": 400,
+        "height": 200
+      },
+      "styleIndex": 12
+    },
+    {
+      "domNodeIndex": 47,
+      "boundingBox": {
+        "x": 18,
+        "y": 642,
+        "width": 384,
+        "height": 184
+      },
+      "styleIndex": 13
+    },
+    {
+      "domNodeIndex": 49,
+      "boundingBox": {
+        "x": 18,
+        "y": 642,
+        "width": 384,
+        "height": 16
+      },
+      "styleIndex": 14
+    },
+    {
+      "domNodeIndex": 50,
+      "boundingBox": {
+        "x": 8,
+        "y": 8,
+        "width": 352,
+        "height": 16
+      },
+      "layoutText": "\nHello from the iframe.\n",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 8,
+            "y": 8,
+            "width": 352,
+            "height": 16
+          },
+          "startCharacterIndex": 1,
+          "numCharacters": 22
+        }
+      ],
+      "styleIndex": 3
+    },
+    {
+      "domNodeIndex": 52,
+      "boundingBox": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "layoutText": "\n    ",
+      "styleIndex": 3
+    },
+    {
+      "domNodeIndex": 53,
+      "boundingBox": {
+        "x": 8,
+        "y": 857,
+        "width": 769,
+        "height": 33
+      },
+      "styleIndex": 15
+    },
+    {
+      "domNodeIndex": 58,
+      "boundingBox": {
+        "x": 8,
+        "y": 857,
+        "width": 769,
+        "height": 33
+      },
+      "styleIndex": 15
+    },
+    {
+      "domNodeIndex": 59,
+      "boundingBox": {
+        "x": 8,
+        "y": 857,
+        "width": 769,
+        "height": 33
+      },
+      "styleIndex": 15
+    },
+    {
+      "domNodeIndex": 60,
+      "boundingBox": {
+        "x": 8,
+        "y": 857,
+        "width": 96,
+        "height": 33
+      },
+      "layoutText": "Hi!",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 8,
+            "y": 857.4375,
+            "width": 96,
+            "height": 32
+          },
+          "startCharacterIndex": 0,
+          "numCharacters": 3
+        }
+      ],
+      "styleIndex": 16
+    }
+  ],
+  "computedStyles": [
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "392.5px 455.438px"
+        },
+        {
+          "name": "height",
+          "value": "910.875px"
+        },
+        {
+          "name": "width",
+          "value": "785px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "384.5px 440.719px"
+        },
+        {
+          "name": "height",
+          "value": "881.438px"
+        },
+        {
+          "name": "width",
+          "value": "769px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "384.5px 8px"
+        },
+        {
+          "name": "height",
+          "value": "16px"
+        },
+        {
+          "name": "width",
+          "value": "769px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "0px 0px"
+        },
+        {
+          "name": "height",
+          "value": "auto"
+        },
+        {
+          "name": "width",
+          "value": "auto"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "100px 288px"
+        },
+        {
+          "name": "height",
+          "value": "576px"
+        },
+        {
+          "name": "width",
+          "value": "200px"
+        },
+        {
+          "name": "display",
+          "value": "inline-block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "100px 240px"
+        },
+        {
+          "name": "height",
+          "value": "480px"
+        },
+        {
+          "name": "width",
+          "value": "200px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "100px 24px"
+        },
+        {
+          "name": "height",
+          "value": "48px"
+        },
+        {
+          "name": "width",
+          "value": "160px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "80px 8px"
+        },
+        {
+          "name": "height",
+          "value": "16px"
+        },
+        {
+          "name": "width",
+          "value": "160px"
+        },
+        {
+          "name": "display",
+          "value": "list-item"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "0px 0px"
+        },
+        {
+          "name": "height",
+          "value": "auto"
+        },
+        {
+          "name": "width",
+          "value": "auto"
+        },
+        {
+          "name": "display",
+          "value": "inline"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "matrix(6.12323e-17, 1, -1, 6.12323e-17, 0, 0)"
+        },
+        {
+          "name": "transform-origin",
+          "value": "100px 16px"
+        },
+        {
+          "name": "height",
+          "value": "32px"
+        },
+        {
+          "name": "width",
+          "value": "200px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "matrix(6.12323e-17, 1, -1, 6.12323e-17, 0, 0)"
+        },
+        {
+          "name": "transform-origin",
+          "value": "0px 0px"
+        },
+        {
+          "name": "height",
+          "value": "auto"
+        },
+        {
+          "name": "width",
+          "value": "auto"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "202px 102px"
+        },
+        {
+          "name": "height",
+          "value": "200px"
+        },
+        {
+          "name": "width",
+          "value": "400px"
+        },
+        {
+          "name": "display",
+          "value": "inline"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "200px 100px"
+        },
+        {
+          "name": "height",
+          "value": "200px"
+        },
+        {
+          "name": "width",
+          "value": "400px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "192px 92px"
+        },
+        {
+          "name": "height",
+          "value": "184px"
+        },
+        {
+          "name": "width",
+          "value": "384px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "192px 8px"
+        },
+        {
+          "name": "height",
+          "value": "16px"
+        },
+        {
+          "name": "width",
+          "value": "384px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "384.5px 16px"
+        },
+        {
+          "name": "height",
+          "value": "32px"
+        },
+        {
+          "name": "width",
+          "value": "769px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(255, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(255, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "0px 0px"
+        },
+        {
+          "name": "height",
+          "value": "auto"
+        },
+        {
+          "name": "width",
+          "value": "auto"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(255, 0, 0)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(255, 0, 0)"
+        }
+      ]
+    }
+  ]
+}
+

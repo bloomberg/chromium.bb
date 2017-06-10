@@ -22,6 +22,7 @@
 #include "headless/public/devtools/domains/device_orientation.h"
 #include "headless/public/devtools/domains/dom.h"
 #include "headless/public/devtools/domains/dom_debugger.h"
+#include "headless/public/devtools/domains/dom_snapshot.h"
 #include "headless/public/devtools/domains/dom_storage.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/heap_profiler.h"
@@ -75,6 +76,7 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   device_orientation::Domain* GetDeviceOrientation() override;
   dom::Domain* GetDOM() override;
   dom_debugger::Domain* GetDOMDebugger() override;
+  dom_snapshot::Domain* GetDOMSnapshot() override;
   dom_storage::Domain* GetDOMStorage() override;
   emulation::Domain* GetEmulation() override;
   heap_profiler::Domain* GetHeapProfiler() override;
@@ -176,8 +178,9 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   database::ExperimentalDomain database_domain_;
   debugger::ExperimentalDomain debugger_domain_;
   device_orientation::ExperimentalDomain device_orientation_domain_;
-  dom_debugger::ExperimentalDomain dom_debugger_domain_;
   dom::ExperimentalDomain dom_domain_;
+  dom_debugger::ExperimentalDomain dom_debugger_domain_;
+  dom_snapshot::ExperimentalDomain dom_snapshot_domain_;
   dom_storage::ExperimentalDomain dom_storage_domain_;
   emulation::ExperimentalDomain emulation_domain_;
   heap_profiler::ExperimentalDomain heap_profiler_domain_;

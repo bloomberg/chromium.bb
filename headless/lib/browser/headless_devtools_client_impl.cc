@@ -45,8 +45,9 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       database_domain_(this),
       debugger_domain_(this),
       device_orientation_domain_(this),
-      dom_debugger_domain_(this),
       dom_domain_(this),
+      dom_debugger_domain_(this),
+      dom_snapshot_domain_(this),
       dom_storage_domain_(this),
       emulation_domain_(this),
       heap_profiler_domain_(this),
@@ -273,12 +274,16 @@ device_orientation::Domain* HeadlessDevToolsClientImpl::GetDeviceOrientation() {
   return &device_orientation_domain_;
 }
 
+dom::Domain* HeadlessDevToolsClientImpl::GetDOM() {
+  return &dom_domain_;
+}
+
 dom_debugger::Domain* HeadlessDevToolsClientImpl::GetDOMDebugger() {
   return &dom_debugger_domain_;
 }
 
-dom::Domain* HeadlessDevToolsClientImpl::GetDOM() {
-  return &dom_domain_;
+dom_snapshot::Domain* HeadlessDevToolsClientImpl::GetDOMSnapshot() {
+  return &dom_snapshot_domain_;
 }
 
 dom_storage::Domain* HeadlessDevToolsClientImpl::GetDOMStorage() {
