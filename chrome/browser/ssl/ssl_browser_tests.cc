@@ -3278,10 +3278,6 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
-        switches::kEnableFeatures,
-        std::string(network_time::kNetworkTimeServiceQuerying.name) +
-            "<SSLNetworkTimeBrowserTestFieldTrial");
-    command_line->AppendSwitchASCII(
         switches::kForceFieldTrials,
         "SSLNetworkTimeBrowserTestFieldTrial/Enabled/");
     command_line->AppendSwitchASCII(
@@ -3292,6 +3288,10 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
 
   void SetUpOnMainThread() override {
     SSLUITest::SetUpOnMainThread();
+    scoped_feature_list_.InitFromCommandLine(
+        std::string(network_time::kNetworkTimeServiceQuerying.name) +
+            "<SSLNetworkTimeBrowserTestFieldTrial",
+        std::string());
     SetUpNetworkTimeServer();
   }
 
@@ -3330,6 +3330,7 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
 
  private:
   DelayedNetworkTimeInterceptor* interceptor_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLNetworkTimeBrowserTest);
 };
