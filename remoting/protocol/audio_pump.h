@@ -29,8 +29,9 @@ class AudioSource;
 
 // AudioPump is responsible for fetching audio data from the AudioCapturer
 // and encoding it before passing it to the AudioStub for delivery to the
-// client. Audio is captured and encoded on the audio thread and then passed to
-// AudioStub on the network thread.
+// client. Audio data will be downmixed to stereo if needed. Audio is captured
+// and encoded on the audio thread and then passed to AudioStub on the network
+// thread.
 class AudioPump : public AudioStream {
  public:
   // The caller must ensure that the |audio_stub| is not destroyed until the

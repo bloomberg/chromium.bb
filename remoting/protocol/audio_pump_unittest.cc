@@ -27,9 +27,13 @@ namespace protocol {
 namespace {
 
 // Creates a dummy packet with 1k data
-std::unique_ptr<AudioPacket> MakeAudioPacket() {
+std::unique_ptr<AudioPacket> MakeAudioPacket(int channel_count = 2) {
   std::unique_ptr<AudioPacket> packet(new AudioPacket);
-  packet->add_data()->resize(1000);
+  packet->add_data()->resize(1024);
+  packet->set_encoding(AudioPacket::ENCODING_RAW);
+  packet->set_sampling_rate(AudioPacket::SAMPLING_RATE_44100);
+  packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
+  packet->set_channels(static_cast<AudioPacket::Channels>(channel_count));
   return packet;
 }
 
@@ -42,6 +46,11 @@ class FakeAudioEncoder : public AudioEncoder {
 
   std::unique_ptr<AudioPacket> Encode(
       std::unique_ptr<AudioPacket> packet) override {
+    EXPECT_TRUE(!!packet);
+    EXPECT_EQ(packet->encoding(), AudioPacket::ENCODING_RAW);
+    EXPECT_EQ(packet->sampling_rate(), AudioPacket::SAMPLING_RATE_44100);
+    EXPECT_EQ(packet->bytes_per_sample(), AudioPacket::BYTES_PER_SAMPLE_2);
+    EXPECT_LE(packet->channels(), AudioPacket::CHANNELS_STEREO);
     return packet;
   }
   int GetBitrate() override { return 160000; }
@@ -125,6 +134,55 @@ TEST_F(AudioPumpTest, BufferSizeLimit) {
   source_->callback().Run(MakeAudioPacket());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(num_sent_packets + 1, sent_packets_.size());
+}
+
+TEST_F(AudioPumpTest, DownmixAudioPacket) {
+  // Run message loop to let the pump start the capturer.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(source_->callback());
+
+  // Generate several audio packets with different channel counts.
+  static const int kChannels[] = {
+    AudioPacket::CHANNELS_7_1,
+    AudioPacket::CHANNELS_6_1,
+    AudioPacket::CHANNELS_5_1,
+    AudioPacket::CHANNELS_STEREO,
+    AudioPacket::CHANNELS_MONO,
+    AudioPacket::CHANNELS_7_1,
+    AudioPacket::CHANNELS_7_1,
+    AudioPacket::CHANNELS_7_1,
+    AudioPacket::CHANNELS_7_1,
+    AudioPacket::CHANNELS_6_1,
+    AudioPacket::CHANNELS_6_1,
+    AudioPacket::CHANNELS_6_1,
+    AudioPacket::CHANNELS_6_1,
+    AudioPacket::CHANNELS_5_1,
+    AudioPacket::CHANNELS_5_1,
+    AudioPacket::CHANNELS_5_1,
+    AudioPacket::CHANNELS_5_1,
+    AudioPacket::CHANNELS_STEREO,
+    AudioPacket::CHANNELS_STEREO,
+    AudioPacket::CHANNELS_STEREO,
+    AudioPacket::CHANNELS_STEREO,
+    AudioPacket::CHANNELS_MONO,
+    AudioPacket::CHANNELS_MONO,
+    AudioPacket::CHANNELS_MONO,
+    AudioPacket::CHANNELS_MONO,
+  };
+
+  for (size_t i = 0; i < arraysize(kChannels); i++) {
+    source_->callback().Run(MakeAudioPacket(kChannels[i]));
+    // Run message loop to let the pump processes the audio packet and send it
+    // to the encoder.
+    base::RunLoop().RunUntilIdle();
+    // Call done closure to allow one more packet to be sent.
+    ASSERT_EQ(done_closures_.size(), 1U);
+    done_closures_.front().Run();
+    done_closures_.pop_back();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  ASSERT_EQ(sent_packets_.size(), arraysize(kChannels));
 }
 
 }  // namespace protocol

@@ -47,6 +47,12 @@ message AudioPacket {
     CHANNELS_INVALID = -1;
     CHANNELS_MONO = 1;
     CHANNELS_STEREO = 2;
+    CHANNELS_SURROUND = 3;
+    CHANNELS_4_0 = 4;
+    CHANNELS_4_1 = 5;
+    CHANNELS_5_1 = 6;
+    CHANNELS_6_1 = 7;
+    CHANNELS_7_1 = 8;
   }
 
   optional Channels channels = 6 [default = CHANNELS_INVALID];
