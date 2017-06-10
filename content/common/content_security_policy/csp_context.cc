@@ -6,6 +6,26 @@
 
 namespace content {
 
+namespace {
+
+// Helper function that returns true if |policy| should be checked under
+// |check_csp_disposition|.
+bool ShouldCheckPolicy(const ContentSecurityPolicy& policy,
+                       CSPContext::CheckCSPDisposition check_csp_disposition) {
+  switch (check_csp_disposition) {
+    case CSPContext::CHECK_REPORT_ONLY_CSP:
+      return policy.header.type == blink::kWebContentSecurityPolicyTypeReport;
+    case CSPContext::CHECK_ENFORCED_CSP:
+      return policy.header.type == blink::kWebContentSecurityPolicyTypeEnforce;
+    case CSPContext::CHECK_ALL_CSP:
+      return true;
+  }
+  NOTREACHED();
+  return true;
+}
+
+}  // namespace
+
 CSPContext::CSPContext() : has_self_(false) {}
 
 CSPContext::~CSPContext() {}
@@ -13,16 +33,39 @@ CSPContext::~CSPContext() {}
 bool CSPContext::IsAllowedByCsp(CSPDirective::Name directive_name,
                                 const GURL& url,
                                 bool is_redirect,
-                                const SourceLocation& source_location) {
+                                const SourceLocation& source_location,
+                                CheckCSPDisposition check_csp_disposition) {
   if (SchemeShouldBypassCSP(url.scheme_piece()))
     return true;
 
   bool allow = true;
   for (const auto& policy : policies_) {
-    allow &= ContentSecurityPolicy::Allow(policy, directive_name, url,
-                                          is_redirect, this, source_location);
+    if (ShouldCheckPolicy(policy, check_csp_disposition)) {
+      allow &= ContentSecurityPolicy::Allow(policy, directive_name, url,
+                                            is_redirect, this, source_location);
+    }
   }
   return allow;
+}
+
+bool CSPContext::ShouldModifyRequestUrlForCsp(
+    const GURL& url,
+    bool is_subresource_or_form_submission,
+    GURL* new_url) {
+  for (const auto& policy : policies_) {
+    if (url.scheme() == "http" &&
+        ContentSecurityPolicy::ShouldUpgradeInsecureRequest(policy) &&
+        is_subresource_or_form_submission) {
+      *new_url = url;
+      GURL::Replacements replacements;
+      replacements.SetSchemeStr("https");
+      if (url.port() == "80")
+        replacements.SetPortStr("443");
+      *new_url = new_url->ReplaceComponents(replacements);
+      return true;
+    }
+  }
+  return false;
 }
 
 void CSPContext::SetSelf(const url::Origin origin) {

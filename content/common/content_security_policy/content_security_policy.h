@@ -45,6 +45,10 @@ struct CONTENT_EXPORT ContentSecurityPolicy {
                     bool is_redirect,
                     CSPContext* context,
                     const SourceLocation& source_location);
+
+  // Returns true if |policy| specifies that an insecure HTTP request should be
+  // upgraded to HTTPS.
+  static bool ShouldUpgradeInsecureRequest(const ContentSecurityPolicy& policy);
 };
 
 }  // namespace content

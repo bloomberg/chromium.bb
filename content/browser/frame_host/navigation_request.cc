@@ -950,9 +950,43 @@ NavigationRequest::CheckContentSecurityPolicyFrameSrc(bool is_redirect) {
   RenderFrameHostImpl* parent = parent_ftn->current_frame_host();
   DCHECK(parent);
 
+  // CSP checking happens in three phases, per steps 3-5 of
+  // https://fetch.spec.whatwg.org/#main-fetch:
+  //
+  // (1) Check report-only policies and trigger reports for any violations.
+  // (2) Upgrade the request to HTTPS if necessary.
+  // (3) Check enforced policies (triggering reports for any violations of those
+  //     policies) and block the request if necessary.
+  //
+  // This sequence of events allows site owners to learn about (via step 1) any
+  // requests that are upgraded in step 2.
+
+  bool allowed = parent->IsAllowedByCsp(
+      CSPDirective::FrameSrc, common_params_.url, is_redirect,
+      common_params_.source_location.value_or(SourceLocation()),
+      CSPContext::CHECK_REPORT_ONLY_CSP);
+
+  // Checking report-only CSP should never return false because no requests are
+  // blocked by report-only policies.
+  DCHECK(allowed);
+
+  // TODO(mkwst,estark): upgrade-insecure-requests does not work when following
+  // redirects. Trying to uprade the new URL on redirect here is fruitless: the
+  // redirect URL cannot be changed at this point. upgrade-insecure-requests
+  // needs to move to the net stack to resolve this. https://crbug.com/615885
+  if (!is_redirect) {
+    GURL new_url;
+    if (parent->ShouldModifyRequestUrlForCsp(
+            common_params_.url, true /* is subresource */, &new_url)) {
+      common_params_.url = new_url;
+      request_params_.original_url = new_url;
+    }
+  }
+
   if (parent->IsAllowedByCsp(
           CSPDirective::FrameSrc, common_params_.url, is_redirect,
-          common_params_.source_location.value_or(SourceLocation()))) {
+          common_params_.source_location.value_or(SourceLocation()),
+          CSPContext::CHECK_ENFORCED_CSP)) {
     return CONTENT_SECURITY_POLICY_CHECK_PASSED;
   }
 

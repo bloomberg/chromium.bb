@@ -66,7 +66,6 @@
 #include "core/loader/FormSubmission.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/LinkLoader.h"
-#include "core/loader/MixedContentChecker.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/ProgressTracker.h"
@@ -1353,11 +1352,6 @@ NavigationPolicy FrameLoader::CheckLoadCanStart(
   RecordLatestRequiredCSP();
   // Before modifying the request, check report-only CSP headers to give the
   // site owner a chance to learn about requests that need to be modified.
-  //
-  // TODO(estark): this doesn't work with --enable-browser-side-navigation,
-  // wherein 'frame-src' is checked in the browser process. Figure out what to
-  // do; maybe with browser-side navigation the upgrade should be happening in
-  // the browser process too. See also https://crbug.com/692595
   Settings* settings = frame_->GetSettings();
   MaybeCheckCSP(
       resource_request, navigation_type, frame_, navigation_policy,
@@ -1599,6 +1593,12 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
                                         "1");
   }
 
+  // PlzNavigate: Upgrading subframe requests is handled by the browser process.
+  Settings* settings = frame_->GetSettings();
+  if (resource_request.GetFrameType() == WebURLRequest::kFrameTypeNested &&
+      settings && settings->GetBrowserSideNavigationEnabled()) {
+    return;
+  }
   UpgradeInsecureRequest(resource_request, document);
 }
 

@@ -15,6 +15,7 @@ static CSPDirective::Name CSPFallback(CSPDirective::Name directive) {
   switch (directive) {
     case CSPDirective::DefaultSrc:
     case CSPDirective::FormAction:
+    case CSPDirective::UpgradeInsecureRequests:
       return CSPDirective::Unknown;
 
     case CSPDirective::FrameSrc:
@@ -184,6 +185,16 @@ std::string ContentSecurityPolicy::ToString() const {
   }
 
   return text.str();
+}
+
+// static
+bool ContentSecurityPolicy::ShouldUpgradeInsecureRequest(
+    const ContentSecurityPolicy& policy) {
+  for (const CSPDirective& directive : policy.directives) {
+    if (directive.name == CSPDirective::UpgradeInsecureRequests)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace content
