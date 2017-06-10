@@ -21,7 +21,6 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
-#include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

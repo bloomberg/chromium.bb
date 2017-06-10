@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
 #include "chrome/browser/ui/webui/physical_web/physical_web_ui.h"
 #include "chrome/browser/ui/webui/policy_material_design_ui.h"
@@ -147,6 +146,7 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/voice_search_ui.h"
 #include "components/proximity_auth/webui/proximity_auth_ui.h"
 #include "components/proximity_auth/webui/url_constants.h"
@@ -398,7 +398,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       extensions::ExtensionSystem::Get(profile)->extension_service()) {
     return &NewWebUI<AppLauncherPageUI>;
   }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
   // Bookmarks are part of NTP on Android.
   if (url.host_piece() == chrome::kChromeUIBookmarksHost) {
@@ -427,8 +427,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       url.host_piece() == chrome::kChromeUIMdSettingsHost) {
     return &NewWebUI<settings::MdSettingsUI>;
   }
-  if (url.host_piece() == chrome::kChromeUISettingsFrameHost)
-    return &NewWebUI<options::OptionsUI>;
   // If the material design extensions page is enabled, it gets its own host.
   // Otherwise, it's handled by the uber settings page.
   if (url.host_piece() == chrome::kChromeUIExtensionsHost &&
@@ -483,6 +481,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::ProxySettingsUI>;
   if (url.host_piece() == chrome::kChromeUISetTimeHost)
     return &NewWebUI<chromeos::SetTimeUI>;
+  if (url.host_piece() == chrome::kChromeUISettingsFrameHost)
+    return &NewWebUI<options::OptionsUI>;
   if (url.host_piece() == chrome::kChromeUISimUnlockHost)
     return &NewWebUI<chromeos::SimUnlockUI>;
   if (url.host_piece() == chrome::kChromeUISlowHost)

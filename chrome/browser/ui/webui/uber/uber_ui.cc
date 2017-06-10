@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
@@ -29,6 +28,10 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/options/options_ui.h"
+#endif
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -127,8 +130,10 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
                   chrome::kChromeUIExtensionsHost);
   RegisterSubpage(chrome::kChromeUIHelpFrameURL,
                   chrome::kChromeUIHelpHost);
+#if defined(OS_CHROMEOS)
   RegisterSubpage(chrome::kChromeUISettingsFrameURL,
                   chrome::kChromeUISettingsHost);
+#endif
   RegisterSubpage(chrome::kChromeUIUberFrameURL,
                   chrome::kChromeUIUberHost);
 }

@@ -19,6 +19,8 @@
 #include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/platform_font_win.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
 #include "ui/views/win/hwnd_util.h"
 
@@ -110,6 +112,15 @@ void ShowManageSSLCertificates(content::WebContents* web_contents) {
   dialog->Show(
       parent,
       base::Bind(&base::DeletePointer<ManageCertificatesDialog>, dialog));
+}
+
+std::string MaybeGetLocalizedFontName(const std::string& font_name_or_list) {
+  std::string font_name = ResolveFontList(font_name_or_list);
+  if (font_name.empty())
+    return font_name;
+  gfx::Font font(font_name, 12);  // dummy font size
+  return static_cast<gfx::PlatformFontWin*>(font.platform_font())
+      ->GetLocalizedFontName();
 }
 
 }  // namespace settings_utils

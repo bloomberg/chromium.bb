@@ -106,16 +106,6 @@ if (!is_android) {
     output_dir = "$root_gen_dir/chrome"
   }
 
-  grit("options_resources") {
-    source = "options_resources.grd"
-    defines = chrome_grit_defines
-    outputs = [
-      "grit/options_resources.h",
-      "options_resources.pak",
-    ]
-    output_dir = "$root_gen_dir/chrome"
-  }
-
   grit("settings_resources") {
     if (use_vulcanize) {
       source = "settings/settings_resources_vulcanized.grd"
@@ -136,6 +126,18 @@ if (!is_android) {
       "grit/settings_resources_map.cc",
       "grit/settings_resources_map.h",
       "settings_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+}
+
+if (is_chromeos) {
+  grit("options_resources") {
+    source = "options_resources.grd"
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/options_resources.h",
+      "options_resources.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
   }

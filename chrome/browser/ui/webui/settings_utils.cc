@@ -8,6 +8,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/url_formatter/url_fixer.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font_list.h"
 #include "url/gurl.h"
 
 namespace settings_utils {
@@ -25,5 +26,17 @@ base::RefCountedMemory* GetFaviconResourceBytes(ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_SETTINGS_FAVICON, scale_factor);
 }
+
+std::string ResolveFontList(const std::string& font_name_or_list) {
+  if (!font_name_or_list.empty() && font_name_or_list[0] == ',')
+    return gfx::FontList::FirstAvailableOrFirst(font_name_or_list);
+  return font_name_or_list;
+}
+
+#if !defined(OS_WIN)
+std::string MaybeGetLocalizedFontName(const std::string& font_name_or_list) {
+  return ResolveFontList(font_name_or_list);
+}
+#endif
 
 }  // namespace settings_utils
