@@ -294,6 +294,7 @@ static_library("host") {
     "//crypto",
     "//device/power_save_blocker",
     "//google_apis",
+    "//media",
     "//remoting/base",
     "//remoting/base:authorization",
     "//remoting/host/security_key",

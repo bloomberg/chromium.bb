@@ -21,7 +21,6 @@
 #include "remoting/host/win/default_audio_device_change_detector.h"
 
 namespace {
-const int kChannels = 2;
 const int kBytesPerSample = 2;
 const int kBitsPerSample = kBytesPerSample * 8;
 // Conversion factor from 100ns to 1ms.
@@ -39,6 +38,7 @@ const int kMinTimerInterval = 30;
 // Upper bound for the timer precision error, in milliseconds.
 // Timers are supposed to be accurate to 20ms, so we use 30ms to be safe.
 const int kMaxExpectedTimerLag = 30;
+
 }  // namespace
 
 namespace remoting {
@@ -150,58 +150,50 @@ bool AudioCapturerWin::Initialize() {
     return false;
   }
 
-  // Set the wave format
-  switch (wave_format_ex_->wFormatTag) {
-    case WAVE_FORMAT_IEEE_FLOAT:
-      // Intentional fall-through.
-    case WAVE_FORMAT_PCM:
-      if (!AudioCapturer::IsValidSampleRate(wave_format_ex_->nSamplesPerSec)) {
-        LOG(ERROR) << "Host sampling rate is neither 44.1 kHz nor 48 kHz.";
-        return false;
-      }
-      sampling_rate_ = static_cast<AudioPacket::SamplingRate>(
-          wave_format_ex_->nSamplesPerSec);
+  if (wave_format_ex_->wFormatTag != WAVE_FORMAT_IEEE_FLOAT &&
+      wave_format_ex_->wFormatTag != WAVE_FORMAT_PCM &&
+      wave_format_ex_->wFormatTag != WAVE_FORMAT_EXTENSIBLE) {
+    LOG(ERROR) << "Failed to force 16-bit PCM";
+    return false;
+  }
 
-      wave_format_ex_->wFormatTag = WAVE_FORMAT_PCM;
-      wave_format_ex_->nChannels = kChannels;
-      wave_format_ex_->wBitsPerSample = kBitsPerSample;
-      wave_format_ex_->nBlockAlign = kChannels * kBytesPerSample;
-      wave_format_ex_->nAvgBytesPerSec =
-          sampling_rate_ * kChannels * kBytesPerSample;
-      break;
-    case WAVE_FORMAT_EXTENSIBLE: {
-      PWAVEFORMATEXTENSIBLE wave_format_extensible =
-          reinterpret_cast<WAVEFORMATEXTENSIBLE*>(
-          static_cast<WAVEFORMATEX*>(wave_format_ex_));
-      if (IsEqualGUID(KSDATAFORMAT_SUBTYPE_IEEE_FLOAT,
-                      wave_format_extensible->SubFormat)) {
-        if (!AudioCapturer::IsValidSampleRate(
-                wave_format_extensible->Format.nSamplesPerSec)) {
-          LOG(ERROR) << "Host sampling rate is neither 44.1 kHz nor 48 kHz.";
-          return false;
-        }
-        sampling_rate_ = static_cast<AudioPacket::SamplingRate>(
-            wave_format_extensible->Format.nSamplesPerSec);
+  if (!AudioCapturer::IsValidSampleRate(wave_format_ex_->nSamplesPerSec)) {
+    LOG(ERROR) << "Host sampling rate is neither 44.1 kHz nor 48 kHz. "
+               << wave_format_ex_->nSamplesPerSec;
+    return false;
+  }
 
-        wave_format_extensible->SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
-        wave_format_extensible->Samples.wValidBitsPerSample = kBitsPerSample;
+  // We support from mono to 7.1. This check should be consistent with
+  // AudioPacket::Channels.
+  if (wave_format_ex_->nChannels > 8 || wave_format_ex_->nChannels <= 0) {
+    LOG(ERROR) << "Unsupported channels " << wave_format_ex_->nChannels;
+    return false;
+  }
 
-        wave_format_extensible->Format.nChannels = kChannels;
-        wave_format_extensible->Format.nSamplesPerSec = sampling_rate_;
-        wave_format_extensible->Format.wBitsPerSample = kBitsPerSample;
-        wave_format_extensible->Format.nBlockAlign =
-            kChannels * kBytesPerSample;
-        wave_format_extensible->Format.nAvgBytesPerSec =
-            sampling_rate_ * kChannels * kBytesPerSample;
-      } else {
-        LOG(ERROR) << "Failed to force 16-bit samples";
-        return false;
-      }
-      break;
-    }
-    default:
-      LOG(ERROR) << "Failed to force 16-bit PCM";
+  sampling_rate_ = static_cast<AudioPacket::SamplingRate>(
+      wave_format_ex_->nSamplesPerSec);
+
+  wave_format_ex_->wBitsPerSample = kBitsPerSample;
+  wave_format_ex_->nBlockAlign = wave_format_ex_->nChannels * kBytesPerSample;
+  wave_format_ex_->nAvgBytesPerSec =
+      sampling_rate_ * wave_format_ex_->nBlockAlign;
+
+  if (wave_format_ex_->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+    PWAVEFORMATEXTENSIBLE wave_format_extensible =
+        reinterpret_cast<WAVEFORMATEXTENSIBLE*>(
+        static_cast<WAVEFORMATEX*>(wave_format_ex_));
+    if (!IsEqualGUID(KSDATAFORMAT_SUBTYPE_IEEE_FLOAT,
+                     wave_format_extensible->SubFormat) &&
+        !IsEqualGUID(KSDATAFORMAT_SUBTYPE_PCM,
+                     wave_format_extensible->SubFormat)) {
+      LOG(ERROR) << "Failed to force 16-bit samples";
       return false;
+    }
+
+    wave_format_extensible->SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+    wave_format_extensible->Samples.wValidBitsPerSample = kBitsPerSample;
+  } else {
+    wave_format_ex_->wFormatTag = WAVE_FORMAT_PCM;
   }
 
   // Initialize the IAudioClient.
@@ -233,7 +225,7 @@ bool AudioCapturerWin::Initialize() {
   }
 
   volume_filter_.ActivateBy(mm_device_.Get());
-  volume_filter_.Initialize(sampling_rate_, kChannels);
+  volume_filter_.Initialize(sampling_rate_, wave_format_ex_->nChannels);
 
   return true;
 }
@@ -280,7 +272,11 @@ void AudioCapturerWin::DoCapture() {
       packet->set_encoding(AudioPacket::ENCODING_RAW);
       packet->set_sampling_rate(sampling_rate_);
       packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
-      packet->set_channels(AudioPacket::CHANNELS_STEREO);
+      // Only the count of channels is taken into account now, we should also
+      // consider dwChannelMask.
+      // TODO(zijiehe): Support also layouts.
+      packet->set_channels(static_cast<AudioPacket::Channels>(
+          wave_format_ex_->nChannels));
 
       callback_.Run(std::move(packet));
     }
