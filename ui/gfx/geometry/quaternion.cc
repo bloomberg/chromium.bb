@@ -66,7 +66,14 @@ Quaternion Quaternion::Slerp(const Quaternion& q, double t) const {
 }
 
 Quaternion Quaternion::Lerp(const Quaternion& q, double t) const {
-  return ((1.0 - t) * *this) + (t * q);
+  return (((1.0 - t) * *this) + (t * q)).normalized();
+}
+
+Quaternion Quaternion::normalized() const {
+  double length = x_ * x_ + y_ * y_ + z_ * z_ + w_ * w_;
+  if (length < kEpsilon)
+    return *this;
+  return *this * (1 / sqrt(length));
 }
 
 std::string Quaternion::ToString() const {

@@ -17,45 +17,40 @@ namespace {
 
 const double kEpsilon = 1e-7;
 
+void CompareQuaternions(const Quaternion& a, const Quaternion& b) {
+  EXPECT_FLOAT_EQ(a.x(), b.x());
+  EXPECT_FLOAT_EQ(a.y(), b.y());
+  EXPECT_FLOAT_EQ(a.z(), b.z());
+  EXPECT_FLOAT_EQ(a.w(), b.w());
+}
+
 }  // namespace
 
 TEST(QuatTest, DefaultConstruction) {
-  Quaternion q;
-  EXPECT_FLOAT_EQ(0.0, q.x());
-  EXPECT_FLOAT_EQ(0.0, q.y());
-  EXPECT_FLOAT_EQ(0.0, q.z());
-  EXPECT_FLOAT_EQ(1.0, q.w());
+  CompareQuaternions(Quaternion(0, 0, 0, 1), Quaternion());
 }
 
 TEST(QuatTest, AxisAngleCommon) {
-  float radians = 0.5;
-  Quaternion q(Vector3dF(1.0f, 0.0f, 0.0f), radians);
-  EXPECT_FLOAT_EQ(std::sin(radians / 2), q.x());
-  EXPECT_FLOAT_EQ(0.0, q.y());
-  EXPECT_FLOAT_EQ(0.0, q.z());
-  EXPECT_FLOAT_EQ(std::cos(radians / 2), q.w());
+  double radians = 0.5;
+  Quaternion q(Vector3dF(1, 0, 0), radians);
+  CompareQuaternions(
+      Quaternion(std::sin(radians / 2), 0, 0, std::cos(radians / 2)), q);
 }
 
 TEST(QuatTest, AxisAngleWithZeroLengthAxis) {
-  Quaternion q(Vector3dF(0.0f, 0.0f, 0.0f), 0.5);
+  Quaternion q(Vector3dF(0, 0, 0), 0.5);
   // If the axis of zero length, we should assume the default values.
-  EXPECT_FLOAT_EQ(0.0, q.x());
-  EXPECT_FLOAT_EQ(0.0, q.y());
-  EXPECT_FLOAT_EQ(0.0, q.z());
-  EXPECT_FLOAT_EQ(1.0, q.w());
+  CompareQuaternions(q, Quaternion());
 }
 
 TEST(QuatTest, Addition) {
-  float values[] = {0.f, 1.0f, 100.0f};
+  double values[] = {0, 1, 100};
   for (size_t i = 0; i < arraysize(values); ++i) {
     float t = values[i];
     Quaternion a(t, 2 * t, 3 * t, 4 * t);
     Quaternion b(5 * t, 4 * t, 3 * t, 2 * t);
     Quaternion sum = a + b;
-    EXPECT_FLOAT_EQ(6 * t, sum.x());
-    EXPECT_FLOAT_EQ(6 * t, sum.y());
-    EXPECT_FLOAT_EQ(6 * t, sum.z());
-    EXPECT_FLOAT_EQ(6 * t, sum.w());
+    CompareQuaternions(Quaternion(t, t, t, t) * 6, sum);
   }
 }
 
@@ -77,41 +72,38 @@ TEST(QuatTest, Multiplication) {
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     Quaternion product = cases[i].a * cases[i].b;
-    EXPECT_FLOAT_EQ(cases[i].expected.x(), product.x());
-    EXPECT_FLOAT_EQ(cases[i].expected.y(), product.y());
-    EXPECT_FLOAT_EQ(cases[i].expected.z(), product.z());
-    EXPECT_FLOAT_EQ(cases[i].expected.w(), product.w());
+    CompareQuaternions(cases[i].expected, product);
   }
 }
 
 TEST(QuatTest, Scaling) {
-  float values[] = {0.f, 1.0f, 100.0f};
+  double values[] = {0, 0, 100};
   for (size_t i = 0; i < arraysize(values); ++i) {
+    double s = values[i];
     Quaternion q(1, 2, 3, 4);
-    Quaternion qs = q * values[i];
-    Quaternion sq = values[i] * q;
-    EXPECT_FLOAT_EQ(1 * values[i], qs.x());
-    EXPECT_FLOAT_EQ(2 * values[i], qs.y());
-    EXPECT_FLOAT_EQ(3 * values[i], qs.z());
-    EXPECT_FLOAT_EQ(4 * values[i], qs.w());
-    EXPECT_FLOAT_EQ(1 * values[i], sq.x());
-    EXPECT_FLOAT_EQ(2 * values[i], sq.y());
-    EXPECT_FLOAT_EQ(3 * values[i], sq.z());
-    EXPECT_FLOAT_EQ(4 * values[i], sq.w());
+    Quaternion qs = q * s;
+    Quaternion sq = s * q;
+    Quaternion expected(s, 2 * s, 3 * s, 4 * s);
+    CompareQuaternions(expected, qs);
+    CompareQuaternions(expected, sq);
   }
 }
 
 TEST(QuatTest, Lerp) {
-  for (size_t i = 0; i < 100; ++i) {
+  for (size_t i = 1; i < 100; ++i) {
     Quaternion a(0, 0, 0, 0);
     Quaternion b(1, 2, 3, 4);
     float t = static_cast<float>(i) / 100.0f;
     Quaternion interpolated = a.Lerp(b, t);
-    EXPECT_FLOAT_EQ(1 * t, interpolated.x());
-    EXPECT_FLOAT_EQ(2 * t, interpolated.y());
-    EXPECT_FLOAT_EQ(3 * t, interpolated.z());
-    EXPECT_FLOAT_EQ(4 * t, interpolated.w());
+    double s = 1.0 / sqrt(30.0);
+    CompareQuaternions(Quaternion(1, 2, 3, 4) * s, interpolated);
   }
+
+  Quaternion a(4, 3, 2, 1);
+  Quaternion b(1, 2, 3, 4);
+  CompareQuaternions(a.normalized(), a.Lerp(b, 0));
+  CompareQuaternions(b.normalized(), a.Lerp(b, 1));
+  CompareQuaternions(Quaternion(1, 1, 1, 1).normalized(), a.Lerp(b, 0.5));
 }
 
 TEST(QuatTest, Slerp) {
@@ -148,10 +140,7 @@ TEST(QuatTest, SlerpOppositeAngles) {
   for (size_t i = 0; i < 100; ++i) {
     float t = static_cast<float>(i) / 100.0f;
     Quaternion interpolated = start.Slerp(stop, t);
-    EXPECT_FLOAT_EQ(expected.x(), interpolated.x());
-    EXPECT_FLOAT_EQ(expected.y(), interpolated.y());
-    EXPECT_FLOAT_EQ(expected.z(), interpolated.z());
-    EXPECT_FLOAT_EQ(expected.w(), interpolated.w());
+    CompareQuaternions(expected, interpolated);
   }
 }
 
