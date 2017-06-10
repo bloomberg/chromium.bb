@@ -213,21 +213,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.AppendSwitch(switches::kDisableGpuRasterization);
     }
 
-    // If the virtual test suite didn't specify a color space, then use the
-    // default layout test color space (GenericRGB for Mac and sRGB for all
-    // other platforms).
-    if (!command_line.HasSwitch(switches::kForceColorProfile)) {
-#if defined(OS_MACOSX)
-      if (command_line.HasSwitch(switches::kEnableColorCorrectRendering)) {
-        command_line.AppendSwitchASCII(switches::kForceColorProfile, "srgb");
-      } else {
-        command_line.AppendSwitchASCII(switches::kForceColorProfile,
-                                       "generic-rgb");
-      }
-#else
+    // Enable color correct rendering. If the virtual test suite didn't specify
+    // a color space, then use sRGB.
+    command_line.AppendSwitch(switches::kEnableColorCorrectRendering);
+    if (!command_line.HasSwitch(switches::kForceColorProfile))
       command_line.AppendSwitchASCII(switches::kForceColorProfile, "srgb");
-#endif
-    }
 
     // We want stable/baseline results when running layout tests.
     command_line.AppendSwitch(switches::kDisableSkiaRuntimeOpts);
