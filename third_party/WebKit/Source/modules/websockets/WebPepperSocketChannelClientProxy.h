@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 #include <memory>
+#include "modules/websockets/WebPepperSocketImpl.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
-#include "web/WebPepperSocketImpl.h"
 
 namespace blink {
 
