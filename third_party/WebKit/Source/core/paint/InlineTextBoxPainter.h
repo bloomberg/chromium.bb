@@ -62,11 +62,6 @@ class InlineTextBoxPainter {
  private:
   enum class PaintOptions { kNormal, kCombinedText };
 
-  void PaintCompositionBackgrounds(GraphicsContext&,
-                                   const LayoutPoint& box_origin,
-                                   const ComputedStyle&,
-                                   const Font&,
-                                   bool use_custom_underlines);
   void PaintSingleCompositionBackgroundRun(GraphicsContext&,
                                            const LayoutPoint& box_origin,
                                            const ComputedStyle&,

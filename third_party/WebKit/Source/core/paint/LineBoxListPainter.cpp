@@ -77,29 +77,4 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
   }
 }
 
-static void InvalidateLineBoxPaintOffsetsInternal(
-    PaintController& paint_controller,
-    InlineFlowBox* inline_box) {
-#if 0
-    // TODO(wangxianzhu): Implement this with PaintInvalidator.
-    paintController.invalidatePaintOffset(*inlineBox);
-    for (InlineBox* child = inlineBox->firstChild(); child; child = child->nextOnLine()) {
-        if (!child->getLineLayoutItem().isText() && child->boxModelObject().hasSelfPaintingLayer())
-            continue;
-        if (child->isInlineFlowBox())
-            invalidateLineBoxPaintOffsetsInternal(paintController, toInlineFlowBox(child));
-        else
-            paintController.invalidatePaintOffset(*child);
-    }
-#endif
-}
-
-void LineBoxListPainter::InvalidateLineBoxPaintOffsets(
-    const PaintInfo& paint_info) const {
-  PaintController& paint_controller = paint_info.context.GetPaintController();
-  for (InlineFlowBox* curr = line_box_list_.FirstLineBox(); curr;
-       curr = curr->NextLineBox())
-    InvalidateLineBoxPaintOffsetsInternal(paint_controller, curr);
-}
-
 }  // namespace blink
