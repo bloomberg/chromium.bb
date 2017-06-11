@@ -183,7 +183,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::Link* manage_accounts_link_;
   views::LabelButton* manage_accounts_button_;
   views::LabelButton* signin_current_profile_button_;
-  views::LabelButton* auth_error_email_button_;
 
   // For material design user menu, the active profile card owns the profile
   // name and photo.
