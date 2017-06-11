@@ -18,4 +18,24 @@ const char kContentSuggestionsAlphaServer[] =
     "https://alpha-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
     "suggestions/fetch";
 
+const char kPushUpdatesSubscriptionServer[] =
+    "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+    "subscribe";
+const char kPushUpdatesSubscriptionStagingServer[] =
+    "https://staging-chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+    "subscribe";
+const char kPushUpdatesSubscriptionAlphaServer[] =
+    "https://alpha-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
+    "suggestions/subscribe";
+
+const char kPushUpdatesUnsubscriptionServer[] =
+    "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+    "unsubscribe";
+const char kPushUpdatesUnsubscriptionStagingServer[] =
+    "https://staging-chromecontentsuggestions-pa.googleapis.com/v1/suggestions/"
+    "unsubscribe";
+const char kPushUpdatesUnsubscriptionAlphaServer[] =
+    "https://alpha-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
+    "suggestions/unsubscribe";
+
 }  // namespace ntp_snippets

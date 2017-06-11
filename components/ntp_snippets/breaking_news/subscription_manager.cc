@@ -4,13 +4,25 @@
 
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
 #include "base/bind.h"
+#include "base/metrics/field_trial_params.h"
 #include "components/ntp_snippets/breaking_news/subscription_json_request.h"
+#include "components/ntp_snippets/features.h"
+#include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_service.h"
 
 namespace ntp_snippets {
 
 using internal::SubscriptionJsonRequest;
+
+namespace {
+
+// Variation parameter for chrome-push-subscription backend.
+const char kPushSubscriptionBackendParam[] = "push_subscription_backend";
+
+// Variation parameter for chrome-push-unsubscription backend.
+const char kPushUnsubscriptionBackendParam[] = "push_unsubscription_backend";
+}
 
 SubscriptionManager::SubscriptionManager(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
@@ -108,5 +120,49 @@ void SubscriptionManager::DidUnsubscribe(const ntp_snippets::Status& status) {
 void SubscriptionManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kContentSuggestionsSubscriptionDataToken,
                                std::string());
+}
+
+GURL GetPushUpdatesSubscriptionEndpoint(version_info::Channel channel) {
+  std::string endpoint = base::GetFieldTrialParamValueByFeature(
+      ntp_snippets::kContentSuggestionsPushFeature,
+      kPushSubscriptionBackendParam);
+  if (!endpoint.empty()) {
+    return GURL{endpoint};
+  }
+
+  switch (channel) {
+    case version_info::Channel::STABLE:
+    case version_info::Channel::BETA:
+      return GURL{kPushUpdatesSubscriptionServer};
+
+    case version_info::Channel::DEV:
+    case version_info::Channel::CANARY:
+    case version_info::Channel::UNKNOWN:
+      return GURL{kPushUpdatesSubscriptionStagingServer};
+  }
+  NOTREACHED();
+  return GURL{kPushUpdatesSubscriptionStagingServer};
+}
+
+GURL GetPushUpdatesUnsubscriptionEndpoint(version_info::Channel channel) {
+  std::string endpoint = base::GetFieldTrialParamValueByFeature(
+      ntp_snippets::kContentSuggestionsPushFeature,
+      kPushUnsubscriptionBackendParam);
+  if (!endpoint.empty()) {
+    return GURL{endpoint};
+  }
+
+  switch (channel) {
+    case version_info::Channel::STABLE:
+    case version_info::Channel::BETA:
+      return GURL{kPushUpdatesUnsubscriptionServer};
+
+    case version_info::Channel::DEV:
+    case version_info::Channel::CANARY:
+    case version_info::Channel::UNKNOWN:
+      return GURL{kPushUpdatesUnsubscriptionStagingServer};
+  }
+  NOTREACHED();
+  return GURL{kPushUpdatesUnsubscriptionStagingServer};
 }
 }  // namespace ntp_snippets

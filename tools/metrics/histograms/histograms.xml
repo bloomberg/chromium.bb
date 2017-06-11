@@ -87268,6 +87268,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="ForeignTabs" label="Open tabs on other devices"/>
   <suffix name="Experimental" label="Experimental"/>
   <suffix name="ReadingList" label="Reading List entries"/>
+  <suffix name="BreakingNews" label="Breaking News entries"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.CountOnNtpOpened"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.DismissedUnvisited"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.DismissedVisited"/>

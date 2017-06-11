@@ -31,12 +31,16 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/gcm_driver/gcm_profile_service.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_suggestions_provider.h"
+#include "components/ntp_snippets/breaking_news/content_suggestions_gcm_app_handler.h"
+#include "components/ntp_snippets/breaking_news/subscription_manager.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
@@ -92,16 +96,21 @@ using content::BrowserThread;
 using history::HistoryService;
 using image_fetcher::ImageFetcherImpl;
 using ntp_snippets::BookmarkSuggestionsProvider;
+using ntp_snippets::BreakingNewsSuggestionsProvider;
 using ntp_snippets::CategoryRanker;
+using ntp_snippets::ContentSuggestionsGCMAppHandler;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::GetFetchEndpoint;
+using ntp_snippets::GetPushUpdatesSubscriptionEndpoint;
+using ntp_snippets::GetPushUpdatesUnsubscriptionEndpoint;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcher;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsSchedulerImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
+using ntp_snippets::SubscriptionManager;
 using ntp_snippets::TabDelegateSyncAdapter;
 using ntp_snippets::UserClassifier;
 using suggestions::ImageDecoderImpl;
@@ -359,6 +368,36 @@ void RegisterForeignSessionsProviderIfEnabled(
   service->RegisterProvider(std::move(provider));
 }
 
+void SubscribeForGCMPushUpdates(PrefService* pref_service,
+                                ContentSuggestionsService* service,
+                                Profile* profile) {
+  gcm::GCMDriver* gcm_driver =
+      gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver();
+
+  scoped_refptr<net::URLRequestContextGetter> request_context =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLRequestContext();
+
+  auto subscription_manager = base::MakeUnique<SubscriptionManager>(
+      request_context, pref_service,
+      GetPushUpdatesSubscriptionEndpoint(chrome::GetChannel()),
+      GetPushUpdatesUnsubscriptionEndpoint(chrome::GetChannel()));
+
+  instance_id::InstanceIDProfileService* instance_id_profile_service =
+      instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile);
+  DCHECK(instance_id_profile_service);
+  DCHECK(instance_id_profile_service->driver());
+
+  auto handler = base::MakeUnique<ContentSuggestionsGCMAppHandler>(
+      gcm_driver, instance_id_profile_service->driver(), pref_service,
+      std::move(subscription_manager));
+
+  auto provider = base::MakeUnique<BreakingNewsSuggestionsProvider>(
+      service, std::move(handler));
+  provider->Start();
+  service->RegisterProvider(std::move(provider));
+}
+
 }  // namespace
 
 #endif  // CONTENT_SUGGESTIONS_ENABLED
@@ -470,6 +509,10 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   }
 #endif
 
+  if (base::FeatureList::IsEnabled(
+          ntp_snippets::kContentSuggestionsPushFeature)) {
+    SubscribeForGCMPushUpdates(pref_service, service, profile);
+  }
   return service;
 
 #else
