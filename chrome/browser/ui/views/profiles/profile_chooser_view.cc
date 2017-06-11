@@ -582,7 +582,6 @@ void ProfileChooserView::ResetView() {
   manage_accounts_link_ = nullptr;
   manage_accounts_button_ = nullptr;
   signin_current_profile_button_ = nullptr;
-  auth_error_email_button_ = nullptr;
   current_profile_card_ = nullptr;
   first_profile_button_ = nullptr;
   guest_profile_button_ = nullptr;
@@ -633,11 +632,6 @@ void ProfileChooserView::OnNativeThemeChanged(
   views::BubbleDialogDelegateView::OnNativeThemeChanged(native_theme);
   SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground)));
-  if (auth_error_email_button_) {
-    auth_error_email_button_->SetTextColor(
-        views::LabelButton::STATE_NORMAL,
-        native_theme->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled));
-  }
 }
 
 void ProfileChooserView::OnAvatarMenuChanged(
@@ -809,8 +803,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_LOCK);
   } else if (sender == close_all_windows_button_) {
     profiles::CloseProfileWindows(browser_->profile());
-  } else if (sender == auth_error_email_button_ ||
-             sender == sync_error_signin_button_) {
+  } else if (sender == sync_error_signin_button_) {
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH);
   } else if (sender == sync_error_passphrase_button_) {
     chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
