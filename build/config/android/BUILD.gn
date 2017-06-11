@@ -150,7 +150,7 @@ config("runtime_library") {
   ]
 
   # Clang with libc++ does not require an explicit atomic library reference.
-  if (!is_clang) {
+  if (!is_clang || (current_cpu == "arm" && arm_version == 6)) {
     libs += [ "atomic" ]
   }
 
