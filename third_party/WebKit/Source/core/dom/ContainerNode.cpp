@@ -220,17 +220,6 @@ bool ContainerNode::EnsurePreInsertionValidity(
     return false;
   }
 
-  return CheckAcceptChildGuaranteedNodeTypes(new_child, next, old_child,
-                                             exception_state);
-}
-
-// TODO(tkent): Fold CheckAcceptChildGuaranteedNodeTypes() into
-// EnsurePreInsertionValidity().
-bool ContainerNode::CheckAcceptChildGuaranteedNodeTypes(
-    const Node& new_child,
-    const Node* next,
-    const Node* old_child,
-    ExceptionState& exception_state) const {
   if (IsDocumentNode()) {
     // Step 2 is unnecessary. No one can have a Document child.
     // Step 3:
