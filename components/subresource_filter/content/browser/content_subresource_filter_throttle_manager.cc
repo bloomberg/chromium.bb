@@ -62,17 +62,23 @@ void ContentSubresourceFilterThrottleManager::RenderFrameDeleted(
 // of subframe navigations.
 void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->GetNetErrorCode() != net::OK)
+    return;
+
   auto throttle = ongoing_activation_throttles_.find(navigation_handle);
   if (throttle == ongoing_activation_throttles_.end())
     return;
 
-  // A filter with DISABLED activation indicates a corrupted ruleset.
+  // Main frame throttles with disabled page-level activation will not have
+  // associated filters.
   AsyncDocumentSubresourceFilter* filter = throttle->second->filter();
-  if (!filter || navigation_handle->GetNetErrorCode() != net::OK ||
-      filter->activation_state().activation_level ==
-          ActivationLevel::DISABLED) {
+  if (!filter)
     return;
-  }
+
+  // A filter with DISABLED activation indicates a corrupted ruleset.
+  ActivationLevel level = filter->activation_state().activation_level;
+  if (level == ActivationLevel::DISABLED)
+    return;
 
   TRACE_EVENT1(
       TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -124,9 +130,10 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
   // Make sure |activated_frame_hosts_| is updated or cleaned up depending on
   // this navigation's activation state.
   if (filter) {
-    filter->set_first_disallowed_load_callback(base::Bind(
+    base::OnceClosure disallowed_callback(base::BindOnce(
         &ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad,
         weak_ptr_factory_.GetWeakPtr()));
+    filter->set_first_disallowed_load_callback(std::move(disallowed_callback));
     activated_frame_hosts_[frame_host] = std::move(filter);
   } else {
     activated_frame_hosts_.erase(frame_host);
