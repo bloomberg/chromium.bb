@@ -761,8 +761,9 @@ def RunTestsInPlatformMode(args):
       yield
     finally:
       if not args.logcat_output_file:
-        logging.critical('Cannot upload logcats file. '
-                        'File to save logcat is not specified.')
+        logging.critical('Cannot upload logcat file: no file specified.')
+      elif not os.path.exists(args.logcat_output_file):
+        logging.critical("Cannot upload logcat file: file doesn't exist.")
       else:
         with open(args.logcat_output_file) as src:
           dst = logdog_helper.open_text('unified_logcats')
