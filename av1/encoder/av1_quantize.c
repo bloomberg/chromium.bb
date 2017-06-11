@@ -1547,7 +1547,7 @@ void av1_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
 #endif
       const int coeff_sign = (coeff >> 31);
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-      const int64_t tmp = abs_coeff + round_ptr[rc != 0];
+      const int64_t tmp = abs_coeff + (round_ptr[rc != 0] >> log_scale);
 #if CONFIG_AOM_QM
       const uint32_t abs_qcoeff =
           (uint32_t)((tmp * quant_ptr[rc != 0] * wt) >> (shift + AOM_QM_BITS));
