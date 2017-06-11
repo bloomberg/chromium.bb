@@ -29,6 +29,9 @@ namespace ntp_snippets {
 // be called upon received push content suggestions.
 class ContentSuggestionsGCMAppHandler : public gcm::GCMAppHandler {
  public:
+  // TODO(mamir): Check if a better paramater datatype makes more sense.
+  using OnNewContentCallback = base::Callback<void(const base::Value& content)>;
+
   ContentSuggestionsGCMAppHandler(
       gcm::GCMDriver* gcm_driver,
       instance_id::InstanceIDDriver* instance_id_driver,
@@ -40,7 +43,7 @@ class ContentSuggestionsGCMAppHandler : public gcm::GCMAppHandler {
 
   // Subscribe to the GCM service if necessary and start listening for pushed
   // content suggestions. Must not be called if already listening.
-  void StartListening();
+  void StartListening(OnNewContentCallback on_new_content_callback);
 
   // Remove the handler, and stop listening for incoming GCM messages. Any
   // further pushed content suggestions will be ignored. Must be called while
@@ -74,6 +77,11 @@ class ContentSuggestionsGCMAppHandler : public gcm::GCMAppHandler {
   instance_id::InstanceIDDriver* const instance_id_driver_;
   PrefService* const pref_service_;
   const std::unique_ptr<SubscriptionManager> subscription_manager_;
+
+  // Called after every time a new message is received in OnMessage() to notify
+  // the content provider.
+  OnNewContentCallback on_new_content_callback_;
+
   base::WeakPtrFactory<ContentSuggestionsGCMAppHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsGCMAppHandler);

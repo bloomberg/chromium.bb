@@ -51,10 +51,12 @@ enum class KnownCategories {
   // Articles for you.
   ARTICLES,
 
+  // Breaking News
+  BREAKING_NEWS = 10008,
   // ****************** INSERT NEW REMOTE CATEGORIES HERE! ******************
 
   // Tracks the last known remote category
-  LAST_KNOWN_REMOTE_CATEGORY = ARTICLES,
+  LAST_KNOWN_REMOTE_CATEGORY = BREAKING_NEWS,
 };
 
 // A category groups ContentSuggestions which belong together. Use the

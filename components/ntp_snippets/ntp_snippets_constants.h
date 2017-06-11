@@ -19,6 +19,18 @@ extern const char kContentSuggestionsServer[];         // used on stable/beta
 extern const char kContentSuggestionsStagingServer[];  // used on dev/canary
 extern const char kContentSuggestionsAlphaServer[];    // for testing
 
+// Server endpoints for push updates subscription.
+extern const char kPushUpdatesSubscriptionServer[];  // used on stable/beta
+extern const char
+    kPushUpdatesSubscriptionStagingServer[];              // used on dev/canary
+extern const char kPushUpdatesSubscriptionAlphaServer[];  // for testing
+
+// Server endpoints for push updates unsubscription.
+extern const char kPushUpdatesUnsubscriptionServer[];  // used on stable/beta
+extern const char
+    kPushUpdatesUnsubscriptionStagingServer[];  // used on dev/canary
+extern const char kPushUpdatesUnsubscriptionAlphaServer[];  // for testing
+
 }  // namespace ntp_snippets
 
 #endif

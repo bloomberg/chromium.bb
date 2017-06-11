@@ -7,12 +7,21 @@
 
 #include "components/ntp_snippets/breaking_news/subscription_json_request.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/version_info/version_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
 
 namespace ntp_snippets {
+
+// Returns the appropriate API endpoint for subscribing for push updates, in
+// consideration of the channel and field trial parameters.
+GURL GetPushUpdatesSubscriptionEndpoint(version_info::Channel channel);
+
+// Returns the appropriate API endpoint for unsubscribing for push updates, in
+// consideration of the channel and field trial parameters.
+GURL GetPushUpdatesUnsubscriptionEndpoint(version_info::Channel channel);
 
 // Class that wraps around the functionality of SubscriptionJsonRequest. It uses
 // the SubscriptionJsonRequest to send subscription and unsubscription requests

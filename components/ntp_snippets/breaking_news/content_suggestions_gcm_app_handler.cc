@@ -40,18 +40,23 @@ ContentSuggestionsGCMAppHandler::~ContentSuggestionsGCMAppHandler() {
   StopListening();
 }
 
-void ContentSuggestionsGCMAppHandler::StartListening() {
+void ContentSuggestionsGCMAppHandler::StartListening(
+    OnNewContentCallback on_new_content_callback) {
 #if !defined(OS_ANDROID)
   NOTREACHED()
       << "The ContentSuggestionsGCMAppHandler should only be used on Android.";
 #endif
   Subscribe();
+  on_new_content_callback_ = std::move(on_new_content_callback);
   gcm_driver_->AddAppHandler(kContentSuggestionsGCMAppID, this);
 }
 
 void ContentSuggestionsGCMAppHandler::StopListening() {
   DCHECK_EQ(gcm_driver_->GetAppHandler(kContentSuggestionsGCMAppID), this);
   gcm_driver_->RemoveAppHandler(kContentSuggestionsGCMAppID);
+  on_new_content_callback_ = OnNewContentCallback();
+  // TODO(mamir): Check which token should be used for unsubscription when
+  // handling change in the token.
   std::string token = pref_service_->GetString(
       ntp_snippets::prefs::kContentSuggestionsGCMSubscriptionTokenCache);
   subscription_manager_->Unsubscribe(token);
@@ -110,7 +115,8 @@ void ContentSuggestionsGCMAppHandler::OnStoreReset() {
 void ContentSuggestionsGCMAppHandler::OnMessage(
     const std::string& app_id,
     const gcm::IncomingMessage& message) {
-  // TODO(mamir): Implement Show notification and update the feed.
+  // TODO(mamir): Build the message.
+  on_new_content_callback_.Run(base::Value());
 }
 
 void ContentSuggestionsGCMAppHandler::OnMessagesDeleted(
