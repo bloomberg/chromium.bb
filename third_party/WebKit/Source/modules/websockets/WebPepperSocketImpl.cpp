@@ -28,13 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebPepperSocketImpl.h"
+#include "modules/websockets/WebPepperSocketImpl.h"
 
 #include <memory>
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
+#include "modules/websockets/WebPepperSocketChannelClientProxy.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
@@ -42,7 +43,6 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebArrayBuffer.h"
 #include "public/web/WebDocument.h"
-#include "web/WebPepperSocketChannelClientProxy.h"
 
 namespace blink {
 
