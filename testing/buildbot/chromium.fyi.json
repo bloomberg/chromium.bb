@@ -10129,6 +10129,18 @@
       }
     ]
   },
+  "Fuchsia": {
+    "additional_compile_targets": [
+      "base_unittests",
+      "d8"
+    ]
+  },
+  "Fuchsia (dbg)": {
+    "additional_compile_targets": [
+      "base_unittests",
+      "d8"
+    ]
+  },
   "Headless Linux (dbg)": {
     "additional_compile_targets": [
       "headless_lib",
