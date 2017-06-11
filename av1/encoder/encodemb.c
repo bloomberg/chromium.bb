@@ -246,7 +246,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
        */
       // compute the distortion for the first candidate
       // and the distortion for quantizing to 0.
-      int dx0 = (-coeff[rc]) * (1 << shift);
+      int dx0 = abs(coeff[rc]) * (1 << shift);
 #if CONFIG_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
         dx0 >>= xd->bd - 8;
@@ -270,7 +270,9 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       dx = (dqcoeff[rc] - coeff[rc]) * (1 << shift);
 #if CONFIG_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        dx >>= xd->bd - 8;
+        int dx_sign = dx < 0 ? 1 : 0;
+        dx = abs(dx) >> (xd->bd - 8);
+        if (dx_sign) dx = -dx;
       }
 #endif  // CONFIG_HIGHBITDEPTH
       d2 = (int64_t)dx * dx;
