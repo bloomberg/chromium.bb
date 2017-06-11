@@ -39,10 +39,6 @@ class BoxPainter : public BoxPainterBase {
   void PaintMask(const PaintInfo&, const LayoutPoint&);
   void PaintClippingMask(const PaintInfo&, const LayoutPoint&);
 
-  // Returns true if the fill layer will certainly occlude anything painted
-  // behind it.
-  static bool IsFillLayerOpaque(const FillLayer&, const LayoutObject&);
-
   void PaintFillLayers(const PaintInfo&,
                        const Color&,
                        const FillLayer&,

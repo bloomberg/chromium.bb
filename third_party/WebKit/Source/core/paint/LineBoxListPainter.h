@@ -26,8 +26,6 @@ class LineBoxListPainter {
              const PaintInfo&,
              const LayoutPoint&) const;
 
-  void InvalidateLineBoxPaintOffsets(const PaintInfo&) const;
-
  private:
   const LineBoxList& line_box_list_;
 };

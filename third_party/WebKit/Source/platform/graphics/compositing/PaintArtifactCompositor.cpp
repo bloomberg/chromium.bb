@@ -104,14 +104,6 @@ class PaintArtifactCompositor::ContentLayerClientImpl
       CcLayersRasterInvalidationTrackingMap().Remove(cc_picture_layer_.get());
   }
 
-  bool HasTrackedRasterInvalidations() const {
-    RasterInvalidationTracking* tracking =
-        CcLayersRasterInvalidationTrackingMap().Find(cc_picture_layer_.get());
-    if (tracking)
-      return !tracking->invalidations.IsEmpty();
-    return false;
-  }
-
   RasterInvalidationTracking& EnsureRasterInvalidationTracking() {
     return CcLayersRasterInvalidationTrackingMap().Add(cc_picture_layer_.get());
   }
@@ -182,14 +174,6 @@ PaintArtifactCompositor::~PaintArtifactCompositor() {}
 void PaintArtifactCompositor::ResetTrackedRasterInvalidations() {
   for (auto& client : content_layer_clients_)
     client->ResetTrackedRasterInvalidations();
-}
-
-bool PaintArtifactCompositor::HasTrackedRasterInvalidations() const {
-  for (auto& client : content_layer_clients_) {
-    if (client->HasTrackedRasterInvalidations())
-      return true;
-  }
-  return false;
 }
 
 std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
