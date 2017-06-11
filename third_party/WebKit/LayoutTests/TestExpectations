@@ -2885,3 +2885,6 @@ crbug.com/731518 [ Win Linux ] webaudio/DynamicsCompressor/dynamicscompressor-cl
 crbug.com/731509 [ Win ] css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure Pass Timeout ]
 
 crbug.com/731535 [ Win ] fast/dom/Window/window-resize-contents.html [ Failure Pass Timeout ]
+
+crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
+crbug.com/732103 [ Mac ] virtual/mojo-loading/http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
