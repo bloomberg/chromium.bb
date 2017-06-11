@@ -15,7 +15,7 @@ std::unique_ptr<LayerImpl> SolidColorScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   const bool kIsOverlayScrollbar = true;
   return SolidColorScrollbarLayerImpl::Create(
-      tree_impl, id(), orientation(),
+      tree_impl, id(), solid_color_scrollbar_layer_inputs_.orientation,
       solid_color_scrollbar_layer_inputs_.thumb_thickness,
       solid_color_scrollbar_layer_inputs_.track_start,
       solid_color_scrollbar_layer_inputs_.is_left_side_vertical_scrollbar,
@@ -91,20 +91,12 @@ bool SolidColorScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return true;
 }
 
-ElementId SolidColorScrollbarLayer::scroll_element_id() const {
-  return solid_color_scrollbar_layer_inputs_.scroll_element_id;
-}
-
 void SolidColorScrollbarLayer::SetScrollElementId(ElementId element_id) {
   if (element_id == solid_color_scrollbar_layer_inputs_.scroll_element_id)
     return;
 
   solid_color_scrollbar_layer_inputs_.scroll_element_id = element_id;
   SetNeedsFullTreeSync();
-}
-
-ScrollbarOrientation SolidColorScrollbarLayer::orientation() const {
-  return solid_color_scrollbar_layer_inputs_.orientation;
 }
 
 }  // namespace cc

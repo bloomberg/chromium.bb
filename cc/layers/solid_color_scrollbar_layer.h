@@ -34,22 +34,7 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   void SetNeedsDisplayRect(const gfx::Rect& rect) override;
 
   // ScrollbarLayerInterface
-  ElementId scroll_element_id() const override;
   void SetScrollElementId(ElementId element_id) override;
-
-  ScrollbarOrientation orientation() const override;
-
-  int thumb_thickness() const {
-    return solid_color_scrollbar_layer_inputs_.thumb_thickness;
-  }
-
-  int track_start() const {
-    return solid_color_scrollbar_layer_inputs_.track_start;
-  }
-
-  bool is_left_side_vertical_scrollbar() const {
-    return solid_color_scrollbar_layer_inputs_.is_left_side_vertical_scrollbar;
-  }
 
  protected:
   SolidColorScrollbarLayer(ScrollbarOrientation orientation,

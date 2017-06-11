@@ -57,10 +57,6 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(
 
 PaintedScrollbarLayer::~PaintedScrollbarLayer() {}
 
-ElementId PaintedScrollbarLayer::scroll_element_id() const {
-  return scroll_element_id_;
-}
-
 void PaintedScrollbarLayer::SetScrollElementId(ElementId element_id) {
   if (element_id == scroll_element_id_)
     return;
@@ -71,10 +67,6 @@ void PaintedScrollbarLayer::SetScrollElementId(ElementId element_id) {
 
 bool PaintedScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return scrollbar_->IsOverlay();
-}
-
-ScrollbarOrientation PaintedScrollbarLayer::orientation() const {
-  return scrollbar_->Orientation();
 }
 
 void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
@@ -89,7 +81,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
-  if (orientation() == HORIZONTAL) {
+  if (scrollbar_->Orientation() == HORIZONTAL) {
     scrollbar_layer->SetTrackStart(
         track_rect_.x() - location_.x());
     scrollbar_layer->SetTrackLength(track_rect_.width());
@@ -143,7 +135,7 @@ gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
 
 gfx::Rect PaintedScrollbarLayer::OriginThumbRect() const {
   gfx::Size thumb_size;
-  if (orientation() == HORIZONTAL) {
+  if (scrollbar_->Orientation() == HORIZONTAL) {
     thumb_size =
         gfx::Size(scrollbar_->ThumbLength(), scrollbar_->ThumbThickness());
   } else {

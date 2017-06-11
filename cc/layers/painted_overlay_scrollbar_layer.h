@@ -28,9 +28,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
   ScrollbarLayerInterface* ToScrollbarLayer() override;
 
   // ScrollbarLayerInterface
-  ElementId scroll_element_id() const override;
   void SetScrollElementId(ElementId element_id) override;
-  ScrollbarOrientation orientation() const override;
 
   // Layer interface
   bool Update() override;

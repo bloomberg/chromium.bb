@@ -49,10 +49,6 @@ PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
 
 PaintedOverlayScrollbarLayer::~PaintedOverlayScrollbarLayer() {}
 
-ElementId PaintedOverlayScrollbarLayer::scroll_element_id() const {
-  return scroll_element_id_;
-}
-
 void PaintedOverlayScrollbarLayer::SetScrollElementId(ElementId element_id) {
   if (element_id == scroll_element_id_)
     return;
@@ -65,10 +61,6 @@ bool PaintedOverlayScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return scrollbar_->IsOverlay();
 }
 
-ScrollbarOrientation PaintedOverlayScrollbarLayer::orientation() const {
-  return scrollbar_->Orientation();
-}
-
 void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
 
@@ -79,7 +71,7 @@ void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
-  if (orientation() == HORIZONTAL) {
+  if (scrollbar_->Orientation() == HORIZONTAL) {
     scrollbar_layer->SetTrackStart(track_rect_.x() - location_.x());
     scrollbar_layer->SetTrackLength(track_rect_.width());
   } else {
