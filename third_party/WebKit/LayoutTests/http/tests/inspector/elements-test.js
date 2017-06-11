@@ -930,7 +930,7 @@ InspectorTest.addNewRuleInStyleSheet = function(styleSheetHeader, selector, call
 InspectorTest.addNewRule = function(selector, callback)
 {
     // Click "Add new rule".
-    document.querySelector(".styles-pane-toolbar").shadowRoot.querySelector(".largeicon-add").click();
+    UI.panels.elements._stylesWidget.contentElement.querySelector(".styles-pane-toolbar").shadowRoot.querySelector(".largeicon-add").click();
     InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "_addBlankSection", onBlankSection.bind(null, selector, callback));
 }
 
