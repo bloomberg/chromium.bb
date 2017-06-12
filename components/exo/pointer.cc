@@ -133,8 +133,11 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
     cursor_changed = true;
 
   // Early out if cursor did not change.
-  if (!cursor_changed)
+  if (!cursor_changed) {
+    // Cursor scale or rotation may have changed.
+    UpdateCursor();
     return;
+  }
 
   // If |surface_| is set then asynchronously capture a snapshot of cursor,
   // otherwise cancel pending capture and immediately set the cursor to "none".
