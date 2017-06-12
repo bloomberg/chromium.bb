@@ -180,7 +180,7 @@ class CORE_EXPORT HTMLCollection
     // Do not repeat registration for the same invalidation type.
     if (InvalidationType() != kInvalidateOnIdNameAttrChange)
       GetDocument().RegisterNodeListWithIdNameCache(this);
-    named_item_cache_ = std::move(cache);
+    named_item_cache_ = cache;
   }
 
   NamedItemCache& GetNamedItemCache() const {
