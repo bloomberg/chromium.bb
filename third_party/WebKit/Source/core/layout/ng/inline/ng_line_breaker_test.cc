@@ -187,6 +187,26 @@ TEST_F(NGLineBreakerTest, OverflowMargin) {
   EXPECT_EQ("789", ToString(lines[2], node));
 }
 
+// Tests when the last word in a node wraps, and another node continues.
+TEST_F(NGLineBreakerTest, WrapLastWord) {
+  LoadAhem();
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      font: 10px/1 Ahem;
+    }
+    </style>
+    <div id=container>AAA AAA AAA <span>BB</span> CC</div>
+  )HTML");
+
+  Vector<NGInlineItemResults> lines;
+  lines = BreakLines(node, LayoutUnit(100));
+  EXPECT_EQ(2u, lines.size());
+  EXPECT_EQ("AAA AAA", ToString(lines[0], node));
+  EXPECT_EQ("AAA BB CC", ToString(lines[1], node));
+}
+
 TEST_F(NGLineBreakerTest, BoundaryInWord) {
   LoadAhem();
   NGInlineNode node = CreateInlineNode(R"HTML(

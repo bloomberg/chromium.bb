@@ -45,6 +45,9 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
                                     unsigned* break_offset);
 
  private:
+  PassRefPtr<ShapeResult> ShapeToEnd(unsigned start,
+                                     LayoutUnit start_position,
+                                     unsigned range_end);
 
   const HarfBuzzShaper* shaper_;
   const Font* font_;

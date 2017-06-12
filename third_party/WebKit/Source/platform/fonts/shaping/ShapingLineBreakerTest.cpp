@@ -243,7 +243,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineRangeEndMidWord) {
   unsigned break_offset = 0;
 
   line = breaker.ShapeLine(0, LayoutUnit::Max(), &break_offset);
-  EXPECT_EQ(3u, break_offset);
+  EXPECT_EQ(2u, break_offset);
   EXPECT_EQ(result->Width(), line->Width());
 }
 }  // namespace blink
