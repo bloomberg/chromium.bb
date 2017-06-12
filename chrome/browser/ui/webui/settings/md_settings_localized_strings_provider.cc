@@ -535,7 +535,10 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"historyDeletionDialogTitle",
        IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
       {"historyDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
-      {"importantSitesSubtitle", IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE},
+      {"importantSitesSubtitleCookies",
+       IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE_COOKIES},
+      {"importantSitesSubtitleCookiesAndCache",
+       IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE_COOKIES_AND_CACHE},
       {"importantSitesConfirm", IDS_SETTINGS_IMPORTANT_SITES_CONFIRM},
       {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
   };
