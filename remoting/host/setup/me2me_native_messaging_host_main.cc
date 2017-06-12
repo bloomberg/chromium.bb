@@ -44,9 +44,9 @@
 #include "remoting/host/win/elevation_helpers.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include <glib-object.h>
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 using remoting::protocol::PairingRegistry;
 
@@ -64,14 +64,14 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   base::mac::ScopedNSAutoreleasePool pool;
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // g_type_init will be deprecated in 2.36. 2.35 is the development
 // version for 2.36, hence do not call g_type_init starting 2.35.
 // http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
 #if !GLIB_CHECK_VERSION(2, 35, 0)
   g_type_init();
 #endif
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
   // Required to find the ICU data file, used by some file_util routines.
   base::i18n::InitializeICU();
