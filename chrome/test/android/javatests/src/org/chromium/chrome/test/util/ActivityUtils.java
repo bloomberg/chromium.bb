@@ -9,10 +9,17 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.ActivityOptionsCompat;
 
 import junit.framework.Assert;
 
+import org.chromium.base.test.util.ScalableTimeout;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -20,7 +27,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
  * Collection of activity utilities.
  */
 public class ActivityUtils {
-    private static final long ACTIVITY_START_TIMEOUT_MS = 3000;
+    private static final long ACTIVITY_START_TIMEOUT_MS = ScalableTimeout.scaleTimeout(3000);
     private static final long CONDITION_POLL_INTERVAL_MS = 100;
 
     /**
@@ -48,6 +55,35 @@ public class ActivityUtils {
             }
             return fragment.getView() != null;
         }
+    }
+
+    /**
+     * Captures an activity of a particular type by launching an intent explicitly targeting the
+     * activity.
+     *
+     * @param <T> The type of activity to wait for.
+     * @param activityType The class type of the activity.
+     * @return The spawned activity.
+     */
+    public static <T> T waitForActivity(
+            final Instrumentation instrumentation, final Class<T> activityType) {
+        Runnable intentTrigger = new Runnable() {
+            @Override
+            public void run() {
+                Context context = instrumentation.getTargetContext().getApplicationContext();
+                Intent activityIntent = new Intent();
+                activityIntent.setClass(context, activityType);
+                activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+
+                Bundle optionsBundle =
+                        ActivityOptionsCompat
+                                .makeCustomAnimation(context, R.anim.activity_open_enter, 0)
+                                .toBundle();
+                IntentUtils.safeStartActivity(context, activityIntent, optionsBundle);
+            }
+        };
+        return waitForActivity(instrumentation, activityType, intentTrigger);
     }
 
     /**
