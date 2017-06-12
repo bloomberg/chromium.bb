@@ -26,7 +26,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -45,14 +44,11 @@ import java.util.concurrent.Semaphore;
 /**
  * This class implements all of the functionality for {@link ChildProcessService} which owns an
  * object of {@link ChildProcessServiceImpl}.
- * It makes possible that WebAPK's ChildProcessService owns a ChildProcessServiceImpl object
- * and uses the same functionalities to create renderer process for WebAPKs when
- * "--enable-improved-a2hs" flag is turned on.
+ * It makes it possible for other consumer services (such as WebAPKs) to reuse that logic.
  */
 @JNINamespace("content")
 @SuppressWarnings("SynchronizeOnNonFinalField")
 @MainDex
-@UsedByReflection("WebApkSandboxedProcessService")
 public class ChildProcessServiceImpl {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
     private static final String TAG = "ChildProcessService";
@@ -91,7 +87,6 @@ public class ChildProcessServiceImpl {
 
     private final Semaphore mActivitySemaphore = new Semaphore(1);
 
-    @UsedByReflection("WebApkSandboxedProcessService")
     public ChildProcessServiceImpl() {
         KillChildUncaughtExceptionHandler.maybeInstallHandler();
     }
@@ -173,7 +168,6 @@ public class ChildProcessServiceImpl {
      * @param hostContext The host context the library should be loaded with (i.e. Chrome).
      */
     @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD") // For sCreateCalled check.
-    @UsedByReflection("WebApkSandboxedProcessService")
     public void create(final Context context, final Context hostContext) {
         mHostClassLoader = hostContext.getClassLoader();
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
@@ -324,7 +318,6 @@ public class ChildProcessServiceImpl {
      *        is thrown when an application with a uid other than
      *        {@link authorizedCallerUid} calls the service's methods.
      */
-    @UsedByReflection("WebApkSandboxedProcessService")
     public IBinder bind(Intent intent, int authorizedCallerUid) {
         mAuthorizedCallerUid = authorizedCallerUid;
         initializeParams(intent);

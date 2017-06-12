@@ -19,14 +19,15 @@ import java.lang.reflect.Method;
  * and creates the renderer.
  */
 public class WebApkSandboxedProcessService extends Service {
-    // Note: the {@link CHILD_PROCESS_SERVICE_IMPL_CLASS_NAME} must sync with the class name
-    // of Chrome's {@link ChildProcessServiceImpl}.
-    private static final String CHILD_PROCESS_SERVICE_IMPL_CLASS_NAME =
-            "org.chromium.content.app.ChildProcessServiceImpl";
     private static final String TAG = "cr_WebApkSandboxedProcessService";
 
-    private Class<?> mChildProcessServiceImplClass;
-    private Object mChildProcessServiceImplInstance;
+    // Note: the {@link WEBAPK_CHILD_PROCESS_SERVICE_IMPL_CLASS_NAME} must sync with the class name
+    // of Chrome's {@link WebApkChildProcessServiceImpl}.
+    private static final String WEBAPK_CHILD_PROCESS_SERVICE_IMPL_CLASS_NAME =
+            "org.chromium.chrome.browser.WebApkChildProcessServiceImpl";
+
+    private Class<?> mWebApkChildProcessServiceImplClass;
+    private Object mWebApkChildProcessServiceImplInstance;
 
     @Override
     public void onCreate() {
@@ -36,16 +37,17 @@ public class WebApkSandboxedProcessService extends Service {
             Context hostBrowserContext =
                     WebApkUtils.getHostBrowserContext(getApplicationContext());
             ClassLoader classLoader = hostBrowserContext.getClassLoader();
-            mChildProcessServiceImplClass =
-                    classLoader.loadClass(CHILD_PROCESS_SERVICE_IMPL_CLASS_NAME);
-            mChildProcessServiceImplInstance = mChildProcessServiceImplClass.newInstance();
+            mWebApkChildProcessServiceImplClass =
+                    classLoader.loadClass(WEBAPK_CHILD_PROCESS_SERVICE_IMPL_CLASS_NAME);
+            mWebApkChildProcessServiceImplInstance =
+                    mWebApkChildProcessServiceImplClass.newInstance();
 
-            Method createMethod = mChildProcessServiceImplClass.getMethod("create",
-                    Context.class, Context.class);
-            createMethod.invoke(mChildProcessServiceImplInstance, getApplicationContext(),
+            Method createMethod = mWebApkChildProcessServiceImplClass.getMethod(
+                    "create", Context.class, Context.class);
+            createMethod.invoke(mWebApkChildProcessServiceImplInstance, getApplicationContext(),
                     hostBrowserContext);
         } catch (Exception e) {
-            Log.v(TAG, "Unable to create a ChildProcessServiceImpl for the WebAPK.", e);
+            Log.v(TAG, "Unable to create a WebApkChildProcessServiceImpl for the WebAPK.", e);
         }
     }
 
@@ -58,11 +60,11 @@ public class WebApkSandboxedProcessService extends Service {
         stopSelf();
         try {
             Method bindMethod =
-                    mChildProcessServiceImplClass.getMethod("bind", Intent.class, int.class);
+                    mWebApkChildProcessServiceImplClass.getMethod("bind", Intent.class, int.class);
             int hostBrowserUid = WebApkUtils.getHostBrowserUid(this);
             assert hostBrowserUid >= 0;
             return (IBinder) bindMethod.invoke(
-                    mChildProcessServiceImplInstance, intent, hostBrowserUid);
+                    mWebApkChildProcessServiceImplInstance, intent, hostBrowserUid);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
@@ -72,8 +74,8 @@ public class WebApkSandboxedProcessService extends Service {
     public void onDestroy() {
         super.onDestroy();
         try {
-            Method destroyMethod = mChildProcessServiceImplClass.getMethod("destroy");
-            destroyMethod.invoke(mChildProcessServiceImplInstance);
+            Method destroyMethod = mWebApkChildProcessServiceImplClass.getMethod("destroy");
+            destroyMethod.invoke(mWebApkChildProcessServiceImplInstance);
         } catch (Exception e) {
             Log.v(TAG, "Unable to destroy the WebApkSandboxedProcessService.", e);
         }
