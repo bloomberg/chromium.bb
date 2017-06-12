@@ -63,7 +63,7 @@ class BASE_EXPORT MemoryDumpManager {
   // Arguments:
   //  request_dump_function: Function to invoke a global dump. Global dump
   //      involves embedder-specific behaviors like multiprocess handshaking.
-  //  is_coordinator: True when current process coodinates the periodic dump
+  //  is_coordinator: True when current process coordinates the periodic dump
   //      triggering.
   void Initialize(RequestGlobalDumpFunction request_dump_function,
                   bool is_coordinator);
@@ -178,7 +178,7 @@ class BASE_EXPORT MemoryDumpManager {
   friend class MemoryDumpManagerTest;
 
   // Holds the state of a process memory dump that needs to be carried over
-  // across task runners in order to fulfil an asynchronous CreateProcessDump()
+  // across task runners in order to fulfill an asynchronous CreateProcessDump()
   // request. At any time exactly one task runner owns a
   // ProcessMemoryDumpAsyncState.
   struct ProcessMemoryDumpAsyncState {
@@ -280,7 +280,7 @@ class BASE_EXPORT MemoryDumpManager {
   void GetDumpProvidersForPolling(
       std::vector<scoped_refptr<MemoryDumpProviderInfo>>*);
 
-  // An ordererd set of registered MemoryDumpProviderInfo(s), sorted by task
+  // An ordered set of registered MemoryDumpProviderInfo(s), sorted by task
   // runner affinity (MDPs belonging to the same task runners are adjacent).
   MemoryDumpProviderInfo::OrderedSet dump_providers_;
 
