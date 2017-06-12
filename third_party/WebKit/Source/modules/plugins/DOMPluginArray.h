@@ -25,6 +25,7 @@
 #include "modules/plugins/DOMPlugin.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
@@ -32,7 +33,7 @@ namespace blink {
 class LocalFrame;
 class PluginData;
 
-class DOMPluginArray final : public GarbageCollected<DOMPluginArray>,
+class DOMPluginArray final : public GarbageCollectedFinalized<DOMPluginArray>,
                              public ScriptWrappable,
                              public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -57,6 +58,9 @@ class DOMPluginArray final : public GarbageCollected<DOMPluginArray>,
   PluginData* GetPluginData() const;
 
   HeapVector<Member<DOMPlugin>> dom_plugins_;
+
+  // TODO(lfg): Temporary to track down https://crbug.com/731239.
+  RefPtr<const SecurityOrigin> main_frame_origin_;
 };
 
 }  // namespace blink

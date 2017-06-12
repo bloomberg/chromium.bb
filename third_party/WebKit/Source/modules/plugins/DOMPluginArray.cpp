@@ -47,6 +47,9 @@ unsigned DOMPluginArray::length() const {
 }
 
 DOMPlugin* DOMPluginArray::item(unsigned index) {
+  // TODO(lfg): Temporary to track down https://crbug.com/731239.
+  CHECK(main_frame_origin_->IsSameSchemeHostPort(GetPluginData()->Origin()));
+
   if (index >= dom_plugins_.size())
     return nullptr;
   if (!dom_plugins_[index]) {
@@ -106,6 +109,8 @@ void DOMPluginArray::UpdatePluginData() {
     dom_plugins_.clear();
     return;
   }
+
+  main_frame_origin_ = data->Origin();
 
   HeapVector<Member<DOMPlugin>> old_dom_plugins(std::move(dom_plugins_));
   dom_plugins_.clear();
