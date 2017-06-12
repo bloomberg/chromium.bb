@@ -126,11 +126,6 @@ bool SchemeRegistry::ShouldTreatURLSchemeAsLocal(const String& scheme) {
   return GetURLSchemesRegistry().local_schemes.Contains(scheme);
 }
 
-void SchemeRegistry::RegisterURLSchemeAsNoAccess(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.DeprecatedLower());
-  GetMutableURLSchemesRegistry().schemes_with_unique_origins.insert(scheme);
-}
-
 bool SchemeRegistry::ShouldTreatURLSchemeAsNoAccess(const String& scheme) {
   DCHECK_EQ(scheme, scheme.DeprecatedLower());
   if (scheme.IsEmpty())
@@ -220,11 +215,6 @@ bool SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
     return false;
   return GetURLSchemesRegistry().not_allowing_javascript_urls_schemes.Contains(
       scheme);
-}
-
-void SchemeRegistry::RegisterURLSchemeAsCORSEnabled(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.DeprecatedLower());
-  GetMutableURLSchemesRegistry().cors_enabled_schemes.insert(scheme);
 }
 
 bool SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(const String& scheme) {
