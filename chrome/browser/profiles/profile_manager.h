@@ -80,6 +80,12 @@ class ProfileManager : public content::NotificationObserver,
   // TODO(skuhne): Move into ash's new user management function.
   static Profile* GetActiveUserProfile();
 
+  // Load and return the initial profile for browser. On ChromeOS, this returns
+  // either the sign-in profile or the active user profile depending on whether
+  // browser is started normally or is restarted after crash. On other
+  // platforms, this returns the default profile.
+  static Profile* CreateInitialProfile();
+
   // Returns a profile for a specific profile directory within the user data
   // dir. This will return an existing profile it had already been created,
   // otherwise it will create and manage it.

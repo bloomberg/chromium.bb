@@ -227,7 +227,7 @@ TEST_F(UserManagerTest, ScreenLockAvailability) {
   user_manager::User* const user =
       user_manager::UserManager::Get()->GetActiveUser();
   Profile* const profile =
-      ProfileHelper::GetProfileByUserIdHash(user->username_hash());
+      ProfileHelper::GetProfileByUserIdHashForTest(user->username_hash());
 
   // Verify that the user is allowed to lock the screen.
   EXPECT_TRUE(user_manager::UserManager::Get()->CanCurrentUserLock());

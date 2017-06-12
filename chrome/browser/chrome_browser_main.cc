@@ -427,11 +427,11 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
   Profile* profile = nullptr;
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // On ChromeOS and Android the ProfileManager will use the same path as the
-  // one we got passed. GetActiveUserProfile will therefore use the correct path
+  // one we got passed. CreateInitialProfile will therefore use the correct path
   // automatically.
   DCHECK_EQ(user_data_dir.value(),
             g_browser_process->profile_manager()->user_data_dir().value());
-  profile = ProfileManager::GetActiveUserProfile();
+  profile = ProfileManager::CreateInitialProfile();
 
   // TODO(port): fix this. See comments near the definition of |user_data_dir|.
   // It is better to CHECK-fail here than it is to silently exit because of

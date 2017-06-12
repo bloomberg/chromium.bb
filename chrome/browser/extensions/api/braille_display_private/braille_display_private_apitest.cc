@@ -7,6 +7,7 @@
 #include <deque>
 
 #include "base/bind.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -336,6 +337,8 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   // Log in.
   session_manager::SessionManager::Get()->CreateSession(
       AccountId::FromUserEmail(kTestUserName), kTestUserName);
+  g_browser_process->profile_manager()->GetProfile(
+      ProfileHelper::Get()->GetProfilePathByUserIdHash(kTestUserName));
   session_manager::SessionManager::Get()->SessionStarted();
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_FALSE(

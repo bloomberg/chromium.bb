@@ -290,6 +290,54 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
                  .value();
 }
 
+// Test Get[ActiveUser|PrimaryUser|LastUsed]Profile does not load user profile.
+TEST_F(ProfileManagerTest, UserProfileLoading) {
+  using chromeos::ProfileHelper;
+
+  Profile* const signin_profile = ProfileHelper::GetSigninProfile();
+
+  // Get[Active|Primary|LastUsed]Profile return the sign-in profile before login
+  // happens. IsSameProfile() is used to properly test against TestProfile whose
+  // OTR version uses a different temp path.
+  EXPECT_TRUE(
+      ProfileManager::GetActiveUserProfile()->IsSameProfile(signin_profile));
+  EXPECT_TRUE(
+      ProfileManager::GetPrimaryUserProfile()->IsSameProfile(signin_profile));
+  EXPECT_TRUE(
+      ProfileManager::GetLastUsedProfile()->IsSameProfile(signin_profile));
+
+  // User signs in but user profile loading has not started.
+  const std::string user_id = "test-user@example.com";
+  const std::string user_id_hash =
+      ProfileHelper::Get()->GetUserIdHashByUserIdForTesting(user_id);
+  user_manager::UserManager::Get()->UserLoggedIn(
+      AccountId::FromUserEmail(user_id), user_id_hash, false);
+
+  // Sign-in profile should be returned at this stage. Otherwise, login code
+  // ends up in an invalid state. Strange things as in http://crbug.com/728683
+  // and http://crbug.com/718734 happens.
+  EXPECT_TRUE(
+      ProfileManager::GetActiveUserProfile()->IsSameProfile(signin_profile));
+  EXPECT_TRUE(
+      ProfileManager::GetPrimaryUserProfile()->IsSameProfile(signin_profile));
+  EXPECT_TRUE(
+      ProfileManager::GetLastUsedProfile()->IsSameProfile(signin_profile));
+
+  // Simulate UserSessionManager loads the profile.
+  Profile* const user_profile =
+      g_browser_process->profile_manager()->GetProfile(
+          ProfileHelper::Get()->GetProfilePathByUserIdHash(user_id_hash));
+  ASSERT_FALSE(user_profile->IsSameProfile(signin_profile));
+
+  // User profile is returned thereafter.
+  EXPECT_TRUE(
+      ProfileManager::GetActiveUserProfile()->IsSameProfile(user_profile));
+  EXPECT_TRUE(
+      ProfileManager::GetPrimaryUserProfile()->IsSameProfile(user_profile));
+  EXPECT_TRUE(
+      ProfileManager::GetLastUsedProfile()->IsSameProfile(user_profile));
+}
+
 #endif
 
 TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
@@ -677,7 +725,7 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
   ASSERT_TRUE(profile_manager);
 
 #if defined(OS_CHROMEOS)
-  // On CrOS, profile returned by GetLastUsedProfile is a singin profile that
+  // On CrOS, profile returned by GetLastUsedProfile is a sign-in profile that
   // is forced to be incognito. That's why we need to create at least one user
   // to get a regular profile.
   RegisterUser("test-user@example.com");
