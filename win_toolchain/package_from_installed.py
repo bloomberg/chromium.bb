@@ -60,9 +60,10 @@ def GetVSPath():
 
 def ExpandWildcards(root, sub_dir):
   # normpath is needed to change '/' to '\\' characters.
-  matches = glob.glob(os.path.normpath(os.path.join(root, sub_dir)))
+  path = os.path.normpath(os.path.join(root, sub_dir))
+  matches = glob.glob(path)
   if len(matches) != 1:
-    raise Exception('%s had %d matches - should be one' % (full, len(matches)))
+    raise Exception('%s had %d matches - should be one' % (path, len(matches)))
   return matches[0]
 
 
