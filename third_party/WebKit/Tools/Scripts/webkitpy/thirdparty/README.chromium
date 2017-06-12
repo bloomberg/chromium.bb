@@ -70,4 +70,6 @@ Description: This includes code for the manifest tool, lint tool, and wptserve.
     layout tests. The wpt/wpt directory only contains the tools, whereas
     LayoutTests/external/wpt contains the tests. Also see wpt/README.chromium
     for more details on maintenance.
-Local Modifications: Removed all files except for those listed in wpt/WPTWhiteList.
+Local Modifications:
+- Removed all files except for those listed in wpt/WPTWhiteList.
+- Added --ignore-glob option for ignoring an extra glob of files (used for ignoring *-expected.txt).
