@@ -536,41 +536,11 @@ class GclientTest(trial_dir.TestCase):
     test_data = [
       # Tuples of deps, deps_os, os_list and expected_deps.
       (
-        # OS doesn't need module.
-        {'foo': 'default_foo'},
-        {'os1': { 'foo': None } },
-        ['os1'],
-        {'foo': None}
-        ),
-      (
-        # OS wants a different version of module.
-        {'foo': 'default_foo'},
-        {'os1': { 'foo': 'os1_foo'} },
-        ['os1'],
-        {'foo': 'os1_foo'}
-        ),
-      (
         # OS with no overrides at all.
         {'foo': 'default_foo'},
         {'os1': { 'foo': None } },
         ['os2'],
         {'foo': 'default_foo'}
-        ),
-      (
-        # One OS doesn't need module, one OS wants the default.
-        {'foo': 'default_foo'},
-        {'os1': { 'foo': None },
-         'os2': {}},
-        ['os1', 'os2'],
-        {'foo': 'default_foo'}
-        ),
-      (
-        # One OS doesn't need module, another OS wants a special version.
-        {'foo': 'default_foo'},
-        {'os1': { 'foo': None },
-         'os2': { 'foo': 'os2_foo'}},
-        ['os1', 'os2'],
-        {'foo': 'os2_foo'}
         ),
       (
         # One OS wants to add a module.
@@ -604,6 +574,39 @@ class GclientTest(trial_dir.TestCase):
       self.assertEqual(result, expected_deps)
       self.assertEqual(deps, orig_deps)
 
+  def testUpdateWithOsDepsInvalid(self):
+    test_data = [
+      # Tuples of deps, deps_os, os_list.
+      (
+        # OS doesn't need module.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': None } },
+        ['os1'],
+        ),
+      (
+        # OS wants a different version of module.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': 'os1_foo'} },
+        ['os1'],
+        ),
+      (
+        # One OS doesn't need module, one OS wants the default.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': None },
+         'os2': {}},
+        ['os1', 'os2'],
+        ),
+      (
+        # One OS doesn't need module, another OS wants a special version.
+        {'foo': 'default_foo'},
+        {'os1': { 'foo': None },
+         'os2': { 'foo': 'os2_foo'}},
+        ['os1', 'os2'],
+        ),
+      ]
+    for deps, deps_os, target_os_list in test_data:
+      with self.assertRaises(gclient_utils.Error):
+        gclient.Dependency.MergeWithOsDeps(deps, deps_os, target_os_list)
 
   def testLateOverride(self):
     """Verifies expected behavior of LateOverride."""
@@ -614,7 +617,7 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(url, late_url)
 
   def testDepsOsOverrideDepsInDepsFile(self):
-    """Verifies that a 'deps_os' path can override a 'deps' path. Also
+    """Verifies that a 'deps_os' path cannot override a 'deps' path. Also
     see testUpdateWithOsDeps above.
     """
 
@@ -644,14 +647,12 @@ class GclientTest(trial_dir.TestCase):
     options.deps_os = 'unix'
 
     obj = gclient.GClient.LoadCurrentConfig(options)
-    obj.RunOnDeps('None', [])
+    with self.assertRaises(gclient_utils.Error):
+      obj.RunOnDeps('None', [])
     self.assertEqual(['unix'], sorted(obj.enforced_os))
     self.assertEquals(
         [
           ('foo', 'svn://example.com/foo'),
-          ('foo/baz', 'svn://example.com/foo/baz'),
-          ('foo/src', 'svn://example.com/foo/src_unix'),
-          ('foo/unix', 'svn://example.com/foo/unix'),
           ],
         sorted(self._get_processed()))
 

@@ -567,15 +567,19 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         target_os_deps[os_dep_key] = None
       else:
         if len(possible_values) > 1:
-          # It would be possible to abort here but it would be
-          # unfortunate if we end up preventing any kind of checkout.
-          logging.error('Conflicting dependencies for %s: %s. (target_os=%s)',
-                        os_dep_key, os_dep_value, target_os_list)
+          raise gclient_utils.Error(
+              'Conflicting dependencies for %s: %s. (target_os=%s)' % (
+                  os_dep_key, os_dep_value, target_os_list))
         # Sorting to get the same result every time in case of conflicts.
         target_os_deps[os_dep_key] = sorted(possible_values)[0]
 
     new_deps = deps.copy()
-    new_deps.update(target_os_deps)
+    for key, value in target_os_deps.iteritems():
+      if key in new_deps:
+        raise gclient_utils.Error(
+            ('Value from deps_os (%r: %r) conflicts with existing deps '
+             'entry (%r).') % (key, value, new_deps[key]))
+      new_deps[key] = value
     return new_deps
 
   def _postprocess_deps(self, deps, rel_prefix):
