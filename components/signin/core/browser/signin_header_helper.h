@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_HEADER_HELPER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_HEADER_HELPER_H_
 
+#include <map>
 #include <string>
 
-#include "build/build_config.h"  // For OS_IOS
+#include "build/build_config.h"
 
 namespace content_settings {
 class CookieSettings;
@@ -88,6 +89,14 @@ class SigninHeaderHelper {
   SigninHeaderHelper() {}
   virtual ~SigninHeaderHelper() {}
 
+  // Dictionary of fields in a account consistency response header.
+  using ResponseHeaderDictionary = std::map<std::string, std::string>;
+
+  // Parses the account consistency response header. Its expected format is
+  // "key1=value1,key2=value2,...".
+  static ResponseHeaderDictionary ParseAccountConsistencyResponseHeader(
+      const std::string& header_value);
+
   // Returns the value of the request header, or empty if the header should not
   // be added. Calls into BuildRequestHeader() which is customized by
   // subclasses.
@@ -136,13 +145,6 @@ void AppendOrRemoveAccountConsistentyRequestHeader(
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response
 // header.
 ManageAccountsParams BuildManageAccountsParams(const std::string& header_value);
-
-// Returns the parameters contained in the X-Chrome-Manage-Accounts response
-// header.
-// If the request does not have a response header or if the header contains
-// garbage, then |service_type| is set to |GAIA_SERVICE_TYPE_NONE|.
-ManageAccountsParams BuildManageAccountsParamsIfExists(net::URLRequest* request,
-                                                       bool is_off_the_record);
 
 }  // namespace signin
 
