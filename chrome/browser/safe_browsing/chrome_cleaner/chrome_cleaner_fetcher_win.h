@@ -6,15 +6,30 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_CLEANER_FETCHER_WIN_H_
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace safe_browsing {
 
+enum class ChromeCleanerFetchStatus {
+  // Fetch succeeded with a net::HTTP_OK response code.
+  kSuccess,
+  // File system error, no fetch on the network was attempted.
+  kFailedToCreateTemporaryDirectory,
+  // We received a net::HTTP_NOT_FOUND response code.
+  kNotFoundOnServer,
+  // Fetch failed or we received an http response code other than net::HTTP_OK
+  // and net::HTTP_NOT_FOUND.
+  kOtherFailure,
+};
+
 // Type of callback that is called when the network request to fetch the Chrome
-// Cleaner binary has been completed. The callback will be passed the filepath
-// and http response code as returned by net::URLFetcher.
+// Cleaner binary has been completed.
 using ChromeCleanerFetchedCallback =
-    base::OnceCallback<void(base::FilePath, int /*http response code*/)>;
+    base::OnceCallback<void(base::FilePath,
+                            ChromeCleanerFetchStatus fetch_status)>;
 
 // Fetches the Chrome Cleaner binary. This function can be called from any
 // sequence and |fetched_callback| will be called back on that same sequence.
