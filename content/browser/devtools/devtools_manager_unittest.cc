@@ -24,6 +24,7 @@
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_view_host.h"
@@ -173,6 +174,9 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
 }
 
 TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
+  // This test triggers incorrect notifications with PlzNavigate.
+  if (IsBrowserSideNavigationEnabled())
+    return;
   // Navigate to URL.  First URL should use first RenderViewHost.
   const GURL url("http://www.google.com");
   controller().LoadURL(
