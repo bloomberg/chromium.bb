@@ -192,6 +192,14 @@ Color LayoutThemeMac::PlatformInactiveListBoxSelectionForegroundColor() const {
   return Color::kBlack;
 }
 
+Color LayoutThemeMac::PlatformSpellingMarkerUnderlineColor() const {
+  return Color(251, 45, 29);
+}
+
+Color LayoutThemeMac::PlatformGrammarMarkerUnderlineColor() const {
+  return Color(107, 107, 107);
+}
+
 Color LayoutThemeMac::PlatformFocusRingColor() const {
   static const RGBA32 kOldAquaFocusRingColor = 0xFF7DADD9;
   if (UsesTestModeFocusRingColor())

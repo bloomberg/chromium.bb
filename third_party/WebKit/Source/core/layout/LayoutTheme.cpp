@@ -332,6 +332,14 @@ Color LayoutTheme::InactiveListBoxSelectionForegroundColor() const {
   return PlatformInactiveListBoxSelectionForegroundColor();
 }
 
+Color LayoutTheme::PlatformSpellingMarkerUnderlineColor() const {
+  return Color(255, 0, 0);
+}
+
+Color LayoutTheme::PlatformGrammarMarkerUnderlineColor() const {
+  return Color(192, 192, 192);
+}
+
 Color LayoutTheme::PlatformActiveSelectionBackgroundColor() const {
   // Use a blue color by default if the platform theme doesn't define anything.
   return Color(0, 0, 255);

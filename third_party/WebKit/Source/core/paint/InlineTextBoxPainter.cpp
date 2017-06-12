@@ -705,9 +705,12 @@ static const float kMarkerWidth = 4;
 static const float kMarkerHeight = 2;
 
 sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
-  SkColor color = (marker_type == DocumentMarker::kGrammar)
-                      ? SkColorSetRGB(0xC0, 0xC0, 0xC0)
-                      : SK_ColorRED;
+  SkColor color =
+      (marker_type == DocumentMarker::kGrammar)
+          ? LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor().Rgb()
+          : LayoutTheme::GetTheme()
+                .PlatformSpellingMarkerUnderlineColor()
+                .Rgb();
 
   // Record the path equivalent to this legacy pattern:
   //   X o   o X o   o X
@@ -746,9 +749,12 @@ static const float kMarkerWidth = 4;
 static const float kMarkerHeight = 3;
 
 sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
-  SkColor color = (marker_type == DocumentMarker::kGrammar)
-                      ? SkColorSetRGB(0x6B, 0x6B, 0x6B)
-                      : SkColorSetRGB(0xFB, 0x2D, 0x1D);
+  SkColor color =
+      (marker_type == DocumentMarker::kGrammar)
+          ? LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor().Rgb()
+          : LayoutTheme::GetTheme()
+                .PlatformSpellingMarkerUnderlineColor()
+                .Rgb();
 
   // Match the artwork used by the Mac.
   static const float kR = 1.5f;
