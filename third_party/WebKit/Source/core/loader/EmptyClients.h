@@ -339,6 +339,12 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) override;
 
+  ObjectContentType GetObjectContentType(const KURL&,
+                                         const String&,
+                                         bool) override {
+    return ObjectContentType();
+  }
+
   void DidCreateNewDocument() override {}
   void DispatchDidClearWindowObjectInMainWorld() override {}
   void DocumentElementAvailable() override {}
