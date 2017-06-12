@@ -56,6 +56,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 
 Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokmärken, historik och andra inställningar, med <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Visa Chrome-menyn</translation>
+<translation id="2416359993254398973">Du behöver ge Chrome behörighet att använda kameran på den här webbplatsen.</translation>
 <translation id="2429317896000329049">Google Chrome kunde inte synkronisera data eftersom synkronisering inte är tillgängligt för din domän.</translation>
 <translation id="2446511512801740068">Chrome är inaktuellt eftersom det inte har startats om på ett tag. Det finns en uppdatering tillgänglig som tillämpas så snart du startar om.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
@@ -161,6 +162,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="556024056938947818">Google Chrome försöker visa lösenord.</translation>
 <translation id="5563479599352954471">Sök med en tryckning</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="557283862590186398">Du behöver ge Chrome behörighet att använda mikrofonen på den här webbplatsen.</translation>
 <translation id="5620765574781326016">Läs mer om vilka ämnen som webbplatser handlar om utan att lämna sidan.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan vara skadlig och har blockerats av Chrome.</translation>
 <translation id="568643307450491754">Hitta dina bokmärken på Chrome-menyn eller i bokmärkesfältet.</translation>
@@ -185,6 +187,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6291549208091401781">Google Chrome har redan installerats för alla användare på datorn.</translation>
 <translation id="6338556085225130112">Uppdatera Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS" />öppen källkod<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6393863479814692971">Du behöver ge Chrome behörighet att använda kameran och mikrofonen på den här webbplatsen.</translation>
 <translation id="6400076122676892962">Den här datorn slutar snart ta emot uppdateringar för Google Chrome eftersom stödet för Mac OS X 10.6, 10.7 och 10.8 kommer att upphöra.</translation>
 <translation id="6410540444482791104">Du kan bidra till att göra Chrome säkrare och enklare att använda genom att låta viss systeminformation och visst sidinnehåll skickas automatiskt till Google i syfte att identifiera skadliga appar och webbplatser.</translation>
 <translation id="6470176598693778404">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Mac OS X 10.6, 10.7 och 10.8 inte längre stöds.</translation>

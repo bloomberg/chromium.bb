@@ -156,6 +156,7 @@
       capture devices will be granted on SAML login pages.  If no match is
       found, access will be automatically denied.  Wildcard patterns are not
       allowed.</translation>
+<translation id="1634989431648355062">Allow the <ph name="FLASH_PLUGIN_NAME" /> plug-in on these sites</translation>
 <translation id="1655229863189977773">Set disk cache size in bytes</translation>
 <translation id="166427968280387991">Proxy server</translation>
 <translation id="1668836044817793277">Whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version.
@@ -745,6 +746,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Leaving these policies unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3758249152301468420">Disable Developer Tools</translation>
 <translation id="3765260570442823273">Duration of the idle log-out warning message</translation>
+<translation id="376931976323225993">Allows you to set whether websites are allowed to automatically run the <ph name="FLASH_PLUGIN_NAME" /> plug-in. Automatically running the <ph name="FLASH_PLUGIN_NAME" /> plug-in can be either allowed for all websites or denied for all websites.
+
+          Click to play allows the <ph name="FLASH_PLUGIN_NAME" /> plug-in to run but the user must click on the placeholder to start its execution.
+
+          If this policy is left not set, the user will be able to change this setting manually.</translation>
 <translation id="3780152581321609624">Include non-standard port in Kerberos SPN</translation>
 <translation id="3780319008680229708">If this policy is set to true, the Cast toolbar icon will always be shown on the toolbar or the overflow menu and users will not be able to remove it.
 
@@ -883,6 +889,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4105989332710272578">Disable Certificate Transparency enforcement for a list of URLs</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
+<translation id="4183229833636799228">Default <ph name="FLASH_PLUGIN_NAME" /> setting</translation>
 <translation id="4192388905594723944">URL for validating remote access client authentication token</translation>
 <translation id="4203389617541558220">Limit the device uptime by scheduling automatic reboots.
 
@@ -1226,6 +1233,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
+<translation id="555077880566103058">Allow all sites to automatically run the <ph name="FLASH_PLUGIN_NAME" /> plug-in</translation>
 <translation id="5559079916187891399">This policy has no effect on Android apps.</translation>
 <translation id="5560039246134246593">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_NAME" />.
 
@@ -1308,12 +1316,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5868414965372171132">User-level network configuration</translation>
 <translation id="588135807064822874">Enable Touch to Search</translation>
 <translation id="5883015257301027298">Default cookies setting</translation>
-<translation id="5887291617378691520">If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened. If left not set no URL will be opened on start up.
-
-          This policy only works if the 'RestoreOnStartup' policy is set to 'RestoreOnStartupIsURLs'.
-
-          This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.</translation>
 <translation id="5887414688706570295">Configures the TalkGadget prefix that will be used by remote access hosts and prevents users from changing it.
 
           If specified, this prefix is prepended to the base TalkGadget name to create a full domain name for the TalkGadget. The base TalkGadget domain name is '.talkgadget.google.com'.
@@ -1399,6 +1401,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Otherwise it may be set to one of the following values: "sslv3", "tls1", "tls1.1" or "tls1.2". When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions less than the specified version. An unrecognised value will be ignored.
 
       Note that, despite the number, "sslv3" is an earlier version than "tls1".</translation>
+<translation id="6181608880636987460">Allows you to set a list of URL patterns that specify sites which are not allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="6190022522129724693"> setting</translation>
 <translation id="6197453924249895891">Grants access to corporate keys to extensions.
 
@@ -1519,6 +1524,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Setting this option to disabled or leave it unset the plug-in finder will be active.</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
+<translation id="6757438632136860443">Allows you to set a list of URL patterns that specify sites which are allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="6766216162565713893">Allow sites to ask the user to grant access to a nearby Bluetooth device</translation>
 <translation id="6770454900105963262">Report information about active kiosk sessions</translation>
 <translation id="6786747875388722282">Extensions</translation>
@@ -1546,6 +1554,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you set this policy, users cannot change or override it.
 
           If this policy is left unset, spoken feedback is disabled initially but can be enabled by the user at any time.</translation>
+<translation id="6922884955650325312">Block the <ph name="FLASH_PLUGIN_NAME" /> plug-in</translation>
 <translation id="6923366716660828830">Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
@@ -1591,18 +1600,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If disabled, no bookmarks are imported.
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
-<translation id="7055358889740598917">Configures the default homepage URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
-
-          The homepage is the page opened by the Home button. The pages that open on start-up are controlled by the RestoreOnStart-Up policies.
-
-          The homepage type can either be set to a URL that you specify here or set to the New Tab Page. If you select the New Tab Page, then this policy does not take effect.
-
-          If you enable this setting, users cannot change their homepage URL in <ph name="PRODUCT_NAME" />, but they can still choose the New Tab Page as their homepage.
-
-          Leaving this policy not set will allow the user to choose their homepage on their own if HomepageIsNewTabPage is not set too.
-
-          This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.</translation>
 <translation id="7063895219334505671">Allow pop-ups on these sites</translation>
 <translation id="706669471845501145">Allow SITE to show desktop notifications?</translation>
 <translation id="7072406291414141328">Enables throttling network bandwidth</translation>
@@ -1624,21 +1621,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to False, background mode is disabled and cannot be controlled by the user in the browser settings.
 
       If this policy is left unset, background mode is initially disabled and can be controlled by the user in the browser settings.</translation>
-<translation id="7123297102171034788">Allows you to specify the behaviour on startup.
-
-          If you choose 'Open New Tab Page' the New Tab Page will always be opened when you start <ph name="PRODUCT_NAME" />.
-
-          If you choose 'Restore the last session', the URLs that were open last time <ph name="PRODUCT_NAME" /> was closed will be reopened and the browsing session will be restored as it was left.
-          Choosing this option disables some settings that rely on sessions or that perform actions on exit (such as Clear browsing data on exit or session-only cookies).
-
-          If you choose 'Open a list of URLs', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME" />.
-
-          If you enable this setting, users cannot change or override it in <ph name="PRODUCT_NAME" />.
-
-          Disabling this setting is equivalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME" />.
-
-          This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.</translation>
 <translation id="7128918109610518786">Lists the application identifiers <ph name="PRODUCT_OS_NAME" /> shows as pinned apps in the launcher bar.
 
       If this policy is configured, the set of applications is fixed and can't be changed by the user.
@@ -1879,20 +1861,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="793134539373873765">Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.</translation>
 <translation id="7933141401888114454">Enable creation of supervised users</translation>
 <translation id="793473937901685727">Set certificate availability for ARC-apps</translation>
-<translation id="7936098023732125869">Enables the use of a default search provider.
-
-          If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.
-
-          You can specify the default search provider to be used by setting the rest of the default search policies. If these are left empty, the user can choose the default provider.
-
-          If you disable this setting, no search is performed when the user enters non-URL text in the omnibox.
-
-          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
-
-          If this policy is left not set, the default search provider is enabled and the user will be able to set the search provider list.
-
-          This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="7941975817681987555">Do not predict network actions on any network connection</translation>
 <translation id="7953256619080733119">Managed user manual exception hosts</translation>
@@ -2017,18 +1985,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8312129124898414409">Allows you to set whether websites are allowed to use key generation. Using key generation can be either allowed for all websites or denied for all websites.
 
           If this policy is left not set, 'BlockKeygen' will be used and the user will be able to change it.</translation>
-<translation id="8316806736175990584">Configures the type of the default homepage in <ph name="PRODUCT_NAME" /> and prevents users from changing homepage preferences. The homepage can either be set to a URL that you specify or set to the New Tab Page.
-
-          If you enable this setting, the New Tab Page is always used for the homepage, and the homepage URL location is ignored.
-
-          If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
-
-          If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME" />.
-
-          Leaving this policy not set will allow the user to choose whether the new tab page is their homepage on their own.
-
-          This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.</translation>
 <translation id="8329984337216493753">This policy is active in retail mode only.
 
       When DeviceIdleLogoutTimeout is specified, this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.
@@ -2064,24 +2020,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8519264904050090490">Managed user manual exception URLs</translation>
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
-<translation id="855339549837475534">Both Chromium and Google Chrome support the same set of
-      policies. Please note that this document may include policies that are
-      targeted for unreleased software versions (i.e. their 'Supported on' entry
-      refers to an unreleased version) and that such policies are subject to
-      change or removal without prior notice.
-
-      These policies are strictly intended to be used to configure instances of
-      <ph name="PRODUCT_NAME" /> internal to your
-      organisation. Use of these policies outside of your organisation (for
-      example, in a publicly distributed program) is considered malware and will
-      probably be labelled as malware by Google and anti-virus vendors.
-
-      These settings don't need to be configured manually!  Easy-to-use
-      templates for Windows, Mac and Linux are available for download from <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      The recommended way to configure policy on Windows is via GPO, although
-      provisioning policy via registry is still supported for Windows instances
-      that are joined to an Active Directory domain.</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
 <translation id="8587229956764455752">Allow creation of new user accounts</translation>
 <translation id="8614804915612153606">Disables Auto Update</translation>
@@ -2098,17 +2036,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If you leave this policy unset <ph name="PRODUCT_NAME" /> will try to detect if a server is on the Intranet and only then will it respond to IWA requests. If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
-<translation id="868068801094828689">Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME" /> to Google and prevents users from changing this setting.
-
-      If this setting is enabled, anonymous reporting of usage and crash-related
-      data is sent to Google.  If it is disabled, this information is not sent
-      to Google. In both cases, users cannot change or override the setting.
-      If this policy is left not set, the setting will be what the user chose
-      upon installation/first run.
-
-      This policy is not available on Windows instances that are not joined to
-      an Active Directory domain. (For Chrome OS, see
-      DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Use built-in DNS client</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
 <translation id="8711086062295757690">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.
@@ -2154,6 +2081,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8858642179038618439">Force YouTube Safety Mode</translation>
 <translation id="8864975621965365890">Suppresses the turn-down prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Homepage</translation>
+<translation id="8882006618241293596">Block the <ph name="FLASH_PLUGIN_NAME" /> plug-in on these sites</translation>
 <translation id="8906768759089290519">Enable guest mode</translation>
 <translation id="8908294717014659003">Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 

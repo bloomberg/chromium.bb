@@ -64,10 +64,12 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="228809120910082333">Confirme a sua conta e PIN abaixo para permitir o acesso do Chromoting.</translation>
 <translation id="2314101195544969792">A sua sessão de <ph name="APPLICATION_NAME" /> está inativa há algum tempo e será desligada dentro de momentos.</translation>
+<translation id="2317666076142640974">Conheça em primeira mão a nova <ph name="LINK_BEGIN" />aplicação Web do Ambiente de Trabalho Remoto do Chrome<ph name="LINK_END" />. Gostaríamos de receber os seus comentários.</translation>
 <translation id="2353140552984634198">Pode aceder com segurança a este computador utilizando o Chromoting.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">Não é possível contactar o anfitrião. Provavelmente, isso deve-se à configuração da rede que está a utilizar.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Última atividade online <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Esta aplicação já não é suportada. Para garantir que recebe as mais recentes funcionalidades e atualizações de segurança, utilize a <ph name="LINK_BEGIN" />aplicação Web do Ambiente de Trabalho Remoto do Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar o Ambiente de Trabalho Remoto do Chrome, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
 <translation id="2512228156274966424">NOTA: Para garantir que todos os atalhos de teclado estão disponíveis, pode configurar o Ambiente de Trabalho Remoto do Chrome para "Abrir como janela".</translation>
 <translation id="2540992418118313681">Pretende partilhar este computador e permitir que outro utilizador o veja e controle?</translation>
@@ -230,6 +232,7 @@ Remoto do Chrome</translation>
 <translation id="6930242544192836755">Duração</translation>
 <translation id="6939719207673461467">Mostrar/ocultar teclado.</translation>
 <translation id="6944854424004126054">Restaurar janela</translation>
+<translation id="6948905685698011662">O Ambiente de Trabalho Remoto do Chrome já está disponível na Web! Experimente a nossa <ph name="LINK_BEGIN" />aplicação Web gratuita<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">As ligações ao computador remoto estão temporariamente bloqueadas porque alguém tentou estabelecer ligação com um PIN inválido. Tente novamente mais tarde.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Tem a certeza de que pretende desativar as ligações remotas a <ph name="HOSTNAME" />? Se mudar de ideias, será necessário aceder a esse computador e voltar a ativar as ligações.</translation>
@@ -246,6 +249,7 @@ Remoto do Chrome</translation>
 <translation id="7401733114166276557">Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="7434397035092923453">Acesso negado ao cliente: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Cliente ligado: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">O Ambiente de Trabalho Remoto do Chrome tem um novo lar na Web. Experimente a nossa <ph name="LINK_BEGIN" />aplicação Web<ph name="LINK_END" />. Além de ser rápida e gratuita, tem as mesmas funcionalidades de sempre.</translation>
 <translation id="7606912958770842224">Ativar ligações remotas</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

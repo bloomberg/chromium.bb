@@ -64,10 +64,12 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="225614027745146050">Laipni lūdzam!</translation>
 <translation id="228809120910082333">Lūdzu, tālāk apstipriniet kontu un PIN kodu, lai piekļūtu Chrome saitei.</translation>
 <translation id="2314101195544969792">Jūsu <ph name="APPLICATION_NAME" /> sesija jau kādu laiku nav aktīva, un drīzumā tiks pārtraukts savienojums.</translation>
+<translation id="2317666076142640974">Izmēģiniet jauno <ph name="LINK_BEGIN" />Chrome attālās darbvirsmas tīmekļa lietotni<ph name="LINK_END" />. Mēs labprāt saņemtu atsauksmes no jums.</translation>
 <translation id="2353140552984634198">Varat izveidot drošu savienojumu ar šo datoru, izmantojot Chrome saiti.</translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2366718077645204424">Nevar sasniegt saimniekdatoru. Iespējamais iemesls var būt tīkla konfigurācija, kuru izmantojat.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Pēdējo reizi redzēts tiešsaistē <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Šī lietotne vairs netiek atbalstīta. Lai saņemtu jaunākās funkcijas un drošības atjauninājumus, lūdzu, izmantojiet <ph name="LINK_BEGIN" />Chrome attālās darbvirsmas tīmekļa lietotni<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Palīdziet mums uzlabot Chrome attālo darbvirsmu, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="2512228156274966424">PIEZĪME. Lai būtu pieejami visi īsinājumtaustiņi, Chrome attālo darbvirsmu varat konfigurēt šādi: “Atvērt kā logu”.</translation>
 <translation id="2540992418118313681">Vai vēlaties koplietot šo datoru ar citu lietotāju, lai viņš varētu skatīt un pārvaldīt tajā esošo saturu?</translation>
@@ -230,6 +232,7 @@ darbvirsmas saimniekdators</translation>
 <translation id="6930242544192836755">Ilgums</translation>
 <translation id="6939719207673461467">Rādīt/slēpt tastatūru</translation>
 <translation id="6944854424004126054">Atjaunot logu</translation>
+<translation id="6948905685698011662">Tagad Chrome attālā darbvirsma ir pieejama tīmeklī. Izmēģiniet mūsu <ph name="LINK_BEGIN" />bezmaksas tīmekļa lietotni<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Savienojumi ar attālo datoru īslaicīgi ir bloķēti, jo kāda persona mēģināja izveidot savienojumu, izmantojot nederīgu PIN. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="6965382102122355670">Labi</translation>
 <translation id="6985691951107243942">Vai tiešām vēlaties atspējot attālos savienojumus ar saimniekdatoru <ph name="HOSTNAME" />? Ja pārdomāsiet, savienojumus ar šo datoru varēsiet iespējot tikai klātienē.</translation>
@@ -246,6 +249,7 @@ darbvirsmas saimniekdators</translation>
 <translation id="7401733114166276557">Chrome attālā darbvirsma</translation>
 <translation id="7434397035092923453">Piekļuve liegta šim klientam: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klients, kas izveidojis savienojumu: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Chrome attālā darbvirsma tiek pārvietota uz tīmekli. Izmēģiniet mūsu <ph name="LINK_BEGIN" />tīmekļa lietotni<ph name="LINK_END" /> — tā darbojas ātri un bez maksas, un tajā ir ietvertas tās pašas funkcijas.</translation>
 <translation id="7606912958770842224">Iespējot attālos savienojumus</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>

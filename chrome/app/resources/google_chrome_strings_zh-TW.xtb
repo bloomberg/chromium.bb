@@ -52,6 +52,7 @@
 
 如果你仍要繼續登入帳戶，各項 Chrome 資訊 (例如書籤、紀錄和其他設定) 則會合併至 <ph name="ACCOUNT_EMAIL_NEW" />。</translation>
 <translation id="2397416548179033562">顯示 Chrome 選單</translation>
+<translation id="2416359993254398973">Chrome 需要相關權限，才能讓這個網站使用你的攝影機。</translation>
 <translation id="2429317896000329049">你的網域無法使用「同步功能」，因此 Google Chrome 無法同步處理你的資料。</translation>
 <translation id="2446511512801740068">Chrome 已有一段時間未重新啟動，現用版本因此過舊。重新啟動後，即會套用可用的更新。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
@@ -155,6 +156,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="556024056938947818">Google Chrome 即將顯示密碼。</translation>
 <translation id="5563479599352954471">輕觸即可搜尋</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="557283862590186398">Chrome 需要相關權限，才能讓這個網站使用你的麥克風。</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能不安全，因此遭到 Chrome 封鎖。</translation>
 <translation id="568643307450491754">你的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
@@ -179,6 +181,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="6291549208091401781">電腦上的所有使用者都已經安裝 Google Chrome 了。</translation>
 <translation id="6338556085225130112">正在更新 Google Chrome</translation>
 <translation id="6368958679917195344">Chrome 作業系統藉助了其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟體<ph name="END_LINK_CROS_OSS" />的相關技術才得以問世。</translation>
+<translation id="6393863479814692971">Chrome 需要相關權限，才能讓這個網站使用你的攝影機和麥克風。</translation>
 <translation id="6400076122676892962">Google Chrome 將停止支援 Mac OS X 10.6、10.7 和 10.8，因此這部電腦很快就不會再收到 Google Chrome 更新。</translation>
 <translation id="6410540444482791104">你可以選擇自動傳送部分系統資訊和網頁內容給 Google，協助我們偵測危險的應用程式和網站，讓 Chrome 變得更安全、更好用。</translation>
 <translation id="6470176598693778404">Google Chrome 已停止支援 Mac OS X 10.6、10.7 和 10.8，因此這部電腦不會再收到 Google Chrome 更新。</translation>

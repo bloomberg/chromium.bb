@@ -75,6 +75,7 @@
 <translation id="1119069657431255176">Archiv ve formátu Tar komprimovaný metodou Bzip2</translation>
 <translation id="1119447706177454957">Interní chyba</translation>
 <translation id="1120026268649657149">Je nutné zadat jedinečné klíčové slovo nebo nezadávat nic</translation>
+<translation id="1120811664190001878">Umožnit tomuto zařízení najít ostatní zařízení s vaším účtem Google, která mají mobilní datové připojení</translation>
 <translation id="1122198203221319518">&amp;Nástroje</translation>
 <translation id="1122242684574577509">Ověření selhalo. Kliknutím přejděte na přihlašovací stránku sítě Wi-Fi, kterou používáte (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Název záložky</translation>
@@ -597,6 +598,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="186612162884103683">Rozšíření <ph name="EXTENSION" /> může číst obrázky, video a zvukové soubory v povolených umístěních a zapisovat do nich.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> je připraven dokončit instalaci.</translation>
 <translation id="1871615898038944731">Vaše zařízení <ph name="DEVICE_TYPE" /> je aktuální</translation>
+<translation id="1877520246462554164">Nepodařilo se získat ověřovací token. Chcete-li to zkusit znovu, odhlaste se a poté se znovu přihlaste.</translation>
 <translation id="1878524442024357078">Žádným webům přístup do počítače pomocí pluginu nepovolovat</translation>
 <translation id="1880905663253319515">Smazat certifikát <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="1882130480443819387">Řadit podle názvu</translation>
@@ -1143,6 +1145,7 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="271033894570825754">Nové</translation>
 <translation id="2713008223070811050">Správa displejů</translation>
 <translation id="2714393097308983682">Obchod Google Play</translation>
+<translation id="2718395828230677721">Noční režim</translation>
 <translation id="2718998670920917754">Antivirový software nalezl virus.</translation>
 <translation id="2721037002783622288">&amp;Vyhledat obrázek pomocí vyhledávače <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -1183,7 +1186,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2775104091073479743">Upravit otisky prstů</translation>
 <translation id="2776441542064982094">V síti zřejmě nejsou žádná zařízení dostupná k registraci. Pokud je zařízení zapnuté a připojené k internetu, zkuste je zaregistrovat podle postupu v návodu k použití.</translation>
 <translation id="2783298271312924866">Staženo</translation>
-<translation id="2783321960289401138">Vytvořit zástupce...</translation>
 <translation id="2783661497142353826">Správa aplikací pro režim veřejného terminálu</translation>
 <translation id="2784407158394623927">Aktivace mobilní datové služby</translation>
 <translation id="2784556410206159845">Smart Lock pro Chromebook z důvodu zajištění bezpečnosti zařízení <ph name="DEVICE_TYPE" /> vyžaduje, aby byl v telefonu nastaven zámek obrazovky.</translation>
@@ -1222,6 +1224,7 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2805646850212350655">Systém souborů Microsoft EFS</translation>
 <translation id="2805707493867224476">Povolit všem webům zobrazovat vyskakovací okna</translation>
 <translation id="2805756323405976993">Aplikace</translation>
+<translation id="2807517655263062534">Zde se zobrazují stažené soubory</translation>
 <translation id="2809346626032021864">Četba</translation>
 <translation id="2809586584051668049">a další (<ph name="NUMBER_ADDITIONAL_DISABLED" />)</translation>
 <translation id="2810731435681289055">Při příštím odemknutí tohoto zařízení <ph name="DEVICE_TYPE" /> se funkce Smart Lock aktualizuje a budete se moci přihlásit pouhým kliknutím na obrázek.</translation>
@@ -1353,6 +1356,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3004391367407090544">Zkuste to prosím později</translation>
 <translation id="300544934591011246">Předchozí heslo</translation>
 <translation id="3007214526293698309">Opravit poměr</translation>
+<translation id="3007771295016901659">Duplikovat kartu</translation>
 <translation id="3009300415590184725">Opravdu chcete zrušit proces nastavení služby mobilních dat?</translation>
 <translation id="3009779501245596802">Indexované databáze</translation>
 <translation id="3010279545267083280">Heslo bylo smazáno</translation>
@@ -1391,12 +1395,14 @@ Další informace naleznete v <ph name="BEGIN_LINK" />centru nápovědy<ph name
 <translation id="3038675903128704560">Žádným webům přístup do počítače pomocí pluginu nepovolovat</translation>
 <translation id="3039828483675273919">Přesouvání $1 položek...</translation>
 <translation id="304009983491258911">Změna PIN SIM karty</translation>
+<translation id="304567287000691532">Sdílení obrazovky</translation>
 <translation id="3046910703532196514">Webová stránka, úplná</translation>
 <translation id="304826556400666995">Zapnout zvuk karet</translation>
 <translation id="3053013834507634016">Použití klíče certifikátu</translation>
 <translation id="3056670889236890135">Nastavení můžete upravovat pouze u aktuálního uživatele. Chcete-li upravit nastavení pro tohoto uživatele, přepněte na něj.</translation>
 <translation id="3057861065630527966">Zálohovat fotky a videa</translation>
 <translation id="3058212636943679650">K obnovení operačního systému počítače budete potřebovat kartu SD nebo paměťovou jednotku USB pro obnovení.</translation>
+<translation id="3060379269883947824">Zapnout hlasovou odezvu po výběru</translation>
 <translation id="3063844757726132584">Všechny své aplikace můžete snadno otevřít pomocí tohoto šikovného spouštěče. Hrajte hry, videochatujte, poslouchejte hudbu, upravujte dokumenty nebo si stáhněte další aplikace.</translation>
 <translation id="3064410671692449875">Nedostatek dat</translation>
 <translation id="3065041951436100775">Zpětná vazba k ukončení procesu karty</translation>
@@ -1430,6 +1436,7 @@ Další informace naleznete v <ph name="BEGIN_LINK" />centru nápovědy<ph name
 <translation id="3108967419958202225">Zvolit...</translation>
 <translation id="3112378005171663295">Sbalit</translation>
 <translation id="3115147772012638511">Čekání na mezipaměť</translation>
+<translation id="3116902203001917540">Usnadňuje čtení a sledování obrazovky při tlumeném osvětlení</translation>
 <translation id="3118319026408854581">Nápověda aplikace <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Šifrování je pro danou operaci na zařízení <ph name="DEVICE_NAME" /> nedostatečné.</translation>
 <translation id="3121793941267913344">Resetování tohoto zařízení <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -1616,6 +1623,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3391716558283801616">Karta 7</translation>
 <translation id="3394150261239285340">Webová stránka <ph name="HOST" /> chce použít váš mikrofon a kameru.</translation>
 <translation id="3396331542604645348">Zvolená tiskárna není k dispozici nebo není správně nainstalovaná. Zkontrolujte tiskárnu nebo vyberte jinou.</translation>
+<translation id="3399432415385675819">Oznámení budou zakázána</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="340485819826776184">Používat službu předpovídání, která pomáhá dokončovat vyhledávací dotazy a adresy URL zadávané do adresního řádku.</translation>
 <translation id="3405664148539009465">Personalizovat písma</translation>
@@ -2196,7 +2204,6 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="4322394346347055525">Zavřít ostatní karty</translation>
 <translation id="4330387663455830245">Jazyk <ph name="LANGUAGE" /> nikdy nepřekládat</translation>
 <translation id="4330437798887640816">Přepnout režim vysokého kontrastu</translation>
-<translation id="4331056788446675037">Jejda. Systému se nepodařilo načíst zásady ze služby Microsoft® Active Directory®.</translation>
 <translation id="4333854382783149454">Šifrování PKCS #1 SHA-1 s RSA</translation>
 <translation id="4335713051520279344">Počítač se za 1 sekundu restartuje.
 Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
@@ -2547,6 +2554,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="488785315393301722">Zobrazit podrobnosti</translation>
 <translation id="4888510611625056742">Karta 2</translation>
 <translation id="4890773143211625964">Zobrazit rozšířené možnosti tiskárny</translation>
+<translation id="4891089016822695758">Fórum beta</translation>
 <translation id="4893336867552636863">Tímto z tohoto zařízení trvale smažete své údaje o prohlížení.</translation>
 <translation id="4898011734382862273">Certifikát <ph name="CERTIFICATE_NAME" /> reprezentuje certifikační autoritu</translation>
 <translation id="4899376560703610051">Zařízení <ph name="DEVICE_TYPE" /> bylo ručně uzamčeno. Před vstupem budete muset zadat heslo.</translation>
@@ -2816,11 +2824,13 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5316588172263354223">Hlasové vyhledávání kdykoliv</translation>
 <translation id="5316716239522500219">Zrcadlit monitory</translation>
 <translation id="5317780077021120954">Uložit</translation>
+<translation id="5319748504063551568">Aby váš účet mohl získat přístup k Obchodu Google Play, budete muset provést ověření u svého poskytovatele identity. Pokračujte kliknutím na Další.</translation>
 <translation id="532247166573571973">Server pravděpodobně není dostupný. Zkuste to znovu později.</translation>
 <translation id="532360961509278431">Soubor $1 nelze otevřít: $2</translation>
 <translation id="5324780743567488672">Nastavit časové pásmo automaticky podle polohy</translation>
 <translation id="5327248766486351172">Název</translation>
 <translation id="5328342723323072228">Aplikace na psaní poznámek:</translation>
+<translation id="532943162177641444">Klepnutím na oznámení na telefonu nebo tabletu <ph name="PHONE_NAME" /> nastavte mobilní hotspot, který bude moci využít toto zařízení.</translation>
 <translation id="5329615878510216304">vyhledat znovu</translation>
 <translation id="5329858601952122676">&amp;Smazat</translation>
 <translation id="5330145655348521461">Tyto soubory jsou otevřeny na jiné ploše. Chcete-li je zobrazit, přejděte do profilu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
@@ -3091,6 +3101,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5754903485544371559">Přidat do aplikací...</translation>
 <translation id="5756163054456765343">C&amp;entrum nápovědy</translation>
 <translation id="5759728514498647443">Dokumenty odeslané k tisku prostřednictvím aplikace <ph name="APP_NAME" /> lze číst v aplikaci <ph name="APP_NAME" />.</translation>
+<translation id="5763751966069581670">Nebyla nalezena žádná zařízení USB</translation>
 <translation id="5764483294734785780">Uložit &amp;zvuk jako...</translation>
 <translation id="57646104491463491">Datum úpravy</translation>
 <translation id="5764797882307050727">Uvolněte v zařízení místo.</translation>
@@ -3125,6 +3136,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5814126672212206791">Typ připojení</translation>
 <translation id="5815645614496570556">Adresa X.400</translation>
 <translation id="5817918615728894473">Spárovat</translation>
+<translation id="5821565227679781414">Vytvořit zástupce</translation>
 <translation id="5826507051599432481">Běžný název (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828228029189342317">Rozhodli jste se otevírat určité typy souborů automaticky po stažení.</translation>
@@ -3215,11 +3227,13 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5941343993301164315">Přihlaste se prosím do zařízení <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimalizovat</translation>
 <translation id="5941907479813014493">Mezi metodami zadávání dat můžete přepínat klávesami Ctrl+Shift+Space.</translation>
+<translation id="5946106656820696578">Teplejší</translation>
 <translation id="5946591249682680882">ID hlášení <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5948205789991352045">Neotvírat</translation>
 <translation id="5948544841277865110">Přidat soukromou síť</translation>
 <translation id="5949544233750246342">Soubor nelze analyzovat</translation>
 <translation id="5951823343679007761">Chybí baterie</translation>
+<translation id="5955282598396714173">Platnost vašeho hesla vypršela. Odhlaste se a poté se znovu přihlaste a změňte jej.</translation>
 <translation id="5956585768868398362">Je toto stránka vyhledávání, kterou jste očekávali?</translation>
 <translation id="5957613098218939406">Další možnosti</translation>
 <translation id="5958529069007801266">Dozorovaný uživatel</translation>
@@ -3237,6 +3251,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5976160379964388480">Ostatní</translation>
 <translation id="5978264784700053212">Centrum zpráv</translation>
 <translation id="5979421442488174909">&amp;Přeložit do jazyka <ph name="LANGUAGE" /></translation>
+<translation id="5979469435153841984">Stránky přidáte do záložek kliknutím na hvězdičku v adresním řádku</translation>
 <translation id="5982621672636444458">Možnosti řazení</translation>
 <translation id="5984222099446776634">Nedávno navštívené</translation>
 <translation id="5989712527536636369"><ph name="BEGIN_PARAGRAPH1" />Jedná se o obecné údaje o zařízení a způsobu jeho využívání, jako jsou úroveň nabití baterie, četnost používání aplikací, kvalita a trvání síťových připojení (jako Wi-Fi a Bluetooth) a zprávy o selhání, když se něco pokazí. Tato data využijeme ke zlepšování aplikací a služeb Google pro všechny. Některé souhrnné informace pomohou ve zlepšování aplikací a služeb také našim partnerům, například vývojářům aplikací pro Android.<ph name="END_PARAGRAPH1" />
@@ -3366,6 +3381,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="6205710420833115353">Některé operace trvají neočekávaně dlouho. Chcete je zrušit?</translation>
 <translation id="6206311232642889873">&amp;Kopírovat obrázek</translation>
 <translation id="6206337697064384582">Server 1</translation>
+<translation id="6207200176136643843">Obnovit výchozí úroveň přiblížení</translation>
 <translation id="6207937957461833379">Země nebo oblast</translation>
 <translation id="6212039847102026977">Zobrazit rozšířené vlastnosti sítě</translation>
 <translation id="6219616557885484178">Vyberte si z více než milionu aplikací a her na Google Play a nainstalujte je do svého zařízení <ph name="DEVICE_TYPE" />.</translation>
@@ -3518,6 +3534,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="642282551015776456">Tento název nelze použít k pojmenování souboru ani složky.</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6426039856985689743">Zakázat  mobilní datové připojení</translation>
+<translation id="6426200009596957090">Otevřít nastavení funkce ChromeVox</translation>
 <translation id="642870617012116879">Tento web se pokusil automaticky stáhnout několik souborů.</translation>
 <translation id="6430814529589430811">Soubor ASCII kódovaný Base64, jeden certifikát</translation>
 <translation id="6431217872648827691">Všechny údaje byly zašifrovány pomocí hesla účtu Google ze dne
@@ -3591,6 +3608,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
 <translation id="6521494105510930048">Sdílet prostřednictvím</translation>
+<translation id="6522797484310591766">Přihlásit se</translation>
 <translation id="6527303717912515753">Sdílet</translation>
 <translation id="6528513914570774834">Povolit ostatním uživatelům tohoto zařízení používat tuto síť</translation>
 <translation id="6528546217685656218">Soukromý klíč tohoto klientského certifikátu chybí nebo je neplatný.</translation>
@@ -3803,6 +3821,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="6860428250435764775">Zvažte upgrade. <ph name="BEGIN_LINK_EOL" />Další informace<ph name="END_LINK_EOL" /></translation>
 <translation id="6862635236584086457">Všechny soubory uložené v této složce se automaticky zálohují online</translation>
 <translation id="6865313869410766144">Automatické vyplňování formulářů</translation>
+<translation id="686664946474413495">Teplota barev</translation>
 <translation id="6867678160199975333">Přepnout na profil <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6869402422344886127">Označené zaškrtávací políčko</translation>
 <translation id="6870888490422746447">Vyberte aplikaci, se kterou obsah chcete sdílet:</translation>
@@ -3867,6 +3886,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 (vyžaduje předchozí heslo)</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="6982896539684144327">Zjištěna tiskárna výrobce <ph name="VENDOR_NAME" /></translation>
+<translation id="6983201004195852174">Podržte tlačítko Hledat a poté kliknutím nebo přetažením vyberte obsah, který chcete nahlas přečíst</translation>
 <translation id="6983783921975806247">Registrovaný OID</translation>
 <translation id="6983991971286645866">Všechny úpravy budou uloženy do souboru $1.</translation>
 <translation id="6984299437918708277">Vyberte obrázek, který se pro váš účet bude zobrazovat na přihlašovací stránce</translation>
@@ -3910,6 +3930,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7025325401470358758">Další podokno</translation>
 <translation id="7027125358315426638">Název databáze:</translation>
 <translation id="7029809446516969842">Hesla</translation>
+<translation id="7029916574452167660">Méně teplé</translation>
 <translation id="7030031465713069059">Uložit heslo</translation>
 <translation id="7031962166228839643">Připravuje se modul TPM. Čekejte prosím (možná i několik minut)...</translation>
 <translation id="7039326228527141150">Přistupovat k zařízením USB od dodavatele <ph name="VENDOR_NAME" /></translation>
@@ -3923,7 +3944,6 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7052237160939977163">Odesílat údaje sledování výkonu</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7052914147756339792">Nastavení tapety...</translation>
-<translation id="7053681315773739487">Složka aplikací</translation>
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="7054808953701320293">Chápu, už mi to nezobrazujte.</translation>
 <translation id="7056526158851679338">&amp;Zkontrolovat zařízení</translation>
@@ -4078,6 +4098,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7314440321558802142">Obchod Play (beta)</translation>
 <translation id="7317938878466090505"><ph name="PROFILE_NAME" /> (aktuální)</translation>
 <translation id="7321545336522791733">Server je nedostupný</translation>
+<translation id="7324297612904500502">Fórum beta</translation>
 <translation id="7325437708553334317">Rozšíření Vysoký kontrast</translation>
 <translation id="7327088014939803293">Vytvoření nového dozorovaného uživatele se nezdařilo. Zkontrolujte, zda jste řádně přihlášeni, a zkuste to znovu.</translation>
 <translation id="73289266812733869">Nevybráno</translation>
@@ -4116,6 +4137,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7378627244592794276">Ne</translation>
 <translation id="73786666777299047">Otevřít Internetový obchod Chrome</translation>
 <translation id="7378810950367401542"> / </translation>
+<translation id="7378812711085314936">Získání datového připojení</translation>
 <translation id="7382160026931194400">Uložená |nastavení obsahu| ani #vyhledávače# nebudou odstraněna a mohou tak vyzrazovat vaše soukromí.</translation>
 <translation id="7383627141017162945">Načíst celý web</translation>
 <translation id="7384292194278095697">Zařízení již není podporováno</translation>
@@ -4134,6 +4156,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7396845648024431313">Aplikace <ph name="APP_NAME" /> se spustí při zapnutí systému a poběží na pozadí i v případě, že zavřete všechna okna prohlížeče <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
 <translation id="740083207982962331">Vyčkejte, než se zařízení Chromebox restartuje...</translation>
+<translation id="7400839060291901923">Nastavte připojení na zařízení <ph name="PHONE_NAME" /></translation>
 <translation id="7401543881546089382">Smazat zkratku</translation>
 <translation id="740624631517654988">Zablokováno vyskakovací okno</translation>
 <translation id="7406691462051376731">Toto zařízení aktuálně do Googlu automaticky odesílá diagnostické údaje a údaje o využití. Toto <ph name="BEGIN_LINK1" />nastavení<ph name="END_LINK1" /> je vynuceno vlastníkem. <ph name="BEGIN_LINK2" />Další informace<ph name="END_LINK2" /></translation>
@@ -4436,6 +4459,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7887192723714330082">Reagovat na „Ok Google“, když je zapnuta a odemknuta obrazovka</translation>
 <translation id="7887334752153342268">Duplikovat</translation>
 <translation id="7887864092952184874">Myš Bluetooth byla spárována</translation>
+<translation id="7889966925761734854">Posuvník přehrávání</translation>
 <translation id="7892100671754994880">Další uživatel</translation>
 <translation id="7893008570150657497">Přistupovat k fotografiím, hudbě a dalším médiím z vašeho počítače</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Předvolba)</translation>
@@ -4455,6 +4479,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7908378463497120834">Je nám líto, minimálně jeden oddíl externího paměťového zařízení nelze připojit.</translation>
 <translation id="7909969815743704077">Staženo v anonymním režimu</translation>
 <translation id="7910768399700579500">Nová složka</translation>
+<translation id="7912080627461681647">Vaše heslo bylo na serveru změněno. Odhlaste se a poté se znovu přihlaste.</translation>
 <translation id="7915471803647590281">Než nám odešlete zpětnou vazbu, sdělte nám prosím, co se děje.</translation>
 <translation id="7925247922861151263">Selhala bezpečnostní kontrola AAA</translation>
 <translation id="7925285046818567682">Čekání na <ph name="HOST_NAME" />...</translation>
@@ -4462,6 +4487,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7926423016278357561">To jsem nebyl(a) já.</translation>
 <translation id="7928710562641958568">Vysunout zařízení</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> sdílí vaši obrazovku a zvuk.</translation>
+<translation id="7931318309563332511">Neznámé</translation>
 <translation id="7938594894617528435">Momentálně offline</translation>
 <translation id="7939412583708276221">Přesto ponechat</translation>
 <translation id="7939997691108949385">Správce bude moci konfigurovat omezení a nastavení pro tohoto uživatele na adrese <ph name="MANAGEMENT_URL" />.</translation>
@@ -4929,6 +4955,7 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8671210955687109937">Může přidávat komentáře</translation>
 <translation id="8673026256276578048">Vyhledávání na webu...</translation>
 <translation id="8673383193459449849">Problém se serverem</translation>
+<translation id="8676374126336081632">Vymazat vstup</translation>
 <translation id="8677039480012021122">Vymazat data a odpojit</translation>
 <translation id="8677212948402625567">Sbalit vše...</translation>
 <translation id="8678648549315280022">Spravovat nastavení stahování...</translation>
@@ -5074,6 +5101,7 @@ Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</trans
 <translation id="8899285681604219177">Nepodporovaná rozšíření jsou zakázána</translation>
 <translation id="8899551033019439140">Hledání tiskárny...</translation>
 <translation id="8899851313684471736">Otevřít o&amp;dkaz v novém okně</translation>
+<translation id="8902667442496790482">Otevřít nastavení hlasové odezvy po výběru</translation>
 <translation id="8903921497873541725">Přiblížit</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8908902564709148335">Upozornění: V počítači jste aktivovali příznak --scripts-require-action, který omezuje funkce tohoto rozšíření. Ostatní zařízení však tento příznak nemusejí podporovat nebo v nich nemusí být aktivován. V těchto zařízeních má rozšíření také následující oprávnění:</translation>
@@ -5251,7 +5279,6 @@ Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</trans
 <translation id="9153934054460603056">Uložit identitu a heslo</translation>
 <translation id="9154194610265714752">Aktualizováno</translation>
 <translation id="9154418932169119429">Tento obrázek není k dispozici v režimu offline.</translation>
-<translation id="91568222606626347">Vytvořit zástupce...</translation>
 <translation id="9157697743260533322">Nastavení automatických aktualizací pro všechny uživatele se nezdařilo (chyba předběžného spuštění: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Jejda! Během ověřování došlo k problému s komunikací se sítí. Zkontrolujte prosím připojení k síti a zkuste to znovu.</translation>
 <translation id="9161070040817969420">Dílčí rámce webu: <ph name="PARENT_SITE" /></translation>
@@ -5259,6 +5286,7 @@ Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</trans
 <translation id="9170397650136757332">Nyní prst lehce natočte, aby se zaznamenaly všechny části otisku</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="9170884462774788842">Jiný program ve vašem počítači nainstaloval motiv, který může měnit funkce Chromu.</translation>
+<translation id="9174212595744391062">Tímto vymažete soubory cookie a mezipaměť všech webů včetně těchto</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> – je připojeno zařízení Bluetooth</translation>
 <translation id="9177499212658576372">V současnosti jste připojeni k síti typu <ph name="NETWORK_TYPE" />.</translation>
 <translation id="917861274483335838">Spravovat blokování pluginů...</translation>

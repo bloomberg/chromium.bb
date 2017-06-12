@@ -150,6 +150,7 @@
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
 <translation id="1617235075406854669">Activa la supressió de l'historial de baixades i del navegador</translation>
 <translation id="163200210584085447">Els patrons d'aquesta llista es compararan amb l'origen de la seguretat de l'URL sol·licitant. Si es troba alguna coincidència, l'URL obtindrà permís per accedir a dispositius de captura de vídeo en pàgines d'inici de sessió amb SAML. Si no es troba cap coincidència, l'accés es denegarà automàticament. Els patrons comodí no es permeten.</translation>
+<translation id="1634989431648355062">Permet el connector <ph name="FLASH_PLUGIN_NAME" /> en aquests llocs</translation>
 <translation id="1655229863189977773">Defineix la mida de la memòria cau del disc en bytes</translation>
 <translation id="166427968280387991">Servidor intermediari</translation>
 <translation id="1668836044817793277">Permetre que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" />.
@@ -705,6 +706,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3758249152301468420">Desactiva les eines per a desenvolupadors</translation>
 <translation id="3765260570442823273">Durada del missatge d'advertència de tancament de la sessió per inactivitat</translation>
+<translation id="376931976323225993">Permet establir si els llocs web poden executar automàticament el connector <ph name="FLASH_PLUGIN_NAME" /> o no. L'execució automàtica del connector <ph name="FLASH_PLUGIN_NAME" /> pot permetre's o denegar-se per a tots els llocs web.
+
+          La funció Clic per reproduir permet que el connector <ph name="FLASH_PLUGIN_NAME" /> s'executi, però l'usuari haurà de fer clic a l'espai reservat per iniciar-ne l'execució.
+
+          Si aquesta política no es defineix, l'usuari podrà canviar l'opció de configuració manualment.</translation>
 <translation id="3780152581321609624">Inclou un port no estàndard a l'SPN de Kerberos</translation>
 <translation id="3780319008680229708">Si aquesta política es defineix com a "true", la icona de la barra d'eines de Cast es mostrarà sempre a la barra d'eines o al menú addicional, i els usuaris no la podran suprimir.
 
@@ -830,6 +836,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4105989332710272578">Desactiva l'aplicació de la Transparència de certificats per a una llista d'URL</translation>
 <translation id="4121350739760194865">Impedeix que les promocions d'aplicacions apareguin a la pestanya nova</translation>
 <translation id="4157003184375321727">Informació del SO i de la versió de microprogramari</translation>
+<translation id="4183229833636799228">Configuració predeterminada del connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per validar el testimoni d'autenticació del client per a l'accés remot</translation>
 <translation id="4203389617541558220">Limiteu el temps d'utilització del dispositiu mitjançant la planificació de reinicis automàtics.
 
@@ -1134,6 +1141,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Tingues en compte que, si la plataforma admet notificacions sobre polítiques, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que aquestes notificacions forcin una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
 <translation id="5535973522252703021">Llista blanca del servidor de delegacions Kerberos</translation>
+<translation id="555077880566103058">Permet que tots els llocs executin el connector <ph name="FLASH_PLUGIN_NAME" /> automàticament</translation>
 <translation id="5559079916187891399">Aquesta política no té cap efecte a les aplicacions per a Android.</translation>
 <translation id="5560039246134246593">Afegeix un paràmetre a l'obtenció del valor seed de les variacions a <ph name="PRODUCT_NAME" />.
 
@@ -1210,12 +1218,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5868414965372171132">Configuració de la xarxa per part de l'usuari</translation>
 <translation id="588135807064822874">Activa Toca per cercar</translation>
 <translation id="5883015257301027298">Configuració predeterminada de les galetes</translation>
-<translation id="5887291617378691520">Si se selecciona Obre una llista d'URL com a acció d'inici, això us permetrà especificar la llista d'URL que s'obren. Si no s'estableix, no s'obrirà cap URL a l'inici.
-
-          Aquesta política només funciona si la política RestoreOnStartup s'estableix en RestoreOnStartupIsURLs.
-
-          Aquesta política no està disponible en instàncies de Windows que
-          no formin part d'un domini d'Active Directory.</translation>
 <translation id="5887414688706570295">Configura el prefix TalkGadget que utilitzaran els amfitrions d'accés remot i que impedeix que els usuaris el canviïn.
 
           Si s'especifica, aquest prefix s'afegeix al nom bàsic de TalkGadget per crear un nom de domini complet per a TalkGadget. El nom de domini bàsic de TalkGadget és ".talkgadget.google.com".
@@ -1298,6 +1300,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       En cas contrari, es pot establir un d'aquests valors: sslv3, tls1, tls1.1 o tls1.2. Quan s'estableixi, <ph name="PRODUCT_NAME" /> no utilitzarà versions de SSL/TLS anteriors a la versió especificada.  S'ignoraran els valors que no es reconeguin.
 
       Tingueu en compte que, al contrari del que sembla, sslv3 és una versió anterior a tls1.</translation>
+<translation id="6181608880636987460">Permet definir una llista de patrons d'URL que especifiquin llocs que no poden executar el connector <ph name="FLASH_PLUGIN_NAME" />.
+
+          Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
 <translation id="6190022522129724693">Configuració predeterminada de les finestres emergents</translation>
 <translation id="6197453924249895891">Permet que les extensions tinguin accés a les claus corporatives.
 
@@ -1410,6 +1415,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
 <translation id="6693751878507293182">Si es defineix aquest paràmetre com a activat, es desactivaran la cerca automàtica i la instal·lació dels connectors que falten a <ph name="PRODUCT_NAME" />. Si es defineix aquest paràmetre com a desactivat o si es deixa sense definir, el cercador de connectors quedarà actiu.</translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
+<translation id="6757438632136860443">Permet definir una llista de patrons d'URL que especifiquin llocs que poden executar el connector <ph name="FLASH_PLUGIN_NAME" />.
+
+          Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
 <translation id="6766216162565713893">Permet que els llocs demanin a l'usuari que els concedeixi accés a un dispositiu Bluetooth proper</translation>
 <translation id="6770454900105963262">Ofereix informació de les sessions de quiosc actives</translation>
 <translation id="6786747875388722282">Extensions</translation>
@@ -1437,6 +1445,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si s'estableix aquesta política, els usuaris no podran canviar-la ni ignorar-la.
 
           Si no s'estableix aquesta política, els comentaris de veu es desactivaran inicialment, però l'usuari els podrà activar en qualsevol moment.</translation>
+<translation id="6922884955650325312">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Especifica el nom del proveïdor de cerca predeterminat. Si es deixa buit o no es defineix, s'utilitzarà el nom de l'amfitrió especificat a l'URL de cerca. Aquesta política només es tindrà en compte si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="6931242315485576290">Desactiva la sincronització de dades amb Google</translation>
 <translation id="6936894225179401731">Especifica el nombre màxim de connexions simultànies al servidor intermediari.
@@ -1468,18 +1477,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7040229947030068419">Valor d'exemple:</translation>
 <translation id="7049373494483449255">Permet que <ph name="PRODUCT_NAME" /> enviï documents a <ph name="CLOUD_PRINT_NAME" /> per imprimir. NOTA: Això només afecta a l'assistència de <ph name="CLOUD_PRINT_NAME" /> a <ph name="PRODUCT_NAME" />. No impedeix que els usuaris enviïn treballs d'impressió als llocs web. Si aquest paràmetre està activat o no està configurat, els usuaris podran imprimir a <ph name="CLOUD_PRINT_NAME" /> des del diàleg d'impressió <ph name="PRODUCT_NAME" />. Si aquest paràmetre està desactivat, els usuaris no podran imprimir a <ph name="CLOUD_PRINT_NAME" /> des del diàleg d'impressió <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Si està activada, aquesta política fa que s'importin les adreces d'interès des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importaran les adreces d'interès. Si no s'ha definit, es demanarà a l'usuari si vol importar o la importació es pot produir de forma automàtica.</translation>
-<translation id="7055358889740598917">Configura l'URL de la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin.
-
-          La pàgina d'inici és la pàgina que s'obre amb el botó Inici. Les polítiques RestoreOnStartup controlen les pàgines que s'obren en iniciar el dispositiu.
-
-          Es pot establir que la pàgina d'inici sigui un URL que especifiqueu o a la pàgina Pestanya nova. Si seleccioneu la pàgina Pestanya nova, aquesta política no s'aplicarà.
-
-          Si activeu aquesta opció de configuració, els usuaris no podran canviar el seu URL de pàgina d'inici a <ph name="PRODUCT_NAME" />, però sí que podran triar la pàgina Pestanya nova com a pàgina d'inici.
-
-          Si deixeu aquesta política sense establir i HomepageIsNewTabPage també es deixa sense establir, l'usuari podrà triar la seva pàgina d'inici.
-
-          Aquesta política no està disponible en les instàncies de Windows que no
-          estan vinculades a un domini d'Active Directory.</translation>
 <translation id="7063895219334505671">Permet les finestres emergents en aquests llocs</translation>
 <translation id="706669471845501145">Permet que els llocs mostrin les notificacions d'escriptori</translation>
 <translation id="7072406291414141328">Activa l'acceleració de l'amplada de banda de la xarxa</translation>
@@ -1501,21 +1498,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política s'estableix en False, el mode de segon pla es desactiva i l'usuari no el pot controlar a la configuració del navegador.
 
       Si aquesta política es deixa sense establir, el mode de segon pla es desactiva en un primer moment i l'usuari el pot controlar a la configuració del navegador.</translation>
-<translation id="7123297102171034788">Us permet especificar el comportament en iniciar el navegador.
-
-          Si trieu Obre la pàgina Pestanya nova, la pàgina s'obrirà sempre en iniciar <ph name="PRODUCT_NAME" />.
-
-          Si trieu Restaura l'última sessió, es tornaran a obrir els URL que teníeu oberts l'última vegada que <ph name="PRODUCT_NAME" /> es va tancar i es restaurarà la sessió de navegació que hi havia en aquell moment.
-          En triar aquesta opció, es desactiva la configuració que depèn de les sessions o que realitza accions en sortir (com ara Esborra les dades de navegació en sortir o les galetes només de sessió).
-
-          Si trieu Obre una llista d'URL, quan l'usuari iniciï <ph name="PRODUCT_NAME" /> s'obrirà la llista d'URL que s'ha d'obrir en iniciar.
-
-          Si activeu aquesta opció de configuració, els usuaris no podran canviar-la ni substituir-la a <ph name="PRODUCT_NAME" />.
-
-          Si la desactiveu, serà com si la deixéssiu sense configurar. L'usuari sí que podrà canviar-la a <ph name="PRODUCT_NAME" />.
-
-          Aquesta política no està disponible en instàncies de Windows que
-          no formin part d'un domini d'Active Directory.</translation>
 <translation id="7128918109610518786">Enumera els identificadors de les aplicacions que <ph name="PRODUCT_OS_NAME" /> mostra com a aplicacions fixades a la barra d'execució ràpida.
 
       Si configureu aquesta política, el conjunt d'aplicacions queda fixada i l'usuari no la pot modificar.
@@ -1745,20 +1727,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la càrrega útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
 <translation id="7933141401888114454">Activa la creació d'usuaris supervisats.</translation>
 <translation id="793473937901685727">Estableix la disponibilitat de certificats per a aplicacions ARC</translation>
-<translation id="7936098023732125869">Activa la utilització d'un proveïdor de cerca predeterminat.
-
-          Si activeu aquesta opció de configuració, es duu a terme una cerca predeterminada quan l'usuari escriu un text a l'omnibox que no sigui un URL.
-
-          Per especificar el proveïdor de cerca predeterminat que vulgueu fer servir, establiu la resta de les polítiques de cerca predeterminades. Si es deixen buides, l'usuari pot triar el proveïdor predeterminat.
-
-          Si desactiveu aquesta opció de configuració, no es duu a terme cap cerca quan l'usuari introdueix un text que no sigui un URL a l'omnibox.
-
-          Tant si activeu com si desactiveu aquesta opció, els usuaris no poden modificar-la ni substituir-la a <ph name="PRODUCT_NAME" />.
-
-          Si aquesta política no s'estableix, s'activa el proveïdor de cerca predeterminat i l'usuari pot definir la llista de proveïdors de cerca.
-
-          Aquesta política no està disponible en instàncies de Windows que
-          no formin part d'un domini d'Active Directory.</translation>
 <translation id="7937766917976512374">Permet o bloqueja la captura de vídeo</translation>
 <translation id="7941975817681987555">No prediguis accions de xarxa en cap connexió de xarxa</translation>
 <translation id="7953256619080733119">Amfitrions d'excepcions manuals d'usuari gestionat</translation>
@@ -1870,18 +1838,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8312129124898414409">Us permet definir si els llocs web estan autoritzats a utilitzar la generació de claus. L'ús de la generació de claus es pot autoritzar o denegar per a tots els llocs web.
 
           Si aquesta política es deixa sense establir, s'utilitzarà "BlockKeygen" i l'usuari podrà canviar-la.</translation>
-<translation id="8316806736175990584">Configura el tipus de pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris modifiquin les preferències de la pàgina d'inici. La pàgina d'inici pot ser tant un URL que especifiqueu com la pàgina Pestanya nova.
-
-          Si activeu aquesta opció de configuració, s'utilitzarà sempre la pàgina Pestanya nova com a pàgina d'inici i s'ignorarà la ubicació de l'URL de la pàgina d'inici.
-
-          Si desactiveu aquesta opció de configuració, la pàgina d'inici de l'usuari mai no serà la pàgina Pestanya nova, tret que s'estableixi l'URL com a "chrome://newtab".
-
-          Tant si activeu com si desactiveu aquesta opció de configuració, els usuaris no podran canviar el tipus de pàgina d'inici a <ph name="PRODUCT_NAME" />.
-
-          Si deixeu aquesta política sense establir, l'usuari podrà triar si vol que la pàgina Pestanya nova sigui la seva pàgina d'inici o no.
-
-          Aquesta política no està disponible en les instàncies de Windows que no
-          estan vinculades a un domini d'Active Directory.</translation>
 <translation id="8329984337216493753">Aquesta política només està activa en mode de venta.
 
       Quan DeviceIdleLogoutTimeout estigui especificat, aquesta política defineix la durada del quadre d'advertència amb un temporitzador de compte enrere que es mostra a l'usuari abans no s'executi el tancament de sessió.
@@ -1919,23 +1875,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8519264904050090490">URL d'excepcions manuals d'usuari gestionat</translation>
 <translation id="8544375438507658205">Renderitzador HTML predeterminat per a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
-<translation id="855339549837475534">Tant Chromium com Google Chrome admeten el mateix conjunt de polítiques.
-      Tingueu en compte que aquest document pot incloure polítiques orientades
-      a versions no publicades del programari (és a dir, l'entrada "Compatible amb"
-      pot fer referència a una versió que encara no s'ha publicat).
-      A més, aquestes polítiques es poden canviar o suprimir sense avís previ.
-
-      Aquestes polítiques estan estrictament destinades a utilitzar-se per configurar instàncies de
-      <ph name="PRODUCT_NAME" /> internes de la vostra
-      organització. Utilitzar aquestes polítiques fora de l'organització (per exemple,
-      en un programa distribuït públicament) es considera programari maliciós i és
-      probable que Google i els proveïdors d'antivirus ho marquin com a tal.
-
-      No cal que configureu aquestes opcions manualment. Podeu baixar plantilles
-      fàcils d'utilitzar per a Windows, per a Mac i per a Linux de la pàgina <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      La manera recomanada de configurar la política a Windows és amb GPO,
-      tot i que encara es permet administrar la política mitjançant el registre per a instàncies de Windows vinculades a un domini d'Active Directory.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
 <translation id="8614804915612153606">Desactiva l'actualització automàtica</translation>
@@ -1952,17 +1891,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 
           Si deixeu aquesta política sense definir, <ph name="PRODUCT_NAME" /> provarà de detectar si un servidor es troba a la intranet i, en aquest cas, respondrà a les sol·licituds IWA. Si es detecta un servidor com a Internet, aleshores <ph name="PRODUCT_NAME" /> ometrà les sol·licituds IWA que enviï.</translation>
 <translation id="8672321184841719703">Versió objectiu de l'actualització automàtica</translation>
-<translation id="868068801094828689">Permet l'enviament d'informes anònims a Google sobre dades d'errors i d'ús relacionades amb <ph name="PRODUCT_NAME" /> i impedeix que els usuaris modifiquin aquesta opció.
-
-      Si aquesta opció de configuració s'activa, s'envien informes anònims d'ús
-      i d'errors a Google. Si es desactiva, aquesta
-      informació no s'envia a Google. En tots dos casos, els usuaris no poden canviar
-      ni anul·lar l'opció de configuració. Si aquesta política es deixa sense establir,
-      s'utilitzarà l'opció que l'usuari hagi seleccionat durant la instal·lació
-      o en executar el producte per primera vegada.
-
-      Aquesta política no està disponible en instàncies de Windows que
-      no formin part d'un domini d'Active Directory. (Per a Chrome OS, consulteu la política DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Utilitza el client DNS integrat</translation>
 <translation id="8704831857353097849">Llista de connectors desactivats</translation>
 <translation id="8711086062295757690">Especifica la paraula clau, que és la drecera utilitzada a la barra d'adreces per activar la cerca d'aquest proveïdor. Aquesta política és opcional. Si no es defineix, no hi haurà cap paraula clau que activi el proveïdor de cerca. Aquesta política només es té en compte si la política "DefaultSearchProviderEnabled" està activada.</translation>
@@ -1998,6 +1926,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8858642179038618439">Força el mode de seguretat de YouTube</translation>
 <translation id="8864975621965365890">Suprimeix l'avís de desactivació que apareix quan un lloc <ph name="PRODUCT_FRAME_NAME" /> renderitza un lloc.</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
+<translation id="8882006618241293596">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /> en aquests llocs</translation>
 <translation id="8906768759089290519">Activa el mode de convidat</translation>
 <translation id="8908294717014659003">Us permet decidir si els llocs web poden accedir als vostres dispositius de captura multimèdia. Es pot proporcionar accés als dispositius de captura multimèdia de manera predeterminada o demanar permís a l'usuari cada vegada que un lloc web vol accedir als dispositius de captura multimèdia.
 

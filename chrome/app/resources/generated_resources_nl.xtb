@@ -75,6 +75,7 @@
 <translation id="1119069657431255176">Tot bzip2 gecomprimeerd tar-archief</translation>
 <translation id="1119447706177454957">Interne fout</translation>
 <translation id="1120026268649657149">Zoekwoord moet leeg of uniek zijn</translation>
+<translation id="1120811664190001878">Dit apparaat toestaan andere apparaten met je Google-account te vinden die verbinding hebben via mobiele data</translation>
 <translation id="1122198203221319518">&amp;Extra</translation>
 <translation id="1122242684574577509">Verificatie mislukt. Klik om naar de loginpagina te gaan van het wifi-netwerk dat je gebruikt (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Naam van bladwijzer</translation>
@@ -596,6 +597,7 @@
 <translation id="186612162884103683">'<ph name="EXTENSION" />' kan afbeeldingen, video- en geluidsbestanden lezen en schrijven op de gecontroleerde locaties.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> is gereed voor het voltooien van je installatie.</translation>
 <translation id="1871615898038944731">Je <ph name="DEVICE_TYPE" /> is up-to-date.</translation>
+<translation id="1877520246462554164">Ophalen van verificatietoken is mislukt. Log uit en weer in om het opnieuw te proberen.</translation>
 <translation id="1878524442024357078">Sites niet toestaan een plug-in te gebruiken om toegang te krijgen tot je computer</translation>
 <translation id="1880905663253319515">Certificaat '<ph name="CERTIFICATE_NAME" />' verwijderen?</translation>
 <translation id="1882130480443819387">Sorteren op titel</translation>
@@ -1143,6 +1145,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="271033894570825754">Nieuw</translation>
 <translation id="2713008223070811050">Beeldschermen beheren</translation>
 <translation id="2714393097308983682">Google Play Store</translation>
+<translation id="2718395828230677721">Nachtverlichting</translation>
 <translation id="2718998670920917754">De antivirussoftware heeft een virus gedetecteerd.</translation>
 <translation id="2721037002783622288">Afbeelding &amp;zoeken in <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -1183,7 +1186,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2775104091073479743">Vingerafdrukken bewerken</translation>
 <translation id="2776441542064982094">Het lijkt erop dat er geen apparaten beschikbaar zijn om te registreren via het netwerk. Als je apparaat aan staat en verbinding heeft met internet, kun je proberen het te registreren met de instructies in de handleiding van het apparaat.</translation>
 <translation id="2783298271312924866">Gedownload</translation>
-<translation id="2783321960289401138">Snelle link maken…</translation>
 <translation id="2783661497142353826">Kiosk-apps beheren</translation>
 <translation id="2784407158394623927">Je mobiele netwerk activeren</translation>
 <translation id="2784556410206159845">Smart Lock voor Chromebook vereist schermvergrendeling op je telefoon om je <ph name="DEVICE_TYPE" /> te beveiligen.</translation>
@@ -1222,6 +1224,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805707493867224476">Alle sites toestaan pop-ups weer te geven</translation>
 <translation id="2805756323405976993">Apps</translation>
+<translation id="2807517655263062534">Bestanden die je downloadt, worden hier weergegeven</translation>
 <translation id="2809346626032021864">Lezen</translation>
 <translation id="2809586584051668049">en <ph name="NUMBER_ADDITIONAL_DISABLED" /> meer</translation>
 <translation id="2810731435681289055">De volgende keer dat je deze <ph name="DEVICE_TYPE" /> ontgrendelt, wordt Smart Lock geüpdatet zodat je gewoon op je afbeelding kunt klikken om door te gaan.</translation>
@@ -1353,6 +1356,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3004391367407090544">Probeer het later opnieuw</translation>
 <translation id="300544934591011246">Vorig wachtwoord</translation>
 <translation id="3007214526293698309">Beeldhouding corrigeren</translation>
+<translation id="3007771295016901659">Tabblad dupliceren</translation>
 <translation id="3009300415590184725">Weet je zeker dat je het instellen van een mobiele dataservice wilt annuleren?</translation>
 <translation id="3009779501245596802">Geïndexeerde databases</translation>
 <translation id="3010279545267083280">Wachtwoord verwijderd</translation>
@@ -1391,12 +1395,14 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3038675903128704560">Sites niet toestaan een plug-in te gebruiken om toegang te krijgen tot je computer</translation>
 <translation id="3039828483675273919">$1 items verplaatsen...</translation>
 <translation id="304009983491258911">Pincode simkaart wijzigen</translation>
+<translation id="304567287000691532">Scherm delen</translation>
 <translation id="3046910703532196514">Webpagina, compleet</translation>
 <translation id="304826556400666995">Dempen tabbladen opheffen</translation>
 <translation id="3053013834507634016">Sleutelgebruik voor certificaat</translation>
 <translation id="3056670889236890135">Je kunt alleen instellingen wijzigen voor de huidige gebruiker. Schakel over naar deze gebruiker om er instellingen voor te wijzigen.</translation>
 <translation id="3057861065630527966">Een back-up van je foto's en video's maken</translation>
 <translation id="3058212636943679650">Als je ooit het besturingssysteem van je computer moet herstellen, heb je een SD-kaart of USB-stick voor herstel nodig.</translation>
+<translation id="3060379269883947824">'Selecteer om uitgesproken te worden' inschakelen</translation>
 <translation id="3063844757726132584">Open al je apps vanuit deze handige launcher. Speel games, start videochats, luister naar muziek, bewerk documenten of download meer apps.</translation>
 <translation id="3064410671692449875">Onvoldoende gegevens</translation>
 <translation id="3065041951436100775">Feedback over gesloten tabblad.</translation>
@@ -1430,6 +1436,7 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3108967419958202225">Kiezen...</translation>
 <translation id="3112378005171663295">Samenvouwen</translation>
 <translation id="3115147772012638511">Wachten op cache...</translation>
+<translation id="3116902203001917540">Hiermee kun je je scherm beter zien en lezen bij weinig licht</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> Help</translation>
 <translation id="3120430004221004537">Onvoldoende versleuteling voor een bepaalde bewerking op: <ph name="DEVICE_NAME" />.</translation>
 <translation id="3121793941267913344">Dit <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat herstellen</translation>
@@ -1618,6 +1625,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3391716558283801616">Tabblad 7</translation>
 <translation id="3394150261239285340"><ph name="HOST" /> wil gebruikmaken van je camera en microfoon.</translation>
 <translation id="3396331542604645348">De geselecteerde printer is niet beschikbaar of niet correct geïnstalleerd. Controleer de printer of probeer een andere printer te selecteren.</translation>
+<translation id="3399432415385675819">Meldingen worden uitgeschakeld</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="340485819826776184">Een voorspellingsservice gebruiken om zoekopdrachten en URL's aan te vullen die in de adresbalk worden getypt</translation>
 <translation id="3405664148539009465">Lettertypen aanpassen</translation>
@@ -2199,7 +2207,6 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="4322394346347055525">Andere tabbladen sluiten</translation>
 <translation id="4330387663455830245"><ph name="LANGUAGE" /> nooit vertalen</translation>
 <translation id="4330437798887640816">Modus voor hoog contrast in-/uitschakelen</translation>
-<translation id="4331056788446675037">Het systeem kan het beleid niet ophalen uit Microsoft® Active Directory®.</translation>
 <translation id="4333854382783149454">PKCS nr. 1 SHA-1 met RSA-encryptie</translation>
 <translation id="4335713051520279344">Deze computer wordt over 1 seconde opnieuw ingesteld.
 Druk op een toets om door te gaan met verkennen.</translation>
@@ -2551,6 +2558,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="488785315393301722">Details weergeven</translation>
 <translation id="4888510611625056742">Tabblad 2</translation>
 <translation id="4890773143211625964">Geavanceerde printeropties weergeven</translation>
+<translation id="4891089016822695758">Bètaforum</translation>
 <translation id="4893336867552636863">Hiermee worden je browsegegevens op dit apparaat definitief verwijderd.</translation>
 <translation id="4898011734382862273">Het certificaat '<ph name="CERTIFICATE_NAME" />' vertegenwoordigt een certificeringsinstantie.</translation>
 <translation id="4899376560703610051">Je <ph name="DEVICE_TYPE" /> is handmatig vergrendeld. Je moet je wachtwoord typen om door te gaan.</translation>
@@ -2822,11 +2830,13 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5316588172263354223">Gesproken zoekopdrachten op elk moment</translation>
 <translation id="5316716239522500219">Monitoren spiegelen</translation>
 <translation id="5317780077021120954">Opslaan</translation>
+<translation id="5319748504063551568">Als je je account wilt inschakelen om toegang te krijgen tot de Google Play Store, moet je je identiteit verifiëren via je Identiteitsprovider. Klik op Volgende om door te gaan.</translation>
 <translation id="532247166573571973">De server is mogelijk niet bereikbaar. Probeer het later opnieuw.</translation>
 <translation id="532360961509278431">'$1' kan niet worden geopend: $2</translation>
 <translation id="5324780743567488672">Tijdzone automatisch instellen op basis van je locatie</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5328342723323072228">Notitie-app:</translation>
+<translation id="532943162177641444">Tik op de melding op je <ph name="PHONE_NAME" /> om de mobiele hotspot in te stellen die door dit apparaat kan worden gebruikt.</translation>
 <translation id="5329615878510216304">opnieuw scannen</translation>
 <translation id="5329858601952122676">Verwij&amp;deren</translation>
 <translation id="5330145655348521461">Deze bestanden zijn op een ander bureaublad geopend. Verplaats ze naar <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) om ze weer te geven.</translation>
@@ -3097,6 +3107,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5754903485544371559">Toevoegen aan Apps...</translation>
 <translation id="5756163054456765343">H&amp;elpcentrum</translation>
 <translation id="5759728514498647443">Documenten die je via <ph name="APP_NAME" /> verzendt om af te drukken, kunnen door <ph name="APP_NAME" /> worden gelezen.</translation>
+<translation id="5763751966069581670">Geen USB-apparaten gevonden</translation>
 <translation id="5764483294734785780">Audio op&amp;slaan als...</translation>
 <translation id="57646104491463491">Bijgewerkt op</translation>
 <translation id="5764797882307050727">Maak ruimte vrij op je apparaat.</translation>
@@ -3131,6 +3142,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5814126672212206791">Verbindingstype</translation>
 <translation id="5815645614496570556">X.400-adres</translation>
 <translation id="5817918615728894473">Koppelen</translation>
+<translation id="5821565227679781414">Snelle link maken</translation>
 <translation id="5826507051599432481">Algemene naam (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828228029189342317">Je hebt ervoor gekozen bepaalde bestandstypen automatisch te openen na het downloaden.</translation>
@@ -3221,11 +3233,13 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5941343993301164315">Log in bij <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimaliseren</translation>
 <translation id="5941907479813014493">Druk op Ctrl+Shift+spatiebalk om te schakelen tussen invoermethoden.</translation>
+<translation id="5946106656820696578">Warmer</translation>
 <translation id="5946591249682680882">Rapport-ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5948205789991352045">Niet openen</translation>
 <translation id="5948544841277865110">Privénetwerk toevoegen</translation>
 <translation id="5949544233750246342">Kan bestand niet parseren</translation>
 <translation id="5951823343679007761">Geen accu</translation>
+<translation id="5955282598396714173">Je wachtwoord is verlopen. Log uit en weer in om het te wijzigen.</translation>
 <translation id="5956585768868398362">Is dit de zoekpagina die je had verwacht?</translation>
 <translation id="5957613098218939406">Meer opties</translation>
 <translation id="5958529069007801266">Gebruiker met beperkte rechten</translation>
@@ -3243,6 +3257,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5976160379964388480">Overige</translation>
 <translation id="5978264784700053212">Berichtencentrum</translation>
 <translation id="5979421442488174909">&amp;Vertalen in het <ph name="LANGUAGE" /></translation>
+<translation id="5979469435153841984">Als je een bladwijzer wilt instellen voor een pagina, klik je op de ster in de adresbalk</translation>
 <translation id="5982621672636444458">Sorteeropties</translation>
 <translation id="5984222099446776634">Recent bezocht</translation>
 <translation id="5989712527536636369"><ph name="BEGIN_PARAGRAPH1" />Dit zijn algemene gegevens over je apparaat en hoe je het apparaat gebruikt, zoals de accustatus, hoe vaak je apps gebruikt, de kwaliteit en duur van je netwerkverbindingen (zoals wifi en Bluetooth), en crashrapporten wanneer dingen niet werken zoals zou moeten. Deze gegevens worden gebruikt om de producten en services van Google voor iedereen te verbeteren. Sommige samengevoegde gegevens helpen ook partners, zoals Android-ontwikkelaars, om hun apps en producten beter te maken.<ph name="END_PARAGRAPH1" />
@@ -3372,6 +3387,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6205710420833115353">Sommige bewerkingen duren langer dan verwacht. Wil je deze afbreken?</translation>
 <translation id="6206311232642889873">A&amp;fbeelding kopiëren</translation>
 <translation id="6206337697064384582">Server 1</translation>
+<translation id="6207200176136643843">Standaardzoomniveau resetten</translation>
 <translation id="6207937957461833379">Land/regio</translation>
 <translation id="6212039847102026977">Geavanceerde netwerkeigenschappen weergeven</translation>
 <translation id="6219616557885484178">Kies uit meer dan een miljoen apps en games op Google Play die je kunt installeren en gebruiken op je <ph name="DEVICE_TYPE" />.</translation>
@@ -3524,6 +3540,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="642282551015776456">Deze naam mag niet worden gebruikt als de naam van een bestand of map.</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6426039856985689743">Mobiele gegevens uitschakelen</translation>
+<translation id="6426200009596957090">ChromeVox-instellingen openen</translation>
 <translation id="642870617012116879">Deze site heeft geprobeerd automatisch meerdere bestanden te downloaden.</translation>
 <translation id="6430814529589430811">Base64 Encoded ASCII, één certificaat</translation>
 <translation id="6431217872648827691">Alle gegevens zijn versleuteld met je Google-wachtwoord vanaf:
@@ -3597,6 +3614,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
 <translation id="6521494105510930048">Delen via</translation>
+<translation id="6522797484310591766">Nu inloggen</translation>
 <translation id="6527303717912515753">Delen</translation>
 <translation id="6528513914570774834">Andere gebruikers van dit apparaat toestaan om dit netwerk te gebruiken</translation>
 <translation id="6528546217685656218">De privésleutel voor dit clientcertificaat ontbreekt of is ongeldig.</translation>
@@ -3809,6 +3827,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="6860428250435764775">Overweeg je apparaat te upgraden. <ph name="BEGIN_LINK_EOL" />Meer informatie<ph name="END_LINK_EOL" /></translation>
 <translation id="6862635236584086457">Er wordt automatisch online een back-up gemaakt van alle bestanden die in deze map zijn opgeslagen</translation>
 <translation id="6865313869410766144">Formuliergegevens voor Automatisch aanvullen</translation>
+<translation id="686664946474413495">Kleurtemperatuur</translation>
 <translation id="6867678160199975333">Schakelen naar <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6869402422344886127">Aangevinkt selectievakje</translation>
 <translation id="6870888490422746447">Kies een app waarmee je wilt delen:</translation>
@@ -3873,6 +3892,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 (vorig wachtwoord vereist)</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="6982896539684144327">Printer van <ph name="VENDOR_NAME" /> gedetecteerd</translation>
+<translation id="6983201004195852174">Houd Zoeken ingedrukt en klik of sleep om content te selecteren die moet worden voorgelezen</translation>
 <translation id="6983783921975806247">Geregistreerde OID</translation>
 <translation id="6983991971286645866">Alle bewerkingen worden opgeslagen in $1.</translation>
 <translation id="6984299437918708277">Selecteer een foto als weergave van je account op het inlogscherm</translation>
@@ -3916,6 +3936,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7025325401470358758">Volgend deelvenster</translation>
 <translation id="7027125358315426638">Naam database:</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
+<translation id="7029916574452167660">Minder warm</translation>
 <translation id="7030031465713069059">Wachtwoord opslaan</translation>
 <translation id="7031962166228839643">TPM wordt voorbereid, even geduld (dit kan een paar minuten duren)...</translation>
 <translation id="7039326228527141150">Toegang verkrijgen tot USB-apparaten van <ph name="VENDOR_NAME" /></translation>
@@ -3929,7 +3950,6 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7052237160939977163">Gegevens over het bijhouden van prestaties verzenden</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7052914147756339792">Achtergrond instellen...</translation>
-<translation id="7053681315773739487">Applicatiemap</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="7054808953701320293">Dit niet meer weergeven.</translation>
 <translation id="7056526158851679338">Apparaten &amp;inspecteren</translation>
@@ -4084,6 +4104,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7314440321558802142">Play Store (bèta)</translation>
 <translation id="7317938878466090505"><ph name="PROFILE_NAME" /> (huidig)</translation>
 <translation id="7321545336522791733">Server niet bereikbaar</translation>
+<translation id="7324297612904500502">Bètaforum</translation>
 <translation id="7325437708553334317">Extensie voor hoog contrast</translation>
 <translation id="7327088014939803293">De nieuwe gebruiker met beperkte rechten kan niet worden gemaakt. Controleer of je correct bent ingelogd en probeer het opnieuw.</translation>
 <translation id="73289266812733869">Niet geselecteerd</translation>
@@ -4122,6 +4143,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7378627244592794276">Nee</translation>
 <translation id="73786666777299047">Chrome Web Store openen</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7378812711085314936">Dataverbinding ophalen</translation>
 <translation id="7382160026931194400">Opslagen |instellingen voor content| en #zoekmachines# worden niet gewist en kunnen je browsegedrag weerspiegelen.</translation>
 <translation id="7383627141017162945">Volledige site laden</translation>
 <translation id="7384292194278095697">Dit apparaat wordt niet meer ondersteund</translation>
@@ -4142,6 +4164,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> wordt gestart zodra je het systeem opstart en blijft zelfs op de achtergrond actief als je alle andere vensters van <ph name="PRODUCT_NAME" /> sluit.</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Wacht tot je Chromebox opnieuw is opgestart...</translation>
+<translation id="7400839060291901923">Een verbinding instellen op je <ph name="PHONE_NAME" /></translation>
 <translation id="7401543881546089382">Snelle link verwijderen</translation>
 <translation id="740624631517654988">Pop-up geblokkeerd</translation>
 <translation id="7406691462051376731">Dit apparaat verzendt momenteel diagnostische en gebruiksgegevens naar Google. Deze <ph name="BEGIN_LINK1" />instelling<ph name="END_LINK1" /> wordt afgedwongen door de eigenaar. <ph name="BEGIN_LINK2" />Meer informatie<ph name="END_LINK2" /></translation>
@@ -4445,6 +4468,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7887192723714330082">Reageren op "Ok Google" wanneer het scherm is ingeschakeld en ontgrendeld</translation>
 <translation id="7887334752153342268">Dupliceren</translation>
 <translation id="7887864092952184874">Bluetooth-muis gekoppeld</translation>
+<translation id="7889966925761734854">Zoeken</translation>
 <translation id="7892100671754994880">Volgende gebruiker</translation>
 <translation id="7893008570150657497">Foto's, muziek en andere media van je computer openen</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (standaard)</translation>
@@ -4464,6 +4488,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7908378463497120834">Ten minste één partitie op je externe opslagapparaat kan niet worden gekoppeld.</translation>
 <translation id="7909969815743704077">Gedownload in incognitomodus</translation>
 <translation id="7910768399700579500">&amp;Nieuwe map</translation>
+<translation id="7912080627461681647">Je wachtwoord is gewijzigd op de server. Log uit en weer in.</translation>
 <translation id="7915471803647590281">Vertel ons wat er aan de hand is voordat je de feedback verzendt.</translation>
 <translation id="7925247922861151263">AAA-controle mislukt</translation>
 <translation id="7925285046818567682">Wachten op <ph name="HOST_NAME" />...</translation>
@@ -4471,6 +4496,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7926423016278357561">Dit was ik niet.</translation>
 <translation id="7928710562641958568">Apparaat uitwerpen</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deelt je scherm en audio.</translation>
+<translation id="7931318309563332511">Onbekend</translation>
 <translation id="7938594894617528435">Op dit moment offline</translation>
 <translation id="7939412583708276221">Toch bewaren</translation>
 <translation id="7939997691108949385">De beheerder kan de beperkingen en instellingen voor deze gebruiker met beperkte rechten configureren op <ph name="MANAGEMENT_URL" />.</translation>
@@ -4938,6 +4964,7 @@ Tijd berekenen tot vol</translation>
 <translation id="8671210955687109937">Mag reageren</translation>
 <translation id="8673026256276578048">Zoeken op internet...</translation>
 <translation id="8673383193459449849">Serverprobleem</translation>
+<translation id="8676374126336081632">Invoer wissen</translation>
 <translation id="8677039480012021122">Gegevens wissen en verbinding verbreken</translation>
 <translation id="8677212948402625567">Alles samenvouwen...</translation>
 <translation id="8678648549315280022">Downloadinstellingen beheren...</translation>
@@ -5084,6 +5111,7 @@ Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de 
 <translation id="8899285681604219177">Niet-ondersteunde extensies uitgeschakeld</translation>
 <translation id="8899551033019439140">Printer zoeken...</translation>
 <translation id="8899851313684471736">Link openen in nieu&amp;w venster</translation>
+<translation id="8902667442496790482">Instellingen voor 'Selecteer om uitgesproken te worden' openen</translation>
 <translation id="8903921497873541725">Inzoomen</translation>
 <translation id="8904976895050290827">Chrome-synchronisatie</translation>
 <translation id="8908902564709148335">Waarschuwing: je hebt de vlag 'scripts vereisen actie' op deze computer ingeschakeld, waardoor de mogelijkheden van deze extensie beperkt worden. Andere apparaten ondersteunen deze vlag mogelijk niet, of hebben deze ingeschakeld. Deze extensie kan op die apparaten ook:</translation>
@@ -5261,7 +5289,6 @@ Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de 
 <translation id="9153934054460603056">Identiteit en wachtwoord opslaan</translation>
 <translation id="9154194610265714752">Bijgewerkt</translation>
 <translation id="9154418932169119429">Deze afbeelding is offline niet beschikbaar.</translation>
-<translation id="91568222606626347">Snelle link maken…</translation>
 <translation id="9157697743260533322">Kan automatische updates niet instellen voor alle gebruikers (lanceringsfout bij pre-flight-procedure: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Er is een netwerkcommunicatieprobleem opgetreden tijdens de verificatie. Controleer je netwerkverbinding en probeer het opnieuw.</translation>
 <translation id="9161070040817969420">Subframes voor: <ph name="PARENT_SITE" /></translation>
@@ -5269,6 +5296,7 @@ Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de 
 <translation id="9170397650136757332">Beweeg je vinger nu een beetje zodat alle delen van je vingerafdruk kunnen worden vastgelegd</translation>
 <translation id="9170848237812810038">&amp;Ongedaan maken</translation>
 <translation id="9170884462774788842">Een ander programma op je computer heeft een thema toegevoegd dat de manier waarop Chrome werkt kan wijzigen.</translation>
+<translation id="9174212595744391062">Hiermee worden cookies en het cachegeheugen voor alle sites gewist, waaronder</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" />: Bluetooth-apparaat verbonden</translation>
 <translation id="9177499212658576372">Je bent momenteel verbonden met het netwerk <ph name="NETWORK_TYPE" />.</translation>
 <translation id="917861274483335838">Blokkeren van plug-ins beheren…</translation>

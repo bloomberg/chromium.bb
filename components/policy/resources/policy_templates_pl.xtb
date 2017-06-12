@@ -152,6 +152,7 @@
       rejestrujących wideo jest udzielany na stronach logowania SAML. Jeśli
       odpowiednik nie zostanie znaleziony, następuje automatyczna odmowa
       dostępu. Wzorce z użyciem symboli wieloznacznych są niedozwolone.</translation>
+<translation id="1634989431648355062">Zezwalaj na uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> w tych witrynach</translation>
 <translation id="1655229863189977773">Ustaw rozmiar dyskowej pamięci podręcznej w bajtach</translation>
 <translation id="166427968280387991">Serwer proxy</translation>
 <translation id="1668836044817793277">Określa, czy zezwolić aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie tego, w jakiej wersji będzie używany system <ph name="PRODUCT_OS_NAME" />.
@@ -706,6 +707,11 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
       Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="3758249152301468420">Wyłącz narzędzia dla programistów</translation>
 <translation id="3765260570442823273">Czas wyświetlania ostrzeżenia o wylogowaniu z powodu bezczynności</translation>
+<translation id="376931976323225993">Pozwala określić, czy witryny mogą automatycznie uruchamiać wtyczkę <ph name="FLASH_PLUGIN_NAME" />. Możesz zezwolić na automatyczne uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> we wszystkich witrynach lub zabronić jej używania we wszystkich witrynach.
+
+          Funkcja Kliknij, by uruchomić umożliwia działanie wtyczki <ph name="FLASH_PLUGIN_NAME" />, ale tylko jeśli użytkownik kliknie obiekt zastępczy.
+
+          Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie ręcznie.</translation>
 <translation id="3780152581321609624">Umieść port niestandardowy w nazwie SPN w protokole Kerberos</translation>
 <translation id="3780319008680229708">Jeśli ta zasada ma wartość prawda, ikona Cast jest zawsze widoczna na pasku narzędzi lub w rozszerzonym menu, a użytkownicy nie mogą jej usunąć.
 
@@ -833,6 +839,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4105989332710272578">Wyłącz egzekwowanie protokołu Certificate Transparency dla adresów URL z listy</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
 <translation id="4157003184375321727">Zgłoś wersje systemu operacyjnego i oprogramowania układowego</translation>
+<translation id="4183229833636799228">Domyślne ustawienie wtyczki <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL pozwalający zweryfikować token uwierzytelniania klienta dostępu zdalnego</translation>
 <translation id="4203389617541558220">Ogranicza czas działania urządzenia przez planowanie automatycznych ponownych uruchomień.
 
@@ -1134,6 +1141,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Uwaga: jeśli platforma obsługuje powiadomienia o zasadach, czas odświeżania będzie ustawiony na 24 godziny (wartości domyślne i wartość tej zasady będą ignorowane), ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad, przez co częstsze odświeżanie jest niepotrzebne.</translation>
 <translation id="5535973522252703021">Biała lista serwerów przekazywania poświadczeń w protokole Kerberos</translation>
+<translation id="555077880566103058">Pozwala wszystkim witrynom na automatyczne uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Ta zasada nie ma żadnego wpływu na aplikacje na Androida.</translation>
 <translation id="5560039246134246593">Dodaj parametr do pobierania odmian w <ph name="PRODUCT_NAME" />.
 
@@ -1210,12 +1218,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5868414965372171132">Konfiguracja sieci na poziomie użytkownika</translation>
 <translation id="588135807064822874">Włącz funkcję Dotknij, by wyszukać</translation>
 <translation id="5883015257301027298">Domyślne ustawienie plików cookie</translation>
-<translation id="5887291617378691520">Umożliwia określenie listy otwieranych adresów URL, jeśli jako działanie po uruchomieniu wybrano opcję „Otwórz adresy URL z listy”. Jeśli ta zasada pozostanie nieskonfigurowana, po uruchomieniu nie będzie otwierany żaden adres URL.
-
-          Ta zasada działa tylko wtedy, gdy zasada RestoreOnStartup jest skonfigurowana jako RestoreOnStartupIsURLs.
-
-          Ta zasada jest niedostępna w systemach Windows,
-          które nie są dołączone do domeny Active Directory.</translation>
 <translation id="5887414688706570295">Konfiguruje przedrostek gadżetu TalkGadget, który będzie używany przez hosty zdalnego dostępu, i uniemożliwia użytkownikom jego zmianę.
 
           W przypadku określenia tego przedrostka jest on dołączany na początku podstawowej nazwy gadżetu TalkGadget, by utworzyć pełną nazwę domeny dla gadżetu TalkGadget. Podstawowa nazwa domeny gadżetu TalkGadget to „.talkgadget.google.com”.
@@ -1299,6 +1301,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       W przeciwnym razie można ustawić jedną z tych wartości: „sslv3”, „tls1”, „tls1.1” lub „tls1.2”. Po ich ustawieniu <ph name="PRODUCT_NAME" /> nie będzie używać protokołu SSL/TLS w wersji niższej niż określona. Wszystkie nierozpoznane wartości będą ignorowane.
 
       Należy pamiętać, że wbrew temu, co sugeruje numer, wersja „sslv3” jest starsza od „tls1”.</translation>
+<translation id="6181608880636987460">Pozwala utworzyć listę wzorców URL-i określających witryny, które nie mogą uruchamiać wtyczki <ph name="FLASH_PLUGIN_NAME" />.
+
+          Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultPluginsSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="6190022522129724693">Domyślne ustawienie wyskakujących okienek</translation>
 <translation id="6197453924249895891">Przyznaje dostęp do kluczy firmowych do rozszerzeń.
 
@@ -1411,6 +1416,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6689792153960219308">Raportuj stan sprzętu</translation>
 <translation id="6693751878507293182">Jeśli włączysz to ustawienie, automatyczne wyszukiwanie i instalowanie brakujących wtyczek zostanie wyłączone w <ph name="PRODUCT_NAME" />. W przypadku wyłączenia lub nieskonfigurowania tej opcji mechanizm wyszukujący wtyczki będzie aktywny.</translation>
 <translation id="6699880231565102694">Włącz uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu</translation>
+<translation id="6757438632136860443">Pozwala utworzyć listę wzorców URL-i określających witryny, które mogą uruchamiać wtyczkę <ph name="FLASH_PLUGIN_NAME" />.
+
+          Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultPluginsSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="6766216162565713893">Zezwól, by witryny prosiły użytkownika o przyznanie dostępu do urządzeń Bluetooth w pobliżu</translation>
 <translation id="6770454900105963262">Informuj o aktywnych sesjach kiosku</translation>
 <translation id="6786747875388722282">Rozszerzenia</translation>
@@ -1436,6 +1444,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Gdy ją ustawisz, użytkownicy nie mogą jej zmienić ani zastąpić.
 
           Jeśli zasada pozostanie nieustawiona, potwierdzenia głosowe są początkowo wyłączone, ale użytkownik może je w każdej chwili włączyć.</translation>
+<translation id="6922884955650325312">Blokuj wtyczkę <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Określa nazwę domyślnego dostawcy wyszukiwania. Jeśli ta zasada pozostanie pusta lub nieskonfigurowana, będzie używana nazwa hosta określona w URL-u wyszukiwarki. Ta zasada jest uwzględniana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="6931242315485576290">Wyłącz synchronizację danych z Google</translation>
 <translation id="6936894225179401731">Określa maksymalną liczbę jednoczesnych połączeń z serwerem proxy. Niektóre serwery proxy nie są w stanie obsłużyć dużej liczby jednoczesnych połączeń z tym samym klientem. W takiej sytuacji można rozwiązać problem, ustawiając dla tej zasady mniejszą wartość. Jej wartość powinna być mniejsza niż 100 i większa niż 6. Wartość domyślna wynosi 32. Niektóre aplikacje sieciowe używają wielu połączeń z oczekującymi żądaniami GET, dlatego zmniejszenie wartości tej zasady poniżej wartości 32 może powodować przerwy w działaniu sieci, jeśli zbyt wiele takich aplikacji będzie otwartych. Zmniejszasz wartości domyślne na własne ryzyko. W przypadku nieskonfigurowania tej zasady będzie używana wartość domyślna, czyli 32.</translation>
@@ -1459,18 +1468,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7040229947030068419">Przykładowa wartość:</translation>
 <translation id="7049373494483449255">Pozwala <ph name="PRODUCT_NAME" /> przesyłać dokumenty do <ph name="CLOUD_PRINT_NAME" /> w celu wydrukowania. UWAGA: to ustawienie wpływa tylko na obsługę <ph name="CLOUD_PRINT_NAME" /> w <ph name="PRODUCT_NAME" />. Nie uniemożliwia użytkownikom drukowania za pośrednictwem innych witryn. W przypadku włączenia lub nieskonfigurowania tego ustawienia, użytkownicy będą mogli drukować w <ph name="CLOUD_PRINT_NAME" /> z okna drukowania w <ph name="PRODUCT_NAME" />. Jeśli to ustawienie zostanie wyłączone, użytkownicy nie będą mogli drukować za pomocą <ph name="CLOUD_PRINT_NAME" /> w oknie drukowania przeglądarki <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Po włączeniu tej zasady wymuszany jest import zakładek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zakładki nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zakładki mają zostać zaimportowane lub operacja ta zostanie wykonana automatycznie.</translation>
-<translation id="7055358889740598917">Konfiguruje URL domyślnej strony startowej <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę.
-
-          Stronę startową otwiera się przyciskiem strony startowej. Strony otwierane po uruchomieniu są określone w zasadach RestoreOnStartup.
-
-          Jako stronę startową można ustawić podany tu URL albo stronę nowej karty. Wybranie strony nowej karty powoduje, że ta zasada nie jest stosowana.
-
-          Jeśli ta zasada jest włączona, użytkownicy nie mogą zmienić adresu URL strony startowej <ph name="PRODUCT_NAME" />, ale mogą wybrać stronę nowej karty jako swoją stronę startową.
-
-          Jeśli ta zasada jest nieskonfigurowana, użytkownik może wybrać stronę startową, o ile nie jest też skonfigurowana zasada HomepageIsNewTabPage.
-
-          Zasada nie jest dostępna w systemach Windows
-          niepodłączonych do domeny Active Directory.</translation>
 <translation id="7063895219334505671">Zezwalaj na wyskakujące okienka w tych witrynach</translation>
 <translation id="706669471845501145">Zezwalaj witrynom na pokazywanie powiadomień na pulpicie</translation>
 <translation id="7072406291414141328">Włącza ograniczanie przepustowości sieci</translation>
@@ -1492,21 +1489,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli wyłączysz tę zasadę, tryb działania w tle nie będzie dostępny i użytkownik nie będzie mógł zmienić tej opcji w ustawieniach przeglądarki.
 
       Jeśli nie skonfigurujesz tej zasady, tryb działania w tle będzie początkowo niedostępny, ale użytkownik będzie mógł zmienić tę opcję w ustawieniach przeglądarki.</translation>
-<translation id="7123297102171034788">Pozwala określić działanie po uruchomieniu.
-
-          Jeśli wybierzesz „Otwórz stronę nowej karty”, po uruchomieniu <ph name="PRODUCT_NAME" /> będzie się zawsze otwierać strona nowej karty.
-
-          Jeśli wybierzesz „Przywróć ostatnią sesję”, będą otwierać się strony, które były otwarte w momencie ostatniego zamknięcia <ph name="PRODUCT_NAME" /> i będzie przywracana sesja przeglądania w postaci, w jakiej została zamknięta.
-          Wybranie tej opcji spowoduje wyłączenie niektórych ustawień zależnych od sesji lub powodujących wykonywanie określonych czynności przy zamykaniu (na przykład wyczyszczenie danych przeglądania po zamknięciu lub usunięcie plików cookie sesji).
-
-          Jeśli wybierzesz „Otwórz adresy URL z listy”, po włączeniu <ph name="PRODUCT_NAME" /> wyświetlą się strony z listy „Adresy URL otwierane po uruchomieniu”.
-
-          Jeśli włączysz to ustawienie, użytkownicy nie będą mogli go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />.
-
-          Wyłączenie tego ustawienia jest równoznaczne z pozostawieniem go nieskonfigurowanego. Użytkownik nadal będzie mógł je zmienić w <ph name="PRODUCT_NAME" />.
-
-          Ta zasada jest niedostępna w systemach Windows,
-          które nie są dołączone do domeny Active Directory.</translation>
 <translation id="7128918109610518786">Lista identyfikatorów aplikacji pokazywanych przez <ph name="PRODUCT_OS_NAME" /> jako aplikacje przypięte na pasku programu uruchamiającego.
 
       Jeśli ta zasada jest skonfigurowana, zestaw aplikacji jest ustalony i nie może być zmieniany przez użytkownika.
@@ -1737,20 +1719,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="793134539373873765">Określa, czy do pobierania aktualizacji systemu operacyjnego ma być używana sieć P2P. Jeśli w tej opcji ustawisz wartość Prawda, urządzenia będą dzieliły aktualizacje w sieci LAN i próbowały pobierać je z tej sieci, co może zmniejszyć wykorzystanie i obciążenie łącza internetowego. Jeśli aktualizacje nie będą dostępne w sieci LAN, urządzenie przełączy się na pobieranie aktualizacji z serwera. Jeśli ustawisz w tej opcji wartość Fałsz, sieć P2P nie będzie używana.</translation>
 <translation id="7933141401888114454">Włącz tworzenie użytkowników nadzorowanych</translation>
 <translation id="793473937901685727">Ustaw dostępność certyfikatu dla aplikacji ARC</translation>
-<translation id="7936098023732125869">Włącza korzystanie z usług domyślnego dostawcy usługi wyszukiwania.
-
-          Jeśli włączysz to ustawienie, wpisanie w omniboksie tekstu, który nie jest adresem URL, będzie powodować użycie wyszukiwarki domyślnej.
-
-          Możesz określić domyślnego dostawcę usługi wyszukiwania, konfigurując pozostałe zasady dotyczące wyszukiwarki domyślnej. Jeśli te zasady pozostaną puste, użytkownik będzie mógł wybrać dostawcę domyślnego.
-
-          Jeśli wyłączysz to ustawienie, wpisanie w omniboksie tekstu, który nie jest adresem URL, nie spowoduje przeprowadzenia wyszukiwania.
-
-          Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />.
-
-          Jeśli ta zasada pozostanie nieustawiona, włączony zostanie domyślny dostawca usługi wyszukiwania, a użytkownik będzie mógł skonfigurować listę dostawców usługi wyszukiwania.
-
-          Ta zasada jest niedostępna w systemach Windows,
-          które nie są dołączone do domeny Active Directory.</translation>
 <translation id="7937766917976512374">Zezwól lub nie na przechwytywanie wideo</translation>
 <translation id="7941975817681987555">Nie przewiduj działań w sieci dla żadnego połączenia sieciowego</translation>
 <translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
@@ -1866,18 +1834,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8312129124898414409">Umożliwia określenie, czy w witrynach mogą być generowane klucze. Generowanie kluczy może być dozwolone lub zabronione we wszystkich witrynach.
 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używane ustawienie „BlockKeygen”, a użytkownik będzie mógł je zmienić.</translation>
-<translation id="8316806736175990584">Konfiguruje typ domyślnej strony startowej w <ph name="PRODUCT_NAME" /> i uniemożliwia zmienianie preferencji strony startowej przez użytkowników. Dla strony startowej można ustawić wybrany URL lub stronę nowej karty.
-
-          Włączenie tego ustawienia powoduje, że jako strona startowa zawsze stosowana jest strona nowej karty, a URL strony startowej jest ignorowany.
-
-          Po wyłączeniu ustawienia strona nowej karty nigdy nie będzie się ustawiała jako strona startowa użytkownika, chyba że jako URL zostanie podana wartość „chrome://newtab”.
-
-          Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli zmienić typu strony startowej w <ph name="PRODUCT_NAME" />.
-
-          W przypadku pozostawienia zasady nieskonfigurowanej użytkownik może wybrać, czy jako strona nowej karty ma się wyświetlać wskazana przez niego strona startowa.
-
-          Ta zasada nie jest dostępna w systemach Windows
-          niepodłączonych do domeny Active Directory.</translation>
 <translation id="8329984337216493753">Ta zasada jest aktywna tylko w trybie sklepu.
 
       W przypadku określenia zasady DeviceIdleLogoutTimeout ta zasada określa czas wyświetlania okna ostrzegawczego z licznikiem czasu, które jest wyświetlane przed wylogowaniem użytkownika.
@@ -1913,27 +1869,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
-<translation id="855339549837475534">Zarówno Chromium, jak i Google Chrome obsługują jednakowy zestaw
-      zasad. Ten dokument może zawierać zasady przeznaczone dla
-      nieopublikowanych wersji oprogramowania (tzn. wpis „obsługiwana w”
-      w informacjach o zasadzie odnosi się do wersji, która nie została wydana).
-      Takie zasady możemy zmienić lub usunąć bez wcześniejszego
-      powiadomienia.
-
-      Zasady te są przeznaczone do konfigurowania
-      <ph name="PRODUCT_NAME" /> tylko na wewnętrzny użytek Twojej organizacji.
-      Użycie ich poza nią (np. w programie rozpowszechnianym publicznie)
-      spowoduje uznanie oprogramowania za złośliwe – prawdopodobnie
-      tak zostanie ono oznaczone przez Google i programy antywirusowe.
-
-      Nie musisz konfigurować tych ustawień ręcznie.
-      Możesz pobrać łatwe w użyciu szablony dla systemów Windows, Mac OS X
-      i Linux ze strony <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Zalecamy skonfigurowanie zasady w systemie Windows
-      za pośrednictwem obiektu zasad grupy (GPO), mimo że
-      obsługa zasady przez rejestr jest nadal możliwa w systemach Windows
-      połączonych z domeną Active Directory.</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
 <translation id="8587229956764455752">Pozwól na tworzenie nowych kont użytkowników</translation>
 <translation id="8614804915612153606">Wyłącza automatyczne aktualizacje</translation>
@@ -1950,12 +1885,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
           Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> próbuje wykryć, czy serwer jest w intranecie, i tylko wtedy odpowiada na żądania IWA. W przypadku serwera internetowego <ph name="PRODUCT_NAME" /> ignoruje żądania IWA.</translation>
 <translation id="8672321184841719703">Wersja docelowa automatycznych aktualizacji</translation>
-<translation id="868068801094828689">Włącza anonimowe przesyłanie do Google raportów o użytkowaniu i danych o awariach <ph name="PRODUCT_NAME" /> oraz blokuje możliwość zmiany tego ustawienia przez użytkowników.
-
-      Jeśli włączysz to ustawienie, do Google będą wysyłane anonimowe raporty o użytkowaniu oraz dane o awariach. Jeśli je wyłączysz, takie informacje nie będą wysyłane. W obu wypadkach użytkownicy nie mogą zmienić ani zastąpić tego ustawienia.
-      Jeśli nie ustawisz tej zasady, obowiązujące ustawienie będzie zależało od wyboru użytkownika przy instalacji lub pierwszym uruchomieniu.
-
-      Ta zasada nie jest dostępna w przypadku systemów Windows, które nie są podłączone do domeny Active Directory. (W przypadku systemu operacyjnego Chrome zapoznaj się zasadą DeviceMetricsReportingEnabled).</translation>
 <translation id="8693243869659262736">Użyj wbudowanego klienta DNS</translation>
 <translation id="8704831857353097849">Lista wyłączonych wtyczek</translation>
 <translation id="8711086062295757690">Pozwala określić słowo kluczowe będące skrótem umożliwiającym wywołanie w omniboksie usługi wyszukiwania od tego dostawcy. Ta zasada jest opcjonalna. Jeśli nie zostanie ustawiona, żadne słowo kluczowe nie będzie aktywować dostawcy wyszukiwania. Ta zasada jest uwzględniana tylko po włączeniu zasady „DefaultSearchProviderEnabled”.</translation>
@@ -1991,6 +1920,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8858642179038618439">Wymuś tryb bezpieczny w YouTube</translation>
 <translation id="8864975621965365890">Pomija monit o odinstalowanie wyświetlany wtedy, gdy witryna jest renderowana przez <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Strona startowa</translation>
+<translation id="8882006618241293596">Blokuj uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> w tych witrynach</translation>
 <translation id="8906768759089290519">Włącz tryb gościa</translation>
 <translation id="8908294717014659003">Pozwala określić, czy strony mogą korzystać z urządzeń do rejestrowania multimediów. Dostęp do tych urządzeń może być dozwolony domyślnie lub użytkownik może być pytany za każdym razem, gdy strona chce użyć urządzenia do rejestrowania multimediów.
 

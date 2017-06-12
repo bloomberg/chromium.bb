@@ -110,12 +110,14 @@
 <translation id="4549794359424059447">Chromium 的后续版本将不再支持 Windows XP 或 Windows Vista。</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="459535195905078186">Chromium 应用</translation>
+<translation id="4611246891205775468">Chromium 需要获得相应权限，才能允许此网站使用您的麦克风。</translation>
 <translation id="4621240073146040695">即将更新到最新版本！重新启动 Chromium 即可完成更新。</translation>
 <translation id="4677944499843243528">其他计算机 (<ph name="HOST_NAME" />) 的另一个 Chromium 进程 (<ph name="PROCESS_ID" />) 好像正在使用此个人资料。Chromium 已锁定此个人资料以防止其受损。如果您确定其他进程目前未使用此个人资料，请为其解锁并重新启动 Chromium。</translation>
 <translation id="469338717132742108">获取有关 Chromium 操作系统的帮助</translation>
 <translation id="4708774505295300557">之前已有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST" /> 的身份登录了 Chromium。请新建一个 Chromium 用户来单独保存您的信息。</translation>
 <translation id="4714956846925717402">更快地访问 Chromium</translation>
 <translation id="4743926867934016338">接受并搜索</translation>
+<translation id="4825874709045178029">Chromium 需要获得相应权限，才能允许此网站使用您的摄像头。</translation>
 <translation id="4888717733111232871">Chromium的入站规则，允许mDNS流量。</translation>
 <translation id="4943838377383847465">Chromium处于后台运行模式。</translation>
 <translation id="4987820182225656817">访客使用Chromium不会留下任何痕迹。</translation>
@@ -232,6 +234,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8222496066431494154">请在您的手机上安装 Chromium。我们会将一条短信发送到您帐号的辅助电话号码：<ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">帮助我们改进Chromium</translation>
 <translation id="8290862415967981663">此文件可能存在危险，因此 Chromium 已将其拦截。</translation>
+<translation id="8328596990138326317">Chromium 需要获得相应权限，才能允许此网站使用您的摄像头和麦克风。</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> 之前使用的是 Chromium</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
 <translation id="8493179195440786826">Chromium版本太旧</translation>

@@ -64,10 +64,12 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="225614027745146050">Selamat datang</translation>
 <translation id="228809120910082333">Sila sahkan akaun dan PIN anda di bawah untuk membenarkan akses melalui Chromoting.</translation>
 <translation id="2314101195544969792">Sesi <ph name="APPLICATION_NAME" /> anda tidak aktif untuk sementara waktu dan akan diputuskan sambungannya tidak lama lagi.</translation>
+<translation id="2317666076142640974">Intai sepintas lalu <ph name="LINK_BEGIN" />apl web Desktop Jauh Chrome<ph name="LINK_END" />. Kami ingin mendengar maklum balas anda.</translation>
 <translation id="2353140552984634198">Anda boleh mengakses komputer ini dengan selamat menggunakan Chromoting.</translation>
 <translation id="2359808026110333948">Teruskan</translation>
 <translation id="2366718077645204424">Tidak dapat mencapai hos. Hal ini mungkin disebabkan oleh konfigurasi rangkaian yang anda gunakan.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Terakhir dilihat dalam talian <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Apl ini tidak disokong lagi. Untuk memastikan anda mendapat ciri terkini dan kemas kini keselamatan, sila gunakan <ph name="LINK_BEGIN" />apl web Desktop Jauh Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Bantu kami mempertingkatkan Desktop Jauh Chrome dengan membenarkan kami mengumpulkan perangkaan penggunaan dan laporan keranapan.</translation>
 <translation id="2512228156274966424">PERHATIAN: Untuk memastikan semua pintasan papan kekunci tersedia, anda boleh mengkonfigurasi Desktop Jauh Chrome kepada ‘Buka sebagai tetingkap’.</translation>
 <translation id="2540992418118313681">Adakah anda ingin berkongsi komputer ini untuk dilihat dan dikawal oleh pengguna lain?</translation>
@@ -230,6 +232,7 @@ Jauh Chrome</translation>
 <translation id="6930242544192836755">Tempoh</translation>
 <translation id="6939719207673461467">Paparkan/Sembunyikan papan kekunci.</translation>
 <translation id="6944854424004126054">Pulihkan tetingkap</translation>
+<translation id="6948905685698011662">Desktop Jauh Chrome kini berada di web! Lihat <ph name="LINK_BEGIN" />apl web percuma<ph name="LINK_END" /> kami.</translation>
 <translation id="6963936880795878952">Sambungan kepada komputer jauh disekat buat sementara waktu kerana seseorang sedang cuba untuk menyambung kepadanya dengan PIN yang tidak sah. Sila cuba sebentar lagi.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Adakah anda pasti mahu melumpuhkan sambungan jauh ke <ph name="HOSTNAME" />? Jika anda berubah fikiran, anda perlu pergi ke komputer tersebut untuk mendayakan semula sambungan.</translation>
@@ -246,6 +249,7 @@ Jauh Chrome</translation>
 <translation id="7401733114166276557">Desktop Jauh Chrome</translation>
 <translation id="7434397035092923453">Akses ditolak untuk klien: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klien disambungkan: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Desktop Jauh Chrome akan berpindah ke rumah baharu di web. Cuba <ph name="LINK_BEGIN" />apl web<ph name="LINK_END" /> kami—apl ini pantas dan percuma, mengandungi semua ciri yang sama seperti sebelum ini.</translation>
 <translation id="7606912958770842224">Dayakan sambungan jauh</translation>
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>

@@ -112,12 +112,14 @@
 <translation id="4549794359424059447">Chromium ના ભાવિ સંસ્કરણો હવેથી Windows XP અથવા Windows Vista ને સમર્થિત કરશે નહિ.</translation>
 <translation id="4567424176335768812">તમે <ph name="USER_EMAIL_ADDRESS" /> તરીકે સાઇન ઇન છો. હવે તમે તમારા બધા સાઇન ઇન કરેલા ઉપકરણો પર તમારા બુકમાર્ક્સ, ઇતિહાસ અને અન્ય સેટિંગ્સને ઍક્સેસ કરી શકો છો.</translation>
 <translation id="459535195905078186">Chromium ઍપ્લિકેશનો</translation>
+<translation id="4611246891205775468">Chromiumને આ સાઇટ માટે તમારા માઇક્રોફોનના ઍક્સેસની પરવાનગીની જરૂર પડે છે.</translation>
 <translation id="4621240073146040695">અપ ટૂ ડેટ થવામાં છે! અપડેટ સમાપ્ત કરવા માટે Chromium ને ફરીથી લોંચ કરો.</translation>
 <translation id="4677944499843243528">બીજા કમ્પ્યુટર (<ph name="HOST_NAME" />) પર પ્રોફાઇલ બીજી Chromium પ્રક્રિયા (<ph name="PROCESS_ID" />) દ્વારા ઉપયોગમાં હોય એવું લાગે છે. Chromium એ પ્રોફાઇલને લૉક કરી છે જેથી તે દૂષિત ન થઈ જાય. જો તમને ખાતરી છે કે કોઈ અન્ય પ્રક્રિયાઓ આ પ્રોફાઇલનો ઉપયોગ કરી રહી નથી, તો તમે પ્રોફાઇલને અનલૉક કરી અને Chromium ને ફરીથી લોંચ કરી શકો છો.</translation>
 <translation id="469338717132742108">Chromium OS સાથે સહાય મેળવો</translation>
 <translation id="4708774505295300557">કોઈએ આ કોમ્પ્યુટર પર પહેલા <ph name="ACCOUNT_EMAIL_LAST" /> તરીકે Chromiumમાં સાઇન ઇન કર્યું છે. તમારી માહિતી અલગ રાખવા માટે કૃપા કરીને નવો Chromium વપરાશકર્તા બનાવો.</translation>
 <translation id="4714956846925717402">Chromium પર વધુ ઝડપથી જાઓ</translation>
 <translation id="4743926867934016338">સ્વીકારો અને શોધો</translation>
+<translation id="4825874709045178029">Chromiumને આ સાઇટ માટે તમારા કૅમેરાના ઍક્સેસની પરવાનગીની જરૂર પડે છે.</translation>
 <translation id="4888717733111232871">mDNS ટ્રાફિકને મંજૂરી આપવા Chromium માટે ઇનબાઉન્ડ નિયમ.</translation>
 <translation id="4943838377383847465">Chromium પૃષ્ઠભૂમિ મોડમાં છે.</translation>
 <translation id="4987820182225656817">અતિથિઓ કંઈપણ પાછળ છોડ્યાં વિના Chromium નો ઉપયોગ કરી શકે છે.</translation>
@@ -234,6 +236,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8222496066431494154">તમારા ફોન પર Chromium ઇન્સ્ટૉલ કરો. અમે તમારા એકાઉન્ટ પુનઃપ્રાપ્તિ ફોન નંબર પર એક SMS મોકલીશું: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Chromium ને બહેતર બનાવવામાં સહાય કરો</translation>
 <translation id="8290862415967981663">આ ફાઇલ જોખમી હોઈ શકે છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
+<translation id="8328596990138326317">Chromiumને આ સાઇટ માટે તમારા કૅમેરા અને માઇક્રોફોનના ઍક્સેસની પરવાનગીની જરૂર પડે છે.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" />, પહેલાં Chromium નો ઉપયોગ કરી રહ્યાં હતાં</translation>
 <translation id="8453117565092476964">ઇન્સ્ટોલર આર્કાઇવ દૂષિત અથવા અમાન્ય છે. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="8493179195440786826">Chromium જૂનું થઈ ગયું છે</translation>

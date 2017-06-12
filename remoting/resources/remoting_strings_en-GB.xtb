@@ -64,10 +64,12 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="225614027745146050">Welcome</translation>
 <translation id="228809120910082333">Please confirm your account and PIN below to allow access by Chromoting.</translation>
 <translation id="2314101195544969792">Your <ph name="APPLICATION_NAME" /> session has been inactive for a while and will be disconnected shortly.</translation>
+<translation id="2317666076142640974">Get a sneak peek at the new <ph name="LINK_BEGIN" />Chrome Remote Desktop web app<ph name="LINK_END" />. We'd love to hear your feedback.</translation>
 <translation id="2353140552984634198">You may securely access this computer using Chromoting.</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2366718077645204424">Unable to reach the host. This is probably due to the configuration of the network you are using.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Last seen online <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">This app is no longer supported. To ensure that you're getting the latest features and security updates, please use the <ph name="LINK_BEGIN" />Chrome Remote Desktop web app<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Help us to improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.</translation>
 <translation id="2512228156274966424">NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.</translation>
 <translation id="2540992418118313681">Would you like to share this computer for another user to see and control?</translation>
@@ -230,6 +232,7 @@ Desktop Host</translation>
 <translation id="6930242544192836755">Duration</translation>
 <translation id="6939719207673461467">Show/hide keyboard.</translation>
 <translation id="6944854424004126054">Restore window</translation>
+<translation id="6948905685698011662">Chrome Remote Desktop is now on the web! Check out our <ph name="LINK_BEGIN" />free web app<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with an invalid PIN. Please try again later.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Are you sure you want to disable remote connections to <ph name="HOSTNAME" />? If you change your mind, you'll need to visit that computer to re-enable connections.</translation>
@@ -246,6 +249,7 @@ Desktop Host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Access denied for client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client connected: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Chrome Remote Desktop is moving to a new home on the web. Try our <ph name="LINK_BEGIN" />web app<ph name="LINK_END" /> – it's fast and free, with all the same features as before.</translation>
 <translation id="7606912958770842224">Enable remote connections</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Cancel</translation>

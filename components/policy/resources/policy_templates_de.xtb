@@ -142,6 +142,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       auf Videoaufnahmegeräte auf SAML-Log-in-Seiten gestattet. Wird keine Übereinstimmung
       erkannt, dann wird der Zugriff automatisch verweigert. Platzhaltermuster
       sind nicht zulässig.</translation>
+<translation id="1634989431648355062">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" für diese Websites zulassen</translation>
 <translation id="1655229863189977773">Cache-Größe für Datenträger in Byte festlegen</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="1668836044817793277">Gibt an, ob der automatisch verzögerungsfrei gestarteten Kiosk-App die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version gestattet werden soll.
@@ -695,6 +696,11 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       Sind diese Richtlinien nicht konfiguriert, so können Nutzer ihre eigenen Proxy-Einstellungen wählen.</translation>
 <translation id="3758249152301468420">Entwickler-Tools deaktivieren</translation>
 <translation id="3765260570442823273">Dauer der Warnmeldung zur Abmeldung bei Inaktivität</translation>
+<translation id="376931976323225993">Mit dieser Option können Sie festlegen, ob Websites das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" automatisch ausführen dürfen. Das automatische Ausführen des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" kann entweder für alle Websites zugelassen oder für alle Websites verboten werden.
+
+          Click-to-Play ermöglicht die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />". Der Nutzer muss jedoch auf den Platzhalter klicken, um die Ausführung zu initiieren.
+
+          Wird diese Richtlinie nicht konfiguriert, kann der Nutzer diese Einstellung manuell ändern.</translation>
 <translation id="3780152581321609624">Nicht-Standard-Port in Kerberos-SPN einschließen</translation>
 <translation id="3780319008680229708">Wenn diese Richtlinie auf "true" gesetzt wird, erscheint das Cast-Symbol immer auf der Symbolleiste oder im Überlaufmenü und Nutzer können es nicht entfernen.
 
@@ -822,6 +828,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="4105989332710272578">Erzwingung der Zertifikatstransparenz für eine Liste von URLs deaktivieren</translation>
 <translation id="4121350739760194865">App-Werbung nicht auf der "Neuer Tab"-Seite anzeigen</translation>
 <translation id="4157003184375321727">Betriebssystem- und Firmware-Version melden</translation>
+<translation id="4183229833636799228">"<ph name="FLASH_PLUGIN_NAME" />" als Standardeinstellung</translation>
 <translation id="4192388905594723944">URL zur Überprüfung des Client-Authentifizierungs-Tokens für den Remote-Zugriff</translation>
 <translation id="4203389617541558220">Hiermit kann die Betriebszeit des Geräts durch die Planung automatischer Neustarts begrenzt werden.
 
@@ -1129,6 +1136,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Hinweis: Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt und alle Standardwerte der Richtlinie werden ignoriert, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen. Daher ist ein kürzeres Intervall zwischen den Aktualisierungen nicht erforderlich.</translation>
 <translation id="5535973522252703021">Weiße Liste für Kerberos-Bevollmächtigungs-Server</translation>
+<translation id="555077880566103058">Automatische Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" für alle Websites zulassen</translation>
 <translation id="5559079916187891399">Diese Richtlinie hat keine Auswirkung auf Android-Apps.</translation>
 <translation id="5560039246134246593">Hiermit fügen Sie beim Abrufen des Varianten-Seeds in <ph name="PRODUCT_NAME" /> einen Parameter hinzu.
 
@@ -1205,12 +1213,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="5868414965372171132">Netzwerkkonfiguration auf Nutzerebene</translation>
 <translation id="588135807064822874">"Zum Suchen tippen" aktivieren</translation>
 <translation id="5883015257301027298">Standardeinstellungen für Cookies</translation>
-<translation id="5887291617378691520">Wenn "URL-Liste öffnen" als Startaktion ausgewählt ist, können Sie hier die Liste der zu öffnenden URLs zusammenstellen. Sollte die Richtlinie nicht konfiguriert sein, wird keine URL beim Start geöffnet.
-
-          Die Richtlinie wird nur umgesetzt, wenn für die Richtlinie "RestoreOnStartup" die Option "RestoreOnStartupIsURLs" festgelegt ist.
-
-          Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die nicht mit
-          einer Active Directory-Domain verbunden sind.</translation>
 <translation id="5887414688706570295">Konfiguriert das TalkGadget-Präfix, das von Remote-Zugriff-Hosts verwendet wird, und verhindert, dass dieses von Nutzern geändert werden kann.
 
           Wenn dieses Präfix angegeben wird, wird es dem TalkGadget-Basisnamen vorangestellt, um einen vollständigen Domain-Namen für das TalkGadget zu erstellen. Der Basisname der TalkGadget-Domain lautet ".talkgadget.google.com".
@@ -1294,6 +1296,9 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       Für die Richtlinie kann auch einer der folgenden Werte festgelegt werden: "sslv3", "tls1", "tls1.1" oder "tls1.2". Wenn die Richtlinie konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> keine Versionen von SSL/TLS, die niedriger als die vorgegebene Version sind. Unbekannte Werte werden ignoriert.
 
       Beachten Sie, dass "sslv3" trotz der höheren Zahl eine frühere Version als "tls1" ist.</translation>
+<translation id="6181608880636987460">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" nicht gestattet ist.
+
+          Ist diese Richtlinie nicht festgelegt, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="6190022522129724693">Standardeinstellung für Pop-ups</translation>
 <translation id="6197453924249895891">Durch diese Richtlinie wird der Zugriff auf Schlüssel zur geschäftlichen Nutzung in Erweiterungen gewährt
 
@@ -1407,6 +1412,9 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
 <translation id="6693751878507293182">Wenn Sie diese Einstellung aktivieren, wird die automatische Suche und Installation fehlender Plug-ins in <ph name="PRODUCT_NAME" /> deaktiviert. Ist sie deaktiviert oder nicht konfiguriert, so ist die Plug-in-Suche aktiv.</translation>
 <translation id="6699880231565102694">Zwei-Faktor-Authentifizierung für Remote-Zugriff-Hosts aktivieren</translation>
+<translation id="6757438632136860443">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" gestattet ist.
+
+          Ist diese Richtlinie nicht festgelegt, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="6766216162565713893">Websites dürfen den Nutzer um Zugriff auf ein Bluetooth-Gerät in der Nähe bitten</translation>
 <translation id="6770454900105963262">Informationen zu aktiven Kiosksitzungen senden</translation>
 <translation id="6786747875388722282">Erweiterungen</translation>
@@ -1432,6 +1440,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
           Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie nicht ändern oder außer Kraft setzen.
 
           Wird diese Richtlinie nicht konfiguriert, ist das gesprochene Feedback zunächst deaktiviert, kann aber von den Nutzern jederzeit aktiviert werden.</translation>
+<translation id="6922884955650325312">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" blockieren</translation>
 <translation id="6923366716660828830">Gibt den Namen des Standardsuchanbieters an. Wenn die Richtlinie leer oder nicht konfiguriert ist, so wird der durch die Such-URL angegebene Hostname verwendet. Diese Richtlinie wird nur dann umgesetzt, wenn "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="6931242315485576290">Synchronisierung der Daten mit Google deaktivieren</translation>
 <translation id="6936894225179401731">Legt die maximale Anzahl gleichzeitiger Verbindungen zum Proxyserver fest.
@@ -1463,17 +1472,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7040229947030068419">Beispielwert</translation>
 <translation id="7049373494483449255">Ermöglicht es <ph name="PRODUCT_NAME" />, Dokumente zum Drucken an <ph name="CLOUD_PRINT_NAME" /> zu senden. Hinweis: Dies wirkt sich nur auf die <ph name="CLOUD_PRINT_NAME" />-Unterstützung in <ph name="PRODUCT_NAME" /> aus. Die Richtlinie verhindert nicht, dass Nutzer Druckaufträge auf Websites geben. Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialog über <ph name="CLOUD_PRINT_NAME" /> drucken. Sollte die Einstellung deaktiviert sein, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialog über <ph name="CLOUD_PRINT_NAME" /> nicht drucken.</translation>
 <translation id="7053678646221257043">Bei Aktivierung erzwingt diese Richtlinie, dass die Lesezeichen vom aktuellen Standardbrowser importiert werden. Wenn Sie deaktiviert ist, werden keine Lesezeichen importiert. Sollte Sie nicht konfiguriert sein, wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
-<translation id="7055358889740598917">Konfiguriert die Standard-Startseiten-URL in <ph name="PRODUCT_NAME" /> und verhindert, dass diese von Nutzern geändert werden kann.
-
-          Die Startseite ist die Seite, die über die Schaltfläche "Startseite" geöffnet wird. Die Seiten, die beim Hochfahren geöffnet werden, werden über die Richtlinien "RestoreOnStartup" kontrolliert.
-
-          Die Art der Startseite kann entweder für eine hier angegebene URL oder für die "Neuer Tab"-Seite festgelegt werden. Falls Sie die "Neuer Tab"-Seite auswählen, wird diese Richtlinie ignoriert.
-
-          Wenn Sie diese Einstellung aktivieren, können Nutzer ihre Startseiten-URL in <ph name="PRODUCT_NAME" /> nicht ändern, jedoch weiterhin ihre Startseite zu der "Neuer Tab"-Seite ändern.
-
-          Ist diese Richtlinie nicht konfiguriert, können die Nutzer selbst eine Startseite wählen, sofern "HomepageIsNewTabPage" ebenfalls nicht konfiguriert ist.
-
-          Diese Richtlinie ist nicht in Windows-Instanzen verfügbar, die nicht mit einer Active Directory-Domain verbunden sind.</translation>
 <translation id="7063895219334505671">Pop-ups auf diesen Websites zulassen</translation>
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
 <translation id="7072406291414141328">Begrenzung der Netzwerkbandbreite zulassen</translation>
@@ -1495,21 +1493,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Ist diese Richtlinie auf "false" gesetzt, wird der Hintergrundmodus deaktiviert und der Prozess kann nicht vom Nutzer über die Browsereinstellungen gesteuert werden.
 
       Ist diese Richtlinie nicht konfiguriert, wird der Hintergrundmodus anfänglich deaktiviert und der Prozess kann vom Nutzer über die Browsereinstellungen gesteuert werden.</translation>
-<translation id="7123297102171034788">Mit dieser Richtlinie können Sie das Verhalten beim Start festlegen.
-
-          Wenn Sie "Startseite öffnen" auswählen, wird bei jedem Start von <ph name="PRODUCT_NAME" /> die Startseite geöffnet.
-
-          Wird die Option "Letzte Sitzung wiederherstellen" ausgewählt, werden die URLs erneut aufgerufen, die beim letzten Schließen von <ph name="PRODUCT_NAME" /> geöffnet waren, und die Sitzung wird wiederhergestellt.
-          Mit der Auswahl dieser Option werden einige Einstellungen deaktiviert, die auf Sitzungen basieren oder Aktionen beim Beenden ausführen, zum Beispiel Sitzungscookies oder die Funktion "Browserdaten löschen".
-
-          Bei Auswahl von "URL-Liste öffnen" werden beim Start von <ph name="PRODUCT_NAME" /> die URLs aufgerufen, die in der Liste "Beim Start zu öffnende URLs" aufgeführt sind.
-
-          Wenn Sie diese Einstellung aktivieren, kann sie in <ph name="PRODUCT_NAME" /> nicht von Nutzern geändert oder außer Kraft gesetzt werden.
-
-          Wird diese Einstellung deaktiviert, entspricht dies einer nicht erfolgten Konfiguration der Einstellung. Der Nutzer kann sie dann in <ph name="PRODUCT_NAME" /> ändern.
-
-          Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die nicht mit
-          einer Active Directory-Domain verbunden sind.</translation>
 <translation id="7128918109610518786">Listet die App-IDs auf, die unter <ph name="PRODUCT_OS_NAME" /> in der Übersichtsleiste als in der Übersicht angezeigte Apps erscheinen.
 
       Wenn diese Richtlinie konfiguriert wird, werden diese Apps festgelegt und können von Nutzern nicht geändert werden.
@@ -1740,20 +1723,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="793134539373873765">Gibt an, ob P2P für die Nutzdaten von Betriebssystem-Updates verwendet werden soll. Falls auf "True" gesetzt, teilen die Geräte Update-Nutzdaten im LAN und versuchen, die Daten von dort zu laden. Dadurch wird potenziell weniger Internetbandbreite verbraucht und es kommt seltener zu Datenstaus. Wenn die Update-Nutzdaten nicht im LAN verfügbar sind, lädt das Gerät sie ersatzweise von einem Updateserver herunter. Ist diese Option auf "False" gesetzt oder nicht konfiguriert, wird P2P nicht verwendet.</translation>
 <translation id="7933141401888114454">Erstellung von betreuten Nutzern aktivieren</translation>
 <translation id="793473937901685727">Verfügbarkeit von Zertifikaten für ARC-Apps festlegen</translation>
-<translation id="7936098023732125869">Ermöglicht die Verwendung einer Standardsuchmaschine
-
-          Ist diese Einstellung aktiviert, wird eine Standardsuche durchgeführt, wenn der Nutzer Text in die Omnibox eingibt, der keine URL ist.
-
-          Sie können die zu verwendende Standardsuchmaschine angeben, indem Sie die restlichen Standard-Suchrichtlinien festlegen. Werden diese nicht festgelegt, kann der Nutzer die Standardsuchmaschine auswählen.
-
-          Ist diese Einstellung deaktiviert, wird keine Suche durchgeführt, wenn der Nutzer einen anderen Text als eine URL in die Omnibox eingibt.
-
-          Wenn Sie diese Einstellung aktivieren oder deaktivieren, können Nutzer die Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen.
-
-          Wird die Richtlinie nicht konfiguriert, wird der Standardsuchanbieter aktiviert und der Nutzer kann die Suchanbieterliste selbst zusammenstellen.
-
-          Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die nicht mit
-          einer Active Directory-Domain verbunden sind.</translation>
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
 <translation id="7941975817681987555">Netzwerkaktionen nicht über Netzwerkverbindungen vervollständigen</translation>
 <translation id="7953256619080733119">Manuell festgelegte Ausnahme-Hosts für verwalteten Nutzer</translation>
@@ -1856,17 +1825,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8312129124898414409">Ermöglicht Ihnen, festzulegen, ob die Schlüsselgenerierung für Websites zugelassen wird. Die Schlüsselgenerierung kann entweder für alle Websites zugelassen oder für alle Websites verboten werden.
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird "BlockKeygen" verwendet, kann jedoch vom Nutzer geändert werden.</translation>
-<translation id="8316806736175990584">Konfiguriert den Typ der Standard-Startseite in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer die Startseiteneinstellungen ändern. Als Startseite kann entweder eine URL oder die "Neuer Tab"-Seite festgelegt werden.
-
-          Falls Sie diese Einstellung aktivieren, wird immer die "Neuer Tab"-Seite als Startseite verwendet und die Startseiten-URL wird ignoriert.
-
-          Ist diese Einstellung deaktiviert, ist die "Neuer Tab"-Seite nie die Startseite des Nutzers, es sei denn, er hat als URL "chrome://newtab" festgelegt.
-
-          Wenn Sie diese Einstellung aktivieren oder deaktivieren, können Nutzer den Typ ihrer Startseite nicht in <ph name="PRODUCT_NAME" /> ändern.
-
-          Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst wählen, ob die "Neuer Tab"-Seite als Startseite verwendet wird.
-
-          Diese Richtlinie ist nicht in Windows-Instanzen verfügbar, die nicht mit einer Active Directory-Domain verbunden sind.</translation>
 <translation id="8329984337216493753">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Falls die Richtlinie "DeviceIdleLogoutTimeout" konfiguriert ist, wird mithilfe der vorliegenden Richtlinie festgelegt, wie lange das Warnfenster mit Countdown für Nutzer zu sehen sein soll, bevor sie abgemeldet werden.
@@ -1902,24 +1860,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8519264904050090490">Manuell festgelegte Ausnahme-URLs für verwalteten Nutzer</translation>
 <translation id="8544375438507658205">Standardanwendung für HTML-Darstellung in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
-<translation id="855339549837475534">Sowohl Chromium als auch Google Chrome unterstützen dieselbe Gruppe von
-      Richtlinien. Beachten Sie, dass dieses Dokument Richtlinien umfassen kann,
-      die sich auf nicht veröffentlichte Softwareversionen beziehen, d. h., ihre
-      Unterstützung gilt für eine nicht veröffentlichte Version, und dass solche
-      Richtlinien ohne vorherige Ankündigung geändert oder entfernt werden können.
-
-      Diese Richtlinien dienen ausschließlich zur Konfiguration von internen
-      <ph name="PRODUCT_NAME" />-Instanzen innerhalb Ihrer Organisation. Eine Anwendung dieser
-      Richtlinien außerhalb Ihrer Organisation, z. B. in einem öffentlich
-      verbreiteten Programm, wird als Malware angesehen und von Google sowie
-      Anbietern von Antivirensoftware mit hoher Wahrscheinlichkeit als Malware gekennzeichnet.
-
-      Diese Einstellungen müssen nicht manuell konfiguriert werden. Nutzerfreundliche
-      Vorlagen für Windows, Mac und Linux sind unter <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> zum Download verfügbar.
-
-      Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte zu konfigurieren,
-      die Bereitstellung von Richtlinien über die Registrierung wird jedoch auch weiterhin
-      von Windows-Instanzen unterstützt, die Teil einer Active Directory-Domain sind.</translation>
 <translation id="8566842294717252664">Web Store auf der "Neuer Tab"-Seite und im App Launcher ausblenden</translation>
 <translation id="8587229956764455752">Erstellung neuer Nutzerkonten erlauben</translation>
 <translation id="8614804915612153606">Automatische Updates deaktivieren</translation>
@@ -1936,18 +1876,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 
           Wenn Sie diese Richtlinie nicht konfigurieren, versucht <ph name="PRODUCT_NAME" /> zu ermitteln, ob der fragliche Server sich im Intranet befindet, und reagiert nur dann auf IWA-Anfragen. Wenn der Server sich dagegen im Internet befindet, werden dessen IWA-Anfragen von <ph name="PRODUCT_NAME" /> ignoriert.</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
-<translation id="868068801094828689">Ermöglicht die anonyme Meldung von Nutzungs- und Systemabsturzdaten zu <ph name="PRODUCT_NAME" /> an Google und verhindert, dass diese Einstellung von Nutzern geändert werden kann.
-
-      Wenn diese Einstellung aktiviert ist, werden anonyme Nutzungs- und
-      Systemabsturzdaten an Google gesendet. Ist sie deaktiviert, werden diese
-      Informationen nicht an Google gesendet. In beiden Fällen kann die Einstellung
-      nicht von Nutzern geändert oder überschrieben werden.
-      Ist diese Richtlinie nicht konfiguriert, wird die Einstellung übernommen, die der
-      Nutzer bei der Installation bzw. beim ersten Ausführen gewählt hat.
-
-      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer Active
-      Directory-Domain verbunden sind. Informationen zu Chrome OS finden Sie unter
-      "DeviceMetricsReportingEnabled".</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
 <translation id="8704831857353097849">Liste der deaktivierten Plug-ins</translation>
 <translation id="8711086062295757690">Gibt das Suchkürzel an, das als die Verknüpfung fungiert, die in der Omnibox als Auslöser der Suche für diesen Anbieter verwendet wird. Diese Richtlinie ist optional. Wenn sie nicht konfiguriert ist, so wird der Suchanbieter von keinem Suchkürzel aktiviert. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
@@ -1983,6 +1911,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8858642179038618439">YouTube-Sicherheitsmodus erzwingen</translation>
 <translation id="8864975621965365890">Unterdrückung des Hinweises auf Einstellung des Frames, der beim Rendern einer Website durch <ph name="PRODUCT_FRAME_NAME" /> erscheint</translation>
 <translation id="8870318296973696995">Startseite</translation>
+<translation id="8882006618241293596">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" auf diesen Websites blockieren</translation>
 <translation id="8906768759089290519">Gastmodus aktivieren</translation>
 <translation id="8908294717014659003">Hier können Sie festlegen, ob Websites der Zugriff auf Medienaufnahmegeräte erlaubt werden soll. Der Zugriff auf Medienaufnahmegeräte kann standardmäßig zugelassen werden oder Sie können einstellen, dass der Nutzer jedes Mal gefragt wird, wenn eine Website auf Medienaufnahmegeräte zugreifen möchte.
 

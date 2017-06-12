@@ -56,6 +56,7 @@
 
 ዝም ብሎ መግባት እንደ ዕልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች ያሉ የChrome መረጃዎችን ከ<ph name="ACCOUNT_EMAIL_NEW" /> ጋር ያዋህዳቸዋል።</translation>
 <translation id="2397416548179033562">የChrome ምናሌ አሳይ</translation>
+<translation id="2416359993254398973">Chrome ለዚህ ጣቢያ የእርስዎን ካሜራ ለመድረስ ፈቃድ ይፈልጋል።</translation>
 <translation id="2429317896000329049">ማመሳሰል ለጎራዎ ስለማይገኝ Google Chrome ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="2446511512801740068">Chrome ለሆነ ጊዜ ያህል ዳግም ስላልተጀመረ ጊዜው አልፎበታል። አንድ ዝማኔ አለ እና ልክ ዳግም ሲያስጀምሩት ይተገበራል።</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
@@ -111,6 +112,7 @@
 <translation id="4147555960264124640">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በእርስዎ Google Chrome መገለጫ ላይ ቁጥጥር እየሰጡት ነው። እንደ የእርስዎ መተግበሪያዎች፣ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ያሉ የእርስዎ Chrome ውሂብ እስከ መጨረሻው ከ<ph name="USER_NAME" /> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች Dashboard አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም። <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">ጫኝው መዝገብ ለመበተን አልቻለም። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
 <translation id="4251615635259297716">የChrome ውሂብዎ ከዚህ መለያ ጋር ይገናኝ?</translation>
+<translation id="4251625577313994583">በእርስዎ iPhone ላይ Chromeን ያግኙት</translation>
 <translation id="4309555186815777032">(የChrome <ph name="BEGIN_BUTTON" />ዳግም መጀመር<ph name="END_BUTTON" /> ያስፈልገዋል)</translation>
 <translation id="4331809312908958774">Chrome ስርዓተ ክወና</translation>
 <translation id="437002079035561265">ይህ ኮምፒውተር የLinux ስርዓት ከአሁን በኋላ ስለማይደገፍ የGoogle Chrome ዝማኔዎችን ከአሁን በኋላ አይቀበልም።</translation>
@@ -160,6 +162,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="556024056938947818">Google Chrome የይለፍ ቃላትን ለማሳየት እየሞከረ ነው።</translation>
 <translation id="5563479599352954471">በአንዲ ንክኪ ይፈልጉ</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="557283862590186398">Chrome ለዚህ ጣቢያ የእርስዎን ማይክራፎን ለመድረስ ፈቃድ ይፈልጋል።</translation>
 <translation id="5620765574781326016">ከገጹ ሳይወጡ በድር ጣቢያዎች ላይ ስላሉ ስለርዕሶች ይወቁ</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>
 <translation id="568643307450491754">ዕልባቶችዎን በChrome ምናሌ ውስጥ ወይም በዕልባቶች አሞሌ ላይ ይፈልጉ።</translation>
@@ -184,6 +187,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="6291549208091401781">Google Chrome ቀደም ብሎ በእርስዎ ኮምፒውተር ላይ ላሉ ተጠቃሚዎች ተጭኗል።</translation>
 <translation id="6338556085225130112">Google Chromeን በማዘመን ላይ</translation>
 <translation id="6368958679917195344">Chrome ስርዓተ ክወና በተጨማሪ <ph name="BEGIN_LINK_CROS_OSS" />ክፍት ምንጭ ሶፍትዌር<ph name="END_LINK_CROS_OSS" /> እውን ሊሆን ችሏል።</translation>
+<translation id="6393863479814692971">Chrome ለዚህ ጣቢያ የእርስዎን ካሜራ እና ማይክራፎን ለመድረስ ፈቃድ ይፈልጋል።</translation>
 <translation id="6400076122676892962">Mac OS X 10.6፣ 10.7 እና 10.8 ከአሁን በኋላ ስለማይደገፉ ይህ ኮምፒውተር በቅርቡ የGoogle Chrome ዝማኔዎችን መቀበል ያቆማል።</translation>
 <translation id="6410540444482791104">አደገኛ መተግበሪያዎች እና ጣቢያዎች እንዲገኙ ለማገዝ አንዳንድ የሥርዓት መረጃን እና የገጽ ይዘትን ለGoogle በመላክ Chrome ደህንነቱ ይበልጥ የተጠበቀ እና ለመጠቀም ይበልጥ የቀለለ እንዲሆን ማድረግ ይችላሉ።</translation>
 <translation id="6470176598693778404">Mac OS X 10.6፣ 10.7 እና 10.8 ከእንግዲህ ስለማይደገፉ ይህ ኮምፒውተር ከአሁን በኋላ የGoogle Chrome ዝማኔዎችን መቀበል ያቆማል።</translation>

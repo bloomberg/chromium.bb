@@ -41,6 +41,7 @@
 <translation id="1232569758102978740">Неозаглавен</translation>
 <translation id="1263231323834454256">Списък за четене</translation>
 <translation id="1264126396475825575">Сигнал за срив, записан в/ъв <ph name="CRASH_TIME" /> (още не е качен или пренебрегнат)</translation>
+<translation id="1283919782143846010">Блокирахме опасно съдържание</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="129553762522093515">Наскоро затворени</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Опитайте да изчистите „бисквитките“ си<ph name="END_LINK" /></translation>
@@ -54,6 +55,7 @@
 <translation id="1340482604681802745">Адрес за вземане</translation>
 <translation id="1344211575059133124">Изглежда, че се нуждаете от разрешение, за да посетите този сайт</translation>
 <translation id="1344588688991793829">Настройки за Автоматично попълване в Chromium...</translation>
+<translation id="1348198688976932919">На хоризонта се задава сайт с опасни приложения</translation>
 <translation id="1374468813861204354">предложения</translation>
 <translation id="1375198122581997741">Всичко за версията</translation>
 <translation id="1377321085342047638">№ на картата</translation>
@@ -152,6 +154,7 @@
 <translation id="2202020181578195191">Въведете валидна година на изтичане</translation>
 <translation id="2212735316055980242">Правилото не е намерено</translation>
 <translation id="2213606439339815911">Записите се извличат...</translation>
+<translation id="2218879909401188352">Понастоящем извършители на атака срещу <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могат да инсталират опасни приложения, които да повредят устройството ви, да добавят скрити такси към сметката ви за мобилни услуги или да откраднат личната ви информация. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2230458221926704099">Поправете връзката си посредством <ph name="BEGIN_LINK" />приложението за диагностика<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Изпращане сега</translation>
 <translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
@@ -162,8 +165,10 @@
 <translation id="230155334948463882">Нова карта?</translation>
 <translation id="2317259163369394535">Изискват се потребителско име и парола за <ph name="DOMAIN" />.</translation>
 <translation id="2354001756790975382">Други отметки</translation>
+<translation id="2354430244986887761">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри опасни приложения<ph name="END_LINK" /> на <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Извършители на атаки може да са в състояние да видят изображенията, които преглеждате на този сайт, и да ви подведат, като ги променят.</translation>
 <translation id="2356070529366658676">Попитайте ме</translation>
+<translation id="2359629602545592467">Няколко</translation>
 <translation id="2359808026110333948">Напред</translation>
 <translation id="2365563543831475020">Сигналът за срив, записан в/ъв <ph name="CRASH_TIME" />, не бе качен</translation>
 <translation id="2367567093518048410">Ниво</translation>
@@ -199,6 +204,7 @@
 <translation id="2650446666397867134">Достъпът до файла бе отказан</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2666117266261740852">Затворете другите раздели или приложения.</translation>
+<translation id="2670429602441959756">Тази страница съдържа функции, които още не се поддържат във VR. Режимът се затваря...</translation>
 <translation id="2674170444375937751">Наистина ли искате да изтриете тези страници от историята си?</translation>
 <translation id="2677748264148917807">Излизане</translation>
 <translation id="2702801445560668637">Списък за четене</translation>
@@ -218,6 +224,7 @@
 <translation id="277499241957683684">Липсващ запис за устройството</translation>
 <translation id="2784949926578158345">Връзката бе възстановена.</translation>
 <translation id="2794233252405721443">Сайтът е блокиран</translation>
+<translation id="2799020568854403057">На хоризонта се задава сайт с опасни приложения</translation>
 <translation id="2803306138276472711">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри злонамерен софтуер<ph name="END_LINK" /> на <ph name="SITE" />. Уебсайтовете, които обикновено са надеждни, понякога се заразяват с опасен софтуер.</translation>
 <translation id="2824775600643448204">Лента за адреси и за търсене</translation>
 <translation id="2826760142808435982">Връзката е шифрована и удостоверена посредством <ph name="CIPHER" /> и използва <ph name="KX" /> като механизъм за обмен на ключове.</translation>
@@ -252,6 +259,7 @@
 <translation id="3093245981617870298">Понастоящем сте офлайн.</translation>
 <translation id="3105172416063519923">ID на актива:</translation>
 <translation id="3109728660330352905">Нямате пълномощия за преглед на тази страница.</translation>
+<translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Опитайте да стартирате диагностика на свързаността<ph name="END_LINK" />.</translation>
 <translation id="3145945101586104090">Декодирането на отговора не бе успешно</translation>
 <translation id="3150653042067488994">Временна грешка в сървъра</translation>
@@ -351,6 +359,7 @@
 <translation id="375403751935624634">Преводът не бе успешен поради грешка в сървъра.</translation>
 <translation id="3759461132968374835">Наскоро не сте съобщавали за сривове. Тези, възникнали при деактивирано изпращане на сигнали за сривове, не се показват тук.</translation>
 <translation id="3778403066972421603">Искате ли тази карта да се запази на устройството и в профила ви в Google?</translation>
+<translation id="3783418713923659662">MasterCard</translation>
 <translation id="3787705759683870569">Изтича на <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">Ако използвате прокси сървър...</translation>
 <translation id="3828924085048779000">Не може пропускът да не се попълни.</translation>
@@ -361,6 +370,9 @@
 <translation id="3886446263141354045">Заявката ви за достъп до този сайт бе изпратена до <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Добавяне на имейл адрес</translation>
 <translation id="3901925938762663762">Картата е с изтекла валидност</translation>
+<translation id="3945915738023014686">Идентификатор на качения сигнал за срив: <ph name="CRASH_ID" /> (локален идентификатор на срива: <ph name="CRASH_LOCAL_ID" />)</translation>
+<translation id="3949571496842715403">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. В сертификата му за сигурност не са посочени алтернативни имена на обекта. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от извършител на атака.</translation>
+<translation id="3949601375789751990">Тук се показва историята ви на сърфиране</translation>
 <translation id="3963721102035795474">Режим за четене</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Няма}=1{От 1 сайт }other{От # сайта }}</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
@@ -452,6 +464,7 @@
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="4854362297993841467">Този начин на бърза доставка не се поддържа. Опитайте с друг.</translation>
 <translation id="4858792381671956233">Попитахте родителите си дали може да посетите този сайт</translation>
+<translation id="4863764087567530506">Въпросното съдържание може да се опита да ви подведе да инсталирате софтуер или да разкриете лична информация. <ph name="BEGIN_LINK" />Показване въпреки това<ph name="END_LINK" />.</translation>
 <translation id="4880827082731008257">Търсене в историята</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{и още 1 уеб страница}other{и още # уеб страници}}</translation>
@@ -525,6 +538,7 @@
 <translation id="5571083550517324815">Този адрес за вземане не се поддържа. Изберете друг.</translation>
 <translation id="5572851009514199876">Моля, стартирайте браузъра Chrome и влезте в него, за да се провери дали имате достъп до този сайт.</translation>
 <translation id="5580958916614886209">Проверете месеца на валидност и опитайте отново</translation>
+<translation id="5586446728396275693">Няма запазени адреси</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="560412284261940334">Управлението не се поддържа</translation>
 <translation id="5610142619324316209">Проверете връзката.</translation>
@@ -538,6 +552,7 @@
 <translation id="5669703222995421982">Получаване на персонализирано съдържание</translation>
 <translation id="5675650730144413517">Тази страница не работи</translation>
 <translation id="5710435578057952990">Самоличността на този уебсайт не е потвърдена.</translation>
+<translation id="5713016350996637505">Блокирахме измамно съдържание</translation>
 <translation id="5720705177508910913">Текущият потребител</translation>
 <translation id="5732392974455271431">Родителите ви могат да го отблокират за вас</translation>
 <translation id="5763042198335101085">Въведете валиден имейл адрес</translation>
@@ -549,14 +564,12 @@
 <translation id="5803412860119678065">Искате ли да се попълнят данните за <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">Връзката ви с/ъс <ph name="DOMAIN" /> е шифрована с остарял криптографски пакет.</translation>
 <translation id="5813119285467412249">&amp;Възстановяване на добавянето</translation>
-<translation id="5814352347845180253">Може да загубите достъп до платено съдържание от <ph name="SITE" /> и някои други сайтове.</translation>
 <translation id="5838278095973806738">Не ви препоръчваме да въвеждате поверителна информация в този сайт (например пароли или номера на кредитни карти), тъй като може да бъде открадната от извършители на атаки.</translation>
 <translation id="5869405914158311789">Няма достъп до този сайт</translation>
 <translation id="5869522115854928033">Запазени пароли</translation>
 <translation id="5872918882028971132">Основни предложения</translation>
 <translation id="5901630391730855834">жълто</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Използва се 1}other{Използват се #}}</translation>
-<translation id="5926846154125914413">Може да загубите достъп до платено съдържание от някои сайтове.</translation>
 <translation id="5959728338436674663">Автоматично изпращане до Google на <ph name="BEGIN_WHITEPAPER_LINK" />системна информация и част от съдържанието на страниците<ph name="END_WHITEPAPER_LINK" /> с цел по-лесно откриване на опасни приложения и сайтове. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967867314010545767">Премахване от историята</translation>
 <translation id="5975083100439434680">Намаляване на мащаба</translation>
@@ -566,9 +579,11 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}other{Страница #}}</translation>
 <translation id="6017514345406065928">зелено</translation>
+<translation id="6017850046339264347">Извършители на атака срещу <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могат да инсталират измамни приложения, които се представят за нещо друго или събират данни, които може да се използват за проследяването ви. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6027201098523975773">Въведете име</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6042308850641462728">Още</translation>
+<translation id="6047233362582046994">Ако разбирате рисковете за сигурността си, може <ph name="BEGIN_LINK" />да посетите този сайт<ph name="END_LINK" /> преди премахването на опасните приложения.</translation>
 <translation id="6060685159320643512">Внимавайте, тези експерименти може да са опасни</translation>
 <translation id="6080696365213338172">Осъществихте достъп до съдържанието посредством осигурен от администратора сертификат. Данните, които предоставите на <ph name="DOMAIN" />, могат да бъдат прихванати от администратора ви.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Няма}=1{1 парола (синхронизирана)}other{# пароли (синхронизирани)}}</translation>
@@ -627,6 +642,7 @@
 <translation id="6556915248009097796">Валидност: <ph name="EXPIRATION_DATE_ABBR" />. Последно използване: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Мениджърът ви все още не е одобрил заявката</translation>
 <translation id="6569060085658103619">Преглеждате страница на разширение</translation>
+<translation id="657639383826808334">Въпросното съдържание може да се опита да инсталира опасен софтуер на устройството ви, който да открадне или изтрие информацията ви. <ph name="BEGIN_LINK" />Показване въпреки това<ph name="END_LINK" />.</translation>
 <translation id="6596325263575161958">Опции за шифроване</translation>
 <translation id="662080504995468778">Оставане</translation>
 <translation id="6626291197371920147">Добавяне на валиден номер на карта</translation>
@@ -717,6 +733,7 @@
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7535087603100972091">Стойност</translation>
 <translation id="7537536606612762813">Задължително</translation>
+<translation id="7542403920425041731">След като потвърдите картата си, данните за нея ще бъдат споделени с този сайт.</translation>
 <translation id="7542995811387359312">Автоматичното попълване на кредитната карта е деактивирано, защото този формуляр не използва защитена връзка.</translation>
 <translation id="7543525346216957623">Попитайте родителя си</translation>
 <translation id="7549584377607005141">За да се покаже правилно тази уеб страница, са необходими по-рано въведените от вас данни. Можете да ги изпратите отново, но така ще повторите всяко изпълнено от нея действие.</translation>
@@ -790,10 +807,10 @@
 <translation id="8149426793427495338">Компютърът ви премина в спящ режим.</translation>
 <translation id="8150722005171944719">Файлът на адрес <ph name="URL" /> не може да бъде прочетен.  Възможно е да е премахнат, преместен или разрешенията му да предотвратяват достъпа.</translation>
 <translation id="8184538546369750125">Използване на глобалната стандартна стойност (разрешаване)</translation>
+<translation id="8191494405820426728">Локален идентификатор на срива: <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;Отмяна на преместването</translation>
 <translation id="8201077131113104583">Невалиден URL адрес за актуализиране на разширението с идентификационен номер <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Обобщена информация за поръчката</translation>
-<translation id="8206354486702514201">Тази настройка е наложена от администратора ви.</translation>
 <translation id="8218327578424803826">Зададено местоположение:</translation>
 <translation id="8225771182978767009">Човекът, който е настроил компютъра, е блокирал този сайт.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" /> и <ph name="TYPE_2" /></translation>
@@ -865,6 +882,7 @@
 <translation id="8996941253935762404">На хоризонта се задава сайт с опасни програми</translation>
 <translation id="8997023839087525404">Сървърът предостави сертификат, който не е разкрит публично чрез правило в Прозрачност на сертификатите. Това се изисква за някои сертификати с цел защита срещу хакери и за да е сигурно, че може да им се има доверие.</translation>
 <translation id="9001074447101275817">Изискват се потребителско име и парола за прокси сървъра <ph name="DOMAIN" />.</translation>
+<translation id="9005998258318286617">Зареждането на PDF документа не бе успешно.</translation>
 <translation id="901974403500617787">Флаговете, които се прилагат за цялата система, могат да бъдат зададени само от собственика: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Тази страница е преведена на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9035022520814077154">Грешка в сигурността</translation>

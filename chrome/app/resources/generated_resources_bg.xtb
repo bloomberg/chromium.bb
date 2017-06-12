@@ -75,6 +75,7 @@
 <translation id="1119069657431255176">Tar архив, компресиран във формат Bzip2</translation>
 <translation id="1119447706177454957">Вътрешна грешка</translation>
 <translation id="1120026268649657149">Ключовата дума трябва да е уникална или полето трябва да е празно</translation>
+<translation id="1120811664190001878">Позволете на това устройство да намира други устройства с профила ви в Google, които имат връзка за пренос на мобилни данни</translation>
 <translation id="1122198203221319518">&amp;Инструменти</translation>
 <translation id="1122242684574577509">Удостоверяването не бе успешно. Кликнете, за да посетите страницата за вход в използваната от вас Wi-Fi мрежа (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Име на отметката</translation>
@@ -593,6 +594,7 @@
 <translation id="186612162884103683"><ph name="EXTENSION" /> може да чете и записва изображения, видео- и звукови файлове в местоположенията с отметка.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> е готов да завърши инсталирането</translation>
 <translation id="1871615898038944731">Устройството ви <ph name="DEVICE_TYPE" /> е актуално</translation>
+<translation id="1877520246462554164">Получаването на означение за удостоверяване не бе успешно. Моля, излезте от профила си и влезте отново в него, за да опитате пак.</translation>
 <translation id="1878524442024357078">Забраняване на сайтовете да използват приставка за достъп до компютъра ви</translation>
 <translation id="1880905663253319515">Да се изтрие ли сертификатът „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="1882130480443819387">Сортиране по заглавие</translation>
@@ -1139,6 +1141,7 @@
 <translation id="271033894570825754">Създаване</translation>
 <translation id="2713008223070811050">Управление на екраните</translation>
 <translation id="2714393097308983682">Google Play Магазин</translation>
+<translation id="2718395828230677721">Нощно осветление</translation>
 <translation id="2718998670920917754">Антивирусният софтуер откри вирус.</translation>
 <translation id="2721037002783622288">&amp;Търсене на изображението чрез <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -1179,7 +1182,6 @@
 <translation id="2775104091073479743">Редактиране на отпечатъците</translation>
 <translation id="2776441542064982094">Изглежда, че в мрежата няма устройства за регистриране. Ако устройството ви е включено и свързано с интернет, опитайте да го регистрирате чрез указанията в ръководството му за употреба.</translation>
 <translation id="2783298271312924866">Изтеглено</translation>
-<translation id="2783321960289401138">Създаване на пряк път...</translation>
 <translation id="2783661497142353826">Управление на павилионните приложения</translation>
 <translation id="2784407158394623927">Мобилната ви услуга за данни се активира</translation>
 <translation id="2784556410206159845">С цел безопасност на вашия <ph name="DEVICE_TYPE" /> Smart Lock за Chromebook изисква заключване на екрана на телефона ви.</translation>
@@ -1218,6 +1220,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2805646850212350655">Шифроване на файлова система от Microsoft</translation>
 <translation id="2805707493867224476">Разрешаване на всички сайтове да показват изскачащи прозорци</translation>
 <translation id="2805756323405976993">Приложения</translation>
+<translation id="2807517655263062534">Тук се показват изтеглените от вас файлове</translation>
 <translation id="2809346626032021864">Четене</translation>
 <translation id="2809586584051668049">и още <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
 <translation id="2810731435681289055">При следващото ви отключване на този <ph name="DEVICE_TYPE" /> Smart Lock ще се актуализира, така че ще можете да влизате само като кликнете върху снимката си.</translation>
@@ -1349,6 +1352,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3004391367407090544">Моля, върнете се по-късно</translation>
 <translation id="300544934591011246">Предишна парола</translation>
 <translation id="3007214526293698309">Коригиране на съотношението</translation>
+<translation id="3007771295016901659">Дублиране на раздела</translation>
 <translation id="3009300415590184725">Наистина ли искате да анулирате процеса на настройка на мобилната услуга за данни?</translation>
 <translation id="3009779501245596802">Индексирани бази от данни</translation>
 <translation id="3010279545267083280">Паролата е изтрита</translation>
@@ -1387,12 +1391,14 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3038675903128704560">Забраняване на сайтовете да използват приставка за достъп до компютъра ви</translation>
 <translation id="3039828483675273919">$1 елемента се преместват...</translation>
 <translation id="304009983491258911">Промяна на ПИН кода на SIM картата</translation>
+<translation id="304567287000691532">Екранът се споделя</translation>
 <translation id="3046910703532196514">Уеб страница, цялата</translation>
 <translation id="304826556400666995">Включване отново на звука на разделите</translation>
 <translation id="3053013834507634016">Използване на ключа на сертификата</translation>
 <translation id="3056670889236890135">Можете да редактирате само настройките за текущия потребител. Превключете към него, за да направите това.</translation>
 <translation id="3057861065630527966">Създаване на резервни копия на снимките и видеоклиповете ви</translation>
 <translation id="3058212636943679650">Ако се наложи да възстановите операционната система на компютъра си, ще ви е необходима SD карта или USB памет за възстановяване.</translation>
+<translation id="3060379269883947824">Активиране на функцията Прочитане на глас</translation>
 <translation id="3063844757726132584">Осъществявайте достъп до всичките си приложения от този удобен стартов панел. Играйте игри, водете видеоразговори, слушайте музика, редактирайте документи или изтегляйте още приложения.</translation>
 <translation id="3064410671692449875">Недостатъчно данни</translation>
 <translation id="3065041951436100775">Отзиви за затворен раздел.</translation>
@@ -1426,6 +1432,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3108967419958202225">Изберете...</translation>
 <translation id="3112378005171663295">Свиване</translation>
 <translation id="3115147772012638511">Кешът се изчаква...</translation>
+<translation id="3116902203001917540">Подобрява видимостта на екрана и улеснява четенето при слаба светлина</translation>
 <translation id="3118319026408854581">Помощ за <ph name="PRODUCT_NAME" /></translation>
 <translation id="3120430004221004537">Недостатъчно шифроване за дадена операция на: <ph name="DEVICE_NAME" />.</translation>
 <translation id="3121793941267913344">Възстановяване на това устройство с <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -1614,6 +1621,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3391716558283801616">Раздел 7</translation>
 <translation id="3394150261239285340"><ph name="HOST" /> иска да използва камерата и микрофона ви.</translation>
 <translation id="3396331542604645348">Избраният принтер не е налице или не е инсталиран правилно. Проверете принтера си или опитайте да изберете друг.</translation>
+<translation id="3399432415385675819">Известията ще бъдат деактивирани</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="340485819826776184">Използване на услуга за предвиждания за помощ при завършването на заявките за търсене и URL адресите, въвеждани в адресната лента</translation>
 <translation id="3405664148539009465">Персонализиране на шрифтовете</translation>
@@ -2195,7 +2203,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4322394346347055525">Затваряне на другите раздели</translation>
 <translation id="4330387663455830245">Никога да не се превежда от <ph name="LANGUAGE" /></translation>
 <translation id="4330437798887640816">Превключване на режима на висок контраст</translation>
-<translation id="4331056788446675037">Ами сега! Системата не успя да извлече правилата от Microsoft® Active Directory®.</translation>
 <translation id="4333854382783149454">PKCS 1 SHA-1 с RSA шифроване</translation>
 <translation id="4335713051520279344">Този компютър ще се рестартира след 1 секунда.
 Натиснете който и да е клавиш, за да продължите да разглеждате.</translation>
@@ -2547,6 +2554,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="488785315393301722">Показване на подробностите</translation>
 <translation id="4888510611625056742">Раздел 2</translation>
 <translation id="4890773143211625964">Показване на разширените опции за принтера</translation>
+<translation id="4891089016822695758">Форум за бета версията</translation>
 <translation id="4893336867552636863">Данните за сърфирането ви ще се изтрият за постоянно от това устройство.</translation>
 <translation id="4898011734382862273">Сертификатът „<ph name="CERTIFICATE_NAME" />“ представлява сертифициращ орган.</translation>
 <translation id="4899376560703610051">Вашият <ph name="DEVICE_TYPE" /> бе заключен ръчно. За да влезете, ще трябва да въведете паролата си.</translation>
@@ -2819,11 +2827,13 @@ PDF файл или в Google Диск.</translation>
 <translation id="5316588172263354223">Гласово търсене по всяко време</translation>
 <translation id="5316716239522500219">Дублиране на мониторите</translation>
 <translation id="5317780077021120954">Запазване</translation>
+<translation id="5319748504063551568">За да разрешите достъпа до Google Play Магазин за профила си, трябва да удостоверите самоличността си чрез доставчика си на удостоверителни услуги. Моля, кликнете върху „Напред“, за да продължите.</translation>
 <translation id="532247166573571973">Възможно е да няма достъп до сървъра. Опитайте отново по-късно.</translation>
 <translation id="532360961509278431">Не може да се отвори „$1“: $2</translation>
 <translation id="5324780743567488672">Автоматично задаване на часовата зона въз основа на местоположението ви</translation>
 <translation id="5327248766486351172">Име</translation>
 <translation id="5328342723323072228">Приложение за водене на бележки:</translation>
+<translation id="532943162177641444">Докоснете известието на телефона си <ph name="PHONE_NAME" />, за да настроите мобилната точка за достъп, която да може да се използва от това устройство.</translation>
 <translation id="5329615878510216304">сканирайте отново</translation>
 <translation id="5329858601952122676">&amp;Изтриване</translation>
 <translation id="5330145655348521461">Тези файлове се отвориха на друг работен плот. Преминете към <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), за да ги прегледате.</translation>
@@ -3095,6 +3105,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="5754903485544371559">Добавяне към Applications...</translation>
 <translation id="5756163054456765343">П&amp;омощен център</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> може да чете документите, които изпращате за отпечатване чрез <ph name="APP_NAME" />.</translation>
+<translation id="5763751966069581670">Няма намерени USB устройства</translation>
 <translation id="5764483294734785780">&amp;Запазване на аудиоклипа като...</translation>
 <translation id="57646104491463491">Дата на промяна</translation>
 <translation id="5764797882307050727">Моля, освободете място на устройството си.</translation>
@@ -3129,6 +3140,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="5814126672212206791">Тип на връзката</translation>
 <translation id="5815645614496570556">Адрес на X.400</translation>
 <translation id="5817918615728894473">Сдвояване</translation>
+<translation id="5821565227679781414">Създаване на пряк път</translation>
 <translation id="5826507051599432481">Общо име (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828228029189342317">Избрали сте определени типове файлове автоматично да се отварят след изтегляне. </translation>
@@ -3219,11 +3231,13 @@ PDF файл или в Google Диск.</translation>
 <translation id="5941343993301164315">Моля, влезте в/ъв <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Намаляване</translation>
 <translation id="5941907479813014493">Натиснете „Ctrl+Shift+Space“, за да превключите между методите на въвеждане.</translation>
+<translation id="5946106656820696578">По-топли цветове</translation>
 <translation id="5946591249682680882">Идентификатор на отчета: <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5948205789991352045">Без отваряне</translation>
 <translation id="5948544841277865110">Добавяне на частна мрежа</translation>
 <translation id="5949544233750246342">Файлът не може да се анализира синтактично</translation>
 <translation id="5951823343679007761">Няма батерия</translation>
+<translation id="5955282598396714173">Паролата ви е изтекла. Моля, излезте от профила си и влезте отново в него, за да я промените.</translation>
 <translation id="5956585768868398362">Това ли е очакваната от вас страница за търсене?</translation>
 <translation id="5957613098218939406">Още опции</translation>
 <translation id="5958529069007801266">Контролиран потребител</translation>
@@ -3241,6 +3255,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="5976160379964388480">Други</translation>
 <translation id="5978264784700053212">Център за съобщения</translation>
 <translation id="5979421442488174909">&amp;Превод на <ph name="LANGUAGE" /></translation>
+<translation id="5979469435153841984">За да запазите отметка към страница, кликнете върху иконата на звезда в адресната лента</translation>
 <translation id="5982621672636444458">Опции за сортиране</translation>
 <translation id="5984222099446776634">Наскоро посетени</translation>
 <translation id="5989712527536636369"><ph name="BEGIN_PARAGRAPH1" />Това е обща информация за устройството ви и употребата му от ваша страна, като например заряд на батерията, колко често използвате приложенията, качеството и продължителността на мрежовите ви връзки (напр. Wi-Fi и Bluetooth), както и сигнали за сривове, когато нещо не работи правилно. Тя ще се използва за подобряване на продуктите и услугите на Google за всички. Част от обобщената информация ще помогне и на партньорите, като например програмисти за Android, да усъвършенстват приложенията и продуктите си.<ph name="END_PARAGRAPH1" />
@@ -3370,6 +3385,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6205710420833115353">Някои операции отнемат повече време от очакваното. Искате ли да ги прекратите?</translation>
 <translation id="6206311232642889873">Копи&amp;ране на изображението</translation>
 <translation id="6206337697064384582">Сървър 1</translation>
+<translation id="6207200176136643843">Възстановяване на стандартното ниво на мащаба</translation>
 <translation id="6207937957461833379">Държава/Регион</translation>
 <translation id="6212039847102026977">Показване на разширените свойства на мрежата</translation>
 <translation id="6219616557885484178">Избирайте между повече от милион приложения и игри в Google Play, които да инсталирате и използвате на своя <ph name="DEVICE_TYPE" />.</translation>
@@ -3522,6 +3538,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="642282551015776456">Това име не може да се използва като име на файл или на папка</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6426039856985689743">Деактивиране на мобилните данни</translation>
+<translation id="6426200009596957090">Отваряне на настройките на ChromeVox</translation>
 <translation id="642870617012116879">Този сайт опита да изтегли автоматично няколко файла.</translation>
 <translation id="6430814529589430811">ASCII с кодиране Base64, единичен сертификат</translation>
 <translation id="6431217872648827691">Всички данни бяха шифровани с паролата ви за Google на
@@ -3595,6 +3612,7 @@ PDF файл или в Google Диск.</translation>
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
 <translation id="6521494105510930048">Споделяне чрез</translation>
+<translation id="6522797484310591766">Влезте в профила си сега</translation>
 <translation id="6527303717912515753">Споделяне</translation>
 <translation id="6528513914570774834">Разрешаване на другите потребители на устройството да използват тази мрежа</translation>
 <translation id="6528546217685656218">Частният ключ за този клиентски сертификат липсва или е невалиден.</translation>
@@ -3807,6 +3825,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6860428250435764775">Моля, помислете за надстройване. <ph name="BEGIN_LINK_EOL" />Научете повече<ph name="END_LINK_EOL" /></translation>
 <translation id="6862635236584086457">За всички файлове, запазени в тази папка, автоматично се създават резервни копия онлайн</translation>
 <translation id="6865313869410766144">Данни за автоматично попълване на формуляри</translation>
+<translation id="686664946474413495">Цветна температура</translation>
 <translation id="6867678160199975333">Превключване към <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6869402422344886127">Отметнато квадратче за отметка</translation>
 <translation id="6870888490422746447">Изберете приложение, с което да споделите:</translation>
@@ -3870,6 +3889,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6980956047710795611">Прехвърляне на всички данни в Chrome OS към новата парола (изисква се предишната)</translation>
 <translation id="6981982820502123353">Достъпност</translation>
 <translation id="6982896539684144327">Открит е принтер от <ph name="VENDOR_NAME" /></translation>
+<translation id="6983201004195852174">Натиснете и задръжте клавиша „търсене“ и кликнете или преместете с плъзгане, за да изберете съдържание, което да бъде прочетено на глас</translation>
 <translation id="6983783921975806247">Регистриран ИДО</translation>
 <translation id="6983991971286645866">Всички редакции ще се запазят в/ъв „$1“.</translation>
 <translation id="6984299437918708277">Изберете снимка, която да се показва за профила ви на екрана за вход</translation>
@@ -3913,6 +3933,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7025325401470358758">Следващият панел</translation>
 <translation id="7027125358315426638">Име на базата от данни:</translation>
 <translation id="7029809446516969842">Пароли</translation>
+<translation id="7029916574452167660">По-студени цветове</translation>
 <translation id="7030031465713069059">Запазване на паролата</translation>
 <translation id="7031962166228839643">Модулът TPM се подготвя. Моля, изчакайте (това може да отнеме няколко минути)...</translation>
 <translation id="7039326228527141150">Достъп до USB устройства от <ph name="VENDOR_NAME" /></translation>
@@ -3926,7 +3947,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7052237160939977163">Да се изпратят данните от проследяването на ефективността</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7052914147756339792">Задаване на тапет...</translation>
-<translation id="7053681315773739487">Папка Applications</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7054808953701320293">Разбрах, да не се показва повече.</translation>
 <translation id="7056526158851679338">&amp;Инспектиране на устройствата</translation>
@@ -4081,6 +4101,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7314440321558802142">Google Play Магазин (бета)</translation>
 <translation id="7317938878466090505"><ph name="PROFILE_NAME" /> (текущ)</translation>
 <translation id="7321545336522791733">Няма достъп до сървъра</translation>
+<translation id="7324297612904500502">Форум за бета версията</translation>
 <translation id="7325437708553334317">Разширение High Contrast</translation>
 <translation id="7327088014939803293">Новият контролиран потребител не можа да се създаде. Моля, уверете се, че сте влезли правилно в профила си, и опитайте отново.</translation>
 <translation id="73289266812733869">Неизбрано</translation>
@@ -4119,6 +4140,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7378627244592794276">Не</translation>
 <translation id="73786666777299047">Отваряне на уеб магазина на Chrome</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7378812711085314936">Получаване на връзка за пренос на данни</translation>
 <translation id="7382160026931194400">Запазените |настройки за съдържанието| и #търсещи машини# няма да бъдат изчистени и може да отразяват навиците ви при сърфиране.</translation>
 <translation id="7383627141017162945">Зареждане на пълната версия на сайта</translation>
 <translation id="7384292194278095697">Това устройство вече не се поддържа</translation>
@@ -4139,6 +4161,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> ще се изпълнява при стартиране на системата и ще продължи да работи на заден план дори след като затворите всички други прозорци на <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7400418766976504921">URL адрес</translation>
 <translation id="740083207982962331">Моля, изчакайте, докато вашият Chromebox се рестартира...</translation>
+<translation id="7400839060291901923">Настройте връзката на телефона си <ph name="PHONE_NAME" /></translation>
 <translation id="7401543881546089382">Изтриване на прекия път</translation>
 <translation id="740624631517654988">Блокиран бе изскачащ прозорец</translation>
 <translation id="7406691462051376731">Понастоящем устройството изпраща до Google данни за диагностиката и употребата. Тази <ph name="BEGIN_LINK1" />настройка<ph name="END_LINK1" /> е наложена от собственика. <ph name="BEGIN_LINK2" />Научете повече<ph name="END_LINK2" /></translation>
@@ -4443,6 +4466,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7887192723714330082">Реакция на „Ok Google“, когато екранът работи и е отключен</translation>
 <translation id="7887334752153342268">Дублиране</translation>
 <translation id="7887864092952184874">Мишката с Bluetooth е сдвоена</translation>
+<translation id="7889966925761734854">Търсене</translation>
 <translation id="7892100671754994880">Следващ потребител</translation>
 <translation id="7893008570150657497">Да осъществява достъп до снимки, музика и друга медия от компютъра ви.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (по подразбиране)</translation>
@@ -4462,6 +4486,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7908378463497120834">За съжаление поне един дял на външното ви устройство за съхранение не можа да бъде свързан.</translation>
 <translation id="7909969815743704077">Изтеглено в режим „инкогнито“</translation>
 <translation id="7910768399700579500">&amp;Нова папка</translation>
+<translation id="7912080627461681647">Паролата ви е променена в сървъра. Моля, излезте от профила си и влезте отново в него.</translation>
 <translation id="7915471803647590281">Моля, кажете ни какво става, преди да изпратите отзивите.</translation>
 <translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>
 <translation id="7925285046818567682">Изчаква се отговор от <ph name="HOST_NAME" />...</translation>
@@ -4469,6 +4494,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="7926423016278357561">Това не бях аз.</translation>
 <translation id="7928710562641958568">Изваждане на устройството</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> споделя екрана и звука ви.</translation>
+<translation id="7931318309563332511">Неизвестно</translation>
 <translation id="7938594894617528435">Понастоящем е офлайн</translation>
 <translation id="7939412583708276221">Запазване въпреки това</translation>
 <translation id="7939997691108949385">Мениджърът ще може да конфигурира ограничения и настройки за този контролиран потребител на адрес <ph name="MANAGEMENT_URL" />.</translation>
@@ -4935,6 +4961,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="8671210955687109937">Може да коментира</translation>
 <translation id="8673026256276578048">Търсене в мрежата...</translation>
 <translation id="8673383193459449849">Проблем със сървъра</translation>
+<translation id="8676374126336081632">Изчистване на въведеното</translation>
 <translation id="8677039480012021122">Изчистване на данните и прекратяване на връзката</translation>
 <translation id="8677212948402625567">Свиване на всички...</translation>
 <translation id="8678648549315280022">Управление на настройките за изтегляне...</translation>
@@ -5080,6 +5107,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="8899285681604219177">Неподдържаните разширения са деактивирани</translation>
 <translation id="8899551033019439140">Принтерът се търси...</translation>
 <translation id="8899851313684471736">Отваряне на връзк&amp;ата в нов прозорец</translation>
+<translation id="8902667442496790482">Отваряне на настройките на Прочитане на глас</translation>
 <translation id="8903921497873541725">Увеличаване на мащаба</translation>
 <translation id="8904976895050290827">Синхронизиране в Chrome</translation>
 <translation id="8908902564709148335">Предупреждение: Активирахте флага --scripts-require-action на този компютър, при което се ограничават възможностите на това разширение. На други устройства обаче е възможно флагът да не се поддържа или да не е активиран. На тях разширението също така може:</translation>
@@ -5257,7 +5285,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="9153934054460603056">Запазване на самоличността и паролата</translation>
 <translation id="9154194610265714752">Актуализирано</translation>
 <translation id="9154418932169119429">Това изображение не е налице офлайн.</translation>
-<translation id="91568222606626347">Създаване на пряк път...</translation>
 <translation id="9157697743260533322">Настройването на автоматични актуализации за всички потребители не бе успешно (грешка при стартирането на предстартовия процес: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ами сега!  При удостоверяването възникна проблем във връзката с мрежата.  Моля, проверете я и опитайте отново.</translation>
 <translation id="9161070040817969420">Подрамки за: <ph name="PARENT_SITE" /></translation>
@@ -5265,6 +5292,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="9170397650136757332">Сега преместете малко пръста си, за да бъдат заснети всички части от отпечатъка ви</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
 <translation id="9170884462774788842">Друга програма на компютъра ви добави тема, която може да промени начина на работа на Chrome.</translation>
+<translation id="9174212595744391062">Така ще се изчистят „бисквитките“ и кешът за всички сайтове, включително</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> – установена е връзка с устройство с Bluetooth</translation>
 <translation id="9177499212658576372">Понастоящем сте свързани с <ph name="NETWORK_TYPE" /> мрежа.</translation>
 <translation id="917861274483335838">Управление на блокирането на приставки...</translation>

@@ -64,10 +64,12 @@
 <translation id="225614027745146050">歡迎使用</translation>
 <translation id="228809120910082333">請在下方確認你的帳戶和 PIN，以便授予 Chromoting 存取權限。</translation>
 <translation id="2314101195544969792">您的「<ph name="APPLICATION_NAME" />」工作階段已閒置一段時間，且即將中斷連線。</translation>
+<translation id="2317666076142640974">歡迎搶先體驗最新 <ph name="LINK_BEGIN" />Chrome 遠端桌面網路應用程式<ph name="LINK_END" />，並提供意見給我們。</translation>
 <translation id="2353140552984634198">你可以透過 Chromoting 安全地存取這台電腦。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2366718077645204424">無法連線到主機，原因可能與你使用的網路設定有關。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次上線時間：<ph name="RELATIVE_TIMESTAMP" />。</translation>
+<translation id="2405928220797050937">我們已不再支援這個應用程式。為確保你取得最新功能和安全性更新，請使用 <ph name="LINK_BEGIN" />Chrome 遠端桌面網路應用程式<ph name="LINK_END" />。</translation>
 <translation id="2499160551253595098">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
 <translation id="2512228156274966424">注意：如要確保所有鍵盤快捷鍵都能正常使用，請將 Chrome 遠端桌面設定為 [在視窗中開啟]。</translation>
 <translation id="2540992418118313681">您要與其他使用者分享這台電腦的瀏覽及控制權限嗎？</translation>
@@ -230,6 +232,7 @@
 <translation id="6930242544192836755">持續時間</translation>
 <translation id="6939719207673461467">顯示/隱藏鍵盤。</translation>
 <translation id="6944854424004126054">還原視窗</translation>
+<translation id="6948905685698011662">Chrome 遠端桌面現已推出線上版！歡迎查看我們的<ph name="LINK_BEGIN" />免費網路應用程式<ph name="LINK_END" />。</translation>
 <translation id="6963936880795878952">有人嘗試使用無效的 PIN 連線至遠端電腦，因此您的連線暫時遭到封鎖。請稍後再試。</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6985691951107243942">你是否確定要停用與 <ph name="HOSTNAME" /> 之間的遠端連線？如果之後改變心意的話，你必須親身前往該電腦所在位置並修改設定後，才能重新啟用連線。</translation>
@@ -246,6 +249,7 @@
 <translation id="7401733114166276557">Chrome 遠端桌面</translation>
 <translation id="7434397035092923453">用戶端遭拒絕存取：<ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7444276978508498879">已連線至用戶端：<ph name="CLIENT_USERNAME" />。</translation>
+<translation id="7589941250119944644">Chrome 遠端桌面現已推出全新的線上版本。歡迎試試我們的<ph name="LINK_BEGIN" />網路應用程式<ph name="LINK_END" />！不僅快速、免費，更完整保留過去的所有功能。</translation>
 <translation id="7606912958770842224">啟用遠端連線</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>

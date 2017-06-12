@@ -52,6 +52,7 @@
 
 このままログインすると、ブックマーク、履歴、その他の設定などの Chrome データが <ph name="ACCOUNT_EMAIL_NEW" /> と統合されます。</translation>
 <translation id="2397416548179033562">Chrome メニューを表示</translation>
+<translation id="2416359993254398973">このサイトを利用するには、Chrome にカメラへのアクセスを許可する必要があります。</translation>
 <translation id="2429317896000329049">お使いのドメインでは同期を利用できないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="2446511512801740068">Chrome はしばらく再起動していないため最新ではありません。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
@@ -153,6 +154,7 @@
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
 <translation id="5563479599352954471">ワンタップで検索</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
+<translation id="557283862590186398">このサイトを利用するには、Chrome にマイクへのアクセスを許可する必要があります。</translation>
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> は危険なファイルの可能性があるため、Chrome でブロックしました。</translation>
 <translation id="568643307450491754">ブックマークは Chrome メニューやブックマーク バーに表示されます。</translation>
@@ -177,6 +179,7 @@
 <translation id="6291549208091401781">Google Chrome は既にパソコンのすべてのユーザー対してインストールされています。</translation>
 <translation id="6338556085225130112">Google Chrome を更新しています</translation>
 <translation id="6368958679917195344">Chrome OS は、<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />が追加されて実現しました。</translation>
+<translation id="6393863479814692971">このサイトを利用するには、Chrome にカメラとマイクへのアクセスを許可する必要があります。</translation>
 <translation id="6400076122676892962">Mac OS X 10.6、10.7、10.8 はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="6410540444482791104">危険なアプリやサイトの検出に役立てるために一部のシステム情報やページのコンテンツを Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
 <translation id="6470176598693778404">Mac OS X 10.6、10.7、10.8 はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>

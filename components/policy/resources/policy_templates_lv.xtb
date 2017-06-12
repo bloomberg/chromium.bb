@@ -158,6 +158,7 @@
       ierakstīšanas ierīcēm tiks nodrošināta SAML pieteikšanās lapās. Ja netiks
       atrasta atbilstība, piekļuve tiks automātiski liegta. Aizstājējzīmes netiek
       atļautas.</translation>
+<translation id="1634989431648355062">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> atļaušana šajās vietnēs</translation>
 <translation id="1655229863189977773">Iestatīt diska kešatmiņas lielumu baitos</translation>
 <translation id="166427968280387991">Starpniekserveris</translation>
 <translation id="1668836044817793277">Atļauja kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju.
@@ -746,6 +747,11 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
       Ja šīs politikas nav iestatītas, lietotāji var izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="3758249152301468420">Atspējo izstrādātāja rīkus</translation>
 <translation id="3765260570442823273">Dīkstāves atteikšanās brīdinājuma ziņojuma ilgums</translation>
+<translation id="376931976323225993">Ļauj iestatīt, vai vietnēm ir atļauts automātiski izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />. Automātiska spraudņa <ph name="FLASH_PLUGIN_NAME" /> izpilde var tikt atļauta vai liegta visām vietnēm.
+
+          Funkcija “Noklikšķināt, lai atskaņotu” ļauj palaist spraudni <ph name="FLASH_PLUGIN_NAME" />, taču lietotājam ir jānoklikšķina uz viettura, lai sāktu spraudņa izpildi.
+
+          Ja šī politika nav iestatīta, lietotājs varēs manuāli mainīt šo iestatījumu.</translation>
 <translation id="3780152581321609624">Ietver Kerberos SPN nestandarta portu</translation>
 <translation id="3780319008680229708">Ja politikai tiks iestatīta vērtība “True”, rīkjoslā vai pārpildes izvēlnē vienmēr būs redzama Cast rīkjoslas ikona, un lietotāji to nevarēs noņemt.
 
@@ -881,6 +887,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4105989332710272578">Atspējot Certificate Transparency piemērošanu norādītajiem vietrāžiem URL</translation>
 <translation id="4121350739760194865">Novērst lietotņu reklāmu rādīšanu Jaunas cilnes lapā.</translation>
 <translation id="4157003184375321727">Ziņošana par OS un programmaparatūras versiju</translation>
+<translation id="4183229833636799228">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> noklusējuma iestatījums</translation>
 <translation id="4192388905594723944">Vietrādis URL attālās piekļuves klienta autentifikācijas pilnvaras apstiprināšanai</translation>
 <translation id="4203389617541558220">Ierobežojiet ierīces darbspējas laiku, plānojot automātiskas atkārtotas palaišanas gadījumus.
 
@@ -1225,6 +1232,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ņemiet vērā: ja platformā tiek atbalstīti politikas paziņojumi, tiks iestatīts atsvaidzināšanas aizkaves laiks 24 stundas (ignorējot visas noklusējuma vērtības un šīs politikas vērtību), jo ir paredzēts, ka ar politikas paziņojumiem atsvaidzināšana tiks veikta piespiedu kārtā katru reizi, kad tiks mainīta politika, un biežāka atsvaidzināšana nebūs nepieciešama.</translation>
 <translation id="5535973522252703021">Kerberos deleģējamo serveru baltais saraksts</translation>
+<translation id="555077880566103058">Atļauja visām vietnēm automātiski izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Šī politika neietekmē Android lietotnes.</translation>
 <translation id="5560039246134246593">Pievienot parametru attiecībā uz variantu sākotnējās vērtības iegūšanu pārlūkā <ph name="PRODUCT_NAME" />.
 
@@ -1307,12 +1315,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5868414965372171132">Lietotāja līmeņa tīkla konfigurācija</translation>
 <translation id="588135807064822874">Meklēšana pieskaroties — iespējošana</translation>
 <translation id="5883015257301027298">Noklusējuma sīkfailu iestatījums</translation>
-<translation id="5887291617378691520">Ja kā startēšanas darbība ir atlasīta opcija “Atvērt vietrāžu URL sarakstu”, varat izmantot šo politiku, lai norādītu atveramo vietrāžu URL sarakstu. Ja politika nav iestatīta, startējot pārlūku, netiks atvērts neviens vietrādis URL.
-
-          Šī politika darbojas tikai tad, ja politikai RestoreOnStartup ir iestatīta vērtība RestoreOnStartupIsURLs.
-
-          Šī politika nav pieejama Windows datoros, kas nav pievienoti
-          Active Directory domēniem.</translation>
 <translation id="5887414688706570295">Konfigurē attālās piekļuves saimniekdatoros izmantojamo sīkrīka TalkGadget prefiksu un neļauj lietotājiem to mainīt.
 
           Norādot šo prefiksu, tas tiek pievienots pamata TalkGadget nosaukuma sākumā, lai izveidotu pilnu TalkGadget domēna nosaukumu. Pamata TalkGadget domēna nosaukums ir “.talkgadget.google.com”.
@@ -1398,6 +1400,9 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Pretējā gadījumā var iestatīt kādu no šīm vērtībām: “sslv3”, “tls1”, “tls1.1” vai “tls1.2”. Ja vērtība ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> netiks izmantotas par norādīto versiju vecākas standarta SSL/TLS versijas. Neatpazītas vērtības tiks ignorētas.
 
       Ņemiet vērā, ka “sslv3” ir vecāka versija nekā “tls1”, kaut arī skaitlis versijas nosaukumā ir lielāks.</translation>
+<translation id="6181608880636987460">Ļauj iestatīt to vietrāžu URL struktūru sarakstu, kas norāda vietnes, kurās nav atļauts izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />.
+
+          Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultPluginsSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.</translation>
 <translation id="6190022522129724693">Noklusējuma uznirstošo logu iestatījums</translation>
 <translation id="6197453924249895891">Paplašinājumiem tiek sniegta piekļuve korporatīvajām atslēgām.
 
@@ -1518,6 +1523,9 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šis iestatījums ir atspējots vai nav iestatīts, spraudņu meklētājs būs aktivizēts.</translation>
 <translation id="6699880231565102694">Divu faktoru autentifikācijas iespējošana attālās piekļuves saimniekdatoriem</translation>
+<translation id="6757438632136860443">Ļauj iestatīt to vietrāžu URL rakstu sarakstu, kas norāda vietnes, kurām atļauts izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />.
+
+          Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultPluginsSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.</translation>
 <translation id="6766216162565713893">Ļaut vietnēm pieprasīt, lai lietotājs piešķirtu piekļuvi tuvumā esošai Bluetooth ierīcei</translation>
 <translation id="6770454900105963262">Ziņošana par aktīvām kioska sesijām</translation>
 <translation id="6786747875388722282">Paplašinājumi</translation>
@@ -1545,6 +1553,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja iestatāt šo politiku, lietotāji nevar to mainīt vai ignorēt.
 
           Ja šī politika nav iestatīta, mutiskās atsauksmes sākotnēji ir atspējotas, taču lietotājs var jebkurā brīdī tās iespējot.</translation>
+<translation id="6922884955650325312">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> bloķēšana</translation>
 <translation id="6923366716660828830">Norāda noklusējuma meklētājprogrammas nosaukumu. Ja nekas nav ievadīts vai šī politika nav iestatīta, tiks lietots ar meklēšanas URL norādītais saimniekdatora nosaukums.
 
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
@@ -1590,18 +1599,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja tā ir atspējota, grāmatzīmes netiek importētas.
 
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
-<translation id="7055358889740598917">Konfigurē produktā <ph name="PRODUCT_NAME" /> izmantoto noklusējuma sākumlapas URL un neļauj lietotājiem to mainīt.
-
-          Sākumlapa ir lapa, kas tiek atvērta, noklikšķinot uz pogas Sākums. Uz lapām, kuras tiek atvērtas, sākot darbu, attiecas “RestoreOnStartup” politikas.
-
-          Sākumlapas veids var būt iestatīts kā URL, ko norādāt šeit, vai kā jaunas cilnes lapa. Ja atlasāt jaunas cilnes lapu, šī politika nav spēkā.
-
-          Ja iespējojat šo iestatījumu, lietotāji nevar mainīt produkta <ph name="PRODUCT_NAME" /> sākumlapas URL, tomēr kā sākumlapu var izvēlēties jaunas cilnes lapu.
-
-          Ja neiestatīsiet ne šo politiku, ne arī politiku “HomepageIsNewTabPage”, lietotājs pats varēs izvēlēties sākumlapu.
-
-          Šī politika nav pieejama Windows datoros, kas nav pievienoti
-          Active Directory domēnam.</translation>
 <translation id="7063895219334505671">Atļauj uznirstošos logus šajās vietnēs</translation>
 <translation id="706669471845501145">Atļaut vietnēm rādīt paziņojumus darbvirsmā</translation>
 <translation id="7072406291414141328">Iespējo tīkla joslas platuma ierobežošanu</translation>
@@ -1623,21 +1620,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šai politikai ir iestatīta vērtība Nepatiesa, fona režīms ir atspējots un lietotājs var to kontrolēt pārlūka iestatījumos.
 
       Ja šī politika nav iestatīta, fona režīms ir sākotnēji atspējots un lietotājs var to kontrolēt pārlūka iestatījumos.</translation>
-<translation id="7123297102171034788">Varat norādīt darbības, kas jāveic startēšanas brīdī.
-
-          Ja izvēlēsieties opciju “Atvērt jaunas cilnes lapu”, startējot pārlūku <ph name="PRODUCT_NAME" />, vienmēr tiks atvērta jaunas cilnes lapa.
-
-          Ja izvēlēsieties opciju “Atjaunot pēdējo sesiju”, tiks atkārtoti atvērti tie vietrāži URL, kuri bija atvērti, pēdējoreiz aizverot pārlūku <ph name="PRODUCT_NAME" />, un tiks atjaunota iepriekšējā pārlūkošanas sesija.
-          Izvēloties šo opciju, tiek atspējoti daži iestatījumi, kas ir atkarīgi no sesijām vai nosaka darbību veikšanu sesijas beigu brīdī (piemēram, pārlūkošanas datu notīrīšana sesijas beigās un tikai sesijai lietojami sīkfaili).
-
-          Ja izvēlēsieties opciju “Atvērt vietrāžu URL sarakstu”, startējot pārlūku <ph name="PRODUCT_NAME" />, tiks atvērtas sarakstā “URL, kas jāatver startēšanas brīdī” norādītās lapas.
-
-          Ja šis iestatījums ir iespējots, lietotāji to nevar mainīt vai ignorēt pārlūkā <ph name="PRODUCT_NAME" />.
-
-          Ja šis iestatījums ir atspējots, tas nozīmē, ka tas nav konfigurēts. Lietotāji joprojām to var mainīt pārlūkā <ph name="PRODUCT_NAME" />.
-
-          Šī politika nav pieejama Windows datoros, kas nav pievienoti
-          Active Directory domēnam.</translation>
 <translation id="7128918109610518786">Norāda lietojumprogrammu identifikatorus, ko operētājsistēma <ph name="PRODUCT_OS_NAME" /> palaišanas joslā rāda kā piespraustās lietotnes.
 
       Konfigurējot šo politiku, lietojumprogrammu kopa tiek fiksēta un lietotājs to nevar mainīt.
@@ -1878,20 +1860,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="793134539373873765">Norāda, vai operētājsistēmas atjaunināšanas vērtumiem izmantot P2P. Ja ir iestatīta vērtība “True”, ierīces kopīgos un mēģinās izmantot atjaunināšanas vērtumus LAN tīklā, tādējādi, iespējams, samazinot interneta joslas platuma lietojumu un pārblīvi. Ja LAN tīklā nav pieejams atjaunināšanas vērtums, ierīce izmantos lejupielādi no atjaunināšanas servera. Ja ir iestatīta vērtība “False” vai šis iestatījums nav konfigurēts, P2P netiks lietots.</translation>
 <translation id="7933141401888114454">Iespējot uzraudzīto lietotāju kontu izveidi</translation>
 <translation id="793473937901685727">Iestatīt sertifikātu pieejamību ARC lietotnēm</translation>
-<translation id="7936098023732125869">Izmantojot šo politiku, var iespējot noklusējuma meklētājprogrammas lietošanu.
-
-          Ja šis iestatījums ir iespējots, ierakstot universālajā lodziņā kādu citu tekstu, nevis vietrādi URL, pēc noklusējuma tiek veikta meklēšana.
-
-          Iestatot pārējās noklusējuma meklēšanas politikas, var norādīt izmantojamo noklusējuma meklētājprogrammu. Ja nekas nav ievadīts, lietotājs var izvēlēties noklusējuma meklētājprogrammu.
-
-          Ja šis iestatījums ir atspējots, netiek veikta meklēšana, ierakstot universālajā lodziņā kādu citu tekstu, nevis vietrādi URL.
-
-          Ja šis iestatījums ir iespējots vai atspējots, lietotāji pārlūkā <ph name="PRODUCT_NAME" /> nevar mainīt vai ignorēt šo iestatījumu.
-
-          Ja šī politika nav iestatīta, ir iespējota noklusējuma meklētājprogramma un lietotājs var iestatīt meklētājprogrammu sarakstu.
-
-          Šī politika nav pieejama Windows datoros, kas nav pievienoti
-          Active Directory domēnam.</translation>
 <translation id="7937766917976512374">Video tveršanas ļaušana vai noraidīšana</translation>
 <translation id="7941975817681987555">Neprognozēt tīkla darbības nevienā tīkla savienojumā</translation>
 <translation id="7953256619080733119">Pārvaldīto lietotāju manuālo izņēmumu saimniekdatori</translation>
@@ -2016,18 +1984,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="8312129124898414409">Ļauj iestatīt, vai vietnēs ir atļauts izmantot atslēgu ģenerēšanu. Atslēgu ģenerēšanas izmantošana var tikt atļauta vai noraidīta visām vietnēm.
 
           Ja šī politika nav iestatīta, tiks lietota politika “BlockKeygen” un lietotājs to varēs mainīt.</translation>
-<translation id="8316806736175990584">Konfigurē noklusējuma sākumlapas veidu produktā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem mainīt sākumlapas preferences. Par sākumlapu var tikt iestatīts konkrēts URL vai jaunas cilnes lapa.
-
-          Ja šis iestatījums ir iespējots, par sākumlapu vienmēr tiek izmantota jaunas cilnes lapa un tiek ignorēta sākumlapas URL atrašanās vieta.
-
-          Ja šis iestatījums ir atspējots, par lietotāja sākumlapu nekad netiek izmantota jaunas cilnes lapa, izņemot gadījumus, kad par tās URL ir iestatīta vērtība chrome://newtab.
-
-          Ja šis iestatījums ir iespējots vai atspējots, lietotāji nevar mainīt savu sākumlapas veidu produktā <ph name="PRODUCT_NAME" />.
-
-          Ja šī politika nav iestatīta, lietotājs var izvēlēties, vai jaunas cilnes lapa ir sākumlapa.
-
-          Šī politika nav pieejama Windows datoros, kas nav pievienoti
-          Active Directory domēnam.</translation>
 <translation id="8329984337216493753">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
       Ja politika DeviceIdleLogoutTimeout ir norādīta, tā definē brīdinājuma lodziņa ilgumu ar atpakaļskaitīšanas taimeri, kas tiek rādīts lietotājam pirms atteikšanās izpildes.
@@ -2063,24 +2019,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="8519264904050090490">Pārvaldīto lietotāju manuālo izņēmumu vietrāži URL</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> noklusējuma HTML renderētājs</translation>
 <translation id="8549772397068118889">Brīdināt, kad tiek apmeklētas satura pakotnēs neiekļautas vietnes.</translation>
-<translation id="855339549837475534">Gan pārlūkā Chromium, gan Google Chrome tiek atbalstītas vienas un
-      tās pašas politikas. Lūdzu, ņemiet vērā, ka šajā dokumentā var būt
-      ietvertas politikas, kas paredzētas neizlaistām programmatūras versijām
-      (proti, sadaļā “Saderīga ar” ir minēta neizlaista versija), un šīs politikas
-      var mainīt vai noņemt bez iepriekšēja brīdinājuma.
-
-      Šīs politikas ir paredzētas tikai iekšējai
-      pārlūka <ph name="PRODUCT_NAME" /> konfigurēšanai jūsu
-      organizācijā. Ja izmantosiet šīs politikas ārpus savas organizācijas (piemēram,
-      publiski izplatītā programmā), programma tiks uzskatīta par ļaunprātīgu programmatūru
-      un, visticamāk, Google un pretvīrusu programmatūras piedāvātāji to uzskatīs par ļaunprātīgu programmatūru.
-
-      Šie iestatījumi nav jākonfigurē manuāli! Vietnē <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />
-      var lejupielādēt ērti lietojamas veidnes Windows, Mac un Linux datoriem.
-
-      Operētājsistēmā Windows politiku konfigurēšanai ieteicams izmantot GPO,
-      taču Windows sistēmās, kas ir pievienotas Active Directory domēnam,
-      politiku izvietošanai var izmantot arī reģistru.</translation>
 <translation id="8566842294717252664">Interneta veikala ikonas nerādīšana jaunas cilnes lapā un lietotņu palaidējā</translation>
 <translation id="8587229956764455752">Atļaut jaunu lietotāju kontu izveidi</translation>
 <translation id="8614804915612153606">Atspējot automātisko atjaunināšanu</translation>
@@ -2097,17 +2035,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Ja neiestatīsiet šo politiku, <ph name="PRODUCT_NAME" /> mēģinās noteikt, vai serveris darbojas iekštīklā, un tikai pēc tam atbildēs IWA pieprasījumiem. Ja serveris ir atzīts par iekštīklu, <ph name="PRODUCT_NAME" /> ignorēs no tā nosūtītos IWA pieprasījumus.</translation>
 <translation id="8672321184841719703">Automātiskā atjauninājuma vēlamā versija</translation>
-<translation id="868068801094828689">Iespējo anonīmu pārskatu sūtīšanu Google serveriem ar lietojuma un avāriju datiem pārlūkā <ph name="PRODUCT_NAME" />, kā arī neļauj lietotājiem mainīt šo iestatījumu.
-
-      Ja šis iestatījums ir iespējots, Google serveriem tiek sūtīti anonīmi pārskati
-      ar lietojuma un avāriju datiem. Ja tas ir atspējots, šī informācija netiek
-      sūtīta Google serveriem. Abos gadījumos lietotāji nevar mainīt vai ignorēt
-      šo iestatījumu. Ja šī politika nav iestatīta, spēkā ir
-      iestatījums, kuru lietotājs izvēlas instalēšanas vai pirmās palaišanas brīdī.
-
-      Šī politika nav pieejama Windows instancēs, kas nav pievienotas
-      Active Directory domēnam. (Operētājsistēmai Chrome OS skatiet politiku
-      DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Iebūvētā DNS klienta izmantošana</translation>
 <translation id="8704831857353097849">Atspējoto spraudņu saraksts</translation>
 <translation id="8711086062295757690">Norāda atslēgvārdu, kas tiek izmantots par saīsni universālajā lodziņā, lai izsauktu meklēšanu ar šo meklētājprogrammu.
@@ -2153,6 +2080,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="8858642179038618439">YouTube piespiedu drošības režīms</translation>
 <translation id="8864975621965365890">Aizliedz noraidīšanas uzvedni, kas tiek parādīta, ja vietni renderē spraudnis <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Sākumlapa</translation>
+<translation id="8882006618241293596">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> bloķēšana šajās vietnēs</translation>
 <translation id="8906768759089290519">Iespējot viesa režīmu</translation>
 <translation id="8908294717014659003">Ļauj iestatīt, vai vietnēm ir atļauts iegūt piekļuvi multivides tveršanas ierīcēm. Piekļuve multivides tveršanas ierīcēm var būt atļauta pēc noklusējuma, vai lietotājam var tikt parādīts atbilstošs jautājums katru reizi, kad vietne vēlas iegūt piekļuvi multivides tveršanas ierīcēm.
 

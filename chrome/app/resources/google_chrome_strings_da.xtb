@@ -52,6 +52,7 @@
 
 Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker, historik and andre indstillinger, med <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Vis Chrome-menuen</translation>
+<translation id="2416359993254398973">Chrome skal have tilladelse til at bruge dit kamera på dette website.</translation>
 <translation id="2429317896000329049">Google Chrome kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængelig for dit domæne.</translation>
 <translation id="2446511512801740068">Chrome er forældet, da den ikke er blevet genstartet i et stykke tid. Der er en tilgængelig opdatering, som anvendes, så snart du genstarter.</translation>
 <translation id="2485422356828889247">Afinstaller</translation>
@@ -153,6 +154,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="556024056938947818">Google Chrome forsøger at vise adgangskoder.</translation>
 <translation id="5563479599352954471">Søg med én berøring</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="557283862590186398">Chrome skal have tilladelse til at bruge din mikrofon på dette website.</translation>
 <translation id="5620765574781326016">Læs om emner på websites uden at forlade siden.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være skadelig, så Chrome har blokeret den.</translation>
 <translation id="568643307450491754">Find dine bogmærker i Chrome-menuen eller på bogmærkelinjen.</translation>
@@ -177,6 +179,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="6291549208091401781">Google Chrome er allerede installeret for alle brugere på computeren.</translation>
 <translation id="6338556085225130112">Opdaterer Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS er lavet ved hjælp af <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6393863479814692971">Chrome skal have tilladelse til at bruge dit kamera og din mikrofon på dette website.</translation>
 <translation id="6400076122676892962">Computeren holder snart op med at modtage Google Chrome-opdateringer, fordi Mac OS X 10.6, 10.7 og 10.8 ikke længere understøttes.</translation>
 <translation id="6410540444482791104">Du kan hjælpe med at gøre Chrome mere sikkert og nemmere at bruge ved automatisk at sende nogle systemoplysninger og sideindhold til Google som en hjælp til at registrere skadelige apps og websites.</translation>
 <translation id="6470176598693778404">Denne computer modtager ikke længere Google Chrome-opdateringer, fordi Mac OS X 10.6, 10.7 og 10.8 ikke længere understøttes.</translation>

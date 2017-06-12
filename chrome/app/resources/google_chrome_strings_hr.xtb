@@ -52,6 +52,7 @@
 
 Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i ostale postavke spojit će se s korisnikom <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Prikaži izbornik Chrome</translation>
+<translation id="2416359993254398973">Chrome treba dopuštenje za pristup fotoaparatu za ovu web-lokaciju.</translation>
 <translation id="2429317896000329049">Google Chrome nije mogao sinkronizirati vaše podatke jer sinkronizacija nije dostupna za vašu domenu.</translation>
 <translation id="2446511512801740068">Chrome je zastario jer dulje vrijeme nije ponovo pokrenut. Ažuriranje je dostupno i primijenit će se čim ponovo pokrenete proizvod.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
@@ -153,6 +154,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="556024056938947818">Google Chrome pokušava prikazati zaporke.</translation>
 <translation id="5563479599352954471">Pretraživanje jednim dodirom</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="557283862590186398">Chrome treba dopuštenje za pristup mikrofonu za ovu web-lokaciju.</translation>
 <translation id="5620765574781326016">Ne morate napustiti stranicu da biste saznali koje su teme web-lokacija.</translation>
 <translation id="565744775970812598">Datoteka <ph name="FILE_NAME" /> mogla bi biti opasna, pa ju je Chrome blokirao.</translation>
 <translation id="568643307450491754">Pronađite oznake u izborniku Chrome ili na traci oznaka.</translation>
@@ -177,6 +179,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="6291549208091401781">Google Chrome već je instaliran za sve korisnike na računalu.</translation>
 <translation id="6338556085225130112">Ažuriranje Google Chromea</translation>
 <translation id="6368958679917195344">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS" />softverom otvorenog koda<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6393863479814692971">Chrome treba dopuštenje za pristup fotoaparatu i mikrofonu za ovu web-lokaciju.</translation>
 <translation id="6400076122676892962">Ovo računalo uskoro će prestati primati ažuriranja za Google Chrome jer sustavi Mac OS X 10.6, 10.7 i 10.8 više neće biti podržani.</translation>
 <translation id="6410540444482791104">Možete pomoći da Chrome bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski šalju neki podaci o sustavu i sadržaju stranice u svrhu otkrivanja opasnih aplikacija i web-lokacija.</translation>
 <translation id="6470176598693778404">Ovo računalo više neće primati ažuriranja za Google Chrome jer sustavi Mac OS X 10.6, 10.7 i 10.8 više nisu podržani.</translation>

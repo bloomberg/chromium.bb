@@ -56,6 +56,7 @@
 
 Ако се ипак пријавите, Chrome информације као што су обележивачи, историја и друга подешавања ће бити обједињене на <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Приказ Chrome менија</translation>
+<translation id="2416359993254398973">Chrome тражи дозволу за приступ камери за овај сајт.</translation>
 <translation id="2429317896000329049">Google Chrome не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
 <translation id="2446511512801740068">Chrome је застарео јер дуго није поново покренут. Ажурирање је доступно и биће примењено чим га поново покренете.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
@@ -161,6 +162,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="556024056938947818">Google Chrome покушава да прикаже лозинке.</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="557283862590186398">Chrome тражи дозволу за приступ микрофону за овај сајт.</translation>
 <translation id="5620765574781326016">Сазнајте више о темама на веб-сајтовима без напуштања странице.</translation>
 <translation id="565744775970812598">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chrome блокирао.</translation>
 <translation id="568643307450491754">Пронађите обележиваче у Chrome менију или на траци са обележивачима.</translation>
@@ -185,6 +187,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6291549208091401781">Google Chrome је већ инсталиран за све кориснике на рачунару.</translation>
 <translation id="6338556085225130112">Ажурирање Google Chrome-а</translation>
 <translation id="6368958679917195344">Chrome OС je могућ захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтвер отвореног кода<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6393863479814692971">Chrome тражи дозволу за приступ камери и микрофону за овај сајт.</translation>
 <translation id="6400076122676892962">Овај рачунар ће ускоро престати да добија ажурирања за Google Chrome јер Mac OS X 10.6, 10.7 и 10.8 више неће бити подржани.</translation>
 <translation id="6410540444482791104">Можете да помогнете да Chrome буде безбеднији и лакши за коришћење тако што ћете аутоматски слати Google-у неке системске информације и садржај страница да бисмо открили опасне апликације и сајтове.</translation>
 <translation id="6470176598693778404">Овај рачунар више неће добијати ажурирања за Google Chrome јер Mac OS X 10.6, 10.7 и 10.8 више нису подржани.</translation>

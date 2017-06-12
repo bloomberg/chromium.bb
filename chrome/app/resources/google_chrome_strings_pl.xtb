@@ -52,6 +52,7 @@
 
 Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, historia i inne ustawienia, zostaną połączone z kontem <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Pokaż menu Chrome</translation>
+<translation id="2416359993254398973">Chrome potrzebuje uprawnień dostępu do aparatu na tej stronie.</translation>
 <translation id="2429317896000329049">Google Chrome nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="2446511512801740068">Chrome jest nieaktualny, ponieważ od pewnego czasu nie był uruchamiany. Dostępna jest aktualizacja, która zostanie zastosowana natychmiast po ponownym uruchomieniu.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
@@ -154,6 +155,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
 <translation id="5563479599352954471">Szukaj jednym kliknięciem</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="557283862590186398">Chrome potrzebuje uprawnień dostępu do mikrofonu na tej stronie.</translation>
 <translation id="5620765574781326016">Poznaj tematy omawiane w witrynach, nie opuszczając strony.</translation>
 <translation id="565744775970812598">Plik <ph name="FILE_NAME" /> może być niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
 <translation id="568643307450491754">Zakładki są dostępne w menu Chrome i na pasku zakładek.</translation>
@@ -178,6 +180,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="6291549208091401781">Google Chrome jest już zainstalowany dla wszystkich użytkowników tego komputera.</translation>
 <translation id="6338556085225130112">Aktualizuję Google Chrome</translation>
 <translation id="6368958679917195344">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS" />oprogramowaniu typu open source<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6393863479814692971">Chrome potrzebuje uprawnień dostępu do aparatu i mikrofonu na tej stronie.</translation>
 <translation id="6400076122676892962">Google Chrome wkrótce przestanie aktualizować się na tym komputerze, bo nie będzie już zgodny z Mac OS X 10.6, 10.7 ani 10.8.</translation>
 <translation id="6410540444482791104">Możesz przyczynić się do zwiększenia bezpieczeństwa i komfortu korzystania z Chrome, automatycznie wysyłając do Google pewne informacje o systemie i część zawartości stron, by pomóc w wykrywaniu niebezpiecznych aplikacji i witryn.</translation>
 <translation id="6470176598693778404">Google Chrome nie będzie już aktualizować się na tym komputerze, bo Mac OS X 10.6, 10.7 i 10.8 nie są już obsługiwane.</translation>

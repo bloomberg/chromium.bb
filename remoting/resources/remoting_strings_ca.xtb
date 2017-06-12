@@ -64,10 +64,12 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="225614027745146050">Et donem la benvinguda</translation>
 <translation id="228809120910082333">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per Chromoting.</translation>
 <translation id="2314101195544969792">La vostra sessió de <ph name="APPLICATION_NAME" /> ha estat inactiva durant una estona i es desconnectarà aviat.</translation>
+<translation id="2317666076142640974">Dona un cop d'ull a la nova <ph name="LINK_BEGIN" />aplicació web Escriptori remot de Chrome<ph name="LINK_END" />. Ens agradaria saber la teva opinió.</translation>
 <translation id="2353140552984634198">Podeu accedir de manera segura a aquest ordinador mitjançant Chromoting.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2366718077645204424">No es pot connectar amb l'amfitrió. Probablement, això passa a causa de la configuració de la xarxa que esteu fent servir.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> L'última connexió va ser <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Aquesta aplicació ja no s'admet. Per garantir que tens les funcions i actualitzacions de seguretat més recents, fes servir l'<ph name="LINK_BEGIN" />aplicació web Escriptori remot de Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
 <translation id="2512228156274966424">NOTA: Per assegurar-vos que totes les tecles de drecera estiguin disponibles, podeu configurar l'escriptori remot de Chrome amb l'opció "Obre com a finestra".</translation>
 <translation id="2540992418118313681">Voleu compartir aquest ordinador perquè un altre usuari el pugui veure i controlar?</translation>
@@ -230,9 +232,10 @@ remot de Chrome</translation>
 <translation id="6930242544192836755">Durada</translation>
 <translation id="6939719207673461467">Mostra o amaga el teclat</translation>
 <translation id="6944854424004126054">Restaura la finestra</translation>
+<translation id="6948905685698011662">Ara Escriptori remot de Chrome és al web. Dona un cop d'ull a la nostra <ph name="LINK_BEGIN" />aplicació web gratuïta<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Les connexions amb l'ordinador remot s'han bloquejat temporalment perquè algú ha provat de connectar-s'hi amb un PIN no vàlid. Torna-ho a provar més tard.</translation>
 <translation id="6965382102122355670">D'acord</translation>
-<translation id="6985691951107243942">Esteu segur que voleu desactivar les connexions remotes a <ph name="HOSTNAME" />? Si canvieu de parer, haureu de visitar aquest ordinador per tornar-les a activar.</translation>
+<translation id="6985691951107243942">Confirmeu que voleu desactivar les connexions remotes a <ph name="HOSTNAME" />? Si canvieu de parer, haureu de visitar aquest ordinador per tornar-les a activar.</translation>
 <translation id="6998989275928107238">Per a</translation>
 <translation id="7019153418965365059">Error d'amfitrió no reconegut: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistència remota</translation>
@@ -246,6 +249,7 @@ remot de Chrome</translation>
 <translation id="7401733114166276557">Escriptori remot de Chrome</translation>
 <translation id="7434397035092923453">S'ha rebutjat l'accés del client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client connectat: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Escriptori remot de Chrome es trasllada a un lloc nou al web. Prova la nostra <ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />; és ràpida i gratuïta, i té totes les funcions que tenia abans.</translation>
 <translation id="7606912958770842224">Activa les connexions remotes</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>

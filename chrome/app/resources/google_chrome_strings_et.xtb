@@ -54,6 +54,7 @@
 
 Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu ja muud seaded, kontoga <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Kuva Chrome'i menüü</translation>
+<translation id="2416359993254398973">Chrome vajab selle saidi puhul luba, et teie kaamerale juurde pääseda.</translation>
 <translation id="2429317896000329049">Google Chrome ei saa teie andmeid sünkroonida, sest sünkroonimine pole teie domeenil saadaval.</translation>
 <translation id="2446511512801740068">Chrome on aegunud, kuna seda ei ole tükk aega taaskäivitatud. Saadaval on värskendus, mis rakendatakse taaskäivitamisel.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
@@ -157,6 +158,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="556024056938947818">Google Chrome püüab näidata paroole.</translation>
 <translation id="5563479599352954471">Otsing ühe puudutusega</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="557283862590186398">Chrome vajab selle saidi puhul luba, et teie mikrofonile juurde pääseda.</translation>
 <translation id="5620765574781326016">Lisateave veebisaitide teemade kohta ilma lehelt lahkumata.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> võib olla ohtlik, mistõttu Chrome blokeeris selle.</translation>
 <translation id="568643307450491754">Otsige oma järjehoidjaid Chrome'i menüüst või järjehoidjaribalt.</translation>
@@ -181,6 +183,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6291549208091401781">Google Chrome on arvutisse kõigi kasutajate jaoks juba installitud.</translation>
 <translation id="6338556085225130112">Google Chrome'i värskendamine</translation>
 <translation id="6368958679917195344">Chrome OS on võimalik tänu <ph name="BEGIN_LINK_CROS_OSS" />avatud lähtekoodiga lisatarkvarale<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6393863479814692971">Chrome vajab selle saidi puhul luba, et teie kaamerale ja mikrofonile juurde pääseda.</translation>
 <translation id="6400076122676892962">Arvuti ei saa varsti enam Google Chrome'i värskendusi, kuna Mac OS X 10.6, 10.7 ja 10.8 tugi lõpeb.</translation>
 <translation id="6410540444482791104">Saate aidata muuta Chrome'i turvalisemaks ja hõlpsamini kasutatavaks, kui lubate saata Google'ile automaatselt teatud süsteemiteavet ning lehesisu, mis aitab tuvastada ohtlikke rakendusi ja saite.</translation>
 <translation id="6470176598693778404">Arvuti ei saa enam Google Chrome'i värskendusi, kuna Mac OS X 10.6, 10.7 ja 10.8 ei toetata enam.</translation>

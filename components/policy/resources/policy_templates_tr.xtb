@@ -159,6 +159,7 @@
       yakalama cihazlarına erişim izni verilir. Herhangi bir eşleşme
       bulunmazsa, erişim otomatik olarak reddedilir. Joker karakter kalıplarına
       izin verilmez.</translation>
+<translation id="1634989431648355062">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisine izin ver</translation>
 <translation id="1655229863189977773">Disk önbelleği boyutunu bayt olarak ayarla</translation>
 <translation id="166427968280387991">Proxy sunucu</translation>
 <translation id="1668836044817793277">Sıfır gecikmeyle otomatik başlatılan kiosk uygulamasının <ph name="PRODUCT_OS_NAME" /> sürümünü kontrol etmesine izin verilip verilmeyeceğini belirtir.
@@ -744,6 +745,11 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politikaların ayarlanmadan bırakılması, kullanıcıların proxy ayarlarını kendilerinin yapabilmesine olanak tanır.</translation>
 <translation id="3758249152301468420">Geliştirici Araçları'nı devre dışı bırak</translation>
 <translation id="3765260570442823273">Boştayken çıkış yapma uyarı mesajının süresi</translation>
+<translation id="376931976323225993">Web sitelerinin <ph name="FLASH_PLUGIN_NAME" /> eklentisini otomatik olarak çalıştırmalarına izin verilip verilmeyeceğini ayarlamanızı sağlar. Otomatik olarak çalışan <ph name="FLASH_PLUGIN_NAME" /> eklentisine ya bütün web sitelerinde izin verilebilir ya da bu eklenti web sitelerinin tümünde reddedilebilir.
+
+          Tıkla oynat seçeneği <ph name="FLASH_PLUGIN_NAME" /> eklentisinin çalışmasına izin verir, ancak eklentiyi çalıştırmak için kullanıcının yer tutucuyu tıklaması gerekir.
+
+          Bu politika ayarlanmadan bırakılırsa kullanıcı bu ayarı manuel olarak değiştirebilir.</translation>
 <translation id="3780152581321609624">Kerberos SPN'sine standart dışı bağlantı noktasını dahil et</translation>
 <translation id="3780319008680229708">Bu politika doğru değerine ayarlanırsa Cast araç çubuğu simgesi, araç çubuğunda veya taşma menüsünde her zaman gösterilir ve kullanıcılar bu simgeyi kaldıramaz.
 
@@ -873,6 +879,7 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 <translation id="4105989332710272578">Bir URL listesi için Sertifika Şeffaflığı uygulamasını devre dışı bırak</translation>
 <translation id="4121350739760194865">Uygulama tanıtımlarının yeni sekme sayfasında görünmesini önle</translation>
 <translation id="4157003184375321727">İşletim sistemi ve donanım yazılımı sürümünü rapor et</translation>
+<translation id="4183229833636799228">Varsayılan <ph name="FLASH_PLUGIN_NAME" /> ayarı</translation>
 <translation id="4192388905594723944">Uzaktan erişim istemci kimlik doğrulama jetonunu doğrulama URL'si</translation>
 <translation id="4203389617541558220">Otomatik yeniden başlatmalar planlayarak cihazın açık olduğu süreyi sınırlandır.
 
@@ -1212,6 +1219,7 @@ politikayı geçersiz kılamaz.
 
       Platform politika bildirimlerini destekliyorsa yenileme gecikmesinin 24 saate ayarlanacağını (tüm varsayılanların ve bu politikanın değerinin yoksayılacağını) unutmayın. Bunun nedeni, politika değiştiğinde politika bildirimlerinin otomatik olarak bir yenilemeyi zorlamasının beklenmesi ve bu yüzden, daha sık yenileme yapılmasına gerek olmamasıdır.</translation>
 <translation id="5535973522252703021">Kerberos yetki sunucusu beyaz listesi</translation>
+<translation id="555077880566103058">Tüm sitelerin otomatik olarak <ph name="FLASH_PLUGIN_NAME" /> eklentisini çalıştırmasına izin ver</translation>
 <translation id="5559079916187891399">Bu politikanın Android uygulamaları üzerinde hiçbir etkisi yoktur.</translation>
 <translation id="5560039246134246593"><ph name="PRODUCT_NAME" /> ürününde Varyasyon temelini almaya parametre ekle.
 
@@ -1294,11 +1302,6 @@ politikayı geçersiz kılamaz.
 <translation id="5868414965372171132">Kullanıcı düzeyi ağ yapılandırması</translation>
 <translation id="588135807064822874">Dokun ve Ara'yı etkinleştir</translation>
 <translation id="5883015257301027298">Varsayılan çerezler ayarı</translation>
-<translation id="5887291617378691520">Başlangıç işlemi olarak "URL listesi aç" seçilirse, açılan URL'lerin listesini belirtmenize olanak verir. Ayarlanmadan bırakılırsa başlangıçta hiçbir URL açılmaz.
-
-          Bu politika sadece "RestoreOnStartup" politikası "RestoreOnStartupIsURLs" seçeneğine ayarlandığında çalışır.
-
-          Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="5887414688706570295">Uzaktan erişim ana makineleri tarafından kullanılacak olan TalkGadget önekini yapılandırır ve kullanıcıların bunu değiştirmesini önler.
 
           Bu önek belirtilirse, TalkGadget'a ilişkin tam bir alan adı oluşturmak üzere temel TalkGadget adının başına eklenir. Temel TalkGadget alan adı '.talkgadget.google.com'dur.
@@ -1383,6 +1386,9 @@ politikayı geçersiz kılamaz.
       Aksi durumda, şu değerlerden birine ayarlanabilir: "sslv3", "tls1", "tls1.1" ya da "tls1.2". Bu politika yapılandırıldığında, <ph name="PRODUCT_NAME" /> ürünü belirtilen sürümden daha eski SSL/TLS sürümlerini kullanmaz. Tanınmayan bir değer ise yoksayılır.
 
       "sslv3"ün numarası büyük olsa da, "tls1"den daha eski bir sürüm olduğunu unutmayın.</translation>
+<translation id="6181608880636987460"><ph name="FLASH_PLUGIN_NAME" /> eklentisini çalıştırmalarına izin verilmeyen siteleri belirten URL kalıplarının listesini ayarlamanıza izin verir.
+
+          Bu politika ayarlanmadan bırakılırsa, tüm siteler için ya "DefaultPluginsSetting" politikasından gelen (ayarlanmışsa) ya da kullanıcının kişisel yapılandırmasından gelen global varsayılan değer kullanılır.</translation>
 <translation id="6190022522129724693">Varsayılan pop-up'lar ayarı</translation>
 <translation id="6197453924249895891">Uzantıların şirket anahtarlarına erişmesine izin verir.
 
@@ -1507,6 +1513,9 @@ politikayı geçersiz kılamaz.
 
       Bu seçeneğin devre dışı olarak ayarlanması veya ayarlanmadan bırakılması, eklenti bulma işlevini etkin hale getirir.</translation>
 <translation id="6699880231565102694">Uzaktan erişim ana makineleri için iki öğeli kimlik doğrulamayı etkinleştir</translation>
+<translation id="6757438632136860443"><ph name="FLASH_PLUGIN_NAME" /> eklentisini çalıştırmalarına izin verilen siteleri belirten URL kalıplarının listesini ayarlamanıza izin verir.
+
+          Bu politika ayarlanmadan bırakılırsa tüm siteler için ya "DefaultPluginsSetting" politikasından gelen (ayarlanmışsa) ya da kullanıcının kişisel yapılandırmasından gelen global varsayılan değer kullanılır.</translation>
 <translation id="6766216162565713893">Sitelerin, yakınlardaki bir Bluetooth cihazına erişmek için kullanıcıdan izin istemesine izin ver</translation>
 <translation id="6770454900105963262">Aktif kiosk oturumlarıyla ilgili bilgileri raporla</translation>
 <translation id="6786747875388722282">Uzantılar</translation>
@@ -1534,6 +1543,7 @@ politikayı geçersiz kılamaz.
           Bu politikayı ayarlarsanız, kullanıcılar bunu değiştiremez ve geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa, sesli geri bildirim başta devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
+<translation id="6922884955650325312"><ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
 <translation id="6923366716660828830">Varsayılan arama sağlayıcısının adını belirtir. Boş bırakılır veya ayarlanmazsa, arama URL'sinin belirttiği ana makine adı kullanılır.
 
           Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirildiğinde dikkate alınır.</translation>
@@ -1579,17 +1589,6 @@ politikayı geçersiz kılamaz.
       Devre dışı bırakılırsa, hiçbir yer işareti içe aktarılmaz.
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
-<translation id="7055358889740598917"><ph name="PRODUCT_NAME" /> içindeki varsayılan ana sayfa URL'sini yapılandırır ve kullanıcıların bunu değiştirmelerini önler.
-
-          Ana sayfa, Ana Sayfa düğmesiyle açılan sayfadır. Başlangıçta açılan sayfalar, RestoreOnStartup politikalarıyla kontrol edilir.
-
-          Ana sayfa türü ya burada belirttiğiniz URL'ye ya da Yeni Sekme Sayfası'na ayarlanabilir. Yeni Sekme Sayfası'nı seçerseniz bu politika göz ardı edilir.
-
-          Bu ayarı etkinleştirirseniz kullanıcılar ana sayfa URL'sini <ph name="PRODUCT_NAME" /> içinden değiştiremezler, ancak ana sayfa olarak Yeni Sekme Sayfası'nı seçmeye devam edebilirler.
-
-          Bu politikanın ayarlanmadan bırakılması, HomepageIsNewTabPage politikası da ayarlanmamışsa kullanıcının ana sayfasını kendi başına seçmesine olanak tanır.
-
-          Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="7063895219334505671">Bu sitelerde pop-up'lara izin ver</translation>
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
 <translation id="7072406291414141328">Ağ bant genişliğini daraltmayı etkinleştirir</translation>
@@ -1611,20 +1610,6 @@ politikayı geçersiz kılamaz.
       Bu politika Yanlış seçeneğine ayarlanırsa arka plan modu devre dışı bırakılır ve tarayıcı ayarlarında kullanıcı tarafından kontrol edilemez.
 
       Bu politika ayarlanmadan bırakılırsa arka plan modu ilk başta devre dışı bırakılır ve tarayıcı ayarlarında kullanıcı tarafından kontrol edilebilir.</translation>
-<translation id="7123297102171034788">Başlangıçtaki çalışma biçimini belirtmenize olanak verir.
-
-          "Yeni Sekme Sayfası Aç"ı seçerseniz, <ph name="PRODUCT_NAME" /> ürününü başlattığınızda her zaman Yeni Sekme sayfası açılır.
-
-          "Son oturumu geri yükle"yi seçerseniz, <ph name="PRODUCT_NAME" /> en son kapatıldığında açık olan URL'ler tekrar açılır ve göz atma oturumu kaldığı yerden geri yüklenir.
-          Bu seçenek belirtildiğinde oturumlarla ilişkili olan veya çıkışta çeşitli işlemler yapan bazı ayarlar (Çıkışta tarama verilerini temizleme veya salt oturum çerezlerini temizleme gibi) devre dışı kalır.
-
-          "URL listesi aç"ı seçerseniz, bir kullanıcı <ph name="PRODUCT_NAME" /> ürününü başlattığında "Başlangıçta açılacak URL'lerin listesi" açılır.
-
-          Bu ayarı etkinleştirirseniz kullanıcılar onu <ph name="PRODUCT_NAME" /> ürününde değiştiremez veya geçersiz kılamaz.
-
-          Bu ayarı devre dışı bırakmak, yapılandırılmamış olarak bırakmakla aynı şeydir. Kullanıcı bu ayarı <ph name="PRODUCT_NAME" /> ürününde istediği gibi değiştirebilir.
-
-          Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="7128918109610518786"><ph name="PRODUCT_OS_NAME" /> tarafından başlatıcı çubuğunda sabitlenmiş uygulamalar olarak gösterilen uygulama tanımlayıcılarını listeler.
 
       Bu politika yapılandırılırsa, uygulama seti sabittir ve kullanıcı tarafından değiştirilemez.
@@ -1863,19 +1848,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="793134539373873765">OS güncelleme yükleri için p2p'nin kullanılıp kullanılmayacağını belirtir. Doğru seçeneğine ayarlanırsa, cihazlar LAN üzerindeki yükleri paylaşır ve kullanmaya çalışır, bu da İnternet bant genişliği kullanımını ve tıkanıklığını potansiyel olarak azaltır. Güncelleme yükü LAN'da kullanılamıyorsa, cihaz bir güncelleme sunucusundan indirme işlemine geçer. Yanlış seçeneğine ayarlanırsa veya yapılandırılmazsa p2p kullanılmaz.</translation>
 <translation id="7933141401888114454">Denetlenen kullanıcılar oluşturmayı etkinleştir</translation>
 <translation id="793473937901685727">ARC uygulamaları için sertifika kullanılabilirliğini ayarla</translation>
-<translation id="7936098023732125869">Varsayılan bir arama sağlayıcısının kullanılmasına izin verir.
-
-          Bu ayarı etkinleştirirseniz, kullanıcı çok amaçlı adres çubuğuna URL dışında bir metin yazdığında varsayılan bir arama yapılır.
-
-          Varsayılan arama politikalarının geri kalanını ayarlayarak, kullanılacak varsayılan arama sağlayıcısını belirtebilirsiniz. Bunlar boş bırakılırsa, kullanıcı varsayılan sağlayıcıyı seçebilir.
-
-          Bu ayarı devre dışı bırakırsanız, kullanıcı çok amaçlı adres çubuğuna URL dışında bir metin girdiğinde hiçbir arama yapılmaz.
-
-          Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar <ph name="PRODUCT_NAME" /> ürününde bu ayarı değiştiremez veya geçersiz kılamaz.
-
-          Bu politika ayarlanmadan bırakılırsa, varsayılan arama sağlayıcısı etkinleştirilir ve kullanıcı arama sağlayıcısı listesini ayarlayabilir.
-
-          Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="7937766917976512374">Video yakalamaya izin verme veya reddetme</translation>
 <translation id="7941975817681987555">Ağ bağlantılarında ağ işlemlerini tahmin etme</translation>
 <translation id="7953256619080733119">Yönetilen kullanıcı manuel istisna ana makineleri</translation>
@@ -2003,17 +1975,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8312129124898414409">Web sitelerinin anahtar oluşturma işlevini kullanmasına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Anahtar oluşturma işlevini kullanma izni ya tüm web siteleri için verilebilir ya da hepsi için reddedilebilir.
 
           Bu politika ayarlanmadan bırakılırsa, "BlockKeygen" kullanılır ve kullanıcı bu ayarı değiştirebilir.</translation>
-<translation id="8316806736175990584"><ph name="PRODUCT_NAME" /> ürününde varsayılan ana sayfa türünü yapılandırır ve kullanıcıların ana sayfa tercihlerini değiştirmesini engeller. Ana sayfa sizin belirttiğiniz bir URL'ye veya Yeni Sekme Sayfası'na ayarlanabilir.
-
-          Bu ayarı etkinleştirirseniz ana sayfa için her zaman Yeni Sekme Sayfası kullanılır ve ana sayfa URL konumu yoksayılır.
-
-          Bu ayarı devre dışı bırakırsanız kullanıcının ana sayfası (URL'si "chrome://newtab" olarak ayarlanmadığı sürece) hiçbir zaman Yeni Sekme Sayfası olmaz.
-
-          Bu ayarı etkinleştirir veya devre dışı bırakırsanız kullanıcılar <ph name="PRODUCT_NAME" /> ürününde ana sayfalarının türünü değiştiremezler.
-
-          Bu politika ayarlanmadan bırakılırsa kullanıcı istediği zaman kendi ana sayfası olarak yeni sekme sayfasını seçebilir.
-
-          Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="8329984337216493753">Bu politika sadece perakende modunda etkindir.
 
       DeviceIdleLogoutTimeout belirtildiğinde, bu politika uyarı kutusunun süresini tanımlar ve çıkış yapılmadan önce kullanıcıya bir geri sayım saati gösterir.
@@ -2049,27 +2010,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8519264904050090490">Yönetilen kullanıcı manuel istisna URL'leri</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> için varsayılan HTML oluşturucusu</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
-<translation id="855339549837475534">Hem Chromium hem de Google Chrome aynı politika grubunu
-      destekler. Bu dokümanın, piyasaya çıkmamış yazılım sürümleri
-      için hedeflenmiş (yani "Desteklenen sürümler" bilgisinde, piyasaya çıkmamış
-      bir sürümün yer aldığı) politikalar içerebileceğini ve bu tür
-      politikaların önceden bildirilmeksizin değiştirilebileceğini veya
-      kaldırılabileceğini lütfen unutmayın.
-
-      Bu politikalar sadece kuruluşunuz dahilindeki <ph name="PRODUCT_NAME" />
-      örneklerini yapılandırmak için kullanılabilir. Bu politikaların
-      kuruluşunuzun dışında (örneğin, herkese açık olarak dağıtılan bir programda)
-      kullanılması kötü amaçlı yazılım olarak kabul edilmesine yol açar ve
-      muhtemelen Google ile virüsten korunma yazılımı tedarikçileri
-      tarafından da kötü amaçlı yazılım olarak sınıflandırılır.
-
-      Bu ayarların manuel olarak yapılandırılması gerekmez!
-      Windows, Mac ve Linux için kullanımı kolay şablonlar
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> adresinden indirilebilir.
-
-      Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır.
-      Ancak, bir Active Directory alan adına katılmış Windows örnekleri için
-      politikanın temel hazırlığının kayıt defteri kullanılarak yapılması da desteklenir.</translation>
 <translation id="8566842294717252664">Yeni sekme sayfasında ve uygulama başlatıcıda web mağazasını gizle</translation>
 <translation id="8587229956764455752">Yeni kullanıcı hesapları oluşturulmasına izin ver</translation>
 <translation id="8614804915612153606">Otomatik Güncellemeyi devre dışı bırakır</translation>
@@ -2086,16 +2026,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
           Bu politikayı ayarlanmamış olarak bırakırsanız, <ph name="PRODUCT_NAME" /> sunucunun İntranet'te olup olmadığını saptamaya çalışır ve buna göre IWA taleplerini yanıtlar. Sunucunun İnternet'te olduğu saptanırsa, sunucudan gelen IWA talepleri <ph name="PRODUCT_NAME" /> tarafından yoksayılır.</translation>
 <translation id="8672321184841719703">Hedef Otomatik Güncelleme Sürümü</translation>
-<translation id="868068801094828689"><ph name="PRODUCT_NAME" /> ile ilgili kullanım ve kilitlenme verilerinin anonim olarak Google'a raporlanmasını etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini önler.
-
-      Bu ayar etkinleştirilirse, kullanım ve kilitlenme verilerine ilişkin anonim
-      bir rapor Google'a gönderilir. Devre dışı bırakılırsa bu bilgiler Google'a
-      gönderilmez. Her iki durumda da, kullanıcılar ayarı değiştiremez veya
-      geçersiz kılamaz. Bu politika ayarlanmadan bırakılırsa, kullanıcının
-      yükleme/ilk çalıştırma sırasında seçtiği ayar geçerli olur.
-
-      Bu politika bir Active Directory alan adına katılmamış Windows
-      örneklerinde kullanılamaz. (Chrome OS için bkz. DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Dahili DNS istemcisini kullan</translation>
 <translation id="8704831857353097849">Devre dışı bırakılmış eklentilerin listesi</translation>
 <translation id="8711086062295757690">Bu sağlayıcıda aramayı tetiklemek üzere çok amaçlı adres çubuğunda anahtar kelime kısayolunu belirtir.
@@ -2139,6 +2069,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8858642179038618439">YouTube Güvenlik Modunu zorla</translation>
 <translation id="8864975621965365890">Bir site <ph name="PRODUCT_FRAME_NAME" /> tarafından oluşturulduğunda görülen reddetme sorusunu engeller.</translation>
 <translation id="8870318296973696995">Ana sayfa</translation>
+<translation id="8882006618241293596">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
 <translation id="8906768759089290519">Misafir modunu etkinleştir</translation>
 <translation id="8908294717014659003">Web sitelerinin medya yakalama cihazlarına erişmelerine izin verilip verilmeyeceğini ayarlamanıza olanak sağlar. Medya yakalama cihazlarına erişime varsayılan olarak izin verilebilir veya bir web sitesinin medya yakalama cihazlarına erişmek istediği her defasında kullanıcıya sorulabilir.
 

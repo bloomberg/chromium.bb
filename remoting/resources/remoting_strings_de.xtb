@@ -64,10 +64,12 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="225614027745146050">Willkommen</translation>
 <translation id="228809120910082333">Bestätigen Sie unten Ihr Konto und Ihre PIN, um den Zugriff durch Chromoting zu gestatten.</translation>
 <translation id="2314101195544969792">Ihre Sitzung bei <ph name="APPLICATION_NAME" /> war längere Zeit inaktiv und wird in Kürze beendet.</translation>
+<translation id="2317666076142640974">Werfen Sie vorab einen Blick auf die Web-App <ph name="LINK_BEGIN" />Chrome Remote Desktop<ph name="LINK_END" />. Wir freuen uns über Feedback!</translation>
 <translation id="2353140552984634198">Mit Chromoting erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2366718077645204424">Die Verbindung zum Host kann nicht hergestellt werden. Das von Ihnen verwendete Netzwerk ist möglicherweise nicht korrekt konfiguriert.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Zuletzt online: <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Diese App wird nicht mehr unterstützt. Damit Ihnen immer die aktuellen Funktionen und Sicherheitsupdates zur Verfügung stehen, verwenden Sie bitte die Web-App <ph name="LINK_BEGIN" />Chrome Remote Desktop<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
 <translation id="2512228156274966424">HINWEIS: Sie können in Chrome Remote Desktop die Option zum Öffnen als Fenster einstellen, damit alle Tastenkombinationen verfügbar sind.</translation>
 <translation id="2540992418118313681">Möchten Sie diesen Computer für einen anderen Nutzer zur Ansicht und Steuerung freigeben?</translation>
@@ -230,6 +232,7 @@ Desktop Host</translation>
 <translation id="6930242544192836755">Dauer</translation>
 <translation id="6939719207673461467">Tastatur ein-/ausblenden</translation>
 <translation id="6944854424004126054">Fenster wiederherstellen</translation>
+<translation id="6948905685698011662">Chrome Remote Desktop ist jetzt im Web verfügbar. Probieren Sie unsere <ph name="LINK_BEGIN" />kostenlose Web-App<ph name="LINK_END" /> aus.</translation>
 <translation id="6963936880795878952">Verbindungen zum Remote-Computer sind vorübergehend blockiert, da jemand versucht hat, eine Verbindung mit einer ungültigen PIN herzustellen. Bitte versuchen Sie es später noch einmal.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Möchten Sie die Remote-Verbindung zu <ph name="HOSTNAME" /> wirklich deaktivieren? Wenn Sie die Verbindung später erneut aktivieren möchten, müssen Sie dies von dem betreffenden Computer aus tun.</translation>
@@ -246,6 +249,7 @@ Desktop Host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Zugriff für folgenden Client verweigert: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7444276978508498879">Client verbunden: <ph name="CLIENT_USERNAME" /></translation>
+<translation id="7589941250119944644">Chrome Remote Desktop ist jetzt im Web verfügbar. Probieren Sie die <ph name="LINK_BEGIN" />Web-App<ph name="LINK_END" /> aus: Sie ist schnell, kostenlos und bietet den gewohnten Funktionsumfang.</translation>
 <translation id="7606912958770842224">Remote-Verbindungen aktivieren</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>

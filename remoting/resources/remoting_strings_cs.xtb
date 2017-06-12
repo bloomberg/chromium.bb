@@ -64,10 +64,12 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="225614027745146050">Vítejte</translation>
 <translation id="228809120910082333">K povolení přístupu prostřednictvím funkce Chromoting je třeba potvrdit účet a kód PIN níže.</translation>
 <translation id="2314101195544969792">Relace aplikace <ph name="APPLICATION_NAME" /> je již nějakou dobu neaktivní a brzy bude odpojena.</translation>
+<translation id="2317666076142640974">Vyzkoušejte novou <ph name="LINK_BEGIN" />webovou aplikaci Vzdálená plocha Chrome<ph name="LINK_END" /> a dejte nám vědět, jak se vám líbí.</translation>
 <translation id="2353140552984634198">K tomuto počítači se můžete bezpečně připojit pomocí funkce Chromoting.</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2366718077645204424">Hostitele nelze nalézt. Pravděpodobnou příčinou je aktuální konfigurace sítě.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Naposledy online: <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Tato aplikace již není podporována. Chcete-li dostávat nejnovější funkce a aktualizace zabezpečení, používejte <ph name="LINK_BEGIN" />webovou aplikaci Vzdálená plocha Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Pomozte nám Vzdálenou plochu Chrome vylepšit tím, že nám povolíte shromažďovat statistiky využití a zprávy o selhání.</translation>
 <translation id="2512228156274966424">POZNÁMKA: Pokud chcete mít k dispozici všechny klávesové zkratky, povolte v konfiguraci Vzdálené plochy Google možnost Otevřít jako okno.</translation>
 <translation id="2540992418118313681">Chcete tento počítač sdílet s dalším uživatelem, aby jej mohl zobrazit a ovládat?</translation>
@@ -231,6 +233,7 @@ plochy Chrome</translation>
 <translation id="6930242544192836755">Délka</translation>
 <translation id="6939719207673461467">Zobrazit či skrýt klávesnici</translation>
 <translation id="6944854424004126054">Obnovit okno</translation>
+<translation id="6948905685698011662">Vzdálená plocha Chrome je nyní na webu. Vyzkoušejte naši <ph name="LINK_BEGIN" />bezplatnou webovou aplikaci<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Připojení ke vzdálenému počítači jsou dočasně zablokována, protože došlo k několika pokusům o připojení s nesprávným kódem PIN. Zkuste to znovu později.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Opravdu chcete zakázat vzdálená připojení k počítači <ph name="HOSTNAME" />? Pokud později své rozhodnutí změníte, bude nutné připojení povolit přímo z uvedeného počítače.</translation>
@@ -247,6 +250,7 @@ plochy Chrome</translation>
 <translation id="7401733114166276557">Vzdálená plocha Chrome</translation>
 <translation id="7434397035092923453">Přístup klienta zamítnut: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klient připojen: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Vzdálená plocha Chrome se stěhuje na web. Vyzkoušejte naši <ph name="LINK_BEGIN" />webovou aplikaci<ph name="LINK_END" /> – je rychlá a zdarma a podporuje všechny funkce jako dříve.</translation>
 <translation id="7606912958770842224">Povolit vzdálená připojení</translation>
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7658239707568436148">Zrušit</translation>

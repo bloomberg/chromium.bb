@@ -111,12 +111,14 @@
 <translation id="4549794359424059447">Chromium च्या भविष्‍यातील आवृत्त्या यापुढे Windows XP किंवा Windows Vista ला समर्थन देणार नाहीत.</translation>
 <translation id="4567424176335768812">आपण <ph name="USER_EMAIL_ADDRESS" /> म्हणून साइन इन केले आहे. आता आपण आपल्या सर्व साइन इन केलेल्या डिव्हाइसेसवरील आपल्या बुकमार्क, इतिहास आणि अन्य सेटिंग्जवर प्रवेश करू शकता.</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
+<translation id="4611246891205775468">या साइटसाठी Chromiumला तुमचा मायक्रोफोन अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="4621240073146040695">अद्ययावत करणे जवळजवळ पूर्ण झाले! अद्यतनित करणे समाप्त करण्यासाठी Chromium रीलाँच करा.</translation>
 <translation id="4677944499843243528">प्रोफाईल दुसर्‍या संगणकावरील (<ph name="HOST_NAME" />) दुसर्‍या Chromium प्रक्रियेद्वारे (<ph name="PROCESS_ID" />) वापरले जात असल्याचे दिसते. Chromium ने प्रोफाईल लॉक केले आहे जेणेकरून ते दूषित होत नाही. कोणतीही अन्य प्रक्रिया हे प्रोफाईल वापरत नसल्याची आपल्याला खात्री असल्यास, आपण प्रोफाईल अनलॉक करू शकता आणि Chromium रीलाँच करू शकता.</translation>
 <translation id="469338717132742108">Chromium OS सह मदत मिळवा</translation>
 <translation id="4708774505295300557">कोणीतरी यापूर्वी या संगणकावरील Chromium मध्ये <ph name="ACCOUNT_EMAIL_LAST" /> म्हणून साइन इन केले. कृपया आपली माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chromium वापरकर्ता तयार करा.</translation>
 <translation id="4714956846925717402">Chromium वर अधिक जलद या</translation>
 <translation id="4743926867934016338">स्‍वीकार करा आणि शोधा</translation>
+<translation id="4825874709045178029">या साइटसाठी Chromiumला तुमचा कॅमेरा अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="4888717733111232871">mDNS रहदारीस अनुमती देण्यासाठी Chromium साठी अंतर्गामी नियम.</translation>
 <translation id="4943838377383847465">Chromium पार्श्वभूमी मोड मध्ये आहे.</translation>
 <translation id="4987820182225656817">अतिथी कोणतीही गोष्ट मागे न सोडता Chromium वापरू शकतात.</translation>
@@ -232,6 +234,7 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="8222496066431494154">आपल्या फोनवर Chromium स्थापित करा. आम्ही आपल्या या खाते पुनर्प्राप्ती फोन नंबरवर एक SMS पाठवू: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Chromium उत्कृष्ट करण्यात मदत करा</translation>
 <translation id="8290862415967981663">ही फाईल कदाचित धोकादायक असू शकते, त्यामुळे Chromium ने ती अवरोधित केली आहे.</translation>
+<translation id="8328596990138326317">या साइटसाठी Chromiumला तुमचा कॅमेरा आणि मायक्रोफोन अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> पूर्वी Chromium वापरत होते</translation>
 <translation id="8453117565092476964">इन्स्टॉलर संग्रहण दूषित किंवा वैध आहे. कृपया Chromium पुन्हा डाउनलोड करा.</translation>
 <translation id="8493179195440786826">Chromium कालबाह्य आहे</translation>

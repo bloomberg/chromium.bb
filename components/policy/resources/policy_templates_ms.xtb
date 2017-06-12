@@ -157,6 +157,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       tangkapan video akan diberi pada halaman log masuk SAML.  Jika padanan tidak
       ditemui, akses akan ditolak secara automatik.  Corak kad bebas tidak
       dibenarkan.</translation>
+<translation id="1634989431648355062">Benarkan pemalam <ph name="FLASH_PLUGIN_NAME" /> pada tapak ini</translation>
 <translation id="1655229863189977773">Tetapkan saiz cache cakera dalam bait</translation>
 <translation id="166427968280387991">Pelayan proksi</translation>
 <translation id="1668836044817793277">Sama ada hendak membenarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" />.
@@ -743,6 +744,11 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih sendiri tetapan proksi mereka.</translation>
 <translation id="3758249152301468420">Lumpuhkan Alatan Pembangun</translation>
 <translation id="3765260570442823273">Tempoh mesej amaran log keluar melahu</translation>
+<translation id="376931976323225993">Membolehkan anda menetapkan sama ada tapak web dibenarkan untuk menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik. Tindakan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik boleh dibenarkan atau ditolak untuk semua tapak web.
+
+          Klik untuk main membenarkan pemalam <ph name="FLASH_PLUGIN_NAME" /> dijalankan tetapi pengguna perlu mengklik pada pemegang tempat untuk memulakan pelaksanaannya.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna akan dapat menukar tetapan ini secara manual.</translation>
 <translation id="3780152581321609624">Termasuk port tidak standard dalam Kerberos SPN</translation>
 <translation id="3780319008680229708">Jika dasar ini ditetapkan kepada benar, ikon bar alat Cast akan sentiasa ditunjukkan di bar alat atau menu limpahan dan pengguna tidak akan dapat mengalih keluar ikon ini.
 
@@ -881,6 +887,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="4105989332710272578">Lumpuhkan penguatkuasaan Ketelusan Sijil untuk senarai URL</translation>
 <translation id="4121350739760194865">Elakkan promosi apl daripada muncul pada halaman tab baharu</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan perisian tegar</translation>
+<translation id="4183229833636799228">Tetapan <ph name="FLASH_PLUGIN_NAME" /> lalai</translation>
 <translation id="4192388905594723944">URL untuk mengesahkan token pengesahan pelanggan akses jauh</translation>
 <translation id="4203389617541558220">Hadkan masa hidup peranti dengan menjadualkan but semula automatik.
 
@@ -1219,6 +1226,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
       Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
 <translation id="5535973522252703021">Senarai putih pelayan penugasan Kerberos</translation>
+<translation id="555077880566103058">Benarkan semua tapak menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik</translation>
 <translation id="5559079916187891399">Dasar ini tidak berkesan terhadap apl Android.</translation>
 <translation id="5560039246134246593">Tambahkan parameter kepada pengambilan benih Variasi dalam <ph name="PRODUCT_NAME" />.
 
@@ -1301,12 +1309,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="5868414965372171132">Konfigurasi rangkaian tahap pengguna</translation>
 <translation id="588135807064822874">Dayakan Sentuh untuk Cari</translation>
 <translation id="5883015257301027298">Tetapan kuki lalai</translation>
-<translation id="5887291617378691520">Jika 'Open a list of URLs' dipilih sebagai tindakan permulaan, anda boleh menentukan senarai URL yang dibuka. Jika dibiarkan tanpa ditetapkan, tiada URL akan dibuka semasa permulaan.
-
-          Dasar ini hanya berfungsi jika dasar 'RestoreOnStartup' ditetapkan kepada 'RestoreOnStartupIsURLs'.
-
-          Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan
-          ke domain Direktori Aktif.</translation>
 <translation id="5887414688706570295">Mengkonfigurasi awalan TalkGadget yang akan digunakan oleh hos akses jauh dan menghalang pengguna daripada menukarnya.
 
           Jika ditetapkan, awalan ini dilampirkan pada permulaan nama TalkGadget asas untuk mencipta nama domain penuh bagi TalkGadget. Nama domain TalkGadget asas ialah '.talkgadget.google.com'.
@@ -1392,6 +1394,9 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika tidak, produk mungkin ditetapkan kepada salah satu nilai berikut: "sslv3", "tls1", "tls1.1" atau "tls1.2". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih rendah daripada versi yang dinyatakan. Nilai yang tidak dikenali akan diabaikan.
 
       Ambil perhatian bahawa, "sslv3" ialah versi yang lebih awal daripada "tls1" walaupun nombornya tidak menggambarkan begitu.</translation>
+<translation id="6181608880636987460">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang tidak dibenarkan untuk menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultPluginsSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.</translation>
 <translation id="6190022522129724693">Tetapan pop muncul lalai</translation>
 <translation id="6197453924249895891">Memberi akses kepada kunci korporat untuk sambungan.
 
@@ -1516,6 +1521,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan, pencari pemalam akan diaktifkan.</translation>
 <translation id="6699880231565102694">Dayakan pengesahan dua faktor untuk hos akses jauh</translation>
+<translation id="6757438632136860443">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dibenarkan untuk menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultPluginsSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.</translation>
 <translation id="6766216162565713893">Benarkan tapak web meminta pengguna memberikan akses kepada peranti Bluetooth berhampiran</translation>
 <translation id="6770454900105963262">Laporkan maklumat tentang sesi kios aktif</translation>
 <translation id="6786747875388722282">Pelanjutan</translation>
@@ -1541,6 +1549,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika anda menetapkan dasar ini, pengguna tidak boleh mengubah atau mengatasinya.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, maklum balas pertuturan dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
+<translation id="6922884955650325312">Sekat pemalam <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Menentukan nama penyedia carian lalai. Jika dibiarkan kosong atau tidak ditetapkan, nama hos yang ditentukan oleh URL carian akan digunakan.
 
           Dasar ini hanya dipertimbangkan jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
@@ -1587,18 +1596,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dilumpuhkan, tiada penanda halaman diimport.
 
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada untuk mengimport atau mengimport mungkin berlaku secara automatik.</translation>
-<translation id="7055358889740598917">Mengkonfigurasikan URL halaman utama lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubahnya.
-
-          Halaman utama ialah halaman yang dibuka oleh butang Laman Utama. Halaman yang dibuka semasa bermula dikawal oleh dasar RestoreOnStartup.
-
-          Jenis halaman boleh ditetapkan kepada URL yang anda nyatakan di sini atau ditetapkan kepada Halaman Tab Baharu. Jika anda memilih Halaman Tab Baharu, maka dasar ini tidak akan dikuatkuasakan.
-
-          Jika anda mendayakan tetapan ini, pengguna tidak boleh menukar URL halaman utama mereka dalam <ph name="PRODUCT_NAME" />, tetapi mereka masih boleh memilih Halaman Tab Baharu sebagai halaman utama mereka.
-
-          Langkah membiarkan dasar ini tanpa ditetapkan akan membolehkan pengguna memilih sendiri halaman utama mereka jika HomepageIsNewTabPage turut tidak ditetapkan.
-
-          Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan
-          ke domain Direktori Aktif.</translation>
 <translation id="7063895219334505671">Benarkan pop muncul pada halaman ini</translation>
 <translation id="706669471845501145">Benarkan tapak untuk memaparkan pemberitahuan desktop</translation>
 <translation id="7072406291414141328">Mendayakan lebar jalur pendikitan rangkaian</translation>
@@ -1620,21 +1617,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini ditetapkan kepada Palsu, mod latar belakang dilumpuhkan dan tidak boleh dikawal oleh pengguna dalam tetapan penyemak imbas.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, mod latar belakang dilumpuhkan pada awalnya dan boleh dikawal oleh pengguna dalam tetapan penyemak imbas.</translation>
-<translation id="7123297102171034788">Membenarkan anda menentukan gelagat semasa permulaan.
-
-          Jika anda memilih 'Open New Tab Page', Halaman Tab Baharu akan sentiasa dibuka apabila anda memulakan <ph name="PRODUCT_NAME" />.
-
-          Jika anda memilih 'Restore the last session', URL yang terbuka semasa kali terakhir <ph name="PRODUCT_NAME" /> ditutup akan dibuka semula dan sesi penyemakan imbas akan dipulihkan sebagaimana sesi itu ditinggalkan.
-          Pemilihan pilihan ini akan melumpuhkan sesetengah tetapan yang bergantung kepada sesi atau yang melaksanakan tindakan semasa keluar (seperti Kosongkan data semakan imbas semasa keluar atau kuki sesi sahaja).
-
-          Jika anda memilih 'Open a list of URLs', senarai 'URLs to open on startup' akan dibuka apabila pengguna memulakan <ph name="PRODUCT_NAME" />.
-
-          Jika anda mendayakan tetapan ini, pengguna tidak dapat mengubah atau mengatasinya dalam <ph name="PRODUCT_NAME" />.
-
-          Pelumpuhan tetapan ini sama seperti membiarkannya tidak dikonfigurasi. Pengguna masih dapat mengubahnya dalam <ph name="PRODUCT_NAME" />.
-
-          Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan 
-          ke domain Direktori Aktif.</translation>
 <translation id="7128918109610518786">Menyenaraikan pengecam aplikasi <ph name="PRODUCT_OS_NAME" /> yang dipaparkan sebagai apl berpin dalam bar pelancar.
 
       Jika dasar ini dikonfigurasi, set aplikasi akan ditetapkan dan tidak boleh diubah oleh pengguna.
@@ -1875,20 +1857,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="793134539373873765">Menentukan sama ada p2p akan digunakan untuk beban bayar kemas kini OS. Jika ditetapkan kepada Benar, peranti akan berkongsi dan cuba menggunakan beban bayar kemas kini pada LAN, berkemungkinan mengurangkan penggunaan dan kesesakan lebar jalur Internet. Jika beban bayar kemas kini tidak tersedia pada LAN, peranti ini akan kembali kepada memuat turun dari pelayan kemas kini. Jika ditetapkan kepada Palsu atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Dayakan penghasilan pengguna di bawah seliaan</translation>
 <translation id="793473937901685727">Tetapkan ketersediaan sijil untuk apl ARC</translation>
-<translation id="7936098023732125869">Membolehkan penggunaan penyedia carian lalai.
-
-          Jika anda mendayakan tetapan ini, carian lalai dilaksanakan apabila pengguna menaip teks yang bukan URL dalam kotak omni.
-
-          Anda boleh menentukan penyediaan carian lalai yang hendak digunakan dengan menetapkan dasar carian lalai yang selebihnya. Jika dibiarkan kosong, pengguna boleh memilih penyedia lalai.
-
-          Jika anda melumpuhkan tetapan ini, tiada carian dilaksanakan apabila pengguna memasukkan teks bukan URL dalam kotak omni.
-
-          Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak dapat mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, penyedia carian lalai didayakan dan pengguna akan dapat menetapkan senarai penyedia carian.
-
-          Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan
-          ke domain Direktori Aktif.</translation>
 <translation id="7937766917976512374">Benarkan atau nafikan rakaman video</translation>
 <translation id="7941975817681987555">Jangan ramalkan tindakan rangkaian pada sebarang sambungan rangkaian</translation>
 <translation id="7953256619080733119">Hos pengecualian manual pengguna terurus</translation>
@@ -2013,18 +1981,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8312129124898414409">Membenarkan anda untuk menetapkan sama ada tapak web dibenarkan untuk menggunakan penghasilan kunci. Menggunakan penghasilan kunci boleh dibenarkan untuk semua tapak web atau ditolak untuk semua tapak web.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'BlockKeygen' akan digunakan dan pengguna akan dapat menukarnya.</translation>
-<translation id="8316806736175990584">Mengkonfigurasikan jenis halaman utama lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah pilihan halaman utama. Halaman utama boleh ditetapkan kepada URL yang anda nyatakan atau ditetapkan kepada Halaman Tab Baharu.
-
-          Jika anda mendayakan tetapan ini, Halaman Tab Baharu sentiasa digunakan untuk halaman utama dan lokasi URL halaman utama akan diabaikan.
-
-          Jika anda melumpuhkan tetapan ini, Halaman Tab Baharu tidak sekali-kali akan dijadikan halaman utama, melainkan URLnya ditetapkan kepada 'chrome://newtab'.
-
-          Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh menukar jenis halaman utama mereka dalam <ph name="PRODUCT_NAME" />.
-
-          Tindakan membiarkan dasar ini tanpa ditetapkan akan membolehkan pengguna memilih sendiri sama ada halaman tab baharu tersebut dijadikan halaman utama mereka.
-
-          Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan
-          ke domain Direktori Aktif.</translation>
 <translation id="8329984337216493753">Dasar ini aktif dalam mod runcit sahaja.
 
       Apabila DeviceIdleLogoutTimeout ditetapkan, dasar ini mentakrifkan tempoh kotak amaran dengan pemasa kira turun yang dipaparkan kepada pengguna sebelum log keluar dilaksanakan.
@@ -2060,24 +2016,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8519264904050090490">URL pengecualian manual pengguna terurus</translation>
 <translation id="8544375438507658205">Pemapar HTML lalai untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Beri amaran apabila melawat tapak web di luar pek kandungan</translation>
-<translation id="855339549837475534">Chromium dan Google Chrome menyokong set dasar yang sama. Harap maklum 
-      bahawa dokumen ini mungkin menyertakan dasar yang disasarkan untuk versi 
-      perisian yang belum dikeluarkan (iaitu masukan 'Disokong pada' merujuk kepada 
-      versi yang belum dikeluarkan) dan bahawa dasar sedemikian adalah tertakluk 
-      kepada perubahan atau pengalihan keluar tanpa memberikan notis terlebih dahulu.
-
-      Dasar ini bertujuan digunakan semata-mata untuk mengkonfigurasi tika dalaman
-      <ph name="PRODUCT_NAME" /> organisasi anda.
-      Penggunaan dasar ini di luar organisasi anda (contohnya, dalam atur cara yang 
-      diedarkan kepada orang ramai) dianggap perisian hasad dan besar kemungkinan 
-      akan dilabel sebagai perisian hasad oleh Google dan vendor antivirus.
-
-      Tetapan ini tidak perlu dikonfigurasikan secara manual! Templat yang mudah 
-      digunakan untuk Windows, Mac dan Linux tersedia untuk dimuat turun daripada <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Cara yang disyorkan untuk mengkonfigurasi dasar pada Windows ialah melalui
-      GPO, walaupun dasar peruntukan melalui pendaftaran masih disokong untuk tika
-      Windows yang bersambung kepada domain Direktori Aktif.</translation>
 <translation id="8566842294717252664">Sembunyikan gedung web daripada Halaman Tab Baharu dan pelancar apl</translation>
 <translation id="8587229956764455752">Benarkan ciptaan akaun pengguna baharu</translation>
 <translation id="8614804915612153606">Lumpuhkan Kemas Kini Auto</translation>
@@ -2095,17 +2033,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           
           Jika anda membiarkan dasar ini tanpa ditetapkan <ph name="PRODUCT_NAME" /> akan cuba mengesan jika pelayan berada di Intranet dan hanya selepas itu permintaan IWA akan dibalas.   Jika pelayan dikesan sebagai Internet, maka permintaan IWA daripadanya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Versi Kemas Kini Auto Sasaran</translation>
-<translation id="868068801094828689">Mendayakan laporan penggunaan dan data berkaitan ranap tanpa nama tentang <ph name="PRODUCT_NAME" /> kepada Google dan menghalang pengguna daripada menukar tetapan ini.
-
-      Jika tetapan ini didayakan, laporan penggunaan dan data berkaitan ranap tanpa nama
-      dihantar kepada Google.  Jika tetapan didayakan, maklumat ini tidak dihantar kepada
-      Google.  Dalam kedua-dua keadaan, pengguna tidak boleh menukar atau membatalkan tetapan.
-      Jika dasar ini dibiarkan tanpa ditetapkan, tetapan akan mengikut apa yang
-      pengguna pilih semasa pemasangan / mula-mula dijalankan.
-
-      Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke
-      domain Direktori Aktif.  (Untuk OS Chrome, lihat
-      DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Gunakan pelanggan DNS terbina dalam</translation>
 <translation id="8704831857353097849">Senarai pemalam yang dilumpuhkan</translation>
 <translation id="8711086062295757690">Menentukan kata kunci iaitu pintasan yang digunakan dalam kotak omni untuk mencetuskan carian bagi penyedia ini.
@@ -2151,6 +2078,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8858642179038618439">Paksa Mod Keselamatan YouTube</translation>
 <translation id="8864975621965365890">Menyekat gesaan penolakan yang dipaparkan apabila tapak dipaparkan oleh <ph name="PRODUCT_FRAME_NAME" /> .</translation>
 <translation id="8870318296973696995">Halaman utama</translation>
+<translation id="8882006618241293596">Sekat pemalam <ph name="FLASH_PLUGIN_NAME" /> pada tapak ini</translation>
 <translation id="8906768759089290519">Dayakan mod tetamu</translation>
 <translation id="8908294717014659003">Membenarkan anda menetapkan sama ada laman web dibenarkan untuk mendapatkan akses kepada peranti tangkapan media. Akses kepada peranti tangkapan media boleh dibenarkan secara lalai atau pengguna boleh ditanya setiap kali laman web ingin mendapatkan akses kepada peranti tangkapan media.
 

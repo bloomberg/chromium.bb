@@ -110,12 +110,14 @@
 <translation id="4549794359424059447">Versi Chromium berikutnya tidak mendukung lagi Windows XP atau Windows Vista.</translation>
 <translation id="4567424176335768812">Anda masuk sebagai <ph name="USER_EMAIL_ADDRESS" />. Kini Anda dapat mengakses bookmark, riwayat, dan setelan lainnya pada seluruh perangkat yang Anda masuki.</translation>
 <translation id="459535195905078186">Aplikasi Chromium</translation>
+<translation id="4611246891205775468">Chromium memerlukan izin akses ke mikrofon untuk situs ini.</translation>
 <translation id="4621240073146040695">Hampir selesai diperbarui! Luncurkan ulang Chromium untuk menyelesaikan pembaruan.</translation>
 <translation id="4677944499843243528">Profil tersebut mungkin digunakan pada proses Chromium lainnya (<ph name="PROCESS_ID" />) pada komputer lain (<ph name="HOST_NAME" />). Chromium telah mengunci profil tersebut agar tidak rusak. Jika yakin tidak ada proses lain yang menggunakan profil tersebut, Anda dapat membuka profil dan meluncurkan Chromium kembali.</translation>
 <translation id="469338717132742108">Dapatkan bantuan Chromium OS</translation>
 <translation id="4708774505295300557">Sebelumnya ada seseorang yang masuk ke Chromium di komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST" />. Buat pengguna Chromium baru agar informasi Anda tetap terpisah.</translation>
 <translation id="4714956846925717402">Buka Chromium lebih cepat</translation>
 <translation id="4743926867934016338">Terima &amp; Telusuri</translation>
+<translation id="4825874709045178029">Chromium memerlukan izin akses ke kamera untuk situs ini.</translation>
 <translation id="4888717733111232871">Inbound rule untuk Chromium guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="4943838377383847465">Chromium berjalan di mode latar belakang.</translation>
 <translation id="4987820182225656817">Tamu dapat menggunakan Chromium tanpa meninggalkan apa pun.</translation>
@@ -232,6 +234,7 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="8222496066431494154">Instal Chromium di ponsel. Kami akan mengirimkan SMS ke nomor telepon pemulihan akun Anda: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Bantu kami membuat Chromium menjadi lebih baik</translation>
 <translation id="8290862415967981663">File ini mungkin berbahaya, jadi Chromium telah memblokirnya.</translation>
+<translation id="8328596990138326317">Chromium memerlukan izin akses ke kamera dan mikrofon untuk situs ini.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> sebelumnya menggunakan Chromium</translation>
 <translation id="8453117565092476964">Arsip pemasang rusak atau tidak valid. Download Chromium lagi.</translation>
 <translation id="8493179195440786826">Chromium Terlalu Lawas</translation>

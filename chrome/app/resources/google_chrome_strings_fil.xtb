@@ -56,6 +56,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 
 Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impormasyon sa Chrome gaya ng mga bookmark, kasaysayan, at iba pang mga setting.</translation>
 <translation id="2397416548179033562">Ipakita ang menu ng Chrome</translation>
+<translation id="2416359993254398973">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera para sa site na ito.</translation>
 <translation id="2429317896000329049">Hindi mai-sync ng Google Chrome ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="2446511512801740068">Luma na ang Chrome dahil matagal na itong hindi muling nailunsad. Available ang isang update at ilalapat ito sa sandaling muli mo itong inilunsad.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
@@ -161,6 +162,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="556024056938947818">Sinusubukan ng Google Chrome na magpakita ng mga password.</translation>
 <translation id="5563479599352954471">Maghanap sa isang pagpindot lang</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="557283862590186398">Kailangan ng Chrome ng pahintulot na i-access ang iyong mikropono para sa site na ito.</translation>
 <translation id="5620765574781326016">Matuto tungkol sa mga paksa sa mga website nang hindi umaalis sa page.</translation>
 <translation id="565744775970812598">Maaaring mapanganib ang <ph name="FILE_NAME" />, kaya na-block ito ng Chrome.</translation>
 <translation id="568643307450491754">Hanapin ang iyong mga bookmark sa Chrome menu o sa bookmarks bar.</translation>
@@ -185,6 +187,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6291549208091401781">Naka-install na ang Google Chrome para sa lahat ng user sa iyong computer.</translation>
 <translation id="6338556085225130112">Ina-update ang Google Chrome</translation>
 <translation id="6368958679917195344">Ginagawang posible ang Chrome OS ng karagdagang <ph name="BEGIN_LINK_CROS_OSS" />open source na software<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="6393863479814692971">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera at mikropono para sa site na ito.</translation>
 <translation id="6400076122676892962">Malapit nang hindi makatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na susuportahan ang Mac OS X 10.6, 10.7 at 10.8.</translation>
 <translation id="6410540444482791104">Makakatulong kang gawing mas ligtas at madaling gamitin ang Chrome sa pamamagitan ng awtomatikong pagpapadala ng ilang impormasyon ng system at content ng page sa Google upang makatulong na tumukoy ng mga mapanganib na app at site.</translation>
 <translation id="6470176598693778404">Hindi na makakatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na sinusuportahan ang Mac OS X 10.6, 10.7 at 10.8.</translation>

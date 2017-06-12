@@ -112,12 +112,14 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4549794359424059447">Las próximas versiones de Chromium dejarán de ser compatibles con Windows XP y Windows Vista.</translation>
 <translation id="4567424176335768812">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes acceder a tus marcadores, a tu historial y a otras opciones en todos los dispositivos en los que hayas iniciado sesión.</translation>
 <translation id="459535195905078186">Aplicaciones de Chromium</translation>
+<translation id="4611246891205775468">Chromium necesita permiso para acceder al micrófono en este sitio web.</translation>
 <translation id="4621240073146040695">Chromium casi ha terminado de actualizarse. Reinícialo para completar la actualización.</translation>
 <translation id="4677944499843243528">Parece que otro proceso de Chromium (<ph name="PROCESS_ID" />) está utilizando el perfil en otro ordenador (<ph name="HOST_NAME" />). Chromium ha bloqueado el perfil para que no se dañe. Si estás seguro de que ningún otro proceso está utilizando este perfil, puedes desbloquearlo y volver a iniciar Chromium.</translation>
 <translation id="469338717132742108">Obtener ayuda de Chromium OS</translation>
 <translation id="4708774505295300557">Otro usuario ha iniciado sesión anteriormente en Chromium con la cuenta <ph name="ACCOUNT_EMAIL_LAST" /> a través de este ordenador. Debes crear un usuario de Chromium para proteger tu información.</translation>
 <translation id="4714956846925717402">Accede a Chromium más rápido</translation>
 <translation id="4743926867934016338">Aceptar y buscar</translation>
+<translation id="4825874709045178029">Chromium necesita permiso para acceder a la cámara en este sitio web.</translation>
 <translation id="4888717733111232871">Regla entrante para que Chromium permita tráfico mDNS.</translation>
 <translation id="4943838377383847465">Chromium está en modo de segundo plano.</translation>
 <translation id="4987820182225656817">Los invitados pueden utilizar Chromium sin dejar nada atrás.</translation>
@@ -235,6 +237,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="8222496066431494154">Instala Chromium en tu teléfono. Te enviaremos un SMS al número de recuperación de la cuenta: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Ayuda a mejorar Chromium</translation>
 <translation id="8290862415967981663">Es posible que este archivo sea peligroso, por lo que Chromium lo ha bloqueado.</translation>
+<translation id="8328596990138326317">Chromium necesita permiso para acceder a la cámara y al micrófono en este sitio web.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> usaba Chromium anteriormente</translation>
 <translation id="8453117565092476964">El archivo de instalación está dañado o no es válido. Vuelve a descargar Chromium.</translation>
 <translation id="8493179195440786826">Chromium no está actualizado</translation>

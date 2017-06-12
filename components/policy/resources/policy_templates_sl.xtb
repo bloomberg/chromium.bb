@@ -156,6 +156,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       do naprav za zajemanje videa odobren na straneh za prijavo SAML. Če ne bo najdeno nobeno
       ujemanje, bo dostop samodejno zavrnjen. Vzorci z nadomestnimi znaki
       niso dovoljeni.</translation>
+<translation id="1634989431648355062">Dovoli vtičnik <ph name="FLASH_PLUGIN_NAME" /> na teh spletnih mestih</translation>
 <translation id="1655229863189977773">Nastavi velikost predpomnilnika diska v bajtih</translation>
 <translation id="166427968280387991">Strežnik proxy</translation>
 <translation id="1668836044817793277">Ali naj se samodejno zagnani aplikaciji za kiosk brez zamika dovoli nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" />.
@@ -745,6 +746,11 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če teh pravilnikov ne nastavite, lahko uporabniki sami izberejo nastavitve proxyja.</translation>
 <translation id="3758249152301468420">Onemogoči Orodja za razvijalce</translation>
 <translation id="3765260570442823273">Trajanje opozorila o odjavi zaradi nedejavnosti</translation>
+<translation id="376931976323225993">Omogoča nastavitev, ali lahko spletna mesta samodejno izvajajo vtičnik <ph name="FLASH_PLUGIN_NAME" />. Samodejno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" /> je mogoče dovoliti ali onemogočiti za vsa spletna mesta.
+
+          Klik za predvajanje omogoča, da se izvaja vtičnik <ph name="FLASH_PLUGIN_NAME" />, vendar mora za izvajanje uporabnik klikniti nadomestni znak.
+
+          Če ta pravilnik ni nastavljen, lahko uporabnik to nastavitev ročno spremeni.</translation>
 <translation id="3780152581321609624">Vključi nestandardna vrata v SPN za Kerberos</translation>
 <translation id="3780319008680229708">Če je ta pravilnik omogočen, bo ikona za Google Cast v orodni vrstici vedno prikazana v orodni vrstici ali v meniju z dodatnimi elementi in je uporabniki ne bodo mogli odstraniti.
 
@@ -883,6 +889,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="4105989332710272578">Onemogočanje uveljavljanja pravilnika o preglednosti potrdila za seznam URL-jev</translation>
 <translation id="4121350739760194865">Onemogoči prikaz oglasov za programe na strani »Nov zavihek«.</translation>
 <translation id="4157003184375321727">Pošiljanje podatkov o različici operacijskega sistema in vdelane programske opreme</translation>
+<translation id="4183229833636799228">Privzeta nastavitev za <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL za preverjanje žetona za preverjanje pristnosti odjemalca za oddaljeni dostop</translation>
 <translation id="4203389617541558220">Omejitev časa delovanja naprave z načrtovanjem samodejnih vnovičnih zagonov.
 
@@ -1224,6 +1231,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur (prezrejo se vse privzete nastavitve in vrednost tega pravilnika), ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev, zaradi česar so pogostejše osvežitve nepotrebne.</translation>
 <translation id="5535973522252703021">Seznam dovoljenih delegacijskih strežnikov za Kerberos</translation>
+<translation id="555077880566103058">Omogoči vsem spletnim mestom samodejno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Ta pravilnik ne vpliva na aplikacije za Android.</translation>
 <translation id="5560039246134246593">Dodajanje parametra prejemanju semen različic v izdelku <ph name="PRODUCT_NAME" />.
 
@@ -1306,12 +1314,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5868414965372171132">Konfiguracija omrežja na ravni uporabnika</translation>
 <translation id="588135807064822874">Omogočanje funkcije Iskanje z dotikom</translation>
 <translation id="5883015257301027298">Privzeta nastavitev piškotkov</translation>
-<translation id="5887291617378691520">Če je za dejanje, ki se izvede ob zagonu, izbrano »Odpri seznam URL-jev«, lahko s tem določite seznam URL-jev, ki se odprejo. Če to ni nastavljeno, se ob zagonu ne bo odprl URL.
-
-          Ta pravilnik deluje le, če je pravilnik »RestoreOnStartup« nastavljen na »RestoreOnStartupIsURLs«.
-
-          Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi
-          v domeno Active Directory.</translation>
 <translation id="5887414688706570295">Nastavi predpono »TalkGadget«, ki jo bodo uporabljali gostitelji oddaljenega dostopa, in prepreči uporabnikom njeno spreminjanje.
 
           Če je ta predpona določena, je dodana pred osnovno ime »TalkGadget«, tako da ustvari polno ime domene za »TalkGadget«. Osnovno ime domene »TalkGadget« je ».talkgadget.google.com«.
@@ -1397,6 +1399,9 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       V nasprotnem primeru je morda nastavljen na eno od naslednjih vrednosti: »sslv3«, »tls1«, »tls1.1« ali »tls1.2«. Če je nastavljen, <ph name="PRODUCT_NAME" /> ne uporablja različic SSL/TLS, ki so nižje od določene različice. Neprepoznana vrednost bo prezrta.
 
       Kljub številki je »sslv3« starejša različica kot »tls1«.</translation>
+<translation id="6181608880636987460">Omogoča nastavitev seznama vzorcev URL-jev, na katerem so spletna mesta, ki jim je onemogočeno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" />.
+
+          Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, ali iz osebnih nastavitev uporabnika.</translation>
 <translation id="6190022522129724693">Privzeta nastavitev pojavnih oken</translation>
 <translation id="6197453924249895891">Razširitvam odobri dostop do ključev podjetja.
 
@@ -1521,6 +1526,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če to možnost onemogočite ali je ne nastavite, bo iskalnik vtičnikov dejaven.</translation>
 <translation id="6699880231565102694">Omogočanje preverjanja pristnosti v dveh korakih za gostitelje oddaljenega dostopa</translation>
+<translation id="6757438632136860443">Omogoča nastavitev seznama vzorcev URL-jev, na katerem so spletna mesta, ki lahko izvajajo vtičnik <ph name="FLASH_PLUGIN_NAME" />.
+
+          Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, ali iz osebnih nastavitev uporabnika.</translation>
 <translation id="6766216162565713893">Dovoli spletnim mestom, da od uporabnika zahtevajo, da omogočijo dostop do naprave Bluetooth v bližini</translation>
 <translation id="6770454900105963262">Poročanje podatkov o aktivnih sejah kioska</translation>
 <translation id="6786747875388722282">Razširitve</translation>
@@ -1548,6 +1556,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
 
           Če ga ne nastavite, je izgovorjava prvotno onemogočena, vendar jo lahko uporabnik kadar koli omogoči.</translation>
+<translation id="6922884955650325312">Blokiraj vtičnik <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Določa ime privzetega ponudnika iskanja. Če pravilnik ostane prazen ali če ni nastavljen, bo uporabljeno ime gostitelja, določeno z URL-jem iskanja.
 
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
@@ -1593,18 +1602,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
        Če je onemogočen, se zaznamki ne uvozijo.
 
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj zaznamke uvozi, ali pa bo uvoz izveden samodejno.</translation>
-<translation id="7055358889740598917">Konfigurira privzeti URL domače strani za <ph name="PRODUCT_NAME" /> in uporabnikom prepreči, da bi ga spreminjali.
-
-          Domača stran je stran, ki se odpre ob kliku na gumb »Domača stran«. Strani, ki se odprejo ob zagonu, določajo pravilniki RestoreOnStartup.
-
-          Vrsta začetne strani je lahko določena z URL-jem, ki ga navedete tukaj, ali nastavljena na stran »Nov zavihek«. Če izberete stran »Nov zavihek«, ta pravilnik nima vpliva.
-
-          Če omogočite to nastavitev, uporabniki ne bodo mogli spremeniti URL-ja domače strani za <ph name="PRODUCT_NAME" />, lahko pa kot domačo stran še vedno izberejo možnost »Nov zavihek«.
-
-          Če tega pravilnika ne nastavite, bo lahko uporabnik sam izbral domačo stran, če ni nastavljen tudi pravilnik HomepageIsNewTabPage.
-
-          Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi
-          domeni Active Directory.</translation>
 <translation id="7063895219334505671">Dovoli pojavna okna na teh mestih</translation>
 <translation id="706669471845501145">Mestom dovoli prikazovanje namiznih obvestil</translation>
 <translation id="7072406291414141328">Omogoči omejevanje omrežne pasovne širine</translation>
@@ -1626,21 +1623,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik onemogočen, je način izvajanja v ozadju onemogočen in ga uporabnik ne more upravljati v nastavitvah brskalnika.
 
       Če ta pravilnik ni nastavljen, je način izvajanja v ozadju na začetku onemogočen in ga uporabnik lahko upravlja v nastavitvah brskalnika.</translation>
-<translation id="7123297102171034788">Določite lahko delovanje ob zagonu.
-
-          Če izberete »Odpri stran 'Nov zavihek'«, se stran »Nov zavihek« odpre vsakič, ko zaženete <ph name="PRODUCT_NAME" />.
-
-          Če izberete »Obnovi zadnjo sejo«, se znova odprejo URL-ji, ki so bili odprti, ko ste nazadnje zaprli <ph name="PRODUCT_NAME" />, in obnovi se seja brskanja.
-          Ta možnost onemogoči nekatere nastavitve, ki so odvisne od sej ali ki izvedejo dejanja, ko zaprete brskalnik (na primer brisanje podatkov o brskanju ali piškotkov seje).
-
-          Če izberete »Odpri seznam URL-jev«, se odpre seznam URL-jev, ki se odprejo ob zagonu, ko uporabnik zažene <ph name="PRODUCT_NAME" />.
-
-          Če omogočite to nastavitev, je uporabniki ne morejo spremeniti ali preglasiti v brskalniku <ph name="PRODUCT_NAME" />.
-
-          Če to nastavitev onemogočite, je enako, kot če je ne nastavite. Uporabnik jo lahko spremeni v brskalniku <ph name="PRODUCT_NAME" />.
-
-          Ta pravilnik ni na voljo za primerke sistema Windows, ki niso pridruženi
-          v domeno Active Directory.</translation>
 <translation id="7128918109610518786">Prikaže identifikatorje aplikacij, ki jih <ph name="PRODUCT_OS_NAME" /> pokaže kot pripete aplikacije v vrstici zaganjalnika.
 
       Če je pravilnik nastavljen, je seznam aplikacij fiksen in ga uporabnik ne more spreminjati.
@@ -1880,20 +1862,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="793134539373873765">Določa, ali se za prenos posodobitvenih paketov operacijskega sistema uporablja p2p. Če je nastavljeno na »True«, naprave dajo posodobitvene pakete v skupno rabo v krajevnem omrežju in jih poskušajo uporabiti ter s tem morebiti zmanjšati uporabo internetne pasovne širine in zamašitve. Če posodobitveni paket ni na voljo v krajevnem omrežju, ga naprava poskuša prenesti iz posodobitvenegea strežnika. Če je nastavljeno na »False« ali ni nastavljeno, se uporabi p2p.</translation>
 <translation id="7933141401888114454">Omogoči ustvarjanje zaščitenih uporabnikov</translation>
 <translation id="793473937901685727">Nastavitev razpoložljivosti potrdil aplikacijam ARC</translation>
-<translation id="7936098023732125869">Omogoča uporabo privzetega ponudnika iskanja.
-
-          Če omogočite to nastavitev, se izvede privzeto iskanje, ko uporabnik v naslovno vrstico vtipka besedilo, ki ni URL.
-
-          Z nastavitvijo preostalih privzetih pravilnikov iskanja lahko določite privzetega ponudnika iskanja, ki bo uporabljen. Če te nastavitve ostanejo prazne, lahko uporabnik izbere privzetega ponudnika.
-
-          Če to nastavitev onemogočite, se iskanje ne izvede, ko uporabnik v naslovno vrstico vnese besedilo, ki ni URL.
-
-          Če to nastavitev omogočite ali onemogočite, je uporabniki ne morejo spremeniti ali preglasiti v brskalniku <ph name="PRODUCT_NAME" />.
-
-          Če ta pravilnik ni nastavljen, je omogočen privzeti ponudnik iskanja in uporabnik lahko nastavi seznam ponudnikov iskanja.
-
-          Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi
-          v domeno Active Directory.</translation>
 <translation id="7937766917976512374">Omogočanje ali onemogočanje snemanje videoposnetka</translation>
 <translation id="7941975817681987555">Ne predvidevaj omrežnih dejanj v nobeni omrežni povezavi</translation>
 <translation id="7953256619080733119">Gostitelji ročnih izjem za upravljanega uporabnika</translation>
@@ -2018,18 +1986,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8312129124898414409">Omogoča nastavitev, ali lahko spletna mesta uporabljajo ustvarjanje ključev. Uporabo ustvarjanja ključev je mogoče dovoliti ali zavrniti za vsa spletna mesta.
 
           Če ta pravilnik ni nastavljen, bo omogočen pravilnik »BlockKeygen«, uporabnik pa ga bo lahko spremenil.</translation>
-<translation id="8316806736175990584">Konfigurira vrsto privzete domače strani v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje nastavitev domače strani. Domačo stran lahko nastavite na URL, ki ga določite, ali na stran »Nov zavihek«.
-
-          Če to nastavitev omogočite, bo za domačo stran vedno uporabljena stran »Nov zavihek«, URL domače strani pa se prezre.
-
-          Če jo onemogočite, uporabnikova domača stran nikoli ne bo stran »Nov zavihek«, razen če je njen URL nastavljen na »chrome://newtab«.
-
-          Če to nastavitev omogočite ali onemogočite, uporabniki ne morejo spremeniti vrste domače strani v brskalniku <ph name="PRODUCT_NAME" />.
-
-          Če tega pravilnika ne nastavite, bo lahko uporabnik izbral, ali bo stran »Nov zavihek« njegova domača stran.
-
-          Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi
-          domeni Active Directory.</translation>
 <translation id="8329984337216493753">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
       Če je določen pravilnik DeviceIdleLogoutTimeout, ta pravilnik določa trajanje opozorila z odštevanjem, ki je pred odjavo prikazano uporabniku.
@@ -2065,24 +2021,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8519264904050090490">URL-ji ročnih izjem za upravljanega uporabnika</translation>
 <translation id="8544375438507658205">Privzeti upodabljalnik HTML-ja za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
-<translation id="855339549837475534">Chromium in Google Chrome podpirata isto skupino
-      pravilnikov. Upoštevajte, da so lahko v tem dokumentu pravilniki,
-      namenjeni za neizdane različice programske opreme (tj. njihov vnos »podprto v različici«
-      se nanaša na neizdano različico) in take pravilnike lahko
-      brez obvestila spremenimo ali odstranimo.
-
-      Ti pravilniki so namenjeni izključno za konfiguriranje primerkov brskalnika
-      <ph name="PRODUCT_NAME" /> znotraj vaše organizacije.
-      Uporaba teh pravilnikov zunaj organizacije (npr. v javno
-      objavljenem programu) se obravnava kot zlonamerna programska oprema
-      ter jo bodo Google in ponudniki protivirusnih programov označili kot zlonamerno.
-
-      Teh nastavitev ni treba konfigurirati ročno. Za Windows, Mac OS in Linux
-      so na voljo predloge, ki jih je mogoče preprosto uporabljati in jih lahko prenesete tukaj: <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Čeprav priporočamo, da v sistemu Windows pravilnik konfigurirate prek predmeta pravilnika skupine,
-      je za primerke sistema Windows, ki so pridruženi v domeno Active Directory,
-      še vedno podprta priprava pravilnikov za uporabo prek registra.</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na strani »Nov zavihek« in v zaganjalniku aplikacij</translation>
 <translation id="8587229956764455752">Omogoči ustvarjanje novih uporabniških računov</translation>
 <translation id="8614804915612153606">Onemogoči samodejno posodabljanje</translation>
@@ -2099,17 +2037,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če tega pravilnika ne nastavite, <ph name="PRODUCT_NAME" /> poskuša zaznati, ali je strežnik v intranetu, in se šele potem odzove na zahteve IWA. Če je strežnik zaznan kot internet, <ph name="PRODUCT_NAME" /> prezre zahteve IWA, poslane iz tega strežnika.</translation>
 <translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
-<translation id="868068801094828689">Omogoča anonimno pošiljanje podatkov o uporabi in zrušitvah programa <ph name="PRODUCT_NAME" /> Googlu in uporabnikom preprečuje spreminjanje te nastavitve.
-
-      Če omogočite to nastavitev, se bodo podatki o uporabi in zrušitvah anonimno
-      pošiljali Googlu. Če jo onemogočite, se ti podatki ne bodo pošiljali
-      Googlu. Uporabniki v obeh primerih nastavitve ne morejo spremeniti ali preglasiti.
-      Če ta pravilnik ni nastavljen, bo veljala nastavitev, ki jo je uporabnik izbral
-      ob namestitvi oziroma prvem zagonu.
-
-      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi
-      v domeno Active Directory. (Za OS Chrome glejte
-      »DeviceMetricsReportingEnabled«.)</translation>
 <translation id="8693243869659262736">Uporaba vgrajenega odjemalca DNS</translation>
 <translation id="8704831857353097849">Seznam onemogočenih vtičnikov</translation>
 <translation id="8711086062295757690">Določa ključno besedo, ki kot bližnjica v naslovni vrstici sproži iskanje za tega ponudnika.
@@ -2155,6 +2082,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8858642179038618439">Vsiljenje varnega načina v YouTubu</translation>
 <translation id="8864975621965365890">Ne prikaže poziva za preklop, ki se prikaže, ko se spletno mesto upodablja z <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Domača stran</translation>
+<translation id="8882006618241293596">Blokiraj vtičnik <ph name="FLASH_PLUGIN_NAME" /> na teh spletnih mestih</translation>
 <translation id="8906768759089290519">Omogoči način gosta</translation>
 <translation id="8908294717014659003">Omogoča nastavitev, ali je spletnim mestom dovoljen dostop do naprav za snemanje predstavnosti. Dostop do naprav za snemanje predstavnosti je lahko privzeto dovoljen ali pa uporabnik dobi poziv, kadar koli spletno mesto želi dostop do naprav za snemanje predstavnosti.
 

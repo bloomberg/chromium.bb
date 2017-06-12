@@ -64,10 +64,12 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="225614027745146050">ようこそ</translation>
 <translation id="228809120910082333">Chromoting によるアクセスを許可するには、下記でアカウントと PIN の確認を行ってください。</translation>
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> のセッションでしばらく操作がありませんでした。セッションを間もなく切断します。</translation>
+<translation id="2317666076142640974">新しい <ph name="LINK_BEGIN" />Chrome リモート デスクトップ ウェブアプリ<ph name="LINK_END" />をいち早く使ってみて、ご意見やご感想をお聞かせください。</translation>
 <translation id="2353140552984634198">Chromoting を使用して、このパソコンに安全にアクセスできます。</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />最終オンライン: <ph name="RELATIVE_TIMESTAMP" />。</translation>
+<translation id="2405928220797050937">このアプリはサポートされなくなりました。最新の機能とセキュリティ アップデートを反映した <ph name="LINK_BEGIN" />Chrome リモート デスクトップ ウェブアプリ<ph name="LINK_END" />をご利用ください。</translation>
 <translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
 <translation id="2512228156274966424">注: すべてのキーボード ショートカットを使用できるようにするには、Chrome リモート デスクトップを [ウィンドウとして開く] に設定してください。</translation>
 <translation id="2540992418118313681">このパソコンの閲覧と制御の権限を別のユーザーと共有しますか？</translation>
@@ -230,6 +232,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6930242544192836755">接続時間</translation>
 <translation id="6939719207673461467">キーボードを表示/非表示</translation>
 <translation id="6944854424004126054">ウィンドウを元のサイズに戻す</translation>
+<translation id="6948905685698011662">Chrome リモート デスクトップが<ph name="LINK_BEGIN" />無料のウェブアプリ<ph name="LINK_END" />になりました。ぜひお試しください。</translation>
 <translation id="6963936880795878952">無効な PIN を使用した接続が試みられたため、リモートのパソコンへの接続が一時的にブロックされています。しばらくしてからもう一度お試しください。</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> へのリモート接続を無効にしてもよろしいですか？元に戻す場合は、該当のパソコンにアクセスして接続を再び有効にする必要があります。</translation>
@@ -246,6 +249,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="7401733114166276557">Chrome リモート デスクトップ</translation>
 <translation id="7434397035092923453">次のクライアントのアクセスを拒否しました: <ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7444276978508498879">次のクライアントが接続しました: <ph name="CLIENT_USERNAME" />。</translation>
+<translation id="7589941250119944644">Chrome リモート デスクトップが高速で無料の<ph name="LINK_BEGIN" />ウェブアプリ<ph name="LINK_END" />になりました。機能はこれまでと同じです。</translation>
 <translation id="7606912958770842224">リモート接続を有効にする</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7658239707568436148">キャンセル</translation>

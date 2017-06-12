@@ -64,10 +64,12 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="225614027745146050">Velkommen</translation>
 <translation id="228809120910082333">Bekræft din konto og pinkode nedenfor for at give adgang via Chromoting.</translation>
 <translation id="2314101195544969792">Din <ph name="APPLICATION_NAME" />-session har været inaktiv i et stykke tid og vil snart blive afbrudt.</translation>
+<translation id="2317666076142640974">Få et smugkig på den nye <ph name="LINK_BEGIN" />webapp Chrome Fjernskrivebord<ph name="LINK_END" />. Vi vil meget gerne have feedback fra dig.</translation>
 <translation id="2353140552984634198">Du kan få sikker adgang til denne computer via Chromoting.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2366718077645204424">Værten kunne ikke nås. Dette skyldes sandsynligvis konfigurationen af det netværk, du bruger.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Sidst set online <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Denne app understøttes ikke længere. Brug <ph name="LINK_BEGIN" />webappen Chrome Fjernskrivebord<ph name="LINK_END" /> for at være sikker på, at du får de seneste funktioner og sikkerhedsopdateringer.</translation>
 <translation id="2499160551253595098">Hjælp os med at forbedre Chrome Fjernskrivebord ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
 <translation id="2512228156274966424">BEMÆRK! Du kan sikre, at alle tastaturgenveje er tilgængelige ved at konfigurere Chrome Fjernskrivebord til "Åbn som vindue".</translation>
 <translation id="2540992418118313681">Vil du dele denne computer, så en anden bruger kan se og styre den?</translation>
@@ -230,6 +232,7 @@ Fjernskrivebord</translation>
 <translation id="6930242544192836755">Varighed</translation>
 <translation id="6939719207673461467">Vis/skjul tastatur.</translation>
 <translation id="6944854424004126054">Gendan vinduet</translation>
+<translation id="6948905685698011662">Chrome Fjernskrivebord er nu tilgængelig på nettet. Se vores <ph name="LINK_BEGIN" />gratis webapp<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Forbindelserne til fjerncomputeren er midlertidigt blokerede, fordi nogen forsøgte at få forbindelse til den med en ugyldig pinkode. Prøv igen senere.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME" />? Hvis du ombestemmer dig, skal du genaktivere forbindelserne på den computer.</translation>
@@ -246,6 +249,7 @@ Fjernskrivebord</translation>
 <translation id="7401733114166276557">Chrome Fjernskrivebord</translation>
 <translation id="7434397035092923453">Adgang nægtet for klient: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Tilsluttet klient: <ph name="CLIENT_USERNAME" /> .</translation>
+<translation id="7589941250119944644">Chrome Fjernskrivebord får nyt hjem på nettet. Prøv vores <ph name="LINK_BEGIN" />webapp<ph name="LINK_END" /> – den er hurtig og gratis og har alle de samme funktioner som før.</translation>
 <translation id="7606912958770842224">Aktivér fjernforbindelser</translation>
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7658239707568436148">Annuller</translation>

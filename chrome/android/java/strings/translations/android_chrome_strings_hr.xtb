@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Otvori online</translation>
 <translation id="1049743911850919806">Anonimno</translation>
 <translation id="10614374240317010">Zaporke se nikad ne spremaju</translation>
+<translation id="1068672505746868501">Nikad ne prevodi <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Odjavljujete se s računa kojim upravlja <ph name="DOMAIN_NAME" />. Time će se izbrisati podaci preglednika Chrome pohranjeni na ovom uređaju, ali ti će podaci ostati na vašem Google računu.</translation>
 <translation id="1111673857033749125">Ovdje će se prikazivati oznake koje ste spremili na drugim uređajima.</translation>
 <translation id="1121094540300013208">Izvješća o upotrebi i rušenju programa</translation>
@@ -60,6 +61,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1506061864768559482">Tražilica</translation>
 <translation id="1513352483775369820">Oznake i Google povijest</translation>
 <translation id="1513858653616922153">Izbriši zaporku</translation>
+<translation id="1539064842193522527">Veza otvorena u Chromeu</translation>
 <translation id="1549000191223877751">Premjesti u drugi prozor</translation>
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
 <translation id="1569387923882100876">Povezani uređaj</translation>
@@ -92,6 +94,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1892551174703874605">Adresna traka. Povucite prema gore da biste vidjeli oznake, preuzimanja i povijest.</translation>
 <translation id="1897409700584096124">Web-lokacija emitira</translation>
 <translation id="1933845786846280168">Odabrana kartica</translation>
+<translation id="1938981467853765413">Pošalji povratne informacije</translation>
 <translation id="194341124344773587">Uključite dopuštenje za Chrome u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Spremanje zaporki</translation>
 <translation id="1944384637046898011">Kriptiraj sve pomoću Googleove zaporke od <ph name="TIME" /></translation>
@@ -137,6 +140,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2387895666653383613">Skaliranje teksta</translation>
 <translation id="238909021488141516">Prilikom preuzimanja sadržaja dogodila se pogreška.</translation>
 <translation id="2414886740292270097">Tamno</translation>
+<translation id="2416359993254398973">Chrome treba dopuštenje za pristup fotoaparatu za ovu web-lokaciju.</translation>
 <translation id="2433507940547922241">Prikaz</translation>
 <translation id="2440823041667407902">Pristup lokaciji</translation>
 <translation id="2450083983707403292">Želite li ponovo pokrenuti preuzimanje datoteke <ph name="FILE_NAME" />?</translation>
@@ -175,6 +179,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2900528713135656174">Stvori događaj</translation>
 <translation id="2902702728133930130">Chrome se nije pokrenuo zbog neočekivane pogreške.</translation>
 <translation id="2903493209154104877">Adrese</translation>
+<translation id="290376772003165898">Ovo nije <ph name="LANGUAGE" />?</translation>
 <translation id="2913331724188855103">Dopuštanje web-lokacijama da spremaju i čitaju podatke kolačića (preporučeno)</translation>
 <translation id="2932150158123903946">Pohrana aplikacije Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Računom upravljaju <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
@@ -191,6 +196,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Uskoro će se prikazati više članaka. Želimo vam ugodno prijepodne!</translation>
 <translation id="3089395242580810162">Otvori na kartici Anonimno</translation>
+<translation id="311456632243022227">Više veza otvoreno u Chromeu</translation>
 <translation id="3137521801621304719">Izlaz iz anonimnog načina</translation>
 <translation id="3148434565183091099">Da biste imali svoje oznake na svim svojim uređajima, prijavite se na Chrome.</translation>
 <translation id="3166827708714933426">Prečaci kartica i prozora</translation>
@@ -235,6 +241,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="3587482841069643663">Sve</translation>
 <translation id="3590487821116122040">Pohrana web-lokacije koju Chrome ne smatra važnom (primjerice web-lokacije koje nemaju spremljene postavke ili koje ne posjećujete često)</translation>
 <translation id="3599863153486145794">Briše povijest na svim uređajima na kojima ste prijavljeni. Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="360207483134687714">Pomognite poboljšati doživljaj VR-a u Chromeu</translation>
 <translation id="360480449234699036">Saznajte više o temama na web-lokacijama bez zatvaranja stranice. "Dodirnite za pretraživanje" Google pretraživanju šalje riječ i njen kontekst, a vraća definicije, slike, rezultate pretraživanja i druge pojedinosti.
 
 Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da biste precizirali pretraživanje, kliznite ploču prema gore do vrha i dodirnite okvir za pretraživanje.</translation>
@@ -308,8 +315,10 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="4351244548802238354">Zatvori dijaloški okvir</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4381206798889118664">Pretražite… recepti</translation>
 <translation id="4384468725000734951">Za pretraživanje se upotrebljava Sogou</translation>
 <translation id="4412992751769744546">Dopusti kolačiće trećih strana</translation>
+<translation id="4432792777822557199">Odsada će se <ph name="SOURCE_LANGUAGE" /> prevoditi na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4445444302979002552">Upotreba usluga predviđanja za predlaganje pojmova za pretraživanje i web-lokacija</translation>
 <translation id="4452548195519783679">Oznaka dodana u mapu <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416">Datoteka <ph name="FILE_NAME" /> preuzeta u pregledniku <ph name="PRODUCT_NAME" /></translation>
@@ -353,9 +362,11 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4837753911714442426">Otvaranje opcija za ispis stranice</translation>
 <translation id="4850886885716139402">Prikaz</translation>
 <translation id="4860895144060829044">Poziv</translation>
+<translation id="4869862470313079745">Pretražite… vijesti</translation>
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="4885273946141277891">Nepodržan broj različitih verzija Chromea.</translation>
 <translation id="4910889077668685004">Aplikacije za plaćanje</translation>
+<translation id="4913169188695071480">Zaustavi osvježavanje</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /> tijekom traženja uređaja…</translation>
 <translation id="4943872375798546930">Nema rezultata</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> dijeli vaš zaslon</translation>
@@ -425,6 +436,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="5556459405103347317">Ponovno učitaj</translation>
 <translation id="5565871407246142825">Kreditne kartice</translation>
 <translation id="5568069709869097550">Ne mogu se prijaviti</translation>
+<translation id="557283862590186398">Chrome treba dopuštenje za pristup mikrofonu za ovu web-lokaciju.</translation>
 <translation id="5578795271662203820">Potraži sliku na usluzi <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Uređivanje adrese</translation>
 <translation id="5596627076506792578">Više opcija</translation>
@@ -476,6 +488,7 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="6042308850641462728">Više</translation>
 <translation id="604996488070107836">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo zbog nepoznate pogreške.</translation>
 <translation id="605721222689873409">GG</translation>
+<translation id="6066049505142453066">Pretražite… vremenska prognoza</translation>
 <translation id="6075798973483050474">Uređivanje početne stranice</translation>
 <translation id="60923314841986378">Preostalo sati: <ph name="HOURS" /></translation>
 <translation id="60924377787140961">Uskoro će se prikazati više članaka. Želimo vam ugodno poslijepodne!</translation>
@@ -504,12 +517,14 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6364438453358674297">Želite li ukloniti prijedlog iz povijesti?</translation>
 <translation id="6383961787135158834">Izbriši pohranu…</translation>
 <translation id="6388207532828177975">Izbriši i poništi</translation>
+<translation id="6393863479814692971">Chrome treba dopuštenje za pristup fotoaparatu i mikrofonu za ovu web-lokaciju.</translation>
 <translation id="6395288395575013217">VEZA</translation>
 <translation id="6404511346730675251">Uredi oznaku</translation>
 <translation id="6406506848690869874">Sinkronizacija</translation>
 <translation id="6409731863280057959">Skočni prozori</translation>
 <translation id="641643625718530986">Ispis…</translation>
 <translation id="6416782512398055893">Preuzeto <ph name="MBS" /> MB</translation>
+<translation id="6437478888915024427">Informacije o stranici</translation>
 <translation id="6447842834002726250">Kolačići</translation>
 <translation id="6448273550210938826">Prijedlozi za pretraživanje i URL</translation>
 <translation id="6463070039183944536">Dodavanje...</translation>
@@ -565,6 +580,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="688738109438487280">Dodavanje postojećih podataka na račun <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otvorena kartica}one{%1$d otvorena kartica}few{%1$d otvorene kartice}other{%1$d otvorenih kartica}}</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
+<translation id="6932129181739884535">Pretražite/unesite naziv web-lokacije</translation>
 <translation id="6945221475159498467">Odaberi</translation>
 <translation id="6963766334940102469">Brisanje oznaka</translation>
 <translation id="6965382102122355670">U redu</translation>
@@ -611,6 +627,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7423098979219808738">Prvo pitaj</translation>
 <translation id="7437998757836447326">Odjava s Chromea</translation>
 <translation id="7445411102860286510">Web-lokacije mogu automatski reproducirati zanemarene videozapise (preporučeno)</translation>
+<translation id="7455923816558154057">Dodirnite za prikaz</translation>
 <translation id="7464701184726199289">Sinkronizirani podaci izbrisat će se sa svih uređaja. Spremljene postavke web-lokacije neće se izbrisati i mogu odražavati vaše navike prilikom pregledavanja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7475192538862203634">Ako se to često prikazuje, pokušajte s ovim <ph name="BEGIN_LINK" />prijedlozima<ph name="END_LINK" />.</translation>
@@ -642,6 +659,7 @@ Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjeric
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
 <translation id="7698359219371678927">Izradite e-poruku u aplikaciji <ph name="APP_NAME" /></translation>
+<translation id="773466115871691567">Uvijek prevodi <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7764225426217299476">Dodaj adresu</translation>
 <translation id="7765158879357617694">Pomakni</translation>
 <translation id="7769602470925380267">Prihvati i odjavi se</translation>
@@ -701,6 +719,7 @@ Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjeric
 <translation id="8275818695183729150">Dopusti (za pretraživanja u adresnoj traci)</translation>
 <translation id="8283853025636624853">Sinkronizacija s računom <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardne kartice</translation>
+<translation id="8339163506404995330">Neće se prevoditi <ph name="LANGUAGE" /></translation>
 <translation id="8372893542064058268">Omogućuje sinkronizaciju u pozadini za određenu web-lokaciju.</translation>
 <translation id="8374821112118309944">Morate ažurirati TalkBack na najnoviju verziju.</translation>
 <translation id="8393700583063109961">Pošaljite poruku</translation>
@@ -778,6 +797,7 @@ Da biste dobili nove licence, povežite se s internetom i reproducirajte preuzet
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9139068048179869749">Web-lokacije moraju tražiti dopuštenje za slanje obavijesti (preporučeno)</translation>
+<translation id="9187067407629017315">Unesite pretraživanje ili web-lokaciju</translation>
 <translation id="9187199695613236444">Pregled prilagođen za mobilne uređaje</translation>
 <translation id="9188680907066685419">Odjava s upravljanog računa</translation>
 <translation id="9206873250291191720">A</translation>

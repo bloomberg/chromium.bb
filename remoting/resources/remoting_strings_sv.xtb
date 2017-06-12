@@ -64,10 +64,12 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="225614027745146050">Välkommen</translation>
 <translation id="228809120910082333">Bekräfta ditt konto och pinkoden nedan genom att tillåta åtkomst via Chromoting.</translation>
 <translation id="2314101195544969792">Sessionen med <ph name="APPLICATION_NAME" /> har varit inaktiv en stund och kommer snart att kopplas från.</translation>
+<translation id="2317666076142640974">Få en förhandstitt på den nya <ph name="LINK_BEGIN" />webbappen Chrome Remote Desktop<ph name="LINK_END" />. Vi vill gärna höra vad du tycker!</translation>
 <translation id="2353140552984634198">Du kan få säker åtkomst till den här datorn med Chromoting.</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2366718077645204424">Det går inte att nå värden. Detta beror troligen på konfigurationen av nätverket som du använder.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Var senast uppe på webben <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Den här appen stöds inte längre. Använd <ph name="LINK_BEGIN" />webbappen Chrome Remote Desktop<ph name="LINK_END" /> så att du får de senaste funktionerna och säkerhetsuppdateringarna.</translation>
 <translation id="2499160551253595098">Hjälp oss att förbättra Chrome Remote Desktop genom att låta oss samla in användningsstatistik och felrapporter.</translation>
 <translation id="2512228156274966424">Obs! Om du vill vara säker på att alla kortkommandon är tillgängliga kan du ställa in Chrome Remote Desktop på Öppna som fönster.</translation>
 <translation id="2540992418118313681">Vill du dela den här datorn så att en annan användare kan visa och styra den?</translation>
@@ -230,6 +232,7 @@ Desktop Host</translation>
 <translation id="6930242544192836755">Varaktighet</translation>
 <translation id="6939719207673461467">Visa/dölj tangentbordet.</translation>
 <translation id="6944854424004126054">Återställ fönstret</translation>
+<translation id="6948905685698011662">Nu finns Chrome Remote Desktop på webben! Kolla in vår <ph name="LINK_BEGIN" />kostnadsfria webbapp<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Anslutningar till fjärrdatorn är tillfälligt blockerade eftersom någon har försökt ansluta till fjärrdatorn med en ogiltig pinkod. Försök igen senare.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME" />? Om du ångrar dig måste du besöka datorn för att kunna aktivera anslutningar igen.</translation>
@@ -246,6 +249,7 @@ Desktop Host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Åtkomst nekad för klient: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klient ansluten: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Chrome Remote Desktop har fått ett nytt hem på webben. Testa vår <ph name="LINK_BEGIN" />webbapp<ph name="LINK_END" /> – den är snabb och gratis, och alla de gamla funktionerna finns kvar.</translation>
 <translation id="7606912958770842224">Aktivera fjärranslutningar</translation>
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7658239707568436148">Avbryt</translation>

@@ -56,6 +56,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 
 Si decides iniciar sesión de todas formas, se fusionará la información de Chrome, como marcadores, historial y otras opciones, con la de <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Mostrar menú de Chrome</translation>
+<translation id="2416359993254398973">Chrome necesita permiso para acceder a la cámara en este sitio web.</translation>
 <translation id="2429317896000329049">Google Chrome no ha podido sincronizar los datos porque la función de sincronización no está disponible para tu dominio.</translation>
 <translation id="2446511512801740068">Chrome no está actualizado porque hace algún tiempo que no se reinicia. Hay una actualización disponible, que se aplicará en cuanto lo reinicies.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -161,6 +162,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
+<translation id="557283862590186398">Chrome necesita permiso para acceder al micrófono en este sitio web.</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
 <translation id="565744775970812598">Es posible que <ph name="FILE_NAME" /> sea peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
@@ -185,6 +187,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios de tu ordenador.</translation>
 <translation id="6338556085225130112">Actualizando Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS" />software libre<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
+<translation id="6393863479814692971">Chrome necesita permiso para acceder a la cámara y al micrófono en este sitio web.</translation>
 <translation id="6400076122676892962">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque Mac OS X 10.6, 10.7 y 10.8 dejarán de ser compatibles.</translation>
 <translation id="6410540444482791104">Ayuda a que Chrome sea más seguro y se pueda utilizar más fácilmente enviando de forma automática información del sistema y contenido de las páginas a Google para que pueda detectar aplicaciones y sitios web peligrosos.</translation>
 <translation id="6470176598693778404">Este ordenador no volverá a recibir actualizaciones de Google Chrome porque Mac OS X 10.6, 10.7 y 10.8 dejarán de ser compatibles.</translation>
