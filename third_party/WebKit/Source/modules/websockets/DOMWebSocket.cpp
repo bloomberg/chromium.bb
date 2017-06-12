@@ -227,7 +227,6 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
       consumed_buffered_amount_(0),
       buffered_amount_after_close_(0),
       binary_type_(kBinaryTypeBlob),
-      binary_type_changes_after_open_(0),
       subprotocol_(""),
       extensions_(""),
       event_queue_(EventQueue::Create(this)),
@@ -418,16 +417,6 @@ void DOMWebSocket::ReleaseChannel() {
   DCHECK(channel_);
   channel_->Disconnect();
   channel_ = nullptr;
-}
-
-void DOMWebSocket::LogBinaryTypeChangesAfterOpen() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, binary_type_changes_histogram,
-      ("WebCore.WebSocket.BinaryTypeChangesAfterOpen", 1, 1024, 10));
-  DVLOG(3) << "WebSocket " << static_cast<void*>(this)
-           << " logBinaryTypeChangesAfterOpen() logging "
-           << binary_type_changes_after_open_;
-  binary_type_changes_histogram.Count(binary_type_changes_after_open_);
 }
 
 void DOMWebSocket::send(const String& message,
@@ -631,22 +620,14 @@ String DOMWebSocket::binaryType() const {
 
 void DOMWebSocket::setBinaryType(const String& binary_type) {
   if (binary_type == "blob") {
-    SetBinaryTypeInternal(kBinaryTypeBlob);
+    binary_type_ = kBinaryTypeBlob;
     return;
   }
   if (binary_type == "arraybuffer") {
-    SetBinaryTypeInternal(kBinaryTypeArrayBuffer);
+    binary_type_ = kBinaryTypeArrayBuffer;
     return;
   }
   NOTREACHED();
-}
-
-void DOMWebSocket::SetBinaryTypeInternal(BinaryType binary_type) {
-  if (binary_type_ == binary_type)
-    return;
-  binary_type_ = binary_type;
-  if (state_ == kOpen || state_ == kClosing)
-    ++binary_type_changes_after_open_;
 }
 
 const AtomicString& DOMWebSocket::InterfaceName() const {
@@ -664,10 +645,8 @@ void DOMWebSocket::ContextDestroyed(ExecutionContext*) {
     channel_->Close(WebSocketChannel::kCloseEventCodeGoingAway, String());
     ReleaseChannel();
   }
-  if (state_ != kClosed) {
+  if (state_ != kClosed)
     state_ = kClosed;
-    LogBinaryTypeChangesAfterOpen();
-  }
 }
 
 bool DOMWebSocket::HasPendingActivity() const {
@@ -739,7 +718,6 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 void DOMWebSocket::DidError() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " didError()";
   state_ = kClosed;
-  LogBinaryTypeChangesAfterOpen();
   event_queue_->Dispatch(Event::Create(EventTypeNames::error));
 }
 
