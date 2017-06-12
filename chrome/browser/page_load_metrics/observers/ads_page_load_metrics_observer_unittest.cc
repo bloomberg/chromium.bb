@@ -92,12 +92,12 @@ class DelayWillProcessResponseObserver : public content::WebContentsObserver {
         throttle_->navigation_handle();
 
     observer->OnRequestComplete(
-        GURL(kNonAdUrl),
+        GURL(kNonAdUrl), net::HostPortPair(),
         navigation_handle->GetRenderFrameHost()->GetFrameTreeNodeId(),
         navigation_handle->GetGlobalRequestID(),
         content::RESOURCE_TYPE_MAIN_FRAME, false /* was_cached */,
         nullptr /* data_reduction_proxy */, 10 * 1024 /* raw_body_bytes */,
-        0 /* original_network_content_length */, base::TimeTicks::Now());
+        0 /* original_network_content_length */, base::TimeTicks::Now(), 0);
 
     throttle_->CancelDeferredNavigation();
   }
@@ -168,11 +168,11 @@ class AdsPageLoadMetricsObserverTest
                     ResourceCached resource_cached,
                     int resource_size_in_kb) {
     page_load_metrics::ExtraRequestCompleteInfo request(
-        GURL(kNonAdUrl), frame->GetFrameTreeNodeId(),
+        GURL(kNonAdUrl), net::HostPortPair(), frame->GetFrameTreeNodeId(),
         resource_cached == ResourceCached::CACHED, resource_size_in_kb * 1024,
         0,       /* original_network_content_length */
         nullptr, /* data_reduction_proxy_data */
-        content::RESOURCE_TYPE_SUB_FRAME);
+        content::RESOURCE_TYPE_SUB_FRAME, 0);
     SimulateLoadedResource(request);
   }
 
@@ -212,11 +212,12 @@ TEST_F(AdsPageLoadMetricsObserverTest, ResourceBeforeAdFrameCommits) {
   // Assume that the next frame's id will be the main frame + 1 and load a
   // resource for that frame. Make sure it gets counted.
   page_load_metrics::ExtraRequestCompleteInfo request(
-      GURL(kNonAdUrl), main_frame->GetFrameTreeNodeId() + 1, false /* cached */,
+      GURL(kNonAdUrl), net::HostPortPair(),
+      main_frame->GetFrameTreeNodeId() + 1, false /* cached */,
       10 * 1024 /* size */, 0 /* original_network_content_length */,
       nullptr
       /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_SUB_FRAME);
+      content::RESOURCE_TYPE_SUB_FRAME, 0);
   SimulateLoadedResource(request);
 
   CreateAndNavigateSubFrame(kNonAdUrl, kAdName, main_frame);
@@ -577,10 +578,11 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
   // Now open a subframe and have its resource load before notification of
   // navigation finishing.
   page_load_metrics::ExtraRequestCompleteInfo request(
-      GURL(kNonAdUrl), main_frame->GetFrameTreeNodeId() + 1, false /* cached */,
+      GURL(kNonAdUrl), net::HostPortPair(),
+      main_frame->GetFrameTreeNodeId() + 1, false /* cached */,
       10 * 1024 /* size */, false /* data_reduction_proxy_used */,
-      0 /* original_network_content_length */,
-      content::RESOURCE_TYPE_SUB_FRAME);
+      0 /* original_network_content_length */, content::RESOURCE_TYPE_SUB_FRAME,
+      0);
   SimulateLoadedResource(request);
   RenderFrameHost* subframe_ad =
       RenderFrameHostTester::For(main_frame)->AppendChild(kAdName);

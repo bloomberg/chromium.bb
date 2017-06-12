@@ -16,6 +16,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/host_port_pair.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "url/gurl.h"
 
@@ -208,18 +209,23 @@ struct PageLoadExtraInfo {
 struct ExtraRequestCompleteInfo {
   ExtraRequestCompleteInfo(
       const GURL& url,
+      const net::HostPortPair& host_port_pair,
       int frame_tree_node_id,
       bool was_cached,
       int64_t raw_body_bytes,
       int64_t original_network_content_length,
       std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
           data_reduction_proxy_data,
-      content::ResourceType detected_resource_type);
+      content::ResourceType detected_resource_type,
+      int net_error);
 
   ~ExtraRequestCompleteInfo();
 
   // The URL for the request.
   const GURL url;
+
+  // The host (IP address) and port for the request.
+  const net::HostPortPair host_port_pair;
 
   // The frame tree node id that initiated the request.
   const int frame_tree_node_id;
@@ -243,6 +249,11 @@ struct ExtraRequestCompleteInfo {
   // examine the type headers that arrived with the request.  During XHRs, we
   // sometimes see resources come back as a different type than we expected.
   const content::ResourceType resource_type;
+
+  // The network error encountered by the request, as defined by
+  // net/base/net_error_list.h. If no error was encountered, this value will be
+  // 0.
+  int net_error;
 };
 
 // Container for various information about a started request within a page load.

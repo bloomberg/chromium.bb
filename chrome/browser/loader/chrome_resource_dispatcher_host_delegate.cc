@@ -74,6 +74,8 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_response.h"
 #include "extensions/features/features.h"
+#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
@@ -374,6 +376,7 @@ void NotifyUIThreadOfRequestComplete(
     const content::ResourceRequestInfo::FrameTreeNodeIdGetter&
         frame_tree_node_id_getter,
     const GURL& url,
+    const net::HostPortPair& host_port_pair,
     const content::GlobalRequestID& request_id,
     ResourceType resource_type,
     bool is_download,
@@ -410,9 +413,10 @@ void NotifyUIThreadOfRequestComplete(
             web_contents);
     if (metrics_observer) {
       metrics_observer->OnRequestComplete(
-          url, frame_tree_node_id_getter.Run(), request_id, resource_type,
-          was_cached, std::move(data_reduction_proxy_data), raw_body_bytes,
-          original_content_length, request_creation_time);
+          url, host_port_pair, frame_tree_node_id_getter.Run(), request_id,
+          resource_type, was_cached, std::move(data_reduction_proxy_data),
+          raw_body_bytes, original_content_length, request_creation_time,
+          net_error);
     }
   }
 }
@@ -877,18 +881,34 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
           ? data_reduction_proxy::util::CalculateEffectiveOCL(*url_request)
           : url_request->GetRawBodyBytes();
 
+  net::HostPortPair request_host_port;
+  // We want to get the IP address of the response if it was returned, and the
+  // last endpoint that was checked if it failed.
+  if (url_request->response_headers()) {
+    request_host_port = url_request->GetSocketAddress();
+  }
+  if (request_host_port.IsEmpty()) {
+    net::IPEndPoint request_ip_endpoint;
+    bool was_successful = url_request->GetRemoteEndpoint(&request_ip_endpoint);
+    if (was_successful) {
+      request_host_port =
+          net::HostPortPair::FromIPEndPoint(request_ip_endpoint);
+    }
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &NotifyUIThreadOfRequestComplete,
-          info->GetWebContentsGetterForRequest(),
-          info->GetFrameTreeNodeIdGetterForRequest(), url_request->url(),
-          info->GetGlobalRequestID(), info->GetResourceType(),
-          info->IsDownload(), url_request->was_cached(),
-          base::Passed(&data_reduction_proxy_data), net_error,
-          url_request->GetTotalReceivedBytes(), url_request->GetRawBodyBytes(),
-          original_content_length, url_request->creation_time(),
-          base::TimeTicks::Now() - url_request->creation_time()));
+      base::BindOnce(&NotifyUIThreadOfRequestComplete,
+                     info->GetWebContentsGetterForRequest(),
+                     info->GetFrameTreeNodeIdGetterForRequest(),
+                     url_request->url(), request_host_port,
+                     info->GetGlobalRequestID(), info->GetResourceType(),
+                     info->IsDownload(), url_request->was_cached(),
+                     base::Passed(&data_reduction_proxy_data), net_error,
+                     url_request->GetTotalReceivedBytes(),
+                     url_request->GetRawBodyBytes(), original_content_length,
+                     url_request->creation_time(),
+                     base::TimeTicks::Now() - url_request->creation_time()));
 }
 
 content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(

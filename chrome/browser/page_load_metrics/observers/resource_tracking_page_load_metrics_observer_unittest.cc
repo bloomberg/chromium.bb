@@ -46,12 +46,14 @@ TEST_F(ResourceTrackingPageLoadMetricsObserverTest, StartAndFinish) {
 
   page_load_metrics::ExtraRequestCompleteInfo done_info{
       GURL(),
+      net::HostPortPair(),
       -1 /*frame_tree_node_id*/,
       false /*was_cached*/,
       1024 * 40 /* raw_body_bytes */,
       1024 * 40 /* original_network_content_length */,
       nullptr /* data reduction_proxy */,
       content::ResourceType::RESOURCE_TYPE_IMAGE,
+      0,
   };
 
   // Start the navigation. This will create the page load tracker and register

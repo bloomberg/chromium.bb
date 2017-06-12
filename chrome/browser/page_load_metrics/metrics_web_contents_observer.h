@@ -114,6 +114,7 @@ class MetricsWebContentsObserver
   // the UI thread.
   void OnRequestComplete(
       const GURL& url,
+      const net::HostPortPair& host_port_pair,
       int frame_tree_node_id,
       const content::GlobalRequestID& request_id,
       content::ResourceType resource_type,
@@ -122,7 +123,8 @@ class MetricsWebContentsObserver
           data_reduction_proxy_data,
       int64_t raw_body_bytes,
       int64_t original_content_length,
-      base::TimeTicks creation_time);
+      base::TimeTicks creation_time,
+      int net_error);
 
   // Invoked on navigations where a navigation delay was added by the
   // DelayNavigationThrottle. This is a temporary method that will be removed

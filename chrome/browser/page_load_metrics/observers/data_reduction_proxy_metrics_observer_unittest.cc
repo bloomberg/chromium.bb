@@ -425,12 +425,14 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
 
   page_load_metrics::ExtraRequestCompleteInfo resource = {
       GURL(),
+      net::HostPortPair(),
       -1 /* frame_tree_node_id */,
       true /*was_cached*/,
       1024 * 40 /* raw_body_bytes */,
       0 /* original_network_content_length */,
       std::move(data),
-      content::ResourceType::RESOURCE_TYPE_MAIN_FRAME};
+      content::ResourceType::RESOURCE_TYPE_MAIN_FRAME,
+      0};
 
   RunTest(true, false);
   SimulateLoadedResource(resource);
@@ -466,26 +468,27 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   // Prepare 4 resources of varying size and configurations.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
-      {GURL(), -1 /* frame_tree_node_id */, true /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
+      {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+       true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
       // Uncached non-proxied request.
-      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
+      {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+       false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
       // Uncached proxied request with .1 compression ratio.
-      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
+      {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+       false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 10 /* original_network_content_length */, data->DeepCopy(),
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
       // Uncached proxied request with .5 compression ratio.
-      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
+      {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+       false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data),
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
   };
 
   int network_resources = 0;
@@ -526,26 +529,27 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   // Prepare 4 resources of varying size and configurations.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
-      {GURL(), -1 /* frame_tree_node_id */, true /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
+      {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+       true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+       0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
       // Uncached non-proxied request.
-      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
+      {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+       false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
       // Uncached proxied request with .1 compression ratio.
-      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
-       1024 * 40 * 10 /* raw_body_bytes */,
+      {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+       false /*was_cached*/, 1024 * 40 * 10 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */, data->DeepCopy(),
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
       // Uncached proxied request with .5 compression ratio.
-      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
-       1024 * 40 * 5 /* raw_body_bytes */,
+      {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+       false /*was_cached*/, 1024 * 40 * 5 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */, std::move(data),
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
   };
 
   int network_resources = 0;

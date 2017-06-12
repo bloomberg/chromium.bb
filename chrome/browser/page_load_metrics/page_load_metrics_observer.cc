@@ -60,20 +60,24 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     const GURL& url,
+    const net::HostPortPair& host_port_pair,
     int frame_tree_node_id,
     bool was_cached,
     int64_t raw_body_bytes,
     int64_t original_network_content_length,
     std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
         data_reduction_proxy_data,
-    content::ResourceType detected_resource_type)
+    content::ResourceType detected_resource_type,
+    int net_error)
     : url(url),
+      host_port_pair(host_port_pair),
       frame_tree_node_id(frame_tree_node_id),
       was_cached(was_cached),
       raw_body_bytes(raw_body_bytes),
       original_network_content_length(original_network_content_length),
       data_reduction_proxy_data(std::move(data_reduction_proxy_data)),
-      resource_type(detected_resource_type) {}
+      resource_type(detected_resource_type),
+      net_error(net_error) {}
 
 ExtraRequestCompleteInfo::~ExtraRequestCompleteInfo() {}
 
