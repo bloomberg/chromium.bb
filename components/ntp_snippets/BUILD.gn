@@ -59,6 +59,8 @@ static_library("ntp_snippets") {
     "reading_list/reading_list_suggestions_provider.h",
     "remote/json_request.cc",
     "remote/json_request.h",
+    "remote/json_to_categories.cc",
+    "remote/json_to_categories.h",
     "remote/persistent_scheduler.h",
     "remote/remote_suggestion.cc",
     "remote/remote_suggestion.h",
