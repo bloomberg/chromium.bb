@@ -293,6 +293,18 @@ void InitializeGLDebugLogging() {
   glDebugMessageCallback(&LogGLDebugMessage, nullptr);
 }
 
+bool ValidContextLostReason(GLenum reason) {
+  switch (reason) {
+    case GL_NO_ERROR:
+    case GL_GUILTY_CONTEXT_RESET_ARB:
+    case GL_INNOCENT_CONTEXT_RESET_ARB:
+    case GL_UNKNOWN_CONTEXT_RESET_ARB:
+      return true;
+    default:
+      return false;
+  }
+}
+
 error::ContextLostReason GetContextLostReasonFromResetStatus(
     GLenum reset_status) {
   switch (reset_status) {
