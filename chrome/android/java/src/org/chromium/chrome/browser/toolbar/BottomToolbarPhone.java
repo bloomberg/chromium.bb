@@ -183,6 +183,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
     }
 
     /**
+     * @return The expand button if it is being used.
+     */
+    public View getExpandButton() {
+        return mExpandButton;
+    }
+
+    /**
      * Set the color of the pull handle used by the toolbar.
      * @param useLightDrawable If the handle color should be light.
      */

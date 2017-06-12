@@ -191,6 +191,9 @@ public abstract class ChromeSwitches {
     /** Switch for enabling "restricted area" swipe logic for Chrome Home. */
     public static final String CHROME_HOME_SWIPE_LOGIC_RESTRICT_AREA = "restrict-area";
 
+    /** Switch for enabling "button only" swipe logic for Chrome Home. */
+    public static final String CHROME_HOME_SWIPE_LOGIC_BUTTON_ONLY = "button-only";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

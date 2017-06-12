@@ -1970,6 +1970,8 @@ const char kChromeHomeSwipeLogicDescription[] =
 
 const char kChromeHomeSwipeLogicRestrictArea[] = "Restrict swipable area";
 
+const char kChromeHomeSwipeLogicButtonOnly[] = "Swipe on expand button";
+
 #endif  // defined(OS_ANDROID)
 
 //  Settings window flags
