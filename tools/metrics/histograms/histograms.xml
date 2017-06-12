@@ -40574,6 +40574,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SuccessfulResolutionWithValidDNSName" enum="Boolean">
+  <owner>palmer@chromium.org</owner>
+  <summary>
+    True if a DNS name contains only characters for which
+    |net::IsValidLabelCharacter| returns true. Used to see if we can deprecate
+    and remove support for arbitrary bytes in DNS names. This histogram is
+    recorded after DNS resolution has completed successfully.
+  </summary>
+</histogram>
+
 <histogram name="Net.TCP_Connection_Idle_Sockets">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
