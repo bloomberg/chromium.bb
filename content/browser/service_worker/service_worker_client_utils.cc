@@ -59,11 +59,17 @@ class OpenURLObserver : public WebContentsObserver {
 
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
     DCHECK(web_contents());
-    if (!navigation_handle->HasCommitted())
+    if (!navigation_handle->HasCommitted()) {
+      // Return error.
+      RunCallback(ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
       return;
+    }
 
-    if (navigation_handle->GetFrameTreeNodeId() != frame_tree_node_id_)
+    if (navigation_handle->GetFrameTreeNodeId() != frame_tree_node_id_) {
+      // Return error.
+      RunCallback(ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
       return;
+    }
 
     RenderFrameHost* render_frame_host =
         navigation_handle->GetRenderFrameHost();
