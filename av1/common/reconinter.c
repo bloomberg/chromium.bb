@@ -1008,10 +1008,7 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
 
           const MV mv = this_mbmi->mv[ref].as_mv;
 
-          const MV mv_q4 = clamp_mv_to_umv_border_sb(
-              xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
           uint8_t *pre;
-          MV32 scaled_mv;
           int xs, ys, subpel_x, subpel_y;
           const int is_scaled = av1_is_scaled(sf);
           ConvolveParams conv_params = get_conv_params(ref, ref, plane);
@@ -1032,22 +1029,40 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
           dst += dst_buf->stride * y + x;
 
           if (is_scaled) {
-            pre =
-                pre_buf->buf + scaled_buffer_offset(x, y, pre_buf->stride, sf);
-            scaled_mv = av1_scale_mv(&mv_q4, mi_x + x, mi_y + y, sf);
+            int ssx = pd->subsampling_x;
+            int ssy = pd->subsampling_y;
+            int orig_pos_y = (mi_y << (SUBPEL_BITS - ssy)) + (y << SUBPEL_BITS);
+            orig_pos_y += mv.row * (1 << (1 - ssy));
+            int orig_pos_x = (mi_x << (SUBPEL_BITS - ssx)) + (x << SUBPEL_BITS);
+            orig_pos_x += mv.col * (1 << (1 - ssx));
+            int pos_y = sf->scale_value_y(orig_pos_y, sf);
+            int pos_x = sf->scale_value_x(orig_pos_x, sf);
+
+            const int top = -((AOM_INTERP_EXTEND + bh) << SUBPEL_BITS);
+            const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
+                               << SUBPEL_BITS;
+            const int left = -((AOM_INTERP_EXTEND + bw) << SUBPEL_BITS);
+            const int right = (pre_buf->width + AOM_INTERP_EXTEND)
+                              << SUBPEL_BITS;
+            pos_y = clamp(pos_y, top, bottom);
+            pos_x = clamp(pos_x, left, right);
+
+            pre = pre_buf->buf0 + (pos_y >> SUBPEL_BITS) * pre_buf->stride +
+                  (pos_x >> SUBPEL_BITS);
+            subpel_x = pos_x & SUBPEL_MASK;
+            subpel_y = pos_y & SUBPEL_MASK;
             xs = sf->x_step_q4;
             ys = sf->y_step_q4;
           } else {
-            pre = pre_buf->buf + y * pre_buf->stride + x;
-            scaled_mv.row = mv_q4.row;
-            scaled_mv.col = mv_q4.col;
+            const MV mv_q4 = clamp_mv_to_umv_border_sb(
+                xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
             xs = ys = SCALE_DENOMINATOR;
+            subpel_x = mv_q4.col & SUBPEL_MASK;
+            subpel_y = mv_q4.row & SUBPEL_MASK;
+            pre = pre_buf->buf +
+                  (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
+                  (x + (mv_q4.col >> SUBPEL_BITS));
           }
-
-          subpel_x = scaled_mv.col & SUBPEL_MASK;
-          subpel_y = scaled_mv.row & SUBPEL_MASK;
-          pre += (scaled_mv.row >> SUBPEL_BITS) * pre_buf->stride +
-                 (scaled_mv.col >> SUBPEL_BITS);
 
 #if CONFIG_EXT_INTER
           if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
@@ -1093,7 +1108,6 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
     struct buf_2d *const dst_buf = &pd->dst;
     uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
     uint8_t *pre[2];
-    MV32 scaled_mv[2];
     SubpelParams subpel_params[2];
 #if CONFIG_CONVOLVE_ROUND
     DECLARE_ALIGNED(16, int32_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
@@ -1127,33 +1141,49 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
               : mi->mbmi.mv[ref].as_mv;
 #endif
 
-      // TODO(jkoleszar): This clamping is done in the incorrect place for the
-      // scaling case. It needs to be done on the scaled MV, not the pre-scaling
-      // MV. Note however that it performs the subsampling aware scaling so
-      // that the result is always q4.
-      // mv_precision precision is MV_PRECISION_Q4.
-      const MV mv_q4 = clamp_mv_to_umv_border_sb(
-          xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
-
       const int is_scaled = av1_is_scaled(sf);
       if (is_scaled) {
-        pre[ref] =
-            pre_buf->buf + scaled_buffer_offset(x, y, pre_buf->stride, sf);
-        scaled_mv[ref] = av1_scale_mv(&mv_q4, mi_x + x, mi_y + y, sf);
+        // Note: The various inputs here have different units:
+        // * mi_x/mi_y are in units of luma pixels
+        // * mv is in units of 1/8 luma pixels
+        // * x/y are in units of pixels *in the current plane*
+        // Here we unify these into a q4-format position within the current
+        // plane, then project into the reference frame
+        int ssx = pd->subsampling_x;
+        int ssy = pd->subsampling_y;
+        int orig_pos_y = (mi_y << (SUBPEL_BITS - ssy)) + (y << SUBPEL_BITS);
+        orig_pos_y += mv.row * (1 << (1 - ssy));
+        int orig_pos_x = (mi_x << (SUBPEL_BITS - ssx)) + (x << SUBPEL_BITS);
+        orig_pos_x += mv.col * (1 << (1 - ssx));
+        int pos_y = sf->scale_value_y(orig_pos_y, sf);
+        int pos_x = sf->scale_value_x(orig_pos_x, sf);
+
+        // Clamp against the reference frame borders, with enough extension
+        // that we don't force the reference block to be partially onscreen.
+        const int top = -((AOM_INTERP_EXTEND + bh) << SUBPEL_BITS);
+        const int bottom = (pre_buf->height + AOM_INTERP_EXTEND) << SUBPEL_BITS;
+        const int left = -((AOM_INTERP_EXTEND + bw) << SUBPEL_BITS);
+        const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SUBPEL_BITS;
+        pos_y = clamp(pos_y, top, bottom);
+        pos_x = clamp(pos_x, left, right);
+
+        pre[ref] = pre_buf->buf0 + (pos_y >> SUBPEL_BITS) * pre_buf->stride +
+                   (pos_x >> SUBPEL_BITS);
+        subpel_params[ref].subpel_x = pos_x & SUBPEL_MASK;
+        subpel_params[ref].subpel_y = pos_y & SUBPEL_MASK;
         subpel_params[ref].xs = sf->x_step_q4;
         subpel_params[ref].ys = sf->y_step_q4;
       } else {
-        pre[ref] = pre_buf->buf + (y * pre_buf->stride + x);
-        scaled_mv[ref].row = mv_q4.row;
-        scaled_mv[ref].col = mv_q4.col;
+        const MV mv_q4 = clamp_mv_to_umv_border_sb(
+            xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
+        subpel_params[ref].subpel_x = mv_q4.col & SUBPEL_MASK;
+        subpel_params[ref].subpel_y = mv_q4.row & SUBPEL_MASK;
         subpel_params[ref].xs = SCALE_DENOMINATOR;
         subpel_params[ref].ys = SCALE_DENOMINATOR;
+        pre[ref] = pre_buf->buf +
+                   (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
+                   (x + (mv_q4.col >> SUBPEL_BITS));
       }
-
-      subpel_params[ref].subpel_x = scaled_mv[ref].col & SUBPEL_MASK;
-      subpel_params[ref].subpel_y = scaled_mv[ref].row & SUBPEL_MASK;
-      pre[ref] += (scaled_mv[ref].row >> SUBPEL_BITS) * pre_buf->stride +
-                  (scaled_mv[ref].col >> SUBPEL_BITS);
     }
 
 #if CONFIG_CONVOLVE_ROUND
@@ -2944,16 +2974,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
                     ? average_split_mvs(pd, mi, ref, block)
                     : mi->mbmi.mv[ref].as_mv;
 
-  // TODO(jkoleszar): This clamping is done in the incorrect place for the
-  // scaling case. It needs to be done on the scaled MV, not the pre-scaling
-  // MV. Note however that it performs the subsampling aware scaling so
-  // that the result is always q4.
-  // mv_precision precision is MV_PRECISION_Q4.
-  const MV mv_q4 = clamp_mv_to_umv_border_sb(xd, &mv, bw, bh, pd->subsampling_x,
-                                             pd->subsampling_y);
-
   uint8_t *pre;
-  MV32 scaled_mv;
   int xs, ys, subpel_x, subpel_y;
   const int is_scaled = av1_is_scaled(sf);
   ConvolveParams conv_params = get_conv_params(ref, 0, plane);
@@ -2975,21 +2996,37 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
   if (is_scaled) {
-    pre = pre_buf->buf + scaled_buffer_offset(x, y, pre_buf->stride, sf);
-    scaled_mv = av1_scale_mv(&mv_q4, mi_x + x, mi_y + y, sf);
+    int ssx = pd->subsampling_x;
+    int ssy = pd->subsampling_y;
+    int orig_pos_y = (mi_y << (SUBPEL_BITS - ssy)) + (y << SUBPEL_BITS);
+    orig_pos_y += mv.row * (1 << (1 - ssy));
+    int orig_pos_x = (mi_x << (SUBPEL_BITS - ssx)) + (x << SUBPEL_BITS);
+    orig_pos_x += mv.col * (1 << (1 - ssx));
+    int pos_y = sf->scale_value_y(orig_pos_y, sf);
+    int pos_x = sf->scale_value_x(orig_pos_x, sf);
+
+    const int top = -((AOM_INTERP_EXTEND + bh) << SUBPEL_BITS);
+    const int bottom = (pre_buf->height + AOM_INTERP_EXTEND) << SUBPEL_BITS;
+    const int left = -((AOM_INTERP_EXTEND + bw) << SUBPEL_BITS);
+    const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SUBPEL_BITS;
+    pos_y = clamp(pos_y, top, bottom);
+    pos_x = clamp(pos_x, left, right);
+
+    pre = pre_buf->buf0 + (pos_y >> SUBPEL_BITS) * pre_buf->stride +
+          (pos_x >> SUBPEL_BITS);
+    subpel_x = pos_x & SUBPEL_MASK;
+    subpel_y = pos_y & SUBPEL_MASK;
     xs = sf->x_step_q4;
     ys = sf->y_step_q4;
   } else {
-    pre = pre_buf->buf + (y * pre_buf->stride + x);
-    scaled_mv.row = mv_q4.row;
-    scaled_mv.col = mv_q4.col;
+    const MV mv_q4 = clamp_mv_to_umv_border_sb(
+        xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
     xs = ys = SCALE_DENOMINATOR;
+    subpel_x = mv_q4.col & SUBPEL_MASK;
+    subpel_y = mv_q4.row & SUBPEL_MASK;
+    pre = pre_buf->buf + (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
+          (x + (mv_q4.col >> SUBPEL_BITS));
   }
-
-  subpel_x = scaled_mv.col & SUBPEL_MASK;
-  subpel_y = scaled_mv.row & SUBPEL_MASK;
-  pre += (scaled_mv.row >> SUBPEL_BITS) * pre_buf->stride +
-         (scaled_mv.col >> SUBPEL_BITS);
 
   av1_make_inter_predictor(pre, pre_buf->stride, dst, ext_dst_stride, subpel_x,
                            subpel_y, sf, w, h, &conv_params,
