@@ -4683,6 +4683,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
          atIndex:(NSUInteger)index {
   [self uninstallDelegatesForTab:tab];
 
+  // Cancel dialogs for |tab|'s WebState.
+  [self.dialogPresenter cancelDialogForWebState:tab.webState];
+
   // Remove stored native controllers for the tab.
   [_nativeControllersForTabIDs removeObjectForKey:tab.tabId];
 
