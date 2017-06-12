@@ -889,10 +889,9 @@ class DownloadTest : public InProcessBrowserTest {
 
       std::unique_ptr<DownloadUrlParameters> params(
           DownloadUrlParameters::CreateForWebContentsMainFrame(
-              web_contents, starting_url));
+              web_contents, starting_url, TRAFFIC_ANNOTATION_FOR_TESTS));
       params->set_callback(creation_observer->callback());
-      DownloadManagerForBrowser(browser())->DownloadUrl(
-          std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
+      DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
 
       // Wait until the item is created, or we have determined that it
       // won't be.
@@ -1723,9 +1722,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
   // Download a file in that new tab, having it open a file picker
   std::unique_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::CreateForWebContentsMainFrame(
-          new_tab, slow_download_url));
+          new_tab, slow_download_url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_prompt(true);
-  manager->DownloadUrl(std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
+  manager->DownloadUrl(std::move(params));
   observer->WaitForFinished();
 
   DownloadManager::DownloadVector items;
@@ -2200,10 +2199,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   std::unique_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::CreateForWebContentsMainFrame(
-          web_contents, url));
+          web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_prompt(true);
-  DownloadManagerForBrowser(browser())->DownloadUrl(
-      std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
+  DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   CheckDownloadStates(1, DownloadItem::COMPLETE);
@@ -2231,10 +2229,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   content::DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   std::unique_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::CreateForWebContentsMainFrame(
-          web_contents, url));
+          web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_file_path(target_file_full_path);
-  DownloadManagerForBrowser(browser())->DownloadUrl(
-      std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
+  DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
@@ -2268,11 +2265,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TransientDownload) {
       other_directory.GetPath().Append(file.BaseName());
   content::DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(web_contents, url));
+      DownloadUrlParameters::CreateForWebContentsMainFrame(
+          web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_file_path(target_file_full_path);
   params->set_transient(true);
-  DownloadManagerForBrowser(browser())->DownloadUrl(
-      std::move(params), TRAFFIC_ANNOTATION_FOR_TESTS);
+  DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
@@ -3840,10 +3837,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
       browser()->tab_strip_model()->GetActiveWebContents();
   std::unique_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::CreateForWebContentsMainFrame(
-          web_contents, url));
+          web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_callback(base::Bind(&SetHiddenDownloadCallback));
-  download_manager->DownloadUrl(std::move(params),
-                                TRAFFIC_ANNOTATION_FOR_TESTS);
+  download_manager->DownloadUrl(std::move(params));
   observer->WaitForFinished();
 
   // Verify that download shelf is not shown.

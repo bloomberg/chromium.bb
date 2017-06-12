@@ -96,8 +96,8 @@ void DownloadDriverImpl::Start(
 
   std::unique_ptr<content::DownloadUrlParameters> download_url_params(
       new content::DownloadUrlParameters(
-          params.request_params.url,
-          storage_partition->GetURLRequestContext()));
+          params.request_params.url, storage_partition->GetURLRequestContext(),
+          traffic_annotation));
 
   // TODO(xingliu): Handle the request headers from |params|, need to tweak
   // download network stack.
@@ -108,8 +108,7 @@ void DownloadDriverImpl::Start(
   download_url_params->set_method(params.request_params.method);
   download_url_params->set_file_path(file_dir_.AppendASCII(params.guid));
 
-  download_manager_->DownloadUrl(std::move(download_url_params),
-                                 traffic_annotation);
+  download_manager_->DownloadUrl(std::move(download_url_params));
 }
 
 void DownloadDriverImpl::Cancel(const std::string& guid) {

@@ -671,7 +671,7 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   std::unique_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
       download_url_, render_process_host_id, render_view_host_routing_id,
       render_frame_host->GetRoutingID(),
-      storage_partition->GetURLRequestContext()));
+      storage_partition->GetURLRequestContext(), NO_TRAFFIC_ANNOTATION_YET));
   params->set_file_path(file);
   if (controller.GetVisibleEntry())
     params->set_referrer(content::Referrer::SanitizeForRequest(
@@ -680,7 +680,7 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted,
                                   this,
                                   extension_id));
-  download_manager->DownloadUrl(std::move(params), NO_TRAFFIC_ANNOTATION_YET);
+  download_manager->DownloadUrl(std::move(params));
 }
 
 void WebstoreInstaller::UpdateDownloadProgress() {

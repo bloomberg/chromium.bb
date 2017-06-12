@@ -19,6 +19,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/common/referrer.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
@@ -65,7 +66,8 @@ class CONTENT_EXPORT DownloadUrlParameters {
   // associating the download with the main frame of the given WebContents.
   static std::unique_ptr<DownloadUrlParameters> CreateForWebContentsMainFrame(
       WebContents* web_contents,
-      const GURL& url);
+      const GURL& url,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Constructs a download not associated with a frame.
   //
@@ -79,7 +81,8 @@ class CONTENT_EXPORT DownloadUrlParameters {
   // non-privileged frame.
   DownloadUrlParameters(
       const GURL& url,
-      net::URLRequestContextGetter* url_request_context_getter);
+      net::URLRequestContextGetter* url_request_context_getter,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // The RenderView routing ID must correspond to the RenderView of the
   // RenderFrame, both of which share the same RenderProcess. This may be a
@@ -89,7 +92,8 @@ class CONTENT_EXPORT DownloadUrlParameters {
       int render_process_host_id,
       int render_view_host_routing_id,
       int render_frame_host_routing_id,
-      net::URLRequestContextGetter* url_request_context_getter);
+      net::URLRequestContextGetter* url_request_context_getter,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   ~DownloadUrlParameters();
 
@@ -278,6 +282,10 @@ class CONTENT_EXPORT DownloadUrlParameters {
   // state following this call.
   DownloadSaveInfo GetSaveInfo() { return std::move(save_info_); }
 
+  const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotation() {
+    return traffic_annotation_;
+  }
+
  private:
   OnStartedCallback callback_;
   bool content_initiated_;
@@ -302,6 +310,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   bool transient_;
   std::string guid_;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle_;
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);
 };

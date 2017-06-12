@@ -70,7 +70,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     // containing the link being dragged rather than the main frame of the tab.
     std::unique_ptr<content::DownloadUrlParameters> params(
         DownloadUrlParameters::CreateForWebContentsMainFrame(
-            web_contents_, url_));
+            web_contents_, url_, NO_TRAFFIC_ANNOTATION_YET));
     params->set_referrer(referrer_);
     params->set_referrer_encoding(referrer_encoding_);
     params->set_callback(base::Bind(&DragDownloadFileUI::OnDownloadStarted,
@@ -78,7 +78,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     params->set_file_path(file_path);
     params->set_file(std::move(file));  // Nulls file.
     BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext())
-        ->DownloadUrl(std::move(params), NO_TRAFFIC_ANNOTATION_YET);
+        ->DownloadUrl(std::move(params));
   }
 
   void Cancel() {

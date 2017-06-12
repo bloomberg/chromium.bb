@@ -2374,10 +2374,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
   SetupEnsureNoPendingDownloads();
   std::unique_ptr<DownloadUrlParameters> download_parameters(
       DownloadUrlParameters::CreateForWebContentsMainFrame(
-          shell()->web_contents(), origin_two.GetURL("/bar")));
+          shell()->web_contents(), origin_two.GetURL("/bar"),
+          TRAFFIC_ANNOTATION_FOR_TESTS));
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
-  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters),
-                                                TRAFFIC_ANNOTATION_FOR_TESTS);
+  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
   observer->WaitForFinished();
 
   // Get the important info from other threads and check it.

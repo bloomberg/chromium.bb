@@ -62,6 +62,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_parameters_callback.h"
 #include "net/log/net_log_source.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
 
@@ -2140,7 +2141,8 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   // associated renderer) goes away before a response is received.
   std::unique_ptr<DownloadUrlParameters> download_params(
       new DownloadUrlParameters(GetURL(),
-                                storage_partition->GetURLRequestContext()));
+                                storage_partition->GetURLRequestContext(),
+                                NO_TRAFFIC_ANNOTATION_YET));
   download_params->set_file_path(GetFullPath());
   if (received_slices_.size() > 0) {
     std::vector<DownloadItem::ReceivedSlice> slices_to_download

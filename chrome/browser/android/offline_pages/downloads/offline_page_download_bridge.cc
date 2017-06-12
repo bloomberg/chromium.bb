@@ -355,7 +355,7 @@ void OfflinePageDownloadBridge::StartDownload(
         web_contents->GetBrowserContext());
     std::unique_ptr<content::DownloadUrlParameters> dl_params(
         content::DownloadUrlParameters::CreateForWebContentsMainFrame(
-            web_contents, url));
+            web_contents, url, NO_TRAFFIC_ANNOTATION_YET));
 
     content::NavigationEntry* entry =
         web_contents->GetController().GetLastCommittedEntry();
@@ -368,7 +368,7 @@ void OfflinePageDownloadBridge::StartDownload(
 
     dl_params->set_prefer_cache(true);
     dl_params->set_prompt(false);
-    dlm->DownloadUrl(std::move(dl_params), NO_TRAFFIC_ANNOTATION_YET);
+    dlm->DownloadUrl(std::move(dl_params));
     return;
   }
 

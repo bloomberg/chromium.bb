@@ -387,12 +387,11 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, DirectDownload) {
   ASSERT_TRUE(web_contents);
   std::unique_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::CreateForWebContentsMainFrame(
-          web_contents, url));
+          web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_file_path(target_path);
 
   // Start download of the URL with a path "/text_path.txt" on the test server.
-  download_manager->DownloadUrl(std::move(params),
-                                TRAFFIC_ANNOTATION_FOR_TESTS);
+  download_manager->DownloadUrl(std::move(params));
 
   // Wait for the download to start.
   download_observer->WaitForFinished();

@@ -2211,19 +2211,18 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
           source_web_contents_->GetBrowserContext(),
           render_frame_host->GetSiteInstance());
 
-  std::unique_ptr<DownloadUrlParameters> dl_params(
-      new DownloadUrlParameters(
-          url, render_frame_host->GetProcess()->GetID(),
-          render_frame_host->GetRenderViewHost()->GetRoutingID(),
-          render_frame_host->GetRoutingID(),
-          storage_partition->GetURLRequestContext()));
+  std::unique_ptr<DownloadUrlParameters> dl_params(new DownloadUrlParameters(
+      url, render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRenderViewHost()->GetRoutingID(),
+      render_frame_host->GetRoutingID(),
+      storage_partition->GetURLRequestContext(), NO_TRAFFIC_ANNOTATION_YET));
   dl_params->set_referrer(CreateReferrer(url, params_));
   dl_params->set_referrer_encoding(params_.frame_charset);
   dl_params->set_suggested_name(params_.suggested_filename);
   dl_params->set_prompt(true);
 
   BrowserContext::GetDownloadManager(browser_context_)
-      ->DownloadUrl(std::move(dl_params), NO_TRAFFIC_ANNOTATION_YET);
+      ->DownloadUrl(std::move(dl_params));
 }
 
 void RenderViewContextMenu::ExecSaveAs() {

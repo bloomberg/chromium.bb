@@ -985,7 +985,8 @@ bool DownloadsDownloadFunction::RunAsync() {
           download_url, render_frame_host()->GetProcess()->GetID(),
           render_frame_host()->GetRenderViewHost()->GetRoutingID(),
           render_frame_host()->GetRoutingID(),
-          storage_partition->GetURLRequestContext()));
+          storage_partition->GetURLRequestContext(),
+          NO_TRAFFIC_ANNOTATION_YET));
 
   base::FilePath creator_suggested_filename;
   if (options.filename.get()) {
@@ -1042,7 +1043,7 @@ bool DownloadsDownloadFunction::RunAsync() {
 
   DownloadManager* manager = BrowserContext::GetDownloadManager(
       current_profile);
-  manager->DownloadUrl(std::move(download_params), NO_TRAFFIC_ANNOTATION_YET);
+  manager->DownloadUrl(std::move(download_params));
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_EXTENSION);
   RecordApiFunctions(DOWNLOADS_FUNCTION_DOWNLOAD);
   return true;
