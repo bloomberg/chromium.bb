@@ -47,7 +47,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
       : shape_cache_(cache),
         text_run_(run),
         font_(font),
-        spacing_(run, font->GetFontDescription()),
+        spacing_(run),
         width_so_far_(0),
         start_index_(0) {
     DCHECK(font);
@@ -56,6 +56,9 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
     // use the cache or if the font doesn't support word by word shaping
     // fall back on shaping the entire run.
     shape_by_word_ = font_->CanShapeWordByWord();
+
+    if (!run.SpacingDisabled())
+      spacing_.SetSpacingAndExpansion(font->GetFontDescription());
   }
 
   bool Next(RefPtr<const ShapeResult>* word_result) {
@@ -202,7 +205,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
   ShapeCache* shape_cache_;
   const TextRun& text_run_;
   const Font* font_;
-  ShapeResultSpacing spacing_;
+  ShapeResultSpacing<TextRun> spacing_;
   float width_so_far_;  // Used only when allowTabs()
   unsigned start_index_ : 31;
   unsigned shape_by_word_ : 1;

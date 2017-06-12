@@ -192,6 +192,8 @@ class PLATFORM_EXPORT TextRun final {
     return codepoint;
   }
 
+  const void* Bytes() const { return data_.bytes_; }
+
   bool Is8Bit() const { return is8_bit_; }
   unsigned length() const { return len_; }
   unsigned CharactersLength() const { return characters_length_; }
@@ -270,6 +272,7 @@ class PLATFORM_EXPORT TextRun final {
   union {
     const LChar* characters8;
     const UChar* characters16;
+    const void* bytes_;
   } data_;
   // Marks the end of the characters buffer.  Default equals to m_len.
   unsigned characters_length_;

@@ -7,30 +7,49 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/text/Character.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 
 class FontDescription;
-class TextRun;
 
+// A context object to apply letter-spacing, word-spacing, and justification to
+// ShapeResult.
+template <typename TextContainerType>
 class PLATFORM_EXPORT ShapeResultSpacing final {
+  STACK_ALLOCATED();
+
  public:
-  ShapeResultSpacing(const TextRun&, const FontDescription&);
+  ShapeResultSpacing(const TextContainerType&);
 
   float LetterSpacing() const { return letter_spacing_; }
   bool HasSpacing() const { return has_spacing_; }
   bool IsVerticalOffset() const { return is_vertical_offset_; }
 
-  float ComputeSpacing(const TextRun&, size_t, float& offset);
+  // Set letter-spacing and word-spacing.
+  bool SetSpacing(const FontDescription&);
+
+  // Set letter-spacing, word-spacing, and justification.
+  // Available only for TextRun.
+  void SetSpacingAndExpansion(const FontDescription&);
+
+  // Compute the sum of all spacings for the specified index.
+  // For justification, this function must be called incrementally since it
+  // keeps states and counts consumed justification opportunities.
+  float ComputeSpacing(const TextContainerType&, size_t, float& offset);
 
  private:
   bool HasExpansion() const { return expansion_opportunity_count_; }
   bool IsAfterExpansion() const { return is_after_expansion_; }
-  bool IsFirstRun(const TextRun&) const;
+  bool IsFirstRun(const TextContainerType&) const;
+
+  void ComputeExpansion(bool allows_leading_expansion,
+                        bool allows_trailing_expansion,
+                        TextJustify);
 
   float NextExpansion();
 
-  const TextRun& text_run_;
+  const TextContainerType& text_;
   float letter_spacing_;
   float word_spacing_;
   float expansion_;
