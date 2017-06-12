@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#include "base/macros.h"
+
 namespace web {
 
 class WebState;
@@ -15,6 +17,8 @@ class WebState;
 // Class used to serialize values added to SerializableUserDataManager.
 class SerializableUserData {
  public:
+  virtual ~SerializableUserData() = default;
+
   // Factory method.
   static std::unique_ptr<SerializableUserData> Create();
 
@@ -23,6 +27,12 @@ class SerializableUserData {
 
   // Decodes the data from |coder|.
   virtual void Decode(NSCoder* coder) = 0;
+
+ protected:
+  SerializableUserData() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SerializableUserData);
 };
 
 // Class that can be used to add serializable user data to a WebState.
@@ -47,6 +57,13 @@ class SerializableUserDataManager {
 
   // Adds the values decoded from |data| to the manager.
   virtual void AddSerializableUserData(SerializableUserData* data) = 0;
+
+ protected:
+  SerializableUserDataManager() = default;
+  ~SerializableUserDataManager() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SerializableUserDataManager);
 };
 
 }  // namespace web

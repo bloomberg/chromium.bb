@@ -13,7 +13,7 @@ namespace web {
 class SerializableUserDataImpl : public SerializableUserData {
  public:
   SerializableUserDataImpl();
-  ~SerializableUserDataImpl();
+  ~SerializableUserDataImpl() override;
 
   // Constructor taking the NSDictionary holding the serializable data.
   explicit SerializableUserDataImpl(NSDictionary* data);
@@ -23,7 +23,7 @@ class SerializableUserDataImpl : public SerializableUserData {
   void Decode(NSCoder* coder) override;
 
   // Returns the serializable data.
-  NSDictionary* data() { return data_; };
+  NSDictionary* data() { return data_; }
 
  private:
   // Decodes the values that were previously encoded using CRWSessionStorage's
