@@ -314,30 +314,25 @@ class Port(object):
         return True
 
     def check_build(self, needs_http, printer):
-        result = True
+        if not self._check_file_exists(self._path_to_driver(), 'test driver'):
+            return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-        dump_render_tree_binary_path = self._path_to_driver()
-        result = self._check_file_exists(dump_render_tree_binary_path,
-                                         'test driver') and result
-        if not result and self.get_option('build'):
-            result = self._check_driver_build_up_to_date(
-                self.get_option('configuration'))
-        else:
-            _log.error('')
+        if not self._check_driver_build_up_to_date(self.get_option('configuration')):
+            return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-        if self.get_option('pixel_tests'):
-            result = self.check_image_diff() and result
+        if self.get_option('pixel_tests') and not self.check_image_diff():
+            return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
         # It's okay if pretty patch isn't available, but we will at least log messages.
         self._pretty_patch_available = self.check_pretty_patch()
 
-        if self._dump_reader:
-            result = self._dump_reader.check_is_functional() and result
+        if self._dump_reader and not self._dump_reader.check_is_functional():
+            return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-        if needs_http:
-            result = self.check_httpd() and result
+        if needs_http and not self.check_httpd():
+            return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-        return exit_codes.OK_EXIT_STATUS if result else exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
+        return exit_codes.OK_EXIT_STATUS
 
     def _check_driver(self):
         driver_path = self._path_to_driver()

@@ -968,15 +968,20 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue('unsupported platform' in stderr.getvalue())
 
     def test_build_check(self):
-        # By using a port_name for a different platform than the one we're running on, the build check should always fail.
+        # By using a port_name for a different platform than the one
+        # we're running on, the build check should always fail because
+        # the binary should not be present.
         if sys.platform == 'darwin':
             port_name = 'linux-trusty'
         else:
             port_name = 'mac-mac10.11'
-        out = StringIO.StringIO()
-        err = StringIO.StringIO()
-        self.assertEqual(run_webkit_tests.main(
-            ['--platform', port_name, 'fast/harness/results.html'], out, err), exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
+        stdout = StringIO.StringIO()
+        stderr = StringIO.StringIO()
+        self.assertEqual(
+            run_webkit_tests.main(['--platform', port_name, 'fast/harness/results.html'], stdout, stderr),
+            exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
+        self.assertIn('Checking build ...', stderr.getvalue())
+        self.assertIn('Build check failed', stderr.getvalue())
 
     def test_verbose_in_child_processes(self):
         # When we actually run multiple processes, we may have to reconfigure logging in the
