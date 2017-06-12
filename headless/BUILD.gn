@@ -514,7 +514,9 @@ if (is_mac) {
   }
 }
 
-if (!is_win) {
+# The js_binary rule doesn't currently work on windows. Apparently there are
+# problems on mac too where java isn't necessarily installed.
+if (is_linux) {
   js_binary("js_devtools_bindings_test") {
     sources = [
       "test/bindings_test.js",
@@ -622,8 +624,8 @@ test("headless_browsertests") {
     "//testing/gtest",
   ]
 
-  # The js_binary rule doesn't currently work on windows.
-  if (!is_win) {
+  # Only include this if we built the js_binary
+  if (is_linux) {
     data += [ "$root_out_dir/headless_browser_tests.pak" ]
     sources += [ "test/headless_js_bindings_browsertest.cc" ]
     deps += [ ":headless_browser_tests_pak" ]
