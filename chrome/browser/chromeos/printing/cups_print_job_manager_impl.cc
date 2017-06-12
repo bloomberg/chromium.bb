@@ -73,8 +73,7 @@ JobResultForHistogram ResultForHistogram(State state) {
 }
 
 void RecordJobResult(JobResultForHistogram result) {
-  UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.JobResult", TIMEOUT_CANCEL,
-                            RESULT_MAX);
+  UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.JobResult", result, RESULT_MAX);
 }
 
 // Returns the equivalient CupsPrintJob#State from a CupsJob#JobState.
