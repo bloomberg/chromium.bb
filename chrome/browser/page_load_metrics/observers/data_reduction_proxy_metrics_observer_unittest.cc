@@ -114,6 +114,7 @@ class TestDataReductionProxyMetricsObserver
     DataReductionProxyData* data =
         DataForNavigationHandle(web_contents_, navigation_handle);
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
+    data->set_request_url(GURL(kDefaultTestUrl));
     data->set_lofi_requested(lofi_used_);
     return DataReductionProxyMetricsObserver::OnCommit(navigation_handle,
                                                        source_id);
@@ -417,6 +418,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   std::unique_ptr<DataReductionProxyData> data =
       base::MakeUnique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
+  data->set_request_url(GURL(kDefaultTestUrl));
   data->set_lofi_received(true);
 
   // Verify LoFi is tracked when a LoFi response is received.
@@ -443,12 +445,12 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   EXPECT_FALSE(pingback_client_->send_pingback_called());
 
   ResetTest();
-  // Verify that when the holdback experiment is enabled, no pingback is sent.
+  // Verify that when the holdback experiment is enabled, a pingback is sent.
   base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
   RunTestAndNavigateToUntrackedUrl(true, false);
-  EXPECT_FALSE(pingback_client_->send_pingback_called());
+  EXPECT_TRUE(pingback_client_->send_pingback_called());
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
@@ -459,6 +461,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   std::unique_ptr<DataReductionProxyData> data =
       base::MakeUnique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
+  data->set_request_url(GURL(kDefaultTestUrl));
 
   // Prepare 4 resources of varying size and configurations.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
@@ -518,6 +521,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   std::unique_ptr<DataReductionProxyData> data =
       base::MakeUnique<DataReductionProxyData>();
   data->set_used_data_reduction_proxy(true);
+  data->set_request_url(GURL(kDefaultTestUrl));
 
   // Prepare 4 resources of varying size and configurations.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {

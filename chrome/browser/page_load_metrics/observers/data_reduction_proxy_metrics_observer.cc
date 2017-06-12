@@ -152,6 +152,7 @@ DataReductionProxyMetricsObserver::OnCommit(
   data_ = data->DeepCopy();
   // DataReductionProxy page loads should only occur on HTTP navigations.
   DCHECK(!navigation_handle->GetURL().SchemeIsCryptographic());
+  DCHECK_EQ(data_->request_url(), navigation_handle->GetURL());
   return CONTINUE_OBSERVING;
 }
 
@@ -278,10 +279,6 @@ void DataReductionProxyMetricsObserver::SendPingback(
   // shutdown cases. crbug.com/618072
   if (!browser_context_ || !data_)
     return;
-  if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() ||
-      data_reduction_proxy::params::IsIncludedInTamperDetectionExperiment()) {
-    return;
-  }
   // Only consider timing events that happened before the first background
   // event.
   base::Optional<base::TimeDelta> response_start;

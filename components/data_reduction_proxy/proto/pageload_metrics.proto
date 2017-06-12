@@ -101,4 +101,8 @@ message PageloadMetrics {
 
   // The previews type that was used on the page.
   optional PreviewsType previews_type = 18;
+
+  // Whether the user is included in the data reduction proxy holdback
+  // experiment.
+  optional bool holdback = 19;
 }
