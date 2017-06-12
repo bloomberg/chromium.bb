@@ -57,29 +57,29 @@ class MediaPageLoadMetricsObserverTest
     // Prepare 4 resources of varying size and configurations.
     page_load_metrics::ExtraRequestCompleteInfo resources[] = {
         // Cached request.
-        {GURL(), -1 /* frame_tree_node_id */, true /*was_cached*/,
-         1024 * 40 /* raw_body_bytes */,
+        {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+         true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
          0 /* original_network_content_length */,
          nullptr /* data_reduction_proxy_data */,
-         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
         // Uncached non-proxied request.
-        {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
-         1024 * 40 /* raw_body_bytes */,
+        {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+         false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
          1024 * 40 /* original_network_content_length */,
          nullptr /* data_reduction_proxy_data */,
-         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
         // Uncached proxied request with .1 compression ratio.
-        {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
-         1024 * 40 /* raw_body_bytes */,
+        {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+         false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
          1024 * 40 /* original_network_content_length */,
          nullptr /* data_reduction_proxy_data */,
-         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
         // Uncached proxied request with .5 compression ratio.
-        {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
-         1024 * 40 /* raw_body_bytes */,
+        {GURL(), net::HostPortPair(), -1 /* frame_tree_node_id */,
+         false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
          1024 * 40 /* original_network_content_length */,
          nullptr /* data_reduction_proxy_data */,
-         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
+         content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, 0},
     };
 
     for (const auto& request : resources) {

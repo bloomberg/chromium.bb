@@ -303,6 +303,7 @@ void MetricsWebContentsObserver::OnRequestStarted(
 
 void MetricsWebContentsObserver::OnRequestComplete(
     const GURL& url,
+    const net::HostPortPair& host_port_pair,
     int frame_tree_node_id,
     const content::GlobalRequestID& request_id,
     content::ResourceType resource_type,
@@ -311,14 +312,15 @@ void MetricsWebContentsObserver::OnRequestComplete(
         data_reduction_proxy_data,
     int64_t raw_body_bytes,
     int64_t original_content_length,
-    base::TimeTicks creation_time) {
+    base::TimeTicks creation_time,
+    int net_error) {
   PageLoadTracker* tracker =
       GetTrackerOrNullForRequest(request_id, resource_type, creation_time);
   if (tracker) {
     ExtraRequestCompleteInfo extra_request_complete_info(
-        url, frame_tree_node_id, was_cached, raw_body_bytes,
+        url, host_port_pair, frame_tree_node_id, was_cached, raw_body_bytes,
         was_cached ? 0 : original_content_length,
-        std::move(data_reduction_proxy_data), resource_type);
+        std::move(data_reduction_proxy_data), resource_type, net_error);
     tracker->OnLoadedResource(extra_request_complete_info);
   }
 }

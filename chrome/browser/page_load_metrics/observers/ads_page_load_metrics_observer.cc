@@ -195,10 +195,11 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
           std::piecewise_construct,
           std::forward_as_tuple(extra_request_info.frame_tree_node_id),
           std::forward_as_tuple(
-              extra_request_info.url, extra_request_info.frame_tree_node_id,
+              extra_request_info.url, extra_request_info.host_port_pair,
+              extra_request_info.frame_tree_node_id,
               extra_request_info.was_cached, extra_request_info.raw_body_bytes,
               extra_request_info.original_network_content_length, nullptr,
-              extra_request_info.resource_type));
+              extra_request_info.resource_type, extra_request_info.net_error));
     } else {
       // This is unexpected, it could be:
       // 1. a resource from a previous navigation that started its resource
