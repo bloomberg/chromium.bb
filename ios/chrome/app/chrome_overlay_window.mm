@@ -5,14 +5,17 @@
 #import "ios/chrome/app/chrome_overlay_window.h"
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "ios/chrome/browser/metrics/size_class_recorder.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface ChromeOverlayWindow () {
-  base::scoped_nsobject<SizeClassRecorder> _recorder;
+  SizeClassRecorder* _recorder;
 }
 
 // Initializes the size class recorder. On iPad iOS 9+, it starts tracking
@@ -48,8 +51,8 @@
 - (void)initializeRecorderIfNeeded {
   DCHECK(!_recorder);
   if (IsIPadIdiom()) {
-    _recorder.reset([[SizeClassRecorder alloc]
-        initWithHorizontalSizeClass:self.traitCollection.horizontalSizeClass]);
+    _recorder = [[SizeClassRecorder alloc]
+        initWithHorizontalSizeClass:self.traitCollection.horizontalSizeClass];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(pageLoaded:)
@@ -65,7 +68,6 @@
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 #pragma mark - UITraitEnvironment
@@ -90,7 +92,7 @@
 #pragma mark - Testing methods
 
 - (void)unsetSizeClassRecorder {
-  _recorder.reset();
+  _recorder = nil;
 }
 
 @end

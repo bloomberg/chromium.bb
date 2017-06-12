@@ -30,19 +30,19 @@
                                      TabSwitching>
 
 // A BrowserViewInformation object to perform BrowserViewController operations.
-@property(nonatomic, readonly) id<BrowserViewInformation>
+@property(weak, nonatomic, readonly) id<BrowserViewInformation>
     browserViewInformation;
 
 // The application window.
-@property(nonatomic, retain) UIWindow* window;
+@property(nonatomic, strong) UIWindow* window;
 
 // Contains information about the application state, for example whether the
 // safe mode is activated.
-@property(nonatomic, assign) AppState* appState;
+@property(nonatomic, weak) AppState* appState;
 
 // This metrics mediator is used to check and update the metrics accordingly to
 // to the user preferences.
-@property(nonatomic, assign) MetricsMediator* metricsMediator;
+@property(nonatomic, weak) MetricsMediator* metricsMediator;
 
 // UIResponder addition to execute a Chrome command.  Overridden in UIWindow to
 // forward the call to the application delegate. The application delegate

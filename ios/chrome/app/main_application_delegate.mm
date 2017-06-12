@@ -5,7 +5,6 @@
 #import "ios/chrome/app/main_application_delegate.h"
 
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/background_activity.h"
@@ -23,25 +22,29 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface MainApplicationDelegate () {
-  base::scoped_nsobject<MainController> _mainController;
+  MainController* _mainController;
   // Memory helper used to log the number of memory warnings received.
-  base::scoped_nsobject<MemoryWarningHelper> _memoryHelper;
+  MemoryWarningHelper* _memoryHelper;
   // Metrics mediator used to check and update the metrics accordingly to
   // to the user preferences.
-  base::scoped_nsobject<MetricsMediator> _metricsMediator;
+  MetricsMediator* _metricsMediator;
   // Browser launcher to have a global launcher.
-  base::scoped_nsprotocol<id<BrowserLauncher>> _browserLauncher;
+  id<BrowserLauncher> _browserLauncher;
   // Container for startup information.
-  base::scoped_nsprotocol<id<StartupInformation>> _startupInformation;
+  id<StartupInformation> _startupInformation;
   // Helper to open new tabs.
-  base::scoped_nsprotocol<id<TabOpening>> _tabOpener;
+  id<TabOpening> _tabOpener;
   // Handles the application stage changes.
-  base::scoped_nsobject<AppState> _appState;
+  AppState* _appState;
   // Handles tab switcher.
-  base::scoped_nsprotocol<id<AppNavigation>> _appNavigation;
+  id<AppNavigation> _appNavigation;
   // Handles tab switcher.
-  base::scoped_nsprotocol<id<TabSwitching>> _tabSwitcherProtocol;
+  id<TabSwitching> _tabSwitcherProtocol;
 }
 
 @end
@@ -50,19 +53,18 @@
 
 - (instancetype)init {
   if (self = [super init]) {
-    _memoryHelper.reset([[MemoryWarningHelper alloc] init]);
-    _mainController.reset([[MainController alloc] init]);
-    _metricsMediator.reset([[MetricsMediator alloc] init]);
+    _memoryHelper = [[MemoryWarningHelper alloc] init];
+    _mainController = [[MainController alloc] init];
+    _metricsMediator = [[MetricsMediator alloc] init];
     [_mainController setMetricsMediator:_metricsMediator];
-    _browserLauncher.reset([_mainController retain]);
-    _startupInformation.reset([_mainController retain]);
-    _tabOpener.reset([_mainController retain]);
-    _appState.reset([[AppState alloc]
-        initWithBrowserLauncher:_browserLauncher
-             startupInformation:_startupInformation
-            applicationDelegate:self]);
-    _tabSwitcherProtocol.reset([_mainController retain]);
-    _appNavigation.reset([_mainController retain]);
+    _browserLauncher = _mainController;
+    _startupInformation = _mainController;
+    _tabOpener = _mainController;
+    _appState = [[AppState alloc] initWithBrowserLauncher:_browserLauncher
+                                       startupInformation:_startupInformation
+                                      applicationDelegate:self];
+    _tabSwitcherProtocol = _mainController;
+    _appNavigation = _mainController;
     [_mainController setAppState:_appState];
   }
   return self;
@@ -90,8 +92,8 @@
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   // Main window must be ChromeOverlayWindow or a subclass of it.
-  self.window = [[[ChromeOverlayWindow alloc]
-      initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
+  self.window = [[ChromeOverlayWindow alloc]
+      initWithFrame:[[UIScreen mainScreen] bounds]];
 
   BOOL inBackground =
       [application applicationState] == UIApplicationStateBackground;

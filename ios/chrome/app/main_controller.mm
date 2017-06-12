@@ -18,8 +18,6 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -148,6 +146,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "net/url_request/url_request_context.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Preference key used to store which profile is current.
@@ -242,31 +244,23 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // The ChromeBrowserState associated with the main (non-OTR) browsing mode.
   ios::ChromeBrowserState* _mainBrowserState;  // Weak.
 
-  // Coordinators used to run the Chrome UI; there will be one of these active
-  // at any given time, usually |_mainCoordinator|.
-  // Main coordinator, backing object for the property of the same name, which
-  // lazily initializes on access.
-  base::scoped_nsobject<MainCoordinator> _mainCoordinator;
-
   // Wrangler to handle BVC and tab model creation, access, and related logic.
   // Implements faetures exposed from this object through the
   // BrowserViewInformation protocol.
-  base::scoped_nsobject<BrowserViewWrangler> _browserViewWrangler;
+  BrowserViewWrangler* _browserViewWrangler;
 
   // Parameters received at startup time when the app is launched from another
   // app.
-  base::scoped_nsobject<AppStartupParameters> _startupParameters;
+  AppStartupParameters* _startupParameters;
 
   // Navigation View controller for the settings.
-  base::scoped_nsobject<SettingsNavigationController>
-      _settingsNavigationController;
+  SettingsNavigationController* _settingsNavigationController;
 
   // View controller for switching tabs.
-  base::scoped_nsobject<UIViewController<TabSwitcher>> _tabSwitcherController;
+  UIViewController<TabSwitcher>* _tabSwitcherController;
 
   // Controller to display the re-authentication flow.
-  base::scoped_nsobject<SigninInteractionController>
-      _signinInteractionController;
+  SigninInteractionController* _signinInteractionController;
 
   // YES while animating the dismissal of stack view.
   BOOL _dismissingStackView;
@@ -283,7 +277,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   BOOL _isColdStart;
 
   // Keeps track of the restore state during startup.
-  base::scoped_nsobject<CrashRestoreHelper> _restoreHelper;
+  CrashRestoreHelper* _restoreHelper;
 
   // An object to record metrics related to the user's first action.
   std::unique_ptr<FirstUserActionRecorder> _firstUserActionRecorder;
@@ -318,34 +312,31 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   PrefChangeRegistrar _localStatePrefChangeRegistrar;
 
   // Clears browsing data from ChromeBrowserStates.
-  base::scoped_nsobject<BrowsingDataRemovalController>
-      _browsingDataRemovalController;
+  BrowsingDataRemovalController* _browsingDataRemovalController;
 
   // The class in charge of showing/hiding the memory debugger when the
   // appropriate pref changes.
-  base::scoped_nsobject<MemoryDebuggerManager> _memoryDebuggerManager;
-
-  base::mac::ObjCPropertyReleaser _propertyReleaser_MainController;
+  MemoryDebuggerManager* _memoryDebuggerManager;
 
   // Responsible for indexing chrome links (such as bookmarks, most likely...)
   // in system Spotlight index.
-  base::scoped_nsobject<SpotlightManager> _spotlightManager;
+  SpotlightManager* _spotlightManager;
 
   // Cached launchOptions from -didFinishLaunchingWithOptions.
-  base::scoped_nsobject<NSDictionary> _launchOptions;
+  NSDictionary* _launchOptions;
 
   // View controller for displaying the history panel.
-  base::scoped_nsobject<UIViewController> _historyPanelViewController;
+  UIViewController* _historyPanelViewController;
 
   // Variable backing metricsMediator property.
-  base::WeakNSObject<MetricsMediator> _metricsMediator;
+  __weak MetricsMediator* _metricsMediator;
 
   // Hander for the startup tasks, deferred or not.
-  base::scoped_nsobject<StartupTasks> _startupTasks;
+  StartupTasks* _startupTasks;
 }
 
 // Pointer to the main view controller, always owned by the main window.
-@property(nonatomic, readonly) MainViewController* mainViewController;
+@property(weak, nonatomic, readonly) MainViewController* mainViewController;
 
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the MainViewController. This property should not be accessed before the
@@ -528,6 +519,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 @implementation MainController
 
+@synthesize mainCoordinator = _mainCoordinator;
 @synthesize appState = _appState;
 @synthesize appLaunchTime = _appLaunchTime;
 @synthesize browserInitializationStage = _browserInitializationStage;
@@ -540,13 +532,16 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     _startQRScannerAfterTabSwitcherDismissal;
 @synthesize startFocusOmniboxAfterTabSwitcherDismissal =
     _startFocusOmniboxAfterTabSwitcherDismissal;
+@synthesize launchOptions = _launchOptions;
+@synthesize startupParameters = _startupParameters;
+@synthesize metricsMediator = _metricsMediator;
+@synthesize settingsNavigationController = _settingsNavigationController;
 
 #pragma mark - Application lifecycle
 
 - (instancetype)init {
   if ((self = [super init])) {
-    _propertyReleaser_MainController.Init(self, [MainController class]);
-    _startupTasks.reset([[StartupTasks alloc] init]);
+    _startupTasks = [[StartupTasks alloc] init];
   }
   return self;
 }
@@ -556,7 +551,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
   net::RequestTracker::SetRequestTrackerFactory(nullptr);
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
-  [super dealloc];
 }
 
 // This function starts up to only what is needed at each stage of the
@@ -678,8 +672,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // until the BVC receives the browser state and tab model.
   BOOL postCrashLaunch = [self mustShowRestoreInfobar];
   if (postCrashLaunch) {
-    _restoreHelper.reset(
-        [[CrashRestoreHelper alloc] initWithBrowserState:chromeBrowserState]);
+    _restoreHelper =
+        [[CrashRestoreHelper alloc] initWithBrowserState:chromeBrowserState];
     [_restoreHelper moveAsideSessionInformation];
   }
 
@@ -687,14 +681,14 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [self initializeBrowserState:chromeBrowserState];
   _mainBrowserState = chromeBrowserState;
   [_browserViewWrangler shutdown];
-  _browserViewWrangler.reset([[BrowserViewWrangler alloc]
-      initWithBrowserState:_mainBrowserState
-          tabModelObserver:self]);
+  _browserViewWrangler =
+      [[BrowserViewWrangler alloc] initWithBrowserState:_mainBrowserState
+                                       tabModelObserver:self];
   // Ensure the main tab model is created.
   ignore_result([_browserViewWrangler mainTabModel]);
 
-  _spotlightManager.reset([[SpotlightManager
-      spotlightManagerWithBrowserState:_mainBrowserState] retain]);
+  _spotlightManager =
+      [SpotlightManager spotlightManagerWithBrowserState:_mainBrowserState];
 
   ShareExtensionService* service =
       ShareExtensionServiceFactory::GetForBrowserState(_mainBrowserState);
@@ -729,7 +723,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [self openTabFromLaunchOptions:_launchOptions
               startupInformation:self
                         appState:self.appState];
-  _launchOptions.reset();
+  _launchOptions = nil;
 
   mojo::edk::Init();
 
@@ -738,7 +732,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     // infobar is displayed now, it may be dismissed immediately and the user
     // will never be able to restore the session.
     [_restoreHelper showRestoreIfNeeded:[self currentTabModel]];
-    _restoreHelper.reset();
+    _restoreHelper = nil;
   }
 
   [self scheduleTasksRequiringBVCWithBrowserState];
@@ -754,9 +748,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       ios::TemplateURLServiceFactory::GetForBrowserState(browserState));
 
   if ([TouchToSearchPermissionsMediator isTouchToSearchAvailableOnDevice]) {
-    base::scoped_nsobject<TouchToSearchPermissionsMediator>
-        touchToSearchPermissions([[TouchToSearchPermissionsMediator alloc]
-            initWithBrowserState:browserState]);
+    TouchToSearchPermissionsMediator* touchToSearchPermissions =
+        [[TouchToSearchPermissionsMediator alloc]
+            initWithBrowserState:browserState];
     if (experimental_flags::IsForceResetContextualSearchEnabled()) {
       [touchToSearchPermissions setPreferenceState:TouchToSearch::UNDECIDED];
     }
@@ -775,12 +769,12 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
   [self markEulaAsAccepted];
 
-  if (_startupParameters.get()) {
+  if (_startupParameters) {
     [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
                                         withURL:[_startupParameters externalURL]
                                      transition:ui::PAGE_TRANSITION_LINK
                                      completion:nil];
-    _startupParameters.reset();
+    _startupParameters = nil;
   }
 }
 
@@ -837,8 +831,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (BrowsingDataRemovalController*)browsingDataRemovalController {
   if (!_browsingDataRemovalController) {
-    _browsingDataRemovalController.reset(
-        [[BrowsingDataRemovalController alloc] initWithDelegate:self]);
+    _browsingDataRemovalController =
+        [[BrowsingDataRemovalController alloc] initWithDelegate:self];
   }
   return _browsingDataRemovalController;
 }
@@ -865,28 +859,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   }
 }
 
-#pragma mark - BrowserLauncher implementation.
-
-- (NSDictionary*)launchOptions {
-  return _launchOptions;
-}
-
-- (void)setLaunchOptions:(NSDictionary*)launchOptions {
-  _launchOptions.reset([launchOptions retain]);
-}
-
 #pragma mark - Property implementation.
 
 - (id<BrowserViewInformation>)browserViewInformation {
   return _browserViewWrangler;
-}
-
-- (AppStartupParameters*)startupParameters {
-  return _startupParameters;
-}
-
-- (void)setStartupParameters:(AppStartupParameters*)startupParameters {
-  _startupParameters.reset([startupParameters retain]);
 }
 
 - (MainViewController*)mainViewController {
@@ -900,31 +876,13 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   }
   if (!_mainCoordinator) {
     // Lazily create the main coordinator.
-    _mainCoordinator.reset(
-        [[MainCoordinator alloc] initWithWindow:self.window]);
+    _mainCoordinator = [[MainCoordinator alloc] initWithWindow:self.window];
   }
   return _mainCoordinator;
 }
 
 - (BOOL)isFirstLaunchAfterUpgrade {
   return [[PreviousSessionInfo sharedInstance] isFirstSessionAfterUpgrade];
-}
-
-- (MetricsMediator*)metricsMediator {
-  return _metricsMediator;
-}
-
-- (void)setMetricsMediator:(MetricsMediator*)metricsMediator {
-  _metricsMediator.reset(metricsMediator);
-}
-
-- (SettingsNavigationController*)settingsNavigationController {
-  return _settingsNavigationController;
-}
-
-- (void)setSettingsNavigationController:
-    (SettingsNavigationController*)settingsNavigationController {
-  _settingsNavigationController.reset([settingsNavigationController retain]);
 }
 
 #pragma mark - StartupInformation implementation.
@@ -951,10 +909,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (void)stopChromeMain {
   [_spotlightManager shutdown];
-  _spotlightManager.reset();
+  _spotlightManager = nil;
 
   [_browserViewWrangler shutdown];
-  _browserViewWrangler.reset();
+  _browserViewWrangler = nil;
 
   _chromeMain.reset();
 }
@@ -1154,11 +1112,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     [[DeferredInitializationRunner sharedInstance]
         enqueueBlockNamed:kMemoryDebuggingToolsStartup
                     block:^{
-                      _memoryDebuggerManager.reset(
-                          [[MemoryDebuggerManager alloc]
-                              initWithView:self.window
-                                     prefs:GetApplicationContext()
-                                               ->GetLocalState()]);
+                      _memoryDebuggerManager = [[MemoryDebuggerManager alloc]
+                          initWithView:self.window
+                                 prefs:GetApplicationContext()
+                                           ->GetLocalState()];
                     }];
   }
 }
@@ -1293,7 +1250,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   if (firstRun) {
     [self showFirstRunUI];
     // Do not ever show the 'restore' infobar during first run.
-    _restoreHelper.reset();
+    _restoreHelper = nil;
   }
 }
 
@@ -1312,13 +1269,13 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
              name:kChromeFirstRunUIDidFinishNotification
            object:nil];
 
-  base::scoped_nsobject<WelcomeToChromeViewController> welcomeToChrome(
+  WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
           initWithBrowserState:_mainBrowserState
-                      tabModel:self.mainTabModel]);
-  base::scoped_nsobject<UINavigationController> navController(
+                      tabModel:self.mainTabModel];
+  UINavigationController* navController =
       [[OrientationLimitingNavigationController alloc]
-          initWithRootViewController:welcomeToChrome]);
+          initWithRootViewController:welcomeToChrome];
   [navController setModalTransitionStyle:UIModalTransitionStyleCrossDissolve];
   CGRect appFrame = [[UIScreen mainScreen] bounds];
   [[navController view] setFrame:appFrame];
@@ -1384,9 +1341,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // Make sure we have the BVC here with a valid profile.
   DCHECK([self.currentBVC browserState]);
 
-  base::scoped_nsobject<OrientationLimitingNavigationController> navController(
+  OrientationLimitingNavigationController* navController =
       [[OrientationLimitingNavigationController alloc]
-          initWithRootViewController:promo]);
+          initWithRootViewController:promo];
 
   // Avoid presenting the promo if the current device orientation is not
   // supported. The promo will be presented at a later moment, when the device
@@ -1425,11 +1382,11 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case IDC_OPTIONS:
       [self showSettings];
       break;
-    case IDC_REPORT_AN_ISSUE:
+    case IDC_REPORT_AN_ISSUE: {
       dispatch_async(dispatch_get_main_queue(), ^{
         [self showReportAnIssue];
       });
-      break;
+    } break;
     case IDC_SHOW_SIGNIN_IOS: {
       ShowSigninCommand* command =
           base::mac::ObjCCastStrict<ShowSigninCommand>(sender);
@@ -1460,7 +1417,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case IDC_SHOW_HISTORY:
       [self showHistory];
       break;
-    case IDC_TOGGLE_TAB_SWITCHER:
+    case IDC_TOGGLE_TAB_SWITCHER: {
       DCHECK(!_tabSwitcherIsActive);
       if (!_isProcessingVoiceSearchCommand) {
         [self showTabSwitcher];
@@ -1471,11 +1428,12 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                          _isProcessingTabSwitcherCommand = NO;
                        });
       }
-      break;
+    } break;
+
     case IDC_PRELOAD_VOICE_SEARCH:
       [self.currentBVC chromeExecuteCommand:sender];
       break;
-    case IDC_VOICE_SEARCH:
+    case IDC_VOICE_SEARCH: {
       if (!_isProcessingTabSwitcherCommand) {
         [self startVoiceSearch];
         _isProcessingVoiceSearchCommand = YES;
@@ -1485,7 +1443,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                          _isProcessingVoiceSearchCommand = NO;
                        });
       }
-      break;
+    } break;
+
     case IDC_CLEAR_BROWSING_DATA_IOS: {
       // Clear both the main browser state and the associated incognito
       // browser state.
@@ -1665,7 +1624,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // deleted. All of the request trackers associated with the closed OTR tabs
   // will have posted CancelRequest calls to the IO thread by now; this just
   // waits for those calls to run before calling |deleteIncognitoBrowserState|.
-  web::RequestTrackerImpl::RunAfterRequestsCancel(base::BindBlock(^{
+  web::RequestTrackerImpl::RunAfterRequestsCancel(base::BindBlockArc(^{
     [self deleteIncognitoBrowserState];
   }));
 
@@ -1757,24 +1716,24 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // which will cache the first snapshot for the tab and reuse it instead of
   // regenerating a new one each time.
   [currentTab setSnapshotCoalescingEnabled:YES];
-  base::ScopedClosureRunner runner(base::BindBlock(^{
+  base::ScopedClosureRunner runner(base::BindBlockArc(^{
     [currentTab setSnapshotCoalescingEnabled:NO];
   }));
 
   [currentBVC prepareToEnterTabSwitcher:nil];
 
-  if (!_tabSwitcherController.get()) {
+  if (!_tabSwitcherController) {
     if (IsIPadIdiom()) {
-      _tabSwitcherController.reset([[TabSwitcherController alloc]
+      _tabSwitcherController = [[TabSwitcherController alloc]
           initWithBrowserState:_mainBrowserState
                   mainTabModel:self.mainTabModel
                    otrTabModel:self.otrTabModel
-                activeTabModel:self.currentTabModel]);
+                activeTabModel:self.currentTabModel];
     } else {
-      _tabSwitcherController.reset([[StackViewController alloc]
+      _tabSwitcherController = [[StackViewController alloc]
           initWithMainTabModel:self.mainTabModel
                    otrTabModel:self.otrTabModel
-                activeTabModel:self.currentTabModel]);
+                activeTabModel:self.currentTabModel];
     }
   } else {
     // The StackViewController is kept in memory to avoid the performance hit of
@@ -1883,7 +1842,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (void)finishDismissingStackView {
   DCHECK_EQ(self.mainViewController.activeViewController,
-            _tabSwitcherController.get());
+            _tabSwitcherController);
 
   if (_modeToDisplayOnStackViewDismissal == StackViewDismissalMode::NORMAL) {
     self.currentBVC = self.mainBVC;
@@ -1956,9 +1915,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ios::ChromeBrowserState*)browserState {
-  base::scoped_nsobject<UIViewController> accountsViewController(
-      [[SignedInAccountsViewController alloc]
-          initWithBrowserState:browserState]);
+  UIViewController* accountsViewController = [
+      [SignedInAccountsViewController alloc] initWithBrowserState:browserState];
   [[self topPresentedViewController]
       presentViewController:accountsViewController
                    animated:YES
@@ -1971,10 +1929,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [[DeferredInitializationRunner sharedInstance]
       runBlockIfNecessary:kPrefObserverInit];
   DCHECK(_localStatePrefObserverBridge);
-  _settingsNavigationController.reset([SettingsNavigationController
+  _settingsNavigationController = [SettingsNavigationController
       newSettingsMainControllerWithMainBrowserState:_mainBrowserState
                                 currentBrowserState:self.currentBrowserState
-                                           delegate:self]);
+                                           delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -1988,9 +1946,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     NOTREACHED();
     return;
   }
-  _settingsNavigationController.reset([SettingsNavigationController
+  _settingsNavigationController = [SettingsNavigationController
       newAccountsController:self.currentBrowserState
-                   delegate:self]);
+                   delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -2000,10 +1958,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showSyncSettings {
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController.reset([SettingsNavigationController
-           newSyncController:_mainBrowserState
-      allowSwitchSyncAccount:YES
-                    delegate:self]);
+  _settingsNavigationController =
+      [SettingsNavigationController newSyncController:_mainBrowserState
+                               allowSwitchSyncAccount:YES
+                                             delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -2013,9 +1971,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showSavePasswordsSettings {
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController.reset([SettingsNavigationController
-      newSavePasswordsController:_mainBrowserState
-                        delegate:self]);
+  _settingsNavigationController =
+      [SettingsNavigationController newSavePasswordsController:_mainBrowserState
+                                                      delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -2025,9 +1983,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showAutofillSettings {
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController.reset([SettingsNavigationController
-      newAutofillController:_mainBrowserState
-                   delegate:self]);
+  _settingsNavigationController =
+      [SettingsNavigationController newAutofillController:_mainBrowserState
+                                                 delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -2037,10 +1995,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showReportAnIssue {
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController.reset([SettingsNavigationController
-      newUserFeedbackController:_mainBrowserState
-                       delegate:self
-             feedbackDataSource:self]);
+  _settingsNavigationController =
+      [SettingsNavigationController newUserFeedbackController:_mainBrowserState
+                                                     delegate:self
+                                           feedbackDataSource:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -2050,9 +2008,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showSyncEncryptionPassphrase {
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController.reset([SettingsNavigationController
+  _settingsNavigationController = [SettingsNavigationController
       newSyncEncryptionPassphraseController:_mainBrowserState
-                                   delegate:self]);
+                                   delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -2062,9 +2020,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showClearBrowsingDataSettingsController {
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController.reset([SettingsNavigationController
+  _settingsNavigationController = [SettingsNavigationController
       newClearBrowsingDataController:_mainBrowserState
-                            delegate:self]);
+                            delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -2074,9 +2032,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showContextualSearchSettingsController {
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController.reset([SettingsNavigationController
+  _settingsNavigationController = [SettingsNavigationController
       newContextualSearchController:_mainBrowserState
-                           delegate:self]);
+                           delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -2097,15 +2055,15 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   }
 
   BOOL areSettingsPresented = _settingsNavigationController != NULL;
-  _signinInteractionController.reset([[SigninInteractionController alloc]
+  _signinInteractionController = [[SigninInteractionController alloc]
           initWithBrowserState:_mainBrowserState
       presentingViewController:[self topPresentedViewController]
          isPresentedOnSettings:areSettingsPresented
                    accessPoint:accessPoint
-                   promoAction:promoAction]);
+                   promoAction:promoAction];
 
   signin_ui::CompletionCallback completion = ^(BOOL success) {
-    _signinInteractionController.reset();
+    _signinInteractionController = nil;
     if (callback)
       callback(success);
   };
@@ -2137,25 +2095,25 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   }
 
   BOOL areSettingsPresented = _settingsNavigationController != NULL;
-  _signinInteractionController.reset([[SigninInteractionController alloc]
+  _signinInteractionController = [[SigninInteractionController alloc]
           initWithBrowserState:_mainBrowserState
       presentingViewController:[self topPresentedViewController]
          isPresentedOnSettings:areSettingsPresented
                    accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN
                    promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_NO_SIGNIN_PROMO]);
+                                   PROMO_ACTION_NO_SIGNIN_PROMO];
 
   [_signinInteractionController
       addAccountWithCompletion:^(BOOL success) {
-        _signinInteractionController.reset();
+        _signinInteractionController = nil;
       }
                 viewController:self.mainViewController];
 }
 
 - (void)showHistory {
-  _historyPanelViewController.reset([[HistoryPanelViewController
+  _historyPanelViewController = [HistoryPanelViewController
       controllerToPresentForBrowserState:_mainBrowserState
-                                  loader:self.currentBVC] retain]);
+                                  loader:self.currentBVC];
   [self.currentBVC presentViewController:_historyPanelViewController
                                 animated:YES
                               completion:nil];
@@ -2171,7 +2129,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (ShowSigninCommandCompletionCallback)successfulSigninCompletion:
     (ProceduralBlock)callback {
-  return [[^(BOOL successful) {
+  return [^(BOOL successful) {
     ios::ChromeBrowserState* browserState = [self currentBrowserState];
     if (browserState->IsOffTheRecord()) {
       NOTREACHED()
@@ -2183,15 +2141,15 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
         ios::SigninManagerFactory::GetForBrowserState(browserState);
     if (signinManager->IsAuthenticated())
       callback();
-  } copy] autorelease];
+  } copy];
 }
 
 - (void)showNativeAppsSettings {
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController.reset([SettingsNavigationController
-      newNativeAppsController:_mainBrowserState
-                     delegate:self]);
+  _settingsNavigationController =
+      [SettingsNavigationController newNativeAppsController:_mainBrowserState
+                                                   delegate:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES
@@ -2210,7 +2168,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                                                  if (completion)
                                                    completion();
                                                }];
-  _settingsNavigationController.reset();
+  _settingsNavigationController = nil;
 }
 
 #pragma mark - TabModelObserver
@@ -2336,7 +2294,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     // restore infobar if needed.
     dispatch_async(dispatch_get_main_queue(), ^{
       [_restoreHelper showRestoreIfNeeded:[self currentTabModel]];
-      _restoreHelper.reset();
+      _restoreHelper = nil;
     });
   }
 
@@ -2558,15 +2516,15 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (UIViewController<TabSwitcher>*)tabSwitcherController {
-  return _tabSwitcherController.get();
+  return _tabSwitcherController;
 }
 
 - (void)setTabSwitcherController:(UIViewController<TabSwitcher>*)controller {
-  _tabSwitcherController.reset([controller retain]);
+  _tabSwitcherController = controller;
 }
 
 - (SigninInteractionController*)signinInteractionController {
-  return _signinInteractionController.get();
+  return _signinInteractionController;
 }
 
 - (UIViewController*)topPresentedViewController {
@@ -2584,9 +2542,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (void)setStartupParametersWithURL:(const GURL&)launchURL {
   NSString* sourceApplication = @"Fake App";
-  _startupParameters.reset([[ChromeAppStartupParameters
+  _startupParameters = [ChromeAppStartupParameters
       newChromeAppStartupParametersWithURL:net::NSURLWithGURL(launchURL)
-                     fromSourceApplication:sourceApplication] retain]);
+                     fromSourceApplication:sourceApplication];
 }
 
 - (void)setUpAsForegrounded {
@@ -2596,9 +2554,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // assertions if the BrowserViewWrangler is asked to create any BVC or
   // tabModel objects, but it will accept assignments to them.
   [_browserViewWrangler shutdown];
-  _browserViewWrangler.reset([[BrowserViewWrangler alloc]
-      initWithBrowserState:nullptr
-          tabModelObserver:self]);
+  _browserViewWrangler =
+      [[BrowserViewWrangler alloc] initWithBrowserState:nullptr
+                                       tabModelObserver:self];
   // This is a test utility method that bypasses the ususal setup steps, so
   // verify that the main coordinator hasn't been created yet, then start it
   // via lazy initialization.
@@ -2612,7 +2570,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
   int removeAllMask = ~0;
   scoped_refptr<CallbackCounter> callbackCounter =
-      new CallbackCounter(base::BindBlock(^{
+      new CallbackCounter(base::BindBlockArc(^{
         [self setUpCurrentBVCForTesting];
         if (completionHandler) {
           completionHandler();
