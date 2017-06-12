@@ -1057,6 +1057,8 @@ component("base") {
     "win/message_window.h",
     "win/object_watcher.cc",
     "win/object_watcher.h",
+    "win/patch_util.cc",
+    "win/patch_util.h",
     "win/process_startup_helper.cc",
     "win/process_startup_helper.h",
     "win/registry.cc",
