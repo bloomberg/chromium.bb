@@ -88,7 +88,7 @@ class CONTENT_EXPORT AudioRendererHost
   // AudioOutputDelegate::EventHandler implementation
   void OnStreamCreated(
       int stream_id,
-      base::SharedMemory* shared_memory,
+      const base::SharedMemory* shared_memory,
       std::unique_ptr<base::CancelableSyncSocket> foreign_socket) override;
   void OnStreamError(int stream_id) override;
 

@@ -66,7 +66,7 @@ void MojoAudioOutputStream::SetVolume(double volume) {
 
 void MojoAudioOutputStream::OnStreamCreated(
     int stream_id,
-    base::SharedMemory* shared_memory,
+    const base::SharedMemory* shared_memory,
     std::unique_ptr<base::CancelableSyncSocket> foreign_socket) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(stream_created_callback_);

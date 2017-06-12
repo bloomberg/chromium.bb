@@ -48,14 +48,12 @@ namespace content {
 AudioSyncReader::AudioSyncReader(
     const media::AudioParameters& params,
     std::unique_ptr<base::SharedMemory> shared_memory,
-    std::unique_ptr<base::CancelableSyncSocket> socket,
-    std::unique_ptr<base::CancelableSyncSocket> foreign_socket)
+    std::unique_ptr<base::CancelableSyncSocket> socket)
     : shared_memory_(std::move(shared_memory)),
       mute_audio_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMuteAudio)),
       had_socket_error_(false),
       socket_(std::move(socket)),
-      foreign_socket_(std::move(foreign_socket)),
       packet_size_(shared_memory_->requested_size()),
       renderer_callback_count_(0),
       renderer_missed_callback_count_(0),
@@ -120,7 +118,8 @@ AudioSyncReader::~AudioSyncReader() {
 
 // static
 std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
-    const media::AudioParameters& params) {
+    const media::AudioParameters& params,
+    base::CancelableSyncSocket* foreign_socket) {
   base::CheckedNumeric<size_t> memory_size =
       sizeof(media::AudioOutputBufferParameters);
   memory_size += AudioBus::CalculateMemorySize(params);
@@ -128,24 +127,14 @@ std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
   std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   std::unique_ptr<base::CancelableSyncSocket> socket(
       new base::CancelableSyncSocket());
-  std::unique_ptr<base::CancelableSyncSocket> foreign_socket(
-      new base::CancelableSyncSocket());
 
   if (!memory_size.IsValid() ||
       !shared_memory->CreateAndMapAnonymous(memory_size.ValueOrDie()) ||
-      !base::CancelableSyncSocket::CreatePair(socket.get(),
-                                              foreign_socket.get())) {
+      !base::CancelableSyncSocket::CreatePair(socket.get(), foreign_socket)) {
     return nullptr;
   }
-  return base::WrapUnique(new AudioSyncReader(params, std::move(shared_memory),
-                                              std::move(socket),
-                                              std::move(foreign_socket)));
-}
-
-std::unique_ptr<base::CancelableSyncSocket>
-AudioSyncReader::TakeForeignSocket() {
-  DCHECK(foreign_socket_);
-  return std::move(foreign_socket_);
+  return base::MakeUnique<AudioSyncReader>(params, std::move(shared_memory),
+                                           std::move(socket));
 }
 
 // media::AudioOutputController::SyncReader implementations.

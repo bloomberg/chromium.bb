@@ -8,9 +8,12 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -29,31 +32,15 @@ using media::AudioParameters;
 namespace content {
 
 namespace {
-
 // Number of audio buffers in the faked ring buffer.
 const int kSegments = 10;
-
-// Audio buffer parameters.
-const int channels = 1;
-const int sampling_frequency_hz = 16000;
-const int frames = sampling_frequency_hz / 100;  // 10 ms
-const int bits_per_sample = 16;
-
-// Faked ring buffer. Must be aligned.
-#define DATA_ALIGNMENT 16
-static_assert(AudioBus::kChannelAlignment == DATA_ALIGNMENT,
-              "Data alignment not same as AudioBus");
-ALIGNAS(DATA_ALIGNMENT)
-uint8_t data[kSegments * (sizeof(media::AudioInputBufferParameters) +
-                          frames * channels * sizeof(float))];
-
 }  // namespace
 
 // Mocked out sockets used for Send/ReceiveWithTimeout. Counts the number of
 // outstanding reads, i.e. the diff between send and receive calls.
 class MockCancelableSyncSocket : public base::CancelableSyncSocket {
  public:
-  MockCancelableSyncSocket(int buffer_size)
+  explicit MockCancelableSyncSocket(int buffer_size)
       : in_failure_mode_(false),
         writes_(0),
         reads_(0),
@@ -118,15 +105,7 @@ class MockCancelableSyncSocket : public base::CancelableSyncSocket {
 
 class AudioInputSyncWriterUnderTest : public AudioInputSyncWriter {
  public:
-  AudioInputSyncWriterUnderTest(void* shared_memory,
-                                size_t shared_memory_size,
-                                int shared_memory_segment_count,
-                                const media::AudioParameters& params,
-                                base::CancelableSyncSocket* socket)
-      : AudioInputSyncWriter(shared_memory, shared_memory_size,
-                             shared_memory_segment_count, params) {
-    socket_.reset(socket);
-  }
+  using AudioInputSyncWriter::AudioInputSyncWriter;
 
   ~AudioInputSyncWriterUnderTest() override {}
 
@@ -135,23 +114,24 @@ class AudioInputSyncWriterUnderTest : public AudioInputSyncWriter {
 
 class AudioInputSyncWriterTest : public testing::Test {
  public:
-  AudioInputSyncWriterTest()
-      : socket_(nullptr) {
-    const media::ChannelLayout layout =
-        media::GuessChannelLayout(channels);
-    EXPECT_NE(media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED, layout);
-    AudioParameters audio_params(
-          AudioParameters::AUDIO_FAKE, layout, sampling_frequency_hz,
-          bits_per_sample, frames);
-
+  AudioInputSyncWriterTest() {
+    const int sampling_frequency_hz = 16000;
+    const int frames = sampling_frequency_hz / 100;  // 10 ms
+    const int bits_per_sample = 16;
+    const AudioParameters audio_params(
+        AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_MONO,
+        sampling_frequency_hz, bits_per_sample, frames);
     const uint32_t segment_size = sizeof(media::AudioInputBufferParameters) +
                                   AudioBus::CalculateMemorySize(audio_params);
-    size_t data_size = kSegments * segment_size;
-    EXPECT_LE(data_size, sizeof(data));
+    const size_t data_size = kSegments * segment_size;
 
-    socket_ = new MockCancelableSyncSocket(kSegments);
-    writer_.reset(new AudioInputSyncWriterUnderTest(
-        &data[0], data_size, kSegments, audio_params, socket_));
+    auto shared_memory = base::MakeUnique<base::SharedMemory>();
+    EXPECT_TRUE(shared_memory->CreateAndMapAnonymous(data_size));
+
+    auto socket = base::MakeUnique<MockCancelableSyncSocket>(kSegments);
+    socket_ = socket.get();
+    writer_ = base::MakeUnique<AudioInputSyncWriterUnderTest>(
+        std::move(shared_memory), std::move(socket), kSegments, audio_params);
     audio_bus_ = AudioBus::Create(audio_params);
   }
 
