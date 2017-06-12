@@ -58,6 +58,7 @@ def add_file_to_grd(grd_doc, filename):
   new_include_node.setAttribute('name', make_name_from_filename(filename))
   new_include_node.setAttribute('file', filename)
   new_include_node.setAttribute('type', 'BINDATA')
+  new_include_node.setAttribute('compress', 'gzip')
   new_include_node.setAttribute('flattenhtml', 'true')
   if filename.endswith('.html'):
     new_include_node.setAttribute('allowexternalscript', 'true')
