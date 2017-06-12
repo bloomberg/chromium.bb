@@ -302,6 +302,9 @@ class WizardController : public BaseScreenDelegate,
   // Returns true if voice interaction value prop should be shown.
   bool ShouldShowVoiceInteractionValueProp() const;
 
+  // Start voice interaction setup wizard in container
+  void StartVoiceInteractionSetupWizard();
+
   // Starts listening for an incoming shark controller connection, if we are
   // running remora OOBE.
   void MaybeStartListeningForSharkConnection();
@@ -391,6 +394,8 @@ class WizardController : public BaseScreenDelegate,
   bool oobe_marked_completed_ = false;
 
   bool login_screen_started_ = false;
+
+  bool is_in_session_oobe_ = false;
 
   // Indicates that once image selection screen finishes we should return to
   // a previous screen instead of proceeding with usual flow.
