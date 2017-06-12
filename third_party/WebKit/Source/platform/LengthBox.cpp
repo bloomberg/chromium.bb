@@ -83,8 +83,8 @@ const Length& LengthBox::Start(WritingMode writing_mode,
                                const Length& right,
                                const Length& bottom) {
   if (IsHorizontalWritingMode(writing_mode))
-    return IsLeftToRightDirection(direction) ? left : right;
-  return IsLeftToRightDirection(direction) ? top : bottom;
+    return IsLtr(direction) ? left : right;
+  return IsLtr(direction) ? top : bottom;
 }
 
 const Length& LengthBox::End(WritingMode writing_mode,
@@ -94,8 +94,8 @@ const Length& LengthBox::End(WritingMode writing_mode,
                              const Length& right,
                              const Length& bottom) {
   if (IsHorizontalWritingMode(writing_mode))
-    return IsLeftToRightDirection(direction) ? right : left;
-  return IsLeftToRightDirection(direction) ? bottom : top;
+    return IsLtr(direction) ? right : left;
+  return IsLtr(direction) ? bottom : top;
 }
 
 const Length& LengthBox::Over(WritingMode writing_mode,
