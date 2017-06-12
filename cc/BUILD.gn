@@ -708,7 +708,6 @@ cc_static_library("test_support") {
 
 cc_test("cc_unittests") {
   sources = [
-    "base/contiguous_container_unittest.cc",
     "base/delayed_unique_notifier_unittest.cc",
     "base/filter_operations_unittest.cc",
     "base/float_quad_unittest.cc",

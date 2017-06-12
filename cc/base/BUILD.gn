@@ -10,8 +10,6 @@ component("base") {
     "base_export.h",
     "completion_event.h",
     "container_util.h",
-    "contiguous_container.cc",
-    "contiguous_container.h",
     "delayed_unique_notifier.cc",
     "delayed_unique_notifier.h",
     "devtools_instrumentation.cc",
