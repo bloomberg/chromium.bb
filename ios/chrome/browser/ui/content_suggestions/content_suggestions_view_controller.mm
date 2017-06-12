@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,6 +20,13 @@
 
 namespace {
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
+const CGFloat kMaxCardWidth = 432;
+
+// Returns whether the cells should be displayed using the full width.
+BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
+  return collection.horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
+         collection.verticalSizeClass != UIUserInterfaceSizeClassCompact;
+}
 }
 
 @interface ContentSuggestionsViewController ()
@@ -26,12 +34,16 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 @property(nonatomic, strong)
     ContentSuggestionsCollectionUpdater* collectionUpdater;
 
+// Left and right margins for the content inset of the collection view.
+@property(nonatomic, assign) CGFloat cardStyleMargin;
+
 @end
 
 @implementation ContentSuggestionsViewController
 
 @synthesize suggestionCommandHandler = _suggestionCommandHandler;
 @synthesize collectionUpdater = _collectionUpdater;
+@synthesize cardStyleMargin = _cardStyleMargin;
 @dynamic collectionViewModel;
 
 #pragma mark - Public
@@ -120,7 +132,22 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   _collectionUpdater.collectionViewController = self;
 
   self.collectionView.delegate = self;
-  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+  self.collectionView.backgroundColor = [UIColor whiteColor];
+  if (ShouldCellsBeFullWidth(
+          [UIApplication sharedApplication].keyWindow.traitCollection)) {
+    self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
+  } else {
+    self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+    CGFloat margin =
+        MAX(0, (self.collectionView.frame.size.width - kMaxCardWidth) / 2);
+    self.collectionView.contentInset = UIEdgeInsetsMake(0, margin, 0, margin);
+  }
+  self.automaticallyAdjustsScrollViewInsets = NO;
+  self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
+  ApplyVisualConstraints(
+      @[ @"V:[top][collection]|", @"H:|[collection]|" ],
+      @{ @"collection" : self.collectionView,
+         @"top" : self.topLayoutGuide });
 
   UILongPressGestureRecognizer* longPressRecognizer =
       [[UILongPressGestureRecognizer alloc]
@@ -133,7 +160,28 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 - (void)viewWillTransitionToSize:(CGSize)size
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
+  // Change the margin, in case -willTransitionToTraitCollection: is called
+  // after this method.
+  self.cardStyleMargin = MAX(0, (size.width - kMaxCardWidth) / 2);
+  if (self.styler.cellStyle == MDCCollectionViewCellStyleCard) {
+    self.collectionView.contentInset =
+        UIEdgeInsetsMake(0, self.cardStyleMargin, 0, self.cardStyleMargin);
+  }
   [self.collectionUpdater updateMostVisitedForSize:size];
+}
+
+- (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
+              withTransitionCoordinator:
+                  (id<UIViewControllerTransitionCoordinator>)coordinator {
+  if (ShouldCellsBeFullWidth(newCollection)) {
+    self.collectionView.contentInset = UIEdgeInsetsZero;
+    self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
+  } else {
+    self.collectionView.contentInset =
+        UIEdgeInsetsMake(0, self.cardStyleMargin, 0, self.cardStyleMargin);
+    self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+  }
+  [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
 #pragma mark - UICollectionViewDelegate
@@ -178,7 +226,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
         insetForSectionAtIndex:(NSInteger)section {
   if ([self.collectionUpdater isMostVisitedSection:section]) {
     CGFloat margin = content_suggestions::centeredTilesMarginForWidth(
-        collectionView.frame.size.width);
+        collectionView.frame.size.width - 2 * collectionView.contentInset.left);
     return UIEdgeInsetsMake(0, margin, 0, margin);
   }
   return [super collectionView:collectionView
