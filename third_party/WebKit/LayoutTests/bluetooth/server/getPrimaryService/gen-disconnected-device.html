@@ -8,13 +8,12 @@
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}],
+  return getDiscoveredHealthThermometerDevice({
+      filters: [{services: ['health_thermometer']}],
       optionalServices: ['generic_access']
-    }))
-    .then(device => assert_promise_rejects_with_message(
-      device.gatt.getPrimaryService('heart_rate'),
+    })
+    .then(([device]) => assert_promise_rejects_with_message(
+      device.gatt.getPrimaryService('health_thermometer'),
       new DOMException('GATT Server is disconnected. ' +
                        'Cannot retrieve services. ' +
                        '(Re)connect first with `device.gatt.connect`.',

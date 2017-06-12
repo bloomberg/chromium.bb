@@ -461,8 +461,59 @@ function setUpHealthThermometerAndHeartRateDevices() {
 function getHealthThermometerDevice(options) {
   return getDiscoveredHealthThermometerDevice(options)
     .then(([device, fake_peripheral]) => {
-      return fake_peripheral
-        .setNextGATTConnectionResponse({code: HCI_SUCCESS})
+      return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
+        .then(() => device.gatt.connect())
+        .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
+          code: HCI_SUCCESS}))
+        .then(() => [device, fake_peripheral]);
+    });
+}
+
+// Returns the same device and fake peripheral as getHealthThermometerDevice()
+// after another frame (an iframe we insert) discovered the device,
+// connected to it and discovered its services.
+function getHealthThermometerDeviceWithServicesDiscovered(options) {
+  return setUpPreconnectedDevice({
+      address: '09:09:09:09:09:09',
+      name: 'Health Thermometer',
+      knownServiceUUIDs: ['generic_access', 'health_thermometer'],
+    })
+    .then(fake_peripheral => {
+      return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
+        .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
+          code: HCI_SUCCESS}))
+        .then(() => new Promise(resolve => {
+          let iframe = document.createElement('iframe');
+          let messageHandler = messageEvent => {
+            if (messageEvent.data === 'Ready') {
+              callWithKeyDown(() => iframe.contentWindow.postMessage({
+                type: 'DiscoverServices',
+                options: options
+              }, '*'));
+            } else if (messageEvent.data === 'DiscoveryComplete') {
+              window.removeEventListener('message', messageHandler);
+              resolve();
+            } else {
+              console.log(messageEvent.data);
+            }
+          }
+          window.addEventListener('message', messageHandler);
+          iframe.src =
+            '../../../resources/bluetooth/health-thermometer-iframe.html';
+          document.body.appendChild(iframe);
+        }))
+        .then(() => requestDeviceWithKeyDown(options))
+        .then(device => device.gatt.connect())
+        .then(gatt => [gatt.device, fake_peripheral]);
+    });
+}
+
+// Similar to getHealthThermometerDevice() except the device has no services,
+// characteristics, or descriptors.
+function getEmptyHealthThermometerDevice(options) {
+  return getDiscoveredHealthThermometerDevice(options)
+    .then(([device, fake_peripheral]) => {
+      return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
         .then(() => device.gatt.connect())
         .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
           code: HCI_SUCCESS}))

@@ -8,17 +8,15 @@
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('DelayedServicesDiscoveryAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}],
-      optionalServices: ['battery_service']}))
-    .then(device => device.gatt.connect())
-    .then(gatt => assert_promise_rejects_with_message(
-      gatt.getPrimaryService('battery_service'),
+  return getHealthThermometerDeviceWithServicesDiscovered({
+      filters: [{services: ['health_thermometer']}],
+      optionalServices: ['glucose']})
+    .then(([device]) => assert_promise_rejects_with_message(
+      device.gatt.getPrimaryServices('glucose'),
       new DOMException(
-        'No Services matching UUID ' + battery_service.uuid + ' found in ' +
-        'Device.', 'NotFoundError')));
+        'No Services matching UUID ' + glucose.uuid + ' found in Device.',
+        'NotFoundError')));
 }, 'Request for absent service. Must reject with NotFoundError even when the ' +
-   'services are not immediately discovered');
+   'services have previously been discovered.');
 
 </script>

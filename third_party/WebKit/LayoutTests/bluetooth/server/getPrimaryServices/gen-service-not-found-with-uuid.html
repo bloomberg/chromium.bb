@@ -8,13 +8,11 @@
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}],
-      optionalServices: ['glucose']}))
-    .then(device => device.gatt.connect())
-    .then(gatt => assert_promise_rejects_with_message(
-      gatt.getPrimaryServices('glucose'),
+  return getHealthThermometerDevice({
+      filters: [{services: ['health_thermometer']}],
+      optionalServices: ['glucose']})
+    .then(([device]) => assert_promise_rejects_with_message(
+      device.gatt.getPrimaryServices('glucose'),
       new DOMException(
         'No Services matching UUID ' + glucose.uuid + ' found in Device.',
         'NotFoundError')));
