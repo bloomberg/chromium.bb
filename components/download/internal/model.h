@@ -78,9 +78,6 @@ class Model {
   // modifications to this model.
   virtual Entry* Get(const std::string& guid) = 0;
 
-  // Returns the total number of in-memory entries with the specific |state|.
-  virtual uint32_t StateCount(Entry::State state) = 0;
-
   // Returns a temporary list of Entry objects that this Model stores.
   // IMPORTANT NOTE: Like Get(), the result of this method should be used
   // immediately and NOT stored.  The underlying data may get updated or removed
