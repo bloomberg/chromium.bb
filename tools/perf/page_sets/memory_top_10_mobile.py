@@ -78,11 +78,3 @@ class MemoryTop10Mobile(story.StorySet):
       name = re.sub(r'\W+', '_', url)
       self.AddStory(ForegroundPage(self, name, url))
       self.AddStory(BackgroundPage(self, 'after_' + name))
-
-
-class MemoryTop10MobileRealistic(MemoryTop10Mobile):
-  """Top 10 mobile user story in realistic mode.
-
-  This means, in particular, neither forced GCs nor clearing caches.
-  """
-  DETERMINISTIC_MODE = False

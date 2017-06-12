@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 from telemetry.page import page as page_module
 from telemetry import story
-from page_sets.startup_pages import BrowserStartupSharedState
 
 
 class BlankPage(page_module.Page):
@@ -30,30 +29,3 @@ class BlankPageSet(story.StorySet):
     super(BlankPageSet, self).__init__(verify_names=True)
     self.AddStory(BlankPage('file://blank_page/blank_page.html',
                             self, 'blank_page.html'))
-
-
-class BlankPageTBM(page_module.Page):
-
-  def __init__(self, url, page_set):
-    super(BlankPageTBM, self).__init__(
-        url, page_set=page_set,
-        shared_page_state_class=BrowserStartupSharedState)
-
-  def RunPageInteractions(self, action_runner):
-    action_runner.ExecuteJavaScript(
-        """
-        this.hasRunRAF = 0;
-        requestAnimationFrame(function() {
-            this.hasRunRAF = 1;
-        });
-        """
-    )
-    action_runner.WaitForJavaScriptCondition("this.hasRunRAF == 1")
-
-
-class BlankPageSetTBM(story.StorySet):
-  """A single blank page."""
-
-  def __init__(self):
-    super(BlankPageSetTBM, self).__init__()
-    self.AddStory(BlankPageTBM('file://blank_page/blank_page.html', self))
