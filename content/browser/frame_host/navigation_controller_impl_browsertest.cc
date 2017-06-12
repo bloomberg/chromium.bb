@@ -5843,10 +5843,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ("GET", root_entry->method());
     EXPECT_EQ(-1, root_entry->post_id());
     EXPECT_EQ("POST", frame_entry->method());
-    // TODO(clamy): Check the post id as well when PlzNavigate handles it
-    // properly.
-    if (!IsBrowserSideNavigationEnabled())
-      EXPECT_NE(-1, frame_entry->post_id());
+    EXPECT_NE(-1, frame_entry->post_id());
     EXPECT_FALSE(entry->GetHasPostData());
     EXPECT_EQ(-1, entry->GetPostID());
   }
