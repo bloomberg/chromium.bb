@@ -4,13 +4,11 @@
 
 #include "content/browser/service_worker/service_worker_url_loader_job.h"
 
-#include "base/command_line.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/blob/blob_reader.h"
@@ -29,9 +27,7 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
       blob_storage_context_(blob_storage_context),
       binding_(this),
       weak_factory_(this) {
-  DCHECK(IsBrowserSideNavigationEnabled() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableNetworkService));
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
 }
 
 ServiceWorkerURLLoaderJob::~ServiceWorkerURLLoaderJob() {}
@@ -76,6 +72,10 @@ void ServiceWorkerURLLoaderJob::FailDueToLostController() {
 
 void ServiceWorkerURLLoaderJob::Cancel() {
   canceled_ = true;
+  weak_factory_.InvalidateWeakPtrs();
+  blob_reader_.reset();
+  blob_storage_context_.reset();
+  fetch_dispatcher_.reset();
 }
 
 bool ServiceWorkerURLLoaderJob::WasCanceled() const {
