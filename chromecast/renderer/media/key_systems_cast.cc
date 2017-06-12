@@ -77,8 +77,17 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
   EmeConfigRule GetRobustnessConfigRule(
       EmeMediaType media_type,
       const std::string& requested_robustness) const override {
-    return requested_robustness.empty() ? EmeConfigRule::SUPPORTED
-                                        : EmeConfigRule::NOT_SUPPORTED;
+    if (requested_robustness.empty()) {
+#if defined(OS_ANDROID)
+      return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
+#else
+      return EmeConfigRule::SUPPORTED;
+#endif
+    }
+
+    // Cast-specific PlayReady implementation does not currently recognize or
+    // support non-empty robustness strings.
+    return EmeConfigRule::NOT_SUPPORTED;
   }
 
   EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
