@@ -35,8 +35,13 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "media/audio/audio_input_controller.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace media {
 class AudioManager;
+class AudioLog;
 class UserInputMonitor;
 }
 
@@ -57,31 +62,32 @@ class CONTENT_EXPORT AudioInputRendererHost
     UNKNOWN_ERROR = 0,
 
     // Failed to look up audio intry for the provided stream id.
-    INVALID_AUDIO_ENTRY,  // = 1
+    INVALID_AUDIO_ENTRY = 1,
 
     // A stream with the specified stream id already exists.
-    STREAM_ALREADY_EXISTS,  // = 2
+    STREAM_ALREADY_EXISTS = 2,
 
     // The page does not have permission to open the specified capture device.
-    PERMISSION_DENIED,  // = 3
+    PERMISSION_DENIED = 3,
 
     // Failed to create shared memory.
-    SHARED_MEMORY_CREATE_FAILED,  // = 4
+    // Obsolete, merged with SYNC_WRITER_INIT_FAILED.
+    // SHARED_MEMORY_CREATE_FAILED = 4
 
     // Failed to initialize the AudioInputSyncWriter instance.
-    SYNC_WRITER_INIT_FAILED,  // = 5
+    SYNC_WRITER_INIT_FAILED = 5,
 
     // Failed to create native audio input stream.
-    STREAM_CREATE_ERROR,  // = 6
+    STREAM_CREATE_ERROR = 6,
 
     // Failed to map and share the shared memory.
-    MEMORY_SHARING_FAILED,  // = 7,
+    MEMORY_SHARING_FAILED = 7,
 
     // Unable to prepare the foreign socket handle.
-    SYNC_SOCKET_ERROR,  // = 8,
+    SYNC_SOCKET_ERROR = 8,
 
     // This error message comes from the AudioInputController instance.
-    AUDIO_INPUT_CONTROLLER_ERROR,  // = 9,
+    AUDIO_INPUT_CONTROLLER_ERROR = 9,
   };
 
   // Called from UI thread from the owner of this object.
