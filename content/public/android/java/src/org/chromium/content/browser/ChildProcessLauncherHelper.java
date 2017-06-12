@@ -231,7 +231,7 @@ public class ChildProcessLauncherHelper {
             @Override
             public void run() {
                 ChildConnectionAllocator allocator = getConnectionAllocator(
-                        context, null /* creationParams */, true /* sandboxed */);
+                        context, ChildProcessCreationParams.getDefault(), true /* sandboxed */);
                 getBindingManager().startModerateBindingManagement(
                         context, allocator.getNumberOfServices());
             }
