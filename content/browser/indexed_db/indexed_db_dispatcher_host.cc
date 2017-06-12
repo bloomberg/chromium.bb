@@ -35,16 +35,16 @@ bool IsValidOrigin(const url::Origin& origin) {
 
 }  // namespace
 
-class IndexedDBDispatcherHost::IDBThreadHelper {
+class IndexedDBDispatcherHost::IDBSequenceHelper {
  public:
-  IDBThreadHelper(
+  IDBSequenceHelper(
       int ipc_process_id,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<IndexedDBContextImpl> indexed_db_context)
       : ipc_process_id_(ipc_process_id),
         request_context_getter_(std::move(request_context_getter)),
         indexed_db_context_(std::move(indexed_db_context)) {}
-  ~IDBThreadHelper() {}
+  ~IDBSequenceHelper() {}
 
   void GetDatabaseNamesOnIDBThread(scoped_refptr<IndexedDBCallbacks> callbacks,
                                    const url::Origin& origin);
@@ -65,7 +65,7 @@ class IndexedDBDispatcherHost::IDBThreadHelper {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(IDBThreadHelper);
+  DISALLOW_COPY_AND_ASSIGN(IDBSequenceHelper);
 };
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
@@ -80,9 +80,9 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
       weak_factory_(this) {
   // Can be null in unittests.
   idb_helper_ = idb_runner_
-                    ? new IDBThreadHelper(ipc_process_id_,
-                                          std::move(request_context_getter),
-                                          indexed_db_context_)
+                    ? new IDBSequenceHelper(ipc_process_id_,
+                                            std::move(request_context_getter),
+                                            indexed_db_context_)
                     : nullptr;
   DCHECK(indexed_db_context_.get());
 }
@@ -174,7 +174,7 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
   scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
       this->AsWeakPtr(), origin, std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
-      FROM_HERE, base::Bind(&IDBThreadHelper::GetDatabaseNamesOnIDBThread,
+      FROM_HERE, base::Bind(&IDBSequenceHelper::GetDatabaseNamesOnIDBThread,
                             base::Unretained(idb_helper_),
                             base::Passed(&callbacks), origin));
 }
@@ -201,7 +201,7 @@ void IndexedDBDispatcherHost::Open(
                                      std::move(database_callbacks_info)));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBThreadHelper::OpenOnIDBThread,
+      base::Bind(&IDBSequenceHelper::OpenOnIDBThread,
                  base::Unretained(idb_helper_), base::Passed(&callbacks),
                  base::Passed(&database_callbacks), origin, name, version,
                  transaction_id));
@@ -223,7 +223,7 @@ void IndexedDBDispatcherHost::DeleteDatabase(
       this->AsWeakPtr(), origin, std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBThreadHelper::DeleteDatabaseOnIDBThread,
+      base::Bind(&IDBSequenceHelper::DeleteDatabaseOnIDBThread,
                  base::Unretained(idb_helper_), base::Passed(&callbacks),
                  origin, name, force_close));
 }
@@ -234,7 +234,7 @@ void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {
   database_bindings_.CloseAllBindings();
 }
 
-void IndexedDBDispatcherHost::IDBThreadHelper::GetDatabaseNamesOnIDBThread(
+void IndexedDBDispatcherHost::IDBSequenceHelper::GetDatabaseNamesOnIDBThread(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const url::Origin& origin) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
@@ -244,7 +244,7 @@ void IndexedDBDispatcherHost::IDBThreadHelper::GetDatabaseNamesOnIDBThread(
       callbacks, origin, indexed_db_path, request_context_getter_);
 }
 
-void IndexedDBDispatcherHost::IDBThreadHelper::OpenOnIDBThread(
+void IndexedDBDispatcherHost::IDBSequenceHelper::OpenOnIDBThread(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     const url::Origin& origin,
@@ -269,7 +269,7 @@ void IndexedDBDispatcherHost::IDBThreadHelper::OpenOnIDBThread(
                                              indexed_db_path);
 }
 
-void IndexedDBDispatcherHost::IDBThreadHelper::DeleteDatabaseOnIDBThread(
+void IndexedDBDispatcherHost::IDBSequenceHelper::DeleteDatabaseOnIDBThread(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const url::Origin& origin,
     const base::string16& name,

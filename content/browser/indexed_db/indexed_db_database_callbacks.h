@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +19,7 @@ class IndexedDBContextImpl;
 class IndexedDBDatabaseError;
 class IndexedDBTransaction;
 
-// Expected to be constructed on IO thread and called/deleted from IDB thread.
+// Expected to be constructed on IO thread and called/deleted from IDB sequence.
 class CONTENT_EXPORT IndexedDBDatabaseCallbacks
     : public base::RefCounted<IndexedDBDatabaseCallbacks> {
  public:
@@ -47,7 +47,7 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   bool complete_ = false;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   std::unique_ptr<IOThreadHelper, BrowserThread::DeleteOnIOThread> io_helper_;
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseCallbacks);
 };

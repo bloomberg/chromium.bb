@@ -37,15 +37,15 @@ IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
     : indexed_db_context_(std::move(context)),
       io_helper_(new IOThreadHelper(std::move(callbacks_info))) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  thread_checker_.DetachFromThread();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void IndexedDBDatabaseCallbacks::OnForcedClose() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (complete_)
     return;
 
@@ -58,7 +58,7 @@ void IndexedDBDatabaseCallbacks::OnForcedClose() {
 
 void IndexedDBDatabaseCallbacks::OnVersionChange(int64_t old_version,
                                                  int64_t new_version) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (complete_)
     return;
 
@@ -72,7 +72,7 @@ void IndexedDBDatabaseCallbacks::OnVersionChange(int64_t old_version,
 void IndexedDBDatabaseCallbacks::OnAbort(
     const IndexedDBTransaction& transaction,
     const IndexedDBDatabaseError& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (complete_)
     return;
 
@@ -85,7 +85,7 @@ void IndexedDBDatabaseCallbacks::OnAbort(
 
 void IndexedDBDatabaseCallbacks::OnComplete(
     const IndexedDBTransaction& transaction) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (complete_)
     return;
 
@@ -99,7 +99,7 @@ void IndexedDBDatabaseCallbacks::OnComplete(
 
 void IndexedDBDatabaseCallbacks::OnDatabaseChange(
     ::indexed_db::mojom::ObserverChangesPtr changes) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_helper_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

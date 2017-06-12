@@ -46,9 +46,9 @@ class CursorImpl : public ::indexed_db::mojom::Cursor {
       const std::vector<std::string>& unused_blob_uuids) override;
 
  private:
-  class IDBThreadHelper;
+  class IDBSequenceHelper;
 
-  IDBThreadHelper* helper_;
+  IDBSequenceHelper* helper_;
   // This raw pointer is safe because all CursorImpl instances are owned by an
   // IndexedDBDispatcherHost.
   IndexedDBDispatcherHost* dispatcher_host_;

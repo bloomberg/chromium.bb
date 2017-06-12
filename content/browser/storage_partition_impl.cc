@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
@@ -473,14 +474,18 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   // BrowserMainLoop may not be initialized in unit tests. Tests will
   // need to inject their own task runner into the IndexedDBContext.
-  base::SequencedTaskRunner* idb_task_runner =
+  // TODO(jsbell): This is no longer true, update tests to provide use a
+  // base::test::ScopedTaskEnvironment instead of injecting a test task
+  // runner.
+  scoped_refptr<base::SequencedTaskRunner> idb_task_runner =
       BrowserThread::CurrentlyOn(BrowserThread::UI) &&
               BrowserMainLoop::GetInstance()
-          ? BrowserMainLoop::GetInstance()
-                ->indexed_db_thread()
-                ->task_runner()
-                .get()
-          : NULL;
+          ? base::CreateSequencedTaskRunnerWithTraits({
+                base::MayBlock(), base::WithBaseSyncPrimitives(),
+                base::TaskPriority::USER_VISIBLE,
+                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+            })
+          : nullptr;
 
   base::FilePath path = in_memory ? base::FilePath() : partition_path;
   partition->indexed_db_context_ =

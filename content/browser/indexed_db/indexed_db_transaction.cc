@@ -9,10 +9,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
@@ -172,7 +171,7 @@ void IndexedDBTransaction::RunTasksIfStarted() {
     return;
 
   should_process_queue_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&IndexedDBTransaction::ProcessTaskQueue,
                             ptr_factory_.GetWeakPtr()));
 }
@@ -254,7 +253,7 @@ void IndexedDBTransaction::Start() {
       // The transaction has never had requests issued against it, but the
       // front-end previously requested a commit; do the commit now, but not
       // re-entrantly as that may renter the coordinator.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&CommitUnused, ptr_factory_.GetWeakPtr()));
     }
     return;

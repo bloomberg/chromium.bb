@@ -152,8 +152,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
                    GURL("file:///")),
         base::Bind(&IndexedDBBrowserTest::DidGetDiskUsage,
                    base::Unretained(this)));
-    scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(GetContext()->TaskRunner()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetDiskUsage to be called.
     base::RunLoop().RunUntilIdle();
@@ -167,8 +167,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
                    Origin(GURL("file:///"))),
         base::Bind(&IndexedDBBrowserTest::DidGetBlobFileCount,
                    base::Unretained(this)));
-    scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(GetContext()->TaskRunner()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetBlobFileCount to be called.
     base::RunLoop().RunUntilIdle();
@@ -333,8 +333,8 @@ class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
         FROM_HERE,
         base::Bind(
             &CopyLevelDBToProfile, shell(), context, EnclosingLevelDBDir()));
-    scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(GetContext()->TaskRunner()));
     ASSERT_TRUE(helper->Run());
   }
 
@@ -499,8 +499,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
       base::Bind(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
                      &IndexedDBContextImpl::DeleteForOrigin),
                  GetContext(), GURL("file:///")));
-  scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-      BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(GetContext()->TaskRunner()));
   ASSERT_TRUE(helper->Run());
   EXPECT_EQ(0, RequestDiskUsage());
 }
