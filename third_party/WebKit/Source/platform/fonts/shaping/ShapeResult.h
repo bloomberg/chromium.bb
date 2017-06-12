@@ -46,6 +46,7 @@ struct hb_buffer_t;
 namespace blink {
 
 class Font;
+template <typename TextContainerType>
 class ShapeResultSpacing;
 class SimpleFontData;
 class TextRun;
@@ -90,7 +91,10 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     return LayoutUnit::FromFloatCeil(PositionForOffset(offset));
   }
 
-  PassRefPtr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing&,
+  void ApplySpacing(ShapeResultSpacing<StringView>&,
+                    const StringView&,
+                    TextDirection);
+  PassRefPtr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing<TextRun>&,
                                              const TextRun&) const;
 
   void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
@@ -105,7 +109,10 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     return AdoptRef(new ShapeResult(other));
   }
 
-  void ApplySpacing(ShapeResultSpacing&, const TextRun&);
+  template <typename TextContainerType>
+  void ApplySpacing(ShapeResultSpacing<TextContainerType>&,
+                    const TextContainerType&,
+                    bool is_rtl);
   void InsertRun(std::unique_ptr<ShapeResult::RunInfo>,
                  unsigned start_glyph,
                  unsigned num_glyphs,

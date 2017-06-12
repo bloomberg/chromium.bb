@@ -28,6 +28,7 @@
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
+#include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
@@ -310,17 +311,23 @@ void NGInlineNode::SegmentText() {
 void NGInlineNode::ShapeText() {
   // TODO(eae): Add support for shaping latin-1 text?
   MutableData().text_content_.Ensure16Bit();
+  const String& text_content = Data().text_content_;
 
   // Shape each item with the full context of the entire node.
-  HarfBuzzShaper shaper(Data().text_content_.Characters16(),
-                        Data().text_content_.length());
+  HarfBuzzShaper shaper(text_content.Characters16(), text_content.length());
+  ShapeResultSpacing<StringView> spacing(text_content);
   for (auto& item : MutableData().items_) {
     if (item.Type() != NGInlineItem::kText)
       continue;
 
-    item.shape_result_ =
-        shaper.Shape(&item.Style()->GetFont(), item.Direction(),
-                     item.StartOffset(), item.EndOffset());
+    const Font& font = item.Style()->GetFont();
+    RefPtr<ShapeResult> shape_result = shaper.Shape(
+        &font, item.Direction(), item.StartOffset(), item.EndOffset());
+
+    if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription())))
+      shape_result->ApplySpacing(spacing, text_content, item.Direction());
+
+    item.shape_result_ = std::move(shape_result);
   }
 }
 
