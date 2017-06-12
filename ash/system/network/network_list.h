@@ -73,6 +73,11 @@ class NetworkListView : public NetworkStateListDetailedView,
   // Updates |view| with the information in |info|.
   void UpdateViewForNetwork(HoverHighlightView* view, const NetworkInfo& info);
 
+  // Creates the a battery icon next to the name of Tether networks indicating
+  // the battery percentage of the mobile device that is being used as a
+  // hotspot.
+  views::View* CreatePowerStatusView(const NetworkInfo& info);
+
   // Creates the view of an extra icon appearing next to the network name
   // indicating that the network is controlled by an extension. If no extension
   // is registered for this network, returns |nullptr|.

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -22,6 +23,7 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "base/i18n/number_formatting.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,6 +37,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -577,9 +580,55 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
   else if (info.connecting)
     SetupConnectingScrollListItem(view);
   view->SetTooltipText(info.tooltip);
-  views::View* controlled_icon = CreateControlledByExtensionView(info);
-  if (controlled_icon)
-    view->AddRightView(controlled_icon);
+
+  // Add an additional icon to the right of the label for networks
+  // that require it (e.g. Tether, controlled by extension).
+  views::View* power_icon = CreatePowerStatusView(info);
+  if (power_icon) {
+    view->AddRightView(power_icon);
+  } else {
+    views::View* controlled_icon = CreateControlledByExtensionView(info);
+    if (controlled_icon)
+      view->AddRightView(controlled_icon);
+  }
+}
+
+views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
+  // Mobile can be Cellular or Tether.
+  if (info.type != NetworkInfo::Type::MOBILE)
+    return nullptr;
+
+  const chromeos::NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          info.guid);
+
+  // Only return a battery icon for Tether network type.
+  if (!NetworkTypePattern::Tether().MatchesType(network->type()))
+    return nullptr;
+
+  views::ImageView* icon = TrayPopupUtils::CreateMoreImageView();
+  gfx::Size canvas_size = gfx::Size(kMenuIconSize, kMenuIconSize);
+  gfx::Canvas canvas(canvas_size, 1.0f, false /* opaque */);
+
+  // Paint the battery's base (background) color.
+  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kMenuIconSize,
+                  kMenuIconColorDisabled);
+  // Paint the charged portion of the battery.
+  const int charge_height = network->battery_percentage() * kMenuIconSize / 100;
+  gfx::Rect clip_rect(0, kMenuIconSize - charge_height, kMenuIconSize,
+                      charge_height);
+  canvas.Save();
+  canvas.ClipRect(clip_rect);
+  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kMenuIconSize,
+                  kMenuIconColor);
+  canvas.Restore();
+
+  // Show the battery icon with correct charge height.
+  icon->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(canvas.GetBitmap()));
+  // Show the numeric battery percentage on hover.
+  icon->SetTooltipText(base::FormatPercent(network->battery_percentage()));
+
+  return icon;
 }
 
 views::View* NetworkListView::CreateControlledByExtensionView(
