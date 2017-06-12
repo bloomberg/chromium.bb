@@ -121,33 +121,6 @@ base::Optional<int> GetStartupMinVolumeForAgc() {
   return base::Optional<int>(startup_min_volume);
 }
 
-// Features for http://crbug.com/672476. These values will be given to WebRTC's
-// gain control (AGC) as lower bounds for the gain reduction during clipping.
-const base::Feature kTunedClippingLevelMin30{
-    "TunedClippingLevelMin30", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTunedClippingLevelMin70{
-    "TunedClippingLevelMin70", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTunedClippingLevelMin110{
-    "TunedClippingLevelMin110", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTunedClippingLevelMin150{
-    "TunedClippingLevelMin150", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTunedClippingLevelMin170{
-    "TunedClippingLevelMin170", base::FEATURE_DISABLED_BY_DEFAULT};
-
-base::Optional<int> GetClippingLevelMin() {
-  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin30))
-    return base::Optional<int>(30);
-  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin70))
-    return base::Optional<int>(70);
-  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin110))
-    return base::Optional<int>(110);
-  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin150))
-    return base::Optional<int>(150);
-  if (base::FeatureList::IsEnabled(kTunedClippingLevelMin170))
-    return base::Optional<int>(170);
-  return base::Optional<int>();
-}
-
 // Checks if the AEC's refined adaptive filter tuning was enabled on the command
 // line.
 bool UseAecRefinedAdaptiveFilter() {
@@ -678,12 +651,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // If the experimental AGC is enabled, check for overridden config params.
   if (audio_constraints.GetGoogExperimentalAutoGainControl()) {
     auto startup_min_volume = GetStartupMinVolumeForAgc();
-    auto clipping_level_min = GetClippingLevelMin();
-    if (startup_min_volume || clipping_level_min) {
-      config.Set<webrtc::ExperimentalAgc>(new webrtc::ExperimentalAgc(
-          true, startup_min_volume.value_or(0),
-          clipping_level_min.value_or(webrtc::kClippedLevelMin)));
-    }
+    constexpr int kClippingLevelMin = 70;
+    // TODO(hlundin) Make this value default in WebRTC and clean up here.
+    config.Set<webrtc::ExperimentalAgc>(new webrtc::ExperimentalAgc(
+        true, startup_min_volume.value_or(0), kClippingLevelMin));
   }
 
   // Create and configure the webrtc::AudioProcessing.
