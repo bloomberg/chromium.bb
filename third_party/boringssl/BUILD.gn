@@ -65,7 +65,8 @@ if (is_win && !is_msan) {
     asmflags = []
     include_dirs = [ "src/include" ]
 
-    if ((current_cpu == "arm" || current_cpu == "arm64") && is_clang) {
+    if ((current_cpu == "arm" || current_cpu == "arm64") && is_clang &&
+        !is_ios) {
       if (current_cpu == "arm" && arm_version != 6) {
         # TODO(hans) Enable integrated-as (crbug.com/124610).
         asmflags += [ "-fno-integrated-as" ]
@@ -97,10 +98,22 @@ if (is_win && !is_msan) {
       } else {
         public_configs = [ ":no_asm_config" ]
       }
-    } else if (current_cpu == "arm" && (is_linux || is_android)) {
-      sources += crypto_sources_linux_arm
-    } else if (current_cpu == "arm64" && (is_linux || is_android)) {
-      sources += crypto_sources_linux_aarch64
+    } else if (current_cpu == "arm") {
+      if (is_linux || is_android) {
+        sources += crypto_sources_linux_arm
+      } else if (is_ios) {
+        sources += crypto_sources_ios_arm
+      } else {
+        public_configs = [ ":no_asm_config" ]
+      }
+    } else if (current_cpu == "arm64") {
+      if (is_linux || is_android) {
+        sources += crypto_sources_linux_aarch64
+      } else if (is_ios) {
+        sources += crypto_sources_ios_aarch64
+      } else {
+        public_configs = [ ":no_asm_config" ]
+      }
     } else {
       public_configs = [ ":no_asm_config" ]
     }
