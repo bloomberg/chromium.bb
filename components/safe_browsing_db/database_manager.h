@@ -152,12 +152,11 @@ class SafeBrowsingDatabaseManager
   // to callback in |client|.
   virtual bool CheckResourceUrl(const GURL& url, Client* client) = 0;
 
-  // Called on the IO thread to check if the given url belongs to the
-  // subresource filter list. If the url doesn't belong to the list, the check
-  // happens synchronously, otherwise it returns false, and "client" is called
-  // asynchronously with the result when it is ready.
-  // Currently supported only on desktop. Returns TRUE if the list is not yet
-  // available.
+  // Called on the IO thread to check if the given url belongs to a list the
+  // subresource cares about. If the url doesn't belong to any such list and the
+  // check can happen synchronously, returns true. Otherwise it returns false,
+  // and "client" is called asynchronously with the result when it is ready.
+  // Returns true if the list is not yet available.
   virtual bool CheckUrlForSubresourceFilter(const GURL& url,
                                             Client* client) = 0;
 

@@ -249,7 +249,7 @@ bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
   DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
   api_handler->StartURLCheck(
       base::Bind(&ClientRequest::OnRequestDoneWeak, req->GetWeakPtr()), url,
-      {SB_THREAT_TYPE_SUBRESOURCE_FILTER});
+      {SB_THREAT_TYPE_SUBRESOURCE_FILTER, SB_THREAT_TYPE_URL_PHISHING});
 
   LogPendingChecks(current_requests_.size());
   current_requests_.push_back(req.release());

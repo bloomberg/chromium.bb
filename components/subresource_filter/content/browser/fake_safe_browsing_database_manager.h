@@ -30,6 +30,10 @@ class FakeSafeBrowsingDatabaseManager
 
   void SimulateTimeout();
 
+  // If set, will synchronously fail from CheckUrlForSubresourceFilter rather
+  // than posting a task to fail if the URL does not match the blacklist.
+  void set_synchronous_failure() { synchronous_failure_ = true; }
+
  protected:
   ~FakeSafeBrowsingDatabaseManager() override;
 
@@ -53,7 +57,8 @@ class FakeSafeBrowsingDatabaseManager
       GURL,
       std::pair<safe_browsing::SBThreatType, safe_browsing::ThreatPatternType>>
       url_to_threat_type_;
-  bool simulate_timeout_;
+  bool simulate_timeout_ = false;
+  bool synchronous_failure_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingDatabaseManager);
 };
