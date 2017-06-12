@@ -11149,6 +11149,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
           Search or type URL
         </message>
+        <message name="IDS_SEARCH_BOX_HINT_FULLSCREEN" desc="Hint text for the search box in fullscreen app list window.">
+          Search your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>, apps, web...
+        </message>
         <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
           Search, or say "Ok Google"
         </message>
