@@ -60,6 +60,7 @@ TabDesktopMediaList::TabDesktopMediaList()
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       weak_factory_(this) {
+  type_ = DesktopMediaID::TYPE_WEB_CONTENTS;
   thumbnail_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }

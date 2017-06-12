@@ -217,6 +217,7 @@ NativeDesktopMediaList::NativeDesktopMediaList(
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       weak_factory_(this) {
+  type_ = type;
   capture_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 

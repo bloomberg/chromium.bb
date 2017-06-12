@@ -37,8 +37,6 @@ class DesktopMediaListAsh : public DesktopMediaListBase {
   void OnThumbnailCaptured(content::DesktopMediaID id,
                            const gfx::Image& image);
 
-  const content::DesktopMediaID::Type type_;
-
   int pending_window_capture_requests_;
 
   base::WeakPtrFactory<DesktopMediaListAsh> weak_factory_;
