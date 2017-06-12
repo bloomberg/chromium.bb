@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/arc_auth_context.h"
+#include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
 
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
