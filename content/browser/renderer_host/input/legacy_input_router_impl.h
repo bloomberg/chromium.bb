@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_IMPL_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_IMPL_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_LEGACY_INPUT_ROUTER_IMPL_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_LEGACY_INPUT_ROUTER_IMPL_H_
 
 #include <stdint.h>
 
@@ -40,20 +40,23 @@ class InputAckHandler;
 class InputRouterClient;
 struct InputEventAck;
 
-// A default implementation for browser input event routing.
-class CONTENT_EXPORT InputRouterImpl
+// An implementation for browser input event routing based on
+// Chrome IPC. This class is named "legacy" because it is largely tied to
+// Chrome IPC which is deprecated. This class will be replaced with a Mojo
+// backed transport. See crbug.com/722928.
+class CONTENT_EXPORT LegacyInputRouterImpl
     : public NON_EXPORTED_BASE(InputRouter),
       public NON_EXPORTED_BASE(GestureEventQueueClient),
       public NON_EXPORTED_BASE(MouseWheelEventQueueClient),
       public NON_EXPORTED_BASE(TouchEventQueueClient),
       public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
  public:
-  InputRouterImpl(IPC::Sender* sender,
-                  InputRouterClient* client,
-                  InputAckHandler* ack_handler,
-                  int routing_id,
-                  const Config& config);
-  ~InputRouterImpl() override;
+  LegacyInputRouterImpl(IPC::Sender* sender,
+                        InputRouterClient* client,
+                        InputAckHandler* ack_handler,
+                        int routing_id,
+                        const Config& config);
+  ~LegacyInputRouterImpl() override;
 
   // InputRouter
   bool SendInput(std::unique_ptr<IPC::Message> message) override;
@@ -75,8 +78,10 @@ class CONTENT_EXPORT InputRouterImpl
 
   void SetFrameTreeNodeId(int frameTreeNodeId) override;
 
+  cc::TouchAction AllowedTouchAction() override;
+
  private:
-  friend class InputRouterImplTest;
+  friend class LegacyInputRouterImplTest;
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            SubframeTouchEventRouting);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
@@ -94,8 +99,7 @@ class CONTENT_EXPORT InputRouterImpl
       const TouchEventWithLatencyInfo& touch_event) override;
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                        InputEventAckState ack_result) override;
-  void OnFilteringTouchEvent(
-      const blink::WebTouchEvent& touch_event) override;
+  void OnFilteringTouchEvent(const blink::WebTouchEvent& touch_event) override;
 
   // GestureEventFilterClient
   void SendGestureEventImmediately(
@@ -147,12 +151,7 @@ class CONTENT_EXPORT InputRouterImpl
 
   // Indicates the source of an ack provided to |ProcessInputEventAck()|.
   // The source is tracked by |current_ack_source_|, which aids in ack routing.
-  enum AckSource {
-    RENDERER,
-    CLIENT,
-    IGNORING_DISPOSITION,
-    ACK_SOURCE_NONE
-  };
+  enum AckSource { RENDERER, CLIENT, IGNORING_DISPOSITION, ACK_SOURCE_NONE };
   // Note: This function may result in |this| being deleted, and as such
   // should be the last method called in any internal chain of event handling.
   void ProcessInputEventAck(blink::WebInputEvent::Type event_type,
@@ -254,9 +253,9 @@ class CONTENT_EXPORT InputRouterImpl
   // Last touch position relative to screen. Used to compute movementX/Y.
   std::map<int, gfx::Point> global_touch_position_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputRouterImpl);
+  DISALLOW_COPY_AND_ASSIGN(LegacyInputRouterImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_IMPL_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_LEGACY_INPUT_ROUTER_IMPL_H_

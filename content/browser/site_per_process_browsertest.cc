@@ -40,7 +40,7 @@
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/renderer_host/input/input_router_impl.h"
+#include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -5726,10 +5726,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // browser.
   RenderWidgetHostImpl* child_render_widget_host =
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
-  InputRouterImpl* child_input_router =
-      static_cast<InputRouterImpl*>(child_render_widget_host->input_router());
   EXPECT_EQ(cc::kTouchActionAuto,
-            child_input_router->touch_action_filter_.allowed_touch_action());
+            child_render_widget_host->input_router()->AllowedTouchAction());
 
   // Simulate touch event to sub-frame.
   gfx::Point child_center(150, 150);
@@ -5765,7 +5763,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Verify the presence of the touch handler in the child frame correctly
   // propagates touch-action:none information back to the child's input router.
   EXPECT_EQ(cc::kTouchActionNone,
-            child_input_router->touch_action_filter_.allowed_touch_action());
+            child_render_widget_host->input_router()->AllowedTouchAction());
 }
 
 // This test verifies that the test in
@@ -5799,10 +5797,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // browser.
   RenderWidgetHostImpl* render_widget_host =
       root->current_frame_host()->GetRenderWidgetHost();
-  InputRouterImpl* input_router =
-      static_cast<InputRouterImpl*>(render_widget_host->input_router());
   EXPECT_EQ(cc::kTouchActionAuto,
-            input_router->touch_action_filter_.allowed_touch_action());
+            render_widget_host->input_router()->AllowedTouchAction());
 
   // Simulate touch event to sub-frame.
   gfx::Point frame_center(150, 150);
@@ -5838,7 +5834,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Verify the presence of the touch handler in the child frame correctly
   // propagates touch-action:none information back to the child's input router.
   EXPECT_EQ(cc::kTouchActionNone,
-            input_router->touch_action_filter_.allowed_touch_action());
+            render_widget_host->input_router()->AllowedTouchAction());
 }
 
 namespace {

@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_FRAME_HOST_INPUT_LEGACY_IPC_FRAME_INPUT_HANDLER_H_
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/common/input/input_handler.mojom.h"
 
 namespace content {
