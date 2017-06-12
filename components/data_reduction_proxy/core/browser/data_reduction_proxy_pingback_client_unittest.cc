@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -215,6 +216,31 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   EXPECT_EQ(
       PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
       pageload_metrics.effective_connection_type());
+  EXPECT_FALSE(pageload_metrics.holdback());
+  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+  histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 1);
+  EXPECT_FALSE(factory()->GetFetcherByID(0));
+}
+
+TEST_F(DataReductionProxyPingbackClientTest, VerifyHoldback) {
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "DataCompressionProxyHoldback", "Enabled"));
+  Init();
+  EXPECT_FALSE(factory()->GetFetcherByID(0));
+  pingback_client()->OverrideRandom(true, 0.5f);
+  pingback_client()->SetPingbackReportingFraction(1.0f);
+  CreateAndSendPingback(false /* lofi_received */,
+                        false /* lite_page_received */,
+                        false /* app_background_occurred */);
+  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
+  net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
+  EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
+  RecordPageloadMetricsRequest batched_request;
+  batched_request.ParseFromString(test_fetcher->upload_data());
+  EXPECT_EQ(batched_request.pageloads_size(), 1);
+  PageloadMetrics pageload_metrics = batched_request.pageloads(0);
+  EXPECT_TRUE(pageload_metrics.holdback());
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
   histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 1);
   EXPECT_FALSE(factory()->GetFetcherByID(0));

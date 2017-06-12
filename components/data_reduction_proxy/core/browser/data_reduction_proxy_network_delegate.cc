@@ -290,20 +290,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
 
   // Reset |request|'s DataReductionProxyData.
   DataReductionProxyData::ClearData(request);
-
-  if (params::IsIncludedInHoldbackFieldTrial()) {
-    if (WasEligibleWithoutHoldback(*request, proxy_info, proxy_retry_info)) {
-      // For the holdback field trial, still log UMA as if the proxy was used.
-      data = DataReductionProxyData::GetDataAndCreateIfNecessary(request);
-      if (data)
-        data->set_used_data_reduction_proxy(true);
-    }
-    // If holdback is enabled, |proxy_info| must not contain a data reduction
-    // proxy.
-    DCHECK(proxy_info.is_empty() ||
-           !data_reduction_proxy_config_->IsDataReductionProxy(
-               proxy_info.proxy_server(), nullptr));
-  }
+  data = nullptr;
 
   bool using_data_reduction_proxy = true;
   // The following checks rule out direct, invalid, and other connection types.
@@ -316,9 +303,44 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
                  proxy_info.proxy_server(), nullptr)) {
     using_data_reduction_proxy = false;
   }
+
+  bool is_holdback_eligible = false;
+
+  if (params::IsIncludedInHoldbackFieldTrial() &&
+      WasEligibleWithoutHoldback(*request, proxy_info, proxy_retry_info)) {
+    is_holdback_eligible = true;
+  }
   // If holdback is enabled, |using_data_reduction_proxy| must be false.
   DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
          !using_data_reduction_proxy);
+
+  // For the holdback field trial, still log UMA and send the pingback as if
+  // the proxy were used.
+  if (is_holdback_eligible || using_data_reduction_proxy) {
+    // Retrieves DataReductionProxyData from a request, creating a new instance
+    // if needed.
+    data = DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+    data->set_used_data_reduction_proxy(true);
+    // Only set GURL, NQE and session key string for main frame requests since
+    // they are not needed for sub-resources.
+    if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
+      data->set_session_key(
+          data_reduction_proxy_request_options_->GetSecureSession());
+      data->set_request_url(request->url());
+      if (request->context()->network_quality_estimator()) {
+        data->set_effective_connection_type(request->context()
+                                                ->network_quality_estimator()
+                                                ->GetEffectiveConnectionType());
+      }
+      // Generate a page ID for main frame requests that don't already have one.
+      // TODO(ryansturm): remove LOAD_MAIN_FRAME_DEPRECATED from d_r_p.
+      // crbug.com/709621
+      if (!page_id) {
+        page_id = data_reduction_proxy_request_options_->GeneratePageId();
+      }
+      data->set_page_id(page_id.value());
+    }
+  }
 
   LoFiDecider* lofi_decider = nullptr;
   if (data_reduction_proxy_io_data_)
@@ -336,25 +358,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     return;
   }
 
-  // Retrieves DataReductionProxyData from a request, creating a new instance
-  // if needed.
-  data = DataReductionProxyData::GetDataAndCreateIfNecessary(request);
-  if (data) {
-    data->set_used_data_reduction_proxy(true);
-    // Only set GURL, NQE and session key string for main frame requests since
-    // they are not needed for sub-resources.
-    if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
-      data->set_session_key(
-          data_reduction_proxy_request_options_->GetSecureSession());
-      data->set_request_url(request->url());
-      if (request->context()->network_quality_estimator()) {
-        data->set_effective_connection_type(request->context()
-                                                ->network_quality_estimator()
-                                                ->GetEffectiveConnectionType());
-      }
-    }
-  }
-
+  DCHECK(data);
   if (data_reduction_proxy_io_data_ &&
       (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED)) {
     data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
@@ -362,21 +366,9 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
                      : false);
   }
 
-  if (data) {
-    data->set_lofi_requested(
-        lofi_decider ? lofi_decider->ShouldRecordLoFiUMA(*request) : false);
-  }
+  data->set_lofi_requested(
+      lofi_decider ? lofi_decider->ShouldRecordLoFiUMA(*request) : false);
   MaybeAddBrotliToAcceptEncodingHeader(proxy_info, headers, *request);
-
-  // Generate a page ID for main frame requests that don't already have one.
-  // TODO(ryansturm): remove LOAD_MAIN_FRAME_DEPRECATED from d_r_p.
-  // crbug.com/709621
-  if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
-    if (!page_id) {
-      page_id = data_reduction_proxy_request_options_->GeneratePageId();
-    }
-    data->set_page_id(page_id.value());
-  }
 
   data_reduction_proxy_request_options_->AddRequestHeader(headers, page_id);
 

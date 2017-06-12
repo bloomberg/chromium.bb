@@ -30,6 +30,8 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   ~DataReductionProxyData() override;
 
   // Whether the DataReductionProxy was used for this request or navigation.
+  // Also true if the user is the holdback experiment, and the request would
+  // otherwise be eligible to use the proxy.
   bool used_data_reduction_proxy() const { return used_data_reduction_proxy_; }
   void set_used_data_reduction_proxy(bool used_data_reduction_proxy) {
     used_data_reduction_proxy_ = used_data_reduction_proxy;
@@ -105,6 +107,8 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
 
  private:
   // Whether the DataReductionProxy was used for this request or navigation.
+  // Also true if the user is the holdback experiment, and the request would
+  // otherwise be eligible to use the proxy.
   bool used_data_reduction_proxy_;
 
   // Whether server Lo-Fi was requested for this request or navigation. True if

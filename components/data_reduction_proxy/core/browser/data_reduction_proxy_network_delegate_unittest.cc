@@ -1144,6 +1144,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
           true, true,
       },
   };
+  test_network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
   base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
@@ -1157,7 +1159,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
     std::unique_ptr<net::URLRequest> request =
         context()->CreateRequest(GURL(kTestURL), net::RequestPriority::IDLE,
                                  nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+    request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
     request->set_method("GET");
+    io_data()->request_options()->SetSecureSession("fake-session");
     net::HttpRequestHeaders headers;
     net::ProxyRetryInfoMap proxy_retry_info;
     network_delegate()->NotifyBeforeSendHeaders(
@@ -1169,6 +1173,11 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
     } else {
       EXPECT_TRUE(data);
       EXPECT_TRUE(data->used_data_reduction_proxy());
+      EXPECT_EQ("fake-session", data->session_key());
+      EXPECT_EQ(GURL(kTestURL), data->request_url());
+      EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_4G,
+                data->effective_connection_type());
+      EXPECT_TRUE(data->page_id());
     }
   }
 }
