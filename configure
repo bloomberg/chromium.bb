@@ -319,6 +319,7 @@ EXPERIMENT_LIST="
     smooth_hv
     var_refs
     rect_intra_pred
+    sbl_symbol
 "
 CONFIG_LIST="
     dependency_tracking
