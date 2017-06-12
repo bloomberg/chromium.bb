@@ -158,7 +158,8 @@ URLLoaderImpl::URLLoaderImpl(
     mojom::URLLoaderAssociatedRequest url_loader_request,
     int32_t options,
     const ResourceRequest& request,
-    mojom::URLLoaderClientPtr url_loader_client)
+    mojom::URLLoaderClientPtr url_loader_client,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : context_(context),
       options_(options),
       connected_(true),
@@ -173,7 +174,7 @@ URLLoaderImpl::URLLoaderImpl(
       base::Bind(&URLLoaderImpl::OnConnectionError, base::Unretained(this)));
 
   url_request_ = context_->url_request_context()->CreateRequest(
-      GURL(request.url), net::DEFAULT_PRIORITY, this);
+      GURL(request.url), net::DEFAULT_PRIORITY, this, traffic_annotation);
   url_request_->set_method(request.method);
 
   url_request_->set_first_party_for_cookies(request.first_party_for_cookies);

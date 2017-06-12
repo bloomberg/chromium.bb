@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader_factory.mojom.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
 
@@ -27,18 +28,23 @@ class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
                             int32_t request_id,
                             uint32_t options,
                             const ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client) override;
+                            mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override;
   void SyncLoad(int32_t routing_id,
                 int32_t request_id,
                 const ResourceRequest& request,
                 SyncLoadCallback callback) override;
 
-  static void CreateLoaderAndStart(ResourceRequesterInfo* requester_info,
-                                   mojom::URLLoaderAssociatedRequest request,
-                                   int32_t routing_id,
-                                   int32_t request_id,
-                                   const ResourceRequest& url_request,
-                                   mojom::URLLoaderClientPtr client);
+  static void CreateLoaderAndStart(
+      ResourceRequesterInfo* requester_info,
+      mojom::URLLoaderAssociatedRequest request,
+      int32_t routing_id,
+      int32_t request_id,
+      const ResourceRequest& url_request,
+      mojom::URLLoaderClientPtr client,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+
   static void SyncLoad(ResourceRequesterInfo* requester_info,
                        int32_t routing_id,
                        int32_t request_id,

@@ -52,10 +52,13 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientPtr client) {
+    mojom::URLLoaderClientPtr client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_EQ(options, mojom::kURLLoadOptionNone);
-  CreateLoaderAndStart(requester_info_.get(), std::move(request), routing_id,
-                       request_id, url_request, std::move(client));
+  CreateLoaderAndStart(
+      requester_info_.get(), std::move(request), routing_id, request_id,
+      url_request, std::move(client),
+      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation));
 }
 
 void URLLoaderFactoryImpl::SyncLoad(int32_t routing_id,
@@ -73,7 +76,8 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientPtr client) {
+    mojom::URLLoaderClientPtr client,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(ResourceDispatcherHostImpl::Get()
              ->io_thread_task_runner()
              ->BelongsToCurrentThread());

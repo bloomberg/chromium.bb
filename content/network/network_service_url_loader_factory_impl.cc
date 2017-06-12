@@ -26,9 +26,11 @@ void NetworkServiceURLLoaderFactoryImpl::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientPtr client) {
-  new URLLoaderImpl(context_, std::move(request), options, url_request,
-                    std::move(client));
+    mojom::URLLoaderClientPtr client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  new URLLoaderImpl(
+      context_, std::move(request), options, url_request, std::move(client),
+      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation));
 }
 
 void NetworkServiceURLLoaderFactoryImpl::SyncLoad(

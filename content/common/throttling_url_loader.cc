@@ -57,9 +57,10 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     uint32_t options,
     std::unique_ptr<ResourceRequest> url_request,
     mojom::URLLoaderClient* client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  std::unique_ptr<ThrottlingURLLoader> loader(
-      new ThrottlingURLLoader(std::move(throttles), client));
+  std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
+      std::move(throttles), client, traffic_annotation));
   loader->Start(factory, routing_id, request_id, options,
                 std::move(url_request), std::move(task_runner));
   return loader;
@@ -86,8 +87,11 @@ void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
 
 ThrottlingURLLoader::ThrottlingURLLoader(
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-    mojom::URLLoaderClient* client)
-    : forwarding_client_(client), client_binding_(this) {
+    mojom::URLLoaderClient* client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+    : forwarding_client_(client),
+      client_binding_(this),
+      traffic_annotation_(traffic_annotation) {
   if (throttles.size() > 0) {
     // TODO(yzshen): Implement a URLLoaderThrottle subclass which handles a list
     // of URLLoaderThrottles.
@@ -127,7 +131,7 @@ void ThrottlingURLLoader::Start(
   client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
   factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader_), routing_id,
                                 request_id, options, *url_request,
-                                std::move(client));
+                                std::move(client), traffic_annotation_);
 }
 
 void ThrottlingURLLoader::OnReceiveResponse(
@@ -261,7 +265,7 @@ void ThrottlingURLLoader::Resume() {
       start_info_->url_loader_factory->CreateLoaderAndStart(
           mojo::MakeRequest(&url_loader_), start_info_->routing_id,
           start_info_->request_id, start_info_->options,
-          *start_info_->url_request, std::move(client));
+          *start_info_->url_request, std::move(client), traffic_annotation_);
 
       if (priority_info_) {
         auto priority_info = std::move(priority_info_);

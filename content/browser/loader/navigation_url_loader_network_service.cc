@@ -37,6 +37,7 @@
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 
 namespace content {
@@ -59,17 +60,19 @@ WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
 
 class AssociatedURLLoaderWrapper final : public mojom::URLLoader {
  public:
-  static void CreateLoaderAndStart(mojom::URLLoaderFactory* factory,
-                                   mojom::URLLoaderRequest request,
-                                   uint32_t options,
-                                   const ResourceRequest& resource_request,
-                                   mojom::URLLoaderClientPtr client) {
+  static void CreateLoaderAndStart(
+      mojom::URLLoaderFactory* factory,
+      mojom::URLLoaderRequest request,
+      uint32_t options,
+      const ResourceRequest& resource_request,
+      mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
     mojom::URLLoaderAssociatedPtr associated_ptr;
     mojom::URLLoaderAssociatedRequest associated_request =
         mojo::MakeRequest(&associated_ptr);
-    factory->CreateLoaderAndStart(std::move(associated_request),
-                                  0 /* routing_id */, 0 /* request_id */,
-                                  options, resource_request, std::move(client));
+    factory->CreateLoaderAndStart(
+        std::move(associated_request), 0 /* routing_id */, 0 /* request_id */,
+        options, resource_request, std::move(client), traffic_annotation);
     mojo::MakeStrongBinding(
         base::MakeUnique<AssociatedURLLoaderWrapper>(std::move(associated_ptr)),
         std::move(request));
@@ -142,7 +145,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
       AssociatedURLLoaderWrapper::CreateLoaderAndStart(
           factory_ptr.get(), std::move(url_loader_request),
           mojom::kURLLoadOptionSendSSLInfo, *resource_request_,
-          std::move(url_loader_client_ptr_));
+          std::move(url_loader_client_ptr_),
+          net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET));
       return;
     }
 
@@ -214,7 +218,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController {
     AssociatedURLLoaderWrapper::CreateLoaderAndStart(
         factory, std::move(url_loader_request_),
         mojom::kURLLoadOptionSendSSLInfo, *resource_request_,
-        std::move(url_loader_client_ptr_));
+        std::move(url_loader_client_ptr_),
+        net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET));
   }
 
  private:

@@ -90,11 +90,13 @@ void ResourceMessageFilter::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientPtr client) {
+    mojom::URLLoaderClientPtr client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_EQ(options, mojom::kURLLoadOptionNone);
   URLLoaderFactoryImpl::CreateLoaderAndStart(
       requester_info_.get(), std::move(request), routing_id, request_id,
-      url_request, std::move(client));
+      url_request, std::move(client),
+      net::NetworkTrafficAnnotationTag(traffic_annotation));
 }
 
 void ResourceMessageFilter::SyncLoad(int32_t routing_id,
