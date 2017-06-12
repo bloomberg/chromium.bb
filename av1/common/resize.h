@@ -91,7 +91,6 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool);
 static INLINE int av1_superres_unscaled(const AV1_COMMON *cm) {
   return (cm->superres_scale_numerator == SUPERRES_SCALE_DENOMINATOR);
 }
-
 #endif  // CONFIG_FRAME_SUPERRES
 
 #ifdef __cplusplus

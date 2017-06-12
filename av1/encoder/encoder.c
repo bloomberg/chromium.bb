@@ -3844,9 +3844,6 @@ static void superres_post_encode(AV1_COMP *cpi) {
 
   if (av1_superres_unscaled(cm)) return;
 
-  assert(cpi->unscaled_source->y_crop_width != cm->superres_upscaled_width);
-  assert(cpi->unscaled_source->y_crop_height != cm->superres_upscaled_height);
-
   av1_superres_upscale(cm, NULL);
 
   // If regular resizing is occurring the source will need to be downscaled to
@@ -3856,6 +3853,8 @@ static void superres_post_encode(AV1_COMP *cpi) {
     cpi->source = cpi->unscaled_source;
     if (cpi->last_source != NULL) cpi->last_source = cpi->unscaled_last_source;
   } else {
+    assert(cpi->unscaled_source->y_crop_width != cm->superres_upscaled_width);
+    assert(cpi->unscaled_source->y_crop_height != cm->superres_upscaled_height);
     // Do downscale. cm->(width|height) has been updated by av1_superres_upscale
     if (aom_realloc_frame_buffer(
             &cpi->scaled_source, cm->superres_upscaled_width,
