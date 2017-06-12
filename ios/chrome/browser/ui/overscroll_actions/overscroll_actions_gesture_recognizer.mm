@@ -6,10 +6,14 @@
 
 #import <UIKit/UIGestureRecognizerSubclass.h>
 
-#import "base/ios/weak_nsobject.h"
+#import "base/logging.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface OverscrollActionsGestureRecognizer () {
-  base::WeakNSProtocol<id> target_;
+  __weak id target_;
   SEL action_;
 }
 @end
@@ -19,7 +23,7 @@
 - (instancetype)initWithTarget:(id)target action:(SEL)action {
   self = [super initWithTarget:target action:action];
   if (self) {
-    target_.reset([target retain]);
+    target_ = target;
     action_ = action;
   }
   return self;
@@ -27,7 +31,10 @@
 
 - (void)reset {
   [super reset];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [target_ performSelector:action_ withObject:self];
+#pragma clang diagnostic pop
 }
 
 - (void)removeTarget:(id)target action:(SEL)action {

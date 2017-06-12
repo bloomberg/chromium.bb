@@ -86,12 +86,12 @@ extern NSString* const kOverscrollActionsDidEnd;
 - (instancetype)initWithScrollView:(UIScrollView*)scrollView;
 
 // The scrollview the overscroll controller will control.
-@property(nonatomic, readonly) UIScrollView* scrollView;
+@property(weak, nonatomic, readonly) UIScrollView* scrollView;
 // The current state of the overscroll controller.
 @property(nonatomic, assign, readonly) OverscrollState overscrollState;
 // The delegate must be set for the OverscrollActionsController to work
 // properly.
-@property(nonatomic, assign) id<OverscrollActionsControllerDelegate> delegate;
+@property(nonatomic, weak) id<OverscrollActionsControllerDelegate> delegate;
 
 // Used to clear state maintained by the controller and de-register from
 // notifications. After this call the controller ceases to function and will
