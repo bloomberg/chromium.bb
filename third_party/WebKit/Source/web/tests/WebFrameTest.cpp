@@ -11631,8 +11631,6 @@ TEST_F(WebFrameTest, MouseReleaseUpdatesScrollbarHoveredPart) {
   mouse_move_over_scrollbar.SetFrameScale(1);
   document->GetFrame()->GetEventHandler().HandleMouseMoveEvent(
       mouse_move_over_scrollbar, Vector<WebMouseEvent>());
-  HitTestResult hit_test_result =
-      web_view->CoreHitTestResultAt(WebPoint(175, 1));
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
   EXPECT_EQ(scrollbar->HoveredPart(), ScrollbarPart::kThumbPart);
 
@@ -11668,6 +11666,75 @@ TEST_F(WebFrameTest, MouseReleaseUpdatesScrollbarHoveredPart) {
       mouse_release_event);
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
   EXPECT_EQ(scrollbar->HoveredPart(), ScrollbarPart::kNoPart);
+}
+
+class TapChangeHoverStateTest : public WebFrameTest {
+ public:
+  void RunTest(bool viewport_enabled,
+               bool viewport_meta,
+               bool should_change_hover_state) {
+    std::string test_page =
+        viewport_meta ? "viewport-2-div.html" : "noviewport-2-div.html";
+
+    FakeCompositingWebViewClient client;
+    RegisterMockedHttpURLLoad(test_page);
+    FrameTestHelpers::WebViewHelper web_view_helper;
+    WebViewBase* web_view;
+    if (viewport_enabled) {
+      web_view = web_view_helper.InitializeAndLoad(base_url_ + test_page, false,
+                                                   nullptr, &client, nullptr,
+                                                   ConfigureAndroid);
+    } else {
+      web_view = web_view_helper.InitializeAndLoad(base_url_ + test_page);
+    }
+    web_view_helper.Resize(WebSize(250, 250));
+
+    Document* document =
+        ToLocalFrame(web_view->GetPage()->MainFrame())->GetDocument();
+
+    Element* div1 = document->getElementById("div1");
+    Element* div2 = document->getElementById("div2");
+
+    // Move mouse over div1 should hover div1.
+    WebMouseEvent mouse_move_over_div1(
+        WebInputEvent::kMouseMove, WebFloatPoint(10, 10), WebFloatPoint(10, 10),
+        WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
+        TimeTicks::Now().InSeconds());
+    mouse_move_over_div1.SetFrameScale(1);
+    document->GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_over_div1, Vector<WebMouseEvent>());
+
+    DCHECK(document->HoverElement() == div1);
+
+    // Tap on div2.
+    WebGestureEvent tap_on_div2(WebInputEvent::kGestureTap,
+                                WebInputEvent::kNoModifiers,
+                                WebInputEvent::kTimeStampForTesting);
+    tap_on_div2.SetFrameScale(1);
+    tap_on_div2.x = tap_on_div2.global_x = 10;
+    tap_on_div2.y = tap_on_div2.global_y = 110;
+    tap_on_div2.source_device = kWebGestureDeviceTouchscreen;
+    web_view_helper.WebView()
+        ->MainFrameImpl()
+        ->GetFrame()
+        ->GetEventHandler()
+        .HandleGestureEvent(tap_on_div2);
+
+    Element* expected_hover_element = should_change_hover_state ? div2 : div1;
+    EXPECT_EQ(expected_hover_element, document->HoverElement());
+  }
+};
+
+TEST_F(TapChangeHoverStateTest, TapNotChangeHoverStateOnViewportMetaAndMobile) {
+  RunTest(true, true, false);
+}
+
+TEST_F(TapChangeHoverStateTest, TapChangeHoverStateOnNoViewportMetaAndMobile) {
+  RunTest(true, false, true);
+}
+
+TEST_F(TapChangeHoverStateTest, TapChangeHoverStateOnViewportMetaAndDesktop) {
+  RunTest(false, true, true);
 }
 
 TEST_F(WebFrameTest,
