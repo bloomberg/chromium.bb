@@ -885,8 +885,7 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
 
   Node::NodeType new_node_type = new_node->getNodeType();
   int num_new_children;
-  if (new_node_type == Node::kDocumentFragmentNode &&
-      !new_node->IsShadowRoot()) {
+  if (new_node_type == Node::kDocumentFragmentNode) {
     // check each child node, not the DocumentFragment itself
     num_new_children = 0;
     for (Node* c = ToDocumentFragment(new_node)->firstChild(); c;
@@ -921,8 +920,7 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
     }
   }
 
-  // InvalidNodeTypeError: Raised if newNode is an Attr, Entity, Notation,
-  // ShadowRoot or Document node.
+  // InvalidNodeTypeError: Raised if new_node is an Attr or Document node.
   switch (new_node_type) {
     case Node::kAttributeNode:
     case Node::kDocumentNode:
@@ -932,13 +930,6 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
                                      "' node, which may not be inserted here.");
       return;
     default:
-      if (new_node->IsShadowRoot()) {
-        exception_state.ThrowDOMException(kInvalidNodeTypeError,
-                                          "The node to be inserted is a shadow "
-                                          "root, which may not be inserted "
-                                          "here.");
-        return;
-      }
       break;
   }
 
