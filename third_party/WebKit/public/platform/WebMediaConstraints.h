@@ -31,14 +31,13 @@
 #ifndef WebMediaConstraints_h
 #define WebMediaConstraints_h
 
-#include <string>
-#include <vector>
-
 #include "WebCommon.h"
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 #include "WebVector.h"
+
+#include <vector>
 
 namespace blink {
 
@@ -167,8 +166,6 @@ class BLINK_PLATFORM_EXPORT StringConstraint : public BaseConstraint {
   void SetExact(const WebString& exact) { exact_.Assign(&exact, 1); }
 
   void SetExact(const WebVector<WebString>& exact) { exact_.Assign(exact); }
-
-  void SetIdeal(const WebString& ideal) { ideal_.Assign(&ideal, 1); }
 
   void SetIdeal(const WebVector<WebString>& ideal) { ideal_.Assign(ideal); }
 
