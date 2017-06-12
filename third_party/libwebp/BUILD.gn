@@ -24,6 +24,7 @@ source_set("libwebp_webp") {
     "webp/demux.h",
     "webp/encode.h",
     "webp/format_constants.h",
+    "webp/mux.h",
     "webp/mux_types.h",
     "webp/types.h",
   ]
@@ -83,7 +84,9 @@ static_library("libwebp_demux") {
 static_library("libwebp_mux") {
   sources = [
     "mux/anim_encode.c",
+    "mux/animi.h",
     "mux/muxedit.c",
+    "mux/muxi.h",
     "mux/muxinternal.c",
     "mux/muxread.c",
   ]
