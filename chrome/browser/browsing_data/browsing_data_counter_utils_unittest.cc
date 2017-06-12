@@ -55,9 +55,8 @@ TEST_F(BrowsingDataCounterUtilsTest, CacheCounterResult) {
       {2.312 * kBytesInAMegabyte, false, true,
        "Frees up 2.3 MB. Some sites may load more slowly on your next visit."},
       {2.312 * kBytesInAMegabyte, true, false, "Less than 2.3 MB"},
-      // TODO(725401): Fix upper case L in estimate string for desktop.
       {2.312 * kBytesInAMegabyte, true, true,
-       "Frees up Less than 2.3 MB. Some sites may load more slowly on your "
+       "Frees up less than 2.3 MB. Some sites may load more slowly on your "
        "next visit."},
       {500.2 * kBytesInAMegabyte, false, false, "500 MB"},
       {500.2 * kBytesInAMegabyte, true, false, "Less than 500 MB"},

@@ -22,11 +22,14 @@
   <message name="IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY" desc="A counter showing that the user's cache is almost empty, having less than 1 MB of data.">
     Less than 1 MB
   </message>
-  <message name="IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY_BASIC" desc="Text showing that the user has less than 1 MB of data. It will be included in the sentence 'Frees up $1.'">
-    less than 1 MB
-  </message>
-  <message name="IDS_DEL_CACHE_COUNTER_BASIC" desc="A counter showing the size of the users's cache including either 'x MB' or 'less than x MB' as $1 and explaining that the cache is used to speed up the loading of websites.">
+  <message name="IDS_DEL_CACHE_COUNTER_BASIC" desc="A counter showing the size of the users's cache. The estimate (e.g. '328 MB' will be substituted). It also explains that the cache is used to speed up the loading of websites.">
     Frees up <ph name="SIZE">$1<ex>328 MB</ex></ph>. Some sites may load more slowly on your next visit.
+  </message>
+  <message name="IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE_BASIC" desc="A counter showing an upper estimate of the size of the users's cache. The estimate (e.g. '328 MB' will be substituted). It also explains that the cache is used to speed up the loading of websites.">
+    Frees up less than <ph name="SIZE">$1<ex>328 MB</ex></ph>. Some sites may load more slowly on your next visit.
+  </message>
+  <message name="IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY_BASIC" desc="A counter showing that the user's cache is almost empty and explaining that the cache is used to speed up the loading of websites.">
+    Frees up less than 1 MB. Some sites may load more slowly on your next visit.
   </message>
   <message name="IDS_DEL_PASSWORDS_COUNTER" desc="A counter showing how many passwords the user has.">
     {COUNT, plural,
