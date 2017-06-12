@@ -10133,12 +10133,28 @@
     "additional_compile_targets": [
       "base_unittests",
       "d8"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "base_unittests"
+      }
     ]
   },
   "Fuchsia (dbg)": {
     "additional_compile_targets": [
       "base_unittests",
       "d8"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "base_unittests"
+      }
     ]
   },
   "Headless Linux (dbg)": {
