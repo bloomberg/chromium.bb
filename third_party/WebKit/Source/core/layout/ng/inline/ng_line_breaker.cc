@@ -15,7 +15,6 @@
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapingLineBreaker.h"
 
 namespace blink {
@@ -23,7 +22,7 @@ namespace blink {
 namespace {
 
 // Use a mock of ShapingLineBreaker for test/debug purposes.
-#define MOCK_SHAPE_LINE
+// #define MOCK_SHAPE_LINE
 
 #if defined(MOCK_SHAPE_LINE)
 // The mock for ShapingLineBreaker::ShapeLine().
@@ -37,9 +36,9 @@ std::pair<unsigned, LayoutUnit> ShapeLineMock(
   LayoutUnit inline_size;
   while (true) {
     unsigned next_break = break_iterator.NextBreakOpportunity(offset + 1);
+    next_break = std::min(next_break, item.EndOffset());
     LayoutUnit next_inline_size =
-        inline_size +
-        item.InlineSize(offset, std::min(next_break, item.EndOffset()));
+        inline_size + item.InlineSize(offset, next_break);
     if (next_inline_size > available_width) {
       if (!has_break_opportunities)
         return std::make_pair(next_break, next_inline_size);
@@ -63,7 +62,8 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       constraint_space_(space),
       item_index_(0),
       offset_(0),
-      break_iterator_(node.Text()) {
+      break_iterator_(node.Text()),
+      shaper_(node.Text().Characters16(), node.Text().length()) {
   if (break_token) {
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
@@ -88,10 +88,6 @@ void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
   const Vector<NGInlineItem>& items = node_.Items();
   const ComputedStyle& style = node_.Style();
   UpdateBreakIterator(style);
-#if !defined(MOCK_SHAPE_LINE)
-  // TODO(kojii): Instantiate in the constructor.
-  HarfBuzzShaper shaper(text.Characters16(), text.length());
-#endif
   available_width_ = algorithm->AvailableWidth();
   position_ = LayoutUnit(0);
   LineBreakState state = LineBreakState::kNotBreakable;
@@ -200,8 +196,9 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   // expensive?
   DCHECK_EQ(item.TextShapeResult()->StartIndexForResult(), item.StartOffset());
   DCHECK_EQ(item.TextShapeResult()->EndIndexForResult(), item.EndOffset());
-  ShapingLineBreaker breaker(&shaper, &item.Style()->GetFont(),
-                             item.TextShapeResult(), break_iterator_);
+  ShapingLineBreaker breaker(&shaper_, &item.Style()->GetFont(),
+                             item.TextShapeResult(), &break_iterator_);
+  available_width = std::max(LayoutUnit(0), available_width);
   item_result->shape_result = breaker.ShapeLine(
       item_result->start_offset, available_width, &item_result->end_offset);
   item_result->inline_size = item_result->shape_result->SnappedWidth();
@@ -209,18 +206,18 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   DCHECK_GT(item_result->end_offset, item_result->start_offset);
   // * If width <= available_width:
   //   * If offset < item.EndOffset(): the break opportunity to fit is found.
-  //   * If offset == item.EndOffset(): the break opportunity at the end fits.
+  //   * If offset == item.EndOffset(): the break opportunity at the end fits,
+  //     or the first break opportunity is beyond the end.
   //     There may be room for more characters.
-  //   * If offset > item.EndOffset(): the first break opportunity is beyond
-  //     the end. There may be room for more characters.
   // * If width > available_width: The first break opporunity does not fit.
   //   offset is the first break opportunity, either inside, at the end, or
   //   beyond the end.
-  if (item_result->end_offset <= item.EndOffset()) {
+  if (item_result->end_offset < item.EndOffset()) {
     item_result->prohibit_break_after = false;
   } else {
-    item_result->prohibit_break_after = true;
-    item_result->end_offset = item.EndOffset();
+    DCHECK_EQ(item_result->end_offset, item.EndOffset());
+    item_result->prohibit_break_after =
+        !break_iterator_.IsBreakable(item_result->end_offset);
   }
 }
 

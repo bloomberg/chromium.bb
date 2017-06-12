@@ -314,6 +314,9 @@ crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/pos
 crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/position-applies-to-014.xht [ Failure ]
 crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/position-applies-to-015.xht [ Failure ]
 
+### virtual/layout_ng Mac 1px glyph difference.
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/015.html [ Failure ]
+
 ### virtual/layout_ng/external/wpt/css/CSS2/abspos
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-009a.xht [ Failure ]

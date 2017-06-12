@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/wtf/Allocator.h"
@@ -87,6 +88,7 @@ class CORE_EXPORT NGLineBreaker {
   LayoutUnit available_width_;
   LayoutUnit position_;
   LazyLineBreakIterator break_iterator_;
+  HarfBuzzShaper shaper_;
 
   unsigned auto_wrap_ : 1;
 };
