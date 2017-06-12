@@ -91,7 +91,7 @@ class ThreatDetails : public base::RefCountedThreadSafe<
   // in UI thread; then do cache collection back in IO thread. We also record
   // if the user did proceed with the warning page, and how many times user
   // visited this page before. When we are done, we send the report.
-  void FinishCollection(bool did_proceed, int num_visits);
+  virtual void FinishCollection(bool did_proceed, int num_visits);
 
   void OnCacheCollectionReady();
 
@@ -110,6 +110,8 @@ class ThreatDetails : public base::RefCountedThreadSafe<
                 const UnsafeResource& resource,
                 net::URLRequestContextGetter* request_context_getter,
                 history::HistoryService* history_service);
+  // Default constructor for testing only.
+  ThreatDetails();
 
   ~ThreatDetails() override;
 

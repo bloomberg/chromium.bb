@@ -114,7 +114,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
           main_frame_url,
           unsafe_resources,
           CreateControllerClient(web_contents, unsafe_resources, ui_manager),
-          display_options) {
+          display_options),
+      threat_details_in_progress_(false) {
   // Start computing threat details. They will be sent only
   // if the user opts-in on the blocking page later.
   // If there's more than one malicious resources, it means the user
@@ -122,11 +123,10 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   // reports.
   if (unsafe_resources.size() == 1 &&
       ShouldReportThreatDetails(unsafe_resources[0].threat_type) &&
-      threat_details_.get() == NULL &&
       sb_error_ui()->CanShowExtendedReportingOption()) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    threat_details_ =
+    threat_details_in_progress_ =
         g_browser_process->safe_browsing_service()
             ->trigger_manager()
             ->StartCollectingThreatDetails(
@@ -188,8 +188,9 @@ SafeBrowsingBlockingPage::GetTypeForTesting() const {
 void SafeBrowsingBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,
                                                    bool did_proceed,
                                                    int num_visits) {
-  if (threat_details_.get() == NULL)
-    return;  // Not all interstitials have threat details (eg., incognito mode).
+  // Not all interstitials collect threat details (eg., incognito mode).
+  if (!threat_details_in_progress_)
+    return;
 
   const bool enabled = sb_error_ui()->is_extended_reporting_enabled() &&
                        sb_error_ui()->is_extended_reporting_opt_in_allowed();
@@ -199,11 +200,10 @@ void SafeBrowsingBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,
   controller()->metrics_helper()->RecordUserInteraction(
       security_interstitials::MetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
   // Finish the malware details collection, send it over.
-  BrowserThread::PostDelayedTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ThreatDetails::FinishCollection, threat_details_,
-                     did_proceed, num_visits),
-      delay);
+  g_browser_process->safe_browsing_service()
+      ->trigger_manager()
+      ->FinishCollectingThreatDetails(web_contents(), delay, did_proceed,
+                                      num_visits);
 }
 
 // static
