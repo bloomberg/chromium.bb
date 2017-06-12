@@ -44,6 +44,26 @@ class SelectionPaintRange {
   DISALLOW_NEW();
 
  public:
+  class Iterator
+      : public std::iterator<std::input_iterator_tag, LayoutObject*> {
+   public:
+    explicit Iterator(const SelectionPaintRange*);
+    Iterator(const Iterator&) = default;
+    bool operator==(const Iterator& other) const {
+      return current_ == other.current_;
+    }
+    bool operator!=(const Iterator& other) const { return !operator==(other); }
+    Iterator& operator++();
+    LayoutObject* operator*() const;
+
+   private:
+    LayoutObject* current_;
+    const LayoutObject* included_end_;
+    const LayoutObject* stop_;
+  };
+  Iterator begin() const { return Iterator(this); };
+  Iterator end() const { return Iterator(nullptr); };
+
   SelectionPaintRange() = default;
   SelectionPaintRange(LayoutObject* start_layout_object,
                       int start_offset,

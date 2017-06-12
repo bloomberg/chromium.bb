@@ -74,6 +74,36 @@ int SelectionPaintRange::EndOffset() const {
   return end_offset_;
 }
 
+SelectionPaintRange::Iterator::Iterator(const SelectionPaintRange* range) {
+  if (!range) {
+    current_ = nullptr;
+    return;
+  }
+  current_ = range->StartLayoutObject();
+  included_end_ = range->EndLayoutObject();
+  stop_ = range->EndLayoutObject()->ChildAt(range->EndOffset());
+  if (stop_)
+    return;
+  stop_ = range->EndLayoutObject()->NextInPreOrderAfterChildren();
+}
+
+LayoutObject* SelectionPaintRange::Iterator::operator*() const {
+  DCHECK(current_);
+  return current_;
+}
+
+SelectionPaintRange::Iterator& SelectionPaintRange::Iterator::operator++() {
+  DCHECK(current_);
+  for (current_ = current_->NextInPreOrder(); current_ && current_ != stop_;
+       current_ = current_->NextInPreOrder()) {
+    if (current_ == included_end_ || current_->CanBeSelectionLeaf())
+      return *this;
+  }
+
+  current_ = nullptr;
+  return *this;
+}
+
 LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
     : frame_selection_(&frame_selection),
       has_pending_selection_(false),
@@ -131,14 +161,7 @@ static SelectionInFlatTree CalcSelection(
   return builder.Build();
 }
 
-static LayoutObject* LayoutObjectAfterPosition(LayoutObject* object,
-                                               unsigned offset) {
-  if (!object)
-    return nullptr;
 
-  LayoutObject* child = object->ChildAt(offset);
-  return child ? child : object->NextInPreOrderAfterChildren();
-}
 
 // Objects each have a single selection rect to examine.
 using SelectedObjectMap = HashMap<LayoutObject*, SelectionState>;
@@ -175,13 +198,7 @@ static SelectedMap CollectSelectedMap(const SelectionPaintRange& range,
 
   SelectedMap selected_map;
 
-  LayoutObject* const stop =
-      LayoutObjectAfterPosition(range.EndLayoutObject(), range.EndOffset());
-  for (LayoutObject* runner = range.StartLayoutObject();
-       runner && (runner != stop); runner = runner->NextInPreOrder()) {
-    if (!runner->CanBeSelectionLeaf() && runner != range.StartLayoutObject() &&
-        runner != range.EndLayoutObject())
-      continue;
+  for (LayoutObject* runner : range) {
     if (runner->GetSelectionState() == SelectionState::kNone)
       continue;
 
@@ -216,10 +233,7 @@ static void SetSelectionState(const SelectionPaintRange& range) {
     range.EndLayoutObject()->SetSelectionStateIfNeeded(SelectionState::kEnd);
   }
 
-  LayoutObject* const stop =
-      LayoutObjectAfterPosition(range.EndLayoutObject(), range.EndOffset());
-  for (LayoutObject* runner = range.StartLayoutObject();
-       runner && runner != stop; runner = runner->NextInPreOrder()) {
+  for (LayoutObject* runner : range) {
     if (runner != range.StartLayoutObject() &&
         runner != range.EndLayoutObject() && runner->CanBeSelectionLeaf())
       runner->SetSelectionStateIfNeeded(SelectionState::kInside);
@@ -304,6 +318,7 @@ void LayoutSelection::ClearSelection() {
   const SelectedMap& old_selected_map = CollectSelectedMap(
       paint_range_, CollectSelectedMapOption::kNotCollectBlock);
   // Clear SelectionState and invalidation.
+  // TODO(yoichio): Iterate with *this directrly.
   for (auto layout_object : old_selected_map.object_map.Keys()) {
     const SelectionState old_state = layout_object->GetSelectionState();
     layout_object->SetSelectionStateIfNeeded(SelectionState::kNone);
@@ -410,28 +425,23 @@ IntRect LayoutSelection::SelectionBounds() {
   if (paint_range_.IsNull())
     return IntRect();
 
-  LayoutObject* os = paint_range_.StartLayoutObject();
-  LayoutObject* stop = LayoutObjectAfterPosition(paint_range_.EndLayoutObject(),
-                                                 paint_range_.EndOffset());
-  while (os && os != stop) {
-    if ((os->CanBeSelectionLeaf() || os == paint_range_.StartLayoutObject() ||
-         os == paint_range_.EndLayoutObject()) &&
-        os->GetSelectionState() != SelectionState::kNone) {
-      // Blocks are responsible for painting line gaps and margin gaps. They
-      // must be examined as well.
-      sel_rect.Unite(SelectionRectForLayoutObject(os));
-      const LayoutBlock* cb = os->ContainingBlock();
-      while (cb && !cb->IsLayoutView()) {
-        sel_rect.Unite(SelectionRectForLayoutObject(cb));
-        VisitedContainingBlockSet::AddResult add_result =
-            visited_containing_blocks.insert(cb);
-        if (!add_result.is_new_entry)
-          break;
-        cb = cb->ContainingBlock();
-      }
-    }
+  // TODO(yoichio): Use CollectSelectedMap.
+  for (LayoutObject* runner : paint_range_) {
+    if (runner->GetSelectionState() == SelectionState::kNone)
+      continue;
 
-    os = os->NextInPreOrder();
+    // Blocks are responsible for painting line gaps and margin gaps. They
+    // must be examined as well.
+    sel_rect.Unite(SelectionRectForLayoutObject(runner));
+    const LayoutBlock* cb = runner->ContainingBlock();
+    while (cb && !cb->IsLayoutView()) {
+      sel_rect.Unite(SelectionRectForLayoutObject(cb));
+      VisitedContainingBlockSet::AddResult add_result =
+          visited_containing_blocks.insert(cb);
+      if (!add_result.is_new_entry)
+        break;
+      cb = cb->ContainingBlock();
+    }
   }
 
   return PixelSnappedIntRect(sel_rect);
@@ -441,17 +451,11 @@ void LayoutSelection::InvalidatePaintForSelection() {
   if (paint_range_.IsNull())
     return;
 
-  LayoutObject* end = LayoutObjectAfterPosition(paint_range_.EndLayoutObject(),
-                                                paint_range_.EndOffset());
-  for (LayoutObject* o = paint_range_.StartLayoutObject(); o && o != end;
-       o = o->NextInPreOrder()) {
-    if (!o->CanBeSelectionLeaf() && o != paint_range_.StartLayoutObject() &&
-        o != paint_range_.EndLayoutObject())
-      continue;
-    if (o->GetSelectionState() == SelectionState::kNone)
+  for (LayoutObject* runner : paint_range_) {
+    if (runner->GetSelectionState() == SelectionState::kNone)
       continue;
 
-    o->SetShouldInvalidateSelection();
+    runner->SetShouldInvalidateSelection();
   }
 }
 
