@@ -1,1 +1,1 @@
-"cookies", "storage", "cache", "executionContexts"
+{ "types": [ "cookies", "storage", "cache", "executionContexts" ] }

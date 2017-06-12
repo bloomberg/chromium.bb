@@ -1,1 +1,1 @@
-"cookies", "storage", "cache"
+{ "types": [ "cookies", "storage", "cache" ] }
