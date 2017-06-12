@@ -8,10 +8,7 @@
 
 #include "base/base64.h"
 #include "base/json/json_reader.h"
-#include "base/optional.h"
 #include "base/path_service.h"
-#include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/test/browser_test.h"
 #include "headless/grit/headless_browsertest_resources.h"
@@ -30,8 +27,7 @@ namespace headless {
 class HeadlessJsBindingsTest
     : public HeadlessAsyncDevTooledBrowserTest,
       public HeadlessTabSocket::Listener,
-      public HeadlessDevToolsClient::RawProtocolListener,
-      public page::Observer {
+      public HeadlessDevToolsClient::RawProtocolListener {
  public:
   void SetUp() override {
     options()->mojo_service_names.insert("headless::TabSocket");
@@ -48,31 +44,10 @@ class HeadlessJsBindingsTest
   }
 
   void RunDevTooledTest() override {
-    base::RunLoop run_loop;
-    devtools_client_->GetPage()->AddObserver(this);
-    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
-    run_loop.Run();
     headless_tab_socket_ = web_contents_->GetHeadlessTabSocket();
     DCHECK(headless_tab_socket_);
     headless_tab_socket_->SetListener(this);
     devtools_client_->SetRawProtocolListener(this);
-    base::Optional<GURL> initial_url = GetInitialUrl();
-    if (initial_url) {
-      devtools_client_->GetPage()->Navigate(initial_url->spec());
-    } else {
-      PrepareToRunJsBindingsTest();
-    }
-  }
-
-  virtual base::Optional<GURL> GetInitialUrl() { return base::nullopt; }
-
-  void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
-    PrepareToRunJsBindingsTest();
-  }
-
-  void PrepareToRunJsBindingsTest() {
     devtools_client_->GetRuntime()->Evaluate(
         ResourceBundle::GetSharedInstance()
             .GetRawDataResource(DEVTOOLS_BINDINGS_TEST)
@@ -143,20 +118,10 @@ class HeadlessJsBindingsTest
       // via HeadlessDevToolsClientImpl::SendRawDevToolsMessage.
       if ((id % 2) == 0)
         return false;
-
-      headless_tab_socket_->SendMessageToTab(json_message);
-      return true;
     }
 
     headless_tab_socket_->SendMessageToTab(json_message);
-
-    // Check which domain the event belongs to, if it's the DOM domain then
-    // assume js handled it.
-    std::string method;
-    DCHECK(parsed_message.GetString("method", &method));
-    std::vector<base::StringPiece> sections = SplitStringPiece(
-        method, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    return sections[0] == "DOM";
+    return true;
   }
 
  private:
@@ -177,27 +142,6 @@ class SimpleCommandJsBindingsTest : public HeadlessJsBindingsTest {
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(SimpleCommandJsBindingsTest);
 
-class ExperimentalCommandJsBindingsTest : public HeadlessJsBindingsTest {
- public:
-  base::Optional<GURL> GetInitialUrl() override {
-    EXPECT_TRUE(embedded_test_server()->Start());
-    return embedded_test_server()->GetURL("/dom_tree_test.html");
-  }
-
-  void RunJsBindingsTest() override {
-    devtools_client_->GetRuntime()->Evaluate(
-        "new chromium.BindingsTest().getResourceTreeUrls();",
-        base::Bind(&HeadlessJsBindingsTest::FailOnJsEvaluateException,
-                   base::Unretained(this)));
-  }
-
-  std::string GetExpectedResult() override {
-    return "[\"/Ahem.ttf\",\"/dom_tree_test.css\",\"/dom_tree_test.html\"]";
-  }
-};
-
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(ExperimentalCommandJsBindingsTest);
-
 class SimpleEventJsBindingsTest : public HeadlessJsBindingsTest {
  public:
   void RunJsBindingsTest() override {
@@ -213,5 +157,4 @@ class SimpleEventJsBindingsTest : public HeadlessJsBindingsTest {
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(SimpleEventJsBindingsTest);
-
 }  // namespace headless
