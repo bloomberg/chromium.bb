@@ -1233,6 +1233,7 @@ void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
   DCHECK_LE(static_cast<int>(visits.size()), options.EffectiveMaxCount());
 
   // Now add them and the URL rows to the results.
+  std::vector<URLResult> matching_results;
   URLResult url_result;
   for (size_t i = 0; i < visits.size(); i++) {
     const VisitRow visit = visits[i];
@@ -1258,8 +1259,9 @@ void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
 
     // We don't set any of the query-specific parts of the URLResult, since
     // snippets and stuff don't apply to basic querying.
-    result->AppendURLBySwapping(&url_result);
+    matching_results.push_back(std::move(url_result));
   }
+  result->SetURLResults(std::move(matching_results));
 
   if (!has_more_results && options.begin_time <= first_recorded_time_)
     result->set_reached_beginning(true);
@@ -1292,13 +1294,14 @@ void HistoryBackend::QueryHistoryText(const base::string16& text_query,
   size_t max_results = options.max_count == 0
                            ? std::numeric_limits<size_t>::max()
                            : static_cast<int>(options.max_count);
-  for (std::vector<URLResult>::iterator it = matching_visits.begin();
-       it != matching_visits.end() && result->size() < max_results; ++it) {
-    result->AppendURLBySwapping(&(*it));
+  bool has_more_results = false;
+  if (matching_visits.size() > max_results) {
+    has_more_results = true;
+    matching_visits.resize(max_results);
   }
+  result->SetURLResults(std::move(matching_visits));
 
-  if (matching_visits.size() == result->size() &&
-      options.begin_time <= first_recorded_time_)
+  if(!has_more_results && options.begin_time <= first_recorded_time_)
     result->set_reached_beginning(true);
 }
 

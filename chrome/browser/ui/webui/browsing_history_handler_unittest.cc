@@ -313,8 +313,10 @@ TEST_F(BrowsingHistoryHandlerTest, MdTruncatesTitles) {
       "ngurlislong.com"), base::Time());
   ASSERT_GT(long_result.url().spec().size(), 300u);
 
+  std::vector<history::URLResult> result_vector;
+  result_vector.push_back(std::move(long_result));
   history::QueryResults results;
-  results.AppendURLBySwapping(&long_result);
+  results.SetURLResults(std::move(result_vector));
 
   BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
   handler.RegisterMessages();  // Needed to create BrowsingHistoryService.

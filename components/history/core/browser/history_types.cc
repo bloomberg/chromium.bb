@@ -55,18 +55,18 @@ const size_t* QueryResults::MatchesForURL(const GURL& url,
 }
 
 void QueryResults::Swap(QueryResults* other) {
-  std::swap(first_time_searched_, other->first_time_searched_);
   std::swap(reached_beginning_, other->reached_beginning_);
   results_.swap(other->results_);
   url_to_results_.swap(other->url_to_results_);
 }
 
-void QueryResults::AppendURLBySwapping(URLResult* result) {
-  URLResult* new_result = new URLResult;
-  new_result->SwapResult(result);
+void QueryResults::SetURLResults(std::vector<URLResult>&& results) {
+  results_ = std::move(results);
 
-  results_.push_back(new_result);
-  AddURLUsageAtIndex(new_result->url(), results_.size() - 1);
+  // Recreate the map for the results_ has been replaced.
+  url_to_results_.clear();
+  for(size_t i = 0; i < results_.size(); ++i)
+    AddURLUsageAtIndex(results_[i].url(), i);
 }
 
 void QueryResults::DeleteURL(const GURL& url) {
@@ -83,7 +83,7 @@ void QueryResults::DeleteRange(size_t begin, size_t end) {
   // were modified. We will delete references to these later.
   std::set<GURL> urls_modified;
   for (size_t i = begin; i <= end; i++) {
-    urls_modified.insert(results_[i]->url());
+    urls_modified.insert(results_[i].url());
   }
 
   // Now just delete that range in the vector en masse (the STL ending is

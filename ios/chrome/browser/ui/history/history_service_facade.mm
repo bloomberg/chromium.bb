@@ -279,11 +279,11 @@ void HistoryServiceFacade::QueryComplete(const base::string16& search_text,
   DCHECK_EQ(0U, query_results_.size());
   query_results_.reserve(results->size());
 
-  for (history::URLResult* result : *results) {
+  for (const auto& result : *results) {
     query_results_.push_back(history::HistoryEntry(
-        history::HistoryEntry::LOCAL_ENTRY, result->url(), result->title(),
-        result->visit_time(), std::string(), !search_text.empty(),
-        result->snippet().text(), result->blocked_visit()));
+        history::HistoryEntry::LOCAL_ENTRY, result.url(), result.title(),
+        result.visit_time(), std::string(), !search_text.empty(),
+        result.snippet().text(), result.blocked_visit()));
   }
 
   results_info_value_.query = search_text;
