@@ -1483,7 +1483,6 @@ test("ash_unittests") {
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
     "//ui/keyboard",
-    "//ui/keyboard:test_support",
     "//ui/message_center",
     "//ui/resources",
     "//ui/strings",
