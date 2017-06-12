@@ -13,8 +13,23 @@
         },
         {
           "object": "LayoutSVGEllipse circle",
+          "rect": [48, 112, 322, 322],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [48, 112, 322, 322],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
           "rect": [8, 155, 102, 236],
           "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 155, 100, 236],
+          "reason": "geometry"
         }
       ]
     }

@@ -12,9 +12,29 @@
           "reason": "style change"
         },
         {
+          "object": "LayoutBlockFlow P",
+          "rect": [138, 128, 654, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [138, 128, 651, 99],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutBlockFlow DIV id='content'",
           "rect": [148, 128, 644, 100],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [148, 128, 644, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [148, 128, 640, 99],
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
@@ -22,9 +42,19 @@
           "reason": "style change"
         },
         {
+          "object": "LayoutBlockFlow P",
+          "rect": [400, 128, 392, 160],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutBlockFlow DIV id='left'",
           "rect": [8, 228, 392, 60],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [400, 128, 389, 159],
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",

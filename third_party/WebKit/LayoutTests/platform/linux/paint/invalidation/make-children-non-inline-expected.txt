@@ -12,9 +12,29 @@
           "reason": "style change"
         },
         {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 64, 784, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 264, 784, 80],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 264, 111, 19],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutText #text",
           "rect": [8, 164, 111, 19],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 144, 80, 19],
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
@@ -24,12 +44,27 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 104, 79, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 104, 79, 19],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 284, 67, 19],
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 184, 67, 19],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 324, 62, 19],
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
@@ -39,7 +74,17 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 124, 45, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 124, 45, 19],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 84, 43, 19],
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
@@ -49,12 +94,27 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 64, 39, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 64, 39, 19],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 304, 29, 19],
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 204, 29, 19],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [8, 164, 10, 100],
+          "reason": "appeared"
         }
       ]
     }

@@ -15,6 +15,11 @@
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
           "rect": [8, 148, 214, 232],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
+          "rect": [8, 68, 214, 232],
+          "reason": "geometry"
         }
       ]
     }

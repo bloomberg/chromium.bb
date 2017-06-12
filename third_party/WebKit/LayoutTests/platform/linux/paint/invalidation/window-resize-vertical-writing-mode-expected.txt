@@ -40,6 +40,11 @@
           "object": "LayoutBlockFlow BODY",
           "rect": [505, 8, 426, 484],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [507, 8, 423, 482],
+          "reason": "geometry"
         }
       ]
     }

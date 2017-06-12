@@ -10,6 +10,11 @@
           "object": "LayoutBlockFlow DIV class='layoutroot'",
           "rect": [28, 46, 200, 200],
           "reason": "background"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [28, 46, 200, 200],
+          "reason": "geometry"
         }
       ]
     }

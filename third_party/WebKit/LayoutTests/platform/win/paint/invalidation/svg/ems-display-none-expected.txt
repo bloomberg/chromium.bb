@@ -10,6 +10,36 @@
           "object": "LayoutSVGContainer g",
           "rect": [50, 54, 561, 86],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [50, 54, 561, 86],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [50, 54, 561, 86],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [50, 54, 561, 86],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [50, 54, 561, 86],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan id='tspan'",
+          "rect": [50, 54, 561, 86],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text id='text'",
+          "rect": [50, 54, 561, 86],
+          "reason": "appeared"
         }
       ]
     }

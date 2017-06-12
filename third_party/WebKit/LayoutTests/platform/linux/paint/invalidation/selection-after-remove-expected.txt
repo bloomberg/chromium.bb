@@ -15,6 +15,21 @@
           "object": "LayoutBlockFlow DIV id='test'",
           "rect": [38, 78, 152, 102],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [70, 158, 42, 20],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [74, 79, 38, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [39, 79, 35, 19],
+          "reason": "geometry"
         }
       ],
       "underPaintInvalidations": [

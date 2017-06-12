@@ -12,6 +12,16 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 300, 300],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 300, 300],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
           "rect": [762, 8, 15, 300],
           "reason": "scroll control"

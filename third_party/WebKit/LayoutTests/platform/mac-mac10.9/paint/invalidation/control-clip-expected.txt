@@ -20,6 +20,11 @@
           "object": "LayoutText #text",
           "rect": [84, 114, 48, 14],
           "reason": "full"
+        },
+        {
+          "object": "LayoutText (anonymous)",
+          "rect": [9, 84, 47, 14],
+          "reason": "full"
         }
       ]
     }

@@ -27,6 +27,31 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [390, 38, 314, 80],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGContainer g id='tabgroupRound'",
           "rect": [390, 38, 314, 80],
           "reason": "appeared"
@@ -49,6 +74,31 @@
         {
           "object": "LayoutSVGPath path",
           "rect": [263, 279, 301, 301],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [263, 279, 301, 300],
           "reason": "appeared"
         },
         {
@@ -97,8 +147,58 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [507, 233, 236, 159],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGContainer g id='tabgroupRectTriangle'",
           "rect": [507, 233, 236, 159],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [7, 257, 236, 158],
           "reason": "appeared"
         },
         {
@@ -107,8 +207,38 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutSVGPath path",
-          "rect": [38, 6, 159, 238],
+          "object": "LayoutSVGContainer g id='tabgroupTriangle__0_content'",
+          "rect": [15, 292, 211, 35],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 292, 211, 35],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 292, 211, 35],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [15, 292, 211, 35],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [15, 292, 211, 35],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [15, 292, 211, 35],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text id='contentTabGroupTriangle0'",
+          "rect": [15, 292, 211, 35],
           "reason": "appeared"
         },
         {
@@ -124,6 +254,36 @@
         {
           "object": "LayoutSVGPath path",
           "rect": [38, 6, 159, 238],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [38, 6, 159, 238],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [38, 7, 158, 236],
           "reason": "appeared"
         },
         {
@@ -152,6 +312,11 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__1'",
+          "rect": [413, 329, 60, 60],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGPath path id='tabgroupRectTriangle__1'",
           "rect": [567, 233, 59, 18],
           "reason": "appeared"
@@ -167,8 +332,118 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [394, 39, 54, 15],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [394, 39, 54, 15],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [394, 39, 54, 15],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [511, 235, 54, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [511, 235, 54, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [511, 235, 54, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [64, 258, 53, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [64, 258, 53, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [64, 258, 53, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [64, 258, 53, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [64, 258, 53, 27],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutSVGPath path id='tabgroupTriangle__2'",
           "rect": [120, 256, 52, 31],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__3'",
+          "rect": [501, 417, 51, 51],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath path id='tabgroupRectRound__2'",
+          "rect": [461, 377, 51, 51],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [571, 235, 50, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [571, 235, 50, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [571, 235, 50, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [454, 39, 50, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [454, 39, 50, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [454, 39, 50, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [370, 286, 48, 47],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [370, 286, 48, 47],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [370, 286, 48, 47],
           "reason": "appeared"
         },
         {
@@ -182,6 +457,31 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [11, 258, 46, 27],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [11, 258, 46, 27],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [11, 258, 46, 27],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [11, 258, 46, 27],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [11, 258, 46, 27],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGPath path id='tabgroupRectTriangle__2'",
           "rect": [623, 233, 46, 18],
           "reason": "appeared"
@@ -192,9 +492,164 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [421, 336, 45, 45],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [421, 336, 45, 45],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [421, 336, 45, 45],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [124, 258, 44, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [124, 258, 44, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [124, 258, 44, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [124, 258, 44, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [124, 258, 44, 27],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutSVGPath path id='tabgroupTriangle__3'",
           "rect": [170, 256, 41, 31],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [671, 235, 39, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [671, 235, 39, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [671, 235, 39, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [554, 39, 39, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [554, 39, 39, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [554, 39, 39, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [508, 424, 37, 37],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [508, 424, 37, 37],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [508, 424, 37, 37],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [510, 39, 37, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [510, 39, 37, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [510, 39, 37, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [469, 385, 36, 35],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [469, 385, 36, 35],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [469, 385, 36, 35],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [628, 235, 36, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [628, 235, 36, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [628, 235, 36, 14],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [174, 258, 32, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [174, 258, 32, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [174, 258, 32, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [174, 258, 32, 27],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [174, 258, 32, 27],
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRect__0'",
@@ -214,6 +669,66 @@
         {
           "object": "LayoutSVGPath path id='tabgroupRect__2'",
           "rect": [178, 123, 19, 46],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [181, 11, 14, 54],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [181, 11, 14, 54],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [181, 11, 14, 54],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [181, 71, 14, 50],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [181, 71, 14, 50],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [181, 71, 14, 50],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [181, 171, 14, 39],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [181, 171, 14, 39],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [181, 171, 14, 39],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [181, 128, 14, 36],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [181, 128, 14, 36],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [181, 128, 14, 36],
           "reason": "appeared"
         }
       ]

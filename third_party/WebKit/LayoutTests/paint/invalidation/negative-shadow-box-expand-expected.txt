@@ -10,6 +10,11 @@
           "object": "LayoutBlockFlow DIV id='outer'",
           "rect": [100, 60, 640, 240],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner2'",
+          "rect": [100, 200, 600, 100],
+          "reason": "appeared"
         }
       ]
     }

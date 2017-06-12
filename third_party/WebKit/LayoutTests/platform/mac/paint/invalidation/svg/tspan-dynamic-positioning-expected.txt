@@ -7,9 +7,29 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [200, 186, 256, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan id='ts'",
+          "rect": [200, 186, 256, 18],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGText text",
           "rect": [200, 186, 256, 18],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [20, 6, 256, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan id='ts'",
+          "rect": [20, 6, 256, 18],
+          "reason": "full"
         },
         {
           "object": "LayoutSVGText text",

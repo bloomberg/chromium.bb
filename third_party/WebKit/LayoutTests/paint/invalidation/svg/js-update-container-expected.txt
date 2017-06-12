@@ -13,6 +13,11 @@
         },
         {
           "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 76, 76],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGRect rect",
           "rect": [-1, -1, 41, 41],
           "reason": "subtree"
         }

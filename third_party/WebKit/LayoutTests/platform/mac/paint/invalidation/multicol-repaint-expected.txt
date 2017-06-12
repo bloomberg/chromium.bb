@@ -18,8 +18,18 @@
         },
         {
           "object": "LayoutText #text",
+          "rect": [234, 14, 300, 52],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [234, 14, 50, 52],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [9, 9, 13, 59],
+          "reason": "geometry"
         }
       ]
     }

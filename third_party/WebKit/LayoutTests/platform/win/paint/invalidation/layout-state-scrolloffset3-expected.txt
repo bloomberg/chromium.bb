@@ -10,6 +10,11 @@
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [100, 120, 34, 50],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [100, 120, 34, 19],
+          "reason": "full"
         }
       ]
     }

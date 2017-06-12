@@ -7,6 +7,51 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 62, 306, 378],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 62, 306, 378],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan id='modify'",
+          "rect": [10, 62, 306, 378],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutSVGText text",
           "rect": [10, 62, 306, 378],
           "reason": "style change"

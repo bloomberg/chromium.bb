@@ -9,7 +9,37 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 62, 306, 258],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 258],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 258],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 258],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 258],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 62, 306, 258],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 62, 306, 258],
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGTSpan tspan id='remove'",

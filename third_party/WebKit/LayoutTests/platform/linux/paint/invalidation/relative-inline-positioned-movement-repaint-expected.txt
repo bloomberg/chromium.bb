@@ -24,6 +24,11 @@
           "object": "LayoutInline (relative positioned) DIV id='block'",
           "rect": [0, 0, 365, 21],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [1, 1, 363, 19],
+          "reason": "geometry"
         }
       ]
     }

@@ -21,6 +21,11 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutBlockFlow DIV class='child'",
+          "rect": [-30, -30, 50, 50],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
           "rect": [0, 0, 10, 60],
           "reason": "full"

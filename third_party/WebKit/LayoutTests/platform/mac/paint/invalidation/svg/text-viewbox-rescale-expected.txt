@@ -7,13 +7,83 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [59, 143, 95, 23],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [59, 143, 95, 23],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [59, 143, 95, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [59, 143, 95, 23],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGViewportContainer svg id='inner2'",
           "rect": [59, 143, 95, 23],
           "reason": "full"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [59, 43, 95, 23],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [59, 43, 95, 23],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [59, 43, 95, 23],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [59, 43, 95, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [59, 43, 95, 23],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGViewportContainer svg id='inner1'",
           "rect": [59, 43, 95, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 0, 2, 1],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 0, 2, 1],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 0, 2, 1],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [0, 0, 2, 1],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 0, 2, 1],
           "reason": "full"
         },
         {

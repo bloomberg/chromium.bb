@@ -40,6 +40,16 @@
           "object": "LayoutBlockFlow BODY",
           "rect": [18, 96, 712, 74],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 234, 489, 537],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 136, 489, 537],
+          "reason": "geometry"
         }
       ]
     }

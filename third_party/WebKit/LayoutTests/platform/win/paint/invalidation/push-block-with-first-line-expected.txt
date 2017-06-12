@@ -20,6 +20,16 @@
           "object": "LayoutBlockFlow DIV class='test'",
           "rect": [8, 8, 784, 20],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 68, 140, 20],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 8, 140, 20],
+          "reason": "geometry"
         }
       ]
     }

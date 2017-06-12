@@ -1,0 +1,87 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#C0C0C0",
+      "paintInvalidations": [
+        {
+          "object": "LayoutIFrame (positioned) IFRAME",
+          "rect": [2, 65, 236, 235],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [3, 65, 235, 235],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [3, 65, 235, 235],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [3, 300, 235, 15],
+          "reason": "scroll control"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [3, 65, 225, 235],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 65, 55, 17],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [238, 65, 15, 235],
+          "reason": "scroll control"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutIFrame (positioned) IFRAME",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'scroll me'",
+      "reason": "subtree"
+    }
+  ]
+}
+

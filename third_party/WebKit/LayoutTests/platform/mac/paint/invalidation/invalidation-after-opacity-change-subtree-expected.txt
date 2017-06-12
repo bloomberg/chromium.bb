@@ -23,6 +23,16 @@
         },
         {
           "object": "LayoutBlockFlow P",
+          "rect": [8, 2200, 777, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 2050, 777, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow P",
           "rect": [8, 2050, 777, 100],
           "reason": "subtree"
         },

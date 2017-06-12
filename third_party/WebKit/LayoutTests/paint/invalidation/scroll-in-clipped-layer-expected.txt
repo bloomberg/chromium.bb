@@ -7,7 +7,17 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+          "rect": [100, 150, 100, 100],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
+          "rect": [100, 150, 100, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative green'",
           "rect": [100, 150, 100, 100],
           "reason": "subtree"
         }

@@ -1,0 +1,11 @@
+ 
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+FAIL gFocusedDocument.activeElement.getAttribute("id") should be 1. Was start.
+FAIL gFocusedDocument.activeElement.getAttribute("id") should be 3. Was 1.
+FAIL gFocusedDocument.activeElement.getAttribute("id") should be 1. Was start.
+PASS gFocusedDocument.activeElement.getAttribute("id") is "start"
+This test tests that areas of an imagemap without an href are not focusable, thus can not be reached with spatial navigation.

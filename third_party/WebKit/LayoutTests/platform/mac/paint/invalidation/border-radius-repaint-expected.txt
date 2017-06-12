@@ -15,6 +15,16 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [19, 79, 200, 88],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='b'",
+          "rect": [33, 293, 172, 20],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='a'",
+          "rect": [33, 133, 172, 20],
+          "reason": "incremental"
         }
       ]
     }

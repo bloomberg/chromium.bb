@@ -25,6 +25,16 @@
           "object": "LayoutBlockFlow (positioned) DIV id='container'",
           "rect": [8, 18, 300, 20],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [428, 38, 256, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [28, 38, 256, 19],
+          "reason": "geometry"
         }
       ]
     }

@@ -20,6 +20,16 @@
           "object": "LayoutInline SPAN",
           "rect": [4, 4, 108, 188],
           "reason": "outline"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
+          "rect": [8, 88, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='block'",
+          "rect": [8, 8, 100, 100],
+          "reason": "geometry"
         }
       ]
     }

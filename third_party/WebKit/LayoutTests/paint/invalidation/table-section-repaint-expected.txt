@@ -62,6 +62,11 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutBlockFlow DIV id='top' class='blue half'",
+          "rect": [8, 98, 60, 30],
+          "reason": "disappeared"
+        },
+        {
           "object": "LayoutTableCell TD",
           "rect": [8, 98, 60, 30],
           "reason": "disappeared"

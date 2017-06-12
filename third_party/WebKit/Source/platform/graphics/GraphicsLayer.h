@@ -394,6 +394,24 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   IntRect previous_interest_rect_;
 };
 
+// ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext uses
+// this to reduce differences between layout test results of SPv1 and SPv2.
+class PLATFORM_EXPORT ScopedSetNeedsDisplayInRectForTrackingOnly {
+ public:
+  ScopedSetNeedsDisplayInRectForTrackingOnly() {
+    DCHECK(!s_enabled_);
+    s_enabled_ = true;
+  }
+  ~ScopedSetNeedsDisplayInRectForTrackingOnly() {
+    DCHECK(s_enabled_);
+    s_enabled_ = false;
+  }
+
+ private:
+  friend class GraphicsLayer;
+  static bool s_enabled_;
+};
+
 }  // namespace blink
 
 #ifndef NDEBUG

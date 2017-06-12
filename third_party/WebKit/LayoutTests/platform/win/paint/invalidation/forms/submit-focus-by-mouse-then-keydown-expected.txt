@@ -15,6 +15,11 @@
           "object": "LayoutText #text",
           "rect": [16, 10, 41, 18],
           "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [16, 11, 41, 16],
+          "reason": "subtree"
         }
       ]
     }

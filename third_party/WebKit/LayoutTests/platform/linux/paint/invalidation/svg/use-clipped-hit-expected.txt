@@ -15,6 +15,11 @@
           "object": "LayoutSVGText text id='status'",
           "rect": [90, 115, 64, 19],
           "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [90, 115, 44, 19],
+          "reason": "appeared"
         }
       ]
     }

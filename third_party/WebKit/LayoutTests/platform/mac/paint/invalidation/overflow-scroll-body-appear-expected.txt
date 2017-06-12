@@ -22,8 +22,28 @@
           "reason": "style change"
         },
         {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 50, 784, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 16, 784, 18],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutText #text",
           "rect": [127, 50, 390, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 16, 348, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 50, 120, 18],
           "reason": "geometry"
         },
         {
@@ -35,6 +55,11 @@
           "object": "LayoutView #document",
           "rect": [785, 585, 15, 15],
           "reason": "scroll control"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [516, 50, 5, 18],
+          "reason": "geometry"
         }
       ]
     }

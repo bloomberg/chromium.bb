@@ -12,6 +12,11 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutImage IMG id='target'",
+          "rect": [48, 94, 100, 100],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutListMarker (anonymous)",
           "rect": [31, 180, 7, 18],
           "reason": "geometry"

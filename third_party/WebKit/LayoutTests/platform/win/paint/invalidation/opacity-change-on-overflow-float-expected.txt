@@ -12,6 +12,11 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutBlockFlow (floating) DIV class='green'",
+          "rect": [8, 84, 100, 100],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow (floating) DIV class='red'",
           "rect": [8, 84, 100, 100],
           "reason": "background"

@@ -10,6 +10,16 @@
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 68, 402, 402],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGImage image",
+          "rect": [9, 69, 400, 400],
+          "reason": "image"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 69, 400, 400],
+          "reason": "geometry"
         }
       ]
     }

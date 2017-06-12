@@ -17,6 +17,21 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGContainer svg:use id='use'",
+          "rect": [33, 33, 50, 50],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRoot svg:svg id='svg'",
+          "rect": [33, 33, 50, 50],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='symbol'",
+          "rect": [33, 33, 50, 50],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
           "rect": [52, 52, 12, 12],
           "reason": "disappeared"
