@@ -212,7 +212,6 @@ test("components_unittests") {
       "//components/safe_browsing/common:unit_tests",
       "//components/safe_browsing/password_protection:password_protection_unittest",
       "//components/safe_browsing/triggers:unit_tests",
-      "//components/safe_browsing_db:unit_tests",
       "//components/safe_json:unit_tests",
       "//components/security_state/content:unit_tests",
       "//components/spellcheck/browser:unit_tests",
@@ -319,7 +318,9 @@ test("components_unittests") {
     ]
   }
 
-  if (safe_browsing_mode == 2) {
+  if (safe_browsing_mode == 1) {
+    deps += [ "//components/safe_browsing_db:unit_tests_desktop" ]
+  } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing_db:unit_tests_mobile" ]
   }
 
