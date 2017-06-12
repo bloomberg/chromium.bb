@@ -77,7 +77,6 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
 - (void)expectNewForegroundTab;
 - (void)setActive:(BOOL)active;
 - (TabModel*)tabModel;
-- (void)shutdown;
 @end
 
 @implementation URLOpenerMockBVC
@@ -111,19 +110,10 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
   return nil;
 }
 
-- (void)shutdown {
-  // no-op
-}
-
 @end
 
 class URLOpenerTest : public PlatformTest {
  protected:
-  void TearDown() override {
-    [main_controller_ stopChromeMain];
-    PlatformTest::TearDown();
-  }
-
   MainController* GetMainController() {
     if (!main_controller_) {
       main_controller_ = [[MainController alloc] init];

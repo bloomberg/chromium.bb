@@ -57,9 +57,6 @@ class ChromeBrowserState;
 - (void)deleteIncognitoTabModelState:
     (BrowsingDataRemovalController*)removalController;
 
-// Called before the instance is deallocated.
-- (void)shutdown;
-
 @end
 
 @interface BrowserViewWrangler (Testing)

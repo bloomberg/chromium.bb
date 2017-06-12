@@ -56,11 +56,6 @@ typedef void (^HandleLaunchOptions)(id self,
 
 class TabOpenerTest : public PlatformTest {
  protected:
-  void TearDown() override {
-    [main_controller_ stopChromeMain];
-    PlatformTest::TearDown();
-  }
-
   BOOL swizzleHasBeenCalled() { return swizzle_block_executed_; }
 
   void swizzleHandleLaunchOptions(
