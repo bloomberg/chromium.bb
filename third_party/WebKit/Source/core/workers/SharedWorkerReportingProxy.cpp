@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WebSharedWorkerReportingProxyImpl.h"
+#include "core/workers/SharedWorkerReportingProxy.h"
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/exported/WebSharedWorkerImpl.h"
@@ -12,18 +12,18 @@
 
 namespace blink {
 
-WebSharedWorkerReportingProxyImpl::WebSharedWorkerReportingProxyImpl(
+SharedWorkerReportingProxy::SharedWorkerReportingProxy(
     WebSharedWorkerImpl* worker,
     ParentFrameTaskRunners* parent_frame_task_runners)
     : worker_(worker), parent_frame_task_runners_(parent_frame_task_runners) {
   DCHECK(IsMainThread());
 }
 
-WebSharedWorkerReportingProxyImpl::~WebSharedWorkerReportingProxyImpl() {
+SharedWorkerReportingProxy::~SharedWorkerReportingProxy() {
   DCHECK(IsMainThread());
 }
 
-void WebSharedWorkerReportingProxyImpl::CountFeature(WebFeature feature) {
+void SharedWorkerReportingProxy::CountFeature(WebFeature feature) {
   DCHECK(!IsMainThread());
   parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
       ->PostTask(BLINK_FROM_HERE,
@@ -31,7 +31,7 @@ void WebSharedWorkerReportingProxyImpl::CountFeature(WebFeature feature) {
                                  CrossThreadUnretained(worker_), feature));
 }
 
-void WebSharedWorkerReportingProxyImpl::CountDeprecation(WebFeature feature) {
+void SharedWorkerReportingProxy::CountDeprecation(WebFeature feature) {
   DCHECK(!IsMainThread());
   // Go through the same code path with countFeature() because a deprecation
   // message is already shown on the worker console and a remaining work is just
@@ -39,7 +39,7 @@ void WebSharedWorkerReportingProxyImpl::CountDeprecation(WebFeature feature) {
   CountFeature(feature);
 }
 
-void WebSharedWorkerReportingProxyImpl::ReportException(
+void SharedWorkerReportingProxy::ReportException(
     const String& error_message,
     std::unique_ptr<SourceLocation>,
     int exception_id) {
@@ -47,16 +47,15 @@ void WebSharedWorkerReportingProxyImpl::ReportException(
   // Not suppported in SharedWorker.
 }
 
-void WebSharedWorkerReportingProxyImpl::ReportConsoleMessage(
-    MessageSource,
-    MessageLevel,
-    const String& message,
-    SourceLocation*) {
+void SharedWorkerReportingProxy::ReportConsoleMessage(MessageSource,
+                                                      MessageLevel,
+                                                      const String& message,
+                                                      SourceLocation*) {
   DCHECK(!IsMainThread());
   // Not supported in SharedWorker.
 }
 
-void WebSharedWorkerReportingProxyImpl::PostMessageToPageInspector(
+void SharedWorkerReportingProxy::PostMessageToPageInspector(
     const String& message) {
   DCHECK(!IsMainThread());
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
@@ -68,7 +67,7 @@ void WebSharedWorkerReportingProxyImpl::PostMessageToPageInspector(
                           CrossThreadUnretained(worker_), message));
 }
 
-void WebSharedWorkerReportingProxyImpl::DidCloseWorkerGlobalScope() {
+void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {
   DCHECK(!IsMainThread());
   parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
       ->PostTask(
@@ -77,7 +76,7 @@ void WebSharedWorkerReportingProxyImpl::DidCloseWorkerGlobalScope() {
                           CrossThreadUnretained(worker_)));
 }
 
-void WebSharedWorkerReportingProxyImpl::DidTerminateWorkerThread() {
+void SharedWorkerReportingProxy::DidTerminateWorkerThread() {
   DCHECK(!IsMainThread());
   parent_frame_task_runners_->Get(TaskType::kUnspecedTimer)
       ->PostTask(BLINK_FROM_HERE,
@@ -85,7 +84,7 @@ void WebSharedWorkerReportingProxyImpl::DidTerminateWorkerThread() {
                                  CrossThreadUnretained(worker_)));
 }
 
-DEFINE_TRACE(WebSharedWorkerReportingProxyImpl) {
+DEFINE_TRACE(SharedWorkerReportingProxy) {
   visitor->Trace(parent_frame_task_runners_);
 }
 

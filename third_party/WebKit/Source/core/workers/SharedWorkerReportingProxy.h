@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebSharedWorkerReportingProxyImpl_h
-#define WebSharedWorkerReportingProxyImpl_h
+#ifndef SharedWorkerReportingProxy_h
+#define SharedWorkerReportingProxy_h
 
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -16,15 +16,14 @@ class WebSharedWorkerImpl;
 // An implementation of WorkerReportingProxy for SharedWorker. This is created
 // and owned by WebSharedWorkerImpl on the main thread, accessed from a worker
 // thread, and destroyed on the main thread.
-class WebSharedWorkerReportingProxyImpl final
-    : public GarbageCollectedFinalized<WebSharedWorkerReportingProxyImpl>,
+class SharedWorkerReportingProxy final
+    : public GarbageCollectedFinalized<SharedWorkerReportingProxy>,
       public WorkerReportingProxy {
-  WTF_MAKE_NONCOPYABLE(WebSharedWorkerReportingProxyImpl);
+  WTF_MAKE_NONCOPYABLE(SharedWorkerReportingProxy);
 
  public:
-  WebSharedWorkerReportingProxyImpl(WebSharedWorkerImpl*,
-                                    ParentFrameTaskRunners*);
-  ~WebSharedWorkerReportingProxyImpl() override;
+  SharedWorkerReportingProxy(WebSharedWorkerImpl*, ParentFrameTaskRunners*);
+  ~SharedWorkerReportingProxy() override;
 
   // WorkerReportingProxy methods:
   void CountFeature(WebFeature) override;
@@ -53,4 +52,4 @@ class WebSharedWorkerReportingProxyImpl final
 
 }  // namespace blink
 
-#endif  // WebSharedWorkerReportingProxyImpl_h
+#endif  // SharedWorkerReportingProxy_h

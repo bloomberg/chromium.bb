@@ -36,7 +36,7 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/workers/WebSharedWorkerReportingProxyImpl.h"
+#include "core/workers/SharedWorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
@@ -111,7 +111,7 @@ class WebSharedWorkerImpl final : public WebFrameClient,
     return Platform::Current()->CreateURLLoader();
   }
 
-  // Callback methods for WebSharedWorkerReportingProxyImpl.
+  // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);
   void PostMessageToPageInspector(const String& message);
   void DidCloseWorkerGlobalScope();
@@ -154,7 +154,7 @@ class WebSharedWorkerImpl final : public WebFrameClient,
 
   Persistent<WorkerInspectorProxy> worker_inspector_proxy_;
 
-  Persistent<WebSharedWorkerReportingProxyImpl> reporting_proxy_;
+  Persistent<SharedWorkerReportingProxy> reporting_proxy_;
   std::unique_ptr<WorkerThread> worker_thread_;
 
   WebSharedWorkerClient* client_;

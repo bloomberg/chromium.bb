@@ -392,7 +392,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   ParentFrameTaskRunners* task_runners =
       ParentFrameTaskRunners::Create(nullptr);
 
-  reporting_proxy_ = new WebSharedWorkerReportingProxyImpl(this, task_runners);
+  reporting_proxy_ = new SharedWorkerReportingProxy(this, task_runners);
   worker_thread_ = WTF::MakeUnique<SharedWorkerThread>(
       name_,
       ThreadableLoadingContext::Create(*ToDocument(loading_document_.Get())),
