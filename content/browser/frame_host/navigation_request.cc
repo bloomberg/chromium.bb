@@ -278,7 +278,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // navigation may start in a renderer and commit in another one.
   // TODO(clamy): See if the navigation start time should be measured in the
   // renderer and sent to the browser instead of being measured here.
-  // TODO(clamy): The pending history list offset should be properly set.
   RequestNavigationParams request_params(
       false,                // is_overriding_user_agent
       std::vector<GURL>(),  // redirects
@@ -290,7 +289,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       std::map<std::string, bool>(),  // subframe_unique_names
       frame_tree_node->has_committed_real_load(),
       false,  // intended_as_new_entry
-      -1,     // pending_history_list_offset
+      -1,     // |pending_history_list_offset| is set to -1 because
+              // history-navigations do not use this path. See comments above.
       current_history_list_offset, current_history_list_length,
       false,  // is_view_source
       false,  // should_clear_history_list
