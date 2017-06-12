@@ -674,6 +674,8 @@ component("platform") {
     "fonts/FontFallbackPriority.h",
     "fonts/FontFamily.cpp",
     "fonts/FontFamily.h",
+    "fonts/FontGlobalContext.cpp",
+    "fonts/FontGlobalContext.h",
     "fonts/FontMetrics.h",
     "fonts/FontOrientation.h",
     "fonts/FontPlatformData.cpp",
