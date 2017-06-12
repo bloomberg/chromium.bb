@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
@@ -249,8 +250,7 @@ TEST_F(CharacterComposerTest, MainTableIsCorrectlyOrdered) {
           EXPECT_LT(previous_key, key) << index;
         previous_key = key;
         // Verify that the internal link is valid.
-        const auto it = std::find(subtrees.begin(), subtrees.end(), value);
-        EXPECT_FALSE(subtrees.end() == it) << index;
+        EXPECT_TRUE(base::ContainsValue(subtrees, value)) << index;
         index += 2;
       }
       // Check the leaf subtable.

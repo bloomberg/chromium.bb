@@ -8,6 +8,7 @@
 #include <valarray>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace ui {
 
@@ -67,8 +68,7 @@ void ListSelectionModel::SetSelectedIndex(int index) {
 }
 
 bool ListSelectionModel::IsSelected(int index) const {
-  return std::find(selected_indices_.begin(), selected_indices_.end(), index) !=
-      selected_indices_.end();
+  return base::ContainsValue(selected_indices_, index);
 }
 
 void ListSelectionModel::AddIndexToSelection(int index) {

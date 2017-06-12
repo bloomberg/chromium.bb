@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/containers/adapters.h"
+#include "base/stl_util.h"
 #include "cc/layers/layer.h"
 #include "jni/ViewAndroidDelegate_jni.h"
 #include "ui/android/event_forwarder.h"
@@ -116,8 +117,7 @@ ScopedJavaLocalRef<jobject> ViewAndroid::GetEventForwarder() {
 
 void ViewAndroid::AddChild(ViewAndroid* child) {
   DCHECK(child);
-  DCHECK(std::find(children_.begin(), children_.end(), child) ==
-         children_.end());
+  DCHECK(!base::ContainsValue(children_, child));
   DCHECK(!RootPathHasEventForwarder(this) || !SubtreeHasEventForwarder(child))
       << "Some view tree path will have more than one event forwarder "
          "if the child is added.";

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "ui/base/accelerators/accelerator_manager_delegate.h"
 
 namespace ui {
@@ -28,7 +29,7 @@ void AcceleratorManager::Register(
 
   for (const ui::Accelerator& accelerator : accelerators) {
     AcceleratorTargetList& targets = accelerators_[accelerator].second;
-    DCHECK(std::find(targets.begin(), targets.end(), target) == targets.end())
+    DCHECK(!base::ContainsValue(targets, target))
         << "Registering the same target multiple times";
     const bool is_first_target_for_accelerator = targets.empty();
 
@@ -71,9 +72,7 @@ void AcceleratorManager::UnregisterAll(AcceleratorTarget* target) {
   for (AcceleratorMap::iterator map_iter = accelerators_.begin();
        map_iter != accelerators_.end();) {
     AcceleratorTargetList* targets = &map_iter->second.second;
-    AcceleratorTargetList::iterator target_iter =
-        std::find(targets->begin(), targets->end(), target);
-    if (target_iter == targets->end()) {
+    if (!base::ContainsValue(*targets, target)) {
       ++map_iter;
     } else {
       auto tmp_iter = map_iter;

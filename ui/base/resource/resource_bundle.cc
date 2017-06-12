@@ -686,9 +686,7 @@ ScaleFactor ResourceBundle::GetMaxScaleFactor() const {
 bool ResourceBundle::IsScaleFactorSupported(ScaleFactor scale_factor) {
   const std::vector<ScaleFactor>& supported_scale_factors =
       ui::GetSupportedScaleFactors();
-  return std::find(supported_scale_factors.begin(),
-                   supported_scale_factors.end(),
-                   scale_factor) != supported_scale_factors.end();
+  return base::ContainsValue(supported_scale_factors, scale_factor);
 }
 
 ResourceBundle::ResourceBundle(Delegate* delegate)
