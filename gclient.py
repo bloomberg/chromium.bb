@@ -81,6 +81,7 @@ from __future__ import print_function
 __version__ = '0.7'
 
 import ast
+import collections
 import copy
 import json
 import logging
@@ -337,7 +338,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # Calculates properties:
     self._parsed_url = None
     self._dependencies = []
+    # Keep track of original values, before post-processing (e.g. deps_os).
+    self._orig_dependencies = []
     self._vars = {}
+
     # A cache of the files affected by the current operation, necessary for
     # hooks.
     self._file_list = []
@@ -555,6 +559,58 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     new_deps.update(target_os_deps)
     return new_deps
 
+  def _postprocess_deps(self, deps, rel_prefix):
+    """Performs post-processing of deps compared to what's in the DEPS file."""
+    # If a line is in custom_deps, but not in the solution, we want to append
+    # this line to the solution.
+    for d in self.custom_deps:
+      if d not in deps:
+        deps[d] = self.custom_deps[d]
+
+    if rel_prefix:
+      logging.warning('use_relative_paths enabled.')
+      rel_deps = {}
+      for d, url in deps.items():
+        # normpath is required to allow DEPS to use .. in their
+        # dependency local path.
+        rel_deps[os.path.normpath(os.path.join(rel_prefix, d))] = url
+      logging.warning('Updating deps by prepending %s.', rel_prefix)
+      deps = rel_deps
+
+    return deps
+
+  def _deps_to_objects(self, deps, use_relative_paths):
+    """Convert a deps dict to a dict of Dependency objects."""
+    deps_to_add = []
+    for name, dep_value in deps.iteritems():
+      should_process = self.recursion_limit and self.should_process
+      deps_file = self.deps_file
+      if self.recursedeps is not None:
+        ent = self.recursedeps.get(name)
+        if ent is not None:
+          deps_file = ent['deps_file']
+      if dep_value is None:
+        continue
+      condition = None
+      condition_value = True
+      if isinstance(dep_value, basestring):
+        url = dep_value
+      else:
+        # This should be guaranteed by schema checking in gclient_eval.
+        assert isinstance(dep_value, collections.Mapping)
+        url = dep_value['url']
+        condition = dep_value.get('condition')
+      if condition:
+        # TODO(phajdan.jr): should we also take custom vars into account?
+        condition_value = gclient_eval.EvaluateCondition(condition, self._vars)
+        should_process = should_process and condition_value
+      deps_to_add.append(Dependency(
+          self, name, url, None, None, self.custom_vars, None,
+          deps_file, should_process, use_relative_paths, condition,
+          condition_value))
+    deps_to_add.sort(key=lambda x: x.name)
+    return deps_to_add
+
   def ParseDepsFile(self):
     """Parses the DEPS file for this dependency."""
     assert not self.deps_parsed
@@ -616,73 +672,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
               'ParseDepsFile(%s): Strict mode disallows %r -> %r' %
               (self.name, key, val))
 
-    # Since we heavily post-process things, freeze ones which should
-    # reflect original state of DEPS.
-    self._vars = gclient_utils.freeze(local_scope.get('vars', {}))
-
-    deps = local_scope.get('deps', {})
-    if 'recursion' in local_scope:
-      self.recursion_override = local_scope.get('recursion')
-      logging.warning(
-          'Setting %s recursion to %d.', self.name, self.recursion_limit)
-    self.recursedeps = None
-    if 'recursedeps' in local_scope:
-      self.recursedeps = {}
-      for ent in local_scope['recursedeps']:
-        if isinstance(ent, basestring):
-          self.recursedeps[ent] = {"deps_file": self.deps_file}
-        else:  # (depname, depsfilename)
-          self.recursedeps[ent[0]] = {"deps_file": ent[1]}
-      logging.warning('Found recursedeps %r.', repr(self.recursedeps))
-    # If present, save 'target_os' in the local_target_os property.
-    if 'target_os' in local_scope:
-      self.local_target_os = local_scope['target_os']
-    # load os specific dependencies if defined.  these dependencies may
-    # override or extend the values defined by the 'deps' member.
-    target_os_list = self.target_os
-    if 'deps_os' in local_scope and target_os_list:
-      deps = self.MergeWithOsDeps(deps, local_scope['deps_os'], target_os_list)
-
-    # If a line is in custom_deps, but not in the solution, we want to append
-    # this line to the solution.
-    for d in self.custom_deps:
-      if d not in deps:
-        deps[d] = self.custom_deps[d]
-
-    # If use_relative_paths is set in the DEPS file, regenerate
-    # the dictionary using paths relative to the directory containing
-    # the DEPS file.  Also update recursedeps if use_relative_paths is
-    # enabled.
-    # If the deps file doesn't set use_relative_paths, but the parent did
-    # (and therefore set self.relative on this Dependency object), then we
-    # want to modify the deps and recursedeps by prepending the parent
-    # directory of this dependency.
-    use_relative_paths = local_scope.get('use_relative_paths', False)
-    rel_prefix = None
-    if use_relative_paths:
-      rel_prefix = self.name
-    elif self._relative:
-      rel_prefix = os.path.dirname(self.name)
-    if rel_prefix:
-      logging.warning('use_relative_paths enabled.')
-      rel_deps = {}
-      for d, url in deps.items():
-        # normpath is required to allow DEPS to use .. in their
-        # dependency local path.
-        rel_deps[os.path.normpath(os.path.join(rel_prefix, d))] = url
-      logging.warning('Updating deps by prepending %s.', rel_prefix)
-      deps = rel_deps
-
-      # Update recursedeps if it's set.
-      if self.recursedeps is not None:
-        logging.warning('Updating recursedeps by prepending %s.', rel_prefix)
-        rel_deps = {}
-        for depname, options in self.recursedeps.iteritems():
-          rel_deps[
-              os.path.normpath(os.path.join(rel_prefix, depname))] = options
-        self.recursedeps = rel_deps
-
-
     if 'allowed_hosts' in local_scope:
       try:
         self._allowed_hosts = frozenset(local_scope.get('allowed_hosts'))
@@ -698,35 +687,62 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._gn_args_file = local_scope.get('gclient_gn_args_file')
     self._gn_args = local_scope.get('gclient_gn_args', [])
 
-    # Convert the deps into real Dependency.
-    deps_to_add = []
-    for name, dep_value in deps.iteritems():
-      should_process = self.recursion_limit and self.should_process
-      deps_file = self.deps_file
-      if self.recursedeps is not None:
-        ent = self.recursedeps.get(name)
-        if ent is not None:
-          deps_file = ent['deps_file']
-      if dep_value is None:
-        continue
-      condition = None
-      condition_value = True
-      if isinstance(dep_value, basestring):
-        url = dep_value
-      else:
-        # This should be guaranteed by schema checking in gclient_eval.
-        assert isinstance(dep_value, dict)
-        url = dep_value['url']
-        condition = dep_value.get('condition')
-      if condition:
-        # TODO(phajdan.jr): should we also take custom vars into account?
-        condition_value = gclient_eval.EvaluateCondition(condition, self._vars)
-        should_process = should_process and condition_value
-      deps_to_add.append(Dependency(
-          self, name, url, None, None, self.custom_vars, None,
-          deps_file, should_process, use_relative_paths, condition,
-          condition_value))
-    deps_to_add.sort(key=lambda x: x.name)
+    # Since we heavily post-process things, freeze ones which should
+    # reflect original state of DEPS.
+    self._vars = gclient_utils.freeze(local_scope.get('vars', {}))
+
+    # If use_relative_paths is set in the DEPS file, regenerate
+    # the dictionary using paths relative to the directory containing
+    # the DEPS file.  Also update recursedeps if use_relative_paths is
+    # enabled.
+    # If the deps file doesn't set use_relative_paths, but the parent did
+    # (and therefore set self.relative on this Dependency object), then we
+    # want to modify the deps and recursedeps by prepending the parent
+    # directory of this dependency.
+    use_relative_paths = local_scope.get('use_relative_paths', False)
+    rel_prefix = None
+    if use_relative_paths:
+      rel_prefix = self.name
+    elif self._relative:
+      rel_prefix = os.path.dirname(self.name)
+
+    deps = local_scope.get('deps', {})
+    orig_deps = gclient_utils.freeze(deps)
+    if 'recursion' in local_scope:
+      self.recursion_override = local_scope.get('recursion')
+      logging.warning(
+          'Setting %s recursion to %d.', self.name, self.recursion_limit)
+    self.recursedeps = None
+    if 'recursedeps' in local_scope:
+      self.recursedeps = {}
+      for ent in local_scope['recursedeps']:
+        if isinstance(ent, basestring):
+          self.recursedeps[ent] = {"deps_file": self.deps_file}
+        else:  # (depname, depsfilename)
+          self.recursedeps[ent[0]] = {"deps_file": ent[1]}
+      logging.warning('Found recursedeps %r.', repr(self.recursedeps))
+
+      if rel_prefix:
+        logging.warning('Updating recursedeps by prepending %s.', rel_prefix)
+        rel_deps = {}
+        for depname, options in self.recursedeps.iteritems():
+          rel_deps[
+              os.path.normpath(os.path.join(rel_prefix, depname))] = options
+        self.recursedeps = rel_deps
+
+    # If present, save 'target_os' in the local_target_os property.
+    if 'target_os' in local_scope:
+      self.local_target_os = local_scope['target_os']
+    # load os specific dependencies if defined.  these dependencies may
+    # override or extend the values defined by the 'deps' member.
+    target_os_list = self.target_os
+    if 'deps_os' in local_scope and target_os_list:
+      deps = self.MergeWithOsDeps(deps, local_scope['deps_os'], target_os_list)
+
+    deps_to_add = self._deps_to_objects(
+        self._postprocess_deps(deps, rel_prefix), use_relative_paths)
+    orig_deps_to_add = self._deps_to_objects(
+        self._postprocess_deps(orig_deps, rel_prefix), use_relative_paths)
 
     # override named sets of hooks by the custom hooks
     hooks_to_run = []
@@ -750,7 +766,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       self._pre_deps_hooks = [self.GetHookAction(hook) for hook in
                               local_scope.get('pre_deps_hooks', [])]
 
-    self.add_dependencies_and_close(deps_to_add, hooks_to_run)
+    self.add_dependencies_and_close(
+        deps_to_add, hooks_to_run, orig_deps_to_add=orig_deps_to_add)
     logging.info('ParseDepsFile(%s) done' % self.name)
 
   def _get_option(self, attr, default):
@@ -759,11 +776,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       obj = obj.parent
     return getattr(obj._options, attr, default)
 
-  def add_dependencies_and_close(self, deps_to_add, hooks):
+  def add_dependencies_and_close(
+      self, deps_to_add, hooks, orig_deps_to_add=None):
     """Adds the dependencies, hooks and mark the parsing as done."""
     for dep in deps_to_add:
       if dep.verify_validity():
         self.add_dependency(dep)
+    for dep in (orig_deps_to_add or deps_to_add):
+      self.add_orig_dependency(dep)
     self._mark_as_parsed(hooks)
 
   def findDepsFromNotAllowedHosts(self):
@@ -1026,6 +1046,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._dependencies.append(new_dep)
 
   @gclient_utils.lockedmethod
+  def add_orig_dependency(self, new_dep):
+    self._orig_dependencies.append(new_dep)
+
+  @gclient_utils.lockedmethod
   def _mark_as_parsed(self, new_hooks):
     self._deps_hooks.extend(new_hooks)
     self._deps_parsed = True
@@ -1034,6 +1058,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   @gclient_utils.lockedmethod
   def dependencies(self):
     return tuple(self._dependencies)
+
+  @property
+  @gclient_utils.lockedmethod
+  def orig_dependencies(self):
+    return tuple(self._orig_dependencies)
 
   @property
   @gclient_utils.lockedmethod
@@ -1781,8 +1810,8 @@ def _FlattenRecurse(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
   logging.debug('_FlattenRecurse(%r)', dep)
 
   # TODO(phajdan.jr): also handle deps_os.
-  for dep in dep.dependencies:
-    _FlattenDep(dep, deps, hooks, pre_deps_hooks, unpinned_deps)
+  for sub_dep in dep.orig_dependencies:
+    _FlattenDep(sub_dep, deps, hooks, pre_deps_hooks, unpinned_deps)
 
 
 def _AddDep(dep, deps, unpinned_deps):

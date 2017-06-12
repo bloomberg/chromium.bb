@@ -474,12 +474,21 @@ deps = {
 deps_os ={
   'mac': {
     'src/none_repo': None,
+
+    # This entry should not appear in flattened DEPS' |deps|.
+    'src/os_repo': '/repo_5',
   },
   'unix': {
     'src/none_repo': None,
+
+    # This entry should not appear in flattened DEPS' |deps|.
+    'src/os_repo': '/repo_5',
   },
   'win': {
     'src/none_repo': None,
+
+    # This entry should not appear in flattened DEPS' |deps|.
+    'src/os_repo': '/repo_5',
   },
 }
 hooks = [
