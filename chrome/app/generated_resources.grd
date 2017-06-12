@@ -12009,6 +12009,18 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME" desc="Message contained in a button to continue the navigation within Chrome.">
           Stay in Chrome
         </message>
+        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_INCOGNITO_WARNING" desc="Message warning the user that we will continue the navigation outside of Chrome.">
+          This site is about to share information with an app outside of incognito mode.
+        </message>
+        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_INCOGNITO_TITLE" desc="Title for the warning message when the user is about to leave incognito mode.">
+          Leave incognito mode?
+        </message>
+        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_INCOGNITO_LEAVE" desc="Button to redirect the user to ARC.">
+          Leave
+        </message>
+        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_INCOGNITO_STAY" desc="Button for keeping the user in Chrome.">
+          Stay
+        </message>
       </if>
 
       <message name="IDS_SAVE_PASSWORD_DIFFERENT_DOMAINS_TITLE" desc="The title of the save password bubble when the submitted form origin isn't equal to the page origin.">
