@@ -448,6 +448,9 @@ bool LayoutBlock::WidthAvailableToChildrenHasChanged() {
   // If we use border-box sizing, have percentage padding, and our parent has
   // changed width then the width available to our children has changed even
   // though our own width has remained the same.
+  // TODO(mstensho): NeedsPreferredWidthsRecalculation() is used here to check
+  // if we have percentage padding, which is rather non-obvious. That method
+  // returns true in other cases as well.
   width_available_to_children_has_changed |=
       Style()->BoxSizing() == EBoxSizing::kBorderBox &&
       NeedsPreferredWidthsRecalculation() &&
@@ -586,11 +589,6 @@ void LayoutBlock::UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
       (height_available_to_children_changed_ &&
        ChangeInAvailableLogicalHeightAffectsChild(this, child))) {
     child.SetChildNeedsLayout(kMarkOnlyThis);
-
-    // If the child has percentage padding or an embedded content box, we also
-    // need to invalidate the childs pref widths.
-    if (child.NeedsPreferredWidthsRecalculation())
-      child.SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
   }
 }
 
@@ -798,12 +796,6 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
        NeedsLayoutDueToStaticPosition(positioned_object)))
     layout_scope.SetChildNeedsLayout(positioned_object);
 
-  // If relayoutChildren is set and the child has percentage padding or an
-  // embedded content box, we also need to invalidate the childs pref widths.
-  if (relayout_children &&
-      positioned_object->NeedsPreferredWidthsRecalculation())
-    positioned_object->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
-
   LayoutUnit logical_top_estimate;
   bool is_paginated = View()->GetLayoutState()->IsPaginated();
   bool needs_block_direction_location_set_before_layout =
@@ -1003,8 +995,6 @@ void LayoutBlock::RemovePositionedObjects(
         (positioned_object->IsDescendantOf(o) && o != positioned_object)) {
       if (containing_block_state == kNewContainingBlock) {
         positioned_object->SetChildNeedsLayout(kMarkOnlyThis);
-        if (positioned_object->NeedsPreferredWidthsRecalculation())
-          positioned_object->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
 
         // The positioned object changing containing block may change paint
         // invalidation container.
