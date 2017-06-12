@@ -81,8 +81,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String PREF_POPUP_PERMISSION = "popup_permission_list";
     public static final String PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION =
             "protected_media_identifier_permission_list";
-    public static final String PREF_SUBRESOURCE_FILTER_PERMISSION =
-            "subresource_filter_permission_list";
+    public static final String PREF_ADS_PERMISSION = "ads_permission_list";
 
     // All permissions from the permissions preference category must be listed here.
     // TODO(mvanouwerkerk): Use this array in more places to reduce verbosity.
@@ -98,7 +97,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             PREF_NOTIFICATIONS_PERMISSION,
             PREF_POPUP_PERMISSION,
             PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION,
-            PREF_SUBRESOURCE_FILTER_PERMISSION,
+            PREF_ADS_PERMISSION,
     };
 
     // The website this page is displaying details about.
@@ -195,10 +194,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
         // This loop looks expensive, but the amount of data is likely to be relatively small
         // because most sites have very few permissions.
         for (Website other : websites) {
-            if (merged.getSubresourceFilterException() == null
-                    && other.getSubresourceFilterException() != null
+            if (merged.getAdsException() == null && other.getAdsException() != null
                     && other.compareByAddressTo(merged) == 0) {
-                merged.setSubresourceFilterException(other.getSubresourceFilterException());
+                merged.setAdsException(other.getAdsException());
             }
             if (merged.getGeolocationInfo() == null && other.getGeolocationInfo() != null
                     && permissionInfoIsForTopLevelOrigin(other.getGeolocationInfo(), origin)) {
@@ -290,6 +288,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 }
             } else if (PREF_RESET_SITE.equals(preference.getKey())) {
                 preference.setOnPreferenceClickListener(this);
+            } else if (PREF_ADS_PERMISSION.equals(preference.getKey())) {
+                setUpAdsPreference(preference);
             } else if (PREF_AUTOPLAY_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getAutoplayPermission());
             } else if (PREF_BACKGROUND_SYNC_PERMISSION.equals(preference.getKey())) {
@@ -312,8 +312,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 setUpListPreference(preference, mSite.getPopupPermission());
             } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
-            } else if (PREF_SUBRESOURCE_FILTER_PERMISSION.equals(preference.getKey())) {
-                setUpSubresourceFilterPreference(preference);
             }
 
             if (permissionPreferenceKeys.contains(preference.getKey())) {
@@ -497,22 +495,22 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     /**
-     * Updates the subresource filter list preference based on subresource filter activation. This
+     * Updates the ads list preference based on whether the site is a candidate for blocking. This
      * has some custom behavior.
-     * 1. If the site is filtering, the permission should show up even if it is set as the default
-     *    (e.g. |preference| is null).
+     * 1. If the site is a candidate and has activation, the permission should show up even if it
+     *    is set as the default (e.g. |preference| is null).
      * 2. The BLOCK string is custom.
      */
-    private void setUpSubresourceFilterPreference(Preference preference) {
-        // If the subresource filter is activated, then this site will have resources filtered
-        // unless there is an explicit permission disallowing the filtering.
-        boolean subresourceFilterActivated = WebsitePreferenceBridge.getSubresourceFilterActivated(
-                mSite.getAddress().getOrigin());
-        ContentSetting permission = mSite.getSubresourceFilterPermission();
+    private void setUpAdsPreference(Preference preference) {
+        // If the ad blocker is activated, then this site will have ads blocked unless there is an
+        // explicit permission disallowing the blocking.
+        boolean activated =
+                WebsitePreferenceBridge.getAdBlockingActivated(mSite.getAddress().getOrigin());
+        ContentSetting permission = mSite.getAdsPermission();
 
         // If |permission| is null, there is no explicit (non-default) permission set for this site.
-        // However, if the filtering is activated, we still want to show the permission as BLOCK.
-        if (permission == null && !subresourceFilterActivated) {
+        // However, if the blocking is activated, we still want to show the permission as BLOCK.
+        if (permission == null && !activated) {
             setUpListPreference(preference, null);
             return;
         }
@@ -523,7 +521,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         Resources res = getResources();
         listPreference.setEntries(
                 new String[] {res.getString(R.string.website_settings_permissions_allow),
-                        res.getString(R.string.subresource_filter_permission_block)});
+                        res.getString(R.string.website_settings_permissions_ads_block)});
         listPreference.setValueIndex(permission == ContentSetting.ALLOW ? 0 : 1);
     }
 
@@ -589,6 +587,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     private int getContentSettingsTypeFromPreferenceKey(String preferenceKey) {
         switch (preferenceKey) {
+            case PREF_ADS_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER;
             case PREF_AUTOPLAY_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
             case PREF_BACKGROUND_SYNC_PERMISSION:
@@ -611,8 +611,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
             case PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
-            case PREF_SUBRESOURCE_FILTER_PERMISSION:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER;
             default:
                 return 0;
         }
@@ -651,7 +649,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         ContentSetting permission = ContentSetting.fromString((String) newValue);
-        if (PREF_AUTOPLAY_PERMISSION.equals(preference.getKey())) {
+        if (PREF_ADS_PERMISSION.equals(preference.getKey())) {
+            mSite.setAdsPermission(permission);
+        } else if (PREF_AUTOPLAY_PERMISSION.equals(preference.getKey())) {
             mSite.setAutoplayPermission(permission);
         } else if (PREF_BACKGROUND_SYNC_PERMISSION.equals(preference.getKey())) {
             mSite.setBackgroundSyncPermission(permission);
@@ -673,8 +673,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
             mSite.setPopupPermission(permission);
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
             mSite.setProtectedMediaIdentifierPermission(permission);
-        } else if (PREF_SUBRESOURCE_FILTER_PERMISSION.equals(preference.getKey())) {
-            mSite.setSubresourceFilterPermission(permission);
         }
 
         return true;
@@ -735,6 +733,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         WebsitePreferenceBridge.nativeClearBannerData(origin);
 
         // Clear the permissions.
+        mSite.setAdsPermission(ContentSetting.DEFAULT);
         mSite.setAutoplayPermission(ContentSetting.DEFAULT);
         mSite.setBackgroundSyncPermission(ContentSetting.DEFAULT);
         mSite.setCameraPermission(ContentSetting.DEFAULT);
@@ -746,7 +745,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
         mSite.setNotificationPermission(ContentSetting.DEFAULT);
         mSite.setPopupPermission(ContentSetting.DEFAULT);
         mSite.setProtectedMediaIdentifierPermission(ContentSetting.DEFAULT);
-        mSite.setSubresourceFilterPermission(ContentSetting.DEFAULT);
 
         for (UsbInfo info : mSite.getUsbInfo()) info.revoke();
 

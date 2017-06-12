@@ -73,7 +73,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
 #endif
     {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
-    {CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, "subresource-filter"},
+    {CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, "ads"},
 };
 
 }  // namespace

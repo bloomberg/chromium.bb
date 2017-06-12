@@ -187,23 +187,23 @@
           aria-describedby="popupsSecondary"></button>
     </div>
     <template is="dom-if" if="[[enableSafeBrowsingSubresourceFilter_]]">
-      <div id="subresource-filter" class="settings-box two-line"
-          category$="[[ContentSettingsTypes.SUBRESOURCE_FILTER]]"
-          data-route="SITE_SETTINGS_SUBRESOURCE_FILTER" on-tap="onTapNavigate_"
+      <div id="ads" class="settings-box two-line"
+          category$="[[ContentSettingsTypes.ADS]]"
+          data-route="SITE_SETTINGS_ADS" on-tap="onTapNavigate_"
           actionable>
         <iron-icon icon="cr:open-in-new"></iron-icon>
         <div class="middle">
-          $i18n{siteSettingsSubresourceFilter}
-          <div class="secondary" id="subresourceFilterSecondary">
+          $i18n{siteSettingsAds}
+          <div class="secondary" id="adsSecondary">
             [[defaultSettingLabel_(
-                default_.subresourceFilter,
-                '$i18nPolymer{siteSettingsSubresourceFilterBlock}',
-                '$i18nPolymer{siteSettingsSubresourceFilterAllow}')]]
+                default_.ads,
+                '$i18nPolymer{siteSettingsAllowed}',
+                '$i18nPolymer{siteSettingsAdsBlock}')]]
           </div>
         </div>
         <button class="subpage-arrow" is="paper-icon-button-light"
-            aria-label="$i18n{siteSettingsSubresourceFilter}"
-            aria-describedby="subresourceFilterSecondary"></button>
+            aria-label="$i18n{siteSettingsAds}"
+            aria-describedby="adsSecondary"></button>
       </div>
     </template>
     <div id="background-sync" class="settings-box two-line"

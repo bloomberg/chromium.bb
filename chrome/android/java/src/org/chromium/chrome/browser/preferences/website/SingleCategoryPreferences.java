@@ -165,9 +165,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
                         }
                     }
 
-                    // For the subresource filter permission, the Allowed list should appear first.
-                    // Default collapsed settings should not change.
-                    if (mCategory.showSubresourceFilterSites()) {
+                    // For the ads permission, the Allowed list should appear first. Default
+                    // collapsed settings should not change.
+                    if (mCategory.showAdsSites()) {
                         blockedGroup.setOrder(allowedGroup.getOrder() + 1);
                     }
 
@@ -214,7 +214,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
      */
     private boolean isOnBlockList(WebsitePreference website) {
         // This list is ordered alphabetically by permission.
-        if (mCategory.showAutoplaySites()) {
+        if (mCategory.showAdsSites()) {
+            return website.site().getAdsPermission() == ContentSetting.BLOCK;
+        } else if (mCategory.showAutoplaySites()) {
             return website.site().getAutoplayPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showBackgroundSyncSites()) {
             return website.site().getBackgroundSyncPermission() == ContentSetting.BLOCK;
@@ -234,8 +236,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
             return website.site().getPopupPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showProtectedMediaSites()) {
             return website.site().getProtectedMediaIdentifierPermission() == ContentSetting.BLOCK;
-        } else if (mCategory.showSubresourceFilterSites()) {
-            return website.site().getSubresourceFilterPermission() == ContentSetting.BLOCK;
         }
 
         return false;
@@ -475,7 +475,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
         if (READ_WRITE_TOGGLE_KEY.equals(preference.getKey())) {
             assert !mCategory.isManaged();
 
-            if (mCategory.showAutoplaySites()) {
+            if (mCategory.showAdsSites()) {
+                PrefServiceBridge.getInstance().setAllowAdsEnabled((boolean) newValue);
+            } else if (mCategory.showAutoplaySites()) {
                 PrefServiceBridge.getInstance().setAutoplayEnabled((boolean) newValue);
             } else if (mCategory.showBackgroundSyncSites()) {
                 PrefServiceBridge.getInstance().setBackgroundSyncEnabled((boolean) newValue);
@@ -497,9 +499,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 PrefServiceBridge.getInstance().setAllowPopupsEnabled((boolean) newValue);
             } else if (mCategory.showProtectedMediaSites()) {
                 PrefServiceBridge.getInstance().setProtectedMediaIdentifierEnabled(
-                        (boolean) newValue);
-            } else if (mCategory.showSubresourceFilterSites()) {
-                PrefServiceBridge.getInstance().setAllowSubresourceFilterEnabled(
                         (boolean) newValue);
             }
 
@@ -702,7 +701,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
                         return mCategory.isManagedByCustodian();
                     }
                 });
-                if (mCategory.showAutoplaySites()) {
+                if (mCategory.showAdsSites()) {
+                    globalToggle.setChecked(PrefServiceBridge.getInstance().adsEnabled());
+                } else if (mCategory.showAutoplaySites()) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isAutoplayEnabled());
                 } else if (mCategory.showBackgroundSyncSites()) {
@@ -728,9 +729,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 } else if (mCategory.showProtectedMediaSites()) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isProtectedMediaIdentifierEnabled());
-                } else if (mCategory.showSubresourceFilterSites()) {
-                    globalToggle.setChecked(
-                            PrefServiceBridge.getInstance().subresourceFilterEnabled());
                 }
             }
         }

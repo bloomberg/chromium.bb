@@ -717,6 +717,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_ALL_SITES" desc='Title of the "All sites" settings screen that allows the user to see permissions for all websites. [CHAR-LIMIT=32]'>
         All sites
       </message>
+      <message name="IDS_ADS_PERMISSION_TITLE" desc="Title for the ads permission [CHAR-LIMIT=32]">
+         Ads
+      </message>
       <message name="IDS_AUTOPLAY_TITLE" desc='Title for the Autoplay settings screen [CHAR-LIMIT=32]'>
         Autoplay
       </message>
@@ -737,12 +740,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_POPUP_PERMISSION_TITLE" desc="Title of the permission to display pop-up windows [CHAR-LIMIT=32]">
         Pop-ups
-      </message>
-      <message name="IDS_SUBRESOURCE_FILTER_PERMISSION_TITLE" desc="Title for the subresource filter permission [CHAR-LIMIT=32]" translateable="false">
-         Subresource Filter
-      </message>
-      <message name="IDS_SUBRESOURCE_FILTER_PERMISSION_BLOCK" desc="The Blocked string for the subresource filter permission" translateable="false">
-         Block (subresource filter)
       </message>
       <message name="IDS_PUSH_NOTIFICATIONS_PERMISSION_TITLE" desc="Title for the permission for showing push notifications [CHAR-LIMIT=32]">
         Notifications
@@ -839,6 +836,16 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_POPUPS_BLOCKED" desc="Summary text explaining that sites are blocked from showing popups and that it is the recommended setting.">
         Block sites from showing pop-ups (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ADS_BLOCKED" desc="Summary text explaining that ads are being blocked on some sites.">
+        Block ads from sites that tend to show intrusive ads
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ADS_BLOCKED_LIST" desc="Summary text explaining that the Ads permission is set to block ads on some sites. To be shown in the list of permission categories.">
+        Blocked from some sites
+      </message>
+      <!-- TODO(csharrison): Mark as translateable when we've confirmed a Site Details UI.-->
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ADS_BLOCK" desc="The Blocked string for the ads permission on Site Details" translateable="false">
+         Block if site tends to show intrusive ads (placeholder)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_LOCATION_ASK" desc="Summary text explaining that sites need to ask for permission before knowing location and that it is the recommended setting.">
         Ask before allowing sites to know your location (recommended)

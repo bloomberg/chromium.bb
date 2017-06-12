@@ -62,8 +62,8 @@ public class WebsitePermissionsFetcher {
         // Popup exceptions are host-based patterns (unless we start
         // synchronizing popup exceptions with desktop Chrome).
         queue.add(new PopupExceptionInfoFetcher());
-        // Subresource filter exceptions are host-based.
-        queue.add(new SubresourceFilterExceptionInfoFetcher());
+        // Ads exceptions are host-based.
+        queue.add(new AdsExceptionInfoFetcher());
         // JavaScript exceptions are host-based patterns.
         queue.add(new JavaScriptExceptionInfoFetcher());
         // Protected media identifier permission is per-origin and per-embedder.
@@ -120,9 +120,9 @@ public class WebsitePermissionsFetcher {
             // Popup exceptions are host-based patterns (unless we start
             // synchronizing popup exceptions with desktop Chrome.)
             queue.add(new PopupExceptionInfoFetcher());
-        } else if (category.showSubresourceFilterSites()) {
-            // Subresource filter exceptions are host-based.
-            queue.add(new SubresourceFilterExceptionInfoFetcher());
+        } else if (category.showAdsSites()) {
+            // Ads exceptions are host-based.
+            queue.add(new AdsExceptionInfoFetcher());
         } else if (category.showJavaScriptSites()) {
             // JavaScript exceptions are host-based patterns.
             queue.add(new JavaScriptExceptionInfoFetcher());
@@ -185,7 +185,7 @@ public class WebsitePermissionsFetcher {
                     site.setPopupException(exception);
                     break;
                 case ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER:
-                    site.setSubresourceFilterException(exception);
+                    site.setAdsException(exception);
                     break;
                 default:
                     assert false : "Unexpected content setting type received: "
@@ -261,7 +261,7 @@ public class WebsitePermissionsFetcher {
         }
     }
 
-    private class SubresourceFilterExceptionInfoFetcher extends Task {
+    private class AdsExceptionInfoFetcher extends Task {
         @Override
         public void run() {
             setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);

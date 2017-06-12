@@ -407,15 +407,15 @@
       </template>
       <template is="dom-if" if="[[enableSafeBrowsingSubresourceFilter_]]"
           no-search>
-        <template is="dom-if" route-path="/content/subresourceFilter" no-search>
-          <settings-subpage page-title="$i18n{siteSettingsSubresourceFilter}">
+        <template is="dom-if" route-path="/content/ads" no-search>
+          <settings-subpage page-title="$i18n{siteSettingsAds}">
             <category-default-setting
-                category="{{ContentSettingsTypes.SUBRESOURCE_FILTER}}"
-                toggle-off-label="$i18n{siteSettingsSubresourceFilterAllow}"
-                toggle-on-label="$i18n{siteSettingsSubresourceFilterBlock}">
+                category="{{ContentSettingsTypes.ADS}}"
+                toggle-off-label="$i18n{siteSettingsAdsBlock}"
+                toggle-on-label="$i18n{siteSettingsAllowed}">
             </category-default-setting>
             <category-setting-exceptions
-                category="{{ContentSettingsTypes.SUBRESOURCE_FILTER}}"
+                category="{{ContentSettingsTypes.ADS}}"
                 read-only-list>
             </category-setting-exceptions>
           </settings-subpage>

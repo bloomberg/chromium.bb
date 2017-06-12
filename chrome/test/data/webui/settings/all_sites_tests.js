@@ -39,6 +39,7 @@ var prefsMixedProvider = {
  */
 var prefsMixedOriginAndPattern = {
   exceptions: {
+    ads: [],
     auto_downloads: [],
     background_sync: [],
     camera: [],
@@ -66,7 +67,6 @@ var prefsMixedOriginAndPattern = {
     midiDevices: [],
     protectedContent: [],
     popups: [],
-    subresource_filter: [],
     unsandboxed_plugins: [],
   }
 };
@@ -78,6 +78,7 @@ var prefsMixedOriginAndPattern = {
  */
 var prefsVarious = {
   exceptions: {
+    ads: [],
     auto_downloads: [],
     background_sync: [],
     camera: [],
@@ -128,7 +129,6 @@ var prefsVarious = {
     plugins: [],
     protectedContent: [],
     popups: [],
-    subresource_filter: [],
     unsandboxed_plugins: [],
   }
 };

@@ -179,6 +179,7 @@ cr.define('settings', function() {
   r.SITE_SETTINGS_HANDLERS = r.SITE_SETTINGS.createChild('/handlers');
 
   // TODO(tommycli): Find a way to refactor these repetitive category routes.
+  r.SITE_SETTINGS_ADS = r.SITE_SETTINGS.createChild('ads');
   r.SITE_SETTINGS_AUTOMATIC_DOWNLOADS =
       r.SITE_SETTINGS.createChild('automaticDownloads');
   r.SITE_SETTINGS_BACKGROUND_SYNC =
@@ -202,8 +203,6 @@ cr.define('settings', function() {
   r.SITE_SETTINGS_PDF_DOCUMENTS = r.SITE_SETTINGS.createChild('pdfDocuments');
   r.SITE_SETTINGS_PROTECTED_CONTENT =
       r.SITE_SETTINGS.createChild('protectedContent');
-  r.SITE_SETTINGS_SUBRESOURCE_FILTER =
-      r.SITE_SETTINGS.createChild('subresourceFilter');
 
 // <if expr="chromeos">
   r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');

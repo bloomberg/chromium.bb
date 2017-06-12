@@ -176,6 +176,9 @@
     </if>
 
     <!-- Permission names -->
+    <message name="IDS_PAGE_INFO_TYPE_ADS" desc="The label used for the ads permission controls in the Website Settings popup.">
+      Ads
+    </message>
     <message name="IDS_PAGE_INFO_TYPE_AUTOPLAY" desc="The label used for the autoplay permission controls in the Website Settings popup.">
       Autoplay
     </message>
@@ -260,9 +263,8 @@
     <message name="IDS_PAGE_INFO_MENU_ITEM_DETECT_IMPORTANT_CONTENT" desc="The text of the menu item of a permissions menu on the Page Info UI that sets the setting to detect important content.">
       Always detect important content on this site
     </message>
-    <!-- IDS_PAGE_INFO_MENU_ITEM_SUBRESOURCE_FILTER_BLOCK is currently the same as IDS_PAGE_INFO_MENU_ITEM_BLOCK, but we use a different string identifier in the code for the flexibility to change it in the future. -->
-    <message name="IDS_PAGE_INFO_MENU_ITEM_SUBRESOURCE_FILTER_BLOCK" desc="The text of the menu item of a permissions menu on the Page Info UI for the subresource filter permission in Block mode">
-      Always block on this site
+    <message name="IDS_PAGE_INFO_MENU_ITEM_ADS_BLOCK" desc="The text of the menu item of a permissions menu on the Page Info UI for the ads permission in Block mode">
+      Block on this site
     </message>
 
     <!-- UI for device access granted to the site using the device chooser (e.g. USB, Bluetooth) -->
@@ -300,8 +302,8 @@
     <message name="IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED" desc="The label used underneath a permission listed in the Page Info bubble if the permission was blocked by Chrome on behalf of the user.">
       Automatically blocked
     </message>
-    <message name="IDS_PAGE_INFO_PERMISSION_SUBRESOURCE_FILTER_SUBTITLE" desc="The label used underneath the subresource filter permission in the Page Info UI. Used on desktop and Android platforms" translateable="false" formatter_data="android_java">
-       Subresource filter activated
+    <message name="IDS_PAGE_INFO_PERMISSION_ADS_SUBTITLE" desc="The label used underneath the ads permission in the Page Info UI if the site is being considered for ad blocking. Used on both desktop and Android platforms" formatter_data="android_java">
+      Site tends to show intrusive ads
     </message>
 
     <!-- Permission change infobar. -->

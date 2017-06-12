@@ -86,12 +86,12 @@ Polymer({
    */
   onChangePermissionControl_: function() {
     switch (this.category) {
+      case settings.ContentSettingsTypes.ADS:
       case settings.ContentSettingsTypes.BACKGROUND_SYNC:
       case settings.ContentSettingsTypes.IMAGES:
       case settings.ContentSettingsTypes.JAVASCRIPT:
       case settings.ContentSettingsTypes.POPUPS:
       case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
-      case settings.ContentSettingsTypes.SUBRESOURCE_FILTER:
 
         // "Allowed" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(

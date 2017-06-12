@@ -107,8 +107,7 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
   // Retrieve the string to show for blocking the permission.
   label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_BLOCK);
   if (permission_.type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER) {
-    label = l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_MENU_ITEM_SUBRESOURCE_FILTER_BLOCK);
+    label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_ADS_BLOCK);
   }
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     label = PageInfoUI::PermissionActionToUIString(
