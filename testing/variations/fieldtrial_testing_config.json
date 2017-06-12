@@ -2169,9 +2169,9 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledOnDiskNoStability3",
+                    "name": "EnabledOnDisk5",
                     "params": {
-                        "send_unreported_metrics": "no",
+                        "send_unreported_metrics": "yes",
                         "storage": "MappedFile"
                     },
                     "enable_features": [
