@@ -15,8 +15,12 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/identity/public/cpp/scope_set.h"
+#include "services/identity/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -54,7 +58,10 @@ std::string GetPrimaryAccountId(content::BrowserContext* context) {
 namespace identity = api::identity;
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
-    : OAuth2TokenService::Consumer("extensions_identity_api"),
+    :
+#if defined(OS_CHROMEOS)
+      OAuth2TokenService::Consumer("extensions_identity_api"),
+#endif
       interactive_(false),
       should_prompt_for_scopes_(false),
       should_prompt_for_signin_(false) {
@@ -483,37 +490,53 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowCompleted(
   CompleteFunctionWithResult(access_token);
 }
 
+void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
+    const base::Optional<std::string>& access_token,
+    base::Time expiration_time,
+    const GoogleServiceAuthError& error) {
+  // By the time we get here we should no longer have an outstanding O2TS
+  // request (either because we never made a request to O2TS directly or because
+  // the request was already fulfilled).
+  DCHECK(!login_token_request_);
+  if (access_token) {
+    TRACE_EVENT_ASYNC_STEP_PAST1("identity", "IdentityGetAuthTokenFunction",
+                                 this, "OnGetAccessTokenComplete", "account",
+                                 token_key_->account_id);
+
+    StartGaiaRequest(access_token.value());
+  } else {
+    TRACE_EVENT_ASYNC_STEP_PAST1("identity", "IdentityGetAuthTokenFunction",
+                                 this, "OnGetAccessTokenComplete", "error",
+                                 error.ToString());
+
+    OnGaiaFlowFailure(GaiaWebAuthFlow::SERVICE_AUTH_ERROR, error,
+                      std::string());
+  }
+}
+
+#if defined(OS_CHROMEOS)
 void IdentityGetAuthTokenFunction::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "OnGetTokenSuccess",
-                               "account",
-                               request->GetAccountId());
   login_token_request_.reset();
-  StartGaiaRequest(access_token);
+  OnGetAccessTokenComplete(access_token, expiration_time,
+                           GoogleServiceAuthError::AuthErrorNone());
 }
 
 void IdentityGetAuthTokenFunction::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  TRACE_EVENT_ASYNC_STEP_PAST1("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "OnGetTokenFailure",
-                               "error",
-                               error.ToString());
   login_token_request_.reset();
-  OnGaiaFlowFailure(GaiaWebAuthFlow::SERVICE_AUTH_ERROR, error, std::string());
+  OnGetAccessTokenComplete(base::nullopt, base::Time(), error);
 }
+#endif
 
 void IdentityGetAuthTokenFunction::Shutdown() {
   gaia_web_auth_flow_.reset();
   signin_flow_.reset();
   login_token_request_.reset();
+  identity_manager_.reset();
   extensions::IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
       ->mint_queue()
@@ -550,8 +573,6 @@ bool IdentityGetAuthTokenFunction::IsOriginWhitelistedInPublicSession() {
 #endif
 
 void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
-  ProfileOAuth2TokenService* service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode()) {
     std::string app_client_id;
@@ -559,6 +580,8 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
     if (chromeos::UserSessionManager::GetInstance()->
             GetAppModeChromeClientOAuthInfo(&app_client_id,
                                             &app_client_secret)) {
+      ProfileOAuth2TokenService* service =
+          ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
       login_token_request_ =
           service->StartRequestForClient(token_key_->account_id,
                                          app_client_id,
@@ -569,8 +592,12 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
     }
   }
 #endif
-  login_token_request_ = service->StartRequest(
-      token_key_->account_id, OAuth2TokenService::ScopeSet(), this);
+
+  ConnectToIdentityManager();
+  identity_manager_->GetAccessToken(
+      token_key_->account_id, ::identity::ScopeSet(), "extensions_identity_api",
+      base::Bind(&IdentityGetAuthTokenFunction::OnGetAccessTokenComplete,
+                 base::Unretained(this)));
 }
 
 void IdentityGetAuthTokenFunction::StartGaiaRequest(
@@ -642,6 +669,15 @@ std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
     client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   }
   return client_id;
+}
+
+void IdentityGetAuthTokenFunction::ConnectToIdentityManager() {
+  if (identity_manager_.is_bound())
+    return;
+
+  content::BrowserContext::GetConnectorFor(GetProfile())
+      ->BindInterface(::identity::mojom::kServiceName,
+                      mojo::MakeRequest(&identity_manager_));
 }
 
 }  // namespace extensions

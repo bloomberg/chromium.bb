@@ -10,12 +10,14 @@
 #include "services/service_manager/public/cpp/service.h"
 
 class SigninManagerBase;
+class ProfileOAuth2TokenService;
 
 namespace identity {
 
 class IdentityService : public service_manager::Service {
  public:
-  IdentityService(SigninManagerBase* signin_manager);
+  IdentityService(SigninManagerBase* signin_manager,
+                  ProfileOAuth2TokenService* token_service);
   ~IdentityService() override;
 
  private:
@@ -29,6 +31,7 @@ class IdentityService : public service_manager::Service {
               mojom::IdentityManagerRequest request);
 
   SigninManagerBase* signin_manager_;
+  ProfileOAuth2TokenService* token_service_;
 
   service_manager::BinderRegistry registry_;
 

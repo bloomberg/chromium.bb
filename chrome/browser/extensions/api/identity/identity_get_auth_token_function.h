@@ -12,6 +12,7 @@
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/interfaces/identity_manager.mojom.h"
 
 namespace extensions {
 
@@ -36,8 +37,10 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                      public GaiaWebAuthFlow::Delegate,
                                      public IdentityMintRequestQueue::Request,
                                      public OAuth2MintTokenFlow::Delegate,
-                                     public IdentitySigninFlow::Delegate,
-                                     public OAuth2TokenService::Consumer {
+#if defined(OS_CHROMEOS)
+                                     public OAuth2TokenService::Consumer,
+#endif
+                                     public IdentitySigninFlow::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.getAuthToken",
                              EXPERIMENTAL_IDENTITY_GETAUTHTOKEN);
@@ -67,12 +70,23 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // Starts a login access token request.
   virtual void StartLoginAccessTokenRequest();
 
+// TODO(blundell): Investigate feasibility of moving the ChromeOS use case
+// to use the Identity Service instead of being an
+// OAuth2TokenService::Consumer.
+#if defined(OS_CHROMEOS)
   // OAuth2TokenService::Consumer implementation:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                          const std::string& access_token,
                          const base::Time& expiration_time) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
+#endif
+
+  // Invoked on completion of IdentityManager::GetAccessToken().
+  // Exposed for testing.
+  void OnGetAccessTokenComplete(const base::Optional<std::string>& access_token,
+                                base::Time expiration_time,
+                                const GoogleServiceAuthError& error);
 
   // Starts a mint token request to GAIA.
   // Exposed for testing.
@@ -138,6 +152,9 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   std::string GetOAuth2ClientId() const;
 
+  // Connects to the Identity Manager. No-op if already connected.
+  void ConnectToIdentityManager();
+
   bool interactive_;
   bool should_prompt_for_scopes_;
   IdentityMintRequestQueue::MintType mint_token_flow_type_;
@@ -152,6 +169,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   IssueAdviceInfo issue_advice_;
   std::unique_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
   std::unique_ptr<IdentitySigninFlow> signin_flow_;
+
+  identity::mojom::IdentityManagerPtr identity_manager_;
 };
 
 }  // namespace extensions

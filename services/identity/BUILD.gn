@@ -18,6 +18,7 @@ source_set("lib") {
     "//base",
     "//components/signin/core/account_id",
     "//components/signin/core/browser",
+    "//services/identity/public/cpp:cpp_types",
     "//services/identity/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",

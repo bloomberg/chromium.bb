@@ -75,6 +75,7 @@
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -1393,5 +1394,8 @@ ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
 
 std::unique_ptr<service_manager::Service> ProfileImpl::CreateIdentityService() {
   SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(this);
-  return base::MakeUnique<identity::IdentityService>(signin_manager);
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(this);
+  return base::MakeUnique<identity::IdentityService>(signin_manager,
+                                                     token_service);
 }
