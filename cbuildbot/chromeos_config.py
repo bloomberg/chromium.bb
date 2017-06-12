@@ -2173,6 +2173,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'elm',
       'falco',
       'fizz',
+      'gale',
       'glados',
       'guado',
       'kevin',
@@ -2203,6 +2204,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_minnie',
       'veyron_rialto',
       'veyron_speedy',
+      'whirlwind',
       'winky',
       'wolf',
       'x86-generic',
@@ -2215,10 +2217,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # pass the last ~20 build attempts, e.g. the builder page shows all green.
   _paladin_new_boards = frozenset([
       'cyan',
-      'gale',
       'veyron_jaq',
       'veyron_tiger',
-      'whirlwind',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
