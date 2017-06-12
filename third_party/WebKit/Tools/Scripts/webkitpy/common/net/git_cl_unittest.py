@@ -176,3 +176,21 @@ class GitCLTest(unittest.TestCase):
                 Build('builder-a', 100): TryJobStatus('COMPLETED', 'FAILURE'),
                 Build('builder-b', 200): TryJobStatus('COMPLETED', 'FAILURE'),
             })
+
+    def test_try_job_results_no_build_number_in_url(self):
+        git_cl = GitCL(MockHost())
+        git_cl.fetch_raw_try_job_results = lambda: [
+            {
+                'builder_name': 'builder-a',
+                'status': 'COMPLETED',
+                'result': 'FAILURE',
+                'failure_reason': 'BUILD_FAILURE',
+                'url': 'https://luci-milo.appspot.com/swarming/task/36a767f405d9ee10',
+            },
+        ]
+        # By default, we try to parse a build number from the URL, which
+        # fails for some URLs.
+        with self.assertRaisesRegexp(AssertionError, '36a767f405d9ee10 did not match'):
+            git_cl.try_job_results()
+        # If we explicitly don't care about that builder, then we ignore it.
+        self.assertEqual(git_cl.try_job_results(['other-builder']), {})
