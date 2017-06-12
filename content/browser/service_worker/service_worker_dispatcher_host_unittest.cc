@@ -99,16 +99,12 @@ static const int kRenderFrameId = 1;
 
 class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
-  TestingServiceWorkerDispatcherHost(
-      int process_id,
-      ServiceWorkerContextWrapper* context_wrapper,
-      ResourceContext* resource_context,
-      EmbeddedWorkerTestHelper* helper)
+  TestingServiceWorkerDispatcherHost(int process_id,
+                                     ResourceContext* resource_context,
+                                     EmbeddedWorkerTestHelper* helper)
       : ServiceWorkerDispatcherHost(process_id, resource_context),
         bad_messages_received_count_(0),
-        helper_(helper) {
-    Init(context_wrapper);
-  }
+        helper_(helper) {}
 
   bool Send(IPC::Message* message) override { return helper_->Send(message); }
 
@@ -166,9 +162,10 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     helper_.reset(helper.release());
     // Replace the default dispatcher host.
     int process_id = helper_->mock_render_process_id();
-    context()->RemoveDispatcherHost(process_id);
     dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
-        process_id, context_wrapper(), &resource_context_, helper_.get());
+        process_id, &resource_context_, helper_.get());
+    helper_->RegisterDispatcherHost(process_id, nullptr);
+    dispatcher_host_->Init(context_wrapper());
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
@@ -743,8 +740,9 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   // is not yet destroyed. This is what the browser does when reusing a crashed
   // render process.
   scoped_refptr<TestingServiceWorkerDispatcherHost> new_dispatcher_host(
-      new TestingServiceWorkerDispatcherHost(
-          process_id, context_wrapper(), &resource_context_, helper_.get()));
+      new TestingServiceWorkerDispatcherHost(process_id, &resource_context_,
+                                             helper_.get()));
+  new_dispatcher_host->Init(context_wrapper());
 
   // To show the new dispatcher can operate, simulate provider creation. Since
   // the old dispatcher cleaned up the old provider host, the new one won't

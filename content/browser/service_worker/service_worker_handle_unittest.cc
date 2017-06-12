@@ -46,16 +46,12 @@ void VerifyStateChangedMessage(int expected_handle_id,
 
 class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
-  TestingServiceWorkerDispatcherHost(
-      int process_id,
-      ServiceWorkerContextWrapper* context_wrapper,
-      ResourceContext* resource_context,
-      EmbeddedWorkerTestHelper* helper)
+  TestingServiceWorkerDispatcherHost(int process_id,
+                                     ResourceContext* resource_context,
+                                     EmbeddedWorkerTestHelper* helper)
       : ServiceWorkerDispatcherHost(process_id, resource_context),
         bad_message_received_count_(0),
-        helper_(helper) {
-    Init(context_wrapper);
-  }
+        helper_(helper) {}
 
   bool Send(IPC::Message* message) override { return helper_->Send(message); }
 
@@ -76,10 +72,11 @@ class ServiceWorkerHandleTest : public testing::Test {
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
-    helper_->context()->RemoveDispatcherHost(helper_->mock_render_process_id());
     dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
-        helper_->mock_render_process_id(), helper_->context_wrapper(),
-        &resource_context_, helper_.get());
+        helper_->mock_render_process_id(), &resource_context_, helper_.get());
+    helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
+                                    dispatcher_host_);
+    dispatcher_host_->Init(helper_->context_wrapper());
 
     const GURL pattern("http://www.example.com/");
     registration_ = new ServiceWorkerRegistration(
