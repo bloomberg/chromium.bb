@@ -3876,7 +3876,7 @@ void LocalFrameView::RemoveAnimatingScrollableArea(
   animating_scrollable_areas_->erase(scrollable_area);
 }
 
-void LocalFrameView::Attach() {
+void LocalFrameView::AttachToLayout() {
   DCHECK(!is_attached_);
   is_attached_ = true;
   if (ParentFrameView()->IsVisible())
@@ -3886,7 +3886,7 @@ void LocalFrameView::Attach() {
   subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
 }
 
-void LocalFrameView::Detach() {
+void LocalFrameView::DetachFromLayout() {
   DCHECK(is_attached_);
   if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     ParentFrameView()->RemoveScrollableArea(this);

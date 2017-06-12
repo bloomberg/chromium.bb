@@ -224,7 +224,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
 
   if (embedded_content_view_) {
     if (embedded_content_view_->IsAttached()) {
-      embedded_content_view_->Detach();
+      embedded_content_view_->DetachFromLayout();
       if (embedded_content_view_->IsPluginView())
         DisposePluginSoon(ToPluginView(embedded_content_view_));
       else
@@ -248,7 +248,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     DCHECK_EQ(GetDocument().View(),
               layout_embedded_content_item.GetFrameView());
     DCHECK(layout_embedded_content_item.GetFrameView());
-    embedded_content_view_->Attach();
+    embedded_content_view_->AttachToLayout();
   }
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
@@ -259,7 +259,7 @@ EmbeddedContentView* HTMLFrameOwnerElement::ReleaseEmbeddedContentView() {
   if (!embedded_content_view_)
     return nullptr;
   if (embedded_content_view_->IsAttached())
-    embedded_content_view_->Detach();
+    embedded_content_view_->DetachFromLayout();
   LayoutEmbeddedContent* layout_embedded_content =
       ToLayoutEmbeddedContent(GetLayoutObject());
   if (layout_embedded_content) {

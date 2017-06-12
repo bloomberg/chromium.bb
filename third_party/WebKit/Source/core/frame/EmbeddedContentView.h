@@ -25,8 +25,8 @@ class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
   virtual bool IsPluginView() const { return false; }
 
   virtual LayoutEmbeddedContent* OwnerLayoutObject() const = 0;
-  virtual void Attach() = 0;
-  virtual void Detach() = 0;
+  virtual void AttachToLayout() = 0;
+  virtual void DetachFromLayout() = 0;
   virtual bool IsAttached() const = 0;
   virtual void SetParentVisible(bool) = 0;
   virtual void SetFrameRect(const IntRect&) = 0;

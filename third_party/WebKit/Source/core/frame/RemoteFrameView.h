@@ -26,8 +26,8 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
   ~RemoteFrameView() override;
 
-  void Attach() override;
-  void Detach() override;
+  void AttachToLayout() override;
+  void DetachFromLayout() override;
   bool IsAttached() const override { return is_attached_; }
 
   RemoteFrame& GetFrame() const {
