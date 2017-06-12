@@ -773,17 +773,20 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
       // but surrounded by non-editable positions. It acts to negate the
       // logic at the beginning of
       // |LayoutObject::createPositionWithAffinity()|.
-      PositionTemplate<Strategy> equivalent =
+      const PositionTemplate<Strategy>& downstream_equivalent =
           DownstreamIgnoringEditingBoundaries(position);
-      if (equivalent == position) {
-        equivalent = UpstreamIgnoringEditingBoundaries(position);
-        if (equivalent == position ||
-            DownstreamIgnoringEditingBoundaries(equivalent) == position)
-          return InlineBoxPosition(inline_box, caret_offset);
+      if (downstream_equivalent != position) {
+        return ComputeInlineBoxPosition(
+            downstream_equivalent, TextAffinity::kUpstream, primary_direction);
       }
+      const PositionTemplate<Strategy>& upstream_equivalent =
+          UpstreamIgnoringEditingBoundaries(position);
+      if (upstream_equivalent == position ||
+          DownstreamIgnoringEditingBoundaries(upstream_equivalent) == position)
+        return InlineBoxPosition(inline_box, caret_offset);
 
-      return ComputeInlineBoxPosition(equivalent, TextAffinity::kUpstream,
-                                      primary_direction);
+      return ComputeInlineBoxPosition(
+          upstream_equivalent, TextAffinity::kUpstream, primary_direction);
     }
     if (layout_object->IsBox()) {
       inline_box = ToLayoutBox(layout_object)->InlineBoxWrapper();
