@@ -1899,9 +1899,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"embeddedIncognitoSite", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_EMBEDDED},
     {"siteSettingsSiteDetails", IDS_SETTINGS_SITE_DETAILS},
     {"noSitesAdded", IDS_SETTINGS_SITE_NO_SITES_ADDED},
-    {"siteSettingsSubresourceFilter", IDS_SUBRESOURCE_FILTER_HEADER},
-    {"siteSettingsSubresourceFilterAllow", IDS_SUBRESOURCE_FILTER_ALLOW_RADIO},
-    {"siteSettingsSubresourceFilterBlock", IDS_SUBRESOURCE_FILTER_BLOCK_RADIO},
+    {"siteSettingsAds", IDS_SETTINGS_SITE_SETTINGS_ADS},
+    {"siteSettingsAdsBlock", IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

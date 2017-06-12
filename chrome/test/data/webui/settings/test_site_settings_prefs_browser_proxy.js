@@ -36,6 +36,7 @@ var SiteSettingsPref;
  */
 var prefsEmpty = {
   defaults: {
+    ads: '',
     auto_downloads: '',
     background_sync: '',
     camera: '',
@@ -48,10 +49,10 @@ var prefsEmpty = {
     plugins: '',
     images: '',
     popups: '',
-    subresource_filter: '',
     unsandboxed_plugins: '',
   },
   exceptions: {
+    ads: [],
     auto_downloads: [],
     background_sync: [],
     camera: [],
@@ -64,7 +65,6 @@ var prefsEmpty = {
     plugins: [],
     images: [],
     popups: [],
-    subresource_filter: [],
     unsandboxed_plugins: [],
   },
 };
@@ -200,7 +200,9 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     this.methodCalled('getDefaultValueForContentType', contentType);
 
     var pref = undefined;
-    if (contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS) {
+    if (contentType == settings.ContentSettingsTypes.ADS) {
+      pref = this.prefs_.defaults.ads;
+    } else if (contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS) {
       pref = this.prefs_.defaults.auto_downloads;
     } else if (contentType == settings.ContentSettingsTypes.BACKGROUND_SYNC) {
       pref = this.prefs_.background_sync;
@@ -229,9 +231,6 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     } else if (
         contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS) {
       pref = this.prefs_.defaults.unsandboxed_plugins;
-    }
-    else if (contentType == settings.ContentSettingsTypes.SUBRESOURCE_FILTER) {
-      pref = this.prefs_.defaults.subresource_filter;
     } else {
       console.log('getDefault received unknown category: ' + contentType);
     }
@@ -245,7 +244,9 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     this.methodCalled('getExceptionList', contentType);
 
     var pref = undefined;
-    if (contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS)
+    if (contentType == settings.ContentSettingsTypes.ADS)
+      pref = this.prefs_.exceptions.ads;
+    else if (contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS)
       pref = this.prefs_.exceptions.auto_downloads;
     else if (contentType == settings.ContentSettingsTypes.BACKGROUND_SYNC)
       pref = this.prefs_.exceptions.background_sync;
@@ -275,9 +276,6 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       pref = this.prefs_.exceptions.popups;
     else if (contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS)
       pref = this.prefs_.exceptions.unsandboxed_plugins;
-    else if (contentType == settings.ContentSettingsTypes.SUBRESOURCE_FILTER) {
-      pref = this.prefs_.exceptions.subresource_filter;
-    }
     else
       console.log('getExceptionList received unknown category: ' + contentType);
 

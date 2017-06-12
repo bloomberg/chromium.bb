@@ -241,11 +241,11 @@ public abstract class WebsitePreferenceBridge {
     }
 
     /**
-     * Returns whether this origin is activated for subresource filtering, and will have
-     * resources filtered unless they are explicitly allowed via a permission.
+     * Returns whether this origin is activated for ad blocking, and will have resources blocked
+     * unless they are explicitly allowed via a permission.
      */
-    public static boolean getSubresourceFilterActivated(String origin) {
-        return nativeGetSubresourceFilterActivated(origin);
+    public static boolean getAdBlockingActivated(String origin) {
+        return nativeGetAdBlockingActivated(origin);
     }
 
     private static native void nativeGetGeolocationOrigins(Object list, boolean managedOnly);
@@ -292,5 +292,5 @@ public abstract class WebsitePreferenceBridge {
             String origin, boolean isIncognito);
     private static native boolean nativeGetDSEGeolocationSetting();
     private static native void nativeSetDSEGeolocationSetting(boolean setting);
-    private static native boolean nativeGetSubresourceFilterActivated(String origin);
+    private static native boolean nativeGetAdBlockingActivated(String origin);
 }

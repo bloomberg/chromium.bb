@@ -12,6 +12,7 @@
  */
 var prefsGeolocation = {
   exceptions: {
+    ads: [],
     auto_downloads: [],
     background_sync: [],
     camera: [],
@@ -50,7 +51,6 @@ var prefsGeolocation = {
     plugins: [],
     protectedContent: [],
     popups: [],
-    subresource_filter: [],
     unsandboxed_plugins: [],
   }
 };
@@ -156,6 +156,7 @@ var prefsMixedEmbeddingOrigin = {
  */
 var prefsVarious = {
   exceptions: {
+    ads: [],
     auto_downloads: [],
     background_sync: [],
     camera: [],
@@ -206,7 +207,6 @@ var prefsVarious = {
     plugins: [],
     protectedContent: [],
     popups: [],
-    subresource_filter: [],
     unsandboxed_plugins: [],
   }
 };
