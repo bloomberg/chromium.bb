@@ -303,7 +303,9 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
                                                     metadata);
   }
 
-  void SimulateTimeout() { fake_safe_browsing_database_->SimulateTimeout(); }
+  FakeSafeBrowsingDatabaseManager* fake_safe_browsing_database() {
+    return fake_safe_browsing_database_.get();
+  }
 
   void ClearAllBlacklistedUrls() {
     fake_safe_browsing_database_->RemoveAllBlacklistedUrls();
@@ -755,6 +757,18 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, ActivationList) {
   }
 }
 
+// Regression test for an issue where synchronous failure from the SB database
+// caused a double cancel. This is DCHECKed in the fake database.
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
+       SynchronousResponse) {
+  const GURL url(kURL);
+  fake_safe_browsing_database()->set_synchronous_failure();
+  SimulateStartAndExpectProceed(url);
+  SimulateCommitAndExpectProceed();
+  tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
+                            0);
+}
+
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
        ActivateForScopeType) {
   const ActivationScopeTestData& test_data = GetParam();
@@ -898,7 +912,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   const ActivationListTestData& test_data = GetParam();
   const GURL url(kURL);
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  SimulateTimeout();
+  fake_safe_browsing_database()->SimulateTimeout();
   SimulateStartAndExpectProceed(url);
 
   // Flush the pending tasks on the IO thread, so the delayed task surely gets

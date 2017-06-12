@@ -48,6 +48,7 @@ void SubresourceFilterSafeBrowsingClientRequest::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   start_time_ = base::TimeTicks::Now();
   if (database_manager_->CheckUrlForSubresourceFilter(url_, this)) {
+    request_completed_ = true;
     SendCheckResultToClient(false /* served_from_network */,
                             safe_browsing::SB_THREAT_TYPE_SAFE,
                             safe_browsing::ThreatMetadata());

@@ -10,8 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
-FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager()
-    : simulate_timeout_(false) {}
+FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager() {}
 
 void FakeSafeBrowsingDatabaseManager::AddBlacklistedUrl(
     const GURL& url,
@@ -38,15 +37,15 @@ FakeSafeBrowsingDatabaseManager::~FakeSafeBrowsingDatabaseManager() {}
 bool FakeSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
     const GURL& url,
     Client* client) {
-  if (simulate_timeout_)
-    return false;
-  if (!url_to_threat_type_.count(url))
+  if (synchronous_failure_ && !url_to_threat_type_.count(url))
     return true;
 
   // Enforce the invariant that a client will not send multiple requests, with
   // the subresource filter client implementation.
   DCHECK(checks_.find(client) == checks_.end());
   checks_.insert(client);
+  if (simulate_timeout_)
+    return false;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&FakeSafeBrowsingDatabaseManager::
@@ -62,9 +61,15 @@ void FakeSafeBrowsingDatabaseManager::OnCheckUrlForSubresourceFilterComplete(
   if (checks_.find(client) == checks_.end())
     return;
   safe_browsing::ThreatMetadata metadata;
-  metadata.threat_pattern_type = url_to_threat_type_[url].second;
+  safe_browsing::SBThreatType threat_type =
+      safe_browsing::SBThreatType::SB_THREAT_TYPE_SAFE;
+  auto it = url_to_threat_type_.find(url);
+  if (it != url_to_threat_type_.end()) {
+    threat_type = it->second.first;
+    metadata.threat_pattern_type = it->second.second;
+  }
+  client->OnCheckBrowseUrlResult(url, threat_type, metadata);
 
-  client->OnCheckBrowseUrlResult(url, url_to_threat_type_[url].first, metadata);
   // Erase the client when a check is complete. Otherwise, it's possible
   // subsequent clients that share an address with this one will DCHECK in
   // CheckUrlForSubresourceFilter.
@@ -83,7 +88,8 @@ bool FakeSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
   return false;
 }
 void FakeSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
-  checks_.erase(client);
+  size_t erased = checks_.erase(client);
+  DCHECK_EQ(erased, 1u);
 }
 bool FakeSafeBrowsingDatabaseManager::CanCheckResourceType(
     content::ResourceType /* resource_type */) const {

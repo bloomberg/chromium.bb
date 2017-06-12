@@ -35,6 +35,26 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSubresourceFilterClient);
 
+namespace {
+
+// V4 is already enabled by default on Android, do not check the V4UsageStatus
+// which performs desktop-only checks!
+scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> GetDatabaseManager() {
+  safe_browsing::SafeBrowsingService* safe_browsing_service =
+      g_browser_process->safe_browsing_service();
+  bool has_supported_manager =
+      safe_browsing_service &&
+      safe_browsing_service->database_manager()->IsSupported();
+#if !defined(OS_ANDROID)
+  has_supported_manager &= safe_browsing::V4FeatureList::GetV4UsageStatus() ==
+                           safe_browsing::V4FeatureList::V4UsageStatus::V4_ONLY;
+#endif
+  return has_supported_manager ? safe_browsing_service->database_manager()
+                               : nullptr;
+}
+
+}  // namespace
+
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
     : web_contents_(web_contents), did_show_ui_for_navigation_(false) {
@@ -53,23 +73,13 @@ void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
     content::NavigationHandle* navigation_handle,
     std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
   if (navigation_handle->IsInMainFrame()) {
-    safe_browsing::SafeBrowsingService* safe_browsing_service =
-        g_browser_process->safe_browsing_service();
-    scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager;
-    if (safe_browsing_service &&
-        safe_browsing_service->database_manager()->IsSupported() &&
-        safe_browsing::V4FeatureList::GetV4UsageStatus() ==
-            safe_browsing::V4FeatureList::V4UsageStatus::V4_ONLY) {
-      database_manager = safe_browsing_service->database_manager();
-    }
-
     throttles->push_back(
         base::MakeUnique<subresource_filter::
                              SubresourceFilterSafeBrowsingActivationThrottle>(
             navigation_handle, this,
             content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::IO),
-            std::move(database_manager)));
+            GetDatabaseManager()));
   }
 
   auto* driver_factory =
