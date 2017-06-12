@@ -17,6 +17,11 @@
           "reason": "disappeared"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [18, 128, 84, 18],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [295, 102, 15, 400],
           "reason": "scroll control"

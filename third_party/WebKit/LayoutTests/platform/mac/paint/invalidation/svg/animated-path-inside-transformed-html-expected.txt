@@ -8,9 +8,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [203, 335, 120, 42],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutSVGText text id='text'",
           "rect": [203, 335, 120, 42],
           "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [247, 89, 119, 42],
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text id='text'",

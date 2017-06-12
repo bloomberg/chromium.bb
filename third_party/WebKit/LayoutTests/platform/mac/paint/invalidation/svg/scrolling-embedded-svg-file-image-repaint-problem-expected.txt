@@ -25,6 +25,21 @@
           "object": "LayoutInline A",
           "rect": [378, 987, 55, 29],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [383, 991, 45, 21],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [427, 991, 6, 21],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [378, 991, 6, 21],
+          "reason": "geometry"
         }
       ]
     }

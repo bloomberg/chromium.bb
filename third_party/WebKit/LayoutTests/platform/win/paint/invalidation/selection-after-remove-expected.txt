@@ -15,6 +15,21 @@
           "object": "LayoutText #text",
           "rect": [39, 79, 146, 99],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [67, 158, 39, 20],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [71, 79, 35, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [39, 79, 32, 19],
+          "reason": "geometry"
         }
       ]
     }

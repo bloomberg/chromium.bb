@@ -15,6 +15,11 @@
           "object": "LayoutSVGRect rect",
           "rect": [0, 100, 800, 100],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 100, 800, 100],
+          "reason": "appeared"
         }
       ]
     }

@@ -20,6 +20,11 @@
           "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 363, 48, 65],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [27, 363, 22, 20],
+          "reason": "appeared"
         }
       ]
     }

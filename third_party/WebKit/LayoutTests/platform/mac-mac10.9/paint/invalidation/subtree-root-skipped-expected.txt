@@ -12,6 +12,11 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [11, 11, 26, 13],
+          "reason": "full"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV id='div'",
           "rect": [8, 288, 10, 20],
           "reason": "geometry"

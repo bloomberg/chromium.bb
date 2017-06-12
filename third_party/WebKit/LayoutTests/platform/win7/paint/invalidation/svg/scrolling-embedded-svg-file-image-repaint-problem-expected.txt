@@ -20,6 +20,26 @@
           "object": "LayoutText #text",
           "rect": [435, 1012, 173, 19],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutInline A",
+          "rect": [384, 1011, 46, 21],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [385, 1012, 44, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [429, 1012, 6, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [379, 1012, 6, 19],
+          "reason": "geometry"
         }
       ]
     }

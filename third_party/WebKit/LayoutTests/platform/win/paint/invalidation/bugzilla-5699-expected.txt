@@ -13,6 +13,26 @@
         },
         {
           "object": "LayoutText #text",
+          "rect": [8, 184, 32, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 156, 32, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutInline SPAN id='d'",
+          "rect": [8, 150, 4, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 150, 4, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [8, 136, 4, 19],
           "reason": "style change"
         }

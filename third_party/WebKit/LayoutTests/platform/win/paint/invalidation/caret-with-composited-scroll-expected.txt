@@ -27,6 +27,11 @@
           "object": "LayoutTextControl INPUT id='text'",
           "rect": [-1, 999, 207, 24],
           "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [3, 1003, 200, 16],
+          "reason": "subtree"
         }
       ]
     },

@@ -511,7 +511,8 @@ void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
     tracking.invalidations.push_back(info);
   }
 
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
+      !ScopedSetNeedsDisplayInRectForTrackingOnly::s_enabled_) {
     // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
     // invalidation rect.
     IntRect r = rect;
@@ -1026,11 +1027,13 @@ void GraphicsLayer::SetNeedsDisplayInRect(
   if (!DrawsContent())
     return;
 
-  layer_->Layer()->InvalidateRect(rect);
-  if (FirstPaintInvalidationTracking::IsEnabled())
-    debug_info_.AppendAnnotatedInvalidateRect(rect, invalidation_reason);
-  for (size_t i = 0; i < link_highlights_.size(); ++i)
-    link_highlights_[i]->Invalidate();
+  if (!ScopedSetNeedsDisplayInRectForTrackingOnly::s_enabled_) {
+    layer_->Layer()->InvalidateRect(rect);
+    if (FirstPaintInvalidationTracking::IsEnabled())
+      debug_info_.AppendAnnotatedInvalidateRect(rect, invalidation_reason);
+    for (size_t i = 0; i < link_highlights_.size(); ++i)
+      link_highlights_[i]->Invalidate();
+  }
 
   TrackRasterInvalidation(client, rect, invalidation_reason);
 }
@@ -1189,6 +1192,8 @@ sk_sp<PaintRecord> GraphicsLayer::CaptureRecord() {
   GetPaintController().GetPaintArtifact().Replay(bounds, graphics_context);
   return graphics_context.EndRecording();
 }
+
+bool ScopedSetNeedsDisplayInRectForTrackingOnly::s_enabled_ = false;
 
 }  // namespace blink
 

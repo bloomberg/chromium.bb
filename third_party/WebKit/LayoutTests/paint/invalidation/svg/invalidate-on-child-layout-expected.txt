@@ -15,6 +15,16 @@
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 110, 110],
           "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='circle'",
+          "rect": [50, 50, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='circle'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
         }
       ]
     }

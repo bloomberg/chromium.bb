@@ -12,8 +12,33 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 247, 681, 132],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGText text",
           "rect": [0, 247, 681, 132],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 130, 519, 132],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 130, 519, 132],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 15, 371, 129],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 15, 371, 129],
           "reason": "appeared"
         }
       ]

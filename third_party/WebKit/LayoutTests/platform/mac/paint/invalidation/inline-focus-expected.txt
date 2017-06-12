@@ -17,6 +17,11 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [0, 34, 429, 18],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutInline A id='link'",
           "rect": [581, -5, 224, 242],
           "reason": "style change"

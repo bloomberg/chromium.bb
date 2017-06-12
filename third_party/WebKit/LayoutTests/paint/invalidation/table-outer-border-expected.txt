@@ -19,7 +19,17 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [8, 8, 132, 149],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [8, 8, 132, 149],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 75, 132, 82],
+          "reason": "appeared"
         },
         {
           "object": "LayoutTableCell TD",
@@ -29,12 +39,27 @@
         {
           "object": "LayoutTableRow TR",
           "rect": [8, 75, 132, 82],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 75, 132, 82],
           "reason": "disappeared"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 8, 132, 82],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 8, 132, 82],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 132, 82],
+          "reason": "appeared"
         },
         {
           "object": "LayoutTableRow TR",

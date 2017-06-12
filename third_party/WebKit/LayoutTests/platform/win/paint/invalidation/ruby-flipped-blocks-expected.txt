@@ -12,8 +12,23 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutRubyBase (anonymous)",
+          "rect": [8, 28, 20, 20],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutRubyRun (anonymous)",
           "rect": [8, 28, 20, 20],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 28, 20, 20],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 8, 20, 20],
           "reason": "geometry"
         },
         {

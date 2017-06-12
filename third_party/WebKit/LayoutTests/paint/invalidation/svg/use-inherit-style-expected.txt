@@ -10,6 +10,16 @@
           "object": "LayoutSVGContainer g id='g'",
           "rect": [0, 0, 100, 60],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [0, 0, 100, 60],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [0, 0, 100, 60],
+          "reason": "style change"
         }
       ]
     }

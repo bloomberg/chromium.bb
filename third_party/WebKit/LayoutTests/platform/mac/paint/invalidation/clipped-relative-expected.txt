@@ -10,6 +10,11 @@
           "object": "LayoutBlockFlow (positioned) DIV id='inner'",
           "rect": [8, 70, 204, 232],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [8, 70, 204, 232],
+          "reason": "geometry"
         }
       ]
     }

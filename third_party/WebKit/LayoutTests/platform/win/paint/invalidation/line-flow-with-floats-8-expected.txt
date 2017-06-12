@@ -13,6 +13,71 @@
         },
         {
           "object": "LayoutText #text",
+          "rect": [14, 240, 406, 139],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 500, 406, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 480, 406, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 180, 406, 79],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 440, 355, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 420, 355, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 80, 354, 119],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 380, 354, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 380, 304, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 380, 298, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 380, 287, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [134, 360, 131, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [83, 360, 131, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [303, 420, 66, 19],
           "reason": "geometry"
         },

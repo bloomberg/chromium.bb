@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 8, 60, 54],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutTableRow TR id='row'",
           "rect": [8, 8, 60, 54],
           "reason": "style change"

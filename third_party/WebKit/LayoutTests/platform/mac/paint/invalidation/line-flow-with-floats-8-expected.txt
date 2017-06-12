@@ -13,7 +13,52 @@
         },
         {
           "object": "LayoutText #text",
+          "rect": [14, 242, 406, 126],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 188, 406, 72],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 404, 355, 72],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 368, 355, 54],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [14, 404, 355, 36],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 80, 354, 108],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 368, 336, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 368, 304, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [178, 350, 145, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [127, 350, 145, 18],
           "reason": "geometry"
         },
         {

@@ -15,6 +15,16 @@
           "object": "LayoutBlockFlow (positioned) SPAN",
           "rect": [155, 37, 292, 20],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [309, 37, 292, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [155, 37, 292, 19],
+          "reason": "appeared"
         }
       ]
     }

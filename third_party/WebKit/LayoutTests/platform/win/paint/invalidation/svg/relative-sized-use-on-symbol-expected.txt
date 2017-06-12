@@ -10,6 +10,46 @@
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 52, 402, 402],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [45, 87, 328, 328],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [45, 87, 328, 328],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [45, 87, 328, 328],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
+          "rect": [45, 87, 328, 328],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [18, 211, 82, 83],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [18, 211, 82, 83],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [18, 211, 82, 83],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
+          "rect": [18, 211, 82, 83],
+          "reason": "geometry"
         }
       ]
     }

@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 200, 200],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutSVGViewportContainer svg id='inner'",
           "rect": [0, 0, 200, 200],
           "reason": "full"

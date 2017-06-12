@@ -9,7 +9,27 @@
         {
           "object": "LayoutSVGContainer g",
           "rect": [0, 0, 100, 100],
-          "reason": "disappeared"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
@@ -32,6 +52,11 @@
           "reason": "disappeared"
         },
         {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "disappeared"
+        },
+        {
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
           "reason": "full"
@@ -105,6 +130,31 @@
           "object": "LayoutSVGContainer g id='inneruse'",
           "rect": [0, 0, 100, 100],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGPath path id='hp'",

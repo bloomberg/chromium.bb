@@ -12,6 +12,36 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 8, 306, 300],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 306, 300],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 306, 300],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [8, 8, 306, 300],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [10, 8, 302, 300],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [10, 8, 302, 300],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
           "rect": [762, 8, 15, 300],
           "reason": "scroll control"

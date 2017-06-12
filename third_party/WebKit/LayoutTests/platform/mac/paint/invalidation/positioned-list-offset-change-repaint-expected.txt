@@ -10,6 +10,11 @@
           "object": "LayoutListItem (positioned) LI",
           "rect": [8, 60, 214, 236],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [8, 60, 214, 232],
+          "reason": "geometry"
         }
       ]
     }

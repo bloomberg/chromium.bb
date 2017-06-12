@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [33, 22, 618, 196],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutSVGText text",
           "rect": [33, 22, 618, 196],
           "reason": "style change"

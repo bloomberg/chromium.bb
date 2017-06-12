@@ -10,6 +10,36 @@
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 68, 402, 402],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [9, 69, 400, 400],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 69, 400, 400],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
+          "rect": [9, 69, 400, 400],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [209, 269, 200, 200],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [9, 69, 200, 200],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [59, 269, 50, 50],
+          "reason": "geometry"
         }
       ]
     }

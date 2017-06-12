@@ -15,6 +15,26 @@
           "object": "LayoutSVGContainer g id='content'",
           "rect": [16, 42, 784, 170],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [16, 42, 784, 170],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [16, 42, 784, 170],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [16, 42, 784, 170],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [16, 42, 784, 170],
+          "reason": "appeared"
         }
       ]
     }

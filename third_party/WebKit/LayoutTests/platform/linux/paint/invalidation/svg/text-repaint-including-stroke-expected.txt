@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [80, 0, 553, 117],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutSVGText text id='bounce'",
           "rect": [80, 0, 553, 117],
           "reason": "subtree"

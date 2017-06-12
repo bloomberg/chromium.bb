@@ -40,6 +40,11 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [8, 508, 29, 19],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [285, 500, 15, 150],
           "reason": "scroll control"

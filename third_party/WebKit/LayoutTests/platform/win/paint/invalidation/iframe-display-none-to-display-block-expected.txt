@@ -12,9 +12,19 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 74, 728, 90],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [10, 74, 728, 90],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [18, 82, 712, 74],
+          "reason": "appeared"
         }
       ]
     }

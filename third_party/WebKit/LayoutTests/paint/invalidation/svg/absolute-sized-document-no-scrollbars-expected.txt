@@ -7,8 +7,18 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 576, 432],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutSVGRoot svg",
           "rect": [0, 0, 576, 432],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 480, 360],
           "reason": "style change"
         }
       ]

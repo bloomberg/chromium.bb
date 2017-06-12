@@ -25,6 +25,16 @@
           "object": "LayoutInline SPAN id='outer'",
           "rect": [16, 148, 90, 23],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [18, 150, 86, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [18, 110, 86, 19],
+          "reason": "geometry"
         }
       ]
     }

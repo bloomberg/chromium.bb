@@ -24,7 +24,17 @@
         {
           "object": "LayoutText #text",
           "rect": [348, 88, 4, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [348, 88, 4, 19],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [88, 88, 4, 19],
+          "reason": "geometry"
         }
       ]
     }

@@ -17,6 +17,11 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutBlockFlow DIV id='target3'",
+          "rect": [8, 388, 100, 20],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [61, 8, 53, 106],
           "reason": "incremental"

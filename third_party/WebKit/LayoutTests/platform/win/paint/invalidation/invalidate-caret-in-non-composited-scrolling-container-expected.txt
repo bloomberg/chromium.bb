@@ -22,6 +22,16 @@
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 68, 22],
           "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [3, 4, 64, 16],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 4, 64, 16],
+          "reason": "subtree"
         }
       ]
     }

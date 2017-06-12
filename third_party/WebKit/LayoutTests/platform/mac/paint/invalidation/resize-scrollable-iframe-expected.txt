@@ -12,6 +12,11 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutIFrame IFRAME id='iframe'",
+          "rect": [8, 108, 300, 300],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [8, 193, 285, 200],
           "reason": "incremental"

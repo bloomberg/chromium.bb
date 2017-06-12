@@ -12,9 +12,19 @@
           "reason": "full"
         },
         {
+          "object": "LayoutTableSection TBODY",
+          "rect": [8, 182, 110, 76],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutTable TABLE",
           "rect": [8, 96, 101, 76],
           "reason": "full"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [8, 96, 101, 76],
+          "reason": "geometry"
         },
         {
           "object": "LayoutTable TABLE id='t'",
@@ -58,8 +68,33 @@
         },
         {
           "object": "LayoutText #text",
+          "rect": [23, 297, 77, 18],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [23, 125, 77, 18],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 317, 51, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 145, 51, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 277, 43, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 105, 43, 18],
+          "reason": "geometry"
         },
         {
           "object": "LayoutText #text",
@@ -79,6 +114,16 @@
         {
           "object": "LayoutTableCell TD",
           "rect": [8, 124, 14, 20],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [17, 211, 4, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [17, 125, 4, 18],
           "reason": "geometry"
         }
       ]

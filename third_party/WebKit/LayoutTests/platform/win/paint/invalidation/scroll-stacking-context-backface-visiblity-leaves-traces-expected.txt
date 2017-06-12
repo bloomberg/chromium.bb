@@ -19,7 +19,17 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutBlockFlow DIV id='recentlink'",
+          "rect": [10, 1822, 150, 150],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV id='searchbar'",
+          "rect": [10, 1422, 150, 150],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='recentlink'",
           "rect": [10, 1422, 150, 150],
           "reason": "subtree"
         }

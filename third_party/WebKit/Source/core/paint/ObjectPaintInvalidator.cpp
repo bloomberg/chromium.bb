@@ -499,12 +499,21 @@ void ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext(
   if (rect.IsEmpty())
     return;
 
+  Optional<ScopedSetNeedsDisplayInRectForTrackingOnly> scope;
   // If the parent has fully invalidated and its visual rect covers this object
   // on the same backing, skip the invalidation.
   if (ParentFullyInvalidatedOnSameBacking() &&
       (context_.parent_context->old_visual_rect.Contains(rect) ||
-       object_.Parent()->VisualRect().Contains(rect)))
-    return;
+       object_.Parent()->VisualRect().Contains(rect))) {
+    if (!object_.GetFrameView()->IsTrackingPaintInvalidations())
+      return;
+    // If we are tracking paint invalidations (e.g. when running a text-based-
+    // repaint layout test), still track the rectangle but the rectangle
+    // won't affect any other functionality including raster-under-invalidation
+    // checking. This is to reduce differences between layout test results of
+    // SPv1 and SPv2, to reduce rebaselines and chance of errors.
+    scope.emplace();
+  }
 
   InvalidatePaintUsingContainer(*context_.paint_invalidation_container, rect,
                                 reason);

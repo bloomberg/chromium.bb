@@ -7,9 +7,19 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [103, 24, 160, 116],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutSVGText text",
           "rect": [103, 24, 160, 116],
           "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [63, 24, 160, 116],
+          "reason": "geometry"
         },
         {
           "object": "LayoutSVGText text",

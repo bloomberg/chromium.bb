@@ -20,6 +20,26 @@
           "object": "LayoutText #text",
           "rect": [112, 193, 179, 19],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [290, 108, 101, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [112, 108, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 108, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [108, 193, 4, 19],
+          "reason": "geometry"
         }
       ]
     }

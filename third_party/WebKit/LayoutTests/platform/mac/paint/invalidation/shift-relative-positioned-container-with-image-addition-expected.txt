@@ -27,9 +27,29 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 88, 728, 90],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [10, 88, 728, 90],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [18, 96, 712, 74],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 230, 489, 537],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 136, 489, 537],
+          "reason": "geometry"
         }
       ]
     }

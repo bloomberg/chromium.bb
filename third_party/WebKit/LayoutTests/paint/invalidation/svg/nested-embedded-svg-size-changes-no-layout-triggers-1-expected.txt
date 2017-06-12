@@ -12,12 +12,27 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutEmbeddedObject OBJECT",
+          "rect": [0, 0, 402, 202],
+          "reason": "style change"
+        },
+        {
           "object": "LayoutBlockFlow BODY",
           "rect": [1, 1, 400, 200],
           "reason": "geometry"
         },
         {
+          "object": "LayoutEmbeddedObject OBJECT",
+          "rect": [1, 1, 400, 200],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 285, 135],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutEmbeddedObject OBJECT",
           "rect": [0, 0, 285, 135],
           "reason": "geometry"
         },

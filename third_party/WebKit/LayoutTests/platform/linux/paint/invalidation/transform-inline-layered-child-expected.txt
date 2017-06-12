@@ -17,6 +17,11 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [135, 361, 159, 195],
+          "reason": "subtree"
+        },
+        {
           "object": "LayoutBlockFlow (positioned) DIV id='box'",
           "rect": [100, 100, 100, 180],
           "reason": "subtree"

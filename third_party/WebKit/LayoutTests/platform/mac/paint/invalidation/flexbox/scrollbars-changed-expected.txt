@@ -19,6 +19,11 @@
         {
           "object": "LayoutText #text",
           "rect": [0, 4, 15, 17],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 4, 15, 17],
           "reason": "disappeared"
         }
       ]

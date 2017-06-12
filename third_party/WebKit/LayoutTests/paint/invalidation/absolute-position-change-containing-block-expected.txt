@@ -25,6 +25,11 @@
           "object": "LayoutBlockFlow (positioned) DIV id='container' class='fixed blue'",
           "rect": [8, 5000, 100, 100],
           "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
+          "rect": [8, 8, 100, 100],
+          "reason": "subtree"
         }
       ]
     }

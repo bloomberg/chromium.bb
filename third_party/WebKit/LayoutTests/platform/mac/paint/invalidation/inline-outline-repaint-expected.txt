@@ -15,6 +15,11 @@
           "object": "LayoutInline SPAN id='test'",
           "rect": [5, 163, 98, 42],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 166, 92, 36],
+          "reason": "full"
         }
       ]
     }

@@ -10,6 +10,11 @@
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 52, 602, 422],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage img",
+          "rect": [9, 53, 420, 420],
+          "reason": "geometry"
         }
       ]
     }

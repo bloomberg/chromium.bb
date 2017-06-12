@@ -32,6 +32,11 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [1, 601, 100, 100],
           "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [1, 201, 100, 100],
+          "reason": "subtree"
         }
       ]
     }

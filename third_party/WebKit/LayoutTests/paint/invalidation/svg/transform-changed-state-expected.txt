@@ -12,9 +12,19 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [108, 108, 100, 100],
+          "reason": "full"
+        },
+        {
           "object": "LayoutSVGContainer g",
           "rect": [108, 8, 100, 100],
           "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [108, 8, 100, 100],
+          "reason": "full"
         }
       ]
     }
