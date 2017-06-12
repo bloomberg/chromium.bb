@@ -129,10 +129,18 @@ bool TransferBufferManager::OnMemoryDump(
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes, buffer->size());
+
     auto guid =
         GetBufferGUIDForTracing(memory_tracker_->ClientTracingId(), buffer_id);
-    pmd->CreateSharedGlobalAllocatorDump(guid);
-    pmd->AddOwnershipEdge(dump->guid(), guid);
+    auto shared_memory_guid =
+        buffer->backing()->shared_memory_handle().GetGUID();
+    if (!shared_memory_guid.is_empty()) {
+      pmd->CreateSharedMemoryOwnershipEdge(
+          dump->guid(), guid, shared_memory_guid, 0 /* importance */);
+    } else {
+      pmd->CreateSharedGlobalAllocatorDump(guid);
+      pmd->AddOwnershipEdge(dump->guid(), guid);
+    }
   }
 
   return true;

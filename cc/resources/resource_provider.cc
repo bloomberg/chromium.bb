@@ -40,7 +40,6 @@
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/gpu_memory_buffer_tracing.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gl/trace_util.h"
 
@@ -2171,10 +2170,13 @@ bool ResourceProvider::OnMemoryDump(
     // Resources may be shared across processes and require a shared GUID to
     // prevent double counting the memory.
     base::trace_event::MemoryAllocatorDumpGuid guid;
+    base::UnguessableToken shared_memory_guid;
     switch (resource.type) {
       case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
         guid =
             resource.gpu_memory_buffer->GetGUIDForTracing(tracing_process_id);
+        shared_memory_guid =
+            resource.gpu_memory_buffer->GetHandle().handle.GetGUID();
         break;
       case RESOURCE_TYPE_GL_TEXTURE:
         DCHECK(resource.gl_id);
@@ -2186,14 +2188,21 @@ bool ResourceProvider::OnMemoryDump(
       case RESOURCE_TYPE_BITMAP:
         DCHECK(resource.has_shared_bitmap_id);
         guid = GetSharedBitmapGUIDForTracing(resource.shared_bitmap_id);
+        shared_memory_guid =
+            resource.shared_bitmap->GetSharedMemoryHandle().GetGUID();
         break;
     }
 
     DCHECK(!guid.empty());
 
     const int kImportance = 2;
-    pmd->CreateSharedGlobalAllocatorDump(guid);
-    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    if (!shared_memory_guid.is_empty()) {
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), guid,
+                                           shared_memory_guid, kImportance);
+    } else {
+      pmd->CreateSharedGlobalAllocatorDump(guid);
+      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    }
   }
 
   return true;

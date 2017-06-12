@@ -388,12 +388,18 @@ bool CommandBufferHelper::OnMemoryDump(
     dump->AddScalar(
         "free_size", MemoryAllocatorDump::kUnitsBytes,
         GetTotalFreeEntriesNoWaiting() * sizeof(CommandBufferEntry));
+    base::UnguessableToken shared_memory_guid =
+        ring_buffer_->backing()->shared_memory_handle().GetGUID();
     auto guid = GetBufferGUIDForTracing(tracing_process_id, ring_buffer_id_);
     const int kImportance = 2;
-    pmd->CreateSharedGlobalAllocatorDump(guid);
-    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    if (!shared_memory_guid.is_empty()) {
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), guid,
+                                           shared_memory_guid, kImportance);
+    } else {
+      pmd->CreateSharedGlobalAllocatorDump(guid);
+      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    }
   }
-
   return true;
 }
 

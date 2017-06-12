@@ -173,16 +173,18 @@ bool BrowserGpuMemoryBufferManager::OnMemoryDump(
       uint64_t client_tracing_process_id =
           ClientIdToTracingProcessId(client_id);
 
-      base::trace_event::MemoryAllocatorDumpGuid shared_buffer_guid;
       if (buffer.second.type == gfx::SHARED_MEMORY_BUFFER) {
-        shared_buffer_guid = gfx::GetSharedMemoryGUIDForTracing(
+        auto shared_buffer_guid = gfx::GetSharedMemoryGUIDForTracing(
             client_tracing_process_id, buffer_id);
+        pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_buffer_guid,
+                                             buffer.second.shared_memory_guid,
+                                             0 /* importance */);
       } else {
-        shared_buffer_guid = gfx::GetGenericSharedGpuMemoryGUIDForTracing(
+        auto shared_buffer_guid = gfx::GetGenericSharedGpuMemoryGUIDForTracing(
             client_tracing_process_id, buffer_id);
+        pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
+        pmd->AddOwnershipEdge(dump->guid(), shared_buffer_guid);
       }
-      pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
-      pmd->AddOwnershipEdge(dump->guid(), shared_buffer_guid);
     }
   }
 
