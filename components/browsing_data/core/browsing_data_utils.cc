@@ -4,6 +4,7 @@
 
 #include "components/browsing_data/core/browsing_data_utils.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "components/browsing_data/core/counters/autofill_counter.h"
 #include "components/browsing_data/core/counters/history_counter.h"
@@ -62,6 +63,47 @@ void RecordDeletionForPeriod(TimePeriod period) {
       base::RecordAction(
           base::UserMetricsAction("ClearBrowsingData_Everything"));
       break;
+  }
+}
+
+void RecordTimePeriodChange(TimePeriod period) {
+  switch (period) {
+    case TimePeriod::LAST_HOUR:
+      base::RecordAction(base::UserMetricsAction(
+          "ClearBrowsingData_TimePeriodChanged_LastHour"));
+      break;
+    case TimePeriod::LAST_DAY:
+      base::RecordAction(base::UserMetricsAction(
+          "ClearBrowsingData_TimePeriodChanged_LastDay"));
+      break;
+    case TimePeriod::LAST_WEEK:
+      base::RecordAction(base::UserMetricsAction(
+          "ClearBrowsingData_TimePeriodChanged_LastWeek"));
+      break;
+    case TimePeriod::FOUR_WEEKS:
+      base::RecordAction(base::UserMetricsAction(
+          "ClearBrowsingData_TimePeriodChanged_LastMonth"));
+      break;
+    case TimePeriod::ALL_TIME:
+      base::RecordAction(base::UserMetricsAction(
+          "ClearBrowsingData_TimePeriodChanged_Everything"));
+      break;
+  }
+}
+
+void RecordDeletionFromTab(ClearBrowsingDataTab tab) {
+  UMA_HISTOGRAM_ENUMERATION("History.ClearBrowsingData.UserDeletedFromTab", tab,
+                            browsing_data::ClearBrowsingDataTab::NUM_TYPES);
+  switch (tab) {
+    case ClearBrowsingDataTab::BASIC:
+      base::RecordAction(base::UserMetricsAction("ClearBrowsingData_BasicTab"));
+      break;
+    case ClearBrowsingDataTab::ADVANCED:
+      base::RecordAction(
+          base::UserMetricsAction("ClearBrowsingData_AdvancedTab"));
+      break;
+    case ClearBrowsingDataTab::NUM_TYPES:
+      NOTREACHED();
   }
 }
 

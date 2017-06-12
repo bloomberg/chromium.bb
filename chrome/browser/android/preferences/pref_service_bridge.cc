@@ -550,6 +550,8 @@ static void SetBrowsingDataDeletionTimePeriod(JNIEnv* env,
   DCHECK_GE(time_period, 0);
   DCHECK_LE(time_period,
             static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST));
+  browsing_data::RecordTimePeriodChange(
+      static_cast<browsing_data::TimePeriod>(time_period));
   GetPrefService()->SetInteger(browsing_data::GetTimePeriodPreferenceName(
                                    ToTabEnum(clear_browsing_data_tab)),
                                time_period);

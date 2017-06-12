@@ -16,6 +16,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
@@ -26,8 +27,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/history_notice_utils.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -77,6 +80,13 @@ static void ClearBrowsingData(
 
   std::vector<int> data_types_vector;
   base::android::JavaIntArrayToIntVector(env, data_types, &data_types_vector);
+
+  if (base::FeatureList::IsEnabled(features::kTabsInCbd)) {
+    int tab = GetOriginalProfile()->GetPrefs()->GetInteger(
+        browsing_data::prefs::kLastClearBrowsingDataTab);
+    browsing_data::RecordDeletionFromTab(
+        static_cast<browsing_data::ClearBrowsingDataTab>(tab));
+  }
 
   int remove_mask = 0;
   for (const int data_type : data_types_vector) {
