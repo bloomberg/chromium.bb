@@ -333,6 +333,11 @@ void LayoutSelection::ClearSelection() {
 
 static SelectionPaintRange CalcSelectionPaintRange(
     const FrameSelection& frame_selection) {
+  const SelectionInDOMTree& selection_in_dom =
+      frame_selection.GetSelectionInDOMTree();
+  if (selection_in_dom.IsNone())
+    return SelectionPaintRange();
+
   const VisibleSelectionInFlatTree& original_selection =
       frame_selection.ComputeVisibleSelectionInFlatTree();
   // Construct a new VisibleSolution, since visibleSelection() is not
