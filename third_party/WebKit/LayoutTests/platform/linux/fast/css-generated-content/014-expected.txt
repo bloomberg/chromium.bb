@@ -70,7 +70,6 @@ layer at (0,0) size 785x915 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {CODE} at (0,0) size 440x16
           LayoutText {#text} at (0,0) size 440x16
             text run at (0,0) width 440: "div.box.one:after{ content:'generated content here!'; }"
-      LayoutBlockFlow {HR} at (0,392.44) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {H2} at (0,414.34) size 769x27
         LayoutText {#text} at (0,0) size 477x26
           text run at (0,0) width 477: "Example (view source to see CSS and HTML):"
@@ -104,3 +103,5 @@ layer at (0,0) size 785x915 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutBlockFlow {<pseudo:after>} at (0,20) size 717x20 [color=#008000]
             LayoutTextFragment (anonymous) at (0,0) size 111x19
               text run at (0,0) width 111: "generated content"
+layer at (8,414) size 769x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,392.44) size 769x2 [border: (1px inset #EEEEEE)]

@@ -8,13 +8,11 @@ layer at (0,0) size 785x1162 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,0) size 580x36
             text run at (0,0) width 580: "Affected Browsers: Safari 2.0, Windows Internet Explorer 6"
             text run at (0,18) width 30: "SP2"
-        LayoutBlockFlow {HR} at (4,72) size 615.19x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {P} at (4,90) size 615.19x54
           LayoutText {#text} at (0,0) size 610x54
             text run at (0,0) width 610: "Bug Description: On the Affected Browsers, if a rule sets the"
             text run at (0,18) width 540: "'background-color' of an element, this color cannot be"
             text run at (0,36) width 480: "overridden by 'background:inherit' declarations."
-        LayoutBlockFlow {HR} at (4,160) size 615.19x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {P} at (4,178) size 615.19x90
           LayoutText {#text} at (0,0) size 600x54
             text run at (0,0) width 600: "Example: With the following code, the background color of H1"
@@ -28,13 +26,11 @@ layer at (0,0) size 785x1162 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,72) size 290x18
             text run at (0,72) width 50: "  H1 "
             text run at (50,72) width 240: "{ background: inherit; }"
-        LayoutBlockFlow {HR} at (4,284) size 615.19x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {P} at (4,302) size 615.19x54
           LayoutText {#text} at (0,0) size 610x54
             text run at (0,0) width 610: "Work-around: The 'background-color' can only be overridden by"
             text run at (0,18) width 600: "another 'background-color' declaration, or by a 'background'"
             text run at (0,36) width 380: "declaration that does specify a color."
-        LayoutBlockFlow {HR} at (4,372) size 615.19x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow (anonymous) at (4,382) size 615.19x20
           LayoutText {#text} at (0,0) size 376x19
             text run at (0,0) width 376: "This is in contradiction with the CSS2 specification which says:"
@@ -75,3 +71,11 @@ layer at (0,0) size 785x1162 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (4,4) size 483x73
             text run at (4,4) width 483: "This header has a pink background"
             text run at (4,41) width 219: "and that's good."
+layer at (85,80) size 615x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (4,72) size 615.19x2 [border: (1px inset #EEEEEE)]
+layer at (85,168) size 615x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (4,160) size 615.19x2 [border: (1px inset #EEEEEE)]
+layer at (85,292) size 615x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (4,284) size 615.19x2 [border: (1px inset #EEEEEE)]
+layer at (85,380) size 615x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (4,372) size 615.19x2 [border: (1px inset #EEEEEE)]

@@ -132,6 +132,8 @@ center {
 
 hr {
     display: block;
+    overflow: hidden;
+    unicode-bidi: isolate;
     -webkit-margin-before: 0.5em;
     -webkit-margin-after: 0.5em;
     -webkit-margin-start: auto;

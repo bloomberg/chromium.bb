@@ -22,7 +22,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,26.66) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,35.31) size 784x34
         LayoutInline {SPAN} at (0,0) size 110x32
           LayoutInline {SPAN} at (0,0) size 110x32
@@ -45,7 +44,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,75.97) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,84.63) size 784x48
         LayoutInline {SPAN} at (0,0) size 581x46
           LayoutInline {SPAN} at (0,0) size 581x46
@@ -65,7 +63,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,139.28) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,147.94) size 784x19
         LayoutInline {SPAN} at (0,0) size 125x20
           LayoutInline {SPAN} at (0,0) size 125x20
@@ -88,7 +85,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,233.59) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,242.25) size 784x19
         LayoutInline {SPAN} at (0,0) size 131x15
           LayoutInline {SPAN} at (0,0) size 131x15
@@ -137,7 +133,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,327.91) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,336.56) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
@@ -237,7 +232,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,539.22) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,547.88) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
@@ -337,7 +331,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,750.53) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,759.19) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
@@ -394,7 +387,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,879.84) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,888.50) size 784x48
         LayoutInline {SPAN} at (0,0) size 201x46
           LayoutInline {SPAN} at (0,0) size 0x0
@@ -419,7 +411,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutBR {BR} at (200,45) size 1x0
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,943.16) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,951.81) size 784x19
         LayoutInline {SPAN} at (0,0) size 183x15
           LayoutInline {SPAN} at (0,0) size 183x17
@@ -442,7 +433,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,977.47) size 784x2
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,986.13) size 784x18
         LayoutInline {SPAN} at (0,0) size 259x15
           LayoutInline {SPAN} at (0,0) size 259x15
@@ -459,7 +449,6 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (0,0) size 0x0
             LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,1010.78) size 784x30.33
-        LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {P} at (0,15.33) size 784x15
           LayoutText {#text} at (0,0) size 206x15
             text run at (0,0) width 206: "This itinerary is subject to change. "
@@ -471,6 +460,28 @@ layer at (0,0) size 800x1062 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
+layer at (8,35) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,84) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,147) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,242) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,336) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,547) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,759) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,888) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,951) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,985) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,1019) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (23,43) size 86x15
   LayoutInline (relative positioned) {SPAN} at (0,0) size 86x15
     LayoutText {#text} at (0,0) size 0x0

@@ -21,10 +21,11 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 746x18
           text run at (0,0) width 562: "To test interactively, click the left side of the W on the second line. The caret should be "
           text run at (561,0) width 185: "move to the start of that line."
-      LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,96) size 250x110
         LayoutText {#text} at (0,0) size 234x110
           text run at (0,0) width 154: "Alice in"
           text run at (153,0) width 13: " "
           text run at (0,55) width 234: "Wonderland"
+layer at (8,94) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
 caret: position 10 of child 0 {#text} of child 7 {DIV} of body

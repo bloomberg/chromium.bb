@@ -233,13 +233,15 @@ layer at (8,16) size 449x38
       LayoutBlockFlow (anonymous) at (0,0) size 449x20
         LayoutText {#text} at (0,0) size 449x19
           text run at (0,0) width 449: "crbug.com/303728: Header Line should not be repeated on every page."
-      LayoutBlockFlow {HR} at (0,28) size 449x2 [border: (1px inset #EEEEEE)]
+layer at (8,44) size 449x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,28) size 449x2 [border: (1px inset #EEEEEE)]
 layer at (8,2685) size 1030x0
   LayoutBlockFlow {DIV} at (0,2669) size 1030x0
 layer at (8,2647) size 444x38 backgroundClip at (0,0) size 1046x799 clip at (0,0) size 1046x799
   LayoutBlockFlow (positioned) {DIV} at (0,-38) size 444x38
     LayoutBlockFlow {DIV} at (0,8) size 444x30
-      LayoutBlockFlow {HR} at (0,0) size 444x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,10) size 444x20
         LayoutText {#text} at (0,0) size 444x19
           text run at (0,0) width 444: "crbug.com/303728: Footer Line should not be repeated on every page."
+layer at (8,2655) size 444x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 444x2 [border: (1px inset #EEEEEE)]

@@ -15,13 +15,14 @@ layer at (0,0) size 800x600
             text run at (0,18) width 251 LTR override: "are reversed on \"visual Hebrew\" pages"
         LayoutText {#text} at (250,18) size 5x18
           text run at (250,18) width 5 LTR override: "."
-      LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,70) size 784x19
         LayoutText {#text} at (0,1) size 286x18
           text run at (0,1) width 286 LTR override: "Text in the field should look like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
       LayoutBlockFlow (anonymous) at (0,105) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
+layer at (8,60) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (11,116) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 31x13

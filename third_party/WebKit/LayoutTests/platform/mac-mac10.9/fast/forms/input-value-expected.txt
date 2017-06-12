@@ -10,7 +10,6 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 725x18
           text run at (0,0) width 725: "Results that match Gecko are like WinIE, but with \"before\" for the attribute in the first two rows and the last row."
-      LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {FORM} at (0,96) size 784x338
         LayoutTable {TABLE} at (0,0) size 767x338
           LayoutTableSection {THEAD} at (0,0) size 767x24
@@ -204,6 +203,8 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (702,292) size 63x20 [r=13 c=3 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 41x18
                   text run at (1,1) width 41: "before"
+layer at (8,94) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (408,132) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 35x13

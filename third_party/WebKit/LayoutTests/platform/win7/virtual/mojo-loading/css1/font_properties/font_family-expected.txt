@@ -26,7 +26,6 @@ layer at (0,0) size 785x1324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (312,112) width 0: " "
           text run at (0,128) width 304: ".seven {font-family: monospace,serif;}"
           text run at (304,128) width 0: " "
-      LayoutBlockFlow {HR} at (0,193) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,211) size 769x198
         LayoutBlockFlow {P} at (0,0) size 769x20
           LayoutText {#text} at (0,0) size 599x19
@@ -46,14 +45,12 @@ layer at (0,0) size 785x1324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {P} at (0,182) size 769x16
           LayoutText {#text} at (0,0) size 352x16
             text run at (0,0) width 352: "This sentence should be in a monospace font."
-      LayoutBlockFlow {HR} at (0,422) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,440) size 769x19
         LayoutText {#text} at (0,0) size 383x18
           text run at (0,0) width 383: "This sentence should be in a sans-serif font, not cursive."
       LayoutBlockFlow {P} at (0,475) size 769x18
         LayoutText {#text} at (0,0) size 550x18
           text run at (0,0) width 550: "This sentence should be in a monospace font, not serif."
-      LayoutBlockFlow {HR} at (0,509) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,524) size 769x210
         LayoutBlockFlow {P} at (0,0) size 769x32
           LayoutText {#text} at (0,0) size 768x32
@@ -105,14 +102,12 @@ layer at (0,0) size 785x1324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutBlockFlow {P} at (0,182) size 747x16
                   LayoutText {#text} at (0,0) size 352x16
                     text run at (0,0) width 352: "This sentence should be in a monospace font."
-              LayoutBlockFlow {HR} at (4,215) size 747x2 [border: (1px inset #EEEEEE)]
               LayoutBlockFlow {P} at (4,233) size 747x19
                 LayoutText {#text} at (0,0) size 383x18
                   text run at (0,0) width 383: "This sentence should be in a sans-serif font, not cursive."
               LayoutBlockFlow {P} at (4,268) size 747x18
                 LayoutText {#text} at (0,0) size 550x18
                   text run at (0,0) width 550: "This sentence should be in a monospace font, not serif."
-              LayoutBlockFlow {HR} at (4,302) size 747x2 [border: (1px inset #EEEEEE)]
               LayoutBlockFlow {DIV} at (4,317) size 747x210
                 LayoutBlockFlow {P} at (0,0) size 747x32
                   LayoutText {#text} at (0,0) size 728x32
@@ -133,3 +128,13 @@ layer at (0,0) size 785x1324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutBlockFlow {P} at (0,194) size 747x16
                   LayoutText {#text} at (0,0) size 352x16
                     text run at (0,0) width 352: "This sentence should be in a monospace font."
+layer at (8,201) size 769x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,193) size 769x2 [border: (1px inset #EEEEEE)]
+layer at (8,430) size 769x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,422) size 769x2 [border: (1px inset #EEEEEE)]
+layer at (8,517) size 769x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,509) size 769x2 [border: (1px inset #EEEEEE)]
+layer at (25,999) size 747x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (4,215) size 747x2 [border: (1px inset #EEEEEE)]
+layer at (25,1086) size 747x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (4,302) size 747x2 [border: (1px inset #EEEEEE)]

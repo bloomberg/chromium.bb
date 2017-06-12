@@ -14,7 +14,6 @@ layer at (0,0) size 800x600
           text run at (0,0) width 727: "If successful, the first sentence would be backward, and the second sentence regular. There should then be an extra "
           text run at (726,0) width 36: "blank"
           text run at (0,20) width 697: "line, followed by a line reading only \"A,\" and finally, a sentence where only the word \"umbrella\" is backward."
-      LayoutBlockFlow {HR} at (0,128) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,138) size 784x120
         LayoutBR {BR} at (0,0) size 0x19
         LayoutInline {BDO} at (0,0) size 221x19
@@ -47,3 +46,5 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (81,100) size 209x19
             text run at (81,100) width 209 LTR override: " sure would be useful in this rain."
         LayoutText {#text} at (0,0) size 0x0
+layer at (8,136) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,128) size 784x2 [border: (1px inset #EEEEEE)]

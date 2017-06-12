@@ -16,7 +16,6 @@ layer at (0,0) size 785x769 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {p} at (0,354.41) size 761.97x26
         LayoutText {#text} at (0,0) size 517x26
           text run at (0,0) width 517: "There should be a red, white and blue pattern above this"
-      LayoutBlockFlow {hr} at (0,403.44) size 761.97x2.88 [border: (1.44px inset #EEEEEE)]
       LayoutBlockFlow {p} at (0,429.34) size 761.97x26
         LayoutText {#text} at (0,0) size 518x26
           text run at (0,0) width 518: "There should be a red, white and blue pattern below this"
@@ -25,3 +24,5 @@ layer at (0,0) size 785x769 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {p} at (0,708.73) size 761.97x26
         LayoutText {#text} at (0,0) size 517x26
           text run at (0,0) width 517: "There should be a red, white and blue pattern above this"
+layer at (12,415) size 762x3 backgroundClip at (12,415) size 761x3 clip at (0,0) size 0x0
+  LayoutBlockFlow {hr} at (0,403.44) size 761.97x2.88 [border: (1.44px inset #EEEEEE)]

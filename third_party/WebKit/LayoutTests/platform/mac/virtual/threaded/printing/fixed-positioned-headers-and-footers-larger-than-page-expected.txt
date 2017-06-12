@@ -231,11 +231,13 @@ layer at (8,0) size 2010x46 backgroundClip at (0,0) size 1046x799 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,0) size 2000x18
         LayoutText {#text} at (0,0) size 706x18
           text run at (0,0) width 706: "crbug.com/303728: Footer Line should be repeated on every page and should be clipped because it's too wide."
-      LayoutBlockFlow {HR} at (0,26) size 2000x2 [border: (1px inset #EEEEEE)]
+layer at (13,31) size 2000x2 backgroundClip at (13,31) size 1033x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,26) size 2000x2 [border: (1px inset #EEEEEE)]
 layer at (8,753) size 2010x46 backgroundClip at (0,0) size 1046x799 clip at (0,0) size 1046x799
   LayoutBlockFlow (positioned) {DIV} at (8,753) size 2010x46 [border: (5px solid #000000)]
     LayoutBlockFlow {DIV} at (5,13) size 2000x28
-      LayoutBlockFlow {HR} at (0,0) size 2000x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,10) size 2000x18
         LayoutText {#text} at (0,0) size 706x18
           text run at (0,0) width 706: "crbug.com/303728: Footer Line should be repeated on every page and should be clipped because it's too wide."
+layer at (13,766) size 2000x2 backgroundClip at (13,766) size 1033x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 2000x2 [border: (1px inset #EEEEEE)]

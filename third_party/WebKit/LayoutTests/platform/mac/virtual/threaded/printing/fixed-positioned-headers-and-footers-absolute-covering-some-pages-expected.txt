@@ -11,7 +11,8 @@ layer at (0,0) size 510x64
         LayoutText {#text} at (0,0) size 472x36
           text run at (0,0) width 472: "crbug.com/303728: Header Line should be repeated on every page except"
           text run at (0,18) width 384: "where it's clipped by the absolute element on pages 3 and 4."
-      LayoutBlockFlow {HR} at (0,44) size 500x2 [border: (1px inset #EEEEEE)]
+layer at (5,49) size 500x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,44) size 500x2 [border: (1px inset #EEEEEE)]
 layer at (0,1000) size 600x2000 backgroundClip at (0,0) size 1046x799 clip at (0,0) size 1046x799
   LayoutBlockFlow (positioned) zI: 2 {DIV} at (0,1000) size 600x2000 [bgcolor=#000000]
     LayoutText zI: 2 {#text} at (0,0) size 58x18

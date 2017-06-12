@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS control 
-FAIL overflow: visible assert_equals: hr.offsetLeft expected 0 but got 50
-Harness: the test ran to completion.
-

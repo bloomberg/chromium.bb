@@ -4286,14 +4286,6 @@ bool LayoutBlockFlow::CreatesNewFormattingContext() const {
     return true;
   }
 
-  if (IsHR()) {
-    // Not mentioned in the spec, but we want HR elements to be pushed to the
-    // side by floats (and all engines seem to do that), since we use borders to
-    // render HR (and it would just ugly to let those borders be painted under
-    // the float).
-    return true;
-  }
-
   if (IsLegend()) {
     // This is wrong; see crbug.com/727378 . It may be that our current
     // implementation requires the rendered legend inside a FIELDSET to create a
