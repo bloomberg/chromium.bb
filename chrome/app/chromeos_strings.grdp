@@ -76,6 +76,27 @@ Press any key to continue exploring.
   <message name="IDS_FILE_SYSTEM_PROVIDER_MANY_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that more than one operations are taking longer than expected.">
     Some operations are taking longer than expected. Do you want to abort them?
   </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS" desc="Part of message in the confirmation dialog box when moving a file out of a Team Drive.">
+    Members of '<ph name="SOURCE_NAME">$1</ph>' will lose access unless these items are shared with them.
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_CONFIRM_CANNOT_MOVE_BACK_TO_TEAM_DRIVE" desc="Part of message in the confirmation dialog box when moving a file from Team Drives to My Drive to tell that the operation is not undoable.">
+    The items cannot be moved back into '<ph name="DESTINATION_NAME">$1</ph>', so you won't be able to undo this action.
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_CONFIRM_TD_MEMBERS_GAIN_ACCESS" desc="Part of message in the confirmation dialog box when moving or copying files into a Team Drive.">
+    Members of '<ph name="DESTINATION_NAME">$1</ph>' will gain access to these items.
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_CONFIRM_TD_MEMBERS_GAIN_ACCESS_TO_COPY" desc="Part of message in the confirmation dialog box when copying files into a Team Drive.">
+    Members of '<ph name="DESTINATION_NAME">$1</ph>' will gain access to the copy of these items.
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_CONFIRM_OWNERSHIP_TRANSFER" desc="Part of message in the confirmation dialog box when moving files between two Team Drives that belong to different domains.">
+    Ownership will be transferred to <ph name="DESTINATION_DOMAIN">$1</ph>.
+  </message>
+  <message name="IDS_FILE_BROWSER_CONFIRM_COPY_BUTTON_LABEL" desc="Button label for approving file copy operation in the confirmation dialog box. This is placed next to CANCEL button.">
+    Copy
+  </message>
+  <message name="IDS_FILE_BROWSER_CONFIRM_MOVE_BUTTON_LABEL" desc="Button label for approving file move operation in the confirmation dialog box. This is placed next to CANCEL button.">
+    Move
+  </message>
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_ABORT_BUTTON" desc="Label of the button on the notification about an operation(s) taking to long.">
     Abort
   </message>

@@ -262,6 +262,7 @@
         'metadata/compiled_resources2.gyp:metadata_model',
         'metadata/compiled_resources2.gyp:thumbnail_model',
         'ui/compiled_resources2.gyp:directory_tree',
+        'ui/compiled_resources2.gyp:file_manager_ui',
         'ui/compiled_resources2.gyp:list_container',
         'ui/compiled_resources2.gyp:multi_profile_share_dialog',
         'ui/compiled_resources2.gyp:progress_center_panel',

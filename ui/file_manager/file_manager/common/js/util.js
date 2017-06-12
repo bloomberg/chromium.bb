@@ -670,6 +670,21 @@ util.isTeamDriveEntry = function(entry) {
 };
 
 /**
+ * Extracts Team Drive name from entry path.
+ * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @return {string} The name of Team Drive. Empty string if |entry| is not
+ *     under Team Drives.
+ */
+util.getTeamDriveName = function(entry) {
+  if (!entry.fullPath || !util.isTeamDriveEntry(entry))
+    return '';
+  var tree = entry.fullPath.split('/');
+  if (tree.length < 3)
+    return '';
+  return tree[2];
+};
+
+/**
  * Creates an instance of UserDOMError with given error name that looks like a
  * FileError except that it does not have the deprecated FileError.code member.
  *

@@ -73,6 +73,22 @@ function FileManagerUI(providersModel, element, launchParam) {
   this.deleteConfirmDialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
 
   /**
+   * Confirm dialog for file move operation.
+   * @type {!FilesConfirmDialog}
+   * @const
+   */
+  this.moveConfirmDialog = new FilesConfirmDialog(this.element);
+  this.moveConfirmDialog.setOkLabel(str('CONFIRM_MOVE_BUTTON_LABEL'));
+
+  /**
+   * Confirm dialog for file copy operation.
+   * @type {!FilesConfirmDialog}
+   * @const
+   */
+  this.copyConfirmDialog = new FilesConfirmDialog(this.element);
+  this.copyConfirmDialog.setOkLabel(str('CONFIRM_COPY_BUTTON_LABEL'));
+
+  /**
    * Share dialog.
    * @type {!ShareDialog}
    * @const
@@ -540,4 +556,30 @@ FileManagerUI.prototype.showOpenInOtherDesktopAlert = function(entries) {
       // Show the dialog.
       this.alertDialog.showWithTitle(title, message, null, null, null);
     }.bind(this));
+};
+
+/**
+ * Shows confirmation dialog and handles user interaction.
+ * @param {boolean} isMove true if the operation is move. false if copy.
+ * @param {!Array<string>} messages The messages to show in the dialog.
+ *     box.
+ * @return {!Promise<boolean>}
+ */
+FileManagerUI.prototype.showConfirmationDialog = function(isMove, messages) {
+  var dialog = null;
+  if (isMove) {
+    dialog = this.moveConfirmDialog;
+  } else {
+    dialog = this.copyConfirmDialog;
+  }
+  return new Promise(function(resolve, reject) {
+    dialog.show(
+        messages.join(' '),
+        function() {
+          resolve(true);
+        },
+        function() {
+          resolve(false);
+        });
+  });
 };

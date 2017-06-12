@@ -645,6 +645,7 @@ FileManager.prototype = /** @struct */ {
     this.fileTransferController_ = new FileTransferController(
         assert(this.document_), assert(this.ui_.listContainer),
         assert(this.ui_.directoryTree), this.ui_.multiProfileShareDialog,
+        this.ui_.showConfirmationDialog.bind(this.ui_),
         assert(this.fileBrowserBackground_.progressCenter),
         assert(this.fileOperationManager_), assert(this.metadataModel_),
         assert(this.thumbnailModel_), assert(this.directoryModel_),
