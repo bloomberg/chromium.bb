@@ -35,9 +35,9 @@
 
 namespace blink {
 
-FontBuilder::FontBuilder(const Document& document)
-    : document_(&document), flags_(0) {
-  DCHECK(document.GetFrame());
+FontBuilder::FontBuilder(const Document* document)
+    : document_(document), flags_(0) {
+  DCHECK(!document || document->GetFrame());
 }
 
 void FontBuilder::SetInitial(float effective_zoom) {
@@ -101,6 +101,7 @@ AtomicString FontBuilder::GenericFontFamilyName(
 
 float FontBuilder::FontSizeForKeyword(unsigned keyword,
                                       bool is_monospace) const {
+  DCHECK(document_);
   return FontSize::FontSizeForKeyword(document_, keyword, is_monospace);
 }
 
@@ -227,6 +228,7 @@ float FontBuilder::GetComputedSizeFromSpecifiedSize(
     FontDescription& font_description,
     float effective_zoom,
     float specified_size) {
+  DCHECK(document_);
   float zoom_factor = effective_zoom;
   // FIXME: Why is this here!!!!?!
   if (LocalFrame* frame = document_->GetFrame())
@@ -262,6 +264,7 @@ void FontBuilder::UpdateOrientation(FontDescription& description,
 void FontBuilder::CheckForGenericFamilyChange(
     const FontDescription& old_description,
     FontDescription& new_description) {
+  DCHECK(document_);
   if (new_description.IsAbsoluteSize())
     return;
 
@@ -411,6 +414,7 @@ void FontBuilder::CreateFont(FontSelector* font_selector,
 
 void FontBuilder::CreateFontForDocument(FontSelector* font_selector,
                                         ComputedStyle& document_style) {
+  DCHECK(document_);
   FontDescription font_description = FontDescription();
   font_description.SetLocale(document_style.GetFontDescription().Locale());
 

@@ -47,7 +47,7 @@ class FontBuilderAdditiveTest : public FontBuilderTest,
 TEST_F(FontBuilderInitTest, InitialFontSizeNotScaled) {
   RefPtr<ComputedStyle> initial = ComputedStyle::Create();
 
-  FontBuilder builder(GetDocument());
+  FontBuilder builder(&GetDocument());
   builder.SetInitial(1.0f);  // FIXME: Remove unused param.
   builder.CreateFont(GetDocument().GetStyleEngine().FontSelector(), *initial);
 
@@ -55,7 +55,7 @@ TEST_F(FontBuilderInitTest, InitialFontSizeNotScaled) {
 }
 
 TEST_F(FontBuilderInitTest, NotDirty) {
-  FontBuilder builder(GetDocument());
+  FontBuilder builder(&GetDocument());
   ASSERT_FALSE(builder.FontDirty());
 }
 
@@ -71,7 +71,7 @@ TEST_P(FontBuilderAdditiveTest, OnlySetValueIsModified) {
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   style->SetFontDescription(parent_description);
 
-  FontBuilder font_builder(GetDocument());
+  FontBuilder font_builder(&GetDocument());
   funcs.set_value(font_builder);
   font_builder.CreateFont(GetDocument().GetStyleEngine().FontSelector(),
                           *style);
