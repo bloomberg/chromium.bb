@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.locale;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -25,6 +26,9 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
         void onDialogShown(DefaultSearchEnginePromoDialog shownDialog);
     }
     private static DefaultSearchEnginePromoDialogObserver sObserver;
+
+    @SuppressLint("StaticFieldLeak")
+    private static DefaultSearchEnginePromoDialog sCurrentDialog;
 
     /** Used to determine the promo dialog contents. */
     @SearchEnginePromoType
@@ -90,6 +94,9 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
     @Override
     public void show() {
         super.show();
+        if (sCurrentDialog != null) sCurrentDialog.dismiss();
+        setCurrentDialog(this);
+
         if (mDialogType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_NEW) {
             RecordUserAction.record("SearchEnginePromo.NewDevice.Shown.Dialog");
         } else if (mDialogType == LocaleManager.SEARCH_ENGINE_PROMO_SHOW_EXISTING) {
@@ -109,6 +116,8 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
         if (mOnDismissed != null) {
             mOnDismissed.onResult(mHelper.getCurrentlySelectedKeyword() != null);
         }
+
+        if (sCurrentDialog == this) setCurrentDialog(null);
     }
 
     /** See {@link #sObserver}. */
@@ -116,5 +125,14 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
     @Nullable
     public static void setObserverForTests(DefaultSearchEnginePromoDialogObserver observer) {
         sObserver = observer;
+    }
+
+    /** @return The current visible Default Search Engine dialog. */
+    static DefaultSearchEnginePromoDialog getCurrentDialog() {
+        return sCurrentDialog;
+    }
+
+    private static void setCurrentDialog(DefaultSearchEnginePromoDialog dialog) {
+        sCurrentDialog = dialog;
     }
 }
