@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_NUMERICS_SAFE_MATH_IMPL_H_
-#define BASE_NUMERICS_SAFE_MATH_IMPL_H_
+#ifndef BASE_NUMERICS_CHECKED_MATH_IMPL_H_
+#define BASE_NUMERICS_CHECKED_MATH_IMPL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,32 +15,10 @@
 #include <type_traits>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math_shared_impl.h"
 
 namespace base {
 namespace internal {
-
-// Everything from here up to the floating point operations is portable C++,
-// but it may not be fast. This code could be split based on
-// platform/architecture and replaced with potentially faster implementations.
-
-// This is used for UnsignedAbs, where we need to support floating-point
-// template instantiations even though we don't actually support the operations.
-// However, there is no corresponding implementation of e.g. SafeUnsignedAbs,
-// so the float versions will not compile.
-template <typename Numeric,
-          bool IsInteger = std::is_integral<Numeric>::value,
-          bool IsFloat = std::is_floating_point<Numeric>::value>
-struct UnsignedOrFloatForSize;
-
-template <typename Numeric>
-struct UnsignedOrFloatForSize<Numeric, true, false> {
-  using type = typename std::make_unsigned<Numeric>::type;
-};
-
-template <typename Numeric>
-struct UnsignedOrFloatForSize<Numeric, false, true> {
-  using type = Numeric;
-};
 
 // Probe for builtin math overflow support on Clang and version check on GCC.
 #if defined(__has_builtin)
@@ -444,19 +422,20 @@ struct CheckedMinOp<
 
 // This is just boilerplate that wraps the standard floating point arithmetic.
 // A macro isn't the nicest solution, but it beats rewriting these repeatedly.
-#define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                                    \
-  template <typename T, typename U>                                            \
-  struct Checked##NAME##Op<                                                    \
-      T, U, typename std::enable_if<std::is_floating_point<T>::value ||        \
-                                    std::is_floating_point<U>::value>::type> { \
-    using result_type = typename MaxExponentPromotion<T, U>::type;             \
-    template <typename V>                                                      \
-    static bool Do(T x, U y, V* result) {                                      \
-      using Promotion = typename MaxExponentPromotion<T, U>::type;             \
-      Promotion presult = x OP y;                                              \
-      *result = static_cast<V>(presult);                                       \
-      return IsValueInRangeForNumericType<V>(presult);                         \
-    }                                                                          \
+#define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                              \
+  template <typename T, typename U>                                      \
+  struct Checked##NAME##Op<                                              \
+      T, U,                                                              \
+      typename std::enable_if<std::is_floating_point<T>::value ||        \
+                              std::is_floating_point<U>::value>::type> { \
+    using result_type = typename MaxExponentPromotion<T, U>::type;       \
+    template <typename V>                                                \
+    static bool Do(T x, U y, V* result) {                                \
+      using Promotion = typename MaxExponentPromotion<T, U>::type;       \
+      Promotion presult = x OP y;                                        \
+      *result = static_cast<V>(presult);                                 \
+      return IsValueInRangeForNumericType<V>(presult);                   \
+    }                                                                    \
   };
 
 BASE_FLOAT_ARITHMETIC_OPS(Add, +)
@@ -465,45 +444,6 @@ BASE_FLOAT_ARITHMETIC_OPS(Mul, *)
 BASE_FLOAT_ARITHMETIC_OPS(Div, /)
 
 #undef BASE_FLOAT_ARITHMETIC_OPS
-
-// Wrap the unary operations to allow SFINAE when instantiating integrals versus
-// floating points. These don't perform any overflow checking. Rather, they
-// exhibit well-defined overflow semantics and rely on the caller to detect
-// if an overflow occured.
-
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr T NegateWrapper(T value) {
-  using UnsignedT = typename std::make_unsigned<T>::type;
-  // This will compile to a NEG on Intel, and is normal negation on ARM.
-  return static_cast<T>(UnsignedT(0) - static_cast<UnsignedT>(value));
-}
-
-template <
-    typename T,
-    typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
-constexpr T NegateWrapper(T value) {
-  return -value;
-}
-
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr typename std::make_unsigned<T>::type InvertWrapper(T value) {
-  return ~value;
-}
-
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr T AbsWrapper(T value) {
-  return static_cast<T>(SafeUnsignedAbs(value));
-}
-
-template <
-    typename T,
-    typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
-constexpr T AbsWrapper(T value) {
-  return value < 0 ? -value : value;
-}
 
 // Floats carry around their validity state with them, but integers do not. So,
 // we wrap the underlying value in a specialization in order to hide that detail
@@ -523,8 +463,8 @@ struct GetNumericRepresentation {
                                                         : NUMERIC_UNKNOWN);
 };
 
-template <typename T, NumericRepresentation type =
-                          GetNumericRepresentation<T>::value>
+template <typename T,
+          NumericRepresentation type = GetNumericRepresentation<T>::value>
 class CheckedNumericState {};
 
 // Integrals require quite a bit of additional housekeeping to manage state.
@@ -625,17 +565,7 @@ class CheckedNumericState<T, NUMERIC_FLOATING> {
   constexpr T value() const { return value_; }
 };
 
-template <template <typename, typename, typename> class M,
-          typename L,
-          typename R>
-struct MathWrapper {
-  using math = M<typename UnderlyingType<L>::type,
-                 typename UnderlyingType<R>::type,
-                 void>;
-  using type = typename math::result_type;
-};
-
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_NUMERICS_SAFE_MATH_IMPL_H_
+#endif  // BASE_NUMERICS_CHECKED_MATH_IMPL_H_
