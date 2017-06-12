@@ -7,6 +7,7 @@ include_rules = [
   # lib is the top-level target, and must remain a leaf in the dependency tree.
   "-android_webview/lib",
 
+  "+components/network_session_configurator/common",
   "+components/metrics",
   "+components/prefs",
   "+components/version_info",

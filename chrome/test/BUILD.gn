@@ -120,6 +120,7 @@ static_library("test_support") {
     "//components/history/core/test:test",
     "//components/infobars/core",
     "//components/metrics:test_support",
+    "//components/network_session_configurator/common",
     "//components/network_time:network_time_test_support",
     "//components/omnibox/browser:test_support",
     "//components/password_manager/core/browser:test_support",

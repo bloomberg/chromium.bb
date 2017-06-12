@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/leak_tracker.h"
 #include "base/environment.h"
@@ -27,7 +28,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/net_log/chrome_net_log.h"
-#include "components/network_session_configurator/network_session_configurator.h"
+#include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/ios/proxy_service_factory.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
@@ -347,9 +348,10 @@ void IOSIOThread::Init() {
   quic_user_agent_id.push_back(' ');
   quic_user_agent_id.append(web::BuildOSCpuInfo());
 
-  network_session_configurator::ParseFieldTrials(
-      /*is_quic_force_disabled=*/false,
-      /*is_quic_force_enabled=*/false, quic_user_agent_id, &params_);
+  // Set up field trials, ignoring debug command line options.
+  network_session_configurator::ParseCommandLineAndFieldTrials(
+      base::CommandLine(base::CommandLine::NO_PROGRAM),
+      /*is_quic_force_disabled=*/false, quic_user_agent_id, &params_);
 
   // InitSystemRequestContext turns right around and posts a task back
   // to the IO thread, so we can't let it run until we know the IO

@@ -103,7 +103,7 @@ test("components_unittests") {
     "//components/mime_util:unit_tests",
     "//components/navigation_metrics:unit_tests",
     "//components/net_log:unit_tests",
-    "//components/network_session_configurator:unit_tests",
+    "//components/network_session_configurator/browser:unit_tests",
     "//components/network_time:unit_tests",
     "//components/ntp_snippets:unit_tests",
     "//components/ntp_tiles:unit_tests",

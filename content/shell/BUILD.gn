@@ -220,6 +220,7 @@ static_library("content_shell_lib") {
     "//components/cdm/renderer",
     "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
     "//components/keyed_service/content",
+    "//components/network_session_configurator/common",
     "//components/plugins/renderer",
     "//components/url_formatter",
     "//components/web_cache/renderer",

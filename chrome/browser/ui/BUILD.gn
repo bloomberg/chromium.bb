@@ -1099,6 +1099,7 @@ split_static_library("ui") {
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/common:features",
       "//components/feedback/proto",
+      "//components/network_session_configurator/common",
       "//components/proximity_auth/webui",
       "//components/ui_metrics",
       "//components/web_modal",

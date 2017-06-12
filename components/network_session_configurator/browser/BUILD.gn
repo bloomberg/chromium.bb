@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("network_session_configurator") {
+static_library("browser") {
   sources = [
     "network_session_configurator.cc",
     "network_session_configurator.h",
@@ -10,13 +10,12 @@ static_library("network_session_configurator") {
 
   public_deps = [
     "//base",
+    "//components/network_session_configurator/common",
     "//net",
   ]
 
   deps = [
-    "//components/data_reduction_proxy/core/common",
     "//components/variations",
-    "//components/version_info",
   ]
 }
 
@@ -26,7 +25,7 @@ source_set("unit_tests") {
     "network_session_configurator_unittest.cc",
   ]
   deps = [
-    ":network_session_configurator",
+    ":browser",
     "//base/test:test_support",
     "//components/variations:variations",
     "//testing/gtest",

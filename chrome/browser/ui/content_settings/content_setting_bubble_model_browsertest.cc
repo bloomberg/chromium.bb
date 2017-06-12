@@ -18,6 +18,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/rappor/test_rappor_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_navigation_observer.h"

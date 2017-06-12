@@ -18,6 +18,7 @@ include_rules = [
   "+components/metrics/client_info.h",
   "+components/metrics/metrics_pref_names.h",
   "+components/nacl/common",
+  "+components/network_session_configurator/common",
   "+components/ntp_tiles",
   "+components/offline_pages/features",
   "+components/password_manager/core/common",

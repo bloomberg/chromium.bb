@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/grit",
   "+components/data_use_measurement/core",
+  "+components/network_session_configurator/common",
   "+components/prefs",
   "+components/version_info",
   "+mojo/edk/embedder",

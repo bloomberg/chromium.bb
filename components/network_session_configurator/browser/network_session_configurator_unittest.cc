@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/network_session_configurator/network_session_configurator.h"
+#include "components/network_session_configurator/browser/network_session_configurator.h"
 
 #include <map>
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/mock_entropy_provider.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_stream_factory.h"
+#include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,16 +25,20 @@ class NetworkSessionConfiguratorTest : public testing::Test {
  public:
   NetworkSessionConfiguratorTest()
       : quic_user_agent_id_("Chrome/52.0.2709.0 Linux x86_64") {
-    field_trial_list_.reset(
-        new base::FieldTrialList(
-            base::MakeUnique<base::MockEntropyProvider>()));
+    field_trial_list_.reset(new base::FieldTrialList(
+        base::MakeUnique<base::MockEntropyProvider>()));
     variations::testing::ClearAllVariationParams();
   }
 
+  void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line) {
+    network_session_configurator::ParseCommandLineAndFieldTrials(
+        command_line, /*is_quic_force_disabled=*/false, quic_user_agent_id_,
+        &params_);
+  }
+
   void ParseFieldTrials() {
-    network_session_configurator::ParseFieldTrials(
-        /*is_quic_force_disabled=*/false,
-        /*is_quic_force_enabled=*/false, quic_user_agent_id_, &params_);
+    ParseCommandLineAndFieldTrials(
+        base::CommandLine(base::CommandLine::NO_PROGRAM));
   }
 
   std::string quic_user_agent_id_;
@@ -43,13 +50,18 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   ParseFieldTrials();
 
   EXPECT_FALSE(params_.ignore_certificate_errors);
-  EXPECT_EQ("Chrome/52.0.2709.0 Linux x86_64", params_.quic_user_agent_id);
   EXPECT_EQ(0u, params_.testing_fixed_http_port);
   EXPECT_EQ(0u, params_.testing_fixed_https_port);
+  EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
+  EXPECT_FALSE(params_.enable_user_alternate_protocol_ports);
+
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_TRUE(params_.http2_settings.empty());
-  EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
+
   EXPECT_FALSE(params_.enable_quic);
+  EXPECT_EQ("Chrome/52.0.2709.0 Linux x86_64", params_.quic_user_agent_id);
+  EXPECT_EQ(0u, params_.origins_to_force_quic_on.size());
+  EXPECT_FALSE(params_.quic_force_hol_blocking);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialHttp2Disable) {
@@ -352,6 +364,127 @@ TEST_F(NetworkSessionConfiguratorTest, QuicForceHolBlocking) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_force_hol_blocking);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, ForceQuic) {
+  struct {
+    bool force_enabled;
+    bool force_disabled;
+    bool expect_quic_enabled;
+  } kTests[] = {
+      {true /* force_enabled */, false /* force_disabled */,
+       true /* expect_quic_enabled */},
+      {false /* force_enabled */, true /* force_disabled */,
+       false /* expect_quic_enabled */},
+      {true /* force_enabled */, true /* force_disabled */,
+       false /* expect_quic_enabled */},
+  };
+
+  for (const auto& test : kTests) {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    if (test.force_enabled)
+      command_line.AppendSwitch(switches::kEnableQuic);
+    if (test.force_disabled)
+      command_line.AppendSwitch(switches::kDisableQuic);
+    ParseCommandLineAndFieldTrials(command_line);
+    EXPECT_EQ(test.expect_quic_enabled, params_.enable_quic);
+  }
+}
+
+TEST_F(NetworkSessionConfiguratorTest, DisableHttp2) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kDisableHttp2);
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_FALSE(params_.enable_http2);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicConnectionOptions) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableQuic);
+  command_line.AppendSwitchASCII(switches::kQuicConnectionOptions,
+                                 "TIMER,TBBR,REJ");
+  ParseCommandLineAndFieldTrials(command_line);
+
+  net::QuicTagVector expected_options;
+  expected_options.push_back(net::kTIME);
+  expected_options.push_back(net::kTBBR);
+  expected_options.push_back(net::kREJ);
+  EXPECT_EQ(expected_options, params_.quic_connection_options);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicMaxPacketLength) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableQuic);
+  command_line.AppendSwitchASCII(switches::kQuicMaxPacketLength, "42");
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_EQ(42u, params_.quic_max_packet_length);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicVersion) {
+  net::QuicVersionVector supported_versions = net::AllSupportedVersions();
+  for (const auto& version : supported_versions) {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    command_line.AppendSwitch(switches::kEnableQuic);
+    command_line.AppendSwitchASCII(switches::kQuicVersion,
+                                   net::QuicVersionToString(version));
+    ParseCommandLineAndFieldTrials(command_line);
+    ASSERT_EQ(1u, params_.quic_supported_versions.size());
+    EXPECT_EQ(version, params_.quic_supported_versions[0]);
+  }
+}
+
+TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableQuic);
+  command_line.AppendSwitchASCII(switches::kOriginToForceQuicOn, "*");
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_EQ(1u, params_.origins_to_force_quic_on.size());
+  EXPECT_EQ(1u, params_.origins_to_force_quic_on.count(net::HostPortPair()));
+}
+
+TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn2) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableQuic);
+  command_line.AppendSwitchASCII(switches::kOriginToForceQuicOn, "foo:1234");
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_EQ(1u, params_.origins_to_force_quic_on.size());
+  EXPECT_EQ(1u, params_.origins_to_force_quic_on.count(
+                    net::HostPortPair("foo", 1234)));
+}
+
+TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn3) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableQuic);
+  command_line.AppendSwitchASCII(switches::kOriginToForceQuicOn, "foo:1,bar:2");
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_EQ(2u, params_.origins_to_force_quic_on.size());
+  EXPECT_EQ(
+      1u, params_.origins_to_force_quic_on.count(net::HostPortPair("foo", 1)));
+  EXPECT_EQ(
+      1u, params_.origins_to_force_quic_on.count(net::HostPortPair("bar", 2)));
+}
+
+TEST_F(NetworkSessionConfiguratorTest, EnableUserAlternateProtocolPorts) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableUserAlternateProtocolPorts);
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_TRUE(params_.enable_user_alternate_protocol_ports);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, IgnoreCertificateErrors) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kIgnoreCertificateErrors);
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_TRUE(params_.ignore_certificate_errors);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, TestingFixedPorts) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kTestingFixedHttpPort, "800");
+  command_line.AppendSwitchASCII(switches::kTestingFixedHttpsPort, "801");
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_EQ(800, params_.testing_fixed_http_port);
+  EXPECT_EQ(801, params_.testing_fixed_https_port);
 }
 
 }  // namespace test

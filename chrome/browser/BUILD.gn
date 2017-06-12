@@ -1555,7 +1555,7 @@ split_static_library("browser") {
     "//components/navigation_metrics",
     "//components/net_log",
     "//components/network_hints/common",
-    "//components/network_session_configurator",
+    "//components/network_session_configurator/browser",
     "//components/network_time",
     "//components/ntp_snippets",
     "//components/ntp_tiles",

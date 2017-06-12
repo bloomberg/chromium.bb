@@ -28,6 +28,7 @@ include_rules = [
   #   2) it's not linked into the content library
   "+components/crash",
   "+components/url_formatter",
+  "+components/network_session_configurator/common",
 ]
 
 specific_include_rules = {

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/network/cache_url_loader.h"
 #include "content/network/network_service_url_loader_factory_impl.h"
 #include "content/network/url_loader_impl.h"
