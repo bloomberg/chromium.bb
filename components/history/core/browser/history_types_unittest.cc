@@ -40,14 +40,14 @@ const char kURL2[] = "http://news.google.com/";
 void AddSimpleData(QueryResults* results) {
   GURL url1(kURL1);
   GURL url2(kURL2);
-  URLResult result1(url1, base::Time::Now());
-  URLResult result2(url1, base::Time::Now());
-  URLResult result3(url2, base::Time::Now());
+  std::vector<URLResult> test_vector;
+
+  test_vector.push_back(URLResult(url1, base::Time::Now()));
+  test_vector.push_back(URLResult(url1, base::Time::Now()));
+  test_vector.push_back(URLResult(url2, base::Time::Now()));
 
   // The URLResults are invalid after being inserted.
-  results->AppendURLBySwapping(&result1);
-  results->AppendURLBySwapping(&result2);
-  results->AppendURLBySwapping(&result3);
+  results->SetURLResults(std::move(test_vector));
   CheckHistoryResultConsistency(*results);
 }
 

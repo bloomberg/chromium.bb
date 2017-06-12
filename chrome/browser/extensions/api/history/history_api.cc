@@ -324,8 +324,8 @@ ExtensionFunction::ResponseAction HistorySearchFunction::Run() {
 void HistorySearchFunction::SearchComplete(history::QueryResults* results) {
   HistoryItemList history_item_vec;
   if (results && !results->empty()) {
-    for (const history::URLResult* item : *results)
-      history_item_vec.push_back(GetHistoryItem(*item));
+    for (const auto& item : *results)
+      history_item_vec.push_back(GetHistoryItem(item));
   }
   Respond(ArgumentList(Search::Results::Create(history_item_vec)));
   Release();  // Balanced in Run().

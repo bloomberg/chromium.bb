@@ -311,11 +311,9 @@ class TabTest : public BlockCleanupTest {
 #ifndef NDEBUG
   // Method useful when debugging.
   void LogHistoryQueryResult(const history::QueryResults* results) {
-    typedef history::QueryResults::URLResultVector::const_iterator iterator;
-    for (iterator i = results->begin(); i != results->end(); ++i) {
-      history::URLResult* result = *i;
-      NSLog(@"title = %@; url = %@", base::SysUTF16ToNSString(result->title()),
-            base::SysUTF8ToNSString(result->url().spec()));
+    for (const auto& result : *results) {
+      NSLog(@"title = %@; url = %@", base::SysUTF16ToNSString(result.title()),
+            base::SysUTF8ToNSString(result.url().spec()));
     }
   }
 #endif

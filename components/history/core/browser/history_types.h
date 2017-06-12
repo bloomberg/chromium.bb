@@ -18,7 +18,6 @@
 #include "base/containers/stack_container.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/favicon_base/favicon_types.h"
@@ -134,26 +133,10 @@ struct PageVisit {
 // a given URL appears in those results.
 class QueryResults {
  public:
-  typedef std::vector<URLResult*> URLResultVector;
+  typedef std::vector<URLResult> URLResultVector;
 
   QueryResults();
   ~QueryResults();
-
-  // Indicates the first time that the query includes results for (queries are
-  // clipped at the beginning, so it will always include to the end of the time
-  // queried).
-  //
-  // If the number of results was clipped as a result of the max count, this
-  // will be the time of the first query returned. If there were fewer results
-  // than we were allowed to return, this represents the first date considered
-  // in the query (this will be before the first result if there was time
-  // queried with no results).
-  //
-  // TODO(brettw): bug 1203054: This field is not currently set properly! Do
-  // not use until the bug is fixed.
-  base::Time first_time_searched() const { return first_time_searched_; }
-  void set_first_time_searched(base::Time t) { first_time_searched_ = t; }
-  // Note: If you need end_time_searched, it can be added.
 
   void set_reached_beginning(bool reached) { reached_beginning_ = reached; }
   bool reached_beginning() { return reached_beginning_; }
@@ -161,11 +144,11 @@ class QueryResults {
   size_t size() const { return results_.size(); }
   bool empty() const { return results_.empty(); }
 
-  URLResult& back() { return *results_.back(); }
-  const URLResult& back() const { return *results_.back(); }
+  URLResult& back() { return results_.back(); }
+  const URLResult& back() const { return results_.back(); }
 
-  URLResult& operator[](size_t i) { return *results_[i]; }
-  const URLResult& operator[](size_t i) const { return *results_[i]; }
+  URLResult& operator[](size_t i) { return results_[i]; }
+  const URLResult& operator[](size_t i) const { return results_[i]; }
 
   URLResultVector::const_iterator begin() const { return results_.begin(); }
   URLResultVector::const_iterator end() const { return results_.end(); }
@@ -189,10 +172,9 @@ class QueryResults {
   // efficiently transferred without copying.
   void Swap(QueryResults* other);
 
-  // Adds the given result to the map, using swap() on the members to avoid
-  // copying (there are a lot of strings and vectors). This means the parameter
-  // object will be cleared after this call.
-  void AppendURLBySwapping(URLResult* result);
+  // Set the result vector, the parameter vector will be moved to results_.
+  // It means the parameter vector will be empty after calling this method.
+  void SetURLResults(std::vector<URLResult>&& results);
 
   // Removes all instances of the given URL from the result set.
   void DeleteURL(const GURL& url);
@@ -215,14 +197,12 @@ class QueryResults {
   // (this is inclusive). This is used when inserting or deleting.
   void AdjustResultMap(size_t begin, size_t end, ptrdiff_t delta);
 
-  base::Time first_time_searched_;
-
   // Whether the query reaches the beginning of the database.
   bool reached_beginning_;
 
   // The ordered list of results. The pointers inside this are owned by this
   // QueryResults object.
-  ScopedVector<URLResult> results_;
+  URLResultVector results_;
 
   // Maps URLs to entries in results_.
   URLToResultIndices url_to_results_;
