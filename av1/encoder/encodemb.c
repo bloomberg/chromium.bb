@@ -1456,17 +1456,17 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 #if CONFIG_CFL
 static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride, double y_avg,
-                          const uint8_t *src, int src_stride, int blk_width,
-                          int blk_height, double dc_pred, double alpha,
-                          int *dist_neg_out) {
+                          const uint8_t *src, int src_stride, int width,
+                          int height, TX_SIZE tx_size, double dc_pred,
+                          double alpha, int *dist_neg_out) {
   const double dc_pred_bias = dc_pred + 0.5;
   int dist = 0;
   int diff;
 
   if (alpha == 0.0) {
     const int dc_pred_i = (int)dc_pred_bias;
-    for (int j = 0; j < blk_height; j++) {
-      for (int i = 0; i < blk_width; i++) {
+    for (int j = 0; j < height; j++) {
+      for (int i = 0; i < width; i++) {
         diff = src[i] - dc_pred_i;
         dist += diff * diff;
       }
@@ -1479,17 +1479,31 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride, double y_avg,
   }
 
   int dist_neg = 0;
-  for (int j = 0; j < blk_height; j++) {
-    for (int i = 0; i < blk_width; i++) {
-      const double scaled_luma = alpha * (y_pix[i] - y_avg);
-      const int uv = src[i];
-      diff = uv - (int)(scaled_luma + dc_pred_bias);
-      dist += diff * diff;
-      diff = uv + (int)(scaled_luma - dc_pred_bias);
-      dist_neg += diff * diff;
+  const int tx_height = tx_size_high[tx_size];
+  const int tx_width = tx_size_wide[tx_size];
+  const uint8_t *t_y_pix;
+  const uint8_t *t_src;
+  for (int b_j = 0; b_j < height; b_j += tx_height) {
+    const int h = b_j + tx_height;
+    for (int b_i = 0; b_i < width; b_i += tx_width) {
+      const int w = b_i + tx_width;
+      t_y_pix = y_pix;
+      t_src = src;
+      for (int t_j = b_j; t_j < h; t_j++) {
+        for (int t_i = b_i; t_i < w; t_i++) {
+          const double scaled_luma = alpha * (t_y_pix[t_i] - y_avg);
+          const int uv = t_src[t_i];
+          diff = uv - (int)(scaled_luma + dc_pred_bias);
+          dist += diff * diff;
+          diff = uv + (int)(scaled_luma - dc_pred_bias);
+          dist_neg += diff * diff;
+        }
+        t_y_pix += y_stride;
+        t_src += src_stride;
+      }
     }
-    y_pix += y_stride;
-    src += src_stride;
+    y_pix += y_stride * tx_height;
+    src += src_stride * tx_height;
   }
 
   if (dist_neg_out) *dist_neg_out = dist_neg;
@@ -1498,7 +1512,7 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride, double y_avg,
 }
 
 static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
-                                 int width, int height,
+                                 int width, int height, TX_SIZE tx_size,
                                  uint8_t y_pix[MAX_SB_SQUARE],
                                  CFL_SIGN_TYPE signs_out[CFL_SIGNS]) {
   const struct macroblock_plane *const p_u = &x->plane[AOM_PLANE_U];
@@ -1514,17 +1528,17 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
   int sse[CFL_PRED_PLANES][CFL_MAGS_SIZE];
   sse[CFL_PRED_U][0] =
       cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_avg, src_u, src_stride_u, width,
-                     height, dc_pred_u, 0, NULL);
+                     height, tx_size, dc_pred_u, 0, NULL);
   sse[CFL_PRED_V][0] =
       cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_avg, src_v, src_stride_v, width,
-                     height, dc_pred_v, 0, NULL);
+                     height, tx_size, dc_pred_v, 0, NULL);
   for (int m = 1; m < CFL_MAGS_SIZE; m += 2) {
     assert(cfl_alpha_mags[m + 1] == -cfl_alpha_mags[m]);
     sse[CFL_PRED_U][m] = cfl_alpha_dist(
-        y_pix, MAX_SB_SIZE, y_avg, src_u, src_stride_u, width, height,
+        y_pix, MAX_SB_SIZE, y_avg, src_u, src_stride_u, width, height, tx_size,
         dc_pred_u, cfl_alpha_mags[m], &sse[CFL_PRED_U][m + 1]);
     sse[CFL_PRED_V][m] = cfl_alpha_dist(
-        y_pix, MAX_SB_SIZE, y_avg, src_v, src_stride_v, width, height,
+        y_pix, MAX_SB_SIZE, y_avg, src_v, src_stride_v, width, height, tx_size,
         dc_pred_v, cfl_alpha_mags[m], &sse[CFL_PRED_V][m + 1]);
   }
 
@@ -1605,7 +1619,7 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCK *x,
       cfl_load(cfl, tmp_pix, MAX_SB_SIZE, 0, 0, width, height);
       cfl->y_avg = cfl_compute_average(tmp_pix, MAX_SB_SIZE, width, height);
       mbmi->cfl_alpha_idx = cfl_compute_alpha_ind(
-          x, cfl, width, height, tmp_pix, mbmi->cfl_alpha_signs);
+          x, cfl, width, height, tx_size, tmp_pix, mbmi->cfl_alpha_signs);
     }
   }
 #if CONFIG_DEBUG
